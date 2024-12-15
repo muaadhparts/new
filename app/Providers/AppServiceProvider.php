@@ -4,12 +4,11 @@ namespace App\Providers;
 
 use App\Models\Currency;
 use App\Models\Language;
-use Illuminate\{
-    Support\Facades\DB,
+use Illuminate\{Support\Facades\DB,
     Support\Collection,
+    Support\Facades\URL,
     Support\ServiceProvider,
-    Pagination\LengthAwarePaginator
-};
+    Pagination\LengthAwarePaginator};
 
 use App\Models\Font;
 use Illuminate\Pagination\Paginator;
@@ -22,6 +21,13 @@ class AppServiceProvider extends ServiceProvider
     {
         Cache::flush();
         Paginator::useBootstrap();
+
+
+        if ($this->app->environment('production')) {
+            URL::forceScheme('https');
+        }
+
+
         view()->composer('*', function ($settings) {
 
             $settings->with('gs', DB::table('generalsettings')->first());
