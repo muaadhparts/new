@@ -6,6 +6,8 @@ use App\Models\Language;
 use Datatables;
 use Illuminate\Http\Request;
 
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Lang;
 use Illuminate\Support\Str;
 use Validator;
 
@@ -33,7 +35,10 @@ class LanguageController extends AdminBaseController
 
     public function create()
     {
-        $lang = json_decode(file_get_contents(public_path() . '/project/resources/lang/default.json'), true);
+//        File::json(resource_path('lang/default.json'));
+//        dd( File::json(resource_path('lang/default.json')) ,resource_path('lang/default.json'));
+//        $lang = json_decode(file_get_contents(public_path() . 'resources/lang/default.json'), true);
+        $lang =  File::json(resource_path('lang/default.json'));
         return view('admin.language.create', compact('lang'));
     }
 

@@ -146,6 +146,7 @@ class DashboardController extends AdminBaseController
 
     public function activation()
     {
+        dd('activation');
         $activation_data = "";
         if (file_exists(public_path() . '/project/license.txt')) {
             $license = file_get_contents(public_path() . '/project/license.txt');
