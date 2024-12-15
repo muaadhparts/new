@@ -117,7 +117,7 @@
         }
     @endphp
 
-      
+    @stack('scripts')
   @yield('script')
 
 </body>
