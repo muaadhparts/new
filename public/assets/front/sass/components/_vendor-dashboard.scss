@@ -1,0 +1,311 @@
+//******** Vendor panel sidebar start *********
+.gs-vendor-sidebar-wrapper {
+  background: $white-color;
+  .gs-dashboard-user-sidebar-wrapper {
+    padding: 40px 24px 40px 24px;
+    box-shadow: none;
+
+    transition: $transition;
+    li {
+      a {
+        position: relative;
+      }
+      
+      
+    }
+  }
+
+  .gs-vendor-sidebar-logo-wrapper {
+    a {
+      transition: $transition;
+    }
+  }
+  &.collapsed {
+    .gs-vendor-sidebar-logo-wrapper {
+      a {
+        position: absolute;
+        opacity: 0;
+      }
+    }
+
+    .label {
+      position: absolute;
+      opacity: 0;
+      left: 62px;
+    }
+
+    .gs-dashboard-user-sidebar-wrapper {
+      padding: 40px 16px 40px 16px;
+      width: 104px;
+      .has-sub-menu {
+        position: relative;
+        a {
+          display: block;
+          .angle-down {
+            display: none;
+          }
+        }
+        .sidebar-sub-menu {
+          margin-left: 15px;
+          width: 220px;
+          position: absolute;
+          top: 0;
+          left: 100%;
+          box-shadow: 0 3px 10px rgba( #000000, .2 );
+          z-index: 5!important;
+        }
+      }
+    }
+  }
+}
+
+.gs-vendor-sidebar-logo-wrapper {
+  height: 124px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  @include screen-1400 {
+    height: 92px;
+  }
+}
+//******** Vendor panel sidebar end **********
+
+// vendor panel header and outlet wrapper
+.gs-vendor-header-outlet-wrapper {
+  width: calc(100% - 312px);
+  overflow: hidden;
+  background: $text-color-50;
+  transition: $transition;
+  @include screen-1400 {
+    width: calc(100% - 288px);
+  }
+  @include screen-1200 {
+    width: 100%;
+  }
+
+  &.increased-width {
+    width: calc(100% - 104px);
+
+    @include screen-1200 {
+      width: 100%;
+    }
+  }
+}
+
+//******* vendor panel header start *********
+.gs-vendor-header {
+  padding: 32px 40px;
+  background-color: $white-color;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  @include screen-1400 {
+    padding: 16px 40px;
+  }
+  @include screen-768 {
+    padding: 10px 20px;
+  }
+
+  .header-toggle {
+    display: inline-block;
+  }
+  //******* vendor header search start *********
+  .vendor-header-search-wrapper {
+    width: 100%;
+    max-width: 513px;
+
+    .vendor-header-search {
+      display: flex;
+      width: 100%;
+      height: 60px;
+      @include screen-992 {
+        height: 52px;
+      }
+      padding: var(--spacing-xxs, 2px) var(--spacing-4xl, 32px)
+        var(--spacing-xxs, 2px) var(--spacing-3xl, 24px);
+      align-items: center;
+      gap: 8px;
+      border-radius: 8px;
+      color: $text-color-800;
+      background: var(--neutral-50, #f8f7f8);
+      border: 1px solid transparent;
+      transition: $transition;
+      padding-left: 60px;
+
+      &::placeholder {
+        color: $text-color-500;
+        font-size: 18px;
+        font-style: normal;
+        font-weight: 400;
+        line-height: 120%;
+      }
+      &:focus,
+      &:active {
+        border: 1px solid $primary-color-500;
+      }
+    }
+    .input-search-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: absolute;
+      top: 0;
+      left: 24px;
+      transform: translateY(45%);
+      @include screen-992 {
+        transform: translateY(35%);
+      }
+    }
+  }
+  //******* vendor header search end **********
+
+  //******* vendor header dropdown start *******
+  .user-dropdown-wrapper {
+    position: relative;
+    cursor: pointer;
+    width: 233px;
+    @include screen-768 {
+      width: auto;
+    }
+    .user-dropdown {
+      display: flex;
+      // justify-content: space-between;
+      gap: 16px;
+      padding: 10px 20px;
+      border-radius: 8px;
+      background-color: $text-color-50;
+      position: relative;
+      @include screen-992 {
+        padding: 6px 10px;
+      }
+
+      svg {
+        transition: $transition;
+        position: absolute;
+        right: 20px;
+        top: 10px;
+
+      }
+
+      &.show {
+        svg {
+          rotate: 180deg;
+        }
+      }
+    }
+    .avatar {
+      border-radius: 40px;
+      border: 1px solid $primary-color-500 !important;
+      width: 40px;
+      height: 40px;
+    }
+    .user-name {
+      font-size: 16px;
+      line-height: 125%;
+      text-transform: capitalize;
+      font-weight: 600;
+    }
+    .user-designation {
+      color: $blue-grey-700;
+      font-family: Poppins;
+      font-size: 14px;
+      font-style: normal;
+      font-weight: 400;
+      line-height: 120%;
+    }
+
+    .dropdown-toggle {
+      color: $text-color-950;
+      &::after {
+        display: none;
+      }
+    }
+    .dropdown-menu {
+      &.show {
+        left: auto !important;
+      }
+
+      li {
+        &:last-child {
+          .dropdown-item {
+            border-bottom: 1px solid $primary-color-500;
+          }
+        }
+        .dropdown-item {
+          border-bottom: 1px solid $text-color-100;
+        }
+      }
+    }
+    .dropdown-item {
+      display: flex;
+      padding: 12px 24px;
+      align-items: center;
+      gap: 16px;
+      background: $white-color;
+
+      color: $text-color-950;
+      font-family: Poppins;
+      font-size: 18px;
+      font-style: normal;
+      font-weight: 400;
+      line-height: 120%;
+      transition: $transition;
+      svg {
+        path {
+          transition: $transition;
+        }
+      }
+      &:hover {
+        background-color: $primary-color-500;
+        color: $white-color;
+        svg {
+          &.has-fill {
+            path {
+              fill: $white-color;
+            }
+          }
+          &.has-stroke {
+            path {
+              stroke: $white-color;
+            }
+          }
+        }
+      }
+    }
+  }
+  //******* vendor header dropdown end *********
+}
+//******* vendor panel header end ***********
+
+// vendor panel outlet
+.gs-vendor-outlet {
+  padding: 40px;
+  padding-bottom: 120px;
+
+  @include screen-768 {
+    padding: 20px;
+  }
+}
+
+// table area start
+.table-area {
+  margin-top: 32px;
+}
+// table area end
+
+// Nice select vendor 
+.nice-select {
+  &.nice-select-vendor {
+      background-color: $text-color-50;
+      &::after {
+          top: 50%;
+          font-family: "Font Awesome 5 Free";
+          font-weight: 900;
+          display: inline-block;
+          font-size: 24px;
+          content: "\f0d7";
+      }
+  }
+}

@@ -1,0 +1,28 @@
+.bg-light-white {
+  background-color: $bg-light-white;
+}
+.bg-class {
+  background-size: cover;
+  background-position: center;
+  object-fit: cover;
+  background-repeat: no-repeat;
+}
+.text-red {
+  color: $danger-color-500;
+}
+
+.bg-pending {
+  background-color: $secondary-color-700;
+}
+.bg-processing {
+  background-color: #C6FF29;
+  color: $white-color;
+}
+.bg-complete {
+    background-color: $green-color-500;
+    color: $white-color;
+}
+.bg-declined {
+    background-color: $danger-color-500;
+       color: $white-color;
+}

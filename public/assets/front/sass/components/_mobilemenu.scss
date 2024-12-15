@@ -1,0 +1,258 @@
+/************************ mobile menu start ****************/
+
+.mobile-menu {
+  width: 290px;
+  height: 100vh;
+  position: fixed;
+  top: 0;
+  left: -300px;
+  background-color: $white-color;
+  z-index: 60;
+  transition: $transition;
+  overflow-y: scroll;
+  //   transition: $transition-base;
+
+  .mobile-menu-top {
+    width: 100%;
+    padding: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background-color: $primary-color-500;
+  }
+
+  .close {
+    // color: $primary-color-500;
+
+    &:hover {
+      color: $primary-color-800;
+    }
+  }
+
+  .tab-content {
+    .tab-pane {
+      padding: 24px 12px;
+      .product-cat-widget {
+        padding-top: 0px;
+      }
+      ul {
+        li {
+          font-size: 16px;
+          font-weight: 500;
+          position: relative;
+          margin-bottom: 12px;
+          a {
+            color: $text-color-950;
+            text-transform: uppercase;
+          }
+        }
+      }
+      .gs-dashboard-user-sidebar-wrapper {
+        li {
+          margin-bottom: 0;
+          svg {
+            width: 16px;
+            height: 16px;
+          }
+          a {
+        
+            span {
+              font-size: 14px;
+            }
+          }
+          &.active,
+          &:hover {
+            a {
+              color: $white-color;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  .mobile-nav-menu {
+    margin-top: 32px;
+
+    li {
+      display: block;
+
+      + li {
+        border-top: 1px solid $primary-color-500;
+      }
+
+      a {
+        display: block;
+        color: $text-color-500;
+        padding: 10px 0;
+        font-weight: 600;
+
+        &:hover {
+          color: $primary-color-500;
+        }
+      }
+
+      &.has-submenu {
+        position: relative;
+
+        & > i {
+          position: absolute;
+          right: 0;
+          top: 6px;
+          padding: 8px;
+          //   transition: $transition-base;
+
+          &.icon-rotate {
+            transform: rotate(180deg);
+          }
+        }
+
+        & > .submenu-wrapper {
+          padding-left: 15px;
+          display: none;
+        }
+      }
+    }
+  }
+
+  .mobile-search {
+    input {
+      width: 100%;
+    }
+
+    button {
+      span {
+        padding: 0;
+        width: 50px;
+        height: 50px;
+      }
+    }
+  }
+
+  &.active {
+    @include screen-1200 {
+      left: 0;
+    }
+  }
+
+  .info-right {
+    margin-top: 20px;
+    display: none;
+
+    @include screen-620 {
+      display: block;
+      ul > li {
+        padding-right: 10px;
+      }
+    }
+  }
+}
+.nav.flex-column .collapse-item ul {
+  margin-left: 20px; /* Adjust this value as needed */
+}
+
+.collapse-item ul {
+  margin-left: 20px;
+
+  li {
+    font-weight: 400 !important;
+    a {
+      font-weight: 400 !important;
+    }
+  }
+}
+
+/* Plus and Minus Icons */
+.collapse-icon::before {
+  font-family: "Font Awesome 5 Free";
+  font-weight: 900;
+  content: "\f067"; /* Plus icon */
+  float: right;
+  margin-right: 5px;
+}
+
+.collapse-icon.collapsed::before {
+  content: "\f068"; /* Minus icon */
+}
+
+/* Toggle icon when nav-link is collapsed or expanded */
+.nav-link[aria-expanded="true"] .collapse-icon::before {
+  content: "\f068"; /* Minus icon */
+  color: $primary-color-500;
+}
+
+.nav-link[aria-expanded="false"] .collapse-icon::before {
+  content: "\f067"; /* Plus icon */
+  color: $primary-color-500;
+}
+
+.collapse-item.collapse .collapse-icon::before {
+  content: "\f068"; /* Minus icon */
+  color: $primary-color-500;
+}
+.collapse-item ul li:first-child {
+  margin-top: 10px;
+}
+
+.collapse-item ul li a.nav-link:hover {
+  color: $primary-color-500 !important;
+}
+
+.collapse-item ul li a.nav-link {
+  font-weight: 400; /* Set font weight to 400 */
+}
+.nav__link:hover {
+  color: $primary-color-500 !important;
+}
+
+.language-dropdown > .dropdown {
+  .dropdown-toggle {
+    color: $text-color-950;
+    font-size: 16px;
+    font-weight: 500;
+    line-height: 120%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0;
+    margin: 0;
+    background-color: transparent;
+    border: none;
+    &:hover {
+      color: $primary-color-500;
+    }
+  }
+
+  .dropdown-menu {
+    min-width: 100%;
+    text-align: center;
+    z-index: 9;
+    padding: 0;
+    border-radius: 0;
+    overflow-y: auto;
+  }
+
+  /* Optional: Style the dropdown items */
+  .dropdown-item {
+    color: #333;
+    height: 44px;
+    padding: 9px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: start;
+    border-bottom: 1px solid $text-color-100;
+    font-family: Poppins;
+    font-size: 18px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 120%;
+  }
+  // .pages_dropdown {
+  //   padding: 13px 24px;
+  // }
+
+  /* Optional: Hover effect on dropdown items */
+  .dropdown-item:hover {
+    background-color: #f8f9fa;
+  }
+}

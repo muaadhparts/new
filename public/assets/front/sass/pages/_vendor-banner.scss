@@ -1,0 +1,69 @@
+.gs-vendor-profile-banner {
+    padding: 32px 32px 80px 32px;
+    border-radius: 12px;
+    background: $white-color;
+
+    .title {
+        color: $text-color-950;
+        font-weight: 500;
+        margin-bottom: 32px;
+        @include screen-992 {
+            margin-bottom: 16px;
+        }
+        @include screen-768 {
+            margin-bottom: 14px;
+        }
+    }
+
+    .banner-des-btn-wrapper {
+        display: inline-flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 48px;
+        @include screen-992 {
+            gap: 24px;
+        }
+    }
+
+    .banner-des-wrapper {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        padding: 0px 68px 0px 68px;
+        gap: 26px;
+        .des {
+            color: $text-color-800;
+            line-height: 120%;
+        }
+        @include screen-992 {
+            padding: 0;
+        }
+    }
+    .banner-wrapper {
+        height: 366px;
+        width: 100%;
+        object-fit: cover;
+        position: relative;
+        .banner {
+            object-fit: cover;
+            width: 100%;
+            height: 100%;
+        }
+        .change-banner-btn {
+            position: absolute;
+            bottom: 24px;
+            right: 47px;
+            cursor: pointer;
+        }
+        @include screen-992 {
+            height: 280px;;
+        }
+        @include screen-576 {
+            height: 180px;;
+        }
+    }
+
+    @include screen-992 {
+        padding: 16px 16px 40px 16px;
+    }
+}

@@ -1,0 +1,9 @@
+
+/project/vendor
+/project/.env
+/project/.env.example
+
+
+DB_DATABASE=drea_laseolqfcgiqgelg
+DB_USERNAME=drea_qwlkhaidsfl
+DB_PASSWORD=tkspIobqfIBG3MK1

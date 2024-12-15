@@ -1,0 +1,94 @@
+.vendor-panel-info-card {
+    display: flex;
+    padding: 40px 24px;
+    align-items: flex-start;
+    gap: 24px;
+    border-radius: 8px;
+    background: #fff;
+    &.total-item-sold {
+      border-left: 4px solid #25CD7F;
+    }
+    &.current-balance {
+      border-left: 4px solid #ffb134;
+    }
+    &.total-earning {
+      border-left: 4px solid #da55f0;
+    }
+    &.pending-commision {
+      border-left: 4px solid #5b68ff;
+    }
+    &.total-order {
+      border-left: 4px solid #ee1243;
+    }
+    &.order-delivered {
+      border-left: 4px solid #27ae60;
+    }
+    &.order-processing {
+      border-left: 4px solid #0ea5e9;
+    }
+    &.order-pending {
+      border-left: 4px solid #fb923c;
+    }
+    @include screen-1920 {
+      flex-direction: column;
+      align-items: center;
+    }
+    @include screen-1200 {
+      flex-direction: row;
+      align-items: flex-start;
+    }
+    @include screen-768 {
+      flex-direction: column;
+      align-items: center;
+    }
+    @include screen-576 {
+      flex-direction: row;
+      align-items: flex-start;
+    }
+  
+    .title-and-value-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 4px;
+      @include screen-1920 {
+        flex-direction: column-reverse;
+        align-items: center;
+      }
+      @include screen-1200 {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      @include screen-768 {
+        flex-direction: column-reverse;
+        align-items: center;
+      }
+      @include screen-576 {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+    }
+  
+    .title {
+      color: $text-color-700;
+      line-height: 160%;
+      font-size: 20px;
+      @include screen-1600 {
+        font-size: 18px;
+      }
+      @include screen-768 {
+        font-size: 16px;
+      }
+      @include screen-576 {
+        font-size: 14px;
+      }
+    }
+    .value {
+      color: $text-color-950;
+    }
+    img {
+      width: 80px;
+      height: 80px;
+      object-fit: cover;
+    }
+  }

@@ -1,0 +1,67 @@
+.gs-chart-wrapper {
+    flex-shrink: 0;
+    border-radius: 12px;
+    background: $white-color;
+    padding: 24px;
+
+    &.vendor-monthly-sales-chart {
+        margin-top: 32px;
+
+        @include screen-992 {
+            margin-top: 16px;
+        }
+    }
+
+    .apexcharts-toolbar {
+        display: none;
+    }
+
+    .chart-title-dropdown-wrapper {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 24px;
+        gap: 24px;
+
+        @include screen-992 {
+            margin-bottom: 12px;
+            gap: 12px;
+        }
+
+        @include screen-576 {
+            flex-direction: column;
+        }
+
+        .chart-title {
+            color: $text-color-950;
+            font-weight: 500;
+        }
+
+        .nice-select {
+            &.nice-select-vendor {
+                min-width: 157px;
+            }
+        }
+
+        .form-group {
+            .form__control {
+                border: none !important;
+            }
+        }
+    }
+
+    // #chart {
+    //     overflow-x: scroll;
+    // }
+
+    // .apexcharts-canvas {
+    //     min-width: 864px !important;
+    //     width: 100%;
+
+    //     svg {
+    //         min-width: 864px !important;
+    //         width: 100%;
+    //     }
+    // }
+
+}

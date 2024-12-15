@@ -1,0 +1,836 @@
+//
+.user-dashboard-sidebar {
+  transition: $transition;
+
+  @include screen-1200 {
+    position: fixed;
+    top: 0;
+    z-index: 10;
+    // left: -300px;
+    left: -300px;
+    width: 300px;
+
+    &.active {
+      left: 0;
+    }
+  }
+
+  .user-dash-sidebar-toggle-btn {
+    // position: absolute;
+    // left: 300px;
+    // background-color: $danger-color-500;
+    // width: 40px;
+    // height: 40px;
+    // svg {
+    //     fill: white;
+    //     path  {
+    //         stroke: white;
+    //     }
+    // }
+  }
+}
+
+// user dashboard styles
+.gs-user-panel-review {
+  background-color: $text-color-50;
+  overflow: hidden;
+}
+
+.gs-dashboard-user-sidebar-wrapper {
+  width: 312px;
+  position: sticky;
+  top: 0;
+  padding: 48px 24px 48px 24px;
+  background: $white-color;
+  box-shadow: 0px 0px 30px 0px rgba(0, 0, 0, 0.05);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+
+  li {
+    &.active,
+    &:hover {
+      a {
+        background: $primary-color-500;
+        color: $white-color;
+
+        svg {
+          &.has-fill {
+            path {
+              fill: $white-color;
+            }
+          }
+
+          &.has-stroke {
+            path {
+              stroke: $white-color;
+            }
+          }
+        }
+      }
+    }
+    &.has-sub-menu {
+      a {
+        .angle-down {
+          transition: $transition;
+        }
+        &:not(.collapsed) {
+          background: $primary-color-500;
+          color: $white-color;
+
+          svg {
+            &.has-fill {
+              path {
+                fill: $white-color;
+              }
+            }
+            &.has-stroke {
+              path {
+                stroke: $white-color;
+              }
+            }
+          }
+          .angle-down {
+            transform: rotate(180deg);
+          }
+        }
+      }
+      .sidebar-sub-menu {
+        margin-left: 40px;
+        .sidebar-sub-menu-item {
+          padding: 13px 32px;
+          color: $text-color-600;
+          border-left: 1px solid $text-color-600;
+          transition: $transition;
+          background-color: $white-color;
+          border-radius: 0;
+          &:hover,
+          &.active {
+            border-color: $primary-color-500;
+            color: $primary-color-500;
+          }
+        }
+      }
+    }
+
+    a {
+      display: flex;
+      padding: 18px 24px;
+      align-items: center;
+      gap: 14px;
+      border-radius: 6px;
+      background: $white-color;
+      color: $text-color-950;
+      transition: $transition;
+
+      svg {
+        &.has-fill {
+          path {
+            fill: $text-color-950;
+            transition: $transition;
+          }
+        }
+
+        &.has-stroke {
+          path {
+            stroke: $text-color-950;
+            transition: $transition;
+          }
+        }
+      }
+
+      span {
+        font-size: 18px;
+        font-style: normal;
+        font-weight: 400;
+        line-height: 120%;
+      }
+
+      @include screen-1200 {
+        padding: 10px 15px;
+        gap: 8px;
+      }
+    }
+  }
+
+  @include screen-1400 {
+    width: 288px;
+  }
+
+  @include screen-1200 {
+    width: 100%;
+    padding: 24px 12px 24px 12px;
+  }
+}
+
+.gs-dashboard-user-content-wrapper,
+.gs-vendor-order-invoice {
+  // ud-page-title
+  .ud-page-title-box {
+    display: flex;
+    align-items: center;
+    margin-bottom: 28px;
+    @include screen-992 {
+      margin-bottom: 14px;
+    }
+  }
+
+  // gs-single-statatics
+  .gs-single-statatics {
+    display: flex;
+    padding: 32px;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    border-radius: 8px;
+
+    h5,
+    p {
+      padding: 0;
+      margin: 0;
+      line-height: 1;
+      text-align: center;
+    }
+
+    &.first-child {
+      background: #eff0ff;
+    }
+
+    &.second-child {
+      background: #e9f9f6;
+    }
+
+    &.third-child {
+      background: #fff7eb;
+    }
+
+    &.fourth-child {
+      background: #e5f9ff;
+    }
+  }
+
+  // recent-orders-table
+  .recent-orders-table {
+    margin-top: 48px;
+    @include screen-992 {
+      margin-top: 24px;
+    }
+  }
+
+  //   acc-info-wrapper
+  .acc-info-wrapper {
+    margin-top: 48px;
+    background-color: $text-color-50;
+    padding: 24px 24px 8px 24px;
+
+    h4 {
+      margin-bottom: 24px;
+    }
+
+    .list-wrapper {
+      display: flex;
+
+      @include screen-768 {
+        flex-direction: column;
+      }
+
+      ul {
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        margin-bottom: 16px;
+
+        li {
+          color: $text-color-800;
+          font-size: 18px;
+          font-style: normal;
+          font-weight: 400;
+          line-height: 120%;
+
+          span {
+            font-weight: 500;
+          }
+
+          @include screen-768 {
+            font-size: 16px;
+          }
+        }
+      }
+    }
+  }
+
+  // gs-checkout-wrapper
+  .gs-checkout-wrapper {
+    padding: 0;
+    max-width: 630px;
+    margin-left: auto;
+    margin-right: auto;
+
+    .checkout-step-wrapper {
+      margin-bottom: 60px;
+
+      @include screen-992 {
+        margin-bottom: 30px;
+      }
+    }
+  }
+
+  // user-purchase-title-wrapper
+  .user-purchase-title-wrapper {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 40px;
+    flex-wrap: wrap;
+    margin-bottom: 32px;
+
+    @include screen-768 {
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+
+    @include screen-400 {
+      h4 {
+        font-size: 20px;
+      }
+    }
+  }
+
+  .purchase-address-wrapper {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 32px;
+    margin-bottom: 60px;
+
+    .address-item {
+      width: calc(50% - 32px);
+
+      h5 {
+        margin-bottom: 16px;
+      }
+
+      ul {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+
+        li {
+          span {
+            font-weight: 600;
+          }
+
+          .pay-status {
+            color: $danger-color-500;
+            font-weight: 400;
+            text-transform: capitalize;
+          }
+        }
+      }
+    }
+
+    @include screen-768 {
+      margin-bottom: 30px;
+
+      .address-item {
+        width: 100%;
+
+        /* Two items per row */
+        ul {
+          li {
+            svg {
+              width: 20px;
+              height: 20px;
+            }
+
+            font-size: 14px;
+          }
+        }
+      }
+    }
+  }
+
+  .order-products-header {
+    @include screen-768 {
+      margin-bottom: 10px;
+    }
+  }
+
+  .table {
+    tr {
+      th {
+        color: $white-color;
+        font-size: 18px;
+        font-weight: 00;
+        padding: 16px;
+      }
+
+      td {
+        padding: 16px;
+
+        .td-title {
+          font-weight: 500;
+          line-height: 130%;
+          font-size: 20px;
+        }
+
+        ul {
+          li {
+            font-size: 16px;
+
+            span {
+              font-weight: 500;
+            }
+          }
+        }
+      }
+    }
+    @include screen-768 {
+      tr {
+        th {
+          font-size: 14px;
+          padding: 12px;
+        }
+        td {
+          padding: 12px;
+          .td-title {
+            font-size: 16px;
+          }
+          ul {
+            li {
+              font-size: 14px;
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+.gs-deposit-section {
+}
+
+.back-btn {
+  background-color: $text-color-100;
+  width: 40px;
+  height: 40px;
+  border-radius: 4px;
+  display: flex;
+  justify-content: center;
+  /* Horizontal centering */
+  align-items: center;
+  color: $text-color-900;
+  &:hover {
+    background-color: $primary-color-500;
+    color: $white-color;
+  }
+}
+.gs-deposit-title {
+  // margin-top: 50px
+  margin-left: 40px;
+
+  h3 {
+    margin-left: 16px;
+  }
+}
+
+.deposit-area {
+  background-color: $white-color;
+  max-width: 610px;
+  margin-top: 40px;
+  margin-left: auto;
+  margin-right: auto;
+  border: 1px solid $text-color-300;
+  border-radius: 12px;
+  padding: 40px;
+
+  .deposit-area-title {
+    background-color: $text-color-50;
+    margin-bottom: 8px;
+
+    h4 {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 29px 85px;
+    }
+  }
+
+  .form-group {
+    label {
+      font-size: 18px;
+      margin-top: 24px;
+      margin-bottom: 16px;
+      color: $text-color-950;
+
+      @include screen-768 {
+        font-size: 14px;
+      }
+    }
+
+    .form-control {
+      width: 100%;
+      padding: 19px 24px;
+      color: $text-color-600;
+
+      &:focus {
+        border-color: $text-color-400;
+        box-shadow: none;
+      }
+
+      &::placeholder {
+        color: $text-color-600;
+
+        @include screen-768 {
+          font-size: 14px;
+        }
+      }
+
+      &:disabled {
+        background-color: $text-color-50;
+      }
+
+      .current {
+        padding-top: 19px;
+        padding-left: 19px;
+
+        @include screen-768 {
+          font-size: 14px;
+          padding-left: 0px;
+          padding-top: 3px;
+        }
+      }
+
+      @include screen-768 {
+        padding: 19px 12px;
+      }
+    }
+
+    .form__control {
+      padding: 0px;
+      height: 65px;
+      border: 1px solid $text-color-100 !important;
+      // &:focus {
+      //   border-color: $text-color-400 !important;
+      //   box-shadow: none;
+      // }
+    }
+
+    .btn-forms {
+      margin-top: 32px;
+      width: 100%;
+    }
+
+    .multi-btn {
+      width: 100%;
+      margin-top: 22px;
+    }
+
+    .nice-select {
+      &::after {
+        @include screen-768 {
+          right: 20px;
+          width: 10px;
+        }
+      }
+    }
+
+    .dropdown-container {
+      position: relative;
+      // display: inline-block;
+    }
+
+    .payment_method {
+      font-size: 16px;
+      color: $text-color-600;
+    }
+
+    .payment_method option {
+      font-size: 16px;
+      color: $text-color-600;
+    }
+
+    .dropdown-icon {
+      position: absolute;
+      top: 50%;
+      right: 10px;
+      transform: translateY(-50%);
+      pointer-events: none;
+    }
+
+    .input-with-addon {
+      position: relative;
+    }
+
+    .currency-addon {
+      font-size: 16px;
+      position: absolute;
+      // top: 0;
+      top: 21px;
+      right: 24px;
+      color: #555;
+    }
+
+    .withdraw-fee {
+      font-size: 18px;
+      color: $text-color-950;
+      margin-top: 24px;
+
+      @include screen-768 {
+        font-size: 14px;
+      }
+    }
+  }
+
+  &.vendor-deposit-area {
+    max-width: 752px;
+    width: 100%;
+  }
+
+  &.vendor-deposit-area,
+  &.vendor-reset-password-area {
+    margin-top: 60px;
+    @include screen-992 {
+      margin-top: 30px;
+    }
+  }
+}
+
+@include screen-768 {
+  .gs-deposit-title {
+    margin-top: 20px;
+  }
+
+  .deposit-area {
+    padding: 20px;
+    margin-top: 20px;
+
+    .deposit-area-title {
+      h4 {
+        padding: 15px 20px;
+      }
+    }
+
+    .form-group {
+      label {
+        margin-top: 16px;
+        margin-bottom: 12px;
+      }
+
+      .form-control {
+        @include screen-768 {
+          padding: 6px 12px;
+        }
+      }
+
+      .form__control {
+        height: 39px;
+      }
+
+      .currency-addon {
+        top: 8px;
+      }
+    }
+  }
+}
+
+.gs-order-track-section {
+  .gs-order-track-title {
+    p {
+      margin-top: 12px;
+      font-size: 18px;
+    }
+  }
+
+  .order-track-area {
+    border: 1px solid $text-color-100;
+    padding: 40px;
+    max-width: 768px;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 60px;
+
+    .order-track-title {
+      background-color: $text-color-50;
+      margin-bottom: 8px;
+
+      h4 {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 24px 50px;
+        text-align: center;
+      }
+    }
+
+    .form-group {
+      label {
+        font-size: 18px;
+        margin-top: 24px;
+        margin-bottom: 16px;
+        color: $text-color-950;
+
+        @include screen-768 {
+          font-size: 14px;
+        }
+      }
+
+      .form-control {
+        width: 100%;
+        padding: 19px 24px;
+        color: $text-color-600;
+
+        &:focus {
+          border-color: $text-color-400;
+          box-shadow: none;
+        }
+
+        &::placeholder {
+          color: $text-color-600;
+
+          @include screen-768 {
+            font-size: 14px;
+          }
+        }
+
+        &:disabled {
+          background-color: $text-color-50;
+        }
+
+        @include screen-768 {
+          padding: 19px 12px;
+        }
+      }
+
+      .btn-width {
+        width: 100%;
+      }
+
+      .btn-forms {
+        margin-top: 32px;
+        width: 100%;
+      }
+    }
+  }
+
+  @include screen-768 {
+    .gs-order-track-title {
+      p {
+        font-size: 14px;
+      }
+    }
+
+    .order-track-area {
+      padding: 20px;
+      margin-top: 20px;
+
+      .order-track-title {
+        h4 {
+          padding: 29px 20px;
+          font-size: 20px;
+        }
+      }
+
+      .form-group {
+        label {
+          margin-top: 16px;
+          margin-bottom: 12px;
+        }
+
+        .form-control {
+          @include screen-768 {
+            padding: 12px 12px;
+          }
+        }
+
+        .btn-forms {
+          margin-top: 16px;
+        }
+      }
+    }
+  }
+}
+
+.gs-edit-profile-section {
+  .edit-profile-area {
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 10px;
+
+    .edit-profile-title {
+      background-color: $text-color-50;
+      margin-bottom: 8px;
+
+      h4 {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 29px 85px;
+      }
+    }
+
+    .multi-form-wrapper {
+      @include screen-576 {
+        gap: 0 !important;
+      }
+    }
+
+    .single-form-wrapper {
+      width: 100% !important;
+    }
+    .pro-btn-forms {
+      margin-top: 32px;
+      width: 100%;
+
+      @include screen-992 {
+        width: 50%;
+        margin-top: 16px;
+        padding: 0;
+      }
+    }
+
+    .btn-forms {
+      margin-top: 32px;
+      width: 100%;
+
+      @include screen-992 {
+        margin-top: 16px;
+      }
+    }
+
+    .profile-img {
+      margin-top: 20px;
+
+      img {
+        width: 100%;
+
+        @include screen-992 {
+          width: 50%;
+        }
+      }
+    }
+  }
+}
+
+.gs-dashboard-outlet {
+  width: calc(100% - 312px);
+  overflow: hidden;
+  padding: 48px 40px;
+  background: $white-color;
+  box-shadow: 0px 4px 30px 0px rgba(0, 0, 0, 0.08);
+  padding-bottom: 120px;
+
+  @include screen-1400 {
+    width: calc(100% - 288px);
+  }
+
+  @include screen-1200 {
+    width: 100%;
+  }
+
+  @include screen-768 {
+    padding: 20px;
+    padding-top: 28px;
+    padding-bottom: 28px;
+  }
+}

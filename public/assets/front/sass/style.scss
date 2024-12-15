@@ -1,0 +1,58 @@
+/*
+Theme Name: Genius Shop HTML Template
+Author: GeniusOcean
+Author URI: https://codecanyon.net/user/geniusocean/portfolio
+Tags: Plumbing,blog, agency
+Description: Pro-Plamber - Plumbing Service HTML5 Template
+Version: 1.0.0
+*/
+
+/************************************** base css **************************************/
+@import "base/variables";
+@import "base/mixin";
+@import "base/reset";
+@import "base/typography";
+@import "base/spacing";
+
+/******************************* theme css **********************************/
+@import "theme/theme-class";
+@import "theme/animations";
+
+/******************************** components ******************************/
+@import "components/buttons";
+@import "components/checkbox_radios";
+@import "components/pagination";
+@import "components/single_components";
+@import "components/breadcrumb";
+@import "components/footer";
+@import "components/header";
+@import "components/mobilemenu";
+@import "components/user_dashboard";
+@import "components/table";
+@import "components/vendor-dashboard";
+@import "components/vendor-info-card";
+@import "components/form";
+@import "components/modal";
+@import "components/chart";
+@import "components/rider_panel";
+@import "components/overlay-image";
+@import "components/extra";
+
+/****************************** page styles ******************************/
+@import "pages/index-1";
+@import "pages/index-3";
+@import "pages/blog";
+@import "pages/product";
+@import "pages/product-details";
+@import "pages/checkout";
+@import "pages/compare";
+@import "pages/user-affiliate-program";
+@import "pages/user-conversation";
+@import "pages/vendor-edit-profile";
+@import "pages/vendor-verification";
+@import "pages/vendor-order-invoice";
+@import "pages/vendor-order-details";
+@import "pages/vendor-banner";
+@import "pages/vendor-bulk-product-upload";
+@import "pages/vendor-add-product";
+@import "pages/vendor-earning";

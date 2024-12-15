@@ -1,0 +1,268 @@
+/**************** scroll top button ***************/
+.info-bar-btn {
+  padding: 2px 8px;
+  font-size: 16px;
+  font-weight: 400;
+  position: relative;
+  display: inline-block;
+  z-index: 1;
+  transition: $transition;
+  border: 1px solid $white-color;
+}
+
+.header-toggle {
+  border-radius: 6px;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 5px;
+  position: relative;
+  z-index: 1;
+  overflow: hidden;
+  background-color: $white-color;
+  display: none;
+  @include screen-992 {
+    svg {
+      width: 30px;
+      height: 30px;
+      padding: 0;
+      margin: 0;
+    }
+  }
+}
+
+.template-btn {
+  display: inline-flex;
+  height: 56px;
+  padding: 16px 40px;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+  border-radius: 8px;
+  background: $primary-color-500;
+  text-transform: capitalize;
+  color: $white-color;
+  font-family: $template-font-1;
+  font-size: 18px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 120%;
+  transition: $transition;
+
+  &.outline-btn {
+    background: transparent;
+    border: 1px solid $text-color-500 !important;
+    color: $gray-700 !important;
+    font-weight: 600;
+    &:hover {
+      color: $primary-color-500 !important;
+      // color: $white-color;
+      border: 1px solid $primary-color-500 !important;
+      background-color: transparent !important;
+    }
+  }
+
+  &.lg-btn {
+    border-radius: 4px;
+    height: 48px;
+    font-size: 16px;
+  }
+  &.md-btn {
+    padding: 8px 20px;
+    border-radius: 4px;
+    height: 36px;
+    font-size: 14px;
+    line-height: 150%; /* 21px */
+  }
+  &.sm-btn {
+    padding: 8px 20px;
+    border-radius: 4px;
+    height: 30px;
+    font-size: 14px;
+    line-height: 150%; /* 21px */
+  }
+  &.dark-outline {
+    background-color: $white-color;
+    border: 1px solid $text-color-950;
+    color: $text-color-950;
+    svg {
+      path {
+        transition: $transition;
+      }
+    }
+    &:hover {
+      color: $white-color;
+      border: 1px solid $secondary-color-300;
+      background-color: $secondary-color-300;
+
+      svg {
+        path {
+          fill: $white-color;
+        }
+      }
+    }
+  }
+  &.dark-btn {
+    background-color: $secondary-color-500;
+    &:hover {
+      background-color: $secondary-color-300;
+    }
+  }
+  &.black-btn {
+    background-color: $black-color;
+    &:hover {
+      background-color: $secondary-color-300;
+    }
+  }
+  &.outlinee-btn {
+    background: transparent;
+    border: 1px solid $primary-color-500;
+    color: $primary-color-500;
+    &:hover {
+      color: $white-color;
+    }
+  }
+  &.yellow-btn {
+    background-color: $secondary-color-700;
+    color: $text-color-950;
+    &:hover {
+      background-color: $secondary-color-700;
+      color: $text-color-950;
+    }
+  }
+  &.green-btn {
+    background-color: $green-color-500;
+    color: $white-color;
+    &:hover {
+      background-color: $green-color-500;
+      color: $white-color;
+    }
+  }
+  &.danger-btn {
+    background-color: $danger-color-500;
+    color: $white-color;
+    &:hover {
+      background-color: $danger-color-500;
+      color: $white-color;
+    }
+  }
+
+  &:hover {
+    background-color: $primary-color-700;
+  }
+  @include screen-1200 {
+    height: 48px;
+    padding: 10px 20px;
+    font-size: 16px;
+  }
+
+  @include screen-576 {
+    font-size: 14px;
+    height: 40px;
+  }
+}
+
+.shop-now-btn {
+  flex: 1;
+  width: 100%;
+
+  display: inline-block !important;
+}
+
+.newsletter-btn {
+  width: 75px;
+  height: 48px;
+  font-size: 18px;
+  font-weight: 400;
+  position: relative;
+  display: inline-block;
+  z-index: 1;
+  transition: $transition;
+  background-color: #030712;
+  color: $white-color;
+  border-radius: 0px 8px 8px 0px;
+  @include screen-1200 {
+    font-size: 16px;
+  }
+  @include screen-768 {
+    font-size: 14px;
+  }
+}
+
+.active-tab-btn {
+  // padding: 14px 51px;
+  font-size: 16px;
+  font-weight: 500;
+  position: relative;
+  display: inline-block;
+  z-index: 1;
+  overflow: hidden;
+  transition: $transition;
+  background-color: $white-color;
+  color: $text-color-950;
+
+  &.active {
+    color: $primary-color-500;
+    border-bottom: 2px solid red;
+
+    &:hover {
+      background-color: transparent;
+      // color: $primary-color-500;
+
+      &::before {
+        top: -10px;
+      }
+    }
+  }
+
+  @include screen-768 {
+    padding: 8px 10px;
+  }
+}
+
+.state-left-btn {
+  border-bottom: 2px solid $text-color-400;
+}
+
+.state-right-btn {
+  border-bottom: 2px solid $text-color-400;
+}
+
+
+// icon button
+.icon-btn {
+  display: flex;
+  width: 40px;
+  height: 40px;
+  padding: 8px;
+  justify-content: center;
+  align-items: center;
+  border-radius: 4px;
+  transition: $transition;
+  &.icon-btn-lg {
+    width: 62px !important;
+    height: 60px !important;
+    @include screen-992 {
+      width: 52px !important;
+      height: 52px !important;
+    }
+    @include screen-425 {
+      width: 40px !important;
+      height: 40px !important;
+    }
+  }
+  &.icon-btn-md {
+    width: 48px !important;
+    height: 48px !important;
+  }
+}
+
+.status-btn {
+    display: inline-block;
+    padding: 5px 15px;
+    border-radius: 5px;
+    text-transform: capitalize;
+    font-weight: 500;
+    font-size: 16px;
+}

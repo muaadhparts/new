@@ -1,0 +1,128 @@
+.account-information {
+  .account-info-box {
+    border: 1px solid $text-color-100;
+    border-radius: 8px;
+    padding: 24px;
+    min-height: 227px;
+
+    h5 {
+      font-weight: 500;
+      margin-bottom: 18px;
+    }
+    .account-info {
+      display: flex;
+      flex-wrap: wrap;
+      flex-direction: column; /* Ensures items wrap if they don't fit in a single line */
+      gap: 10px;
+    }
+    .icon-box {
+      background-color: $icon-bg;
+      width: 60px;
+      height: 60px;
+      border-radius: 4px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-bottom: 24px;
+    }
+    h6 {
+      font-weight: 400;
+      margin-bottom: 8px;
+    }
+    h4 {
+      font-weight: 600;
+      //   margin-bottom: 14px;
+    }
+  }
+}
+
+.accept-reject-btn {
+  display: flex;
+  gap: 24px;
+  @include screen-768 {
+    gap: 12px;
+  }
+}
+
+// .delivery-details-area {
+//   flex-direction: row;
+//   display: flex;
+//   gap: 24px;
+// }
+
+.delivery-address-info {
+  display: flex;
+
+  flex-wrap: wrap;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.account-info-item {
+  .info-title {
+    font-size: 16px;
+    font-weight: 500;
+  }
+  .info-content {
+    font-size: 16px;
+    font-weight: 400;
+    word-break: break-all;
+  }
+}
+.delivery-details {
+  margin-top: 32px;
+  h5 {
+    margin-bottom: 16px;
+  }
+}
+
+.ordered-products {
+  h5 {
+    margin-top: 32px;
+    margin-bottom: 16px;
+  }
+  .ordered-tbg {
+    th {
+      background-color: $text-color-800;
+      text-align: left;
+      padding-left: 16px;
+      .title {
+        color: $white-color;
+        font-weight: 400;
+        font-size: 18px;
+
+        @include screen-768 {
+          font-size: 16px;
+        }
+      }
+    }
+  }
+  .product-title-width {
+    max-width: 400px !important;
+  }
+  .tbody-product {
+    td {
+      ul {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+      span {
+        font-weight: 500;
+      }
+    }
+  }
+}
+
+.custom-table-rider tr {
+  .title {
+    color: $text-color-950;
+    font-size: 18px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 160%;
+    @include screen-992 {
+      font-size: 16px;
+    }
+  }
+}

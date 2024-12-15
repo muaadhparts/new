@@ -1,0 +1,85 @@
+.gs-user-affiliate-content-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 48px;
+  @include screen-992 {
+    gap: 24px;
+  }
+
+  .affiliate-program-wrapper {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 48px;
+    @include screen-992 {
+      gap: 24px;
+    }
+    .copy-box-wrapper,
+    .affiliate-banner-wrapper {
+      width: 100%;
+      display: flex;
+      align-items: flex-start;
+      gap: 28px;
+
+      @include screen-992 {
+        flex-direction: column;
+      }
+    }
+    .title-des-wrapper {
+      width: 291px;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 12px;
+      @include screen-460 {
+        width: 100%;
+      }
+    }
+    .copy-box {
+      width: calc(100% - 291px);
+      @include screen-992 {
+        width: 100%;
+      }
+      position: relative;
+      display: flex;
+      padding: 24px 16px;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 16px;
+      background-color: $text-color-50;
+    }
+    .img-wrapper {
+      width: calc(100% - 291px);
+      @include screen-992 {
+        width: 100%;
+      }
+      img {
+        max-width: 370px;
+        @include screen-768 {
+          max-width: initial;
+        }
+      }
+    }
+    .copy-text {
+      overflow-x: scroll;
+    }
+    .copy-btn {
+      display: flex;
+      padding: 12px;
+      align-items: flex-start;
+      gap: 10px;
+      transition: $transition;
+      background-color: $primary-color-500;
+      &:hover {
+        background-color: $primary-color-700;
+      }
+    }
+  }
+
+  .pagination-wrapper {
+    margin-top: 44px;
+    @include screen-992 {
+      margin-top: 14px;
+    }
+  }
+}

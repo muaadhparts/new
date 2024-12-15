@@ -1,0 +1,193 @@
+/********************** hero section start **********************/
+.hero-slider-wrapper {
+  // position: relative;
+  .slick-dots {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: 40px;
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    li {
+      button {
+        width: 16px;
+        height: 16px;
+        font-size: 0;
+        border-radius: 50%;
+        background-color: rgba($primary-color-500, 0.2);
+      }
+      &.slick-active {
+        button {
+          width: 40px;
+          height: 16px;
+          border-radius: 8px;
+          background-color: rgba($primary-color-500, 1);
+        }
+      }
+      @include screen-576 {
+        button {
+          width: 12px;
+          height: 12px;
+        }
+        &.slick-active {
+          button {
+            width: 24px;
+            height: 12px;
+          }
+        }
+      }
+    }
+    @include screen-576 {
+      bottom: 35px;
+    }
+  }
+
+  .slick-current.slick-active {
+    .subtitle, .title, .des, .hero-shop-now-btn {
+      -webkit-animation: 1.4s ease-in-out fadeInUp;
+      animation: 1.4s ease-in-out fadeInUp;
+    }
+    .title {
+      animation-delay: 0.1s;
+    }
+    .des {
+      animation-delay: 0.2s;
+    }
+    .hero-shop-now-btn {
+      animation-delay: 0.3s;
+    }
+  } 
+}
+.gs-hero-section {
+  background-size: cover;
+  object-fit: cover;
+  background-position: bottom;
+  height: 700px;
+  display: flex !important;
+  align-items: center;
+  @include screen-1200 {
+    height: 500px;
+  }
+  @include screen-768 {
+    height: 450px;
+    background-position: left;
+  }
+  .hero-content {
+    @include screen-768 {
+      text-align: center;
+    }
+
+    .subtitle {
+      margin-bottom: 6px;
+    }
+    .title {
+      margin-bottom: 24px;
+    }
+    .des {
+      margin-bottom: 48px;
+    }
+  }
+}
+/********************** hero section end **********************/
+
+/********************** gs-cate-section start **********************/
+.gs-cate-section {
+  padding: 120px 0px;
+  @include screen-1200 {
+    padding: 80px 0px;
+  }
+  @include screen-992 {
+    padding: 60px 0px;
+  }
+}
+/********************** gs-cate-section end **********************/
+
+/********************** gs-offer-section start **********************/
+.gs-offer-section {
+  padding-bottom: 120px;
+  .product-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+
+  @include screen-1200 {
+    padding-bottom: 80px;
+  }
+  @include screen-992 {
+    padding-bottom: 60px;
+  }
+}
+
+/********************** gs-offer-section end **********************/
+
+/********************** gs-explore-product-section start **********************/
+.gs-explore-product-section {
+  padding: 120px 0px;
+
+  .explore-tab-navbar {
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+    li {
+      .nav-link {
+        color: $black-color;
+        font-family: $template-font-2;
+        font-size: 20px;
+        font-style: normal;
+        font-weight: 500;
+        line-height: 130%;
+        &.active {
+          color: $primary-color-500;
+          border-bottom: 2px solid $primary-color-500;
+        }
+      }
+    }
+  }
+  @include screen-1200 {
+    padding: 80px 0;
+  }
+  @include screen-992 {
+    padding: 60px 0;
+  }
+  
+  @include screen-768 {
+    .explore-tab-navbar {
+      gap: 20px;
+      li{
+        .nav-link {
+          font-size: 16px;
+        }
+      }
+    }
+  }
+  @include screen-576 {
+    .explore-tab-navbar {
+      gap: 10px;
+    }
+  }
+}
+/********************** gs-explore-product-section end **********************/
+
+// error
+.error-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+  justify-content: center;
+  align-items: center;
+
+  .error-img {
+    max-width: 700px;
+    width: 100%;
+    height: 485px;
+    object-fit: cover;
+  }
+}
+
+
+.dropdown-item.active, .dropdown-item:active {
+    background-color: $primary-color-500!important;
+    color: $white-color!important;
+}

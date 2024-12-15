@@ -1,0 +1,262 @@
+.gallery-extra-remove-btn {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: $danger-color-500;
+  border-radius: 50%;
+  color: white;
+  font-size: 11px;
+}
+.right-1 {
+  right: 1px !important;
+}
+.img-wh-80 {
+  height: 80px;
+  width: 80px;
+  object-fit: cover;
+}
+
+.position-abs-center {
+  position: absolute;
+  top: 50%;
+  left: 55%;
+  transform: translate(-50%, -50%);
+}
+
+.feature-extra-tags-remove-btn {
+  position: absolute;
+  top: -9px;
+  right: -12px;
+}
+
+ul.tagit li.tagit-choice-editable {
+  padding: 2px 5px !important;
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+ul.tagit li.tagit-choice .tagit-close {
+  cursor: pointer;
+  position: static !important;
+  right: 0.1em;
+  top: 50%;
+  margin-top: initial !important;
+  line-height: initial !important;
+  background: $danger-color-500;
+  width: 18px;
+  height: 18px;
+  display: flex;
+  border-radius: 50%;
+  /* padding: 10px; */
+  font-size: 12px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: white;
+}
+
+.ui-widget.ui-widget-content {
+  padding: 5px 20px !important;
+  border-radius: 5px !important;
+}
+
+.nicEdit-main {
+  width: 98% !important;
+  &:focus-visible {
+    // outline: 1px solid $primary-color-500!important;
+    outline: none !important;
+  }
+}
+
+.overlayed-img-wrapper {
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+.product-license-remove-btn {
+  width: 48px;
+  height: 48px;
+  background: $danger-color-500;
+  color: white !important;
+  border-radius: 5px;
+}
+
+.pricing-details-extra-ul {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  li {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+  }
+  .title {
+    color: $text-color-800;
+    font-size: 16px;
+    font-style: normal;
+    font-weight: 600;
+    line-height: 120%;
+  }
+  .content {
+    color: $text-color-800;
+    font-size: 16px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 120%; /* 19.2px */
+  }
+}
+
+.product-stocks-wraper {
+  margin-bottom: 24px;
+}
+
+.w-150 {
+  width: 150px !important;
+  height: 150px !important;
+  object-fit: contain !important;
+}
+
+.product-main-slider {
+  .slick-track {
+    gap: 0;
+  }
+}
+
+.title-hover-color {
+  color: $text-color-950;
+  &:hover {
+    color: $primary-color-500;
+  }
+}
+
+.max-w-480 {
+  max-width: 480px !important;
+}
+
+.succss-icon {
+  @include screen-768 {
+    width: 60px;
+    height: 60px;
+  }
+}
+
+.color-show-btn {
+  width: 15px;
+  height: 15px;
+  display: inline-block;
+}
+
+.bottom-12 {
+  bottom: 12px;
+}
+
+// Farhad
+
+@media (max-width: 576px) {
+  .custom-gap-sm-2 {
+    gap: 0.7rem !important;
+  }
+} // This is equivalent to gap-2
+.gs-vendor-header-noti {
+  position: absolute;
+  top: 124px;
+  right: 37px;
+  max-width: 400px;
+  width: 100%;
+  display: inline-flex;
+  padding: 24px 32px;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  background: $white-color;
+  box-shadow: 0px 8px 40px 0px rgba(0, 0, 0, 0.12);
+  opacity: 0;
+  visibility: hidden;
+  transition: $transition;
+  max-height: 300px;
+  overflow-y: scroll;
+  &.active {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  .clear-btn {
+    font-size: 14px;
+    background: $danger-color-500;
+    padding: 4px 10px;
+    color: $white-color;
+    border-radius: 4px;
+    @include screen-768 {
+      padding: 2px 6px;
+    }
+  }
+
+  @include screen-1400 {
+    top: 92px;
+  }
+  @include screen-992 {
+    top: 85px;
+  }
+  @include screen-768 {
+    top: 72px;
+    right: 19px;
+    max-width: 270px;
+    padding: 24px 16px;
+  }
+  .title {
+    color: $text-color-950;
+    font-size: 18px;
+    font-style: normal;
+    font-weight: 600;
+    line-height: 120%;
+    @include screen-768 {
+      font-size: 16px;
+    }
+  }
+
+  ul {
+    li {
+      border-top: 1px solid $text-color-100;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      &:last-child {
+        padding-bottom: 0px;
+      }
+      a {
+        color: $primary-color-500;
+        transition: $transition;
+        &:hover {
+          color: rgba($primary-color-500, 0.9);
+        }
+      }
+
+      .sm-info-1 {
+        color: $text-color-600;
+      }
+      .sm-info-1 {
+        color: $text-color-950;
+      }
+    }
+  }
+}
+
+.vendor-res-header-logo {
+  @include screen-425 {
+    width: 100px;
+    object-fit: contain;
+  }
+}
+
+#banner_code {
+  outline: none;
+  border: none;
+}
+
+.table-responsive {
+  overflow-y: hidden;
+}

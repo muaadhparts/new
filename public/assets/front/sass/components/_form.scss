@@ -1,0 +1,116 @@
+.form-group {
+  span.text-danger {
+    display: inline-block;
+    margin-top: 8px;
+  }
+    label {
+      font-size: 18px;
+      margin-top: 18px;
+      margin-bottom: 12px;
+      color: $text-color-950;
+      @include screen-768 {
+        font-size: 14px;
+        margin-top: 12px;
+        margin-bottom: 8px;
+      }
+      &.label-btn {
+        cursor: pointer;
+      }
+    }
+    .form-control {
+      width: 100%;
+      padding: 12px 20px;
+      color: $text-color-600;
+      &:focus {
+        border-color: $text-color-400;
+        box-shadow: none;
+      }
+      &::placeholder {
+        color: $text-color-600;
+        @include screen-768 {
+          font-size: 14px;
+        }
+      }
+      &:disabled {
+        background-color: $text-color-50;
+        // padding: 10px 20px !important;
+      }
+      .current {
+        padding-top: 16px;
+        padding-left: 20px;
+        @include screen-768 {
+          font-size: 14px;
+          padding-left: 13px;
+          padding-top: 15px;
+        }
+      }
+      @include screen-768 {
+        padding: 12px 12px;
+      }
+    }
+  
+    .nice-select {
+      &::after {
+        transition: $transition;
+        @include screen-768 {
+          right: 20px;
+        }
+      }
+    }
+  
+    .dropdown-container {
+      position: relative;
+      // display: inline-block;
+    }
+    .payment_method {
+      font-size: 16px;
+      color: $text-color-600;
+    }
+  
+    .payment_method option {
+      font-size: 16px;
+      color: $text-color-600;
+    }
+  
+    .form__control {
+      padding: 0px;
+      height: initial!important;
+      border: 1px solid $text-color-100 !important;
+      @include screen-768 {
+        height: 50px;
+      }
+    }
+  
+    .dropdown-icon {
+      position: absolute;
+      top: 50%;
+      right: 10px;
+      transform: translateY(-50%);
+      pointer-events: none;
+    }
+  }
+
+  .gs-extra-search-box-form {
+    display: flex;
+    align-items: center;
+    max-width: 300px;
+    width: 100%;
+    .form-control {
+      border-top-right-radius: 0px;
+      border-bottom-right-radius: 0px;
+      @include screen-768 {
+        padding: 10px 12px;
+      }
+    }
+
+    .template-btn {
+      border-top-left-radius: 0px;
+      border-bottom-left-radius: 0px;
+      padding: 0px 20px;
+      height: 50px;
+      @include screen-768 {
+       height: 46px;
+      }
+    }
+
+  }

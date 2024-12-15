@@ -1,0 +1,26 @@
+.gs-single-statatics {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  padding: 32px;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+  -ms-flex-direction: column;
+  flex-direction: column;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  gap: 16px;
+  border-radius: 8px; }
+  .gs-single-statatics h5, .gs-single-statatics p {
+    padding: 0;
+    margin: 0;
+    line-height: 1; }
+  .gs-single-statatics.first-child {
+    background: #EFF0FF; }
+  .gs-single-statatics.second-child {
+    background: #E9F9F6; }
+  .gs-single-statatics.third-child {
+    background: #FFF7EB; }
+  .gs-single-statatics.fourth-child {
+    background: #E5F9FF; }

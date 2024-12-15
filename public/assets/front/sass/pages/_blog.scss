@@ -1,0 +1,99 @@
+/********************** blog start **********************/
+.gs-blog-wrapper {
+  padding: 120px 0;
+  background-color: $bg-light-white;
+  @include screen-992 {
+    padding: 60px 0;
+  }
+
+  // blog wrapper
+  .gs-main-blog-wrapper {
+    .gs-main-single-blog {
+      margin-bottom: 40px;
+      @include screen-768 {
+        margin-bottom: 20px;
+      }
+    }
+  }
+
+  // gs-blog-sidebar-wrapper
+  .gs-blog-sidebar-wrapper {
+    display: flex;
+    flex-direction: column;
+    margin-right: 24px;
+    background: $white-color;
+    &.right-side {
+      margin-left: 24px;
+      margin-right: 0px;
+    }
+    @include screen-992 {
+      margin-right: 0px;
+      &.right-side {
+        margin-left: 0px;
+        margin-right: 0px;
+      }
+    }
+    .single-blog-widget {
+      &:last-child {
+        margin-bottom: 24px;
+        margin-top: 24px;
+        @include screen-992 {
+          margin-bottom: 16px;
+          margin-top: 16px;
+        }
+      }
+    }
+  }
+}
+
+.gs-blog-details-wrapper {
+  .gs-blog-card {
+    .fea-img {
+      margin-bottom: 16px;
+    }
+    .fea-title {
+      margin-top: 24px;
+    }
+    .meta-info-wrapper {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      @include screen-1400 {
+        gap: 10px;
+      }
+      .single-meta {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        border-right: 1px solid $text-color-800;
+        &:last-child {
+          border-right: none;
+        }
+        a.meta-title {
+          &:hover {
+            color: $primary-color-500;
+          }
+        }
+        .meta-title {
+          display: inline-block;
+          color: $text-color-800;
+          font-size: 16px;
+          font-style: normal;
+          font-weight: 400;
+          line-height: 170%; /* 27.2px */
+          padding-right: 30px;
+          @include screen-1400 {
+            padding-right: 10px;
+          }
+        }
+        @include screen-768 {
+          border-right: none;
+          .meta-title {
+            padding-right: 0px;
+          }
+        }
+      }
+    }
+  }
+}
+/********************** blog end **********************/

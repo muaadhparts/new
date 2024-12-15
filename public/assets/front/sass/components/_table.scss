@@ -1,0 +1,657 @@
+//***** reguler table start *****
+.user-table {
+  width: 100%;
+
+  table {
+    min-width: max-content;
+  }
+
+  .view-btn-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .view-btn {
+    display: inline-block;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 4px;
+    background-color: $black-color;
+    transition: $transition;
+
+    &:hover {
+      background-color: $secondary-color-300;
+    }
+
+    &.delete-btn {
+      background-color: $danger-color-500;
+
+      &:hover {
+        background-color: $primary-color-700;
+      }
+    }
+
+    &.edit-btn {
+      background-color: $blue-500;
+
+      &:hover {
+        background-color: $blue-700;
+      }
+    }
+  }
+
+  th {
+    background-color: $text-color-50;
+    text-align: center;
+    padding: 20px 16px;
+
+    .header-title {
+      color: $primary-color-500;
+    }
+
+    &.customer-name {
+      min-width: 244px;
+    }
+
+    &.product-name {
+      min-width: 392px;
+    }
+
+    &.affiliate-bonus {
+      min-width: 290px;
+    }
+  }
+
+  td {
+    text-align: center;
+    vertical-align: middle;
+    padding: 20px 16px;
+
+    &.product-name,
+    .product-name {
+      max-width: 360px;
+    }
+
+    &.address,
+    .address {
+      max-width: 280px;
+    }
+
+    &.message,
+    .message {
+      max-width: 374px;
+    }
+
+    &.subject,
+    .subject {
+      max-width: 227px;
+    }
+
+    &.actions,
+    .actions {
+      max-width: 118px;
+
+      .actions-btns-wrapper {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+
+        .template-btn {
+          &.md-btn {
+            padding: 8px 16px;
+          }
+        }
+      }
+    }
+
+    .table-img {
+      max-width: 80px;
+      max-height: 80px;
+    }
+
+    .table-icon-btns-wrapper {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+    }
+  }
+
+  @include screen-768 {
+    th {
+      font-size: 14px;
+      background-color: $text-color-50;
+      text-align: center;
+      padding: 10px 8px;
+
+      .header-title {
+        color: $primary-color-500;
+      }
+
+      &.customer-name {
+        min-width: 180px !important;
+      }
+
+      &.product-name {
+        min-width: 300px;
+      }
+
+      &.affiliate-bonus {
+        min-width: 200px;
+      }
+    }
+
+    td {
+      font-size: 14px;
+      text-align: center;
+      vertical-align: middle;
+      padding: 10px 5px;
+
+      img {
+        position: relative;
+        z-index: 0;
+      }
+
+      &.product-name,
+      .product-name {
+        max-width: 360px;
+      }
+
+      &.address,
+      .address {
+        max-width: 280px;
+      }
+
+      &.message,
+      .message {
+        max-width: 374px;
+      }
+
+      &.subject,
+      .subject {
+        max-width: 227px;
+      }
+
+      &.actions,
+      .actions {
+        max-width: 118px;
+
+        .actions-btns-wrapper {
+          display: flex;
+          flex-direction: column;
+          gap: 16px;
+
+          .template-btn {
+            &.md-btn {
+              padding: 8px 16px;
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+.table-title {
+  margin-bottom: 28px;
+  @include screen-992 {
+    margin-bottom: 14px;
+  }
+}
+
+//***** reguler table end *****
+
+//***** data table start *****
+table {
+  &.gs-data-table {
+    thead {
+      tr {
+        th {
+          border-bottom: 0;
+          padding: 19px 16px;
+          background-color: $text-color-50;
+          color: $primary-color-500;
+          font-family: Saira;
+          font-size: 18px;
+          font-style: normal;
+          font-weight: 600;
+          line-height: 160%;
+        }
+      }
+    }
+
+    tbody {
+      tr {
+        td {
+          padding: 24px 16px;
+          color: $text-color-900;
+          font-family: Poppins;
+          font-size: 16px;
+          font-style: normal;
+          font-weight: 400;
+          line-height: 150%;
+
+          @include screen-768 {
+            padding: 12px 8px;
+          }
+        }
+      }
+    }
+
+    @include screen-768 {
+      thead {
+        tr {
+          th {
+            padding: 10px 16px !important;
+            font-size: 14px;
+          }
+        }
+      }
+
+      tbody {
+        tr {
+          td {
+            // padding: 10px 15px !important;
+            font-size: 14px;
+          }
+        }
+      }
+    }
+  }
+
+  tr {
+    border-top: 1px solid $border-color-400;
+    border-bottom: 1px solid $border-color-400;
+  }
+
+  td,
+  th {
+    border-right: 1px solid $border-color-400;
+    border-left: 1px solid $border-color-400;
+  }
+}
+
+.dt-layout-row {
+  margin-bottom: 28px;
+
+  label {
+    margin-left: 9px;
+    color: $text-color-950;
+    font-family: Saira;
+    font-size: 20px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 130%;
+    text-transform: capitalize;
+  }
+}
+
+.dt-layout-table {
+  overflow-x: scroll;
+}
+
+div.dt-container.dt-empty-footer tbody > tr:last-child > * {
+  border-bottom: 0;
+}
+
+div.dt-container {
+  z-index: 1;
+
+  .dt-paging {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+
+    .dt-paging-button {
+      width: 49px;
+      height: 48px;
+      padding: 11px 9px;
+      border-radius: 2px;
+      border: 1px solid var(--neutral-500, #978d8f);
+      background: #fff;
+      transition: $transition;
+      display: inline-flex;
+      justify-content: center;
+      align-items: center;
+      font-family: Saira;
+      font-size: 20px;
+      font-style: normal;
+      font-weight: 400;
+      line-height: 130%;
+
+      &:hover {
+        background: $primary-color-500;
+        color: $white-color !important;
+      }
+
+      &.current {
+        border: 0;
+        background: $primary-color-500;
+        color: $white-color !important;
+
+        &:hover {
+          background: $primary-color-500;
+          color: $white-color !important;
+        }
+      }
+
+      &.disabled {
+        background-color: $text-color-100;
+
+        &:hover {
+          background-color: $text-color-100;
+        }
+      }
+
+      &.previous,
+      &.next,
+      &.first,
+      &.last {
+        font-size: 32px;
+      }
+    }
+
+    @include screen-768 {
+      justify-content: center;
+
+      .dt-paging-button {
+        width: 40px;
+        height: 40px;
+        padding: 8px 6px;
+        font-size: 16px;
+
+        &.previous,
+        &.next,
+        &.first,
+        &.last {
+          font-size: 20px;
+        }
+      }
+    }
+  }
+}
+
+.dt-search {
+  display: inline-block;
+  position: relative;
+  right: 250px;
+
+  @include screen-992 {
+    right: 0;
+  }
+}
+
+.data-table-btn-wrapper {
+  display: flex;
+  justify-content: end;
+  position: absolute;
+  top: 0;
+
+  @include screen-992 {
+    position: static;
+  }
+
+  @include screen-768 {
+    justify-content: center;
+  }
+}
+
+.data-table-btn {
+  width: 230px;
+  height: 37px;
+  position: relative;
+  bottom: -5px;
+  z-index: 2;
+
+  @include screen-992 {
+    bottom: 0;
+    // margin-bottom: 12px;
+    width: 214px;
+  }
+}
+
+//***** data table end *****
+
+//***** vendor panel tables start *****
+.vendor-table-wrapper,
+.user-table-wrapper {
+  padding: 32px;
+  border-radius: 12px;
+  background: $white-color;
+
+  .title {
+    color: $text-color-950;
+  }
+
+  .user-table th .header-title {
+    color: $text-color-950;
+  }
+
+  .dt-column-order {
+    display: none;
+  }
+
+  .user-table td .table-img {
+    max-width: 60px;
+    max-height: 60px;
+  }
+
+  table.gs-data-table thead tr th {
+    text-align: left;
+  }
+
+  .user-table td {
+    text-align: left;
+  }
+
+  table.dataTable thead > tr > th.dt-orderable-asc,
+  table.dataTable thead > tr > th.dt-orderable-desc,
+  table.dataTable thead > tr > th.dt-ordering-asc,
+  table.dataTable thead > tr > th.dt-ordering-desc,
+  table.dataTable thead > tr > td.dt-orderable-asc,
+  table.dataTable thead > tr > td.dt-orderable-desc,
+  table.dataTable thead > tr > td.dt-ordering-asc,
+  table.dataTable thead > tr > td.dt-ordering-desc {
+    padding-right: 16px;
+  }
+
+  table td,
+  table th {
+    border-right: 0;
+    border-left: 0;
+  }
+
+  .user-table td {
+    .product-name {
+      max-width: 180px;
+    }
+
+    .category {
+      max-width: 139px;
+    }
+
+    .title {
+      max-width: 328px;
+    }
+
+    .product-title {
+      max-width: 235px;
+    }
+
+    .details {
+      max-width: 790px;
+    }
+
+    .customer,
+    .rider {
+      .key {
+        font-weight: 600;
+        line-height: 170%;
+      }
+
+      .value {
+        line-height: 170%;
+      }
+    }
+
+    .status {
+      max-width: 127px;
+
+      .nice-select {
+        display: flex;
+        align-items: center;
+        height: 36px;
+        outline: 0;
+        border: 0;
+        padding: 8px 12px 8px 16px;
+        background-color: $green-color-500;
+        min-width: 100%;
+        // width: 100%;
+        width: 127px;
+
+        .list {
+          max-height: initial;
+          overflow-y: initial;
+        }
+        &.active {
+          background-color: $green-color-500;
+        }
+        &.deactive {
+          background-color: $danger-color-500;
+        }
+
+        .current {
+          padding: 0;
+          font-size: 14px;
+          font-family: Saira;
+          color: $white-color;
+        }
+
+        &:focus {
+          outline: none;
+        }
+
+        &::after {
+          transition: $transition;
+          right: 8px;
+          content: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16' fill='none'%3E%3Cpath d='M12.4726 5.47259C12.4106 5.4101 12.3369 5.36051 12.2556 5.32666C12.1744 5.29282 12.0872 5.27539 11.9992 5.27539C11.9112 5.27539 11.8241 5.29282 11.7428 5.32666C11.6616 5.36051 11.5879 5.4101 11.5259 5.47259L8.47256 8.52592C8.41058 8.58841 8.33685 8.638 8.25561 8.67185C8.17437 8.7057 8.08723 8.72312 7.99923 8.72312C7.91122 8.72312 7.82408 8.7057 7.74284 8.67185C7.6616 8.638 7.58787 8.58841 7.52589 8.52592L4.47256 5.47259C4.41058 5.4101 4.33685 5.36051 4.25561 5.32666C4.17437 5.29282 4.08723 5.27539 3.99923 5.27539C3.91122 5.27539 3.82408 5.29282 3.74284 5.32666C3.6616 5.36051 3.58787 5.4101 3.52589 5.47259C3.40173 5.5975 3.33203 5.76647 3.33203 5.94259C3.33203 6.11871 3.40173 6.28768 3.52589 6.41259L6.58589 9.47259C6.96089 9.84712 7.46922 10.0575 7.99923 10.0575C8.52923 10.0575 9.03756 9.84712 9.41256 9.47259L12.4726 6.41259C12.5967 6.28768 12.6664 6.11871 12.6664 5.94259C12.6664 5.76647 12.5967 5.5975 12.4726 5.47259Z' fill='white'/%3E%3C/svg%3E");
+        }
+      }
+
+      .form-control:focus {
+        box-shadow: none;
+      }
+    }
+  }
+
+  table thead tr {
+    &:first-child {
+      border-top: 0;
+      border-bottom: 0;
+    }
+  }
+
+  table tbody tr {
+    &:first-child {
+      border-top: 0;
+    }
+  }
+
+  &.all-products-table-wrapper,
+  &.product-catalogs-table-wrapper {
+    .user-table td {
+      .product-name {
+        max-width: 412px;
+      }
+    }
+  }
+
+  @include screen-768 {
+    padding: 16px;
+  }
+}
+
+.user-table-wrapper {
+  padding: 0px;
+}
+
+.order-delivery-table-wrapper,
+.all-orders-table-wrapper,
+.product-catalogs-table-wrapper,
+.order-details-table-wrapper {
+  .dt-search {
+    right: 0;
+  }
+}
+
+.order-delivery-table-wrapper,
+.order-details-table-wrapper {
+  td {
+    vertical-align: top;
+  }
+}
+
+.recent-products-table-wrapper,
+.recent-orders-table-wrapper {
+  height: 100%;
+  padding: 24px;
+
+  div.dt-container {
+    div.dt-layout-cell {
+      display: none;
+      padding: 0 0;
+    }
+  }
+
+  .dt-layout-row {
+    margin-bottom: 0;
+  }
+
+  table tr {
+    &:last-child {
+      border-bottom: 0;
+    }
+  }
+}
+
+//***** vendor panel tables end *****
+
+.thead-bg {
+  th {
+    background-color: $black-color;
+    text-align: left;
+    padding-left: 8px;
+
+    .title {
+      color: $white-color;
+      font-weight: 400;
+      font-size: 18px;
+
+      @include screen-768 {
+        font-size: 16px;
+      }
+    }
+  }
+}
+
+.tbody-product {
+  td {
+    &.td-product-name {
+      max-width: 161px;
+    }
+
+    @include screen-768 {
+      span {
+        font-size: 14px;
+      }
+
+      li {
+        font-size: 14px;
+      }
+    }
+  }
+}

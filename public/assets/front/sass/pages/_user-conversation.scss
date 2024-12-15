@@ -1,0 +1,137 @@
+.gs-user-conversation-content-wrapper {
+  overflow: hidden;
+  padding: 48px 40px;
+  background: $white-color;
+  box-shadow: 0px 4px 30px 0px rgba(0, 0, 0, 0.08);
+  padding-bottom: 120px;
+  @include screen-768 {
+    padding: 20px;
+  }
+  // ud-page-title
+  .ud-page-title-box {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 40px;
+  }
+  .left-arrow-btn {
+    width: 40px;
+    height: 40px;
+    flex-shrink: 0;
+    border-radius: 4px;
+    background: $text-color-100;
+    transition: $transition;
+    &:hover {
+      background: $text-color-300;
+    }
+  }
+
+  .conversation-boxes-wrapper {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 32px;
+
+    .conversation-box {
+      width: 100%;
+      display: flex;
+      padding: 24px;
+      align-items: flex-start;
+      gap: 24px;
+      background: $text-color-50;
+
+      .message-and-time-wrapper {
+        min-height: 118px;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+        border-left: 1px solid $text-color-200;
+        padding-left: 24px;
+        .time {
+          color: $text-color-600;
+        }
+        .message {
+          color: $text-color-950;
+        }
+      }
+
+      &.conversation-right {
+        background: $bg-light-pink;
+        .message-and-time-wrapper {
+          border-left: 0;
+          padding-left: 0;
+          border-right: 1px solid $text-color-200;
+          padding-right: 24px;
+        }
+      }
+
+      @include screen-768 {
+        flex-direction: column;
+        gap: 10px;
+        .message-and-time-wrapper {
+          padding-left: 0;
+          border-left: 0;
+        }
+        &.conversation-right {
+          flex-direction: column-reverse;
+          .message-and-time-wrapper {
+            border-right: 0 !important;
+            padding-right: 0;
+          }
+        }
+      }
+    }
+
+    .message-sender-box {
+      display: flex;
+      width: 100px;
+      flex-direction: column;
+      align-items: center;
+      @include screen-768 {
+        align-items: start;
+      }
+      gap: 12px;
+      .avater {
+        width: 80px;
+        height: 80px;
+        border-radius: 80px;
+      }
+      .message-sender {
+        color: $text-color-950;
+      }
+    }
+  }
+
+  .send-message-form {
+    margin-top: 60px;
+    width: 100%;
+    display: inline-flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 32px;
+    @include screen-768 {
+      margin-top: 30px;
+      gap: 16px;
+    }
+
+    .message-input {
+      display: flex;
+      width: 100%;
+      height: 171px;
+      padding: 24px;
+      align-items: flex-start;
+      gap: 10px;
+      border-radius: 8px;
+      border: 1px solid $text-color-100;
+      outline: 0;
+      transition: $transition;
+      &:focus {
+        border: 1px solid $primary-color-500;
+      }
+    }
+    .conversation-reply-btn {
+      width: 100%;
+    }
+  }
+}

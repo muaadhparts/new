@@ -1,0 +1,220 @@
+.gs-modal {
+  .modal-dialog {
+    width: calc(100% - 16px);
+
+    &.assign-rider-modal-dialog {
+      max-width: 801px;
+    }
+
+    &.image-gallery-modal-dialog {
+      max-width: 920px;
+
+      .modal-img {
+        max-height: 400px;
+      }
+    }
+
+    &.confirm-delete-modal-dialog {
+      max-width: 514px;
+    }
+
+    &.edit-service-modal-dialog {
+      max-width: 600px;
+
+      .edit-service-modal-img {
+        max-height: 400px;
+      }
+    }
+
+    &.send-message-modal-dialog {
+      max-width: 650px;
+    }
+
+    &.transaction-details-modal-dialog {
+      max-width: 668px;
+    }
+
+    .modal-content {
+      padding: 24px;
+      border-radius: 12px;
+      background: $white-color;
+      box-shadow: 0px 0px 36px 8px rgba(0, 0, 0, 0.08);
+
+      @include screen-992 {
+        padding: 20px;
+      }
+
+      .modal-header {
+        padding: 0;
+        display: flex;
+        padding-bottom: 24px;
+        align-items: center;
+        justify-content: space-between;
+        gap: 24px;
+        border-bottom: 1px solid $text-color-100;
+
+        @include screen-992 {
+          padding-bottom: 12px;
+          gap: 12px;
+        }
+
+        .title {
+          color: $text-color-950;
+        }
+
+        .sub-title {
+          color: $text-color-950;
+          font-weight: 400;
+        }
+
+        .gs-modal-close-btn {
+          font-size: 32px;
+          color: $primary-color-500;
+          transition: $transition;
+
+          &:hover {
+            color: $primary-color-800;
+          }
+        }
+
+        [data-bs-dismiss="modal"] {
+          padding-right: 0;
+          padding-top: 0;
+        }
+        &.delete-modal-header {
+          padding-bottom: 0;
+          border-bottom: none;
+        }
+      }
+
+      &.assign-rider-modal-content,
+      &.image-gallery-modal-content,
+      &.edit-service-modal-content,
+      &.send-message-modal-content {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 32px;
+
+        @include screen-992 {
+          gap: 16px;
+        }
+      }
+
+      &.edit-service-modal-content {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 24px;
+        padding: 24px;
+
+        @include screen-992 {
+          gap: 12px;
+        }
+
+        label {
+          margin-top: 0;
+        }
+      }
+
+      &.confirm-delete-modal-content {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 40px;
+
+        @include screen-992 {
+          gap: 20px;
+        }
+
+        .title-des-wrapper {
+          display: flex;
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 16px;
+
+          @include screen-992 {
+            gap: 8px;
+          }
+
+          .sub-title {
+            line-height: 170%;
+          }
+        }
+      }
+
+      label {
+        margin-top: 0px;
+      }
+
+      .transaction-info-wrapper {
+        width: 100%;
+        height: 100%;
+        display: inline-flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 28px;
+
+        .info-list {
+          width: 100%;
+
+          .info-list-item {
+            padding: 16px 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 48px;
+            border-bottom: 1px solid $text-color-100;
+            color: $text-color-950;
+            font-size: 20px;
+            line-height: 120%;
+
+            .info-type {
+              font-weight: 500;
+              flex-shrink: 0;
+              font-family: $template-font-2;
+            }
+
+            .info {
+              font-weight: 400;
+              word-wrap: break-word;
+              overflow-wrap: break-word;
+              display: inline-block;
+              max-width: 100%;
+              word-break: break-all;
+              white-space: normal;
+            }
+
+            &:last-child {
+              border-bottom: none;
+            }
+
+            @include screen-1600 {
+              gap: 24px;
+            }
+
+            @include screen-1200 {
+              
+              font-size: 18px;
+            }
+            @include screen-992 {
+              padding: 12px 0;
+              // font-size: 14px;
+            }
+            @include screen-768 {
+              // padding: 12px 0;
+              font-size: 16px;
+            }
+            @include screen-576 {
+              // padding: 12px 0;
+              font-size: 14px;
+            }
+          }
+        }
+        @include screen-992 {
+          gap: 14px;
+        }
+      }
+    }
+  }
+}

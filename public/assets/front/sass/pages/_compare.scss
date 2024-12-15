@@ -1,0 +1,29 @@
+// gs-compare-wrapper
+.gs-compare-wrapper {
+  table {
+    td {
+      .product-title {
+        transition: $transition;
+        text-transform: capitalize;
+        color: $text-color-950;
+        &:hover {
+          color: $primary-color-500;
+        }
+      }
+      padding: 16px;
+      min-width: 180px;
+      vertical-align: top;
+
+      &.btn-wrapper {
+        a {
+          &:first-child {
+            margin-bottom: 16px;
+            @include screen-992 {
+              margin-bottom: 8px;
+            }
+          }
+        }
+      }
+    }
+  }
+}

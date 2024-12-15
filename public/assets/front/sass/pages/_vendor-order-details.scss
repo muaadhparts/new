@@ -1,0 +1,80 @@
+.gs-order-info-cards-wrapper {
+    margin-bottom: 28px;
+
+    .order-info-card {
+        width: 100%;
+        height: 100%;
+        display: inline-flex;
+        padding: 24px;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 28px;
+        border-radius: 12px;
+        background: $white-color;
+
+        .title {
+            color: $text-color-950;
+            font-weight: 500;
+        }
+
+        .info-list {
+            width: 100%;
+
+            .info-list-item {
+                padding: 16px 0;
+                display: flex;
+                align-items: center;
+                gap: 48px;
+                border-bottom: 1px solid $text-color-100;
+                color: $text-color-950;
+                font-size: 16px;
+                line-height: 120%;
+
+                .info-type {
+                    font-weight: 500;
+                    flex-shrink: 0;
+                }
+
+                .info {
+                    font-weight: 400;
+                    word-wrap: break-word; 
+                    overflow-wrap: break-word; 
+                    display: inline-block; 
+                    max-width: 100%; 
+                    word-break: break-all;
+                    white-space: normal; 
+                }
+
+                &:last-child {
+                    border-bottom: none;
+                }
+                @include screen-1600 {
+                    gap: 24px;
+                }
+                @include screen-992 {
+                    padding: 12px 0;
+                    font-size: 14px;
+                }
+            }
+        }
+
+        &.order-details-card {
+            .info-type {
+                min-width: 141px;
+            }
+        }
+
+        &.billing-details-card,
+        &.shipping-address-card {
+            .info-type {
+                min-width: 99px;
+            }
+        }
+        @include screen-992 {
+            gap: 14px;
+        }
+        @include screen-768 {
+            padding: 16px;
+        }
+    }
+}
