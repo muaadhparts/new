@@ -22,6 +22,7 @@
         "laravel/socialite": "^5.9",
         "laravel/tinker": "^2.8",
         "league/omnipay": "^3.2",
+        "livewire/livewire": "^3.5",
         "mercadopago/dx-php": "^2.5.3",
         "mews/purifier": "^3.4",
         "mollie/laravel-mollie": "^2.25",
@@ -38,6 +39,7 @@
         "yajra/laravel-datatables-oracle": "^10.8"
     },
     "require-dev": {
+        "barryvdh/laravel-debugbar": "^3.14",
         "fakerphp/faker": "^1.9.1",
         "laravel/pint": "^1.0",
         "laravel/sail": "^1.18",

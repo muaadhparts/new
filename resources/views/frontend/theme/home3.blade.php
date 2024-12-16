@@ -1,44 +1,93 @@
 @extends('layouts.front')
 
 @section('content')
-    <!-- hero section start -->
-    <section class="hero-slider-wrapper">
-        @foreach ($sliders as $slider)
-            <div class="gs-hero-section" data-background="{{ asset('assets/images/sliders/' . $slider->photo) }}">
-                <div class="container">
-                    <div class="row align-items-center">
-                        <div class="col-12 col-md-6 col-lg-6">
-                            <div class="hero-content">
-                                <h6 class="subtitle wow-replaced" style="color:{{ $slider->subtitle_color }}">
-                                    {{ $slider->subtitle_text }}</h6>
-                                <h1 class="title wow-replaced" data-wow-delay=".1s" style="color:{{ $slider->title_color }}">
-                                    {{ $slider->title_text }}</h1>
-                                <p class="des wow-replaced" data-wow-delay=".2s" style="color:{{ $slider->title_color }}">
-                                    {{ $slider->details_text }}
-                                    @php
+{{--    <!-- hero section start -->--}}
+{{--    <section class="hero-slider-wrapper" dir="ltr">--}}
+{{--        @foreach ($sliders as $slider)--}}
+{{--            <div class="gs-hero-section" data-background="{{ asset('assets/images/sliders/' . $slider->photo) }}">--}}
+{{--                <div class="container">--}}
+{{--                    <div class="row align-items-center">--}}
+{{--                        <div class="col-12 col-md-6 col-lg-6">--}}
+{{--                            <div class="hero-content">--}}
+{{--                                <h6 class="subtitle wow-replaced" style="color:{{ $slider->subtitle_color }}">--}}
+{{--                                    {{ $slider->subtitle_text }}</h6>--}}
+{{--                                <h1 class="title wow-replaced" data-wow-delay=".1s" style="color:{{ $slider->title_color }}">--}}
+{{--                                    {{ $slider->title_text }}</h1>--}}
+{{--                                <p class="des wow-replaced" data-wow-delay=".2s" style="color:{{ $slider->title_color }}">--}}
+{{--                                    {{ $slider->details_text }}--}}
+{{--                                    @php--}}
 
-                                    @endphp
-                                </p>
-                                <a class="template-btn hero-shop-now-btn wow-replaced " data-wow-delay=".3s"
-                                    href="{{ $slider->link }}">
-                                    @lang('Shop Now')
-                                </a>
+{{--                                    @endphp--}}
+{{--                                </p>--}}
+{{--                                <a class="template-btn hero-shop-now-btn wow-replaced " data-wow-delay=".3s"--}}
+{{--                                    href="{{ $slider->link }}">--}}
+{{--                                    @lang('Shop Now')--}}
+{{--                                </a>--}}
 
-                            </div>
-                        </div>
+{{--                            </div>--}}
+{{--                        </div>--}}
+{{--                    </div>--}}
+{{--                </div>--}}
+{{--            </div>--}}
+{{--        @endforeach--}}
+
+{{--    </section>--}}
+    <!-- hero section end -->
+
+
+<!-- Partner Section -->
+
+
+
+<section class="gs-partner-section home-3 bg-light-white py-4">
+    <livewire:search-box/>
+
+    <div class="container title-box-and-partners-container">
+
+
+        <div class="title-box-wrapper">
+            <div class="row justify-content-center align-items-center h-100">
+                <div class="col-12">
+                    <div class="gs-title-box">
+                        <h2 class="title wow-replaced">@lang('Genuine Parts Catalogues') </h2>
+                        <p class="des mb-0 wow-replaced" data-wow-delay=".1s">@lang('Cillum eu id enim aliquip aute
+                                                        ullamco anim. Culpa deserunt nostrud excepteur voluptate velit ipsum esse enim Cillum eu id
+                                                        enim aliquip aute ullamco.')
+                        </p>
                     </div>
                 </div>
             </div>
-        @endforeach
+        </div>
+        <div class="gs-partners">
+            <div
+                    class="row gy-4 row-cols-xxl-4 row-cols-xl-3 row-cols-lg-4 row-cols-md-3 row-cols-sm-2 row-cols-1 justify-content-center">
 
-    </section>
-    <!-- hero section end -->
+                @foreach (DB::table('partners')->get() as $data)
+                    <div class="col">
+                        <div class="wow-replaced " data-wow-delay=".1s">
+                            <a href="javascript:;">
+                                <div class="single-partner">
+
+                                     <img src="{{ asset('assets/images/partner/' . $data->photo) }}" alt="partner " class="img-fluid">
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                @endforeach
+            </div>
+        </div>
+    </div>
+
+</section>
+<!-- Partner Section Completed -->
+
+
 
 
 
 
     <!-- categories section start -->
-    <div class="gs-cate-section">
+    <div class="gs-cate-section"  dir="ltr">
         <div class="container wow-replaced">
             <div class="home3-cate-slider">
                 @foreach ($featured_categories as $fcategory)
@@ -363,41 +412,5 @@
         </section>
         <!-- Latest Post Section   -->
     @endif
-    <!-- Partner Section -->
-    <section class="gs-partner-section home-3 bg-light-white py-120">
-        <div class="container title-box-and-partners-container">
-            <div class="title-box-wrapper">
-                <div class="row justify-content-center align-items-center h-100">
-                    <div class="col-12">
-                        <div class="gs-title-box">
-                            <h2 class="title wow-replaced">@lang('Our Partners') </h2>
-                            <p class="des mb-0 wow-replaced" data-wow-delay=".1s">@lang('Cillum eu id enim aliquip aute
-                                                        ullamco anim. Culpa deserunt nostrud excepteur voluptate velit ipsum esse enim Cillum eu id
-                                                        enim aliquip aute ullamco.')
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="gs-partners">
-                <div
-                    class="row gy-4 row-cols-xxl-4 row-cols-xl-3 row-cols-lg-4 row-cols-md-3 row-cols-sm-2 row-cols-1 justify-content-center">
 
-                    @foreach (DB::table('partners')->get() as $data)
-                        <div class="col">
-                            <div class="wow-replaced " data-wow-delay=".1s">
-                                <a href="javascript:;">
-                                    <div class="single-partner">
-                                        <img src="{{ asset('assets/images/partner/' . $data->photo) }}" alt="partner">
-                                    </div>
-                                </a>
-                            </div>
-                        </div>
-                    @endforeach
-                </div>
-            </div>
-        </div>
-
-    </section>
-    <!-- Partner Section Completed -->
 @endsection

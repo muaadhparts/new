@@ -1511,6 +1511,8 @@ Route::group(['middleware' => 'maintenance'], function () {
 
     // ************************************ FRONT SECTION **********************************************
 
+
+    Route::get('illustrated', 'TestController@illustrated')->name('illustrated');
     Route::post('/item/report', 'Front\CatalogController@report')->name('product.report');
 
     Route::get('/', 'Front\FrontendController@index')->name('front.index');
