@@ -1,5 +1,5 @@
 {
-    "Stock": "Stock",
+    "Stock": "مخزووون",
     "Welcome!": "Welcome!",
     "Edit Profile": "Edit Profile",
     "Change Password": "Change Password",
@@ -222,7 +222,7 @@
     "Custom": "Custom",
     "Enter Unit": "Enter Unit",
     "Product Description": "Product Description",
-    "Product Buy\/Return Policy": "Product Buy\/Return Policy",
+    "Product Buy/Return Policy": "Product Buy/Return Policy",
     "Youtube Video URL": "Youtube Video URL",
     "Enter Youtube Video URL": "Enter Youtube Video URL",
     "Allow Product SEO": "Allow Product SEO",
@@ -457,7 +457,7 @@
     "Add": "Add",
     "Banner Image": "Banner Image",
     "(Preferred SIze: 250 X 444 Pixel)": "(Preferred SIze: 250 X 444 Pixel)",
-    "Home": "Home",
+    "Home": "الرسس",
     "Faq": "Faq",
     "Right Side Banner": "Right Side Banner",
     "Left Side Banner1": "Left Side Banner1",
@@ -644,7 +644,7 @@
     "Default Background": "Default Background",
     "Vendor Store Default Background": "Vendor Store Default Background",
     "Set Background": "Set Background",
-    "(This background will be displayed if vendor dose not set his \/ her store background)": "(This background will be displayed if vendor dose not set his \/ her store background)",
+    "(This background will be displayed if vendor dose not set his / her store background)": "(This background will be displayed if vendor dose not set his / her store background)",
     "Completed Deposits": "Completed Deposits",
     "Pending Deposits": "Pending Deposits",
     "Transactions": "Transactions",
@@ -715,7 +715,7 @@
     "Display Products Per Page": "Display Products Per Page",
     "VENDOR PAGE SECTION": "VENDOR PAGE SECTION",
     "PRODUCT DETAILS PAGE SECTION": "PRODUCT DETAILS PAGE SECTION",
-    "Display Contact Seller": "Display Contact Seller",
+    "Display Contact Seller": "Display Contact Seller333",
     "Display Product By Seller": "Display Product By Seller",
     "WISHLIST PAGE SECTION": "WISHLIST PAGE SECTION",
     "View Wishlist Product Per Page": "View Wishlist Product Per Page",
@@ -729,5 +729,5 @@
     "GOT IT!": "GOT IT!",
     "Shop Now": "Shop Now",
     "Products For You": "Products For You",
-    "Feedback Given By Customer": "Feedback Given By Customer"
+    "Feedback Given By Customer": "Feedback Given By 22Customereee2222"
 }

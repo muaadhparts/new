@@ -1,22 +1,26 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en"  @if(app()->getLocale() ==='ar') xdir="rtl" @endif  >
 
+{{--@dd(Session::get('language') ,app()->getLocale())--}}
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ $gs->title }}</title>
     <!--Essential css files-->
-    <link rel="stylesheet" href="{{ asset('assets/front') }}/css/bootstrap.min.css">
-    <link rel="stylesheet" href="{{ asset('assets/front') }}/css/all.css">
-    <link rel="stylesheet" href="{{ asset('assets/front') }}/css/slick.css">
-    <link rel="stylesheet" href="{{ asset('assets/front') }}/css/nice-select.css">
-    <link rel="stylesheet" href="{{ asset('assets/front') }}/css/jquery-ui.css">
-    <link rel="stylesheet" href="{{ asset('assets/front') }}/css/animate.css">
+    <link rel="stylesheet" href="{{ asset('assets/front/css/bootstrap.min.css') }}">
+{{--    <link rel="stylesheet" href="{{ asset('assets/front/css/bootstrap.rtl.min.css') }}">--}}
+
     <link rel="stylesheet" href="{{ asset('assets/front/css/all.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/front/css/slick.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/front/css/nice-select.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/front/css/jquery-ui.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/front/css/animate.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/front/css/toastr.min.css') }}">
-    <link rel="stylesheet" href="{{ asset('assets/front') }}/css/datatables.min.css">
-    <link rel="stylesheet" href="{{ asset('assets/front') }}/css/style.css">
-    <link rel="stylesheet" href="{{ asset('assets/front') }}/css/custom.css">
+    <link rel="stylesheet" href="{{ asset('assets/front/css/datatables.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/front/css/style.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/front/css/custom.css') }}">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tarekraafat/autocomplete.js@10.2.9/dist/css/autoComplete.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/@tarekraafat/autocomplete.js@10.2.9/dist/autoComplete.min.js"></script>
     <link rel="icon" href="{{ asset('assets/images/' . $gs->favicon) }}">
     @include('includes.frontend.extra_head')
     @yield('css')

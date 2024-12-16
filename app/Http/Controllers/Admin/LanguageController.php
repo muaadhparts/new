@@ -164,8 +164,10 @@ class LanguageController extends AdminBaseController
     public function edit($id)
     {
         $data = Language::findOrFail($id);
-        $data_results = file_get_contents('project/resources/lang/' . $data->file);
-        $lang = json_decode($data_results, true);
+//        $data_results = file_get_contents('project/resources/lang/' . $data->file);
+//        $lang = json_decode($data_results, true);
+        $lang =  File::json(resource_path('lang/'.$data->file));
+
         return view('admin.language.edit', compact('data', 'lang'));
     }
 
@@ -203,6 +205,7 @@ class LanguageController extends AdminBaseController
         //--- Validation Section
         $rules = ['language' => 'unique:languages,language,' . $id];
         $customs = ['language.unique' => 'This language has already been taken.'];
+//        dd( $request->all());
         $validator = Validator::make($request->all(), $rules, $customs);
         if ($validator->fails()) {
             return response()->json(array('errors' => $validator->getMessageBag()->toArray()));
@@ -212,21 +215,30 @@ class LanguageController extends AdminBaseController
         //--- Logic Section
         $new = null;
         $input = $request->all();
+//        dd($input);
         $data = Language::findOrFail($id);
-       
+
         $data->language = $input['language'];
         $data->rtl = $input['rtl'];
+//        dd($data);
         $data->update();
         unset($input['_token']);
         unset($input['language']);
         $keys = $request->keys;
         $values = $request->values;
+//        dd($values);
         foreach (array_combine($keys, $values) as $key => $value) {
             $n = str_replace("_", " ", $key);
             $new[$n] = $value;
         }
-        $mydata = json_encode($new);
-        file_put_contents('project/resources/lang/' . $data->file, $mydata);
+//        $mydata = json_encode($new);
+        $mydata = json_encode($new, JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+
+//        dd($mydata);
+        file_put_contents(resource_path('lang/' . $data->file), $mydata);
+
+
+//        file_put_contents('project/resources/lang/' . $data->file, $mydata);
         //--- Logic Section Ends
 
         //--- Redirect Section
@@ -234,6 +246,47 @@ class LanguageController extends AdminBaseController
         return response()->json($msg);
         //--- Redirect Section Ends
     }
+
+    public function xupdate(Request $request, $id)
+    {
+        //--- Validation Section
+        $rules = ['language' => 'unique:languages,language,' . $id];
+        $messages = ['language.unique' => 'This language has already been taken.'];
+
+        $validator = Validator::make($request->all(), $rules, $messages);
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->getMessageBag()->toArray()]);
+        }
+        //--- Validation Section Ends
+
+        //--- Logic Section
+        $data = Language::findOrFail($id);
+
+        $data->language = $request->input('language');
+        $data->rtl = $request->input('rtl');
+        $data->update();
+
+        $keys = $request->input('keys', []);
+        $values = $request->input('values', []);
+
+//        dd($keys, $values);
+        $newData = [];
+        foreach (array_combine($keys, $values) as $key => $value) {
+            $formattedKey = str_replace("_", " ", $key);
+            $newData[$formattedKey] = $value;
+        }
+
+        $jsonData = json_encode($newData, JSON_PRETTY_PRINT);
+
+        file_put_contents(resource_path('lang/' . $data->file), $jsonData);
+        //--- Logic Section Ends
+
+        //--- Redirect Section
+        return response()->json(__('Data Updated Successfully.'));
+        //--- Redirect Section Ends
+    }
+
+
 
     public function status($id1, $id2)
     {
