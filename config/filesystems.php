@@ -13,8 +13,22 @@ return [
     |
     */
 
-    'default' => env('FILESYSTEM_DISK', 'local'),
+//    'default' => env('FILESYSTEM_DISK', 'local'),
 
+    'default' => env('FILESYSTEM_DRIVER', 'do'),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Default Cloud Filesystem Disk
+    |--------------------------------------------------------------------------
+    |
+    | Many applications store files both locally and in the cloud. For this
+    | reason, you may specify a default "cloud" driver here. This driver
+    | will be bound as the Cloud disk implementation in the container.
+    |
+    */
+
+    'cloud' => env('FILESYSTEM_CLOUD', 'do'),
     /*
     |--------------------------------------------------------------------------
     | Filesystem Disks
@@ -55,6 +69,16 @@ return [
             'use_path_style_endpoint' => env('AWS_USE_PATH_STYLE_ENDPOINT', false),
             'throw' => false,
         ],
+
+        'do' => [
+            'driver' => 's3',
+            'key' => env('DO_ACCESS_KEY_ID'),
+            'secret' => env('DO_SECRET_ACCESS_KEY'),
+            'region' => env('DO_DEFAULT_REGION'),
+            'bucket' => env('DO_BUCKET'),
+            'endpoint' => env('DO_ENDPOINT'),
+        ],
+
 
     ],
 

@@ -2,9 +2,14 @@
 
 // ************************************ ADMIN SECTION **********************************************
 
+use App\Livewire\Catlogs;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Http;
+
+
+
+
 Route::get('/under-maintenance', 'Front\FrontendController@maintenance')->name('front-maintenance');
 
 Route::prefix('admin')->group(function () {
@@ -1513,6 +1518,11 @@ Route::group(['middleware' => 'maintenance'], function () {
 
 
     Route::get('illustrated', 'TestController@illustrated')->name('illustrated');
+
+//    Route::get('partners/{link}', 'BrandController@index')->name('partners.index');
+
+
+
     Route::post('/item/report', 'Front\CatalogController@report')->name('product.report');
 
     Route::get('/', 'Front\FrontendController@index')->name('front.index');

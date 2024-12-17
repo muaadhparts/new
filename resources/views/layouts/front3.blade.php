@@ -61,7 +61,9 @@
     <div class="overlay"></div>
 
 
-{{--    {{$slot}}--}}
+{{--    <div class="bg-secondary">--}}
+        {{$slot}}
+
     @yield('content')
 
 

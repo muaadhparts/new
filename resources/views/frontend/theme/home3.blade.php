@@ -62,13 +62,13 @@
             <div
                     class="row gy-4 row-cols-xxl-4 row-cols-xl-3 row-cols-lg-4 row-cols-md-3 row-cols-sm-2 row-cols-1 justify-content-center">
 
-                @foreach (DB::table('partners')->get() as $data)
+                @foreach (DB::table('partners')->get() as $brand)
                     <div class="col">
                         <div class="wow-replaced " data-wow-delay=".1s">
-                            <a href="javascript:;">
+                            <a href="{{route('catlogs.index',$brand->name)}}">
                                 <div class="single-partner">
 
-                                     <img src="{{ asset('assets/images/partner/' . $data->photo) }}" alt="partner " class="img-fluid">
+                                     <img src="{{ asset('assets/images/partner/' . $brand->photo) }}" alt="partner " class="img-fluid">
                                 </div>
                             </a>
                         </div>
