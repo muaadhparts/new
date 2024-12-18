@@ -34,13 +34,13 @@ class Illustrations extends Component
             ->first();
 
 //        $this->partCallouts = collect( $this->illustration->illustrationWithCallouts);
-        $this->partCallouts = collect($this->illustration->illustrationWithCallouts)['partCallouts'];
+        $this->partCallouts = collect($this->illustration->illustrationwithcallouts)['partCallouts'];
 
-//        dd($this->illustration ,$this->illustration->illustrationWithCallouts , $this->partCallouts,$this->category);
+//        dd($this->illustration ,$this->illustration->illustrationwithcallouts , $this->partCallouts,$this->category);
  //        $products = Product::take(10)->get();
 
         $this->products = DB::table(Str::lower($data))
-            ->select('code', 'partNumber', 'callout' ,'label_'.app()->getLocale())
+            ->select('code', 'partnumber', 'callout' ,'label_'.app()->getLocale())
             ->distinct()
             ->where('code','101A-001')
             ->orderBy('callout')

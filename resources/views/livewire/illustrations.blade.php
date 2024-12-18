@@ -130,7 +130,7 @@
                                     x-on:click="$dispatch('modal', {partNumber: '{{ $item->callout }}',isLoading:true, isOpen: true ,categoryId:'{{ $category->id }}' })"
                                     id="part_{{ $item->callout }}">{{ $item->callout }}</td>
 
-                                <td>{{ $item->partNumber }}</td>
+                                <td>{{ $item->partnumber }}</td>
 
                                 <td>  @if(app()->getLocale() ==='en')  {{ $item->label_en }} @else  {{ $item->label_ar }} @endif </td>
 

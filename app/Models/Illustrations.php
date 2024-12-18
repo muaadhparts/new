@@ -15,7 +15,7 @@ class Illustrations extends Model
 
 
     protected $casts = [
-         'illustrationWithCallouts' => 'array',
+         'illustrationwithcallouts' => 'array',
 //        'basicNumberHyperlinkCallouts' => 'array',
 //        'sectionHyplerlinkCallouts' => 'array',
 //        'hardwareCallouts' => 'array',
