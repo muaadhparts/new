@@ -23,7 +23,8 @@
         "laravel/tinker": "^2.8",
         "league/flysystem-aws-s3-v3": "^3.29",
         "league/omnipay": "^3.2",
-        "livewire/livewire": "^3.5",
+         "livewire/livewire": "^2.1",
+
         "mercadopago/dx-php": "^2.5.3",
         "mews/purifier": "^3.4",
         "mollie/laravel-mollie": "^2.25",

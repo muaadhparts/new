@@ -22,6 +22,8 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tarekraafat/autocomplete.js@10.2.9/dist/css/autoComplete.min.css">
     <script src="https://cdn.jsdelivr.net/npm/@tarekraafat/autocomplete.js@10.2.9/dist/autoComplete.min.js"></script>
     <link rel="icon" href="{{ asset('assets/images/' . $gs->favicon) }}">
+    @livewireStyles
+    @livewireScripts
     @include('includes.frontend.extra_head')
     @yield('css')
 
