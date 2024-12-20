@@ -14,6 +14,7 @@ class CatlogTreeLevel3 extends Component
     public function mount($id,$data,$key1,$key2)
     {
 //         dd($id ,$data);
+        $this->vehicle = $data;
         $this->brand = Partner::where('name', $id)->firstorFail();
         $this->categories = NCategory::where('data', $data)
             ->select('id','data','code','label','thumbnailimage','key1','key2')

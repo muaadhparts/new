@@ -3,6 +3,7 @@
 
     <div class="row gy-4 gy-lg-5 mt-4 mb-10">
 
+        <livewire:attributes  :vehicle="$vehicle" />
 
     @foreach ($categories  as $catalog)
 {{--                    @dd($catalog->data , $catalog );--}}

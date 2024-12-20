@@ -3,6 +3,7 @@
 
     <div class="row gy-4 gy-lg-5 mt-4 mb-10">
 
+        <livewire:attributes  :vehicle="$vehicle" />
 
     @foreach ($categories  as $catalog)
 {{--                    @dd($catalog->data , $catalog );--}}
@@ -16,7 +17,7 @@
                     </div>
                     <div class="p-3 text-center">
 
-                            <h6 class="product-title text-dark fw-bold text-center">{{ $catalog->label }}</h6>
+                            <h6 class="product-title text-dark fw-bold text-center">{{ preg_replace('/\s*\(.*?\)/', '', $catalog->label)  }}</h6>
                     </div>
                 </div>
             </a>

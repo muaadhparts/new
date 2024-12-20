@@ -60,6 +60,13 @@ class Catalog extends Model
         return $this->hasMany( Category::class,'vehicle_id','id')->with('subCategories');
     }
 
+
+
+    public function attributes(){
+        return $this->hasMany( MajorAttributes::class,'data','data');
+    }
+
+
     public function parentCategory(){
         return $this->hasMany( Category::class,'vehicle_id','id')->whereNull('parent_id');
     }

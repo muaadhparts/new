@@ -21,6 +21,7 @@
     <link rel="stylesheet" href="{{ asset('assets/front/css/custom.css') }}">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tarekraafat/autocomplete.js@10.2.9/dist/css/autoComplete.min.css">
     <script src="https://cdn.jsdelivr.net/npm/@tarekraafat/autocomplete.js@10.2.9/dist/autoComplete.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.3.0/css/datepicker.css" rel="stylesheet" type="text/css" />
     <link rel="icon" href="{{ asset('assets/images/' . $gs->favicon) }}">
     @livewireStyles
     @livewireScripts
@@ -53,7 +54,7 @@
     @include('includes.user.mobile-header')
     @elseif(in_array("rider",$explodeUrl))
     @include('includes.rider.mobile-header')
-    @else 
+    @else
     @include('includes.frontend.mobile_menu')
         <!-- user panel mobile sidebar -->
 

@@ -1,5 +1,5 @@
 <div>
-    illustrations
+
     @php use Illuminate\Support\Str; @endphp
 
 
@@ -74,9 +74,11 @@
 
 <div class="container m-md-2">
     <div class="row bg-white panel-body">
+
         <div class="col-md-6 content mt-auto mb-auto">
 
             <div class="row m-0">
+
                 <div class="block1">
                     <div class="products-view">
                         <div class="products-view__options view-options view-options--offcanvas--mobile">
@@ -108,6 +110,8 @@
         <div class="col-md-6 content m-0">
 
             <div class="row">
+                <livewire:attributes  :vehicle="$vehicle" />
+
                 <div class="col-sm-12 col-md-12">
                     <table class="glow pop-vin table table-bordered-1 table-hover table-condensed">
                         <thead>

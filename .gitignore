@@ -1,6 +1,8 @@
 /public/build
 /node_modules
- /public/uploads/
+/public/uploads/
+/public/assets/images
+
 /public/hot
 /public/database-backup/
 /storage/temp/
