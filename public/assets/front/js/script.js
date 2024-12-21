@@ -394,10 +394,10 @@ $(document).ready(function () {
   });
 
   //******  17. COUNTER UP ******//
-  $(".counter").counterUp({
-    delay: 10,
-    time: 1000,
-  });
+  // $(".counter").counterUp({
+  //   delay: 10,
+  //   time: 1000,
+  // });
 
   //******  18. CHANGE FILE NAME OF FILE INPUT  ******//
   $('.input-file').on("change", function () {

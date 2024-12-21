@@ -1,5 +1,6 @@
 <div class="{{ isset($class) ? $class : 'col-md-6 col-lg-4 col-xl-3' }}">
 
+{{--    @dump()--}}
     <div class="single-product">
         <div class="img-wrapper">
             @if ($product->offPercentage() && round($product->offPercentage()) > 0)
@@ -41,8 +42,10 @@
 
 
 
+{{--                @dump($product->thumbnail)--}}
             <img class="product-img"
-                src="{{ $product->thumbnail ? asset('assets/images/thumbnails/' . $product->thumbnail) : asset('assets/images/noimage.png') }}"
+{{--                 src="{{ $product->thumbnail ?  asset('assets/images/thumbnails/' . $product->thumbnail) : asset('assets/images/noimage.png') }}"--}}
+                 src="{{ $product->thumbnail ? \Illuminate\Support\Facades\Storage::url($product->thumbnail)    : asset('assets/images/noimage.png') }}"
                 alt="product img">
 
             <div class="add-to-cart">

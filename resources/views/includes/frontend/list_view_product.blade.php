@@ -32,7 +32,9 @@
                 </a>
             @endif
             <img class="product-img"
-                src="{{ $product->thumbnail ? asset('assets/images/thumbnails/' . $product->thumbnail) : asset('assets/images/noimage.png') }}"
+                 src="{{ $product->thumbnail ? \Illuminate\Support\Facades\Storage::url($product->thumbnail)    : asset('assets/images/noimage.png') }}"
+
+{{--                src="{{ $product->thumbnail ? asset('assets/images/thumbnails/' . $product->thumbnail) : asset('assets/images/noimage.png') }}"--}}
                 alt="product img">
 
         </div>
