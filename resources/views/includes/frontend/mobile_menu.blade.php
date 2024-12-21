@@ -96,7 +96,7 @@
                     <!-- <h5 class="widget-title">Product categories</h5> -->
                     <div class="product-cat-widget">
                         <ul class="accordion">
-                            @foreach ($categories as $category)
+                            @foreach ($categories->load('subs') as $category)
                                 @if ($category->subs->count() > 0)
                                     <li>
                                         @php
@@ -118,58 +118,59 @@
                                             </button>
                                         </div>
 
-                                        @foreach ($category->subs as $subcategory)
-                                            @php
-                                                $isSubcategoryActive =
-                                                    $isCategoryActive && Request::segment(3) === $subcategory->slug;
-                                            @endphp
-                                            <ul id="{{ $category->slug }}_level_2"
-                                                class="accordion-collapse collapse ms-3 {{ $isCategoryActive ? 'show' : '' }}">
-                                                <li class="">
-                                                    <div class="d-flex justify-content-between align-items-lg-baseline">
-                                                        <a href="{{ route('front.category', [$category->slug, $subcategory->slug]) }}"
-                                                            class="{{ $isSubcategoryActive ? 'sidebar-active-color' : '' }} "
-                                                            @if ($subcategory->childs->count() > 0) data-bs-toggle="collapse"
-                                        data-bs-target="#inner{{ $subcategory->slug }}_level_2_1"
-                                        aria-controls="inner{{ $subcategory->slug }}_level_2_1"
-                                        aria-expanded="{{ $isSubcategoryActive ? 'true' : 'false' }}"
-                                        class="{{ $isSubcategoryActive ? '' : 'collapsed' }}" @endif>
-                                                            {{ $subcategory->name }}
-                                                        </a>
+{{--                                        @foreach ($category->subs->take(2) as $subcategory)--}}
+{{--                                            @php--}}
+{{--                                                $isSubcategoryActive =--}}
+{{--                                                    $isCategoryActive && Request::segment(3) === $subcategory->slug;--}}
+{{--                                            @endphp--}}
+{{--                                            <ul id="{{ $category->slug }}_level_2"--}}
+{{--                                                class="accordion-collapse collapse ms-3 {{ $isCategoryActive ? 'show' : '' }}">--}}
+{{--                                                <li class="">--}}
+{{--                                                    <div class="d-flex justify-content-between align-items-lg-baseline">--}}
+{{--                                                        <a href="{{ route('front.category', [$category->slug, $subcategory->slug]) }}"--}}
+{{--                                                            class="{{ $isSubcategoryActive ? 'sidebar-active-color' : '' }} "--}}
+{{--                                                            @if ($subcategory->childs->count() > 0) data-bs-toggle="collapse"--}}
+{{--                                                                data-bs-target="#inner{{ $subcategory->slug }}_level_2_1"--}}
+{{--                                                                aria-controls="inner{{ $subcategory->slug }}_level_2_1"--}}
+{{--                                                                aria-expanded="{{ $isSubcategoryActive ? 'true' : 'false' }}"--}}
+{{--                                                                class="{{ $isSubcategoryActive ? '' : 'collapsed' }}"--}}
+{{--                                                                @endif>--}}
+{{--                                                            {{ $subcategory->name }} 22--}}
+{{--                                                        </a>--}}
 
-                                                        @if ($subcategory->childs->count() > 0)
-                                                            <button data-bs-toggle="collapse"
-                                                                data-bs-target="#inner{{ $subcategory->slug }}_level_2_1"
-                                                                aria-controls="inner{{ $subcategory->slug }}_level_2_1"
-                                                                aria-expanded="{{ $isSubcategoryActive ? 'true' : 'false' }}"
-                                                                class="position-relative bottom-12 {{ $isSubcategoryActive ? '' : 'collapsed' }}">
-                                                                <i class="fa-solid fa-plus"></i>
-                                                                <i class="fa-solid fa-minus"></i>
-                                                            </button>
-                                                        @endif
-                                                    </div>
+{{--                                                        @if ($subcategory->childs->count() > 0)--}}
+{{--                                                            <button data-bs-toggle="collapse"--}}
+{{--                                                                data-bs-target="#inner{{ $subcategory->slug }}_level_2_1"--}}
+{{--                                                                aria-controls="inner{{ $subcategory->slug }}_level_2_1"--}}
+{{--                                                                aria-expanded="{{ $isSubcategoryActive ? 'true' : 'false' }}"--}}
+{{--                                                                class="position-relative bottom-12 {{ $isSubcategoryActive ? '' : 'collapsed' }}">--}}
+{{--                                                                <i class="fa-solid fa-plus"></i>--}}
+{{--                                                                <i class="fa-solid fa-minus"></i>--}}
+{{--                                                            </button>--}}
+{{--                                                        @endif--}}
+{{--                                                    </div>--}}
 
-                                                    @if ($subcategory->childs->count() > 0)
-                                                        <ul id="inner{{ $subcategory->slug }}_level_2_1"
-                                                            class="accordion-collapse collapse ms-3 {{ $isSubcategoryActive ? 'show' : '' }}">
-                                                            @foreach ($subcategory->childs as $child)
-                                                                @php
-                                                                    $isChildActive =
-                                                                        $isSubcategoryActive &&
-                                                                        Request::segment(4) === $child->slug;
-                                                                @endphp
-                                                                <li>
-                                                                    <a href="{{ route('front.category', [$category->slug, $subcategory->slug, $child->slug]) }}"
-                                                                        class="{{ $isChildActive ? 'sidebar-active-color' : '' }}">
-                                                                        {{ $child->name }}
-                                                                    </a>
-                                                                </li>
-                                                            @endforeach
-                                                        </ul>
-                                                    @endif
-                                                </li>
-                                            </ul>
-                                        @endforeach
+{{--                                                    @if ($subcategory->childs->count() > 0)--}}
+{{--                                                        <ul id="inner{{ $subcategory->slug }}_level_2_1"--}}
+{{--                                                            class="accordion-collapse collapse ms-3 {{ $isSubcategoryActive ? 'show' : '' }}">--}}
+{{--                                                            @foreach ($subcategory->childs as $child)--}}
+{{--                                                                @php--}}
+{{--                                                                    $isChildActive =--}}
+{{--                                                                        $isSubcategoryActive &&--}}
+{{--                                                                        Request::segment(4) === $child->slug;--}}
+{{--                                                                @endphp--}}
+{{--                                                                <li>--}}
+{{--                                                                    <a href="{{ route('front.category', [$category->slug, $subcategory->slug, $child->slug]) }}"--}}
+{{--                                                                        class="{{ $isChildActive ? 'sidebar-active-color' : '' }}">--}}
+{{--                                                                        {{ $child->name }}--}}
+{{--                                                                    </a>--}}
+{{--                                                                </li>--}}
+{{--                                                            @endforeach--}}
+{{--                                                        </ul>--}}
+{{--                                                    @endif--}}
+{{--                                                </li>--}}
+{{--                                            </ul>--}}
+{{--                                        @endforeach--}}
 
                                     </li>
                                 @else

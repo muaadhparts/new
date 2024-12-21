@@ -12,6 +12,7 @@ class Category extends Model
     public function subs()
     {
     	return $this->hasMany('App\Models\Subcategory')->where('status','=',1);
+//            ->take(6);
     }
     
 

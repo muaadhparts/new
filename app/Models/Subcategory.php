@@ -11,7 +11,7 @@ class Subcategory extends Model
 
     public function childs()
     {
-    	return $this->hasMany('App\Models\Childcategory')->where('status','=',1);
+    	return $this->hasMany('App\Models\Childcategory')->where('status','=',1)->take(1);
     }
 
     public function category()

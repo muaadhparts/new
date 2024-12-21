@@ -195,13 +195,15 @@
                             <div class="megamenu cat-megamenu">
                                 <div class="row w-100">
                                     @foreach ($categories as $category)
+{{--                                        @dd($category ,$category->subs->take(4));--}}
                                         <div class="col-lg-3">
                                             <div class="single-menu mt-30">
                                                 <h5><a
                                                         href="{{ route('front.category', [$category->slug]) }}">{{ $category->name }}</a>
                                                 </h5>
                                                 @if ($category->subs->count() > 0)
-                                                    @foreach ($category->subs as $subcategory)
+{{--                                                    @dd($category->subs);--}}
+                                                    @foreach ($category->subs->take(2) as $subcategory)
                                                         <ul>
                                                             <li><a
                                                                     href="{{ route('front.category', [$category->slug, $subcategory->slug]) }}{{ !empty(request()->input('search')) ? '?search=' . request()->input('search') : '' }}">{{ $subcategory->name }}</a>

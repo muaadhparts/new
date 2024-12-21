@@ -27,10 +27,10 @@ class FrontBaseController extends Controller
         // Set Global GeneralSettings
 
         $this->gs = DB::table('generalsettings')->first();
-
-        // Set Global PageSettings
-
-        $this->ps = DB::table('pagesettings')->first();
+//
+//        // Set Global PageSettings
+//
+//        $this->ps = DB::table('pagesettings')->first();
         
 
         $this->middleware(function ($request, $next) {

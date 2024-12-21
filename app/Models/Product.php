@@ -161,24 +161,24 @@ class Product extends Model
     public function showPrice()
     {
         $id = $this->id;
-        $product = Product::find($id);
-
+//        $product = Product::find($id);
+//        dd($product ,$this->price);
         $gs = cache()->remember('generalsettings', now()->addDay(), function () {
             return DB::table('generalsettings')->first();
         });
-        $price = $product->price;
+        $price = $this->price;
 
-        if ($product->user_id != 0) {
-            $price = $product->price + $gs->fixed_commission + ($product->price / 100) * $gs->percentage_commission;
+        if ($this->user_id != 0) {
+            $price = $this->price + $gs->fixed_commission + ($this->price / 100) * $gs->percentage_commission;
         }
 
-        if (!empty($product->size)) {
-            $price += $product->size_price[0];
+        if (!empty($this->size)) {
+            $price += $this->size_price[0];
         }
 
         // Attribute Section
 
-        $attributes = $product->attributes["attributes"];
+        $attributes = $this->attributes["attributes"];
         if (!empty($attributes)) {
             $attrArr = json_decode($attributes, true);
         }

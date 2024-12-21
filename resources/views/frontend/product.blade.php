@@ -50,9 +50,10 @@
                 <div class="col-lg-6 wow-replaced" data-wow-delay=".1s">
                     <div class="gs-product-details-gallery-wrapper">
                         <div class="product-main-slider">
-                            <img src="{{ filter_var($productt->photo, FILTER_VALIDATE_URL) ? $productt->photo : asset('assets/images/products/' . $productt->photo) }}"
+
+                            <img src="{{ filter_var($productt->photo, FILTER_VALIDATE_URL) ? $productt->photo : \Illuminate\Support\Facades\Storage::url($productt->thumbnail)  }}"
                                 alt="Thumb Image"
-                                data-zoom-image="{{ filter_var($productt->photo, FILTER_VALIDATE_URL) ? $productt->photo : asset('assets/images/products/' . $productt->photo) }}"
+                                data-zoom-image="{{ filter_var($productt->photo, FILTER_VALIDATE_URL) ? $productt->photo : \Illuminate\Support\Facades\Storage::url($productt->thumbnail) }}"
                                 class="main-img" alt="gallery-img">
                             @foreach ($productt->galleries as $gal)
                                 <img src="{{ asset('assets/images/galleries/' . $gal->photo) }}"
@@ -62,9 +63,9 @@
                         </div>
 
                         <div class="product-nav-slider">
-                            <img src="{{ filter_var($productt->photo, FILTER_VALIDATE_URL) ? $productt->photo : asset('assets/images/products/' . $productt->photo) }}"
+                            <img src="{{ filter_var($productt->photo, FILTER_VALIDATE_URL) ? $productt->photo :  \Illuminate\Support\Facades\Storage::url($productt->thumbnail)  }}"
                                 alt="Thumb Image"
-                                data-zoom-image="{{ filter_var($productt->photo, FILTER_VALIDATE_URL) ? $productt->photo : asset('assets/images/products/' . $productt->photo) }}"
+                                data-zoom-image="{{ filter_var($productt->photo, FILTER_VALIDATE_URL) ? $productt->photo :  \Illuminate\Support\Facades\Storage::url($productt->thumbnail)  }}"
                                 class="nav-img" alt="gallery-img">
                             @foreach ($productt->galleries as $gal)
                                 <img src="{{ asset('assets/images/galleries/' . $gal->photo) }}"

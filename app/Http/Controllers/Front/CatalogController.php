@@ -26,7 +26,7 @@ class CatalogController extends FrontBaseController
     public function category(Request $request, $slug = null, $slug1 = null, $slug2 = null, $slug3 = null)
     {
        
-        $data['categories'] = Category::where('status', 1)->get();
+        $data['categories'] = Category::with('subs')->where('status', 1)->get();
 
         if ($request->view_check) {
             session::put('view', $request->view_check);
