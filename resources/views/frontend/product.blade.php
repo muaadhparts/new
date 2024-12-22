@@ -506,13 +506,13 @@
 
 
                             </span>
-                            <span> <b>@lang('Total Items :')</b>
-                                @if ($productt->user_id != 0)
-                                    {{ App\Models\Product::where('user_id', '=', $productt->user_id)->get()->count() }}
-                                @else
-                                    {{ App\Models\Product::where('user_id', '=', 0)->get()->count() }}
-                                @endif
-                            </span>
+{{--                            <span> <b>@lang('Total Items :')</b>--}}
+{{--                                @if ($productt->user_id != 0)--}}
+{{--                                    {{ App\Models\Product::where('user_id', '=', $productt->user_id)->get()->count() }}--}}
+{{--                                @else--}}
+{{--                                    {{ App\Models\Product::where('user_id', '=', 0)->get()->count() }}--}}
+{{--                                @endif--}}
+{{--                            </span>--}}
 
                             <div class="action-btns-wrapper">
 

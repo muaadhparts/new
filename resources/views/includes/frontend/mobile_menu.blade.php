@@ -47,7 +47,7 @@
 
                                 </ul>
                             </li>
-                            <li><a href="{{ route('front.blog') }}">@lang('BLOG')</a></li>
+{{--                            <li><a href="{{ route('front.blog') }}">@lang('BLOG')</a></li>--}}
                             <li><a href="{{ route('front.faq') }}">@lang('FAQ')</a></li>
                             <li><a href="{{ route('front.contact') }}">@lang('CONTACT')</a></li>
 
