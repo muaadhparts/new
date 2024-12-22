@@ -208,8 +208,16 @@
                                                             <li><a
                                                                     href="{{ route('front.category', [$category->slug, $subcategory->slug]) }}{{ !empty(request()->input('search')) ? '?search=' . request()->input('search') : '' }}">{{ $subcategory->name }}</a>
                                                             </li>
+
                                                         </ul>
                                                     @endforeach
+
+{{--                                                    <p><a class="link-opacity-10-hover" href="#">Link hover opacity 10</a></p>--}}
+                                                    <a class="btn btn-outline-primary  px-1 btn-sm"
+
+                                                     href="{{ route('front.category', [$category->slug, $subcategory->slug]) }}{{ !empty(request()->input('search')) ? '?search=' . request()->input('search') : '' }}">  more .......</a>
+
+
                                                 @endif
                                             </div>
                                         </div>

@@ -142,6 +142,8 @@
                                         </li>
                                     @endif
 
+
+
                                     @if ($productt->type == 'License')
                                         @if ($productt->platform != null)
                                             <span><b>@lang('Platform:') </b></span>

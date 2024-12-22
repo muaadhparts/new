@@ -103,9 +103,9 @@ class Product extends Model
             return DB::table('generalsettings')->first();
         });
         $price = $this->price;
-        if ($this->user_id != 0) {
-            $price = $this->price + $gs->fixed_commission + ($this->price / 100) * $gs->percentage_commission;
-        }
+//        if ($this->user_id != 0) {
+//            $price = $this->price + $gs->fixed_commission + ($this->price / 100) * $gs->percentage_commission;
+//        }
         if (!empty($this->size)) {
             $price += $this->size_price[0];
         }
@@ -168,9 +168,11 @@ class Product extends Model
         });
         $price = $this->price;
 
-        if ($this->user_id != 0) {
-            $price = $this->price + $gs->fixed_commission + ($this->price / 100) * $gs->percentage_commission;
-        }
+
+//        dd($this->price ,$price);
+//        if ($this->user_id != 0) {
+//            $price = $this->price + $gs->fixed_commission + ($this->price / 100) * $gs->percentage_commission;
+//        }
 
         if (!empty($this->size)) {
             $price += $this->size_price[0];
@@ -208,6 +210,7 @@ class Product extends Model
             });
         }
 
+//        dd($price);
         $price = $price * $curr->value;
         $price = \PriceHelper::showPrice($price);
 

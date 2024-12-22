@@ -107,7 +107,7 @@
         };
     
       </script>
-
+    @livewireScripts
 
 
     @php
@@ -125,6 +125,7 @@
 
     @stack('scripts')
   @yield('script')
+
 
 </body>
 

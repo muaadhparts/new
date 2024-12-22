@@ -117,7 +117,7 @@ class CatalogController extends FrontBaseController
             ->when(empty($sort), function ($query, $sort) {
                 return $query->latest('id');
             })
-            ->take(50) /// note for later
+            ->take(10) /// note for later
             ->withCount('ratings')
             ->withAvg('ratings', 'rating');
 

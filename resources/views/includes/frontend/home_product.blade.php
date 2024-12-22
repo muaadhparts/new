@@ -45,8 +45,10 @@
 {{--                @dump($product->thumbnail)--}}
             <img class="product-img"
 {{--                 src="{{ $product->thumbnail ?  asset('assets/images/thumbnails/' . $product->thumbnail) : asset('assets/images/noimage.png') }}"--}}
-                 src="{{ $product->thumbnail ? \Illuminate\Support\Facades\Storage::url($product->photo)    : asset('assets/images/noimage.png') }}"
+                 src="{{ Storage::exists($product->photo) ? \Illuminate\Support\Facades\Storage::url($product->photo) : asset('assets/images/noimage.png') }}"
                 alt="product img">
+
+
 
             <div class="add-to-cart">
 
@@ -114,6 +116,14 @@
             <a href="{{ route('front.product', $product->slug) }}">
                 <h6 class="product-title">{{ $product->showName() }}</h6>
             </a>
+
+
+            <p>
+                <span>@lang('Product SKU :') </span>
+                <span>{{ $product->sku }} </span>
+            </p>
+
+
             <div class="price-wrapper">
                 <h6>{{ $product->showPrice() }}</h6>
 
@@ -133,4 +143,31 @@
             </div>
         </div>
     </div>
+
+
+
+
+
+
+
+
 </div>
+@push('scripts')
+
+
+    <script>
+
+
+
+        Livewire.emit('alternativeModal');
+
+
+        document.addEventListener('DOMContentLoaded', function () {
+            Livewire.on('openModal', () => {
+                var modal = new bootstrap.Modal(document.getElementById('alternativeModal'));
+                modal.show();
+            });
+        });
+    </script>
+
+@endpush

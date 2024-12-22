@@ -1,8 +1,36 @@
-<div class="container-fluid mb-10">
+<div class="container-fluid mb-10 text-center">
+
+
+        <div class="autoComplete_wrapper ">
+            <input
+                    type="text"
+                    id="autoComplete"
+                    class="form-control"
+                    placeholder="VIN / Part Number / Part Code"
+                    wire:model.debounce.300ms="query"
+            >
+
+        @if (!empty($results))
+            <div class="container w-50 results-list mt-3  text-center">
+                <ul class="list-group">
+                    @foreach ($results as $result)
+                        <li class="list-group-item d-flex justify-content-between">
+                        <span wire:click="selectItem('{{ $result['value'] }}')" style="cursor: pointer;">
+                            {{ $result['value'] }}
+                        </span>
+{{--                            <small class="text-muted">{{ $result['key'] }}</small>--}}
+                        </li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
+
+        </div>
 
 
 
-{{--    <div class="autoComplete_wrapper">--}}
+
+    {{--    <div class="autoComplete_wrapper">--}}
 {{--        <input--}}
 {{--                type="text"--}}
 {{--                id="autoComplete"--}}
@@ -27,13 +55,13 @@
 
 
 
-    <div class="body w-100 text-center">
-        <div class="autoComplete_wrapper">
-            <input id="autoComplete" type="text" tabindex="1" class="form-control" placeholder="VIN / Part Number / Part Code">
-        </div>
-        {{-- Additional sections can be added below if needed --}}
-        <div class="selection"></div>
-    </div>
+{{--    <div class="body w-100 text-center">--}}
+{{--        <div class="autoComplete_wrapper">--}}
+{{--            <input id="autoComplete" type="text" tabindex="1" class="form-control" placeholder="VIN / Part Number / Part Code">--}}
+{{--        </div>--}}
+{{--        --}}{{-- Additional sections can be added below if needed --}}
+{{--        <div class="selection"></div>--}}
+{{--    </div>--}}
 </div>
 
 
@@ -54,9 +82,9 @@
     .getElementById("autoComplete")
     .setAttribute("placeholder", "Loading...");
     // Fetch External Data Source
-    const source = await fetch(
-    "https://tarekraafat.github.io/autoComplete.js/demo/db/generic.json"
-    );
+    // const source = await fetch(
+    // "https://tarekraafat.github.io/autoComplete.js/demo/db/generic.json"
+    // );
     const data = await source.json();
     // Post Loading placeholder text
     document
