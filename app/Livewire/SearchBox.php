@@ -19,9 +19,11 @@ class SearchBox extends Component
     public function search($query)
     {
         return \App\Models\Product::Where('sku', 'like', "%{$query}%")
-//             orwhere('name', 'like', "%{$query}%")
+            ->orwhere('name', 'like', "%{$query}%")
+            ->orwhere('label_en', 'like', "%{$query}%")
+            ->orwhere('label_ar', 'like', "%{$query}%")
 //            ->limit(10)
-            ->get(['sku as value', 'sku as key'])
+            ->get(['sku as value', 'name as key'])
             ->toArray();
     }
 
