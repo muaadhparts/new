@@ -37,14 +37,15 @@
         rel="stylesheet">
 @endif
 
-<link rel="stylesheet"
-    href="{{ asset('assets/front/css/styles.php?color=' . str_replace('#', '', $gs->colors) . '&header_color=' . $gs->header_color) }}">
-@if ($default_font->font_family)
-    <link rel="stylesheet" id="colorr"
-        href="{{ asset('assets/front/css/font.php?font_familly=' . $default_font->font_family) }}">
-@else
-    <link rel="stylesheet" id="colorr" href="{{ asset('assets/front/css/font.php?font_familly=' . ' Open Sans') }}">
-@endif
+{{--<link rel="stylesheet"--}}
+{{--    href="{{ asset('assets/front/css/styles.php?color=' . str_replace('#', '', $gs->colors) . '&header_color=' . $gs->header_color) }}">--}}
+
+{{--@if ($default_font->font_family)--}}
+{{--    <link rel="stylesheet" id="colorr"--}}
+{{--        href="{{ asset('assets/front/css/font.php?font_familly=' . $default_font->font_family) }}">--}}
+{{--@else--}}
+{{--    <link rel="stylesheet" id="colorr" href="{{ asset('assets/front/css/font.php?font_familly=' . ' Open Sans') }}">--}}
+{{--@endif--}}
 
 @if (!empty($seo->google_analytics))
     <script>

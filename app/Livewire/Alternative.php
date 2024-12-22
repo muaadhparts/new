@@ -16,6 +16,7 @@ class Alternative extends Component
     {
         $this->sku = $sku;
 
+
         $this->product = \App\Models\Product::where('sku', $sku)->first(); // Adjust model and query as needed
 
         $this->emit('openModal'); // Trigger the modal

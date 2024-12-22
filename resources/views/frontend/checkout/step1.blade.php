@@ -496,7 +496,7 @@
 @endsection
 
 
-@section('script')
+@push('scripts')
     <script src="https://js.paystack.co/v1/inline.js"></script>
     <script src="https://sdk.mercadopago.com/js/v2"></script>
     <script src="https://www.2checkout.com/checkout/api/2co.min.js"></script>
@@ -505,6 +505,7 @@
         $('a.payment:first').addClass('active');
 
         $('.checkoutform').attr('action', $('a.payment:first').attr('data-form'));
+
         $($('a.payment:first').attr('href')).load($('a.payment:first').data('href'));
 
 
@@ -696,4 +697,4 @@
 
         });
     </script>
-@endsection
+@endpush

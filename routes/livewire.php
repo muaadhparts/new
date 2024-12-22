@@ -20,6 +20,9 @@ Route::prefix('catlogs')->group(function () {
 //    Route::get('{id}/{data}/{code}/{key2}', Level1Tree::class)->name('child2.tree');
 //    Route::get('{id}/{data}/{code}/{key2}/', Child3CatlogTree::class)->name('child3.tree');
 });
+
+Route::get('result/{sku}', \App\Livewire\SearchResultsPage::class)->name('search.result');
+
 //
 //
 //Route::get('catlogs/{id}' ,Catlogs::class)->name('catlogs.index');
