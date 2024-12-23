@@ -29,9 +29,9 @@ class DashboardController extends AdminBaseController
 
             $data['sales'] .= "'" . Order::where('status', '=', 'completed')->whereDate('created_at', '=', date("Y-m-d", strtotime('-' . $i . ' days')))->count() . "',";
         }
-        $data['users'] = User::all();
-        $data['products'] = Product::all();
-        $data['blogs'] = Blog::all();
+        $data['users'] = User::count();
+        $data['products'] = Product::count();
+        $data['blogs'] = Blog::count();
         $data['pproducts'] = Product::latest('id')->take(5)->get();
         $data['rorders'] = Order::latest('id')->take(5)->get();
         $data['poproducts'] = Product::latest('views')->take(5)->get();
@@ -40,12 +40,12 @@ class DashboardController extends AdminBaseController
         $data['browsers'] = Counter::where('type', 'browser')->latest('total_count')->take(5)->get();
 
         $data['activation_notify'] = "";
-        if (file_exists(public_path() . '/rooted.txt')) {
-            $rooted = file_get_contents(public_path() . '/rooted.txt');
-            if ($rooted < date('Y-m-d', strtotime("+10 days"))) {
-                $data['activation_notify'] = "<i class='icofont-warning-alt icofont-4x'></i><br>Please activate your system.<br> If you do not activate your system now, it will be inactive on " . $rooted . "!!<br><a href='" . url('/admin/activation') . "' class='btn btn-success'>Activate Now</a>";
-            }
-        }
+//        if (file_exists(public_path() . '/rooted.txt')) {
+//            $rooted = file_get_contents(public_path() . '/rooted.txt');
+//            if ($rooted < date('Y-m-d', strtotime("+10 days"))) {
+//                $data['activation_notify'] = "<i class='icofont-warning-alt icofont-4x'></i><br>Please activate your system.<br> If you do not activate your system now, it will be inactive on " . $rooted . "!!<br><a href='" . url('/admin/activation') . "' class='btn btn-success'>Activate Now</a>";
+//            }
+//        }
 
         return view('admin.dashboard', $data);
     }

@@ -22,9 +22,9 @@ class ProductController extends AdminBaseController
     public function datatables(Request $request)
     {
         if ($request->type == 'all') {
-            $datas = Product::whereProductType('normal')->latest('id')->get();
+            $datas = Product:: whereProductType('normal')->latest('id')->take(1000)->get();
         } else if ($request->type == 'deactive') {
-            $datas = Product::whereProductType('normal')->whereStatus(0)->latest('id')->get();
+            $datas = Product::whereProductType('normal')->whereStatus(0)->latest('id')->take(1000)->get();
         }
 
         //--- Integrating This Collection Into Datatables
