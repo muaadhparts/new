@@ -352,7 +352,7 @@ class CheckoutController extends FrontBaseController
     public function checkoutStep1(Request $request)
     {
         $step1 = $request->all();
-        dd($step1);
+//        dd($step1);
         Session::put('step1', $step1);
         return redirect()->route('front.checkout.step2');
     }
