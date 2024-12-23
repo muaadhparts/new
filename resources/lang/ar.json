@@ -1,6 +1,8 @@
 {
     "Stock": "المخزون",
     "Welcome!": "مرحبًا!",
+    "Vendor Login" : "دخول الموردين",
+    "Rider Login" : "دخول السواق",
     "Edit Profile": "تعديل الملف الشخصي",
     "Change Password": "تغيير كلمة المرور",
     "Logout": "تسجيل الخروج",

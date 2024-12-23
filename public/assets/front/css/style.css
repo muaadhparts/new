@@ -5125,7 +5125,7 @@ p.text-lg {
 }
 
 .dropdown-menu.show {
-  left: 4px !important;
+  /*left: 4px !important;*/
   top: 6px !important;
 }
 

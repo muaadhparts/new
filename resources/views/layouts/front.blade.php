@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en"  @if(app()->getLocale() ==='ar') xdir="rtl" @endif  >
+<html lang="en"  @if(app()->getLocale() ==='ar') dir="rtl" @endif  >
 
 {{--@dd(Session::get('language') ,app()->getLocale())--}}
 <head>
@@ -8,6 +8,7 @@
     <title>{{ $gs->title }}</title>
     <!--Essential css files-->
     <link rel="stylesheet" href="{{ asset('assets/front/css/bootstrap.min.css') }}">
+
 {{--    <link rel="stylesheet" href="{{ asset('assets/front/css/bootstrap.rtl.min.css') }}">--}}
 
     <link rel="stylesheet" href="{{ asset('assets/front/css/all.css') }}">
@@ -22,6 +23,10 @@
 
     <link rel="stylesheet" href="{{ asset('assets/front/css/custom.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/front/css/nice-select.css') }}">
+{{--    @if(app()->getLocale() ==='ar')--}}
+
+{{--        <link rel="stylesheet" href="{{ asset('assets/front/css/style_ar.css') }}">--}}
+{{--    @endif--}}
 {{--    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tarekraafat/autocomplete.js@10.2.9/dist/css/autoComplete.01.min.css">--}}
     <link rel="icon" href="{{ asset('assets/images/' . $gs->favicon) }}">
     @include('includes.frontend.extra_head')
