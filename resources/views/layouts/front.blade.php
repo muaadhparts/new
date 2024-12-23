@@ -19,6 +19,7 @@
     <link rel="stylesheet" href="{{ asset('assets/front/css/datatables.min.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/front/css/style.css') }}">
 {{--    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tarekraafat/autocomplete.js@10.2.9/dist/css/autoComplete.min.css">--}}
+
     <link rel="stylesheet" href="{{ asset('assets/front/css/custom.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/front/css/nice-select.css') }}">
 {{--    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tarekraafat/autocomplete.js@10.2.9/dist/css/autoComplete.01.min.css">--}}
