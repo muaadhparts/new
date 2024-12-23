@@ -2,11 +2,11 @@
 
 
         <div class="autoComplete_wrapper">
-            <input
+            <input  style=""
                     type="text"
                     id="autoComplete"
                     class="form-control  "
-                    placeholder="VIN / Part Number / Part Code"
+                    placeholder="VIN / Part Number"
                     wire:model.debounce.300ms="query"
             >
 

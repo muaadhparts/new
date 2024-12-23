@@ -9,6 +9,7 @@ use Livewire\Component;
 class CatlogTreeLevel1 extends Component
 {
 
+//    public $id;
     public $brand;
     public $categories;
     public $vehicle;
@@ -16,6 +17,7 @@ class CatlogTreeLevel1 extends Component
     public function mount($id,$data)
     {
         $this->vehicle = $data;
+//        $this->id = $id;
 //         dd($id ,$data);
         $this->brand = Partner::where('name', $id)->firstorFail();
         $this->categories = NCategory::where('data', $data)

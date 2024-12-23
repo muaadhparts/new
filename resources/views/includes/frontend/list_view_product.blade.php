@@ -32,7 +32,7 @@
                 </a>
             @endif
             <img class="product-img"
-                 src="{{ Storage::exists($product->photo)  ? \Illuminate\Support\Facades\Storage::url($product->thumbnail)    : asset('assets/images/noimage.png') }}"
+                 src="{{ Storage::exists($product->thumbnail)  ? \Illuminate\Support\Facades\Storage::url($product->photo)    : asset('assets/images/noimage.png') }}"
 
 {{--                src="{{ $product->thumbnail ? asset('assets/images/thumbnails/' . $product->thumbnail) : asset('assets/images/noimage.png') }}"--}}
                 alt="product img">
@@ -40,14 +40,18 @@
         </div>
         <div class="content-wrapper">
             <h4 class="product-title">
-                <a href="{{ route('front.product', $product->slug) }}"> {{ $product->showName() }}</a>
+                <a href="{{ route('front.product', $product->slug) }}"> {{ $product->showName()  }}</a>
+            </h4>
+
+            <h4 class="product-title">
+                {{ $product->label_ar }}
             </h4>
 
 
 
 
 
-                <p>
+            <p>
                     <span>@lang('Product SKU :') </span>
                     <span>{{ $product->sku }} </span>
                 </p>

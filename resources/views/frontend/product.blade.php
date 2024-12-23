@@ -51,9 +51,9 @@
                     <div class="gs-product-details-gallery-wrapper">
                         <div class="product-main-slider">
 
-                            <img src="{{ filter_var($productt->photo, FILTER_VALIDATE_URL) ? $productt->photo : \Illuminate\Support\Facades\Storage::url($productt->thumbnail)  }}"
+                            <img src="{{ filter_var($productt->photo, FILTER_VALIDATE_URL) ? $productt->photo : \Illuminate\Support\Facades\Storage::url($productt->photo)  }}"
                                 alt="Thumb Image"
-                                data-zoom-image="{{ filter_var($productt->photo, FILTER_VALIDATE_URL) ? $productt->photo : \Illuminate\Support\Facades\Storage::url($productt->thumbnail) }}"
+                                data-zoom-image="{{ filter_var($productt->photo, FILTER_VALIDATE_URL) ? $productt->photo : \Illuminate\Support\Facades\Storage::url($productt->photo) }}"
                                 class="main-img" alt="gallery-img">
                             @foreach ($productt->galleries as $gal)
                                 <img src="{{ asset('assets/images/galleries/' . $gal->photo) }}"

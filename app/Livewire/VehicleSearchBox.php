@@ -2,13 +2,14 @@
 
 namespace App\Livewire;
 
-use App\Models\Product;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Livewire\Component;
 
-class SearchBox extends Component
+class VehicleSearchBox extends Component
 {
-
     public $query = '';
+    public $vehicle;
     public $results = [];
 
     public function updatedQuery()
@@ -18,11 +19,20 @@ class SearchBox extends Component
 
     public function search($query)
     {
-        return \App\Models\Product::Where('sku', 'like', "%{$query}%")
-            ->orwhere('name', 'like', "%{$query}%")
+//        dd($this);
+//        $query = DB::table(Str::lower($this->vehicle))
+//            ->select(
+//                'code', 'partnumber', 'callout',  'label_'.app()->getLocale(),
+//
+//            )
+//            ->where('code',$code );
+        return DB::table(Str::lower($this->vehicle))
+            ->where('partnumber', 'like', "%{$query}%")
+//            ->orwhere('name', 'like', "%{$query}%")
+            ->orwhere('callout', 'like', "%{$query}%")
             ->orwhere('label_en', 'like', "%{$query}%")
             ->orwhere('label_ar', 'like', "%{$query}%")
-            ->select('id', 'sku', 'name', 'label_en', 'label_ar')
+            ->select('id', 'partnumber',   'label_en', 'label_ar')
             ->limit(50)
             ->get();
 //            ->limit(10)
@@ -41,8 +51,9 @@ class SearchBox extends Component
 //        $this->results = [];
     }
 
+
     public function render()
     {
-        return view('livewire.search-box');
+        return view('livewire.vehicle-search-box');
     }
 }

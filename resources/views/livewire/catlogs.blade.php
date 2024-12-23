@@ -1,8 +1,12 @@
 <div class="container  ">
 
 
+
+
     <div class="row gy-4 gy-lg-5 mt-4">
+        <livewire:search-box/>
         <div>
+
             <!-- Search and Filter Row -->
             <div class="row mb-4">
                 <!-- Search Input -->

@@ -123,7 +123,7 @@
 
 .autoComplete_wrapper > input {
   height: 3rem;
-  width: 1000px;
+  width: 1000px !important;
   margin: 0;
   padding: 0 2rem 0 3.2rem;
   box-sizing: border-box;
