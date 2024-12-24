@@ -34,6 +34,7 @@
         "php-http/message-factory": "^1.1",
         "phpmailer/phpmailer": "^6.8",
         "razorpay/razorpay": "^2.8",
+        "siberfx/laravel-tryoto": "^1.0",
         "stripe/stripe-php": "^12.6",
         "symfony/http-client": "^7.1",
         "tymon/jwt-auth": "^2.0",
