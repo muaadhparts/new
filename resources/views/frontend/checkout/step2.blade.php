@@ -215,6 +215,10 @@
                                     $vendor = App\Models\Admin::findOrFail(1);
                                 }
 
+//
+//                                dd($shipping);
+//                                dd($vendor_id)
+
                             @endphp
 
                             <div class="product-infos-wrapper wow-replaced" data-wow-delay=".2s">
@@ -223,7 +227,9 @@
                                 <!-- product list  -->
                                 <div class="product-list">
                                     @foreach ($array_product as $product)
+
                                         @php
+//                                        dd($product);
                                             if ($product['dp'] == 0) {
                                                 $is_Digital = 0;
                                             }
@@ -232,7 +238,7 @@
                                             <div class="img-wrapper">
                                                 <a href="#">
                                                     <img width="200" class="img-cls"
-                                                        src="{{ asset('assets/images/products/' . $product['item']['photo']) }}"
+                                                        src="{{  \Illuminate\Support\Facades\Storage::url($product['item']['photo'])   }}"
                                                         alt="product">
                                                 </a>
                                             </div>
@@ -245,6 +251,7 @@
                                                     </a>
                                                 </h6>
 
+{{--                                                @dd($product)--}}
                                                 <ul class="product-specifications-list">
                                                     <li>
                                                         <span class="specification-name">@lang('Price :')</span>
@@ -299,40 +306,41 @@
 
                                 @if ($gs->multiple_shipping == 1)
                                     <div class="shop-info-wrapper">
-                                        <ul>
-                                            <li>
-                                                <span><b>@lang('Shop Name :')</b></span>
-                                                <span>{{ $vendor->shop_name }}</span>
-                                            </li>
-                                            <li>
-                                                <span><b>@lang('Shop Phone :')</b></span>
-                                                <span>{{ $vendor->phone }}</span>
-                                            </li>
-                                            <li>
-                                                <span><b>@lang('Shop Address:')</b></span>
-                                                <span>{{ $vendor->address }}</span>
-                                            </li>
-                                            <li>
+{{--                                        <ul>--}}
+{{--                                            <li>--}}
+{{--                                                <span><b>@lang('Shop Name :')</b></span>--}}
+{{--                                                <span>{{ $vendor->shop_name }}22</span>--}}
+{{--                                            </li>--}}
+{{--                                            <li>--}}
+{{--                                                <span><b>@lang('Shop Phone :')</b></span>--}}
+{{--                                                <span>{{ $vendor->phone }}</span>--}}
+{{--                                            </li>--}}
+{{--                                            <li>--}}
+{{--                                                <span><b>@lang('Shop Address:')</b></span>--}}
+{{--                                                <span>{{ $vendor->address }}</span>--}}
+{{--                                            </li>--}}
+{{--                                            <li>--}}
+{{--w--}}
+{{--                                            </li>--}}
+{{--                                        </ul>--}}
 
-                                            </li>
-                                        </ul>
-
+{{--                                        livewire.tryoto-componet--}}
 
                                         @if ($is_Digital == 0)
-                                            <div class="d-flex flex-wrap gap-2 mb-3 bg-light-white p-4">
-                                                <span class="label mr-2">
-                                                    <b>{{ __('Packageing :') }}</b>
-                                                </span>
-                                                <p id="packing_text{{ $vendor_id }}">
-                                                    {{ isset($packaging[0])
-                                                        ? $packaging[0]['title'] . '+' . $curr->sign . round($packaging[0]['price'] * $curr->value, 2)
-                                                        : 'Package not found' }}
-                                                </p>
-                                                <button type="button" class="template-btn sm-btn" data-bs-toggle="modal"
-                                                    data-bs-target="#vendor_package{{ $vendor_id }}">
-                                                    {{ __('Select Package') }}
-                                                </button>
-                                            </div>
+{{--                                            <div class="d-flex flex-wrap gap-2 mb-3 bg-light-white p-4">--}}
+{{--                                                <span class="label mr-2">--}}
+{{--                                                    <b>{{ __('Packageing :') }}22</b>--}}
+{{--                                                </span>--}}
+{{--                                                <p id="packing_text{{ $vendor_id }}">--}}
+{{--                                                    {{ isset($packaging[0])--}}
+{{--                                                        ? $packaging[0]['title'] . '+' . $curr->sign . round($packaging[0]['price'] * $curr->value, 2)--}}
+{{--                                                        : 'Package not found' }}--}}
+{{--                                                </p>--}}
+{{--                                                <button type="button" class="template-btn sm-btn" data-bs-toggle="modal"--}}
+{{--                                                    data-bs-target="#vendor_package{{ $vendor_id }}">--}}
+{{--                                                    {{ __('Select Package') }}--}}
+{{--                                                </button>--}}
+{{--                                            </div>--}}
                                             <div class="d-flex flex-wrap gap-2 mb-3 bg-light-white p-4">
                                                 <span class="label mr-2">
                                                     <b>{{ __('Shipping :') }}</b>
@@ -344,17 +352,15 @@
                                                 </p>
                                                 <button type="button" class="template-btn sm-btn" data-bs-toggle="modal"
                                                     data-bs-target="#vendor_shipping{{ $vendor_id }}">
-                                                    {{ __('Select Shipping') }}
+                                                    {{ __('Select Shipping') }} 444
                                                 </button>
                                             </div>
+
                                             @include('includes.frontend.vendor_shipping', [
                                                 'shipping' => $shipping,
                                                 'vendor_id' => $vendor_id,
                                             ])
-                                            @include('includes.frontend.vendor_packaging', [
-                                                'packaging' => $packaging,
-                                                'vendor_id' => $vendor_id,
-                                            ])
+
                                         @endif
                                     </div>
                                 @else
@@ -383,6 +389,10 @@
                                 $is_Digital = 1;
                             @endphp
                         @endforeach
+
+
+{{--                        <livewire:tryoto-componet :products="$array_product" />--}}
+
 
 
 

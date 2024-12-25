@@ -6,8 +6,7 @@ use App\Livewire\Catlogs;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Http;
-
-
+use Siberfx\LaravelTryoto\app\Http\Controllers\Api\TryOtoController;
 
 
 Route::get('/under-maintenance', 'Front\FrontendController@maintenance')->name('front-maintenance');
@@ -1623,7 +1622,9 @@ Route::group(['middleware' => 'maintenance'], function () {
 
     Route::get('/checkout/step3', 'Front\CheckoutController@checkoutstep3')->name('front.checkout.step3');
 
+
     Route::get('/carts/coupon/check', 'Front\CouponController@couponcheck')->name('front.coupon.check');
+
     Route::get('/checkout/payment/{slug1}/{slug2}', 'Front\CheckoutController@loadpayment')->name('front.load.payment');
     Route::get('/checkout/payment/return', 'Front\CheckoutController@payreturn')->name('front.payment.return');
     Route::get('/checkout/payment/cancle', 'Front\CheckoutController@paycancle')->name('front.payment.cancle');
@@ -1796,6 +1797,13 @@ Route::group(['middleware' => 'maintenance'], function () {
 });
 
 
+
+
+Route::group(['prefix' => 'tryoto'], function () {
+    Route::get('set-webhook', [TryOtoController::class, 'setWebhook'])->name('tryoto.set-webhook');
+    Route::post('webhook/callback', [TryOtoController::class, 'listenWebhook'])->name('tryoto.callback');
+
+});
 
 
 Route::post('the/genius/ocean/2441139', 'Front\FrontendController@subscription');

@@ -38,7 +38,10 @@ class PaymentGateway extends Model
     public function showCheckoutLink(){
         $link = '';
         $data = $this->keyword == null ? 'other' : $this->keyword;
-        if($data == 'paypal'){
+//        dd($data);
+        if($data == 'myfattora'){
+            $link = url('myfatoorah');
+        }else if($data == 'paypal'){
             $link = route('front.paypal.submit');
         }else if($data == 'stripe'){
             $link = route('front.stripe.submit');
@@ -69,6 +72,10 @@ class PaymentGateway extends Model
         }else{
             $link = route('front.manual.submit');
         }
+
+
+
+
         return $link;
     }
 

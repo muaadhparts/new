@@ -26,6 +26,7 @@ class Order extends Model
 
     public static function getShipData($cart)
     {
+//        dd($cart);
         $vendor_shipping_id = 0;
         $user = array();
         foreach ($cart->items as $prod) {

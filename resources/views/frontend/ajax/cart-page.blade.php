@@ -9,6 +9,7 @@
             @endphp
 
 
+{{--        @dd(Session::get('cart') ,$products)--}}
 
             <div class="col-lg-8">
                 <div class="cart-table table-responsive">
@@ -25,20 +26,23 @@
                         <tbody class="t_body">
                             @foreach ($products as $product)
                                 @php
-                         
+
+//                                dd(Session::get('cart'), $products);
                                     if ($product['discount'] != 0) {
                                         $total_itemprice = $product['item_price'] * $product['qty'];
                                         $tdiscount = ($total_itemprice * $product['discount']) / 100;
                                         $discount += $tdiscount;
                                     }
-                              
+
+                                    dump($product)
                                 @endphp
 
 
                                 <tr class="">
                                     <td class="cart-product-area">
                                         <div class="cart-product d-flex">
-                                            <img src="{{ $product['item']['photo'] ? asset('assets/images/products/' . $product['item']['photo']) : asset('assets/images/noimage.png') }}"
+
+                                            <img src="{{ $product['item']['photo'] ? \Illuminate\Support\Facades\Storage::url($product['item']['photo']) : asset('assets/images/noimage.png') }}"
                                                 alt="">
                                             <div class="cart-product-info">
 
@@ -65,27 +69,34 @@
                                         </div>
                                     </td>
                                     <td class="cart-price">
+{{--                                        @dd($product);--}}
                                         {{ App\Models\Product::convertPrice($product['item_price']) }}</td>
-
+`
                                     @if ($product['item']['type'] == 'Physical')
                                         <td>
                                             <div class="cart-quantity">
                                                 <button class="cart-quantity-btn quantity-down">-</button>
+
                                                 <input type="text"
                                                     id="qty{{ $product['item']['id'] . $product['size'] . $product['color'] . str_replace(str_split(' ,'), '', $product['values']) }}"
-                                                    value="{{ $product['qty'] }}" class="borderless" readonly>
+                                                    value="{{ $product['qty'] }}"  class="borderless" readonly>
+
                                                 <input type="hidden" class="prodid"
                                                     value="{{ $product['item']['id'] }}">
+
                                                 <input type="hidden" class="itemid"
                                                     value="{{ $product['item']['id'] . $product['size'] . $product['color'] . str_replace(str_split(' ,'), '', $product['values']) }}">
                                                 <input type="hidden" class="size_qty"
                                                     value="{{ $product['size_qty'] }}">
                                                 <input type="hidden" class="size_price"
                                                     value="{{ $product['size_price'] }}">
+
                                                 <input type="hidden" class="minimum_qty"
                                                     value="{{ $product['item']['minimum_qty'] == null ? '0' : $product['item']['minimum_qty'] }}">
-
-                                                <button class="cart-quantity-btn quantity-up">+</button>
+{{--                                                    @dump($product['qty'] ,$product['stock'])--}}
+                                                    @if($product['stock'] > 0 )
+                                                <button class="cart-quantity-btn quantity-up" >+</button>
+                                                @endif
                                             </div>
                                         </td>
                                     @else

@@ -170,9 +170,9 @@ class Product extends Model
 
 
 //        dd($this->price ,$price);
-//        if ($this->user_id != 0) {
-//            $price = $this->price + $gs->fixed_commission + ($this->price / 100) * $gs->percentage_commission;
-//        }
+        if ($this->user_id != 0) {
+            $price = $this->price + $gs->fixed_commission + ($this->price / 100) * $gs->percentage_commission;
+        }
 
         if (!empty($this->size)) {
             $price += $this->size_price[0];
@@ -345,6 +345,7 @@ class Product extends Model
                 return Currency::where('is_default', '=', 1)->first();
             });
         }
+//        dd($price ,$curr->value);
         $price = $price * $curr->value;
         $price = \PriceHelper::showPrice($price);
         if ($gs->currency_format == 0) {
@@ -596,8 +597,9 @@ class Product extends Model
             });
         }
 
-        $price = $price * $curr->value;
+//        $price = $price * $curr->value;
         $preprice = $preprice * $curr->value;
+//        dd($preprice ,$price);
         $Percentage = (($preprice - $price) * 100) / $preprice;
 
         if ($Percentage) {

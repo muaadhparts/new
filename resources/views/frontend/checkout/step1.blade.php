@@ -439,10 +439,6 @@
                 </div>
 
 
-
-
-
-
                 <input type="hidden" name="dp" value="{{ $digital }}">
                 <input type="hidden" id="input_tax" name="tax" value="">
                 <input type="hidden" id="input_tax_type" name="tax_type" value="">
@@ -497,10 +493,10 @@
 
 
 @push('scripts')
-    <script src="https://js.paystack.co/v1/inline.js"></script>
-    <script src="https://sdk.mercadopago.com/js/v2"></script>
-    <script src="https://www.2checkout.com/checkout/api/2co.min.js"></script>
-    <script src="https://js.stripe.com/v3/"></script>
+{{--    <script src="https://js.paystack.co/v1/inline.js"></script>--}}
+{{--    <script src="https://sdk.mercadopago.com/js/v2"></script>--}}
+{{--    <script src="https://www.2checkout.com/checkout/api/2co.min.js"></script>--}}
+{{--    <script src="https://js.stripe.com/v3/"></script>--}}
     <script type="text/javascript">
         $('a.payment:first').addClass('active');
 

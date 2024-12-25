@@ -61,6 +61,7 @@
 
                         <div class="list-wrapper">
                             @foreach ($gateways as $gt)
+
                             @if ($gt->checkout == 1)
                             @if ($gt->type == 'manual')
                             @if ($digital == 0)
@@ -83,6 +84,7 @@
                                 </label>
                             </div>
                             @endif
+
                             @else
                             <div class="gs-radio-wrapper payment" data-val="{{ $gt->keyword }}"
                                 data-show="{{ $gt->showForm() }}" data-form="{{ $gt->showCheckoutLink() }}"
@@ -99,9 +101,12 @@
                                 <label class="label-wrapper" for="pl{{ $gt->id }}">
                                     <span class="label-title"> {{ $gt->name }}</span>
                                     @if ($gt->information != null)
+                                        ddd
                                     <span class="label-subtitle">{{ $gt->getAutoDataText() }}</span>
                                     @endif
                                 </label>
+
+                                
                             </div>
                             @endif
                             @endif

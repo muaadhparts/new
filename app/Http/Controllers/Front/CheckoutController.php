@@ -10,10 +10,15 @@ use Auth;
 use DB;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Session;
+use Siberfx\LaravelTryoto\app\Services\TryotoService;
 
 class CheckoutController extends FrontBaseController
 {
     // Loading Payment Gateways
+
+
+
+
 
     public function loadpayment($slug1, $slug2)
     {
@@ -102,6 +107,8 @@ class CheckoutController extends FrontBaseController
                 $total = Session::get('coupon_total');
                 $total = str_replace(',', '', str_replace($curr->sign, '', $total));
             }
+
+//            dd($total ,$cart->items);
 
             return view('frontend.checkout.step1', ['products' => $cart->items, 'totalPrice' => $total, 'pickups' => $pickups, 'totalQty' => $cart->totalQty, 'shipping_cost' => 0, 'digital' => $dp, 'curr' => $curr, 'shipping_data' => $shipping_data, 'package_data' => $package_data, 'vendor_shipping_id' => $vendor_shipping_id, 'vendor_packing_id' => $vendor_packing_id]);
         } else {
@@ -203,7 +210,9 @@ class CheckoutController extends FrontBaseController
             return redirect()->route('front.cart')->with('success', __("You don't have any product to checkout."));
         }
 
+
         $step1 = (object) Session::get('step1');
+//        dd($step1);
         $dp = 1;
         $vendor_shipping_id = 0;
         $vendor_packing_id = 0;
@@ -352,7 +361,16 @@ class CheckoutController extends FrontBaseController
     public function checkoutStep1(Request $request)
     {
         $step1 = $request->all();
-//        dd($step1);
+////        dd($step1);
+//        $oldCart = Session::get('cart');
+//
+//        // Update cart details with shipping information
+//        $oldCart->totalPrice = 60;
+//
+//
+//        // Create a new cart instance
+//        $cart = new Cart($oldCart);
+//
         Session::put('step1', $step1);
         return redirect()->route('front.checkout.step2');
     }
@@ -360,6 +378,38 @@ class CheckoutController extends FrontBaseController
     public function checkoutStep2Submit(Request $request)
     {
         $step2 = $request->all();
+        $oldCart = Session::get('cart');
+
+        // Update cart details with shipping information
+        $oldCart->totalPrice = 60;
+
+
+        // Create a new cart instance
+        $cart = new Cart($oldCart);
+//        dd($step2 ,$step2['shipping'][0] ==="1");
+
+        if($step2['shipping'][0] !=="1"){
+        list($shippingId, $shipping_company, $shipping_cost) = explode('#', $step2['shipping'][0]);
+        $shipping_cost = (float) $shipping_cost; // Ensure the shipping cost is numeric
+//        dd($shippingId ,$shipping_cost);
+    // Retrieve the current cart from the session
+        $oldCart = Session::get('cart');
+
+    // Update cart details with shipping information
+            $oldCart->totalPrice += $shipping_cost;
+            $oldCart->shipping_name = $shipping_company;
+            $oldCart->shipping_cost = $shipping_cost;
+
+    // Create a new cart instance
+            $cart = new Cart($oldCart);
+
+    // Update step2 with shipping details
+        $step2['shipping_company'] = $shipping_company;
+        $step2['shipping_cost'] = $shipping_cost;
+
+        }
+
+//        dd(  $step2 ,$cart);
         Session::put('step2', $step2);
         return redirect()->route('front.checkout.step3');
     }
@@ -367,6 +417,7 @@ class CheckoutController extends FrontBaseController
     public function checkoutstep3()
     {
 
+//        dd(Session::get('step2'));
         if (!Session::has('step1')) {
             return redirect()->route('front.checkout')->with('success', __("Please fill up step 1."));
         }
@@ -395,9 +446,10 @@ class CheckoutController extends FrontBaseController
         if (Auth::check()) {
 
             // Shipping Method
-
+//                dd($cart ,Session::get('step2'));
             if ($this->gs->multiple_shipping == 1) {
                 $ship_data = Order::getShipData($cart);
+//                dd($ship_data);
                 $shipping_data = $ship_data['shipping_data'];
                 $vendor_shipping_id = $ship_data['vendor_shipping_id'];
             } else {

@@ -53,7 +53,7 @@
 
                             <img src="{{ filter_var($productt->photo, FILTER_VALIDATE_URL) ? $productt->photo : \Illuminate\Support\Facades\Storage::url($productt->photo)  }}"
                                 alt="Thumb Image"
-                                data-zoom-image="{{ filter_var($productt->photo, FILTER_VALIDATE_URL) ? $productt->photo : \Illuminate\Support\Facades\Storage::url($productt->photo) }}"
+                                data-zoom-image="{{ filter_var($productt->photo, FILTER_VALIDATE_URL) ?  $productt->photo : \Illuminate\Support\Facades\Storage::url($productt->photo) }}"
                                 class="main-img" alt="gallery-img">
                             @foreach ($productt->galleries as $gal)
                                 <img src="{{ asset('assets/images/galleries/' . $gal->photo) }}"
