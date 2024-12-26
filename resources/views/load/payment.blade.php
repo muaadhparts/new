@@ -2,6 +2,7 @@
 
 $pay_data = $gateway->convertAutoData();
 
+//dd($pay_data);
 @endphp
 
 @if($payment == 'cod')

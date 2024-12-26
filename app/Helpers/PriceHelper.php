@@ -129,6 +129,7 @@ class PriceHelper
                 }
                 $tax_amount = ($totalAmount / 100) * $tax;
                 $totalAmount = $totalAmount + $tax_amount;
+
             }
 
             if ($gs->multiple_shipping == 0) {
@@ -139,7 +140,9 @@ class PriceHelper
                     $vendor_packing_ids[$vendor_id] = isset($input['packaging_id']) && $input['packaging_id'] != 0 ? $input['packaging_id'] : null;
                 }
 
+
                 $shipping = isset($input['shipping_id']) && $input['shipping_id'] != 0 ? Shipping::findOrFail($input['shipping_id']) : null;
+
 
                 $packeing = isset($input['packaging_id']) && $input['packaging_id'] != 0 ? Package::findOrFail($input['packaging_id']) : null;
 
@@ -148,6 +151,7 @@ class PriceHelper
                 if (isset($input['coupon_id']) && !empty($input['coupon_id'])) {
                     $totalAmount = $totalAmount - $input['coupon_discount'];
                 }
+
 
                 return [
                     'total_amount' => $totalAmount,
@@ -163,17 +167,29 @@ class PriceHelper
 
                 if (isset($input['shipping']) && gettype($input['shipping']) == 'string') {
                     $shippingData = json_decode($input['shipping'], true);
+//                    dd($shippingData);
                 } else {
                     $shippingData = isset($input['shipping']) ? $input['shipping'] : null;
+//                    dd($shippingData);
                 }
-
+//                dd($input);
                 $shipping_cost = 0;
                 $packaging_cost = 0;
                 $vendor_ids = [];
                 if (isset($input['shipping']) && $input['shipping'] != 0 && is_array($shippingData)) {
+//                    dd($shippingData);
                     foreach ($shippingData as $key => $shipping_id) {
+//                        dd($input['shipping'] ,$shipping_id);
                         $shipping = Shipping::findOrFail($shipping_id);
-                        $shipping_cost += $shipping->price;
+
+                            if($shipping->id===16){
+                                $shipping_cost += $input['shipping_cost'];
+//                                dd($shipping ,$input['shipping_cost']);
+                            }else{
+                                $shipping_cost += $shipping->price;
+                            }
+
+
                         if (!in_array($shipping->user_id, $vendor_ids)) {
                             $vendor_ids[] = $shipping->user_id;
                         }

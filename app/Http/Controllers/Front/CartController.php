@@ -34,6 +34,7 @@ class CartController extends FrontBaseController
             Session::forget('coupon_percentage');
         }
         $oldCart = Session::get('cart');
+//        dd($oldCart);
         $cart = new Cart($oldCart);
         $products = $cart->items;
 
@@ -762,6 +763,7 @@ class CartController extends FrontBaseController
     public function country_tax(Request $request)
     {
 
+//        dd($request->all());
         if ($request->country_id) {
             if ($request->state_id != 0) {
                 $state = State::findOrFail($request->state_id);
@@ -771,6 +773,7 @@ class CartController extends FrontBaseController
             } else {
                 $country = Country::findOrFail($request->country_id);
                 $tax = $country->tax;
+
                 $data[11] = $country->id;
                 $data[12] = 'country_tax';
             }

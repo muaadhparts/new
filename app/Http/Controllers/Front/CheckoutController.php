@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Front;
 
+use App\Helpers\PriceHelper;
 use App\Models\Cart;use App\Models\City;
 use App\Models\Order;
 use App\Models\PaymentGateway;
@@ -10,6 +11,7 @@ use Auth;
 use DB;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\Validator;
 use Siberfx\LaravelTryoto\app\Services\TryotoService;
 
 class CheckoutController extends FrontBaseController
@@ -361,6 +363,32 @@ class CheckoutController extends FrontBaseController
     public function checkoutStep1(Request $request)
     {
         $step1 = $request->all();
+
+        $validator = Validator::make($step1, [
+            'customer_name' => 'required|string|max:255',
+            'customer_email' => 'required|email|max:255',
+            'customer_phone' => 'required|numeric',
+            'customer_address' => 'required|string|max:255',
+            'customer_zip' => 'nullable|string|max:20',
+            'customer_country' => 'required|string|max:255',
+            'customer_state' => 'required|string|max:255',
+            'customer_city' => 'required|string|max:255',
+ //            'shipping_name' => 'nullable|string|max:255',
+//            'shipping_phone' => 'nullable|regex:/^[0-9]{10,15}$/',
+//            'shipping_address' => 'nullable|string|max:255',
+//            'shipping_zip' => 'nullable|string|max:20',
+//            'shipping_city' => 'nullable|string|max:255',
+//            'shipping_state' => 'nullable|string|max:255',
+        ]);
+
+
+        if ($validator->fails()) {
+            return  back()->withErrors($validator->errors());
+        }
+
+
+//        dd($step1 ,$validator->errors());
+//            Session::forget(['step1', 'step2','step3','cart']);
 ////        dd($step1);
 //        $oldCart = Session::get('cart');
 //
@@ -379,13 +407,14 @@ class CheckoutController extends FrontBaseController
     {
         $step2 = $request->all();
         $oldCart = Session::get('cart');
+        $input = Session::get('step1') +$step2;
 
         // Update cart details with shipping information
-        $oldCart->totalPrice = 60;
+//        $oldCart->totalPrice = 60;
 
 
         // Create a new cart instance
-        $cart = new Cart($oldCart);
+//        $cart = new Cart($oldCart);
 //        dd($step2 ,$step2['shipping'][0] ==="1");
 
         if($step2['shipping'][0] !=="1"){
@@ -394,9 +423,11 @@ class CheckoutController extends FrontBaseController
 //        dd($shippingId ,$shipping_cost);
     // Retrieve the current cart from the session
         $oldCart = Session::get('cart');
-
+//            $orderCalculate = PriceHelper::getOrderTotal($input, $oldCart);
+//
+//            dd($orderCalculate);
     // Update cart details with shipping information
-            $oldCart->totalPrice += $shipping_cost;
+//            $oldCart->totalPrice += $shipping_cost;
             $oldCart->shipping_name = $shipping_company;
             $oldCart->shipping_cost = $shipping_cost;
 
@@ -438,6 +469,7 @@ class CheckoutController extends FrontBaseController
         $gateways = PaymentGateway::scopeHasGateway($this->curr->id);
         $pickups = DB::table('pickups')->get();
         $oldCart = Session::get('cart');
+//        dd($oldCart);
         $cart = new Cart($oldCart);
         $products = $cart->items;
         $paystack = PaymentGateway::whereKeyword('paystack')->first();
@@ -481,6 +513,7 @@ class CheckoutController extends FrontBaseController
                 $total = Session::get('coupon_total');
                 $total = str_replace(',', '', str_replace($curr->sign, '', $total));
             }
+//            dd($total ,$cart);
 
             return view('frontend.checkout.step3', ['products' => $cart->items, 'totalPrice' => $total, 'pickups' => $pickups, 'totalQty' => $cart->totalQty, 'gateways' => $gateways, 'shipping_cost' => 0, 'digital' => $dp, 'curr' => $curr, 'shipping_data' => $shipping_data, 'package_data' => $package_data, 'vendor_shipping_id' => $vendor_shipping_id, 'vendor_packing_id' => $vendor_packing_id, 'paystack' => $paystackData, 'step1' => $step1, 'step2' => $step2]);
         } else {

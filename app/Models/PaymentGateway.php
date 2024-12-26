@@ -39,8 +39,8 @@ class PaymentGateway extends Model
         $link = '';
         $data = $this->keyword == null ? 'other' : $this->keyword;
 //        dd($data);
-        if($data == 'myfattora'){
-            $link = url('myfatoorah');
+        if($data == 'myfatoorah'){
+            $link = route('front.myfatoorah.submit');
         }else if($data == 'paypal'){
             $link = route('front.paypal.submit');
         }else if($data == 'stripe'){

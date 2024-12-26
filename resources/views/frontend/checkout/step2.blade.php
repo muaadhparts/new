@@ -352,7 +352,7 @@
                                                 </p>
                                                 <button type="button" class="template-btn sm-btn" data-bs-toggle="modal"
                                                     data-bs-target="#vendor_shipping{{ $vendor_id }}">
-                                                    {{ __('Select Shipping') }} 444
+                                                    {{ __('Select Shipping') }}
                                                 </button>
                                             </div>
 

@@ -145,39 +145,79 @@
                                     <div class="input-wrapper">
                                         <label class="label-cls" for="customer_name">@lang('Name')</label>
                                         <input class="input-cls" id="customer_name" type="text" name="customer_name"
-                                            placeholder="@lang('Full Name')"
-                                            value="{{ Auth::check() ? Auth::user()->name : '' }}">
-                                    </div>
-                                </div>
-                                <div class="col-lg-6">
-                                    <div class="input-wrapper">
-                                        <label class="label-cls" for="customer_email">@lang('Email')</label>
-                                        <input class="input-cls" id="customer_email" type="text"
-                                            name="customer_email" placeholder="@lang('Your Email')"
-                                            value="{{ Auth::check() ? Auth::user()->email : '' }}">
+                                               placeholder="@lang('Full Name')"
+                                               value="{{ old('customer_name', Auth::check() ? Auth::user()->name : '') }}">
+                                        @error('customer_name')
+                                        <span class="text-danger">{{ $message }}</span>
+                                        @enderror
                                     </div>
                                 </div>
 
                                 <div class="col-lg-6">
                                     <div class="input-wrapper">
-                                        <label class="label-cls" for="phone">
-                                            @lang('Phone Number')
-                                        </label>
-                                        <input class="input-cls" id="phone" type="tel"
-                                            placeholder="@lang('Phone Number')" name="customer_phone"
-                                            value="{{ Auth::check() ? Auth::user()->phone : '' }}">
+                                        <label class="label-cls" for="customer_email">@lang('Email')</label>
+                                        <input class="input-cls" id="customer_email" type="text" name="customer_email"
+                                               placeholder="@lang('Your Email')"
+                                               value="{{ old('customer_email', Auth::check() ? Auth::user()->email : '') }}">
+                                        @error('customer_email')
+                                        <span class="text-danger">{{ $message }}</span>
+                                        @enderror
                                     </div>
                                 </div>
+
                                 <div class="col-lg-6">
                                     <div class="input-wrapper">
-                                        <label class="label-cls" for="address">
-                                            @lang('Address')
-                                        </label>
-                                        <input class="input-cls" id="address" type="text"
-                                            placeholder="@lang('Address')" name="customer_address"
-                                            value="{{ Auth::check() ? Auth::user()->address : '' }}">
+                                        <label class="label-cls" for="phone">@lang('Phone Number')</label>
+                                        <input class="input-cls" id="phone" type="tel" name="customer_phone"
+                                               placeholder="@lang('Phone Number')"
+                                               value="{{ old('customer_phone', Auth::check() ? Auth::user()->phone : '') }}">
+                                        @error('customer_phone')
+                                        <span class="text-danger">{{ $message }}</span>
+                                        @enderror
                                     </div>
                                 </div>
+
+                                <div class="col-lg-6">
+                                    <div class="input-wrapper">
+                                        <label class="label-cls" for="address">@lang('Address')</label>
+                                        <input class="input-cls" id="address" type="text" name="customer_address"
+                                               placeholder="@lang('Address')"
+                                               value="{{ old('customer_address', Auth::check() ? Auth::user()->address : '') }}">
+                                        @error('customer_address')
+                                        <span class="text-danger">{{ $message }}</span>
+                                        @enderror
+                                    </div>
+                                </div>
+
+
+
+                                {{--                                <div class="col-lg-6">--}}
+{{--                                    <div class="input-wrapper">--}}
+{{--                                        <label class="label-cls" for="customer_name">@lang('Name')</label>--}}
+{{--                                        <input class="input-cls" id="customer_name" type="text" name="customer_name"--}}
+{{--                                            placeholder="@lang('Full Name')"--}}
+{{--                                            value="{{ Auth::check() ? Auth::user()->name : '' }}">--}}
+{{--                                    </div>--}}
+{{--                                </div>--}}
+{{--                                <div class="col-lg-6">--}}
+{{--                                    <div class="input-wrapper">--}}
+{{--                                        <label class="label-cls" for="customer_email">@lang('Email')</label>--}}
+{{--                                        <input class="input-cls" id="customer_email" type="text"--}}
+{{--                                            name="customer_email" placeholder="@lang('Your Email')"--}}
+{{--                                            value="{{ Auth::check() ? Auth::user()->email : '' }}">--}}
+{{--                                    </div>--}}
+{{--                                </div>--}}
+
+{{--                                <div class="col-lg-6">--}}
+{{--                                    <div class="input-wrapper">--}}
+{{--                                        <label class="label-cls" for="phone">--}}
+{{--                                            @lang('Phone Number')--}}
+{{--                                        </label>--}}
+{{--                                        <input class="input-cls" id="phone" type="tel"--}}
+{{--                                            placeholder="@lang('Phone Number')" name="customer_phone"--}}
+{{--                                            value="{{ Auth::check() ? Auth::user()->phone : '' }}">--}}
+{{--                                    </div>--}}
+{{--                                </div>--}}
 
 
                                 <div class="col-lg-6">
@@ -191,13 +231,15 @@
                                     </div>
                                 </div>
 
-
                                 <div class="col-lg-6">
                                     <div class="input-wrapper">
                                         <label class="label-cls">@lang('Select Country')</label>
                                         <select class="nice-select" id="select_country" name="customer_country" required>
                                             @include('includes.countries')
                                         </select>
+                                        @error('customer_country')
+                                        <span class="text-danger">{{ $message }}</span>
+                                        @enderror
                                     </div>
                                 </div>
 
@@ -205,37 +247,72 @@
                                     <div class="input-wrapper">
                                         <label class="label-cls">@lang('Select State')</label>
                                         <select class="nice-select" id="show_state" name="customer_state" required>
-
+                                            <option value="" disabled selected>@lang('Select a state')</option>
                                         </select>
+                                        @error('customer_state')
+                                        <span class="text-danger">{{ $message }}</span>
+                                        @enderror
                                     </div>
                                 </div>
 
-                                <div class="col-lg-6 d-none">
+                                <div class="col-lg-6 d-none select_city">
                                     <div class="input-wrapper">
                                         <label class="label-cls">@lang('Select City')</label>
-                                        <select class="nice-select " id="show_city" name="customer_city" required>
-
+                                        <select class="nice-select" id="show_city" name="customer_city" required>
+                                            <option value="" disabled selected>@lang('Select a city')</option>
                                         </select>
+                                        @error('customer_city')
+                                        <span class="text-danger">{{ $message }}</span>
+                                        @enderror
                                     </div>
                                 </div>
+
+
+
+                                {{--                                <div class="col-lg-6">--}}
+{{--                                    <div class="input-wrapper">--}}
+{{--                                        <label class="label-cls">@lang('Select Country')</label>--}}
+{{--                                        <select class="nice-select" id="select_country" name="customer_country" required>--}}
+{{--                                            @include('includes.countries')--}}
+{{--                                        </select>--}}
+{{--                                    </div>--}}
+{{--                                </div>--}}
+
+{{--                                <div class="col-lg-6 d-none select_state">--}}
+{{--                                    <div class="input-wrapper">--}}
+{{--                                        <label class="label-cls">@lang('Select State')</label>--}}
+{{--                                        <select class="nice-select" id="show_state" name="customer_state" required>--}}
+
+{{--                                        </select>--}}
+{{--                                    </div>--}}
+{{--                                </div>--}}
+
+{{--                                <div class="col-lg-6 d-none">--}}
+{{--                                    <div class="input-wrapper">--}}
+{{--                                        <label class="label-cls">@lang('Select City')</label>--}}
+{{--                                        <select class="nice-select " id="show_city" name="customer_city" required>--}}
+
+{{--                                        </select>--}}
+{{--                                    </div>--}}
+{{--                                </div>--}}
 
 
                                 <!-- chekbox -->
-                                <div class="col-lg-12  {{ $digital == 1 ? 'd-none' : '' }}" id="ship_deff">
-                                    <div class="gs-checkbox-wrapper" data-bs-toggle="collapse"
-                                        data-bs-target="#show_shipping_address" role="region" aria-expanded="false"
-                                        aria-controls="show_shipping_address">
-                                        <input type="checkbox" id="shpto" name="is_shipping" value="1">
-                                        <label class="icon-label" for="shpto">
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12"
-                                                viewBox="0 0 12 12" fill="none">
-                                                <path d="M10 3L4.5 8.5L2 6" stroke="#EE1243" stroke-width="1.6666"
-                                                    stroke-linecap="round" stroke-linejoin="round" />
-                                            </svg>
-                                        </label>
-                                        <label for="shpto">@lang('Ship to a Different Address?')</label>
-                                    </div>
-                                </div>
+{{--                                <div class="col-lg-12  {{ $digital == 1 ? 'd-none' : '' }}" id="ship_deff">--}}
+{{--                                    <div class="gs-checkbox-wrapper" data-bs-toggle="collapse"--}}
+{{--                                        data-bs-target="#show_shipping_address" role="region" aria-expanded="false"--}}
+{{--                                        aria-controls="show_shipping_address">--}}
+{{--                                        <input type="checkbox" id="shpto" name="is_shipping" value="1">--}}
+{{--                                        <label class="icon-label" for="shpto">--}}
+{{--                                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12"--}}
+{{--                                                viewBox="0 0 12 12" fill="none">--}}
+{{--                                                <path d="M10 3L4.5 8.5L2 6" stroke="#EE1243" stroke-width="1.6666"--}}
+{{--                                                    stroke-linecap="round" stroke-linejoin="round" />--}}
+{{--                                            </svg>--}}
+{{--                                        </label>--}}
+{{--                                        <label for="shpto">@lang('Ship to a Different Address?')</label>--}}
+{{--                                    </div>--}}
+{{--                                </div>--}}
                             </div>
                         </div>
 
@@ -325,7 +402,7 @@
                                 <div class="details-wrapper">
                                     <div class="price-details">
                                         <span>@lang('Total MRP')</span>
-                                        <span
+                                         <span
                                             class="right-side cart-total">{{ Session::has('cart') ? App\Models\Product::convertPrice(Session::get('cart')->totalPrice) : '0.00' }}</span>
                                     </div>
 
@@ -577,6 +654,7 @@
         $(document).on('change', '#show_state', function() {
             $('#show_city').niceSelect("destroy");
             let state_id = $(this).val();
+            // alert(state_id)
             let country_id = $('#select_country option:selected').attr('data');
 
             $.get("{{ route('state.wise.city') }}", {

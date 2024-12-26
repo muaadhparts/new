@@ -1630,6 +1630,14 @@ Route::group(['middleware' => 'maintenance'], function () {
     Route::get('/checkout/payment/cancle', 'Front\CheckoutController@paycancle')->name('front.payment.cancle');
     Route::get('/checkout/payment/wallet-check', 'Front\CheckoutController@walletcheck')->name('front.wallet.check');
 
+
+
+    // My Fatoorah
+    Route::post('/checkout/payment/myfatoorah/submit', 'Payment\Checkout\MyFatoorahController@store')->name('front.myfatoorah.submit');
+    Route::get('/checkout/payment/paypal-notify', 'Payment\Checkout\PaypalController@notify')->name('front.paypal.notify');
+
+
+
     // Paypal
     Route::post('/checkout/payment/paypal/submit', 'Payment\Checkout\PaypalController@store')->name('front.paypal.submit');
     Route::get('/checkout/payment/paypal-notify', 'Payment\Checkout\PaypalController@notify')->name('front.paypal.notify');

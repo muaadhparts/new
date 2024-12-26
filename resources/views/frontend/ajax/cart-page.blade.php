@@ -34,7 +34,7 @@
                                         $discount += $tdiscount;
                                     }
 
-                                    dump($product)
+//                                    dump($product)
                                 @endphp
 
 

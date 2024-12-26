@@ -5,6 +5,38 @@
         <link rel="stylesheet" href="{{asset('vendor/myfatoorah/css/style.css')}}"/>
     </head>
 
+    @php
+
+                dd(request()->all() ,$products ,$step1 ,$step2 ,);
+                 $orderId = request('oid') ?: 147;
+                 $order   = $this->getTestOrderData($orderId);
+
+                 //You can replace this variable with customer Id in your system
+                 $customerId = request('customerId');
+
+                 //You can use the user defined field if you want to save card
+                 $userDefinedField = config('myfatoorah.save_card') && $customerId ? "CK-$customerId" : '';
+
+                 //Get the enabled gateways at your MyFatoorah acount to be displayed on checkout page
+                 $mfObj          = new MyFatoorahPaymentEmbedded($this->mfConfig);
+                 $paymentMethods = $mfObj->getCheckoutGateways($order['total'], $order['currency'], config('myfatoorah.register_apple_pay'));
+
+                 if (empty($paymentMethods['all'])) {
+                     throw new Exception('noPaymentGateways');
+                 }
+
+                 //Generate MyFatoorah session for embedded payment
+                 $mfSession = $mfObj->getEmbeddedSession($userDefinedField);
+
+                 //Get Environment url
+                 $isTest = $this->mfConfig['isTest'];
+                 $vcCode = $this->mfConfig['countryCode'];
+
+                 $countries = MyFatoorah::getMFCountries();
+                 $jsDomain  = ($isTest) ? $countries[$vcCode]['testPortal'] : $countries[$vcCode]['portal'];
+
+     @endphp
+
     <body dir="{{App::isLocale('ar') ? 'rtl' : 'ltr'}}">
         <div class="mf-payment-methods-container" id="mf-noPaymentGateways">
             <div class="mf-danger-text">
