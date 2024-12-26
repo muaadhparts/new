@@ -599,8 +599,13 @@ class Product extends Model
 
 //        $price = $price * $curr->value;
         $preprice = $preprice * $curr->value;
-//        dd($preprice ,$price);
-        $Percentage = (($preprice - $price) * 100) / $preprice;
+//        dd($this, $preprice ,$price);
+        $Percentage = '';
+            if($preprice > 0){
+                $Percentage = (($preprice - $price) * 100) / $preprice;
+            }
+
+
 
         if ($Percentage) {
             return $Percentage;

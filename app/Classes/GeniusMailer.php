@@ -39,6 +39,7 @@ class GeniusMailer
 
     public function sendAutoOrderMail(array $mailData, $id)
     {
+//        dd($mailData);
         $temp = EmailTemplate::where('email_type', '=', $mailData['type'])->first();
         $order = Order::findOrFail($id);
         $cart = json_decode($order->cart, true);
