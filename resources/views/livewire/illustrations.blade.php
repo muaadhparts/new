@@ -72,7 +72,32 @@
             }
         </style>
 
-<div class="container m-md-2">
+
+
+
+    <div class="container p-4 mt-3">
+        <div class=" product-nav-wrapper">
+
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item "><a  class="text-black" href="{{route('front.index')}}">Home</a></li>
+                    <li class="breadcrumb-item"><a class="text-black" href="{{route('catlogs.index',$brand->name)}}">{{$brand->name}}</a></li>
+                    <li class="breadcrumb-item  "><a class="text-black" href="{{route('tree.level1',['id'=> $brand->name ,'data'=> $vehicle ])}}">{{$vehicle}}</a></li>
+                    <li class="breadcrumb-item active"><a class="text-black" href="{{route('tree.level2',['id'=> $brand->name ,'data'=> $vehicle ,'key1' => $category->key1 ])}}">{{$category->value1}}</a></li>
+                    <li class="breadcrumb-item active"><a class="text-black" href="{{route('tree.level2',['id'=> $brand->name ,'data'=> $vehicle ,'key1' => $category->key1 ,'key2'=> $category->key2 ])}}">{{$category->value2}}</a></li>
+                    <li class="breadcrumb-item active"><a class="text-primary" href="{{route('illustrations',['id'=> $brand->name ,'data'=> $vehicle ,'key1' => $category->key1 ,'key2'=> $category->key2 ,'code'=>$category->code])}}">{{ preg_replace('/\s*\(.*?\)/', '', $category->label)  }}</a></li>
+                    {{--                <a href="{{route('illustrations',['id'=> $brand->name ,'data'=> $catalog->data ,'key1' => $catalog->key1  , 'key2'=>$catalog->key2,'code'=>$catalog->code])}}">--}}
+
+                </ol>
+            </nav>
+        </div>
+        
+        <livewire:vehicle-search-box  :vehicle="$vehicle"/>
+    </div>
+
+
+    <div class="container m-md-2">
+
     <div class="row bg-white panel-body">
 
         <div class="col-md-6 content mt-auto mb-auto">
@@ -110,7 +135,8 @@
         <div class="col-md-6 content m-0">
 
             <div class="row">
-                <livewire:attributes  :vehicle="$vehicle" />
+{{--                <livewire:attributes  :vehicle="$vehicle" />--}}
+
 
                 <div class="col-sm-12 col-md-12">
                     <table class="glow pop-vin table table-bordered-1 table-hover table-condensed">

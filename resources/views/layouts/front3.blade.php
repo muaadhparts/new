@@ -59,10 +59,8 @@
         <!-- user panel mobile sidebar -->
 
     @endif
-   
 
     <div class="overlay"></div>
-
 
 {{--    <div class="bg-secondary">--}}
         {{$slot}}

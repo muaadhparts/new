@@ -15,15 +15,13 @@
             </ol>
         </nav>
     </div>
+
     <div class="row gy-4 gy-lg-5 mt-4 mb-10">
 
-        <livewire:attributes  :vehicle="$vehicle" />
+
 
         <livewire:vehicle-search-box  :vehicle="$vehicle"/>
 
-{{--        <x-slot:attributes>--}}
-{{--            Server Error--}}
-{{--        </x-slot>--}}
 
 
     @foreach ($categories  as $catalog)

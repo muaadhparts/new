@@ -1,28 +1,43 @@
-<div class="  xmb-10 text-center">
+<div class="container mx-auto  pl-5">
+    <div class="row">
+        <div class="col-12  mx-auto">
+            <div class="d-flex flex-wrap align-items-start">
+                <!-- Attributes Section -->
+                <div class="flex-shrink-0 me-3">
+                    <livewire:attributes :vehicle="$vehicle" />
+                </div>
 
+                <!-- Search Input Section -->
+                <div class="flex-grow-1">
+                    <div class="autoComplete_wrapper">
+                        <input
+                                type="text"
+                                id="autoComplete"
+                                class="form-control"
+                                placeholder="VIN / Part Number / Part Code"
+                                wire:model.debounce.300ms="query"
+                        >
 
-    <div class="autoComplete_wrapper">
-        <input  style=""
-                type="text"
-                id="autoComplete"
-                class="form-control  "
-                placeholder="VIN / Part Number / Part Code"
-                wire:model.debounce.300ms="query"
-        >
-
-        @if (!empty($results))
-            {{--                @dd($results);--}}
-            <ul  id="autoComplete_list_1"   role="listbox" >
-                @foreach ($results as $result)
-                    <li xclass="list-group-item d-flex justify-content-between" xstyle="display: flex; justify-content: space-between;">
-                        <span wire:click="selectItem('{{ $result->partnumber }}')" xstyle="text-overflow: ellipsis; white-space: nowrap; overflow: hidden;" >
-                            {{ $result->partnumber  }}
-                        </span>
-                        <small class="text-black"  style="display: flex; align-items: center; font-size: 13px; font-weight: 100; text-transform: uppercase;">{{ $result->label_en }} - {{ $result->label_ar }}</small>
-                    </li>
-                @endforeach
-            </ul>
-        @endif
-
+                        @if (!empty($results))
+                            <ul id="autoComplete_list_1" role="listbox" class="mt-2">
+                                @foreach ($results as $result)
+                                    <li class="list-group-item d-flex justify-content-between">
+                                        <span
+                                                wire:click="selectItem('{{ $result->partnumber }}')"
+                                                style="text-overflow: ellipsis; white-space: nowrap; overflow: hidden;"
+                                        >
+                                            {{ $result->partnumber }}
+                                        </span>
+                                        <small class="text-black" style="font-size: 13px; font-weight: 100; text-transform: uppercase;">
+                                            {{ $result->label_en }} - {{ $result->label_ar }}
+                                        </small>
+                                    </li>
+                                @endforeach
+                            </ul>
+                        @endif
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>

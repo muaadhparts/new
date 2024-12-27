@@ -10,12 +10,19 @@ class CatlogTreeLevel2 extends Component
 {
 
     public $brand;
+    public $category;
     public $categories;
     public function mount($id,$data,$key1)
     {
-//         dd($id ,$data);
+//         dd($id ,$data ,$key1);
         $this->vehicle = $data;
         $this->brand = Partner::where('name', $id)->firstorFail();
+       $this->category  = NCategory::where('data', $data)
+            ->select('id','data','code','label','thumbnailimage')
+            ->whereNull('key1')
+             ->where('code' ,$key1)
+            ->first();
+//       dd($this->category);
         $this->categories = NCategory::where('data', $data)
             ->select('id','data','code','label','thumbnailimage','key1','key2')
             ->where('key1' ,$key1)

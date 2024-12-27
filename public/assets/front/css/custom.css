@@ -121,9 +121,12 @@
   position: relative;
 }
 
+
+
+
 .autoComplete_wrapper > input {
   height: 3rem;
-  width: 1000px !important;
+  width: 400px !important;
   margin: 0;
   padding: 0 2rem 0 3.2rem;
   box-sizing: border-box;
@@ -144,6 +147,14 @@
   transition: all 0.4s ease;
   -webkit-transition: all -webkit-transform 0.4s ease;
 }
+
+
+@media (min-width: 1200px) {
+  .autoComplete_wrapper > input {
+    width: 1000px !important;
+  }
+}
+
 
 .autoComplete_wrapper > input::placeholder {
   color: rgba(255, 122, 122, 0.5);

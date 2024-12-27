@@ -1,11 +1,11 @@
-<div class="p-5">
+<div  >
 
-    {{ $this->attributes}}
+{{--    {{ $this->attributes}}--}}
 
 {{--    @dd($this)--}}
 
-    <button class="btn btn-primary" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasForm" aria-controls="offcanvasForm">
-        Toggle Form
+    <button class="btn btn-primary " type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasForm" aria-controls="offcanvasForm">
+        Toggle
     </button>
 
     <!-- Offcanvas Component -->
@@ -14,6 +14,9 @@
             <h5 id="offcanvasFormLabel" class="mb-0">Form Details</h5>
             <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
         </div>
+
+
+
         <div class="offcanvas-body">
             <!-- Responsive Form Container -->
 

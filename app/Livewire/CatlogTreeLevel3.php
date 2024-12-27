@@ -11,11 +11,20 @@ class CatlogTreeLevel3 extends Component
 
     public $brand;
     public $categories;
+    public $category;
     public function mount($id,$data,$key1,$key2)
     {
-//         dd($id ,$data);
+//         dd($id ,$data ,$key1,$key2);
         $this->vehicle = $data;
         $this->brand = Partner::where('name', $id)->firstorFail();
+        $this->category  = NCategory::where('data', $data)
+//            ->select('id','data','code','label','thumbnailimage')
+            ->where('key1' ,$key1)
+            ->where('code' ,$key2)
+            ->first();
+//         dd($id ,$data ,$key1,$key2 ,$this->category );
+
+
         $this->categories = NCategory::where('data', $data)
             ->select('id','data','code','label','thumbnailimage','key1','key2')
             ->where('key1' ,$key1)
@@ -24,7 +33,7 @@ class CatlogTreeLevel3 extends Component
             ->get();
 
 
-//        dd($this->categories);
+//        dd($this->categories , $this->category);
 
     }
 

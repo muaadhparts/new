@@ -18,18 +18,24 @@ class Illustrations extends Component
     public $partCallouts;
     public $illustration;
     public $products;
+
+    public $brand;
+    public $categories;
+
     public function mount($id,$data,$key1,$key2,$code)
     {
 //         dd($id,$data,$key1,$key2,$code );
 
         $this->vehicle = $data;
+        $this->brand = Partner::where('name', $id)->firstorFail();
         $this->category = NCategory::where('data', $data)
-            ->select('id','data','code','label','images','key1','key2')
+//            ->select('id','data','code','label','images','key1','key2')
              ->where('key1' ,$key1)
                 ->where('key2' ,$key2)
                 ->where('code' ,$code)
                ->firstOrfail();
 
+//        dd($this->category);
         $this->illustration  =   \App\Models\Illustrations::where('data',$data)
             ->where('code',$code)
             ->first();
