@@ -17,6 +17,7 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\Validator;
 
 class FrontendController extends FrontBaseController
 {
@@ -646,6 +647,16 @@ class FrontendController extends FrontBaseController
 
     public function subscribe(Request $request)
     {
+
+
+        $validator = Validator::make($request->all(), [
+            'email' => 'required|email|unique:subscribers,email',
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()->back()->withErrors($validator)->withInput();
+        }
+
         $subs = Subscriber::where('email', '=', $request->email)->first();
         if (isset($subs)) {
             return back()->with('unsuccess', 'You have already subscribed.');
