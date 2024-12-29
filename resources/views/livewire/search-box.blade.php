@@ -10,17 +10,39 @@
                     wire:model.debounce.300ms="query"
             >
 
-            @if (!empty($results))
-{{--                @dd($results);--}}
+            @if (!empty($results) )
+
+{{--                @dd($results ,$is_vin);--}}
             <ul  id="autoComplete_list_1"   role="listbox" >
-                @foreach ($results as $result)
+
+                @if($is_vin)
+{{--                    @dd($results['vin'])--}}
+
                     <li xclass="list-group-item d-flex justify-content-between" xstyle="display: flex; justify-content: space-between;">
+
+                        <span  wire:click="selectedVin('{{ json_encode($results) }}')">
+                            {{ $results['vin'] }}
+
+                            {{ $results['label_en'] }}
+{{--                            $results['vin']--}}
+                        </span>
+                        <small class="text-black"  style="display: flex; align-items: center; font-size: 13px; font-weight: 100; text-transform: uppercase;">  {{ $results['label_en'] }}  </small>
+                    </li>
+
+                @else
+
+                    @foreach ($results as $result)
+
+                        <li xclass="list-group-item d-flex justify-content-between" xstyle="display: flex; justify-content: space-between;">
+
                         <span wire:click="selectItem('{{ $result->sku }}')" xstyle="text-overflow: ellipsis; white-space: nowrap; overflow: hidden;" >
                             {{ $result->sku  }}
                         </span>
-                        <small class="text-black"  style="display: flex; align-items: center; font-size: 13px; font-weight: 100; text-transform: uppercase;">{{ $result->label_en }} - {{ $result->label_ar }}</small>
-                    </li>
-                @endforeach
+                            <small class="text-black"  style="display: flex; align-items: center; font-size: 13px; font-weight: 100; text-transform: uppercase;">{{ $result->label_en }} - {{ $result->label_ar }}</small>
+                        </li>
+                    @endforeach
+                @endif
+
             </ul>
             @endif
 

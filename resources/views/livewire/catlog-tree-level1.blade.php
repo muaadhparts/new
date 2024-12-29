@@ -8,8 +8,18 @@
 
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
+{{--                    @dd(request('vin'))--}}
+
                 <li class="breadcrumb-item "><a  class="text-black" href="{{route('front.index')}}">Home</a></li>
                 <li class="breadcrumb-item"><a class="text-black" href="{{route('catlogs.index',$brand->name)}}">{{$brand->name}}</a></li>
+                @if(request('vin'))
+                    <li class="breadcrumb-item"><a class="text-black" href="{{route('tree.level1',
+                                ['id'=> $brand->name ,
+                                 'data'=> $vehicle ,
+                                'vin'=>  request('vin')])}}">
+                            {{request('vin')}}</a>
+                    </li>
+                @endif
                 <li class="breadcrumb-item active"><a class="text-primary" href="{{route('tree.level1',['id'=> $brand->name ,'data'=> $vehicle ])}}">{{$vehicle}}</a></li>
 {{--                <li class="breadcrumb-item active" aria-current="page">Data</li>--}}
             </ol>

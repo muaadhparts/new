@@ -1816,3 +1816,9 @@ Route::group(['prefix' => 'tryoto'], function () {
 
 Route::post('the/genius/ocean/2441139', 'Front\FrontendController@subscription');
 Route::get('finalize', 'Front\FrontendController@finalize');
+
+Route::get('tt', function () {
+    \App\Jobs\VerifyTokenJob::dispatchSync();
+
+    return Token::latest()->first()->id;
+});

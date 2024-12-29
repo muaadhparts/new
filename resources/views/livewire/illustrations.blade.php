@@ -91,7 +91,7 @@
                 </ol>
             </nav>
         </div>
-        
+
         <livewire:vehicle-search-box  :vehicle="$vehicle"/>
     </div>
 
