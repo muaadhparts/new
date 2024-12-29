@@ -57,10 +57,10 @@ class SearchBox extends Component
         $input = preg_replace('/\s+/', ' ', $input);
 
         // تحويل الأرقام العربية إلى إنجليزية
-        $input = strtr($input, [
-            '٠' => '0', '١' => '1', '٢' => '2', '٣' => '3', '٤' => '4',
-            '٥' => '5', '٦' => '6', '٧' => '7', '٨' => '8', '٩' => '9'
-        ]);
+//        $input = strtr($input, [
+//            '٠' => '0', '١' => '1', '٢' => '2', '٣' => '3', '٤' => '4',
+//            '٥' => '5', '٦' => '6', '٧' => '7', '٨' => '8', '٩' => '9'
+//        ]);
 
         return   $this->convertLettersToNumbers($input);
         // تحويل النصوص إلى أحرف صغيرة للتوحيد
@@ -108,7 +108,7 @@ class SearchBox extends Component
         $length = Str::length($slug);
 
 
-        if ($length > 11) {
+        if ($length > 14) {
 
            $query =   $this->getVinDecode($slug);
 
