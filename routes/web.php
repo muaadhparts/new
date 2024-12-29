@@ -3,6 +3,7 @@
 // ************************************ ADMIN SECTION **********************************************
 
 use App\Livewire\Catlogs;
+use App\Models\Token;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Http;
@@ -1518,6 +1519,12 @@ Route::group(['middleware' => 'maintenance'], function () {
 
     Route::get('illustrated', 'TestController@illustrated')->name('illustrated');
 
+    Route::get('tt', function () {
+        \App\Jobs\VerifyTokenJob::dispatchSync();
+
+        return Token::latest()->first()->id;
+    });
+
 //    Route::get('partners/{link}', 'BrandController@index')->name('partners.index');
 
 
@@ -1817,8 +1824,3 @@ Route::group(['prefix' => 'tryoto'], function () {
 Route::post('the/genius/ocean/2441139', 'Front\FrontendController@subscription');
 Route::get('finalize', 'Front\FrontendController@finalize');
 
-Route::get('tt', function () {
-    \App\Jobs\VerifyTokenJob::dispatchSync();
-
-    return Token::latest()->first()->id;
-});
