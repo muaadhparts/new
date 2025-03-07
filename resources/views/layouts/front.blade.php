@@ -19,9 +19,9 @@
     <link rel="stylesheet" href="{{ asset('assets/front/css/toastr.min.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/front/css/datatables.min.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/front/css/style.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/front/css/magnific-popup.css') }}">
 {{--    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tarekraafat/autocomplete.js@10.2.9/dist/css/autoComplete.min.css">--}}
-
-    <link rel="stylesheet" href="{{ asset('assets/front/css/custom.css') }}">
+     <link rel="stylesheet" href="{{ asset('assets/front/css/custom.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/front/css/nice-select.css') }}">
 {{--    @if(app()->getLocale() ==='ar')--}}
 
@@ -77,6 +77,11 @@
     <!-- footer section -->
     @livewireScripts
     <!--Esential Js Files-->
+    zepto.min.js
+
+    <script src="{{ asset('assets/front/js/zepto.min.js') }}"  ></script>
+    <script src="{{ asset('assets/front/js/jquery.magnific-popup.js') }}"  ></script>
+
     <script src="{{ asset('assets/front/js/jquery.min.js') }}"  ></script>
     <script src="{{ asset('assets/front/js/slick.js') }}"  ></script>
     <script src="{{ asset('assets/front/js/jquery-ui.js') }}"  ></script>
@@ -84,7 +89,9 @@
     <script src="{{ asset('assets/front/js/wow.js') }}"  ></script>
     <script src="{{ asset('assets/front/js/bootstrap.bundle.min.js') }}"  ></script>
     <script src="{{ asset('assets/front/js/toastr.min.js') }}"  ></script>
+
     <script src="{{ asset('assets/front/js/script.js') }}"  ></script>
+
     <script src="{{ asset('assets/front/js/myscript.js') }}"  ></script>
 
     <script src="https://cdn.jsdelivr.net/npm/@tarekraafat/autocomplete.js@10.2.9/dist/autoComplete.min.js"></script>
@@ -111,7 +118,7 @@
             'minimum_qty_error': '{{ __('Minimum Quantity is:') }}',
             'affiliate_link_copy': '{{ __('Affiliate Link Copied Successfully') }}'
         };
-    
+
       </script>
 
 

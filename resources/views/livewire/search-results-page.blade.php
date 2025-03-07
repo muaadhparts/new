@@ -1,22 +1,6 @@
 <div>
 
 
-{{--    <section class="gs-breadcrumb-section bg-class"--}}
-{{--             data-background="{{ $gs->breadcrumb_banner ? asset('assets/images/' . $gs->breadcrumb_banner) : asset('assets/images/noimage.png') }}">--}}
-{{--        <div class="container">--}}
-{{--            <div class="row justify-content-center content-wrapper">--}}
-{{--                <div class="col-12">--}}
-{{--                    <h2 class="breadcrumb-title">@lang('Product')</h2>--}}
-{{--                    <ul class="bread-menu">--}}
-{{--                        <li><a href="{{ route('front.index') }}">@lang('Home')</a></li>--}}
-{{--                        <li><a href="javascript:;">@lang('Product')  {{$sku}}</a></li>--}}
-{{--                    </ul>--}}
-{{--                </div>--}}
-{{--            </div>--}}
-{{--        </div>--}}
-{{--    </section>--}}
-
-
     <div class="gs-blog-wrapper">
 
         <div class="container">

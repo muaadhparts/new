@@ -1,6 +1,8 @@
 (function ($) {
   "use strict";
 
+
+
   //   wishlist
   $(document).on("click", ".wishlist", function (e) {
     e.preventDefault();
@@ -321,6 +323,11 @@
       },
     });
   });
+
+
+
+
+
 
   $(document).on("click", "#addtobycard", function () {
     let pid = "";

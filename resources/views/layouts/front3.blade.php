@@ -9,6 +9,7 @@
     <!--Essential css files-->
     <link rel="stylesheet" href="{{ asset('assets/front/css/bootstrap.min.css') }}">
 {{--    <link rel="stylesheet" href="{{ asset('assets/front/css/bootstrap.rtl.min.css') }}">--}}
+    <link rel="stylesheet" href="{{ asset('assets/front/css/magnific-popup.css') }}">
 
     <link rel="stylesheet" href="{{ asset('assets/front/css/all.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/front/css/slick.css') }}">
@@ -17,6 +18,7 @@
     <link rel="stylesheet" href="{{ asset('assets/front/css/animate.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/front/css/toastr.min.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/front/css/datatables.min.css') }}">
+
     <link rel="stylesheet" href="{{ asset('assets/front/css/style.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/front/css/custom.css') }}">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tarekraafat/autocomplete.js@10.2.9/dist/css/autoComplete.min.css">
@@ -77,15 +79,23 @@
         <script src="{{ asset('assets/front') }}/js/slick.js"></script>
     <script src="{{ asset('assets/front') }}/js/jquery-ui.js"></script>
     <script src="{{ asset('assets/front') }}/js/nice-select.js"></script>
- 
+
     <script src="{{ asset('assets/front') }}/js/wow.js"></script>
     <script src="{{ asset('assets/front') }}/js/bootstrap.bundle.min.js"></script>
     <script src="{{ asset('assets/front/js/toastr.min.js') }}"></script>
-    
+
     <script src="{{ asset('assets/front') }}/js/script.js"></script>
     <script src="{{ asset('assets/front/js/myscript.js') }}"></script>
+    <script src="{{ asset('assets/front/js/jquery.magnific-popup.js') }}"  ></script>
 
 
+    <script>
+        $(document).ready(function() {
+            alert('jjj');
+            $('.test-popup-link').magnificPopup({type:'image'});
+        });
+
+    </script>
     <script>
         "use strict";
         var mainurl = "{{ url('/') }}";
@@ -108,7 +118,7 @@
             'minimum_qty_error': '{{ __('Minimum Quantity is:') }}',
             'affiliate_link_copy': '{{ __('Affiliate Link Copied Successfully') }}'
         };
-    
+
       </script>
 
 

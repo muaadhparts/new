@@ -24,6 +24,12 @@ class Product extends Model
         return $this->belongsTo('App\Models\Category')->withDefault();
     }
 
+    public function brand()
+    {
+        return $this->belongsTo('App\Models\Partner')->withDefault();
+    }
+
+
     public function subcategory()
     {
         return $this->belongsTo('App\Models\Subcategory')->withDefault();
