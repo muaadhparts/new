@@ -91,7 +91,7 @@
 
     <script>
         $(document).ready(function() {
-            alert('jjj');
+            // alert('jjj');
             $('.test-popup-link').magnificPopup({type:'image'});
         });
 

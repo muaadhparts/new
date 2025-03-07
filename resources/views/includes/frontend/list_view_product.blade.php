@@ -32,7 +32,7 @@
                 </a>
             @endif
 
- 
+
 
                 <a class="test-popup-link" href="{{ Storage::exists($product->thumbnail)  ? \Illuminate\Support\Facades\Storage::url($product->photo)    : asset('assets/images/noimage.png') }}">
 
