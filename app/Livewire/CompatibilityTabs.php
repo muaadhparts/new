@@ -41,7 +41,7 @@ class CompatibilityTabs extends Component
                 SELECT DISTINCT partnumber, callout, label_en, applicability, code 
               FROM ".Str::lower($this->activeTab)."
                 WHERE partnumber = :partnumber
-            ", ['partnumber' => '1520831U0A']);
+            ", ['partnumber' => $this->sku]);
 
 
 

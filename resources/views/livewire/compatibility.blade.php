@@ -17,7 +17,7 @@
                 </div>
                 <div class="modal-body">
 
-                    <livewire:compatibility-tabs :catalogs="$catalogs"/>
+                    <livewire:compatibility-tabs :catalogs="$catalogs" :sku="$sku"/>
 
 
 
