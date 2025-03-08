@@ -84,10 +84,11 @@
             </p>
 
             <p>
-                <span>@lang('Compatibility:') </span>
-                <a href="#">
-                <span class="text-primary "> <i class="fa fa-car fa-2xl"></i> </span>
-                </a>
+
+
+                <livewire:compatibility :sku="$product->sku" wire:key="$product->sku" />
+
+
             </p>
 
 
@@ -96,11 +97,7 @@
         </div>
         <div class="content-wrapper align-content-center align-items-center" >
 
-
-
                 <img src="{{asset('assets/images/partner/' .$product->brand?->photo) }}" width="100"  height="100">
-
-
 
 
             @if( $product->price > 0)
