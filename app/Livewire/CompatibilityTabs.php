@@ -32,7 +32,7 @@ class CompatibilityTabs extends Component
 
     public function render()
     {
-        $this->activeTab = 'HY10GL';
+//        $this->activeTab = 'HY10GL';
 //        dump($this->activeTab);
 
 //
