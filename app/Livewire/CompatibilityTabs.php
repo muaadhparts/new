@@ -17,7 +17,7 @@ class CompatibilityTabs extends Component
     {
         $this->catalogs = $catalogs;
         $this->activeTab = $catalogs[0]->data ?? null; // Default to first tab
-        $this->products =  $this->getProducts; // Default to first tab
+        $this->products =  $this->getProducts(); // Default to first tab
     }
 
     public function setActiveTab($tab)
