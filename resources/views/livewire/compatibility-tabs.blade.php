@@ -20,7 +20,7 @@
 
                     <h5>{{$catalog->name}}</h5>
                     <p>{{$catalog->data}}</p>
-                    @dump($results)
+{{--                    @dump($results)--}}
 {{--                    @if(filled($results))--}}
                         <div class="container">
                             <h4>Parts List</h4>
