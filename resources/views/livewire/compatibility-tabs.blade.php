@@ -20,11 +20,11 @@
 
                     <h5>{{$catalog->name}}</h5>
                     <p>{{$catalog->data}}</p>
-                    @dump($products)
-                    @if(filled($products))
-                    @foreach($products as $index => $product)
+                    @dump($results)
+                    @if(filled($results))
+                    @foreach($results as $index => $result)
 
-                            {{$product->code}}
+                            {{$result->code}}
                     @endforeach
                     @endif
                 </div>

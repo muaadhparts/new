@@ -39,7 +39,9 @@ class CompatibilityTabs extends Component
     public function render()
     {
 
-         dump($this->getProducts() ,$this->sku);
-        return view('livewire.compatibility-tabs',['products' => $this->getProducts()]);
+        $results =$this->getProducts();
+
+//            dump($this->getProducts() ,$this->sku);
+        return view('livewire.compatibility-tabs',['results' =>$this->getProducts()]);
     }
 }
