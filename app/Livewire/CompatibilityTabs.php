@@ -17,6 +17,7 @@ class CompatibilityTabs extends Component
     {
         $this->catalogs = $catalogs;
         $this->activeTab = $catalogs[0]->data ?? null; // Default to first tab
+        $this->products =  $this->getProducts; // Default to first tab
     }
 
     public function setActiveTab($tab)
@@ -24,32 +25,21 @@ class CompatibilityTabs extends Component
         $this->activeTab = $tab;
     }
 
-//    public function render()
-//    {
-//        return view('livewire.catalog-tabs');
-//    }
-
-
-    public function render()
+    public function getProducts()
     {
-//        $this->activeTab = 'HY10GL';
-//        dump($this->activeTab);
-
-//
-
-        $results = DB::select("
+        return   DB::select("
                 SELECT DISTINCT partnumber, callout, label_en, applicability, code 
               FROM ".Str::lower($this->activeTab)."
                 WHERE partnumber = :partnumber
             ", ['partnumber' => $this->sku]);
 
+    }
 
 
-//        $results = DB::table(Str::lower($this->activeTab))
-//            ->selectRaw('DISTINCT id, partnumber, callout, label_en, label_ar, code') // Ensure DISTINCT selection
-//            ->where('partnumber', '=', '1520831U0A') // Exact match for partnumber
-//            ->get();
-//         dd($results);
-        return view('livewire.compatibility-tabs',['products' => $results]);
+    public function render()
+    {
+
+         dump($this->getProducts() ,$this->sku);
+        return view('livewire.compatibility-tabs',['products' => $this->getProducts()]);
     }
 }
