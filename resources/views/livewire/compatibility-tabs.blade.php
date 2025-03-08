@@ -20,7 +20,7 @@
 
                     <h5>{{$catalog->name}}</h5>
                     <p>{{$catalog->data}}</p>
-{{--                    @dump($products)--}}
+                    @dump($products)
                     @if(filled($products))
                     @foreach($products as $index => $product)
 
