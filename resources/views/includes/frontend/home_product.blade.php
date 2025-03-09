@@ -42,10 +42,9 @@
 
 
 
-{{--                @dump($product->thumbnail)--}}
-            <img class="product-img"
+             <img class="product-img"
 {{--                 src="{{ $product->thumbnail ?  asset('assets/images/thumbnails/' . $product->thumbnail) : asset('assets/images/noimage.png') }}"--}}
-                 src="{{ Storage::exists($product->photo) ? \Illuminate\Support\Facades\Storage::url($product->photo) : asset('assets/images/noimage.png') }}"
+                 src="{{  \Illuminate\Support\Facades\Storage::url($product->photo) ??  asset('assets/images/noimage.png') }}"
                 alt="product img">
 
 
@@ -116,6 +115,11 @@
             <a href="{{ route('front.product', $product->slug) }}">
                 <h6 class="product-title">{{ $product->showName() }}</h6>
             </a>
+
+            <a href="{{ route('front.product', $product->slug) }}">
+                <h6 class="product-title">{{ $product->label_ar }}</h6>
+            </a>
+
 
 
             <p>

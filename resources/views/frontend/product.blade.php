@@ -2,19 +2,23 @@
 
 @section('content')
     <!-- breadcrumb start  -->
-    <section class="gs-breadcrumb-section bg-class"
-        data-background="{{ $gs->breadcrumb_banner ? asset('assets/images/' . $gs->breadcrumb_banner) : asset('assets/images/noimage.png') }}">
-        <div class="container">
-            <div class="row justify-content-center content-wrapper">
-                <div class="col-12">
-                    <h2 class="breadcrumb-title">@lang('Product Details')</h2>
-                    <ul class="bread-menu">
-                        <li><a href="{{ route('front.index') }}">@lang('Home')</a></li>
-                        <li><a href="#">{{ $productt->name }}</a></li>
-                    </ul>
-                </div>
-            </div>
-        </div>
+{{--    <section class="gs-breadcrumb-section bg-class"--}}
+{{--        data-background="{{ $gs->breadcrumb_banner ? asset('assets/images/' . $gs->breadcrumb_banner) : asset('assets/images/noimage.png') }}">--}}
+{{--        <div class="container">--}}
+{{--            <div class="row justify-content-center content-wrapper">--}}
+{{--                <div class="col-12">--}}
+{{--                    <h2 class="breadcrumb-title">@lang('Product Details')</h2>--}}
+{{--                    <ul class="bread-menu">--}}
+{{--                        <li><a href="{{ route('front.index') }}">@lang('Home')</a></li>--}}
+{{--                        <li><a href="#">{{ $productt->name }}</a></li>--}}
+{{--                    </ul>--}}
+{{--                </div>--}}
+{{--            </div>--}}
+{{--        </div>--}}
+{{--    </section>--}}
+    <section class="col-lg py-4">
+        <livewire:search-box/>
+
     </section>
     <!-- breadcrumb end -->
 
@@ -81,6 +85,8 @@
                         <!-- product-info-wrapper  -->
                         <div class="product-info-wrapper  {{ $productt->type != 'Physical' ? 'mb-3' : '' }}">
                             <h3>{{ $productt->name }}</h3>
+                            <h3>{{ $productt->label_ar }}</h3>
+
                             <div class="price-wrapper">
                                 <h5 id="sizeprice">{{ $productt->showPrice() }}</h5>
                                 <h5><del>{{ $productt->showPreviousPrice() }}</del></h5>
@@ -138,7 +144,9 @@
                                     @if ($productt->sku != null)
                                         <li>
                                             <span><b>@lang('Product SKU :') </b></span>
-                                            <span>{{ $productt->sku }} </span>
+                                            <a href="{{ route('search.result', $productt->sku) }}" target="_blank">
+                                            <span class="text-primary">{{ $productt->sku }} </span>
+                                            </a>
                                         </li>
                                     @endif
 
@@ -312,8 +320,15 @@
                         <input type="hidden" id="curr_sign" value="{{ $curr->sign }}">
 
 
+
                         <!-- add to cart buy btn wrapper -->
+                        <div class="row row-cols-2 py-3">
+                         <livewire:compatibility :sku="$productt->sku" wire:key="$productt->sku" />
+                            
+                        </div>
                         <div class="row row-cols-2">
+
+
                             <div class="col">
                                 <button type="button" class="template-btn dark-btn w-100" id="addtodetailscart">
                                     @lang('add to cart')

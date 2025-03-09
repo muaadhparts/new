@@ -27,6 +27,15 @@ class CompatibilityTabs extends Component
 
     public function getProducts()
     {
+        if(app()->isLocal()){
+            return   DB::select("
+                SELECT DISTINCT partnumber, callout, label_en, applicability, code 
+              FROM ".Str::lower('y62gl')."
+                WHERE partnumber = :partnumber
+            ", ['partnumber' => $this->sku]);
+
+        }
+
         return   DB::select("
                 SELECT DISTINCT partnumber, callout, label_en, applicability, code 
               FROM ".Str::lower($this->activeTab)."

@@ -53,12 +53,7 @@
                         </div>
 
 
-{{--                    @foreach($results as $index => $result)--}}
-
-{{--                            {{$result->code}}--}}
-{{--                    @endforeach--}}
-{{--                    @endif--}}
-                </div>
+                 </div>
             @endif
         @endforeach
     </div>
