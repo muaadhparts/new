@@ -324,7 +324,9 @@
                         <!-- add to cart buy btn wrapper -->
                         <div class="row row-cols-2 py-3">
                          <livewire:compatibility :sku="$productt->sku" wire:key="$productt->sku" />
-                            
+
+                             <livewire:alternative  :sku="$productt->sku" />
+
                         </div>
                         <div class="row row-cols-2">
 

@@ -34,10 +34,10 @@
 
 
 
-                <a class="test-popup-link" href="{{ Storage::exists($product->thumbnail)  ? \Illuminate\Support\Facades\Storage::url($product->photo)    : asset('assets/images/noimage.png') }}">
+                <a class="test-popup-link" href="{{  \Illuminate\Support\Facades\Storage::url($product->photo) ?? asset('assets/images/noimage.png') }}">
 
             <img class="product-img"
-                 src="{{ Storage::exists($product->thumbnail)  ? \Illuminate\Support\Facades\Storage::url($product->photo)    : asset('assets/images/noimage.png') }}"
+                 src="{{   \Illuminate\Support\Facades\Storage::url($product->photo)   ??  asset('assets/images/noimage.png') }}"
 
 {{--                src="{{ $product->thumbnail ? asset('assets/images/thumbnails/' . $product->thumbnail) : asset('assets/images/noimage.png') }}"--}}
                 alt="product img">
