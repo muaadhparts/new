@@ -21,6 +21,7 @@
                     <li xclass="list-group-item d-flex justify-content-between" xstyle="display: flex; justify-content: space-between;">
 
                         <span  wire:click="selectedVin('{{ json_encode($results) }}')">
+
                             {{ $results['vin'] }}
 
                             {{ $results['label_en'] }}

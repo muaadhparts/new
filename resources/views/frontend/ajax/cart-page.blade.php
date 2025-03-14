@@ -164,10 +164,22 @@
                             <p class="cart-summary-subtitle">@lang('Discount')</p>
                             <p class="cart-summary-price">{{ App\Models\Product::convertPrice($discount) }}</p>
                         </div>
+
+                        <div class="cart-summary-item d-flex justify-content-between">
+                            <p class="cart-summary-subtitle">@lang('Tax')</p>
+                                @php
+
+                                $total = App\Models\Product::convertPrice($mainTotal);
+                                $tax = $mainTotal * 0.15 ;
+//                                dump($total ,$mainTotal * 0.15)
+                             @endphp
+                            <p class="cart-summary-price">{{ App\Models\Product::convertPrice($tax)  }}</p>
+                        </div>
+
                         <div class="cart-summary-item d-flex justify-content-between">
                             <p class="cart-summary-subtitle">@lang('Total')</p>
                             <p class="cart-summary-price total-cart-price">
-                                {{ Session::has('cart') ? App\Models\Product::convertPrice($mainTotal) : '0.00' }}
+                                {{ Session::has('cart') ? App\Models\Product::convertPrice($mainTotal+$tax) : '0.00' }}
                             </p>
                         </div>
                         <div class="cart-summary-btn">

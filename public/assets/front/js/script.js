@@ -74,7 +74,7 @@ $(document).ready(function () {
 
 
   //******  5. NICE SELECT ******//
-  $(".nice-select").niceSelect();
+  // $(".nice-select").niceSelect();
 
   //****** 6. WOW JS ******//
   new WOW().init();
