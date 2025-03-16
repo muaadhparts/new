@@ -46,8 +46,14 @@
                                                 alt="">
                                             <div class="cart-product-info">
 
+                                                <a class="art-title d-inline-block xproduct-title">
+                                                    <a href="{{ route('front.product', $product['item']['slug']) }}"> {{ $product['item']['sku'] }}</a>
+                                                </a>
+
+
+{{--                                                    @dd($product['item']['sku'] )--}}
                                                 <a class="cart-title d-inline-block"
-                                                    href="{{ route('front.product', $product['item']['slug']) }}">{{ mb_strlen($product['item']['name'], 'UTF-8') > 35
+                                                   xhref="{{ route('front.product', $product['item']['slug']) }}">{{ mb_strlen($product['item']['name'], 'UTF-8') > 35
                                                         ? mb_substr($product['item']['name'], 0, 35, 'UTF-8') . '...'
                                                         : $product['item']['name'] }}</a>
 

@@ -44,6 +44,8 @@
                     </div>
                 </div>
             </div>
+{{--            @dd($products)--}}
+
 
             <!-- address-->
             <form class="address-wrapper" action="{{ route('front.checkout.step2.submit') }}" method="POST">

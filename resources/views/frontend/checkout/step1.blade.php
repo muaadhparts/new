@@ -233,9 +233,14 @@
 
 
 
+
+
+
+
+                                @if(!Auth::check() )
                                 <div class="col-lg-6">
                                     <div class="input-wrapper">
-                                        <label class="label-cls">@lang('Select Country')2</label>
+                                        <label class="label-cls">@lang('Select Country')</label>
                                         <select xclass="1nice-select" id="select_country" name="customer_country"  required>
                                             @include('includes.countries')
                                         </select>
@@ -269,35 +274,33 @@
                                         @enderror
                                     </div>
                                 </div>
+                                @else
+
+
+{{--                                    <div class="col-lg-6">--}}
+{{--                                        <div class="input-wrapper">--}}
+{{--                                            <label class="label-cls">@lang('Select Country')</label>--}}
+{{--                                            <select xclass="1nice-select" id="select_country" name="customer_country"  required>--}}
+{{--                                                @include('includes.countries')--}}
+{{--                                            </select>--}}
+{{--                                            @error('customer_country')--}}
+{{--                                            <span class="text-danger">{{ $message }}</span>--}}
+{{--                                            @enderror--}}
+{{--                                        </div>--}}
+{{--                                    </div>--}}
+
+{{--                                    <select class="nice-select" id="customer_country" name="customer_country">--}}
+{{--                                                <option value="{{Auth::user()->country}}"   selected> {{Auth::user()->country}}</option>--}}
+{{--                                    </select>--}}
+
+                                    <input type="hidden" xid="select_country"  name="customer_country"  value="{{Auth::user()->country}}">
+                                    <input type="hidden" id="show_state"  name="customer_state"  value="{{Auth::user()->state_id}}">
+                                    <input type="hidden" id="show_city" name="customer_city"  value="{{Auth::user()->city_id}}">
 
 
 
-                                {{--                                <div class="col-lg-6">--}}
-                                {{--                                    <div class="input-wrapper">--}}
-                                {{--                                        <label class="label-cls">@lang('Select Country')</label>--}}
-                                {{--                                        <select class="nice-select" id="select_country" name="customer_country" required>--}}
-                                {{--                                            @include('includes.countries')--}}
-                                {{--                                        </select>--}}
-                                {{--                                    </div>--}}
-                                {{--                                </div>--}}
+                                @endif
 
-                                {{--                                <div class="col-lg-6 d-none select_state">--}}
-                                {{--                                    <div class="input-wrapper">--}}
-                                {{--                                        <label class="label-cls">@lang('Select State')</label>--}}
-                                {{--                                        <select class="nice-select" id="show_state" name="customer_state" required>--}}
-
-                                {{--                                        </select>--}}
-                                {{--                                    </div>--}}
-                                {{--                                </div>--}}
-
-                                {{--                                <div class="col-lg-6 d-none">--}}
-                                {{--                                    <div class="input-wrapper">--}}
-                                {{--                                        <label class="label-cls">@lang('Select City')</label>--}}
-                                {{--                                        <select class="nice-select " id="show_city" name="customer_city" required>--}}
-
-                                {{--                                        </select>--}}
-                                {{--                                    </div>--}}
-                                {{--                                </div>--}}
 
 
                                 <!-- chekbox -->
@@ -305,7 +308,7 @@
                                     <div class="gs-checkbox-wrapper" data-bs-toggle="collapse"
                                          data-bs-target="#show_shipping_address" role="region" aria-expanded="false"
                                          aria-controls="show_shipping_address">
-                                        <input type="checkbox" id="shpto" name="is_shipping" value="1">
+                                        <input type="checkbox" id="shpto" name="is_shipping" value="0">
                                         <label class="icon-label" for="shpto">
                                             <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12"
                                                  viewBox="0 0 12 12" fill="none">
@@ -410,11 +413,19 @@
                                     </div>
 
 
-                                    <div class="price-details tax_show d-none">
+                                        @if(Auth::check())
+                                    <div class="price-details tax_show xd-none">
                                         <span>@lang('Tax')</span>
-                                        <span class="right-side original_tax original_tax">0</span>
-                                    </div>
+                                        <span class="right-side original_tax original_tax">15%</span>
+                                     </div>
 
+                                    @else
+                                        <div class="price-details tax_show d-none">
+                                            <span>@lang('Tax')</span>
+                                            <span class="right-side original_tax original_tax">0</span>
+                                        </div>
+
+                                    @endif
 
                                     @if (Session::has('coupon'))
                                         <div class="price-details">
@@ -469,8 +480,18 @@
                                         <span class="total-amount" id="final-cost">
                                             {{ Session::get('coupon_total1') }}</span>
                                     @else
+{{--                                        @dump(App\Models\Product::convertPrice($totalPrice * 0.15))--}}
+                                        @php
+
+//                                            $total = App\Models\Product::convertPrice($mainTotal);
+                                            $tax = $totalPrice * 0.15 ;
+//                                            $totalPrice =
+//                                            dump($tax ,$totalPrice * 0.15)
+                                        @endphp
+
+
                                         <span class="total-amount"
-                                              id="final-cost">{{ App\Models\Product::convertPrice($totalPrice) }}</span>
+                                             id="xfinal-cost">{{ App\Models\Product::convertPrice($totalPrice + $tax) }}</span>
                                     @endif
                                 </div>
                             </div>
@@ -541,7 +562,7 @@
                            value="{{ preg_replace(' /[^0-9,.]/', '', Session::get('coupon_total1')) }}">
                 @else
                     <input type="hidden" name="total" id="grandtotal"
-                           value="{{ round($totalPrice * $curr->value, 2) }}">
+                           value="{{ round($totalPrice+10 * $curr->value, 2) }}">
                     <input type="hidden" id="tgrandtotal" value="{{ round($totalPrice * $curr->value, 2) }}">
                 @endif
                 <input type="hidden" id="original_tax" value="0">

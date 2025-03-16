@@ -87,6 +87,7 @@ class CartController extends FrontBaseController
     {
 
         $prod = Product::where('id', '=', $id)->first(['id', 'user_id', 'slug', 'name', 'photo', 'size', 'size_qty', 'size_price', 'color',
+            'sku',
             'price', 'stock', 'weight' , 'type', 'file', 'link', 'license', 'license_qty', 'measure', 'whole_sell_qty', 'whole_sell_discount', 'attributes', 'color_all', "color_price"]);
 
         // Set Attrubutes
@@ -194,7 +195,7 @@ class CartController extends FrontBaseController
     public function addtocart($id)
     {
 
-        $prod = Product::where('id', '=', $id)->first(['id', 'user_id', 'slug', 'name', 'photo', 'size', 'size_qty', 'size_price', 'color', 'price', 'stock' ,  'weight' , 'type', 'file', 'link', 'license', 'license_qty', 'measure', 'whole_sell_qty', 'whole_sell_discount', 'attributes', 'minimum_qty', 'color_price', 'color_all']);
+        $prod = Product::where('id', '=', $id)->first(['id', 'user_id', 'slug','sku' ,'name', 'photo', 'size', 'size_qty', 'size_price', 'color', 'price', 'stock' ,  'weight' , 'type', 'file', 'link', 'license', 'license_qty', 'measure', 'whole_sell_qty', 'whole_sell_discount', 'attributes', 'minimum_qty', 'color_price', 'color_all']);
 
         // Set Attrubutes
 
@@ -342,7 +343,7 @@ class CartController extends FrontBaseController
 
         $size_price = ($size_price / $curr->value);
         $color_price = ($color_price / $curr->value);
-        $prod = Product::where('id', '=', $id)->first(['id', 'user_id', 'slug', 'name', 'photo', 'size', 'size_qty', 'size_price', 'color', 'price', 'stock' ,  'weight' , 'type', 'file', 'link', 'license', 'license_qty', 'measure', 'whole_sell_qty', 'whole_sell_discount', 'attributes', 'minimum_qty', 'stock_check', 'size_price', 'color_all']);
+        $prod = Product::where('id', '=', $id)->first(['id', 'user_id', 'sku' ,'slug', 'name', 'photo', 'size', 'size_qty', 'size_price', 'color', 'price', 'stock' ,  'weight' , 'type', 'file', 'link', 'license', 'license_qty', 'measure', 'whole_sell_qty', 'whole_sell_discount', 'attributes', 'minimum_qty', 'stock_check', 'size_price', 'color_all']);
         if ($prod->type != 'Physical') {
             $qty = 1;
         }
