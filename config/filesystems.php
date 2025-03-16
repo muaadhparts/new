@@ -2,7 +2,7 @@
 
 return [
 
-    'default' => env('FILESYSTEM_DISK', 'local'),
+    'default' => env('FILESYSTEM_DISK', 'do'),
 
     'disks' => [
 
@@ -14,7 +14,8 @@ return [
         'public' => [
             'driver' => 'local',
             'root' => storage_path('app/public'),
-            'url' => env('APP_URL') . '/storage',
+//            'url' => env('APP_URL') . '/storage',
+            'url' => env('SPACES_CDN_ENDPOINT'). '/storage2',
             'visibility' => 'public',
         ],
 
@@ -32,7 +33,26 @@ return [
             'options' => [
                 'verify' => false, 
             ],
-        ], 
+        ],
+
+
+
+
+        'do' => [
+            'driver' => 's3',
+            'key' => env('DO_ACCESS_KEY_ID'),
+            'secret' => env('DO_SECRET_ACCESS_KEY'),
+            'endpoint' => env('SPACES_ENDPOINT'),
+            'region' => env('DO_DEFAULT_REGION'),
+            'bucket' => env('DO_BUCKET'),
+            'url' => env('DO_ENDPOINT'),
+            'visibility' => 'public',
+            'throw' => false,
+            'use_path_style_endpoint' => true,
+            'options' => [
+                'verify' => false,
+            ],
+        ],
 
     ],
 

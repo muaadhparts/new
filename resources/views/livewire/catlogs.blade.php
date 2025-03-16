@@ -37,7 +37,7 @@
                         <img class="xproduct-img img-fluid rounded" src="{{ Storage::url($catalog->largeImagePath) }}" alt="product img">
                     </div>
                     <div class="ccontent-wrapper p-3 text-center">
-                        <a href="http://atw.test/item/auto-parts-product-title-will-be-here-101-wb44721fdqs" class="text-decoration-none">
+                        <a href="" class="text-decoration-none">
                             <h6 class="product-title text-dark fw-bold text-center">{{ $catalog->shortName }}</h6>
                         </a>
                         <div class="xprice-wrapper mt-2 text-center">
