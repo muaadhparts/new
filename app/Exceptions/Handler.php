@@ -35,11 +35,11 @@ class Handler extends ExceptionHandler
             Log::error($e->getMessage(), ['exception' => $e]);
 
             // إرسال الخطأ إلى Slack عند حدوث خطأ خطير
-            if ($e instanceof QueryException || $e instanceof \ErrorException) {
-                Http::post(env('SLACK_WEBHOOK_URL'), [
-                    'text' => "🚨 خطأ في السيرفر: " . $e->getMessage(),
-                ]);
-            }
+//            if ($e instanceof QueryException || $e instanceof \ErrorException) {
+//                Http::post(env('SLACK_WEBHOOK_URL'), [
+//                    'text' => "🚨 خطأ في السيرفر: " . $e->getMessage(),
+//                ]);
+//            }
         });
     }
 
@@ -62,7 +62,7 @@ class Handler extends ExceptionHandler
     /**
      * Render an exception into an HTTP response.
      */
-    public function render($request, Throwable $exception)
+    public function xrender($request, Throwable $exception)
     {
         // تسجيل الأخطاء في السجلات
         Log::error($exception->getMessage(), ['exception' => $exception]);
@@ -107,6 +107,7 @@ class Handler extends ExceptionHandler
             ], 422);
         }
 
+//        dd($exception->getMessage());
         // خطأ عام
         return response()->json([
             'message' => 'حدث خطأ غير متوقع، يرجى المحاولة لاحقًا',

@@ -44,6 +44,8 @@
                     </div>
                 </div>
             </div>
+{{--            @dd($products)--}}
+
 
             <!-- address-->
             <form class="address-wrapper" action="{{ route('front.checkout.step2.submit') }}" method="POST">
@@ -243,7 +245,13 @@
                                                 </a>
                                             </div>
                                             <div class="content-wrapper">
+                                                <a class="art-title d-inline-block xproduct-title">
+                                                    <a href="{{ route('front.product', $product['item']['slug']) }}"> {{ $product['item']['sku'] }}</a>
+                                                </a>
+
                                                 <h6>
+
+
                                                     <a class="product-title"
                                                         href="{{ route('front.product', $product['item']['slug']) }}"
                                                         target="_blank">

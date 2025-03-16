@@ -353,7 +353,9 @@ class Product extends Model
         }
 //        dd($price ,$curr->value);
         $price = $price * $curr->value;
+//        dd($price);
         $price = \PriceHelper::showPrice($price);
+//        dd($price);
         if ($gs->currency_format == 0) {
             return $curr->sign . $price;
         } else {

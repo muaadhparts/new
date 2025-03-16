@@ -22,7 +22,8 @@
     <link rel="stylesheet" href="{{ asset('assets/front/css/magnific-popup.css') }}">
 {{--    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tarekraafat/autocomplete.js@10.2.9/dist/css/autoComplete.min.css">--}}
      <link rel="stylesheet" href="{{ asset('assets/front/css/custom.css') }}">
-    <link rel="stylesheet" href="{{ asset('assets/front/css/nice-select.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/front/css/nice-select2.css')r}}">
+
 {{--    @if(app()->getLocale() ==='ar')--}}
 
 {{--        <link rel="stylesheet" href="{{ asset('assets/front/css/style_ar.css') }}">--}}
@@ -85,7 +86,7 @@
     <script src="{{ asset('assets/front/js/jquery.min.js') }}"  ></script>
     <script src="{{ asset('assets/front/js/slick.js') }}"  ></script>
     <script src="{{ asset('assets/front/js/jquery-ui.js') }}"  ></script>
-    <script src="{{ asset('assets/front/js/nice-select.js') }}"  ></script>
+    <script src="{{ asset('assets/front/js/nice-select2.js') }}"  ></script>
     <script src="{{ asset('assets/front/js/wow.js') }}"  ></script>
     <script src="{{ asset('assets/front/js/bootstrap.bundle.min.js') }}"  ></script>
     <script src="{{ asset('assets/front/js/toastr.min.js') }}"  ></script>

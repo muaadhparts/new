@@ -204,6 +204,7 @@ class CheckoutController extends FrontBaseController
 
     public function checkoutstep2()
     {
+
         if (!Session::has('step1')) {
             return redirect()->route('front.checkout')->with('success', __("Please fill up step 1."));
         }
@@ -212,6 +213,7 @@ class CheckoutController extends FrontBaseController
             return redirect()->route('front.cart')->with('success', __("You don't have any product to checkout."));
         }
 
+//        dd(Session::get('cart'));
 
         $step1 = (object) Session::get('step1');
 //        dd($step1);
@@ -224,6 +226,7 @@ class CheckoutController extends FrontBaseController
         $cart = new Cart($oldCart);
         $products = $cart->items;
 
+//        dd($products);
         if (Auth::check()) {
 
             // Shipping Method
@@ -261,6 +264,7 @@ class CheckoutController extends FrontBaseController
                 $total = Session::get('coupon_total');
                 $total = str_replace(',', '', str_replace($curr->sign, '', $total));
             }
+//            dd($cart->items);
 
             return view('frontend.checkout.step2', ['products' => $cart->items, 'totalPrice' => $total, 'pickups' => $pickups, 'totalQty' => $cart->totalQty,'shipping_cost' => 0, 'digital' => $dp, 'curr' => $curr, 'shipping_data' => $shipping_data, 'package_data' => $package_data, 'vendor_shipping_id' => $vendor_shipping_id, 'vendor_packing_id' => $vendor_packing_id, 'step1' => $step1]);
         } else {
@@ -309,6 +313,7 @@ class CheckoutController extends FrontBaseController
                         }
                     }
                 }
+//                dd($cart->items);
                 return view('frontend.checkout.step2', ['products' => $cart->items, 'totalPrice' => $total, 'pickups' => $pickups, 'totalQty' => $cart->totalQty, 'shipping_cost' => 0, 'digital' => $dp, 'curr' => $curr, 'shipping_data' => $shipping_data, 'package_data' => $package_data, 'vendor_shipping_id' => $vendor_shipping_id, 'vendor_packing_id' => $vendor_packing_id, 'step1' => $step1]);
             }
 
@@ -347,6 +352,7 @@ class CheckoutController extends FrontBaseController
                     $total = $total;
                 }
                 $ck = 1;
+//                dd($cart->items);
                 return view('frontend.checkout.step2', ['products' => $cart->items, 'totalPrice' => $total, 'pickups' => $pickups, 'totalQty' => $cart->totalQty,'shipping_cost' => 0, 'digital' => $dp, 'curr' => $curr, 'shipping_data' => $shipping_data, 'package_data' => $package_data, 'vendor_shipping_id' => $vendor_shipping_id, 'vendor_packing_id' => $vendor_packing_id, 'step1' => $step1]);
             }
         }
@@ -364,6 +370,7 @@ class CheckoutController extends FrontBaseController
     {
         $step1 = $request->all();
 
+//        dd($step1);
         $validator = Validator::make($step1, [
             'customer_name' => 'required|string|max:255',
             'customer_email' => 'required|email|max:255',
@@ -372,7 +379,7 @@ class CheckoutController extends FrontBaseController
             'customer_zip' => 'nullable|string|max:20',
             'customer_country' => 'required|string|max:255',
             'customer_state' => 'required|string|max:255',
-            'customer_city' => 'required|string|max:255',
+//            'customer_city' => 'required|string|max:255',
  //            'shipping_name' => 'nullable|string|max:255',
 //            'shipping_phone' => 'nullable|regex:/^[0-9]{10,15}$/',
 //            'shipping_address' => 'nullable|string|max:255',
@@ -382,6 +389,7 @@ class CheckoutController extends FrontBaseController
         ]);
 
 
+//        dd($validator ,$validator->errors()->all());
         if ($validator->fails()) {
             return  back()->withErrors($validator->errors());
         }
@@ -399,6 +407,7 @@ class CheckoutController extends FrontBaseController
 //        // Create a new cart instance
 //        $cart = new Cart($oldCart);
 //
+//        dd($step1);
         Session::put('step1', $step1);
         return redirect()->route('front.checkout.step2');
     }
@@ -513,9 +522,13 @@ class CheckoutController extends FrontBaseController
                 $total = Session::get('coupon_total');
                 $total = str_replace(',', '', str_replace($curr->sign, '', $total));
             }
-//            dd($total ,$cart);
+//            $step2 = Session::get('step2');
 
-            return view('frontend.checkout.step3', ['products' => $cart->items, 'totalPrice' => $total, 'pickups' => $pickups, 'totalQty' => $cart->totalQty, 'gateways' => $gateways, 'shipping_cost' => 0, 'digital' => $dp, 'curr' => $curr, 'shipping_data' => $shipping_data, 'package_data' => $package_data, 'vendor_shipping_id' => $vendor_shipping_id, 'vendor_packing_id' => $vendor_packing_id, 'paystack' => $paystackData, 'step1' => $step1, 'step2' => $step2]);
+//            $shipping_cost = $step2['shipping_cost'] ?? 0;
+////            shipping_cost
+//            dd($total ,$cart ,$step2->shipping_cost);
+
+            return view('frontend.checkout.step3', ['products' => $cart->items, 'totalPrice' => $total, 'pickups' => $pickups, 'totalQty' => $cart->totalQty, 'gateways' => $gateways, 'shipping_cost2' => $step2->shipping_cost, 'digital' => $dp, 'curr' => $curr, 'shipping_data' => $shipping_data, 'package_data' => $package_data, 'vendor_shipping_id' => $vendor_shipping_id, 'vendor_packing_id' => $vendor_packing_id, 'paystack' => $paystackData, 'step1' => $step1, 'step2' => $step2]);
         } else {
 
             if ($this->gs->guest_checkout == 1) {

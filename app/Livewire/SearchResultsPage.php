@@ -24,6 +24,7 @@ class SearchResultsPage extends Component
         if($alternativesSkus){
             $this->alternatives =   Product::wherein('sku',$alternativesSkus->alternative)
 //                   ->Orwhere('sku', $sku)
+                                    ->orderBy('stock','DESC')
                                     ->get();
         }
 

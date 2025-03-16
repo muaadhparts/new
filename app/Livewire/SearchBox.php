@@ -107,6 +107,7 @@ class SearchBox extends Component
         $slug = Str::upper($slug);
         $length = Str::length($slug);
 
+//        dd($length);
 
         if ($length > 14) {
 

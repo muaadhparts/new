@@ -266,8 +266,10 @@
 
                                 <div class="price-details">
                                     <span>@lang('Shipping Cost')</span>
-                                    <span class="right-side">{{ App\Models\Product::convertPrice($shipping_cost)
-                                        }}</span>
+                                    <span class="right-side">
+                                        {{ App\Models\Product::convertPrice($shipping_cost2)
+                                        }}
+                                    </span>
                                 </div>
 
 

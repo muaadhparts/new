@@ -46,8 +46,14 @@
                                                 alt="">
                                             <div class="cart-product-info">
 
+                                                <a class="art-title d-inline-block xproduct-title">
+                                                    <a href="{{ route('front.product', $product['item']['slug']) }}"> {{ $product['item']['sku'] }}</a>
+                                                </a>
+
+
+{{--                                                    @dd($product['item']['sku'] )--}}
                                                 <a class="cart-title d-inline-block"
-                                                    href="{{ route('front.product', $product['item']['slug']) }}">{{ mb_strlen($product['item']['name'], 'UTF-8') > 35
+                                                   xhref="{{ route('front.product', $product['item']['slug']) }}">{{ mb_strlen($product['item']['name'], 'UTF-8') > 35
                                                         ? mb_substr($product['item']['name'], 0, 35, 'UTF-8') . '...'
                                                         : $product['item']['name'] }}</a>
 
@@ -164,10 +170,22 @@
                             <p class="cart-summary-subtitle">@lang('Discount')</p>
                             <p class="cart-summary-price">{{ App\Models\Product::convertPrice($discount) }}</p>
                         </div>
+
+                        <div class="cart-summary-item d-flex justify-content-between">
+                            <p class="cart-summary-subtitle">@lang('Tax')</p>
+                                @php
+
+                                $total = App\Models\Product::convertPrice($mainTotal);
+                                $tax = $mainTotal * 0.15 ;
+//                                dump($total ,$mainTotal * 0.15)
+                             @endphp
+                            <p class="cart-summary-price">{{ App\Models\Product::convertPrice($tax)  }}</p>
+                        </div>
+
                         <div class="cart-summary-item d-flex justify-content-between">
                             <p class="cart-summary-subtitle">@lang('Total')</p>
                             <p class="cart-summary-price total-cart-price">
-                                {{ Session::has('cart') ? App\Models\Product::convertPrice($mainTotal) : '0.00' }}
+                                {{ Session::has('cart') ? App\Models\Product::convertPrice($mainTotal+$tax) : '0.00' }}
                             </p>
                         </div>
                         <div class="cart-summary-btn">
