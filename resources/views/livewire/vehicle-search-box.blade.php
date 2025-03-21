@@ -28,7 +28,11 @@
                                                 wire:click="selectItem('{{ $result->partnumber }}')"
                                                 style="text-overflow: ellipsis; white-space: nowrap; overflow: hidden;"
                                         >
-                                            {{ $result->partnumber }}
+
+                                                    {{ $result->partnumber }}
+
+
+
                                         </span>
                                         <small class="text-black" style="font-size: 13px; font-weight: 100; text-transform: uppercase;">
                                             {{ $result->label_en }} - {{ $result->label_ar }}

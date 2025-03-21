@@ -1,13 +1,5 @@
 <div>
 
-    <div class="container">
-
-
-
-
-
-    </div>
-
 
 
     <div class="gs-blog-wrapper">
@@ -46,6 +38,7 @@
                         }
                     @endphp
 
+{{--                    @dd($prods);--}}
 
                     @if ($prods->count() == 0)
                         <!-- product nav wrapper for no data found -->
@@ -60,9 +53,68 @@
                             <div class="tab-pane fade {{ $view == 'list-view' ? 'show active' : '' }}"
                                  id="layout-list-pane" role="tabpanel" tabindex="0">
                                 <div class="row gy-4 gy-lg-5 mt-20 ">
-                                    @foreach ($prods as $product)
-                                        @include('includes.frontend.list_view_product')
-                                    @endforeach
+                                    <div class="modal-body">
+
+
+                                        <div class="container">
+                                            {{--                        <h4>Parts List</h4>--}}
+                                            <table class="table table-bordered">
+                                                <thead>
+                                                <tr>
+                                                    <th>@lang('Part Number')</th>
+                                                    <th>@lang('Name')</th>
+                                                    <th>@lang('Qty ')</th>
+                                                    <th>@lang('callout ')</th>
+                                                    <th>@lang('applicability ')</th>
+                                                    <th>@lang('begin_date ')</th>
+                                                    <th>@lang('end_date ')</th>
+
+                                                    <th>@lang('View')</th>
+
+
+                                                </tr>
+                                                </thead>
+                                                <tbody>
+                                                @forelse($prods as $product)
+                                                    <tr>
+
+
+                                                        <td>
+{{--                                                            {{ $product->partnumber }}--}}
+                                                            <a href="{{ route('search.result', $product->partnumber) }}" target="_blank">
+                                                                <span class="text-primary">{{ $product->partnumber }} </span>
+                                                            </a>
+                                                        </td>
+                                                        <td>{{ $product->label_en }} -
+                                                            {{ $product->label_ar }}
+                                                        </td>
+                                                         <td>{{ $product->qty }}</td>
+                                                        <td>{{ $product->callout  }}</td>
+                                                        <td>{{ $product->applicability  }}</td>
+                                                        <td>{{ $product->formattedbegindate  }}</td>
+                                                        <td>{{ $product->formattedenddate  }}</td>
+                                                        <td>
+                                                            <a class="btn btn-outline-primary" href="{{ route('front.product', $product->code) }}">
+                                                                @lang('View')
+                                                            </a>
+
+                                                        </td>
+                                                    </tr>
+                                                @empty
+                                                    <tr>
+                                                        <td colspan="5" class="text-center">No data found</td>
+                                                    </tr>
+                                                @endforelse
+                                                </tbody>
+                                            </table>
+                                        </div>
+
+                                        {{--                    <livewire:alternative />--}}
+                                    </div>
+
+{{--                                    @foreach ($prods as $product)--}}
+{{--                                        @include('includes.frontend.list_view_product')--}}
+{{--                                    @endforeach--}}
                                 </div>
                             </div>
 

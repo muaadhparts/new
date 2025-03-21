@@ -66,21 +66,26 @@ class VehicleSearchBox extends Component
 //        dd($this);
         if ($this->query) {
 
-            $results = DB::table(Str::lower($this->vehicle))
-                ->where('partnumber', 'like', "{$query}%")
-                ->orWhere('callout', 'like', "{$query}%")
-                ->orWhere('label_en', 'like', "{$query}%")
-                ->orWhere('label_ar', 'like', "{$query}%")
-                ->select('id', 'partnumber', 'callout', 'label_en', 'label_ar')
-                ->limit(100)
-                ->pluck( 'partnumber')
-                ->unique()
-                ->toArray();
-
+//            $results = DB::table(Str::lower($this->vehicle))
+//
+//
+//                ->where('partnumber', 'like', "{$query}%")
+//                ->orWhere('callout', 'like', "{$query}%")
+//                ->orWhere('label_en', 'like', "{$query}%")
+//                ->orWhere('label_ar', 'like', "{$query}%")
+//                ->select('id','qty', 'partnumber', 'callout', 'label_en',
+//                    'label_ar' ,'applicability' ,'formattedbegindate' ,'formattedenddate' ,'code')
+////                ->limit(100)
+//                ->paginate(20);
+//                ->get();
+//                ->pluck( 'partnumber')
+//                ->unique()
+//                ->toArray();
+//        dd($results);
 
 //        $products2=  Product::pluck('sku')->toArray();
 //        $results =   array_merge_recursive_distinct($results ,$products2 );
-        $products =   implode(',',$results);
+//        $products =   implode(',',$results);
         $vehicle2   = Catalog::with('brand:id,name')->where('data',   $this->vehicle)->first();
 
 
@@ -92,7 +97,7 @@ class VehicleSearchBox extends Component
 
 //            $this->redirect(CatlogsProducts::class);
 //            dd($products2 ,$results ,$products);
-        redirect()->route('catlogs.products', ['id' => $vehicle2->brand->name , 'data' => $vehicle2->data , 'products' => $products]);
+        redirect()->route('catlogs.products', ['id' => $vehicle2->brand->name , 'data' => $vehicle2->data , 'query' => $this->query]);
 //
 //        $this->redirectRoute('catlogs.products', [ 'products' => $products]);
 
@@ -129,6 +134,7 @@ class VehicleSearchBox extends Component
                 ->orWhere('label_ar', 'like', "%{$query}%")
                 ->select('id', 'partnumber', 'callout', 'label_en', 'label_ar')
                 ->limit(50)
+                ->distinct('partnumber')
                 ->get();
         }
 

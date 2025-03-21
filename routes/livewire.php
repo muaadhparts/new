@@ -23,7 +23,7 @@ Route::prefix('catlogs')->group(function () {
 //    Route::get('{id}/{data}/{code}/{key2}/', Child3CatlogTree::class)->name('child3.tree');
 });
 
-Route::get( '{id}/{data}/products/{products}', CatlogsProducts::class)->name('catlogs.products');
+Route::get( '{id}/{data}/products/{query}', CatlogsProducts::class)->name('catlogs.products');
 
 Route::get('result/{sku}', \App\Livewire\SearchResultsPage::class)->name('search.result');
 
