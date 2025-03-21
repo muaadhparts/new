@@ -26,7 +26,7 @@
             </nav>
             <div class="row flex-column-reverse flex-lg-row">
 {{--                @dump($this)--}}
-{{--                <livewire:vehicle-search-box  :vehicle="$vehicle"/>--}}
+                <livewire:vehicle-search-box  :vehicle="$vehicle"/>
 
                 <div class="col-12 col-lg-12 col-xl-12 gs-main-blog-wrapper">
 
@@ -85,7 +85,7 @@
                                                                 <span class="text-primary">{{ $product->partnumber }} </span>
                                                             </a>
                                                         </td>
-                                                        <td>{{ $product->label_en }} -
+                                                        <td>{{ $product->label_en }} -<br>
                                                             {{ $product->label_ar }}
                                                         </td>
                                                          <td>{{ $product->qty }}</td>
