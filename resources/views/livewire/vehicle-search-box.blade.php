@@ -1,11 +1,12 @@
 <div class="container mx-auto  pl-5">
     <div class="row">
         <div class="col-12  mx-auto">
+            <div class="flex-shrink-0 me-3 py-3">
+                <livewire:attributes :vehicle="$vehicle" />
+            </div>
             <div class="d-flex flex-wrap align-items-start">
                 <!-- Attributes Section -->
-                <div class="flex-shrink-0 me-3">
-                    <livewire:attributes :vehicle="$vehicle" />
-                </div>
+
 
                 <!-- Search Input Section -->
                 <div class="flex-grow-1">
