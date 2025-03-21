@@ -15,7 +15,8 @@
                                 id="autoComplete"
                                 class="form-control"
                                 placeholder="VIN / Part Number / Part Code"
-                                wire:model.debounce.300ms="query"
+                                wire:model.debounce.600ms="query"
+                                wire:keydown.enter="search2('{{$query}}')"
                         >
 
                         @if (!empty($results))

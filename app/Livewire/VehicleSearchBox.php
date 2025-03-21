@@ -2,6 +2,8 @@
 
 namespace App\Livewire;
 
+use App\Models\Catalog;
+use App\Models\Product;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Livewire\Component;
@@ -53,9 +55,50 @@ class VehicleSearchBox extends Component
             '٥' => '5', '٦' => '6', '٧' => '7', '٨' => '8', '٩' => '9'
         ]);
 
-        return   $this->convertLettersToNumbers($input);
+//        return   $this->convertLettersToNumbers($input);
+        return  $input;
         // تحويل النصوص إلى أحرف صغيرة للتوحيد
 //        return Str::lower($input);
+    }
+
+    public function search2($query)
+    {
+//        dd($this);
+        if ($this->query) {
+
+            $results = DB::table(Str::lower($this->vehicle))
+                ->where('partnumber', 'like', "{$query}%")
+                ->orWhere('callout', 'like', "{$query}%")
+                ->orWhere('label_en', 'like', "{$query}%")
+                ->orWhere('label_ar', 'like', "{$query}%")
+                ->select('id', 'partnumber', 'callout', 'label_en', 'label_ar')
+                ->limit(100)
+                ->pluck( 'partnumber')
+                ->unique()
+                ->toArray();
+
+
+        $products2=  Product::pluck('sku')->toArray();
+        $results =   array_merge_recursive_distinct($results ,$products2 );
+        $products =   implode(',',$results);
+        $vehicle2   = Catalog::with('brand:id,name')->where('data',   $this->vehicle)->first();
+
+
+//        dd($this->vehicle);
+
+//        $products =  Product::whereIn('sku', $results)
+//            ->take(20)
+//            ->get();
+
+//            $this->redirect(CatlogsProducts::class);
+//            dd($products2 ,$results ,$products);
+        redirect()->route('catlogs.products', ['id' => $vehicle2->brand->name , 'data' => $vehicle2->data , 'products' => $products]);
+//
+//        $this->redirectRoute('catlogs.products', [ 'products' => $products]);
+
+
+//        dd($results);
+        }
     }
 
 
@@ -64,7 +107,9 @@ class VehicleSearchBox extends Component
         $query = $this->cleanInput($query);
 //         dd($query);
 
-        $results =  DB::table(Str::lower($this->vehicle))
+//        dd($this);
+
+        $results = DB::table(Str::lower($this->vehicle))
             ->where('partnumber', 'like', "{$query}%")
             ->orWhere('callout', 'like', "{$query}%")
             ->orWhere('label_en', 'like', "{$query}%")
@@ -73,8 +118,10 @@ class VehicleSearchBox extends Component
             ->limit(50)
             ->get();
 
+
         // إذا لم تكن هناك نتائج، البحث داخل النص
         if ($results->isEmpty()) {
+//            dd($results);
             $results = DB::table(Str::lower($this->vehicle))
                 ->where('partnumber', 'like', "%{$query}%")
                 ->orWhere('callout', 'like', "%{$query}%")
@@ -90,34 +137,12 @@ class VehicleSearchBox extends Component
     }
 
 
-    public function xsearch($query)
-    {
-//        dd($this);
-//        $query = DB::table(Str::lower($this->vehicle))
-//            ->select(
-//                'code', 'partnumber', 'callout',  'label_'.app()->getLocale(),
-//
-//            )
-//            ->where('code',$code );
-        return DB::table(Str::lower($this->vehicle))
-            ->where('partnumber', 'like', "%{$query}%")
-//            ->orwhere('name', 'like', "%{$query}%")
-            ->orwhere('callout', 'like', "%{$query}%")
-            ->orwhere('label_en', 'like', "%{$query}%")
-            ->orwhere('label_ar', 'like', "%{$query}%")
-            ->select('id', 'partnumber',   'label_en', 'label_ar')
-            ->limit(50)
-            ->get();
-//            ->limit(10)
-//            ->get(['sku as value', 'name as key'])
-//            ->toArray();
-    }
-
 
 
     public function selectItem($value)
     {
-//        dd($value);
+//        dd( $value);
+//        $this->query = $value;
         redirect()->route('search.result', ['sku' => $value]);
 //        $this->query = $value;
 

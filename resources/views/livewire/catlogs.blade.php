@@ -15,6 +15,22 @@
                            placeholder="Search">
                 </div>
 
+
+                <div class="col-md-3 mb-3">
+                    <select class="form-select" wire:model="region">
+                        <option value="GL"   > [GL] General Market - Left-Hand Drive </option>
+                         <option value="AR">[AR] Australia </option>
+                        <option value="CA">[CA] Canada </option>
+                        <option value="EL"> [EL] Europe - Left-Hand Drive </option>
+                        <option value="EL"> [EL] Europe - Right-Hand Drive </option>
+
+                        <option value="GR"> [GR] General Market - Right-Hand Drive </option>
+                        <option value="JP"> [JP] Japan </option>
+                        <option value="US"> [US] USA </option>
+
+                    </select>
+                </div>
+
                 <!-- Year Filter Dropdown -->
                 <div class="col-md-3 mb-3">
                     <select class="form-select" wire:model="searchYear">
@@ -24,12 +40,13 @@
                         @endforeach
                     </select>
                 </div>
+
+
             </div>
         </div>
 
         @foreach ($catlogs->sortby('sort') as $catalog)
-{{--            @dd($catalog->data);--}}
-            <div class="col-12 col-sm-6 col-md-4 col-xl-3 text-center">
+             <div class="col-12 col-sm-6 col-md-4 col-xl-3 text-center">
                 <a href="{{route('tree.level1',['id'=> $brand->name ,'data'=> $catalog->data ])}}">
                 <div class="single-product card border-0 shadow-sm h-100  ">
 

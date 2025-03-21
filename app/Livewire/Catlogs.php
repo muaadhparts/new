@@ -5,20 +5,23 @@ namespace App\Livewire;
 use App\Models\Catalog;
 use App\Models\Partner;
 use Livewire\Component;
+use Livewire\WithPagination;
 
 class Catlogs extends Component
 {
-    // use WithPagination;
+     use WithPagination;
 
 
     // public $searchName;
     public $searchName = '';
     public $searchYear;
     public $brand;
+    public $region   ;
 
     public function mount($id)
     {
 //         dd($id);
+        $this->region = 'GL';
         $this->brand = Partner::where('name', $id)->firstorFail();
 //        $this->brandId = Partner::where('name', $id)->first();
     }
@@ -29,17 +32,36 @@ class Catlogs extends Component
         $currentYear = date('Y');
         $years = range($currentYear+1 ,1975);
 
+//        dd($this->region);
 
-        $catlogs = Catalog::where('brand_id', $this->brand->id)->where(function ($query) {
-            $query->where('name', 'like', '%' . $this->searchName . '%')
-                ->orWhere('shortName', 'like', '%' . $this->searchName . '%')
-                ->orWhere('data', 'like', '%' . $this->searchName . '%');
-        })->when($this->searchYear, function ($query) {
-                    $query->whereRaw('? BETWEEN beginYear AND endYear', [$this->searchYear]);
-         })
-        ->paginate(10);
+        $catlogs = Catalog::where('brand_id', $this->brand->id)
+                ->where('applicableRegions',$this->region)
+                ->where(function ($query) {
 
-//        dd($catlogs ,$this->brand);
+                })->when($this->searchName, function ($query) {
+                        $query
+
+                            ->where('name', 'like', '%' . $this->searchName . '%')
+
+                            ->orWhere('shortName', 'like', '%' . $this->searchName . '%')
+                            ->orWhere('data', 'like', '%' . $this->searchName . '%');
+
+        //                $query->whereRaw('? BETWEEN beginYear AND endYear', [$this->searchYear]);
+                    })
+
+            ->when($this->searchYear, function ($query) {
+                $query->where('beginYear', '>=', $this->searchYear)
+                    ->where('endYear', '>=', $this->searchYear)
+                    ->orWhere('endYear',0);
+////                    ->where(function ($q) {
+//                        $q->where('endYear', '>=', $this->searchYear)
+//
+////                    });
+            })->orderBy('name', 'ASC')
+
+        ->simplePaginate(10);
+
+//        dd($catlogs->count() ,$this->region ,$this->brand);
         return view('livewire.catlogs', [
             'catlogs' => $catlogs,
             'years' => $years,

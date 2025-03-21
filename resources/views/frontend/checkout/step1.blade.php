@@ -816,7 +816,8 @@
 
         $(document).ready(function() {
 
-            // alert('dd');
+            // var options = { searchable: true };
+            // alert(options.searchable);
             // $('#show_state').niceSelect("destroy");
             var instance2 = NiceSelect.bind(document.getElementById("show_state"), options);
 
