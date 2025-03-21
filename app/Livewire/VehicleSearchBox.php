@@ -78,8 +78,8 @@ class VehicleSearchBox extends Component
                 ->toArray();
 
 
-        $products2=  Product::pluck('sku')->toArray();
-        $results =   array_merge_recursive_distinct($results ,$products2 );
+//        $products2=  Product::pluck('sku')->toArray();
+//        $results =   array_merge_recursive_distinct($results ,$products2 );
         $products =   implode(',',$results);
         $vehicle2   = Catalog::with('brand:id,name')->where('data',   $this->vehicle)->first();
 
