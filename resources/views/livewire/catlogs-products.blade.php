@@ -77,11 +77,8 @@
                                                 <tbody>
                                                 @forelse($prods as $product)
                                                     <tr>
-
-
-                                                        <td>
-{{--                                                            {{ $product->partnumber }}--}}
-                                                            <a href="{{ route('search.result', $product->partnumber) }}" target="_blank">
+                                                         <td>
+                                                             <a href="{{ route('search.result', $product->partnumber) }}" target="_blank">
                                                                 <span class="text-primary">{{ $product->partnumber }} </span>
                                                             </a>
                                                         </td>
@@ -94,7 +91,7 @@
                                                         <td>{{ $product->formattedbegindate  }}</td>
                                                         <td>{{ $product->formattedenddate  }}</td>
                                                         <td>
-                                                            <a class="btn btn-outline-primary" href="{{ route('front.product', $product->code) }}">
+                                                            <a class="btn btn-outline-primary" href="{{ url("catlogs/{$this->brand->name}/$this->vehicle/$product->key1/$product->key2/$product->code") }}">
                                                                 @lang('View')
                                                             </a>
 
@@ -109,12 +106,8 @@
                                             </table>
                                         </div>
 
-                                        {{--                    <livewire:alternative />--}}
-                                    </div>
+                                     </div>
 
-{{--                                    @foreach ($prods as $product)--}}
-{{--                                        @include('includes.frontend.list_view_product')--}}
-{{--                                    @endforeach--}}
                                 </div>
                             </div>
 

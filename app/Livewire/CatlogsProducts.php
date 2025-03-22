@@ -43,7 +43,8 @@ class CatlogsProducts extends Component
             ->orWhere('label_en', 'like', "{$this->query}%")
             ->orWhere('label_ar', 'like', "{$this->query}%")
             ->select('id','qty', 'partnumber', 'callout', 'label_en',
-                'label_ar' ,'applicability' ,'formattedbegindate' ,'formattedenddate' ,'code')
+
+                'label_ar' ,'applicability' ,'formattedbegindate' ,'formattedenddate' ,'key1','key2','code')
             ->simplePaginate(20);
 //        dd($prods->count());
 
