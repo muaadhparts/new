@@ -15,7 +15,7 @@
                                 type="text"
                                 id="autoComplete"
                                 class="form-control"
-                                placeholder="VIN / Part Number / Part Code"
+                                placeholder="Name / Part Number / Part Code"
                                 wire:model.debounce.600ms="query"
                                 wire:keydown.enter="search2('{{$query}}')"
                         >

@@ -19,16 +19,22 @@ class Attributes extends Component
 
     {
 
+//        Session::forget('current_vehicle');
+//        dump(Session::get('current_vehicle'));
+//        Session::put('current_vehicle', $vehicle);
 
         $this->catalog  = Catalog::with('attributes')->select('id','data')->where('data',$vehicle)->firstOrFail();
 //           dd($vehicle , $this->catalog );
 
 
-        $this->data = $this->catalog->attributes->mapWithKeys(function ($attribute) {
-            return [
-                $attribute->name => null // Initialize with null or a default value
-            ];
-        })->toArray();
+        $this->data = session('attributes', []);
+
+//        $this->data = $this->catalog->attributes->mapWithKeys(function ($attribute) {
+//            return [
+//                $attribute->name => null // Initialize with null or a default value
+//            ];
+//        })->toArray();
+
 
     }
 
@@ -42,9 +48,11 @@ class Attributes extends Component
     {
 
 
-//            Session::put('attributes', $this->data);
-//            dd($this->data);
-        $this->dispatchBrowserEvent('form-saved');
+            Session::put('current_vehicle', $this->catalog->data);
+
+            Session::put('attributes', $this->data);
+//            dd($this,Session::get('current_vehicle') ,$this->data);
+            $this->dispatchBrowserEvent('form-saved');
 //             session(['attributes' => $this->data]);
 
 //            dd(Session::get('attributes') ,   session('attributes'));

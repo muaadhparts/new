@@ -4,6 +4,7 @@ namespace App\Livewire;
 
 use App\Models\Catalog;
 use App\Models\Partner;
+use Illuminate\Support\Facades\Session;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -28,7 +29,8 @@ class Catlogs extends Component
 
     public function render()
     {
-
+        Session::forget('current_vehicle');
+        Session::forget('attributes');
         $currentYear = date('Y');
         $years = range($currentYear+1 ,1975);
 

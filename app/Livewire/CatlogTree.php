@@ -4,6 +4,7 @@ namespace App\Livewire;
 
 use App\Models\NCategory;
 use App\Models\Partner;
+use Illuminate\Support\Facades\Session;
 use Livewire\Component;
 
 class CatlogTree extends Component
@@ -14,6 +15,7 @@ class CatlogTree extends Component
     public function mount($id,$data)
     {
 //         dd($id ,$data);
+
         $this->brand = Partner::where('name', $id)->firstorFail();
         $this->categories = NCategory::where('data', $data)
             ->select('id','data','code','label','thumbnailimage')
@@ -25,6 +27,8 @@ class CatlogTree extends Component
 
     public function render()
     {
+        Session::forget('current_vehicle');
+        Session::forget('attributes');
 
         return view('livewire.catlog-tree');
     }

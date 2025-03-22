@@ -4,6 +4,7 @@ namespace App\Livewire;
 
 use App\Models\NCategory;
 use App\Models\Partner;
+use Illuminate\Support\Facades\Session;
 use Livewire\Component;
 
 class CatlogTreeLevel1 extends Component
@@ -31,6 +32,8 @@ class CatlogTreeLevel1 extends Component
     public function render()
     {
 
+        Session::forget('current_vehicle');
+        Session::forget('attributes');
         return view('livewire.catlog-tree-level1');
     }
 }
