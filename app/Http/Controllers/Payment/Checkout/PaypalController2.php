@@ -2,26 +2,19 @@
 
 namespace App\Http\Controllers\Payment\Checkout;
 
-use App\{
-    Models\Cart,
-    Models\Order,
-    Classes\GeniusMailer,
-    Models\PaymentGateway
-};
+use App\{Classes\GeniusMailer, Models\Cart, Models\Order, Models\PaymentGateway};
 use App\Helpers\PriceHelper;
 use App\Models\Country;
 use App\Models\Reward;
 use App\Models\State;
-
 use Illuminate\Http\Request;
-use Illuminate\Routing\Route;
 use Illuminate\Support\Facades\Auth;
-use Session;
-use OrderHelper;
 use Illuminate\Support\Str;
 use Omnipay\Omnipay;
+use OrderHelper;
+use Session;
 
-class PaypalController extends CheckoutBaseControlller
+class PaypalController2 extends CheckoutBaseControlller
 {
     public $_api_context;
     public $gateway;

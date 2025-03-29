@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Front;
 
 use App\Helpers\PriceHelper;
+use App\Http\Controllers\MyFatoorahController;
 use App\Models\Cart;use App\Models\City;
 use App\Models\Order;
 use App\Models\PaymentGateway;
@@ -24,6 +25,9 @@ class CheckoutController extends FrontBaseController
 
     public function loadpayment($slug1, $slug2)
     {
+//
+        $slug2 =19;
+//        dd($slug1, $slug2);
         $curr = $this->curr;
         $payment = $slug1;
         $pay_id = $slug2;
@@ -31,6 +35,7 @@ class CheckoutController extends FrontBaseController
         if ($pay_id != 0) {
             $gateway = PaymentGateway::findOrFail($pay_id);
         }
+//        dd($slug1, $slug2 ,$gateway);
         return view('load.payment', compact('payment', 'pay_id', 'gateway', 'curr'));
     }
 
@@ -425,7 +430,7 @@ class CheckoutController extends FrontBaseController
         // Create a new cart instance
 //        $cart = new Cart($oldCart);
 //        dd($step2 ,$step2['shipping'][0] ==="1");
-
+        $shipping_cost = 0;
         if($step2['shipping'][0] !=="1"){
         list($shippingId, $shipping_company, $shipping_cost) = explode('#', $step2['shipping'][0]);
         $shipping_cost = (float) $shipping_cost; // Ensure the shipping cost is numeric
@@ -448,14 +453,19 @@ class CheckoutController extends FrontBaseController
         $step2['shipping_cost'] = $shipping_cost;
 
         }
+        $step2['shipping_cost'] = $shipping_cost;
 
-//        dd(  $step2 ,$cart);
+//        dd(  $step2 ,$cart ,$shipping_cost);
         Session::put('step2', $step2);
         return redirect()->route('front.checkout.step3');
     }
 
     public function checkoutstep3()
     {
+        $my =  new MyFatoorahController();
+        return $my->index();
+//        dd($my->index());
+    return redirect()->route('front.myfatoorah.submit');
 
 //        dd(Session::get('step2'));
         if (!Session::has('step1')) {
@@ -483,11 +493,11 @@ class CheckoutController extends FrontBaseController
         $products = $cart->items;
         $paystack = PaymentGateway::whereKeyword('paystack')->first();
         $paystackData = $paystack->convertAutoData();
-
+//        dd($cart ,Session::get('step2'));
         if (Auth::check()) {
 
             // Shipping Method
-//                dd($cart ,Session::get('step2'));
+
             if ($this->gs->multiple_shipping == 1) {
                 $ship_data = Order::getShipData($cart);
 //                dd($ship_data);
@@ -528,7 +538,7 @@ class CheckoutController extends FrontBaseController
 ////            shipping_cost
 //            dd($total ,$cart ,$step2->shipping_cost);
 
-            return view('frontend.checkout.step3', ['products' => $cart->items, 'totalPrice' => $total, 'pickups' => $pickups, 'totalQty' => $cart->totalQty, 'gateways' => $gateways, 'shipping_cost2' => $step2->shipping_cost, 'digital' => $dp, 'curr' => $curr, 'shipping_data' => $shipping_data, 'package_data' => $package_data, 'vendor_shipping_id' => $vendor_shipping_id, 'vendor_packing_id' => $vendor_packing_id, 'paystack' => $paystackData, 'step1' => $step1, 'step2' => $step2]);
+            return view('frontend.checkout.step3', ['products' => $cart->items, 'totalPrice' => $total, 'pickups' => $pickups, 'totalQty' => $cart->totalQty, 'gateways' => $gateways, 'shipping_cost' => $step2->shipping_cost, 'digital' => $dp, 'curr' => $curr, 'shipping_data' => $shipping_data, 'package_data' => $package_data, 'vendor_shipping_id' => $vendor_shipping_id, 'vendor_packing_id' => $vendor_packing_id, 'paystack' => $paystackData, 'step1' => $step1, 'step2' => $step2]);
         } else {
 
             if ($this->gs->guest_checkout == 1) {
@@ -540,6 +550,7 @@ class CheckoutController extends FrontBaseController
                     $shipping_data = DB::table('shippings')->where('user_id', '=', 0)->get();
                 }
 
+//                dd($shipping_data);
                 // Packaging
 
                 if ($this->gs->multiple_shipping == 1) {
@@ -575,7 +586,21 @@ class CheckoutController extends FrontBaseController
                         }
                     }
                 }
-                return view('frontend.checkout.step3', ['products' => $cart->items, 'totalPrice' => $total, 'pickups' => $pickups, 'totalQty' => $cart->totalQty, 'gateways' => $gateways, 'shipping_cost' => 0, 'digital' => $dp, 'curr' => $curr, 'shipping_data' => $shipping_data, 'package_data' => $package_data, 'vendor_shipping_id' => $vendor_shipping_id, 'vendor_packing_id' => $vendor_packing_id, 'paystack' => $paystackData, 'step2' => $step2, 'step1' => $step1]);
+
+
+//                dd($total ,$step2 ,['products' => $cart->items,
+//                    'totalPrice' => $total,
+//                    'pickups' => $pickups, 'totalQty' => $cart->totalQty,
+//                    'gateways' => $gateways,
+//                    'shipping_cost' => $step2->shipping_cost, 'digital' => $dp,
+//                    'curr' => $curr, 'shipping_data' => $shipping_data,
+//                    'package_data' => $package_data, 'vendor_shipping_id' => $vendor_shipping_id,
+//                    'vendor_packing_id' => $vendor_packing_id, 'paystack' => $paystackData,
+//                    'step2' => $step2, 'step1' => $step1]);
+
+
+                return view('frontend.checkout.step3', ['products' => $cart->items, 'totalPrice' => $total, 'pickups' => $pickups, 'totalQty' => $cart->totalQty,
+                                'gateways' => $gateways, 'shipping_cost' =>  $step2->shipping_cost, 'digital' => $dp, 'curr' => $curr, 'shipping_data' => $shipping_data, 'package_data' => $package_data, 'vendor_shipping_id' => $vendor_shipping_id, 'vendor_packing_id' => $vendor_packing_id, 'paystack' => $paystackData, 'step2' => $step2, 'step1' => $step1]);
             }
 
             // If guest checkout is Deactivated then display pop up form with proper error message
@@ -613,7 +638,23 @@ class CheckoutController extends FrontBaseController
                     $total = $total;
                 }
                 $ck = 1;
-                return view('frontend.checkout.step3', ['products' => $cart->items, 'totalPrice' => $total, 'pickups' => $pickups, 'totalQty' => $cart->totalQty, 'gateways' => $gateways, 'shipping_cost' => 0, 'digital' => $dp, 'curr' => $curr, 'shipping_data' => $shipping_data, 'package_data' => $package_data, 'vendor_shipping_id' => $vendor_shipping_id, 'vendor_packing_id' => $vendor_packing_id, 'paystack' => $paystackData, 'step2' => $step2, 'step1' => $step1]);
+//                dd($total ,['products' => $cart->items,
+//                    'totalPrice' => $total,
+//                    'pickups' => $pickups, 'totalQty' => $cart->totalQty,
+//                    'gateways' => $gateways, 'shipping_cost' => 0, 'digital' => $dp,
+//                    'curr' => $curr, 'shipping_data' => $shipping_data,
+//                    'package_data' => $package_data, 'vendor_shipping_id' => $vendor_shipping_id,
+//                    'vendor_packing_id' => $vendor_packing_id, 'paystack' => $paystackData,
+//                    'step2' => $step2, 'step1' => $step1]);
+                return view('frontend.checkout.step3',
+                    ['products' => $cart->items,
+                        'totalPrice' => $total,
+                        'pickups' => $pickups, 'totalQty' => $cart->totalQty,
+                        'gateways' => $gateways, 'shipping_cost' => 0, 'digital' => $dp,
+                        'curr' => $curr, 'shipping_data' => $shipping_data,
+                        'package_data' => $package_data, 'vendor_shipping_id' => $vendor_shipping_id,
+                        'vendor_packing_id' => $vendor_packing_id, 'paystack' => $paystackData,
+                        'step2' => $step2, 'step1' => $step1]);
             }
         }
     }

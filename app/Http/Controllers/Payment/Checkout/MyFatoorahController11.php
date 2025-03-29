@@ -5,27 +5,24 @@ namespace App\Http\Controllers\Payment\Checkout;
 use App\Classes\GeniusMailer;
 use App\Helpers\OrderHelper;
 use App\Helpers\PriceHelper;
-use App\Http\Controllers\Controller;
 use App\Models\Cart;
 use App\Models\Country;
 use App\Models\Order;
-use App\Models\PaymentGateway;
 use App\Models\Reward;
 use App\Models\State;
+use Exception;
+use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
-use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Str;
-use Mollie\Laravel\Facades\Mollie;
-use MyFatoorah\Library\MyFatoorah;
 use MyFatoorah\Library\API\Payment\MyFatoorahPayment;
 use MyFatoorah\Library\API\Payment\MyFatoorahPaymentEmbedded;
 use MyFatoorah\Library\API\Payment\MyFatoorahPaymentStatus;
-use Exception;
+use MyFatoorah\Library\MyFatoorah;
 
-class MyFatoorahController extends CheckoutBaseControlller {
+class MyFatoorahController11 extends CheckoutBaseControlller {
 
     /**
      * @var array
@@ -52,8 +49,6 @@ class MyFatoorahController extends CheckoutBaseControlller {
 
     public function store(Request $request)
     {
-
-        dd($request->all());
         $input = array_merge(
             Session::get('step1', []),
             Session::get('step2', []),

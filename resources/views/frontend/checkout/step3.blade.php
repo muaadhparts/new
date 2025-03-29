@@ -62,6 +62,7 @@
                         <div class="list-wrapper">
                             @foreach ($gateways as $gt)
 
+                                @dump($gt->showForm())
                             @if ($gt->checkout == 1)
                             @if ($gt->type == 'manual')
                             @if ($digital == 0)
@@ -101,7 +102,7 @@
                                 <label class="label-wrapper" for="pl{{ $gt->id }}">
                                     <span class="label-title"> {{ $gt->name }}</span>
                                     @if ($gt->information != null)
-                                        ddd
+
                                     <span class="label-subtitle">{{ $gt->getAutoDataText() }}</span>
                                     @endif
                                 </label>
@@ -228,14 +229,17 @@
 
                                 @php
 
-                                $shipping_cost = 0;
-                                if (isset($step2->shipping) && is_array($step2->shipping)) {
-                                foreach ($step2->shipping as $key => $value) {
-                                $shpping = App\Models\Shipping::findOrFail($value);
-                                $shipping_cost += $shpping->price;
-                                }
-                                }
+//                                @dd($step2 ,$shipping_cost);
 
+//                                $shipping_cost = 0;
+//                                if (isset($step2->shipping) && is_array($step2->shipping)) {
+//                                foreach ($step2->shipping as $key => $value) {
+//                                $shpping = App\Models\Shipping::findOrFail($value);
+//                                $shipping_cost += $shpping->price;
+//                                }
+//                                }
+
+//                                dd($shipping_cost);
                                 $packing_cost = 0;
                                 if (isset($step2->packeging) && is_array($step2->packeging)) {
                                 foreach ($step2->packeging as $key => $value) {
@@ -245,7 +249,7 @@
                                 }
 
                                 $extra_cost = $shipping_cost + $packing_cost;
-
+//                                dd($shipping_cost)
                                 @endphp
 
 
@@ -267,7 +271,7 @@
                                 <div class="price-details">
                                     <span>@lang('Shipping Cost')</span>
                                     <span class="right-side">
-                                        {{ App\Models\Product::convertPrice($shipping_cost2)
+                                        {{ App\Models\Product::convertPrice($shipping_cost)
                                         }}
                                     </span>
                                 </div>

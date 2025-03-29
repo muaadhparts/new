@@ -1632,7 +1632,7 @@ Route::group(['middleware' => 'maintenance'], function () {
 
     Route::get('/carts/coupon/check', 'Front\CouponController@couponcheck')->name('front.coupon.check');
 
-    Route::get('/checkout/payment/{slug1}/{slug2}', 'Front\CheckoutController@loadpayment')->name('front.load.payment');
+//    Route::get('/checkout/payment/{slug1}/{slug2}', 'Front\CheckoutController@loadpayment')->name('front.load.payment');
     Route::get('/checkout/payment/return', 'Front\CheckoutController@payreturn')->name('front.payment.return');
     Route::get('/checkout/payment/cancle', 'Front\CheckoutController@paycancle')->name('front.payment.cancle');
     Route::get('/checkout/payment/wallet-check', 'Front\CheckoutController@walletcheck')->name('front.wallet.check');
@@ -1640,8 +1640,11 @@ Route::group(['middleware' => 'maintenance'], function () {
 
 
     // My Fatoorah
-    Route::post('/checkout/payment/myfatoorah/submit', 'Payment\Checkout\MyFatoorahController@store')->name('front.myfatoorah.submit');
-    Route::get('/checkout/payment/paypal-notify', 'Payment\Checkout\PaypalController@notify')->name('front.paypal.notify');
+    Route::post('/checkout/payment/myfatoorah/submit', 'App\Http\Controllers\MyFatoorahController@index')->name('front.myfatoorah.submit');
+    Route::get('/checkout/payment/myfatoorah/myfatoorah-notify', 'App\Http\Controllers\MyFatoorahController@notify')->name('front.myfatoorah.notify');
+//    Route::post('/checkout/payment/myfatoorah/submit', 'Payment\Checkout\MyFatoorahController@store')->name('front.myfatoorah.submit');
+
+//    Route::get('/checkout/payment/paypal-notify', 'Payment\Checkout\PaypalController@notify')->name('front.paypal.notify');
 
 
 
