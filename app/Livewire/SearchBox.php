@@ -103,20 +103,25 @@ class SearchBox extends Component
     public function search($query)
     {
 
+
         $slug = str_replace('-', '',$query);
         $slug = Str::upper($slug);
         $length = Str::length($slug);
-
+//    dd($length ,$query);
 //        dd($length);
 
         if ($length > 14) {
 
            $query =   $this->getVinDecode($slug);
 
-            $this->is_vin = true;
-            $CatalogModel = Session::get('CatalogModel');
+//           dd($query);
+            if($query){
+                $this->is_vin = true;
+                $CatalogModel = Session::get('CatalogModel');
 //            to_route('tree.level1',['slug'=>$data['slug']]);
-            return   $query;
+                return   $query;
+            }
+
 //            return    redirect()->route('tree.level1',$query);
 //            dd($query ,$slug,$CatalogModel);
 //            redirect()->route('search.result', ['sku' => $value]);
@@ -246,7 +251,7 @@ class SearchBox extends Component
 //            dd($response->json()  ,count($response->json()['vehicles']));
             if(count($response->json()['vehicles']) >0){
 
-
+//                $this->is_vin = true;
 
 
                 $data = $response->json()['vehicles'][0];
@@ -288,7 +293,7 @@ class SearchBox extends Component
 //            return redirect()->back();
         }
 
-//        dd($response->json() ,$response);
+        dd($response->json() ,$response);
 
 
 //        "https://microcat-apac.superservice.com/ver/microcat/epc-html/v3/vehicle/search?searchTerm=JNKAY1AP7BM200155&market=SA&language=en&dataLanguage=en"
