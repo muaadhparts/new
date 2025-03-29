@@ -14,7 +14,7 @@ return [
       * Test Mode (boolean)
      * Accepted value: true for the test mode or false for the live mode
      */
-    'test_mode' => false,
+    'test_mode' => env('FATOORAH_TEST_MODE',true),
     /**
      * Country ISO Code (string)
      * Accepted value: KWT, SAU, ARE, QAT, BHR, OMN, JOD, or EGY.
