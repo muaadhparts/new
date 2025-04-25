@@ -88,7 +88,9 @@ class MyFatoorahController extends CheckoutBaseControlller {
         $input = Session::get('input_data');
         $step1 = Session::get('step1');
         $step2 = Session::get('step2');
-        $input = array_merge($step1, $step2, $input);
+
+        // dd($input ,$step1,$step2);
+        $input = array_merge($step1, $step2);
 //        $response =    $this->callback();
 
         try {
