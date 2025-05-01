@@ -18,4 +18,11 @@ class Partner extends Model
         return $this->hasMany(Catalog::class ,'brand_id','id');
     }
 
+
+
+    public function regions()
+    {
+        return $this->hasMany(BrandRegion::class, 'brand_id');
+    }
+
 }

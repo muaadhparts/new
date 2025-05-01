@@ -18,17 +18,11 @@
 
                 <div class="col-md-3 mb-3">
                     <select class="form-select" wire:model="region">
-                        <option value="GL"   > [GL] General Market - Left-Hand Drive </option>
-                         <option value="AR">[AR] Australia </option>
-                        <option value="CA">[CA] Canada </option>
-                        <option value="EL"> [EL] Europe - Left-Hand Drive </option>
-                        <option value="EL"> [EL] Europe - Right-Hand Drive </option>
-
-                        <option value="GR"> [GR] General Market - Right-Hand Drive </option>
-                        <option value="JP"> [JP] Japan </option>
-                        <option value="US"> [US] USA </option>
-
+                        @foreach ($this->regionOptions as $value => $label)
+                            <option value="{{ $value }}">{{ $label }}</option>
+                        @endforeach
                     </select>
+                   
                 </div>
 
                 <!-- Year Filter Dropdown -->

@@ -120,7 +120,7 @@ class MyFatoorahController extends CheckoutBaseControlller {
 
         $oldCart = Session::get('cart');
         $cart = new Cart($oldCart);
-        OrderHelper::license_check($cart); // For License Checking
+        // OrderHelper::license_check($cart); // For License Checking
         $t_oldCart = Session::get('cart');
         $t_cart = new Cart($t_oldCart);
         $new_cart = [];
