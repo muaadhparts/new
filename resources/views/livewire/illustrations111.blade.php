@@ -26,7 +26,6 @@
 
             div[id*='zoom_container'] .landmarks .lable div {
                 z-index: 19999;
-                width: 100;
                 text-align: center;
                 vertical-align: middle;
                 border: 2px solid blue;
@@ -71,8 +70,6 @@
                     opacity: .2;
                 }
             }
-
-           
         </style>
 
 
@@ -99,16 +96,16 @@
     </div>
 
 
-    <div class="container  ">
+    <div class="container m-md-2">
 
-    <div class="row bg-white  panel-body">
+    <div class="row bg-white panel-body">
 
-        <div class="col-md-12 content mt-auto mb-auto" >
+        <div class="col-md-6 content mt-auto mb-auto">
 
-            <div class="row m-0 " xstyle="background-color: red">
+            <div class="row m-0">
 
                 <div class="block1">
-                    <div class="products-view" style="margin-left: 25%;">
+                    <div class="products-view">
                         <div class="products-view__options view-options view-options--offcanvas--mobile">
 
                             <div class="view-options2 xview-options__body--filters ">
@@ -121,7 +118,7 @@
 
                                 <div id="zoom_container">
 
-                                    <img id="image"    class="mx-auto"  src="{{ Storage::url($category->images) }}" alt="{{ $category->name }}"
+                                    <img id="image" src="{{ Storage::url($category->images) }}" alt="{{ $category->name }}"
                                          width="80" />
                                     <div class="landmarks" data-show-at-zoom="0" data-allow-drag="false"></div>
                                 </div>
@@ -135,7 +132,7 @@
             </div>
 
         </div>
-        <div class="col-md-12 content m-0">
+        <div class="col-md-6 content m-0">
 
             <div class="row">
 {{--                <livewire:attributes  :vehicle="$vehicle" />--}}
@@ -155,7 +152,8 @@
                             <th>@lang('Qty ')</th> 
                             <th>@lang('applicability ')</th>
                             <th>@lang('begin_date ')</th>
-                            <th>@lang('end_date ')</th> 
+                            <th>@lang('end_date ')</th>
+
                             <th>@lang('View')</th>
 
 
@@ -166,7 +164,9 @@
                       
                              <tr class="part-search-tr" x-data="{ isHovered: false }" class="pointer correct-callout"
                                 data-category-id="{{ $category->id }}" data-index="{{ $item->callout }}">
+
  
+
 
                                 <td class="codeonimage " style="color: blue; cursor: pointer;"
                                     x-on:click="$dispatch('modal', {partNumber: '{{ $item->callout }}',isLoading:true, isOpen: true ,categoryId:'{{ $category->id }}' })"
