@@ -23,7 +23,7 @@ class Catlogs extends Component
      
         $this->brand = Partner::where('name', $id)->firstOrFail();
         // dd($this->brand ,$this ,  $this->brand->regions);
-        // $this->region = 'GL';
+        $this->region = $this->brand->regions->first()?->code ?? '';
       
     }
 
