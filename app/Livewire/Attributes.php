@@ -52,6 +52,7 @@ class Attributes extends Component
 
             Session::put('attributes', $this->data);
 //            dd($this,Session::get('current_vehicle') ,$this->data);
+            $this->emit('form-saved');
             $this->dispatchBrowserEvent('form-saved');
 //             session(['attributes' => $this->data]);
 

@@ -122,7 +122,7 @@
                                 <div id="zoom_container">
 
                                     <img id="image"    class="mx-auto"  src="{{ Storage::url($category->images) }}" alt="{{ $category->name }}"
-                                         width="80" />
+                                         width="800" height="500" />
                                     <div class="landmarks" data-show-at-zoom="0" data-allow-drag="false"></div>
                                 </div>
                             </div>
@@ -144,7 +144,7 @@
                 <div class="col-sm-12 col-md-12">
 
                 
-                
+                        {{-- @dump($products) --}}
                     <table class="glow pop-vin table table-bordered-1 table-hover table-condensed">
                         <thead>
                         <tr>
@@ -168,17 +168,22 @@
                                 data-category-id="{{ $category->id }}" data-index="{{ $item->callout }}">
  
 
-                                <td class="codeonimage " style="color: blue; cursor: pointer;"
+                                <td xclass="codeonimage " style="color: blue; cursor: pointer;"
                                     x-on:click="$dispatch('modal', {partNumber: '{{ $item->callout }}',isLoading:true, isOpen: true ,categoryId:'{{ $category->id }}' })"
-                                    id="part_{{ $item->callout }}">{{ $item->callout }}</td>
+                                    id="part_{{ $item->callout }}">
+                                    {{ $item->callout }}
+                                </td>
 
+                                {{-- <td>{{ $item->callout }}</td> --}}
                                 <td>{{ $item->partnumber }}</td>
 
-                                <td>  @if(app()->getLocale() ==='en')  {{ $item->label_en }} @else  {{ $item->label_ar }} @endif </td>
+                                {{-- <td>  @if(app()->getLocale() ==='en')  {{ $item->label_en }} @else  {{ $item->label_ar }} @endif </td> --}}
+                                {{-- <td>  @if(app()->getLocale() ==='en')  {{ $item->label_en }} @else  {{ $item->label_ar ??  $item->label_en  }} @endif </td> --}}
                                 <td>{{ $item->qty }}</td>
                                 <td>{{ $item->applicability }}</td>
                                 <td>{{ $item->formattedbegindate }}</td>
                                 <td>{{ $item->formattedenddate }}</td>
+                                <td> voew</td>
                                 {{-- <td>
                                     <a class="btn btn-outline-primary" href="{{ url("catlogs/{$this->brand->name}/$this->vehicle/$product->key1/$product->key2/$product->code") }}">
                                         @lang('View')

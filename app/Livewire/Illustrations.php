@@ -19,14 +19,19 @@ class Illustrations extends Component
     public $illustration;
     public $products;
 
+    public $vehicle;
+    public $region;
+    public $code;
     public $brand;
     public $categories;
-
+    protected $listeners = ['form-saved' => 'handleRefresh'];
+ 
     public function mount($id,$data,$key1,$key2,$code)
     {
 //         dd($id,$data,$key1,$key2,$code );
 
         $this->vehicle = $data;
+        $this->code = $code;
         $this->brand = Partner::where('name', $id)->firstorFail();
         $this->category = NCategory::where('data', $data)
 //            ->select('id','data','code','label','images','key1','key2')
@@ -46,27 +51,81 @@ class Illustrations extends Component
 //        dd($this->illustration ,$this->illustration->illustrationwithcallouts , $this->partCallouts,$this->category);
  //        $products = Product::take(10)->get();
 
-//        dd(Session::get('attributes'));
+    //    dd(Session::get('attributes'));
+
+    
+
+//            dd($year ,$month  ,$query->get(),Session::get('attributes'));
+
+        
+
+            
+            $this->products = DB::table(Str::lower($data))
+                // ->select('code', 'partnumber', 'callout' ,'label_'.app()->getLocale())
+                ->select(
+                    'code', 
+                    'partnumber', 
+                    'callout',  
+                    'label_en',
+                    'label_ar',
+                    // 'label_'.app()->getLocale(),
+
+                    'qty', 
+                    'applicability',
+                    'formattedbegindate',
+                    'formattedenddate'
+                   
+                )
+              
+                ->distinct()
+                ->where('code',$code )
+                ->orderBy('callout')
+                ->get();
+
+                // dd($this->products);
+
+       
+
+        
+        
+
+
+
+//        dd($this->illustration->illustrationWithCallouts ,$this->products);
+
+    }
+
+
+    public function handleRefresh()
+    {
 
         if(Session::get('attributes')) {
 
+            // dd($this ,$this->products);
+            // dd(Session::get('attributes'));
             $year = !empty(Session::get('attributes')['year']) ? Session::get('attributes')['year'] : null ;
             $month = !empty(Session::get('attributes')['month']) ? Session::get('attributes')['month'] : null ;
-            $attributes = Session::get('attributes');
+            $attributes =array_filter( Session::get('attributes')) ;
             DB::statement("SET sql_mode=(SELECT REPLACE(@@sql_mode, 'ONLY_FULL_GROUP_BY', ''))");
 
-            $query = DB::table(Str::lower($data))
+            // dd($year,$month,$attributes);
+            $query = DB::table(Str::lower($this->vehicle))
                 ->select(
-                    'code', 'partnumber', 'callout',  'label_'.app()->getLocale(),
-//                    'partnumber',
-//                    'applicability',
-//                    DB::raw('MAX(id) AS id'),
-//                    DB::raw("CONCAT(MAX(begin_month), '/', MAX(begin_year)) AS formattedbegindate"),
-//                    DB::raw("CONCAT(MAX(end_month), '/', MAX(end_year)) AS formattedenddate"),
-////                    'code',
-//                    DB::raw('MAX(callout) AS callout')
-                )
-                ->where('code',$code );
+                    'code', 
+                    'partnumber', 
+                    'callout',  
+                    'label_en',
+                    'label_ar',
+                    // 'label_'.app()->getLocale(),
+
+                    'qty', 
+                    'applicability',
+                    'formattedbegindate',
+                    'formattedenddate'
+
+ //                 
+                );
+               
 
             if($year){
                 $query->where(function ($query) use ($year ,$month) {
@@ -94,67 +153,51 @@ class Illustrations extends Component
                 unset($attributes['month']);
                 unset($attributes['year']);
 
+
                 foreach ($attributes as $key => $value) {
 //                        dd($key ,$value);
-                        $query->orWhere('applicability', 'LIKE', "%{$value}%");
+// dd($key,$value);
+                        $query->where('applicability', 'LIKE', "%{$value}%");
+                        // $query->orWhere('applicability', 'LIKE', "%{$value}%");
 //
-                }
+                } 
+ 
+                });
+//              
+                // ->groupBy('partnumber', 'applicability','callout', 'code')
+                
+                 
 
-
-
-//                $query = DB::table('your_table_name')->where(function ($query) use ($array) {
-//
-//                });
-//                    $query->where('applicability', 'LIKE', '%3ROW%')
-//                        ->orWhere('applicability', 'LIKE', '%VK56DE%')
-//                        ->orWhere('applicability', 'LIKE', '%PR/C%')
-//                        ->orWhere('applicability', 'LIKE', '%5AT%')
-//                        ->orWhere('applicability', 'LIKE', '%GCC%');
-                })
-//                ->where(function ($query) {
-//                    $query->where('begin_year', '<', 2015)
-//                        ->orWhere(function ($subQuery) {
-//                            $subQuery->where('begin_year', '=', 2015)
-//                                ->where('begin_month', '<=', 8);
-//                        });
-//                })
-//                ->where(function ($query) {
-//                    $query->where('end_year', '>', 2015)
-//                        ->orWhere(function ($subQuery) {
-//                            $subQuery->where('end_year', '=', 2015)
-//                                ->where('end_month', '>=', 8);
-//                        })
-//                        ->orWhereNull('end_year');
-//                })
-                ->groupBy('partnumber', 'applicability','callout', 'code')
+                // dd($query->get());
+            $this->products  =$query
+            ->distinct()
+                ->where('code',$this->code )
                 ->orderBy('callout')
-                ->get();
+            ->get();
 
+            // dd($this->products);
 
-            $this->products  =$query->get();
-
-//            dd($year ,$month  ,$query->get(),Session::get('attributes'));
-
-        }else {
-            $this->products = DB::table(Str::lower($data))
-                ->select('code', 'partnumber', 'callout' ,'label_'.app()->getLocale())
-                ->distinct()
-                ->where('code',$code )
-                ->orderBy('callout')
-                ->get();
-
-
+            // $this->render();
         }
-
-
-
-//        dd($this->illustration->illustrationWithCallouts ,$this->products);
-
+        // dd('refreshData' ,Session::get('attributes'));
+        // Your refresh logic here
+        // $this->loadData();
+        // ... existing code ...
     }
+ 
+
+    // public function refreshData()
+    // { 
+    //     dd('refreshData');
+    //     // Handle the event here
+    //     $this->loadData();
+    //     // ... existing code ...
+    // }
 
     public function render()
     {
 
+        // dd($this->products);
 
         return view('livewire.illustrations');
     }
