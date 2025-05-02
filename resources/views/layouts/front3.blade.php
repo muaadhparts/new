@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en"  @if(app()->getLocale() ==='ar') xdir="rtl" @endif  >
+<html lang="en"  @if(app()->getLocale() ==='ar') dir="rtl" @endif  >
 
 {{--@dd(Session::get('language') ,app()->getLocale())--}}
 <head>

@@ -11,7 +11,9 @@ use App\Livewire\Level1Tree;
 use Illuminate\Support\Facades\Route;
 
 
-Route::prefix('catlogs')->group(function () {
+Route::prefix('catlogs')
+->middleware(['web','localization'])
+->group(function () {
     Route::get('{id}', Catlogs::class)->name('catlogs.index');
     Route::get('{id}/{data}', CatlogTreeLevel1::class)->name('tree.level1');
 
