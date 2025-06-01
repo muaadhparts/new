@@ -15,6 +15,7 @@ use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Session;
 
+
 class AppServiceProvider extends ServiceProvider
 {
     public function boot()

@@ -14,6 +14,8 @@
     "Declined Orders": "الطلبات المرفوضة",
     "Products": "المنتجات",
     "Add New Product": "إضافة منتج جديد",
+    "Applicability": "مستوى التطبيق",
+
     "All Products": "جميع المنتجات",
     "Deactivated Product": "المنتجات المعطلة",
     "Affiliate Products": "منتجات الأفلييت",
@@ -147,7 +149,9 @@
     "Upload Icon": "رفع أيقونة",
     "Set Banner": "تعيين بانر",
     "Upload Banner": "رفع بانر",
-    "Prefered Size: (1230x267) or Square Sized Image": "الحجم المفضل: (1230x267) أو صورة مربعة",
+
+    
+    "Prefered Size:or Square Sized Image": "الحجم المفضل: (1230x267) أو صورة مربعة",
     "Create Category": "إنشاء فئة",
     "Current Icon": "الأيقونة الحالية",
     "Current Banner": "البانر الحالي",

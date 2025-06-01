@@ -34,12 +34,21 @@
 
                     @foreach ($results as $result)
 
-                        <li xclass="list-group-item d-flex justify-content-between" xstyle="display: flex; justify-content: space-between;">
+                        <li class="list-group-item" style="padding: 10px; border-bottom: 1px solid #ddd; cursor: pointer;">
 
-                        <span wire:click="selectItem('{{ $result->sku }}')" xstyle="text-overflow: ellipsis; white-space: nowrap; overflow: hidden;" >
-                            {{ $result->sku  }}
-                        </span>
-                            <small class="text-black"  style="display: flex; align-items: center; font-size: 13px; font-weight: 100; text-transform: uppercase;">{{ $result->label_en }} - {{ $result->label_ar }}</small>
+                            <div wire:click="selectItem('{{ $result->sku }}')" style="font-weight: bold; font-size: 16px; color: #e90b0b;">
+                                {{ $result->sku }}
+                            </div>
+                            <div style="font-weight: 600; font-size: 14px; color: #912020; margin-top: 2px; font-family: 'Arial', 'Tahoma', sans-serif;">
+                                {{ $result->label_ar }}
+                            {{-- <div style="font-weight: 600; font-size: 14px; color: #1f12d3; margin-top: 4px;">
+                                {{ $result->label_en }} --}}
+                            </div>
+                             <div style="font-weight: 600; font-size: 14px; color: #1f12d3; margin-top: 4px;">
+                                {{ $result->label_en }}
+                            {{-- <div style="font-weight: 600; font-size: 14px; color: #912020; margin-top: 2px; font-family: 'Arial', 'Tahoma', sans-serif;">
+                                {{ $result->label_ar }} --}}
+                            </div>
                         </li>
                     @endforeach
                 @endif

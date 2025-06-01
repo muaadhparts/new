@@ -1,4 +1,4 @@
-jQuery(function($) {
+jQuery(function ($) {
     var data = $('#image').smoothZoom({
         width: 800,
         height: 500,
@@ -21,44 +21,64 @@ jQuery(function($) {
         mouse_WHEEL: true,
         use_3D_Transform: true,
         border_TRANSPARENCY: 0,
-        on_IMAGE_LOAD: function() {
+        on_IMAGE_LOAD: function () {
             console.log('on_IMAGE_LOAD')
         },
-        on_IMAGE_LOAD: function() {
-            console.log('on_IMAGE_LOAD')
-        },
-        on_ZOOM_PAN_UPDATE: function() {
+        on_ZOOM_PAN_UPDATE: function () {
             console.log('on_ZOOM_PAN_UPDATE')
         },
-        on_ZOOM_PAN_COMPLETE: function() {
-
-        },
-        on_LANDMARK_STATE_CHANGE: function() {
+        on_ZOOM_PAN_COMPLETE: function () { },
+        on_LANDMARK_STATE_CHANGE: function () {
             console.log('on_LANDMARK_STATE_CHANGE')
         }
-
+        
     });
+
     partsData.forEach(element => {
-
+        const jsonPart = JSON.stringify(element).replace(/"/g, '&quot;');
         $('#image').smoothZoom('addLandmark', [`
-                <div x-data="{ isHovered: false }"
-                        data-category-id="${element.categoryId }" data-index="${ element.index }"  class="item lable lable-single pointer correct-callout" data-container="body"   data-allow-scale="true" data-size="${element.width},${element.height}" data-position="${element.x},${element.y}">
-                <div data-codeonimage="${element.index}" x-on:click="$dispatch('modal', {partNumber: '${ element.index }',isLoading:true, isOpen: true ,categoryId:'${element.categoryId}' })"
-                                 class="bbdover" id="part_${ element.index }" style="position: absolute; width: ${element.width}; height: ${element.height}; background-color:ransparent; opacity: 0.7;">
-                </div>
-                </div>`]);
+        <div x-data="{ isHovered: false }"
+            data-category-id="${element.categoryId}"
+            data-index="${element.index}"
+            class="item lable lable-single pointer correct-callout callout-label"
+            data-container="body"
+            data-allow-scale="true"
+            data-size="${element.width},${element.height}"
+            data-position="${element.x},${element.y}"
+            data-part="${jsonPart}">
+            <div class="bbdover"
+                 id="part_${element.index}"
+                 style="position: absolute; width: ${element.width}; height: ${element.height}; background-color:transparent; opacity: 0.7;">
+            </div>
+        </div>`]);
     });
-    $('.bbdover').hover(function() {
 
+    // ✅ ربط الضغط على المربعات بإرسال البيانات إلى Livewire
+    setTimeout(() => {
+        document.querySelectorAll(".callout-label").forEach(label => {
+            label.addEventListener("click", function () {
+                const part = JSON.parse(this.dataset.part);
+                window.livewire.emit("openCalloutModal", {
+                    data: window.vehicleCode || "غير معروف",
+                    code: window.categoryCode || "غير معروف",
+                    callout: part.callout || "غير موجود"
+                });
+            });
+        });
+    }, 1000);
+
+    
+
+    $('.bbdover').hover(function () {
         var do_scroll = false;
         var code = $(this).attr('data-codeonimage');
         $(this).addClass('hovered');
-        $(this).siblings().each(function() {
+        $(this).siblings().each(function () {
             if ($(this).attr('data-codeonimage') == code) {
                 $(this).addClass('hovered');
             }
         });
-        $.each($(this).parents('div.panel-body').find('table td.codeonimage'), function(i, val) {
+        $.each($(this).parents('div.panel-body').find('table td.codeonimage'), function (i, val) {
             if (code == $(val).text()) {
                 $(val).parent().addClass('hovered');
                 if (!do_scroll) {
@@ -70,38 +90,37 @@ jQuery(function($) {
                 }
             }
         });
-    }, function() {
+    }, function () {
         var code = $(this).attr('data-codeonimage');
         $(this).removeClass('hovered');
-        $(this).siblings().each(function() {
+        $(this).siblings().each(function () {
             if ($(this).attr('data-codeonimage') == code) {
                 $(this).removeClass('hovered');
             }
         });
-        $.each($(this).parents('div.panel-body').find('table td.codeonimage'), function(i, val) {
+        $.each($(this).parents('div.panel-body').find('table td.codeonimage'), function (i, val) {
             if (code == $(val).text()) {
                 $(val).parent().removeClass('hovered');
             }
         });
     });
 
-    $('tr.part-search-tr').hover(function() {
+    $('tr.part-search-tr').hover(function () {
         var code = $(this).find('td.codeonimage').text();
-
-        $.each($(this).parents('div.panel-body').find('div.bbdover'), function(i, val) {
+        $.each($(this).parents('div.panel-body').find('div.bbdover'), function (i, val) {
             if (code == $(val).attr('data-codeonimage')) {
                 $(val).addClass('hovered');
             }
         });
-    }, function() {
+    }, function () {
         var code = $(this).find('td.codeonimage').text();
-        $.each($(this).parents('div.panel-body').find('div.bbdover'), function(i, val) {
+        $.each($(this).parents('div.panel-body').find('div.bbdover'), function (i, val) {
             if (code == $(val).attr('data-codeonimage')) {
                 $(val).removeClass('hovered');
             }
         });
     });
-
+    
 });
 
 function cartItems() {
@@ -114,23 +133,21 @@ function cartItems() {
         isMany: false,
         productId: null,
 
-
-        fetchCartPartItems() {
+    fetchCartPartItems() {
             $("#modal").modal('show');
 
             fetch(route, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': csrf,
-                    },
-                    body: JSON.stringify({
-                        partNumber: this.partNumber,
-                        categoryId: this.categoryId,
-                        productId: this.productId,
-
-                    })
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': csrf,
+                },
+                body: JSON.stringify({
+                    partNumber: this.partNumber,
+                    categoryId: this.categoryId,
+                    productId: this.productId,
                 })
+            })
                 .then((response) => response.text())
                 .then((data) => {
                     this.isLoading = false;
@@ -149,6 +166,7 @@ function cartItems() {
                     console.log("ERROR", err)
                 });
         },
+
         closeCartPartItems() {
             this.isOpen = false;
             this.isLoading = false;
@@ -159,5 +177,7 @@ function cartItems() {
             $("#modal").modal('hide');
 
         }
+
     };
+
 }

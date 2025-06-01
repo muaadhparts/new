@@ -35,22 +35,35 @@ class CatlogsProducts extends Component
 
     public function render()
     {
-        $prods =      DB::table(Str::lower($this->vehicle))
-//
+        $labelColumn = app()->getLocale() === 'ar'
+            ? DB::raw('label_ar as label')
+            : DB::raw('label_en as label');
 
-            ->where('partnumber', 'like', "{$this->query}%")
-            ->orWhere('callout', 'like', "{$this->query}%")
-            ->orWhere('label_en', 'like', "{$this->query}%")
-            ->orWhere('label_ar', 'like', "{$this->query}%")
-            ->select('id','qty', 'partnumber', 'callout', 'label_en',
-
-                'label_ar' ,'applicability' ,'formattedbegindate' ,'formattedenddate' ,'key1','key2','code')
+        $prods = DB::table(Str::lower($this->vehicle))
+            ->where(function ($query) {
+                $query->where('partnumber', 'like', "{$this->query}%")
+                    ->orWhere('callout', 'like', "{$this->query}%")
+                    ->orWhere('label_en', 'like', "{$this->query}%")
+                    ->orWhere('label_ar', 'like', "{$this->query}%");
+            })
+            ->select(
+                'id',
+                'qty',
+                'partnumber',
+                'callout',
+                $labelColumn, // 👈 فقط عمود واحد حسب اللغة
+                'applicability',
+                'formattedbegindate',
+                'formattedenddate',
+                'key1',
+                'key2',
+                'code'
+            )
             ->simplePaginate(20);
-//        dd($prods->count());
 
-//        dd($this->products);
-        return view('livewire.catlogs-products',[
+        return view('livewire.catlogs-products', [
             'prods' => $prods,
         ]);
     }
+
 }

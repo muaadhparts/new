@@ -54,7 +54,16 @@
                             <div class="dropdown">
                                 <button class="dropdown-toggle" type="button" data-bs-toggle="dropdown"
                                     aria-expanded="false">
-                                    @lang('English')
+                                    @php
+                                        $currentLang = null;
+                                        if (Session::has('language')) {
+                                            $currentLang = $languges->where('id', Session::get('language'))->first();
+                                        }
+                                        if (!$currentLang) {
+                                            $currentLang = $languges->where('is_default', 1)->first();
+                                        }
+                                    @endphp
+                                    {{ $currentLang ? $currentLang->language : 'English' }}
                                 </button>
                                 <ul class="dropdown-menu">
                                     @foreach ($languges as $language)

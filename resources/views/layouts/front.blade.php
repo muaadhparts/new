@@ -6,6 +6,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ $gs->title }}</title>
+    @livewireStyles
+
     <!--Essential css files-->
     <link rel="stylesheet" href="{{ asset('assets/front/css/bootstrap.min.css') }}">
 
@@ -76,7 +78,7 @@
     <!-- footer section -->
     @include('includes.frontend.footer')
     <!-- footer section -->
-    @livewireScripts
+    {{-- @livewireScripts --}}
     <!--Esential Js Files-->
     zepto.min.js
 
@@ -139,8 +141,12 @@
 
     @stack('scripts')
   @yield('script')
+    @livewireScripts
+    <script src="{{ asset('assets/front/js/ill/illustrated.js') }}"></script>
 
-
+    @stack('scripts')
+    @yield('script')
 </body>
 
 </html>
+

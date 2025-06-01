@@ -32,7 +32,7 @@ class Handler extends ExceptionHandler
     public function register(): void
     {
         $this->reportable(function (Throwable $e) {
-            Log::error($e->getMessage(), ['exception' => $e]);
+            // Log::error($e->getMessage(), ['exception' => $e]);
 
             // إرسال الخطأ إلى Slack عند حدوث خطأ خطير
 //            if ($e instanceof QueryException || $e instanceof \ErrorException) {

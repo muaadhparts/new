@@ -82,9 +82,7 @@
                                                                 <span class="text-primary">{{ $product->partnumber }} </span>
                                                             </a>
                                                         </td>
-                                                        <td>{{ $product->label_en }} -<br>
-                                                            {{ $product->label_ar }}
-                                                        </td>
+                                                        <td>{{ $product->label }}</td>
                                                          <td>{{ $product->qty }}</td>
                                                         <td>{{ $product->callout  }}</td>
                                                         <td>{{ $product->applicability  }}</td>
