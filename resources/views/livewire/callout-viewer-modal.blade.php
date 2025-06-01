@@ -25,21 +25,28 @@
                                 <table class="table table-bordered table-hover align-middle text-center">
                                     <thead class="table-light">
                                         <tr>
-                                            <th>@lang('Part Code')</th>
+                                            {{-- <th>@lang('Part Code')</th> --}}
                                             <th>@lang('Part Number')</th>
-                                            <th>@lang('Name Part')</th>
+                                            <th>@lang('Name')</th>
+                                            <th>@lang('Applicability')</th>
                                         </tr>
                                     </thead>
                                     <tbody>
+                                        {{-- @dd($this) --}}
                                         @foreach ($products as $item)
                                             <tr>
-                                                <td>{{ $item->callout }}</td>
-                                                <td>{{ $item->partnumber }}</td>
-                                                <td>
+                                                <td width="20px">{{  $loop->iteration }}</td>
+
+                                                {{-- @dd($item) --}}
+                                                
+                                                <td width="100px">{{ $item->partnumber }} </td>
+                                                {{-- <td width="100px">{{ $item->label_en }} </td> --}}
+                                                <td width="100px">
                                                     {{ app()->getLocale() === 'ar'
-                                                        ? ($item->label_ar ?? $item->label_en)
+                                                        ? ($item->label_ar   ?? $item->label_en)
                                                         : $item->label_en }}
                                                 </td>
+                                                <td width="100px">{{ $item->applicability }}</td>
                                             </tr>
                                         @endforeach
                                     </tbody>

@@ -50,7 +50,7 @@ class Illustrations extends Component
 
             $query = DB::table(Str::lower($data))
                 ->select(
-                    'code', 'partnumber', 'callout' // فقط الحقول الأساسية\
+                    // 'code', 'partnumber', 'callout' // فقط الحقول الأساسية\
 
                 )
                 ->where('code',$code );
@@ -88,7 +88,8 @@ class Illustrations extends Component
                 ->get();
 
 
-            $this->products  =$query->get();
+            // $this->products  =$query->get();
+
         }else {
             $this->products = DB::table(Str::lower($data))
                 ->select('code', 'partnumber', 'callout', 'label_ar', 'label_en')
@@ -96,6 +97,8 @@ class Illustrations extends Component
                 ->where('code', $code)
                 ->orderBy('callout')
                 ->get();
+
+                // dd($this->products);
 
 
         }

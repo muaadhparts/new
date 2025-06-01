@@ -101,7 +101,7 @@
                     </div>
                 </div>
             </div>
-
+{{-- 
             <div class="mt-4">
                 <table class="glow pop-vin table table-bordered-1 table-hover table-condensed">
                     <thead>
@@ -123,17 +123,20 @@
                                 {{ $item->callout }}
                             </td>
                             <td>{{ $item->partnumber }}</td>
-                            <td>
+                             <td>
                                 {{ app()->getLocale() === 'ar'
                                     ? ($item->label_ar ?? $item->label_en)
                                     : $item->label_en }}
                             </td>
-                            <td><button type="button" class="btn btn-danger">{{ __('common.applicability') }}</button></td>
+                            <td>
+                                    {{ $item->applicability }}
+                             
+                            </td>
                         </tr>
                     @endforeach
                     </tbody>
                 </table>
-            </div>
+            </div> --}}
         </div>
     </div>
 
