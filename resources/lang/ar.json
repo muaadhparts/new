@@ -2054,8 +2054,7 @@
     "messages.no_matches": "لا توجد قطع مطابقة للمواصفات.",
     "messages.api_error": "خطأ أثناء جلب البيانات.",
     "messages.load_failed": "تعذر تحميل البيانات",
-    "messages.added_to_cart": "تمت الإضافة إلى السلة",
-
+    "Added to cart": "تمت الإضافة إلى السلة",
     "ext.partCode": "رمز القطعة",
     "ext.market": "السوق",
     "ext.specialNote": "ملاحظة خاصة",
