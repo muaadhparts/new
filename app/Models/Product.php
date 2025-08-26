@@ -158,9 +158,9 @@ class Product extends Model
         $price = $price * $curr->value;
         $price = \PriceHelper::showPrice($price);
         if ($gs->currency_format == 0) {
-            return $curr->sign . $price;
+            return $curr->sign . ' ' . $price;
         } else {
-            return $price . $curr->sign;
+            return $price . ' ' . $curr->sign;
         }
     }
 
@@ -221,9 +221,9 @@ class Product extends Model
         $price = \PriceHelper::showPrice($price);
 
         if ($gs->currency_format == 0) {
-            return $curr->sign . $price;
+            return $curr->sign . ' ' . $price;
         } else {
-            return $price . $curr->sign;
+            return $price . ' ' . $curr->sign;
         }
     }
 
@@ -269,9 +269,9 @@ class Product extends Model
         $price = \PriceHelper::showPrice($price);
 
         if ($gs->currency_format == 0) {
-            return $curr->sign . $price;
+            return $curr->sign . ' ' . $price;
         } else {
-            return $price . $curr->sign;
+            return $price . ' ' . $curr->sign;
         }
     }
 
@@ -329,9 +329,9 @@ class Product extends Model
         
 
         if ($gs->currency_format == 0) {
-            return $curr->sign . $price;
+            return $curr->sign . ' ' . $price;
         } else {
-            return $price . $curr->sign;
+            return $price . ' ' . $curr->sign;
         }
 
 
@@ -357,9 +357,9 @@ class Product extends Model
         $price = \PriceHelper::showPrice($price);
 //        dd($price);
         if ($gs->currency_format == 0) {
-            return $curr->sign . $price;
+            return $curr->sign . ' ' . $price;
         } else {
-            return $price . $curr->sign;
+            return $price . ' ' . $curr->sign;
         }
     }
 
@@ -381,9 +381,9 @@ class Product extends Model
         $price = $price * $curr->value;
         $price = \PriceHelper::showPrice($price);
         if ($gs->currency_format == 0) {
-            return $curr->sign . $price;
+            return $curr->sign . ' ' . $price;
         } else {
-            return $price . $curr->sign;
+            return $price . ' ' . $curr->sign;
         }
     }
 
