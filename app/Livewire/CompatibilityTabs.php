@@ -3,54 +3,49 @@
 namespace App\Livewire;
 
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
 use Livewire\Component;
 
 class CompatibilityTabs extends Component
 {
-    public $catalogs;
     public $sku;
-    public $activeTab;
-    public $products;
+    public $results;
 
-    public function mount($catalogs)
+    public function mount($sku)
     {
-        $this->catalogs = $catalogs;
-        $this->activeTab = $catalogs[0]->data ?? null; // Default to first tab
-        $this->products =  $this->getProducts(); // Default to first tab
+        $this->sku = $sku;
+        $this->results = $this->getCompatibility();
     }
 
-    public function setActiveTab($tab)
+    public function getCompatibility()
     {
-        $this->activeTab = $tab;
+        return DB::table('parts_index')
+            ->join('catalogs', 'catalogs.code', '=', 'parts_index.catalog_code')
+            ->select(
+                'parts_index.part_number',
+                'parts_index.catalog_code',
+                'catalogs.label_en',
+                'catalogs.label_ar',
+                'catalogs.beginYear',
+                'catalogs.endYear'
+            )
+            ->where('parts_index.part_number', $this->sku)
+            ->get()
+            ->map(function ($item) {
+                return (object) [
+                    'part_number'   => $item->part_number,
+                    'catalog_code'  => $item->catalog_code,
+                    'label'         => app()->getLocale() === 'ar' ? $item->label_ar : $item->label_en,
+                    'begin_year'    => $item->beginYear,
+                    'end_year'      => $item->endYear ?: 'حتى الآن',
+                ];
+            });
     }
-
-    public function getProducts()
-    {
-        if(app()->isLocal()){
-            return   DB::select("
-                SELECT DISTINCT partnumber, callout, label_en, applicability, code 
-              FROM ".Str::lower('y62gl')."
-                WHERE partnumber = :partnumber
-            ", ['partnumber' => $this->sku]);
-
-        }
-
-        return   DB::select("
-                SELECT DISTINCT partnumber, callout, label_en, applicability, code 
-              FROM ".Str::lower($this->activeTab)."
-                WHERE partnumber = :partnumber
-            ", ['partnumber' => $this->sku]);
-
-    }
-
 
     public function render()
     {
-
-        $results =$this->getProducts();
-
-//            dump($this->getProducts() ,$this->sku);
-        return view('livewire.compatibility-tabs',['results' =>$this->getProducts()]);
+        return view('livewire.compatibility-tabs', [
+            'results' => $this->results,
+            'sku'     => $this->sku,
+        ]);
     }
 }

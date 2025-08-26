@@ -1,63 +1,80 @@
 <div class="container">
-
-
-
-
-
-    <div class=" product-nav-wrapper">
-
+    <div class="product-nav-wrapper">
         <nav aria-label="breadcrumb">
-            <ol class="breadcrumb">
-{{--                    @dd(request('vin'))--}}
+            <ol class="breadcrumb text-uppercase">
 
-                <li class="breadcrumb-item "><a  class="text-black" href="{{route('front.index')}}">Home</a></li>
-                <li class="breadcrumb-item"><a class="text-black" href="{{route('catlogs.index',$brand->name)}}">{{$brand->name}}</a></li>
-                @if(request('vin'))
-                    <li class="breadcrumb-item"><a class="text-black" href="{{route('tree.level1',
-                                ['id'=> $brand->name ,
-                                 'data'=> $vehicle ,
-                                'vin'=>  request('vin')])}}">
-                            {{request('vin')}}</a>
+                {{-- Home --}}
+                <li class="breadcrumb-item">
+                    <a class="text-black" href="{{ route('front.index') }}">Home</a>
+                </li>
+
+                {{-- Brand --}}
+                <li class="breadcrumb-item">
+                    <a class="text-black" href="{{ route('catlogs.index', $brand->name) }}">
+                        {{ strtoupper($brand->name) }}
+                    </a>
+                </li>
+
+                {{-- VIN --}}
+                @if(Session::get('vin'))
+                    <li class="breadcrumb-item">
+                        <a class="text-black" href="{{ route('tree.level1', [
+                            'id' => $brand->name,
+                            'data' => $catalog,
+                            'vin' => Session::get('vin')
+                        ]) }}">
+                            {{ Session::get('vin') }}
+                        </a>
                     </li>
                 @endif
-                <li class="breadcrumb-item active"><a class="text-primary" href="{{route('tree.level1',['id'=> $brand->name ,'data'=> $vehicle ])}}">{{$vehicle}}</a></li>
-{{--                <li class="breadcrumb-item active" aria-current="page">Data</li>--}}
+
+                {{-- الكتالوج (مستوى حالي بدون رابط) --}}
+                <li class="breadcrumb-item active text-primary text-uppercase" aria-current="page">
+                    {{ strtoupper($catalog->shortName ?? $catalog->name ?? $catalog->code) }}
+                </li>
+
             </ol>
         </nav>
     </div>
+    {{-- <div class="row gy-4 gy-lg-5 mt-4">
+        <livewire:search-box/>
+        <div> --}}
+            {{-- @dd(Session::get('vin')) --}}
+        {{-- @dd(Session::get('preloaded_full_code')) --}}
+       {{-- @dd(Session::get('model_begin_date')) --}}
+       {{-- @dd(Session::get('model_end_date')) --}}
+        {{-- @dd(Session::get('selected_filters')) --}}
+            {{-- @dd(Session::get('selected_filters') ,Session::get('selected_filters_labeled')) --}}
 
     <div class="row gy-4 gy-lg-5 mt-4 mb-10">
 
+        <livewire:vehicle-search-box :catalog="$catalog->code" :spec="Session::get('attributes')" />
 
-
-        <livewire:vehicle-search-box  :vehicle="$vehicle"/>
-
-
-
-    @foreach ($categories  as $catalog)
-{{--                    @dd($catalog->data , $catalog );--}}
-        <div class="col-12 col-sm-6 col-md-4 col-xl-3 text-center">
-            <a href="{{route('tree.level2',['id'=> $brand->name ,'data'=> $catalog->data ,'key1' => $catalog->code ])}}">
-                <div class="single-product card border-0 shadow-sm h-100  ">
-
-                    <div class="img-wrapper position-relative">
-                        <img class=" img-fluid rounded" src="{{ Storage::url($catalog->thumbnailimage) }}" alt="product img">
+        @foreach ($categories as $cat)
+            <div class="col-12 col-sm-6 col-md-4 col-xl-3 text-center">
+                <a href="{{ route('tree.level2', [
+                    'id' => $brand->name,
+                    'data' => $catalog->code,
+                    'key1' => $cat->full_code,
+                    'vin' => Session::get('vin')
+                ]) }}">
+                    <div class="single-product card border-0 shadow-sm h-100">
+                        <div class="img-wrapper position-relative">
+                            <img class="img-fluid rounded"
+                                 src="{{ $cat->thumbnail ? Storage::url($cat->thumbnail) : asset('assets/images/no-image.png') }}"
+                                 alt="{{ $cat->full_code }}"
+                                 onerror="this.onerror=null; this.src='{{ asset('assets/images/no-image.png') }}';">
+                        </div>
+                        <div class="p-3 text-center">
+                            <h6 class="product-title text-dark fw-bold text-uppercase">{{ $cat->full_code }}</h6>
+                            @if($cat->label)
+                                <p class="text-muted small">{{ $cat->label }}</p>
+                            @endif
+                        </div>
                     </div>
-                    <div class="p-3 text-center">
-
-                            <h6 class="product-title text-dark fw-bold text-center">{{ $catalog->label }}</h6>
-
-
-                    </div>
-                </div>
-            </a>
-        </div>
-    @endforeach
+                </a>
+            </div>
+        @endforeach
 
     </div>
-
-
-
-
-
 </div>

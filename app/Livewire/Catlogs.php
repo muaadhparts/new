@@ -5,6 +5,7 @@ namespace App\Livewire;
 use App\Models\Catalog;
 use App\Models\Brand;
 use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\Log;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -19,54 +20,123 @@ class Catlogs extends Component
 
     public function mount($id)
     {
-        // dd($id ,$this);
-     
-        $this->brand = Brand::where('name', $id)->firstOrFail();
-        // dd($this->brand ,$this ,  $this->brand->regions);
-        $this->region = $this->brand->regions->first()?->code ?? '';
-      
+        $this->resetFilters();
+
+        try {
+            // Get brand by name
+            $this->brand = Brand::whereRaw('LOWER(name) = ?', [strtolower($id)])->first();
+
+            if (!$this->brand) {
+                Log::error("Brand not found: {$id}");
+                session()->flash('error', __('Brand not found.'));
+                return;
+            }
+
+            // Select first region by default
+            $this->region = $this->brand->regions()->value('code');
+
+        } catch (\Exception $e) {
+            Log::error("Error in Catlogs mount: " . $e->getMessage());
+            session()->flash('error', __('An error occurred while loading data.'));
+        }
+    }
+
+    public function updatedRegion()
+    {
+        $this->resetPage();
+    }
+
+    public function updatedSearchName()
+    {
+        $this->resetPage();
+    }
+
+    public function updatedSearchYear()
+    {
+        $this->resetPage();
     }
 
     public function render()
     {
-        Session::forget('current_vehicle');
-        Session::forget('attributes');
+        $this->resetFilters();
 
-        $currentYear = date('Y');
-        $years = range($currentYear + 1, 1975);
+        $years = $this->getYearRange();
 
-        $catlogs = Catalog::where('brand_id', $this->brand->id)
-            ->where('applicableRegions', $this->region)
-            ->when($this->searchName, function ($query) {
-                $query->where(function ($q) {
-                    $q->where('name', 'like', '%' . $this->searchName . '%')
-                        ->orWhere('shortName', 'like', '%' . $this->searchName . '%')
-                        ->orWhere('data', 'like', '%' . $this->searchName . '%');
-                });
-            })
-            ->when($this->searchYear, function ($query) {
-                $query->where(function ($q) {
+        try {
+            // Get region ID
+            $brandRegionId = $this->brand?->regions()
+                ->where('code', $this->region)
+                ->value('id');
+
+            // Query catalogs
+            $catlogs = Catalog::query()
+                ->where('brand_id', $this->brand->id)
+                ->when($brandRegionId, fn($q) => $q->where('brand_region_id', $brandRegionId))
+                ->when($this->searchName, fn($q) =>
+                    $q->where(function ($q) {
+                        $q->where('label_ar', 'like', "%{$this->searchName}%")
+                        ->orWhere('label_en', 'like', "%{$this->searchName}%")
+                        ->orWhere('code', 'like', "%{$this->searchName}%");
+                    })
+                )
+                ->when($this->searchYear, fn($q) =>
                     $q->where('beginYear', '<=', $this->searchYear)
-                        ->where(function ($q2) {
-                            $q2->where('endYear', '>=', $this->searchYear)
-                                ->orWhere('endYear', 0);
-                        });
-                });
-            })
-            ->orderBy('name', 'ASC')
-            ->simplePaginate(10);
+                    ->where(fn($q2) =>
+                        $q2->where('endYear', '>=', $this->searchYear)
+                            ->orWhere('endYear', 0)
+                    )
+                )
+                ->orderBy('new_id', 'ASC')
+                ->paginate(12);
+
+            Log::info("Catalogs found for brand {$this->brand->name} with region {$this->region}: " . $catlogs->count());
+
+        } catch (\Exception $e) {
+            Log::error("Error in Catlogs render: " . $e->getMessage());
+            $catlogs = collect();
+        }
 
         return view('livewire.catlogs', [
             'catlogs' => $catlogs,
             'years' => $years,
         ]);
     }
+
     public function getRegionOptionsProperty()
     {
-        if (!$this->brand || !$this->brand->regions) {
+        if (!$this->brand) {
             return [];
         }
-        return $this->brand->regions->pluck('label', 'code')->toArray();
+
+        try {
+            $regions = $this->brand->regions()->get();
+            return $regions->pluck('label_en', 'code')->toArray();
+        } catch (\Exception $e) {
+            Log::error("Error getting region options: " . $e->getMessage());
+            return [];
+        }
     }
 
+    /**
+     * Reset filters and Session
+     */
+    protected function resetFilters()
+    {
+        Session::forget([
+            'current_catalog',
+            'attributes',
+            'selected_filters',
+            'selected_filters_labeled',
+            'filtered_level3_codes',
+            'vin',
+        ]);
+    }
+
+    /**
+     * Get year range for filter
+     */
+    protected function getYearRange(): array
+    {
+        return range(date('Y') + 1, 1975);
+    }
 }

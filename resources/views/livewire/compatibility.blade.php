@@ -1,28 +1,20 @@
 <div>
-
-
-    <!-- Button trigger modal -->
-    <span>@lang('Compatibility:') </span>
+    <span>@lang('Compatibility:')</span>
     <button type="button" class="btn zbtn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal{{$sku}}">
         <i class="fa fa-car fa-2xl"></i>
     </button>
-{{--    php artisan make:livewire CompatibilityTabs--}}
+
     <!-- Modal -->
     <div class="modal fade" id="exampleModal{{$sku}}" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-        <div class="modal-dialog  modal-dialog-centered modal-xl " style="width: 100%">
+        <div class="modal-dialog modal-dialog-centered modal-xl" style="width: 100%">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="exampleModalLabel">@lang('Compatibility:') {{$sku}} </h5>
+                    <h5 class="modal-title" id="exampleModalLabel">@lang('Compatibility:') {{$sku}}</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-
-                    <livewire:compatibility-tabs :catalogs="$catalogs" :sku="$sku"/>
-
-
-
-
-
+                    {{-- <livewire:compatibility-tabs :catalogs="$catalogs" :sku="$sku"/> --}}
+                    <livewire:compatibility-tabs :sku="$sku"/>
 
                 </div>
                 <div class="modal-footer">
@@ -33,30 +25,22 @@
         </div>
     </div>
 
-
-    <!-- JavaScript to Set Active Tab Based on URL Hash -->
+    <!-- Optional JavaScript for Tab Activation -->
     <script>
         document.addEventListener("DOMContentLoaded", function () {
-            // Get the value after "#" in the URL
-            let hash = window.location.hash.substring(1); // Removes the "#" symbol
-            // alert(hash);
+            let hash = window.location.hash.substring(1);
             if (hash) {
-                let tabs = document.querySelectorAll("#catalogTabs .nav-link");
+                let tabs = document.querySelectorAll(".nav-pills .nav-link");
 
-                // Remove 'active' class from all tabs
                 tabs.forEach(tab => tab.classList.remove("active"));
 
-                // Find and activate the tab matching the hash value
-                let activeTab = document.getElementById(`tab-${hash}`);
+                let activeTab = document.querySelector(`.nav-link[data-tab='${hash}']`);
                 if (activeTab) {
                     activeTab.classList.add("active");
-                } else {
-                    // Default to the first tab if no match found
+                } else if (tabs.length > 0) {
                     tabs[0].classList.add("active");
                 }
             }
         });
     </script>
-
-
 </div>

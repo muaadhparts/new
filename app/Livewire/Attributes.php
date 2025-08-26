@@ -2,77 +2,233 @@
 
 namespace App\Livewire;
 
-use App\Models\Catalog;
-use App\Models\MajorAttributes;
-use Illuminate\Support\Facades\Session;
 use Livewire\Component;
+use App\Models\Catalog;
+use App\Models\Brand;
+use App\Models\Specification;
+use App\Models\SpecificationItem;
+use App\Models\VinDecodedCache;
+use App\Models\VinSpecMapped;
+use Illuminate\Support\Facades\Session;
 
 class Attributes extends Component
 {
+    protected $listeners = [
+        'vinSelected' => 'loadFilters',
+        'save' => 'save',
+    ];
 
-    public  $catalog;
-    public $attributes;
-    public array $data = [];
+    public $catalog;
+    public $vin;
+    public $filters = [];
+    public $data = [];
+    public $availableYears = [];
+    public $availableMonths = [];
 
-
-    public function mount($vehicle)
-
+    public function mount($catalog = null, $vin = null)
     {
+        // 🧹 حذف الجلسات القديمة عند الدخول من الصفحة الرئيسية
+        if (request()->routeIs('front.index')) {
+            Session::forget([
+                'vin',
+                'current_catalog',
+                'selected_filters',
+                'selected_filters_labeled',
+                'attributes',
+                'filtered_level3_codes',
+            ]);
+        }
 
-//        Session::forget('current_vehicle');
-//        dump(Session::get('current_vehicle'));
-//        Session::put('current_vehicle', $vehicle);
+        $this->catalog = is_string($catalog)
+            ? Catalog::where('code', $catalog)->first()
+            : $catalog;
 
-        $this->catalog  = Catalog::with('attributes')->select('id','data')->where('data',$vehicle)->firstOrFail();
-//           dd($vehicle , $this->catalog );
+        $this->vin = $vin;
 
+        $this->generateAvailableDateRanges();
 
-        $this->data = session('attributes', []);
+        // 🧠 تحميل الفلاتر من الجلسة
+        $this->data = Session::get('selected_filters', []);
+        foreach ($this->data as $key => $item) {
+            if (!is_array($item)) {
+                $this->data[$key] = [
+                    'value_id' => $item,
+                    'source' => 'manual',
+                ];
+            }
+        }
 
-//        $this->data = $this->catalog->attributes->mapWithKeys(function ($attribute) {
-//            return [
-//                $attribute->name => null // Initialize with null or a default value
-//            ];
-//        })->toArray();
-
-
+        $this->loadFilters();
     }
 
+    protected function generateAvailableDateRanges()
+    {
+        $this->availableMonths = range(1, 12);
 
-    public function attributes(){
-        $this->attributes =  $this->catalog->attributes;
+        if (!$this->catalog) return;
 
+        $start = $this->catalog->beginDate;
+        $end = $this->catalog->endDate;
+
+        $startYear = ($start && strlen($start) >= 6) ? (int)substr($start, 0, 4) : 1980;
+        $endYear = ($end && strlen($end) >= 6 && $end !== '000000') ? (int)substr($end, 0, 4) : date('Y');
+
+        $this->availableYears = range($endYear, $startYear);
+    }
+
+    public function loadFilters()
+    {
+        // ✅ تحميل الفلاتر من رقم الهيكل (VIN)
+        if ($this->vin) {
+            $this->loadFiltersFromVin();
+        }
+
+        // ✅ تحميل الفلاتر من الكتالوج والمواصفات
+        if ($this->catalog) {
+            $this->loadFiltersFromCatalog();
+        }
+    }
+
+    protected function loadFiltersFromVin()
+    {
+        $vinData = VinDecodedCache::where('vin', $this->vin)->first();
+        if (!$vinData) return;
+
+        $mappings = VinSpecMapped::with(['specification', 'specificationItem'])
+            ->where('vin_id', $vinData->id)
+            ->get();
+
+        foreach ($mappings as $map) {
+            $spec = $map->specification;
+            $item = $map->specificationItem;
+
+            $this->data[$spec->name] = [
+                'value_id' => $item->value_id ?? $item->id,
+                'source' => 'vin',
+            ];
+
+            $items = SpecificationItem::where('specification_id', $spec->id)
+                ->when($this->catalog, fn($q) => $q->where('catalog_id', $this->catalog->id))
+                ->get();
+
+            $this->filters[$spec->name] = [
+                'label' => $spec->label,
+                'items' => $items,
+                'selected' => $this->data[$spec->name]['value_id'] ?? null,
+            ];
+        }
+
+        // 🔢 تحميل سنة وشهر التصنيع
+        if (!empty($vinData->buildDate) && strlen($vinData->buildDate) >= 6) {
+            $this->data['year'] = [
+                'value_id' => substr($vinData->buildDate, 0, 4),
+                'source' => 'vin',
+            ];
+            $this->data['month'] = [
+                'value_id' => substr($vinData->buildDate, 4, 2),
+                'source' => 'vin',
+            ];
+        }
+
+        Session::put('selected_filters', $this->data);
+    }
+
+    protected function loadFiltersFromCatalog()
+    {
+        $specs = Specification::with(['items' => fn($q) =>
+            $q->where('catalog_id', $this->catalog->id)
+        ])->get();
+
+        foreach ($specs as $spec) {
+            if ($spec->items->count()) {
+                $this->filters[$spec->name] = [
+                    'label' => $spec->label,
+                    'items' => $spec->items,
+                    'selected' => $this->data[$spec->name]['value_id'] ?? null,
+                ];
+            }
+        }
+
+        if (!$this->vin) {
+            $this->filters['year'] = [
+                'label' => 'Production Year',
+                'items' => collect($this->availableYears)->map(fn($year) => [
+                    'value_id' => $year,
+                    'label' => $year,
+                ]),
+                'selected' => $this->data['year']['value_id'] ?? null,
+            ];
+
+            $this->filters['month'] = [
+                'label' => 'Production Month',
+                'items' => collect($this->availableMonths)->map(fn($month) => [
+                    'value_id' => str_pad($month, 2, '0', STR_PAD_LEFT),
+                    'label' => str_pad($month, 2, '0', STR_PAD_LEFT),
+                ]),
+                'selected' => $this->data['month']['value_id'] ?? null,
+            ];
+        }
     }
 
     public function save()
     {
+        if (!$this->vin) {
+            Session::put('selected_filters', $this->data);
+        }
 
+        $labeledData = $this->generateLabeledData(Session::get('selected_filters', []));
+        Session::put('selected_filters_labeled', $labeledData);
 
-            Session::put('current_vehicle', $this->catalog->data);
-
-            Session::put('attributes', $this->data);
-//            dd($this,Session::get('current_vehicle') ,$this->data);
-            $this->emit('form-saved');
-            $this->dispatchBrowserEvent('form-saved');
-//             session(['attributes' => $this->data]);
-
-//            dd(Session::get('attributes') ,   session('attributes'));
-//        dd($this->data);
-        // Handle form submission logic here
-//        foreach ($this->attributes as $name => $value) {
-//            // Process or save each attribute
-//            // For example, update a database record
-//        }
-
-//        session()->flash('message', 'Attributes saved successfully.');
+        $this->emit('filtersSelected', $labeledData);
     }
 
+    protected function generateLabeledData($mergedData)
+    {
+        $labeled = [];
 
+        foreach ($mergedData as $key => $filterData) {
+            $value_id = is_array($filterData) ? $filterData['value_id'] : $filterData;
+            $source = is_array($filterData) ? ($filterData['source'] ?? 'manual') : 'manual';
 
+            $label = $key;
+            $displayValue = $value_id;
+
+            if (in_array($key, ['year', 'month'])) {
+                $label = $key === 'year' ? 'Production Year' : 'Production Month';
+            }
+
+            if (isset($this->filters[$key])) {
+                $label = $this->filters[$key]['label'] ?? $key;
+                $item = collect($this->filters[$key]['items'])->first(fn($i) => $i['value_id'] == $value_id);
+                if ($item) {
+                    $displayValue = $item['label'];
+                }
+            }
+
+            $labeled[$key] = [
+                'label' => $label,
+                'value' => $displayValue,
+                'value_id' => $value_id,
+                'source' => $source,
+            ];
+        }
+
+        return $labeled;
+    }
+
+    public function resetFilters()
+    {
+        if ($this->vin) return;
+
+        $this->data = [];
+        Session::forget('selected_filters');
+        Session::forget('selected_filters_labeled');
+        $this->loadFilters();
+    }
 
     public function render()
     {
-//        dd($this->attributes->toArray());
         return view('livewire.attributes');
     }
 }
+

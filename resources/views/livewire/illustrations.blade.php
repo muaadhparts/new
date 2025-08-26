@@ -1,257 +1,190 @@
 <div>
-
     @php use Illuminate\Support\Str; @endphp
-        <style>
-            #zoom_container .landmarks {
-                position: absolute;
-                z-index: 10;
-                top: 0px;
-                left: 0px;
-            }
 
-            /**/
-            #zoom_container .landmarks .item {
-                position: absolute;
-                text-align: center;
-                display: none;
-            }
+    <style>
+        #zoom_container .landmarks {
+            position: absolute;
+            z-index: 10;
+            top: 0;
+            left: 0;
+        }
 
-            .hovered {
-                border: 2px solid rgb(219, 16, 16) !important;
-                background-color: #bce8f1 !important;
-            }
+        #zoom_container .landmarks .item {
+            position: absolute;
+            text-align: center;
+            display: none;
+        }
 
-            div[id*='zoom_container'] .landmarks .lable div {
-                z-index: 19999;
-                text-align: center;
-                vertical-align: middle;
-                border: 2px solid blue;
-                background-color: transparent;
-                display: table-cell;
-                cursor: pointer;
-                padding-left: 4px !important;
-                padding-right: 4px !important;
-                position: absolute;
-                border-radius: 999px;
-                font: bold 15px tahoma, arial, verdana, sans-serif;
-            }
+        .hovered {
+            border: 2px solid rgb(219, 16, 16) !important;
+            background-color: #bce8f1 !important;
+        }
 
+        div[id*='zoom_container'] .landmarks .lable div {
+            z-index: 19999;
+            text-align: center;
+            vertical-align: middle;
+            border: 2px solid blue;
+            background-color: transparent;
+            display: table-cell;
+            cursor: pointer;
+            padding-left: 4px !important;
+            padding-right: 4px !important;
+            position: absolute;
+            border-radius: 999px;
+            font: bold 15px tahoma, arial, verdana, sans-serif;
+        }
 
-            .inner-card {
-                height: 20px;
-                background-color: #eee;
-            }
+        .inner-card { height: 20px; background-color: #eee; }
+        .card-1 { height: 200px; background-color: #eee; }
+        .card-2 { height: 130px; }
+        .h-screen { height: 100vh; }
 
-            .card-1 {
+        .animate-pulse { animation: pulse 2s cubic-bezier(.4, 0, .6, 1) infinite; }
+        @keyframes pulse { 50% { opacity: .2; } }
 
-                height: 200px;
-                background-color: #eee;
-            }
+        /* Mobile polish */
+        @media (max-width: 768px) {
+            .smoothZoom_controls { display: none !important; }
+            body { overscroll-behavior-y: contain; }
+            #zoom_container img { touch-action: pan-x pan-y; max-width: 100%; height: auto; }
+        }
+    </style>
 
-            .card-2 {
-                height: 130px;
-            }
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <div class="product-nav-wrapper">
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb text-uppercase">
+                            {{-- Home --}}
+                            <li class="breadcrumb-item">
+                                <a class="text-black" href="{{ route('front.index') }}">Home</a>
+                            </li>
 
-            .h-screen {
-                height: 100vh;
-            }
+                            {{-- Brand --}}
+                            @if($brand)
+                                <li class="breadcrumb-item">
+                                    <a class="text-black" href="{{ route('catlogs.index', ['id' => $brand->name]) }}">
+                                        {{ strtoupper($brand->name) }}
+                                    </a>
+                                </li>
+                            @endif
 
-            .animate-pulse {
+                            {{-- VIN --}}
+                            @if(Session::get('vin'))
+                                <li class="breadcrumb-item">
+                                    <a class="text-black" href="{{ route('tree.level1', [
+                                        'id'   => $brand->name,
+                                        'data' => $catalog->code,
+                                        'vin'  => Session::get('vin')
+                                    ]) }}">
+                                        {{ Session::get('vin') }}
+                                    </a>
+                                </li>
+                            @endif
 
-                animation: pulse 2s cubic-bezier(.4, 0, .6, 1) infinite;
-            }
+                            {{-- Catalog --}}
+                            @if($catalog)
+                                <li class="breadcrumb-item">
+                                    <a class="text-black" href="{{ route('tree.level1', [
+                                        'id'   => $brand->name,
+                                        'data' => $catalog->code
+                                    ]) }}">
+                                        {{ strtoupper($catalog->shortName ?? $catalog->name ?? $catalog->code) }}
+                                    </a>
+                                </li>
+                            @endif
 
+                            {{-- Level 1 --}}
+                            @if($parentCategory1)
+                                <li class="breadcrumb-item">
+                                    <a class="text-black" href="{{ route('tree.level2', [
+                                        'id'   => $brand->name,
+                                        'data' => $catalog->code,
+                                        'key1' => $parentCategory1->full_code
+                                    ]) }}">
+                                        {{ strtoupper($parentCategory1->slug ?? $parentCategory1->full_code) }}
+                                    </a>
+                                </li>
+                            @endif
 
-            @keyframes pulse {
-                50% {
-                    opacity: .2;
-                }
-            }
-        </style>
+                            {{-- Level 2 --}}
+                            @if($parentCategory2)
+                                <li class="breadcrumb-item">
+                                    <a class="text-black" href="{{ route('tree.level3', [
+                                        'id'   => $brand->name,
+                                        'data' => $catalog->code,
+                                        'key1' => $parentCategory1->full_code,
+                                        'key2' => $parentCategory2->full_code
+                                    ]) }}">
+                                        {{ strtoupper($parentCategory2->slug ?? $parentCategory2->full_code) }}
+                                    </a>
+                                </li>
+                            @endif
 
-
-
-
-    <div class="container p-4 mt-3">
-        <div class="product-nav-wrapper">
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb">
-                    <li class="breadcrumb-item"><a class="text-black" href="{{route('front.index')}}">Home</a></li>
-                    <li class="breadcrumb-item"><a class="text-black" href="{{route('catlogs.index',$brand->name)}}">{{$brand->name}}</a></li>
-                    <li class="breadcrumb-item"><a class="text-black" href="{{route('tree.level1',['id'=> $brand->name ,'data'=> $vehicle ])}}">{{$vehicle}}</a></li>
-                    <li class="breadcrumb-item"><a class="text-black" href="{{route('tree.level2',['id'=> $brand->name ,'data'=> $vehicle ,'key1' => $category->key1 ])}}">{{$category->value1}}</a></li>
-                    <li class="breadcrumb-item"><a class="text-black" href="{{route('tree.level2',['id'=> $brand->name ,'data'=> $vehicle ,'key1' => $category->key1 ,'key2'=> $category->key2 ])}}">{{$category->value2}}</a></li>
-                    <li class="breadcrumb-item active"><a class="text-primary" href="{{route('illustrations',['id'=> $brand->name ,'data'=> $vehicle ,'key1' => $category->key1 ,'key2'=> $category->key2 ,'code'=>$category->code])}}">{{ preg_replace('/\s*\(.*?\)/', '', $category->label) }}</a></li>
-                </ol>
-            </nav>
+                            {{-- Level 3 (current) --}}
+                            @if($parentCategory3)
+                                <li class="breadcrumb-item active text-primary text-uppercase" aria-current="page">
+                                    {{ strtoupper($parentCategory3->Applicability ?? $parentCategory3->full_code) }}
+                                </li>
+                            @endif
+                        </ol>
+                    </nav>
+                </div>
+            </div>
         </div>
-        <livewire:vehicle-search-box :vehicle="$vehicle"/>
     </div>
+
+    {{-- Search box (tقييد السيكشن الحالي) --}}
+    <livewire:vehicle-search-box
+        :catalog="$catalog->code"
+        :allowed-codes-override="[$category->full_code]" />
 
     <div class="container m-md-2 d-flex justify-content-center">
         <div class="col-md-8 bg-white panel-body text-center">
             <div class="products-view">
                 <div class="products-view__options view-options view-options--offcanvas--mobile">
-                    <div class="view-options2 xview-options__body--filters ">
+                    <div class="view-options2 xview-options__body--filters">
                         <div class="view-options__label" style="top:-10px">{{ $category->name }}</div>
                         <div id="zoom_container">
-                            <img id="image" src="{{ Storage::url($category->images) }}" alt="{{ $category->name }}" width="80" />
+                            <img id="image"
+                                 src="{{ Storage::url($category->images) }}"
+                                 alt="{{ $category->name }}"
+                                 width="100%" height="100%" />
                             <div class="landmarks" data-show-at-zoom="0" data-allow-drag="false"></div>
                         </div>
                     </div>
                 </div>
             </div>
-{{-- 
-            <div class="mt-4">
-                <table class="glow pop-vin table table-bordered-1 table-hover table-condensed">
-                    <thead>
-                    <tr>
-                        <th>{{ __('Part Code') }}</th>
-                        <th>{{ __('Part Number') }}</th>
-                        <th>{{ __('Name Part') }}</th>
-                        <th>{{ __('Applicability') }}</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    @foreach ($products as $index => $item)
-                        <tr class="part-search-tr" x-data="{ isHovered: false }" class="pointer correct-callout"
-                            data-category-id="{{ $category->id }}" data-index="{{ $item->callout }}">
-                            <td class="codeonimage callout-code-click"
-                                data-callout="{{ $item->callout }}"
-                                style="color: rgba(16, 16, 219, 0.473); cursor: pointer;"
-                                id="part_{{ $item->callout }}">
-                                {{ $item->callout }}
-                            </td>
-                            <td>{{ $item->partnumber }}</td>
-                             <td>
-                                {{ app()->getLocale() === 'ar'
-                                    ? ($item->label_ar ?? $item->label_en)
-                                    : $item->label_en }}
-                            </td>
-                            <td>
-                                    {{ $item->applicability }}
-                             
-                            </td>
-                        </tr>
-                    @endforeach
-                    </tbody>
-                </table>
-            </div> --}}
         </div>
     </div>
-
-    <div x-data="cartItems();">
-        <template x-on:modal.window="partNumber = $event.detail.partNumber; categoryId = $event.detail.categoryId; isOpen = $event.detail.isOpen; isLoading = $event.detail.isLoading;productId = $event.detail.productId;fetchCartPartItems();"></template>
-        <div class="modal fade" id="modal">
-            <div class="modal-dialog modal-xl" role="document">
-                <div class="modal-content">
-                    <h4 class="modal-title" id="modelHeading"></h4>
-                    <div class="modal-body" id="modalContent">
-                        <template x-if="isLoading">
-                            <div class="card">
-                                <div class="card-1 animate-pulse"></div>
-                                <div class="card-2 p-3">
-                                    <div class="row">
-                                        <div class="col-4"><div class="inner-card animate-pulse"></div></div>
-                                        <div class="col-8"><div class="inner-card animate-pulse"></div></div>
-                                    </div>
-                                    <div class="row mt-3">
-                                        <div class="col-6"><div class="inner-card animate-pulse"></div></div>
-                                        <div class="col-6"><div class="inner-card animate-pulse"></div></div>
-                                    </div>
-                                    <div class="row mt-3">
-                                        <div class="col-2"><div class="inner-card animate-pulse"></div></div>
-                                        <div class="col-10"><div class="inner-card animate-pulse"></div></div>
-                                    </div>
-                                </div>
-                            </div>
-                        </template>
-                        <template x-if="!isLoading">
-                            <div x-html="products"></div>
-                        </template>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" x-on:click="closeCartPartItems();" class="btn btn-danger" data-dismiss="modal">
-                            <h5 class="font_14 f_w_500 theme_text3">{{ __('common.cancel') }}</h5>
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
 
 @push('scripts')
+    {{-- مرّر الداتا للواجهة --}}
+    <script>
+        window.sectionData    = @json($section);
+        window.categoryData   = @json($category->loadMissing('catalog')); // يضمن وجود catalog->code
+        window.calloutsFromDB = @json($callouts);
+        window.brandName      = @json(optional($brand)->name);
+        const callouts = window.calloutsFromDB ?? [];
+        let csrf = "{{ csrf_token() }}";
+        // dd() // للتحقق لاحقًا:
+        // console.log({section: window.sectionData, category: window.categoryData, brand: window.brandName, calloutsCount: (callouts||[]).length});
+    </script>
 
-<script>
-    window.vehicleCode = @js($vehicle);
-    window.categoryCode = @js($category->code);
-</script>
-
-<script src="{{ asset('assets/front/js/jq-zoom.js') }}"></script>
-<script src="{{ asset('assets/front/js/preview.js') }}"></script>
-<script src="{{ asset('assets/front/js/ill/illustrated.js') }}"></script>
-
-<script>
+    {{-- جهّز نسخة آمنة من رقم الإصدار للسكربت --}}
     @php
-        $partsData = [];
-        foreach ($partCallouts as $index => $Callouts) {
-            foreach ($Callouts as $key => $Callout) {
-                $partsData[] = [
-                    'x' => $Callout['rectangle']['left'],
-                    'y' => $Callout['rectangle']['top'],
-                    'width' => Str::length($key) > 10 ? '250px' : '150px',
-                    'height' => '30px',
-                    'index' => $index,
-                    'partNumber' => $index,
-                    'callout' => $index, 
-                    'categoryId' => $category->id
-                ];
-            }
-        }
+        $jsRel  = 'assets/front/js/ill/illustrated.js';
+        $jsPath = public_path($jsRel);
+        $jsVer  = file_exists($jsPath) ? filemtime($jsPath) : time();
     @endphp
 
-   var partsData = "{{ json_encode($partsData) }}";
-    var decodedString = partsData.replace(/&quot;/g, '"');
-    var partsData = JSON.parse(decodedString);
-</script>
-
-<script>
-    let csrf = "{{ csrf_token() }}";
-</script>
+    {{-- سكربتات التكبير ثم سكربتنا مع ?v= --}}
+    <script src="{{ asset('assets/front/js/jq-zoom.js') }}"></script>
+    <script src="{{ asset('assets/front/js/preview.js') }}"></script>
+    <script src="{{ asset($jsRel) }}?v={{ $jsVer }}"></script>
 @endpush
 
-<livewire:callout-modal />
-
-@push('scripts')
-<script>
-    document.addEventListener("DOMContentLoaded", function () {
-        setTimeout(() => {
-            // ✅ الضغط على المربعات فوق الصورة
-            document.querySelectorAll(".callout-label").forEach(label => {
-                label.addEventListener("click", function () {
-                    const part = JSON.parse(this.dataset.part);
-                    window.livewire.emit("openCalloutModal", {
-                        data: window.vehicleCode,
-                        code: window.categoryCode,
-                        callout: part.callout
-                    });
-                });
-            });
-
-            // ✅ الضغط على Part Code داخل الجدول
-            document.querySelectorAll(".callout-code-click").forEach(cell => {
-                cell.addEventListener("click", function () {
-                    const callout = this.dataset.callout;
-                    window.livewire.emit("openCalloutModal", {
-                        data: window.vehicleCode,
-                        code: window.categoryCode,
-                        callout: callout
-                    });
-                });
-            });
-
-        }, 500);
-    });
-</script>
-@endpush
+    <livewire:callout-modal />
+</div>

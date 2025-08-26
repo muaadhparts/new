@@ -1,235 +1,94 @@
-<div class="xcontainer-fluid mb-10 text-center">
+<div class="container mb-5 text-center">
 
+    {{-- الحقل --}}
+    <div class="search-row">
+        <input
+            type="text"
+            class="search-input"
+            placeholder="{{ __('Enter part number or name') }}"
+            wire:model.debounce.300ms="query"
+            wire:keydown.enter="submitSearch"
+            aria-label="{{ __('Search by part number or name') }}"
+        >
+    </div>
 
-        <div class="autoComplete_wrapper">
-            <input  style=""
-                    type="text"
-                    id="autoComplete"
-                    class="form-control  "
-                    placeholder="VIN / Part Number"
-                    wire:model.debounce.300ms="query"
-            >
+    {{-- التلميح --}}
+    <p class="search-hint mt-2">
+        {{ __('Example:') }} <code dir="ltr">1520831U0b</code>
+    </p>
 
-            @if (!empty($results) )
-
-{{--                @dd($results ,$is_vin);--}}
-            <ul  id="autoComplete_list_1"   role="listbox" >
-
-                @if($is_vin)
-{{--                    @dd($results['vin'])--}}
-
-                    <li xclass="list-group-item d-flex justify-content-between" xstyle="display: flex; justify-content: space-between;">
-
-                        <span  wire:click="selectedVin('{{ json_encode($results) }}')">
-
-                            {{ $results['vin'] }}
-
-                            {{ $results['label_en'] }}
-{{--                            $results['vin']--}}
-                        </span>
-                        <small class="text-black"  style="display: flex; align-items: center; font-size: 13px; font-weight: 100; text-transform: uppercase;">  {{ $results['label_en'] }}  </small>
-                    </li>
-
-                @else
-
-                    @foreach ($results as $result)
-
-                        <li class="list-group-item" style="padding: 10px; border-bottom: 1px solid #ddd; cursor: pointer;">
-
-                            <div wire:click="selectItem('{{ $result->sku }}')" style="font-weight: bold; font-size: 16px; color: #e90b0b;">
-                                {{ $result->sku }}
-                            </div>
-                            <div style="font-weight: 600; font-size: 14px; color: #912020; margin-top: 2px; font-family: 'Arial', 'Tahoma', sans-serif;">
-                                {{ $result->label_ar }}
-                            {{-- <div style="font-weight: 600; font-size: 14px; color: #1f12d3; margin-top: 4px;">
-                                {{ $result->label_en }} --}}
-                            </div>
-                             <div style="font-weight: 600; font-size: 14px; color: #1f12d3; margin-top: 4px;">
-                                {{ $result->label_en }}
-                            {{-- <div style="font-weight: 600; font-size: 14px; color: #912020; margin-top: 2px; font-family: 'Arial', 'Tahoma', sans-serif;">
-                                {{ $result->label_ar }} --}}
-                            </div>
-                        </li>
-                    @endforeach
-                @endif
-
-            </ul>
-            @endif
-
+    {{-- رسالة التنبيه مع مؤقّت إظهار --}}
+    <div
+        x-data="{ show:false, timer:null, delay: {{ $notFoundDelayMs }}, nf: @entangle('notFound') }"
+        x-effect="
+            if (nf) {
+                clearTimeout(timer);
+                show = false;
+                timer = setTimeout(() => { show = true }, delay);
+            } else {
+                show = false;
+                clearTimeout(timer);
+            }
+        "
+    >
+        <div class="alert alert-warning mt-3" 
+             x-show="show" 
+             x-transition
+             x-cloak
+             style="font-weight: bold; font-size: 15px;">
+            {{ $userMessage }}
         </div>
+    </div>
+
+    {{-- النتائج --}}
+    @if (!empty($results))
+        <ul role="listbox" style="list-style: none; padding: 0; margin-top: 15px;">
+            @foreach ($results as $result)
+                <li class="list-group-item" style="padding: 10px; border-bottom: 1px solid #ddd; cursor: pointer;">
+                    <div wire:click="selectItem('{{ $result['sku'] }}')"
+                         style="font-weight: bold; font-size: 16px; color: #e90b0b;">
+                        {{ $result['sku'] }}
+                    </div>
+                    <div style="font-weight: 600; font-size: 14px; color: #912020; margin-top: 2px;">
+                        {{ $result['label_ar'] ?? '' }}
+                    </div>
+                    <div style="font-weight: 600; font-size: 14px; color: #1f12d3;">
+                        {{ $result['label_en'] ?? '' }}
+                    </div>
+                </li>
+            @endforeach
+        </ul>
+    @endif
 </div>
 
+<style>
+    [x-cloak] { display: none !important; }
 
-
-@push('scripts')
-
-{{--    <script>--}}
-
-
-{{--    // The autoComplete.js Engine instance creator--}}
-{{--    const autoCompleteJS = new autoComplete({--}}
-{{--    data: {--}}
-{{--    src: async () => {--}}
-{{--    try {--}}
-{{--    // Loading placeholder text--}}
-{{--    document--}}
-{{--    .getElementById("autoComplete")--}}
-{{--    .setAttribute("placeholder", "Loading...");--}}
-{{--    // // Fetch External Data Source--}}
-{{--    // const source = await fetch(--}}
-{{--    // "https://tarekraafat.github.io/autoComplete.js/demo/db/generic.json"--}}
-{{--    // );--}}
-{{--    const data = await source.json();--}}
-{{--    // Post Loading placeholder text--}}
-{{--    document--}}
-{{--    .getElementById("autoComplete")--}}
-{{--    .setAttribute("placeholder", autoCompleteJS.placeHolder);--}}
-{{--    // Returns Fetched data--}}
-{{--    return data;--}}
-{{--    } catch (error) {--}}
-{{--    return error;--}}
-{{--    }--}}
-{{--    },--}}
-{{--    keys: ["food", "cities", "animals"],--}}
-{{--    cache: true,--}}
-{{--    filter: (list) => {--}}
-{{--    // Filter duplicates--}}
-{{--    // incase of multiple data keys usage--}}
-{{--    const filteredResults = Array.from(--}}
-{{--    new Set(list.map((value) => value.match))--}}
-{{--    ).map((food) => {--}}
-{{--    return list.find((value) => value.match === food);--}}
-{{--    });--}}
-
-{{--    return filteredResults;--}}
-{{--    }--}}
-{{--    },--}}
-{{--    placeHolder: "Search for Food & Drinks!",--}}
-{{--    resultsList: {--}}
-{{--    element: (list, data) => {--}}
-{{--    const info = document.createElement("p");--}}
-{{--    if (data.results.length > 0) {--}}
-{{--    info.innerHTML = `Displaying <strong>${data.results.length}</strong> out of <strong>${data.matches.length}</strong> results`;--}}
-{{--    } else {--}}
-{{--    info.innerHTML = `Found <strong>${data.matches.length}</strong> matching results for <strong>"${data.query}"</strong>`;--}}
-{{--    }--}}
-{{--    list.prepend(info);--}}
-{{--    },--}}
-{{--    noResults: true,--}}
-{{--    maxResults: 15,--}}
-{{--    tabSelect: true--}}
-{{--    },--}}
-{{--    resultItem: {--}}
-{{--    element: (item, data) => {--}}
-{{--    // Modify Results Item Style--}}
-{{--    item.style = "display: flex; justify-content: space-between;";--}}
-{{--    // Modify Results Item Content--}}
-{{--    item.innerHTML = `--}}
-{{--    <span style="text-overflow: ellipsis; white-space: nowrap; overflow: hidden;">--}}
-{{--        ${data.match}--}}
-{{--      </span>--}}
-{{--    <span style="display: flex; align-items: center; font-size: 13px; font-weight: 100; text-transform: uppercase; color: rgba(0,0,0,.2);">--}}
-{{--        ${data.key}--}}
-{{--      </span>`;--}}
-{{--    },--}}
-{{--    highlight: true--}}
-{{--    },--}}
-{{--    events: {--}}
-{{--    input: {--}}
-{{--    focus: () => {--}}
-{{--    if (autoCompleteJS.input.value.length) autoCompleteJS.start();--}}
-{{--    }--}}
-{{--    }--}}
-{{--    }--}}
-{{--    });--}}
-
-{{--    // autoCompleteJS.input.addEventListener("init", function (event) {--}}
-{{--    //   console.log(event);--}}
-{{--    // });--}}
-
-{{--    // autoCompleteJS.input.addEventListener("response", function (event) {--}}
-{{--    //   console.log(event.detail);--}}
-{{--    // });--}}
-
-{{--    // autoCompleteJS.input.addEventListener("results", function (event) {--}}
-{{--    //   console.log(event.detail);--}}
-{{--    // });--}}
-
-{{--    // autoCompleteJS.input.addEventListener("open", function (event) {--}}
-{{--    //   console.log(event.detail);--}}
-{{--    // });--}}
-
-{{--    // autoCompleteJS.input.addEventListener("navigate", function (event) {--}}
-{{--    //   console.log(event.detail);--}}
-{{--    // });--}}
-
-{{--    autoCompleteJS.input.addEventListener("selection", function (event) {--}}
-{{--    const feedback = event.detail;--}}
-{{--    autoCompleteJS.input.blur();--}}
-{{--    // Prepare User's Selected Value--}}
-{{--    const selection = feedback.selection.value[feedback.selection.key];--}}
-{{--    // Render selected choice to selection div--}}
-{{--    document.querySelector(".selection").innerHTML = selection;--}}
-{{--    // Replace Input value with the selected value--}}
-{{--    autoCompleteJS.input.value = selection;--}}
-{{--    // Console log autoComplete data feedback--}}
-{{--    console.log(feedback);--}}
-{{--    });--}}
-
-{{--    // autoCompleteJS.input.addEventListener("close", function (event) {--}}
-{{--    //   console.log(event.detail);--}}
-{{--    // });--}}
-
-{{--    // Toggle Search Engine Type/Mode--}}
-{{--    document.querySelector(".toggler").addEventListener("click", () => {--}}
-{{--    // Holds the toggle button selection/alignment--}}
-{{--    const toggle = document.querySelector(".toggle").style.justifyContent;--}}
-
-{{--    if (toggle === "flex-start" || toggle === "") {--}}
-{{--    // Set Search Engine mode to Loose--}}
-{{--    document.querySelector(".toggle").style.justifyContent = "flex-end";--}}
-{{--    document.querySelector(".toggler").innerHTML = "Loose";--}}
-{{--    autoCompleteJS.searchEngine = "loose";--}}
-{{--    } else {--}}
-{{--    // Set Search Engine mode to Strict--}}
-{{--    document.querySelector(".toggle").style.justifyContent = "flex-start";--}}
-{{--    document.querySelector(".toggler").innerHTML = "Strict";--}}
-{{--    autoCompleteJS.searchEngine = "strict";--}}
-{{--    }--}}
-{{--    });--}}
-
-{{--    // Blur/unBlur page elements--}}
-{{--    const action = (action) => {--}}
-{{--    const title = document.querySelector("h1");--}}
-{{--    const mode = document.querySelector(".mode");--}}
-{{--    const selection = document.querySelector(".selection");--}}
-{{--    const footer = document.querySelector(".footer");--}}
-
-{{--    if (action === "dim") {--}}
-{{--    title.style.opacity = 1;--}}
-{{--    mode.style.opacity = 1;--}}
-{{--    selection.style.opacity = 1;--}}
-{{--    } else {--}}
-{{--    title.style.opacity = 0.3;--}}
-{{--    mode.style.opacity = 0.2;--}}
-{{--    selection.style.opacity = 0.1;--}}
-{{--    }--}}
-{{--    };--}}
-
-{{--    // Blur/unBlur page elements on input focus--}}
-{{--    ["focus", "blur"].forEach((eventType) => {--}}
-{{--    autoCompleteJS.input.addEventListener(eventType, () => {--}}
-{{--    // Blur page elements--}}
-{{--    if (eventType === "blur") {--}}
-{{--    action("dim");--}}
-{{--    } else if (eventType === "focus") {--}}
-{{--    // unBlur page elements--}}
-{{--    action("light");--}}
-{{--    }--}}
-{{--    });--}}
-{{--    });--}}
-
-{{--    </script>--}}
-
-
-@endpush
+    .search-row{
+        display:flex; justify-content:center; align-items:center; gap:12px; flex-wrap:wrap;
+    }
+    .search-input{
+        padding: 12px 18px;
+        font-size: 16px;
+        border: 2px solid #007bff;
+        border-radius: 30px;
+        box-shadow: 0 0 6px rgba(0,123,255,0.2);
+        outline: none;
+        width: 100%;
+        max-width: 520px; 
+        transition: all 0.3s ease-in-out;
+    }
+    .search-input:focus{
+        border-color:#0056b3;
+        box-shadow:0 0 8px rgba(0,86,179,0.3);
+    }
+    .search-hint{
+        font-size: 13px;
+        color: #6c757d;
+        margin-bottom: 0;
+    }
+    @media (max-width: 576px){
+        .search-row{ flex-direction: column; }
+        .search-input{ max-width: 100%; }
+    }
+</style>

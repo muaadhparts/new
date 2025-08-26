@@ -1,8 +1,8 @@
 <?php return array (
   'alternative' => 'App\\Livewire\\Alternative',
+  'alternativeproduct' => 'App\\Livewire\\Alternativeproduct',
   'attributes' => 'App\\Livewire\\Attributes',
   'callout-modal' => 'App\\Livewire\\CalloutModal',
-  'catlog-tree' => 'App\\Livewire\\CatlogTree',
   'catlog-tree-level1' => 'App\\Livewire\\CatlogTreeLevel1',
   'catlog-tree-level2' => 'App\\Livewire\\CatlogTreeLevel2',
   'catlog-tree-level3' => 'App\\Livewire\\CatlogTreeLevel3',
@@ -12,6 +12,8 @@
   'compatibility-tabs' => 'App\\Livewire\\CompatibilityTabs',
   'illustrations' => 'App\\Livewire\\Illustrations',
   'search-box' => 'App\\Livewire\\SearchBox',
+  'search-boxvin' => 'App\\Livewire\\SearchBoxvin',
+  'search-results-modal' => 'App\\Livewire\\SearchResultsModal',
   'search-results-page' => 'App\\Livewire\\SearchResultsPage',
   'tryoto-componet' => 'App\\Livewire\\TryotoComponet',
   'vehicle-search-box' => 'App\\Livewire\\VehicleSearchBox',

@@ -67,6 +67,8 @@ class ProductDetailsController extends FrontBaseController
         return view('frontend.product', compact('productt', 'curr', 'affilate_user', 'vendor_products'));
     }
 
+
+
     public function report(Request $request)
     {
         $rules = [

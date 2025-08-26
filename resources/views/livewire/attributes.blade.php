@@ -1,177 +1,145 @@
-{{--<div  >--}}
-
-{{--    {{ $this->attributes}}--}}
-
-{{--    @dd($this)--}}
-
-{{--    <button class="btn btn-primary " type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasForm" aria-controls="offcanvasForm">--}}
-{{--        Toggle--}}
-{{--    </button>--}}
-
-{{--    <!-- Offcanvas Component -->--}}
-{{--    <div class="offcanvas offcanvas-start" tabindex="-1" id="offcanvasForm" aria-labelledby="offcanvasFormLabel">--}}
-{{--        <div class="offcanvas-header">--}}
-{{--            <h5 id="offcanvasFormLabel" class="mb-0">Form Details</h5>--}}
-{{--            <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>--}}
-{{--        </div>--}}
-
-
-
-{{--        <div class="offcanvas-body">--}}
-{{--            <!-- Responsive Form Container -->--}}
-
-{{--            @php--}}
-{{--                 $currentYear = date('Y');--}}
-{{--                     $years = range($currentYear+1 ,1975);--}}
-{{--             @endphp--}}
-
-{{--            <form wire:submit.prevent="save" method="get" class="row g-1 p-1">--}}
-{{--                <!-- Loop through attributes to generate form groups -->--}}
-
-
-{{--                <label for="date-select">Select Date:</label>--}}
-{{--                <div class="input-group">--}}
-{{--                    <!-- Month Select -->--}}
-{{--                    <select class="form-select me-2" id="month-select" wire:model.defer="data.month">--}}
-{{--                        <option value="">Select Month</option>--}}
-{{--                        @foreach (range(1, 12) as $month)--}}
-{{--                            <option value="{{ str_pad($month, 2, '0', STR_PAD_LEFT) }}">--}}
-{{--                                {{ str_pad($month, 2, '0', STR_PAD_LEFT) }}--}}
-{{--                            </option>--}}
-{{--                        @endforeach--}}
-{{--                    </select>--}}
-
-{{--                    <!-- Year Select -->--}}
-{{--                    <select class="form-select" id="year-select" wire:model.defer="data.year">--}}
-{{--                        <option value="">Select Year</option>--}}
-{{--                        @foreach ($years as $year)--}}
-{{--                            <option value="{{ $year }}">{{ $year }}</option>--}}
-{{--                        @endforeach--}}
-{{--                    </select>--}}
-{{--                </div>--}}
-
-{{--                @foreach ($catalog->attributes as $attribute)--}}
-{{--                    <div class="col-md-12 col-lg-12">--}}
-{{--                        <div class="form-group">--}}
-{{--                            <label for="select-{{ $attribute['id'] }}" class="form-label">--}}
-{{--                                {{ $attribute['label'] }}--}}
-{{--                            </label>--}}
-{{--                            wire:model.debounce="data.{{ $attribute['name']  }}"--}}
-{{--                            <select  class="form-select" id="select-{{ $attribute['id'] }}" wire:model.defer="data.{{ $attribute['name']  }}"  name="{{ $attribute['name'] }}">--}}
-{{--                                <!-- Loop through subitems to create options -->--}}
-{{--                                @foreach ($attribute['items'] as $subitem)--}}
-{{--                                    <option value="{{ $subitem['id'] }}" @if($subitem['disabled']) disabled @endif>--}}
-{{--                                        {{ $subitem['label'] }}--}}
-{{--                                    </option>--}}
-{{--                                @endforeach--}}
-{{--                            </select>--}}
-{{--                        </div>--}}
-{{--                    </div>--}}
-{{--                @endforeach--}}
-{{--                <!-- Submit Button -->--}}
-{{--                <div class="col-12 mt-3">--}}
-{{--                    <button type="submit" class="btn btn-success w-100">Submit</button>--}}
-{{--                </div>--}}
-{{--            </form>--}}
-{{--        </div>--}}
-{{--    </div>--}}
-
-{{--@push('scripts')--}}
-{{--        <script>--}}
-{{--            $(function () {--}}
-{{--                $("#datepicker").datepicker({--}}
-{{--                    autoclose: true,--}}
-{{--                    todayHighlight: true--}}
-{{--                }).datepicker('update', new Date());--}}
-{{--            });--}}
-
-{{--        </script>--}}
-
-
-
-{{--@endpush--}}
-{{--</div>--}}
-
 <div>
-    <button class="btn btn-primary" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasForm" aria-controls="offcanvasForm">
-        Toggle
-{{--        {{$data}}--}}
-    </button>
-    {{ collect($data)->filter()->map(fn($value, $key) => "$key: $value")->implode(', ') }}
+    @php
+        $filtersLabeled = Session::get('selected_filters_labeled');
+        $isFromVin = Session::has('vin');
+    @endphp
 
-    {{--    @foreach($data as $key => $value)--}}
-{{--        <p><strong>{{ $key }}:</strong> {{ $value ?? '-' }}</p>--}}
-{{--    @endforeach--}}
-
-    <!-- Offcanvas Component -->
-    <div class="offcanvas offcanvas-start" tabindex="-1" id="offcanvasForm" aria-labelledby="offcanvasFormLabel">
-        <div class="offcanvas-header">
-            <h5 id="offcanvasFormLabel" class="mb-0">Form Details</h5>
-            <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    <!-- زر فتح النافذة -->
+    {{-- <button class="btn btn-primary" type="button"
+            data-bs-toggle="offcanvas" data-bs-target="#offcanvasForm"
+            aria-controls="offcanvasForm">
+        Car Specifications
+    </button> --}}
+    <!-- عرض المواصفات -->
+    @if(is_array($filtersLabeled) && count($filtersLabeled))
+        <div class="alert alert-warning mt-3">
+            <strong>Selectd Specifications:</strong>
+            <ul class="mb-0">
+                @foreach($filtersLabeled as $name => $value)
+                    <li>
+                        {{ $value['label'] }}:
+                        <span class="text-primary">{{ $value['value'] ?? $value['value_id'] }}</span>
+                        @if(isset($value['source']) && $value['source'] === 'vin')
+                            <small class="text-muted">(Vin)</small>
+                        @endif
+                    </li>
+                @endforeach
+            </ul>
         </div>
+    @endif
 
-        <div class="offcanvas-body">
-            @php
-                $currentYear = date('Y');
-                $years = range($currentYear + 1, 1975);
-            @endphp
+    <!-- نموذج المواصفات -->
+    <form wire:submit.prevent="save" class="row g-1 p-1">
+        <div class="offcanvas offcanvas-start" tabindex="-1" id="offcanvasForm"
+             aria-labelledby="offcanvasFormLabel" data-bs-backdrop="static">
 
-            <form wire:submit.prevent="save" method="get" class="row g-1 p-1" id="autoSaveForm">
-                <!-- Month + Year -->
-                <label for="date-select">Select Date:</label>
-                <div class="input-group">
-                    <select class="form-select me-2" wire:model="data.month" wire:change="save">
-                        <option value="">Select Month</option>
-                        @foreach (range(1, 12) as $month)
-                            <option value="{{ str_pad($month, 2, '0', STR_PAD_LEFT) }}">
-                                {{ str_pad($month, 2, '0', STR_PAD_LEFT) }}
-                            </option>
-                        @endforeach
-                    </select>
+            <div class="offcanvas-header">
+                <h5 id="offcanvasFormLabel" class="mb-0">
+                    Specifications {{ $catalogName ?? $shortName ?? $catalogCode ?? 'Unknown' }}
+                    @if(isset($source)) <small class="text-muted"> ({{ $source }})</small> @endif
+                </h5>
 
-                    <select class="form-select" wire:model="data.year" wire:change="save">
-                        <option value="">Select Year</option>
-                        @foreach ($years as $year)
-                            <option value="{{ $year }}">{{ $year }}</option>
-                        @endforeach
-                    </select>
-                </div>
+                <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas"
+                        aria-label="Close"></button>
+            </div>
 
-                <!-- Dynamic Attributes -->
-                @foreach ($catalog->attributes as $attribute)
-                    <div class="col-md-12 col-lg-12">
-                        <div class="form-group">
-                            <label for="select-{{ $attribute['id'] }}" class="form-label">
-                                {{ $attribute['label'] }}
+            <div class="offcanvas-body">
+
+                <!-- التاريخ -->
+                @if(isset($filters['year']) || isset($filters['month']))
+                    <div class="mb-3">
+                        <label>Build Date:</label>
+                        <div class="input-group">
+                            @if(isset($filters['month']))
+                                <select class="form-select me-2"
+                                        wire:model.defer="data.month.value_id"
+                                        name="data[month][value_id]"
+                                        @if($isFromVin) disabled @endif>
+                                    <option value="">Month</option>
+                                    @foreach($filters['month']['items'] ?? [] as $item)
+                                        <option value="{{ is_object($item) ? $item->value_id : $item['value_id'] }}">
+                                            {{ is_object($item) ? $item->label : $item['label'] }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            @endif
+
+                            @if(isset($filters['year']))
+                                <select class="form-select"
+                                        wire:model.defer="data.year.value_id"
+                                        name="data[year][value_id]"
+                                        @if($isFromVin) disabled @endif>
+                                    <option value="">Year</option>
+                                    @foreach($filters['year']['items'] ?? [] as $item)
+                                        <option value="{{ is_object($item) ? $item->value_id : $item['value_id'] }}">
+                                            {{ is_object($item) ? $item->label : $item['label'] }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            @endif
+                        </div>
+                    </div>
+                @endif
+
+                <!-- باقي الخصائص -->
+                @forelse ($filters as $index => $attribute)
+                    @if(!in_array($index, ['year', 'month']))
+                        <div class="mb-3">
+                            <label for="select-{{ $index }}" class="form-label">
+                                {{ $attribute['label'] ?? $index }}
                             </label>
                             <select class="form-select"
-                                    id="select-{{ $attribute['id'] }}"
-                                    wire:model="data.{{ $attribute['name'] }}"
-                                    wire:change="save"
-                                    name="{{ $attribute['name'] }}">
-                                @foreach ($attribute['items'] as $subitem)
-                                    <option value="{{ $subitem['id'] }}" @if($subitem['disabled']) disabled @endif>
-                                        {{ $subitem['label'] }}
+                                    wire:model.defer="data.{{ $index }}.value_id"
+                                    name="data[{{ $index }}][value_id]"
+                                    @if($isFromVin) disabled @endif>
+                                <option value="">-- Choose --</option>
+                                @foreach ($attribute['items'] ?? [] as $item)
+                                    <option value="{{ is_object($item) ? $item->value_id : $item['value_id'] }}">
+                                        {{ is_object($item) ? $item->label : $item['label'] }}
                                     </option>
                                 @endforeach
                             </select>
                         </div>
+                    @endif
+                @empty
+                    <div class="alert alert-warning mt-2">
+                        No specifications available to display.
                     </div>
-                @endforeach
-            </form>
-        </div>
-    </div>
+                @endforelse
 
-    @push('scripts')
-        <script>
-            // Listen for Livewire save event and close Offcanvas
-            window.addEventListener('form-saved', () => {
-                const offcanvasEl = document.getElementById('offcanvasForm');
-                const offcanvasInstance = bootstrap.Offcanvas.getInstance(offcanvasEl);
-                if (offcanvasInstance) {
-                    offcanvasInstance.hide();
-                }
+                <!-- زر الحفظ -->
+                @unless($isFromVin)
+                    <div class="d-grid mt-4">
+                        <button type="submit" class="btn btn-success">
+                            Save Specifications
+                        </button>
+                    </div>
+                @endunless
+
+     <!-- زر الإزالة -->
+@unless($isFromVin)
+    <div class="d-grid mt-2">
+        <button type="button" class="btn btn-outline-secondary" wire:click="resetFilters">
+            Clear Entries
+        </button>
+    </div>
+@endunless
+
+</div> <!-- /offcanvas-body -->
+</div> <!-- /offcanvas -->
+</form>
+
+<!-- الحفظ عند الإغلاق إذا لم يكن VIN -->
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var canvas = document.getElementById('offcanvasForm');
+        if (canvas) {
+            canvas.addEventListener('hidden.bs.offcanvas', function () {
+                @if (!Session::has('vin'))
+                    Livewire.find('{{ $attributes['wire:id'] ?? $this->id }}')?.call('save');
+                @endif
             });
-        </script>
-    @endpush
-</div>
+        }
+    });
+</script>
+</div> <!-- /wrapper div -->
