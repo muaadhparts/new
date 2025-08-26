@@ -156,7 +156,7 @@ Route::group(['prefix' => 'front'], function () {
 
     Route::get('/services', 'Api\Front\FrontendController@services');
     Route::get('/banners', 'Api\Front\FrontendController@banners');
-    Route::get('/partners', 'Api\Front\FrontendController@partners');
+    Route::get('/brands', 'Api\Front\FrontendController@brands');
     Route::get('/products', 'Api\Front\FrontendController@products');
     Route::get('/vendor/products/{id}', 'Api\Front\FrontendController@vendor_products');
     Route::get('/settings', 'Api\Front\FrontendController@settings');

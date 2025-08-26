@@ -654,17 +654,17 @@ Route::prefix('admin')->group(function () {
 
         //------------ ADMIN BANNER SECTION ENDS ------------
 
-        //------------ ADMIN PARTNER SECTION ------------
+        //------------ ADMIN BRAND SECTION ------------
 
-        Route::get('/partner/datatables', 'Admin\PartnerController@datatables')->name('admin-partner-datatables');
-        Route::get('/partner', 'Admin\PartnerController@index')->name('admin-partner-index');
-        Route::get('/partner/create', 'Admin\PartnerController@create')->name('admin-partner-create');
-        Route::post('/partner/create', 'Admin\PartnerController@store')->name('admin-partner-store');
-        Route::get('/partner/edit/{id}', 'Admin\PartnerController@edit')->name('admin-partner-edit');
-        Route::post('/partner/edit/{id}', 'Admin\PartnerController@update')->name('admin-partner-update');
-        Route::delete('/partner/delete/{id}', 'Admin\PartnerController@destroy')->name('admin-partner-delete');
+        Route::get('/brand/datatables', 'Admin\BrandController@datatables')->name('admin-brand-datatables');
+        Route::get('/brand', 'Admin\BrandController@index')->name('admin-brand-index');
+        Route::get('/brand/create', 'Admin\BrandController@create')->name('admin-brand-create');
+        Route::post('/brand/create', 'Admin\BrandController@store')->name('admin-brand-store');
+        Route::get('/brand/edit/{id}', 'Admin\BrandController@edit')->name('admin-brand-edit');
+        Route::post('/brand/edit/{id}', 'Admin\BrandController@update')->name('admin-brand-update');
+        Route::delete('/brand/delete/{id}', 'Admin\BrandController@destroy')->name('admin-brand-delete');
 
-        //------------ ADMIN PARTNER SECTION ENDS ------------
+        //------------ ADMIN BRAND SECTION ENDS ------------
 
         //------------ ADMIN PAGE SETTINGS SECTION ------------
 
@@ -1525,7 +1525,7 @@ Route::group(['middleware' => 'maintenance'], function () {
         return Token::latest()->first()->id;
     });
 
-//    Route::get('partners/{link}', 'BrandController@index')->name('partners.index');
+//    Route::get('brands/{link}', 'BrandController@index')->name('brands.index');
 
 
 

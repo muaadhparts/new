@@ -375,25 +375,25 @@
 </section>
 <!-- Latest Post Section   -->
 
-<!-- Partner Section -->
-<section class="gs-partner-section">
+<!-- Brand Section -->
+<section class="gs-brand-section">
     <div class="container">
         <div class="row mb-60 justify-content-center">
             <div class="col-lg-7">
                 <div class="gs-title-box text-center">
-                    <h2 class="title wow-replaced">@lang('Our Partners') </h2>
+                    <h2 class="title wow-replaced">@lang('Our Brands') </h2>
                     <p class="des mb-0 wow-replaced" data-wow-delay=".1s">@lang('Cillum eu id enim aliquip aute ullamco
                         anim. Culpa deserunt nostrud excepteur voluptate velit ipsum esse enim Cillum eu id enim aliquip
                         aute ullamco.')</p>
                 </div>
             </div>
         </div>
-        <div class="gs-partnerss row justify-content-center">
-            @foreach (DB::table('partners')->get() as $data)
+        <div class="gs-brandss row justify-content-center">
+            @foreach (DB::table('brands')->get() as $data)
             <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6 wow-replaced p-0" data-wow-delay=".1s">
                 <a href="#">
-                    <div class="single-partner">
-                        <img src="{{ asset('assets/images/partner/' . $data->photo) }}" alt="partner">
+                    <div class="single-brand">
+                        <img src="{{ asset('assets/images/brand/' . $data->photo) }}" alt="brand">
                     </div>
                 </a>
             </div>

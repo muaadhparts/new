@@ -3,7 +3,7 @@
 namespace App\Livewire;
 
 use App\Models\NCategory;
-use App\Models\Partner;
+use App\Models\Brand;
 use Livewire\Component;
 
 class CatlogTreeLevel3 extends Component
@@ -16,7 +16,7 @@ class CatlogTreeLevel3 extends Component
     {
 //         dd($id ,$data ,$key1,$key2);
         $this->vehicle = $data;
-        $this->brand = Partner::where('name', $id)->firstorFail();
+        $this->brand = Brand::where('name', $id)->firstorFail();
         $this->category  = NCategory::where('data', $data)
 //            ->select('id','data','code','label','thumbnailimage')
             ->where('key1' ,$key1)

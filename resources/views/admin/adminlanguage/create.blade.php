@@ -1054,11 +1054,11 @@ textarea.input-field {
                                   <span class="remove lang-remove"><i class="fas fa-times"></i></span>
                                   <div class="row">
                                     <div class="col-lg-6">
-                                      <textarea name="keys[]" class="input-field" placeholder="Enter Language Key" required="">Partners</textarea>
+                                      <textarea name="keys[]" class="input-field" placeholder="Enter Language Key" required="">Brands</textarea>
                                     </div>
 
                                     <div class="col-lg-6">
-                                      <textarea  name="values[]" class="input-field" placeholder="Enter Language Value" required="">Partners</textarea>
+                                      <textarea  name="values[]" class="input-field" placeholder="Enter Language Value" required="">Brands</textarea>
                                     </div>
                                   </div>
                                 </div>

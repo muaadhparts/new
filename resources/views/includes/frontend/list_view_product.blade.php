@@ -97,7 +97,7 @@
         </div>
         <div class="content-wrapper align-content-center align-items-center" >
 
-                <img src="{{asset('assets/images/partner/' .$product->brand?->photo) }}" width="100"  height="100">
+                <img src="{{asset('assets/images/brand/' .$product->brand?->photo) }}" width="100"  height="100">
 
 
             @if( $product->price > 0)

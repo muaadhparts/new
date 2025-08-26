@@ -4,7 +4,7 @@ namespace App\Http\Resources;
 
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class PartnerResource extends JsonResource
+class BrandResource extends JsonResource
 {
     /**
      * Transform the resource into an array.
@@ -16,7 +16,7 @@ class PartnerResource extends JsonResource
     {
       return [
         'id' => $this->id,
-        'image' => url('/') . '/assets/images/partner/'.$this->photo,
+        'image' => url('/') . '/assets/images/brand/'.$this->photo,
         'link' => $this->link
       ];
     }

@@ -10,7 +10,7 @@
                     <div class="product-description">
                       <div class="body-area">
                         @include('alerts.admin.form-error')  
-                      <form id="geniusformdata" action="{{route('admin-partner-create')}}" method="POST" enctype="multipart/form-data">
+                      <form id="geniusformdata" action="{{route('admin-brand-create')}}" method="POST" enctype="multipart/form-data">
                         {{csrf_field()}}
 
                         <div class="row">
@@ -50,7 +50,7 @@
                             </div>
                           </div>
                           <div class="col-lg-7">
-                            <button class="addProductSubmit-btn mt-4" type="submit">{{ __('Create Partner') }}</button>
+                            <button class="addProductSubmit-btn mt-4" type="submit">{{ __('Create Brand') }}</button>
                           </div>
                         </div>
                       </form>

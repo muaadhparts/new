@@ -2,21 +2,21 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Partner;
+use App\Models\Brand;
 
 class BrandController extends Controller
 {
-    public function index($partner)
+    public function index($brand)
     {
 
-     $partner =  Partner::with('catalogs')
-         ->where('name',$partner)
+     $brand =  Brand::with('catalogs')
+         ->where('name',$brand)
          ->first();
 
 //            ->firstOrFail();
 
 
 
-        dd($partner);
+        dd($brand);
     }
 }

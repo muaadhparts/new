@@ -2,7 +2,7 @@
 
 namespace App\Livewire;
 
-use App\Models\Partner;
+use App\Models\Brand;
 use App\Models\Product;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -25,7 +25,7 @@ class CatlogsProducts extends Component
         $this->vehicle = $data;
         $this->query = $query;
 //         dd($id ,$products);
-        $this->brand = Partner::where('name', $id)->firstorFail();
+        $this->brand = Brand::where('name', $id)->firstorFail();
 
 
 

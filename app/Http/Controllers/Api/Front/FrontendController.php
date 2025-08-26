@@ -10,7 +10,7 @@ use App\Http\Resources\FeaturedBannerResource;
 use App\Http\Resources\FeaturedLinkResource;
 use App\Http\Resources\OrderTrackResource;
 use App\Http\Resources\PageResource;
-use App\Http\Resources\PartnerResource;
+use App\Http\Resources\BrandResource;
 use App\Http\Resources\ProductlistResource;
 use App\Http\Resources\ServiceResource;
 use App\Http\Resources\SliderResource;use App\Models\ArrivalSection;
@@ -25,7 +25,7 @@ use App\Models\Language;
 use App\Models\Order;
 use App\Models\Page;
 use App\Models\Pagesetting;
-use App\Models\Partner;
+use App\Models\Brand;
 use App\Models\Product;
 use App\Models\Service;
 use App\Models\Slider;
@@ -37,7 +37,7 @@ use Validator;
 
 class FrontendController extends Controller
 {
-    // Display Sliders, Featured Links, Featured Banners, Services, Banners & Partners
+    // Display Sliders, Featured Links, Featured Banners, Services, Banners & Brands
 
     public function section_customization()
     {
@@ -227,17 +227,17 @@ class FrontendController extends Controller
         }
     }
 
-    public function partners()
+    public function brands()
     {
         try {
-            $partners = Partner::all();
-            return response()->json(['status' => true, 'data' => PartnerResource::collection($partners), 'error' => []]);
+            $brands = Brand::all();
+            return response()->json(['status' => true, 'data' => BrandResource::collection($brands), 'error' => []]);
         } catch (\Exception $e) {
             return response()->json(['status' => true, 'data' => [], 'error' => ['message' => $e->getMessage()]]);
         }
     }
 
-    // Display Sliders, Featured Links, Featured Banners, Services, Banners & Partners Ends
+    // Display Sliders, Featured Links, Featured Banners, Services, Banners & Brands Ends
 
     // Display All Type Of Products
 

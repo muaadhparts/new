@@ -50,6 +50,6 @@ class CatalogModel extends Model
 
     public function brand(): BelongsTo
     {
-        return $this->belongsTo(Partner::class);
+        return $this->belongsTo(Brand::class);
     }
 }

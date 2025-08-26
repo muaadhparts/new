@@ -3,7 +3,7 @@
 namespace App\Livewire;
 
 use App\Models\NCategory;
-use App\Models\Partner;
+use App\Models\Brand;
 use Illuminate\Support\Facades\Session;
 use Livewire\Component;
 
@@ -16,13 +16,13 @@ class CatlogTree extends Component
     {
 //         dd($id ,$data);
 
-        $this->brand = Partner::where('name', $id)->firstorFail();
+        $this->brand = Brand::where('name', $id)->firstorFail();
         $this->categories = NCategory::where('data', $data)
             ->select('id','data','code','label','thumbnailimage')
             ->whereNull('key1')
             ->get();
 //        dd($this->categories);
-//        $this->brandId = Partner::where('name', $id)->first();
+//        $this->brandId = Brand::where('name', $id)->first();
     }
 
     public function render()

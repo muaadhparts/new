@@ -121,8 +121,8 @@ class PageSettingController extends AdminBaseController
         if ($request->best_sellers == ""){
             $input['best_sellers'] = 0;
         }
-        if ($request->partner == ""){
-            $input['partner'] = 0;
+        if ($request->brand == ""){
+            $input['brand'] = 0;
         }
         if ($request->top_big_trending == ""){
             $input['top_big_trending'] = 0;

@@ -152,22 +152,22 @@
 
 
 <!--==================== Service Section Start ====================-->
-@if ($ps->partner == 1)
+@if ($ps->brand == 1)
     <div class="full-row bg-light">
         <div class="container">
             <div class="row justify-content-center">
                 <div class="col-lg-5">
 
-                    <h2 class="main-title mb-4 text-center text-secondary">{{ $gs->partner_title }}</h2>
+                    <h2 class="main-title mb-4 text-center text-secondary">{{ $gs->brand_title }}</h2>
                     <span class="mb-30 sub-title text-general font-medium ordenery-font font-400 text-center">{{
-            $gs->partner_text }}</span>
+            $gs->brand_text }}</span>
                 </div>
             </div>
             <div class="row g-3">
-                @foreach (DB::table('partners')->get() as $data)
+                @foreach (DB::table('brands')->get() as $data)
                     <div class="col-6 col-sm-4 col-lg-3 col-xl-2">
                         <div class="simple-service">
-                            <img src="{{ asset('assets/images/partner/' . $data->photo) }}" alt="">
+                            <img src="{{ asset('assets/images/brand/' . $data->photo) }}" alt="">
 
                         </div>
                     </div>

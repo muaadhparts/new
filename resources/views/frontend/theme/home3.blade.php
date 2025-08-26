@@ -35,14 +35,14 @@
     <!-- hero section end -->
 
 
-<!-- Partner Section -->
+<!-- Brand Section -->
 
 
 
-<section class="gs-partner-section home-3 bg-light-white py-4">
+<section class="gs-brand-section home-3 bg-light-white py-4">
     <livewire:search-box/>
 
-    <div class="container title-box-and-partners-container">
+    <div class="container title-box-and-brands-container">
 
 
         <div class="title-box-wrapper">
@@ -58,17 +58,17 @@
                 </div>
             </div>
         </div>
-        <div class="gs-partners">
+        <div class="gs-brands">
             <div
                     class="row gy-4 row-cols-xxl-4 row-cols-xl-3 row-cols-lg-4 row-cols-md-3 row-cols-sm-2 row-cols-1 justify-content-center">
 
-                @foreach (DB::table('partners')->get() as $brand)
+                @foreach (DB::table('brands')->get() as $brand)
                     <div class="col">
                         <div class="wow-replaced " data-wow-delay=".1s">
                             <a href="{{route('catlogs.index',$brand->name)}}">
-                                <div class="single-partner">
+                                <div class="single-brand">
 
-                                     <img src="{{ asset('assets/images/partner/' . $brand->photo) }}" alt="partner " class="img-fluid">
+                                     <img src="{{ asset('assets/images/brand/' . $brand->photo) }}" alt="brand " class="img-fluid">
                                 </div>
                             </a>
                         </div>
@@ -79,7 +79,7 @@
     </div>
 
 </section>
-<!-- Partner Section Completed -->
+<!-- Brand Section Completed -->
 
 
 

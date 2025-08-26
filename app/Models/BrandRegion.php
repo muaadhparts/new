@@ -8,8 +8,8 @@ class BrandRegion extends Model
 {
     protected $fillable = ['brand_id', 'code', 'label'];
 
-    public function partner()
+    public function brand()
     {
-        return $this->belongsTo(Partner::class, 'brand_id');
+        return $this->belongsTo(Brand::class, 'brand_id');
     }
 }

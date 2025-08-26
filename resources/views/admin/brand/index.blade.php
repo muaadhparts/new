@@ -1,12 +1,12 @@
 @extends('layouts.admin') 
 
 @section('content')  
-          <input type="hidden" id="headerdata" value="{{ __('PARTNER') }}">
+          <input type="hidden" id="headerdata" value="{{ __('BRAND') }}">
           <div class="content-area">
             <div class="mr-breadcrumb">
               <div class="row">
                 <div class="col-lg-12">
-                    <h4 class="heading">{{ __('Partners') }}</h4>
+                    <h4 class="heading">{{ __('Brands') }}</h4>
                     <ul class="links">
                       <li>
                         <a href="{{ route('admin.dashboard') }}">{{ __('Dashboard') }} </a>
@@ -15,7 +15,7 @@
                           <a href="javascript:;">{{ __('Home Page Settings') }} </a>
                         </li>                      
                       <li>
-                        <a href="{{ route('admin-partner-index') }}">{{ __('Partners') }}</a>
+                        <a href="{{ route('admin-brand-index') }}">{{ __('Brands') }}</a>
                       </li>
                     </ul>
                 </div>
@@ -89,7 +89,7 @@
 
       <!-- Modal body -->
       <div class="modal-body">
-            <p class="text-center">{{ __('You are about to delete this Partner.') }}</p>
+            <p class="text-center">{{ __('You are about to delete this Brand.') }}</p>
             <p class="text-center">{{ __('Do you want to proceed?') }}</p>
       </div>
 
@@ -125,7 +125,7 @@
          ordering: false,
                processing: true,
                serverSide: true,
-               ajax: '{{ route('admin-partner-datatables') }}',
+               ajax: '{{ route('admin-brand-datatables') }}',
                columns: [
                         { data: 'photo', name: 'photo' , searchable: false, orderable: false},
                         { data: 'link', name: 'link' },
@@ -139,8 +139,8 @@
 
         $(function() {
         $(".btn-area").append('<div class="col-sm-4 table-contents">'+
-          '<a class="add-btn" data-href="{{route('admin-partner-create')}}" id="add-data" data-toggle="modal" data-target="#modal1">'+
-          '<i class="fas fa-plus"></i> {{ __('Add New Partner') }}'+
+          '<a class="add-btn" data-href="{{route('admin-brand-create')}}" id="add-data" data-toggle="modal" data-target="#modal1">'+
+          '<i class="fas fa-plus"></i> {{ __('Add New Brand') }}'+
           '</a>'+
           '</div>');
       });                     

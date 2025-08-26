@@ -4,7 +4,7 @@ namespace App\Livewire;
 
 use App\Models\Category;
 use App\Models\NCategory;
-use App\Models\Partner;
+use App\Models\Brand;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Str;
@@ -25,7 +25,7 @@ class Illustrations extends Component
     {
 
         $this->vehicle = $data;
-        $this->brand = Partner::where('name', $id)->firstorFail();
+        $this->brand = Brand::where('name', $id)->firstorFail();
         $this->category = NCategory::where('data', $data)
              ->where('key1' ,$key1)
                 ->where('key2' ,$key2)

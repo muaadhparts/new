@@ -26,12 +26,12 @@
     }
 }
 
-.gs-partner-section {
+.gs-brand-section {
     &.home-3 {
         margin-top: 0;
         margin-bottom: 0;
 
-        .title-box-and-partners-container {
+        .title-box-and-brands-container {
             display: flex;
             justify-content: center;
             align-items: center;
@@ -71,7 +71,7 @@
             }
         }
 
-        .gs-partners {
+        .gs-brands {
             width: calc(100% - 448px);
 
             @include screen-1200 {

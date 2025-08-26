@@ -404,7 +404,7 @@
             <a href="{{ route('admin-service-index') }}"><span>{{ __('Services') }}</span></a>
         </li>
         <li>
-            <a href="{{ route('admin-partner-index') }}"><span>{{ __('Partners') }}</span></a>
+            <a href="{{ route('admin-brand-index') }}"><span>{{ __('Brands') }}</span></a>
         </li>
         <li>
             <a href="{{ route('admin-ps-customize') }}"><span>{{ __('Home Page Customization') }}</span></a>

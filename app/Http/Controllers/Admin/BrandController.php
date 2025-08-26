@@ -3,38 +3,38 @@
 namespace App\Http\Controllers\Admin;
 
 use App\{
-    Models\Partner
+    Models\Brand
 };
 use Illuminate\Http\Request;
 use Validator;
 use Datatables;
 
-class PartnerController extends AdminBaseController
+class BrandController extends AdminBaseController
 {
 
     //*** JSON Request
     public function datatables()
     {
-         $datas = Partner::latest('id')->get();
+         $datas = Brand::latest('id')->get();
          //--- Integrating This Collection Into Datatables
          return Datatables::of($datas)
-                            ->editColumn('photo', function(Partner $data) {
-                                $photo = $data->photo ? url('assets/images/partner/'.$data->photo):url('assets/images/noimage.png');
+                            ->editColumn('photo', function(Brand $data) {
+                                $photo = $data->photo ? url('assets/images/brand/'.$data->photo):url('assets/images/noimage.png');
                                 return '<img src="' . $photo . '" alt="Image">';
                             })
-                            ->addColumn('action', function(Partner $data) {
-                                return '<div class="action-list"><a data-href="' . route('admin-partner-edit',$data->id) . '" class="edit" data-toggle="modal" data-target="#modal1"> <i class="fas fa-edit"></i>'.__('Edit').'</a><a href="javascript:;" data-href="' . route('admin-partner-delete',$data->id) . '" data-toggle="modal" data-target="#confirm-delete" class="delete"><i class="fas fa-trash-alt"></i></a></div>';
+                            ->addColumn('action', function(Brand $data) {
+                                return '<div class="action-list"><a data-href="' . route('admin-brand-edit',$data->id) . '" class="edit" data-toggle="modal" data-target="#modal1"> <i class="fas fa-edit"></i>'.__('Edit').'</a><a href="javascript:;" data-href="' . route('admin-brand-delete',$data->id) . '" data-toggle="modal" data-target="#confirm-delete" class="delete"><i class="fas fa-trash-alt"></i></a></div>';
                             }) 
                             ->rawColumns(['photo', 'action'])
                             ->toJson(); //--- Returning Json Data To Client Side
     }
 
     public function index(){
-        return view('admin.partner.index');
+        return view('admin.brand.index');
     }
 
     public function create(){
-        return view('admin.partner.create');
+        return view('admin.brand.create');
     }
 
     //*** POST Request
@@ -53,12 +53,12 @@ class PartnerController extends AdminBaseController
         //--- Validation Section Ends
 
         //--- Logic Section
-        $data = new Partner();
+        $data = new Brand();
         $input = $request->all();
         if ($file = $request->file('photo')) 
          {      
             $name = \PriceHelper::ImageCreateName($file);
-            $file->move('assets/images/partner',$name);           
+            $file->move('assets/images/brand',$name);           
             $input['photo'] = $name;
         } 
         if (!empty($request->meta_tag)) 
@@ -86,8 +86,8 @@ class PartnerController extends AdminBaseController
     //*** GET Request
     public function edit($id)
     {
-        $data = Partner::findOrFail($id);
-        return view('admin.partner.edit',compact('data'));
+        $data = Brand::findOrFail($id);
+        return view('admin.brand.edit',compact('data'));
     }
 
     //*** POST Request
@@ -106,16 +106,16 @@ class PartnerController extends AdminBaseController
         //--- Validation Section Ends
 
         //--- Logic Section
-        $data = Partner::findOrFail($id);
+        $data = Brand::findOrFail($id);
         $input = $request->all();
             if ($file = $request->file('photo')) 
             {              
                 $name = \PriceHelper::ImageCreateName($file);
-                $file->move('assets/images/partner',$name);
+                $file->move('assets/images/brand',$name);
                 if($data->photo != null)
                 {
-                    if (file_exists(public_path().'/assets/images/partner/'.$data->photo)) {
-                        unlink(public_path().'/assets/images/partner/'.$data->photo);
+                    if (file_exists(public_path().'/assets/images/brand/'.$data->photo)) {
+                        unlink(public_path().'/assets/images/brand/'.$data->photo);
                     }
                 }            
             $input['photo'] = $name;
@@ -151,7 +151,7 @@ class PartnerController extends AdminBaseController
     //*** GET Request Delete
     public function destroy($id)
     {
-        $data = Partner::findOrFail($id);
+        $data = Brand::findOrFail($id);
         //If Photo Doesn't Exist
         if($data->photo == null){
             $data->delete();
@@ -161,8 +161,8 @@ class PartnerController extends AdminBaseController
             //--- Redirect Section Ends     
         }
         //If Photo Exist
-        if (file_exists(public_path().'/assets/images/partner/'.$data->photo)) {
-            unlink(public_path().'/assets/images/partner/'.$data->photo);
+        if (file_exists(public_path().'/assets/images/brand/'.$data->photo)) {
+            unlink(public_path().'/assets/images/brand/'.$data->photo);
         }
         $data->delete();
         //--- Redirect Section     

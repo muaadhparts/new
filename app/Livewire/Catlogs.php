@@ -3,7 +3,7 @@
 namespace App\Livewire;
 
 use App\Models\Catalog;
-use App\Models\Partner;
+use App\Models\Brand;
 use Illuminate\Support\Facades\Session;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -21,7 +21,7 @@ class Catlogs extends Component
     {
         // dd($id ,$this);
      
-        $this->brand = Partner::where('name', $id)->firstOrFail();
+        $this->brand = Brand::where('name', $id)->firstOrFail();
         // dd($this->brand ,$this ,  $this->brand->regions);
         $this->region = $this->brand->regions->first()?->code ?? '';
       
