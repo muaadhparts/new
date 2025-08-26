@@ -1,5 +1,6 @@
 <?php
 
+
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
@@ -334,7 +335,7 @@ class CalloutController extends Controller
     }
 }
 
-
+// يعيد المابق بشكل كامل 
 // namespace App\Http\Controllers\Api;
 
 // use App\Http\Controllers\Controller;
@@ -694,5 +695,375 @@ class CalloutController extends Controller
 //             'match_count'  => count($matchValueIds),
 //             'difference_count' => 0,
 //         ], $storeData);
+//     }
+// }
+
+
+// اول كود غير مطور 
+// namespace App\Http\Controllers\Api;
+
+// use App\Http\Controllers\Controller;
+// use App\Models\NewCategory;
+// use Illuminate\Http\Request;
+// use Illuminate\Support\Facades\DB;
+// use Illuminate\Support\Facades\Session;
+
+// class CalloutController extends Controller
+// {
+//     // helper: اسم الجدول الديناميكي
+//     protected function dyn(string $base, string $catalogCode): string
+//     {
+//         return strtolower("{$base}_{$catalogCode}");
+//     }
+
+//     public function show(Request $request)
+//     {
+//         $t0 = microtime(true);
+
+//         $sectionId   = (int) $request->query('section_id');
+//         $categoryId  = (int) $request->query('category_id');
+//         $catalogCode = (string) $request->query('catalog_code');
+//         $calloutKey  = (string) $request->query('callout');
+
+//         if (!$sectionId || !$categoryId || !$catalogCode || !$calloutKey) {
+//             return response()->json([
+//                 'ok' => false,
+//                 'error' => 'Missing required parameters: section_id, category_id, catalog_code, callout',
+//             ], 422);
+//         }
+
+//         $category = NewCategory::with('catalog')->find($categoryId);
+//         if (!$category || !$category->catalog) {
+//             return response()->json([
+//                 'ok' => false,
+//                 'error' => 'Invalid category or catalog',
+//             ], 404);
+//         }
+
+//         // مواصفات المستخدم من السيشن (إن وجدت)
+//         $specs = Session::get('selected_filters', []);
+//         $yearMonth = $this->extractYearMonth($specs);
+
+//         // جلب القطع المتعلقة بالكول-أوت
+//         $parts = $this->fetchPartsWithSpecs($sectionId, $calloutKey, $catalogCode, $category->catalog_id);
+
+//         // تجهيز expectedSet من مواصفات المستخدم أو مواصفات الفئة
+//         if (!empty($specs)) {
+//             $expectedSet = collect($specs)
+//                 ->pluck('value_id')->map(fn($v) => (string) $v)->unique()->values()->all();
+//             $categorySpecs = null;
+//         } else {
+//             $categorySpecs = $this->fetchCategorySpecs($categoryId, $category->catalog_id);
+//             $expectedSet = collect($categorySpecs)->pluck('spec_items')->flatten(1)
+//                 ->pluck('value_id')->map(fn($v) => (string) $v)->unique()->values()->all();
+//         }
+
+//         // تقييم القروبات (الوتر الحساس) + احترام التاريخ لو محدد
+//         $rawMatches = collect($parts)->map(function ($part) use ($expectedSet, $yearMonth) {
+//             foreach ($part['groups'] as $group) {
+//                 $gIndex = (int) $group['group_index'];
+//                 $values = collect($group['spec_items'])->pluck('value_id')->map(fn($v) => (string) $v)->all();
+
+//                 // قروب عام
+//                 if ($gIndex === 0 && empty($values)) {
+//                     return [
+//                         ...$part,
+//                         'matched_group_index' => $gIndex,
+//                         'match_count' => 0,
+//                         'difference_count' => 0,
+//                     ];
+//                 }
+
+//                 $intersection = array_intersect($values, $expectedSet);
+//                 $difference   = array_diff($values, $expectedSet);
+
+//                 if (count($intersection) >= 1 && count($difference) === 0) {
+//                     if ($gIndex > 0 && $yearMonth) {
+//                         $begin = $group['begin_date'] ?? null;
+//                         $end   = $group['end_date']   ?? null;
+//                         if (($begin && $yearMonth < $begin) || ($end && $yearMonth > $end)) {
+//                             continue;
+//                         }
+//                     }
+//                     return [
+//                         ...$part,
+//                         'matched_group_index' => $gIndex,
+//                         'match_count' => count($intersection),
+//                         'difference_count' => 0,
+//                     ];
+//                 }
+//             }
+//             return null;
+//         })->filter()->values();
+
+//         // اختيار القطعة المطابقة الرسمية
+//         if (!empty($specs)) {
+//             $match = $yearMonth
+//                 ? $this->matchWithSpecsAndDate($parts, $specs, $yearMonth)
+//                 : $this->matchWithSpecs($parts, $specs);
+//         } else {
+//             $match = $this->matchWithCategorySpecs($parts, $categorySpecs);
+//         }
+
+//         // بناء التفاصيل (بالامتدادات عند توفر group_id مطابق)
+//         $allMatchedParts = $rawMatches->map(fn($p) => $this->appendDetails($p, $sectionId, $catalogCode, $category->catalog_id));
+//         $rawResults = $allMatchedParts->all();
+
+//         $products = $match
+//             ? [ $this->appendDetails($match, $sectionId, $catalogCode, $category->catalog_id) ]
+//             : [];
+
+//         $elapsed = round((microtime(true) - $t0) * 1000); // ms
+
+//         $response = [
+//             'ok' => true,
+//             'elapsed_ms' => $elapsed,
+//             'products' => $products,
+//             'rawResults' => $rawResults,
+//         ];
+
+//         // dd($response); // فحص سريع عند الحاجة
+
+//         return response()->json($response);
+//     }
+
+//     protected function extractYearMonth(array $specs): ?string
+//     {
+//         $year  = $specs['year']['value_id']  ?? null;
+//         $month = $specs['month']['value_id'] ?? null;
+//         return ($year && $month) ? $year . str_pad($month, 2, '0', STR_PAD_LEFT) : null;
+//     }
+
+//     protected function fetchPartsWithSpecs(int $sectionId, string $calloutKey, string $catalogCode, int $catalogId): array
+//     {
+//         $groupTable        = $this->dyn('part_spec_groups', $catalogCode);
+//         $itemTable         = $this->dyn('part_spec_group_items', $catalogCode);
+//         $periodTable       = $this->dyn('part_periods', $catalogCode);
+//         $partsTable        = $this->dyn('parts', $catalogCode);
+//         $sectionPartsTable = $this->dyn('section_parts', $catalogCode);
+
+//         $parts = DB::table("{$partsTable} as p")
+//             ->join("{$sectionPartsTable} as sp", 'sp.part_id', '=', 'p.id')
+//             ->where('sp.section_id', $sectionId)
+//             ->where('p.callout', $calloutKey)
+//             ->select('p.id as part_id', 'p.part_number')
+//             ->get();
+
+//         if ($parts->isEmpty()) return [];
+
+//         $partIds = $parts->pluck('part_id')->all();
+
+//         $groups = DB::table("{$groupTable} as g")
+//             ->leftJoin("{$periodTable} as pp", 'pp.id', '=', 'g.part_period_id')
+//             ->whereIn('g.part_id', $partIds)
+//             ->where('g.section_id', $sectionId)
+//             ->where('g.catalog_id', $catalogId)
+//             ->select('g.id as group_id', 'g.part_id', 'g.group_index', 'pp.begin_date', 'pp.end_date')
+//             ->get();
+
+//         $items = $groups->isEmpty() ? collect() : DB::table("{$itemTable} as gi")
+//             ->join('specification_items as si', 'si.id', '=', 'gi.specification_item_id')
+//             ->join('specifications as s', 's.id', '=', 'si.specification_id')
+//             ->whereIn('gi.group_id', $groups->pluck('id')->all() ?: $groups->pluck('group_id')->all())
+//             ->select('gi.group_id', 's.name as spec_code', 'si.value_id')
+//             ->get();
+
+//         $itemsGrouped = $items->groupBy('group_id');
+//         $groupsByPart = $groups->groupBy('part_id');
+
+//         return $parts->map(function ($part) use ($groupsByPart, $itemsGrouped) {
+//             $gs = $groupsByPart[$part->part_id] ?? collect();
+//             return [
+//                 'part_id'     => $part->part_id,
+//                 'part_number' => $part->part_number,
+//                 'groups' => $gs->map(function ($g) use ($itemsGrouped) {
+//                     return [
+//                         'group_id'    => $g->group_id,
+//                         'group_index' => $g->group_index,
+//                         'begin_date'  => $g->begin_date,
+//                         'end_date'    => $g->end_date,
+//                         'spec_items'  => isset($itemsGrouped[$g->group_id]) ? $itemsGrouped[$g->group_id]->values()->all() : [],
+//                     ];
+//                 })->values()->all(),
+//             ];
+//         })->toArray();
+//     }
+
+//     protected function fetchCategorySpecs(int $categoryId, int $catalogId): array
+//     {
+//         $groups = DB::table('category_spec_groups as csg')
+//             ->leftJoin('category_periods as cp', 'cp.id', '=', 'csg.category_period_id')
+//             ->where('csg.category_id', $categoryId)
+//             ->where('csg.catalog_id', $catalogId)
+//             ->select('csg.id as group_id', 'csg.group_index', 'cp.begin_date', 'cp.end_date')
+//             ->get()
+//             ->map(function ($group) {
+//                 $items = DB::table('category_spec_group_items as csgi')
+//                     ->join('specification_items as si', 'si.id', '=', 'csgi.specification_item_id')
+//                     ->join('specifications as s', 's.id', '=', 'si.specification_id')
+//                     ->where('csgi.group_id', $group->group_id)
+//                     ->select('s.name as spec_code', 'si.value_id')
+//                     ->get()
+//                     ->toArray();
+//                 return [
+//                     'group_index' => $group->group_index,
+//                     'begin_date'  => $group->begin_date,
+//                     'end_date'    => $group->end_date,
+//                     'spec_items'  => $items,
+//                 ];
+//             })
+//             ->filter(fn($g) => count($g['spec_items']) > 0)
+//             ->values()
+//             ->toArray();
+
+//         return $groups;
+//     }
+
+//     protected function matchWithSpecs(array $parts, array $expected): ?array
+//     {
+//         $expectedSet = collect($expected)->pluck('value_id')->filter()->map(fn($v) => (string) $v)->unique()->values()->all();
+//         foreach ($parts as $part) {
+//             foreach ($part['groups'] as $group) {
+//                 $values       = collect($group['spec_items'])->pluck('value_id')->map(fn($v) => (string) $v)->all();
+//                 $intersection = array_intersect($values, $expectedSet);
+//                 $difference   = array_diff($values, $expectedSet);
+//                 if (count($intersection) >= 1 && count($difference) === 0) {
+//                     return [
+//                         ...$part,
+//                         'matched_group_index' => $group['group_index'],
+//                         'match_count' => count($intersection),
+//                         'difference_count' => count($difference),
+//                     ];
+//                 }
+//             }
+//         }
+//         return null;
+//     }
+
+//     protected function matchWithSpecsAndDate(array $parts, array $expected, string $yearMonth): ?array
+//     {
+//         $expectedSet = collect($expected)->pluck('value_id')->filter()->map(fn($v) => (string) $v)->unique()->values()->all();
+//         foreach ($parts as $part) {
+//             foreach ($part['groups'] as $group) {
+//                 $gIndex = (int) $group['group_index'];
+//                 $values = collect($group['spec_items'])->pluck('value_id')->map(fn($v) => (string) $v)->all();
+
+//                 if ($gIndex === 0 && empty($values)) {
+//                     return [
+//                         ...$part,
+//                         'matched_group_index' => $gIndex,
+//                         'match_count' => 0,
+//                         'difference_count' => 0,
+//                     ];
+//                 }
+
+//                 $intersection = array_intersect($values, $expectedSet);
+//                 $difference   = array_diff($values, $expectedSet);
+//                 if (count($intersection) >= 1 && count($difference) === 0) {
+//                     $begin = $group['begin_date'] ?? null;
+//                     $end   = $group['end_date']   ?? null;
+//                     if (($begin && $yearMonth < $begin) || ($end && $yearMonth > $end)) {
+//                         continue;
+//                     }
+//                     return [
+//                         ...$part,
+//                         'matched_group_index' => $group['group_index'],
+//                         'match_count' => count($intersection),
+//                         'difference_count' => 0,
+//                     ];
+//                 }
+//             }
+//         }
+//         return null;
+//     }
+
+//     protected function matchWithCategorySpecs(array $parts, ?array $categorySpecs): ?array
+//     {
+//         if (!$categorySpecs) return null;
+
+//         foreach ($parts as $part) {
+//             foreach ($part['groups'] as $group) {
+//                 $gIndex = (int) $group['group_index'];
+//                 $values = collect($group['spec_items'])->pluck('value_id')->map(fn($v) => (string) $v)->all();
+
+//                 if ($gIndex === 0 && empty($values)) {
+//                     return [
+//                         ...$part,
+//                         'matched_group_index' => $gIndex,
+//                         'match_count' => 0,
+//                         'difference_count' => 0,
+//                     ];
+//                 }
+
+//                 foreach ($categorySpecs as $catGroup) {
+//                     $catValues    = collect($catGroup['spec_items'])->pluck('value_id')->map(fn($v) => (string) $v)->all();
+//                     $intersection = array_intersect($values, $catValues);
+//                     $difference   = array_diff($values, $catValues);
+//                     if (count($intersection) >= 1 && count($difference) === 0) {
+//                         return [
+//                             ...$part,
+//                             'matched_group_index' => $gIndex,
+//                             'match_count' => count($intersection),
+//                             'difference_count' => 0,
+//                         ];
+//                     }
+//                 }
+//             }
+//         }
+//         return null;
+//     }
+
+//     protected function appendDetails(array $part, int $sectionId, string $catalogCode, int $catalogId): array
+//     {
+//         $partsTable        = $this->dyn('parts', $catalogCode);
+//         $sectionPartsTable = $this->dyn('section_parts', $catalogCode);
+//         $extTable          = $this->dyn('part_extensions', $catalogCode);
+
+//         $matchedGroupIndex = $part['matched_group_index'] ?? null;
+//         $groups            = $part['groups'] ?? [];
+//         $matchedGroup      = collect($groups)->firstWhere('group_index', $matchedGroupIndex);
+//         $groupId           = $matchedGroup['group_id'] ?? null;
+
+//         $details = DB::table("{$partsTable} as p")
+//             ->join("{$sectionPartsTable} as sp", 'sp.part_id', '=', 'p.id')
+//             ->where('sp.section_id', $sectionId)
+//             ->where('p.id', $part['part_id'])
+//             ->select('p.label_en as part_label_en', 'p.label_ar as part_label_ar', 'p.qty as part_qty', 'p.callout', 'p.part_number')
+//             ->first();
+
+//         $extensions = [];
+//         if ($groupId) {
+//             $exists = DB::table('information_schema.tables')
+//                 ->where('table_schema', DB::getDatabaseName())
+//                 ->where('table_name', $extTable)
+//                 ->exists();
+
+//             if ($exists) {
+//                 $extensionRows = DB::table($extTable)
+//                     ->where('part_id', $part['part_id'])
+//                     ->where('section_id', $sectionId)
+//                     ->where('group_id', $groupId)
+//                     ->select('extension_key', 'extension_value')
+//                     ->get();
+
+//                 $extensions = $extensionRows->mapWithKeys(fn($row) => [$row->extension_key => $row->extension_value])->all();
+//             }
+//         }
+
+//         return [
+//             'part_id'           => $part['part_id'],
+//             'part_number'       => optional($details)->part_number,
+//             'part_label_ar'     => optional($details)->part_label_ar,
+//             'part_label_en'     => optional($details)->part_label_en,
+//             'part_qty'          => optional($details)->part_qty,
+//             'part_callout'      => optional($details)->callout,
+//             'part_begin'        => $matchedGroup['begin_date'] ?? null,
+//             'part_end'          => $matchedGroup['end_date'] ?? null,
+//             'match_values'      => collect($matchedGroup['spec_items'] ?? [])->pluck('value_id')->all(),
+//             'details'           => $matchedGroup['spec_items'] ?? [],
+//             'extensions'        => $extensions,
+//             'match_count'       => $part['match_count'] ?? 0,
+//             'difference_count'  => $part['difference_count'] ?? 0,
+//         ];
 //     }
 // }
