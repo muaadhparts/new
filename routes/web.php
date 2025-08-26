@@ -10,24 +10,24 @@ use Illuminate\Support\Facades\Http;
 use Siberfx\LaravelTryoto\app\Http\Controllers\Api\TryOtoController;
 
 
-// use App\Http\Controllers\Api\CalloutController;
-// use App\Http\Controllers\Front\ProductDetailsController;
+use App\Http\Controllers\Api\CalloutController;
+use App\Http\Controllers\Front\ProductDetailsController;
 
 
-// Route::get('/checkout/quick', 'Front\QuickCheckoutController@quick')->name('front.checkout.quick');
+Route::get('/checkout/quick', 'Front\QuickCheckoutController@quick')->name('front.checkout.quick');
 
-// Route::prefix('modal')->name('modal.')->group(function () {
-//     Route::get('/product/id/{product}',   [ProductDetailsController::class, 'productFragment'])->name('product.id');
-//     Route::get('/product/sku/{sku}',      [ProductDetailsController::class, 'productFragment'])->name('product.sku');
-//     Route::get('/compatibility/{key}',    [ProductDetailsController::class, 'compatibilityFragment'])->name('compatibility');
-//     Route::get('/alternative/{key}',      [ProductDetailsController::class, 'alternativeFragment'])->name('alternative');
-//     Route::get('/quickview/{id}',         [ProductDetailsController::class, 'quickFragment'])->name('quickview');
-//     Route::get('/product/{key}',          [ProductDetailsController::class, 'productFragment'])->name('product');
-// });
+Route::prefix('modal')->name('modal.')->group(function () {
+    Route::get('/product/id/{product}',   [ProductDetailsController::class, 'productFragment'])->name('product.id');
+    Route::get('/product/sku/{sku}',      [ProductDetailsController::class, 'productFragment'])->name('product.sku');
+    Route::get('/compatibility/{key}',    [ProductDetailsController::class, 'compatibilityFragment'])->name('compatibility');
+    Route::get('/alternative/{key}',      [ProductDetailsController::class, 'alternativeFragment'])->name('alternative');
+    Route::get('/quickview/{id}',         [ProductDetailsController::class, 'quickFragment'])->name('quickview');
+    Route::get('/product/{key}',          [ProductDetailsController::class, 'productFragment'])->name('product');
+});
 
-// Route::prefix('api')->middleware('web')->group(function () {
-//     Route::get('/callouts', [CalloutController::class, 'show'])->name('api.callouts.show');
-// });
+Route::prefix('api')->middleware('web')->group(function () {
+    Route::get('/callouts', [CalloutController::class, 'show'])->name('api.callouts.show');
+});
 
 
 

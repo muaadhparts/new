@@ -67,6 +67,34 @@ class ProductDetailsController extends FrontBaseController
         return view('frontend.product', compact('productt', 'curr', 'affilate_user', 'vendor_products'));
     }
 
+    public function quickFragment(int $id)
+    {
+        $product = \App\Models\Product::findOrFail($id);
+        return response()->view('quick', compact('product'));
+    }
+
+    public function productFragment(string $key)
+    {
+        $product = \App\Models\Product::where('sku', $key)->first()
+                ?: \App\Models\Product::where('slug', $key)->firstOrFail();
+
+        return response()->view('partials.product', compact('product'));
+    }
+    
+
+    public function compatibilityFragment(string $key)
+    {
+        $sku = $key;
+        return response()->view('partials.compatibility', compact('sku'));
+    }
+
+    public function alternativeFragment(string $key)
+    {
+        $sku = $key;
+        return response()->view('partials.alternative', compact('sku'));
+    }
+
+
 
 
     public function report(Request $request)

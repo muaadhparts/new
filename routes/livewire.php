@@ -17,7 +17,7 @@ Route::prefix('catlogs')
     Route::get('{id}/{data}', CatlogTreeLevel1::class)->name('tree.level1');
     Route::get('{id}/{data}/{key1}', CatlogTreeLevel2::class)->name('tree.level2');
     Route::get('{id}/{data}/{key1}/{key2}', CatlogTreeLevel3::class)->name('tree.level3');
-    Route::get('{id}/{data}/{key1}/{key2}/{code}', \App\Livewire\Illustrations::class)->name('illustrations');
+    Route::get('{id}/{data}/{key1}/{key2}/{key3}', \App\Livewire\Illustrations::class)->name('illustrations');
 });
 
 Route::get('/callout-modal', CalloutModal::class);

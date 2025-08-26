@@ -5,11 +5,11 @@
     @endphp
 
     <!-- زر فتح النافذة -->
-    {{-- <button class="btn btn-primary" type="button"
+    <button class="btn btn-primary" type="button"
             data-bs-toggle="offcanvas" data-bs-target="#offcanvasForm"
             aria-controls="offcanvasForm">
-        Car Specifications
-    </button> --}}
+        Specifications
+    </button>
     <!-- عرض المواصفات -->
     @if(is_array($filtersLabeled) && count($filtersLabeled))
         <div class="alert alert-warning mt-3">
