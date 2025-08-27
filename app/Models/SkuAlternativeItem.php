@@ -3,14 +3,25 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class SkuAlternative extends Model
+class SkuAlternativeItem extends Model
 {
-    protected $table = 'sku_alternatives';
-    protected $fillable = ['sku', 'group_id'];
+    protected $table = 'sku_alternative_items';
+    protected $fillable = ['a_id', 'sku'];
 
-    public function products()
+    // عطّلها إذا الجدول ما فيه created_at/updated_at
+    public $timestamps = false;
+
+    public function group(): BelongsTo
     {
-        return $this->hasMany(Product::class, 'sku', 'sku');
+        // dd('SkuAlternativeItem@group', $this->a_id); // لفحص سريع عند الحاجة
+        return $this->belongsTo(SkuAlternative::class, 'a_id');
+    }
+
+    public function product(): BelongsTo
+    {
+        // dd('SkuAlternativeItem@product', $this->sku); // لفحص سريع عند الحاجة
+        return $this->belongsTo(Product::class, 'sku', 'sku');
     }
 }

@@ -1,9 +1,14 @@
 <?php
+
+namespace App\Models;
+
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class PartPeriod extends Model
 {
+    // يتم تحديد الجدول ديناميكيًا عبر setCatalog()
     protected $table;
 
     protected $fillable = [
@@ -14,12 +19,14 @@ class PartPeriod extends Model
 
     public $timestamps = false;
 
-    public function __construct(array $attributes = [], string $catalogCode = null)
+    /**
+     * اضبط جدول الفترات حسب كود الكتالوج (ديناميكي).
+     */
+    public function setCatalog(string $catalogCode): void
     {
-        parent::__construct($attributes);
-
-        // ✨ تحديد الجدول حسب كود الكاتالوج
-        if ($catalogCode) {
+        // dd('PartPeriod@setCatalog', $catalogCode); // لفحص سريع عند الحاجة
+        $catalogCode = trim($catalogCode);
+        if ($catalogCode !== '') {
             $this->setTable('part_periods_' . strtolower($catalogCode));
         }
     }
@@ -29,7 +36,7 @@ class PartPeriod extends Model
         return $this->belongsTo(Part::class, 'part_id');
     }
 
-    public function extensions()
+    public function extensions(): HasMany
     {
         return $this->hasMany(PartExtension::class, 'part_period_id');
     }
