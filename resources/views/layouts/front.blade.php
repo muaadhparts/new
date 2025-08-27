@@ -80,7 +80,7 @@
     <!-- footer section -->
     {{-- @livewireScripts --}}
     <!--Esential Js Files-->
-    zepto.min.js
+    {{-- zepto.min.js --}}
 
     <script src="{{ asset('assets/front/js/zepto.min.js') }}"  ></script>
     <script src="{{ asset('assets/front/js/jquery.magnific-popup.js') }}"  ></script>

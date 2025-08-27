@@ -50,9 +50,7 @@
                 <div class="col-12">
                     <div class="gs-title-box">
                         <h2 class="title wow-replaced">@lang('Genuine Parts Catalogues') </h2>
-                        <p class="des mb-0 wow-replaced" data-wow-delay=".1s">@lang('Cillum eu id enim aliquip aute
-                                                        ullamco anim. Culpa deserunt nostrud excepteur voluptate velit ipsum esse enim Cillum eu id
-                                                        enim aliquip aute ullamco.')
+                        <p class="des mb-0 wow-replaced" data-wow-delay=".1s">@lang('Explore genuine OEM parts catalogues for all vehicle models. Fast search, precise results, and certified quality guaranteed.')
                         </p>
                     </div>
                 </div>

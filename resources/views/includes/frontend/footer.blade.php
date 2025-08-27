@@ -1,5 +1,5 @@
 <footer class="gs-footer-section {{ $gs->theme == 'theme3' ? 'home-3' : '' }}">
-    <div class="newslatter {{ $gs->theme != 'theme1' ? 'newslatter2' : '' }}">
+    {{-- <div class="newslatter {{ $gs->theme != 'theme1' ? 'newslatter2' : '' }}">
         <div class="container">
             <div class="row newslatter-row">
                 <div class="col-lg-7 col-md-6 col-12 newslatter-area">
@@ -19,11 +19,12 @@
                 </div>
             </div>
         </div>
-    </div>
+    </div> --}}
     <div class="container">
 
         <div class="row footer-row gy-3">
             <div class="col-lg-3 col-md-6 col-12 left-info">
+                
                 <img class="logo" src="{{ asset('assets/images/' . $gs->footer_logo) }}" alt="">
                 <a class="wow-replaced" data-wow-delay=".1s" href="tel:+11234567890">
                     <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"
@@ -138,7 +139,7 @@
 
                 </ul>
             </div>
-            <div class="col-lg-3 col-md-6 col-12">
+            {{-- <div class="col-lg-3 col-md-6 col-12">
                 <h5 class=" wow-replaced">@lang('Recent Post')</h5>
                 <div class="gs-sm-recent-post-wrapper">
                     @php
@@ -178,7 +179,7 @@
                                     {{ date('M d - Y', strtotime($footer_blog->created_at)) }}</span>
                             </div>
                         </a>
-                    @endforeach
+                    @endforeach --}}
 
                 </div>
             </div>
