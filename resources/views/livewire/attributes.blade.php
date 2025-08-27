@@ -11,7 +11,7 @@
         Specifications
     </button>
     <!-- عرض المواصفات -->
-    @if(is_array($filtersLabeled) && count($filtersLabeled))
+    {{-- @if(is_array($filtersLabeled) && count($filtersLabeled))
         <div class="alert alert-warning mt-3">
             <strong>Selectd Specifications:</strong>
             <ul class="mb-0">
@@ -26,7 +26,7 @@
                 @endforeach
             </ul>
         </div>
-    @endif
+    @endif --}}
 
     <!-- نموذج المواصفات -->
     <form wire:submit.prevent="save" class="row g-1 p-1">
