@@ -28,7 +28,7 @@
 
     {{-- التلميح --}}
     <p class="search-hint mt-2">
-        {{ __('Example:') }} <code dir="ltr">1520831U0b</code>
+        {{ __('Example :') }} <code dir="ltr">1520831U0B</code>
     </p>
     <!-- Modal -->
     <div class="modal fade" id="vinSearchModal" tabindex="-1" aria-labelledby="vinSearchModalLabel" aria-hidden="true">

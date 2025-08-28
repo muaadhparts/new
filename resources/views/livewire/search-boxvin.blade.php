@@ -30,7 +30,7 @@
 
         {{-- التلميح --}}
         <p class="search-hint mt-2 text-muted small">
-            {{ __('Example:') }} <code dir="ltr">5N1AA0NC7EN603053</code>
+            {{ __('Example :') }} <code dir="ltr">5N1AA0NC7EN603053</code>
         </p>
 
         {{-- شريط التحميل --}}
