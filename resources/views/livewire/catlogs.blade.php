@@ -61,7 +61,7 @@
                             <div class="ccontent-wrapper p-3 text-center">
                                 <a href="" class="text-decoration-none">
                                    <h6 class="product-title text-dark fw-bold text-center">
-                                        {{ app()->getLocale() == 'ar' ? $catalog->label_ar : $catalog->label_en }}
+                                        {{ getLocalizedLabel($catalog) }}
                                     </h6>
                                 </a>
                                 <p class="text-muted small">{{ $catalog->code }}</p>

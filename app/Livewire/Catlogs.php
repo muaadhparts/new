@@ -5,7 +5,6 @@ namespace App\Livewire;
 use App\Models\Catalog;
 use App\Models\Brand;
 use Illuminate\Support\Facades\Session;
-use Illuminate\Support\Facades\Log;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -27,7 +26,6 @@ class Catlogs extends Component
             $this->brand = Brand::whereRaw('LOWER(name) = ?', [strtolower($id)])->first();
 
             if (!$this->brand) {
-                Log::error("Brand not found: {$id}");
                 session()->flash('error', __('Brand not found.'));
                 return;
             }
@@ -36,7 +34,6 @@ class Catlogs extends Component
             $this->region = $this->brand->regions()->value('code');
 
         } catch (\Exception $e) {
-            Log::error("Error in Catlogs mount: " . $e->getMessage());
             session()->flash('error', __('An error occurred while loading data.'));
         }
     }
@@ -89,10 +86,7 @@ class Catlogs extends Component
                 ->orderBy('new_id', 'ASC')
                 ->paginate(12);
 
-            Log::info("Catalogs found for brand {$this->brand->name} with region {$this->region}: " . $catlogs->count());
-
         } catch (\Exception $e) {
-            Log::error("Error in Catlogs render: " . $e->getMessage());
             $catlogs = collect();
         }
 
@@ -110,12 +104,16 @@ class Catlogs extends Component
 
         try {
             $regions = $this->brand->regions()->get();
-            return $regions->pluck('label_en', 'code')->toArray();
+
+            return $regions->mapWithKeys(function ($region) {
+                return [$region->code => getLocalizedLabel($region)];
+            })->toArray();
+
         } catch (\Exception $e) {
-            Log::error("Error getting region options: " . $e->getMessage());
             return [];
         }
     }
+
 
     /**
      * Reset filters and Session
