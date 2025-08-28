@@ -12,8 +12,13 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule): void
     {
-        // $schedule->command('inspire')->hourly();
+        // يجدد التوكن كل 5 دقائق إذا اقترب من الانتهاء
+        $schedule->command('nissan:refresh-token')->everyFiveMinutes();
     }
+    
+    protected $commands = [
+        \App\Console\Commands\ClearLog::class,
+    ];
 
     /**
      * Register the commands for the application.
