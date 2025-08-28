@@ -5,6 +5,13 @@
 
         <div class="container">
             <livewire:search-box/>
+                <!-- زر فتح المودال -->
+            <div class="text-center mt-3">
+                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#vinSearchModal">
+                    @lang('Search by VIN')
+                </button>
+            </div>
+
             <div class="row flex-column-reverse flex-lg-row">
 
                 <div class="col-12 col-lg-12 col-xl-12 gs-main-blog-wrapper">

@@ -11,6 +11,19 @@ function wishlistCheck($product_id)
 
 }
 
+
+if (! function_exists('getLocalizedLabel')) {
+    function getLocalizedLabel($item): string
+    {
+        $locale = app()->getLocale();
+        if ($locale === 'ar') {
+            return $item['label_ar'] ?: $item['label_en'];
+        }
+        return $item['label_en'] ?: $item['label_ar'];
+    }
+}
+
+
 if (! function_exists('formatYearRange')) {
     function formatYearRange($begin, $end, $locale = null)
     {

@@ -18,6 +18,13 @@
 {{--    </section>--}}
     <section class="col-lg py-4">
         <livewire:search-box/>
+            <!-- زر فتح المودال -->
+    <div class="text-center mt-3">
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#vinSearchModal">
+            @lang('Search by VIN')
+        </button>
+    </div>
+
 
     </section>
     <!-- breadcrumb end -->

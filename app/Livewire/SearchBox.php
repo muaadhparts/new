@@ -9,9 +9,6 @@ class SearchBox extends Component
 {
     public string $query = '';
     public array $results = [];
-    public bool $notFound = false;
-    public string $userMessage = '';
-    public int $notFoundDelayMs = 1000;
 
     public function updatedQuery()
     {
@@ -38,71 +35,60 @@ class SearchBox extends Component
     public function searchByPartQuery(string $query): array
     {
         $sku = $this->cleanInput($query);
-        $this->userMessage = '';
-        $this->notFound = false;
 
+        // البحث بالرقم (prefix-only)
         $results = Product::where('sku', 'like', "{$sku}%")
-            ->select('id', 'sku', 'name', 'label_en', 'label_ar')
+            ->select('id', 'sku', 'label_en', 'label_ar')
             ->limit(50)
             ->get();
 
+        // fallback → البحث بالاسم
         if ($results->isEmpty()) {
-            // fallback للبحث بالاسم (contains + AND)
             $results = $this->searchByPartNameQuery($query);
         }
 
-        if ($results->isEmpty()) {
-            $this->notFound = true;
-            $this->userMessage = __('No matching parts found. If you are unsure of the exact part number or name, please switch to the VIN tab and search using your vehicle\'s VIN.');
-        }
-
-        // dd($results->toArray()); // debug
         return $results->toArray();
     }
 
     private function searchByPartNameQuery(string $query)
     {
         $normalized = $this->normalizeArabic($query);
-        $words = preg_split('/\s+/', trim($normalized));
+        $words = array_filter(preg_split('/\s+/', trim($normalized)));
 
-        // بحث بكل الكلمات (AND)
-        $results = Product::query()
-            ->where(function ($q) use ($words) {
-                foreach ($words as $word) {
-                    $word = trim($word);
-                    if ($word === '') continue;
+        // لو ما فيه كلمات نرجع فاضي
+        if (empty($words)) {
+            return collect();
+        }
 
-                    $q->where(function ($sub) use ($word) {
-                        $sub->where('label_ar', 'like', "%{$word}%")
-                           ->orWhere('label_en', 'like', "%{$word}%")
-                           ->orWhere('name', 'like', "%{$word}%");
-                    });
-                }
-            })
-            ->select('id', 'sku', 'name', 'label_en', 'label_ar')
-            ->limit(50)
-            ->get();
+        // نبدأ من كل الكلمات (AND) ثم نقلص تدريجياً
+        for ($i = count($words); $i > 0; $i--) {
+            // ناخذ أول $i كلمات
+            $subset = array_slice($words, 0, $i);
 
-        // fallback (OR) إذا لم يُعثر على شيء ومعنا أكثر من كلمة
-        if ($results->isEmpty() && count(array_filter($words)) > 1) {
             $results = Product::query()
-                ->where(function ($q) use ($words) {
-                    foreach ($words as $word) {
+                ->where(function ($q) use ($subset) {
+                    foreach ($subset as $word) {
                         $word = trim($word);
                         if ($word === '') continue;
 
-                        $q->orWhere('label_ar', 'like', "%{$word}%")
-                          ->orWhere('label_en', 'like', "%{$word}%")
-                          ->orWhere('name', 'like', "%{$word}%");
+                        $q->where(function ($sub) use ($word) {
+                            $sub->where('label_ar', 'like', "%{$word}%")
+                                ->orWhere('label_en', 'like', "%{$word}%");
+                        });
                     }
                 })
-                ->select('id', 'sku', 'name', 'label_en', 'label_ar')
+                ->select('id', 'sku', 'label_en', 'label_ar')
                 ->limit(50)
                 ->get();
+
+            if ($results->isNotEmpty()) {
+                return $results;
+            }
         }
 
-        return $results;
+        return collect();
     }
+
 
     private function normalizeArabic(string $text): string
     {
@@ -124,7 +110,6 @@ class SearchBox extends Component
 
     public function render()
     {
-        // dd('render: SearchBox (part)'); // debug
         return view('livewire.search-box');
     }
 }
