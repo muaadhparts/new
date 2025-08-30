@@ -1,3 +1,7 @@
+{{-- @php
+    dd(Session::get('cart'));
+@endphp --}}
+
 @extends('layouts.front')
 @section('content')
     <section class="gs-breadcrumb-section bg-class"

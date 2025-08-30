@@ -1,3 +1,4 @@
+
 <div class="container-fluid px-3">
     <div class="row g-4">
         @if (Session::has('cart'))

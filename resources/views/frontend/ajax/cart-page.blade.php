@@ -9,7 +9,6 @@
             @endphp
 
 
-{{--        @dd(Session::get('cart') ,$products)--}}
 
             <div class="col-lg-8">
                 <div class="cart-table table-responsive">
@@ -26,34 +25,25 @@
                         <tbody class="t_body">
                             @foreach ($products as $product)
                                 @php
-
-//                                dd(Session::get('cart'), $products);
+                         
                                     if ($product['discount'] != 0) {
                                         $total_itemprice = $product['item_price'] * $product['qty'];
                                         $tdiscount = ($total_itemprice * $product['discount']) / 100;
                                         $discount += $tdiscount;
                                     }
-
-//                                    dump($product)
+                              
                                 @endphp
 
 
                                 <tr class="">
                                     <td class="cart-product-area">
                                         <div class="cart-product d-flex">
-
                                             <img src="{{ $product['item']['photo'] ? \Illuminate\Support\Facades\Storage::url($product['item']['photo']) : asset('assets/images/noimage.png') }}"
                                                 alt="">
                                             <div class="cart-product-info">
 
-                                                <a class="art-title d-inline-block xproduct-title">
-                                                    <a href="{{ route('front.product', $product['item']['slug']) }}"> {{ $product['item']['sku'] }}</a>
-                                                </a>
-
-
-{{--                                                    @dd($product['item']['sku'] )--}}
                                                 <a class="cart-title d-inline-block"
-                                                   xhref="{{ route('front.product', $product['item']['slug']) }}">{{ mb_strlen($product['item']['name'], 'UTF-8') > 35
+                                                    href="{{ route('front.product', $product['item']['slug']) }}">{{ mb_strlen($product['item']['name'], 'UTF-8') > 35
                                                         ? mb_substr($product['item']['name'], 0, 35, 'UTF-8') . '...'
                                                         : $product['item']['name'] }}</a>
 
@@ -75,34 +65,27 @@
                                         </div>
                                     </td>
                                     <td class="cart-price">
-{{--                                        @dd($product);--}}
                                         {{ App\Models\Product::convertPrice($product['item_price']) }}</td>
-`
+
                                     @if ($product['item']['type'] == 'Physical')
                                         <td>
                                             <div class="cart-quantity">
                                                 <button class="cart-quantity-btn quantity-down">-</button>
-
                                                 <input type="text"
                                                     id="qty{{ $product['item']['id'] . $product['size'] . $product['color'] . str_replace(str_split(' ,'), '', $product['values']) }}"
-                                                    value="{{ $product['qty'] }}"  class="borderless" readonly>
-
+                                                    value="{{ $product['qty'] }}" class="borderless" readonly>
                                                 <input type="hidden" class="prodid"
                                                     value="{{ $product['item']['id'] }}">
-
                                                 <input type="hidden" class="itemid"
                                                     value="{{ $product['item']['id'] . $product['size'] . $product['color'] . str_replace(str_split(' ,'), '', $product['values']) }}">
                                                 <input type="hidden" class="size_qty"
                                                     value="{{ $product['size_qty'] }}">
                                                 <input type="hidden" class="size_price"
                                                     value="{{ $product['size_price'] }}">
-
                                                 <input type="hidden" class="minimum_qty"
                                                     value="{{ $product['item']['minimum_qty'] == null ? '0' : $product['item']['minimum_qty'] }}">
-{{--                                                    @dump($product['qty'] ,$product['stock'])--}}
-                                                    @if($product['stock'] > 0 )
-                                                <button class="cart-quantity-btn quantity-up" >+</button>
-                                                @endif
+
+                                                <button class="cart-quantity-btn quantity-up">+</button>
                                             </div>
                                         </td>
                                     @else
@@ -170,22 +153,10 @@
                             <p class="cart-summary-subtitle">@lang('Discount')</p>
                             <p class="cart-summary-price">{{ App\Models\Product::convertPrice($discount) }}</p>
                         </div>
-
-                        <div class="cart-summary-item d-flex justify-content-between">
-                            <p class="cart-summary-subtitle">@lang('Tax')</p>
-                                @php
-
-                                $total = App\Models\Product::convertPrice($mainTotal);
-                                $tax = $mainTotal * 0.15 ;
-//                                dump($total ,$mainTotal * 0.15)
-                             @endphp
-                            <p class="cart-summary-price">{{ App\Models\Product::convertPrice($tax)  }}</p>
-                        </div>
-
                         <div class="cart-summary-item d-flex justify-content-between">
                             <p class="cart-summary-subtitle">@lang('Total')</p>
                             <p class="cart-summary-price total-cart-price">
-                                {{ Session::has('cart') ? App\Models\Product::convertPrice($mainTotal+$tax) : '0.00' }}
+                                {{ Session::has('cart') ? App\Models\Product::convertPrice($mainTotal) : '0.00' }}
                             </p>
                         </div>
                         <div class="cart-summary-btn">
