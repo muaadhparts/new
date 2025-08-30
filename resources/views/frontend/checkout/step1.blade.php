@@ -1,19 +1,6 @@
 @extends('layouts.front')
 @section('content')
-   {{-- <section class="gs-breadcrumb-section bg-class"
-            data-background="{{ $gs->breadcrumb_banner ? asset('assets/images/' . $gs->breadcrumb_banner) : asset('assets/images/noimage.png') }}">
-       <div class="container">
-           <div class="row justify-content-center content-wrapper">
-               <div class="col-12">
-                   <h2 class="breadcrumb-title">@lang('Checkout')</h2>
-                   <ul class="bread-menu">
-                       <li><a href="{{ route('front.index') }}">@lang('Home')</a></li>
-                       <li><a href="{{ route('front.checkout') }}">@lang('Checkout')</a></li>
-                   </ul>
-               </div>
-           </div>
-       </div>
-   </section> --}}
+   {{-- ... breadcrumb محذوف للتخفيف ... --}}
 
     <div class="gs-checkout-wrapper">
         <div class="container">
@@ -53,7 +40,7 @@
                                         <label class="label-cls" for="name">@lang('Name')</label>
                                         <input class="input-cls" id="name" name="personal_name"
                                                value="{{ Auth::check() ? Auth::user()->name : '' }}" type="text"
-                                               placeholder="@lang('Enter Your Name')" {{ Auth::check() ? 'readonly' : '' }}>
+                                               placeholder="@lang('Enter Your Name')" {{ Auth::check() ? '' : '' }}>
                                     </div>
                                 </div>
                                 <div class="col-lg-6">
@@ -61,8 +48,7 @@
                                         <label class="label-cls" for="email">@lang('Email')</label>
                                         <input class="input-cls" id="email" type="email" name="personal_email"
                                                placeholder="@lang('Enter Your Emai')l"
-                                               value="{{ Auth::check() ? Auth::user()->email : '' }}"
-                                                {{ Auth::check() ? 'readonly' : '' }}>
+                                               value="{{ Auth::check() ? Auth::user()->email : '' }}">
                                     </div>
                                 </div>
 
@@ -73,10 +59,8 @@
                                              aria-controls="show_passwords" role="region">
                                             <input type="checkbox" id="showca">
                                             <label class="icon-label" for="showca">
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12"
-                                                     viewBox="0 0 12 12" fill="none">
-                                                    <path d="M10 3L4.5 8.5L2 6" stroke="#EE1243" stroke-width="1.6666"
-                                                          stroke-linecap="round" stroke-linejoin="round" />
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12" fill="none">
+                                                    <path d="M10 3L4.5 8.5L2 6" stroke="#EE1243" stroke-width="1.6666" stroke-linecap="round" stroke-linejoin="round"/>
                                                 </svg>
                                             </label>
                                             <label for="showca">@lang('Create an account ?')</label>
@@ -86,20 +70,14 @@
                                         <div class="row gy-4">
                                             <div class="col-lg-6">
                                                 <div class="input-wrapper">
-                                                    <label class="label-cls" for="crpass">
-                                                        @lang('Create Password')
-                                                    </label>
-                                                    <input class="input-cls" id="crpass" type="password"
-                                                           placeholder="@lang('Create Your Password')">
+                                                    <label class="label-cls" for="crpass">@lang('Create Password')</label>
+                                                    <input class="input-cls" id="crpass" type="password" placeholder="@lang('Create Your Password')">
                                                 </div>
                                             </div>
                                             <div class="col-lg-6">
                                                 <div class="input-wrapper">
-                                                    <label class="label-cls" for="conpass">
-                                                        @lang('Confirm Password')
-                                                    </label>
-                                                    <input class="input-cls" id="conpass" type="password"
-                                                           placeholder="@lang('Confirm Password')">
+                                                    <label class="label-cls" for="conpass">@lang('Confirm Password')</label>
+                                                    <input class="input-cls" id="conpass" type="password" placeholder="@lang('Confirm Password')">
                                                 </div>
                                             </div>
                                         </div>
@@ -115,7 +93,7 @@
                                 <div class="col-lg-6 {{ $digital == 1 ? 'd-none' : '' }}">
                                     <div class="input-wrapper">
                                         <label class="label-cls" for="Shipping">@lang('Shipping')</label>
-                                        <select class="input-cls nice-select" id="shipop" name="shipping" required="">
+                                        <select class="input-cls" id="shipop" name="shipping" required>
                                             <option value="shipto">{{ __('Ship To Address') }}</option>
                                             <option value="pickup">{{ __('Pick Up') }}</option>
                                         </select>
@@ -126,9 +104,7 @@
                                         <label class="label-cls" for="Shipping">@lang('Shipping')</label>
                                         <select class="input-cls" name="pickup_location">
                                             @foreach ($pickups as $pickup)
-                                                <option value="{{ $pickup->location }}">
-                                                    {{ $pickup->location }}
-                                                </option>
+                                                <option value="{{ $pickup->location }}">{{ $pickup->location }}</option>
                                             @endforeach
                                         </select>
                                     </div>
@@ -140,9 +116,7 @@
                                         <input class="input-cls" id="customer_name" type="text" name="customer_name"
                                                placeholder="@lang('Full Name')"
                                                value="{{ old('customer_name', Auth::check() ? Auth::user()->name : '') }}">
-                                        @error('customer_name')
-                                        <span class="text-danger">{{ $message }}</span>
-                                        @enderror
+                                        @error('customer_name') <span class="text-danger">{{ $message }}</span> @enderror
                                     </div>
                                 </div>
 
@@ -152,9 +126,7 @@
                                         <input class="input-cls" id="customer_email" type="text" name="customer_email"
                                                placeholder="@lang('Your Email')"
                                                value="{{ old('customer_email', Auth::check() ? Auth::user()->email : '') }}">
-                                        @error('customer_email')
-                                        <span class="text-danger">{{ $message }}</span>
-                                        @enderror
+                                        @error('customer_email') <span class="text-danger">{{ $message }}</span> @enderror
                                     </div>
                                 </div>
 
@@ -164,9 +136,7 @@
                                         <input class="input-cls" id="phone" type="tel" name="customer_phone"
                                                placeholder="@lang('Phone Number')"
                                                value="{{ old('customer_phone', Auth::check() ? Auth::user()->phone : '') }}">
-                                        @error('customer_phone')
-                                        <span class="text-danger">{{ $message }}</span>
-                                        @enderror
+                                        @error('customer_phone') <span class="text-danger">{{ $message }}</span> @enderror
                                     </div>
                                 </div>
 
@@ -176,66 +146,45 @@
                                         <input class="input-cls" id="address" type="text" name="customer_address"
                                                placeholder="@lang('Address')"
                                                value="{{ old('customer_address', Auth::check() ? Auth::user()->address : '') }}">
-                                        @error('customer_address')
-                                        <span class="text-danger">{{ $message }}</span>
-                                        @enderror
+                                        @error('customer_address') <span class="text-danger">{{ $message }}</span> @enderror
                                     </div>
                                 </div>
 
                                 <div class="col-lg-6">
                                     <div class="input-wrapper">
-                                        <label class="label-cls" for="zip">
-                                            @lang('Postal Code')
-                                        </label>
-                                        <input class="input-cls" id="zip" type="text"
-                                               placeholder="@lang('Postal Code')" name="customer_zip"
-                                               value="{{ Auth::check() ? Auth::user()->zip : '' }}">
+                                        <label class="label-cls" for="zip">@lang('Postal Code')</label>
+                                        <input class="input-cls" id="zip" type="text" placeholder="@lang('Postal Code')" name="customer_zip"
+                                               value="{{ old('customer_zip', Auth::check() ? Auth::user()->zip : '') }}">
                                     </div>
                                 </div>
 
-                                {{-- للضيوف: اختيار الدولة/الولاية/المدينة --}}
-                                @if(!Auth::check())
-                                    <div class="col-lg-6">
-                                        <div class="input-wrapper">
-                                            <label class="label-cls">@lang('Select Country')</label>
-                                            <select id="select_country" name="customer_country" class="nice-select" required>
-                                                @include('includes.countries')
-                                            </select>
-                                            @error('customer_country')
-                                            <span class="text-danger">{{ $message }}</span>
-                                            @enderror
-                                        </div>
+                                {{-- للضيف + للمسجّل: نظهر حقول الدولة/الولاية/المدينة للجميع --}}
+                                <div class="col-lg-6">
+                                    <div class="input-wrapper">
+                                        <label class="label-cls">@lang('Select Country')</label>
+                                        {{-- إزالة class="nice-select" لمنع التفعيل التلقائي المزدوج --}}
+                                        <select id="select_country" name="customer_country" class="input-cls" required>
+                                            @include('includes.countries')
+                                        </select>
+                                        @error('customer_country') <span class="text-danger">{{ $message }}</span> @enderror
                                     </div>
+                                </div>
 
-                                    <div class="col-lg-6 d-none select_state">
-                                        <div class="input-wrapper">
-                                            <label class="label-cls">@lang('Select State')</label>
-                                            <select class="nice-select" id="show_state" name="customer_state" required>
-                                                {{-- خيارات الولايات عبر Ajax --}}
-                                            </select>
-                                            @error('customer_state')
-                                            <span class="text-danger">{{ $message }}</span>
-                                            @enderror
-                                        </div>
+                                <div class="col-lg-6 select_state d-none">
+                                    <div class="input-wrapper">
+                                        <label class="label-cls">@lang('Select State')</label>
+                                        <select id="show_state" name="customer_state" class="input-cls"></select>
+                                        @error('customer_state') <span class="text-danger">{{ $message }}</span> @enderror
                                     </div>
+                                </div>
 
-                                    <div class="col-lg-6 d-none select_city">
-                                        <div class="input-wrapper">
-                                            <label class="label-cls">@lang('Select City')</label>
-                                            <select class="nice-select" id="show_city" name="customer_city" required>
-                                                {{-- خيارات المدن عبر Ajax --}}
-                                            </select>
-                                            @error('customer_city')
-                                            <span class="text-danger">{{ $message }}</span>
-                                            @enderror
-                                        </div>
+                                <div class="col-lg-6 select_city d-none">
+                                    <div class="input-wrapper">
+                                        <label class="label-cls">@lang('Select City')</label>
+                                        <select id="show_city" name="customer_city" class="input-cls"></select>
+                                        @error('customer_city') <span class="text-danger">{{ $message }}</span> @enderror
                                     </div>
-                                @else
-                                    {{-- للمسجل: نستخدم القيم المحفوظة (بدون إظهار Selects) --}}
-                                    <input type="hidden" name="customer_country" value="{{ Auth::user()->country }}">
-                                    <input type="hidden" name="customer_state"   value="{{ Auth::user()->state_id }}">
-                                    <input type="hidden" name="customer_city"    value="{{ Auth::user()->city_id }}">
-                                @endif
+                                </div>
 
                                 <!-- chekbox -->
                                 <div class="col-lg-12  {{ $digital == 1 ? 'd-none' : '' }}" id="ship_deff">
@@ -244,10 +193,8 @@
                                          aria-controls="show_shipping_address">
                                         <input type="checkbox" id="shpto" name="is_shipping" value="0">
                                         <label class="icon-label" for="shpto">
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12"
-                                                 viewBox="0 0 12 12" fill="none">
-                                                <path d="M10 3L4.5 8.5L2 6" stroke="#EE1243" stroke-width="1.6666"
-                                                      stroke-linecap="round" stroke-linejoin="round" />
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12" fill="none">
+                                                <path d="M10 3L4.5 8.5L2 6" stroke="#EE1243" stroke-width="1.6666" stroke-linecap="round" stroke-linejoin="round"/>
                                             </svg>
                                         </label>
                                         <label for="shpto">@lang('Ship to a Different Address?')</label>
@@ -262,70 +209,54 @@
                             <div class="row g-4">
                                 <div class="col-lg-6">
                                     <div class="input-wrapper">
-                                        <label class="label-cls" for="shipping_name">
-                                            @lang('Name')
-                                        </label>
-                                        <input class="input-cls" id="shipping_name" type="text"
-                                               placeholder="@lang('Full Name')" name="shipping_name">
+                                        <label class="label-cls" for="shipping_name">@lang('Name')</label>
+                                        <input class="input-cls" id="shipping_name" type="text" placeholder="@lang('Full Name')" name="shipping_name">
                                     </div>
                                 </div>
 
                                 <div class="col-lg-6">
                                     <div class="input-wrapper">
-                                        <label class="label-cls" for="shipping_phone">
-                                            @lang('Phone Number')
-                                        </label>
-                                        <input class="input-cls" id="shipping_phone" name="shipping_phone"
-                                               type="tel" placeholder="@lang('Phone Number')">
+                                        <label class="label-cls" for="shipping_phone">@lang('Phone Number')</label>
+                                        <input class="input-cls" id="shipping_phone" name="shipping_phone" type="tel" placeholder="@lang('Phone Number')">
                                     </div>
                                 </div>
                                 <div class="col-lg-6">
                                     <div class="input-wrapper">
-                                        <label class="label-cls" for="shipping_address">
-                                            @lang('Address')
-                                        </label>
-                                        <input class="input-cls" id="shipping_address" name="shipping_address"
-                                               type="text" placeholder="@lang('Address')">
+                                        <label class="label-cls" for="shipping_address">@lang('Address')</label>
+                                        <input class="input-cls" id="shipping_address" name="shipping_address" type="text" placeholder="@lang('Address')">
                                     </div>
                                 </div>
                                 <div class="col-lg-6">
                                     <div class="input-wrapper">
-                                        <label class="label-cls" for="shipping_zip">
-                                            @lang('Postal Code')
-                                        </label>
-                                        <input class="input-cls" id="shipping_zip" name="shipping_zip" type="text"
-                                               placeholder="@lang('Postal Code')">
+                                        <label class="label-cls" for="shipping_zip">@lang('Postal Code')</label>
+                                        <input class="input-cls" id="shipping_zip" name="shipping_zip" type="text" placeholder="@lang('Postal Code')">
                                     </div>
                                 </div>
                                 <div class="col-lg-6">
                                     <div class="input-wrapper">
                                         <label class="label-cls" for="shipping_city">@lang('City')</label>
-                                        <input class="input-cls" id="shipping_city" name="shipping_city" type="text"
-                                               placeholder="@lang('City')">
+                                        <input class="input-cls" id="shipping_city" name="shipping_city" type="text" placeholder="@lang('City')">
                                     </div>
                                 </div>
                                 <div class="col-lg-6">
                                     <div class="input-wrapper">
                                         <label class="label-cls" for="shipping_state">@lang('State')</label>
-                                        <input class="input-cls" id="shipping_state" name="shipping_state"
-                                               type="text" placeholder="@lang('State')">
+                                        <input class="input-cls" id="shipping_state" name="shipping_state" type="text" placeholder="@lang('State')">
                                     </div>
                                 </div>
                                 <div class="col-lg-6">
                                     <div class="input-wrapper">
                                         <label class="label-cls">@lang('Select Country')</label>
-                                        <select class="nice-select" name="shipping_country">
+                                        {{-- إزالة nice-select هنا أيضًا لتفادي أي ازدواجية --}}
+                                        <select class="input-cls" name="shipping_country">
                                             @include('partials.user.countries')
                                         </select>
                                     </div>
                                 </div>
                                 <div class="col-lg-12">
                                     <div class="input-wrapper">
-                                        <label class="label-cls" for="Order-Note">
-                                            @lang('Order Note')
-                                        </label>
-                                        <input class="input-cls" id="Order-Note" name="order_notes" type="text"
-                                               placeholder="@lang('Order note (Optional)')">
+                                        <label class="label-cls" for="Order-Note">@lang('Order Note')</label>
+                                        <input class="input-cls" id="Order-Note" name="order_notes" type="text" placeholder="@lang('Order note (Optional)')">
                                     </div>
                                 </div>
                             </div>
@@ -348,7 +279,6 @@
                                         </span>
                                     </div>
 
-                                    {{-- الضريبة مخفية افتراضيًا للجميع إلى أن يتم اختيار الدولة/الولاية واستدعاء country_tax --}}
                                     <div class="price-details tax_show d-none">
                                         <span>@lang('Tax')</span>
                                         <span class="right-side original_tax">0</span>
@@ -362,37 +292,27 @@
                                                 </span>
                                             </span>
                                             @if ($gs->currency_format == 0)
-                                                <span id="discount" class="right-side">
-                                                    {{ $curr->sign }}{{ Session::get('coupon') }}
-                                                </span>
+                                                <span id="discount" class="right-side">{{ $curr->sign }}{{ Session::get('coupon') }}</span>
                                             @else
-                                                <span id="discount" class="right-side">
-                                                    {{ Session::get('coupon') }}{{ $curr->sign }}
-                                                </span>
+                                                <span id="discount" class="right-side">{{ Session::get('coupon') }}{{ $curr->sign }}</span>
                                             @endif
                                         </div>
                                     @else
                                         <div class="price-details d-none">
                                             <span>@lang('Discount') <span class="dpercent"></span></span>
-                                            <span id="discount" class="right-side">
-                                                {{ $curr->sign }}{{ Session::get('coupon') }}
-                                            </span>
+                                            <span id="discount" class="right-side">{{ $curr->sign }}{{ Session::get('coupon') }}</span>
                                         </div>
                                     @endif
 
                                     @if ($digital == 0)
                                         <div class="price-details">
                                             <span>@lang('Shipping Cost')</span>
-                                            <span class="right-side shipping_cost_view">
-                                                {{ App\Models\Product::convertPrice(0) }}
-                                            </span>
+                                            <span class="right-side shipping_cost_view">{{ App\Models\Product::convertPrice(0) }}</span>
                                         </div>
 
                                         <div class="price-details">
                                             <span>@lang('Packaging Cost')</span>
-                                            <span class="right-side packing_cost_view">
-                                                {{ App\Models\Product::convertPrice(0) }}
-                                            </span>
+                                            <span class="right-side packing_cost_view">{{ App\Models\Product::convertPrice(0) }}</span>
                                         </div>
                                     @endif
                                 </div>
@@ -400,46 +320,32 @@
                                 <hr>
                                 <div class="final-price">
                                     <span>@lang('Final Price')</span>
-
-                                    {{-- لا نحسب ضريبة هنا إطلاقًا. نعرض المجموع الحالي فقط.
-                                         سيتم تحديث هذا الحقل بعد Ajax من tax_submit --}}
                                     @if (Session::has('coupon_total'))
                                         @if ($gs->currency_format == 0)
-                                            <span class="total-amount" id="final-cost">
-                                                {{ $curr->sign }}{{ $totalPrice }}
-                                            </span>
+                                            <span class="total-amount" id="final-cost">{{ $curr->sign }}{{ $totalPrice }}</span>
                                         @else
-                                            <span class="total-amount" id="final-cost">
-                                                {{ $totalPrice }}{{ $curr->sign }}
-                                            </span>
+                                            <span class="total-amount" id="final-cost">{{ $totalPrice }}{{ $curr->sign }}</span>
                                         @endif
                                     @elseif(Session::has('coupon_total1'))
-                                        <span class="total-amount" id="final-cost">
-                                            {{ Session::get('coupon_total1') }}
-                                        </span>
+                                        <span class="total-amount" id="final-cost">{{ Session::get('coupon_total1') }}</span>
                                     @else
-                                        <span class="total-amount" id="final-cost">
-                                            {{ App\Models\Product::convertPrice($totalPrice) }}
-                                        </span>
+                                        <span class="total-amount" id="final-cost">{{ App\Models\Product::convertPrice($totalPrice) }}</span>
                                     @endif
                                 </div>
                             </div>
 
-                            <!-- btn wrapper -->
                             <div class="summary-inner-box">
                                 <div class="btn-wrappers">
-                                    <button type="submit" href="#" class="template-btn w-100">
+                                    <button type="submit" class="template-btn w-100">
                                         @lang('Continue')
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="25" height="24"
-                                             viewBox="0 0 25 24" fill="none">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="25" height="24" viewBox="0 0 25 24" fill="none">
                                             <g clip-path="url(#clip0_489_34176))">
                                                 <path d="M23.62 9.9099L19.75 5.9999C19.657 5.90617 19.5464 5.83178 19.4246 5.78101C19.3027 5.73024 19.172 5.7041 19.04 5.7041C18.908 5.7041 18.7773 5.73024 18.6554 5.78101C18.5336 5.83178 18.423 5.90617 18.33 5.9999C18.1437 6.18726 18.0392 6.44071 18.0392 6.7049C18.0392 6.96909 18.1437 7.22254 18.33 7.4099L21.89 10.9999H1.5C1.23478 10.9999 0.98043 11.1053 0.792893 11.2928C0.605357 11.4803 0.5 11.7347 0.5 11.9999H0.5C0.5 12.2651 0.605357 12.5195 0.792893 12.707C0.98043 12.8945 1.23478 12.9999 1.5 12.9999H21.95L18.33 16.6099C18.2363 16.7029 18.1619 16.8135 18.1111 16.9353C18.0603 17.0572 18.0342 17.1879 18.0342 17.3199C18.0342 17.4519 18.0603 17.5826 18.1111 17.7045C18.1619 17.8263 18.2363 17.9369 18.33 18.0299C18.423 18.1236 18.5336 18.198 18.6554 18.2488C18.7773 18.2996 18.908 18.3257 19.04 18.3257C19.172 18.3257 19.3027 18.2996 19.4246 18.2488C19.5464 18.198 19.657 18.1236 19.75 18.0299L23.62 14.1499C24.1818 13.5874 24.4974 12.8249 24.4974 12.0299C24.4974 11.2349 24.1818 10.4724 23.62 9.9099Z" fill="white"/>
                                             </g>
                                         </svg>
                                     </button>
                                     <a href="{{ route('front.checkout') }}" class="template-btn dark-outline w-100">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="25" height="24"
-                                             viewBox="0 0 25 24" fill="none">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="25" height="24" viewBox="0 0 25 24" fill="none">
                                             <g clip-path="url(#clip0_489_34179)">
                                                 <path d="M1.38 9.9099L5.25 5.9999C5.34296 5.90617 5.45357 5.83178 5.57542 5.78101C5.69728 5.73024 5.82799 5.7041 5.96 5.7041C6.09201 5.7041 6.22272 5.73024 6.34458 5.78101C6.46643 5.83178 6.57704 5.90617 6.67 5.9999C6.85625 6.18726 6.96079 6.44071 6.96079 6.7049C6.96079 6.96909 6.85625 7.22254 6.67 7.4099L3.11 10.9999H23.5C23.7652 10.9999 24.0196 11.1053 24.2071 11.2928C24.3946 11.4803 24.5 11.7347 24.5 11.9999V11.9999C24.5 12.2651 24.3946 12.5195 24.2071 12.707C24.0196 12.8945 23.7652 12.9999 23.5 12.9999H3.05L6.67 16.6099C6.76373 16.7029 6.83812 16.8135 6.88889 16.9353C6.93966 17.0572 6.9658 17.1879 6.9658 17.3199C6.9658 17.4519 6.93966 17.5826 6.88889 17.7045C6.83812 17.8263 6.76373 17.9369 6.67 18.0299C6.57704 18.1236 6.46643 18.198 6.34458 18.2488C6.22272 18.2996 6.09201 18.3257 5.96 18.3257C5.82799 18.3257 5.69728 18.2996 5.57542 18.2488C5.45357 18.198 5.34296 18.1236 5.25 18.0299L1.38 14.1499C0.818197 13.5874 0.50264 12.8249 0.50264 12.0299C0.50264 11.2349 0.818197 10.4724 1.38 9.9099Z" fill="#030712"/>
                                             </g>
@@ -467,240 +373,225 @@
                     <input type="hidden" name="total" id="grandtotal" value="{{ round($totalPrice * $curr->value, 2) }}">
                     <input type="hidden" id="tgrandtotal" value="{{ $totalPrice }}">
                 @elseif(Session::has('coupon_total1'))
-                    <input type="hidden" name="total" id="grandtotal"
-                           value="{{ preg_replace(' /[^0-9,.]/', '', Session::get('coupon_total1')) }}">
-                    <input type="hidden" id="tgrandtotal"
-                           value="{{ preg_replace(' /[^0-9,.]/', '', Session::get('coupon_total1')) }}">
+                    <input type="hidden" name="total" id="grandtotal" value="{{ preg_replace(' /[^0-9,.]/', '', Session::get('coupon_total1')) }}">
+                    <input type="hidden" id="tgrandtotal" value="{{ preg_replace(' /[^0-9,.]/', '', Session::get('coupon_total1')) }}">
                 @else
-                    {{-- إجمالي بدون ضريبة/رسوم إضافية --}}
                     <input type="hidden" name="total" id="grandtotal" value="{{ round($totalPrice * $curr->value, 2) }}">
                     <input type="hidden" id="tgrandtotal" value="{{ round($totalPrice * $curr->value, 2) }}">
                 @endif
 
                 <input type="hidden" id="original_tax" value="0">
                 <input type="hidden" id="wallet-price" name="wallet_price" value="0">
-                <input type="hidden" id="ttotal"
-                       value="{{ Session::has('cart') ? App\Models\Product::convertPrice(Session::get('cart')->totalPrice) : '0' }}">
-                <input type="hidden" name="coupon_code" id="coupon_code"
-                       value="{{ Session::has('coupon_code') ? Session::get('coupon_code') : '' }}">
-                <input type="hidden" name="coupon_discount" id="coupon_discount"
-                       value="{{ Session::has('coupon') ? Session::get('coupon') : '' }}">
-                <input type="hidden" name="coupon_id" id="coupon_id"
-                       value="{{ Session::has('coupon') ? Session::get('coupon_id') : '' }}">
-                <input type="hidden" name="user_id" id="user_id"
-                       value="{{ Auth::guard('web')->check() ? Auth::guard('web')->user()->id : '' }}">
+                <input type="hidden" id="ttotal" value="{{ Session::has('cart') ? App\Models\Product::convertPrice(Session::get('cart')->totalPrice) : '0' }}">
+                <input type="hidden" name="coupon_code" id="coupon_code" value="{{ Session::has('coupon_code') ? Session::get('coupon_code') : '' }}">
+                <input type="hidden" name="coupon_discount" id="coupon_discount" value="{{ Session::has('coupon') ? Session::get('coupon') : '' }}">
+                <input type="hidden" name="coupon_id" id="coupon_id" value="{{ Session::has('coupon') ? Session::get('coupon_id') : '' }}">
+                <input type="hidden" name="user_id" id="user_id" value="{{ Auth::guard('web')->check() ? Auth::guard('web')->user()->id : '' }}">
 
             </form>
         </div>
     </div>
-    <!--  checkout wrapper end-->
 @endsection
 
 @push('scripts')
-    <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            var options = { searchable: true };
-            NiceSelect.bind(document.getElementById("select_country"), options);
-        });
-    </script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    var options = { searchable: true };
 
-    <script type="text/javascript">
-        $('a.payment:first').addClass('active');
-        $('.checkoutform').attr('action', $('a.payment:first').attr('data-form'));
-        $($('a.payment:first').attr('href')).load($('a.payment:first').data('href'));
-        var show = $('a.payment:first').data('show');
-        if (show != 'no') { $('.pay-area').removeClass('d-none'); } else { $('.pay-area').addClass('d-none'); }
-        $($('a.payment:first').attr('href')).addClass('active').addClass('show');
-    </script>
+    // نفعّل NiceSelect لعنصر الدولة مرة واحدة فقط (أزلنا class=nice-select من HTML)
+    const countryEl = document.getElementById("select_country");
+    if (countryEl && !countryEl.dataset.nsBound) {
+        NiceSelect.bind(countryEl, options);
+        countryEl.dataset.nsBound = "1";
+    }
+});
+</script>
 
-    <script type="text/javascript">
-        var coup = 0;
-        var pos  = {{ $gs->currency_format }};
+<script type="text/javascript">
+    $('a.payment:first').addClass('active');
+    $('.checkoutform').attr('action', $('a.payment:first').attr('data-form'));
+    $($('a.payment:first').attr('href')).load($('a.payment:first').data('href'));
+    var show = $('a.payment:first').data('show');
+    if (show != 'no') { $('.pay-area').removeClass('d-none'); } else { $('.pay-area').addClass('d-none'); }
+    $($('a.payment:first').attr('href')).addClass('active').addClass('show');
+</script>
 
-        let mship = 0;
-        let mpack = 0;
+<script type="text/javascript">
+    var coup = 0;
+    var pos  = {{ $gs->currency_format }};
 
-        // اعرض الإجمالي الحالي كما هو (بدون ضريبة)
-        var ftotal = parseFloat($('#grandtotal').val());
-        ftotal = parseFloat(ftotal).toFixed(2);
-        if (pos == 0) { $('#final-cost').html('{{ $curr->sign }}' + ftotal) }
-        else          { $('#final-cost').html(ftotal + '{{ $curr->sign }}') }
-        $('#grandtotal').val(ftotal);
+    let mship = 0;
+    let mpack = 0;
 
-        let original_tax = 0;
+    var ftotal = parseFloat($('#grandtotal').val());
+    ftotal = parseFloat(ftotal).toFixed(2);
+    if (pos == 0) { $('#final-cost').html('{{ $curr->sign }}' + ftotal) }
+    else          { $('#final-cost').html(ftotal + '{{ $curr->sign }}') }
+    $('#grandtotal').val(ftotal);
 
-        // تغيير الدولة
-        $(document).on('change', '#select_country', function() {
-            var options = { searchable: true };
+    let original_tax = 0;
 
-            document.getElementById("show_state").innerHTML = '';
-            document.getElementById("show_city").innerHTML  = '';
+    // قيم المستخدم المسجّل (لتعبئة الدولة/الولاية/المدينة)
+    var IS_LOGGED  = {{ Auth::check() ? 'true' : 'false' }};
+    var SAVED_COUNTRY = {!! json_encode(Auth::check() ? (Auth::user()->country ?? '') : '') !!};
+    var SAVED_STATEID = {!! json_encode(Auth::check() ? (Auth::user()->state_id ?? '') : '') !!};
+    var SAVED_CITYID  = {!! json_encode(Auth::check() ? (Auth::user()->city_id ?? '') : '') !!};
 
-            let state_id   = 0;
-            let country_id = $('#select_country option:selected').attr('data'); // قد يكون undefined لو placeholder
-            let is_state   = $('option:selected', this).attr('rel');
-            let is_auth    = $('option:selected', this).attr('rel1');
-            let is_user    = $('option:selected', this).attr('rel5');
-            let state_url  = $('option:selected', this).attr('data-href');
+    // تغيير الدولة
+    $(document).on('change', '#select_country', function() {
+        var options = { searchable: true };
 
-            // إذا لا توجد دولة مختارة (placeholder) -> لا شيء
-            if (!country_id) {
-                $('.tax_show').addClass('d-none');
-                return;
-            }
+        document.getElementById("show_state").innerHTML = '';
+        document.getElementById("show_city").innerHTML  = '';
 
-            if (is_auth == 1 || is_state == 1) {
-                if (is_state == 1) {
-                    $('.select_state').removeClass('d-none');
-                    $.get(state_url, function(response) {
-                        $('#show_state').html(response.data);
+        let state_id   = 0;
+        let country_id = $('#select_country option:selected').attr('data');
+        let is_state   = $('option:selected', this).attr('rel');
+        let is_auth    = $('option:selected', this).attr('rel1');
+        let is_user    = $('option:selected', this).attr('rel5');
+        let state_url  = $('option:selected', this).attr('data-href');
 
-                        if (is_user == 1) {
-                            tax_submit(country_id, response.state);
-                        } else {
-                            tax_submit(country_id, state_id);
-                        }
-
-                        NiceSelect.bind(document.getElementById("show_state"), options);
-                    });
-                } else {
-                    tax_submit(country_id, state_id);
-                    hide_state();
-                }
-            } else {
-                tax_submit(country_id, state_id);
-                hide_state();
-            }
-        });
-
-        // تغيير الولاية
-        $(document).on('change', '#show_state', function() {
-            var options = { searchable: true };
-
-            let state_id   = $(this).val();
-            let country_id = $('#select_country option:selected').attr('data');
-            if (!country_id) return;
-
-            $.get("{{ route('state.wise.city') }}", { state_id: state_id }, function(data) {
-                $('#show_city').parent().parent().removeClass('d-none');
-                let cityDropdown = document.getElementById("show_city");
-                cityDropdown.innerHTML = '';
-                cityDropdown.innerHTML = data.data;
-                // لو تبغى NiceSelect للمدن:
-                // NiceSelect.bind(document.getElementById("show_city"), options);
-            });
-
-            tax_submit(country_id, state_id);
-        });
-
-        function hide_state() {
-            $('.select_state').addClass('d-none');
+        if (!country_id) {
+            $('.tax_show').addClass('d-none');
+            $('.select_state, .select_city').addClass('d-none');
+            return;
         }
 
-        $(document).ready(function() {
-            // لا تستدعي tax_submit تلقائيًا إذا لا يوجد دولة مختارة
-            var options = { searchable: true };
-            var instance2 = NiceSelect.bind(document.getElementById("show_state"), options);
-            instance2.destroy();
+        if (is_auth == 1 || is_state == 1) {
+            if (is_state == 1) {
+                $('.select_state').removeClass('d-none');
+                $.get(state_url, function(response) {
+                    $('#show_state').html(response.data);
 
-            const $opt = $('#select_country option:selected');
-            const country_id = $opt.attr('data'); // سيكون undefined لو placeholder
-            if (!country_id) {
-                $('.tax_show').addClass('d-none');
-                return;
-            }
+                    // نفعّل NiceSelect للولاية مرة واحدة
+                    const st = document.getElementById("show_state");
+                    if (st && !st.dataset.nsBound) { NiceSelect.bind(st, options); st.dataset.nsBound="1"; }
 
-            let state_id  = $('#select_country option:selected').attr('rel2');
-            let is_state  = $('#select_country option:selected', this).attr('rel');
-            let is_auth   = $('#select_country option:selected', this).attr('rel1');
-            let state_url = $('#select_country option:selected', this).attr('data-href');
-
-            if (is_auth == 1 && is_state == 1) {
-                if (is_state == 1) {
-                    $('.select_state').removeClass('d-none');
-                    $.get(state_url, function(response) {
-                        $('#show_state').html(response.data);
+                    // للمسجّل: اختَر الولاية المحفوظة إن وُجدت
+                    if (IS_LOGGED && SAVED_STATEID) {
+                        $('#show_state').val(String(SAVED_STATEID)).trigger('change');
+                    } else if (is_user == 1) {
                         tax_submit(country_id, response.state);
-                    });
-                } else {
-                    tax_submit(country_id, state_id);
-                    hide_state();
-                }
+                    } else {
+                        tax_submit(country_id, state_id);
+                    }
+                });
             } else {
                 tax_submit(country_id, state_id);
                 hide_state();
             }
+        } else {
+            tax_submit(country_id, state_id);
+            hide_state();
+        }
+    });
+
+    // تغيير الولاية
+    $(document).on('change', '#show_state', function() {
+        let state_id   = $(this).val();
+        let country_id = $('#select_country option:selected').attr('data');
+        if (!country_id) return;
+
+        $.get("{{ route('state.wise.city') }}", { state_id: state_id }, function(data) {
+            $('#show_city').parent().parent().removeClass('d-none');
+            $('#show_city').html(data.data);
+
+            // اختيار المدينة المحفوظة (للمسجّل)
+            if (IS_LOGGED && SAVED_CITYID) {
+                $('#show_city').val(String(SAVED_CITYID));
+            }
         });
 
-        // استدعاء حساب الضريبة من السيرفر فقط
-        function tax_submit(country_id, state_id) {
-            if (!country_id) return; // حماية إضافية
+        tax_submit(country_id, state_id);
+    });
 
-            $('.gocover').show();
-            var total = $("#ttotal").val();
-            var ship  = 0;
+    function hide_state() {
+        $('.select_state').addClass('d-none');
+        $('.select_city').addClass('d-none');
+    }
 
-            // تأكد أن mainurl معرّف عالميًا. إن لم يكن:
-            // const mainurl = "{{ url('') }}";
+    $(document).ready(function() {
+        // لا نربط NiceSelect للولاية هنا (نربطه بعد تحميل الخيارات)
+        const $opt = $('#select_country option');
 
-            $.ajax({
-                type: "GET",
-                url: mainurl + "/country/tax/check",
-                data: {
-                    state_id: state_id,
-                    country_id: country_id,
-                    total: total,
-                    shipping_cost: ship
-                },
-                success: function(data) {
-                    $('#grandtotal').val(data[0]);
-                    $('#tgrandtotal').val(data[0]);
-                    $('#original_tax').val(data[1]);
-
-                    // أظهر سطر الضريبة بعد أن رجعت نسبة صحيحة
-                    $('.tax_show').removeClass('d-none');
-                    $('#input_tax').val(data[11]);
-                    $('#input_tax_type').val(data[12]);
-                    $('.original_tax').html(parseFloat(data[1]) + "%");
-
-                    var ttotal  = parseFloat($('#grandtotal').val());
-                    var tttotal = parseFloat($('#grandtotal').val()) + (parseFloat(mship) + parseFloat(mpack));
-                    ttotal  = parseFloat(ttotal).toFixed(2);
-                    tttotal = parseFloat(tttotal).toFixed(2);
-
-                    $('#grandtotal').val(data[0] + parseFloat(mship) + parseFloat(mpack));
-
-                    if (pos == 0) {
-                        $('#final-cost').html('{{ $curr->sign }}' + tttotal);
-                        $('.total-cost-dum #total-cost').html('{{ $curr->sign }}' + ttotal);
-                    } else {
-                        $('#total-cost').html('');
-                        $('#final-cost').html(tttotal + '{{ $curr->sign }}');
-                        $('.total-cost-dum #total-cost').html(ttotal + '{{ $curr->sign }}');
-                    }
-                    $('.gocover').hide();
+        // للمسجّل: اضبط الدولة المحفوظة ثم فعّل سلسلة التهيئة (تحميل الولايات/المدن)
+        if (IS_LOGGED && SAVED_COUNTRY) {
+            // حاول المطابقة على value أو النص
+            let matched = false;
+            $opt.each(function(){
+                if ($(this).val() === SAVED_COUNTRY || $(this).text().trim().toUpperCase() === String(SAVED_COUNTRY).trim().toUpperCase()) {
+                    $(this).prop('selected', true);
+                    matched = true;
+                    return false;
                 }
             });
+            if (matched) { $('#select_country').trigger('change'); }
+        } else {
+            // ضيف: لا نعرض الضريبة قبل اختيار الدولة
+            $('.tax_show').addClass('d-none');
         }
+    });
 
-        $('#shipop').on('change', function() {
-            var val = $(this).val();
-            if (val == 'pickup') {
-                $('#shipshow').removeClass('d-none');
-                $('.show_shipping_address').addClass('d-none');
-            } else {
-                $('#shipshow').addClass('d-none');
-                $('#show_shipping_address').removeClass('d-none');
+    // استدعاء حساب الضريبة من السيرفر فقط
+    function tax_submit(country_id, state_id) {
+        if (!country_id) return;
+
+        $('.gocover').show();
+        var total = $("#ttotal").val();
+        var ship  = 0;
+
+        $.ajax({
+            type: "GET",
+            url: mainurl + "/country/tax/check",
+            data: { state_id: state_id, country_id: country_id, total: total, shipping_cost: ship },
+            success: function(data) {
+                $('#grandtotal').val(data[0]);
+                $('#tgrandtotal').val(data[0]);
+                $('#original_tax').val(data[1]);
+
+                $('.tax_show').removeClass('d-none');
+                $('#input_tax').val(data[11]);
+                $('#input_tax_type').val(data[12]);
+                $('.original_tax').html(parseFloat(data[1]) + "%");
+
+                var ttotal  = parseFloat($('#grandtotal').val());
+                var tttotal = parseFloat($('#grandtotal').val()) + (parseFloat(mship) + parseFloat(mpack));
+                ttotal  = parseFloat(ttotal).toFixed(2);
+                tttotal = parseFloat(tttotal).toFixed(2);
+
+                $('#grandtotal').val(data[0] + parseFloat(mship) + parseFloat(mpack));
+
+                if (pos == 0) {
+                    $('#final-cost').html('{{ $curr->sign }}' + tttotal);
+                    $('.total-cost-dum #total-cost').html('{{ $curr->sign }}' + ttotal);
+                } else {
+                    $('#total-cost').html('');
+                    $('#final-cost').html(tttotal + '{{ $curr->sign }}');
+                    $('.total-cost-dum #total-cost').html(ttotal + '{{ $curr->sign }}');
+                }
+                $('.gocover').hide();
             }
         });
+    }
 
-        $("#shpto").on("change", function() {
-            if (this.checked) {
-                $('#show_shipping_address input, #show_shipping_address select').prop('required', true);
-            } else {
-                $('#show_shipping_address input, #show_shipping_address select').prop('required', false);
-            }
-            $('#show_shipping_address input[name="order_notes"]').prop('required', false);
-        });
-    </script>
+    $('#shipop').on('change', function() {
+        var val = $(this).val();
+        if (val == 'pickup') {
+            $('#shipshow').removeClass('d-none');
+            $('.show_shipping_address').addClass('d-none');
+        } else {
+            $('#shipshow').addClass('d-none');
+            $('#show_shipping_address').removeClass('d-none');
+        }
+    });
+
+    $("#shpto").on("change", function() {
+        if (this.checked) {
+            $('#show_shipping_address input, #show_shipping_address select').prop('required', true);
+        } else {
+            $('#show_shipping_address input, #show_shipping_address select').prop('required', false);
+        }
+        $('#show_shipping_address input[name="order_notes"]').prop('required', false);
+    });
+</script>
 @endpush
