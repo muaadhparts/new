@@ -14,6 +14,66 @@ use App\Http\Controllers\Api\CalloutController;
 use App\Http\Controllers\Front\ProductDetailsController;
 
 
+
+// Route::get('/refresh-stock/{token}', function ($token) {
+//     abort_unless($token === env('REFRESH_TOKEN'), 403);
+
+//     Artisan::call('stock:full-refresh');
+//     $refreshOutput = Artisan::output();
+
+//     Artisan::call('products:update-price');
+//     $priceOutput = Artisan::output();
+
+//     return response()->json([
+//         'status' => 'success',
+//         'refresh_output' => $refreshOutput,
+//         'price_output'   => $priceOutput,
+//     ]);
+// });
+
+
+// Route::get('/refresh-stock/{token}', function ($token) {
+//     abort_unless($token === env('REFRESH_TOKEN'), 403);
+
+//     $logs = [];
+
+//     // تشغيل full-refresh
+//     Artisan::call('stock:full-refresh');
+//     $logs[] = Artisan::output();
+
+//     // تشغيل تحديث الأسعار
+//     Artisan::call('products:update-price');
+//     $logs[] = Artisan::output();
+
+//     // دمج المخرجات
+//     $output = implode("\n\n", $logs);
+
+//     // تنسيقات بالألوان
+//     $styled = htmlspecialchars($output); // أمان ضد أي أكواد
+//     $styled = preg_replace('/✔ (.*)/', '<span style="color:green;font-weight:bold">✔ $1</span>', $styled);
+//     $styled = preg_replace('/❌ (.*)/', '<span style="color:red;font-weight:bold">❌ $1</span>', $styled);
+//     $styled = preg_replace('/⚠ (.*)/', '<span style="color:orange;font-weight:bold">⚠ $1</span>', $styled);
+//     $styled = preg_replace('/ℹ (.*)/', '<span style="color:gray">ℹ $1</span>', $styled);
+//     $styled = preg_replace('/🎉 (.*)/', '<span style="color:blue;font-weight:bold">🎉 $1</span>', $styled);
+
+//     return <<<HTML
+//     <html>
+//       <head>
+//         <title>Stock Refresh Logs</title>
+//         <meta charset="utf-8">
+//         <style>
+//           body { background:#f8f9fa; font-family:Arial, sans-serif; padding:20px; }
+//           pre { background:#fff; padding:20px; border-radius:10px; box-shadow:0 2px 6px rgba(0,0,0,0.1); }
+//         </style>
+//       </head>
+//       <body>
+//         <h2>📋 Stock Refresh & Price Update Logs</h2>
+//         <pre>{$styled}</pre>
+//       </body>
+//     </html>
+//     HTML;
+// });
+
 Route::get('/refresh-stock/{token}', function ($token) {
     abort_unless($token === env('REFRESH_TOKEN'), 403);
 
