@@ -1599,7 +1599,11 @@ Route::group(['middleware' => 'maintenance'], function () {
 
     // PRODCT SECTION
 
-    Route::get('/item/{slug}', 'Front\ProductDetailsController@product')->name('front.product');
+    // Route::get('/item/{slug}', 'Front\ProductDetailsController@product')->name('front.product');
+
+    // تمرير slug ومعرف البائع user لضمان تمييز المنتجات المكررة
+    Route::get('/item/{slug}/{user}', 'Front\ProductDetailsController@product')->name('front.product');
+    
     Route::get('/item/show/cross/products/{id}', 'Front\ProductDetailsController@showCrossProduct')->name('front.show.cross.product');
     Route::get('/afbuy/{slug}', 'Front\ProductDetailsController@affProductRedirect')->name('affiliate.product');
     Route::get('/item/quick/view/{id}/', 'Front\ProductDetailsController@quick')->name('product.quick');

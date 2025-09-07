@@ -20,36 +20,83 @@ class ProductDetailsController extends FrontBaseController
 
     // -------------------------------- PRODUCT DETAILS SECTION ----------------------------------------
 
-    public function product(Request $request, $slug)
+    // public function product(Request $request, $slug)
+    // {
+    //     $affilate_user = 0;
+    //     $gs = $this->gs;
+    //     if ($gs->product_affilate == 1) {
+    //         if ($request->has('ref')) {
+    //             if (!empty($request->ref)) {
+    //                 $ref = $request->ref;
+    //                 $user = User::where('affilate_code', $ref)->first();
+    //                 if ($user) {
+    //                     $affilate_users = array();
+    //                     $ck = false;
+    //                     if (Auth::check()) {
+    //                         // Checking whether the affiliate holder is using his own affilate
+    //                         if (Auth::user()->id != $user->id) {
+    //                             $affilate_user = $user->id;
+    //                         }
+    //                     } else {
+    //                         $affilate_user = $user->id;
+    //                     }
+    //                 }
+    //             }
+    //         }
+    //     }
+
+    //     $productt = Product::with('user', 'galleries')->where('slug', '=', $slug)->firstOrFail();
+    //     $vendor_products = Product::where('user_id', $productt->user_id)->where('id', '!=', $productt->id)->where('status', 1)->orderBy('id', 'desc')
+    //         ->withCount('ratings')
+    //         ->withAvg('ratings', 'rating')
+    //         ->take(9)->get();
+
+    //     if ($productt->status == 0) {
+    //         return response()->view('errors.404')->setStatusCode(404);
+    //     }
+
+    //     $productt->views += 1;
+    //     $productt->update();
+    //     $curr = $this->curr;
+
+    //     $product_click = new ProductClick;
+    //     $product_click->product_id = $productt->id;
+    //     $product_click->date = Carbon::now()->format('Y-m-d');
+    //     $product_click->save();
+
+    //     return view('frontend.product', compact('productt', 'curr', 'affilate_user', 'vendor_products'));
+    // }
+    public function product(Request $request, $slug, $user)
     {
         $affilate_user = 0;
         $gs = $this->gs;
-        if ($gs->product_affilate == 1) {
-            if ($request->has('ref')) {
-                if (!empty($request->ref)) {
-                    $ref = $request->ref;
-                    $user = User::where('affilate_code', $ref)->first();
-                    if ($user) {
-                        $affilate_users = array();
-                        $ck = false;
-                        if (Auth::check()) {
-                            // Checking whether the affiliate holder is using his own affilate
-                            if (Auth::user()->id != $user->id) {
-                                $affilate_user = $user->id;
-                            }
-                        } else {
-                            $affilate_user = $user->id;
-                        }
-                    }
+
+        if ($gs->product_affilate == 1 && $request->has('ref') && !empty($request->ref)) {
+            $ref = $request->ref;
+            $userRef = User::where('affilate_code', $ref)->first();
+            if ($userRef) {
+                if (Auth::check() && Auth::id() != $userRef->id) {
+                    $affilate_user = $userRef->id;
+                } elseif (!Auth::check()) {
+                    $affilate_user = $userRef->id;
                 }
             }
         }
 
-        $productt = Product::with('user', 'galleries')->where('slug', '=', $slug)->firstOrFail();
-        $vendor_products = Product::where('user_id', $productt->user_id)->where('id', '!=', $productt->id)->where('status', 1)->orderBy('id', 'desc')
+        // التعديل هنا: slug + user_id
+        $productt = Product::with('user', 'galleries')
+            ->where('slug', '=', $slug)
+            ->where('user_id', '=', $user)
+            ->firstOrFail();
+
+        $vendor_products = Product::where('user_id', $productt->user_id)
+            ->where('id', '!=', $productt->id)
+            ->where('status', 1)
+            ->orderBy('id', 'desc')
             ->withCount('ratings')
             ->withAvg('ratings', 'rating')
-            ->take(9)->get();
+            ->take(9)
+            ->get();
 
         if ($productt->status == 0) {
             return response()->view('errors.404')->setStatusCode(404);

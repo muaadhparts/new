@@ -93,7 +93,8 @@
 
 
                 @if ($product->type != 'Listing')
-                    <a href="{{ route('front.product', $product->slug) }}">
+                    <a href="{{ route('front.product', ['slug' => $product->slug, 'user' => $product->user_id]) }}">
+                        <div class="details">…</div>
                         <div class="details">
                             <svg class="icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24"
                                 viewBox="0 0 24 24" fill="none">
@@ -112,15 +113,13 @@
             </div>
         </div>
         <div class="content-wrapper">
-            <a href="{{ route('front.product', $product->slug) }}">
+            <a href="{{ route('front.product', ['slug' => $product->slug, 'user' => $product->user_id]) }}">
                 <h6 class="product-title">{{ $product->showName() }}</h6>
             </a>
 
-            <a href="{{ route('front.product', $product->slug) }}">
+            <a href="{{ route('front.product', ['slug' => $product->slug, 'user' => $product->user_id]) }}">
                 <h6 class="product-title">{{ $product->label_ar }}</h6>
             </a>
-
-
 
             <p>
                 <span>@lang('Product SKU :') </span>

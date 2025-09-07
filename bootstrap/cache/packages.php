@@ -109,6 +109,28 @@
       0 => 'Livewire\\LivewireServiceProvider',
     ),
   ),
+  'lorisleiva/laravel-actions' => 
+  array (
+    'aliases' => 
+    array (
+      'Action' => 'Lorisleiva\\Actions\\Facades\\Actions',
+    ),
+    'providers' => 
+    array (
+      0 => 'Lorisleiva\\Actions\\ActionServiceProvider',
+    ),
+  ),
+  'lorisleiva/lody' => 
+  array (
+    'aliases' => 
+    array (
+      'Lody' => 'Lorisleiva\\Lody\\Lody',
+    ),
+    'providers' => 
+    array (
+      0 => 'Lorisleiva\\Lody\\LodyServiceProvider',
+    ),
+  ),
   'mews/purifier' => 
   array (
     'aliases' => 

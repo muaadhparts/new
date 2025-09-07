@@ -12,10 +12,13 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule): void
     {
-        // يجدد التوكن كل 5 دقائق إذا اقترب من الانتهاء
+        // يجدد التوكن
         $schedule->command('nissan:refresh-token')->everyFiveMinutes();
+
+        // تحديث كامل: تنزيل + استيراد + تجميع يومياً الساعة 2:00 صباحاً
+        $schedule->command('stock:full-refresh')->dailyAt('02:00')->withoutOverlapping();
     }
-    
+
     protected $commands = [
         \App\Console\Commands\ClearLog::class,
     ];

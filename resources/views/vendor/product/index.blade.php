@@ -121,8 +121,10 @@
                                                 </defs>
                                             </svg>
                                         </a>
-                                        <a href="{{ route('front.product', $data->slug) }}" target="_blank"
-                                            class="view-btn">
+                                        {{-- <a href="{{ route('front.product', $data->slug) }}" target="_blank"
+                                            class="view-btn"> --}}
+                                        <a href="{{ route('front.product', ['slug' => $data->slug, 'user' => $data->user_id]) }}" target="_blank" class="view-btn">
+
                                             <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
                                                 xmlns="http://www.w3.org/2000/svg">
                                                 <g clip-path="url(#clip0_548_165891)">

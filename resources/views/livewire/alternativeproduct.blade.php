@@ -48,9 +48,13 @@
                                             <td>{{ $result->stock ?? 0 }}</td>
                                             <td class="fw-bold {{ $highlight ? 'text-success' : '' }}">{{ $result->showPrice() }}</td>
                                             <td>
-                                                <a class="btn btn-outline-primary btn-sm" href="{{ route('front.product', $result->slug) }}">
+                                                {{-- <a class="btn btn-outline-primary btn-sm" href="{{ route('front.product', $result->slug) }}">
                                                     @lang('View')
-                                                </a>
+                                                </a> --}}
+                                                <a class="btn btn-outline-primary btn-sm" 
+                                                    href="{{ route('front.product', ['slug' => $result->slug, 'user' => $result->user_id]) }}">
+                                                        @lang('View')
+                                                    </a>
                                             </td>
                                         </tr>
                                     @empty
@@ -85,9 +89,10 @@
                                                         <p class="mb-1 small text-muted"><strong>@lang('Part Number'):</strong> {{ $result->sku }}</p>
                                                         <p class="mb-1 fw-bold {{ $highlight ? 'text-success' : '' }}">{{ $result->showPrice() }}</p>
                                                         <p class="mb-2 small"><strong>@lang('Stock'):</strong> {{ $result->stock ?? 0 }}</p>
-                                                        <a href="{{ route('front.product', $result->slug) }}" class="btn btn-primary btn-sm w-100">
-                                                            @lang('View')
-                                                        </a>
+                                                        <a href="{{ route('front.product', ['slug' => $result->slug, 'user' => $result->user_id]) }}" 
+                                                            class="btn btn-primary btn-sm w-100">
+                                                                @lang('View')
+                                                            </a>
                                                     </div>
                                                 </div>
                                             </div>

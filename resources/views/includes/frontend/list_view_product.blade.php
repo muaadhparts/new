@@ -45,7 +45,10 @@
         </div>
         <div class="content-wrapper">
             <h4 class="xproduct-title">
-                <a xhref="{{ route('front.product', $product->slug) }}"> {{ $product->showName()  }}</a>
+                <a href="{{ route('front.product', ['slug' => $product->slug, 'user' => $product->user_id]) }}">
+                    {{ $product->showName() }}
+                </a>
+
             </h4>
 
             <h4 class="xproduct-title">
@@ -135,7 +138,9 @@
                         </div>
                     </a>
 
-                     <a href="{{ route('front.product', $product->slug) }}" title="{{__('show_product')}}">
+                     {{-- <a href="{{ route('front.product', $product->slug) }}" title="{{__('show_product')}}"> --}}
+                    <a href="{{ route('front.product', ['slug' => $product->slug, 'user' => $product->user_id]) }}" title="{{ __('show_product') }}">
+
                         <div class="details">
                             <svg class="icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24"
                                  viewBox="0 0 24 24" fill="none">

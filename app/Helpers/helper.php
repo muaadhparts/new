@@ -93,3 +93,15 @@ function addon($name)
 
     return false;
 }
+/**
+ * يبني مسار ملفات الـ Spaces بناءً على التاريخ والفرع
+ */
+if (! function_exists('space_path')) {
+    function space_path(string $directory): string
+    {
+        $year = now()->format('Y');
+        $month = now()->format('m');
+        $day = now()->format('d');
+        return "sync/{$year}/{$month}/{$day}/{$directory}";
+    }
+}
