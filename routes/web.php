@@ -14,6 +14,23 @@ use App\Http\Controllers\Api\CalloutController;
 use App\Http\Controllers\Front\ProductDetailsController;
 
 
+
+Route::get('/refresh-stock/{token}', function ($token) {
+    abort_unless($token === env('REFRESH_TOKEN'), 403);
+
+    Artisan::call('stock:full-refresh');
+    $refreshOutput = Artisan::output();
+
+    Artisan::call('products:update-price');
+    $priceOutput = Artisan::output();
+
+    return response()->json([
+        'status' => 'success',
+        'refresh_output' => $refreshOutput,
+        'price_output'   => $priceOutput,
+    ]);
+});
+
 Route::get('/checkout/quick', 'Front\QuickCheckoutController@quick')->name('front.checkout.quick');
 
 Route::prefix('modal')->name('modal.')->group(function () {
@@ -1540,13 +1557,13 @@ Route::group(['middleware' => 'maintenance'], function () {
     // ************************************ FRONT SECTION **********************************************
 
 
-    Route::get('illustrated', 'TestController@illustrated')->name('illustrated');
+    // Route::get('illustrated', 'TestController@illustrated')->name('illustrated');
 
-    Route::get('tt', function () {
-        \App\Jobs\VerifyTokenJob::dispatchSync();
+    // Route::get('tt', function () {
+    //     \App\Jobs\VerifyTokenJob::dispatchSync();
 
-        return Token::latest()->first()->id;
-    });
+    //     return Token::latest()->first()->id;
+    // });
 
 //    Route::get('brands/{link}', 'BrandController@index')->name('brands.index');
 

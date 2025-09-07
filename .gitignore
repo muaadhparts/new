@@ -2,7 +2,8 @@
 /node_modules
 /public/uploads/
 /public/assets/imagesb
-
+/bootstrap/cache/packages.php
+/bootstrap/cache/services.php
 /public/hot
 /public/database-backup/
 /storage/temp/
