@@ -14,22 +14,23 @@ use App\Http\Controllers\Api\CalloutController;
 use App\Http\Controllers\Front\ProductDetailsController;
 
 
-
 Route::get('/refresh-stock/{token}', function ($token) {
     abort_unless($token === env('REFRESH_TOKEN'), 403);
 
+    $output = [];
+
+    // تنزيل + استيراد + تجميع
     Artisan::call('stock:full-refresh');
-    $refreshOutput = Artisan::output();
+    $output[] = Artisan::output();
 
+    // تحديث الأسعار
     Artisan::call('products:update-price');
-    $priceOutput = Artisan::output();
+    $output[] = Artisan::output();
 
-    return response()->json([
-        'status' => 'success',
-        'refresh_output' => $refreshOutput,
-        'price_output'   => $priceOutput,
-    ]);
+    // نجمع كل المخرجات ونرجعها كـ نص
+    return "<pre>" . implode("\n\n", $output) . "</pre>";
 });
+
 
 Route::get('/checkout/quick', 'Front\QuickCheckoutController@quick')->name('front.checkout.quick');
 
