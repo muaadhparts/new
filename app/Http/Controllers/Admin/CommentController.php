@@ -16,7 +16,7 @@ class CommentController extends AdminBaseController
 		return Datatables::of($datas)
 			->addColumn('product', function (Comment $data) {
 				$name =  mb_strlen(strip_tags($data->product->name), 'utf-8') > 50 ? mb_substr(strip_tags($data->product->name), 0, 50, 'utf-8') . '...' : strip_tags($data->product->name);
-				$product = '<a href="' . route('front.product', $data->product->slug) . '" target="_blank">' . $name . '</a>';
+				$product = '<a href="' . route('front.product', ['slug' => $data->product->slug, 'user' => $data->product->user_id]) . '" target="_blank">' . $name . '</a>';
 				return $product;
 			})
 			->addColumn('commenter', function (Comment $data) {
