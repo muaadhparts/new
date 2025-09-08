@@ -15,6 +15,7 @@ class VendorBaseController extends Controller
     protected $curr;
     protected $language_id;
     protected $user;
+    protected $language;
 
     public function __construct()
     {

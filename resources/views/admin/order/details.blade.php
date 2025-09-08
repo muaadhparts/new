@@ -456,15 +456,17 @@
                                         <span class="badge badge-success">{{ __('Completed') }}</span>
 
                                         @else
-                                        @if($user->status == 'pending')
-                                        <span class="badge badge-warning">{{ucwords($user->status)}}</span>
-                                        @elseif($user->status == 'processing')
+                                        {{-- @if($user->status == 'pending')
+                                        <span class="badge badge-warning">{{ucwords($user->status)}}</span> --}}
+                                        @if($user && $user->status == 'pending')
+                                        <span class="badge badge-warning">{{ ucwords($user->status) }}</span>
+                                        @elseif($user && $user->status == 'processing')
                                         <span class="badge badge-info">{{ucwords($user->status)}}</span>
-                                        @elseif($user->status == 'on delivery')
+                                        @elseif($user && $user->status == 'on delivery')
                                         <span class="badge badge-primary">{{ucwords($user->status)}}</span>
-                                        @elseif($user->status == 'completed')
+                                        @elseif($user && $user->status == 'completed')
                                         <span class="badge badge-success">{{ucwords($user->status)}}</span>
-                                        @elseif($user->status == 'declined')
+                                        @elseif($user && $user->status == 'declined')
                                         <span class="badge badge-danger">{{ucwords($user->status)}}</span>
                                         @endif
                                         @endif
@@ -482,19 +484,24 @@
                                         @endphp
                                         @if(isset($user))
                                         <a target="_blank"
-                                            href="{{ route('front.product', $product['item']['slug']) }}">{{mb_strlen($product['item']['name'],'utf-8')
+                                            href="{{ route('front.product', ['slug' => $product['item']['slug'], 'user' => $product['item']['user_id']]) }}"{{mb_strlen($product['item']['name'],'utf-8')
                                             > 30 ? mb_substr($product['item']['name'],0,30,'utf-8').'...' :
                                             $product['item']['name']}}</a>
                                         @else
-                                        <a target="_blank"
+                                        {{-- <a target="_blank"
                                             href="{{ route('front.product', $product['item']['slug']) }}">{{mb_strlen($product['item']['name'],'utf-8')
                                             > 30 ? mb_substr($product['item']['name'],0,30,'utf-8').'...' :
-                                            $product['item']['name']}}</a>
+                                            $product['item']['name']}}</a> --}}
+                                        <a target="_blank" 
+                                            href="{{ route('front.product', ['slug' => $product['item']['slug'], 'user' => $product['item']['user_id']]) }}">
+                                            {{ $product['item']['name'] }}
+                                            </a>
+
                                         @endif
                                         @else
 
                                         <a target="_blank"
-                                            href="{{ route('front.product', $product['item']['slug']) }}">{{mb_strlen($product['item']['name'],'utf-8')
+                                            href="{{ route('front.product', ['slug' => $product['item']['slug'], 'user' => $product['item']['user_id']]) }}">{{mb_strlen($product['item']['name'],'utf-8')
                                             > 30 ? mb_substr($product['item']['name'],0,30,'utf-8').'...' :
                                             $product['item']['name']}}</a>
 

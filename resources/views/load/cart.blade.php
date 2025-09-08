@@ -8,11 +8,11 @@
                         data-href="{{ route('product.cart.remove', $product['item']['id'] . $product['size'] . $product['color'] . str_replace(str_split(' ,'), '', $product['values'])) }}"
                         title="Remove this item"><i class="fas fa-times"></i></div>
 
-                    <a href="{{ route('front.product', $product['item']['slug']) }}" class="product-image"><img
+                    <a href="{{ route('front.product', ['slug' => $product['item']['slug'], 'user' => $product['item']['user_id']]) }}" class="product-image"><img
                             src="{{ $product['item']['photo'] ? filter_var($product['item']['photo'], FILTER_VALIDATE_URL) ? $product['item']['photo'] : asset('assets/images/products/' . $product['item']['photo']) : asset('assets/images/noimage.png') }}"
                             class="attachment-woocommerce_thumbnail size-woocommerce_thumbnail" alt="Cart product"></a>
 
-                    <a href="{{ route('front.product', $product['item']['slug']) }}"
+                    <a href="{{ route('front.product', ['slug' => $product['item']['slug'], 'user' => $product['item']['user_id']]) }}"
                         class="product-name">{{ mb_strlen($product['item']['name'], 'UTF-8') > 45 ? mb_substr($product['item']['name'], 0, 45, 'UTF-8') . '...' : $product['item']['name'] }}</a>
 
 

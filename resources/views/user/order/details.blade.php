@@ -335,14 +335,14 @@
                                                     @if (isset($user))
                                                         <b><a class="a_title_link d-block title-hover-color"
                                                                 target="_blank"
-                                                                href="{{ route('front.product', $product['item']['slug']) }}">{{ mb_strlen($product['item']['name'], 'UTF-8') > 50
+                                                                href="{{ route('front.product', ['slug' => $product['item']['slug'], 'user' => $product['item']['user_id']]) }}" >{{ mb_strlen($product['item']['name'], 'UTF-8') > 50
                                                                     ? mb_substr($product['item']['name'], 0, 50, 'UTF-8') . '...'
                                                                     : $product['item']['name'] }}</a></b>
                                                     @else
                                                         <b>
                                                             <a class="a_title_link d-block title-hover-color"
                                                                 target="_blank"
-                                                                href="{{ route('front.product', $product['item']['slug']) }}">
+                                                                href="{{ route('front.product', ['slug' => $product['item']['slug'], 'user' => $product['item']['user_id']]) }}">
                                                                 {{ mb_strlen($product['item']['name'], 'UTF-8') > 50
                                                                     ? mb_substr($product['item']['name'], 0, 50, 'UTF-8') . '...'
                                                                     : $product['item']['name'] }}
@@ -352,7 +352,7 @@
                                                 @else
                                                     <b>
                                                         <a class="a_title_link d-block title-hover-color" target="_blank"
-                                                            href="{{ route('front.product', $product['item']['slug']) }}">
+                                                            href="{{ route('front.product', ['slug' => $product['item']['slug'], 'user' => $product['item']['user_id']]) }}">
                                                             {{ mb_strlen($product['item']['name'], 'UTF-8') > 50
                                                                 ? mb_substr($product['item']['name'], 0, 50, 'UTF-8') . '...'
                                                                 : $product['item']['name'] }}

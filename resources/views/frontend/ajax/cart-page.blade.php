@@ -43,7 +43,7 @@
                                             <div class="cart-product-info">
 
                                                 <a class="cart-title d-inline-block"
-                                                    href="{{ route('front.product', $product['item']['slug']) }}">{{ mb_strlen($product['item']['name'], 'UTF-8') > 35
+                                                    href="{{ route('front.product', ['slug' => $product['item']['slug'], 'user' => $product['item']['user_id']]) }}" >{{ mb_strlen($product['item']['name'], 'UTF-8') > 35
                                                         ? mb_substr($product['item']['name'], 0, 35, 'UTF-8') . '...'
                                                         : $product['item']['name'] }}</a>
 

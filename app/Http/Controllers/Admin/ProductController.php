@@ -31,8 +31,8 @@ class ProductController extends AdminBaseController
         return Datatables::of($datas)
             ->editColumn('name', function (Product $data) {
                 $name = mb_strlen($data->name, 'UTF-8') > 50 ? mb_substr($data->name, 0, 50, 'UTF-8') . '...' : $data->name;
-                $id = '<small>' . __("ID") . ': <a href="' . route('front.product', $data->slug) . '" target="_blank">' . sprintf("%'.08d", $data->id) . '</a></small>';
-                $id3 = $data->type == 'Physical' ? '<small class="ml-2"> ' . __("SKU") . ': <a href="' . route('front.product', $data->slug) . '" target="_blank">' . $data->sku . '</a>' : '';
+                $id = '<small>' . __("ID") . ': <a href="' . route('front.product', ['slug' => $data->slug, 'user' => $data->user_id]) . '" target="_blank">' . sprintf("%'.08d", $data->id) . '</a></small>';
+                $id3 = $data->type == 'Physical' ? '<small class="ml-2"> ' . __("SKU") . ': <a href="' . route('front.product', ['slug' => $data->slug, 'user' => $data->user_id]) . '" target="_blank">' . $data->sku . '</a>' : '';
                 return $name . '<br>' . $id . $id3 . $data->checkVendor();
             })
             ->editColumn('price', function (Product $data) {
@@ -77,8 +77,8 @@ class ProductController extends AdminBaseController
         return Datatables::of($datas)
             ->editColumn('name', function (Product $data) {
                 $name = mb_strlen($data->name, 'UTF-8') > 50 ? mb_substr($data->name, 0, 50, 'UTF-8') . '...' : $data->name;
-                $id = '<small>' . __("ID") . ': <a href="' . route('front.product', $data->slug) . '" target="_blank">' . sprintf("%'.08d", $data->id) . '</a></small>';
-                $id3 = $data->type == 'Physical' ? '<small class="ml-2"> ' . __("SKU") . ': <a href="' . route('front.product', $data->slug) . '" target="_blank">' . $data->sku . '</a>' : '';
+                $id = '<small>' . __("ID") . ': <a href="' . route('front.product', ['slug' => $data->slug, 'user' => $data->user_id]) . '" target="_blank">' . sprintf("%'.08d", $data->id) . '</a></small>';
+                $id3 = $data->type == 'Physical' ? '<small class="ml-2"> ' . __("SKU") . ': <a href="' . route('front.product', ['slug' => $data->slug, 'user' => $data->user_id]) . '" target="_blank">' . $data->sku . '</a>' : '';
                 return $name . '<br>' . $id . $id3 . $data->checkVendor();
             })
             ->editColumn('price', function (Product $data) {

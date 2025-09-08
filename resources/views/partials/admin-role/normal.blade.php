@@ -261,7 +261,10 @@
             <a href="{{ route('admin-vendor-subs','completed') }}"><span>{{ __('Completed Subscriptions') }}</span></a>
         </li>
         <li>
-            <a href="{{ route('admin-vendor-pendings','pending') }}"><span>{{ __('Pending Subscriptions') }}</span></a>
+            {{-- <a href="{{ route('admin-vendor-pendings','pending') }}"><span>{{ __('Pending Subscriptions') }}</span></a> --}}
+            <a href="{{ route('admin-vendor-subs','pending') }}">
+                <span>{{ __('Pending Subscriptions') }}</span>
+            </a>
         </li>
     </ul>
 </li>

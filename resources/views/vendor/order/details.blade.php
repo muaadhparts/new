@@ -320,7 +320,7 @@
                                             @endphp
                                             @if (isset($user))
                                             <a class="title-hover-color content product-title d-inline-block" target="_blank"
-                                                href="{{ route('front.product', $product['item']['slug']) }}">
+                                                href="{{ route('front.product', ['slug' => $product['item']['slug'], 'user' => $product['item']['user_id']]) }}">
                                                 {{ mb_strlen($product['item']['name'], 'UTF-8') > 30
                                                     ? mb_substr($product['item']['name'], 0, 30, 'UTF-8') . '...'
                                                     : $product['item']['name'] }}

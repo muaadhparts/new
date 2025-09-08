@@ -180,6 +180,7 @@
                columns: [
                         { data: 'name', name: 'name' },
                         { data: 'type', name: 'type' },
+						{ data: 'stock', name: 'stock' },
                         { data: 'price', name: 'price' },
                         { data: 'status', searchable: false, orderable: false},
             			{ data: 'action', searchable: false, orderable: false }

@@ -49,7 +49,7 @@
                                                     </div>
                                                     <div class="flex-grow-1">
                                                         <h6 class="mb-1">
-                                                            <a href="{{ route('front.product', $product['item']['slug']) }}" 
+                                                            <a href="{{ route('front.product', ['slug' => $product['item']['slug'], 'user' => $product['item']['user_id']]) }}" 
                                                                 class="text-decoration-none text-dark fw-medium">
                                                                 {{ mb_strlen($product['item']['name'], 'UTF-8') > 40
                                                                     ? mb_substr($product['item']['name'], 0, 40, 'UTF-8') . '...'
@@ -58,7 +58,7 @@
                                                         </h6>
                                                         <p class="text-muted small mb-2">
                                                             <span class="fw-medium">@lang('SKU'):</span>
-                                                            <a href="{{ route('front.product', $product['item']['slug']) }}" 
+                                                            <a href="{{ route('front.product', ['slug' => $product['item']['slug'], 'user' => $product['item']['user_id']]) }}" 
                                                                 class="text-primary text-decoration-none">
                                                                 {{ $product['item']['sku'] }}
                                                             </a>

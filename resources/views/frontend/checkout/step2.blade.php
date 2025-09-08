@@ -246,14 +246,14 @@
                                             </div>
                                             <div class="content-wrapper">
                                                 <a class="art-title d-inline-block xproduct-title">
-                                                    <a href="{{ route('front.product', $product['item']['slug']) }}"> {{ $product['item']['sku'] }}</a>
+                                                    <a href="{{ route('front.product', ['slug' => $product['item']['slug'], 'user' => $product['item']['user_id']]) }}" > {{ $product['item']['sku'] }}</a>
                                                 </a>
 
                                                 <h6>
 
 
                                                     <a class="product-title"
-                                                        href="{{ route('front.product', $product['item']['slug']) }}"
+                                                        href="{{ route('front.product', ['slug' => $product['item']['slug'], 'user' => $product['item']['user_id']]) }}"
                                                         target="_blank">
                                                         {{ $product['item']['name'] }}
                                                     </a>

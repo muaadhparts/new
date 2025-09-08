@@ -11,6 +11,7 @@ class AdminBaseController extends Controller
     protected $gs;
     protected $curr;
     protected $language_id;
+    protected $language;
     public function __construct()
     {
         $this->middleware('auth:admin');
