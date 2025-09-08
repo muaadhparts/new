@@ -7,7 +7,7 @@
           <div class="product type-product">
             <div class="product-wrapper">
             <div class="product-image">
-               <a href="{{ route('front.product', ['slug' => $product->slug, 'user' => $product->user_id]) }}" class="woocommerce-LoopProduct-link"><img
+               <a href="{{ route('front.product', ['slug' => $product->slug, 'user' => $product->user_id]) }}" class="woocommerce-LoopProduct-link"> <img
                  src="{{ $product->photo ? asset('assets/images/products/' . $product->photo) : asset('assets/images/noimage.png') }}"
                  alt="Product Image"></a>
                @if (round($product->offPercentage()) > 0)
@@ -191,7 +191,8 @@
          <div class="product type-product">
            <div class="product-wrapper">
             <div class="product-image">
-               <a href="{{ route('front.product', ['slug' => $product->slug, 'user' => $product->user_id]) }}" class="woocommerce-LoopProduct-link"><img
+               <a href="{{ route('front.product', ['slug' => $product->slug, 'user' => $product->user_id]) }}" class="woocommerce-LoopProduct-link">
+                  <img
                   src="{{ $product->photo ? asset('assets/images/products/' . $product->photo) : asset('assets/images/noimage.png') }}"
                   alt="Product Image"></a>
                @if (round($product->offPercentage()) > 0)

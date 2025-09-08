@@ -16,7 +16,7 @@ class ReportController extends AdminBaseController
 	         return Datatables::of($datas)
 	                            ->addColumn('product', function(Report $data) {
 									$name =  mb_strlen(strip_tags($data->product->name),'UTF-8') > 50 ? mb_substr(strip_tags($data->product->name),0,50,'UTF-8').'...' : strip_tags($data->product->name);
-	                                $product = '<a href="'.route('front.product', ['slug' => $data->slug, 'user' => $data->user_id]) .'" target="_blank">'.$name.'</a>';
+	                                $product = '<a href="'.route('front.product', ['slug' => $data->product->slug, 'user' => $data->product->user_id]).'" target="_blank">'.$name.'</a>';
 	                                return $product;
 	                            })
 	                            ->addColumn('reporter', function(Report $data) {

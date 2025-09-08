@@ -56,7 +56,7 @@
          </div>
        </div>
        <div class="product-info">
-          <h3 class="product-title"><a href="{{ route('front.product', $prod->slug) }}">{{ $prod->showName() }}</a></h3>
+          <h3 class="product-title"><a href="{{ route('front.product', ['slug' => $prod->slug, 'user' => $prod->user_id]) }}"> {{ $prod->showName() }}</a></h3>
           <div class="product-price">
              <div class="price">
                 <ins>{{ $prod->showPrice() }} </ins>

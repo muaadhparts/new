@@ -1,4 +1,4 @@
-<a href="{{ route('front.product', $prod->slug) }}" class="single-product-flas">
+<a href="{{ route('front.product', ['slug' => $prod->slug, 'user' => $prod->user_id]) }}" class="single-product-flas">
     <div class="img">
        <img src="{{ $prod->thumbnail ? asset('assets/images/thumbnails/'.$prod->thumbnail):asset('assets/images/noimage.png') }}" alt="">
        @if(!empty($prod->features))
