@@ -7,7 +7,7 @@
                     <div class="product type-product">
                         <div class="product-wrapper">
                             <div class="product-image">
-                                href="{{ route('front.product', ['slug' => $product->slug, 'user' => $product->user_id]) }}" class="woocommerce-LoopProduct-link"><img
+                                <a href="{{ route('front.product', ['slug' => $product->slug, 'user' => $product->user_id]) }}" class="woocommerce-LoopProduct-link"><img
                                         src="{{ $product->thumbnail ? asset('assets/images/thumbnails/' . $product->thumbnail) : asset('assets/images/noimage.png') }}"
                                         alt="Product Image"></a>
                                 <div class="hover-area">

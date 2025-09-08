@@ -2,7 +2,7 @@
     <div class="product-wrapper">
        <div class="product-image">
 
-          <a href="{{ route('front.product', $prod->slug) }}" class="woocommerce-LoopProduct-link"><img src="{{ $prod->thumbnail ? asset('assets/images/thumbnails/'.$prod->thumbnail):asset('assets/images/noimage.png') }}" alt="Product Image"></a>
+          <a href="{{ route('front.product', ['slug' => $prod->slug, 'user' => $prod->user_id]) }}" class="woocommerce-LoopProduct-link"><img src="{{ $prod->thumbnail ? asset('assets/images/thumbnails/'.$prod->thumbnail):asset('assets/images/noimage.png') }}" alt="Product Image"></a>
           @if(!empty($prod->features))
           <div class="product-variations">
              @foreach($prod->features as $key => $data1)
@@ -56,7 +56,7 @@
          </div>
        </div>
        <div class="product-info">
-          <h3 class="product-title"><a href="{{ route('front.product', ['slug' => $prod->slug, 'user' => $prod->user_id]) }}"> {{ $prod->showName() }}</a></h3>
+          <h3 class="product-title"><a href="{{ route('front.product', ['slug' => $prod->slug, 'user' => $prod->user_id]) }}">{{ $prod->showName() }}</a></h3>
           <div class="product-price">
              <div class="price">
                 <ins>{{ $prod->showPrice() }} </ins>
