@@ -678,7 +678,10 @@ class CheckoutController extends FrontBaseController
 
                 $check = '';
             }
-            $html_states .= '<option value="' . $state->id . '"   rel="' . $state->country->id . '" ' . $check . ' >' . $state->state . '</option>';
+            // $html_states .= '<option value="' . $state->id . '"   rel="' . $state->country->id . '" ' . $check . ' >' . $state->state . '</option>';
+            $html_states .= '<option value="' . $state->id . '" rel="' . $state->country->id . '" ' . $check . ' >' 
+              . __('states.' . $state->state) . '</option>';
+
         }
 
         return response()->json(["data" => $html_states, "state" => $user_state]);
@@ -702,7 +705,10 @@ class CheckoutController extends FrontBaseController
             } else {
                 $check = '';
             }
-            $html_cities .= '<option value="' . $city->city_name . '"   ' . $check . ' >' . $city->city_name . '</option>';
+            // $html_cities .= '<option value="' . $city->city_name . '"   ' . $check . ' >' . $city->city_name . '</option>';
+            $html_cities .= '<option value="' . $city->city_name . '" ' . $check . ' >' 
+              . __('cities.' . $city->city_name) . '</option>';
+
         }
 
         return response()->json(["data" => $html_cities, "state" => $user_city]);
@@ -726,7 +732,10 @@ class CheckoutController extends FrontBaseController
             } else {
                 $check = '';
             }
-            $html_cities .= '<option value="' . $city->id . '"   ' . $check . ' >' . $city->city_name . '</option>';
+            // $html_cities .= '<option value="' . $city->id . '"   ' . $check . ' >' . $city->city_name . '</option>';
+            $html_cities .= '<option value="' . $city->id . '" ' . $check . ' >' 
+              . __('cities.' . $city->city_name) . '</option>';
+
         }
 
         return response()->json(["data" => $html_cities, "state" => $user_city]);
