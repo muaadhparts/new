@@ -1943,7 +1943,9 @@
     "errors.no_matching_callout_label": "ادخل اسم قطعه صحيح او اختر اسم من التلميحات",
 
 
-    "ui.vin_specs": "مواصفات رقم الهيكل",
+    "ui.vin_specs": "تمت الإضافةإلى السلة ",
+    "ui.added_to_cart": "مواصفات رقم الهيكل",
+
     "ui.section_only": "القسم الحالي فقط",
     "ui.catalog_wide": "الاقسام كامله",
     "ui.catalog_all": "كل الاقسام",
@@ -1962,7 +1964,7 @@
     "ui.searching_by_name": "جاري البحث بالاسم",
     "ui.loading_callouts": "جاري تحميل الكول آوت",
     "ui.select_matching_callout": "اختر الكول آوت المطابق",
-    "ui.callout": "الكول آوت",
+    "ui.callout": "كود القطعه",
     "ui.name": "الاسم",
     "ui.qty": "الكمية",
     "ui.period": "الفترة",
