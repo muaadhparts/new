@@ -133,6 +133,7 @@ class MyFatoorahController extends CheckoutBaseControlller {
 
 
         $orderCalculate = PriceHelper::getOrderTotal($input, $cart);
+            $input['tax'] = data_get($orderCalculate, 'tax', 0);
 //         dd($orderCalculate,'multi');
         if (isset($orderCalculate['success']) && $orderCalculate['success'] == false) {
             return redirect()->back()->with('unsuccess', $orderCalculate['message']);

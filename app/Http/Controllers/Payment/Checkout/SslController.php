@@ -84,8 +84,8 @@ class SslController extends CheckoutBaseControlller
             $input['vendor_shipping_id'] = @$shipping->id;
             $input['packing_title'] = @$packeing->title;
             $input['vendor_packing_id'] = @$packeing->id;
-            $input['shipping_cost'] = @$packeing->price ?? 0;
-            $input['packing_cost'] = @$packeing->price ?? 0;
+            $input['shipping_cost'] = @$shipping->price ?? 0; // ✅ تصحيح: أخذ من الشحن
+            $input['packing_cost']  = @$packeing->price ?? 0;
             $input['is_shipping'] = $is_shipping;
             $input['vendor_shipping_ids'] = $vendor_shipping_ids;
             $input['vendor_packing_ids'] = $vendor_packing_ids;
@@ -137,7 +137,8 @@ class SslController extends CheckoutBaseControlller
         } else {
             $input['tax_location'] = Country::findOrFail($input['tax'])->country_name;
         }
-        $input['tax'] = Session::get('current_tax');
+        $input['tax'] = data_get($orderCalculate, 'tax', 0);
+
 
         if ($input['dp'] == 1) {
             $input['status'] = 'completed';

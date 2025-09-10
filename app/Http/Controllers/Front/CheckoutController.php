@@ -638,14 +638,14 @@ class CheckoutController extends FrontBaseController
                     $total = $total;
                 }
                 $ck = 1;
-//                dd($total ,['products' => $cart->items,
-//                    'totalPrice' => $total,
-//                    'pickups' => $pickups, 'totalQty' => $cart->totalQty,
-//                    'gateways' => $gateways, 'shipping_cost' => 0, 'digital' => $dp,
-//                    'curr' => $curr, 'shipping_data' => $shipping_data,
-//                    'package_data' => $package_data, 'vendor_shipping_id' => $vendor_shipping_id,
-//                    'vendor_packing_id' => $vendor_packing_id, 'paystack' => $paystackData,
-//                    'step2' => $step2, 'step1' => $step1]);
+            //    dd($total ,['products' => $cart->items,
+            //        'totalPrice' => $total,
+            //        'pickups' => $pickups, 'totalQty' => $cart->totalQty,
+            //        'gateways' => $gateways, 'shipping_cost' => 0, 'digital' => $dp,
+            //        'curr' => $curr, 'shipping_data' => $shipping_data,
+            //        'package_data' => $package_data, 'vendor_shipping_id' => $vendor_shipping_id,
+            //        'vendor_packing_id' => $vendor_packing_id, 'paystack' => $paystackData,
+            //        'step2' => $step2, 'step1' => $step1]);
                 return view('frontend.checkout.step3',
                     ['products' => $cart->items,
                         'totalPrice' => $total,
