@@ -25,13 +25,11 @@
                         <tbody class="t_body">
                             @foreach ($products as $product)
                                 @php
-                         
                                     if ($product['discount'] != 0) {
                                         $total_itemprice = $product['item_price'] * $product['qty'];
                                         $tdiscount = ($total_itemprice * $product['discount']) / 100;
                                         $discount += $tdiscount;
                                     }
-                              
                                 @endphp
 
 
@@ -46,6 +44,17 @@
                                                     href="{{ route('front.product', ['slug' => $product['item']['slug'], 'user' => $product['item']['user_id']]) }}" >{{ mb_strlen($product['item']['name'], 'UTF-8') > 35
                                                         ? mb_substr($product['item']['name'], 0, 35, 'UTF-8') . '...'
                                                         : $product['item']['name'] }}</a>
+
+                                                {{-- NEW: show SKU under product name (linked) if available --}}
+                                                @if (!empty($product['item']['sku']))
+                                                    <p class="text-muted small mb-1">
+                                                        <span class="fw-medium">@lang('SKU'):</span>
+                                                        <a href="{{ route('front.product', ['slug' => $product['item']['slug'], 'user' => $product['item']['user_id']]) }}"
+                                                           class="text-primary text-decoration-none">
+                                                            {{ $product['item']['sku'] }}
+                                                        </a>
+                                                    </p>
+                                                @endif
 
                                                 <div class="d-flex align-items-center gap-2">
                                                     @if (!empty($product['color']))
@@ -160,7 +169,16 @@
                             </p>
                         </div>
                         <div class="cart-summary-btn">
-                            <a href="{{ route('front.checkout') }}" class="template-btn w-100">@lang('Proceed to Checkout')</a>
+                            {{-- NEW: if guest, send to registration (with fallback to login if register route missing) --}}
+                            @auth
+                                <a href="{{ route('front.checkout') }}" class="template-btn w-100">@lang('Proceed to Checkout')</a>
+                            @else
+                                @if (Route::has('user.register'))
+                                    <a href="{{ route('user.register', ['redirect' => 'cart']) }}" class="template-btn w-100">@lang('Proceed to Checkout')</a>
+                                @else
+                                    <a href="{{ route('user.login', ['redirect' => 'cart']) }}" class="template-btn w-100">@lang('Proceed to Checkout')</a>
+                                @endif
+                            @endauth
                         </div>
                     </div>
                 </div>

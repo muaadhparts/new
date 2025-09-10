@@ -53,6 +53,26 @@ class CityController extends Controller
     }
 
 
+    // public function store(Request $request, $state_id)
+    // {
+    //     $rules = [
+    //         'city_name'  => 'required|unique:cities,city_name',
+    //     ];
+
+    //     $validator = Validator::make($request->all(), $rules);
+
+    //     if ($validator->fails()) {
+    //         return response()->json(array('errors' => $validator->getMessageBag()->toArray()));
+    //     }
+
+    //     $state = new City();
+    //     $state->city_name = $request->city_name;
+    //     $state->state_id = $state_id;
+    //     $state->status = 1;
+    //     $state->save();
+    //     $mgs = __('Data Added Successfully.');
+    //     return response()->json($mgs);
+    // }
     public function store(Request $request, $state_id)
     {
         $rules = [
@@ -65,14 +85,19 @@ class CityController extends Controller
             return response()->json(array('errors' => $validator->getMessageBag()->toArray()));
         }
 
-        $state = new City();
-        $state->city_name = $request->city_name;
-        $state->state_id = $state_id;
-        $state->status = 1;
-        $state->save();
+        $state = State::findOrFail($state_id);
+
+        $city = new City();
+        $city->city_name = $request->city_name;
+        $city->state_id = $state_id;
+        $city->country_id = $state->country_id; // ✅ إضافة هذا السطر
+        $city->status = 1;
+        $city->save();
+
         $mgs = __('Data Added Successfully.');
         return response()->json($mgs);
     }
+
 
 
     //*** GET Request Status
