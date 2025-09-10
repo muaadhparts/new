@@ -26,7 +26,7 @@ class CheckoutController extends FrontBaseController
     public function loadpayment($slug1, $slug2)
     {
 //
-        $slug2 =19;
+        // $slug2 =19;
 //        dd($slug1, $slug2);
         $curr = $this->curr;
         $payment = $slug1;
@@ -665,7 +665,7 @@ class CheckoutController extends FrontBaseController
         $states = State::where('country_id', $country_id)->get();
 
         if (Auth::user()) {
-            $user_state = Auth::user()->state;
+            $user_state = Auth::user()->state_id;
         } else {
             $user_state = 0;
         }
