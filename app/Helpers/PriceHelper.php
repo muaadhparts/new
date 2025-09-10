@@ -158,11 +158,13 @@ class PriceHelper
                     'shipping' => $shipping,
                     'packeing' => $packeing,
                     'is_shipping' => 0,
+                    'tax'            => $tax_amount, // ✅ أُضيفت قيمة الضريبة
                     'vendor_shipping_ids' => @json_encode($vendor_shipping_ids),
                     'vendor_packing_ids' => @json_encode($vendor_packing_ids),
                     'vendor_ids' => @json_encode($vendor_ids),
                     'success' => true,
                 ];
+
             } else {
 
                 if (isset($input['shipping']) && gettype($input['shipping']) == 'string') {
