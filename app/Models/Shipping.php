@@ -14,7 +14,6 @@
 // }
 
 
-
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
@@ -22,12 +21,20 @@ use Illuminate\Database\Eloquent\Builder;
 
 class Shipping extends Model
 {
-    protected $fillable = ['user_id', 'title', 'subtitle', 'price'];
+    protected $table = 'shippings';
     public $timestamps = false;
+
+    protected $fillable = [
+        'user_id',
+        'title',
+        'subtitle',
+        'price',
+        // أضف أعمدة أخرى لديك هنا إن وُجدت
+    ];
 
     /**
      * يعيد شحنات البائع + الشحنات العامة (user_id = 0)
-     * ويقدّم شحنات البائع على العامة في الترتيب.
+     * ويقدّم شحنات البائع في الترتيب.
      */
     public function scopeForVendor(Builder $query, int $vendorId): Builder
     {
@@ -37,8 +44,7 @@ class Shipping extends Model
     }
 
     /**
-     * سكوب مؤقت للتعرّف على Tryoto (M).
-     * يفضل لاحقًا استبداله بعمود provider.
+     * سكوب للتعرّف على Tryoto مؤقتًا (يفضل لاحقًا عمود provider).
      */
     public function scopeIsTryoto(Builder $query): Builder
     {

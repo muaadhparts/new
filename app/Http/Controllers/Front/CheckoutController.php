@@ -417,46 +417,115 @@ class CheckoutController extends FrontBaseController
         return redirect()->route('front.checkout.step2');
     }
 
+//     public function checkoutStep2Submit(Request $request)
+//     {
+//         $step2 = $request->all();
+//         $oldCart = Session::get('cart');
+//         $input = Session::get('step1') +$step2;
+
+//         // Update cart details with shipping information
+// //        $oldCart->totalPrice = 60;
+
+
+//         // Create a new cart instance
+// //        $cart = new Cart($oldCart);
+// //        dd($step2 ,$step2['shipping'][0] ==="1");
+//         $shipping_cost = 0;
+//         if($step2['shipping'][0] !=="1"){
+//         list($shippingId, $shipping_company, $shipping_cost) = explode('#', $step2['shipping'][0]);
+//         $shipping_cost = (float) $shipping_cost; // Ensure the shipping cost is numeric
+// //        dd($shippingId ,$shipping_cost);
+//     // Retrieve the current cart from the session
+//         $oldCart = Session::get('cart');
+// //            $orderCalculate = PriceHelper::getOrderTotal($input, $oldCart);
+// //
+// //            dd($orderCalculate);
+//     // Update cart details with shipping information
+// //            $oldCart->totalPrice += $shipping_cost;
+//             $oldCart->shipping_name = $shipping_company;
+//             $oldCart->shipping_cost = $shipping_cost;
+
+//     // Create a new cart instance
+//             $cart = new Cart($oldCart);
+
+//     // Update step2 with shipping details
+//         $step2['shipping_company'] = $shipping_company;
+//         $step2['shipping_cost'] = $shipping_cost;
+
+//         }
+//         $step2['shipping_cost'] = $shipping_cost;
+
+// //        dd(  $step2 ,$cart ,$shipping_cost);
+//         Session::put('step2', $step2);
+//         return redirect()->route('front.checkout.step3');
+//     }
+
     public function checkoutStep2Submit(Request $request)
     {
-        $step2 = $request->all();
+        $step2  = $request->all();
         $oldCart = Session::get('cart');
-        $input = Session::get('step1') +$step2;
+        $input  = Session::get('step1') + $step2;
 
-        // Update cart details with shipping information
-//        $oldCart->totalPrice = 60;
+        // إجمالي تكلفة الشحن + أسماء الشركات (قد يكون متعدد البائعين)
+        $shipping_cost_total = 0.0;
+        $shipping_names = [];
 
+        // حالة الشحن المتعدد: shipping[vendor_id] = {id أو deliveryOptionId#Company#price}
+        if (isset($step2['shipping']) && is_array($step2['shipping'])) {
 
-        // Create a new cart instance
-//        $cart = new Cart($oldCart);
-//        dd($step2 ,$step2['shipping'][0] ==="1");
-        $shipping_cost = 0;
-        if($step2['shipping'][0] !=="1"){
-        list($shippingId, $shipping_company, $shipping_cost) = explode('#', $step2['shipping'][0]);
-        $shipping_cost = (float) $shipping_cost; // Ensure the shipping cost is numeric
-//        dd($shippingId ,$shipping_cost);
-    // Retrieve the current cart from the session
-        $oldCart = Session::get('cart');
-//            $orderCalculate = PriceHelper::getOrderTotal($input, $oldCart);
-//
-//            dd($orderCalculate);
-    // Update cart details with shipping information
-//            $oldCart->totalPrice += $shipping_cost;
-            $oldCart->shipping_name = $shipping_company;
-            $oldCart->shipping_cost = $shipping_cost;
+            foreach (array_values($step2['shipping']) as $val) {
+                if (is_string($val) && strpos($val, '#') !== false) {
+                    // تنسيق Tryoto: deliveryOptionId#CompanyName#price
+                    $parts   = explode('#', $val);
+                    $company = $parts[1] ?? '';
+                    $price   = (float)($parts[2] ?? 0);
 
-    // Create a new cart instance
-            $cart = new Cart($oldCart);
+                    $shipping_cost_total += $price;
+                    if ($company !== '') {
+                        $shipping_names[] = $company;
+                    }
+                } else {
+                    // تنسيق ID عادي من جدول shippings
+                    $id = (int)$val;
+                    if ($id > 0) {
+                        $ship = \App\Models\Shipping::find($id);
+                        if ($ship) {
+                            $shipping_cost_total += (float)$ship->price;
+                            $shipping_names[] = $ship->title;
+                        }
+                    }
+                }
+            }
 
-    // Update step2 with shipping details
-        $step2['shipping_company'] = $shipping_company;
-        $step2['shipping_cost'] = $shipping_cost;
-
+        // حالة الشحن المفرد: name="shipping_id"
+        } elseif (isset($step2['shipping_id'])) {
+            $id = (int)$step2['shipping_id'];
+            if ($id > 0) {
+                $ship = \App\Models\Shipping::find($id);
+                if ($ship) {
+                    $shipping_cost_total += (float)$ship->price;
+                    $shipping_names[] = $ship->title;
+                }
+            }
         }
-        $step2['shipping_cost'] = $shipping_cost;
 
-//        dd(  $step2 ,$cart ,$shipping_cost);
+        // دمج الأسماء (إن وجدت)
+        $shipping_name = count($shipping_names) ? implode(' + ', array_unique($shipping_names)) : null;
+
+        // تحديث الكارت في السيشن
+        if ($oldCart) {
+            $oldCart->shipping_name = $shipping_name;
+            $oldCart->shipping_cost = $shipping_cost_total;
+            $cart = new Cart($oldCart);
+            Session::put('cart', $cart);
+        }
+
+        // حفظ ملخص الشحن في step2 لاستخدامه في step3
+        $step2['shipping_company'] = $shipping_name;
+        $step2['shipping_cost']    = $shipping_cost_total;
+
         Session::put('step2', $step2);
+
         return redirect()->route('front.checkout.step3');
     }
 

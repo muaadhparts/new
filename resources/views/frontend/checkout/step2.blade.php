@@ -180,7 +180,7 @@
                                     $packaging = App\Models\Package::where('user_id', $vendor_id)->get();
                                     $vendor = App\Models\User::findOrFail($vendor_id);
                                 } else {
-                                    $shipping = App\Models\Shipping::where('user_id', 0)->get();
+                                    $shipping = App\Models\Shipping::forVendor($vendor_id)->get();
                                     $packaging = App\Models\Package::where('user_id', 0)->get();
                                     $vendor = App\Models\Admin::findOrFail(1);
                                 }

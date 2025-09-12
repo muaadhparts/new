@@ -141,13 +141,22 @@ use Livewire\Component;
 
 class TryotoComponet extends Component
 {
+    /** منتجات هذا البائع داخل المودال */
     public array $products = [];
+
+    /** خيارات شركات الشحن من Tryoto */
     public array $deliveryCompany = [];
 
+    /** رقم البائع لربط الإشارة وتحديث نص الشحن أعلى المودال */
     public int $vendorId = 0;
 
+    /** توكن OTO */
     protected $token;
+
+    /** الوزن الإجمالي */
     protected $weight = 100;
+
+    /** إعدادات API */
     protected string $url;
     protected string $_token;
     protected string $_webhook;
@@ -170,6 +179,8 @@ class TryotoComponet extends Component
         $this->authorize();
         $this->getWeight();
         $this->checkOTODeliveryFee();
+
+        // // dd($this->deliveryCompany); // فحص سريع لو احتجت
     }
 
     public function render()
@@ -177,6 +188,9 @@ class TryotoComponet extends Component
         return view('livewire.tryoto-componet');
     }
 
+    /**
+     * حساب الوزن الإجمالي
+     */
     public function getWeight(): void
     {
         $this->weight = 0;
@@ -187,6 +201,9 @@ class TryotoComponet extends Component
         }
     }
 
+    /**
+     * جلب توكن Tryoto
+     */
     protected function authorize(): void
     {
         $response = Http::post($this->url . '/rest/v2/refreshToken', [
@@ -197,26 +214,38 @@ class TryotoComponet extends Component
             $token = $response->json()['access_token'];
             Cache::put('tryoto-token', $token, now()->addMinutes($response->json()['expires_in']));
             $this->token = $token;
+            // // dd($this->token); // فحص سريع لو احتجت
         }
     }
 
+    /**
+     * يُستدعى عند تغيير الراديو في جدول Tryoto
+     * value = "deliveryOptionId#CompanyName#price"
+     */
     public function selectedOption(string $value): void
     {
-        // value = "deliveryOptionId#CompanyName#price"
-        $parts = explode('#', $value);
-        $company = $parts[1] ?? '';
-        $price   = (float)($parts[2] ?? 0);
+        // $parts   = explode('#', $value);
+        // $company = $parts[1] ?? '';
+        // $price   = (float)($parts[2] ?? 0);
+        // // dd($company, $price); // فحص سريع لو احتجت
 
-        // بثّ الحدث للواجهة
+        // نبث حدثًا للواجهة لتحدّث نص "الشحن:" والسعر
         $this->emit('shipping-updated', ['vendorId' => $this->vendorId]);
+        // // dd('emit:shipping-updated', $this->vendorId); // فحص
     }
 
+    /**
+     * جلب خيارات الشحن من Tryoto
+     */
     protected function checkOTODeliveryFee(): void
     {
         $response = Http::withToken($this->token)->post($this->url . '/rest/v2/checkOTODeliveryFee', [
             "originCity"      => "Riyadh",
             "destinationCity" => "Riyadh",
             "weight"          => $this->weight,
+            // "xheight" => 30,
+            // "xwidth"  => 30,
+            // "xlength"=> 30
         ]);
 
         if (!$response->successful()) {
@@ -225,7 +254,7 @@ class TryotoComponet extends Component
 
         $this->deliveryCompany = $response->json()['deliveryCompany'] ?? [];
 
-        // إعلان مبدئي لتحديث نص الشحن على أول خيار
+        // إعلان مبدئي لتحديث نص الشحن الافتراضي (أول خيار)
         $this->emit('shipping-updated', ['vendorId' => $this->vendorId]);
     }
 }
