@@ -176,7 +176,7 @@
                             @php
                                 // تهيئة بيانات البائع + شحن/تغليف
                                 if ($vendor_id != 0) {
-                                    $shipping = App\Models\Shipping::where('user_id', $vendor_id)->get();
+                                    $shipping = App\Models\Shipping::forVendor($vendor_id)->get();
                                     $packaging = App\Models\Package::where('user_id', $vendor_id)->get();
                                     $vendor = App\Models\User::findOrFail($vendor_id);
                                 } else {
@@ -530,161 +530,180 @@
 @endsection
 
 @section('script')
-    <script src="https://js.paystack.co/v1/inline.js"></script>
-    <script src="https://sdk.mercadopago.com/js/v2"></script>
-    <script src="https://js.stripe.com/v3/"></script>
+<script src="https://js.paystack.co/v1/inline.js"></script>
+<script src="https://sdk.mercadopago.com/js/v2"></script>
+<script src="https://js.stripe.com/v3/"></script>
 
-    <script type="text/javascript">
-        // مُعين بسيط لاستخراج رقم من نص عملة
-        function toNum(v){ return parseFloat(String(v).replace(/[^0-9.\-]/g,'')) || 0; }
+<script type="text/javascript">
+(function () {
+  if (window.__bindShippingOnce) return; window.__bindShippingOnce = true;
 
-        var coup = 0;
-        var pos = {{ $gs->currency_format }};
-        let mship = 0;
-        let mpack = 0;
+  // مُعين بسيط لاستخراج رقم من نص عملة
+  function toNum(v){ return parseFloat(String(v).replace(/[^0-9.\-]/g,'')) || 0; }
 
-        var ftotal = parseFloat($('#grandtotal').val());
-        ftotal = parseFloat(ftotal).toFixed(2);
+  var coup = 0;
+  var pos = {{ $gs->currency_format }};
+  var mship = 0;
+  var mpack = 0;
 
-        if (pos == 0) {
-            $('#final-cost').html('{{ $curr->sign }}' + ftotal)
-        } else {
-            $('#final-cost').html(ftotal + '{{ $curr->sign }}')
-        }
-        $('#grandtotal').val(ftotal);
+  var ftotal = parseFloat($('#grandtotal').val());
+  ftotal = parseFloat(ftotal).toFixed(2);
 
-        let original_tax = 0;
+  if (pos == 0) {
+    $('#final-cost').html('{{ $curr->sign }}' + ftotal)
+  } else {
+    $('#final-cost').html(ftotal + '{{ $curr->sign }}')
+  }
+  $('#grandtotal').val(ftotal);
 
-        $(document).ready(function() {
-            getShipping();
-            getPacking();
+  // تحديث نص الشحن للبائع
+  function updateVendorShippingText(vendorId) {
+    var selector = 'input.shipping[name="shipping[' + vendorId + ']"]:checked';
+    var input = document.querySelector(selector);
+    if (!input) return;
 
-            let country_id = $('#select_country').val();
-            let state_id = $('#state_id').val();
-            let is_state = $('#is_state').val();
-            let state_url = $('#state_url').val();
+    var label = (input.getAttribute('data-form') || '').trim();
+    var view  = (input.getAttribute('view') || '').trim();
 
-            if (is_state == 1) {
-                $('.select_state').removeClass('d-none');
-                $.get(state_url, function(response) {
-                    $('#show_state').html(response.data);
-                    tax_submit(country_id, response.state);
-                });
-            } else {
-                tax_submit(country_id, state_id);
-                hide_state();
-            }
-        });
+    var p = document.getElementById('shipping_text' + vendorId);
+    if (p) { p.textContent = (label ? label : '') + (view ? ('+' + view) : ''); }
 
-        function hide_state() {
-            $('.select_state').addClass('d-none');
-        }
+    recalcTotals();
+  }
 
-        function tax_submit(country_id, state_id) {
-            $('.gocover').show();
-            var total = $("#ttotal").val();
-            var ship = 0;
-            $.ajax({
-                type: "GET",
-                url: mainurl + "/country/tax/check",
-                data: { state_id: state_id, country_id: country_id, total: total, shipping_cost: ship },
-                success: function(data) {
-                    // data[0] = grand total, data[1] = tax percent, data[11]=tax id, data[12]=tax type
-                    $('#grandtotal').val(data[0]);
-                    $('#tgrandtotal').val(data[0]);
-                    $('#original_tax').val(data[1]);
-                    $('.tax_show').removeClass('d-none');
-                    $('#input_tax').val(data[11]);
-                    $('#input_tax_type').val(data[12]);
+  // تحديث نص التغليف للبائع
+  function updateVendorPackingText(vendorId) {
+    var selector = 'input.packing[name="packing[' + vendorId + ']"]:checked';
+    var input = document.querySelector(selector);
+    if (!input) return;
 
-                    // عرض النسبة + قيمة الضريبة
-                    var taxPct = parseFloat(data[1]) || 0;
-                    var subtotal = toNum($('.cart-total').text()); // إجمالي MRP الظاهر
-                    var discountAmt = toNum($('#discount').text()); // قيمة الخصم إن وُجد
-                    var taxableBase = Math.max(0, subtotal - discountAmt); // الأساس الخاضع للضريبة
-                    var taxAmt = (taxableBase * taxPct / 100);
-                    var taxAmtFixed = taxAmt.toFixed(2);
-                    var taxAmtWithSign = (pos == 0) ? '{{ $curr->sign }}' + taxAmtFixed : taxAmtFixed + '{{ $curr->sign }}';
-                    $('.original_tax').html(taxPct + "% (" + taxAmtWithSign + ")");
+    var label = (input.getAttribute('data-form') || '').trim();
+    var view  = (input.getAttribute('view') || '').trim();
 
-                    // إعادة حساب مع الشحن/التغليف
-                    var ttotal = parseFloat($('#grandtotal').val());
-                    var tttotal = parseFloat($('#grandtotal').val()) + (parseFloat(mship) + parseFloat(mpack));
-                    ttotal = parseFloat(ttotal).toFixed(2);
-                    tttotal = parseFloat(tttotal).toFixed(2);
+    var p = document.getElementById('packing_text' + vendorId);
+    if (p) { p.textContent = (label ? label : '') + (view ? ('+' + view) : ''); }
 
-                    $('#grandtotal').val(data[0] + parseFloat(mship) + parseFloat(mpack));
+    recalcTotals();
+  }
 
-                    if (pos == 0) {
-                        $('#final-cost').html('{{ $curr->sign }}' + tttotal);
-                        $('.total-cost-dum #total-cost').html('{{ $curr->sign }}' + ttotal);
-                    } else {
-                        $('#total-cost').html('');
-                        $('#final-cost').html(tttotal + '{{ $curr->sign }}');
-                        $('.total-cost-dum #total-cost').html(ttotal + '{{ $curr->sign }}');
-                    }
-                    $('.gocover').hide();
-                }
-            });
-        }
+  // إعادة حساب الإجمالي
+  function recalcTotals() {
+    mship = 0; mpack = 0;
 
-        // (single shipping) من يمين الصفحة
-        $('.shipping').on('click', function() {
-            getShipping();
-            let ref = $(this).attr('ref');
-            let view = $(this).attr('view');
-            let title = $(this).attr('data-form');
-            if (ref) { $('#shipping_text' + ref).html(title + '+' + view); }
+    document.querySelectorAll('input.shipping:checked').forEach(function(el){
+      mship += parseFloat(el.getAttribute('data-price')) || 0;
+    });
+    document.querySelectorAll('input.packing:checked').forEach(function(el){
+      mpack += parseFloat(el.getAttribute('data-price')) || 0;
+    });
 
-            var ttotal = parseFloat($('#tgrandtotal').val()) + parseFloat(mship) + parseFloat(mpack);
-            ttotal = parseFloat(ttotal).toFixed(2);
+    // تحديث الملخص (يمين الصفحة)
+    var subtotal = toNum($('.cart-total').text());
+    var discountAmt = toNum($('#discount').text());
+    var base = Math.max(0, subtotal - discountAmt);
+    var taxPct = parseFloat($('#original_tax').val()) || 0;
+    var taxAmt = base * taxPct / 100;
 
-            if (pos == 0) {
-                $('#final-cost').html('{{ $curr->sign }}' + ttotal);
-            } else {
-                $('#final-cost').html(ttotal + '{{ $curr->sign }}');
-            }
-            $('#grandtotal').val(ttotal);
-            $('#multi_shipping_id').val($(this).val());
-        });
+    var tttotal = base + taxAmt + mship + mpack;
 
-        $('.packing').on('click', function() {
-            getPacking();
-            let ref = $(this).attr('ref');
-            let view = $(this).attr('view');
-            let title = $(this).attr('data-form');
-            if (ref) { $('#packing_text' + ref).html(title + '+' + view); }
+    if (pos == 0) {
+      $('#final-cost').html('{{ $curr->sign }}' + tttotal.toFixed(2));
+    } else {
+      $('#final-cost').html(tttotal.toFixed(2) + '{{ $curr->sign }}');
+    }
+    $('#grandtotal').val(tttotal.toFixed(2));
 
-            var ttotal = parseFloat($('#tgrandtotal').val()) + parseFloat(mship) + parseFloat(mpack);
-            ttotal = parseFloat(ttotal).toFixed(2);
+    $('.shipping_cost_view').html('{{ $curr->sign }}' + mship.toFixed(2));
+    $('.packing_cost_view').html('{{ $curr->sign }}' + mpack.toFixed(2));
+  }
 
-            if (pos == 0) {
-                $('#final-cost').html('{{ $curr->sign }}' + ttotal);
-            } else {
-                $('#final-cost').html(ttotal + '{{ $curr->sign }}');
-            }
-            $('#grandtotal').val(ttotal);
-            $('#multi_packaging_id').val($(this).val());
-        });
+  // (single shipping) من يمين الصفحة
+  $(document).on('click', '.shipping', function() {
+    let ref = $(this).attr('ref');
+    let view = $(this).attr('view');
+    let title = $(this).attr('data-form');
+    if (ref) { $('#shipping_text' + ref).html(title + '+' + view); }
+    recalcTotals();
+    $('#multi_shipping_id').val($(this).val());
+  });
 
-        function getShipping() {
-            mship = 0;
-            $('.shipping').each(function() {
-                if ($(this).is(':checked')) {
-                    mship += parseFloat($(this).attr('data-price')) || 0;
-                }
-                $('.shipping_cost_view').html('{{ $curr->sign }}' + (mship.toFixed ? mship.toFixed(2) : mship));
-            });
-        }
+  $(document).on('click', '.packing', function() {
+    let ref = $(this).attr('ref');
+    let view = $(this).attr('view');
+    let title = $(this).attr('data-form');
+    if (ref) { $('#packing_text' + ref).html(title + '+' + view); }
+    recalcTotals();
+    $('#multi_packaging_id').val($(this).val());
+  });
 
-        function getPacking() {
-            mpack = 0;
-            $('.packing').each(function() {
-                if ($(this).is(':checked')) {
-                    mpack += parseFloat($(this).attr('data-price')) || 0;
-                }
-                $('.packing_cost_view').html('{{ $curr->sign }}' + (mpack.toFixed ? mpack.toFixed(2) : mpack));
-            });
-        }
-    </script>
+  // بعد تحميل Livewire
+  document.addEventListener('livewire:load', function () {
+    if (window.Livewire) {
+      Livewire.on('shipping-updated', function (payload) {
+        var vId = (payload && (payload.vendorId ?? payload['vendorId'] ?? payload['vendor_id'])) ?? '0';
+        updateVendorShippingText(vId);
+      });
+    }
+
+    // تهيئة افتراضية
+    document.querySelectorAll('[id^="shipping_text"]').forEach(function (el) {
+      var vId = el.id.replace('shipping_text', '');
+      updateVendorShippingText(vId);
+    });
+  });
+
+  // ضريبة البلد/الولاية (كما في الكود القديم)
+  function hide_state() { $('.select_state').addClass('d-none'); }
+
+  function tax_submit(country_id, state_id) {
+    $('.gocover').show();
+    var total = $("#ttotal").val();
+    var ship = 0;
+    $.ajax({
+      type: "GET",
+      url: mainurl + "/country/tax/check",
+      data: { state_id: state_id, country_id: country_id, total: total, shipping_cost: ship },
+      success: function(data) {
+        $('#grandtotal').val(data[0]);
+        $('#tgrandtotal').val(data[0]);
+        $('#original_tax').val(data[1]);
+        $('.tax_show').removeClass('d-none');
+        $('#input_tax').val(data[11]);
+        $('#input_tax_type').val(data[12]);
+
+        var taxPct = parseFloat(data[1]) || 0;
+        var subtotal = toNum($('.cart-total').text());
+        var discountAmt = toNum($('#discount').text());
+        var taxableBase = Math.max(0, subtotal - discountAmt);
+        var taxAmt = (taxableBase * taxPct / 100);
+        var taxAmtFixed = taxAmt.toFixed(2);
+        var taxAmtWithSign = (pos == 0) ? '{{ $curr->sign }}' + taxAmtFixed : taxAmtFixed + '{{ $curr->sign }}';
+        $('.original_tax').html(taxPct + "% (" + taxAmtWithSign + ")");
+
+        recalcTotals();
+        $('.gocover').hide();
+      }
+    });
+  }
+
+  $(document).ready(function() {
+    let country_id = $('#select_country').val();
+    let state_id = $('#state_id').val();
+    let is_state = $('#is_state').val();
+    let state_url = $('#state_url').val();
+
+    if (is_state == 1) {
+      $('.select_state').removeClass('d-none');
+      $.get(state_url, function(response) {
+        $('#show_state').html(response.data);
+        tax_submit(country_id, response.state);
+      });
+    } else {
+      tax_submit(country_id, state_id);
+      hide_state();
+    }
+  });
+
+})();
+</script>
 @endsection

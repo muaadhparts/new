@@ -15,9 +15,9 @@
 
                         @forelse($shipping as $data)
 
-                            @if($data->id ===16)
+                            @if($data->title === 'M')
 
-                                <livewire:tryoto-componet :products="$array_product"    />
+                                <livewire:tryoto-componet :products="$array_product" :vendor-id="$vendor_id" />
 
                             @else
 
@@ -26,7 +26,7 @@
                                     <input type="radio" class="shipping" ref="{{$vendor_id}}"
                                            data-price="{{ round($data->price * $curr->value,2) }}"
                                            view="{{ $curr->sign }}{{ round($data->price * $curr->value,2) }}"
-                                           data-form="{{$data->title}}" id="free-shepping{{ $data->id }}"
+                                           data-form="{{$data->title}}" id="free-shepping{{ $vendor_id }}-{{ $data->id }}"
                                            name="shipping[{{$vendor_id}}]" value="{{ $data->id }}" {{ ($loop->first) ?
                             'checked' :
                             ''
@@ -34,7 +34,7 @@
 
 
 
-                                    <label class="icon-label" for="free-shepping{{ $data->id }}">
+                                    <label class="icon-label" for="free-shepping{{ $vendor_id }}-{{ $data->id }}">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20"
                                              fill="none">
                                             <rect x="0.5" y="0.5" width="19" height="19" rx="9.5" fill="#FDFDFD" />
@@ -43,7 +43,7 @@
                                         </svg>
                                     </label>
 
-                                    <label for="free-shepping{{ $data->id }}">
+                                    <label for="free-shepping{{ $vendor_id }}-{{ $data->id }}">
                                         {{ $data->title }}
                                         @if($data->price != 0)
                                             + {{ $curr->sign }}{{ round($data->price * $curr->value,2) }}

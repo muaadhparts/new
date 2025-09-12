@@ -1,14 +1,47 @@
 <?php
 
+// namespace App\Models;
+
+// use Illuminate\Database\Eloquent\Model;
+
+// class Shipping extends Model
+// {
+//     protected $fillable = ['user_id', 'title', 'subtitle', 'price'];
+
+//     public $timestamps = false;
+
+
+// }
+
+
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Builder;
 
 class Shipping extends Model
 {
     protected $fillable = ['user_id', 'title', 'subtitle', 'price'];
-
     public $timestamps = false;
 
+    /**
+     * يعيد شحنات البائع + الشحنات العامة (user_id = 0)
+     * ويقدّم شحنات البائع على العامة في الترتيب.
+     */
+    public function scopeForVendor(Builder $query, int $vendorId): Builder
+    {
+        return $query
+            ->whereIn('user_id', [0, $vendorId])
+            ->orderByRaw('CASE WHEN user_id = ? THEN 0 ELSE 1 END', [$vendorId]);
+    }
 
+    /**
+     * سكوب مؤقت للتعرّف على Tryoto (M).
+     * يفضل لاحقًا استبداله بعمود provider.
+     */
+    public function scopeIsTryoto(Builder $query): Builder
+    {
+        return $query->where('title', 'M');
+    }
 }
