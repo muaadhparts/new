@@ -1908,7 +1908,7 @@
     "ui.searching_by_number": "Searching by number",
     "ui.searching_by_name": "Searching by name",
     "ui.loading_callouts": "Loading callouts",
-    "ui.select_matching_callout": "Select Matching Callout",
+    "ui.select_matching_callout": "Select Matching Part Code",
     "ui.callout": "Part Code",
     "ui.name": "Name",
     "ui.qty": "Qty",
