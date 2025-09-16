@@ -22,7 +22,11 @@ class VendorController extends VendorBaseController
 
             $data['sales'] .= "'" . VendorOrder::where('user_id', '=', $this->user->id)->where('status', '=', 'completed')->whereDate('created_at', '=', date("Y-m-d", strtotime('-' . $i . ' days')))->sum("price") . "',";
         }
-        $data['pproducts'] = Product::where('user_id', '=', $this->user->id)->latest('id')->take(6)->get();
+        // Retrieve recent products for this vendor using the merchantProducts relationship.
+        // Limit to 5 entries to avoid overwhelming the dashboard when there are many products.
+        $data['pproducts'] = Product::whereHas('merchantProducts', function ($q) {
+            $q->where('user_id', $this->user->id);
+        })->latest('products.id')->take(5)->get();
         $data['rorders'] = VendorOrder::where('user_id', '=', $this->user->id)->latest('id')->take(10)->get();
         $data['user'] = $this->user;
         $data['pending'] = VendorOrder::where('user_id', '=', $this->user->id)->where('status', '=', 'pending')->get();

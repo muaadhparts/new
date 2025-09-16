@@ -10,6 +10,8 @@ use App\Models\Currency;
 use App\Models\Gallery;
 use App\Models\Generalsetting;
 use App\Models\Product;
+// Import MerchantProduct to handle vendor specific product data
+use App\Models\MerchantProduct;
 use App\Models\Subcategory;
 use DB;
 use Illuminate\Http\Request;
@@ -24,7 +26,13 @@ class ProductController extends VendorBaseController
     public function index()
     {
         $user = $this->user;
-        $datas = $user->products()->where('product_type', 'normal')->latest('id')->paginate(10);
+        // Retrieve vendor specific product listings via merchant_products instead of products
+        $datas = $user->merchantProducts()
+            ->whereHas('product', function($query){
+                $query->where('product_type', 'normal');
+            })
+            ->with('product')
+            ->latest('id')->paginate(10);
         return view('vendor.product.index', compact('datas'));
     }
 
@@ -36,7 +44,15 @@ class ProductController extends VendorBaseController
     public function catalogs()
     {
         $user = $this->user;
-        $datas = Product::where('product_type', 'normal')->where('status', '=', 1)->where('is_catalog', '=', 1)->latest('id')->get();
+        // Fetch catalog products available for vendors.  Products are considered
+        // available if they are normal type, marked as catalog, and have at least
+        // one active merchant listing (status = 1).  We use the new scopeStatus
+        // on Product to redirect status filtering to merchant_products.status.
+        $datas = Product::where('product_type', 'normal')
+            ->where('is_catalog', '=', 1)
+            ->status(1)
+            ->latest('id')
+            ->get();
         return view('vendor.product.catalogs', compact('datas', 'user'));
     }
 
@@ -83,12 +99,12 @@ class ProductController extends VendorBaseController
     //*** GET Request
     public function status($id1, $id2)
     {
-        $data = Product::findOrFail($id1);
-        $data->status = $id2;
-        $data->update();
-
-        return back()->with("success",__('Status Updated Successfully.'));
-        //--- Redirect Section Ends
+        // Update the status of the vendor's product listing in merchant_products
+        $userId = $this->user->id;
+        $merchantProduct = MerchantProduct::where('product_id', $id1)->where('user_id', $userId)->firstOrFail();
+        $merchantProduct->status = $id2;
+        $merchantProduct->save();
+        return back()->with("success", __('Status Updated Successfully.'));
     }
 
     //*** POST Request

@@ -18,36 +18,45 @@
         </thead>
 
         <tbody>
-        @foreach($alternatives as $p)
-          <tr>
-            <td class="fw-semibold">{{ $p->sku }}</td>
+        {{-- الآن $alternatives = Collection<MerchantProduct> --}}
+        @foreach($alternatives as $mp)
+          @php
+            /** @var \App\Models\MerchantProduct $mp */
+            $product   = $mp->product;
+            $vp        = method_exists($mp,'vendorSizePrice') ? (float)$mp->vendorSizePrice() : (float)$mp->price;
+            $highlight = ($mp->stock > 0 && $vp > 0);
+
+            $locale = app()->getLocale();
+            $name   = $locale === 'ar'
+                      ? ($product->label_ar ?: $product->label_en)
+                      : ($product->label_en ?: $product->label_ar);
+          @endphp
+
+          <tr @if($highlight) style="background-color:#f0fff4" @endif>
+            <td class="fw-semibold">{{ $product->sku }}</td>
+
+            <td>{{ e($name) }}</td>
 
             <td>
-              @if(app()->getLocale() === 'ar')
-                  {{ $p->label_ar ?? $p->label_en }}
-              @else
-                  {{ $p->label_en ?? $p->label_ar }}
-              @endif
-            </td>
-
-            <td>
-              <span class="badge bg-{{ ($p->stock ?? 0) > 0 ? 'success' : 'secondary' }}">
-                {{ $p->stock ?? 0 }}
+              <span class="badge bg-{{ ($mp->stock ?? 0) > 0 ? 'success' : 'secondary' }}">
+                {{ $mp->stock ?? 0 }}
               </span>
             </td>
 
             <td class="fw-bold text-dark">
-              {{ method_exists($p,'showPrice')
-                    ? $p->showPrice()
-                    : (\App\Models\Product::convertPrice($p->price ?? 0)) }}
+              {{-- سعر هذا البائع --}}
+              {{ method_exists($mp,'showPrice')
+                   ? $mp->showPrice()
+                   : (\App\Models\Product::convertPrice($vp)) }}
             </td>
 
             <td>
-              <a href="{{ route('front.product', ['slug' => $p->slug, 'user' => $p->user_id]) }}"
+              {{-- مهم: مرّر user (معرّف البائع) وليس من Product --}}
+              <a href="{{ route('front.product', ['slug' => $product->slug, 'user' => $mp->user_id]) }}"
                  class="btn btn-sm btn-outline-primary quick-view"
-                 data-id="{{ $p->id }}"
-                 data-sku="{{ $p->sku }}"
-                 data-url="{{ route('modal.quickview', ['id' => $p->id]) }}">
+                 data-id="{{ $product->id }}"
+                 data-sku="{{ $product->sku }}"
+                 data-url="{{ route('modal.quickview', ['id' => $product->id]) }}">
                 <i class="bi bi-eye"></i> @lang('Quick View')
               </a>
             </td>
@@ -69,11 +78,11 @@
 /* تحسين الجدول للجوال */
 @media (max-width: 768px) {
   .ill-alt .table thead {
-    display: none; /* نخفي رأس الجدول */
+    display: none;
   }
-  .ill-alt .table, 
-  .ill-alt .table tbody, 
-  .ill-alt .table tr, 
+  .ill-alt .table,
+  .ill-alt .table tbody,
+  .ill-alt .table tr,
   .ill-alt .table td {
     display: block;
     width: 100%;

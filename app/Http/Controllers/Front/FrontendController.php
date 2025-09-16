@@ -88,7 +88,10 @@ class FrontendController extends FrontBaseController
 
         // count all product
 
-        $data['products'] = Product::where('status', 1)->count();
+        // Count products that have at least one active merchant listing
+        $data['products'] = Product::whereHas('merchantProducts', function($q){
+            $q->where('status', 1);
+        })->count();
         $data['ratings'] = Rating::count();
 
 //        $data['hot_products'] = Product::whereHot(1)->whereStatus(1)
@@ -263,166 +266,137 @@ class FrontendController extends FrontBaseController
     {
         $gs = $this->gs;
 
-        $data['hot_products'] = Product::whereHot(1)->whereStatus(1)
+        // Fetch hot products by filtering products that have at least one active merchant listing from a vendor (is_vendor = 2)
+        $data['hot_products'] = Product::whereHot(1)
+            ->status(1)
+            ->whereHas('merchantProducts.user', function($query){
+                $query->where('is_vendor', 2);
+            })
             ->take($gs->hot_count)
-
-            ->with(['user' => function ($query) {
-                $query->select('id', 'is_vendor');
+            ->with(['merchantProducts' => function($q){
+                $q->where('status', 1)->with('user:id,is_vendor');
             }])
-            ->when('user', function ($query) {
-                foreach ($query as $q) {
-                    if ($q->is_vendor == 2) {
-                        return $q;
-                    }
-                }
-            })
             ->withCount('ratings')
             ->withAvg('ratings', 'rating')
             ->orderby('id', 'desc')
             ->get();
 
-        $data['latest_products'] = Product::whereLatest(1)->whereStatus(1)
-
+        // Latest products
+        $data['latest_products'] = Product::whereLatest(1)
+            ->status(1)
+            ->whereHas('merchantProducts.user', function($query){
+                $query->where('is_vendor', 2);
+            })
             ->take($gs->new_count)
-            ->with(['user' => function ($query) {
-                $query->select('id', 'is_vendor');
+            ->with(['merchantProducts' => function($q){
+                $q->where('status', 1)->with('user:id,is_vendor');
             }])
-            ->when('user', function ($query) {
-                foreach ($query as $q) {
-                    if ($q->is_vendor == 2) {
-                        return $q;
-                    }
-                }
-            })
             ->withCount('ratings')
             ->withAvg('ratings', 'rating')
             ->orderby('id', 'desc')
             ->get();
 
-        $data['sale_products'] = Product::whereSale(1)->whereStatus(1)
-
+        // Sale products
+        $data['sale_products'] = Product::whereSale(1)
+            ->status(1)
+            ->whereHas('merchantProducts.user', function($query){
+                $query->where('is_vendor', 2);
+            })
             ->take($gs->sale_count)
-            ->with(['user' => function ($query) {
-                $query->select('id', 'is_vendor');
+            ->with(['merchantProducts' => function($q){
+                $q->where('status', 1)->with('user:id,is_vendor');
             }])
-            ->when('user', function ($query) {
-                foreach ($query as $q) {
-                    if ($q->is_vendor == 2) {
-                        return $q;
-                    }
-                }
-            })
             ->withCount('ratings')
             ->withAvg('ratings', 'rating')
             ->orderby('id', 'desc')
             ->get();
 
-        $data['best_products'] = Product::query()->whereStatus(1)->whereBest(1)
-
+        // Best products
+        $data['best_products'] = Product::query()->whereBest(1)
+            ->status(1)
+            ->whereHas('merchantProducts.user', function($query){
+                $query->where('is_vendor', 2);
+            })
             ->take($gs->best_seller_count)
-        // get category id and created at
-            ->with(['user' => function ($query) {
-                $query->select('id', 'is_vendor');
+            ->with(['merchantProducts' => function($q){
+                $q->where('status', 1)->with('user:id,is_vendor');
             }])
-            ->when('user', function ($query) {
-                foreach ($query as $q) {
-                    if ($q->is_vendor == 2) {
-                        return $q;
-                    }
-                }
-            })
-
             ->withCount('ratings')
             ->withAvg('ratings', 'rating')
             ->orderby('id', 'desc')
             ->get();
 
-        $data['popular_products'] = Product::whereStatus(1)->whereFeatured(1)
-
+        // Popular products (featured)
+        $data['popular_products'] = Product::whereFeatured(1)
+            ->status(1)
+            ->whereHas('merchantProducts.user', function($query){
+                $query->where('is_vendor', 2);
+            })
             ->take($gs->popular_count)
-            ->with(['user' => function ($query) {
-                $query->select('id', 'is_vendor');
+            ->with(['merchantProducts' => function($q){
+                $q->where('status', 1)->with('user:id,is_vendor');
             }])
-
-            ->when('user', function ($query) {
-                foreach ($query as $q) {
-                    if ($q->is_vendor == 2) {
-                        return $q;
-                    }
-                }
-            })
             ->withCount('ratings')
             ->withAvg('ratings', 'rating')
             ->orderby('id', 'desc')
             ->get();
 
-        $data['top_products'] = Product::whereStatus(1)->whereTop(1)
-
+        // Top products
+        $data['top_products'] = Product::whereTop(1)
+            ->status(1)
+            ->whereHas('merchantProducts.user', function($query){
+                $query->where('is_vendor', 2);
+            })
             ->take($gs->top_rated_count)
-            ->with(['user' => function ($query) {
-                $query->select('id', 'is_vendor');
+            ->with(['merchantProducts' => function($q){
+                $q->where('status', 1)->with('user:id,is_vendor');
             }])
-            ->when('user', function ($query) {
-                foreach ($query as $q) {
-                    if ($q->is_vendor == 2) {
-                        return $q;
-                    }
-                }
-            })
-            ->orderby('id', 'desc')
             ->withCount('ratings')->withAvg('ratings', 'rating')
+            ->orderby('id', 'desc')
             ->get();
 
-        $data['big_products'] = Product::whereStatus(1)->whereBig(1)
-
+        // Big products
+        $data['big_products'] = Product::whereBig(1)
+            ->status(1)
+            ->whereHas('merchantProducts.user', function($query){
+                $query->where('is_vendor', 2);
+            })
             ->take($gs->big_save_count)
-            ->with(['user' => function ($query) {
-                $query->select('id', 'is_vendor');
+            ->with(['merchantProducts' => function($q){
+                $q->where('status', 1)->with('user:id,is_vendor');
             }])
-            ->when('user', function ($query) {
-                foreach ($query as $q) {
-                    if ($q->is_vendor == 2) {
-                        return $q;
-                    }
-                }
-            })
-            ->orderby('id', 'desc')
             ->withCount('ratings')
             ->withAvg('ratings', 'rating')
+            ->orderby('id', 'desc')
             ->get();
 
-        $data['trending_products'] = Product::whereStatus(1)->whereTrending(1)
-
+        // Trending products
+        $data['trending_products'] = Product::whereTrending(1)
+            ->status(1)
+            ->whereHas('merchantProducts.user', function($query){
+                $query->where('is_vendor', 2);
+            })
             ->take($gs->trending_count)
-            ->with(['user' => function ($query) {
-                $query->select('id', 'is_vendor');
+            ->with(['merchantProducts' => function($q){
+                $q->where('status', 1)->with('user:id,is_vendor');
             }])
-            ->when('user', function ($query) {
-                foreach ($query as $q) {
-                    if ($q->is_vendor == 2) {
-                        return $q;
-                    }
-                }
-            })
             ->withCount('ratings')
             ->withAvg('ratings', 'rating')
             ->orderby('id', 'desc')
             ->get();
 
-        $data['flash_products'] = Product::whereStatus(1)->whereIsDiscount(1)
+        // Flash product (only one product)
+        $data['flash_products'] = Product::whereIsDiscount(1)
+            ->status(1)
             ->where('discount_date', '>=', date('Y-m-d'))
-
-            ->with(['user' => function ($query) {
-                $query->select('id', 'is_vendor');
-            }])
-            ->when('user', function ($query) {
-                foreach ($query as $q) {
-                    if ($q->is_vendor == 2) {
-                        return $q;
-                    }
-                }
+            ->whereHas('merchantProducts.user', function($query){
+                $query->where('is_vendor', 2);
             })
-            ->latest()->first();
+            ->with(['merchantProducts' => function($q){
+                $q->where('status', 1)->with('user:id,is_vendor');
+            }])
+            ->latest()
+            ->first();
 
         $data['blogs'] = Blog::latest()->take(2)->get();
         $data['ps'] = $this->ps;
@@ -575,7 +549,17 @@ class FrontendController extends FrontBaseController
     {
         if (mb_strlen($slug, 'UTF-8') > 1) {
             $search = ' ' . $slug;
-            $prods = Product::where('name', 'like', '%' . $search . '%')->orWhere('name', 'like', $slug . '%')->where('status', '=', 1)->orderby('id', 'desc')->take(10)->get();
+            // Only return products that have at least one active merchant listing
+            $prods = Product::where(function($query) use ($search, $slug) {
+                    $query->where('name', 'like', '%' . $search . '%')
+                          ->orWhere('name', 'like', $slug . '%');
+                })
+                ->whereHas('merchantProducts', function($q){
+                    $q->where('status', 1);
+                })
+                ->orderby('id', 'desc')
+                ->take(10)
+                ->get();
             return view('load.suggest', compact('prods', 'slug'));
         }
         return "";

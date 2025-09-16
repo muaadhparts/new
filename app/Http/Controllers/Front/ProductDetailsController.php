@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Front;
 use App\Models\Comment;
 use App\Models\Order;
 use App\Models\Product;
+use App\Models\MerchantProduct;
 use App\Models\ProductClick;
 use App\Models\Rating;
 use App\Models\Reply;
@@ -83,22 +84,35 @@ class ProductDetailsController extends FrontBaseController
             }
         }
 
-        // التعديل هنا: slug + user_id
-        $productt = Product::with('user', 'galleries')
-            ->where('slug', '=', $slug)
-            ->where('user_id', '=', $user)
+        // التعديل هنا: المنتج أصبح مرتبطًا بالتاجر من خلال جدول merchant_products وليس لديه user_id في products.
+        // نحاول العثور على سجل التاجر (MerchantProduct) بناءً على الـ slug ومعرّف المستخدم (التاجر).
+        $merchantProduct = MerchantProduct::where('user_id', $user)
+            ->whereHas('product', function ($query) use ($slug) {
+                $query->where('slug', '=', $slug);
+            })
+            ->with(['product' => function ($q) {
+                $q->with('galleries');
+            }])
             ->firstOrFail();
 
-        $vendor_products = Product::where('user_id', $productt->user_id)
-            ->where('id', '!=', $productt->id)
+        $productt = $merchantProduct->product;
+
+        // اجلب منتجات نفس التاجر (المتاجر) باستثناء هذا المنتج الحالي، مع التأكد من أن الحالة مفعلة
+        $vendorProductIds = MerchantProduct::where('user_id', $merchantProduct->user_id)
+            ->where('product_id', '!=', $merchantProduct->product_id)
             ->where('status', 1)
             ->orderBy('id', 'desc')
+            ->take(9)
+            ->pluck('product_id')
+            ->toArray();
+
+        $vendor_products = Product::whereIn('id', $vendorProductIds)
             ->withCount('ratings')
             ->withAvg('ratings', 'rating')
-            ->take(9)
             ->get();
 
-        if ($productt->status == 0) {
+        // إذا كانت حالة المنتج في merchant_products مفعّلة (1)، يُسمح بالعرض، وإلا يُعرض خطأ 404
+        if ($merchantProduct->status == 0) {
             return response()->view('errors.404')->setStatusCode(404);
         }
 

@@ -2,6 +2,11 @@
 
 {{--    @dump()--}}
     <div class="single-product">
+        @php
+            // Retrieve the first merchant record for this product to extract vendor information.
+            // If no merchant is found, default vendorId to 0 so the `user` parameter is always present.
+            $vendorId = optional($product->merchantProducts->first())->user_id ?? 0;
+        @endphp
         <div class="img-wrapper">
             @if ($product->offPercentage() && round($product->offPercentage()) > 0)
                 <span class="product-badge">-{{ round($product->offPercentage()) }}%</span>
@@ -93,7 +98,7 @@
 
 
                 @if ($product->type != 'Listing')
-                    <a href="{{ route('front.product', ['slug' => $product->slug, 'user' => $product->user_id]) }}">
+                    <a href="{{ route('front.product', ['slug' => $product->slug, 'user' => $vendorId]) }}">
                         <div class="details">…</div>
                         <div class="details">
                             <svg class="icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24"
@@ -113,11 +118,11 @@
             </div>
         </div>
         <div class="content-wrapper">
-            <a href="{{ route('front.product', ['slug' => $product->slug, 'user' => $product->user_id]) }}">
+            <a href="{{ route('front.product', ['slug' => $product->slug, 'user' => $vendorId]) }}">
                 <h6 class="product-title">{{ $product->showName() }}</h6>
             </a>
 
-            <a href="{{ route('front.product', ['slug' => $product->slug, 'user' => $product->user_id]) }}">
+            <a href="{{ route('front.product', ['slug' => $product->slug, 'user' => $vendorId]) }}">
                 <h6 class="product-title">{{ $product->label_ar }}</h6>
             </a>
 

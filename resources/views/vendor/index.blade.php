@@ -48,8 +48,10 @@
                     <img src="{{ asset('assets/front') }}/icons/vendor-dashboard-icon_5.svg" alt="">
                     <div class="title-and-value-wrapper">
                         <p class="title">@lang('Total Products!')</p>
-                        <h3 class="value">
-                            <span class="counter">{{ count($user->products) }}</span>
+                    <h3 class="value">
+                            {{-- In the new architecture the user (vendor) no longer owns products directly via a user_id column.
+                                 Use the merchantProducts relationship to count how many product listings the vendor has. --}}
+                            <span class="counter">{{ count($user->merchantProducts) }}</span>
                         </h3>
                     </div>
                 </div>

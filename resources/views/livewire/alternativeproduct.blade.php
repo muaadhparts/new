@@ -12,13 +12,19 @@
                 <div class="modal-content">
                     <div class="modal-header d-flex justify-content-between align-items-center">
                         <h5 class="modal-title fw-bold">@lang('Product Alternatives'): {{ $sku }}</h5>
-                        <button type="button" class="btn btn-light rounded-circle shadow-sm" 
+                        <button type="button" class="btn btn-light rounded-circle shadow-sm"
                                 style="width: 35px; height: 35px; display: flex; align-items: center; justify-content: center;"
                                 data-bs-dismiss="modal" aria-label="Close">
                             <i class="fas fa-times text-danger"></i>
                         </button>
                     </div>
                     <div class="modal-body">
+
+                        @php
+                            // هل العناصر القادمة MerchantProduct أم Product؟
+                            $first   = $alternatives->first();
+                            $isMpSet = $first instanceof \App\Models\MerchantProduct;
+                        @endphp
 
                         <!-- جدول للكمبيوتر -->
                         <div class="container d-none d-md-block">
@@ -33,36 +39,88 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @forelse($alternatives as $result)
-                                        @php
-                                            $highlight = ($result->stock > 0 && $result->vendorPrice() > 0);
-                                        @endphp
-                                        <tr @if($highlight) style="background-color: #f0fff4;" @endif>
-                                            <td>{{ $result->sku }}</td>
-                                            <td>
-                                                @php
-                                                    $locale = app()->getLocale();
-                                                    echo $locale === 'ar' ? ($result->label_ar ?: $result->label_en) : $result->label_en;
-                                                @endphp
-                                            </td>
-                                            <td>{{ $result->stock ?? 0 }}</td>
-                                            <td class="fw-bold {{ $highlight ? 'text-success' : '' }}">{{ $result->showPrice() }}</td>
-                                            <td>
-                                                {{-- <a class="btn btn-outline-primary btn-sm" href="{{ route('front.product', $result->slug) }}">
-                                                    @lang('View')
-                                                </a> --}}
-                                                <a class="btn btn-outline-primary btn-sm" 
-                                                    href="{{ route('front.product', ['slug' => $result->slug, 'user' => $result->user_id]) }}">
+
+                                    @if($isMpSet)
+                                        {{-- $alternatives = Collection<MerchantProduct> --}}
+                                        @forelse($alternatives as $mp)
+                                            @php
+                                                $product   = $mp->product;
+                                                $vp        = method_exists($mp, 'vendorSizePrice') ? (float)$mp->vendorSizePrice() : (float)$mp->price;
+                                                $highlight = ($mp->stock > 0 && $vp > 0);
+                                                $locale    = app()->getLocale();
+                                                $name      = $locale === 'ar'
+                                                            ? ($product->label_ar ?: $product->label_en)
+                                                            : ($product->label_en ?: $product->label_ar);
+                                            @endphp
+                                            <tr @if($highlight) style="background-color: #f0fff4;" @endif>
+                                                <td>{{ $product->sku }}</td>
+                                                <td>{{ e($name) }}</td>
+                                                <td>{{ $mp->stock ?? 0 }}</td>
+                                                <td class="fw-bold {{ $highlight ? 'text-success' : '' }}">
+                                                    {{ method_exists($mp, 'showPrice') ? $mp->showPrice() : $vp }}
+                                                </td>
+                                                <td>
+                                                    <a class="btn btn-outline-primary btn-sm"
+                                                       href="{{ route('front.product', ['slug' => $product->slug, 'user' => $mp->user_id]) }}">
                                                         @lang('View')
                                                     </a>
-                                            </td>
-                                        </tr>
-                                    @empty
+                                                </td>
+                                            </tr>
+                                        @empty
+                                            <tr>
+                                                <td colspan="5" class="text-center">@lang('No data found')</td>
+                                            </tr>
+                                        @endforelse
 
-                                        <tr>
-                                            <td colspan="5" class="text-center">@lang('No data found')</td>
-                                        </tr>
-                                    @endforelse
+                                    @else
+                                        {{-- $alternatives = Collection<Product> --}}
+                                        @foreach($alternatives as $product)
+                                            @php
+                                                $merchants = $product->merchantProducts()
+                                                    ->where('status', 1)
+                                                    ->with('user:id,is_vendor')
+                                                    ->get();
+                                            @endphp
+
+                                            @forelse($merchants as $mp)
+                                                @php
+                                                    $vp        = method_exists($mp, 'vendorSizePrice') ? (float)$mp->vendorSizePrice() : (float)$mp->price;
+                                                    $highlight = ($mp->stock > 0 && $vp > 0);
+                                                    $locale    = app()->getLocale();
+                                                    $name      = $locale === 'ar'
+                                                                ? ($product->label_ar ?: $product->label_en)
+                                                                : ($product->label_en ?: $product->label_ar);
+                                                @endphp
+                                                <tr @if($highlight) style="background-color: #f0fff4;" @endif>
+                                                    <td>{{ $product->sku }}</td>
+                                                    <td>{{ e($name) }}</td>
+                                                    <td>{{ $mp->stock ?? 0 }}</td>
+                                                    <td class="fw-bold {{ $highlight ? 'text-success' : '' }}">
+                                                        {{ method_exists($mp, 'showPrice') ? $mp->showPrice() : $vp }}
+                                                    </td>
+                                                    <td>
+                                                        <a class="btn btn-outline-primary btn-sm"
+                                                           href="{{ route('front.product', ['slug' => $product->slug, 'user' => $mp->user_id]) }}">
+                                                            @lang('View')
+                                                        </a>
+                                                    </td>
+                                                </tr>
+                                            @empty
+                                                {{-- لا يوجد بائعون لهذا البديل --}}
+                                            @endforelse
+                                        @endforeach
+
+                                        @if(
+                                            $alternatives->every(function($p){
+                                                return $p->merchantProducts()->where('status',1)->count() === 0;
+                                            })
+                                        )
+                                            <tr>
+                                                <td colspan="5" class="text-center">@lang('No data found')</td>
+                                            </tr>
+                                        @endif
+                                    @endif
+
                                 </tbody>
                             </table>
                         </div>
@@ -70,37 +128,105 @@
                         <!-- كروت للموبايل -->
                         <div class="container d-block d-md-none">
                             <div class="row g-3">
-                                @forelse($alternatives as $result)
-                                    <div class="col-12">
-                                        <div class="card shadow-sm h-100 @if($highlight) border-success @endif">
-                                            <div class="row g-0">
-                                                <div class="col-4">
-                                                    <img src="{{ $result->photo ? \Illuminate\Support\Facades\Storage::url($result->photo) : asset('assets/images/noimage.png') }}"
-                                                        class="img-fluid rounded-start" alt="{{ $result->sku }}">
-                                                </div>
-                                                <div class="col-8">
-                                                    <div class="card-body p-2">
-                                                        <h6 class="card-title mb-1">
-                                                            @php
-                                                                $locale = app()->getLocale();
-                                                                echo $locale === 'ar' ? ($result->label_ar ?: $result->label_en) : $result->label_en;
-                                                            @endphp
-                                                        </h6>
-                                                        <p class="mb-1 small text-muted"><strong>@lang('Part Number'):</strong> {{ $result->sku }}</p>
-                                                        <p class="mb-1 fw-bold {{ $highlight ? 'text-success' : '' }}">{{ $result->showPrice() }}</p>
-                                                        <p class="mb-2 small"><strong>@lang('Stock'):</strong> {{ $result->stock ?? 0 }}</p>
-                                                        <a href="{{ route('front.product', ['slug' => $result->slug, 'user' => $result->user_id]) }}" 
-                                                            class="btn btn-primary btn-sm w-100">
+
+                                @if($isMpSet)
+                                    {{-- $alternatives = Collection<MerchantProduct> --}}
+                                    @forelse($alternatives as $mp)
+                                        @php
+                                            $product   = $mp->product;
+                                            $vp        = method_exists($mp, 'vendorSizePrice') ? (float)$mp->vendorSizePrice() : (float)$mp->price;
+                                            $highlight = ($mp->stock > 0 && $vp > 0);
+                                            $locale    = app()->getLocale();
+                                            $name      = $locale === 'ar'
+                                                        ? ($product->label_ar ?: $product->label_en)
+                                                        : ($product->label_en ?: $product->label_ar);
+                                        @endphp
+                                        <div class="col-12">
+                                            <div class="card shadow-sm h-100 @if($highlight) border-success @endif">
+                                                <div class="row g-0">
+                                                    <div class="col-4">
+                                                        <img src="{{ $product->photo ? \Illuminate\Support\Facades\Storage::url($product->photo) : asset('assets/images/noimage.png') }}"
+                                                             class="img-fluid rounded-start" alt="{{ $product->sku }}">
+                                                    </div>
+                                                    <div class="col-8">
+                                                        <div class="card-body p-2">
+                                                            <h6 class="card-title mb-1">{{ e($name) }}</h6>
+                                                            <p class="mb-1 small text-muted"><strong>@lang('Part Number'):</strong> {{ $product->sku }}</p>
+                                                            <p class="mb-1 fw-bold {{ $highlight ? 'text-success' : '' }}">
+                                                                {{ method_exists($mp, 'showPrice') ? $mp->showPrice() : $vp }}
+                                                            </p>
+                                                            <p class="mb-2 small"><strong>@lang('Stock'):</strong> {{ $mp->stock ?? 0 }}</p>
+                                                            <a href="{{ route('front.product', ['slug' => $product->slug, 'user' => $mp->user_id]) }}"
+                                                               class="btn btn-primary btn-sm w-100">
                                                                 @lang('View')
                                                             </a>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
                                         </div>
-                                    </div>
-                                @empty
-                                    <p class="text-center">@lang('No data found')</p>
-                                @endforelse
+                                    @empty
+                                        <p class="text-center">@lang('No data found')</p>
+                                    @endforelse
+
+                                @else
+                                    {{-- $alternatives = Collection<Product> --}}
+                                    @foreach($alternatives as $product)
+                                        @php
+                                            $merchants = $product->merchantProducts()
+                                                ->where('status', 1)
+                                                ->with('user:id,is_vendor')
+                                                ->get();
+                                        @endphp
+
+                                        @forelse($merchants as $mp)
+                                            @php
+                                                $vp        = method_exists($mp, 'vendorSizePrice') ? (float)$mp->vendorSizePrice() : (float)$mp->price;
+                                                $highlight = ($mp->stock > 0 && $vp > 0);
+                                                $locale    = app()->getLocale();
+                                                $name      = $locale === 'ar'
+                                                            ? ($product->label_ar ?: $product->label_en)
+                                                            : ($product->label_en ?: $product->label_ar);
+                                            @endphp
+                                            <div class="col-12">
+                                                <div class="card shadow-sm h-100 @if($highlight) border-success @endif">
+                                                    <div class="row g-0">
+                                                        <div class="col-4">
+                                                            <img src="{{ $product->photo ? \Illuminate\Support\Facades\Storage::url($product->photo) : asset('assets/images/noimage.png') }}"
+                                                                 class="img-fluid rounded-start" alt="{{ $product->sku }}">
+                                                        </div>
+                                                        <div class="col-8">
+                                                            <div class="card-body p-2">
+                                                                <h6 class="card-title mb-1">{{ e($name) }}</h6>
+                                                                <p class="mb-1 small text-muted"><strong>@lang('Part Number'):</strong> {{ $product->sku }}</p>
+                                                                <p class="mb-1 fw-bold {{ $highlight ? 'text-success' : '' }}">
+                                                                    {{ method_exists($mp, 'showPrice') ? $mp->showPrice() : $vp }}
+                                                                </p>
+                                                                <p class="mb-2 small"><strong>@lang('Stock'):</strong> {{ $mp->stock ?? 0 }}</p>
+                                                                <a href="{{ route('front.product', ['slug' => $product->slug, 'user' => $mp->user_id]) }}"
+                                                                   class="btn btn-primary btn-sm w-100">
+                                                                    @lang('View')
+                                                                </a>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        @empty
+                                            {{-- لا يوجد بائعون لهذا المنتج --}}
+                                        @endforelse
+                                    @endforeach
+
+                                    @if(
+                                        $alternatives->every(function($p){
+                                            return $p->merchantProducts()->where('status',1)->count() === 0;
+                                        })
+                                    )
+                                        <p class="text-center">@lang('No data found')</p>
+                                    @endif
+
+                                @endif
+
                             </div>
                         </div>
 

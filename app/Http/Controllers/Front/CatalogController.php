@@ -62,65 +62,91 @@ class CatalogController extends FrontBaseController
             $data['childcat'] = $childcat;
         }
 
-        $data['latest_products'] = Product::with('user')->whereStatus(1)->whereLatest(1)
-            ->whereHas('user', function ($q) {
-                $q->where('is_vendor', 2);
-            })
-            ->when('user', function ($query) {
-                foreach ($query as $q) {
-                    if ($q->is_vendor == 2) {
-                        return $q;
-                    }
-                }
+        // Retrieve latest products that have at least one active merchant listing with a vendor account
+        $data['latest_products'] = Product::status(1)
+            ->whereLatest(1)
+            ->whereHas('merchantProducts', function ($q) {
+                $q->where('status', 1)
+                    ->whereHas('user', function ($user) {
+                        $user->where('is_vendor', 2);
+                    });
             })
             ->withCount('ratings')
             ->withAvg('ratings', 'rating')
             ->take(5)
             ->get();
 
-        $prods = Product::with('user')->when($cat, function ($query, $cat) {
+        // Build product query based on categories and vendor-specific conditions
+        $prods = Product::query();
+        
+        // Filter by category
+        $prods = $prods->when($cat, function ($query, $cat) {
             return $query->where('category_id', $cat->id);
-        })
-            ->when($subcat, function ($query, $subcat) {
-                return $query->where('subcategory_id', $subcat->id);
-            })
-            ->when($type, function ($query, $type) {
-                return $query->with('user')->whereStatus(1)->whereIsDiscount(1)
-                    ->where('discount_date', '>=', date('Y-m-d'))
-                    ->whereHas('user', function ($user) {
-                        $user->where('is_vendor', 2);
-                    });
-            })
-            ->when($childcat, function ($query, $childcat) {
-                return $query->where('childcategory_id', $childcat->id);
-            })
-            ->when($search, function ($query, $search) {
-                return $query->where('name', 'like', '%' . $search . '%')->orWhere('name', 'like', $search . '%');
-            })
-            ->when($minprice, function ($query, $minprice) {
-                return $query->where('price', '>=', $minprice);
-            })
-            ->when($maxprice, function ($query, $maxprice) {
-                return $query->where('price', '<=', $maxprice);
-            })
-            ->when($sort, function ($query, $sort) {
-                if ($sort == 'date_desc') {
-                    return $query->latest('id');
-                } elseif ($sort == 'date_asc') {
-                    return $query->oldest('id');
-                } elseif ($sort == 'price_desc') {
-                    return $query->latest('price');
-                } elseif ($sort == 'price_asc') {
-                    return $query->oldest('price');
-                }
-            })
-            ->when(empty($sort), function ($query, $sort) {
-                return $query->latest('id');
-            })
-            ->where('stock','>=',1)
-            ->take(10) /// note for later
-            ->withCount('ratings')
-            ->withAvg('ratings', 'rating');
+        });
+
+        // Filter by subcategory
+        $prods = $prods->when($subcat, function ($query, $subcat) {
+            return $query->where('subcategory_id', $subcat->id);
+        });
+
+        // Filter by child category
+        $prods = $prods->when($childcat, function ($query, $childcat) {
+            return $query->where('childcategory_id', $childcat->id);
+        });
+
+        // Search by name
+        $prods = $prods->when($search, function ($query, $search) {
+            return $query->where(function ($subQuery) use ($search) {
+                $subQuery->where('name', 'like', '%' . $search . '%')
+                    ->orWhere('name', 'like', $search . '%');
+            });
+        });
+
+        // Apply price, discount and stock filters via merchantProducts relationship
+        $prods = $prods->whereHas('merchantProducts', function ($q) use ($minprice, $maxprice, $type) {
+            $q->where('status', 1)
+                ->where('stock', '>=', 1)
+                ->when($minprice, function ($query) use ($minprice) {
+                    return $query->where('price', '>=', $minprice);
+                })
+                ->when($maxprice, function ($query) use ($maxprice) {
+                    return $query->where('price', '<=', $maxprice);
+                })
+                ->when($type, function ($query) {
+                    // `type` indicates discount filter: require discount to be active and not expired
+                    return $query->where('is_discount', 1)
+                        ->where('discount_date', '>=', date('Y-m-d'));
+                })
+                ->whereHas('user', function ($user) {
+                    $user->where('is_vendor', 2);
+                });
+        });
+
+        // Sorting options
+        $prods = $prods->when($sort, function ($query, $sort) {
+            if ($sort == 'date_desc') {
+                return $query->latest('products.id');
+            } elseif ($sort == 'date_asc') {
+                return $query->oldest('products.id');
+            } elseif ($sort == 'price_desc') {
+                // Order by minimum vendor price descending
+                return $query->orderByRaw('(select min(price) from merchant_products where merchant_products.product_id = products.id and merchant_products.status = 1) desc');
+            } elseif ($sort == 'price_asc') {
+                // Order by minimum vendor price ascending
+                return $query->orderByRaw('(select min(price) from merchant_products where merchant_products.product_id = products.id and merchant_products.status = 1) asc');
+            }
+        });
+        
+        // Default sorting if no sort option provided
+        if (empty($sort)) {
+            $prods = $prods->latest('products.id');
+        }
+
+        // Ensure we only consider products with active merchant listings
+        $prods = $prods->status(1);
+
+        // Limit results for page performance, will paginate later
+        $prods = $prods->take(10)->withCount('ratings')->withAvg('ratings', 'rating');
 
         $prods = $prods->where(function ($query) use ($cat, $subcat, $childcat, $type, $request) {
             $flag = 0;
@@ -179,12 +205,13 @@ class CatalogController extends FrontBaseController
             }
         });
 
-        $prods = $prods->where('status', 1)->get()
-
-            ->map(function ($item) {
-                $item->price = $item->vendorSizePrice();
-                return $item;
-            })->paginate(isset($pageby) ? $pageby : $this->gs->page_count);
+        // Paginate after applying filters and eager loading ratings.  Once paginated, transform each item
+        $prods = $prods->paginate(isset($pageby) ? $pageby : $this->gs->page_count);
+        $prods->getCollection()->transform(function ($item) {
+            // Replace price with vendor size price (includes commission and attribute adjustments)
+            $item->price = $item->vendorSizePrice();
+            return $item;
+        });
         $data['prods'] = $prods;
         if ($request->ajax()) {
             $data['ajax_check'] = 1;

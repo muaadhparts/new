@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Tymon\JWTAuth\Contracts\JWTSubject;
+// Import MerchantProduct model to expose vendor listings via a relationship
+use App\Models\MerchantProduct;
 
 class User extends Authenticatable implements JWTSubject
 {
@@ -146,9 +148,27 @@ class User extends Authenticatable implements JWTSubject
 
     public function wishlistCount()
     {
-        return \App\Models\Wishlist::where('user_id', '=', $this->id)->with(['product'])->whereHas('product', function ($query) {
-            $query->where('status', '=', 1);
-        })->count();
+        // Count wishlist items where the underlying product has at least one active merchant listing.
+        return \App\Models\Wishlist::where('user_id', '=', $this->id)
+            ->whereHas('product', function ($productQuery) {
+                // Only include products that have at least one merchant_product entry with status = 1
+                $productQuery->whereIn('id', function($subQuery) {
+                    $subQuery->select('product_id')
+                        ->from('merchant_products')
+                        ->where('status', '=', 1);
+                });
+            })
+            ->count();
+    }
+
+    /**
+     * Get all merchant product entries belonging to this user (vendor).
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function merchantProducts()
+    {
+        return $this->hasMany(MerchantProduct::class, 'user_id');
     }
 
     public function checkVerification()
