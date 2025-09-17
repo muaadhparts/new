@@ -19,45 +19,75 @@ use Validator;
 class ProductController extends AdminBaseController
 {
     //*** JSON Request
+    // داخل class ProductController extends AdminBaseController
+
     public function datatables(Request $request)
     {
         if ($request->type == 'all') {
-            $datas = Product:: whereProductType('normal')->latest('id')->take(1000)->get();
-        } else if ($request->type == 'deactive') {
-            $datas = Product::whereProductType('normal')->whereStatus(0)->latest('id')->take(1000)->get();
+            $datas = \App\Models\Product::whereProductType('normal')->latest('id')->take(50)->get();
+        } elseif ($request->type == 'deactive') {
+            $datas = \App\Models\Product::whereProductType('normal')->whereStatus(0)->latest('id')->take(50)->get();
+        } else {
+            $datas = \App\Models\Product::latest('id')->take(50)->get();
         }
 
-        //--- Integrating This Collection Into Datatables
-        return Datatables::of($datas)
-            ->editColumn('name', function (Product $data) {
+        return \Datatables::of($datas)
+            ->editColumn('name', function (\App\Models\Product $data) {
                 $name = mb_strlen($data->name, 'UTF-8') > 50 ? mb_substr($data->name, 0, 50, 'UTF-8') . '...' : $data->name;
-                $id = '<small>' . __("ID") . ': <a href="' . route('front.product', ['slug' => $data->slug, 'user' => $data->user_id]) . '" target="_blank">' . sprintf("%'.08d", $data->id) . '</a></small>';
-                $id3 = $data->type == 'Physical' ? '<small class="ml-2"> ' . __("SKU") . ': <a href="' . route('front.product', ['slug' => $data->slug, 'user' => $data->user_id]) . '" target="_blank">' . $data->sku . '</a>' : '';
+
+                // استخرج أول/أرخص عرض بائع نشط لهذا المنتج
+                $mp = $data->merchantProducts()->where('status', 1)->orderBy('price')->first();
+                $vendorId = optional($mp)->user_id;
+
+                $prodLink = $vendorId
+                    ? route('front.product', ['slug' => $data->slug, 'user' => $vendorId])
+                    : '#';
+
+                $id  = '<small>' . __("ID") . ': <a href="' . $prodLink . '" target="_blank">' . sprintf("%'.08d", $data->id) . '</a></small>';
+                $id3 = $data->type == 'Physical'
+                    ? '<small class="ml-2"> ' . __("SKU") . ': <a href="' . $prodLink . '" target="_blank">' . $data->sku . '</a>'
+                    : '';
+
+                // checkVendor() تم تحديثها لقراءة أول بائع نشط (انظر ملف Product بالأسفل)
                 return $name . '<br>' . $id . $id3 . $data->checkVendor();
             })
-            ->editColumn('price', function (Product $data) {
-                $price = $data->price * $this->curr->value;
-                return \PriceHelper::showAdminCurrencyPrice($price);
+            ->editColumn('price', function (\App\Models\Product $data) {
+                // أقل سعر نشط من عروض البائعين
+                $min = \DB::table('merchant_products')
+                    ->where('product_id', $data->id)
+                    ->where('status', 1)
+                    ->min('price');
+
+                if ($min === null) {
+                    return \PriceHelper::showAdminCurrencyPrice(0);
+                }
+
+                // طبّق العمولات (ثابت + نسبة) ثم حوّل لعملة الأدمن
+                $gs = cache()->remember('generalsettings', now()->addDay(), fn () => \DB::table('generalsettings')->first());
+                $base = (float)$min + (float)$gs->fixed_commission + ((float)$min * (float)$gs->percentage_commission / 100);
+
+                return \PriceHelper::showAdminCurrencyPrice($base * $this->curr->value);
             })
-            ->editColumn('photo', function (Product $data) {
+            ->editColumn('stock', function (\App\Models\Product $data) {
+                // مجموع مخزون العروض النشطة
+                $sum = \DB::table('merchant_products')
+                    ->where('product_id', $data->id)
+                    ->where('status', 1)
+                    ->sum('stock');
+
+                if ($sum === 0) {
+                    return __("Out Of Stock");
+                }
+                return $sum;
+            })
+            ->editColumn('photo', function (\App\Models\Product $data) {
                 $photo = $data->photo ? asset('assets/images/products/' . $data->photo) : asset('assets/images/noimage.png');
                 return '<img src="' . $photo . '" alt="Image" class="img-thumbnail" style="width:80px">';
             })
-            ->editColumn('stock', function (Product $data) {
-                $stck = (string) $data->stock;
-                if ($stck == "0") {
-                    return __("Out Of Stock");
-                } elseif ($stck == null) {
-                    return __("Unlimited");
-                } else {
-                    return $data->stock;
-                }
-
-            })
-            ->addColumn('status', function (Product $data) {
+            ->addColumn('status', function (\App\Models\Product $data) {
                 $class = $data->status == 1 ? 'drop-success' : 'drop-danger';
-                $s = $data->status == 1 ? 'selected' : '';
-                $ns = $data->status == 0 ? 'selected' : '';
+                $s     = $data->status == 1 ? 'selected' : '';
+                $ns    = $data->status == 0 ? 'selected' : '';
                 return '<div class="action-list">
                             <select class="process select droplinks ' . $class . '">
                                 <option data-val="1" value="' . route('admin-prod-status', ['id1' => $data->id, 'id2' => 1]) . '" ' . $s . '>' . __("Activated") . '</option>
@@ -65,13 +95,24 @@ class ProductController extends AdminBaseController
                             </select>
                         </div>';
             })
+            ->addColumn('action', function (\App\Models\Product $data) {
+                $catalog = $data->type == 'Physical'
+                    ? ($data->is_catalog == 1
+                        ? '<a href="javascript:;" data-href="' . route('admin-prod-catalog', ['id1' => $data->id, 'id2' => 0]) . '" data-toggle="modal" data-target="#catalog-modal" class="delete"><i class="fas fa-trash-alt"></i> ' . __("Remove Catalog") . '</a>'
+                        : '<a href="javascript:;" data-href="' . route('admin-prod-catalog', ['id1' => $data->id, 'id2' => 1]) . '" data-toggle="modal" data-target="#catalog-modal"> <i class="fas fa-plus"></i> ' . __("Add To Catalog") . '</a>')
+                    : '';
 
-            ->addColumn('action', function (Product $data) {
-                $catalog = $data->type == 'Physical' ? ($data->is_catalog == 1 ? '<a href="javascript:;" data-href="' . route('admin-prod-catalog', ['id1' => $data->id, 'id2' => 0]) . '" data-toggle="modal" data-target="#catalog-modal" class="delete"><i class="fas fa-trash-alt"></i> ' . __("Remove Catalog") . '</a>' : '<a href="javascript:;" data-href="' . route('admin-prod-catalog', ['id1' => $data->id, 'id2' => 1]) . '" data-toggle="modal" data-target="#catalog-modal"> <i class="fas fa-plus"></i> ' . __("Add To Catalog") . '</a>') : '';
-                return '<div class="godropdown"><button class="go-dropdown-toggle"> ' . __("Actions") . '<i class="fas fa-chevron-down"></i></button><div class="action-list"><a href="' . route('admin-prod-edit', $data->id) . '"> <i class="fas fa-edit"></i> ' . __("Edit") . '</a><a href="javascript" class="set-gallery" data-toggle="modal" data-target="#setgallery"><input type="hidden" value="' . $data->id . '"><i class="fas fa-eye"></i> ' . __("View Gallery") . '</a>' . $catalog . '<a data-href="' . route('admin-prod-feature', $data->id) . '" class="feature" data-toggle="modal" data-target="#modal2"> <i class="fas fa-star"></i> ' . __("Highlight") . '</a><a href="javascript:;" data-href="' . route('admin-prod-delete', $data->id) . '" data-toggle="modal" data-target="#confirm-delete" class="delete"><i class="fas fa-trash-alt"></i> ' . __("Delete") . '</a></div></div>';
+                return '<div class="godropdown"><button class="go-dropdown-toggle"> ' . __("Actions") . '<i class="fas fa-chevron-down"></i></button>
+                        <div class="action-list">
+                            <a href="' . route('admin-prod-edit', $data->id) . '"><i class="fas fa-edit"></i> ' . __("Edit") . '</a>
+                            <a href="javascript" class="set-gallery" data-toggle="modal" data-target="#setgallery"><input type="hidden" value="' . $data->id . '"><i class="fas fa-eye"></i> ' . __("View Gallery") . '</a>'
+                            . $catalog .
+                            '<a data-href="' . route('admin-prod-feature', $data->id) . '" class="feature" data-toggle="modal" data-target="#modal2"> <i class="fas fa-star"></i> ' . __("Highlight") . '</a>
+                            <a href="javascript:;" data-href="' . route('admin-prod-delete', $data->id) . '" data-toggle="modal" data-target="#confirm-delete" class="delete"><i class="fas fa-trash-alt"></i> ' . __("Delete") . '</a>
+                        </div></div>';
             })
-            ->rawColumns(['name', 'status', 'action','photo'])
-            ->toJson(); //--- Returning Json Data To Client Side
+            ->rawColumns(['name', 'status', 'action', 'photo'])
+            ->toJson();
     }
 
     //*** JSON Request

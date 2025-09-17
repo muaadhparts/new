@@ -4,44 +4,65 @@ namespace App\Models;
 
 use App\Models\Currency;
 use App\Models\MerchantProduct;
-use DB;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
 
 class Product extends Model
 {
+    /**
+     * Product model now stores only catalogue-level attributes;
+     * vendor-specific data is stored on MerchantProduct.
+     */
+    protected $fillable = [
+        'category_id', 'product_type', 'affiliate_link', 'sku', 'subcategory_id', 'childcategory_id',
+        'attributes', 'name', 'photo', 'details', 'policy', 'views', 'tags', 'featured', 'best', 'top',
+        'hot', 'latest', 'big', 'trending', 'features', 'colors', 'meta_tag', 'meta_description', 'youtube',
+        'type', 'file', 'link', 'platform', 'region', 'licence_type', 'measure', 'catalog_id', 'slug',
+        'flash_count', 'hot_count', 'new_count', 'sale_count', 'best_seller_count', 'popular_count',
+        'top_rated_count', 'big_save_count', 'trending_count', 'page_count', 'seller_product_count',
+        'wishlist_count', 'vendor_page_count', 'min_price', 'max_price', 'product_page', 'post_count',
+        'cross_products'
+    ];
 
-    // Removed vendor specific columns (e.g. user_id, price, stock, status) from fillable.
-    // Product model now stores only catalogue-level attributes; vendor specific data is stored on MerchantProduct.
-    protected $fillable = ['category_id', 'product_type', 'affiliate_link', 'sku', 'subcategory_id', 'childcategory_id', 'attributes', 'name', 'photo', 'details', 'policy', 'views', 'tags', 'featured', 'best', 'top', 'hot', 'latest', 'big', 'trending', 'features', 'colors', 'meta_tag', 'meta_description', 'youtube', 'type', 'file', 'link', 'platform', 'region', 'licence_type', 'measure', 'catalog_id', 'slug', 'flash_count', 'hot_count', 'new_count', 'sale_count', 'best_seller_count', 'popular_count', 'top_rated_count', 'big_save_count', 'trending_count', 'page_count', 'seller_product_count', 'wishlist_count', 'vendor_page_count', 'min_price', 'max_price', 'product_page', 'post_count', 'cross_products'];
+    /**
+     * Selectable columns for listing products (catalog-level only).
+     */
+    public $selectable = [
+        'id', 'name', 'slug', 'features', 'colors', 'thumbnail', 'attributes',
+        'category_id', 'details', 'type'
+    ];
 
-    // Selectable columns for listing products. Removed vendor specific fields (price, size, status).
-    public $selectable = ['id', 'name', 'slug', 'features', 'colors', 'thumbnail', 'attributes', 'category_id', 'details', 'type'];
+    /* =========================================================================
+     |  Scopes
+     | ========================================================================= */
 
-    public function scopeHome($query)
+    /**
+     * Home products: only products that have at least one active merchant listing.
+     */
+    public function scopeHome(Builder $query): Builder
     {
-        // Home products scope: only products that have at least one active merchant listing
-        return $query->whereHas('merchantProducts', function($q){
-                $q->where('status', 1);
-            })
+        return $query
+            ->whereHas('merchantProducts', fn ($q) => $q->where('status', 1))
             ->select($this->selectable)
             ->latest('id');
     }
 
     /**
-     * Scope for filtering products by merchant listing status.  This overrides
-     * dynamic whereStatus() calls to redirect to merchant_products.status.
-     *
-     * @param \Illuminate\Database\Eloquent\Builder $query
-     * @param int $status
-     * @return \Illuminate\Database\Eloquent\Builder
+     * Scope for filtering products by merchant listing status.
+     * Redirects status check to merchant_products.status.
      */
-    public function scopeStatus($query, $status)
+    public function scopeStatus(Builder $query, int $status = 1): Builder
     {
-        return $query->whereHas('merchantProducts', function($q) use ($status) {
+        return $query->whereHas('merchantProducts', function ($q) use ($status) {
             $q->where('status', $status);
         });
     }
+
+    /* =========================================================================
+     |  Relations
+     | ========================================================================= */
 
     public function category()
     {
@@ -53,7 +74,6 @@ class Product extends Model
         return $this->belongsTo('App\Models\Brand')->withDefault();
     }
 
-
     public function subcategory()
     {
         return $this->belongsTo('App\Models\Subcategory')->withDefault();
@@ -64,16 +84,8 @@ class Product extends Model
         return $this->belongsTo('App\Models\Childcategory')->withDefault();
     }
 
-    public function user()
-    {
-        return $this->belongsTo('App\Models\User')->withDefault();
-    }
-
     /**
-     * Get all merchant product entries for this product.  Each vendor listing
-     * stores vendor specific fields such as price, stock and status.
-     *
-     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     * Vendor listings for this product (each row is one seller).
      */
     public function merchantProducts()
     {
@@ -115,309 +127,246 @@ class Product extends Model
         return $this->hasMany('App\Models\Report', 'product_id');
     }
 
-    public function IsSizeColor($value)
+    /* =========================================================================
+     |  Helpers (Vendor-aware)
+     | ========================================================================= */
+
+    /**
+     * UI helper (admin): show first active vendor badge/link.
+     */
+    public function checkVendor(): string
     {
-        $sizes = array_unique($this->size);
-        return in_array($value, $sizes);
+        $mp = $this->merchantProducts()->where('status', 1)->first();
+        return $mp
+            ? '<small class="ml-2"> ' . __("VENDOR") . ': <a href="' . route('admin-vendor-show', $mp->user_id) . '" target="_blank">' . optional($mp->user)->shop_name . '</a></small>'
+            : '';
     }
 
-    public function checkVendor()
+    /**
+     * Resolve active merchant listing for this product.
+     * If $userId passed, resolve that vendor's listing; otherwise first active listing.
+     *
+     * // dd(['product_id' => $this->id, 'userId' => $userId, 'hit' => optional($mp)->id]); // debug
+     */
+    public function activeMerchant(?int $userId = null): ?MerchantProduct
     {
-        return $this->user_id != 0 ? '<small class="ml-2"> ' . __("VENDOR") . ': <a href="' . route('admin-vendor-show', $this->user_id) . '" target="_blank">' . $this->user->shop_name . '</a></small>' : '';
+        return $this->merchantProducts()
+            ->when($userId, fn ($q) => $q->where('user_id', $userId))
+            ->where('status', 1)
+            ->first();
     }
-    public function vendorPrice()
+
+    /**
+     * Legacy compatibility (base price incl. commission) for first active merchant.
+     * Prefer vendorSizePrice() which accounts for size/options via MerchantProduct logic.
+     */
+    public function vendorPrice(?int $userId = null)
     {
-        // In the new architecture, price and status are stored per vendor in
-        // merchant_products.  This helper returns the base price for the first
-        // active merchant listing, including commission.  If no active listing
-        // exists, null is returned.
-        // Retrieve an active merchant listing for this product.  If there are
-        // multiple, we simply use the first one.  Applications may refine
-        // selection logic based on user context.
-        $merchant = $this->merchantProducts()->where('status', 1)->first();
+        $merchant = $this->activeMerchant($userId);
         if (!$merchant) {
             return null;
         }
-        // Base price provided by the vendor for this listing
-        $price = $merchant->price;
-        // Apply fixed and percentage commission from general settings
-        $gs = cache()->remember('generalsettings', now()->addDay(), function () {
-            return DB::table('generalsettings')->first();
-        });
-        $priceWithCommission = $price + $gs->fixed_commission + ($price / 100) * $gs->percentage_commission;
-        return $priceWithCommission;
+
+        $gs = cache()->remember('generalsettings', now()->addDay(), fn () => DB::table('generalsettings')->first());
+
+        $price = (float) $merchant->price;
+        $price = $price + (float) $gs->fixed_commission + ($price * (float) $gs->percentage_commission / 100);
+
+        return $price;
     }
 
-    public function vendorSizePrice()
+    /**
+     * Vendor-aware size/options/commission price.
+     * Delegates to MerchantProduct::vendorSizePrice() to avoid duplication.
+     *
+     * // dd(['product_id' => $this->id, 'userId' => $userId, 'price' => $mp ? $mp->vendorSizePrice() : null]); // debug
+     */
+    public function vendorSizePrice(?int $userId = null)
     {
-        // Compute the vendor price including size and attribute adjustments.
-        $merchant = $this->merchantProducts()->where('status', 1)->first();
-        if (!$merchant) {
-            return null;
-        }
-        // Base price from vendor
-        $price = $merchant->price;
-        // Add first size price if provided on the merchant listing
-        if (!empty($merchant->size_price)) {
-            $sizePrices = is_array($merchant->size_price) ? $merchant->size_price : explode(',', $merchant->size_price);
-            if (!empty($sizePrices) && isset($sizePrices[0]) && $sizePrices[0] !== '') {
-                $price += (float) $sizePrices[0];
-            }
-        }
-
-        // Attribute Section: apply the first price of each attribute that has details_status = 1
-        $attrArr = [];
-        $attributes = isset($this->attributes["attributes"]) ? $this->attributes["attributes"] : null;
-        if (!empty($attributes)) {
-            $attrArr = json_decode($attributes, true);
-        }
-        if (!empty($attrArr)) {
-            foreach ($attrArr as $attrKey => $attrVal) {
-                if (is_array($attrVal) && array_key_exists("details_status", $attrVal) && $attrVal['details_status'] == 1) {
-                    // Find the first price and add it
-                    if (isset($attrVal['prices']) && is_array($attrVal['prices']) && isset($attrVal['prices'][0])) {
-                        $price += $attrVal['prices'][0];
-                    }
-                }
-            }
-        }
-        // Apply commission after adding size and attribute prices
-        $gs = cache()->remember('generalsettings', now()->addDay(), function () {
-            return DB::table('generalsettings')->first();
-        });
-        $priceWithCommission = $price + $gs->fixed_commission + ($price / 100) * $gs->percentage_commission;
-        return $priceWithCommission;
+        $mp = $this->activeMerchant($userId);
+        return $mp ? $mp->vendorSizePrice() : null;
     }
 
+    /**
+     * Convert vendor-aware price to session currency and format.
+     */
     public function setCurrency()
     {
-        $gs = cache()->remember('generalsettings', now()->addDay(), function () {
-            return DB::table('generalsettings')->first();
-        });
-        $price = $this->price;
-        if (Session::has('currency')) {
-            $curr = cache()->remember('session_currency', now()->addDay(), function () {
-                return Currency::find(Session::get('currency'));
-            });
-        } else {
-            $curr = cache()->remember('default_currency', now()->addDay(), function () {
-                return Currency::where('is_default', '=', 1)->first();
-            });
-        }
-        $price = $price * $curr->value;
-        $price = \PriceHelper::showPrice($price);
-        if ($gs->currency_format == 0) {
-            return $curr->sign . ' ' . $price;
-        } else {
-            return $price . ' ' . $curr->sign;
-        }
-    }
-
-    public function showPrice()
-    {
-        // Present the product price converted to the current session currency using
-        // vendor specific pricing.  This method uses vendorSizePrice() to
-        // compute the base price including size and attribute adjustments and
-        // commission.  It then converts to the session currency and returns
-        // the formatted price string.
         $rawPrice = $this->vendorSizePrice();
         if ($rawPrice === null) {
             return 0;
         }
-        // Retrieve session or default currency
-        if (Session::has('currency')) {
-            $curr = cache()->remember('session_currency', now()->addDay(), function () {
-                return Currency::find(Session::get('currency'));
-            });
-        } else {
-            $curr = cache()->remember('default_currency', now()->addDay(), function () {
-                return Currency::where('is_default', '=', 1)->first();
-            });
-        }
-        // Apply currency conversion
-        $converted = $rawPrice * $curr->value;
-        $converted = \PriceHelper::showPrice($converted);
-        $gs = cache()->remember('generalsettings', now()->addDay(), function () {
-            return DB::table('generalsettings')->first();
-        });
+
+        $gs = cache()->remember('generalsettings', now()->addDay(), fn () => DB::table('generalsettings')->first());
+        $curr = Session::has('currency')
+            ? cache()->remember('session_currency', now()->addDay(), fn () => Currency::find(Session::get('currency')))
+            : cache()->remember('default_currency', now()->addDay(), fn () => Currency::where('is_default', 1)->first());
+
+        $converted = \PriceHelper::showPrice($rawPrice * $curr->value);
         return $gs->currency_format == 0 ? $curr->sign . ' ' . $converted : $converted . ' ' . $curr->sign;
     }
 
-    public function adminShowPrice()
+    /**
+     * Show formatted price (session currency) for a vendor-aware price.
+     */
+    public function showPrice(?int $userId = null)
     {
-        // Return the vendor specific price converted to the default currency for
-        // admin view.  Uses vendorSizePrice() to compute the base price with
-        // commission and then converts to the default currency.
-        $rawPrice = $this->vendorSizePrice();
+        $rawPrice = $this->vendorSizePrice($userId);
         if ($rawPrice === null) {
             return 0;
         }
-        $gs = cache()->remember('generalsettings', now()->addDay(), function () {
-            return DB::table('generalsettings')->first();
-        });
-        // Default currency
-        $curr = Currency::where('is_default', '=', 1)->first();
-        $converted = $rawPrice * $curr->value;
-        $converted = \PriceHelper::showPrice($converted);
+
+        $gs = cache()->remember('generalsettings', now()->addDay(), fn () => DB::table('generalsettings')->first());
+        $curr = Session::has('currency')
+            ? cache()->remember('session_currency', now()->addDay(), fn () => Currency::find(Session::get('currency')))
+            : cache()->remember('default_currency', now()->addDay(), fn () => Currency::where('is_default', 1)->first());
+
+        $converted = \PriceHelper::showPrice($rawPrice * $curr->value);
         return $gs->currency_format == 0 ? $curr->sign . ' ' . $converted : $converted . ' ' . $curr->sign;
     }
 
-    public function showPreviousPrice()
+    /**
+     * Show admin-formatted price (default currency).
+     */
+    public function adminShowPrice(?int $userId = null)
     {
-        // Show the previous price (if any) converted to session currency.  This
-        // uses the previous_price on the first active merchant listing and
-        // includes size/attribute adjustments and commission.  Returns 0 if
-        // there is no previous price.
-        // Find an active merchant listing
-        $merchant = $this->merchantProducts()->where('status', 1)->first();
-        if (!$merchant || !$merchant->previous_price) {
+        $rawPrice = $this->vendorSizePrice($userId);
+        if ($rawPrice === null) {
             return 0;
         }
-        // Start with the vendor's previous price
-        $price = $merchant->previous_price;
-        // Size adjustments
-        if (!empty($merchant->size_price)) {
-            $sizePrices = is_array($merchant->size_price) ? $merchant->size_price : explode(',', $merchant->size_price);
-            if (!empty($sizePrices) && isset($sizePrices[0]) && $sizePrices[0] !== '') {
-                $price += (float) $sizePrices[0];
-            }
+
+        $gs = cache()->remember('generalsettings', now()->addDay(), fn () => DB::table('generalsettings')->first());
+        $curr = Currency::where('is_default', 1)->first();
+
+        $converted = \PriceHelper::showPrice($rawPrice * $curr->value);
+        return $gs->currency_format == 0 ? $curr->sign . ' ' . $converted : $converted . ' ' . $curr->sign;
+    }
+
+    /**
+     * Show previous price (vendor previous_price + adjustments + commission).
+     * If none, return 0.
+     */
+    public function showPreviousPrice(?int $userId = null)
+    {
+        $mp = $this->activeMerchant($userId);
+        if (!$mp || !$mp->previous_price) {
+            return 0;
         }
-        // Attribute adjustments
-        $attrArr = [];
-        $attributes = isset($this->attributes["attributes"]) ? $this->attributes["attributes"] : null;
-        if (!empty($attributes)) {
-            $attrArr = json_decode($attributes, true);
-        }
-        if (!empty($attrArr)) {
-            foreach ($attrArr as $attrKey => $attrVal) {
-                if (is_array($attrVal) && array_key_exists("details_status", $attrVal) && $attrVal['details_status'] == 1) {
-                    if (isset($attrVal['prices']) && is_array($attrVal['prices']) && isset($attrVal['prices'][0])) {
-                        $price += $attrVal['prices'][0];
-                    }
+
+        // Base previous price
+        $price = (float) $mp->previous_price;
+
+        // Size adjustment (first bucket if provided)
+        if (!empty($mp->size_price)) {
+            $raw = $mp->size_price;
+            if (is_string($raw)) {
+                $decoded = json_decode($raw, true);
+                if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+                    $first = array_values($decoded)[0] ?? 0;
+                    $price += (float) $first;
+                } else {
+                    $parts = explode(',', $raw);
+                    $price += isset($parts[0]) && $parts[0] !== '' ? (float) $parts[0] : 0.0;
                 }
+            } elseif (is_array($raw)) {
+                $first = array_values($raw)[0] ?? 0;
+                $price += (float) $first;
             }
         }
-        // Apply commission
-        $gs = cache()->remember('generalsettings', now()->addDay(), function () {
-            return DB::table('generalsettings')->first();
-        });
-        $priceWithCommission = $price + $gs->fixed_commission + ($price / 100) * $gs->percentage_commission;
-        // Convert to currency
-        if (Session::has('currency')) {
-            $curr = cache()->remember('session_currency', now()->addDay(), function () {
-                return Currency::find(Session::get('currency'));
-            });
-        } else {
-            $curr = cache()->remember('default_currency', now()->addDay(), function () {
-                return Currency::where('is_default', '=', 1)->first();
-            });
-        }
-        $converted = $priceWithCommission * $curr->value;
-        $converted = \PriceHelper::showPrice($converted);
+
+        // Commission
+        $gs = cache()->remember('generalsettings', now()->addDay(), fn () => DB::table('generalsettings')->first());
+        $price = $price + (float) $gs->fixed_commission + ($price * (float) $gs->percentage_commission / 100);
+
+        // Currency formatting
+        $curr = Session::has('currency')
+            ? cache()->remember('session_currency', now()->addDay(), fn () => Currency::find(Session::get('currency')))
+            : cache()->remember('default_currency', now()->addDay(), fn () => Currency::where('is_default', 1)->first());
+
+        $converted = \PriceHelper::showPrice($price * $curr->value);
         return $gs->currency_format == 0 ? $curr->sign . ' ' . $converted : $converted . ' ' . $curr->sign;
-
-
     }
 
+    /**
+     * Convert a raw price (base currency) into current session currency, formatted.
+     */
     public static function convertPrice($price)
     {
-        $gs = cache()->remember('generalsettings', now()->addDay(), function () {
-            return DB::table('generalsettings')->first();
-        });
-        if (Session::has('currency')) {
-            $curr = cache()->remember('session_currency', now()->addDay(), function () {
-                return Currency::find(Session::get('currency'));
-            });
-        } else {
-            $curr = cache()->remember('default_currency', now()->addDay(), function () {
-                return Currency::where('is_default', '=', 1)->first();
-            });
-        }
-//        dd($price ,$curr->value);
-        $price = $price * $curr->value;
-//        dd($price);
-        $price = \PriceHelper::showPrice($price);
-//        dd($price);
-        if ($gs->currency_format == 0) {
-            return $curr->sign . ' ' . $price;
-        } else {
-            return $price . ' ' . $curr->sign;
-        }
+        $gs = cache()->remember('generalsettings', now()->addDay(), fn () => DB::table('generalsettings')->first());
+
+        $curr = Session::has('currency')
+            ? cache()->remember('session_currency', now()->addDay(), fn () => Currency::find(Session::get('currency')))
+            : cache()->remember('default_currency', now()->addDay(), fn () => Currency::where('is_default', 1)->first());
+
+        $price = \PriceHelper::showPrice($price * $curr->value);
+        return $gs->currency_format == 0 ? $curr->sign . ' ' . $price : $price . ' ' . $curr->sign;
     }
 
     public static function vendorConvertPrice($price)
     {
-        $gs = cache()->remember('generalsettings', now()->addDay(), function () {
-            return DB::table('generalsettings')->first();
-        });
+        $gs = cache()->remember('generalsettings', now()->addDay(), fn () => DB::table('generalsettings')->first());
 
-        if (Session::has('currency')) {
-            $curr = cache()->remember('session_currency', now()->addDay(), function () {
-                return Currency::find(Session::get('currency'));
-            });
-        } else {
-            $curr = cache()->remember('default_currency', now()->addDay(), function () {
-                return Currency::where('is_default', '=', 1)->first();
-            });
-        }
-        $price = $price * $curr->value;
-        $price = \PriceHelper::showPrice($price);
-        if ($gs->currency_format == 0) {
-            return $curr->sign . ' ' . $price;
-        } else {
-            return $price . ' ' . $curr->sign;
-        }
+        $curr = Session::has('currency')
+            ? cache()->remember('session_currency', now()->addDay(), fn () => Currency::find(Session::get('currency')))
+            : cache()->remember('default_currency', now()->addDay(), fn () => Currency::where('is_default', 1)->first());
+
+        $price = \PriceHelper::showPrice($price * $curr->value);
+        return $gs->currency_format == 0 ? $curr->sign . ' ' . $price : $price . ' ' . $curr->sign;
     }
 
     public static function vendorConvertWithoutCurrencyPrice($price)
     {
+        $curr = Session::has('currency')
+            ? Currency::find(Session::get('currency'))
+            : Currency::where('is_default', 1)->first();
 
-        if (Session::has('currency')) {
-            $curr = Currency::find(Session::get('currency'));
-        } else {
-            $curr = Currency::where('is_default', '=', 1)->first();
-        }
-  
-        $price = $price * $curr->value;
-        $price = \PriceHelper::showPrice($price);
+        $price = \PriceHelper::showPrice($price * $curr->value);
         return $price;
     }
 
     public function showName()
     {
-        $name = mb_strlen($this->name, 'UTF-8') > 50 ? mb_substr($this->name, 0, 50, 'UTF-8') . '...' : $this->name;
-        return $name;
+        return mb_strlen($this->name, 'UTF-8') > 50 ? mb_substr($this->name, 0, 50, 'UTF-8') . '...' : $this->name;
     }
 
-    public function emptyStock()
+    /**
+     * Out of stock if no active merchant listing OR (when $userId provided) that listing has zero stock.
+     */
+    public function emptyStock(?int $userId = null): bool
     {
-        // Determine stock based on the first active merchant listing.  If no
-        // active listing exists or stock is zero, consider the product out of stock.
-        $merchant = $this->merchantProducts()->where('status', 1)->first();
-        if (!$merchant) {
-            return true;
+        if ($userId) {
+            $mp = $this->activeMerchant($userId);
+            return !$mp || (string) $mp->stock === "0";
         }
-        $stck = (string) $merchant->stock;
-        return $stck === "0";
+
+        $hasStock = $this->merchantProducts()
+            ->where('status', 1)
+            ->where('stock', '>', 0)
+            ->exists();
+
+        return !$hasStock;
     }
 
+    /**
+     * Build tag cloud from products that have at least one active merchant listing.
+     */
     public static function showTags()
     {
-        // Retrieve tags only for products that have at least one active merchant listing
-        $tags = null;
-        $tagz = '';
-        $name = Product::whereHas('merchantProducts', function($q){
-                $q->where('status', 1);
-            })->pluck('tags')->toArray();
-        foreach ($name as $nm) {
-            if (!empty($nm)) {
-                foreach ($nm as $n) {
-                    $tagz .= $n . ',';
-                }
+        $raw = Product::whereHas('merchantProducts', fn ($q) => $q->where('status', 1))
+            ->pluck('tags')
+            ->toArray();
+
+        $joined = [];
+        foreach ($raw as $tagsStr) {
+            if (is_array($tagsStr)) {
+                $joined = array_merge($joined, $tagsStr);
+            } elseif (is_string($tagsStr) && $tagsStr !== '') {
+                $joined = array_merge($joined, explode(',', $tagsStr));
             }
         }
-        $tags = array_unique(explode(',', $tagz));
-        return $tags;
+
+        $joined = array_filter(array_map('trim', $joined), fn ($t) => $t !== '');
+        return array_values(array_unique($joined));
     }
 
     public function is_decimal($val)
@@ -425,297 +374,236 @@ class Product extends Model
         return is_numeric($val) && floor($val) != $val;
     }
 
+    /* =========================================================================
+     |  Accessors (legacy)
+     |  NOTE: These accessors read catalog-level columns if present.
+     | ========================================================================= */
+
     public function getColorallAttribute($value)
     {
-        if ($value == null) {
-            return '';
-        }
-        return explode(",", $value);
+        return $value === null ? '' : explode(",", $value);
     }
 
     public function getColorPriceAttribute($value)
     {
-        if ($value == null) {
-            return '';
-        }
-        return explode(',', $value);
+        return $value === null ? '' : explode(',', $value);
     }
 
     public function getSizeAttribute($value)
     {
-        if ($value == null) {
-            return '';
-        }
-        return explode(',', $value);
+        return $value === null ? '' : explode(',', $value);
     }
 
     public function getSizeQtyAttribute($value)
     {
-        if ($value == null) {
-            return '';
-        }
-        return explode(',', $value);
+        return $value === null ? '' : explode(',', $value);
     }
 
     public function getSizePriceAttribute($value)
     {
-        if ($value == null) {
-            return '';
-        }
-        return explode(',', $value);
+        return $value === null ? '' : explode(',', $value);
     }
 
     public function getColorAttribute($value)
     {
-        if ($value == null) {
-            return '';
-        }
-        return explode(',', $value);
+        return $value === null ? '' : explode(',', $value);
     }
 
     public function getTagsAttribute($value)
     {
-        if ($value == null) {
-            return '';
-        }
-        return explode(',', $value);
+        return $value === null ? '' : explode(',', $value);
     }
 
     public function getMetaTagAttribute($value)
     {
-        if ($value == null) {
-            return '';
-        }
-        return explode(',', $value);
+        return $value === null ? '' : explode(',', $value);
     }
 
     public function getFeaturesAttribute($value)
     {
-        if ($value == null) {
-            return '';
-        }
-        return explode(',', $value);
+        return $value === null ? '' : explode(',', $value);
     }
 
     public function getColorsAttribute($value)
     {
-        if ($value == null) {
-            return '';
-        }
-        return explode(',', $value);
+        return $value === null ? '' : explode(',', $value);
     }
 
     public function getLicenseAttribute($value)
     {
-        if ($value == null) {
-            return '';
-        }
-        return explode(',,', $value);
+        return $value === null ? '' : explode(',,', $value);
     }
 
     public function getLicenseQtyAttribute($value)
     {
-        if ($value == null) {
-            return '';
-        }
-        return explode(',', $value);
+        return $value === null ? '' : explode(',', $value);
     }
 
     public function getWholeSellQtyAttribute($value)
     {
-        if ($value == null) {
-            return '';
-        }
-        return explode(',', $value);
+        return $value === null ? '' : explode(',', $value);
     }
 
     public function getWholeSellDiscountAttribute($value)
     {
-        if ($value == null) {
-            return '';
-        }
-        return explode(',', $value);
+        return $value === null ? '' : explode(',', $value);
     }
 
-    public function offPercentage()
-    {
+    /* =========================================================================
+     |  Discount helpers (vendor-aware)
+     | ========================================================================= */
 
-        $gs = cache()->remember('generalsettings', now()->addDay(), function () {
-            return DB::table('generalsettings')->first();
-        });
-        $price = $this->price;
-        $preprice = $this->previous_price;
-        if (!$preprice) {
+    /**
+     * Off percentage based on vendor current vs previous price (both vendor-aware).
+     * Returns numeric percentage (not formatted).
+     */
+    public function offPercentage(?int $userId = null)
+    {
+        $mp = $this->activeMerchant($userId);
+        if (!$mp || !$mp->previous_price) {
             return 0;
         }
 
-        if ($this->user_id != 0) {
-            $price = $this->price + $gs->fixed_commission + ($this->price / 100) * $gs->percentage_commission;
-            $preprice = $this->previous_price + $gs->fixed_commission + ($this->previous_price / 100) * $gs->percentage_commission;
+        $current = $this->vendorSizePrice($userId);
+        if ($current === null) {
+            return 0;
         }
 
-        if (!empty($this->size)) {
-            $price += $this->size_price[0];
-            $preprice += $this->size_price[0];
-        }
+        // Build previous final price similar to showPreviousPrice() but in raw value.
+        $prev = (float) $mp->previous_price;
 
-        // Attribute Section
-
-        $attributes = $this->attributes["attributes"];
-        if (!empty($attributes)) {
-            $attrArr = json_decode($attributes, true);
-        }
-
-        if (!empty($attrArr)) {
-            foreach ($attrArr as $attrKey => $attrVal) {
-                if (is_array($attrVal) && array_key_exists("details_status", $attrVal) && $attrVal['details_status'] == 1) {
-
-                    foreach ($attrVal['values'] as $optionKey => $optionVal) {
-                        $price += $attrVal['prices'][$optionKey];
-                        // only the first price counts
-                        $preprice += $attrVal['prices'][$optionKey];
-                        break;
-                    }
+        if (!empty($mp->size_price)) {
+            $raw = $mp->size_price;
+            if (is_string($raw)) {
+                $decoded = json_decode($raw, true);
+                if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+                    $first = array_values($decoded)[0] ?? 0;
+                    $prev += (float) $first;
+                } else {
+                    $parts = explode(',', $raw);
+                    $prev += isset($parts[0]) && $parts[0] !== '' ? (float) $parts[0] : 0.0;
                 }
+            } elseif (is_array($raw)) {
+                $first = array_values($raw)[0] ?? 0;
+                $prev += (float) $first;
             }
         }
 
-        // Attribute Section Ends
+        $gs = cache()->remember('generalsettings', now()->addDay(), fn () => DB::table('generalsettings')->first());
+        $prev = $prev + (float) $gs->fixed_commission + ($prev * (float) $gs->percentage_commission / 100);
 
-        if (Session::has('currency')) {
-            $curr = cache()->remember('session_currency', now()->addDay(), function () {
-                return Currency::find(Session::get('currency'));
-            });
-        } else {
-            $curr = cache()->remember('default_currency', now()->addDay(), function () {
-                return Currency::where('is_default', '=', 1)->first();
-            });
+        if ($prev <= 0) {
+            return 0;
         }
 
-//        $price = $price * $curr->value;
-        $preprice = $preprice * $curr->value;
-//        dd($this, $preprice ,$price);
-        $Percentage = '';
-            if($preprice > 0){
-                $Percentage = (($preprice - $price) * 100) / $preprice;
-            }
-
-
-
-        if ($Percentage) {
-            return $Percentage;
-        }
+        $percentage = ((float) $prev - (float) $current) * 100 / (float) $prev;
+        return $percentage;
     }
 
+    /* =========================================================================
+     |  Collections filters (legacy)
+     | ========================================================================= */
+
+    /**
+     * Filter a product collection to those having an active merchant listing,
+     * and stamp a transient price property equal to vendorSizePrice().
+     */
     public static function filterProducts($collection)
     {
         foreach ($collection as $key => $product) {
-            // Skip products with no active merchant listing
             $vendorPrice = $product->vendorSizePrice();
             if ($vendorPrice === null) {
                 unset($collection[$key]);
                 continue;
             }
-            // Filter by max price if provided
-            if (isset($_GET['max']) && $vendorPrice >= $_GET['max']) {
+            if (isset($_GET['max']) && $vendorPrice >= (float) $_GET['max']) {
                 unset($collection[$key]);
                 continue;
             }
-            // Set the price attribute on the product instance to the calculated vendor price
+            // Stamp computed price (transient) for sorting/UI
             $product->price = $vendorPrice;
         }
         return $collection;
     }
 
-    // MOBILE API SECTION
+    /* =========================================================================
+     |  MOBILE API SECTION (vendor-aware)
+     | ========================================================================= */
 
-    public function ApishowPrice()
+    public function ApishowPrice(?int $userId = null)
     {
-        // API show price: vendor specific price including size and attribute
-        // adjustments and commission converted to session currency.
-        $rawPrice = $this->vendorSizePrice();
+        $rawPrice = $this->vendorSizePrice($userId);
         if ($rawPrice === null) {
             return 0;
         }
-        // Determine session or default currency
-        if (Session::has('currency')) {
-            $curr = cache()->remember('session_currency', now()->addDay(), function () {
-                return Currency::find(Session::get('currency'));
-            });
-        } else {
-            $curr = cache()->remember('default_currency', now()->addDay(), function () {
-                return Currency::where('is_default', '=', 1)->first();
-            });
-        }
+
+        $curr = Session::has('currency')
+            ? cache()->remember('session_currency', now()->addDay(), fn () => Currency::find(Session::get('currency')))
+            : cache()->remember('default_currency', now()->addDay(), fn () => Currency::where('is_default', 1)->first());
+
         $converted = $rawPrice * $curr->value;
         return \PriceHelper::apishowPrice($converted);
     }
 
-    public function ApishowDetailsPrice()
+    public function ApishowDetailsPrice(?int $userId = null)
     {
-        // API show detailed price: vendor specific price including size and
-        // attribute adjustments and commission converted to session currency.
-        $rawPrice = $this->vendorSizePrice();
+        $rawPrice = $this->vendorSizePrice($userId);
         if ($rawPrice === null) {
             return 0;
         }
-        if (Session::has('currency')) {
-            $curr = cache()->remember('session_currency', now()->addDay(), function () {
-                return Currency::find(Session::get('currency'));
-            });
-        } else {
-            $curr = cache()->remember('default_currency', now()->addDay(), function () {
-                return Currency::where('is_default', '=', 1)->first();
-            });
-        }
+
+        $curr = Session::has('currency')
+            ? cache()->remember('session_currency', now()->addDay(), fn () => Currency::find(Session::get('currency')))
+            : cache()->remember('default_currency', now()->addDay(), fn () => Currency::where('is_default', 1)->first());
+
         $converted = $rawPrice * $curr->value;
         return \PriceHelper::apishowPrice($converted);
     }
 
-    public function ApishowPreviousPrice()
+    public function ApishowPreviousPrice(?int $userId = null)
     {
-        // API previous price: compute the previous price using merchant listing
-        // previous_price, add size/attribute adjustments and commission, then
-        // convert to session currency.
-        $merchant = $this->merchantProducts()->where('status', 1)->first();
-        if (!$merchant || !$merchant->previous_price) {
+        $mp = $this->activeMerchant($userId);
+        if (!$mp || !$mp->previous_price) {
             return 0;
         }
-        $price = $merchant->previous_price;
-        if (!empty($merchant->size_price)) {
-            $sizePrices = is_array($merchant->size_price) ? $merchant->size_price : explode(',', $merchant->size_price);
-            if (!empty($sizePrices) && isset($sizePrices[0]) && $sizePrices[0] !== '') {
-                $price += (float) $sizePrices[0];
-            }
-        }
-        $attrArr = [];
-        $attributes = isset($this->attributes["attributes"]) ? $this->attributes["attributes"] : null;
-        if (!empty($attributes)) {
-            $attrArr = json_decode($attributes, true);
-        }
-        if (!empty($attrArr)) {
-            foreach ($attrArr as $attrKey => $attrVal) {
-                if (is_array($attrVal) && array_key_exists("details_status", $attrVal) && $attrVal['details_status'] == 1) {
-                    if (isset($attrVal['prices']) && is_array($attrVal['prices']) && isset($attrVal['prices'][0])) {
-                        $price += $attrVal['prices'][0];
-                    }
+
+        $price = (float) $mp->previous_price;
+
+        if (!empty($mp->size_price)) {
+            $raw = $mp->size_price;
+            if (is_string($raw)) {
+                $decoded = json_decode($raw, true);
+                if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+                    $first = array_values($decoded)[0] ?? 0;
+                    $price += (float) $first;
+                } else {
+                    $parts = explode(',', $raw);
+                    $price += isset($parts[0]) && $parts[0] !== '' ? (float) $parts[0] : 0.0;
                 }
+            } elseif (is_array($raw)) {
+                $first = array_values($raw)[0] ?? 0;
+                $price += (float) $first;
             }
         }
-        $gs = cache()->remember('generalsettings', now()->addDay(), function () {
-            return DB::table('generalsettings')->first();
-        });
-        $priceWithCommission = $price + $gs->fixed_commission + ($price / 100) * $gs->percentage_commission;
-        if (Session::has('currency')) {
-            $curr = cache()->remember('session_currency', now()->addDay(), function () {
-                return Currency::find(Session::get('currency'));
-            });
-        } else {
-            $curr = cache()->remember('default_currency', now()->addDay(), function () {
-                return Currency::where('is_default', '=', 1)->first();
-            });
-        }
-        $converted = $priceWithCommission * $curr->value;
+
+        $gs = cache()->remember('generalsettings', now()->addDay(), fn () => DB::table('generalsettings')->first());
+        $price = $price + (float) $gs->fixed_commission + ($price * (float) $gs->percentage_commission / 100);
+
+        $curr = Session::has('currency')
+            ? cache()->remember('session_currency', now()->addDay(), fn () => Currency::find(Session::get('currency')))
+            : cache()->remember('default_currency', now()->addDay(), fn () => Currency::where('is_default', 1)->first());
+
+        $converted = $price * $curr->value;
         return \PriceHelper::apishowPrice($converted);
+    }
+
+    /* =========================================================================
+     |  Misc
+     | ========================================================================= */
+
+    public function IsSizeColor($value)
+    {
+        $sizes = array_unique($this->size);
+        return in_array($value, $sizes);
     }
 }
