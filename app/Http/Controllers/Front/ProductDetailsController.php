@@ -45,33 +45,39 @@ class ProductDetailsController extends FrontBaseController
     //             }
     //         }
     //     }
-
+    //
     //     $productt = Product::with('user', 'galleries')->where('slug', '=', $slug)->firstOrFail();
     //     $vendor_products = Product::where('user_id', $productt->user_id)->where('id', '!=', $productt->id)->where('status', 1)->orderBy('id', 'desc')
     //         ->withCount('ratings')
     //         ->withAvg('ratings', 'rating')
     //         ->take(9)->get();
-
+    //
     //     if ($productt->status == 0) {
     //         return response()->view('errors.404')->setStatusCode(404);
     //     }
-
+    //
     //     $productt->views += 1;
     //     $productt->update();
     //     $curr = $this->curr;
-
+    //
     //     $product_click = new ProductClick;
     //     $product_click->product_id = $productt->id;
     //     $product_click->date = Carbon::now()->format('Y-m-d');
     //     $product_click->save();
-
+    //
     //     return view('frontend.product', compact('productt', 'curr', 'affilate_user', 'vendor_products'));
     // }
+
+    /**
+     * صفحة تفاصيل المنتج: /item/{slug}/{user}
+     * تربط المنتج بالبائع عبر merchant_products وليس عبر products.user_id.
+     */
     public function product(Request $request, $slug, $user)
     {
         $affilate_user = 0;
         $gs = $this->gs;
 
+        // منطق الأفلييت كما هو
         if ($gs->product_affilate == 1 && $request->has('ref') && !empty($request->ref)) {
             $ref = $request->ref;
             $userRef = User::where('affilate_code', $ref)->first();
@@ -84,38 +90,52 @@ class ProductDetailsController extends FrontBaseController
             }
         }
 
-        // التعديل هنا: المنتج أصبح مرتبطًا بالتاجر من خلال جدول merchant_products وليس لديه user_id في products.
+        // المنتج أصبح مرتبطًا بالتاجر من خلال جدول merchant_products
         // نحاول العثور على سجل التاجر (MerchantProduct) بناءً على الـ slug ومعرّف المستخدم (التاجر).
         $merchantProduct = MerchantProduct::where('user_id', $user)
             ->whereHas('product', function ($query) use ($slug) {
                 $query->where('slug', '=', $slug);
             })
-            ->with(['product' => function ($q) {
-                $q->with('galleries');
-            }])
+            ->with([
+                'product' => function ($q) {
+                    $q->with('galleries')
+                      ->withCount('ratings')
+                      ->withAvg('ratings', 'rating');
+                }
+            ])
             ->firstOrFail();
 
         $productt = $merchantProduct->product;
 
-        // اجلب منتجات نفس التاجر (المتاجر) باستثناء هذا المنتج الحالي، مع التأكد من أن الحالة مفعلة
-        $vendorProductIds = MerchantProduct::where('user_id', $merchantProduct->user_id)
-            ->where('product_id', '!=', $merchantProduct->product_id)
-            ->where('status', 1)
-            ->orderBy('id', 'desc')
-            ->take(9)
-            ->pluck('product_id')
-            ->toArray();
-
-        $vendor_products = Product::whereIn('id', $vendorProductIds)
-            ->withCount('ratings')
-            ->withAvg('ratings', 'rating')
-            ->get();
-
-        // إذا كانت حالة المنتج في merchant_products مفعّلة (1)، يُسمح بالعرض، وإلا يُعرض خطأ 404
+        // إذا كانت حالة العرض للبائع غير مفعلة → 404
         if ($merchantProduct->status == 0) {
             return response()->view('errors.404')->setStatusCode(404);
         }
 
+        // بائعون آخرون لنفس المنتج (غير المختار)
+        $otherSellers = MerchantProduct::query()
+            ->where('product_id', $productt->id)
+            ->where('status', 1)
+            ->where('user_id', '<>', $merchantProduct->user_id)
+            ->with('user:id,shop_name,is_vendor')
+            ->get();
+
+        // منتجات أخرى لنفس البائع (عروض أخرى غير هذا المنتج)
+        $vendorListings = MerchantProduct::query()
+            ->where('user_id', $merchantProduct->user_id)
+            ->where('status', 1)
+            ->where('product_id', '<>', $productt->id)
+            ->with(['product' => function ($q) {
+                $q->withCount('ratings')->withAvg('ratings', 'rating');
+            }])
+            ->latest('id')
+            ->take(9)
+            ->get();
+
+        // مصفوفة Products لتوافق القوالب القديمة
+        $vendor_products = $vendorListings->pluck('product');
+
+        // زيادة المشاهدات وتسجيل النقرات كما هو
         $productt->views += 1;
         $productt->update();
         $curr = $this->curr;
@@ -125,7 +145,20 @@ class ProductDetailsController extends FrontBaseController
         $product_click->date = Carbon::now()->format('Y-m-d');
         $product_click->save();
 
-        return view('frontend.product', compact('productt', 'curr', 'affilate_user', 'vendor_products'));
+        // ملاحظة: في الـ Blade، السعر/المخزون يُقرأ من merchantProduct (عرض البائع)،
+        // بينما الهوية/الصور/التقييمات من productt.
+        return view('frontend.product', [
+            'productt'        => $productt,
+            'curr'            => $curr,
+            'affilate_user'   => $affilate_user,
+            'vendor_products' => $vendor_products,
+
+            // مُضاف حديثًا للسياسة الجديدة:
+            'merchant'        => $merchantProduct,      // عرض البائع الحالي
+            'vendorId'        => $merchantProduct->user_id,
+            'otherSellers'    => $otherSellers,
+            'vendorListings'  => $vendorListings,
+        ]);
     }
 
     public function quickFragment(int $id)
@@ -141,7 +174,6 @@ class ProductDetailsController extends FrontBaseController
 
         return response()->view('partials.product', compact('product'));
     }
-    
 
     public function compatibilityFragment(string $key)
     {
@@ -154,9 +186,6 @@ class ProductDetailsController extends FrontBaseController
         $sku = $key;
         return response()->view('partials.alternative', compact('sku'));
     }
-
-
-
 
     public function report(Request $request)
     {
@@ -176,7 +205,6 @@ class ProductDetailsController extends FrontBaseController
         $msg = __('Report Sent Successfully.');
         return response()->json($msg);
         //--- Redirect Section Ends
-
     }
 
     public function quick($id)

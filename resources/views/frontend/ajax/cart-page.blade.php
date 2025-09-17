@@ -24,20 +24,23 @@
                                 @php
                                     // خصم العنصر
                                     if (!empty($product['discount'])) {
-                                        $total_itemprice = (float)($product['item_price'] ?? 0) * (int)($product['qty'] ?? 1);
-                                        $tdiscount = ($total_itemprice * (float)$product['discount']) / 100;
+                                        $total_itemprice = (float) ($product['item_price'] ?? 0) * (int) ($product['qty'] ?? 1);
+                                        $tdiscount = ($total_itemprice * (float) $product['discount']) / 100;
                                         $discount += $tdiscount;
                                     }
 
-                                    // vendorId الآمن (يدعم array|object)
-                                    $vendorId = data_get($product, 'item.user_id');
+                                    // vendorId الآمن (يدعم array|object) + fallback إلى 0
+                                    $vendorId = data_get($product, 'item.user_id') ?? 0;
                                     $slug     = data_get($product, 'item.slug');
                                     $name     = data_get($product, 'item.name');
                                     $sku      = data_get($product, 'item.sku');
                                     $photo    = data_get($product, 'item.photo');
 
-                                    // مفتاح العنصر المركّب
-                                    $itemKey = data_get($product, 'item.id') . ($product['size'] ?? '') . ($product['color'] ?? '') . str_replace(str_split(' ,'), '', $product['values'] ?? '');
+                                    // مفتاح العنصر المركّب (product_id + size + color + values)
+                                    $itemKey = data_get($product, 'item.id')
+                                               . ($product['size'] ?? '')
+                                               . ($product['color'] ?? '')
+                                               . str_replace(str_split(' ,'), '', $product['values'] ?? '');
 
                                     // رابط تفاصيل المنتج (لا ينهار لو vendorId مفقود)
                                     $productUrl = $vendorId
@@ -113,7 +116,7 @@
                                         <td class="product-quantity">1</td>
                                     @endif
 
-                                    @if ($product['size_qty'])
+                                    @if (!empty($product['size_qty']))
                                         <input type="hidden" id="stock{{ $itemKey }}" value="{{ $product['size_qty'] }}">
                                     @elseif(data_get($product,'item.type') != 'Physical')
                                         <input type="hidden" id="stock{{ $itemKey }}" value="1">
@@ -130,7 +133,7 @@
 
                                     <td>
                                         <a class="cart-remove-btn"
-                                           ata-class="cremove{{ $itemKey }}"
+                                           data-class="cremove{{ $itemKey }}"
                                            href="{{ route('product.cart.remove', $itemKey) }}">
                                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
                                                  viewBox="0 0 24 24" fill="none">

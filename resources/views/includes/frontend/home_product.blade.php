@@ -21,7 +21,9 @@
                         </div>
                     </a>
                 @else
-                    <a href="javascript:;" class="wishlist" data-href="{{ route('user-wishlist-add', $product->id) }}">
+                    {{-- <a href="javascript:;" class="wishlist" data-href="{{ route('user-wishlist-add', $product->id) }}"> --}}
+                        <a href="javascript:;" class="wishlist"
+                            data-href="{{ route('user-wishlist-add', ['id' => $product->id, 'user' => $vendorId]) }}">
                         <div class="add-to-wishlist-btn {{ wishlistCheck($product->id) ? 'active' : '' }}">
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
                                 fill="none">
@@ -57,8 +59,9 @@
             <div class="add-to-cart">
 
                 @if ($product->type != 'Listing')
-                    <a data-href="{{ route('product.compare.add', $product->id) }}" class="compare_product"
-                        href="javascrit:;">
+                    {{-- <a data-href="{{ route('product.compare.add', $product->id) }}" class="compare_product" href="javascrit:;"> --}}
+                    <a data-href="{{ route('product.compare.add', ['id' => $product->id, 'user' => $vendorId]) }}"
+                        class="compare_product" href="javascrit:;">
                         <div class="compare">
                             <svg class="icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24"
                                 viewBox="0 0 24 24" fill="none">
@@ -84,8 +87,12 @@
                         </div>
                     @else
                         @if ($product->type != 'Listing')
-                            <a {{ $product->cross_products ? 'data-bs-target=#exampleModal' : '' }} href="javascript:;"
+                            {{-- <a {{ $product->cross_products ? 'data-bs-target=#exampleModal' : '' }} href="javascript:;"
                                 data-href="{{ route('product.cart.add', $product->id) }}"
+                                data-cross-href="{{ route('front.show.cross.product', $product->id) }}"
+                                class="add_cart_click {{ $product->cross_products ? 'view_cross_product' : '' }}"> --}}
+                            <a {{ $product->cross_products ? 'data-bs-target=#exampleModal' : '' }} href="javascript:;"
+                                data-href="{{ route('product.cart.add', ['product' => $product->id, 'user' => $vendorId]) }}"
                                 data-cross-href="{{ route('front.show.cross.product', $product->id) }}"
                                 class="add_cart_click {{ $product->cross_products ? 'view_cross_product' : '' }}">
                                 <div class="add-cart">

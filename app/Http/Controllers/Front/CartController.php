@@ -37,9 +37,9 @@ class CartController extends FrontBaseController
             Session::forget('coupon_percentage');
         }
 
-        $oldCart   = Session::get('cart');
-        $cart      = new Cart($oldCart);
-        $products  = $cart->items;
+        $oldCart    = Session::get('cart');
+        $cart       = new Cart($oldCart);
+        $products   = $cart->items;
         $totalPrice = $cart->totalPrice;
         $mainTotal  = $totalPrice;
 
@@ -79,9 +79,9 @@ class CartController extends FrontBaseController
             Session::forget('coupon_percentage');
         }
 
-        $oldCart   = Session::get('cart');
-        $cart      = new Cart($oldCart);
-        $products  = $cart->items;
+        $oldCart    = Session::get('cart');
+        $cart       = new Cart($oldCart);
+        $products   = $cart->items;
         $totalPrice = $cart->totalPrice;
         $mainTotal  = $totalPrice;
 
@@ -89,7 +89,7 @@ class CartController extends FrontBaseController
     }
 
     /* ===========================================================
-     |  إضافة سريع للسلة (Ajax قديم) — يتطلب vendorId = request('user')
+     |  إضافة سريع للسلة (Ajax) — يتطلب vendorId = request('user')
      |===========================================================*/
     public function addcart($id)
     {
@@ -98,11 +98,10 @@ class CartController extends FrontBaseController
             return 0;
         }
 
-        // المنتج (هوية فقط) — بدون user_id
+        // المنتج (هوية فقط) — أعمدة موجودة فعلًا في products
         $prod = Product::where('id', $id)->first([
-            'id','slug','name','photo','size','size_qty','size_price','color','sku',
-            'price','stock','weight','type','file','link','license','license_qty',
-            'measure','whole_sell_qty','whole_sell_discount','attributes','color_all','color_price'
+            'id','slug','name','photo','color','sku',
+            'weight','type','file','link','measure','attributes','color_all','color_price','cross_products'
         ]);
         if (!$prod) {
             return 0;
@@ -117,25 +116,23 @@ class CartController extends FrontBaseController
             return 0;
         }
 
-        // حقن سياق البائع داخل الـ Product (خصائص runtime للتوافق مع كود Cart)
-        $prod->user_id             = $vendorId;              // inject فقط (ليس عمود)
+        // حقن سياق البائع داخل الـ Product (runtime لتوافق Cart)
+        $prod->user_id             = $vendorId;              // inject (ليس عمودًا فعليًا)
         $prod->merchant_product_id = $mp->id;
         $prod->price               = $mp->vendorSizePrice(); // السعر النهائي (مقاس+خصائص+عمولة)
         $prod->previous_price      = $mp->previous_price;
         $prod->stock               = $mp->stock;
 
-        // 🔧 حقن خصائص المقاس للبائع (لتفعيل accessors على Product)
+        // 🔧 خصائص المقاسات/الحدود من merchant_products
         $prod->setAttribute('size',       $mp->size);
         $prod->setAttribute('size_qty',   $mp->size_qty);
         $prod->setAttribute('size_price', $mp->size_price);
-        // خصائص إضافية لو مخزنة على merchant_products
-        $prod->setAttribute('stock_check',         $mp->stock_check ?? $prod->stock_check);
-        $prod->setAttribute('minimum_qty',         $mp->minimum_qty ?? $prod->minimum_qty);
-        $prod->setAttribute('whole_sell_qty',      $mp->whole_sell_qty ?? $prod->whole_sell_qty);
-        $prod->setAttribute('whole_sell_discount', $mp->whole_sell_discount ?? $prod->whole_sell_discount);
-        $prod->setAttribute('color_all',           $mp->color_all ?? $prod->color_all);
+        $prod->setAttribute('stock_check',         $mp->stock_check ?? null);
+        $prod->setAttribute('minimum_qty',         $mp->minimum_qty ?? null);
+        $prod->setAttribute('whole_sell_qty',      $mp->whole_sell_qty ?? null);
+        $prod->setAttribute('whole_sell_discount', $mp->whole_sell_discount ?? null);
 
-        // Set Attrubutes
+        // Set Attributes (أسعار خصائص إضافية من attributes على مستوى المنتج)
         $keys = '';
         $values = '';
 
@@ -149,21 +146,21 @@ class CartController extends FrontBaseController
             }
         }
 
-        // Size
+        // Size افتراضي لو موجود
         $size = '';
         if (!empty($prod->size)) {
             $size = trim($prod->size[0]);
         }
         $size = str_replace(' ', '-', $size);
 
-        // Color
+        // Color افتراضي لو موجود
         $color = '';
         if (!empty($prod->color)) {
             $color = $prod->color[0];
             $color = str_replace('#', '', $color);
         }
 
-        // Attributes prices
+        // أسعار الخصائص
         if (!empty($prod->attributes)) {
             $attrArr = json_decode($prod->attributes, true);
             if (!empty($attrArr)) {
@@ -224,10 +221,8 @@ class CartController extends FrontBaseController
         }
 
         $prod = Product::where('id', $id)->first([
-            'id','slug','sku','name','photo','size','size_qty','size_price','color',
-            'price','stock','weight','type','file','link','license','license_qty',
-            'measure','whole_sell_qty','whole_sell_discount','attributes','minimum_qty',
-            'color_price','color_all','stock_check'
+            'id','slug','sku','name','photo','color',
+            'weight','type','file','link','measure','attributes','color_price','color_all','cross_products'
         ]);
         if (!$prod) {
             return redirect()->route('front.cart')->with('unsuccess', __('Product not found.'));
@@ -252,11 +247,10 @@ class CartController extends FrontBaseController
         $prod->setAttribute('size',       $mp->size);
         $prod->setAttribute('size_qty',   $mp->size_qty);
         $prod->setAttribute('size_price', $mp->size_price);
-        $prod->setAttribute('stock_check',         $mp->stock_check ?? $prod->stock_check);
-        $prod->setAttribute('minimum_qty',         $mp->minimum_qty ?? $prod->minimum_qty);
-        $prod->setAttribute('whole_sell_qty',      $mp->whole_sell_qty ?? $prod->whole_sell_qty);
-        $prod->setAttribute('whole_sell_discount', $mp->whole_sell_discount ?? $prod->whole_sell_discount);
-        $prod->setAttribute('color_all',           $mp->color_all ?? $prod->color_all);
+        $prod->setAttribute('stock_check',         $mp->stock_check ?? null);
+        $prod->setAttribute('minimum_qty',         $mp->minimum_qty ?? null);
+        $prod->setAttribute('whole_sell_qty',      $mp->whole_sell_qty ?? null);
+        $prod->setAttribute('whole_sell_discount', $mp->whole_sell_discount ?? null);
 
         // Attributes
         $keys = '';
@@ -305,23 +299,21 @@ class CartController extends FrontBaseController
         $oldCart = Session::has('cart') ? Session::get('cart') : null;
         $cart    = new Cart($oldCart);
 
-        // minimum_qty checks
+        // minimum_qty checks (من mp عبر حقن $prod->minimum_qty)
+        $minQty = (int) ($prod->minimum_qty ?? 0);
         if (!empty($cart->items)) {
             if (!empty($cart->items[$id . $size . $color . str_replace(str_split(' ,'), '', $values)])) {
-                $minimum_qty = (int) $prod->minimum_qty;
-                if ($cart->items[$id . $size . $color . str_replace(str_split(' ,'), '', $values)]['qty'] < $minimum_qty) {
-                    return redirect()->route('front.cart')->with('unsuccess', __('Minimum Quantity is:') . ' ' . $prod->minimum_qty);
+                if ($minQty && $cart->items[$id . $size . $color . str_replace(str_split(' ,'), '', $values)]['qty'] < $minQty) {
+                    return redirect()->route('front.cart')->with('unsuccess', __('Minimum Quantity is:') . ' ' . $minQty);
                 }
             } else {
-                $minimum_qty = (int) $prod->minimum_qty;
-                if ($prod->minimum_qty != null && 1 < $minimum_qty) {
-                    return redirect()->route('front.cart')->with('unsuccess', __('Minimum Quantity is:') . ' ' . $prod->minimum_qty);
+                if ($minQty && 1 < $minQty) {
+                    return redirect()->route('front.cart')->with('unsuccess', __('Minimum Quantity is:') . ' ' . $minQty);
                 }
             }
         } else {
-            $minimum_qty = (int) $prod->minimum_qty;
-            if ($prod->minimum_qty != null && 1 < $minimum_qty) {
-                return redirect()->route('front.cart')->with('unsuccess', __('Minimum Quantity is:') . ' ' . $prod->minimum_qty);
+            if ($minQty && 1 < $minQty) {
+                return redirect()->route('front.cart')->with('unsuccess', __('Minimum Quantity is:') . ' ' . $minQty);
             }
         }
 
@@ -359,28 +351,30 @@ class CartController extends FrontBaseController
         $qty        = isset($request->qty) ? (int)$request->qty : 1;
         $size       = isset($request->size) ? str_replace(' ', '-', $request->size) : '';
         $color      = isset($request->color) ? $request->color : '';
-        $color_price = isset($request->color_price) ? (float) $_GET['color_price'] : 0;
-        $size_qty   = isset($request->size_qty) ? $_GET['size_qty'] : '';
-        $size_price = isset($request->size_price) ? (float) $_GET['size_price'] : 0;
 
-        $size_key = isset($request->size_qty) ? $_GET['size_qty'] : '';
-        $keys   = isset($request->keys)   ? $request->keys   : '';
-        $values = isset($request->values) ? $request->values : '';
-        $prices = isset($request->prices) ? $request->prices : 0;
+        // قيَم قد تأتي "undefined" من الواجهة → طبّعها للصفر
+        $raw_color_price = $request->input('color_price', 0);
+        $raw_size_qty    = $request->input('size_qty', '');
+        $raw_size_price  = $request->input('size_price', 0);
 
-        $affilate_user = isset($_GET['affilate_user']) ? $_GET['affilate_user'] : '0';
+        $color_price = is_numeric($raw_color_price) ? (float) $raw_color_price : 0.0;
+        $size_qty    = $raw_size_qty;
+        $size_price  = is_numeric($raw_size_price) ? (float) $raw_size_price : 0.0;
+
+        $size_key = $request->input('size_qty', '');
+        $keys     = $request->input('keys', '');
+        $values   = $request->input('values', '');
+        $prices   = $request->input('prices', 0);
+
+        $affilate_user = $request->input('affilate_user', '0');
         $keys   = $keys   == "" ? '' : implode(',', (array)$keys);
         $values = $values == "" ? '' : implode(',', (array)$values);
         $curr   = $this->curr;
 
-        $size_price  = ($size_price / $curr->value);
-        $color_price = ($color_price / $curr->value);
-
+        // المنتج (هوية فقط)
         $prod = Product::where('id', $id)->first([
-            'id','slug','sku','name','photo','size','size_qty','size_price','color',
-            'price','stock','weight','type','file','link','license','license_qty',
-            'measure','whole_sell_qty','whole_sell_discount','attributes','minimum_qty',
-            'stock_check','color_all'
+            'id','slug','sku','name','photo','color',
+            'weight','type','file','link','measure','attributes','color_all','cross_products'
         ]);
         if (!$prod) { return 0; }
         if ($prod->type != 'Physical') { $qty = 1; }
@@ -413,11 +407,10 @@ class CartController extends FrontBaseController
         $prod->setAttribute('size',       $mp->size);
         $prod->setAttribute('size_qty',   $mp->size_qty);
         $prod->setAttribute('size_price', $mp->size_price);
-        $prod->setAttribute('stock_check',         $mp->stock_check ?? $prod->stock_check);
-        $prod->setAttribute('minimum_qty',         $mp->minimum_qty ?? $prod->minimum_qty);
-        $prod->setAttribute('whole_sell_qty',      $mp->whole_sell_qty ?? $prod->whole_sell_qty);
-        $prod->setAttribute('whole_sell_discount', $mp->whole_sell_discount ?? $prod->whole_sell_discount);
-        $prod->setAttribute('color_all',           $mp->color_all ?? $prod->color_all);
+        $prod->setAttribute('stock_check',         $mp->stock_check ?? null);
+        $prod->setAttribute('minimum_qty',         $mp->minimum_qty ?? null);
+        $prod->setAttribute('whole_sell_qty',      $mp->whole_sell_qty ?? null);
+        $prod->setAttribute('whole_sell_discount', $mp->whole_sell_discount ?? null);
 
         if (!empty($prices)) {
             foreach ((array)$prices as $data) {
@@ -457,19 +450,19 @@ class CartController extends FrontBaseController
         if (!empty($cart->items)) {
             $key = $id . $size . $color . str_replace(str_split(' ,'), '', $values);
             if (!empty($cart->items[$key])) {
-                $minimum_qty = (int) $prod->minimum_qty;
-                if ($cart->items[$key]['qty'] < $minimum_qty) {
+                $minimum_qty = (int) ($prod->minimum_qty ?? 0);
+                if ($minimum_qty && $cart->items[$key]['qty'] < $minimum_qty) {
                     $data = []; $data[1] = true; $data[2] = $minimum_qty;
                     return response()->json($data);
                 }
-            } else if ($prod->minimum_qty != null) {
+            } else if ($prod->minimum_qty) {
                 $minimum_qty = (int) $prod->minimum_qty;
                 if ($qty < $minimum_qty) {
                     $data = []; $data[1] = true; $data[2] = $minimum_qty;
                     return response()->json($data);
                 }
             }
-        } else if ($prod->minimum_qty != null) {
+        } else if ($prod->minimum_qty) {
             $minimum_qty = (int) $prod->minimum_qty;
             if ($qty < $minimum_qty) {
                 $data = []; $data[3] = true; $data[4] = $minimum_qty;
@@ -518,14 +511,21 @@ class CartController extends FrontBaseController
         $qty        = isset($request->qty) ? (int)$request->qty : 1;
         $size       = isset($request->size) ? str_replace(' ', '-', $request->size) : '';
         $color      = isset($request->color) ? "#" . $request->color : '';
-        $colorPrice = isset($request->color_price) ? (float) $_GET['color_price'] : 0;
-        $size_qty   = isset($request->size_qty) ? $_GET['size_qty'] : '';
-        $size_price = isset($request->size_price) ? (float) $_GET['size_price'] : 0;
-        $size_key   = isset($request->size_qty) ? $_GET['size_qty'] : '';
-        $keysArr    = isset($request->keys) ? explode(",", $request->keys) : '';
-        $valsArr    = isset($request->values) ? explode(",", $request->values) : '';
-        $pricesArr  = isset($request->prices) ? explode(",", $request->prices) : 0;
-        $aff        = isset($_GET['affilate_user']) ? $_GET['affilate_user'] : '0';
+
+        // تطبيع القيم القادمة من الواجهة
+        $raw_color_price = $request->input('color_price', 0);
+        $raw_size_qty    = $request->input('size_qty', '');
+        $raw_size_price  = $request->input('size_price', 0);
+
+        $colorPrice = is_numeric($raw_color_price) ? (float) $raw_color_price : 0.0;
+        $size_qty   = $raw_size_qty;
+        $size_price = is_numeric($raw_size_price) ? (float) $raw_size_price : 0.0;
+
+        $size_key   = $request->input('size_qty', '');
+        $keysArr    = $request->input('keys')   ? explode(",", $request->input('keys'))   : '';
+        $valsArr    = $request->input('values') ? explode(",", $request->input('values')) : '';
+        $pricesArr  = $request->input('prices') ? explode(",", $request->input('prices')) : 0;
+        $aff        = $request->input('affilate_user', '0');
 
         $keys   = !$keysArr ? '' : implode(',', $keysArr);
         $values = !$valsArr ? '' : implode(',', $valsArr);
@@ -533,13 +533,11 @@ class CartController extends FrontBaseController
         $curr = $this->curr;
 
         $size_price = ($size_price / $curr->value);
-        $colorPrice = (float) $_GET['color_price'];
+        $colorPrice = (float) $colorPrice;
 
         $prod = Product::where('id', $id)->first([
-            'id','slug','name','photo','size','size_qty','size_price','color',
-            'price','stock','weight','type','file','link','license','license_qty',
-            'measure','whole_sell_qty','whole_sell_discount','attributes','minimum_qty',
-            'stock_check','color_price','color_all'
+            'id','slug','name','photo','color',
+            'weight','type','file','link','measure','attributes','color_all','cross_products'
         ]);
         if (!$prod) {
             return redirect()->route('front.cart')->with('unsuccess', __('Product not found.'));
@@ -579,11 +577,10 @@ class CartController extends FrontBaseController
         $prod->setAttribute('size',       $mp->size);
         $prod->setAttribute('size_qty',   $mp->size_qty);
         $prod->setAttribute('size_price', $mp->size_price);
-        $prod->setAttribute('stock_check',         $mp->stock_check ?? $prod->stock_check);
-        $prod->setAttribute('minimum_qty',         $mp->minimum_qty ?? $prod->minimum_qty);
-        $prod->setAttribute('whole_sell_qty',      $mp->whole_sell_qty ?? $prod->whole_sell_qty);
-        $prod->setAttribute('whole_sell_discount', $mp->whole_sell_discount ?? $prod->whole_sell_discount);
-        $prod->setAttribute('color_all',           $mp->color_all ?? $prod->color_all);
+        $prod->setAttribute('stock_check',         $mp->stock_check ?? null);
+        $prod->setAttribute('minimum_qty',         $mp->minimum_qty ?? null);
+        $prod->setAttribute('whole_sell_qty',      $mp->whole_sell_qty ?? null);
+        $prod->setAttribute('whole_sell_discount', $mp->whole_sell_discount ?? null);
 
         if (!empty($pricesArr) && !empty($pricesArr[0])) {
             foreach ($pricesArr as $p) {
@@ -622,24 +619,22 @@ class CartController extends FrontBaseController
         $oldCart = Session::has('cart') ? Session::get('cart') : null;
         $cart    = new Cart($oldCart);
 
-        // minimum_qty checks
+        // minimum_qty checks (من mp عبر حقن $prod->minimum_qty)
+        $minQty = (int) ($prod->minimum_qty ?? 0);
         if (!empty($cart->items)) {
             $key = $id . $size . $color . str_replace(str_split(' ,'), '', $values);
             if (!empty($cart->items[$key])) {
-                $minimum_qty = (int) $prod->minimum_qty;
-                if ($cart->items[$key]['qty'] < $minimum_qty) {
-                    return redirect()->route('front.cart')->with('unsuccess', __('Minimum Quantity is:') . ' ' . $prod->minimum_qty);
+                if ($minQty && $cart->items[$key]['qty'] < $minQty) {
+                    return redirect()->route('front.cart')->with('unsuccess', __('Minimum Quantity is:') . ' ' . $minQty);
                 }
-            } else if ($prod->minimum_qty != null) {
-                $minimum_qty = (int) $prod->minimum_qty;
-                if ($qty < $minimum_qty) {
-                    return redirect()->route('front.cart')->with('unsuccess', __('Minimum Quantity is:') . ' ' . $prod->minimum_qty);
+            } else if ($minQty) {
+                if ($qty < $minQty) {
+                    return redirect()->route('front.cart')->with('unsuccess', __('Minimum Quantity is:') . ' ' . $minQty);
                 }
             }
-        } else if ($prod->minimum_qty != null) {
-            $minimum_qty = (int) $prod->minimum_qty;
-            if ($qty < $minimum_qty) {
-                return redirect()->route('front.cart')->with('unsuccess', __('Minimum Quantity is:') . ' ' . $prod->minimum_qty);
+        } else if ($minQty) {
+            if ($qty < $minQty) {
+                return redirect()->route('front.cart')->with('unsuccess', __('Minimum Quantity is:') . ' ' . $minQty);
             }
         }
 
@@ -681,13 +676,12 @@ class CartController extends FrontBaseController
         $id        = $_GET['id'];
         $itemid    = $_GET['itemid'];
         $size_qty  = $_GET['size_qty'];
-        $size_price = $_GET['size_price'];
+        $size_price= $_GET['size_price'];
 
         // المنتج (هوية فقط)
         $prod = Product::where('id', $id)->first([
-            'id','slug','name','photo','size','size_qty','size_price','color','price','stock',
-            'weight','type','file','link','license','license_qty','measure','whole_sell_qty',
-            'whole_sell_discount','attributes','stock_check'
+            'id','slug','name','photo','color',
+            'weight','type','file','link','measure','attributes'
         ]);
         if (!$prod) {
             return 0;
@@ -780,12 +774,11 @@ class CartController extends FrontBaseController
         $id        = $_GET['id'];
         $itemid    = $_GET['itemid'];
         $size_qty  = $_GET['size_qty'];
-        $size_price = $_GET['size_price'];
+        $size_price= $_GET['size_price'];
 
         $prod = Product::where('id', $id)->first([
-            'id','slug','name','photo','size','size_qty','size_price','color','price','stock',
-            'weight','type','file','link','license','license_qty','measure','whole_sell_qty',
-            'whole_sell_discount','attributes'
+            'id','slug','name','photo','color',
+            'weight','type','file','link','measure','attributes'
         ]);
         if (!$prod) {
             return 0;
