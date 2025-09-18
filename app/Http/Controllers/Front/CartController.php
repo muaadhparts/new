@@ -13,7 +13,6 @@ use Illuminate\Support\Facades\Session;
 
 class CartController extends FrontBaseController
 {
-    /* ========================= صفحة السلة ========================= */
     public function cart(Request $request)
     {
         if (!Session::has('cart')) {
@@ -35,7 +34,7 @@ class CartController extends FrontBaseController
         return view('frontend.cart', compact('products', 'totalPrice', 'mainTotal'));
     }
 
-    public function cartview()    { return view('load.cart'); }
+    public function cartview() { return view('load.cart'); }
 
     public function view_cart()
     {
@@ -51,24 +50,19 @@ class CartController extends FrontBaseController
         return view('frontend.ajax.cart-page', compact('products', 'totalPrice', 'mainTotal'));
     }
 
-    /* ===================== أدوات مساعدة داخلية ===================== */
+    /* ===================== Utilities ===================== */
 
-    /** تحويل CSV إلى array */
     private function toArrayValues($v): array
     {
         if (is_array($v)) return $v;
         if (is_string($v) && $v !== '') return array_map('trim', explode(',', $v));
         return [];
     }
-
-    /** التقط فهرس المقاس المختار */
     private function findSizeIndex(array $sizes, string $size)
     {
         if ($size === '') return false;
         return array_search(trim($size), array_map('trim', $sizes), true);
     }
-
-    /** اختر أول مقاس كميته > 0 وإلا أول مقاس */
     private function pickAvailableSize(?string $sizeCsv, ?string $qtyCsv): array
     {
         $sizes = $this->toArrayValues($sizeCsv ?? '');
@@ -85,8 +79,6 @@ class CartController extends FrontBaseController
         }
         return [$picked, $pickedQty];
     }
-
-    /** اختيار بائع تلقائي عند غياب user (Stock>0 أولًا ثم السعر) */
     private function pickDefaultListing(int $productId): ?MerchantProduct
     {
         return MerchantProduct::where('product_id', $productId)
@@ -95,8 +87,6 @@ class CartController extends FrontBaseController
             ->orderBy('price', 'ASC')
             ->first();
     }
-
-    /** حساب المخزون الفعلي حسب المقاس المختار (أو العام) */
     private function effectiveStock(MerchantProduct $mp, string $size = ''): int
     {
         if (!empty($mp->size) && !empty($mp->size_qty) && $size !== '') {
@@ -108,8 +98,6 @@ class CartController extends FrontBaseController
         }
         return (int)($mp->stock ?? 0);
     }
-
-    /** هويّة المنتج فقط من products */
     private function fetchIdentity(int $id): ?Product
     {
         return Product::query()->select([
@@ -117,8 +105,6 @@ class CartController extends FrontBaseController
             'weight','type','file','link','measure','attributes','color_all','cross_products'
         ])->find($id);
     }
-
-    /** جلب سجل البائع (أو fallback للبائع الافتراضي عند غياب/فشل) */
     private function fetchListingOrFallback(Product $prod, ?int $vendorId): ?MerchantProduct
     {
         if ($vendorId) {
@@ -130,8 +116,6 @@ class CartController extends FrontBaseController
         }
         return $this->pickDefaultListing($prod->id);
     }
-
-    /** حقن سياق البائع في كائن المنتج (runtime) */
     private function injectMerchantContext(Product $prod, MerchantProduct $mp): void
     {
         $prod->user_id             = $mp->user_id;
@@ -148,43 +132,29 @@ class CartController extends FrontBaseController
         $prod->setAttribute('whole_sell_qty',      $mp->whole_sell_qty ?? null);
         $prod->setAttribute('whole_sell_discount', $mp->whole_sell_discount ?? null);
     }
-
-    /** طبّع رقم */
     private function normNum($v, $default = 0.0) { return is_numeric($v) ? (float)$v : (float)$default; }
 
-    /* ===================== إضافة سريع للسلة (Ajax) ===================== */
+    /* ===================== addcart ===================== */
     public function addcart($id)
     {
         $prod = $this->fetchIdentity($id); if (!$prod) return 0;
-
-        // التقط vendorId أو اختَر بائعًا افتراضيًا
         $vendorId = (int) request('user');
-        $mp = $this->fetchListingOrFallback($prod, $vendorId);
-        if (!$mp) return 0;
+        $mp = $this->fetchListingOrFallback($prod, $vendorId); if (!$mp) return 0;
 
-        // المقاس: اختر أول متاح إن لم يُمرّر
         $size = (string) request('size', '');
-        if ($size === '') {
-            [$picked, $_] = $this->pickAvailableSize($mp->size, $mp->size_qty);
-            $size = $picked;
-        }
+        if ($size === '') { [$size, $_] = $this->pickAvailableSize($mp->size, $mp->size_qty); }
 
-        // اللون الافتراضي (إن وجد)
         $color = '';
         if (!empty($prod->color)) {
             $colors = $this->toArrayValues($prod->color);
             if (!empty($colors)) $color = $colors[0];
         }
 
-        // افحص المخزون الفعلي
         $effStock = $this->effectiveStock($mp, $size);
         if ($effStock <= 0) return 0;
 
-        // حقن سياق البائع
         $this->injectMerchantContext($prod, $mp);
-
-        // خصائص إضافية
-        $keys = (string) request('keys','');
+        $keys   = (string) request('keys','');
         $values = (string) request('values','');
 
         $oldCart = Session::has('cart') ? Session::get('cart') : null;
@@ -198,25 +168,19 @@ class CartController extends FrontBaseController
         return response()->json([count($cart->items)]);
     }
 
-    /* ======================= إضافة (navigate) ======================= */
+    /* ===================== addtocart ===================== */
     public function addtocart($id)
     {
         $prod = $this->fetchIdentity($id);
         if (!$prod) return redirect()->route('front.cart')->with('unsuccess', __('Product not found.'));
 
-        // vendorId أو fallback
         $vendorId = (int) request('user', 0);
         $mp = $this->fetchListingOrFallback($prod, $vendorId);
         if (!$mp) return redirect()->route('front.cart')->with('unsuccess', __('Vendor listing not found or inactive.'));
 
-        // المقاس
         $size = (string) request('size','');
-        if ($size === '') {
-            [$picked, $_] = $this->pickAvailableSize($mp->size, $mp->size_qty);
-            $size = $picked;
-        }
+        if ($size === '') { [$size, $_] = $this->pickAvailableSize($mp->size, $mp->size_qty); }
 
-        // اللون
         $color = '';
         if (!empty($prod->color)) {
             $colors = $this->toArrayValues($prod->color);
@@ -227,7 +191,6 @@ class CartController extends FrontBaseController
         if ($effStock <= 0) return redirect()->route('front.cart')->with('unsuccess', __('Out Of Stock.'));
 
         $this->injectMerchantContext($prod, $mp);
-
         $keys   = (string) request('keys','');
         $values = (string) request('values','');
 
@@ -242,7 +205,7 @@ class CartController extends FrontBaseController
         return redirect()->route('front.cart');
     }
 
-    /* ===================== إضافة بعدد معيّن (Ajax) ===================== */
+    /* ===================== addnumcart ===================== */
     public function addnumcart(Request $request)
     {
         $id   = (int) ($request->id ?? $_GET['id'] ?? 0);
@@ -266,15 +229,11 @@ class CartController extends FrontBaseController
         $vendorId = (int) $request->input('user', 0);
         $mp = $this->fetchListingOrFallback($prod, $vendorId); if (!$mp) return 0;
 
-        if ($size === '') {
-            [$picked, $_] = $this->pickAvailableSize($mp->size, $mp->size_qty);
-            $size = $picked;
-        }
+        if ($size === '') { [$size, $_] = $this->pickAvailableSize($mp->size, $mp->size_qty); }
         $effStock = $this->effectiveStock($mp, $size);
         if ($effStock <= 0 || $qty > $effStock) return 0;
 
         $this->injectMerchantContext($prod, $mp);
-
         if (!empty($prices)) foreach ((array)$prices as $p) $prod->price += ((float)$p / $curr->value);
 
         $oldCart = Session::has('cart') ? Session::get('cart') : null;
@@ -291,7 +250,7 @@ class CartController extends FrontBaseController
         ]);
     }
 
-    /* =================== إضافة بعدد معيّن (Navigate) =================== */
+    /* ===================== addtonumcart ===================== */
     public function addtonumcart(Request $request)
     {
         $id   = (int) ($request->id ?? 0);
@@ -319,17 +278,13 @@ class CartController extends FrontBaseController
         $mp = $this->fetchListingOrFallback($prod, $vendorId);
         if (!$mp) return redirect()->route('front.cart')->with('unsuccess', __('Vendor listing not found or inactive.'));
 
-        if ($size === '') {
-            [$picked, $_] = $this->pickAvailableSize($mp->size, $mp->size_qty);
-            $size = $picked;
-        }
+        if ($size === '') { [$size, $_] = $this->pickAvailableSize($mp->size, $mp->size_qty); }
         $effStock = $this->effectiveStock($mp, $size);
         if ($effStock <= 0 || $qty > $effStock) {
             return redirect()->route('front.cart')->with('unsuccess', __('Out Of Stock.'));
         }
 
         $this->injectMerchantContext($prod, $mp);
-
         if (!empty($pricesArr) && !empty($pricesArr[0])) {
             foreach ($pricesArr as $p) $prod->price += ((float)$p / $curr->value);
         }
@@ -345,7 +300,6 @@ class CartController extends FrontBaseController
         return redirect()->route('front.cart')->with('success', __('Successfully Added To Cart.'));
     }
 
-    /* ========================= إزالة عنصر ========================= */
     public function removecart($id)
     {
         $curr    = $this->curr;
@@ -362,7 +316,6 @@ class CartController extends FrontBaseController
         return back()->with('success', __('Item has been removed from cart.'));
     }
 
-    /* ======================= ضريبة الدولة/الولاية ======================= */
     public function country_tax(Request $request)
     {
         if ($request->country_id) {

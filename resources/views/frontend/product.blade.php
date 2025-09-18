@@ -1,5 +1,5 @@
 @extends('layouts.front')
-
+@include('includes.seo.canonical')
 @section('content')
     <!-- breadcrumb start  -->
 {{--    <section class="gs-breadcrumb-section bg-class"--}}
