@@ -13,28 +13,14 @@ use Illuminate\Support\Facades\Session;
 
 class CartController extends FrontBaseController
 {
-    /* ===========================================================
-     |  صفحة السلة
-     |===========================================================*/
+    /* ========================= صفحة السلة ========================= */
     public function cart(Request $request)
     {
         if (!Session::has('cart')) {
             return view('frontend.cart');
         }
-        if (Session::has('already')) {
-            Session::forget('already');
-        }
-        if (Session::has('coupon')) {
-            Session::forget('coupon');
-        }
-        if (Session::has('coupon_total')) {
-            Session::forget('coupon_total');
-        }
-        if (Session::has('coupon_total1')) {
-            Session::forget('coupon_total1');
-        }
-        if (Session::has('coupon_percentage')) {
-            Session::forget('coupon_percentage');
+        foreach (['already','coupon','coupon_total','coupon_total1','coupon_percentage'] as $k) {
+            if (Session::has($k)) Session::forget($k);
         }
 
         $oldCart    = Session::get('cart');
@@ -46,204 +32,114 @@ class CartController extends FrontBaseController
         if ($request->ajax()) {
             return view('frontend.ajax.cart-page', compact('products', 'totalPrice', 'mainTotal'));
         }
-
         return view('frontend.cart', compact('products', 'totalPrice', 'mainTotal'));
     }
 
-    public function cartview()
-    {
-        return view('load.cart');
-    }
+    public function cartview()    { return view('load.cart'); }
 
     public function view_cart()
     {
-        if (!Session::has('cart')) {
-            return view('frontend.cart');
+        if (!Session::has('cart')) { return view('frontend.cart'); }
+        foreach (['already','coupon','coupon_code','coupon_total','coupon_total1','coupon_percentage'] as $k) {
+            if (Session::has($k)) Session::forget($k);
         }
-        if (Session::has('already')) {
-            Session::forget('already');
-        }
-        if (Session::has('coupon')) {
-            Session::forget('coupon');
-        }
-        if (Session::has('coupon_code')) {
-            Session::forget('coupon_code');
-        }
-        if (Session::has('coupon_total')) {
-            Session::forget('coupon_total');
-        }
-        if (Session::has('coupon_total1')) {
-            Session::forget('coupon_total1');
-        }
-        if (Session::has('coupon_percentage')) {
-            Session::forget('coupon_percentage');
-        }
-
         $oldCart    = Session::get('cart');
         $cart       = new Cart($oldCart);
         $products   = $cart->items;
         $totalPrice = $cart->totalPrice;
         $mainTotal  = $totalPrice;
-
         return view('frontend.ajax.cart-page', compact('products', 'totalPrice', 'mainTotal'));
     }
 
-    /* ===========================================================
-     |  إضافة سريع للسلة (Ajax) — يتطلب vendorId = request('user')
-     |===========================================================*/
-    public function addcart($id)
+    /* ===================== أدوات مساعدة داخلية ===================== */
+
+    /** تحويل CSV إلى array */
+    private function toArrayValues($v): array
     {
-        $vendorId = (int) request('user'); // إلزامي حسب السياسة
-        if (!$vendorId) {
-            return 0;
-        }
-
-        // المنتج (هوية فقط) — أعمدة موجودة فعلًا في products
-        $prod = Product::where('id', $id)->first([
-            'id','slug','name','photo','color','sku',
-            'weight','type','file','link','measure','attributes','color_all','color_price','cross_products'
-        ]);
-        if (!$prod) {
-            return 0;
-        }
-
-        // سجل البائع
-        $mp = MerchantProduct::where('product_id', $prod->id)
-            ->where('user_id', $vendorId)
-            ->where('status', 1)
-            ->first();
-        if (!$mp) {
-            return 0;
-        }
-
-        // حقن سياق البائع داخل الـ Product (runtime لتوافق Cart)
-        $prod->user_id             = $vendorId;              // inject (ليس عمودًا فعليًا)
-        $prod->merchant_product_id = $mp->id;
-        $prod->price               = $mp->vendorSizePrice(); // السعر النهائي (مقاس+خصائص+عمولة)
-        $prod->previous_price      = $mp->previous_price;
-        $prod->stock               = $mp->stock;
-
-        // 🔧 خصائص المقاسات/الحدود من merchant_products
-        $prod->setAttribute('size',       $mp->size);
-        $prod->setAttribute('size_qty',   $mp->size_qty);
-        $prod->setAttribute('size_price', $mp->size_price);
-        $prod->setAttribute('stock_check',         $mp->stock_check ?? null);
-        $prod->setAttribute('minimum_qty',         $mp->minimum_qty ?? null);
-        $prod->setAttribute('whole_sell_qty',      $mp->whole_sell_qty ?? null);
-        $prod->setAttribute('whole_sell_discount', $mp->whole_sell_discount ?? null);
-
-        // Set Attributes (أسعار خصائص إضافية من attributes على مستوى المنتج)
-        $keys = '';
-        $values = '';
-
-        if (!empty($prod->license_qty)) {
-            $lcheck = 1;
-            foreach ($prod->license_qty as $ttl => $dtl) {
-                if ($dtl < 1) { $lcheck = 0; } else { $lcheck = 1; break; }
-            }
-            if ($lcheck == 0) {
-                return 0;
-            }
-        }
-
-        // Size افتراضي لو موجود
-        $size = '';
-        if (!empty($prod->size)) {
-            $size = trim($prod->size[0]);
-        }
-        $size = str_replace(' ', '-', $size);
-
-        // Color افتراضي لو موجود
-        $color = '';
-        if (!empty($prod->color)) {
-            $color = $prod->color[0];
-            $color = str_replace('#', '', $color);
-        }
-
-        // أسعار الخصائص
-        if (!empty($prod->attributes)) {
-            $attrArr = json_decode($prod->attributes, true);
-            if (!empty($attrArr)) {
-                $count = count($attrArr);
-                $j = 0;
-                foreach ($attrArr as $attrKey => $attrVal) {
-                    if (is_array($attrVal) && array_key_exists("details_status", $attrVal) && $attrVal['details_status'] == 1) {
-                        $keys .= $attrKey . ($j == $count - 1 ? '' : ','); $j++;
-                        foreach ($attrVal['values'] as $optionKey => $optionVal) {
-                            $values      .= $optionVal . ',';
-                            $prod->price += $attrVal['prices'][$optionKey];
-                            break;
-                        }
-                    }
-                }
-            }
-        }
-        $keys   = rtrim($keys, ',');
-        $values = rtrim($values, ',');
-
-        $oldCart = Session::has('cart') ? Session::get('cart') : null;
-        $cart    = new Cart($oldCart);
-
-        if ($cart->items != null && @$cart->items[$id . $size . $color . str_replace(str_split(' ,'), '', $values)]['dp'] == 1) {
-            return 'digital';
-        }
-
-        $cart->add($prod, $prod->id, $size, $color, $keys, $values);
-
-        if ($cart->items[$id . $size . $color . str_replace(str_split(' ,'), '', $values)]['stock'] < 0) {
-            return 0;
-        }
-        if ($cart->items[$id . $size . $color . str_replace(str_split(' ,'), '', $values)]['size_qty']) {
-            if ($cart->items[$id . $size . $color . str_replace(str_split(' ,'), '', $values)]['qty'] >
-                $cart->items[$id . $size . $color . str_replace(str_split(' ,'), '', $values)]['size_qty']) {
-                return 0;
-            }
-        }
-
-        $cart->totalPrice = 0;
-        foreach ($cart->items as $data) {
-            $cart->totalPrice += $data['price'];
-        }
-
-        Session::put('cart', $cart);
-        $data[0] = count($cart->items);
-        return response()->json($data);
+        if (is_array($v)) return $v;
+        if (is_string($v) && $v !== '') return array_map('trim', explode(',', $v));
+        return [];
     }
 
-    /* ===========================================================
-     |  إضافة للسلة (تحقق من minimum_qty) — يتطلب vendorId
-     |===========================================================*/
-    public function addtocart($id)
+    /** التقط فهرس المقاس المختار */
+    private function findSizeIndex(array $sizes, string $size)
     {
-        $vendorId = (int) request('user'); // إلزامي
-        if (!$vendorId) {
-            return redirect()->route('front.cart')->with('unsuccess', __('Missing vendor.'));
-        }
+        if ($size === '') return false;
+        return array_search(trim($size), array_map('trim', $sizes), true);
+    }
 
-        $prod = Product::where('id', $id)->first([
-            'id','slug','sku','name','photo','color',
-            'weight','type','file','link','measure','attributes','color_price','color_all','cross_products'
-        ]);
-        if (!$prod) {
-            return redirect()->route('front.cart')->with('unsuccess', __('Product not found.'));
+    /** اختر أول مقاس كميته > 0 وإلا أول مقاس */
+    private function pickAvailableSize(?string $sizeCsv, ?string $qtyCsv): array
+    {
+        $sizes = $this->toArrayValues($sizeCsv ?? '');
+        $qtys  = $this->toArrayValues($qtyCsv  ?? '');
+        $picked = '';
+        $pickedQty = null;
+        foreach ($sizes as $i => $sz) {
+            $q = (int)($qtys[$i] ?? 0);
+            if ($q > 0) { $picked = $sz; $pickedQty = $q; break; }
         }
+        if ($picked === '' && !empty($sizes)) {
+            $picked    = $sizes[0];
+            $pickedQty = (int)($qtys[0] ?? 0);
+        }
+        return [$picked, $pickedQty];
+    }
 
-        $mp = MerchantProduct::where('product_id', $prod->id)
-            ->where('user_id', $vendorId)
+    /** اختيار بائع تلقائي عند غياب user (Stock>0 أولًا ثم السعر) */
+    private function pickDefaultListing(int $productId): ?MerchantProduct
+    {
+        return MerchantProduct::where('product_id', $productId)
             ->where('status', 1)
+            ->orderByRaw('CASE WHEN (stock IS NULL OR stock=0) THEN 1 ELSE 0 END ASC')
+            ->orderBy('price', 'ASC')
             ->first();
-        if (!$mp) {
-            return redirect()->route('front.cart')->with('unsuccess', __('Vendor listing not found or inactive.'));
-        }
+    }
 
-        // inject vendor context
-        $prod->user_id             = $vendorId;
+    /** حساب المخزون الفعلي حسب المقاس المختار (أو العام) */
+    private function effectiveStock(MerchantProduct $mp, string $size = ''): int
+    {
+        if (!empty($mp->size) && !empty($mp->size_qty) && $size !== '') {
+            $sizes = $this->toArrayValues($mp->size);
+            $qtys  = $this->toArrayValues($mp->size_qty);
+            $idx   = $this->findSizeIndex($sizes, $size);
+            if ($idx !== false && isset($qtys[$idx]) && $qtys[$idx] !== '') return (int)$qtys[$idx];
+            return 0;
+        }
+        return (int)($mp->stock ?? 0);
+    }
+
+    /** هويّة المنتج فقط من products */
+    private function fetchIdentity(int $id): ?Product
+    {
+        return Product::query()->select([
+            'id','slug','sku','name','photo','color',
+            'weight','type','file','link','measure','attributes','color_all','cross_products'
+        ])->find($id);
+    }
+
+    /** جلب سجل البائع (أو fallback للبائع الافتراضي عند غياب/فشل) */
+    private function fetchListingOrFallback(Product $prod, ?int $vendorId): ?MerchantProduct
+    {
+        if ($vendorId) {
+            $mp = MerchantProduct::where('product_id', $prod->id)
+                ->where('user_id', $vendorId)
+                ->where('status', 1)
+                ->first();
+            if ($mp) return $mp;
+        }
+        return $this->pickDefaultListing($prod->id);
+    }
+
+    /** حقن سياق البائع في كائن المنتج (runtime) */
+    private function injectMerchantContext(Product $prod, MerchantProduct $mp): void
+    {
+        $prod->user_id             = $mp->user_id;
         $prod->merchant_product_id = $mp->id;
         $prod->price               = $mp->vendorSizePrice();
         $prod->previous_price      = $mp->previous_price;
         $prod->stock               = $mp->stock;
 
-        // inject vendor size attributes
         $prod->setAttribute('size',       $mp->size);
         $prod->setAttribute('size_qty',   $mp->size_qty);
         $prod->setAttribute('size_price', $mp->size_price);
@@ -251,603 +147,205 @@ class CartController extends FrontBaseController
         $prod->setAttribute('minimum_qty',         $mp->minimum_qty ?? null);
         $prod->setAttribute('whole_sell_qty',      $mp->whole_sell_qty ?? null);
         $prod->setAttribute('whole_sell_discount', $mp->whole_sell_discount ?? null);
+    }
 
-        // Attributes
-        $keys = '';
-        $values = '';
-        if (!empty($prod->license_qty)) {
-            $lcheck = 1;
-            foreach ($prod->license_qty as $ttl => $dtl) {
-                if ($dtl < 1) { $lcheck = 0; } else { $lcheck = 1; break; }
-            }
-            if ($lcheck == 0) {
-                return redirect()->route('front.cart')->with('unsuccess', __('Out Of Stock.'));
-            }
+    /** طبّع رقم */
+    private function normNum($v, $default = 0.0) { return is_numeric($v) ? (float)$v : (float)$default; }
+
+    /* ===================== إضافة سريع للسلة (Ajax) ===================== */
+    public function addcart($id)
+    {
+        $prod = $this->fetchIdentity($id); if (!$prod) return 0;
+
+        // التقط vendorId أو اختَر بائعًا افتراضيًا
+        $vendorId = (int) request('user');
+        $mp = $this->fetchListingOrFallback($prod, $vendorId);
+        if (!$mp) return 0;
+
+        // المقاس: اختر أول متاح إن لم يُمرّر
+        $size = (string) request('size', '');
+        if ($size === '') {
+            [$picked, $_] = $this->pickAvailableSize($mp->size, $mp->size_qty);
+            $size = $picked;
         }
 
-        $size = '';
-        if (!empty($prod->size)) {
-            $size = trim($prod->size[0]);
-        }
-
+        // اللون الافتراضي (إن وجد)
         $color = '';
         if (!empty($prod->color)) {
-            $color = $prod->color[0];
-            $color = str_replace('#', '', $color);
+            $colors = $this->toArrayValues($prod->color);
+            if (!empty($colors)) $color = $colors[0];
         }
 
-        if (!empty($prod->attributes)) {
-            $attrArr = json_decode($prod->attributes, true);
-            if (!empty($attrArr)) {
-                $count = count($attrArr);
-                $j = 0;
-                foreach ($attrArr as $attrKey => $attrVal) {
-                    if (is_array($attrVal) && array_key_exists("details_status", $attrVal) && $attrVal['details_status'] == 1) {
-                        $keys .= $attrKey . ($j == $count - 1 ? '' : ','); $j++;
-                        foreach ($attrVal['values'] as $optionKey => $optionVal) {
-                            $values      .= $optionVal . ',';
-                            $prod->price += $attrVal['prices'][$optionKey];
-                            break;
-                        }
-                    }
-                }
-            }
-        }
-        $keys   = rtrim($keys, ',');
-        $values = rtrim($values, ',');
+        // افحص المخزون الفعلي
+        $effStock = $this->effectiveStock($mp, $size);
+        if ($effStock <= 0) return 0;
+
+        // حقن سياق البائع
+        $this->injectMerchantContext($prod, $mp);
+
+        // خصائص إضافية
+        $keys = (string) request('keys','');
+        $values = (string) request('values','');
 
         $oldCart = Session::has('cart') ? Session::get('cart') : null;
         $cart    = new Cart($oldCart);
-
-        // minimum_qty checks (من mp عبر حقن $prod->minimum_qty)
-        $minQty = (int) ($prod->minimum_qty ?? 0);
-        if (!empty($cart->items)) {
-            if (!empty($cart->items[$id . $size . $color . str_replace(str_split(' ,'), '', $values)])) {
-                if ($minQty && $cart->items[$id . $size . $color . str_replace(str_split(' ,'), '', $values)]['qty'] < $minQty) {
-                    return redirect()->route('front.cart')->with('unsuccess', __('Minimum Quantity is:') . ' ' . $minQty);
-                }
-            } else {
-                if ($minQty && 1 < $minQty) {
-                    return redirect()->route('front.cart')->with('unsuccess', __('Minimum Quantity is:') . ' ' . $minQty);
-                }
-            }
-        } else {
-            if ($minQty && 1 < $minQty) {
-                return redirect()->route('front.cart')->with('unsuccess', __('Minimum Quantity is:') . ' ' . $minQty);
-            }
-        }
-
-        if ($cart->items != null && @$cart->items[$id . $size . $color . str_replace(str_split(' ,'), '', $values)]['dp'] == 1) {
-            return redirect()->route('front.cart')->with('unsuccess', __('This item is already in the cart.'));
-        }
-
         $cart->add($prod, $prod->id, $size, $color, $keys, $values);
 
-        if ($cart->items[$id . $size . $color . str_replace(str_split(' ,'), '', $values)]['stock'] < 0) {
-            return redirect()->route('front.cart')->with('unsuccess', __('Out Of Stock.'));
-        }
-        if ($cart->items[$id . $size . $color . str_replace(str_split(' ,'), '', $values)]['size_qty']) {
-            if ($cart->items[$id . $size . $color . str_replace(str_split(' ,'), '', $values)]['qty'] >
-                $cart->items[$id . $size . $color . str_replace(str_split(' ,'), '', $values)]['size_qty']) {
-                return redirect()->route('front.cart')->with('unsuccess', __('Out Of Stock.'));
-            }
+        $cart->totalPrice = 0;
+        foreach ($cart->items as $data) $cart->totalPrice += $data['price'];
+
+        Session::put('cart', $cart);
+        return response()->json([count($cart->items)]);
+    }
+
+    /* ======================= إضافة (navigate) ======================= */
+    public function addtocart($id)
+    {
+        $prod = $this->fetchIdentity($id);
+        if (!$prod) return redirect()->route('front.cart')->with('unsuccess', __('Product not found.'));
+
+        // vendorId أو fallback
+        $vendorId = (int) request('user', 0);
+        $mp = $this->fetchListingOrFallback($prod, $vendorId);
+        if (!$mp) return redirect()->route('front.cart')->with('unsuccess', __('Vendor listing not found or inactive.'));
+
+        // المقاس
+        $size = (string) request('size','');
+        if ($size === '') {
+            [$picked, $_] = $this->pickAvailableSize($mp->size, $mp->size_qty);
+            $size = $picked;
         }
 
-        $cart->totalPrice = 0;
-        foreach ($cart->items as $data) {
-            $cart->totalPrice += $data['price'];
+        // اللون
+        $color = '';
+        if (!empty($prod->color)) {
+            $colors = $this->toArrayValues($prod->color);
+            if (!empty($colors)) $color = $colors[0];
         }
+
+        $effStock = $this->effectiveStock($mp, $size);
+        if ($effStock <= 0) return redirect()->route('front.cart')->with('unsuccess', __('Out Of Stock.'));
+
+        $this->injectMerchantContext($prod, $mp);
+
+        $keys   = (string) request('keys','');
+        $values = (string) request('values','');
+
+        $oldCart = Session::has('cart') ? Session::get('cart') : null;
+        $cart    = new Cart($oldCart);
+        $cart->add($prod, $prod->id, $size, $color, $keys, $values);
+
+        $cart->totalPrice = 0;
+        foreach ($cart->items as $data) $cart->totalPrice += $data['price'];
 
         Session::put('cart', $cart);
         return redirect()->route('front.cart');
     }
 
-    /* ===========================================================
-     |  إضافة بعدد معيّن (Ajax) — يتطلب vendorId
-     |===========================================================*/
+    /* ===================== إضافة بعدد معيّن (Ajax) ===================== */
     public function addnumcart(Request $request)
     {
-        $id         = (int) ($request->id ?? $_GET['id'] ?? 0);
-        $qty        = isset($request->qty) ? (int)$request->qty : 1;
-        $size       = isset($request->size) ? str_replace(' ', '-', $request->size) : '';
-        $color      = isset($request->color) ? $request->color : '';
+        $id   = (int) ($request->id ?? $_GET['id'] ?? 0);
+        $qty  = (int) ($request->qty ?? 1);
+        $size = (string) ($request->size ?? '');
+        $color= (string) ($request->color ?? '');
 
-        // قيَم قد تأتي "undefined" من الواجهة → طبّعها للصفر
-        $raw_color_price = $request->input('color_price', 0);
-        $raw_size_qty    = $request->input('size_qty', '');
-        $raw_size_price  = $request->input('size_price', 0);
+        $size_qty   = (string) ($request->size_qty   ?? '');
+        $size_price = $this->normNum($request->size_price ?? 0);
+        $color_price= $this->normNum($request->color_price ?? 0);
 
-        $color_price = is_numeric($raw_color_price) ? (float) $raw_color_price : 0.0;
-        $size_qty    = $raw_size_qty;
-        $size_price  = is_numeric($raw_size_price) ? (float) $raw_size_price : 0.0;
-
-        $size_key = $request->input('size_qty', '');
-        $keys     = $request->input('keys', '');
-        $values   = $request->input('values', '');
+        $size_key = (string) ($request->size_qty ?? '');
+        $keys     = (string) $request->input('keys','');
+        $values   = (string) $request->input('values','');
         $prices   = $request->input('prices', 0);
+        $curr     = $this->curr;
 
-        $affilate_user = $request->input('affilate_user', '0');
-        $keys   = $keys   == "" ? '' : implode(',', (array)$keys);
-        $values = $values == "" ? '' : implode(',', (array)$values);
-        $curr   = $this->curr;
-
-        // المنتج (هوية فقط)
-        $prod = Product::where('id', $id)->first([
-            'id','slug','sku','name','photo','color',
-            'weight','type','file','link','measure','attributes','color_all','cross_products'
-        ]);
-        if (!$prod) { return 0; }
+        $prod = $this->fetchIdentity($id); if (!$prod) return 0;
         if ($prod->type != 'Physical') { $qty = 1; }
 
-        // vendorId: من الطلب أو من العنصر الموجود بالسلة (إن وُجد)
         $vendorId = (int) $request->input('user', 0);
-        if (!$vendorId) {
-            $oldCart = Session::has('cart') ? Session::get('cart') : null;
-            if ($oldCart && isset($oldCart->items[$id . $size . str_replace('#','',$color) . str_replace(str_split(' ,'), '', $values)])) {
-                $itm = $oldCart->items[$id . $size . str_replace('#','',$color) . str_replace(str_split(' ,'), '', $values)];
-                $vendorId = (int) ($itm['item']['user_id'] ?? ($itm['item']->user_id ?? 0));
-            }
+        $mp = $this->fetchListingOrFallback($prod, $vendorId); if (!$mp) return 0;
+
+        if ($size === '') {
+            [$picked, $_] = $this->pickAvailableSize($mp->size, $mp->size_qty);
+            $size = $picked;
         }
-        if (!$vendorId) { return 0; }
+        $effStock = $this->effectiveStock($mp, $size);
+        if ($effStock <= 0 || $qty > $effStock) return 0;
 
-        $mp = MerchantProduct::where('product_id', $prod->id)
-            ->where('user_id', $vendorId)
-            ->where('status', 1)
-            ->first();
-        if (!$mp) { return 0; }
+        $this->injectMerchantContext($prod, $mp);
 
-        // inject vendor context
-        $prod->user_id             = $vendorId;
-        $prod->merchant_product_id = $mp->id;
-        $prod->price               = $mp->vendorSizePrice();
-        $prod->previous_price      = $mp->previous_price;
-        $prod->stock               = $mp->stock;
-
-        // inject vendor size attributes
-        $prod->setAttribute('size',       $mp->size);
-        $prod->setAttribute('size_qty',   $mp->size_qty);
-        $prod->setAttribute('size_price', $mp->size_price);
-        $prod->setAttribute('stock_check',         $mp->stock_check ?? null);
-        $prod->setAttribute('minimum_qty',         $mp->minimum_qty ?? null);
-        $prod->setAttribute('whole_sell_qty',      $mp->whole_sell_qty ?? null);
-        $prod->setAttribute('whole_sell_discount', $mp->whole_sell_discount ?? null);
-
-        if (!empty($prices)) {
-            foreach ((array)$prices as $data) {
-                $prod->price += ((float)$data / $curr->value);
-            }
-        }
-
-        if (!empty($prod->license_qty)) {
-            $lcheck = 1;
-            foreach ($prod->license_qty as $ttl => $dtl) {
-                if ($dtl < 1) { $lcheck = 0; } else { $lcheck = 1; break; }
-            }
-            if ($lcheck == 0) { return 0; }
-        }
-
-        if (empty($size)) {
-            if (!empty($prod->size)) {
-                $size = trim($prod->size[0]);
-            }
-            $size = str_replace(' ', '-', $size);
-        }
-
-        if ($size_qty == '0' && $prod->stock_check == 1) {
-            return 0;
-        }
-
-        if (empty($color)) {
-            if (!empty($prod->color)) {
-                $color = $prod->color[0];
-            }
-        }
-        $color = str_replace('#', '', $color);
+        if (!empty($prices)) foreach ((array)$prices as $p) $prod->price += ((float)$p / $curr->value);
 
         $oldCart = Session::has('cart') ? Session::get('cart') : null;
         $cart    = new Cart($oldCart);
-
-        if (!empty($cart->items)) {
-            $key = $id . $size . $color . str_replace(str_split(' ,'), '', $values);
-            if (!empty($cart->items[$key])) {
-                $minimum_qty = (int) ($prod->minimum_qty ?? 0);
-                if ($minimum_qty && $cart->items[$key]['qty'] < $minimum_qty) {
-                    $data = []; $data[1] = true; $data[2] = $minimum_qty;
-                    return response()->json($data);
-                }
-            } else if ($prod->minimum_qty) {
-                $minimum_qty = (int) $prod->minimum_qty;
-                if ($qty < $minimum_qty) {
-                    $data = []; $data[1] = true; $data[2] = $minimum_qty;
-                    return response()->json($data);
-                }
-            }
-        } else if ($prod->minimum_qty) {
-            $minimum_qty = (int) $prod->minimum_qty;
-            if ($qty < $minimum_qty) {
-                $data = []; $data[3] = true; $data[4] = $minimum_qty;
-                return response()->json($data);
-            }
-        }
-
-        if (isset($cart->items[$id . $size . $color . str_replace(str_split(' ,'), '', $values)])) {
-            if ($cart->items != null && $cart->items[$id . $size . $color . str_replace(str_split(' ,'), '', $values)]['dp'] == 1) {
-                return 'digital';
-            }
-        }
-
-        $cart->addnum($prod, $prod->id, $qty, $size, $color, $size_qty, $size_price, $color_price, $size_key, $keys, $values, $affilate_user);
-
-        if ($cart->items[$id . $size . $color . str_replace(str_split(' ,'), '', $values)]['stock'] < 0) {
-            return 0;
-        }
-        if ($prod->stock_check == 1) {
-            if ($cart->items[$id . $size . $color . str_replace(str_split(' ,'), '', $values)]['size_qty']) {
-                if ($cart->items[$id . $size . $color . str_replace(str_split(' ,'), '', $values)]['qty'] >
-                    $cart->items[$id . $size . $color . str_replace(str_split(' ,'), '', $values)]['size_qty']) {
-                    return 0;
-                }
-            }
-        }
+        $cart->addnum($prod, $prod->id, $qty, $size, $color, $size_qty, $size_price, $color_price, $size_key, $keys, $values, $request->input('affilate_user','0'));
 
         $cart->totalPrice = 0;
-        foreach ($cart->items as $data) {
-            $cart->totalPrice += $data['price'];
-        }
+        foreach ($cart->items as $data) $cart->totalPrice += $data['price'];
 
         Session::put('cart', $cart);
-        $data[0] = count($cart->items);
-        $data[1] = $cart->totalPrice;
-        $data[1] = \PriceHelper::showCurrencyPrice($data[1] * $curr->value);
-        return response()->json($data);
+        return response()->json([
+            count($cart->items),
+            \PriceHelper::showCurrencyPrice($cart->totalPrice * $curr->value),
+        ]);
     }
 
-    /* ===========================================================
-     |  إضافة بعدد معيّن (Navigate) — يتطلب vendorId
-     |===========================================================*/
+    /* =================== إضافة بعدد معيّن (Navigate) =================== */
     public function addtonumcart(Request $request)
     {
-        $id         = isset($request->id) ? (int)$request->id : 0;
-        $qty        = isset($request->qty) ? (int)$request->qty : 1;
-        $size       = isset($request->size) ? str_replace(' ', '-', $request->size) : '';
-        $color      = isset($request->color) ? "#" . $request->color : '';
+        $id   = (int) ($request->id ?? 0);
+        $qty  = (int) ($request->qty ?? 1);
+        $size = (string) ($request->size ?? '');
+        $color= (string) ($request->color ?? '');
 
-        // تطبيع القيم القادمة من الواجهة
-        $raw_color_price = $request->input('color_price', 0);
-        $raw_size_qty    = $request->input('size_qty', '');
-        $raw_size_price  = $request->input('size_price', 0);
+        $size_qty   = (string) ($request->size_qty   ?? '');
+        $size_price = $this->normNum($request->size_price ?? 0);
+        $colorPrice = $this->normNum($request->color_price ?? 0);
 
-        $colorPrice = is_numeric($raw_color_price) ? (float) $raw_color_price : 0.0;
-        $size_qty   = $raw_size_qty;
-        $size_price = is_numeric($raw_size_price) ? (float) $raw_size_price : 0.0;
-
-        $size_key   = $request->input('size_qty', '');
-        $keysArr    = $request->input('keys')   ? explode(",", $request->input('keys'))   : '';
-        $valsArr    = $request->input('values') ? explode(",", $request->input('values')) : '';
-        $pricesArr  = $request->input('prices') ? explode(",", $request->input('prices')) : 0;
-        $aff        = $request->input('affilate_user', '0');
-
+        $size_key   = (string) ($request->size_qty ?? '');
+        $keysArr    = $request->input('keys')   ? explode(',', $request->input('keys'))   : '';
+        $valsArr    = $request->input('values') ? explode(',', $request->input('values')) : '';
+        $pricesArr  = $request->input('prices') ? explode(',', $request->input('prices')) : 0;
         $keys   = !$keysArr ? '' : implode(',', $keysArr);
         $values = !$valsArr ? '' : implode(',', $valsArr);
-
         $curr = $this->curr;
 
-        $size_price = ($size_price / $curr->value);
-        $colorPrice = (float) $colorPrice;
-
-        $prod = Product::where('id', $id)->first([
-            'id','slug','name','photo','color',
-            'weight','type','file','link','measure','attributes','color_price','color_all','cross_products'
-        ]);
-        if (!$prod) {
-            return redirect()->route('front.cart')->with('unsuccess', __('Product not found.'));
-        }
+        $prod = $this->fetchIdentity($id);
+        if (!$prod) return redirect()->route('front.cart')->with('unsuccess', __('Product not found.'));
         if ($prod->type != 'Physical') { $qty = 1; }
 
-        // vendorId من الطلب أو من السلة
         $vendorId = (int) $request->input('user', 0);
-        if (!$vendorId) {
-            $keyGuess = $id . $size . str_replace('#','',$color) . str_replace(str_split(' ,'), '', $values);
-            $oldCart  = Session::has('cart') ? Session::get('cart') : null;
-            if ($oldCart && isset($oldCart->items[$keyGuess])) {
-                $itm = $oldCart->items[$keyGuess];
-                $vendorId = (int) ($itm['item']['user_id'] ?? ($itm['item']->user_id ?? 0));
-            }
+        $mp = $this->fetchListingOrFallback($prod, $vendorId);
+        if (!$mp) return redirect()->route('front.cart')->with('unsuccess', __('Vendor listing not found or inactive.'));
+
+        if ($size === '') {
+            [$picked, $_] = $this->pickAvailableSize($mp->size, $mp->size_qty);
+            $size = $picked;
         }
-        if (!$vendorId) {
-            return redirect()->route('front.cart')->with('unsuccess', __('Missing vendor.'));
-        }
-
-        $mp = MerchantProduct::where('product_id', $prod->id)
-            ->where('user_id', $vendorId)
-            ->where('status', 1)
-            ->first();
-        if (!$mp) {
-            return redirect()->route('front.cart')->with('unsuccess', __('Vendor listing not found or inactive.'));
-        }
-
-        // inject vendor context
-        $prod->user_id             = $vendorId;
-        $prod->merchant_product_id = $mp->id;
-        $prod->price               = $mp->vendorSizePrice();
-        $prod->previous_price      = $mp->previous_price;
-        $prod->stock               = $mp->stock;
-
-        // inject vendor size attributes
-        $prod->setAttribute('size',       $mp->size);
-        $prod->setAttribute('size_qty',   $mp->size_qty);
-        $prod->setAttribute('size_price', $mp->size_price);
-        $prod->setAttribute('stock_check',         $mp->stock_check ?? null);
-        $prod->setAttribute('minimum_qty',         $mp->minimum_qty ?? null);
-        $prod->setAttribute('whole_sell_qty',      $mp->whole_sell_qty ?? null);
-        $prod->setAttribute('whole_sell_discount', $mp->whole_sell_discount ?? null);
-
-        if (!empty($pricesArr) && !empty($pricesArr[0])) {
-            foreach ($pricesArr as $p) {
-                $prod->price += ((float)$p / $curr->value);
-            }
-        }
-
-        if (!empty($prod->license_qty)) {
-            $lcheck = 1;
-            foreach ($prod->license_qty as $ttl => $dtl) {
-                if ($dtl < 1) { $lcheck = 0; } else { $lcheck = 1; break; }
-            }
-            if ($lcheck == 0) {
-                return redirect()->route('front.cart')->with('unsuccess', __('Out Of Stock.'));
-            }
-        }
-
-        if (empty($size)) {
-            if (!empty($prod->size)) {
-                $size = trim($prod->size[0]);
-            }
-            $size = str_replace(' ', '-', $size);
-        }
-
-        if ($size_qty == '0') {
+        $effStock = $this->effectiveStock($mp, $size);
+        if ($effStock <= 0 || $qty > $effStock) {
             return redirect()->route('front.cart')->with('unsuccess', __('Out Of Stock.'));
         }
 
-        if (empty($color)) {
-            if (!empty($prod->color)) {
-                $color = $prod->color[0];
-            }
+        $this->injectMerchantContext($prod, $mp);
+
+        if (!empty($pricesArr) && !empty($pricesArr[0])) {
+            foreach ($pricesArr as $p) $prod->price += ((float)$p / $curr->value);
         }
-        $color = str_replace('#', '', $color);
 
         $oldCart = Session::has('cart') ? Session::get('cart') : null;
         $cart    = new Cart($oldCart);
-
-        // minimum_qty checks
-        $minQty = (int) ($prod->minimum_qty ?? 0);
-        if (!empty($cart->items)) {
-            $key = $id . $size . $color . str_replace(str_split(' ,'), '', $values);
-            if (!empty($cart->items[$key])) {
-                if ($minQty && $cart->items[$key]['qty'] < $minQty) {
-                    return redirect()->route('front.cart')->with('unsuccess', __('Minimum Quantity is:') . ' ' . $minQty);
-                }
-            } else if ($minQty) {
-                if ($qty < $minQty) {
-                    return redirect()->route('front.cart')->with('unsuccess', __('Minimum Quantity is:') . ' ' . $minQty);
-                }
-            }
-        } else if ($minQty) {
-            if ($qty < $minQty) {
-                return redirect()->route('front.cart')->with('unsuccess', __('Minimum Quantity is:') . ' ' . $minQty);
-            }
-        }
-
-        $cart->addnum($prod, $prod->id, $qty, $size, $color, $size_qty, $size_price, $colorPrice, $size_key, $keys, $values, $aff);
-
-        if ($cart->items[$id . $size . $color . str_replace(str_split(' ,'), '', $values)]['dp'] == 1) {
-            return redirect()->route('front.cart')->with('unsuccess', __('This item is already in the cart.'));
-        }
-        if ($cart->items[$id . $size . $color . str_replace(str_split(' ,'), '', $values)]['stock'] < 0) {
-            return redirect()->route('front.cart')->with('unsuccess', __('Out Of Stock.'));
-        }
-        if ($prod->stock_check == 1) {
-            if ($cart->items[$id . $size . $color . str_replace(str_split(' ,'), '', $values)]['size_qty']) {
-                if ($cart->items[$id . $size . $color . str_replace(str_split(' ,'), '', $values)]['qty'] >
-                    $cart->items[$id . $size . $color . str_replace(str_split(' ,'), '', $values)]['size_qty']) {
-                    return redirect()->route('front.cart')->with('unsuccess', __('Out Of Stock.'));
-                }
-            }
-        }
+        $cart->addnum($prod, $prod->id, $qty, $size, $color, $size_qty, $size_price, $colorPrice, $size_key, $keys, $values, $request->input('affilate_user','0'));
 
         $cart->totalPrice = 0;
-        foreach ($cart->items as $data) {
-            $cart->totalPrice += $data['price'];
-        }
+        foreach ($cart->items as $data) $cart->totalPrice += $data['price'];
 
         Session::put('cart', $cart);
         return redirect()->route('front.cart')->with('success', __('Successfully Added To Cart.'));
     }
 
-    /* ===========================================================
-     |  زيادة كمية عنصر واحد (Ajax) — يستخرج vendorId من العنصر
-     |===========================================================*/
-    public function addbyone()
-    {
-        if (Session::has('coupon')) {
-            Session::forget('coupon');
-        }
-        $curr      = $this->curr;
-        $id        = $_GET['id'];
-        $itemid    = $_GET['itemid'];
-        $size_qty  = $_GET['size_qty'];
-        $size_price= $_GET['size_price'];
-
-        // المنتج (هوية فقط)
-        $prod = Product::where('id', $id)->first([
-            'id','slug','name','photo','color',
-            'weight','type','file','link','measure','attributes'
-        ]);
-        if (!$prod) {
-            return 0;
-        }
-
-        // vendorId من السلة
-        $oldCart  = Session::has('cart') ? Session::get('cart') : null;
-        $vendorId = 0;
-        if ($oldCart && isset($oldCart->items[$itemid])) {
-            $itm      = $oldCart->items[$itemid];
-            $vendorId = (int) ($itm['item']['user_id'] ?? ($itm['item']->user_id ?? 0));
-        }
-        if (!$vendorId) { return 0; }
-
-        $mp = MerchantProduct::where('product_id', $prod->id)
-            ->where('user_id', $vendorId)
-            ->where('status', 1)
-            ->first();
-        if (!$mp) { return 0; }
-
-        // inject vendor context + خصائص المقاسات
-        $prod->user_id             = $vendorId;
-        $prod->merchant_product_id = $mp->id;
-        $prod->price               = $mp->vendorSizePrice();
-        $prod->previous_price      = $mp->previous_price;
-        $prod->stock               = $mp->stock;
-
-        $prod->setAttribute('size',       $mp->size);
-        $prod->setAttribute('size_qty',   $mp->size_qty);
-        $prod->setAttribute('size_price', $mp->size_price);
-
-        // إضافة أسعار الخصائص الافتراضية كما في كودك
-        if (!empty($prod->attributes)) {
-            $attrArr = json_decode($prod->attributes, true);
-            if (!empty($attrArr)) {
-                foreach ($attrArr as $attrKey => $attrVal) {
-                    if (is_array($attrVal) && array_key_exists("details_status", $attrVal) && $attrVal['details_status'] == 1) {
-                        foreach ($attrVal['values'] as $optionKey => $optionVal) {
-                            $prod->price += $attrVal['prices'][$optionKey];
-                            break;
-                        }
-                    }
-                }
-            }
-        }
-
-        $cart = new Cart($oldCart);
-        $cart->adding($prod, $itemid, $size_qty, $size_price);
-
-        if ($prod->stock_check == 1) {
-            if ($cart->items[$itemid]['stock'] < 0) {
-                return 0;
-            }
-            if (!empty($size_qty)) {
-                if ($cart->items[$itemid]['qty'] > $cart->items[$itemid]['size_qty']) {
-                    return 0;
-                }
-            }
-        }
-
-        $cart->totalPrice = 0;
-        foreach ($cart->items as $data) {
-            $cart->totalPrice += $data['price'];
-        }
-
-        Session::put('cart', $cart);
-
-        $data[0] = $cart->totalPrice;
-        $data[3] = $data[0];
-        $data[1] = $cart->items[$itemid]['qty'];
-        $data[2] = $cart->items[$itemid]['price'];
-
-        $data[0] = \PriceHelper::showCurrencyPrice($data[0] * $curr->value);
-        $data[2] = \PriceHelper::showCurrencyPrice($data[2] * $curr->value);
-        $data[3] = \PriceHelper::showCurrencyPrice($data[3] * $curr->value);
-        $data[4] = $cart->items[$itemid]['discount'] == 0 ? '' : '(' . $cart->items[$itemid]['discount'] . '% ' . __('Off') . ')';
-
-        return response()->json($data);
-    }
-
-    /* ===========================================================
-     |  إنقاص كمية عنصر واحد (Ajax) — يستخرج vendorId من العنصر
-     |===========================================================*/
-    public function reducebyone()
-    {
-        if (Session::has('coupon')) {
-            Session::forget('coupon');
-        }
-        $curr      = $this->curr;
-        $id        = $_GET['id'];
-        $itemid    = $_GET['itemid'];
-        $size_qty  = $_GET['size_qty'];
-        $size_price= $_GET['size_price'];
-
-        $prod = Product::where('id', $id)->first([
-            'id','slug','name','photo','color',
-            'weight','type','file','link','measure','attributes'
-        ]);
-        if (!$prod) {
-            return 0;
-        }
-
-        $oldCart  = Session::has('cart') ? Session::get('cart') : null;
-        $vendorId = 0;
-        if ($oldCart && isset($oldCart->items[$itemid])) {
-            $itm      = $oldCart->items[$itemid];
-            $vendorId = (int) ($itm['item']['user_id'] ?? ($itm['item']->user_id ?? 0));
-        }
-        if (!$vendorId) { return 0; }
-
-        $mp = MerchantProduct::where('product_id', $prod->id)
-            ->where('user_id', $vendorId)
-            ->where('status', 1)
-            ->first();
-        if (!$mp) { return 0; }
-
-        $prod->user_id             = $vendorId;
-        $prod->merchant_product_id = $mp->id;
-        $prod->price               = $mp->vendorSizePrice();
-        $prod->previous_price      = $mp->previous_price;
-        $prod->stock               = $mp->stock;
-
-        $prod->setAttribute('size',       $mp->size);
-        $prod->setAttribute('size_qty',   $mp->size_qty);
-        $prod->setAttribute('size_price', $mp->size_price);
-
-        if (!empty($prod->attributes)) {
-            $attrArr = json_decode($prod->attributes, true);
-            if (!empty($attrArr)) {
-                foreach ($attrArr as $attrKey => $attrVal) {
-                    if (is_array($attrVal) && array_key_exists("details_status", $attrVal) && $attrVal['details_status'] == 1) {
-                        foreach ($attrVal['values'] as $optionKey => $optionVal) {
-                            $prod->price += $attrVal['prices'][$optionKey];
-                            break;
-                        }
-                    }
-                }
-            }
-        }
-
-        $cart = new Cart($oldCart);
-        $cart->reducing($prod, $itemid, $size_qty, $size_price);
-
-        $cart->totalPrice = 0;
-        foreach ($cart->items as $data) {
-            $cart->totalPrice += $data['price'];
-        }
-
-        Session::put('cart', $cart);
-
-        $data[0] = $cart->totalPrice;
-        $data[3] = $data[0];
-        $data[1] = $cart->items[$itemid]['qty'];
-        $data[2] = $cart->items[$itemid]['price'];
-
-        $data[0] = \PriceHelper::showCurrencyPrice($data[0] * $curr->value);
-        $data[2] = \PriceHelper::showCurrencyPrice($data[2] * $curr->value);
-        $data[3] = \PriceHelper::showCurrencyPrice($data[3] * $curr->value);
-        $data[4] = $cart->items[$itemid]['discount'] == 0 ? '' : '(' . $cart->items[$itemid]['discount'] . '% ' . __('Off') . ')';
-
-        return response()->json($data);
-    }
-
-    /* ===========================================================
-     |  إزالة عنصر من السلة
-     |===========================================================*/
+    /* ========================= إزالة عنصر ========================= */
     public function removecart($id)
     {
         $curr    = $this->curr;
@@ -855,24 +353,16 @@ class CartController extends FrontBaseController
         $cart    = new Cart($oldCart);
 
         $cart->removeItem($id);
-        Session::forget('cart');
-        Session::forget('already');
-        Session::forget('coupon');
-        Session::forget('coupon_total');
-        Session::forget('coupon_total1');
-        Session::forget('coupon_percentage');
-
-        Session::put('cart', $cart);
-        if (count($cart->items) == 0) {
-            Session::forget('cart');
+        foreach (['cart','already','coupon','coupon_total','coupon_total1','coupon_percentage'] as $k) {
+            Session::forget($k);
         }
+        Session::put('cart', $cart);
+        if (empty($cart->items)) { Session::forget('cart'); }
 
         return back()->with('success', __('Item has been removed from cart.'));
     }
 
-    /* ===========================================================
-     |  ضريبة الدولة / الولاية
-     |===========================================================*/
+    /* ======================= ضريبة الدولة/الولاية ======================= */
     public function country_tax(Request $request)
     {
         if ($request->country_id) {
@@ -887,26 +377,18 @@ class CartController extends FrontBaseController
                 $data[11] = $country->id;
                 $data[12] = 'country_tax';
             }
-        } else {
-            $tax = 0;
-        }
+        } else { $tax = 0; }
 
         Session::put('is_tax', $tax);
 
-        $total  = (float) preg_replace('/[^0-9\.]/ui', '', $_GET['total']);
+        $total  = (float) preg_replace('/[^0-9\.]/ui', '', $_GET['total'] ?? 0);
         $stotal = ($total * $tax) / 100;
-        $sstotal = $stotal * $this->curr->value;
+        $sstotal= $stotal * $this->curr->value;
         Session::put('current_tax', $sstotal);
 
         $total = $total + $stotal;
-
-        $data[0] = round($total, 2);
+        $data[0] = round(Session::has('coupon') ? $total - (float) Session::get('coupon') : $total, 2);
         $data[1] = $tax;
-
-        if (Session::has('coupon')) {
-            $data[0] = round($data[0] - Session::get('coupon'), 2);
-        }
-
         return response()->json($data);
     }
 }
