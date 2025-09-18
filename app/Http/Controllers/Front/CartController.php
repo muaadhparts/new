@@ -537,7 +537,7 @@ class CartController extends FrontBaseController
 
         $prod = Product::where('id', $id)->first([
             'id','slug','name','photo','color',
-            'weight','type','file','link','measure','attributes','color_all','cross_products'
+            'weight','type','file','link','measure','attributes','color_price','color_all','cross_products'
         ]);
         if (!$prod) {
             return redirect()->route('front.cart')->with('unsuccess', __('Product not found.'));
@@ -619,7 +619,7 @@ class CartController extends FrontBaseController
         $oldCart = Session::has('cart') ? Session::get('cart') : null;
         $cart    = new Cart($oldCart);
 
-        // minimum_qty checks (من mp عبر حقن $prod->minimum_qty)
+        // minimum_qty checks
         $minQty = (int) ($prod->minimum_qty ?? 0);
         if (!empty($cart->items)) {
             $key = $id . $size . $color . str_replace(str_split(' ,'), '', $values);
