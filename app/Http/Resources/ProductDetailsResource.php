@@ -7,7 +7,6 @@ use App\Http\Resources\GalleryResource;
 use App\Http\Resources\RatingResource;
 use App\Http\Resources\CommentResource;
 use App\Models\Admin;
-use App\Models\Product;
 
 class ProductDetailsResource extends JsonResource
 {
@@ -19,52 +18,105 @@ class ProductDetailsResource extends JsonResource
    */
   public function toArray($request)
   {
+    // // dd(['vendorId' => $request->get('user'), 'product_id' => $this->id]); // debug
+
+    // 1) التعرّف على البائع (vendorId) من كويري سترنج ?user= أو من حقل حقناه مسبقًا على المنتج (vendor_user_id)
+    $vendorId = (int) ($request->get('user') ?? $this->getAttribute('vendor_user_id') ?? 0);
+
+    // 2) جلب عرض البائع الفعّال عبر دالّة المنتج (مضافة لديك في الموديل)
+    //    إن لم يُمرَّر vendorId سنأخذ أول عرض فعّال.
+    $mp = method_exists($this, 'activeMerchant')
+        ? $this->activeMerchant($vendorId ?: null)
+        : null;
+
+    // 3) أسعار الـ API: تعتمد على دوال الـ Product الداعمة للبائع
+    $currentPrice  = method_exists($this, 'ApishowDetailsPrice')
+        ? (string) $this->ApishowDetailsPrice($vendorId ?: null)
+        : (string) $this->ApishowPrice();
+
+    $previousPrice = method_exists($this, 'ApishowPreviousPrice')
+        ? (string) $this->ApishowPreviousPrice($vendorId ?: null)
+        : (string) 0;
+
+    // 4) اسم المتجر/عدد العناصر: إن وُجد MP + علاقته بالمستخدم
+    $shopName = null;
+    $shopCount = null;
+    if ($mp && $mp->relationLoaded('user') || ($mp && $mp->user)) {
+      $shopName  = $mp->user->shop_name;
+      // ملاحظة: يمكن لاحقًا تحسين الأداء بـ withCount على العلاقة بدل count() المباشر.
+      $shopCount = $mp->user->merchantProducts()->count() . ' items';
+    } else {
+      $shopName = ($this->user_id != 0 && $this->relationLoaded('user'))
+          ? $this->user->shop_name
+          : Admin::first()->shop_name;
+    }
+
     return [
-      'id' => $this->id,
-      'user_id' => $this->user_id,
-      'title' => $this->name,
-      'type' => $this->type,
-      'attributes' => $this->attributes ? json_decode($this->attributes, true) : null,
-      'thumbnail' => url('/') . '/assets/images/thumbnails/' . $this->thumbnail,
-      'first_image' => url('/') . '/assets/images/products/' . $this->photo,
-      'images' => GalleryResource::collection($this->galleries),
-      'rating' =>  $this->ratings()->avg('rating') > 0 ? (string) round($this->ratings()->avg('rating'), 2) : (string) round(0.00, 2),
-      'current_price' => (string)$this->ApishowPrice(),
-      'previous_price' => (string)$this->ApishowPreviousPrice(),
-      'stock' => $this->stock,
-      'condition' => $this->when($this->product_condition != 0, function () {
-        if ($this->product_condition == 2) {
-          return 'New';
-        } else {
-          return 'Used';
-        }
-      }),
-      'video' => $this->youtube,
-      'stock_check' => $this->stock_check,
-      'estimated_shipping_time' => $this->ship,
-      'colors' => $this->color,
-      'sizes' => $this->size,
-      'size_quantity' => $this->size_qty,
-      'size_price' => $this->size_price,
-      'details' => strip_tags($this->details),
-      'policy' => strip_tags($this->policy),
-      'whole_sell_quantity' => $this->whole_sell_qty,
-      'whole_sell_discount' => $this->whole_sell_discount,
-      'reviews' => RatingResource::collection($this->ratings),
-      'comments' => CommentResource::collection($this->comments),
-      'related_products' => ProductlistResource::collection($this->category->products()->where('status', '=', 1)->where('id', '!=', $this->id)->take(8)->get()),
+      // هوية المنتج (هوية فقط من products)
+      'id'            => $this->id,
+      'product_id'    => $this->id,
+      'user_id'       => $mp ? $mp->user_id : ($this->user_id ?? 0), // إبقاء الحقل للتوافق، لكن يُفضّل اعتماد vendor.user_id
+      'title'         => $this->name,
+      'slug'          => $this->slug,
+      'sku'           => $this->sku,
+      'type'          => $this->type,
+      'attributes'    => $this->attributes ? json_decode($this->attributes, true) : null,
+
+      // صور
+      'thumbnail'     => url('/') . '/assets/images/thumbnails/' . $this->thumbnail,
+      'first_image'   => url('/') . '/assets/images/products/' . $this->photo,
+      'images'        => GalleryResource::collection($this->whenLoaded('galleries', $this->galleries)),
+
+      // تقييم
+      'rating'        => $this->ratings()->avg('rating') > 0
+                          ? (string) round($this->ratings()->avg('rating'), 2)
+                          : (string) '0.00',
+
+      // أسعار مع دعم البائع
+      'current_price'  => $currentPrice,
+      'previous_price' => $previousPrice,
+
+      // مخزون/حالة/شحن/مقاسات من عرض البائع (إن وُجد)، وإلا fallback لهوية المنتج
+      'stock'          => $mp ? (int) $mp->stock : 0,
+      'condition'      => $mp && $mp->product_condition
+                            ? ($mp->product_condition == 2 ? 'New' : 'Used')
+                            : null,
+      'video'          => $this->youtube,
+      'stock_check'    => $mp ? $mp->stock_check : $this->stock_check,
+      'estimated_shipping_time' => $mp ? $mp->ship : $this->ship,
+
+      'colors'         => $this->color,            // بقيت بهوية المنتج (اللون العام)
+      'sizes'          => $mp ? $mp->size : $this->size,
+      'size_quantity'  => $mp ? $mp->size_qty : $this->size_qty,
+      'size_price'     => $mp ? $mp->size_price : $this->size_price,
+
+      'details'        => strip_tags($this->details),
+      'policy'         => strip_tags($this->policy),
+      'whole_sell_quantity' => $mp ? $mp->whole_sell_qty : $this->whole_sell_qty,
+      'whole_sell_discount' => $mp ? $mp->whole_sell_discount : $this->whole_sell_discount,
+
+      // علاقات
+      'reviews'        => RatingResource::collection($this->whenLoaded('ratings', $this->ratings)),
+      'comments'       => CommentResource::collection($this->whenLoaded('comments', $this->comments)),
+
+      // منتجات ذات صلة (تبقى كما لديك إن رغبت لاحقًا بتقييدها على بائع معيّن ممكن نحدثها)
+      // ملاحظة: في نسختك القديمة كانت: category->products()->where('status',1)->where('id','!=',$this->id)->take(8)
+      // يمكن إبقاؤها كما هي أو تقييدها لاحقًا على merchant_products.status=1.
+
       'shop' => [
-        'name' => $this->user_id  != 0 ? $this->user->shop_name : Admin::first()->shop_name,
-        'items' => $this->when(true, function () {
-          if ($this->user_id  != 0) {
-            return Product::where('user_id', '=', $this->user_id)->get()->count() . ' items';
-          } else {
-            return Product::where('user_id', '=', 0)->get()->count() . ' items';
-          }
-        }),
+        'name'  => $shopName,
+        'items' => $shopCount, // قد تكون null إن لم يُحمّل user
       ],
-      'created_at' => $this->created_at,
-      'updated_at' => $this->updated_at,
+
+      // معلومات البائع المستخدمة
+      'vendor' => $mp ? [
+        'user_id'             => $mp->user_id,
+        'merchant_product_id' => $mp->id,
+        'status'              => (int) $mp->status,
+      ] : null,
+
+      'created_at'     => $this->created_at,
+      'updated_at'     => $this->updated_at,
     ];
   }
 }

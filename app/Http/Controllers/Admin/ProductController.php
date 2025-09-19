@@ -10,7 +10,8 @@ use App\Models\Currency;
 use App\Models\Gallery;
 use App\Models\Product;
 use App\Models\Subcategory;
-use Datatables;use DB;
+use Datatables;
+use DB;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Image;
@@ -23,6 +24,8 @@ class ProductController extends AdminBaseController
 
     public function datatables(Request $request)
     {
+        // // dd(['admin_datatables' => true]); // اختباري
+
         if ($request->type == 'all') {
             $datas = \App\Models\Product::whereProductType('normal')->latest('id')->take(50)->get();
         } elseif ($request->type == 'deactive') {
@@ -35,8 +38,13 @@ class ProductController extends AdminBaseController
             ->editColumn('name', function (\App\Models\Product $data) {
                 $name = mb_strlen($data->name, 'UTF-8') > 50 ? mb_substr($data->name, 0, 50, 'UTF-8') . '...' : $data->name;
 
-                // استخرج أول/أرخص عرض بائع نشط لهذا المنتج
-                $mp = $data->merchantProducts()->where('status', 1)->orderBy('price')->first();
+                // استخرج أول/أرخص عرض بائع نشط لهذا المنتج (المتوفر أولاً ثم الأرخص)
+                $mp = $data->merchantProducts()
+                    ->where('status', 1)
+                    ->orderByRaw('CASE WHEN (stock IS NULL OR stock = 0) THEN 1 ELSE 0 END ASC')
+                    ->orderBy('price')
+                    ->first();
+
                 $vendorId = optional($mp)->user_id;
 
                 $prodLink = $vendorId
@@ -48,12 +56,12 @@ class ProductController extends AdminBaseController
                     ? '<small class="ml-2"> ' . __("SKU") . ': <a href="' . $prodLink . '" target="_blank">' . $data->sku . '</a>'
                     : '';
 
-                // checkVendor() تم تحديثها لقراءة أول بائع نشط (انظر ملف Product بالأسفل)
+                // checkVendor() تم تحديثها لقراءة أول بائع نشط
                 return $name . '<br>' . $id . $id3 . $data->checkVendor();
             })
             ->editColumn('price', function (\App\Models\Product $data) {
                 // أقل سعر نشط من عروض البائعين
-                $min = \DB::table('merchant_products')
+                $min = DB::table('merchant_products')
                     ->where('product_id', $data->id)
                     ->where('status', 1)
                     ->min('price');
@@ -62,20 +70,28 @@ class ProductController extends AdminBaseController
                     return \PriceHelper::showAdminCurrencyPrice(0);
                 }
 
-                // طبّق العمولات (ثابت + نسبة) ثم حوّل لعملة الأدمن
-                $gs = cache()->remember('generalsettings', now()->addDay(), fn () => \DB::table('generalsettings')->first());
-                $base = (float)$min + (float)$gs->fixed_commission + ((float)$min * (float)$gs->percentage_commission / 100);
+                // عمولة المنصة (ثابت + نسبة)
+                $gs = cache()->remember(
+                    'generalsettings',
+                    now()->addDay(),
+                    fn () => DB::table('generalsettings')->first()
+                );
 
+                $base = (float) $min
+                      + (float) $gs->fixed_commission
+                      + ((float) $min * (float) $gs->percentage_commission / 100);
+
+                // إظهار حسب عملة الأدمن
                 return \PriceHelper::showAdminCurrencyPrice($base * $this->curr->value);
             })
             ->editColumn('stock', function (\App\Models\Product $data) {
                 // مجموع مخزون العروض النشطة
-                $sum = \DB::table('merchant_products')
+                $sum = DB::table('merchant_products')
                     ->where('product_id', $data->id)
                     ->where('status', 1)
                     ->sum('stock');
 
-                if ($sum === 0) {
+                if ((int) $sum === 0) {
                     return __("Out Of Stock");
                 }
                 return $sum;
@@ -118,30 +134,68 @@ class ProductController extends AdminBaseController
     //*** JSON Request
     public function catalogdatatables()
     {
+        // // dd(['admin_catalog_datatables' => true]); // اختباري
+
         $datas = Product::where('is_catalog', '=', 1)->orderBy('id', 'desc');
 
         //--- Integrating This Collection Into Datatables
         return Datatables::of($datas)
             ->editColumn('name', function (Product $data) {
                 $name = mb_strlen($data->name, 'UTF-8') > 50 ? mb_substr($data->name, 0, 50, 'UTF-8') . '...' : $data->name;
-                $id = '<small>' . __("ID") . ': <a href="' . route('front.product', ['slug' => $data->slug, 'user' => $data->user_id]) . '" target="_blank">' . sprintf("%'.08d", $data->id) . '</a></small>';
-                $id3 = $data->type == 'Physical' ? '<small class="ml-2"> ' . __("SKU") . ': <a href="' . route('front.product', ['slug' => $data->slug, 'user' => $data->user_id]) . '" target="_blank">' . $data->sku . '</a>' : '';
+
+                // تمرير vendorId الصحيح بدل product->user_id
+                $mp = $data->merchantProducts()
+                    ->where('status', 1)
+                    ->orderByRaw('CASE WHEN (stock IS NULL OR stock = 0) THEN 1 ELSE 0 END ASC')
+                    ->orderBy('price')
+                    ->first();
+
+                $vendorId = optional($mp)->user_id;
+                $prodLink = $vendorId
+                    ? route('front.product', ['slug' => $data->slug, 'user' => $vendorId])
+                    : '#';
+
+                $id  = '<small>' . __("ID") . ': <a href="' . $prodLink . '" target="_blank">' . sprintf("%'.08d", $data->id) . '</a></small>';
+                $id3 = $data->type == 'Physical'
+                    ? '<small class="ml-2"> ' . __("SKU") . ': <a href="' . $prodLink . '" target="_blank">' . $data->sku . '</a>'
+                    : '';
+
                 return $name . '<br>' . $id . $id3 . $data->checkVendor();
             })
             ->editColumn('price', function (Product $data) {
-                $price = $data->price * $this->curr->value;
-                return \PriceHelper::showAdminCurrencyPrice($price);
-            })
-            ->editColumn('stock', function (Product $data) {
-                $stck = (string) $data->stock;
-                if ($stck == "0") {
-                    return __("Out Of Stock");
-                } elseif ($stck == null) {
-                    return __("Unlimited");
-                } else {
-                    return $data->stock;
+                // أقل سعر نشط من عروض البائعين (بدل القراءة من products.price)
+                $min = DB::table('merchant_products')
+                    ->where('product_id', $data->id)
+                    ->where('status', 1)
+                    ->min('price');
+
+                if ($min === null) {
+                    return \PriceHelper::showAdminCurrencyPrice(0);
                 }
 
+                $gs = cache()->remember(
+                    'generalsettings',
+                    now()->addDay(),
+                    fn () => DB::table('generalsettings')->first()
+                );
+
+                $base = (float) $min
+                      + (float) $gs->fixed_commission
+                      + ((float) $min * (float) $gs->percentage_commission / 100);
+
+                return \PriceHelper::showAdminCurrencyPrice($base * $this->curr->value);
+            })
+            ->editColumn('stock', function (Product $data) {
+                // مجموع مخزون العروض النشطة (بدل products.stock)
+                $sum = DB::table('merchant_products')
+                    ->where('product_id', $data->id)
+                    ->where('status', 1)
+                    ->sum('stock');
+
+                if ($sum === 0) {
+                    return __("Out Of Stock");
+                }
+                return $sum;
             })
             ->addColumn('status', function (Product $data) {
                 $class = $data->status == 1 ? 'drop-success' : 'drop-danger';
@@ -160,6 +214,7 @@ class ProductController extends AdminBaseController
     {
         return view('admin.product.catalog');
     }
+
     public function index()
     {
         return view('admin.product.index');
@@ -193,7 +248,6 @@ class ProductController extends AdminBaseController
             return view('admin.product.create.license', compact('cats', 'sign'));
         } else if (($slug == 'listing')) {
             return view('admin.product.create.listing', compact('cats', 'sign'));
-
         }
     }
 
@@ -212,7 +266,6 @@ class ProductController extends AdminBaseController
     //*** POST Request
     public function uploadUpdate(Request $request, $id)
     {
-
         //--- Validation Section
         $rules = [
             'image' => 'required',
@@ -343,7 +396,6 @@ class ProductController extends AdminBaseController
                 $input['color_all'] = null;
                 $input['color_price'] = null;
             } else {
-              
                 $input['color_all'] = implode(',', $request->color_all);
             }
 
@@ -363,7 +415,6 @@ class ProductController extends AdminBaseController
             if ($request->mesasure_check == "") {
                 $input['measure'] = null;
             }
-
         }
 
         if (empty($request->seo_check)) {
@@ -376,7 +427,6 @@ class ProductController extends AdminBaseController
         }
 
         if ($request->type == "License") {
-
             if (in_array(null, $request->license) || in_array(null, $request->license_qty)) {
                 $input['license'] = null;
                 $input['license_qty'] = null;
@@ -384,7 +434,6 @@ class ProductController extends AdminBaseController
                 $input['license'] = implode(',,', $request->license);
                 $input['license_qty'] = implode(',', $request->license_qty);
             }
-
         }
 
         if (in_array(null, $request->features) || in_array(null, $request->colors)) {
@@ -417,11 +466,7 @@ class ProductController extends AdminBaseController
                             $ttt["$in_name" . "_price"][] = $aprice / $sign->value;
                         }
                         $attrArr["$in_name"]["prices"] = $ttt["$in_name" . "_price"];
-                        if ($catAttr->details_status) {
-                            $attrArr["$in_name"]["details_status"] = 1;
-                        } else {
-                            $attrArr["$in_name"]["details_status"] = 0;
-                        }
+                        $attrArr["$in_name"]["details_status"] = $catAttr->details_status ? 1 : 0;
                     }
                 }
             }
@@ -438,11 +483,7 @@ class ProductController extends AdminBaseController
                             $ttt["$in_name" . "_price"][] = $aprice / $sign->value;
                         }
                         $attrArr["$in_name"]["prices"] = $ttt["$in_name" . "_price"];
-                        if ($subAttr->details_status) {
-                            $attrArr["$in_name"]["details_status"] = 1;
-                        } else {
-                            $attrArr["$in_name"]["details_status"] = 0;
-                        }
+                        $attrArr["$in_name"]["details_status"] = $subAttr->details_status ? 1 : 0;
                     }
                 }
             }
@@ -459,11 +500,7 @@ class ProductController extends AdminBaseController
                             $ttt["$in_name" . "_price"][] = $aprice / $sign->value;
                         }
                         $attrArr["$in_name"]["prices"] = $ttt["$in_name" . "_price"];
-                        if ($childAttr->details_status) {
-                            $attrArr["$in_name"]["details_status"] = 1;
-                        } else {
-                            $attrArr["$in_name"]["details_status"] = 0;
-                        }
+                        $attrArr["$in_name"]["details_status"] = $childAttr->details_status ? 1 : 0;
                     }
                 }
             }
@@ -475,9 +512,6 @@ class ProductController extends AdminBaseController
             $jsonAttr = json_encode($attrArr);
             $input['attributes'] = $jsonAttr;
         }
-
-
-        // dd($input);
 
         // Save Data
         $data->fill($input)->save();
@@ -522,7 +556,6 @@ class ProductController extends AdminBaseController
     //*** GET Request
     public function import()
     {
-
         $cats = Category::all();
         $sign = $this->curr;
         return view('admin.product.productcsv', compact('cats', 'sign'));
@@ -573,7 +606,6 @@ class ProductController extends AdminBaseController
                     $input['childcategory_id'] = null;
 
                     $mcat = Category::where(DB::raw('lower(name)'), strtolower($line[1]));
-                    //$mcat = Category::where("name", $line[1]);
 
                     if ($mcat->exists()) {
                         $input['category_id'] = $mcat->first()->id;
@@ -688,7 +720,6 @@ class ProductController extends AdminBaseController
         } else {
             return view('admin.product.edit.physical', compact('cats', 'data', 'sign'));
         }
-
     }
 
     //*** POST Request
@@ -785,12 +816,6 @@ class ProductController extends AdminBaseController
                 $input['color_all'] = null;
             } else {
                 $input['color_all'] = implode(',', $request->color_all);
-                // $color_prices = $request->color_price;
-                // $c_price = array();
-                // foreach ($color_prices as $key => $sPrice) {
-                //     $c_price[$key] = $sPrice / $sign->value;
-                // }
-                // $input['color_price'] = implode(',', $c_price);
             }
 
             // Check Whole Sale
@@ -840,7 +865,6 @@ class ProductController extends AdminBaseController
                     $input['license_qty'] = implode(',', $license_qty);
                 }
             }
-
         }
 
         if (!in_array(null, $request->colors)) {
@@ -888,11 +912,7 @@ class ProductController extends AdminBaseController
                             $ttt["$in_name" . "_price"][] = $aprice / $sign->value;
                         }
                         $attrArr["$in_name"]["prices"] = $ttt["$in_name" . "_price"];
-                        if ($catAttr->details_status) {
-                            $attrArr["$in_name"]["details_status"] = 1;
-                        } else {
-                            $attrArr["$in_name"]["details_status"] = 0;
-                        }
+                        $attrArr["$in_name"]["details_status"] = $catAttr->details_status ? 1 : 0;
                     }
                 }
             }
@@ -909,15 +929,12 @@ class ProductController extends AdminBaseController
                             $ttt["$in_name" . "_price"][] = $aprice / $sign->value;
                         }
                         $attrArr["$in_name"]["prices"] = $ttt["$in_name" . "_price"];
-                        if ($subAttr->details_status) {
-                            $attrArr["$in_name"]["details_status"] = 1;
-                        } else {
-                            $attrArr["$in_name"]["details_status"] = 0;
-                        }
+                        $attrArr["$in_name"]["details_status"] = $subAttr->details_status ? 1 : 0;
                     }
                 }
             }
         }
+
         if (!empty($request->childcategory_id)) {
             $childAttrs = Attribute::where('attributable_id', $request->childcategory_id)->where('attributable_type', 'App\Models\Childcategory')->get();
             if (!empty($childAttrs)) {
@@ -929,11 +946,7 @@ class ProductController extends AdminBaseController
                             $ttt["$in_name" . "_price"][] = $aprice / $sign->value;
                         }
                         $attrArr["$in_name"]["prices"] = $ttt["$in_name" . "_price"];
-                        if ($childAttr->details_status) {
-                            $attrArr["$in_name"]["details_status"] = 1;
-                        } else {
-                            $attrArr["$in_name"]["details_status"] = 0;
-                        }
+                        $attrArr["$in_name"]["details_status"] = $childAttr->details_status ? 1 : 0;
                     }
                 }
             }
@@ -1010,13 +1023,11 @@ class ProductController extends AdminBaseController
         $msg = __('Highlight Updated Successfully.');
         return response()->json($msg);
         //--- Redirect Section Ends
-
     }
 
     //*** GET Request
     public function destroy($id)
     {
-
         $data = Product::findOrFail($id);
         if ($data->galleries->count() > 0) {
             foreach ($data->galleries as $gal) {
@@ -1025,7 +1036,6 @@ class ProductController extends AdminBaseController
                 }
                 $gal->delete();
             }
-
         }
 
         if ($data->reports->count() > 0) {
@@ -1066,7 +1076,6 @@ class ProductController extends AdminBaseController
                     unlink(public_path() . '/assets/images/products/' . $data->photo);
                 }
             }
-
         }
 
         if (file_exists(public_path() . '/assets/images/thumbnails/' . $data->thumbnail) && $data->thumbnail != "") {
@@ -1084,7 +1093,7 @@ class ProductController extends AdminBaseController
         return response()->json($msg);
         //--- Redirect Section Ends
 
-// PRODUCT DELETE ENDS
+        // PRODUCT DELETE ENDS
     }
 
     public function catalog($id1, $id2)
@@ -1154,5 +1163,4 @@ class ProductController extends AdminBaseController
         $crossProducts = Product::where('category_id', $catId)->where('status', 1)->get();
         return view('load.cross_product', compact('crossProducts'));
     }
-
 }

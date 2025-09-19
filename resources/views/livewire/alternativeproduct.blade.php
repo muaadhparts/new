@@ -11,7 +11,7 @@
             <div class="modal-dialog modal-dialog-centered modal-xl">
                 <div class="modal-content">
                     <div class="modal-header d-flex justify-content-between align-items-center">
-                        <h5 class="modal-title fw-bold">@lang('Product Alternatives'): {{ $sku }}</h5>
+                        <h5 class="modal-title fw-bold" id="alternativeModalLabel">@lang('Product Alternatives'): {{ $sku }}</h5>
                         <button type="button" class="btn btn-light rounded-circle shadow-sm"
                                 style="width: 35px; height: 35px; display: flex; align-items: center; justify-content: center;"
                                 data-bs-dismiss="modal" aria-label="Close">
@@ -21,12 +21,14 @@
                     <div class="modal-body">
 
                         @php
-                            // هل العناصر القادمة MerchantProduct أم Product؟
+                            // نوع العناصر: MerchantProduct أو Product
                             $first   = $alternatives->first();
                             $isMpSet = $first instanceof \App\Models\MerchantProduct;
+
+                            // // dd(['alts' => $alternatives->count(), 'isMpSet' => $isMpSet]); // اختباري
                         @endphp
 
-                        <!-- جدول للكمبيوتر -->
+                        <!-- جدول (ديسكتوب) -->
                         <div class="container d-none d-md-block">
                             <table class="table table-bordered text-center align-middle">
                                 <thead class="table-light">
@@ -41,7 +43,7 @@
                                 <tbody>
 
                                     @if($isMpSet)
-                                        {{-- $alternatives = Collection<MerchantProduct> --}}
+                                        {{-- Collection<MerchantProduct> --}}
                                         @forelse($alternatives as $mp)
                                             @php
                                                 $product   = $mp->product;
@@ -49,15 +51,15 @@
                                                 $highlight = ($mp->stock > 0 && $vp > 0);
                                                 $locale    = app()->getLocale();
                                                 $name      = $locale === 'ar'
-                                                            ? ($product->label_ar ?: $product->label_en)
-                                                            : ($product->label_en ?: $product->label_ar);
+                                                             ? ($product->label_ar ?: $product->label_en)
+                                                             : ($product->label_en ?: $product->label_ar);
                                             @endphp
-                                            <tr @if($highlight) style="background-color: #f0fff4;" @endif>
+                                            <tr @if($highlight) style="background-color:#f0fff4;" @endif>
                                                 <td>{{ $product->sku }}</td>
                                                 <td>{{ e($name) }}</td>
-                                                <td>{{ $mp->stock ?? 0 }}</td>
+                                                <td>{{ (int)($mp->stock ?? 0) }}</td>
                                                 <td class="fw-bold {{ $highlight ? 'text-success' : '' }}">
-                                                    {{ method_exists($mp, 'showPrice') ? $mp->showPrice() : $vp }}
+                                                    {{ method_exists($mp, 'showPrice') ? $mp->showPrice() : \App\Models\Product::convertPrice($vp) }}
                                                 </td>
                                                 <td>
                                                     <a class="btn btn-outline-primary btn-sm"
@@ -73,7 +75,7 @@
                                         @endforelse
 
                                     @else
-                                        {{-- $alternatives = Collection<Product> --}}
+                                        {{-- Collection<Product> --}}
                                         @foreach($alternatives as $product)
                                             @php
                                                 $merchants = $product->merchantProducts()
@@ -88,15 +90,15 @@
                                                     $highlight = ($mp->stock > 0 && $vp > 0);
                                                     $locale    = app()->getLocale();
                                                     $name      = $locale === 'ar'
-                                                                ? ($product->label_ar ?: $product->label_en)
-                                                                : ($product->label_en ?: $product->label_ar);
+                                                                 ? ($product->label_ar ?: $product->label_en)
+                                                                 : ($product->label_en ?: $product->label_ar);
                                                 @endphp
-                                                <tr @if($highlight) style="background-color: #f0fff4;" @endif>
+                                                <tr @if($highlight) style="background-color:#f0fff4;" @endif>
                                                     <td>{{ $product->sku }}</td>
                                                     <td>{{ e($name) }}</td>
-                                                    <td>{{ $mp->stock ?? 0 }}</td>
+                                                    <td>{{ (int)($mp->stock ?? 0) }}</td>
                                                     <td class="fw-bold {{ $highlight ? 'text-success' : '' }}">
-                                                        {{ method_exists($mp, 'showPrice') ? $mp->showPrice() : $vp }}
+                                                        {{ method_exists($mp, 'showPrice') ? $mp->showPrice() : \App\Models\Product::convertPrice($vp) }}
                                                     </td>
                                                     <td>
                                                         <a class="btn btn-outline-primary btn-sm"
@@ -125,12 +127,12 @@
                             </table>
                         </div>
 
-                        <!-- كروت للموبايل -->
+                        <!-- كروت (موبايل) -->
                         <div class="container d-block d-md-none">
                             <div class="row g-3">
 
                                 @if($isMpSet)
-                                    {{-- $alternatives = Collection<MerchantProduct> --}}
+                                    {{-- Collection<MerchantProduct> --}}
                                     @forelse($alternatives as $mp)
                                         @php
                                             $product   = $mp->product;
@@ -138,8 +140,8 @@
                                             $highlight = ($mp->stock > 0 && $vp > 0);
                                             $locale    = app()->getLocale();
                                             $name      = $locale === 'ar'
-                                                        ? ($product->label_ar ?: $product->label_en)
-                                                        : ($product->label_en ?: $product->label_ar);
+                                                         ? ($product->label_ar ?: $product->label_en)
+                                                         : ($product->label_en ?: $product->label_ar);
                                         @endphp
                                         <div class="col-12">
                                             <div class="card shadow-sm h-100 @if($highlight) border-success @endif">
@@ -153,9 +155,9 @@
                                                             <h6 class="card-title mb-1">{{ e($name) }}</h6>
                                                             <p class="mb-1 small text-muted"><strong>@lang('Part Number'):</strong> {{ $product->sku }}</p>
                                                             <p class="mb-1 fw-bold {{ $highlight ? 'text-success' : '' }}">
-                                                                {{ method_exists($mp, 'showPrice') ? $mp->showPrice() : $vp }}
+                                                                {{ method_exists($mp, 'showPrice') ? $mp->showPrice() : \App\Models\Product::convertPrice($vp) }}
                                                             </p>
-                                                            <p class="mb-2 small"><strong>@lang('Stock'):</strong> {{ $mp->stock ?? 0 }}</p>
+                                                            <p class="mb-2 small"><strong>@lang('Stock'):</strong> {{ (int)($mp->stock ?? 0) }}</p>
                                                             <a href="{{ route('front.product', ['slug' => $product->slug, 'user' => $mp->user_id]) }}"
                                                                class="btn btn-primary btn-sm w-100">
                                                                 @lang('View')
@@ -170,7 +172,7 @@
                                     @endforelse
 
                                 @else
-                                    {{-- $alternatives = Collection<Product> --}}
+                                    {{-- Collection<Product> --}}
                                     @foreach($alternatives as $product)
                                         @php
                                             $merchants = $product->merchantProducts()
@@ -185,8 +187,8 @@
                                                 $highlight = ($mp->stock > 0 && $vp > 0);
                                                 $locale    = app()->getLocale();
                                                 $name      = $locale === 'ar'
-                                                            ? ($product->label_ar ?: $product->label_en)
-                                                            : ($product->label_en ?: $product->label_ar);
+                                                             ? ($product->label_ar ?: $product->label_en)
+                                                             : ($product->label_en ?: $product->label_ar);
                                             @endphp
                                             <div class="col-12">
                                                 <div class="card shadow-sm h-100 @if($highlight) border-success @endif">
@@ -200,9 +202,9 @@
                                                                 <h6 class="card-title mb-1">{{ e($name) }}</h6>
                                                                 <p class="mb-1 small text-muted"><strong>@lang('Part Number'):</strong> {{ $product->sku }}</p>
                                                                 <p class="mb-1 fw-bold {{ $highlight ? 'text-success' : '' }}">
-                                                                    {{ method_exists($mp, 'showPrice') ? $mp->showPrice() : $vp }}
+                                                                    {{ method_exists($mp, 'showPrice') ? $mp->showPrice() : \App\Models\Product::convertPrice($vp) }}
                                                                 </p>
-                                                                <p class="mb-2 small"><strong>@lang('Stock'):</strong> {{ $mp->stock ?? 0 }}</p>
+                                                                <p class="mb-2 small"><strong>@lang('Stock'):</strong> {{ (int)($mp->stock ?? 0) }}</p>
                                                                 <a href="{{ route('front.product', ['slug' => $product->slug, 'user' => $mp->user_id]) }}"
                                                                    class="btn btn-primary btn-sm w-100">
                                                                     @lang('View')

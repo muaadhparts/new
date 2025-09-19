@@ -2,17 +2,24 @@
     <div class="single-product-list-view">
         <div class="img-wrapper">
             @php
-                // اجلب سجل البائع (merchant) وتمريره من الأعلى، وإلا fallback لأول بائع نشط
                 /** @var \App\Models\Product $product */
                 /** @var \App\Models\MerchantProduct|null $merchant */
-                $merchant = $merchant ?? optional($product->merchantProducts()->where('status',1)->first());
-                $vendorId = $vendorId ?? optional($merchant)->user_id;
+
+                // اختر عرض البائع: نشط أولًا، المتوفر قبل غير المتوفر، ثم الأرخص
+                $merchant = $merchant
+                    ?? $product->merchantProducts()
+                        ->where('status', 1)
+                        ->orderByRaw('CASE WHEN (stock IS NULL OR stock = 0) THEN 1 ELSE 0 END ASC')
+                        ->orderBy('price')
+                        ->first();
+
+                $vendorId  = $vendorId ?? optional($merchant)->user_id ?? 0;
+                $hasVendor = $vendorId > 0;
 
                 // نسبة الخصم على مستوى البائع (اختياري)
                 $off = 0;
                 if ($merchant && $merchant->previous_price > 0 && $merchant->price > 0) {
-                    $off = (($merchant->previous_price - $merchant->price) * 100) / $merchant->previous_price;
-                    $off = round($off);
+                    $off = round((($merchant->previous_price - $merchant->price) * 100) / $merchant->previous_price);
                 }
             @endphp
 
@@ -21,7 +28,8 @@
             @endif
 
             @if (Auth::check())
-                <a href="javascript" class="wishlist" data-href="{{ route('user-wishlist-add', $product->id) }}">
+                <a href="javascript:;" class="wishlist"
+                   data-href="{{ $hasVendor ? route('user-wishlist-add', ['id' => $product->id, 'user' => $vendorId]) : 'javascript:;' }}">
                     <div class="add-to-wishlist-btn {{ wishlistCheck($product->id) ? 'active' : '' }}">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
                             <path fill-rule="evenodd" clip-rule="evenodd"
@@ -50,13 +58,12 @@
         </div>
 
         <div class="content-wrapper">
+            @php
+                $vendorId  = $vendorId ?? optional($merchant)->user_id ?? 0;
+                $detailsUrl = $vendorId ? route('front.product', ['slug' => $product->slug, 'user' => $vendorId]) : 'javascript:;';
+            @endphp
             <h4 class="xproduct-title">
-                @php
-                    $vendorId = $vendorId ?? optional($merchant)->user_id ?? 0;
-                @endphp
-                <a href="{{ route('front.product', ['slug' => $product->slug, 'user' => $vendorId]) }}">
-                    {{ $product->showName() }}
-                </a>
+                <a href="{{ $detailsUrl }}">{{ $product->showName() }}</a>
             </h4>
 
             <h4 class="xproduct-title">{{ $product->label_ar }}</h4>
@@ -99,7 +106,7 @@
         </div>
 
         <div class="content-wrapper align-content-center align-items-center">
-            <img src="{{ asset('assets/images/brand/' . $product->brand?->photo) }}" width="100" height="100">
+            <img src="{{ asset('assets/images/brand/' . $product->brand?->photo) }}" width="100" height="100" alt="brand">
 
             @if($merchant)
                 <div class="price-wrapper">
@@ -124,7 +131,7 @@
                 </div>
 
                 {{-- رابط التفاصيل يجب أن يحمل vendorId --}}
-                <a href="{{ route('front.product', ['slug' => $product->slug, 'user' => $vendorId]) }}" title="{{ __('show_product') }}">
+                <a href="{{ $detailsUrl }}" title="{{ __('show_product') }}">
                     <div class="details">
                         <svg class="icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24"
                              viewBox="0 0 24 24" fill="none">
@@ -136,8 +143,9 @@
                     </div>
                 </a>
 
-                {{-- باقي الأزرار كما هي --}}
-                <a href="javascript:;" class="compare_product" data-href="{{ route('product.compare.add', $product->id) }}">
+                {{-- Compare: يمرر vendorId --}}
+                <a href="javascript:;" class="compare_product"
+                   data-href="{{ $hasVendor ? route('product.compare.add', ['id' => $product->id, 'user' => $vendorId]) : 'javascript:;' }}">
                     <div class="compare">
                         <svg class="icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
                             <path d="M18.1777 8C23.2737 8 23.2737 16 18.1777 16C13.0827 16 11.0447 8 5.43875 8C0.85375 8 0.85375 16 5.43875 16C11.0447 16 13.0828 8 18.1788 8H18.1777Z"
@@ -151,13 +159,15 @@
                         <div class="add-cart">@lang('Add To Cart')</div>
                     </a>
                 @else
-                    @if ($stockQty == 0)
+                    @if (!$hasVendor || ($stockQty ?? 0) == 0)
                         <div class="add-cart">{{ __('Out of Stock') }}</div>
                     @else
                         @if ($product->type != 'Listing')
                             <a {{ $product->cross_products ? 'data-bs-target=#exampleModal' : '' }} href="javascript:;"
-                               data-href="{{ route('product.cart.add', $product->id) }}"
+                               data-href="{{ route('product.cart.add', ['id' => $product->id, 'user' => $vendorId]) }}"
                                data-cross-href="{{ route('front.show.cross.product', $product->id) }}"
+                               data-user="{{ $vendorId }}"
+                               data-product="{{ $product->id }}"
                                class="add_cart_click {{ $product->cross_products ? 'view_cross_product' : '' }}">
                                 <div class="add-cart">@lang('Add To Cart')</div>
                             </a>
