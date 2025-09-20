@@ -21,6 +21,35 @@ class Cart extends Model
         }
     }
 
+    /* ============================ أدوات مساعدة عامة ============================ */
+
+    /**
+     * استخرج vendorId من العنصر (يُحقن مسبقًا داخل المنتج في الكنترولر).
+     */
+    protected function vendorIdFromItem($item): int
+    {
+        return (int)($item->vendor_user_id ?? $item->user_id ?? 0);
+    }
+
+    /**
+     * أنشئ مفتاح العنصر في السلة مع تمييز البائع.
+     * الشكل: id : u{vendor} : {size_key|size} : {color} : {values-clean}
+     */
+    protected function makeKey($item, $size = '', $color = '', $values = '', $size_key = '')
+    {
+        $vendor = $this->vendorIdFromItem($item);
+        $cleanValues = is_string($values) ? str_replace([' ', ','], '', $values) : (string)$values;
+        $dim = ($size_key !== '' && $size_key !== null) ? $size_key : $size;
+
+        return implode(':', [
+            $item->id,
+            'u' . $vendor,
+            (string)$dim,
+            (string)$color,
+            (string)$cleanValues,
+        ]);
+    }
+
     private function toArrayValues($v): array
     {
         if (is_array($v)) return $v;
@@ -47,10 +76,12 @@ class Cart extends Model
         return [$picked, $pickedQty];
     }
 
+    /* ============================ إضافة عنصر (1 وحدة) ============================ */
+
     public function add($item, $id, $size, $color, $keys, $values)
     {
         $storedItem = [
-            'user_id'      => $item->user_id,
+            'user_id'      => $this->vendorIdFromItem($item),
             'qty'          => 0,
             'size_key'     => 0,
             'size_qty'     => $item->size_qty,
@@ -69,7 +100,8 @@ class Cart extends Model
             'affilate_user'=> 0
         ];
 
-        $key = $id . $size . $color . str_replace(str_split(' ,'), '', $values);
+        // مفتاح Vendor-aware
+        $key = $this->makeKey($item, (string)$size, (string)$color, (string)$values, '');
 
         if ($item->type == 'Physical') {
             if ($this->items && array_key_exists($key, $this->items)) {
@@ -148,15 +180,18 @@ class Cart extends Model
         $storedItem['price'] = $item->price * $storedItem['qty'];
         $this->items[$key]   = $storedItem;
         $this->totalQty++;
+        // // dd(['add_key'=>$key,'vendor'=>$this->vendorIdFromItem($item)]); // اختباري
     }
 
-    public function addnum($item, $id, $qty, $size, $color, $size_qty, $size_price,$color_price, $size_key, $keys, $values, $affilate_user)
+    /* ============================ إضافة عنصر (كمية) ============================ */
+
+    public function addnum($item, $id, $qty, $size, $color, $size_qty, $size_price, $color_price, $size_key, $keys, $values, $affilate_user)
     {
         $size_cost  = 0;
         $color_cost = 0;
 
         $storedItem = [
-            'user_id'      => $item->user_id,
+            'user_id'      => $this->vendorIdFromItem($item),
             'qty'          => 0,
             'size_key'     => 0,
             'size_qty'     => $item->size_qty,
@@ -176,7 +211,8 @@ class Cart extends Model
             'affilate_user'=> 0
         ];
 
-        $key = $id . $size . $color . str_replace(str_split(' ,'), '', $values);
+        // مفتاح Vendor-aware
+        $key = $this->makeKey($item, (string)$size, (string)$color, (string)$values, (string)$size_key);
 
         if ($item->type == 'Physical') {
             if ($this->items && array_key_exists($key, $this->items)) {
@@ -274,7 +310,11 @@ class Cart extends Model
         $storedItem['price'] = $item->price * $storedItem['qty'];
         $this->items[$key]   = $storedItem;
         $this->totalQty     += $storedItem['qty'];
+
+        // // dd(['addnum_key'=>$key,'vendor'=>$this->vendorIdFromItem($item),'qty'=>$storedItem['qty']]); // اختباري
     }
+
+    /* ============================ دوال دعم موجودة أصلًا ============================ */
 
     public function adding($item, $id, $size_qty, $size_price)
     {

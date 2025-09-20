@@ -18,56 +18,6 @@ use Illuminate\Support\Facades\Validator;
 
 class ProductDetailsController extends FrontBaseController
 {
-
-    // -------------------------------- PRODUCT DETAILS SECTION ----------------------------------------
-
-    // public function product(Request $request, $slug)
-    // {
-    //     $affilate_user = 0;
-    //     $gs = $this->gs;
-    //     if ($gs->product_affilate == 1) {
-    //         if ($request->has('ref')) {
-    //             if (!empty($request->ref)) {
-    //                 $ref = $request->ref;
-    //                 $user = User::where('affilate_code', $ref)->first();
-    //                 if ($user) {
-    //                     $affilate_users = array();
-    //                     $ck = false;
-    //                     if (Auth::check()) {
-    //                         // Checking whether the affiliate holder is using his own affilate
-    //                         if (Auth::user()->id != $user->id) {
-    //                             $affilate_user = $user->id;
-    //                         }
-    //                     } else {
-    //                         $affilate_user = $user->id;
-    //                     }
-    //                 }
-    //             }
-    //         }
-    //     }
-    //
-    //     $productt = Product::with('user', 'galleries')->where('slug', '=', $slug)->firstOrFail();
-    //     $vendor_products = Product::where('user_id', $productt->user_id)->where('id', '!=', $productt->id)->where('status', 1)->orderBy('id', 'desc')
-    //         ->withCount('ratings')
-    //         ->withAvg('ratings', 'rating')
-    //         ->take(9)->get();
-    //
-    //     if ($productt->status == 0) {
-    //         return response()->view('errors.404')->setStatusCode(404);
-    //     }
-    //
-    //     $productt->views += 1;
-    //     $productt->update();
-    //     $curr = $this->curr;
-    //
-    //     $product_click = new ProductClick;
-    //     $product_click->product_id = $productt->id;
-    //     $product_click->date = Carbon::now()->format('Y-m-d');
-    //     $product_click->save();
-    //
-    //     return view('frontend.product', compact('productt', 'curr', 'affilate_user', 'vendor_products'));
-    // }
-
     /**
      * صفحة تفاصيل المنتج: /item/{slug}/{user}
      * تربط المنتج بالبائع عبر merchant_products وليس عبر products.user_id.
@@ -90,29 +40,47 @@ class ProductDetailsController extends FrontBaseController
             }
         }
 
-        // المنتج أصبح مرتبطًا بالتاجر من خلال جدول merchant_products
-        // نحاول العثور على سجل التاجر (MerchantProduct) بناءً على الـ slug ومعرّف المستخدم (التاجر).
-        $merchantProduct = MerchantProduct::where('user_id', $user)
-            ->whereHas('product', function ($query) use ($slug) {
-                $query->where('slug', '=', $slug);
-            })
-            ->with([
-                'product' => function ($q) {
-                    $q->with('galleries')
-                      ->withCount('ratings')
-                      ->withAvg('ratings', 'rating');
-                }
-            ])
+        // 1) هوية المنتج من الـ slug
+        $productt = Product::with(['galleries'])
+            ->withCount('ratings')
+            ->withAvg('ratings', 'rating')
+            ->where('slug', $slug)
             ->firstOrFail();
 
-        $productt = $merchantProduct->product;
+        // 2) التأكد من {user}
+        $userId = (int) $user;
+        if ($userId <= 0) {
+            // ليس لدينا بائع صالح، نحاول تحويل المستخدم لأقرب بائع فعّال
+            $fallback = MerchantProduct::where('product_id', $productt->id)
+                ->where('status', 1)
+                ->orderByRaw('CASE WHEN (stock IS NULL OR stock = 0) THEN 1 ELSE 0 END ASC')
+                ->orderBy('price')
+                ->first();
 
-        // إذا كانت حالة العرض للبائع غير مفعلة → 404
-        if ($merchantProduct->status == 0) {
-            return response()->view('errors.404')->setStatusCode(404);
+            return $fallback
+                ? redirect()->route('front.product', ['slug' => $slug, 'user' => $fallback->user_id])
+                : response()->view('errors.404')->setStatusCode(404);
         }
 
-        // بائعون آخرون لنفس المنتج (غير المختار)
+        // 3) عرض البائع لهذا المنتج (لا تستخدم firstOrFail لتفادي الاستثناء)
+        $merchantProduct = MerchantProduct::where('product_id', $productt->id)
+            ->where('user_id', $userId)
+            ->first();
+
+        // إن لم يوجد أو غير مفعّل → إعادة توجيه لأقرب بائع فعّال إن وُجد، وإلا 404
+        if (!$merchantProduct || (int) $merchantProduct->status !== 1) {
+            $fallback = MerchantProduct::where('product_id', $productt->id)
+                ->where('status', 1)
+                ->orderByRaw('CASE WHEN (stock IS NULL OR stock = 0) THEN 1 ELSE 0 END ASC')
+                ->orderBy('price')
+                ->first();
+
+            return $fallback
+                ? redirect()->route('front.product', ['slug' => $slug, 'user' => $fallback->user_id])
+                : response()->view('errors.404')->setStatusCode(404);
+        }
+
+        // 4) بائعون آخرون لنفس المنتج (غير المختار)
         $otherSellers = MerchantProduct::query()
             ->where('product_id', $productt->id)
             ->where('status', 1)
@@ -120,7 +88,7 @@ class ProductDetailsController extends FrontBaseController
             ->with('user:id,shop_name,is_vendor')
             ->get();
 
-        // منتجات أخرى لنفس البائع (عروض أخرى غير هذا المنتج)
+        // 5) منتجات أخرى لنفس البائع (عروض أخرى غير هذا المنتج)
         $vendorListings = MerchantProduct::query()
             ->where('user_id', $merchantProduct->user_id)
             ->where('status', 1)
@@ -135,17 +103,17 @@ class ProductDetailsController extends FrontBaseController
         // مصفوفة Products لتوافق القوالب القديمة
         $vendor_products = $vendorListings->pluck('product');
 
-        // زيادة المشاهدات وتسجيل النقرات كما هو
-        $productt->views += 1;
-        $productt->update();
-        $curr = $this->curr;
+        // 6) زيادة المشاهدات وتسجيل النقرات كما هو
+        $productt->increment('views');
 
         $product_click = new ProductClick;
         $product_click->product_id = $productt->id;
         $product_click->date = Carbon::now()->format('Y-m-d');
         $product_click->save();
 
-        // ملاحظة: في الـ Blade، السعر/المخزون يُقرأ من merchantProduct (عرض البائع)،
+        $curr = $this->curr;
+
+        // ملاحظة: في الـ Blade، السعر/المخزون يُقرأ من merchant (عرض البائع)،
         // بينما الهوية/الصور/التقييمات من productt.
         return view('frontend.product', [
             'productt'        => $productt,
@@ -189,22 +157,17 @@ class ProductDetailsController extends FrontBaseController
 
     public function report(Request $request)
     {
-        $rules = [
-            'note' => 'max:400',
-        ];
-        $customs = [
-            'note.max' => __('Note Must Be Less Than 400 Characters.'),
-        ];
+        $rules = ['note' => 'max:400'];
+        $customs = ['note.max' => __('Note Must Be Less Than 400 Characters.')];
         $validator = Validator::make($request->all(), $rules, $customs);
+
         if ($validator->fails()) {
-            return response()->json(array('errors' => $validator->getMessageBag()->toArray()));
+            return response()->json(['errors' => $validator->getMessageBag()->toArray()]);
         }
+
         $data = new Report;
-        $input = $request->all();
-        $data->fill($input)->save();
-        $msg = __('Report Sent Successfully.');
-        return response()->json($msg);
-        //--- Redirect Section Ends
+        $data->fill($request->all())->save();
+        return response()->json(__('Report Sent Successfully.'));
     }
 
     public function quick($id)
@@ -219,15 +182,14 @@ class ProductDetailsController extends FrontBaseController
         $product = Product::where('slug', '=', $slug)->first();
         return redirect($product->affiliate_link);
     }
-    // -------------------------------- PRODUCT DETAILS SECTION ENDS----------------------------------------
 
     // -------------------------------- PRODUCT COMMENT SECTION ----------------------------------------
 
     public function comment(Request $request)
     {
         $comment = new Comment;
-        $input = $request->all();
-        $comment->fill($input)->save();
+        $comment->fill($request->all())->save();
+
         $data[0] = $comment->user->photo ? url('assets/images/users/' . $comment->user->photo) : url('assets/images/' . $this->gs->user_image);
         $data[1] = $comment->user->name;
         $data[2] = $comment->created_at->diffForHumans();
@@ -236,45 +198,20 @@ class ProductDetailsController extends FrontBaseController
         $data[6] = route('product.comment.edit', $comment->id);
         $data[7] = route('product.reply', $comment->id);
         $data[8] = $comment->user->id;
+
         $newdata = '<li>';
         $newdata .= '<div class="single-comment comment-section">';
-        $newdata .= '<div class="left-area">';
-        $newdata .= '<img src="' . $data[0] . '" alt="">';
-        $newdata .= '<h5 class="name">' . $data[1] . '</h5>';
-        $newdata .= '<p class="date">' . $data[2] . '</p>';
-        $newdata .= '</div>';
-        $newdata .= '<div class="right-area">';
-        $newdata .= '<div class="comment-body">';
-        $newdata .= '<p>' . $data[3] . '</p>';
-        $newdata .= '</div>';
-        $newdata .= '<div class="comment-footer">';
-        $newdata .= '<div class="links">';
+        $newdata .= '<div class="left-area"><img src="' . $data[0] . '" alt=""><h5 class="name">' . $data[1] . '</h5><p class="date">' . $data[2] . '</p></div>';
+        $newdata .= '<div class="right-area"><div class="comment-body"><p>' . $data[3] . '</p></div>';
+        $newdata .= '<div class="comment-footer"><div class="links">';
         $newdata .= '<a href="javascript:;" class="comment-link reply mr-2"><i class="fas fa-reply "></i>' . __('Reply') . '</a>';
         $newdata .= '<a href="javascript:;" class="comment-link edit mr-2"><i class="fas fa-edit "></i>' . __('Edit') . '</a>';
-        $newdata .= '<a href="javascript:;" data-href="' . $data[5] . '" class="comment-link comment-delete mr-2">';
-        $newdata .= '<i class="fas fa-trash"></i>' . __('Delete') . '</a>';
-        $newdata .= '</div>';
-        $newdata .= '</div>';
-        $newdata .= '</div>';
-        $newdata .= '</div>';
-        $newdata .= '<div class="replay-area edit-area d-none">';
-        $newdata .= '<form class="update" action="' . $data[6] . '" method="POST">';
-        $newdata .= csrf_field();
-        $newdata .= '<textarea placeholder="' . __('Edit Your Comment') . '" name="text" required=""></textarea>';
-        $newdata .= '<button type="submit">' . __('Submit') . '</button>';
-        $newdata .= '<a href="javascript:;" class="remove">' . __('Cancel') . '</a>';
-        $newdata .= '</form>';
-        $newdata .= '</div>';
-        $newdata .= '<div class="replay-area reply-reply-area d-none">';
-        $newdata .= '<form class="reply-form" action="' . $data[7] . '" method="POST">';
-        $newdata .= '<input type="hidden" name="user_id" value="' . $data[8] . '">';
-        $newdata .= csrf_field();
-        $newdata .= '<textarea placeholder="' . __('Write Your Reply') . '" name="text" required=""></textarea>';
-        $newdata .= '<button type="submit">' . __('Submit') . '</button>';
-        $newdata .= '<a href="javascript:;" class="remove">' . __('Cancel') . '</a>';
-        $newdata .= '</form>';
-        $newdata .= '</div>';
+        $newdata .= '<a href="javascript:;" data-href="' . $data[5] . '" class="comment-link comment-delete mr-2"><i class="fas fa-trash"></i>' . __('Delete') . '</a>';
+        $newdata .= '</div></div></div></div>';
+        $newdata .= '<div class="replay-area edit-area d-none"><form class="update" action="' . $data[6] . '" method="POST">' . csrf_field() . '<textarea placeholder="' . __('Edit Your Comment') . '" name="text" required=""></textarea><button type="submit">' . __('Submit') . '</button><a href="javascript:;" class="remove">' . __('Cancel') . '</a></form></div>';
+        $newdata .= '<div class="replay-area reply-reply-area d-none"><form class="reply-form" action="' . $data[7] . '" method="POST"><input type="hidden" name="user_id" value="' . $data[8] . '">' . csrf_field() . '<textarea placeholder="' . __('Write Your Reply') . '" name="text" required=""></textarea><button type="submit">' . __('Submit') . '</button><a href="javascript:;" class="remove">' . __('Cancel') . '</a></form></div>';
         $newdata .= '</li>';
+
         return response()->json($newdata);
     }
 
@@ -282,7 +219,8 @@ class ProductDetailsController extends FrontBaseController
     {
         $comment = Comment::findOrFail($id);
         $comment->text = $request->text;
-        $comment->update();
+        $comment->save();
+
         return response()->json($comment->text);
     }
 
@@ -290,57 +228,35 @@ class ProductDetailsController extends FrontBaseController
     {
         $comment = Comment::findOrFail($id);
         if ($comment->replies->count() > 0) {
-            foreach ($comment->replies as $reply) {
-                $reply->delete();
-            }
+            foreach ($comment->replies as $reply) { $reply->delete(); }
         }
         $comment->delete();
     }
-
-    // -------------------------------- PRODUCT COMMENT SECTION ENDS ----------------------------------------
 
     // -------------------------------- PRODUCT REPLY SECTION ----------------------------------------
 
     public function reply(Request $request, $id)
     {
         $reply = new Reply;
-        $input = $request->all();
-        $input['comment_id'] = $id;
-        $reply->fill($input)->save();
-        $data[0] = $reply->user->photo ? url('assets/images/users/' . $reply->user->photo) : url('assets/images/' . $this->gs->user_image);
-        $data[1] = $reply->user->name;
-        $data[2] = $reply->created_at->diffForHumans();
-        $data[3] = $reply->text;
-        $data[4] = route('product.reply.delete', $reply->id);
-        $data[5] = route('product.reply.edit', $reply->id);
-        $newdata = '<div class="single-comment replay-review">';
-        $newdata .= '<div class="left-area">';
-        $newdata .= '<img src="' . $data[0] . '" alt="">';
-        $newdata .= '<h5 class="name">' . $data[1] . '</h5>';
-        $newdata .= '<p class="date">' . $data[2] . '</p>';
-        $newdata .= '</div>';
-        $newdata .= '<div class="right-area">';
-        $newdata .= '<div class="comment-body">';
-        $newdata .= '<p>' . $data[3] . '</p>';
-        $newdata .= '</div>';
-        $newdata .= '<div class="comment-footer">';
-        $newdata .= '<div class="links">';
+        $data = $request->all();
+        $data['comment_id'] = $id;
+        $reply->fill($data)->save();
+
+        $resp[0] = $reply->user->photo ? url('assets/images/users/' . $reply->user->photo) : url('assets/images/' . $this->gs->user_image);
+        $resp[1] = $reply->user->name;
+        $resp[2] = $reply->created_at->diffForHumans();
+        $resp[3] = $reply->text;
+        $resp[4] = route('product.reply.delete', $reply->id);
+        $resp[5] = route('product.reply.edit', $reply->id);
+
+        $newdata = '<div class="single-comment replay-review"><div class="left-area"><img src="' . $resp[0] . '" alt=""><h5 class="name">' . $resp[1] . '</h5><p class="date">' . $resp[2] . '</p></div>';
+        $newdata .= '<div class="right-area"><div class="comment-body"><p>' . $resp[3] . '</p></div><div class="comment-footer"><div class="links">';
         $newdata .= '<a href="javascript:;" class="comment-link reply mr-2"><i class="fas fa-reply "></i>' . __('Reply') . '</a>';
         $newdata .= '<a href="javascript:;" class="comment-link edit mr-2"><i class="fas fa-edit "></i>' . __('Edit') . '</a>';
-        $newdata .= '<a href="javascript:;" data-href="' . $data[4] . '" class="comment-link reply-delete mr-2">';
-        $newdata .= '<i class="fas fa-trash"></i>' . __('Delete') . '</a>';
-        $newdata .= '</div>';
-        $newdata .= '</div>';
-        $newdata .= '</div>';
-        $newdata .= '</div>';
-        $newdata .= '<div class="replay-area edit-area d-none">';
-        $newdata .= '<form class="update" action="' . $data[5] . '" method="POST">';
-        $newdata .= csrf_field();
-        $newdata .= '<textarea placeholder="' . __('Edit Your Reply') . '" name="text" required=""></textarea>';
-        $newdata .= '<button type="submit">' . __('Submit') . '</button>';
-        $newdata .= '<a href="javascript:;" class="remove">' . __('Cancel') . '</a>';
-        $newdata .= '</form>';
-        $newdata .= '</div>';
+        $newdata .= '<a href="javascript:;" data-href="' . $resp[4] . '" class="comment-link reply-delete mr-2"><i class="fas fa-trash"></i>' . __('Delete') . '</a>';
+        $newdata .= '</div></div></div></div>';
+        $newdata .= '<div class="replay-area edit-area d-none"><form class="update" action="' . $resp[5] . '" method="POST">' . csrf_field() . '<textarea placeholder="' . __('Edit Your Reply') . '" name="text" required=""></textarea><button type="submit">' . __('Submit') . '</button><a href="javascript:;" class="remove">' . __('Cancel') . '</a></form></div>';
+
         return response()->json($newdata);
     }
 
@@ -348,7 +264,7 @@ class ProductDetailsController extends FrontBaseController
     {
         $reply = Reply::findOrFail($id);
         $reply->text = $request->text;
-        $reply->update();
+        $reply->save();
         return response()->json($reply->text);
     }
 
@@ -358,43 +274,38 @@ class ProductDetailsController extends FrontBaseController
         $reply->delete();
     }
 
-    // -------------------------------- PRODUCT REPLY SECTION ENDS----------------------------------------
-
     // ------------------ Rating SECTION --------------------
 
     public function reviewsubmit(Request $request)
     {
         $ck = 0;
-        $orders = Order::where('user_id', '=', $request->user_id)->where('status', '=', 'completed')->get();
+        $orders = Order::where('user_id', $request->user_id)->where('status', 'completed')->get();
 
         foreach ($orders as $order) {
             $cart = json_decode($order->cart, true);
             foreach ($cart['items'] as $product) {
-                if ($request->product_id == $product['item']['id']) {
-                    $ck = 1;
-                    break;
-                }
+                if ($request->product_id == $product['item']['id']) { $ck = 1; break; }
             }
         }
+
         if ($ck == 1) {
             $user = Auth::user();
-            $prev_reviewer = Rating::where('product_id', '=', $request->product_id)->where('user_id', '=', $user->id)->first();
-            if (isset($prev_reviewer)) {
-                $input = $request->all();
-                $input['review_date'] = date('Y-m-d H:i:s');
-                $prev_reviewer->update($input);
-                $data = __('Your Rating Submitted Successfully.');
-                return back()->with('success', $data);
+            $prev = Rating::where('product_id', $request->product_id)->where('user_id', $user->id)->first();
+            $payload = $request->all();
+            $payload['review_date'] = date('Y-m-d H:i:s');
+
+            if ($prev) {
+                $prev->update($payload);
+            } else {
+                $rating = new Rating;
+                $rating->fill($payload);
+                $rating['review_date'] = date('Y-m-d H:i:s');
+                $rating->save();
             }
-            $Rating = new Rating;
-            $Rating->fill($request->all());
-            $Rating['review_date'] = date('Y-m-d H:i:s');
-            $Rating->save();
-            $data = __('Your Rating Submitted Successfully.');
-            return back()->with('success', $data);
-        } else {
-            return back()->with('unsuccess', __('You did not purchase this product.'));
+            return back()->with('success', __('Your Rating Submitted Successfully.'));
         }
+
+        return back()->with('unsuccess', __('You did not purchase this product.'));
     }
 
     public function reviews($id)
@@ -409,17 +320,15 @@ class ProductDetailsController extends FrontBaseController
         return view('load.side-load', compact('productt'));
     }
 
-    // ------------------ Rating SECTION ENDS --------------------
-
     public function showCrossProduct($id)
     {
         $product = Product::findOrFail($id);
-        $cross_ids = explode(',', $product->cross_products);
+        $cross_ids = array_filter(explode(',', (string) $product->cross_products));
+        $cross_products = Product::whereIn('id', $cross_ids)
+            ->withCount('ratings')
+            ->withAvg('ratings', 'rating')
+            ->get();
 
-        $cross_products = Product::whereIn('id', $cross_ids)->withCount('ratings')
-            ->withAvg('ratings', 'rating')->get();
         return view('includes.cross_product', compact('cross_products'));
-
     }
-
 }

@@ -2,13 +2,84 @@
 
 @section('content')
     @php
-        /** تهيئة المستخدم الحالي مرة واحدة للاستخدام في كامل الصفحة */
-        $currentUser = $user ?? auth()->user();
-        $mpCount     = $currentUser->merchantProducts()->count();
-        $soldQty     = \App\Models\VendorOrder::where('user_id', $currentUser->id)->where('status', 'completed')->sum('qty');
-        $recentEarning = \App\Models\VendorOrder::with('order')->where('user_id', $currentUser->id);
-        $recentEarningSum = $recentEarning->count() > 0 ? $recentEarning->sum('price') : 0;
-        $pendingCommission = $currentUser->admin_commission;
+        use Carbon\Carbon;
+
+        /** تهيئة المستخدم الحالي */
+        $currentUser        = $user ?? auth()->user();
+
+        /** بطاقات المعلومات العلوية */
+        $mpCount            = $currentUser->merchantProducts()->count();
+        $soldQty            = \App\Models\VendorOrder::where('user_id', $currentUser->id)
+                                ->where('status', 'completed')->sum('qty');
+        $recentEarningQ     = \App\Models\VendorOrder::with('order')->where('user_id', $currentUser->id);
+        $recentEarningSum   = $recentEarningQ->count() > 0 ? $recentEarningQ->sum('price') : 0;
+        $pendingCommission  = $currentUser->admin_commission;
+
+        /** مصدر جدول المنتجات الحديثة (يدعم $pproducts | $datas | fallback) */
+        $recentSource = $pproducts ?? ($datas ?? null);
+        if ($recentSource instanceof \Illuminate\Pagination\LengthAwarePaginator) {
+            $recentProducts = collect($recentSource->items());
+        } elseif (is_array($recentSource) || $recentSource instanceof \Illuminate\Support\Collection) {
+            $recentProducts = collect($recentSource);
+        } else {
+            // fallback — آخر 10 عروض للبائع
+            $recentProducts = $currentUser->merchantProducts()
+                ->with(['product.category','product.subcategory','product.childcategory'])
+                ->latest('id')->take(10)->get();
+        }
+
+        /** مصدر جدول الطلبات الحديثة (يدعم $rorders | $orders | fallback) */
+        $recentOrders = $rorders ?? ($orders ?? null);
+        if ($recentOrders instanceof \Illuminate\Pagination\LengthAwarePaginator) {
+            $recentOrders = collect($recentOrders->items());
+        } elseif (is_array($recentOrders)) {
+            $recentOrders = collect($recentOrders);
+        } elseif ($recentOrders instanceof \Illuminate\Support\Collection) {
+            // OK
+        } else {
+            // fallback — آخر 10 طلبات للبائع
+            $recentOrders = \App\Models\VendorOrder::where('user_id', $currentUser->id)
+                ->latest('id')->take(10)->get();
+        }
+
+        /**
+         * بيانات الرسم البياني:
+         * إن لم يأتِ $sales/$days من الكنترولر، نحسب آخر 12 شهرًا (اسم الشهر + مجموع price للطلبات المكتملة)
+         */
+        $hasDaysFromController  = isset($days)  && is_string($days)  && trim($days)  !== '';
+        $hasSalesFromController = isset($sales) && is_string($sales) && trim($sales) !== '';
+
+        if ($hasDaysFromController && $hasSalesFromController) {
+            $daysJson  = $days;   // يفترض أنها JSON جاهزة من الكنترولر
+            $salesJson = $sales;  // يفترض أنها JSON جاهزة من الكنترولر
+        } else {
+            // نحسب آخر 12 شهرًا
+            $months = [];
+            $totals = [];
+
+            for ($i = 11; $i >= 0; $i--) {
+                $mKey = Carbon::now()->subMonths($i)->format('Y-m');
+                $label = Carbon::now()->subMonths($i)->format('M');
+                $months[$mKey] = $label;
+                $totals[$mKey] = 0;
+            }
+
+            $since = Carbon::now()->subMonths(11)->startOfMonth();
+            $vendorCompleted = \App\Models\VendorOrder::where('user_id', $currentUser->id)
+                                ->where('status', 'completed')
+                                ->where('created_at', '>=', $since)
+                                ->get(['price','created_at']);
+
+            foreach ($vendorCompleted as $vo) {
+                $key = Carbon::parse($vo->created_at)->format('Y-m');
+                if (array_key_exists($key, $totals)) {
+                    $totals[$key] += (float) $vo->price;
+                }
+            }
+
+            $daysJson  = json_encode(array_values($months), JSON_UNESCAPED_UNICODE);
+            $salesJson = json_encode(array_values($totals));
+        }
     @endphp
 
     <div class="gs-vendor-outlet">
@@ -76,7 +147,7 @@
                     <div class="title-and-value-wrapper">
                         <p class="title">@lang('Current Balance')</p>
                         <h3 class="value">
-                            {{$curr->sign}}
+                            {{ $curr->sign }}
                             <span class="counter">
                                 {{ \App\Models\Product::vendorConvertWithoutCurrencyPrice($currentUser->current_balance) }}
                             </span>
@@ -91,7 +162,7 @@
                     <div class="title-and-value-wrapper">
                         <p class="title">@lang('Total Earning')</p>
                         <h3 class="value">
-                            {{$curr->sign}}
+                            {{ $curr->sign }}
                             <span class="counter">
                                 {{ \App\Models\Product::vendorConvertWithoutCurrencyPrice($recentEarningSum) }}
                             </span>
@@ -106,7 +177,7 @@
                     <div class="title-and-value-wrapper">
                         <p class="title">@lang('Pending Commision')</p>
                         <h3 class="value">
-                            {{$curr->sign}}
+                            {{ $curr->sign }}
                             <span class="counter">
                                 {{ \App\Models\Product::vendorConvertWithoutCurrencyPrice($pendingCommission) }}
                             </span>
@@ -136,60 +207,65 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @forelse ($pproducts as $data)
+                                @forelse ($recentProducts as $row)
                                     @php
-                                        // سعر البائع الحالي (Vendor-aware)
-                                        $mp = \App\Models\MerchantProduct::where('product_id', $data->id)
-                                            ->where('user_id', $currentUser->id)
-                                            ->first();
-                                        $priceNow = $mp
+                                        // ندعم حالتين: عنصر من MerchantProduct أو من Product
+                                        if ($row instanceof \App\Models\MerchantProduct) {
+                                            $mp   = $row;
+                                            $prod = $row->relationLoaded('product') ? $row->product : \App\Models\Product::find($row->product_id);
+                                        } else {
+                                            $prod = $row;
+                                            $mp   = \App\Models\MerchantProduct::where('product_id', $prod->id)
+                                                    ->where('user_id', $currentUser->id)->first();
+                                        }
+
+                                        $imgSrc = $prod?->photo
+                                            ? (filter_var($prod->photo, FILTER_VALIDATE_URL) ? $prod->photo : asset('assets/images/products/'.$prod->photo))
+                                            : asset('assets/images/noimage.png');
+
+                                        $catName   = $prod?->category?->name;
+                                        $subName   = $prod?->subcategory?->name;
+                                        $childName = $prod?->childcategory?->name;
+
+                                        $priceNow  = $mp
                                             ? (method_exists($mp,'showPrice') ? $mp->showPrice() : \App\Models\Product::convertPrice($mp->price))
-                                            : $data->showPrice();
+                                            : ($prod ? $prod->showPrice() : '-');
                                     @endphp
+
                                     <tr>
-                                        <td>
-                                            <img class="table-img"
-                                                 src="{{ filter_var($data->photo, FILTER_VALIDATE_URL) ? $data->photo : asset('assets/images/products/' . $data->photo) }}"
-                                                 alt="">
-                                        </td>
+                                        <td><img class="table-img" src="{{ $imgSrc }}" alt=""></td>
                                         <td class="text-start">
                                             <div class="product-name">
                                                 <span class="content">
-                                                    {{ mb_strlen(strip_tags($data->name), 'UTF-8') > 50
-                                                        ? mb_substr(strip_tags($data->name), 0, 50, 'UTF-8') . '...'
-                                                        : strip_tags($data->name) }}
+                                                    {{ $prod
+                                                        ? (mb_strlen(strip_tags($prod->name), 'UTF-8') > 50
+                                                            ? mb_substr(strip_tags($prod->name), 0, 50, 'UTF-8').'...'
+                                                            : strip_tags($prod->name))
+                                                        : '—' }}
                                                 </span>
                                             </div>
                                         </td>
                                         <td class="text-start">
                                             <div class="category">
                                                 <span class="content">
-                                                    {{ $data->category->name }}
-                                                    @if (isset($data->subcategory))
-                                                        <br>{{ $data->subcategory->name }}
-                                                    @endif
-                                                    @if (isset($data->childcategory))
-                                                        <br>{{ $data->childcategory->name }}
-                                                    @endif
+                                                    {{ $catName ?: '—' }}
+                                                    @if($subName)<br>{{ $subName }}@endif
+                                                    @if($childName)<br>{{ $childName }}@endif
                                                 </span>
                                             </div>
                                         </td>
-                                        <td><span class="content">{{ $data->type }}</span></td>
+                                        <td><span class="content">{{ $prod?->type ?? '—' }}</span></td>
                                         <td><span class="content">{{ $priceNow }}</span></td>
                                         <td>
                                             <div class="table-icon-btns-wrapper">
-                                                <a href="{{ route('vendor-prod-edit', $data->id) }}" class="view-btn">
+                                                <a href="{{ route('vendor-prod-edit', $prod?->id ?? 0) }}" class="view-btn" title="@lang('Edit')">
                                                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
                                                          xmlns="http://www.w3.org/2000/svg">
                                                         <g clip-path="url(#clip0_548_165892)">
                                                             <path d="M12 4.84668C7.41454 4.84668 3.25621 7.35543 0.187788 11.4303C-0.0625959 11.7641 -0.0625959 12.2305 0.187788 12.5644C3.25621 16.6442 7.41454 19.1529 12 19.1529C16.5855 19.1529 20.7438 16.6442 23.8122 12.5693C24.0626 12.2354 24.0626 11.769 23.8122 11.4352C20.7438 7.35543 16.5855 4.84668 12 4.84668ZM12.3289 17.0369C9.28506 17.2284 6.7714 14.7196 6.96287 11.6709C7.11998 9.1572 9.15741 7.11977 11.6711 6.96267C14.7149 6.7712 17.2286 9.27994 17.0371 12.3287C16.8751 14.8375 14.8377 16.8749 12.3289 17.0369ZM12.1767 14.7098C10.537 14.8129 9.18196 13.4628 9.28997 11.8231C9.37343 10.468 10.4732 9.37322 11.8282 9.28485C13.4679 9.18175 14.823 10.5319 14.7149 12.1716C14.6266 13.5316 13.5268 14.6264 12.1767 14.7098Z"
                                                                   fill="white"/>
                                                         </g>
-                                                        <defs>
-                                                            <clipPath id="clip0_548_165892">
-                                                                <rect width="24" height="24" fill="white" />
-                                                            </clipPath>
-                                                        </defs>
+                                                        <defs><clipPath id="clip0_548_165892"><rect width="24" height="24" fill="white"/></clipPath></defs>
                                                     </svg>
                                                 </a>
                                             </div>
@@ -220,7 +296,7 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @forelse ($rorders as $data)
+                                @forelse ($recentOrders as $data)
                                     <tr>
                                         <td><span class="content">{{ $data->order_number }}</span></td>
                                         <td><span class="content">{{ date('Y-m-d', strtotime($data->created_at)) }}</span></td>
@@ -233,11 +309,7 @@
                                                             <path d="M12 4.84668C7.41454 4.84668 3.25621 7.35543 0.187788 11.4303C-0.0625959 11.7641 -0.0625959 12.2305 0.187788 12.5644C3.25621 16.6442 7.41454 19.1529 12 19.1529C16.5855 19.1529 20.7438 16.6442 23.8122 12.5693C24.0626 12.2354 24.0626 11.769 23.8122 11.4352C20.7438 7.35543 16.5855 4.84668 12 4.84668ZM12.3289 17.0369C9.28506 17.2284 6.7714 14.7196 6.96287 11.6709C7.11998 9.1572 9.15741 7.11977 11.6711 6.96267C14.7149 6.7712 17.2286 9.27994 17.0371 12.3287C16.8751 14.8375 14.8377 16.8749 12.3289 17.0369ZM12.1767 14.7098C10.537 14.8129 9.18196 13.4628 9.28997 11.8231C9.37343 10.468 10.4732 9.37322 11.8282 9.28485C13.4679 9.18175 14.823 10.5319 14.7149 12.1716C14.6266 13.5316 13.5268 14.6264 12.1767 14.7098Z"
                                                                   fill="white"/>
                                                         </g>
-                                                        <defs>
-                                                            <clipPath id="clip0_548_165897">
-                                                                <rect width="24" height="24" fill="white" />
-                                                            </clipPath>
-                                                        </defs>
+                                                        <defs><clipPath id="clip0_548_165897"><rect width="24" height="24" fill="white"/></clipPath></defs>
                                                     </svg>
                                                 </a>
                                             </div>
@@ -272,16 +344,17 @@
         (function($) {
             "use strict";
 
+            // بيانات الرسم محسوبة/قادمة من الكنترولر أو فولباك
+            var chartDays  = {!! $daysJson !!};
+            var chartSales = {!! $salesJson !!};
+
             var options = {
                 colors: ['#27BE69'],
                 series: [{
                     name: 'Net Profit',
-                    data: [{!! $sales !!}]
+                    data: chartSales
                 }],
-                chart: {
-                    type: 'bar',
-                    height: 450
-                },
+                chart: { type: 'bar', height: 450 },
                 plotOptions: {
                     bar: {
                         horizontal: false,
@@ -294,16 +367,14 @@
                 },
                 dataLabels: { enabled: false },
                 stroke: { show: true, width: 2, colors: ['transparent'] },
-                xaxis: { categories: [{!! $days !!}] },
+                xaxis: { categories: chartDays },
                 fill: { opacity: 1 },
                 tooltip: {
-                    y: {
-                        formatter: function(val) { return "$ " + val }
-                    }
+                    y: { formatter: function(val) { return "{{ $curr->sign ?? '$' }} " + val } }
                 }
             };
 
-            var chart = new ApexCharts($("#chart")[0], options);
+            var chart = new ApexCharts(document.getElementById("chart"), options);
             chart.render();
         })(jQuery);
     </script>
