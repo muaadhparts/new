@@ -2,10 +2,29 @@
 <div class="row row-cols-xxl-2 row-cols-md-2 row-cols-1 g-3 product-style-1 shop-list product-list e-bg-light e-title-hover-primary e-hover-image-zoom">
     @foreach($vprods as $product)
         @php
-            $mp = $product->merchantProducts()->where('status',1)->orderBy('price')->first();
-            $vendorId = optional($mp)->user_id;
-            $thumb = $product->thumbnail ? asset('assets/images/thumbnails/'.$product->thumbnail) : asset('assets/images/noimage.png');
+            // اختر عرض البائع: نشط أولًا، المتوفر قبل غير المتوفر، ثم الأرخص
+            $mp = $product->merchantProducts()
+                ->where('status', 1)
+                ->orderByRaw('CASE WHEN (stock IS NULL OR stock = 0) THEN 1 ELSE 0 END ASC')
+                ->orderBy('price')
+                ->first();
+
+            $vendorId = optional($mp)->user_id ?? 0;
+            $thumb    = $product->thumbnail ? asset('assets/images/thumbnails/'.$product->thumbnail) : asset('assets/images/noimage.png');
+
+            // أسعار Vendor-aware
+            $priceNow = $mp
+                ? (method_exists($mp, 'showPrice') ? $mp->showPrice() : \App\Models\Product::convertPrice($mp->price))
+                : $product->showPrice();
+
+            $priceWas = ($mp && $mp->previous_price)
+                ? \App\Models\Product::convertPrice($mp->previous_price)
+                : $product->showPreviousPrice();
+
+            // توفّر Vendor-aware
+            $isOut = (!$mp || (int)($mp->stock ?? 0) <= 0);
         @endphp
+
         <div class="col">
             <div class="product type-product">
                 <div class="product-wrapper">
@@ -24,7 +43,7 @@
                                        aria-label="{{ __('Add To Cart') }}"></a>
                                 </div>
                             @else
-                                @if($product->emptyStock())
+                                @if($isOut)
                                     <div class="cart-button">
                                         <a class="cart-out-of-stock button add_to_cart_button" href="#"
                                            title="{{ __('Out Of Stock') }}"><i class="flaticon-cancel flat-mini mx-auto"></i></a>
@@ -35,7 +54,7 @@
                                             <a href="javascript:;" data-bs-toggle="modal"
                                                data-cross-href="{{ route('front.show.cross.product', $product->id) }}"
                                                {{ $product->cross_products ? 'data-bs-target=#exampleModal' : '' }}
-                                               data-href="{{ $vendorId ? route('product.cart.add', ['product'=>$product->id,'user'=>$vendorId]) : route('product.cart.add', $product->id) }}"
+                                               data-href="{{ $vendorId ? route('product.cart.add', ['id'=>$product->id,'user'=>$vendorId]) : route('product.cart.add', $product->id) }}"
                                                class="add-cart button add_to_cart_button {{ $product->cross_products ? 'view_cross_product' : '' }}"
                                                aria-label="{{ __('Add To Cart') }}"></a>
                                         </div>
@@ -76,10 +95,6 @@
 
                         <div class="product-price">
                             <div class="price">
-                                @php
-                                    $priceNow = $mp ? $mp->showPrice() : $product->showPrice();
-                                    $priceWas = ($mp && $mp->previous_price) ? \App\Models\Product::convertPrice($mp->previous_price) : $product->showPreviousPrice();
-                                @endphp
                                 <ins>{{ $priceNow }}</ins>
                                 <del>{{ $priceWas }}</del>
                             </div>
@@ -105,10 +120,29 @@
 <div class="row row-cols-xl-4 row-cols-md-3 row-cols-sm-2 row-cols-1 product-style-1 e-title-hover-primary e-image-bg-light e-hover-image-zoom e-info-center">
     @foreach($vprods as $product)
         @php
-            $mp = $product->merchantProducts()->where('status',1)->orderBy('price')->first();
-            $vendorId = optional($mp)->user_id;
-            $thumb = $product->thumbnail ? asset('assets/images/thumbnails/'.$product->thumbnail) : asset('assets/images/noimage.png');
+            // اختر عرض البائع: نشط أولًا، المتوفر قبل غير المتوفر، ثم الأرخص
+            $mp = $product->merchantProducts()
+                ->where('status', 1)
+                ->orderByRaw('CASE WHEN (stock IS NULL OR stock = 0) THEN 1 ELSE 0 END ASC')
+                ->orderBy('price')
+                ->first();
+
+            $vendorId = optional($mp)->user_id ?? 0;
+            $thumb    = $product->thumbnail ? asset('assets/images/thumbnails/'.$product->thumbnail) : asset('assets/images/noimage.png');
+
+            // أسعار Vendor-aware
+            $priceNow = $mp
+                ? (method_exists($mp, 'showPrice') ? $mp->showPrice() : \App\Models\Product::convertPrice($mp->price))
+                : $product->showPrice();
+
+            $priceWas = ($mp && $mp->previous_price)
+                ? \App\Models\Product::convertPrice($mp->previous_price)
+                : $product->showPreviousPrice();
+
+            // توفّر Vendor-aware
+            $isOut = (!$mp || (int)($mp->stock ?? 0) <= 0);
         @endphp
+
         <div class="col">
             <div class="product type-product">
                 <div class="product-wrapper">
@@ -127,7 +161,7 @@
                                        aria-label="{{ __('Add To Cart') }}"></a>
                                 </div>
                             @else
-                                @if($product->emptyStock())
+                                @if($isOut)
                                     <div class="cart-button">
                                         <a class="cart-out-of-stock button add_to_cart_button" href="#"
                                            title="{{ __('Out Of Stock') }}"><i class="flaticon-cancel flat-mini mx-auto"></i></a>
@@ -138,7 +172,7 @@
                                             <a href="javascript:;" data-bs-toggle="modal"
                                                data-cross-href="{{ route('front.show.cross.product', $product->id) }}"
                                                {{ $product->cross_products ? 'data-bs-target=#exampleModal' : '' }}
-                                               data-href="{{ $vendorId ? route('product.cart.add', ['product'=>$product->id,'user'=>$vendorId]) : route('product.cart.add', $product->id) }}"
+                                               data-href="{{ $vendorId ? route('product.cart.add', ['id'=>$product->id,'user'=>$vendorId]) : route('product.cart.add', $product->id) }}"
                                                class="add-cart button add_to_cart_button {{ $product->cross_products ? 'view_cross_product' : '' }}"
                                                aria-label="{{ __('Add To Cart') }}"></a>
                                         </div>
@@ -179,10 +213,6 @@
 
                         <div class="product-price">
                             <div class="price">
-                                @php
-                                    $priceNow = $mp ? $mp->showPrice() : $product->showPrice();
-                                    $priceWas = ($mp && $mp->previous_price) ? \App\Models\Product::convertPrice($mp->previous_price) : $product->showPreviousPrice();
-                                @endphp
                                 <ins>{{ $priceNow }}</ins>
                                 <del>{{ $priceWas }}</del>
                             </div>
