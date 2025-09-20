@@ -118,91 +118,124 @@
     return true;
   });
 
-  $(document).on("click", ".quantity-up", function () {
-    var pid = $(this).parent().find(".prodid").val();
-    var itemid = $(this).parent().find(".itemid").val();
-    var size_qty = $(this).parent().find(".size_qty").val();
+  // زيادة الكمية (+)
+  $(document).on('click', '.quantity-up', function (e) {
+    e.preventDefault();
 
-    var size_price = $(this)
-      .parent()
-      .parent()
-      .parent()
-      .find(".size_price")
-      .val();
+    var $box       = $(this).closest('.cart-quantity');
+    var prodid     = $box.find('.prodid').val();
+    var itemid     = $box.find('.itemid').val();     // مفتاح السلة الحقيقي (id:u{vendor}:{size}:{color}:{values})
+    var domkey     = $box.find('.domkey').val();     // نسخة آمنة للـ DOM
+    var size_qty   = $box.find('.size_qty').val();
+    var size_price = $box.find('.size_price').val();
+    var minQty     = parseInt($box.find('.minimum_qty').val() || '0', 10);
 
-    var stck = $("#stock" + itemid).val();
-    var qty = parseInt($("#qty" + itemid).val());
-    if (stck != "") {
-      var stk = parseInt(stck);
-      if (qty < stk) {
-        qty++;
-        $("#qty" + itemid).html(qty);
-      }
-    } else {
-      qty++;
-      $("#qty" + itemid).html(qty);
+    var $qtyInput  = $('#qty' + domkey);
+    var $priceCell = $('#prc' + domkey);
+    var $stock     = $('#stock' + domkey);
+
+    var currentQty = parseInt($qtyInput.val() || '0', 10);
+    var maxStock   = parseInt($stock.val() || '0', 10);
+
+    // تحقّق محلي سريع قبل الطلب (الخادم سيتحقق أيضًا)
+    if (maxStock > 0 && (currentQty + 1) > maxStock) {
+      if (typeof $.notify === 'function') { $.notify('غير متوفر', 'error'); }
+      else if (typeof toastr !== 'undefined') { toastr.error('غير متوفر'); }
+      else { alert('غير متوفر'); }
+      return;
     }
+
     $.ajax({
-      type: "GET",
-      url: mainurl + "/addbyone",
+      url: '/addbyone',
+      type: 'GET',
+      dataType: 'json',
       data: {
-        id: pid,
+        id: prodid,
         itemid: itemid,
         size_qty: size_qty,
-        size_price: size_price,
+        size_price: size_price
       },
-      success: function (data) {
-        $(".gocover").hide();
-        if (data == 0) {
-          toastr.error(lang.cart_out);
-        } else {
-          $.get(mainurl + "/carts", function (response) {
-            $(".load_cart").html(response);
-          });
+      success: function (resp) {
+        if (resp === 0 || resp === '0') {
+          if (typeof $.notify === 'function') { $.notify('غير متوفر', 'error'); }
+          else if (typeof toastr !== 'undefined') { toastr.error('غير متوفر'); }
+          else { alert('غير متوفر'); }
+          return;
         }
+
+        // resp[1] = qty, resp[2] = row price (formatted), resp[0] = cart total (formatted), resp[4] = خصم إن وُجد
+        $qtyInput.val(resp[1]);
+        $priceCell.html(resp[2] + (resp[4] || ''));
+        $('.total-cart-price').html(resp[0]);
       },
+      error: function () {
+        if (typeof $.notify === 'function') { $.notify('حدث خطأ غير متوقع', 'error'); }
+        else if (typeof toastr !== 'undefined') { toastr.error('حدث خطأ غير متوقع'); }
+        else { alert('حدث خطأ غير متوقع'); }
+      }
     });
   });
 
-  $(document).on("click", ".quantity-down", function () {
-    var pid = $(this).siblings(".prodid").val();
-    var itemid = $(this).siblings(".itemid").val();
-    var size_qty = $(this).siblings(".size_qty").val();
-    var size_price = $(this).siblings(".size_price").val();
-    var qty = parseInt($("#qty" + itemid).val());
-    var minimum_qty = $(this).siblings(".minimum_qty").val();
 
-    $(".gocover").show();
-    if (qty <= 1) {
-      $("#qty" + itemid).val("1");
-      $(".gocover").hide();
-      return false;
-    } else if (qty < minimum_qty) {
-      return false;
-    } else {
-      $(".gocover").show();
+  // إنقاص الكمية (-)
+  $(document).on('click', '.quantity-down', function (e) {
+    e.preventDefault();
 
-      $("#qty" + itemid).val(qty);
-      $.ajax({
-        type: "GET",
-        url: mainurl + "/reducebyone",
-        data: {
-          id: pid,
-          itemid: itemid,
-          size_qty: size_qty,
-          size_price: size_price,
-        },
-        success: function (data) {
-          if (data.qty >= 1) {
-            $.get(mainurl + "/carts", function (response) {
-              $(".load_cart").html(response);
-            });
-          } else {
-            return false;
-          }
-        },
-      });
+    var $box       = $(this).closest('.cart-quantity');
+    var prodid     = $box.find('.prodid').val();
+    var itemid     = $box.find('.itemid').val();     // مفتاح السلة الحقيقي
+    var domkey     = $box.find('.domkey').val();     // نسخة آمنة للـ DOM
+    var size_qty   = $box.find('.size_qty').val();
+    var size_price = $box.find('.size_price').val();
+    var minQty     = parseInt($box.find('.minimum_qty').val() || '0', 10);
+
+    var $qtyInput  = $('#qty' + domkey);
+    var $priceCell = $('#prc' + domkey);
+
+    var currentQty = parseInt($qtyInput.val() || '0', 10);
+
+    // احترم الحد الأدنى إن وُجد
+    if (minQty > 0 && (currentQty - 1) < minQty) {
+      if (typeof $.notify === 'function') { $.notify('لا يمكن النزول عن الحد الأدنى', 'warning'); }
+      else if (typeof toastr !== 'undefined') { toastr.warning('لا يمكن النزول عن الحد الأدنى'); }
+      else { alert('لا يمكن النزول عن الحد الأدنى'); }
+      return;
     }
+
+    // إن كان سيصبح 0، اترك منطق الحذف الحالي يتولى (إن كان عندك زر حذف)
+    if ((currentQty - 1) < 1) {
+      // يمكنك هنا الاكتفاء بعدم الاستدعاء أو الاعتماد على زر الحذف
+      // return;
+    }
+
+    $.ajax({
+      url: '/reducebyone',
+      type: 'GET',
+      dataType: 'json',
+      data: {
+        id: prodid,
+        itemid: itemid,
+        size_qty: size_qty,
+        size_price: size_price
+      },
+      success: function (resp) {
+        if (resp === 0 || resp === '0') {
+          if (typeof $.notify === 'function') { $.notify('غير متوفر', 'error'); }
+          else if (typeof toastr !== 'undefined') { toastr.error('غير متوفر'); }
+          else { alert('غير متوفر'); }
+          return;
+        }
+
+        $qtyInput.val(resp[1]);
+        $priceCell.html(resp[2] + (resp[4] || ''));
+        $('.total-cart-price').html(resp[0]);
+      },
+      error: function () {
+        if (typeof $.notify === 'function') { $.notify('حدث خطأ غير متوقع', 'error'); }
+        else if (typeof toastr !== 'undefined') { toastr.error('حدث خطأ غير متوقع'); }
+        else { alert('حدث خطأ غير متوقع'); }
+      }
+    });
   });
 
   $(document).on("click", ".cart_size", function () {

@@ -19,8 +19,9 @@
                                 <th scope="col">@lang('Action')</th>
                             </tr>
                         </thead>
+
                         <tbody class="t_body">
-                            @foreach ($products as $product)
+                            @foreach ($products as $rowKey => $product)
                                 @php
                                     // خصم العنصر
                                     if (!empty($product['discount'])) {
@@ -29,20 +30,26 @@
                                         $discount += $tdiscount;
                                     }
 
-                                    // vendorId الآمن (يدعم array|object) + fallback إلى 0
+                                    // بيانات أساسية من العنصر (يدعم array | object)
                                     $vendorId = data_get($product, 'item.user_id') ?? 0;
                                     $slug     = data_get($product, 'item.slug');
                                     $name     = data_get($product, 'item.name');
                                     $sku      = data_get($product, 'item.sku');
                                     $photo    = data_get($product, 'item.photo');
 
-                                    // مفتاح العنصر المركّب (product_id + size + color + values)
-                                    $itemKey = data_get($product, 'item.id')
-                                               . ($product['size'] ?? '')
-                                               . ($product['color'] ?? '')
-                                               . str_replace(str_split(' ,'), '', $product['values'] ?? '');
+                                    // المفتاح السابق المبني على (id + size + color + values) — يُستخدم كـ fallback إذا كان $rowKey عددي
+                                    $fallbackItemKey = (string) data_get($product, 'item.id')
+                                        . (string) ($product['size'] ?? '')
+                                        . (string) ($product['color'] ?? '')
+                                        . str_replace(str_split(' ,'), '', (string) ($product['values'] ?? ''));
 
-                                    // رابط تفاصيل المنتج (لا ينهار لو vendorId مفقود)
+                                    // مفتاح السلة الحقيقي من foreach (إن كان string)، وإلا نستخدم fallback
+                                    $row = is_string($rowKey) ? $rowKey : $fallbackItemKey;
+
+                                    // domKey آمن للـ DOM (لا يحتوي على محارف تُربك المحددات)
+                                    $domKey = str_replace([':', '#', '.', ' ', '/', '\\'], '_', $row);
+
+                                    // رابط تفاصيل المنتج (يمرر user للبائع)
                                     $productUrl = $vendorId
                                         ? route('front.product', ['slug' => $slug, 'user' => $vendorId])
                                         : 'javascript:;';
@@ -55,12 +62,11 @@
                                                  alt="">
                                             <div class="cart-product-info">
 
-                                                <a class="cart-title d-inline-block"
-                                                   href="{{ $productUrl }}">
+                                                <a class="cart-title d-inline-block" href="{{ $productUrl }}">
                                                     {{ mb_strlen($name, 'UTF-8') > 35 ? mb_substr($name, 0, 35, 'UTF-8') . '...' : $name }}
                                                 </a>
 
-                                                {{-- NEW: show SKU under product name (linked) if available --}}
+                                                {{-- عرض SKU تحت اسم المنتج إن وجد --}}
                                                 @if (!empty($sku))
                                                     <p class="text-muted small mb-1">
                                                         <span class="fw-medium">@lang('SKU'):</span>
@@ -98,13 +104,15 @@
                                                 <button class="cart-quantity-btn quantity-down">-</button>
 
                                                 <input type="text"
-                                                       id="qty{{ $itemKey }}"
+                                                       id="qty{{ $domKey }}"
                                                        value="{{ $product['qty'] }}"
                                                        class="borderless" readonly>
 
-                                                <input type="hidden" class="prodid"  value="{{ data_get($product, 'item.id') }}">
-                                                <input type="hidden" class="itemid"  value="{{ $itemKey }}">
-                                                <input type="hidden" class="size_qty"  value="{{ $product['size_qty'] }}">
+                                                {{-- مفاتيح الطلب --}}
+                                                <input type="hidden" class="prodid"   value="{{ data_get($product, 'item.id') }}">
+                                                <input type="hidden" class="itemid"   value="{{ $row }}">      {{-- يُرسل للخادم --}}
+                                                <input type="hidden" class="domkey"   value="{{ $domKey }}">  {{-- للاستخدام في الـ JS لاختيار عناصر DOM --}}
+                                                <input type="hidden" class="size_qty" value="{{ $product['size_qty'] }}">
                                                 <input type="hidden" class="size_price" value="{{ $product['size_price'] }}">
                                                 <input type="hidden" class="minimum_qty"
                                                        value="{{ data_get($product,'item.minimum_qty') === null ? '0' : data_get($product,'item.minimum_qty') }}">
@@ -116,15 +124,16 @@
                                         <td class="product-quantity">1</td>
                                     @endif
 
+                                    {{-- مخزون الصف (حسب المقاس إن وُجد، وإلا حسب النوع) --}}
                                     @if (!empty($product['size_qty']))
-                                        <input type="hidden" id="stock{{ $itemKey }}" value="{{ $product['size_qty'] }}">
-                                    @elseif(data_get($product,'item.type') != 'Physical')
-                                        <input type="hidden" id="stock{{ $itemKey }}" value="1">
+                                        <input type="hidden" id="stock{{ $domKey }}" value="{{ $product['size_qty'] }}">
+                                    @elseif (data_get($product,'item.type') != 'Physical')
+                                        <input type="hidden" id="stock{{ $domKey }}" value="1">
                                     @else
-                                        <input type="hidden" id="stock{{ $itemKey }}" value="{{ $product['stock'] }}">
+                                        <input type="hidden" id="stock{{ $domKey }}" value="{{ $product['stock'] }}">
                                     @endif
 
-                                    <td class="cart-price" id="prc{{ $itemKey }}">
+                                    <td class="cart-price" id="prc{{ $domKey }}">
                                         {{ App\Models\Product::convertPrice($product['price']) }}
                                         @if (!empty($product['discount']))
                                             <strong>{{ $product['discount'] }} %{{ __('off') }}</strong>
@@ -133,8 +142,8 @@
 
                                     <td>
                                         <a class="cart-remove-btn"
-                                           data-class="cremove{{ $itemKey }}"
-                                           href="{{ route('product.cart.remove', $itemKey) }}">
+                                           data-class="cremove{{ $domKey }}"
+                                           href="{{ route('product.cart.remove', $row) }}">
                                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
                                                  viewBox="0 0 24 24" fill="none">
                                                 <path d="M9 3H15M3 6H21M19 6L18.2987 16.5193C18.1935 18.0975 18.1409 18.8867 17.8 19.485C17.4999 20.0118 17.0472 20.4353 16.5017 20.6997C15.882 21 15.0911 21 13.5093 21H10.4907C8.90891 21 8.11803 21 7.49834 20.6997C6.95276 20.4353 6.50009 20.0118 6.19998 19.485C5.85911 18.8867 5.8065 18.0975 5.70129 16.5193L5 6M10 10.5V15.5M14 10.5V15.5"
@@ -174,7 +183,7 @@
                             </p>
                         </div>
                         <div class="cart-summary-btn">
-                            {{-- NEW: if guest, send to registration (with fallback to login if register route missing) --}}
+                            {{-- توجيه الزائر للتسجيل/الدخول قبل المتابعة --}}
                             @auth
                                 <a href="{{ route('front.checkout') }}" class="template-btn w-100">
                                     @lang('Proceed to Checkout')
