@@ -92,7 +92,6 @@ class CartController extends FrontBaseController
     }
     private function effectiveStock(MerchantProduct $mp, string $size = ''): int
     {
-        // حجم محدد
         if (!empty($mp->size) && !empty($mp->size_qty) && $size !== '') {
             $sizes = $this->toArrayValues($mp->size);
             $qtys  = $this->toArrayValues($mp->size_qty);
@@ -100,7 +99,6 @@ class CartController extends FrontBaseController
             if ($idx !== false && isset($qtys[$idx]) && $qtys[$idx] !== '') return (int)$qtys[$idx];
             return 0;
         }
-        // مخزون عام — إن كان NULL نعتبره غير محدود
         if (is_null($mp->stock) || $mp->stock === '') return 999999;
         return (int)$mp->stock;
     }
@@ -141,7 +139,6 @@ class CartController extends FrontBaseController
     }
     private function normNum($v, $default = 0.0) { return is_numeric($v) ? (float)$v : (float)$default; }
 
-    /** إعادة احتساب الإجماليات من عناصر السلة لتصحيح أي اختلاف */
     private function recomputeTotals(Cart $cart): void
     {
         $totalQty = 0; $totalPrice = 0.0;
@@ -155,7 +152,6 @@ class CartController extends FrontBaseController
         $cart->totalPrice = $totalPrice;
     }
 
-    /** إيجاد rowKey داخل السلة (للعمليات: حذف/زيادة/نقصان) */
     private function findRowKeyInCart(Cart $cart, int $productId, ?int $vendorId, ?string $sizeKey, ?string $size, ?string $color, ?string $values): ?string
     {
         $valuesNorm = is_string($values) ? str_replace([' ', ','], '', $values) : null;
@@ -185,7 +181,7 @@ class CartController extends FrontBaseController
         return null;
     }
 
-    /* ===================== addcart (1 قطعة) ===================== */
+    /* ===================== addcart / addtocart / addnumcart / addtonumcart ===================== */
     public function addcart($id)
     {
         $prod = $this->fetchIdentity($id); if (!$prod) return 0;
@@ -217,7 +213,6 @@ class CartController extends FrontBaseController
         return response()->json([count($cart->items)]);
     }
 
-    /* ===================== addtocart (1 قطعة + Redirect) ===================== */
     public function addtocart($id)
     {
         $prod = $this->fetchIdentity($id);
@@ -252,7 +247,6 @@ class CartController extends FrontBaseController
         return redirect()->route('front.cart');
     }
 
-    /* ===================== addnumcart (كمية + Ajax) ===================== */
     public function addnumcart(Request $request)
     {
         $id   = (int) ($request->id ?? $_GET['id'] ?? 0);
@@ -299,7 +293,6 @@ class CartController extends FrontBaseController
         ]);
     }
 
-    /* ===================== addtonumcart (كمية + Redirect) ===================== */
     public function addtonumcart(Request $request)
     {
         $id   = (int) ($request->id ?? 0);
@@ -351,7 +344,7 @@ class CartController extends FrontBaseController
         return redirect()->route('front.cart')->with('success', __('Successfully Added To Cart.'));
     }
 
-    /* ===================== زيادة/نقصان من صفحة السلة (Vendor-aware) ===================== */
+    /* ===================== زيادة/نقصان (الأسامي الجديدة) ===================== */
 
     public function increaseItem(Request $request)
     {
@@ -383,9 +376,7 @@ class CartController extends FrontBaseController
             return response()->json(['status'=>'error','msg'=>__('Out Of Stock'), 'max'=>$avail], 422);
         }
 
-        // لا نمرر أي size_price هنا حتى لا نضاعف سعر الوحدة
         $cart->adding($item, $row, $rowData['size_qty'] ?? '', 0);
-
         $this->recomputeTotals($cart);
         Session::put('cart', $cart);
 
@@ -418,9 +409,7 @@ class CartController extends FrontBaseController
             return response()->json(['status'=>'error','msg'=>'Min qty reached'], 422);
         }
 
-        // لا نمرر أي size_price هنا حتى لا نغير سعر الوحدة
         $cart->reducing($item, $row, $rowData['size_qty'] ?? '', 0);
-
         $this->recomputeTotals($cart);
         Session::put('cart', $cart);
 
@@ -434,7 +423,109 @@ class CartController extends FrontBaseController
         ]);
     }
 
-    /* ===================== remove (يدعم rowId المركّب) ===================== */
+    /* ===================== زيادة/نقصان (الأسامي القديمة المتوافقة مع الثيم) ===================== */
+
+    // GET /addbyone?id=PRODUCT_ID&itemid=ROW_KEY&size_qty=&size_price=...
+    public function addbyone(Request $request)
+    {
+        if (!Session::has('cart')) { return 0; }
+
+        $curr      = $this->curr;
+        $id        = (int) ($request->id ?? 0);
+        $itemid    = (string) ($request->itemid ?? '');  // rowKey Vendor-aware
+        $size_qty  = (string) ($request->size_qty ?? '');
+        // لا نضيف size_price هنا حتى لا نضاعف سعر الوحدة
+        $size_price= 0;
+
+        $prod = $this->fetchIdentity($id); if (!$prod) return 0;
+
+        $oldCart  = Session::get('cart');
+        if (!isset($oldCart->items[$itemid])) return 0;
+
+        $row      = $oldCart->items[$itemid];
+        $vendorId = (int) ($row['item']['vendor_user_id'] ?? $row['item']['user_id'] ?? 0);
+        $size     = (string) ($row['size'] ?? '');
+
+        $mp = MerchantProduct::where('product_id', $prod->id)
+                ->where('user_id', $vendorId)
+                ->where('status', 1)
+                ->first();
+        if (!$mp) return 0;
+
+        $this->injectMerchantContext($prod, $mp);
+
+        // تحقق من المخزون
+        $avail = $this->effectiveStock($mp, $size);
+        $qtyNow= (int) ($row['qty'] ?? 0);
+        if ($qtyNow + 1 > $avail) {
+            return response()->json(['status'=>'error','msg'=>__('Out Of Stock')]);
+        }
+
+        $cart = new Cart($oldCart);
+        $cart->adding($prod, $itemid, $size_qty, $size_price);
+
+        // totals
+        $cart->totalPrice = 0;
+        foreach ($cart->items as $d) { $cart->totalPrice += $d['price']; }
+        Session::put('cart', $cart);
+
+        // استجابة قديمة (المتوقع من الثيم)
+        $data = [];
+        $data[0] = \PriceHelper::showCurrencyPrice($cart->totalPrice * $curr->value);
+        $data[1] = $cart->items[$itemid]['qty'];
+        $data[2] = \PriceHelper::showCurrencyPrice($cart->items[$itemid]['price'] * $curr->value);
+        $data[3] = \PriceHelper::showCurrencyPrice($cart->totalPrice * $curr->value);
+        $data[4] = $cart->items[$itemid]['discount'] == 0 ? '' : '(' . $cart->items[$itemid]['discount'] . '% ' . __('Off') . ')';
+
+        return response()->json($data);
+    }
+
+    // GET /reducebyone?id=PRODUCT_ID&itemid=ROW_KEY&size_qty=&size_price=...
+    public function reducebyone(Request $request)
+    {
+        if (!Session::has('cart')) { return 0; }
+
+        $curr      = $this->curr;
+        $id        = (int) ($request->id ?? 0);
+        $itemid    = (string) ($request->itemid ?? '');
+        $size_qty  = (string) ($request->size_qty ?? '');
+        $size_price= 0;
+
+        $prod = $this->fetchIdentity($id); if (!$prod) return 0;
+
+        $oldCart  = Session::get('cart');
+        if (!isset($oldCart->items[$itemid])) return 0;
+
+        $row      = $oldCart->items[$itemid];
+        $vendorId = (int) ($row['item']['vendor_user_id'] ?? $row['item']['user_id'] ?? 0);
+
+        $mp = MerchantProduct::where('product_id', $prod->id)
+                ->where('user_id', $vendorId)
+                ->where('status', 1)
+                ->first();
+        if (!$mp) return 0;
+
+        $this->injectMerchantContext($prod, $mp);
+
+        $cart = new Cart($oldCart);
+        // لا نغيّر سعر الوحدة
+        $cart->reducing($prod, $itemid, $size_qty, $size_price);
+
+        // totals
+        $cart->totalPrice = 0;
+        foreach ($cart->items as $d) { $cart->totalPrice += $d['price']; }
+        Session::put('cart', $cart);
+
+        $data = [];
+        $data[0] = \PriceHelper::showCurrencyPrice($cart->totalPrice * $curr->value);
+        $data[1] = $cart->items[$itemid]['qty'];
+        $data[2] = \PriceHelper::showCurrencyPrice($cart->items[$itemid]['price'] * $curr->value);
+        $data[3] = \PriceHelper::showCurrencyPrice($cart->totalPrice * $curr->value);
+
+        return response()->json($data);
+    }
+
+    /* ===================== remove ===================== */
     public function removecart(Request $request, $id)
     {
         if (!Session::has('cart')) return back();

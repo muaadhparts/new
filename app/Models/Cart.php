@@ -179,8 +179,9 @@ class Cart extends Model
 
         $storedItem['price'] = $item->price * $storedItem['qty'];
         $this->items[$key]   = $storedItem;
+
+        // الزيادة بقطعة واحدة فقط
         $this->totalQty++;
-        // // dd(['add_key'=>$key,'vendor'=>$this->vendorIdFromItem($item)]); // اختباري
     }
 
     /* ============================ إضافة عنصر (كمية) ============================ */
@@ -227,8 +228,11 @@ class Cart extends Model
 
         $storedItem['affilate_user'] = $affilate_user;
 
-        if (Auth::guard('admin')->check()) { $storedItem['qty'] = $qty; }
-        else { $storedItem['qty'] = $storedItem['qty'] + $qty; }
+        if (Auth::guard('admin')->check()) {
+            $storedItem['qty'] = $qty;
+        } else {
+            $storedItem['qty'] = $storedItem['qty'] + $qty;
+        }
 
         if ($item->stock !== null && $item->stock !== '') {
             $storedItem['stock'] = ((int)$storedItem['stock']) - $qty;
@@ -309,9 +313,9 @@ class Cart extends Model
 
         $storedItem['price'] = $item->price * $storedItem['qty'];
         $this->items[$key]   = $storedItem;
-        $this->totalQty     += $storedItem['qty'];
 
-        // // dd(['addnum_key'=>$key,'vendor'=>$this->vendorIdFromItem($item),'qty'=>$storedItem['qty']]); // اختباري
+        // الزيادة بقدر الكمية المُضافة فقط
+        $this->totalQty     += (int) $qty;
     }
 
     /* ============================ دوال دعم موجودة أصلًا ============================ */
@@ -319,7 +323,7 @@ class Cart extends Model
     public function adding($item, $id, $size_qty, $size_price)
     {
         $storedItem = [
-            'user_id'      => $item->user_id,
+            'user_id'      => $this->vendorIdFromItem($item),
             'qty'          => 0,
             'size_key'     => 0,
             'size_qty'     => $item->size_qty,
@@ -341,9 +345,11 @@ class Cart extends Model
             $storedItem = $this->items[$id];
         }
 
+        // +1 فقط
         $storedItem['qty']++;
         if ($item->stock !== null && $item->stock !== '') $storedItem['stock']--;
 
+        // لا نضيف size_price هنا لتجنب مضاعفة السعر (الكنترولر يمرر 0)
         $item->price += (float) $size_price;
 
         if (!empty($item->whole_sell_qty)) {
@@ -366,13 +372,15 @@ class Cart extends Model
 
         $storedItem['price'] = $item->price * $storedItem['qty'];
         $this->items[$id]    = $storedItem;
-        $this->totalQty     += $storedItem['qty'];
+
+        // زِد الإجمالي بواحد فقط
+        $this->totalQty++;
     }
 
     public function reducing($item, $id, $size_qty, $size_price)
     {
         $storedItem = [
-            'user_id'      => $item->user_id,
+            'user_id'      => $this->vendorIdFromItem($item),
             'qty'          => 0,
             'size_key'     => 0,
             'size_qty'     => $item->size_qty,
@@ -398,6 +406,7 @@ class Cart extends Model
         $storedItem['qty']--;
         if ($item->stock !== null && $item->stock !== '') $storedItem['stock']++;
 
+        // لا نضيف size_price هنا لتجنب تغيير سعر الوحدة
         $item->price += (float) $size_price;
 
         if (!empty($item->whole_sell_qty)) {
@@ -427,6 +436,8 @@ class Cart extends Model
 
         $storedItem['price'] = $item->price * $storedItem['qty'];
         $this->items[$id] = $storedItem;
+
+        // أنقص الإجمالي بواحد
         $this->totalQty--;
     }
 
