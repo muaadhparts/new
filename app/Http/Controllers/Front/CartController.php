@@ -393,9 +393,9 @@ class CartController extends FrontBaseController
             'status'     => 'ok',
             'row'        => $row,
             'qty'        => $cart->items[$row]['qty'],
-            'row_total'  => $cart->items[$row]['price'],
+            'row_total'  => \PriceHelper::showCurrencyPrice($cart->items[$row]['price'] * $this->curr->value),
             'totalQty'   => $cart->totalQty,
-            'totalPrice' => $cart->totalPrice,
+            'totalPrice' => \PriceHelper::showCurrencyPrice($cart->totalPrice * $this->curr->value),
         ]);
     }
 
@@ -428,9 +428,9 @@ class CartController extends FrontBaseController
             'status'     => 'ok',
             'row'        => $row,
             'qty'        => $cart->items[$row]['qty'],
-            'row_total'  => $cart->items[$row]['price'],
+            'row_total'  => \PriceHelper::showCurrencyPrice($cart->items[$row]['price'] * $this->curr->value),
             'totalQty'   => $cart->totalQty,
-            'totalPrice' => $cart->totalPrice,
+            'totalPrice' => \PriceHelper::showCurrencyPrice($cart->totalPrice * $this->curr->value),
         ]);
     }
 
