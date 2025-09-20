@@ -423,62 +423,71 @@ class CartController extends FrontBaseController
         ]);
     }
 
-    /* ===================== زيادة/نقصان (الأسامي القديمة المتوافقة مع الثيم) ===================== */
-
-    // GET /addbyone?id=PRODUCT_ID&itemid=ROW_KEY&size_qty=&size_price=...
-    public function addbyone(Request $request)
+    public function addbyone()
     {
-        if (!Session::has('cart')) { return 0; }
+        if (Session::has('coupon')) {
+            Session::forget('coupon');
+        }
+        $curr       = $this->curr;
+        $id         = (int)($_GET['id']      ?? 0);
+        $itemid     = (string)($_GET['itemid']  ?? '');
+        $size_qty   = (string)($_GET['size_qty'] ?? '');
+        $size_price = (float)($_GET['size_price'] ?? 0);
 
-        $curr      = $this->curr;
-        $id        = (int) ($request->id ?? 0);
-        $itemid    = (string) ($request->itemid ?? '');  // rowKey Vendor-aware
-        $size_qty  = (string) ($request->size_qty ?? '');
-        // لا نضيف size_price هنا حتى لا نضاعف سعر الوحدة
-        $size_price= 0;
-
-        $prod = $this->fetchIdentity($id); if (!$prod) return 0;
-
-        $oldCart  = Session::get('cart');
-        if (!isset($oldCart->items[$itemid])) return 0;
-
-        $row      = $oldCart->items[$itemid];
-        $vendorId = (int) ($row['item']['vendor_user_id'] ?? $row['item']['user_id'] ?? 0);
-        $size     = (string) ($row['size'] ?? '');
-
-        $mp = MerchantProduct::where('product_id', $prod->id)
-                ->where('user_id', $vendorId)
-                ->where('status', 1)
-                ->first();
-        if (!$mp) return 0;
-
-        $this->injectMerchantContext($prod, $mp);
-
-        // تحقق من المخزون
-        $avail = $this->effectiveStock($mp, $size);
-        $qtyNow= (int) ($row['qty'] ?? 0);
-        if ($qtyNow + 1 > $avail) {
-            return response()->json(['status'=>'error','msg'=>__('Out Of Stock')]);
+        // جلب السلة وعنصرها الحالي
+        $oldCart = Session::has('cart') ? Session::get('cart') : null;
+        if (!$oldCart || !isset($oldCart->items[$itemid])) {
+            return 0;
         }
 
-        $cart = new Cart($oldCart);
+        // هوية المنتج (بدون أعمدة زائدة)
+        $prod = $this->fetchIdentity($id);
+        if (!$prod) { return 0; }
+
+        // vendorId من العنصر نفسه (وفق سياسة MerchantProduct)
+        $itm      = $oldCart->items[$itemid];
+        $vendorId = (int) ($itm['item']['user_id'] ?? ($itm['item']->user_id ?? 0));
+        if (!$vendorId) { return 0; }
+
+        // سجل البائع الفعّال
+        $mp = \App\Models\MerchantProduct::where('product_id', $prod->id)
+            ->where('user_id', $vendorId)
+            ->where('status', 1)
+            ->first();
+        if (!$mp) { return 0; }
+
+        // المقاس الحالي للعنصر + تحقق المخزون الفعلي لهذا المقاس/البائع
+        $size      = (string)($oldCart->items[$itemid]['size'] ?? '');
+        $effStock  = $this->effectiveStock($mp, $size);
+        $currentQty= (int)($oldCart->items[$itemid]['qty'] ?? 0);
+
+        // منع الزيادة لو تجاوزنا المخزون الحقيقي
+        if ($effStock <= 0 || ($currentQty + 1) > $effStock) {
+            return 0;
+        }
+
+        // حقن سياق البائع داخل الـ Product
+        $this->injectMerchantContext($prod, $mp);
+
+        // نفّذ الزيادة بنفس آلية المشروع
+        $cart = new \App\Models\Cart($oldCart);
         $cart->adding($prod, $itemid, $size_qty, $size_price);
 
-        // totals
-        $cart->totalPrice = 0;
-        foreach ($cart->items as $d) { $cart->totalPrice += $d['price']; }
         Session::put('cart', $cart);
 
-        // استجابة قديمة (المتوقع من الثيم)
-        $data = [];
-        $data[0] = \PriceHelper::showCurrencyPrice($cart->totalPrice * $curr->value);
-        $data[1] = $cart->items[$itemid]['qty'];
-        $data[2] = \PriceHelper::showCurrencyPrice($cart->items[$itemid]['price'] * $curr->value);
-        $data[3] = \PriceHelper::showCurrencyPrice($cart->totalPrice * $curr->value);
-        $data[4] = $cart->items[$itemid]['discount'] == 0 ? '' : '(' . $cart->items[$itemid]['discount'] . '% ' . __('Off') . ')';
+        // نفس بنية الاسترجاع الحالية
+        $data        = [];
+        $data[0]     = $cart->totalPrice;
+        $data[3]     = $data[0];
+        $data[1]     = $cart->items[$itemid]['qty'];
+        $data[2]     = $cart->items[$itemid]['price'];
+        $data[0]     = \PriceHelper::showCurrencyPrice($data[0] * $curr->value);
+        $data[2]     = \PriceHelper::showCurrencyPrice($data[2] * $curr->value);
+        $data[3]     = \PriceHelper::showCurrencyPrice($data[3] * $curr->value);
 
         return response()->json($data);
     }
+
 
     // GET /reducebyone?id=PRODUCT_ID&itemid=ROW_KEY&size_qty=&size_price=...
     public function reducebyone(Request $request)
