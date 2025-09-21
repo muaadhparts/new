@@ -57,53 +57,90 @@ class MerchantProduct extends Model
     /**
      * احسب السعر النهائي لعرض البائع مع إضافة فرق المقاس والخصائص والعمولات.
      */
-    public function vendorSizePrice(): float
+    // public function vendorSizePrice(): float
+    // {
+    //     // dd(['base' => $this->price, 'size_price' => $this->size_price]); // فحص سريع (معلّق حسب قاعدتك)
+
+    //     $price = (float) ($this->price ?? 0);
+
+    //     // فرق المقاس (أخذ أول قيمة إن وُجدت)
+    //     $sizeAddon = 0.0;
+    //     if (!empty($this->size_price)) {
+    //         $raw = $this->size_price;
+    //         if (is_string($raw)) {
+    //             $decoded = json_decode($raw, true);
+    //             if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+    //                 $first = array_values($decoded)[0] ?? 0;
+    //                 $sizeAddon = (float) $first;
+    //             } else {
+    //                 // صيغة نصية مفصولة بفواصل
+    //                 $parts = explode(',', $raw);
+    //                 $sizeAddon = isset($parts[0]) && $parts[0] !== '' ? (float) $parts[0] : 0.0;
+    //             }
+    //         } elseif (is_array($raw)) {
+    //             $first = array_values($raw)[0] ?? 0;
+    //             $sizeAddon = (float) $first;
+    //         }
+    //     }
+    //     $price += $sizeAddon;
+
+    //     // TODO: إضافة أسعار الخصائص المفعّلة (details_status=1) لو مخزنة على مستوى عرض التاجر
+    //     $optsTotal = 0.0;
+    //     // $optsTotal = ...;
+    //     $price += $optsTotal;
+
+    //     // عمولة المنصّة: ثابتة + نسبة
+    //     $gs = cache()->remember('generalsettings_for_commission', now()->addHours(12), function () {
+    //         return DB::table('generalsettings')->first(['fixed_commission', 'percentage_commission']);
+    //     });
+
+    //     $fixed   = isset($gs->fixed_commission) ? (float) $gs->fixed_commission : 0.0;
+    //     $percent = isset($gs->percentage_commission) ? (float) $gs->percentage_commission : 0.0;
+
+    //     $price += $fixed;
+    //     if ($percent !== 0.0) {
+    //         $price += ($price * $percent / 100);
+    //     }
+
+    //     // dd(['mp_id' => $this->id, 'final' => $price, 'fixed' => $fixed, 'percent' => $percent]); // فحص سريع (معلّق)
+    //     return round($price, 2);
+    // }
+    
+    public function vendorSizePrice()
     {
-        // dd(['base' => $this->price, 'size_price' => $this->size_price]); // فحص سريع (معلّق حسب قاعدتك)
+        // السعر الأساسي = سعر عرض البائع + أي زيادات (مقاسات/خيارات) إن وُجدت وكانت رقمية
+        $base = (float) ($this->price ?? 0);
 
-        $price = (float) ($this->price ?? 0);
+        if (!empty($this->size_price) && is_numeric($this->size_price)) {
+            $base += (float) $this->size_price;
+        }
 
-        // فرق المقاس (أخذ أول قيمة إن وُجدت)
-        $sizeAddon = 0.0;
-        if (!empty($this->size_price)) {
-            $raw = $this->size_price;
-            if (is_string($raw)) {
-                $decoded = json_decode($raw, true);
-                if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
-                    $first = array_values($decoded)[0] ?? 0;
-                    $sizeAddon = (float) $first;
-                } else {
-                    // صيغة نصية مفصولة بفواصل
-                    $parts = explode(',', $raw);
-                    $sizeAddon = isset($parts[0]) && $parts[0] !== '' ? (float) $parts[0] : 0.0;
-                }
-            } elseif (is_array($raw)) {
-                $first = array_values($raw)[0] ?? 0;
-                $sizeAddon = (float) $first;
+        // إلغاء العمولة عندما يكون السعر الأساسي صفرًا أو أقل
+        if ($base <= 0) {
+            // dd(['mp_id' => $this->id, 'base' => $base]); // فحص سريع عند الحاجة
+            return 0.0;
+        }
+
+        // إضافة عمولة المنصّة (ثابتة + نسبة) على السعر الأساسي
+        $gs = \App\Models\Generalsetting::query()
+            ->select(['fixed_commission', 'percentage_commission'])
+            ->first();
+
+        $final = $base;
+
+        if ($gs) {
+            $fixed    = (float) ($gs->fixed_commission ?? 0);
+            $percent  = (float) ($gs->percentage_commission ?? 0);
+
+            if ($fixed > 0) {
+                $final += $fixed;
+            }
+            if ($percent > 0) {
+                $final += $base * ($percent / 100);
             }
         }
-        $price += $sizeAddon;
 
-        // TODO: إضافة أسعار الخصائص المفعّلة (details_status=1) لو مخزنة على مستوى عرض التاجر
-        $optsTotal = 0.0;
-        // $optsTotal = ...;
-        $price += $optsTotal;
-
-        // عمولة المنصّة: ثابتة + نسبة
-        $gs = cache()->remember('generalsettings_for_commission', now()->addHours(12), function () {
-            return DB::table('generalsettings')->first(['fixed_commission', 'percentage_commission']);
-        });
-
-        $fixed   = isset($gs->fixed_commission) ? (float) $gs->fixed_commission : 0.0;
-        $percent = isset($gs->percentage_commission) ? (float) $gs->percentage_commission : 0.0;
-
-        $price += $fixed;
-        if ($percent !== 0.0) {
-            $price += ($price * $percent / 100);
-        }
-
-        // dd(['mp_id' => $this->id, 'final' => $price, 'fixed' => $fixed, 'percent' => $percent]); // فحص سريع (معلّق)
-        return round($price, 2);
+        return round($final, 2);
     }
 
     /**

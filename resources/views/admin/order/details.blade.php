@@ -369,6 +369,7 @@
         </div>
 
         @php
+        $resultArray = [];
         foreach ($cart['items'] as $key => $item) {
         $userId = $item["user_id"];
         if (!isset($resultArray[$userId])) {
