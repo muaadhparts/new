@@ -425,68 +425,73 @@ class CartController extends FrontBaseController
 
     public function addbyone()
     {
-        if (Session::has('coupon')) {
-            Session::forget('coupon');
+        if (\Session::has('coupon')) {
+            \Session::forget('coupon');
         }
 
-        $curr      = $this->curr;
-        $id        = $_GET['id'];
-        $itemid    = $_GET['itemid'];   // قد يأتي مختصرًا (مثلاً "221692")
-        $size_qty  = $_GET['size_qty'];
-        $size_price= $_GET['size_price'];
+        $curr       = $this->curr;
+        $id         = (int)($_GET['id'] ?? 0);
+        $itemid     = (string)($_GET['itemid'] ?? '');
+        $size_qty   = $_GET['size_qty'] ?? null;
+        $size_price = (float)($_GET['size_price'] ?? 0);
 
-        // المنتج (هوية فقط)
-        $prod = \App\Models\Product::where('id', $id)->first([
-            'id','slug','name','photo','color',
-            'weight','type','file','link','measure','attributes','stock_check'
-        ]);
-        if (!$prod) { return 0; }
-
-        // السلة + تطبيع itemid إذا كان مختصرًا
-        $oldCart = Session::has('cart') ? Session::get('cart') : null;
-        $cartItems = $oldCart ? ($oldCart->items ?? []) : [];
-
-        // إن لم نجد المفتاح كما أرسله الفرونت، جرّب أن تبحث عن المفتاح الحقيقي بصيغة id:u{vendor}:...
-        if ($oldCart && !isset($cartItems[$itemid])) {
-            // أولوية: مفاتيح تبدأ بـ "id:" (أي id:u...)
-            foreach ($cartItems as $k => $v) {
-                if (strpos($k, $id . ':') === 0) { $itemid = $k; break; }
-            }
-            // احتياط: أول مفتاح يبدأ بـ "id" (لو كان بناء مختلف)
-            if (!isset($cartItems[$itemid])) {
-                foreach ($cartItems as $k => $v) {
-                    if (strpos($k, (string)$id) === 0) { $itemid = $k; break; }
-                }
-            }
-        }
+        // السلة والعنصر الحالي
+        $oldCart = \Session::has('cart') ? \Session::get('cart') : null;
         if (!$oldCart || !isset($oldCart->items[$itemid])) {
             return 0;
         }
 
-        // vendorId من عنصر السلة نفسه (يعتمد على وجود المفتاح الصحيح)
-        $itm      = $oldCart->items[$itemid];
-        $vendorId = (int) ($itm['item']['user_id'] ?? ($itm['item']->user_id ?? 0));
+        // المنتج (هوية فقط)
+        $prod = \App\Models\Product::find($id, ['id','slug','name','photo','type','attributes']);
+        if (!$prod) { return 0; }
+
+        // معلومات الصف من السلة (Vendor-aware)
+        $row      = $oldCart->items[$itemid];
+        $vendorId = (int)($row['user_id'] ?? ($row['item']['user_id'] ?? ($row['item']->user_id ?? 0)));
         if (!$vendorId) { return 0; }
 
-        // سجل البائع
+        // جلب عرض البائع MerchantProduct
         $mp = \App\Models\MerchantProduct::where('product_id', $prod->id)
             ->where('user_id', $vendorId)
             ->where('status', 1)
             ->first();
         if (!$mp) { return 0; }
 
-        // inject سياق البائع + خصائص المقاسات
+        // احسب المخزون الفعلي للمقاس الحالي إن وُجد وإلا إجمالي مخزون البائع
+        $size = (string)($row['size'] ?? '');
+        $effStock = null;
+        if ($size !== '' && !empty($mp->size) && !empty($mp->size_qty)) {
+            $sizes = is_array($mp->size) ? $mp->size : array_map('trim', explode(',', (string)$mp->size));
+            $qtys  = is_array($mp->size_qty) ? $mp->size_qty : array_map('intval', array_map('trim', explode(',', (string)$mp->size_qty)));
+            $idx = array_search(trim($size), $sizes, true);
+            $effStock = $idx !== false ? (int)($qtys[$idx] ?? 0) : (int)($qtys[0] ?? 0);
+        } else {
+            $effStock = (int)($mp->stock ?? 0);
+        }
+
+        $currentQty = (int)($row['qty'] ?? 0);
+
+        // احترام فحص المخزون حسب عرض البائع
+        if ((int)($mp->stock_check ?? 0) === 1) {
+            if ($effStock <= 0 || ($currentQty + 1) > $effStock) {
+                return 0;
+            }
+        }
+
+        // حقن سياق البائع داخل كائن المنتج (ليقرأه Cart::vendorIdFromItem)
         $prod->user_id             = $vendorId;
+        $prod->vendor_user_id      = $vendorId; // for Cart::vendorIdFromItem
         $prod->merchant_product_id = $mp->id;
         $prod->price               = $mp->vendorSizePrice();
         $prod->previous_price      = $mp->previous_price;
-        $prod->stock               = $mp->stock;
+        $prod->stock               = $effStock; // يُستخدم كبداية عند غياب العنصر (لدينا عنصر موجود فعليًا)
 
+        // تمرير مقاسات البائع (سلاسل كما هي)
         $prod->setAttribute('size',       $mp->size);
         $prod->setAttribute('size_qty',   $mp->size_qty);
         $prod->setAttribute('size_price', $mp->size_price);
 
-        // إضافة أسعار الخصائص الافتراضية (كما في كودك الحالي)
+        // إضافة أسعار الخصائص المفعّلة إن وُجدت على المنتج (سابق المنطق)
         if (!empty($prod->attributes)) {
             $attrArr = json_decode($prod->attributes, true);
             if (!empty($attrArr)) {
@@ -501,33 +506,23 @@ class CartController extends FrontBaseController
             }
         }
 
-        // الزيادة
+        // الزيادة (+1) بنفس آلية مشروعك
         $cart = new \App\Models\Cart($oldCart);
         $cart->adding($prod, $itemid, $size_qty, $size_price);
 
-        if ($prod->stock_check == 1) {
-            if ($cart->items[$itemid]['stock'] < 0) {
-                return 0;
-            }
-            if (!empty($size_qty)) {
-                if ($cart->items[$itemid]['qty'] > $cart->items[$itemid]['size_qty']) {
-                    return 0;
-                }
-            }
-        }
+        // إعادة احتساب إجمالي السعر (الـ Cart لا يجمعه هنا)
+        $cart->totalPrice = 0;
+        foreach ($cart->items as $it) { $cart->totalPrice += $it['price']; }
 
-        Session::put('cart', $cart);
+        \Session::put('cart', $cart);
 
-        $data = [];
-        $data[0] = $cart->totalPrice;
-        $data[3] = $data[0];
-        $data[1] = $cart->items[$itemid]['qty'];
-        $data[2] = $cart->items[$itemid]['price'];
-
-        $data[0] = \PriceHelper::showCurrencyPrice($data[0] * $curr->value);
-        $data[2] = \PriceHelper::showCurrencyPrice($data[2] * $curr->value);
-        $data[3] = \PriceHelper::showCurrencyPrice($data[3] * $curr->value);
-        $data[4] = $cart->items[$itemid]['discount'] == 0 ? '' : '(' . $cart->items[$itemid]['discount'] . '% ' . __('Off') . ')';
+        // تجهيز الاستجابة
+        $data        = [];
+        $data[0]     = \PriceHelper::showCurrencyPrice($cart->totalPrice * $curr->value);
+        $data[1]     = $cart->items[$itemid]['qty'];
+        $data[2]     = \PriceHelper::showCurrencyPrice($cart->items[$itemid]['price'] * $curr->value);
+        $data[3]     = $data[0];
+        $data[4]     = $cart->items[$itemid]['discount'] == 0 ? '' : '(' . $cart->items[$itemid]['discount'] . '% ' . __('Off') . ')';
 
         return response()->json($data);
     }
@@ -535,42 +530,26 @@ class CartController extends FrontBaseController
 
     public function reducebyone()
     {
-        if (Session::has('coupon')) {
-            Session::forget('coupon');
+        if (\Session::has('coupon')) {
+            \Session::forget('coupon');
         }
 
-        $curr      = $this->curr;
-        $id        = $_GET['id'];
-        $itemid    = $_GET['itemid'];  // قد يأتي مختصرًا
-        $size_qty  = $_GET['size_qty'];
-        $size_price= $_GET['size_price'];
+        $curr       = $this->curr;
+        $id         = (int)($_GET['id'] ?? 0);
+        $itemid     = (string)($_GET['itemid'] ?? '');
+        $size_qty   = $_GET['size_qty'] ?? null;
+        $size_price = (float)($_GET['size_price'] ?? 0);
 
-        $prod = \App\Models\Product::where('id', $id)->first([
-            'id','slug','name','photo','color',
-            'weight','type','file','link','measure','attributes'
-        ]);
-        if (!$prod) { return 0; }
-
-        // السلة + تطبيع itemid إذا كان مختصرًا
-        $oldCart = Session::has('cart') ? Session::get('cart') : null;
-        $cartItems = $oldCart ? ($oldCart->items ?? []) : [];
-
-        if ($oldCart && !isset($cartItems[$itemid])) {
-            foreach ($cartItems as $k => $v) {
-                if (strpos($k, $id . ':') === 0) { $itemid = $k; break; }
-            }
-            if (!isset($cartItems[$itemid])) {
-                foreach ($cartItems as $k => $v) {
-                    if (strpos($k, (string)$id) === 0) { $itemid = $k; break; }
-                }
-            }
-        }
+        $oldCart = \Session::has('cart') ? \Session::get('cart') : null;
         if (!$oldCart || !isset($oldCart->items[$itemid])) {
             return 0;
         }
 
-        $itm      = $oldCart->items[$itemid];
-        $vendorId = (int) ($itm['item']['user_id'] ?? ($itm['item']->user_id ?? 0));
+        $prod = \App\Models\Product::find($id, ['id','slug','name','photo','type','attributes']);
+        if (!$prod) { return 0; }
+
+        $row      = $oldCart->items[$itemid];
+        $vendorId = (int)($row['user_id'] ?? ($row['item']['user_id'] ?? ($row['item']->user_id ?? 0)));
         if (!$vendorId) { return 0; }
 
         $mp = \App\Models\MerchantProduct::where('product_id', $prod->id)
@@ -579,16 +558,18 @@ class CartController extends FrontBaseController
             ->first();
         if (!$mp) { return 0; }
 
+        // حقن سياق البائع (أسعار/مخزون/مقاسات)
         $prod->user_id             = $vendorId;
+        $prod->vendor_user_id      = $vendorId;
         $prod->merchant_product_id = $mp->id;
         $prod->price               = $mp->vendorSizePrice();
         $prod->previous_price      = $mp->previous_price;
-        $prod->stock               = $mp->stock;
-
+        $prod->stock               = (int)($mp->stock ?? 0);
         $prod->setAttribute('size',       $mp->size);
         $prod->setAttribute('size_qty',   $mp->size_qty);
         $prod->setAttribute('size_price', $mp->size_price);
 
+        // خصائص المنتج إن لزم
         if (!empty($prod->attributes)) {
             $attrArr = json_decode($prod->attributes, true);
             if (!empty($attrArr)) {
@@ -606,27 +587,21 @@ class CartController extends FrontBaseController
         $cart = new \App\Models\Cart($oldCart);
         $cart->reducing($prod, $itemid, $size_qty, $size_price);
 
+        // إعادة احتساب الإجمالي
         $cart->totalPrice = 0;
-        foreach ($cart->items as $data) {
-            $cart->totalPrice += $data['price'];
-        }
+        foreach ($cart->items as $it) { $cart->totalPrice += $it['price']; }
 
-        Session::put('cart', $cart);
+        \Session::put('cart', $cart);
 
-        $data = [];
-        $data[0] = $cart->totalPrice;
-        $data[3] = $data[0];
-        $data[1] = $cart->items[$itemid]['qty'];
-        $data[2] = $cart->items[$itemid]['price'];
-
-        $data[0] = \PriceHelper::showCurrencyPrice($data[0] * $curr->value);
-        $data[2] = \PriceHelper::showCurrencyPrice($data[2] * $curr->value);
-        $data[3] = \PriceHelper::showCurrencyPrice($data[3] * $curr->value);
-        $data[4] = $cart->items[$itemid]['discount'] == 0 ? '' : '(' . $cart->items[$itemid]['discount'] . '% ' . __('Off') . ')';
+        $data        = [];
+        $data[0]     = \PriceHelper::showCurrencyPrice($cart->totalPrice * $curr->value);
+        $data[1]     = $cart->items[$itemid]['qty'];
+        $data[2]     = \PriceHelper::showCurrencyPrice($cart->items[$itemid]['price'] * $curr->value);
+        $data[3]     = $data[0];
+        $data[4]     = $cart->items[$itemid]['discount'] == 0 ? '' : '(' . $cart->items[$itemid]['discount'] . '% ' . __('Off') . ')';
 
         return response()->json($data);
     }
-
 
     /* ===================== remove ===================== */
     public function removecart(Request $request, $id)

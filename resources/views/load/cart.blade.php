@@ -1,26 +1,48 @@
 <div class="cart-popup">
     <ul class="cart_list product_list_widget ">
         @if (Session::has('cart'))
-            @foreach(Session::get('cart')->items as $product)
+            @foreach(Session::get('cart')->items as $rowKey => $product)
+                @php
+                    // المفتاح الحقيقي Vendor-aware كما هو في جلسة السلة
+                    $row    = (string) $rowKey;
+                    // نسخة آمنة للـ DOM لتجنب محارف تُربك المحددات
+                    $domKey = str_replace([':', '#', '.', ' ', '/', '\\'], '_', $row);
+
+                    $slug     = data_get($product, 'item.slug');
+                    $vendorId = data_get($product, 'item.user_id');
+                    $name     = data_get($product, 'item.name');
+                    $photo    = data_get($product, 'item.photo');
+
+                    $productUrl = $vendorId
+                        ? route('front.product', ['slug' => $slug, 'user' => $vendorId])
+                        : 'javascript:;';
+                @endphp
+
                 <li class="mini-cart-item">
                     <div class="cart-remove remove"
-                        data-class="cremove{{ $product['item']['id'] . $product['size'] . $product['color'] . str_replace(str_split(' ,'), '', $product['values']) }}"
-                        data-href="{{ route('product.cart.remove', $product['item']['id'] . $product['size'] . $product['color'] . str_replace(str_split(' ,'), '', $product['values'])) }}"
-                        title="Remove this item"><i class="fas fa-times"></i></div>
+                         data-class="cremove{{ $domKey }}"
+                         data-href="{{ route('product.cart.remove', $row) }}"
+                         title="Remove this item">
+                        <i class="fas fa-times"></i>
+                    </div>
 
-                    <a href="{{ route('front.product', ['slug' => $product['item']['slug'], 'user' => $product['item']['user_id']]) }}" class="product-image"><img
-                            src="{{ $product['item']['photo'] ? filter_var($product['item']['photo'], FILTER_VALIDATE_URL) ? $product['item']['photo'] : asset('assets/images/products/' . $product['item']['photo']) : asset('assets/images/noimage.png') }}"
-                            class="attachment-woocommerce_thumbnail size-woocommerce_thumbnail" alt="Cart product"></a>
+                    <a href="{{ $productUrl }}" class="product-image">
+                        <img
+                            src="{{ $photo ? (filter_var($photo, FILTER_VALIDATE_URL) ? $photo : asset('assets/images/products/' . $photo)) : asset('assets/images/noimage.png') }}"
+                            class="attachment-woocommerce_thumbnail size-woocommerce_thumbnail"
+                            alt="Cart product">
+                    </a>
 
-                    <a href="{{ route('front.product', ['slug' => $product['item']['slug'], 'user' => $product['item']['user_id']]) }}"
-                        class="product-name">{{ mb_strlen($product['item']['name'], 'UTF-8') > 45 ? mb_substr($product['item']['name'], 0, 45, 'UTF-8') . '...' : $product['item']['name'] }}</a>
-
+                    <a href="{{ $productUrl }}" class="product-name">
+                        {{ mb_strlen($name, 'UTF-8') > 45 ? mb_substr($name, 0, 45, 'UTF-8') . '...' : $name }}
+                    </a>
 
                     <div class="cart-item-quantity">
-                        <span class="cart-product-qty"
-                            id="cqt{{$product['item']['id'] . $product['size'] . $product['color'] . str_replace(str_split(' ,'), '', $product['values'])}}">{{$product['qty']}}</span><span>{{ $product['item']['measure'] }}</span>
-                        x <span
-                            id="prct{{$product['item']['id'] . $product['size'] . $product['color'] . str_replace(str_split(' ,'), '', $product['values'])}}">{{ App\Models\Product::convertPrice($product['item_price']) }}
+                        <span class="cart-product-qty" id="cqt{{ $domKey }}">{{ $product['qty'] }}</span>
+                        <span>{{ data_get($product, 'item.measure') }}</span>
+                        x
+                        <span id="prct{{ $domKey }}">
+                            {{ App\Models\Product::convertPrice($product['item_price']) }}
                             {{ $product['discount'] == 0 ? '' : '(' . $product['discount'] . '% ' . __('Off') . ')' }}
                         </span>
                     </div>
@@ -33,18 +55,17 @@
                 </div>
             </div>
         @endif
-
     </ul>
+
     <div class="total-cart">
-        <div class="title">@lang('Total:') </div>
-        <div class="price"><span
-                class="cart-total">{{ Session::has('cart') ? App\Models\Product::convertPrice(Session::get('cart')->totalPrice) : '0.00' }}
+        <div class="title">@lang('Total:')</div>
+        <div class="price">
+            <span class="cart-total">
+                {{ Session::has('cart') ? App\Models\Product::convertPrice(Session::get('cart')->totalPrice) : '0.00' }}
             </span>
         </div>
     </div>
 
     <a href="{{ route('front.cart') }}" class="btn btn-primary rounded-0 view-cart">{{ __('View cart') }}</a>
-
     <a href="{{ route('front.checkout') }}" class="btn btn-secondary rounded-0 checkout">{{ __('Check out') }}</a>
-
 </div>
