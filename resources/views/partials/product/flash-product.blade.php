@@ -81,6 +81,7 @@
                         <li>
                             <span class="cart-btn quick-view"
                                   data-href="{{ route('product.quick', $prod->id) }}"
+                                  data-user="{{ $vendorId ?? '' }}"
                                   rel-toggle="tooltip" data-placement="top"
                                   title="{{ __('Quick View') }}" data-toggle="modal" data-target="#quickview">
                                 <i class="fas fa-eye"></i>

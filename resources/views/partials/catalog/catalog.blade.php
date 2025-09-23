@@ -174,8 +174,10 @@
                                                             alt="Product Image"></a>
                                                     <div class="wishlist-view">
                                                         <div class="quickview-button">
-                                                            <a class="quickview-btn"
+                                                            <a class="quickview-btn quick-view"
                                                                 href="{{ route('front.product', ['slug' => $prod['slug'], 'user' => $prod['user_id']]) }}"
+                                                                data-url="{{ route('modal.quickview', ['id' => $prod['id']]) }}"
+                                                                data-user="{{ $prod['user_id'] ?? '' }}"
                                                                 data-bs-toggle="tooltip" data-bs-placement="top" title=""
                                                                 data-bs-original-title="Quick View"
                                                                 aria-label="Quick View">{{ __('Quick View') }}</a>

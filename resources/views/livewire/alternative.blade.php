@@ -51,13 +51,6 @@
             </td>
 
             <td>
-              {{-- مهم: مرّر user (معرّف البائع) وليس من Product --}}
-              {{-- <a href="{{ route('front.product', ['slug' => $product->slug, 'user' => $mp->user_id]) }}"
-                 class="btn btn-sm btn-outline-primary quick-view"
-                 data-id="{{ $product->id }}"
-                 data-sku="{{ $product->sku }}"
-                 data-url="{{ route('modal.quickview', ['id' => $product->id]) }}">
-                <i class="bi bi-eye"></i> @lang('Quick View') --}}
               <a href="{{ route('front.product', ['slug' => $product->slug, 'user' => $mp->user_id]) }}"
                 class="btn btn-sm btn-outline-primary quick-view"
                 data-id="{{ $product->id }}"

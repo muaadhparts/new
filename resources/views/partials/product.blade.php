@@ -17,9 +17,25 @@
     // حماية في حال عدم تمرير $gs من الـ View الأب
     $gs = $gs ?? (isset($__data['gs']) ? $__data['gs'] : null);
 
-    // دوال عرض السعر قد تعتمد على خصائص المنتج المحقونة (price/previous_price)
-    $priceHtml = method_exists($product, 'showPrice') ? $product->showPrice() : (\App\Models\Product::convertPrice($product->price ?? 0));
-    $prevHtml  = (method_exists($product, 'showPreviousPrice') && $product->showPreviousPrice()) ? $product->showPreviousPrice() : null;
+    // --- 👇 أهم نقطة: إجبار القراءة من السعر المحقون مع البائع، وتجنّب showPrice() حين تتوفر هوية البائع ---
+    $forceVendor = request()->has('user') || isset($product->vendor_user_id);
+
+    $rawPrice = $product->price ?? null;
+    $rawPrev  = $product->previous_price ?? null;
+
+    // لو لدينا بائع محدد (forceVendor) نستخدم السعر المحقون مباشرةً
+    if ($forceVendor) {
+        $priceHtml = $rawPrice !== null ? \App\Models\Product::convertPrice($rawPrice) : '-';
+        $prevHtml  = $rawPrev  !== null ? \App\Models\Product::convertPrice($rawPrev)  : null;
+    } else {
+        // خلاف ذلك: اسمح باستخدام showPrice() كالمعتاد
+        $priceHtml = method_exists($product, 'showPrice')
+            ? $product->showPrice()
+            : (\App\Models\Product::convertPrice($rawPrice ?? 0));
+        $prevHtml  = (method_exists($product, 'showPreviousPrice') && $product->showPreviousPrice())
+            ? $product->showPreviousPrice()
+            : ($rawPrev !== null ? \App\Models\Product::convertPrice($rawPrev) : null);
+    }
 
     // تقييمات (اختياري)
     $avg   = $product->ratings_avg_rating ?? null;
