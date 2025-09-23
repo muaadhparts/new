@@ -22,7 +22,8 @@ class WishlistController extends Controller
             $user = Auth::guard('api')->user();
             $wishes = Wishlist::where('user_id','=',$user->id)->pluck('product_id');
 
-            // Search By Sort
+            // Get products with vendor context for wishlist items
+            $productsQuery = Product::where('status', 1)->whereIn('id', $wishes);
 
             if(!empty($request->sort))
             {
@@ -30,26 +31,28 @@ class WishlistController extends Controller
 
                 if($sort == "date_desc")
                 {
-                    $prods = Product::where('status','=',1)->whereIn('id',$wishes)->orderBy('id','desc')->get();
+                    $productsQuery->orderBy('id','desc');
                 }
                 else if($sort == "date_asc")
                 {
-                    $prods = Product::where('status','=',1)->whereIn('id',$wishes)->get();
+                    $productsQuery->orderBy('id','asc');
                 }
                 else if($sort == "price_asc")
                 {
-                    $prods = Product::where('status','=',1)->whereIn('id',$wishes)->orderBy('price','asc')->get();
+                    // Note: For price sorting, we'll use the Product model's price for sorting
+                    // but the actual display price will come from merchant_products via resource
+                    $productsQuery->orderBy('price','asc');
                 }
                 else if($sort == "price_desc")
                 {
-                    $prods = Product::where('status','=',1)->whereIn('id',$wishes)->orderBy('price','desc')->get();
+                    $productsQuery->orderBy('price','desc');
                 }
-
-                return response()->json(['status' => true, 'data' => ProductlistResource::collection($prods), 'error' => []]);
-                
             }
 
-            $prods = Product::where('status','=',1)->whereIn('id',$wishes)->get();
+            $prods = $productsQuery->get();
+
+            // Note: ProductlistResource will automatically use the first available merchant_product
+            // for vendor-aware pricing and data
             
             return response()->json(['status' => true, 'data' => ProductlistResource::collection($prods), 'error' => []]);
 

@@ -757,7 +757,7 @@
 
                     <div class="input-label-wrapper {{ $data->stock_check == 1 ? 'd-none' : '' }}" id="default_stock">
                         <label>@lang('Product Stock')</label>
-                        <input type="number" class="form-control" name="stock" value="{{ $data->stock }}"
+                        <input type="number" class="form-control" name="stock" value="{{ $merchantProduct->stock ?? '' }}"
                             placeholder="@lang('Enter Product Stock') ">
                     </div>
 

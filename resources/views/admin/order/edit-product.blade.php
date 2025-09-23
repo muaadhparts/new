@@ -13,12 +13,16 @@
         
               {{-- PRODUCT SIZE SECTION  --}}    
 
-              @if(!empty($productt->size))
+              @php
+                  $vendorId = $order->user_id ?? 0;
+                  $vendorSizes = $productt->getVendorSizes($vendorId);
+              @endphp
+              @if(!empty($vendorSizes))
 
               <div class="product-size">
                 <p class="title">{{ __('Size :') }}</p>
                 <ul class="siz-list">
-                  @foreach(array_unique($productt->size) as $key => $data1)
+                  @foreach($vendorSizes as $key => $data1)
                     <li class="{{ $item['size'] == $data1 ? 'active' : '' }}" data-key="{{ str_replace(' ','',$data1) }}">
                       <span class="box">
                         {{ $data1 }}     
@@ -34,21 +38,28 @@
 
               {{-- PRODUCT COLOR SECTION  --}}     
 
-              @if(!empty($productt->color))
+              @php
+                  $vendorColors = $productt->getVendorColors($vendorId);
+              @endphp
+              @if(!empty($vendorColors))
 
               <div class="product-color">
                 <div class="title">{{ __('Color :') }}</div>
                 <ul class="color-list">
 
-                  @foreach($productt->color as $key => $data1)
+                  @foreach($vendorColors as $key => $data1)
 
-                    <li class="{{ ('#'.$item['color'] == $data1 && $productt->size[$key] == $productt->size[$item['size_key']]) ? 'active' : '' }} {{ $productt->IsSizeColor($productt->size[$key]) ? str_replace(' ','',$productt->size[$key]) : ''  }} {{ $productt->size[$key] == $productt->size[$item['size_key']] ? 'show-colors' : '' }}">
-                      <span class="box" data-color="{{ $productt->color[$key] }}" style="background-color: {{ $productt->color[$key] }}">
+                    <li class="{{ ('#'.$item['color'] == $data1 && ($vendorSizes[$key] ?? '') == ($vendorSizes[$item['size_key']] ?? '')) ? 'active' : '' }} {{ $productt->IsSizeColor($vendorSizes[$key] ?? '') ? str_replace(' ','',($vendorSizes[$key] ?? '')) : ''  }} {{ ($vendorSizes[$key] ?? '') == ($vendorSizes[$item['size_key']] ?? '') ? 'show-colors' : '' }}">
+                      <span class="box" data-color="{{ $vendorColors[$key] ?? '' }}" style="background-color: {{ $vendorColors[$key] ?? '' }}">
 
-                        <input type="hidden" class="size" value="{{ $productt->size[$key] }}">
-                        <input type="hidden" class="size_qty" value="{{ $productt->size_qty[$key] }}">
+                        @php
+                            $vendorSizeQty = $productt->getVendorSizeQty($vendorId, $key);
+                            $vendorSizePrice = $productt->getVendorSizePrice($vendorId, $key);
+                        @endphp
+                        <input type="hidden" class="size" value="{{ $vendorSizes[$key] ?? '' }}">
+                        <input type="hidden" class="size_qty" value="{{ $vendorSizeQty }}">
                         <input type="hidden" class="size_key" value="{{$key}}">
-                        <input type="hidden" class="size_price" value="{{ round($productt->size_price[$key] * $curr->value,2) }}">                        
+                        <input type="hidden" class="size_price" value="{{ round($vendorSizePrice * $curr->value,2) }}">                        
                       
                       </span>
                     </li>
@@ -65,15 +76,18 @@
               {{-- PRODUCT STOCK CONDITION SECTION  --}}    
 
             
-              @if(is_array($productt->size))
+              @if(!empty($vendorSizes))
 
-                <input type="hidden" class="product-stock" value="{{@$item['size_key'] ??  $productt->size_qty[0] }}">
+                @php
+                    $firstSizeQty = $productt->getVendorSizeQty($vendorId, 0);
+                @endphp
+                <input type="hidden" class="product-stock" value="{{@$item['size_key'] ??  $firstSizeQty }}">
 
                 @else
 
 
                 @if(!$productt->emptyStock())
-                  <input type="hidden" class="product-stock" value="{{ $productt->stock }}">
+                  <input type="hidden" class="product-stock" value="{{ $productt->vendorSizeStock() }}">
                 @elseif($productt->type != 'Physical')
                   <input type="hidden" class="product-stock" value="0">
                 @else

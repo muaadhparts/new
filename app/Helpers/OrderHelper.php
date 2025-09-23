@@ -159,16 +159,22 @@ class OrderHelper
         try {
             foreach ($cart->items as $prod) {
                 $x = (string)$prod['size_qty'];
-               
+
                 if (!empty($x) && $x != "undefined") {
-                    $product = Product::find($prod['item']['id']);
-                    $x = (int)$x;
-                    $x = $x - $prod['qty'];
-                    $temp = $product->size_qty;
-                    $temp[$prod['size_key']] = $x;
-                    $temp1 = implode(',', $temp);
-                    $product->size_qty =  $temp1;
-                    $product->update();
+                    // Update size_qty in merchant_products instead of products
+                    $merchantProduct = \App\Models\MerchantProduct::where('product_id', $prod['item']['id'])
+                        ->where('user_id', $prod['user_id'])
+                        ->first();
+
+                    if ($merchantProduct) {
+                        $x = (int)$x;
+                        $x = $x - $prod['qty'];
+                        $temp = $merchantProduct->size_qty;
+                        $temp[$prod['size_key']] = $x;
+                        $temp1 = implode(',', $temp);
+                        $merchantProduct->size_qty = $temp1;
+                        $merchantProduct->update();
+                    }
                 }
             }
         } catch (\Exception $e) {
@@ -181,14 +187,22 @@ class OrderHelper
             foreach ($cart->items as $prod) {
                 $x = (string)$prod['stock'];
                 if ($x != null) {
+                    // Update stock in merchant_products instead of products
+                    $merchantProduct = \App\Models\MerchantProduct::where('product_id', $prod['item']['id'])
+                        ->where('user_id', $prod['user_id'])
+                        ->first();
 
-                    $product = Product::find($prod['item']['id']);
-                    $product->stock =  $prod['stock'];
-                    $product->update();
-                    if ($product->stock <= 5) {
-                        $notification = new Notification;
-                        $notification->product_id = $product->id;
-                        $notification->save();
+                    if ($merchantProduct) {
+                        $merchantProduct->stock = $prod['stock'];
+                        $merchantProduct->update();
+
+                        // Send low stock notification for this vendor's listing
+                        if ($merchantProduct->stock <= 5) {
+                            $notification = new Notification;
+                            $notification->product_id = $merchantProduct->product_id;
+                            $notification->user_id = $merchantProduct->user_id; // Add vendor context
+                            $notification->save();
+                        }
                     }
                 }
             }

@@ -448,8 +448,13 @@ class ProductController extends AdminBaseController
             $input['tags'] = implode(',', $request->tags);
         }
 
-        $input['price'] = ($input['price'] / $sign->value);
-        $input['previous_price'] = ($input['previous_price'] / $sign->value);
+        // Legacy fields removed - prices now handled via MerchantProduct
+        // Store base product info only, vendor-specific data goes to merchant_products
+        $basePrice = ($input['price'] / $sign->value);
+        $basePreviousPrice = ($input['previous_price'] / $sign->value);
+
+        // Remove legacy fields from product table
+        unset($input['price'], $input['previous_price'], $input['stock'], $input['user_id']);
         if ($request->cross_products) {
             $input['cross_products'] = implode(',', $request->cross_products);
         }
@@ -513,8 +518,28 @@ class ProductController extends AdminBaseController
             $input['attributes'] = $jsonAttr;
         }
 
-        // Save Data
+        // Save base product data (without vendor-specific fields)
         $data->fill($input)->save();
+
+        // Create merchant_product entry for the vendor
+        $vendorId = (int) ($request->input('user_id') ?? 0);
+        if ($vendorId > 0) {
+            \App\Models\MerchantProduct::updateOrCreate(
+                ['product_id' => $data->id, 'user_id' => $vendorId],
+                [
+                    'price' => $basePrice,
+                    'previous_price' => $basePreviousPrice,
+                    'stock' => (int) $request->input('stock', 0),
+                    'size' => $input['size'] ?? null,
+                    'size_qty' => $input['size_qty'] ?? null,
+                    'size_price' => $input['size_price'] ?? null,
+                    'minimum_qty' => $request->input('minimum_qty') ?: null,
+                    'whole_sell_qty' => $input['whole_sell_qty'] ?? null,
+                    'whole_sell_discount' => $input['whole_sell_discount'] ?? null,
+                    'status' => 1
+                ]
+            );
+        }
 
         // Set SLug
         $prod = Product::find($data->id);
@@ -629,9 +654,10 @@ class ProductController extends AdminBaseController
                         $input['name'] = $line[4];
                         $input['details'] = $line[6];
                         $input['color'] = $line[13];
-                        $input['price'] = $line[7];
-                        $input['previous_price'] = $line[8] != "" ? $line[8] : null;
-                        $input['stock'] = $line[9];
+                        // Store prices temporarily for merchant_product creation
+                        $csvPrice = $line[7];
+                        $csvPreviousPrice = $line[8] != "" ? $line[8] : null;
+                        $csvStock = $line[9];
                         $input['size'] = $line[10];
                         $input['size_qty'] = $line[11];
                         $input['size_price'] = $line[12];
@@ -679,12 +705,25 @@ class ProductController extends AdminBaseController
                         $timg->save(public_path() . '/assets/images/thumbnails/' . $thumbnail);
                         $input['thumbnail'] = $thumbnail;
 
-                        // Conert Price According to Currency
-                        $input['price'] = ($input['price'] / $sign->value);
-                        $input['previous_price'] = ($input['previous_price'] / $sign->value);
+                        // Convert Price According to Currency
+                        $convertedPrice = ($csvPrice / $sign->value);
+                        $convertedPreviousPrice = ($csvPreviousPrice / $sign->value);
 
-                        // Save Data
+                        // Save base product data (without vendor-specific fields)
                         $data->fill($input)->save();
+
+                        // Create merchant_product entry for imported product (assume admin user_id = 1)
+                        \App\Models\MerchantProduct::create([
+                            'product_id' => $data->id,
+                            'user_id' => 1, // Admin/default vendor
+                            'price' => $convertedPrice,
+                            'previous_price' => $convertedPreviousPrice,
+                            'stock' => (int) $csvStock,
+                            'size' => $input['size'] ?? null,
+                            'size_qty' => $input['size_qty'] ?? null,
+                            'size_price' => $input['size_price'] ?? null,
+                            'status' => 1
+                        ]);
 
                     } else {
                         $log .= "<br>" . __('Row No') . ": " . $i . " - " . __('No Category Found!') . "<br>";
@@ -896,8 +935,12 @@ class ProductController extends AdminBaseController
             $input['tags'] = null;
         }
 
-        $input['price'] = $input['price'] / $sign->value;
-        $input['previous_price'] = $input['previous_price'] / $sign->value;
+        // Legacy fields removed - prices now handled via MerchantProduct
+        $basePrice = $input['price'] / $sign->value;
+        $basePreviousPrice = $input['previous_price'] / $sign->value;
+
+        // Remove legacy fields from product table
+        unset($input['price'], $input['previous_price'], $input['stock'], $input['user_id']);
 
         // store filtering attributes for physical product
         $attrArr = [];
@@ -964,6 +1007,26 @@ class ProductController extends AdminBaseController
         $data->slug = Str::slug($data->name, '-') . '-' . strtolower($data->sku);
 
         $data->update($input);
+
+        // Update merchant_product entry for the vendor
+        $vendorId = (int) ($request->input('user_id') ?? 0);
+        if ($vendorId > 0) {
+            \App\Models\MerchantProduct::updateOrCreate(
+                ['product_id' => $data->id, 'user_id' => $vendorId],
+                [
+                    'price' => $basePrice,
+                    'previous_price' => $basePreviousPrice,
+                    'stock' => (int) $request->input('stock', 0),
+                    'size' => $input['size'] ?? null,
+                    'size_qty' => $input['size_qty'] ?? null,
+                    'size_price' => $input['size_price'] ?? null,
+                    'minimum_qty' => $request->input('minimum_qty') ?: null,
+                    'whole_sell_qty' => $input['whole_sell_qty'] ?? null,
+                    'whole_sell_discount' => $input['whole_sell_discount'] ?? null,
+                    'status' => 1
+                ]
+            );
+        }
         //-- Logic Section Ends
 
         //--- Redirect Section

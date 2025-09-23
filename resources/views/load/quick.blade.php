@@ -51,7 +51,7 @@
                       <div class="isStock">
                           <span>
                             <i class="far fa-check-circle"></i>
-                            {{ $gs->show_stock == 0 ? '' : $product->stock }} {{ __('In Stock') }}
+                            {{ $gs->show_stock == 0 ? '' : $product->vendorSizeStock() }} {{ __('In Stock') }}
                           </span>
                       </div>
                       @endif
@@ -140,11 +140,15 @@
               <div class="price-and-discount">
                 <div class="price">
                   <div class="current-price" id="msizeprice">
-                    {{ $product->showPrice() }}
+                    {{ $product->vendorSizePrice() }}
                   </div>
                   <small>
                     <del>
-                      {{ $product->showPreviousPrice() }}
+                    @php
+                        $vendorPrice = $product->vendorSizePrice();
+                        $vendorPrevPrice = $product->vendorSizePreviousPrice();
+                    @endphp
+                    {{ $vendorPrevPrice ? $vendorPrevPrice : '' }}
                     </del>
                   </small>
                 </div>
@@ -158,11 +162,15 @@
 
                   {{-- PRODUCT SIZE SECTION  --}}
 
-                  @if(!empty($product->size))
+                  @php
+                    $vendorId = request()->get('user') ?? ($product->vendor_user_id ?? $product->user_id);
+                    $vendorSizes = $product->getVendorSizes($vendorId);
+                  @endphp
+                  @if(!empty($vendorSizes))
                   <div class="mproduct-size">
                     <p class="title">{{ __('Size :') }}</p>
                     <ul class="siz-list">
-                      @foreach(array_unique($product->size) as $key => $data1)
+                      @foreach($vendorSizes as $key => $data1)
                     <li class="{{ $loop->first ? 'active' : '' }}" data-key="{{ str_replace(' ','',$data1) }}">
                           <span class="box">
                             {{ $data1 }}
@@ -187,14 +195,21 @@
                     <div class="title">{{ __('Color :') }}</div>
                     <ul class="color-list">
 
-                      @foreach($product->color as $key => $data1)
+                      @php
+                        $vendorColors = $product->getVendorColors($vendorId);
+                      @endphp
+                      @foreach($vendorColors as $key => $data1)
 
-                        <li class="{{ $loop->first ? 'active' : '' }} {{ $product->IsSizeColor($product->size[$key]) ? str_replace(' ','',$product->size[$key]) : ''  }} {{ $product->size[$key] == $product->size[0] ? 'show-colors' : '' }}">
+                        <li class="{{ $loop->first ? 'active' : '' }} {{ $product->IsSizeColor($vendorSizes[$key] ?? '') ? str_replace(' ','',($vendorSizes[$key] ?? '')) : ''  }} {{ ($vendorSizes[$key] ?? '') == ($vendorSizes[0] ?? '') ? 'show-colors' : '' }}">
                           <span class="box" data-color="{{ $product->color[$key] }}" style="background-color: {{ $product->color[$key] }}">
-                            <input type="hidden" class="msize" value="{{ $product->size[$key] }}">
-                            <input type="hidden" class="msize_qty" value="{{ $product->size_qty[$key] }}">
+                            @php
+                                $vendorSizeQty = $product->getVendorSizeQty($vendorId, $key);
+                                $vendorSizePrice = $product->getVendorSizePrice($vendorId, $key);
+                            @endphp
+                            <input type="hidden" class="msize" value="{{ $vendorSizes[$key] ?? '' }}">
+                            <input type="hidden" class="msize_qty" value="{{ $vendorSizeQty }}">
                             <input type="hidden" class="msize_key" value="{{$key}}">
-                            <input type="hidden" class="msize_price" value="{{ round($product->size_price[$key] * $curr->value,2) }}">
+                            <input type="hidden" class="msize_price" value="{{ round($vendorSizePrice * $curr->value,2) }}">
 
                           </span>
                         </li>
@@ -209,11 +224,14 @@
                   {{-- PRODUCT COLOR SECTION ENDS  --}}
 
                   @else
-                  @if(!empty($product->size_all))
+                  @php
+                    $vendorSizeAll = $product->getVendorSizeAll($vendorId);
+                @endphp
+                @if(!empty($vendorSizeAll))
                   <div class="mproduct-size" data-key="false">
                     <p class="title">{{ __('Size :') }}</p>
                     <ul class="siz-list">
-                      @foreach(array_unique(explode(',',$product->size_all)) as $key => $data1)
+                      @foreach(array_unique(explode(',', $vendorSizeAll)) as $key => $data1)
                     <li class="{{ $loop->first ? 'active' : '' }}" data-key="{{ str_replace(' ','',$data1) }}">
                           <span class="box">
                             {{ $data1 }}
@@ -225,13 +243,16 @@
                     </ul>
                   </div>
                   @endif
-                  @if(!empty($product->color_all))
+                  @php
+                      $vendorColorAll = $product->getVendorColorAll($vendorId);
+                  @endphp
+                  @if(!empty($vendorColorAll))
 
                   <div class="mproduct-color" data-key="false">
                     <div class="title">{{ __('Color :') }}</div>
                     <ul class="color-list">
 
-                      @foreach(explode(',',$product->color_all) as $key => $color1)
+                      @foreach(explode(',', $vendorColorAll) as $key => $color1)
 
                         <li class="{{ $loop->first ? 'active' : '' }} show-colors">
                           <span class="box" data-color="{{ $color1 }}" style="background-color: {{ $color1 }}">
@@ -252,14 +273,17 @@
 
               {{-- PRODUCT STOCK CONDITION SECTION  --}}
 
-              @if(!empty($product->size))
+              @if(!empty($vendorSizes))
 
-                <input type="hidden" class="product-stock" value="{{ $product->size_qty[0] }}">
+                @php
+                    $firstSizeQty = $product->getVendorSizeQty($vendorId, 0);
+                @endphp
+                <input type="hidden" class="product-stock" value="{{ $firstSizeQty }}">
 
                 @else
 
                 @if(!$product->emptyStock())
-                  <input type="hidden" class="product-stock" value="{{ $product->stock }}">
+                  <input type="hidden" class="product-stock" value="{{ $product->vendorSizeStock() }}">
                 @elseif($product->type != 'Physical')
                   <input type="hidden" class="product-stock" value="0">
                 @else
@@ -315,7 +339,7 @@
 
               {{-- PRODUCT ADD CART SECTION --}}
 
-              <input type="hidden" id="mproduct_price" value="{{ round($product->vendorPrice() * $curr->value,2) }}">
+              <input type="hidden" id="mproduct_price" value="{{ round($product->vendorSizePrice() * $curr->value,2) }}">
               <input type="hidden" id="mproduct_id" value="{{ $product->id }}">
               <input type="hidden" id="mcurr_pos" value="{{ $gs->currency_format }}">
               <input type="hidden" id="mcurr_sign" value="{{ $curr->sign }}">

@@ -35,27 +35,48 @@ class VendorController extends Controller
             $services = DB::table('services')->where('user_id', '=', $vendor->id)->get();
             $data['services'] = ServiceResource::collection($services);
 
-            // Search By Price
-            $prods = Product::when($minprice, function ($query, $minprice) {
+            // Get products through merchant_products for this vendor
+            $merchantProductsQuery = \App\Models\MerchantProduct::where('user_id', $vendor->id)
+                ->where('status', 1)
+                ->with(['product' => function($query) {
+                    $query->where('status', 1);
+                }]);
+
+            // Apply price filtering on merchant_products.price
+            $merchantProductsQuery->when($minprice, function ($query, $minprice) {
                 return $query->where('price', '>=', $minprice);
             })
-                ->when($maxprice, function ($query, $maxprice) {
-                    return $query->where('price', '<=', $maxprice);
-                })
-                ->when($sort, function ($query, $sort) {
-                    if ($sort == 'date_desc') {
-                        return $query->orderBy('id', 'DESC');
-                    } elseif ($sort == 'date_asc') {
-                        return $query->orderBy('id', 'ASC');
-                    } elseif ($sort == 'price_desc') {
-                        return $query->orderBy('price', 'DESC');
-                    } elseif ($sort == 'price_asc') {
-                        return $query->orderBy('price', 'ASC');
-                    }
-                })
-                ->when(empty($sort), function ($query, $sort) {
+            ->when($maxprice, function ($query, $maxprice) {
+                return $query->where('price', '<=', $maxprice);
+            });
+
+            // Apply sorting
+            $merchantProductsQuery->when($sort, function ($query, $sort) {
+                if ($sort == 'date_desc') {
                     return $query->orderBy('id', 'DESC');
-                })->where('status', 1)->where('user_id', $vendor->id)->get();
+                } elseif ($sort == 'date_asc') {
+                    return $query->orderBy('id', 'ASC');
+                } elseif ($sort == 'price_desc') {
+                    return $query->orderBy('price', 'DESC');
+                } elseif ($sort == 'price_asc') {
+                    return $query->orderBy('price', 'ASC');
+                }
+            })
+            ->when(empty($sort), function ($query, $sort) {
+                return $query->orderBy('id', 'DESC');
+            });
+
+            $merchantProducts = $merchantProductsQuery->get();
+
+            // Extract products and inject vendor context
+            $prods = $merchantProducts->map(function($mp) use ($vendor) {
+                if (!$mp->product) return null;
+
+                $product = $mp->product;
+                // Inject vendor context for the resource
+                $product->setAttribute('vendor_user_id', $vendor->id);
+                return $product;
+            })->filter()->values();
 
             $vprods = (new Collection(Product::filterProducts($prods)));
             $data['products'] = ProductlistResource::collection($vprods);

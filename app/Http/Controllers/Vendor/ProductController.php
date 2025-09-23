@@ -614,16 +614,22 @@ class ProductController extends VendorBaseController
     {
         $cats = Category::all();
         $data = Product::findOrFail($id);
+
+        // Get merchant product data for this vendor
+        $merchantProduct = MerchantProduct::where('product_id', $id)
+            ->where('user_id', $this->user->id)
+            ->first();
+
         $sign = $this->curr;
 
         if ($data->type == 'Digital') {
-            return view('vendor.product.edit.digital', compact('cats', 'data', 'sign'));
+            return view('vendor.product.edit.digital', compact('cats', 'data', 'merchantProduct', 'sign'));
         } elseif ($data->type == 'License') {
-            return view('vendor.product.edit.license', compact('cats', 'data', 'sign'));
+            return view('vendor.product.edit.license', compact('cats', 'data', 'merchantProduct', 'sign'));
         } elseif ($data->type == 'Listing') {
-            return view('vendor.product.edit.listing', compact('cats', 'data', 'sign'));
+            return view('vendor.product.edit.listing', compact('cats', 'data', 'merchantProduct', 'sign'));
         } else {
-            return view('vendor.product.edit.physical', compact('cats', 'data', 'sign'));
+            return view('vendor.product.edit.physical', compact('cats', 'data', 'merchantProduct', 'sign'));
         }
     }
 

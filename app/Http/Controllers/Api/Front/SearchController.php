@@ -242,9 +242,11 @@ class SearchController extends Controller
                                             });
   
                                     $prods = $prods->where('status', 1)->get();
-                                    
+
                                     $prods = (new Collection(Product::filterProducts($prods)));
-                                  
+
+                                    // Note: Search results show products from all vendors
+                                    // ProductlistResource will use the first available merchant_product for pricing
                                     return response()->json(['status' => true, 'data' => ProductlistResource::collection($prods->flatten(1)), 'error' => []]);
           }
           catch(\Exception $e){

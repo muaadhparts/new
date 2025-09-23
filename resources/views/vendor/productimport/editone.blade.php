@@ -148,7 +148,7 @@
 											</div>
 										</div>
 										<div class="col-lg-12">
-											<input name="stock" type="text" class="input-field" placeholder="{{ __("e.g 20") }}" value="{{ $data->stock }}">
+											<input name="stock" type="text" class="input-field" placeholder="{{ __("e.g 20") }}" value="{{ $merchantProduct->stock ?? '' }}">
 											<div class="checkbox-wrapper">
 												<input type="checkbox" name="measure_check" class="checkclick" id="allowProductMeasurement" value="1" {{ $data->measure == null ? '' : 'checked' }}>
 												<label for="allowProductMeasurement">{{ __("Allow Product Measurement") }}</label>
@@ -549,7 +549,7 @@
 										</div>
 									</div>
 									<div class="col-lg-12">
-										<input name="price" step="0.1" type="number" class="input-field" placeholder="{{ __("e.g 20") }}" value="{{round($data->price * $sign->value , 2)}}" required="" min="0">
+										<input name="price" step="0.1" type="number" class="input-field" placeholder="{{ __("e.g 20") }}" value="{{round(($merchantProduct->price ?? 0) * $sign->value , 2)}}" required="" min="0">
 									</div>
 								</div>
 

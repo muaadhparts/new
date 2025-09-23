@@ -265,27 +265,44 @@ class OrderController extends AdminBaseController
 
                     $cart = json_decode($data->cart, true);
 
-                    // Restore Product Stock If Any
+                    // Restore Product Stock If Any - Update merchant_products instead
                     foreach ($cart->items as $prod) {
                         $x = (string) $prod['stock'];
                         if ($x != null) {
-                            $product = Product::findOrFail($prod['item']['id']);
-                            $product->stock = $product->stock + $prod['qty'];
-                            $product->update();
+                            // Find the merchant product that was used for this order item
+                            $vendorId = $prod['item']['user_id'] ?? null;
+                            if ($vendorId) {
+                                $merchantProduct = \App\Models\MerchantProduct::where('product_id', $prod['item']['id'])
+                                    ->where('user_id', $vendorId)
+                                    ->first();
+
+                                if ($merchantProduct) {
+                                    $merchantProduct->stock = $merchantProduct->stock + $prod['qty'];
+                                    $merchantProduct->update();
+                                }
+                            }
                         }
                     }
 
-                    // Restore Product Size Qty If Any
+                    // Restore Product Size Qty If Any - Update merchant_products instead
                     foreach ($cart->items as $prod) {
                         $x = (string) $prod['size_qty'];
                         if (!empty($x)) {
-                            $product = Product::findOrFail($prod['item']['id']);
-                            $x = (int) $x;
-                            $temp = $product->size_qty;
-                            $temp[$prod['size_key']] = $x;
-                            $temp1 = implode(',', $temp);
-                            $product->size_qty = $temp1;
-                            $product->update();
+                            $vendorId = $prod['item']['user_id'] ?? null;
+                            if ($vendorId) {
+                                $merchantProduct = \App\Models\MerchantProduct::where('product_id', $prod['item']['id'])
+                                    ->where('user_id', $vendorId)
+                                    ->first();
+
+                                if ($merchantProduct && $merchantProduct->size_qty) {
+                                    $x = (int) $x;
+                                    $temp = explode(',', $merchantProduct->size_qty);
+                                    $temp[$prod['size_key']] = $x;
+                                    $temp1 = implode(',', $temp);
+                                    $merchantProduct->size_qty = $temp1;
+                                    $merchantProduct->update();
+                                }
+                            }
                         }
                     }
 
@@ -329,16 +346,24 @@ class OrderController extends AdminBaseController
 
     public function product_submit(Request $request)
     {
-
         $sku = $request->sku;
-        $product = Product::whereUserId($request->vendor_id)->whereStatus(1)->where('sku', $sku)->first();
+        $vendorId = $request->vendor_id;
+
+        // Find product through merchant_products relationship
+        $merchantProduct = \App\Models\MerchantProduct::where('user_id', $vendorId)
+            ->whereHas('product', function($query) use ($sku) {
+                $query->where('sku', $sku)->where('status', 1);
+            })
+            ->with('product')
+            ->first();
+
         $data = array();
-        if (!$product) {
+        if (!$merchantProduct || !$merchantProduct->product) {
             $data[0] = false;
             $data[1] = __('No Product Found');
         } else {
             $data[0] = true;
-            $data[1] = $product->id;
+            $data[1] = $merchantProduct->product->id;
         }
         return response()->json($data);
     }
@@ -370,7 +395,36 @@ class OrderController extends AdminBaseController
         $keys = $keys == "" ? '' : implode(',', $keys);
         $values = $values == "" ? '' : implode(',', $values);
         $size_price = ($size_price / $order->currency_value);
-        $prod = Product::where('id', '=', $id)->first(['id', 'user_id', 'slug', 'name', 'photo', 'size', 'size_qty', 'size_price', 'color', 'price', 'stock', 'type', 'file', 'link', 'license', 'license_qty', 'measure', 'whole_sell_qty', 'whole_sell_discount', 'attributes', 'minimum_qty']);
+
+        // Get product with merchant data
+        $product = Product::where('id', '=', $id)->first(['id', 'slug', 'name', 'photo', 'type', 'file', 'link', 'license', 'license_qty', 'measure', 'attributes']);
+
+        // Get vendor-specific data from merchant_products
+        $vendorId = (int) ($_GET['vendor_id'] ?? 0);
+        $merchantProduct = null;
+        if ($vendorId > 0) {
+            $merchantProduct = \App\Models\MerchantProduct::where('product_id', $id)
+                ->where('user_id', $vendorId)
+                ->where('status', 1)
+                ->first();
+        }
+
+        if (!$merchantProduct) {
+            return redirect()->back()->with('unsuccess', __('Product not available from this vendor.'));
+        }
+
+        // Create a combined product object with merchant data
+        $prod = (object) array_merge($product->toArray(), [
+            'user_id' => $merchantProduct->user_id,
+            'price' => $merchantProduct->price,
+            'stock' => $merchantProduct->stock,
+            'size' => $merchantProduct->size ? explode(',', $merchantProduct->size) : null,
+            'size_qty' => $merchantProduct->size_qty ? explode(',', $merchantProduct->size_qty) : null,
+            'size_price' => $merchantProduct->size_price ? explode(',', $merchantProduct->size_price) : null,
+            'minimum_qty' => $merchantProduct->minimum_qty,
+            'whole_sell_qty' => $merchantProduct->whole_sell_qty,
+            'whole_sell_discount' => $merchantProduct->whole_sell_discount
+        ]);
 
         if ($prod->user_id != 0) {
             $prc = $prod->price + $this->gs->fixed_commission + ($prod->price / 100) * $this->gs->percentage_commission;
@@ -524,7 +578,36 @@ class OrderController extends AdminBaseController
         $item_id = $_GET['item_id'];
 
         $size_price = ($size_price / $order->currency_value);
-        $prod = Product::where('id', '=', $id)->first(['id', 'user_id', 'slug', 'name', 'photo', 'size', 'size_qty', 'size_price', 'color', 'price', 'stock', 'type', 'file', 'link', 'license', 'license_qty', 'measure', 'whole_sell_qty', 'whole_sell_discount', 'attributes', 'minimum_qty']);
+
+        // Get product with merchant data
+        $product = Product::where('id', '=', $id)->first(['id', 'slug', 'name', 'photo', 'type', 'file', 'link', 'license', 'license_qty', 'measure', 'attributes']);
+
+        // Get vendor-specific data from merchant_products
+        $vendorId = (int) ($_GET['vendor_id'] ?? 0);
+        $merchantProduct = null;
+        if ($vendorId > 0) {
+            $merchantProduct = \App\Models\MerchantProduct::where('product_id', $id)
+                ->where('user_id', $vendorId)
+                ->where('status', 1)
+                ->first();
+        }
+
+        if (!$merchantProduct) {
+            return redirect()->back()->with('unsuccess', __('Product not available from this vendor.'));
+        }
+
+        // Create a combined product object with merchant data
+        $prod = (object) array_merge($product->toArray(), [
+            'user_id' => $merchantProduct->user_id,
+            'price' => $merchantProduct->price,
+            'stock' => $merchantProduct->stock,
+            'size' => $merchantProduct->size ? explode(',', $merchantProduct->size) : null,
+            'size_qty' => $merchantProduct->size_qty ? explode(',', $merchantProduct->size_qty) : null,
+            'size_price' => $merchantProduct->size_price ? explode(',', $merchantProduct->size_price) : null,
+            'minimum_qty' => $merchantProduct->minimum_qty,
+            'whole_sell_qty' => $merchantProduct->whole_sell_qty,
+            'whole_sell_discount' => $merchantProduct->whole_sell_discount
+        ]);
 
         if ($prod->user_id != 0) {
             $prc = $prod->price + $this->gs->fixed_commission + ($prod->price / 100) * $this->gs->percentage_commission;

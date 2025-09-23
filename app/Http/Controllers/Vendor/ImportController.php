@@ -285,8 +285,14 @@ class ImportController extends VendorBaseController
     {
         $cats = Category::all();
         $data = Product::findOrFail($id);
+
+        // Get merchant product data for this vendor
+        $merchantProduct = MerchantProduct::where('product_id', $id)
+            ->where('user_id', $this->user->id)
+            ->first();
+
         $sign = $this->curr;
-        return view('vendor.productimport.editone', compact('cats', 'data', 'sign'));
+        return view('vendor.productimport.editone', compact('cats', 'data', 'merchantProduct', 'sign'));
     }
 
     //*** POST Request

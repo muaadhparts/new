@@ -231,19 +231,26 @@
                         @endif
 
                         @if ($productt->stock_check == 1)
-                            @if (!empty($productt->size))
+                            @php
+                                $vendorSizes = $productt->getVendorSizes($vendorId);
+                            @endphp
+                            @if (!empty($vendorSizes))
                                 <!-- product size -->
                                 <div class="variation-wrapper variation-sizes">
                                     <span class="varition-title">@lang('Size :')</span>
                                     <ul>
-                                        @foreach (array_unique($productt->size) as $key => $data1)
+                                        @foreach ($vendorSizes as $key => $data1)
+                                            @php
+                                                $vendorSizePrice = $productt->getVendorSizePrice($vendorId, $key);
+                                                $vendorSizeQty = $productt->getVendorSizeQty($vendorId, $key);
+                                            @endphp
                                             <li class="{{ $loop->first ? 'active' : '' }} cart_size"
-                                                data-price="{{ $productt->size_price[$key] * $curr->value }}">
+                                                data-price="{{ $vendorSizePrice * $curr->value }}">
                                                 <input {{ $loop->first ? 'checked' : '' }} type="radio"
                                                        id="size_{{ $key }}" data-value="{{ $key }}"
                                                        data-key="{{ str_replace(' ', '', $data1) }}"
-                                                       data-price="{{ $productt->size_price[$key] * $curr->value }}"
-                                                       data-qty="{{ $productt->size_qty[$key] }}" value="{{ $key }}"
+                                                       data-price="{{ $vendorSizePrice * $curr->value }}"
+                                                       data-qty="{{ $vendorSizeQty }}" value="{{ $key }}"
                                                        name="size">
                                                 <label for="size_{{ $key }}">{{ $data1 }}</label>
                                             </li>
@@ -252,12 +259,15 @@
                                 </div>
                             @endif
 
-                            @if (!empty($productt->color_all))
+                            @php
+                                $vendorColorAll = $productt->getVendorColorAll($vendorId);
+                            @endphp
+                            @if (!empty($vendorColorAll))
                                 <!-- product colors -->
                                 <div class="variation-wrapper variation-colors">
                                     <span class="varition-title">@lang('Color :')</span>
                                     <ul>
-                                        @foreach ($productt->color_all as $ckey => $color1)
+                                        @foreach (explode(',', $vendorColorAll) as $ckey => $color1)
                                             <li class="{{ $loop->first ? 'active' : '' }} cart_color">
                                                 <input {{ $loop->first ? 'checked' : '' }} type="radio" data-price="0"
                                                        data-color="{{ $color1 }}" id="color_{{ $ckey }}"
@@ -273,14 +283,20 @@
                         @endif
 
                         @if ($productt->type == 'Physical')
-                            @if (is_array($productt->size))
-                                <input type="hidden" id="stock" value="{{ $productt->size_qty[0] }}">
+                            @if (!empty($vendorSizes))
+                                @php
+                                    $firstSizeQty = $productt->getVendorSizeQty($vendorId, 0);
+                                @endphp
+                                <input type="hidden" id="stock" value="{{ $firstSizeQty }}">
                             @else
                                 @if (!$productt->emptyStock())
                                     @if ($productt->stock_check == 1)
-                                        <input type="hidden" id="stock" value="{{ $productt->size_price[0] }}">
+                                        @php
+                                            $firstSizePrice = $productt->getVendorSizePrice($vendorId, 0);
+                                        @endphp
+                                        <input type="hidden" id="stock" value="{{ $firstSizePrice }}">
                                     @else
-                                        <input type="hidden" id="stock" value="{{ $productt->stock }}">
+                                        <input type="hidden" id="stock" value="{{ $productt->vendorSizeStock() }}">
                                     @endif
                                 @elseif($productt->type != 'Physical')
                                     <input type="hidden" id="stock" value="0">

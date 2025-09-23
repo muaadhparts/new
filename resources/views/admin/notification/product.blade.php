@@ -7,7 +7,7 @@
 		@foreach($datas as $data)
 			<li>
 				<a href="{{ route('admin-prod-edit',$data->product->id) }}"> <i class="icofont-cart"></i> {{mb_strlen($data->product->name,'UTF-8') > 30 ? mb_substr($data->product->name,0,30,'UTF-8') : $data->product->name}}</a>
-				<a class="clear">{{ __('Stock') }} : {{$data->product->stock}}</a>
+				<a class="clear">{{ __('Stock') }} : {{$data->product->vendorSizeStock()}}</a>
 			</li>
 		@endforeach
 

@@ -55,15 +55,31 @@ class FrontendController extends Controller
     {
         try {
             $user = User::where('id', $vendor_id)->first();
-            if ($request->type) {
-                if ($request->type == 'normal' || $request->type == "affiliate") {
-                    $prods = Product::whereUserId($user->id)->whereProductType($request->type)->get();
-                } else {
-                    $prods = Product::whereUserId($user->id)->get();
-                }
-            } else {
-                $prods = Product::whereUserId($user->id)->get();
+            if (!$user) {
+                return response()->json(['status' => false, 'data' => [], 'error' => ['message' => 'Vendor not found']]);
             }
+
+            // Get products through merchant_products for this vendor
+            $merchantProductsQuery = \App\Models\MerchantProduct::where('user_id', $user->id)
+                ->where('status', 1)
+                ->with(['product' => function($query) use ($request) {
+                    $query->where('status', 1);
+                    if ($request->type && in_array($request->type, ['normal', 'affiliate'])) {
+                        $query->where('product_type', $request->type);
+                    }
+                }]);
+
+            $merchantProducts = $merchantProductsQuery->get();
+
+            // Extract products and inject vendor context
+            $prods = $merchantProducts->map(function($mp) use ($user) {
+                if (!$mp->product) return null;
+
+                $product = $mp->product;
+                // Inject vendor context for the resource
+                $product->setAttribute('vendor_user_id', $user->id);
+                return $product;
+            })->filter()->values();
 
             return response()->json(['status' => true, 'data' => ProductlistResource::collection($prods), 'error' => []]);
         } catch (\Exception $e) {
@@ -300,10 +316,14 @@ class FrontendController extends Controller
                     $prods = $prods->where('status', 1)->paginate($paginate);
                 }
 
+                // Note: General product listing shows products from all vendors
+                // For vendor-specific data, ProductlistResource will use the first available merchant_product
                 return response()->json(['status' => true, 'data' => ProductlistResource::collection($prods)->response()->getData(true), 'error' => []]);
             } else {
 
                 $prods = Product::where('status', 1)->get();
+                // Note: General product listing shows products from all vendors
+                // For vendor-specific data, ProductlistResource will use the first available merchant_product
                 return response()->json(['status' => true, 'data' => ProductlistResource::collection($prods), 'error' => []]);
             }
         } catch (\Exception $e) {
