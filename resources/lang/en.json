@@ -1996,7 +1996,7 @@
     "messages.no_matches": "No parts match your filters.",
     "messages.api_error": "Error while fetching data.",
     "messages.load_failed": "Failed to load data",
-    "messages.added_to_cart": "Added to cart",
+    "added_to_cart": "Item added to cart",
 
     "ext.partCode": "Part Code",
     "ext.market": "Market",
