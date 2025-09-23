@@ -7,7 +7,7 @@ use App\Models\SkuAlternative;
 use App\Models\MerchantProduct;
 use Livewire\Component;
 
-class Alternativeproduct extends Component
+class alternativeproduct extends Component
 {
     /**
      * ملاحظة: صرنا نخزن هنا سجلات MerchantProduct (عروض البائعين)،

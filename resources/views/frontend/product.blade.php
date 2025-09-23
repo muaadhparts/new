@@ -1,3 +1,4 @@
+{{-- resources\views\frontend\product.blade.php --}}
 @extends('layouts.front')
 
 @include('includes.seo.canonical')
@@ -689,10 +690,7 @@
     <div class="gs-product-cards-slider-area wow-replaced" data-wow-delay=".1s">
         <div class="container">
             <h2 class="title text-center">@lang('Related Products')</h2>
-            <div class="product-cards-slider">
-                @foreach (App\Models\Product::where('type', $productt->type)->where('product_type', $productt->product_type)->withCount('ratings')->withAvg('ratings', 'rating')->take(12)->get() as $product)
-                    @include('includes.frontend.home_product', ['class' => 'not'])
-                @endforeach
+                @livewire('alternativerelatedproduct', ['sku' => $productt->sku], key('alt-rel-'.$productt->sku))
             </div>
         </div>
     </div>

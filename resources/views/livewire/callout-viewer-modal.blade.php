@@ -1,3 +1,6 @@
+
+{{-- resources\views\livewire\callout-viewer-modal.blade.php --}}
+
 <div
     id="modal"
     wire:ignore.self

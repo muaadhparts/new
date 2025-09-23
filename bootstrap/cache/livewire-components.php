@@ -1,6 +1,7 @@
 <?php return array (
   'alternative' => 'App\\Livewire\\Alternative',
   'alternativeproduct' => 'App\\Livewire\\Alternativeproduct',
+  'alternativerelatedproduct' => 'App\\Livewire\\Alternativerelatedproduct',
   'attributes' => 'App\\Livewire\\Attributes',
   'callout-modal' => 'App\\Livewire\\CalloutModal',
   'catlog-tree-level1' => 'App\\Livewire\\CatlogTreeLevel1',

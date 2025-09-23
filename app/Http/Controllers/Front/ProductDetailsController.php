@@ -129,16 +129,99 @@ class ProductDetailsController extends FrontBaseController
         ]);
     }
 
+    // public function quickFragment(int $id)
+    // {
+    //     $product = \App\Models\Product::findOrFail($id);
+    //     return response()->view('quick', compact('product'));
+    // }
+    // public function quickFragment(int $id)
+    // {
+    //     $product = \App\Models\Product::findOrFail($id);
+
+    //     // ✅ خُذ معرف البائع من الاستعلام ?user=123
+    //     $vendorId = (int) request()->query('user', 0);
+    //     if ($vendorId > 0) {
+    //         // ابحث عن عرض هذا البائع لهذا المنتج
+    //         $mp = \App\Models\MerchantProduct::where('product_id', $product->id)
+    //             ->where('user_id', $vendorId)
+    //             ->first();
+
+    //         if ($mp) {
+    //             // ✅ حقن سياق البائع داخل كائن المنتج ليعرض السعر/المخزون الصحيحين
+    //             $product->setAttribute('vendor_user_id', $mp->user_id);
+    //             if (isset($mp->price))          { $product->setAttribute('price', $mp->price); }
+    //             if (isset($mp->previous_price)) { $product->setAttribute('previous_price', $mp->previous_price); }
+    //             if (isset($mp->stock))          { $product->setAttribute('stock', $mp->stock); }
+
+    //             // حقول اختيارية إن كانت موجودة في mp (لا تضر إن لم توجد)
+    //             foreach (['size','size_qty','size_price','license','license_qty'] as $field) {
+    //                 if (isset($mp->{$field})) { $product->setAttribute($field, $mp->{$field}); }
+    //             }
+    //         }
+    //     }
+
+    //     return response()->view('quick', compact('product'));
+    // }
     public function quickFragment(int $id)
     {
         $product = \App\Models\Product::findOrFail($id);
-        return response()->view('quick', compact('product'));
+
+        // البائع من ?user=
+        $vendorId = (int) request()->query('user', 0);
+        if ($vendorId > 0) {
+            $mp = \App\Models\MerchantProduct::where('product_id', $product->id)
+                ->where('user_id', $vendorId)
+                ->first();
+
+            if ($mp) {
+                // حقن سياق البائع
+                $product->setAttribute('vendor_user_id', $mp->user_id);
+                if (isset($mp->price))          $product->setAttribute('price', $mp->price);
+                if (isset($mp->previous_price)) $product->setAttribute('previous_price', $mp->previous_price);
+                if (isset($mp->stock))          $product->setAttribute('stock', $mp->stock);
+                foreach (['size','size_qty','size_price','license','license_qty'] as $f) {
+                    if (isset($mp->{$f})) $product->setAttribute($f, $mp->{$f});
+                }
+            }
+        }
+
+        return response()->view('partials.product', compact('product'));
     }
+
 
     public function productFragment(string $key)
     {
-        $product = \App\Models\Product::where('sku', $key)->first()
-                ?: \App\Models\Product::where('slug', $key)->firstOrFail();
+        // حاول جلب القيمة الفعلية من باراميترات الراوت إن وُجدت
+        $raw = request()->route('product') ?? request()->route('sku') ?? $key;
+
+        // احصل على المنتج بالترتيب: Model bound / id رقمي / sku / slug
+        if ($raw instanceof \App\Models\Product) {
+            $product = $raw;
+        } elseif (is_numeric($raw)) {
+            $product = \App\Models\Product::findOrFail((int) $raw);
+        } else {
+            $product = \App\Models\Product::where('sku', $raw)->first()
+                    ?: \App\Models\Product::where('slug', $raw)->firstOrFail();
+        }
+
+        // البائع من ?user=
+        $vendorId = (int) request()->query('user', 0);
+        if ($vendorId > 0) {
+            $mp = \App\Models\MerchantProduct::where('product_id', $product->id)
+                ->where('user_id', $vendorId)
+                ->first();
+
+            if ($mp) {
+                // حقن سياق البائع
+                $product->setAttribute('vendor_user_id', $mp->user_id);
+                if (isset($mp->price))          $product->setAttribute('price', $mp->price);
+                if (isset($mp->previous_price)) $product->setAttribute('previous_price', $mp->previous_price);
+                if (isset($mp->stock))          $product->setAttribute('stock', $mp->stock);
+                foreach (['size','size_qty','size_price','license','license_qty'] as $f) {
+                    if (isset($mp->{$f})) $product->setAttribute($f, $mp->{$f});
+                }
+            }
+        }
 
         return response()->view('partials.product', compact('product'));
     }

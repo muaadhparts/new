@@ -531,19 +531,12 @@ class CheckoutController extends FrontBaseController
 
     public function checkoutstep3()
     {
-        $my =  new MyFatoorahController();
-        return $my->index();
-//        dd($my->index());
-    return redirect()->route('front.myfatoorah.submit');
-
-//        dd(Session::get('step2'));
         if (!Session::has('step1')) {
             return redirect()->route('front.checkout')->with('success', __("Please fill up step 1."));
         }
         if (!Session::has('step2')) {
             return redirect()->route('front.checkout.step2')->with('success', __("Please fill up step 2."));
         }
-
         if (!Session::has('cart')) {
             return redirect()->route('front.cart')->with('success', __("You don't have any product to checkout."));
         }
@@ -556,177 +549,263 @@ class CheckoutController extends FrontBaseController
         $curr = $this->curr;
         $gateways = PaymentGateway::scopeHasGateway($this->curr->id);
         $pickups = DB::table('pickups')->get();
+
         $oldCart = Session::get('cart');
-//        dd($oldCart);
         $cart = new Cart($oldCart);
         $products = $cart->items;
+
         $paystack = PaymentGateway::whereKeyword('paystack')->first();
-        $paystackData = $paystack->convertAutoData();
-//        dd($cart ,Session::get('step2'));
-        if (Auth::check()) {
+        $paystackData = $paystack ? $paystack->convertAutoData() : [];
 
-            // Shipping Method
-
-            if ($this->gs->multiple_shipping == 1) {
-                $ship_data = Order::getShipData($cart);
-//                dd($ship_data);
-                $shipping_data = $ship_data['shipping_data'];
-                $vendor_shipping_id = $ship_data['vendor_shipping_id'];
-            } else {
-                $shipping_data = DB::table('shippings')->whereUserId(0)->get();
-            }
-
-            // Packaging
-
-            if ($this->gs->multiple_shipping == 1) {
-                $pack_data = Order::getPackingData($cart);
-                $package_data = $pack_data['package_data'];
-                $vendor_packing_id = $pack_data['vendor_packing_id'];
-            } else {
-                $package_data = DB::table('packages')->whereUserId(0)->get();
-            }
-            foreach ($products as $prod) {
-                if ($prod['item']['type'] == 'Physical') {
-                    $dp = 0;
-                    break;
-                }
-            }
-            $total = $cart->totalPrice;
-            $coupon = Session::has('coupon') ? Session::get('coupon') : 0;
-
-            if (!Session::has('coupon_total')) {
-                $total = $total - $coupon;
-                $total = $total + 0;
-            } else {
-                $total = Session::get('coupon_total');
-                $total = str_replace(',', '', str_replace($curr->sign, '', $total));
-            }
-//            $step2 = Session::get('step2');
-
-//            $shipping_cost = $step2['shipping_cost'] ?? 0;
-////            shipping_cost
-//            dd($total ,$cart ,$step2->shipping_cost);
-
-            return view('frontend.checkout.step3', ['products' => $cart->items, 'totalPrice' => $total, 'pickups' => $pickups, 'totalQty' => $cart->totalQty, 'gateways' => $gateways, 'shipping_cost' => $step2->shipping_cost, 'digital' => $dp, 'curr' => $curr, 'shipping_data' => $shipping_data, 'package_data' => $package_data, 'vendor_shipping_id' => $vendor_shipping_id, 'vendor_packing_id' => $vendor_packing_id, 'paystack' => $paystackData, 'step1' => $step1, 'step2' => $step2]);
-        } else {
-
-            if ($this->gs->guest_checkout == 1) {
-                if ($this->gs->multiple_shipping == 1) {
-                    $ship_data = Order::getShipData($cart);
-                    $shipping_data = $ship_data['shipping_data'];
-                    $vendor_shipping_id = $ship_data['vendor_shipping_id'];
-                } else {
-                    $shipping_data = DB::table('shippings')->where('user_id', '=', 0)->get();
-                }
-
-//                dd($shipping_data);
-                // Packaging
-
-                if ($this->gs->multiple_shipping == 1) {
-                    $pack_data = Order::getPackingData($cart);
-                    $package_data = $pack_data['package_data'];
-                    $vendor_packing_id = $pack_data['vendor_packing_id'];
-                } else {
-                    $package_data = DB::table('packages')->whereUserId('0')->get();
-
-                }
-
-                foreach ($products as $prod) {
-                    if ($prod['item']['type'] == 'Physical') {
-                        $dp = 0;
-                        break;
-                    }
-                }
-                $total = $cart->totalPrice;
-                $coupon = Session::has('coupon') ? Session::get('coupon') : 0;
-
-                if (!Session::has('coupon_total')) {
-                    $total = $total - $coupon;
-                    $total = $total + 0;
-                } else {
-                    $total = Session::get('coupon_total');
-                    $total = str_replace($curr->sign, '', $total) + round(0 * $curr->value, 2);
-                }
-                foreach ($products as $prod) {
-                    if ($prod['item']['type'] != 'Physical') {
-                        if (!Auth::check()) {
-                            $ck = 1;
-                            return view('frontend.checkout.step3', ['products' => $cart->items, 'totalPrice' => $total, 'pickups' => $pickups, 'totalQty' => $cart->totalQty, 'gateways' => $gateways, 'shipping_cost' => 0, 'digital' => $dp, 'curr' => $curr, 'shipping_data' => $shipping_data, 'package_data' => $package_data, 'vendor_shipping_id' => $vendor_shipping_id, 'vendor_packing_id' => $vendor_packing_id, 'paystack' => $paystackData, 'step2' => $step2, 'step1' => $step1]);
-                        }
-                    }
-                }
-
-
-//                dd($total ,$step2 ,['products' => $cart->items,
-//                    'totalPrice' => $total,
-//                    'pickups' => $pickups, 'totalQty' => $cart->totalQty,
-//                    'gateways' => $gateways,
-//                    'shipping_cost' => $step2->shipping_cost, 'digital' => $dp,
-//                    'curr' => $curr, 'shipping_data' => $shipping_data,
-//                    'package_data' => $package_data, 'vendor_shipping_id' => $vendor_shipping_id,
-//                    'vendor_packing_id' => $vendor_packing_id, 'paystack' => $paystackData,
-//                    'step2' => $step2, 'step1' => $step1]);
-
-
-                return view('frontend.checkout.step3', ['products' => $cart->items, 'totalPrice' => $total, 'pickups' => $pickups, 'totalQty' => $cart->totalQty,
-                                'gateways' => $gateways, 'shipping_cost' =>  $step2->shipping_cost, 'digital' => $dp, 'curr' => $curr, 'shipping_data' => $shipping_data, 'package_data' => $package_data, 'vendor_shipping_id' => $vendor_shipping_id, 'vendor_packing_id' => $vendor_packing_id, 'paystack' => $paystackData, 'step2' => $step2, 'step1' => $step1]);
-            }
-
-            // If guest checkout is Deactivated then display pop up form with proper error message
-
-            else {
-
-                // Shipping Method
-
-                if ($this->gs->multiple_shipping == 1) {
-                    $ship_data = Order::getShipData($cart);
-                    $shipping_data = $ship_data['shipping_data'];
-                    $vendor_shipping_id = $ship_data['vendor_shipping_id'];
-                } else {
-                    $shipping_data = DB::table('shippings')->where('user_id', '=', 0)->get();
-                }
-
-                // Packaging
-
-                if ($this->gs->multiple_packaging == 1) {
-                    $pack_data = Order::getPackingData($cart);
-                    $package_data = $pack_data['package_data'];
-                    $vendor_packing_id = $pack_data['vendor_packing_id'];
-                } else {
-                    $package_data = DB::table('packages')->where('user_id', '=', 0)->get();
-                }
-
-                $total = $cart->totalPrice;
-                $coupon = Session::has('coupon') ? Session::get('coupon') : 0;
-
-                if (!Session::has('coupon_total')) {
-                    $total = $total - $coupon;
-                    $total = $total + 0;
-                } else {
-                    $total = Session::get('coupon_total');
-                    $total = $total;
-                }
-                $ck = 1;
-            //    dd($total ,['products' => $cart->items,
-            //        'totalPrice' => $total,
-            //        'pickups' => $pickups, 'totalQty' => $cart->totalQty,
-            //        'gateways' => $gateways, 'shipping_cost' => 0, 'digital' => $dp,
-            //        'curr' => $curr, 'shipping_data' => $shipping_data,
-            //        'package_data' => $package_data, 'vendor_shipping_id' => $vendor_shipping_id,
-            //        'vendor_packing_id' => $vendor_packing_id, 'paystack' => $paystackData,
-            //        'step2' => $step2, 'step1' => $step1]);
-                return view('frontend.checkout.step3',
-                    ['products' => $cart->items,
-                        'totalPrice' => $total,
-                        'pickups' => $pickups, 'totalQty' => $cart->totalQty,
-                        'gateways' => $gateways, 'shipping_cost' => 0, 'digital' => $dp,
-                        'curr' => $curr, 'shipping_data' => $shipping_data,
-                        'package_data' => $package_data, 'vendor_shipping_id' => $vendor_shipping_id,
-                        'vendor_packing_id' => $vendor_packing_id, 'paystack' => $paystackData,
-                        'step2' => $step2, 'step1' => $step1]);
-            }
+        // اكتشف هل بالسلة منتج فيزيائي
+        foreach ($products as $prod) {
+            if ($prod['item']['type'] == 'Physical') { $dp = 0; break; }
         }
+
+        // شحن وتغليف
+        if ($this->gs->multiple_shipping == 1) {
+            $ship_data = Order::getShipData($cart);
+            $shipping_data = $ship_data['shipping_data'];
+            $vendor_shipping_id = $ship_data['vendor_shipping_id'];
+        } else {
+            $shipping_data = DB::table('shippings')->whereUserId(0)->get();
+        }
+
+        if ($this->gs->multiple_shipping == 1) {
+            $pack_data = Order::getPackingData($cart);
+            $package_data = $pack_data['package_data'];
+            $vendor_packing_id = $pack_data['vendor_packing_id'];
+        } else {
+            $package_data = DB::table('packages')->whereUserId(0)->get();
+        }
+
+        // الإجمالي مع الكوبون
+        $total = $cart->totalPrice;
+        $coupon = Session::has('coupon') ? Session::get('coupon') : 0;
+        if (!Session::has('coupon_total')) {
+            $total = $total - $coupon;
+        } else {
+            $total = Session::get('coupon_total');
+        }
+
+        // أعرض صفحة وسائل الدفع (Step 3)
+        return view('frontend.checkout.step3', [
+            'products'            => $cart->items,
+            'totalPrice'          => $total,
+            'pickups'             => $pickups,
+            'totalQty'            => $cart->totalQty,
+            'gateways'            => $gateways,
+            'shipping_cost'       => $step2->shipping_cost ?? 0,
+            'digital'             => $dp,
+            'curr'                => $curr,
+            'shipping_data'       => $shipping_data,
+            'package_data'        => $package_data,
+            'vendor_shipping_id'  => $vendor_shipping_id,
+            'vendor_packing_id'   => $vendor_packing_id,
+            'paystack'            => $paystackData,
+            'step2'               => $step2,
+            'step1'               => $step1,
+        ]);
     }
+
+//     public function checkoutstep3()
+//     {
+//         $my =  new MyFatoorahController();
+//         return $my->index();
+// //        dd($my->index());
+//     return redirect()->route('front.myfatoorah.submit');
+
+// //        dd(Session::get('step2'));
+//         if (!Session::has('step1')) {
+//             return redirect()->route('front.checkout')->with('success', __("Please fill up step 1."));
+//         }
+//         if (!Session::has('step2')) {
+//             return redirect()->route('front.checkout.step2')->with('success', __("Please fill up step 2."));
+//         }
+
+//         if (!Session::has('cart')) {
+//             return redirect()->route('front.cart')->with('success', __("You don't have any product to checkout."));
+//         }
+
+//         $step1 = (object) Session::get('step1');
+//         $step2 = (object) Session::get('step2');
+//         $dp = 1;
+//         $vendor_shipping_id = 0;
+//         $vendor_packing_id = 0;
+//         $curr = $this->curr;
+//         $gateways = PaymentGateway::scopeHasGateway($this->curr->id);
+//         $pickups = DB::table('pickups')->get();
+//         $oldCart = Session::get('cart');
+// //        dd($oldCart);
+//         $cart = new Cart($oldCart);
+//         $products = $cart->items;
+//         $paystack = PaymentGateway::whereKeyword('paystack')->first();
+//         $paystackData = $paystack->convertAutoData();
+// //        dd($cart ,Session::get('step2'));
+//         if (Auth::check()) {
+
+//             // Shipping Method
+
+//             if ($this->gs->multiple_shipping == 1) {
+//                 $ship_data = Order::getShipData($cart);
+// //                dd($ship_data);
+//                 $shipping_data = $ship_data['shipping_data'];
+//                 $vendor_shipping_id = $ship_data['vendor_shipping_id'];
+//             } else {
+//                 $shipping_data = DB::table('shippings')->whereUserId(0)->get();
+//             }
+
+//             // Packaging
+
+//             if ($this->gs->multiple_shipping == 1) {
+//                 $pack_data = Order::getPackingData($cart);
+//                 $package_data = $pack_data['package_data'];
+//                 $vendor_packing_id = $pack_data['vendor_packing_id'];
+//             } else {
+//                 $package_data = DB::table('packages')->whereUserId(0)->get();
+//             }
+//             foreach ($products as $prod) {
+//                 if ($prod['item']['type'] == 'Physical') {
+//                     $dp = 0;
+//                     break;
+//                 }
+//             }
+//             $total = $cart->totalPrice;
+//             $coupon = Session::has('coupon') ? Session::get('coupon') : 0;
+
+//             if (!Session::has('coupon_total')) {
+//                 $total = $total - $coupon;
+//                 $total = $total + 0;
+//             } else {
+//                 $total = Session::get('coupon_total');
+//                 $total = str_replace(',', '', str_replace($curr->sign, '', $total));
+//             }
+// //            $step2 = Session::get('step2');
+
+// //            $shipping_cost = $step2['shipping_cost'] ?? 0;
+// ////            shipping_cost
+// //            dd($total ,$cart ,$step2->shipping_cost);
+
+//             return view('frontend.checkout.step3', ['products' => $cart->items, 'totalPrice' => $total, 'pickups' => $pickups, 'totalQty' => $cart->totalQty, 'gateways' => $gateways, 'shipping_cost' => $step2->shipping_cost, 'digital' => $dp, 'curr' => $curr, 'shipping_data' => $shipping_data, 'package_data' => $package_data, 'vendor_shipping_id' => $vendor_shipping_id, 'vendor_packing_id' => $vendor_packing_id, 'paystack' => $paystackData, 'step1' => $step1, 'step2' => $step2]);
+//         } else {
+
+//             if ($this->gs->guest_checkout == 1) {
+//                 if ($this->gs->multiple_shipping == 1) {
+//                     $ship_data = Order::getShipData($cart);
+//                     $shipping_data = $ship_data['shipping_data'];
+//                     $vendor_shipping_id = $ship_data['vendor_shipping_id'];
+//                 } else {
+//                     $shipping_data = DB::table('shippings')->where('user_id', '=', 0)->get();
+//                 }
+
+// //                dd($shipping_data);
+//                 // Packaging
+
+//                 if ($this->gs->multiple_shipping == 1) {
+//                     $pack_data = Order::getPackingData($cart);
+//                     $package_data = $pack_data['package_data'];
+//                     $vendor_packing_id = $pack_data['vendor_packing_id'];
+//                 } else {
+//                     $package_data = DB::table('packages')->whereUserId('0')->get();
+
+//                 }
+
+//                 foreach ($products as $prod) {
+//                     if ($prod['item']['type'] == 'Physical') {
+//                         $dp = 0;
+//                         break;
+//                     }
+//                 }
+//                 $total = $cart->totalPrice;
+//                 $coupon = Session::has('coupon') ? Session::get('coupon') : 0;
+
+//                 if (!Session::has('coupon_total')) {
+//                     $total = $total - $coupon;
+//                     $total = $total + 0;
+//                 } else {
+//                     $total = Session::get('coupon_total');
+//                     $total = str_replace($curr->sign, '', $total) + round(0 * $curr->value, 2);
+//                 }
+//                 foreach ($products as $prod) {
+//                     if ($prod['item']['type'] != 'Physical') {
+//                         if (!Auth::check()) {
+//                             $ck = 1;
+//                             return view('frontend.checkout.step3', ['products' => $cart->items, 'totalPrice' => $total, 'pickups' => $pickups, 'totalQty' => $cart->totalQty, 'gateways' => $gateways, 'shipping_cost' => 0, 'digital' => $dp, 'curr' => $curr, 'shipping_data' => $shipping_data, 'package_data' => $package_data, 'vendor_shipping_id' => $vendor_shipping_id, 'vendor_packing_id' => $vendor_packing_id, 'paystack' => $paystackData, 'step2' => $step2, 'step1' => $step1]);
+//                         }
+//                     }
+//                 }
+
+
+// //                dd($total ,$step2 ,['products' => $cart->items,
+// //                    'totalPrice' => $total,
+// //                    'pickups' => $pickups, 'totalQty' => $cart->totalQty,
+// //                    'gateways' => $gateways,
+// //                    'shipping_cost' => $step2->shipping_cost, 'digital' => $dp,
+// //                    'curr' => $curr, 'shipping_data' => $shipping_data,
+// //                    'package_data' => $package_data, 'vendor_shipping_id' => $vendor_shipping_id,
+// //                    'vendor_packing_id' => $vendor_packing_id, 'paystack' => $paystackData,
+// //                    'step2' => $step2, 'step1' => $step1]);
+
+
+//                 return view('frontend.checkout.step3', ['products' => $cart->items, 'totalPrice' => $total, 'pickups' => $pickups, 'totalQty' => $cart->totalQty,
+//                                 'gateways' => $gateways, 'shipping_cost' =>  $step2->shipping_cost, 'digital' => $dp, 'curr' => $curr, 'shipping_data' => $shipping_data, 'package_data' => $package_data, 'vendor_shipping_id' => $vendor_shipping_id, 'vendor_packing_id' => $vendor_packing_id, 'paystack' => $paystackData, 'step2' => $step2, 'step1' => $step1]);
+//             }
+
+//             // If guest checkout is Deactivated then display pop up form with proper error message
+
+//             else {
+
+//                 // Shipping Method
+
+//                 if ($this->gs->multiple_shipping == 1) {
+//                     $ship_data = Order::getShipData($cart);
+//                     $shipping_data = $ship_data['shipping_data'];
+//                     $vendor_shipping_id = $ship_data['vendor_shipping_id'];
+//                 } else {
+//                     $shipping_data = DB::table('shippings')->where('user_id', '=', 0)->get();
+//                 }
+
+//                 // Packaging
+
+//                 if ($this->gs->multiple_packaging == 1) {
+//                     $pack_data = Order::getPackingData($cart);
+//                     $package_data = $pack_data['package_data'];
+//                     $vendor_packing_id = $pack_data['vendor_packing_id'];
+//                 } else {
+//                     $package_data = DB::table('packages')->where('user_id', '=', 0)->get();
+//                 }
+
+//                 $total = $cart->totalPrice;
+//                 $coupon = Session::has('coupon') ? Session::get('coupon') : 0;
+
+//                 if (!Session::has('coupon_total')) {
+//                     $total = $total - $coupon;
+//                     $total = $total + 0;
+//                 } else {
+//                     $total = Session::get('coupon_total');
+//                     $total = $total;
+//                 }
+//                 $ck = 1;
+//             //    dd($total ,['products' => $cart->items,
+//             //        'totalPrice' => $total,
+//             //        'pickups' => $pickups, 'totalQty' => $cart->totalQty,
+//             //        'gateways' => $gateways, 'shipping_cost' => 0, 'digital' => $dp,
+//             //        'curr' => $curr, 'shipping_data' => $shipping_data,
+//             //        'package_data' => $package_data, 'vendor_shipping_id' => $vendor_shipping_id,
+//             //        'vendor_packing_id' => $vendor_packing_id, 'paystack' => $paystackData,
+//             //        'step2' => $step2, 'step1' => $step1]);
+//                 return view('frontend.checkout.step3',
+//                     ['products' => $cart->items,
+//                         'totalPrice' => $total,
+//                         'pickups' => $pickups, 'totalQty' => $cart->totalQty,
+//                         'gateways' => $gateways, 'shipping_cost' => 0, 'digital' => $dp,
+//                         'curr' => $curr, 'shipping_data' => $shipping_data,
+//                         'package_data' => $package_data, 'vendor_shipping_id' => $vendor_shipping_id,
+//                         'vendor_packing_id' => $vendor_packing_id, 'paystack' => $paystackData,
+//                         'step2' => $step2, 'step1' => $step1]);
+//             }
+//         }
+//     }
 
     public function getState($country_id)
     {
