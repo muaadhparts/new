@@ -45,7 +45,7 @@
                                                         <tr>
 
 														<td>
-															{{mb_strlen($prod->product->name,'UTF-8') > 60 ? mb_substr($prod->product->name,0,60,'UTF-8').'...' : $prod->product->name}}
+															<x-product-name :product="$prod->product" :vendor-id="0" target="_blank" />
 														</td>
                                                       <td>
                                                         {{$prod->product->category->name}}

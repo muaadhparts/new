@@ -353,7 +353,7 @@
                                         <td class="product-details">
                                             <img src="{{ asset('assets/images/products/' . $product['item']['photo']) }}"
                                                 alt="" class="d-lg-none d-table-cell pb-24 small-device-img">
-                                            <h6>{{ $product['item']['name'] }}</h6>
+                                            <h6><x-product-name :item="$product['item']" :vendor-id="$product['item']['user_id']" target="_blank" /></h6>
                                             <p><span>@lang('Quantity:')</span> {{ $product['qty'] }}</p>
                                             <p><span>Size:</span>
                                                 @if (!empty($product['size']))

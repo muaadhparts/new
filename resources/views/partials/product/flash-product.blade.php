@@ -21,7 +21,7 @@
     </div>
 
     <div class="content">
-        <h4 class="name">{{ $prod->showName() }}</h4>
+        <h4 class="name"><x-product-name :product="$prod" :vendor-id="$vendorId" target="_self" /></h4>
 
         <ul class="stars d-flex">
             <div class="ratings">

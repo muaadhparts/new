@@ -236,13 +236,11 @@
                                         <td><img class="table-img" src="{{ $imgSrc }}" alt=""></td>
                                         <td class="text-start">
                                             <div class="product-name">
-                                                <span class="content">
-                                                    {{ $prod
-                                                        ? (mb_strlen(strip_tags($prod->name), 'UTF-8') > 50
-                                                            ? mb_substr(strip_tags($prod->name), 0, 50, 'UTF-8').'...'
-                                                            : strip_tags($prod->name))
-                                                        : '—' }}
-                                                </span>
+                                                @if($prod)
+                                                    <x-product-name :product="$prod" :vendor-id="$prod->user_id ?? 0" target="_blank" />
+                                                @else
+                                                    <span class="content">—</span>
+                                                @endif
                                             </div>
                                         </td>
                                         <td class="text-start">

@@ -1405,13 +1405,13 @@ table.dataTable thead .sorting_desc_disabled::after {
                                                 $user = App\Models\User::find($product['item']['user_id']);
                                                 @endphp
                                                 @if(isset($user))
-                                                {{ $product['item']['name']}}
+                                                <x-product-name :item="$product" :vendor-id="$product['item']['user_id']" />
                                                 @else
-                                                {{$product['item']['name']}}
+                                                <x-product-name :item="$product" :vendor-id="$product['item']['user_id']" />
                                                 @endif
 
                                                 @else
-                                                {{ $product['item']['name']}}
+                                                <x-product-name :item="$product" :vendor-id="$product['item']['user_id']" />
                                                 @endif
                                             </td>
 

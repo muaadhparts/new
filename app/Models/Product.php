@@ -348,6 +348,16 @@ class Product extends Model
     }
 
     /**
+     * Get vendor-aware stock quantity.
+     * Returns stock from the active merchant listing.
+     */
+    public function vendorSizeStock(?int $userId = null)
+    {
+        $mp = $this->activeMerchant($userId);
+        return $mp ? $mp->stock : 0;
+    }
+
+    /**
      * Build tag cloud from products that have at least one active merchant listing.
      */
     public static function showTags()

@@ -47,9 +47,7 @@
                                     <div class="cart-product d-flex">
                                         <img src="{{ $photo ? \Illuminate\Support\Facades\Storage::url($photo) : asset('assets/images/noimage.png') }}" alt="">
                                         <div class="cart-product-info">
-                                            <a class="cart-title d-inline-block" href="{{ $productUrl }}">
-                                                {{ mb_strlen($name,'UTF-8') > 35 ? mb_substr($name,0,35,'UTF-8').'...' : $name }}
-                                            </a>
+                                            <x-product-name :item="$product['item']" :vendor-id="$vendorId" target="_blank" class="cart-title d-inline-block" />
 
                                             @if (!empty($sku))
                                                 <p class="text-muted small mb-1">

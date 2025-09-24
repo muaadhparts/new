@@ -81,7 +81,7 @@
                     <form>
                         <!-- product-info-wrapper  -->
                         <div class="product-info-wrapper  {{ $productt->type != 'Physical' ? 'mb-3' : '' }}">
-                            <h3>{{ $productt->name }}</h3>
+                            <h3><x-product-name :product="$productt" :vendor-id="$vendorId" target="_self" /></h3>
                             <h3>{{ $productt->label_ar }}</h3>
 
                             {{-- السعر: Vendor-aware --}}

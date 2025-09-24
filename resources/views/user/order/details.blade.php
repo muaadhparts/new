@@ -333,31 +333,12 @@
                                                         $user = App\Models\User::find($product['item']['user_id']);
                                                     @endphp
                                                     @if (isset($user))
-                                                        <b><a class="a_title_link d-block title-hover-color"
-                                                                target="_blank"
-                                                                href="{{ route('front.product', ['slug' => $product['item']['slug'], 'user' => $product['item']['user_id']]) }}" >{{ mb_strlen($product['item']['name'], 'UTF-8') > 50
-                                                                    ? mb_substr($product['item']['name'], 0, 50, 'UTF-8') . '...'
-                                                                    : $product['item']['name'] }}</a></b>
+                                                        <b><x-product-name :item="$product" :vendor-id="$product['item']['user_id']" target="_blank" class="a_title_link d-block title-hover-color" /></b>
                                                     @else
-                                                        <b>
-                                                            <a class="a_title_link d-block title-hover-color"
-                                                                target="_blank"
-                                                                href="{{ route('front.product', ['slug' => $product['item']['slug'], 'user' => $product['item']['user_id']]) }}">
-                                                                {{ mb_strlen($product['item']['name'], 'UTF-8') > 50
-                                                                    ? mb_substr($product['item']['name'], 0, 50, 'UTF-8') . '...'
-                                                                    : $product['item']['name'] }}
-                                                            </a>
-                                                        </b>
+                                                        <b><x-product-name :item="$product" :vendor-id="$product['item']['user_id']" target="_blank" class="a_title_link d-block title-hover-color" /></b>
                                                     @endif
                                                 @else
-                                                    <b>
-                                                        <a class="a_title_link d-block title-hover-color" target="_blank"
-                                                            href="{{ route('front.product', ['slug' => $product['item']['slug'], 'user' => $product['item']['user_id']]) }}">
-                                                            {{ mb_strlen($product['item']['name'], 'UTF-8') > 50
-                                                                ? mb_substr($product['item']['name'], 0, 50, 'UTF-8') . '...'
-                                                                : $product['item']['name'] }}
-                                                        </a>
-                                                    </b>
+                                                    <b><x-product-name :item="$product" :vendor-id="$product['item']['user_id']" target="_blank" class="a_title_link d-block title-hover-color" /></b>
                                                 @endif
                                                 @if ($product['item']['type'] != 'Physical')
                                                     @if ($order->payment_status == 'Completed')

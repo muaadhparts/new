@@ -1,6 +1,6 @@
 <div class="product-info text-center">
   <h4 class="item-name">
-    {{ $productt->name }}
+    <x-product-name :product="$productt" :vendor-id="$order->user_id ?? 0" />
   </h4>     
                   
         <div class="price-and-discount">

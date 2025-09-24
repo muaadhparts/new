@@ -232,11 +232,7 @@
                                                 </a>
 
                                                 <h6>
-                                                    <a class="product-title"
-                                                        href="{{ route('front.product', ['slug' => $product['item']['slug'], 'user' => $product['item']['user_id']]) }}"
-                                                        target="_blank">
-                                                        {{ $product['item']['name'] }}
-                                                    </a>
+                                                    <x-product-name :item="$product['item']" :vendor-id="$product['item']['user_id']" target="_blank" class="product-title" />
                                                 </h6>
 
                                                 <ul class="product-specifications-list">

@@ -63,7 +63,7 @@
                 $detailsUrl = $vendorId ? route('front.product', ['slug' => $product->slug, 'user' => $vendorId]) : 'javascript:;';
             @endphp
             <h4 class="xproduct-title">
-                <a href="{{ $detailsUrl }}">{{ $product->showName() }}</a>
+                <a href="{{ $detailsUrl }}"><x-product-name :product="$product" :vendor-id="$vendorId" target="_self" /></a>
             </h4>
 
             <h4 class="xproduct-title">{{ $product->label_ar }}</h4>

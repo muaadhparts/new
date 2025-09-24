@@ -186,7 +186,7 @@
                                                 </div>
                                                 <div class="product-info">
                                                     <h3 class="product-title"><a
-                                                            href="{{ route('front.product', $prod['slug']) }}">{{ App\Models\Product::whereId($prod['id'])->first()->showName() }}</a>
+                                                            href="{{ route('front.product', $prod['slug']) }}"><x-product-name :product="App\Models\Product::whereId($prod['id'])->first()" :vendor-id="0" target="_self" /></a>
                                                     </h3>
                                                     <div class="product-price">
                                                         <div class="price">

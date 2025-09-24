@@ -75,7 +75,7 @@
     <div class="col-12 col-lg-6">
         {{-- عنوان المنتج --}}
         <h3 class="fw-bold mb-2">
-            {{ $product->name ?? $product->title ?? $product->slug ?? $product->sku }}
+            <x-product-name :product="$product" :vendor-id="$vendorId" target="_blank" />
         </h3>
 
         {{-- تسمية ثانوية (اختياري) --}}

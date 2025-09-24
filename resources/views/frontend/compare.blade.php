@@ -47,7 +47,7 @@
                             @foreach ($products as $product)
                                 <td>
                                     <a href="#">
-                                        <h6 class="product-title">{{ $product['item']['name'] }}</h6>
+                                        <h6 class="product-title"><x-product-name :product="$product['item']" :vendor-id="0" target="_self" /></h6>
                                     </a>
                                 </td>
                             @endforeach

@@ -32,7 +32,7 @@
           <div class="col-lg-7">
             <div class="product-info">
               <h4 class="item-name">
-                {{ $product->name }}
+                <x-product-name :product="$product" :vendor-id="request()->get('user', $product->user_id)" target="_blank" />
               </h4>
 
               <div class="top-meta">

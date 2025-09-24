@@ -363,24 +363,13 @@
                                                     @php
                                                         $user = App\Models\User::find($product['item']['user_id']);
                                                     @endphp
-                                                    @if (isset($user))
-                                                        <span class="content product-title d-inline-block">
-                                                            <a target="_blank"
-                                                                href="{{ route('front.product', ['slug' => $product['item']['slug'], 'user' => $product['item']['user_id']]) }}">
-                                                                {{ mb_strlen($product['item']['name'], 'UTF-8') > 30
-                                                                    ? mb_substr($product['item']['name'], 0, 30, 'UTF-8') . '...'
-                                                                    : $product['item']['name'] }}
-                                                            </a>
-                                                        </span>
-                                                    @else
-                                                        <span class="content product-title d-inline-block"><a
-                                                                href="javascript:;">
-                                                                {{ mb_strlen($product['item']['name'], 'UTF-8') > 30
-                                                                    ? mb_substr($product['item']['name'], 0, 30, 'UTF-8') . '...'
-                                                                    : $product['item']['name'] }}
-                                                            </a>
-                                                        </span>
-                                                    @endif
+                                                    <span class="content product-title d-inline-block">
+                                                        @if (isset($user))
+                                                            <x-product-name :item="$product" :vendor-id="$product['item']['user_id']" target="_blank" class="d-inline-block" />
+                                                        @else
+                                                            <x-product-name :item="$product" target="_self" class="d-inline-block" />
+                                                        @endif
+                                                    </span>
                                                 @endif
 
 

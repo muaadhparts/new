@@ -89,7 +89,7 @@
                     <div class="product-info">
                         <h3 class="product-title">
                             <a href="{{ $vendorId ? route('front.product', ['slug' => $product->slug, 'user' => $vendorId]) : 'javascript:;' }}">
-                                {{ $product->showName() }}
+                                <x-product-name :product="$product" :vendor-id="$vendorId" target="_self" />
                             </a>
                         </h3>
 
@@ -207,7 +207,7 @@
                     <div class="product-info">
                         <h3 class="product-title">
                             <a href="{{ $vendorId ? route('front.product', ['slug' => $product->slug, 'user' => $vendorId]) : 'javascript:;' }}">
-                                {{ $product->showName() }}
+                                <x-product-name :product="$product" :vendor-id="$vendorId" target="_self" />
                             </a>
                         </h3>
 

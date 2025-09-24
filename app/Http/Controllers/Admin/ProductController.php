@@ -36,8 +36,6 @@ class ProductController extends AdminBaseController
 
         return \Datatables::of($datas)
             ->editColumn('name', function (\App\Models\Product $data) {
-                $name = mb_strlen($data->name, 'UTF-8') > 50 ? mb_substr($data->name, 0, 50, 'UTF-8') . '...' : $data->name;
-
                 // استخرج أول/أرخص عرض بائع نشط لهذا المنتج (المتوفر أولاً ثم الأرخص)
                 $mp = $data->merchantProducts()
                     ->where('status', 1)
@@ -45,11 +43,18 @@ class ProductController extends AdminBaseController
                     ->orderBy('price')
                     ->first();
 
-                $vendorId = optional($mp)->user_id;
+                $vendorId = optional($mp)->user_id ?: 0;
 
                 $prodLink = $vendorId
                     ? route('front.product', ['slug' => $data->slug, 'user' => $vendorId])
                     : '#';
+
+                // Use the product name component
+                $nameComponent = view('components.product-name', [
+                    'product' => $data,
+                    'vendorId' => $vendorId,
+                    'target' => '_blank'
+                ])->render();
 
                 $id  = '<small>' . __("ID") . ': <a href="' . $prodLink . '" target="_blank">' . sprintf("%'.08d", $data->id) . '</a></small>';
                 $id3 = $data->type == 'Physical'
@@ -57,7 +62,7 @@ class ProductController extends AdminBaseController
                     : '';
 
                 // checkVendor() تم تحديثها لقراءة أول بائع نشط
-                return $name . '<br>' . $id . $id3 . $data->checkVendor();
+                return $nameComponent . '<br>' . $id . $id3 . $data->checkVendor();
             })
             ->editColumn('price', function (\App\Models\Product $data) {
                 // أقل سعر نشط من عروض البائعين

@@ -46,12 +46,12 @@
         @endif
         <img class="img-fluid"
              src="{{ $productt->photo ? \Illuminate\Support\Facades\Storage::url($productt->photo) : asset('assets/images/noimage.png') }}"
-             alt="{{ $productt->showName() }}">
+             alt="{{ $productt->name }}">
       </div>
     </div>
 
     <div class="col-md-6">
-      <h1 class="h4 mb-1">{{ $productt->showName() }}</h1>
+      <h1 class="h4 mb-1"><x-product-name :product="$productt" :vendor-id="$vendorId" target="_self" /></h1>
       @if(!empty($productt->sku))
         <p class="text-muted mb-2"><strong>SKU:</strong>
           <a href="{{ route('search.result', $productt->sku) }}" class="text-primary" target="_blank">{{ $productt->sku }}</a>

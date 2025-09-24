@@ -108,7 +108,7 @@
 
     <div class="content-wrapper">
       <a href="{{ $detailsUrl }}">
-        <h6 class="product-title">{{ $product->showName() }}</h6>
+        <h6 class="product-title"><x-product-name :product="$product" :vendor-id="$vendorId" target="_self" /></h6>
       </a>
       <p><span>@lang('Product SKU :')</span> <span>{{ $product->sku }}</span></p>
       <div class="price-wrapper">

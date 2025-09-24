@@ -33,9 +33,7 @@
                             alt="Cart product">
                     </a>
 
-                    <a href="{{ $productUrl }}" class="product-name">
-                        {{ mb_strlen($name, 'UTF-8') > 45 ? mb_substr($name, 0, 45, 'UTF-8') . '...' : $name }}
-                    </a>
+                    <x-product-name :item="$product['item']" :vendor-id="$vendorId" target="_blank" class="product-name" />
 
                     <div class="cart-item-quantity">
                         <span class="cart-product-qty" id="cqt{{ $domKey }}">{{ $product['qty'] }}</span>

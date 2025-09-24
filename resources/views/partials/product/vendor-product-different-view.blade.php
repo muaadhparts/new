@@ -57,7 +57,7 @@
 
               <div class="product-info">
                 <h3 class="product-title">
-                  <a href="{{ route('front.product', ['slug' => $product->slug, 'user' => $product->user_id]) }}">{{ $product->showName() }}</a>
+                  <a href="{{ route('front.product', ['slug' => $product->slug, 'user' => $product->user_id]) }}"><x-product-name :product="$product" :vendor-id="$product->user_id" target="_self" /></a>
                 </h3>
                 <div class="product-price">
                   <div class="price">
@@ -138,7 +138,7 @@
 
               <div class="product-info">
                 <h3 class="product-title">
-                  <a href="{{ route('front.product', ['slug' => $product->slug, 'user' => $product->user_id]) }}">{{ $product->showName() }}</a>
+                  <a href="{{ route('front.product', ['slug' => $product->slug, 'user' => $product->user_id]) }}"><x-product-name :product="$product" :vendor-id="$product->user_id" target="_self" /></a>
                 </h3>
                 <div class="product-price">
                   <div class="price">

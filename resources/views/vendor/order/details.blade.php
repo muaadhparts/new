@@ -345,20 +345,9 @@
                                                 );
                                             @endphp
                                             @if (isset($user))
-                                            <a class="title-hover-color content product-title d-inline-block" target="_blank"
-                                                href="{{ route('front.product', ['slug' => $product['item']['slug'], 'user' => $product['item']['user_id']]) }}">
-                                                {{ mb_strlen($product['item']['name'], 'UTF-8') > 30
-                                                    ? mb_substr($product['item']['name'], 0, 30, 'UTF-8') . '...'
-                                                    : $product['item']['name'] }}
-                                            </a>
-
+                                            <x-product-name :item="$product" :vendor-id="$product['item']['user_id']" target="_blank" class="title-hover-color content product-title d-inline-block" />
                                             @else
-                                            <a class="title-hover-color content product-title d-inline-block" href="javascript:;">
-                                                {{ mb_strlen($product['item']['name'], 'UTF-8') > 30
-                                                    ? mb_substr($product['item']['name'], 0, 30, 'UTF-8') . '...'
-                                                    : $product['item']['name'] }}
-                                            </a>
-
+                                            <x-product-name :item="$product" :vendor-id="$product['item']['user_id']" target="_blank" class="title-hover-color content product-title d-inline-block" />
                                             @endif
                                         @endif
 

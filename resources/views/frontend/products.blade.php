@@ -326,7 +326,7 @@
                                                     alt="product img">
                                             </div>
                                             <div class="content-wrapper">
-                                                <h6 class="title">{{ $product['name'] }}</h6>
+                                                <h6 class="title"><x-product-name :product="$product" :vendor-id="0" target="_self" /></h6>
                                                 <div class="price-wrapper">
                                                     <span
                                                         class="price">{{ PriceHelper::showPrice($product['price']) }}</span>

@@ -14,7 +14,7 @@
         </td>
         <td class="product-name">
             <a href="{{ route('front.product', ['slug' => $wishlist->slug, 'user' => $wishlist->user_id]) }}">
-                {{  mb_strlen($wishlist->name,'UTF-8') > 35 ? mb_substr($wishlist->name,0,35,'UTF-8'). 35 ? mb_substr($wishlist->name,0,35,'UTF-8').'...' : $wishlist->name }}</a></td>
+                <x-product-name :product="$wishlist" :vendor-id="$wishlist->user_id" target="_blank" /></a></td>
         <td class="product-price"> <span class="woocommerce-Price-amount amount"><bdi><span class="woocommerce-Price-currencySymbol">{{ $wishlist->showPrice() }}  <small>
             <del>
                 {{ $wishlist->showPreviousPrice() }}
