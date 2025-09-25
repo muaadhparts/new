@@ -57,14 +57,15 @@ class CatalogController extends FrontBaseController
             $subcat = Subcategory::where('slug', $slug1)->firstOrFail();
             $data['subcat'] = $subcat;
         }
-        if (!empty($slug2)) {
-            $childcat = Childcategory::where('slug', $slug2)->firstOrFail();
+        if (!empty($slug2) && $subcat) {
+            $childcat = Childcategory::where('slug', $slug2)
+                ->where('subcategory_id', $subcat->id)
+                ->firstOrFail();
             $data['childcat'] = $childcat;
         }
 
         // Retrieve latest products that have at least one active merchant listing with a vendor account
-        $data['latest_products'] = Product::status(1)
-            ->whereLatest(1)
+        $data['latest_products'] = Product::whereLatest(1)
             ->whereHas('merchantProducts', function ($q) {
                 $q->where('status', 1)
                     ->whereHas('user', function ($user) {
@@ -142,9 +143,6 @@ class CatalogController extends FrontBaseController
             $prods = $prods->latest('products.id');
         }
 
-        // Ensure we only consider products with active merchant listings
-        $prods = $prods->status(1);
-
         // Add ratings count and average
         $prods = $prods->withCount('ratings')->withAvg('ratings', 'rating');
 
@@ -204,14 +202,19 @@ class CatalogController extends FrontBaseController
                 }
             }
         });
+        
+        // dd($prods->toSql(), $prods->getBindings(), $prods->count());
+
 
         // Paginate after applying filters and eager loading ratings.  Once paginated, transform each item
         $prods = $prods->paginate(isset($pageby) ? $pageby : $this->gs->page_count);
+        
         $prods->getCollection()->transform(function ($item) {
             // Replace price with vendor size price (includes commission and attribute adjustments)
             $item->price = $item->vendorSizePrice();
             return $item;
         });
+        
         $data['prods'] = $prods;
         if ($request->ajax()) {
             $data['ajax_check'] = 1;

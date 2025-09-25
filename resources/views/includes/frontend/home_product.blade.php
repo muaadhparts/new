@@ -2,6 +2,9 @@
   // اختيار عرض البائع: نشط أولاً، المتوفر قبل غير المتوفر، ثم الأرخص
   $mp = $product->merchantProducts()
         ->where('status', 1)
+        ->whereHas('user', function ($user) {
+            $user->where('is_vendor', 2);
+        })
         ->orderByRaw('CASE WHEN (stock IS NULL OR stock = 0) THEN 1 ELSE 0 END ASC')
         ->orderBy('price')
         ->first();
