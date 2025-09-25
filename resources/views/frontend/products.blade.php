@@ -28,152 +28,95 @@
                             <h5 class="widget-title">@lang('Product categories')</h5>
                             <div class="product-cat-widget">
 
-
-
                                 <ul class="accordion">
                                     @foreach ($categories as $category)
-                                        @php
-//                                        dd($categories  ,$category->subs);
-                                            $isCategoryActive = Request::segment(2) === $category->slug;
-                                        @endphp
+                                        @if ($category->subs->count() > 0)
+                                            <li>
+                                                @php
+                                                    $isCategoryActive = Request::segment(2) === $category->slug;
+                                                @endphp
+                                                <div class="d-flex justify-content-between align-items-lg-baseline">
+                                                    <a href="{{ route('front.category', $category->slug) }}"
+                                                        class="{{ $isCategoryActive ? 'sidebar-active-color' : '' }}">
+                                                        {{ $category->name }}
+                                                    </a>
 
-                                        <li>
-                                            <div class="d-flex justify-content-between align-items-lg-baseline">
-                                                <a href="{{ route('front.category', $category->slug) }}"
-                                                   class="{{ $isCategoryActive ? 'sidebar-active-color' : '' }}">
-                                                    {{ $category->name }}  {{$category->id}}
-                                                </a>
-
-                                                @if ($category->subs->count() > 0)
                                                     <button data-bs-toggle="collapse"
-                                                            data-bs-target="#{{ $category->slug }}_level_2"
-                                                            aria-controls="{{ $category->slug }}_level_2"
-                                                            aria-expanded="{{ $isCategoryActive ? 'true' : 'false' }}"
-                                                            class="{{ $isCategoryActive ? '' : 'collapsed' }}">
+                                                        data-bs-target="#{{ $category->slug }}_level_2"
+                                                        aria-controls="{{ $category->slug }}_level_2"
+                                                        aria-expanded="{{ $isCategoryActive ? 'true' : 'false' }}"
+                                                        class="{{ $isCategoryActive ? '' : 'collapsed' }}">
                                                         <i class="fa-solid fa-plus"></i>
                                                         <i class="fa-solid fa-minus"></i>
                                                     </button>
-                                                @endif
-                                            </div>
+                                                </div>
 
-                                            @if ($category->subs->count() > 0)
-                                                <ul id="{{ $category->slug }}_level_2"
-                                                    class="accordion-collapse collapse ms-3 {{ $isCategoryActive ? 'show' : '' }}">
-                                                    @foreach ($category->subs as $subcategory)
-
-{{--                                                        @dd($category->subs ,$subcategory ,$subcategory->childs->count() )--}}
-                                                        @php
-                                                            $isSubcategoryActive = $isCategoryActive && Request::segment(3) === $subcategory->slug;
-                                                        @endphp
-                                                        <li>
-                                                            <div class="d-flex justify-content-between align-items-lg-baseline">
+                                                @foreach ($category->subs as $subcategory)
+                                                    @php
+                                                        $isSubcategoryActive =
+                                                            $isCategoryActive &&
+                                                            Request::segment(3) === $subcategory->slug;
+                                                    @endphp
+                                                    <ul id="{{ $category->slug }}_level_2"
+                                                        class="accordion-collapse collapse ms-3 {{ $isCategoryActive ? 'show' : '' }}">
+                                                        <li class="">
+                                                            <div
+                                                                class="d-flex justify-content-between align-items-lg-baseline">
                                                                 <a href="{{ route('front.category', [$category->slug, $subcategory->slug]) }}"
-                                                                   class="{{ $isSubcategoryActive ? 'sidebar-active-color' : '' }}">
-                                                                    {{ $subcategory->name }}  {{$subcategory->id}}
+                                                                    class="{{ $isSubcategoryActive ? 'sidebar-active-color' : '' }} "
+                                                                    @if ($subcategory->childs->count() > 0) data-bs-toggle="collapse"
+                                                                   data-bs-target="#inner{{ $subcategory->slug }}_level_2_1"
+                                                                   aria-controls="inner{{ $subcategory->slug }}_level_2_1"
+                                                                   aria-expanded="{{ $isSubcategoryActive ? 'true' : 'false' }}"
+                                                                   class="{{ $isSubcategoryActive ? '' : 'collapsed' }}" @endif>
+                                                                    {{ $subcategory->name }}
                                                                 </a>
 
+                                                                @if ($subcategory->childs->count() > 0)
+                                                                    <button data-bs-toggle="collapse"
+                                                                        data-bs-target="#inner{{ $subcategory->slug }}_level_2_1"
+                                                                        aria-controls="inner{{ $subcategory->slug }}_level_2_1"
+                                                                        aria-expanded="{{ $isSubcategoryActive ? 'true' : 'false' }}"
+                                                                        class="{{ $isSubcategoryActive ? '' : 'collapsed' }}">
+                                                                        <i class="fa-solid fa-plus"></i>
+                                                                        <i class="fa-solid fa-minus"></i>
+                                                                    </button>
+                                                                @endif
                                                             </div>
 
+                                                            @if ($subcategory->childs->count() > 0)
+                                                                <ul id="inner{{ $subcategory->slug }}_level_2_1"
+                                                                    class="accordion-collapse collapse ms-3 {{ $isSubcategoryActive ? 'show' : '' }}">
+                                                                    @foreach ($subcategory->childs as $child)
+                                                                        @php
+                                                                            $isChildActive =
+                                                                                $isSubcategoryActive &&
+                                                                                Request::segment(4) === $child->slug;
+                                                                        @endphp
+                                                                        <li>
+                                                                            <a href="{{ route('front.category', [$category->slug, $subcategory->slug, $child->slug]) }}"
+                                                                                class="{{ $isChildActive ? 'sidebar-active-color' : '' }}">
+                                                                                {{ $child->name }}
+                                                                            </a>
+                                                                        </li>
+                                                                    @endforeach
+                                                                </ul>
+                                                            @endif
                                                         </li>
-                                                    @endforeach
-                                                </ul>
-                                            @endif
-                                        </li>
+                                                    </ul>
+                                                @endforeach
+
+                                            </li>
+                                        @else
+                                            <li>
+                                                <a href="{{ route('front.category', $category->slug) }}"
+                                                    class="{{ Request::segment(2) === $category->slug ? 'active' : '' }}">
+                                                    {{ $category->name }}
+                                                </a>
+                                            </li>
+                                        @endif
                                     @endforeach
                                 </ul>
-
-
-{{--                                <ul class="accordion">--}}
-{{--                                    @foreach ($categories as $category)--}}
-
-{{--                                        @dd($categories ,$category->subs)--}}
-{{--                                        @if ($category->subs->count() > 0)--}}
-{{--                                            <li>--}}
-{{--                                                @php--}}
-{{--                                                    $isCategoryActive = Request::segment(2) === $category->slug;--}}
-{{--                                                @endphp--}}
-{{--                                                <div class="d-flex justify-content-between align-items-lg-baseline">--}}
-{{--                                                    <a href="{{ route('front.category', $category->slug) }}"--}}
-{{--                                                        class="{{ $isCategoryActive ? 'sidebar-active-color' : '' }}">--}}
-{{--                                                        {{ $category->name }}--}}
-{{--                                                    </a>--}}
-
-{{--                                                    <button data-bs-toggle="collapse"--}}
-{{--                                                        data-bs-target="#{{ $category->slug }}_level_2"--}}
-{{--                                                        aria-controls="{{ $category->slug }}_level_2"--}}
-{{--                                                        aria-expanded="{{ $isCategoryActive ? 'true' : 'false' }}"--}}
-{{--                                                        class="{{ $isCategoryActive ? '' : 'collapsed' }}">--}}
-{{--                                                        <i class="fa-solid fa-plus"></i>--}}
-{{--                                                        <i class="fa-solid fa-minus"></i>--}}
-{{--                                                    </button>--}}
-{{--                                                </div>--}}
-
-{{--                                                @foreach ($category->subs as $subcategory)--}}
-{{--                                                    @php--}}
-{{--                                                        $isSubcategoryActive =--}}
-{{--                                                            $isCategoryActive &&--}}
-{{--                                                            Request::segment(3) === $subcategory->slug;--}}
-{{--                                                    @endphp--}}
-{{--                                                    <ul id="{{ $category->slug }}_level_2"--}}
-{{--                                                        class="accordion-collapse collapse ms-3 {{ $isCategoryActive ? 'show' : '' }}">--}}
-{{--                                                        <li class="">--}}
-{{--                                                            <div--}}
-{{--                                                                class="d-flex justify-content-between align-items-lg-baseline">--}}
-{{--                                                                <a href="{{ route('front.category', [$category->slug, $subcategory->slug]) }}"--}}
-{{--                                                                    class="{{ $isSubcategoryActive ? 'sidebar-active-color' : '' }} "--}}
-{{--                                                                    @if ($subcategory->childs->count() > 0) data-bs-toggle="collapse"--}}
-{{--                                                                   data-bs-target="#inner{{ $subcategory->slug }}_level_2_1"--}}
-{{--                                                                   aria-controls="inner{{ $subcategory->slug }}_level_2_1"--}}
-{{--                                                                   aria-expanded="{{ $isSubcategoryActive ? 'true' : 'false' }}"--}}
-{{--                                                                   class="{{ $isSubcategoryActive ? '' : 'collapsed' }}" @endif>--}}
-{{--                                                                    {{ $subcategory->name }}--}}
-{{--                                                                </a>--}}
-
-{{--                                                                @if ($subcategory->childs->count() > 0)--}}
-{{--                                                                    <button data-bs-toggle="collapse"--}}
-{{--                                                                        data-bs-target="#inner{{ $subcategory->slug }}_level_2_1"--}}
-{{--                                                                        aria-controls="inner{{ $subcategory->slug }}_level_2_1"--}}
-{{--                                                                        aria-expanded="{{ $isSubcategoryActive ? 'true' : 'false' }}"--}}
-{{--                                                                        class="{{ $isSubcategoryActive ? '' : 'collapsed' }}">--}}
-{{--                                                                        <i class="fa-solid fa-plus"></i>--}}
-{{--                                                                        <i class="fa-solid fa-minus"></i>--}}
-{{--                                                                    </button>--}}
-{{--                                                                @endif--}}
-{{--                                                            </div>--}}
-
-{{--                                                            @if ($subcategory->childs->count() > 0)--}}
-{{--                                                                <ul id="inner{{ $subcategory->slug }}_level_2_1"--}}
-{{--                                                                    class="accordion-collapse collapse ms-3 {{ $isSubcategoryActive ? 'show' : '' }}">--}}
-{{--                                                                    @foreach ($subcategory->childs as $child)--}}
-{{--                                                                        @php--}}
-{{--                                                                            $isChildActive =--}}
-{{--                                                                                $isSubcategoryActive &&--}}
-{{--                                                                                Request::segment(4) === $child->slug;--}}
-{{--                                                                        @endphp--}}
-{{--                                                                        <li>--}}
-{{--                                                                            <a href="{{ route('front.category', [$category->slug, $subcategory->slug, $child->slug]) }}"--}}
-{{--                                                                                class="{{ $isChildActive ? 'sidebar-active-color' : '' }}">--}}
-{{--                                                                                {{ $child->name }}--}}
-{{--                                                                            </a>--}}
-{{--                                                                        </li>--}}
-{{--                                                                    @endforeach--}}
-{{--                                                                </ul>--}}
-{{--                                                            @endif--}}
-{{--                                                        </li>--}}
-{{--                                                    </ul>--}}
-{{--                                                @endforeach--}}
-
-{{--                                            </li>--}}
-{{--                                        @else--}}
-{{--                                            <li>--}}
-{{--                                                <a href="{{ route('front.category', $category->slug) }}"--}}
-{{--                                                    class="{{ Request::segment(2) === $category->slug ? 'active' : '' }}">--}}
-{{--                                                    {{ $category->name }}--}}
-{{--                                                </a>--}}
-{{--                                            </li>--}}
-{{--                                        @endif--}}
-{{--                                    @endforeach--}}
-{{--                                </ul>--}}
 
                             </div>
                         </div>
@@ -387,7 +330,7 @@
                                     <svg xmlns="http://www.w3.org/2000/svg" width="31" height="24"
                                         viewBox="0 0 31 24" fill="none">
                                         <path fill-rule="evenodd" clip-rule="evenodd"
-                                            d="M1.33331 18.7575H3.90917C4.64356 18.7575 5.24248 19.3564 5.24248 20.0908V22.6666C5.24248 23.401 4.64356 24 3.90917 24H1.33331C0.598918 24 0 23.4011 0 22.6666V20.0908C0 19.3564 0.598918 18.7575 1.33331 18.7575ZM10.7121 0H29.44C30.1744 0 30.7734 0.598986 30.7734 1.33331V3.90917C30.7734 4.64349 30.1744 5.24248 29.44 5.24248C15.6911 5.24248 24.461 5.24248 10.7121 5.24248C9.97775 5.24248 9.37876 4.64356 9.37876 3.90917V1.33331C9.37876 0.598918 9.97775 0 10.7121 0ZM1.33331 0H3.90917C4.64356 0 5.24248 0.598986 5.24248 1.33331V3.90917C5.24248 4.64356 4.64356 5.24248 3.90917 5.24248H1.33331C0.598918 5.24248 0 4.64356 0 3.90917V1.33331C0 0.598918 0.598918 0 1.33331 0ZM10.7121 9.37869H29.44C30.1744 9.37869 30.7734 9.97768 30.7734 10.712V13.2879C30.7734 14.0222 30.1744 14.6212 29.44 14.6212C15.6911 14.6212 24.461 14.6212 10.7121 14.6212C9.97775 14.6212 9.37876 14.0223 9.37876 13.2879V10.712C9.37876 9.97761 9.97775 9.37869 10.7121 9.37869ZM1.33331 9.37869H3.90917C4.64356 9.37869 5.24248 9.97768 5.24248 10.712V13.2879C5.24248 14.0223 4.64356 14.6212 3.90917 14.6212H1.33331C0.598918 14.6212 0 14.0223 0 13.2879V10.712C0 9.97761 0.598918 9.37869 1.33331 9.37869ZM10.7121 18.7575H29.44C30.1744 18.7575 30.7734 19.3564 30.7734 20.0908V22.6666C30.7734 23.4009 30.1744 23.9999 29.44 23.9999C15.6911 23.9999 24.461 23.9999 10.7121 23.9999C9.97775 23.9999 9.37876 23.401 9.37876 22.6666V20.0908C9.37876 19.3564 9.97775 18.7575 10.7121 18.7575Z"
+                                            d="M1.33331 18.7575H3.90917C4.64356 18.7575 5.24248 19.3564 5.24248 20.0908V22.6666C5.24248 23.401 4.64356 24 3.90917 24H1.33331C0.598918 24 0 23.4011 0 22.6666V20.0908C0 19.3564 0.598918 18.7575 1.33331 18.7575ZM10.7121 0H29.44C30.1744 0 30.7734 0.598986 30.7734 1.33331V3.90917C30.7734 4.64349 30.1744 5.24248 29.44 5.24248C15.6911 5.24248 24.461 5.24248 10.7121 5.24248C9.97775 5.24248 9.37876 4.64356 9.37876 3.90917V1.33331C9.37876 0.598918 9.97775 0 10.7121 0ZM1.33331 0H3.90917C4.64356 0 5.24248 0.598986 5.24248 1.33331V3.90917C5.24248 4.64356 4.64356 5.24248 3.90917 5.24248H1.33331C0.598918 5.24248 0 4.64356 0 3.90917V1.33331C0 0.598918 0 0 1.33331 0ZM10.7121 9.37869H29.44C30.1744 9.37869 30.7734 9.97768 30.7734 10.712V13.2879C30.7734 14.0222 30.1744 14.6212 29.44 14.6212C15.6911 14.6212 24.461 14.6212 10.7121 14.6212C9.97775 14.6212 9.37876 14.0223 9.37876 13.2879V10.712C9.37876 9.97761 9.97775 9.37869 10.7121 9.37869ZM1.33331 9.37869H3.90917C4.64356 9.37869 5.24248 9.97768 5.24248 10.712V13.2879C5.24248 14.0223 4.64356 14.6212 3.90917 14.6212H1.33331C0.598918 14.6212 0 14.0223 0 13.2879V10.712C0 9.97761 0.598918 9.37869 1.33331 9.37869ZM10.7121 18.7575H29.44C30.1744 18.7575 30.7734 19.3564 30.7734 20.0908V22.6666C30.7734 23.4009 30.1744 23.9999 29.44 23.9999C15.6911 23.9999 24.461 23.9999 10.7121 23.9999C9.97775 23.9999 9.37876 23.401 9.37876 22.6666V20.0908C9.37876 19.3564 9.97775 18.7575 10.7121 18.7575Z"
                                             fill="#978D8F" />
                                     </svg>
                                 </button>
