@@ -1,6 +1,4 @@
 <?php
-<?php
-
 namespace App\Http\Controllers\Api\Front;
 
 use App\Models\MerchantProduct;

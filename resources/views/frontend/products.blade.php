@@ -1,3 +1,5 @@
+
+
 @extends('layouts.front')
 
 @section('content')
@@ -6,10 +8,30 @@
         <div class="container">
             <div class="row justify-content-center content-wrapper">
                 <div class="col-12">
-                    <h2 class="breadcrumb-title">@lang('Product')</h2>
+                    <h2 class="breadcrumb-title">
+                        @if(!empty($childcat))
+                            {{ $childcat->name }}
+                        @elseif(!empty($subcat))
+                            {{ $subcat->name }}
+                        @elseif(!empty($cat))
+                            {{ $cat->name }}
+                        @else
+                            @lang('Product')
+                        @endif
+                    </h2>
                     <ul class="bread-menu">
                         <li><a href="{{ route('front.index') }}">@lang('Home')</a></li>
-                        <li><a href="javascript:;">@lang('Product')</a></li>
+                        @if(!empty($cat))
+                            <li><a href="{{ route('front.category', $cat->slug) }}">{{ $cat->name }}</a></li>
+                        @endif
+                        @if(!empty($subcat))
+                            <li><a href="{{ route('front.category', [$cat->slug, $subcat->slug]) }}">{{ $subcat->name }}</a></li>
+                        @endif
+                        @if(!empty($childcat))
+                            <li><a href="javascript:;">{{ $childcat->name }}</a></li>
+                        @else
+                            <li><a href="javascript:;">@lang('Product')</a></li>
+                        @endif
                     </ul>
                 </div>
             </div>

@@ -145,8 +145,8 @@ class CatalogController extends FrontBaseController
         // Ensure we only consider products with active merchant listings
         $prods = $prods->status(1);
 
-        // Limit results for page performance, will paginate later
-        $prods = $prods->take(10)->withCount('ratings')->withAvg('ratings', 'rating');
+        // Add ratings count and average
+        $prods = $prods->withCount('ratings')->withAvg('ratings', 'rating');
 
         $prods = $prods->where(function ($query) use ($cat, $subcat, $childcat, $type, $request) {
             $flag = 0;
