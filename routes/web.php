@@ -1339,7 +1339,12 @@ Route::group(['middleware' => 'maintenance'], function () {
 
         // User Wishlist
         Route::get('/wishlists', 'User\WishlistController@wishlists')->name('user-wishlists');
-        Route::get('/wishlist/add/{id}', 'User\WishlistController@addwish')->name('user-wishlist-add');
+
+        // New merchant-product based routes
+        Route::get('/wishlist/add/merchant/{merchantProductId}', 'User\WishlistController@addwish')->name('user-wishlist-add-merchant');
+
+        // Legacy and current routes
+        Route::get('/wishlist/add/{id}', 'User\WishlistController@addwishLegacy')->name('user-wishlist-add');
         Route::get('/wishlist/remove/{id}', 'User\WishlistController@removewish')->name('user-wishlist-remove');
         // User Wishlist Ends
 
@@ -1675,13 +1680,24 @@ Route::group(['middleware' => 'maintenance'], function () {
     Route::get('/search', 'Front\CatalogController@search')->name('front.search');
     // TAG SECTION ENDS
 
+    // COMPARE SECTION (moved before product routes to prevent route conflicts)
+    Route::get('/item/compare/view', 'Front\CompareController@compare')->name('product.compare');
+
+    // New merchant-product based routes
+    Route::get('/item/compare/add/merchant/{merchantProductId}', 'Front\CompareController@addcompare')->name('product.compare.add.merchant');
+    Route::get('/item/compare/remove/{merchantProductId}', 'Front\CompareController@removecompare')->name('product.compare.remove');
+
+    // Legacy product-based routes for backward compatibility
+    Route::get('/item/compare/add/{id}', 'Front\CompareController@addcompareLegacy')->name('product.compare.add');
+    // COMPARE SECTION ENDS
+
     // PRODCT SECTION
 
     // Route::get('/item/{slug}', 'Front\ProductDetailsController@product')->name('front.product');
 
     // تمرير slug ومعرف البائع user لضمان تمييز المنتجات المكررة
     Route::get('/item/{slug}/{user}', 'Front\ProductDetailsController@product')->name('front.product');
-    
+
     Route::get('/item/show/cross/products/{id}', 'Front\ProductDetailsController@showCrossProduct')->name('front.show.cross.product');
     Route::get('/afbuy/{slug}', 'Front\ProductDetailsController@affProductRedirect')->name('affiliate.product');
     Route::get('/item/quick/view/{id}/', 'Front\ProductDetailsController@quick')->name('product.quick');
@@ -1717,11 +1733,6 @@ Route::group(['middleware' => 'maintenance'], function () {
     Route::get('/carts/coupon', 'Front\CouponController@coupon');
     // CART SECTION ENDS
 
-    // COMPARE SECTION
-    Route::get('/item/compare/view', 'Front\CompareController@compare')->name('product.compare');
-    Route::get('/item/compare/add/{id}', 'Front\CompareController@addcompare')->name('product.compare.add');
-    Route::get('/item/compare/remove/{id}', 'Front\CompareController@removecompare')->name('product.compare.remove');
-    // COMPARE SECTION ENDS
 
     // CHECKOUT SECTION
     Route::get('/buy-now/{id}', 'Front\CheckoutController@buynow')->name('front.buynow');

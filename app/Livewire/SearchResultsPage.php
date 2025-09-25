@@ -33,7 +33,7 @@ class SearchResultsPage extends Component
                 $this->alternatives = Product::whereIn('sku', $alternativeSkus)
                     ->get()
                     ->sortByDesc(function ($product) {
-                        $hasStockAndPrice = ($product->stock > 0 && $product->vendorPrice() > 0) ? 1 : 0;
+                        $hasStockAndPrice = ($product->vendorSizeStock() > 0 && $product->vendorPrice() > 0) ? 1 : 0;
                         return ($hasStockAndPrice * 1000000) + $product->vendorPrice();
                     });
             } else {

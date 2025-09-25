@@ -45,7 +45,12 @@ class ProductDetailsController extends FrontBaseController
             ->withCount('ratings')
             ->withAvg('ratings', 'rating')
             ->where('slug', $slug)
-            ->firstOrFail();
+            ->first();
+
+        // If no product found, return 404
+        if (!$productt) {
+            return response()->view('errors.404')->setStatusCode(404);
+        }
 
         // 2) التأكد من {user}
         $userId = (int) $user;

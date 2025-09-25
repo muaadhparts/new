@@ -321,7 +321,7 @@ class FrontendController extends Controller
                 return response()->json(['status' => true, 'data' => ProductlistResource::collection($prods)->response()->getData(true), 'error' => []]);
             } else {
 
-                $prods = Product::where('status', 1)->get();
+                $prods = Product::status(1)->get();
                 // Note: General product listing shows products from all vendors
                 // For vendor-specific data, ProductlistResource will use the first available merchant_product
                 return response()->json(['status' => true, 'data' => ProductlistResource::collection($prods), 'error' => []]);

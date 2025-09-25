@@ -23,7 +23,7 @@ class WishlistController extends Controller
             $wishes = Wishlist::where('user_id','=',$user->id)->pluck('product_id');
 
             // Get products with vendor context for wishlist items
-            $productsQuery = Product::where('status', 1)->whereIn('id', $wishes);
+            $productsQuery = Product::status(1)->whereIn('id', $wishes);
 
             if(!empty($request->sort))
             {

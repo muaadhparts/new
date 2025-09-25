@@ -358,6 +358,57 @@ class Product extends Model
     }
 
     /**
+     * Get vendor-specific product condition.
+     */
+    public function getProductCondition(?int $userId = null)
+    {
+        $mp = $this->activeMerchant($userId);
+        return $mp ? $mp->product_condition : 0;
+    }
+
+    /**
+     * Get vendor-specific minimum quantity.
+     */
+    public function getMinimumQty(?int $userId = null)
+    {
+        $mp = $this->activeMerchant($userId);
+        return $mp ? $mp->minimum_qty : null;
+    }
+
+    /**
+     * Get vendor-specific stock check setting.
+     */
+    public function getStockCheck(?int $userId = null)
+    {
+        $mp = $this->activeMerchant($userId);
+        return $mp ? $mp->stock_check : 0;
+    }
+
+    /**
+     * Get vendor-specific colors from merchant product.
+     */
+    public function getVendorColors(?int $userId = null)
+    {
+        $mp = $this->activeMerchant($userId);
+        if (!$mp || empty($mp->color_all)) {
+            return [];
+        }
+        return is_array($mp->color_all) ? $mp->color_all : explode(',', $mp->color_all);
+    }
+
+    /**
+     * Get vendor-specific sizes from merchant product.
+     */
+    public function getVendorSizes(?int $userId = null)
+    {
+        $mp = $this->activeMerchant($userId);
+        if (!$mp || empty($mp->size_all)) {
+            return [];
+        }
+        return is_array($mp->size_all) ? $mp->size_all : explode(',', $mp->size_all);
+    }
+
+    /**
      * Build tag cloud from products that have at least one active merchant listing.
      */
     public static function showTags()
@@ -386,8 +437,41 @@ class Product extends Model
 
     /* =========================================================================
      |  Accessors (legacy)
-     |  NOTE: These accessors read catalog-level columns if present.
+     |  NOTE: These accessors now redirect vendor-specific columns to merchant_products.
      | ========================================================================= */
+
+    /**
+     * Legacy accessors for vendor-specific columns.
+     * These now redirect to the active merchant product.
+     */
+    public function __get($key)
+    {
+        // Handle vendor-specific columns that were moved to merchant_products
+        $vendorColumns = [
+            'product_condition' => 'getProductCondition',
+            'minimum_qty' => 'getMinimumQty',
+            'stock_check' => 'getStockCheck',
+            'stock' => 'vendorSizeStock',
+            'price' => 'vendorPrice'
+        ];
+
+        if (array_key_exists($key, $vendorColumns)) {
+            $method = $vendorColumns[$key];
+            return $this->$method();
+        }
+
+        // For color/size, check if it's vendor-specific first
+        if ($key === 'color' && $this->getVendorColors()) {
+            return $this->getVendorColors();
+        }
+
+        if ($key === 'size' && $this->getVendorSizes()) {
+            return $this->getVendorSizes();
+        }
+
+        // Fall back to parent implementation
+        return parent::__get($key);
+    }
 
     public function getColorallAttribute($value)
     {

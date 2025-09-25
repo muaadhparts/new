@@ -1228,7 +1228,7 @@ class ProductController extends AdminBaseController
 
     public function getCrossProduct($catId)
     {
-        $crossProducts = Product::where('category_id', $catId)->where('status', 1)->get();
+        $crossProducts = Product::where('category_id', $catId)->status(1)->get();
         return view('load.cross_product', compact('crossProducts'));
     }
 }

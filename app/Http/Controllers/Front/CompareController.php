@@ -4,65 +4,129 @@ namespace App\Http\Controllers\Front;
 
 use App\Models\Compare;
 use App\Models\Product;
+use App\Models\MerchantProduct;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Session;
 
 class CompareController extends FrontBaseController
 {
-
     public function compare()
     {
-
         if (!Session::has('compare')) {
             return view('frontend.compare');
         }
+
         $oldCompare = Session::get('compare');
         $compare = new Compare($oldCompare);
-        $products = $compare->items;
+        $products = $compare->getItemsWithProducts();
+
         return view('frontend.compare', compact('products'));
     }
 
-    public function addcompare($id)
+    /**
+     * Add merchant product to comparison
+     * Expects merchant_product_id as parameter
+     */
+    public function addcompare($merchantProductId)
     {
         $data[0] = 0;
-        $prod = Product::findOrFail($id);
+        $merchantProduct = MerchantProduct::with('product')->findOrFail($merchantProductId);
         $oldCompare = Session::has('compare') ? Session::get('compare') : null;
 
-        if ($oldCompare && count($oldCompare->items) == 3) {
+        if ($oldCompare && count($oldCompare->items) >= 3) {
             $data[0] = 1;
             $data['error'] = __('You can compare maximum 3 products.');
             return response()->json($data);
         }
 
         $compare = new Compare($oldCompare);
-        $compare->add($prod, $prod->id);
+        $compare->add($merchantProduct, $merchantProductId);
         Session::put('compare', $compare);
-        if ($compare->items[$id]['ck'] == 1) {
+
+        if ($compare->items[$merchantProductId]['ck'] == 1) {
             $data[0] = 1;
         }
+
         $data[1] = count($compare->items);
         $data['success'] = __('Successfully Added To Compare.');
         $data['error'] = __('Already Added To Compare.');
         return response()->json($data);
     }
 
-    public function removecompare($id)
+    /**
+     * Legacy method for backward compatibility
+     * Converts product_id to merchant_product_id
+     * Can optionally accept user parameter to specify vendor
+     */
+    public function addcompareLegacy(Request $request, $productId)
+    {
+        $data[0] = 0;
+        $product = Product::findOrFail($productId);
+        $oldCompare = Session::has('compare') ? Session::get('compare') : null;
+
+        if ($oldCompare && count($oldCompare->items) >= 3) {
+            $data[0] = 1;
+            $data['error'] = __('You can compare maximum 3 products.');
+            return response()->json($data);
+        }
+
+        $userId = $request->get('user');
+
+        // If user parameter is provided, find specific merchant product for that vendor
+        if ($userId) {
+            $merchantProduct = MerchantProduct::with('product')
+                ->where('product_id', $productId)
+                ->where('user_id', $userId)
+                ->where('status', 1)
+                ->first();
+        } else {
+            // Fallback: find the first active merchant product
+            $merchantProduct = MerchantProduct::with('product')
+                ->where('product_id', $productId)
+                ->where('status', 1)
+                ->orderBy('price')
+                ->first();
+        }
+
+        if (!$merchantProduct) {
+            $data[0] = 1;
+            $data['error'] = __('Product not available from any vendor.');
+            return response()->json($data);
+        }
+
+        $compare = new Compare($oldCompare);
+        $compare->add($merchantProduct, $merchantProduct->id);
+        Session::put('compare', $compare);
+
+        if ($compare->items[$merchantProduct->id]['ck'] == 1) {
+            $data[0] = 1;
+        }
+
+        $data[1] = count($compare->items);
+        $data['success'] = __('Successfully Added To Compare.');
+        $data['error'] = __('Already Added To Compare.');
+        return response()->json($data);
+    }
+
+    public function removecompare($merchantProductId)
     {
         $data[0] = 0;
         $oldCompare = Session::has('compare') ? Session::get('compare') : null;
         $compare = new Compare($oldCompare);
-        $compare->removeItem($id);
+        $compare->removeItem($merchantProductId);
 
         if (count($compare->items) > 0) {
             Session::put('compare', $compare);
             return back()->with('success', __('Successfully Removed From Compare.'));
         } else {
             Session::forget('compare');
-            return back()->with('error', __('No Product Found In Compare.'));
+            return back()->with('success', __('Compare List Cleared.'));
         }
     }
 
-    public function clearcompare($id)
+    public function clearcompare()
     {
         Session::forget('compare');
+        return back()->with('success', __('Compare List Cleared.'));
     }
 }

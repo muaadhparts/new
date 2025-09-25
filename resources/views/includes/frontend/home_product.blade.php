@@ -1,15 +1,24 @@
 @php
-  // اختيار عرض البائع: نشط أولاً، المتوفر قبل غير المتوفر، ثم الأرخص
-  $mp = $product->merchantProducts()
-        ->where('status', 1)
-        ->whereHas('user', function ($user) {
-            $user->where('is_vendor', 2);
-        })
-        ->orderByRaw('CASE WHEN (stock IS NULL OR stock = 0) THEN 1 ELSE 0 END ASC')
-        ->orderBy('price')
-        ->first();
+  // If vendor_user_id is already set on the product (from wishlist), use that merchant product
+  if (isset($product->vendor_user_id) && $product->vendor_user_id) {
+      $mp = $product->merchantProducts()
+            ->where('user_id', $product->vendor_user_id)
+            ->where('status', 1)
+            ->first();
+      $vendorId = $product->vendor_user_id;
+  } else {
+      // اختيار عرض البائع: نشط أولاً، المتوفر قبل غير المتوفر، ثم الأرخص
+      $mp = $product->merchantProducts()
+            ->where('status', 1)
+            ->whereHas('user', function ($user) {
+                $user->where('is_vendor', 2);
+            })
+            ->orderByRaw('CASE WHEN (stock IS NULL OR stock = 0) THEN 1 ELSE 0 END ASC')
+            ->orderBy('price')
+            ->first();
+      $vendorId = optional($mp)->user_id ?? 0;
+  }
 
-  $vendorId   = optional($mp)->user_id ?? 0;
   $hasVendor  = $vendorId > 0;
 
   // رابط التفاصيل يتطلب تمرير {user}.. عند غياب بائع متاح نوقف الرابط
@@ -19,12 +28,22 @@
   $offPercent = null;
   if ($mp && $mp->previous_price && $mp->previous_price > 0) {
       $offPercent = round((1 - ($mp->price / $mp->previous_price)) * 100);
+  } elseif (isset($product->previous_price) && isset($product->price) && $product->previous_price > $product->price) {
+      // Use effective pricing if already set on the product (from wishlist)
+      $offPercent = round((1 - ($product->price / $product->previous_price)) * 100);
   } elseif (method_exists($product, 'offPercentage')) {
       $offPercent = (int) round($product->offPercentage());
   }
 
   // حالة التوفر حسب عرض البائع
-  $inStock = $mp ? (is_null($mp->stock) || (int)$mp->stock > 0) : (!$product->emptyStock());
+  if ($mp) {
+      $inStock = is_null($mp->stock) || (int)$mp->stock > 0;
+  } elseif (isset($product->stock)) {
+      // Use effective stock if already set on the product
+      $inStock = is_null($product->stock) || (int)$product->stock > 0;
+  } else {
+      $inStock = !$product->emptyStock();
+  }
 @endphp
 
 <div class="{{ isset($class) ? $class : 'col-md-6 col-lg-4 col-xl-3' }}">
@@ -40,15 +59,20 @@
       @if (Auth::check())
         @if (isset($wishlist))
           <a href="javascript:;" class="removewishlist"
-             data-href="{{ route('user-wishlist-remove', App\Models\Wishlist::where('user_id', Auth::id())->where('product_id',$product->id)->first()->id) }}">
+             data-href="{{ route('user-wishlist-remove', isset($product->wishlist_item_id) ? $product->wishlist_item_id : App\Models\Wishlist::where('user_id', Auth::id())->where('product_id',$product->id)->first()->id ?? 0) }}">
             <div class="add-to-wishlist-btn bg-danger">
               <i class="fas fa-trash text-white"></i>
             </div>
           </a>
         @else
-          <a href="javascript:;" class="wishlist"
-             data-href="{{ route('user-wishlist-add', ['id'=>$product->id,'user'=>$vendorId]) }}">
-            <div class="add-to-wishlist-btn {{ wishlistCheck($product->id) ? 'active' : '' }}">
+          @if($mp && $mp->id)
+            <a href="javascript:;" class="wishlist"
+               data-href="{{ route('user-wishlist-add-merchant', $mp->id) }}">
+          @else
+            <a href="javascript:;" class="wishlist"
+               data-href="{{ route('user-wishlist-add', $product->id) }}">
+          @endif
+            <div class="add-to-wishlist-btn {{ ($mp && $mp->id) ? (merchantWishlistCheck($mp->id) ? 'active' : '') : (wishlistCheck($product->id) ? 'active' : '') }}">
               {{-- أيقونة --}}
             </div>
           </a>
@@ -71,7 +95,7 @@
         @if ($product->type != 'Listing')
           {{-- Compare --}}
           <a class="compare_product" href="javascript:;"
-             data-href="{{ $hasVendor ? route('product.compare.add', ['id'=>$product->id,'user'=>$vendorId]) : 'javascript:;' }}">
+             data-href="{{ ($mp && $mp->id) ? route('product.compare.add.merchant', $mp->id) : ($hasVendor ? route('product.compare.add', ['id'=>$product->id,'user'=>$vendorId]) : 'javascript:;') }}">
             <div class="compare">…</div>
           </a>
         @endif

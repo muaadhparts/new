@@ -201,7 +201,7 @@
                       @foreach($vendorColors as $key => $data1)
 
                         <li class="{{ $loop->first ? 'active' : '' }} {{ $product->IsSizeColor($vendorSizes[$key] ?? '') ? str_replace(' ','',($vendorSizes[$key] ?? '')) : ''  }} {{ ($vendorSizes[$key] ?? '') == ($vendorSizes[0] ?? '') ? 'show-colors' : '' }}">
-                          <span class="box" data-color="{{ $product->color[$key] }}" style="background-color: {{ $product->color[$key] }}">
+                          <span class="box" data-color="{{ $vendorColors[$key] }}" style="background-color: {{ $vendorColors[$key] }}">
                             @php
                                 $vendorSizeQty = $product->getVendorSizeQty($vendorId, $key);
                                 $vendorSizePrice = $product->getVendorSizePrice($vendorId, $key);

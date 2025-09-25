@@ -29,13 +29,18 @@
                             <td>
                                 <h6 class="td-title">@lang('product Image')</h6>
                             </td>
-                            @foreach ($products as $product)
+                            @foreach ($products as $merchantProductId => $productData)
+                                @php
+                                    $product = $productData['product'] ?? null;
+                                @endphp
                                 <td>
-                                    <a href="#">
-                                        <img class="img-fluid w-150"
-                                            src="{{ $product['item']['thumbnail'] ? asset('assets/images/thumbnails/' . $product['item']['thumbnail']) : asset('assets/images/noimage.png') }}"
-                                            alt="compare-img">
-                                    </a>
+                                    @if($product)
+                                        <a href="{{ route('front.product', ['slug' => $product->slug, 'user' => $productData['merchant_product']->user_id]) }}">
+                                            <img class="img-fluid w-150"
+                                                src="{{ $product->thumbnail ? asset('assets/images/thumbnails/' . $product->thumbnail) : asset('assets/images/noimage.png') }}"
+                                                alt="compare-img">
+                                        </a>
+                                    @endif
                                 </td>
                             @endforeach
                         </tr>
@@ -44,11 +49,29 @@
                                 <h6 class="td-title">@lang('product name')</h6>
                             </td>
 
-                            @foreach ($products as $product)
+                            @foreach ($products as $merchantProductId => $productData)
+                                @php
+                                    $product = $productData['product'] ?? null;
+                                @endphp
                                 <td>
-                                    <a href="#">
-                                        <h6 class="product-title"><x-product-name :product="$product['item']" :vendor-id="0" target="_self" /></h6>
-                                    </a>
+                                    @if($product)
+                                        <a href="{{ route('front.product', ['slug' => $product->slug, 'user' => $productData['merchant_product']->user_id]) }}">
+                                            <h6 class="product-title">{{ $product->name }}</h6>
+                                        </a>
+                                    @endif
+                                </td>
+                            @endforeach
+                        </tr>
+                        <tr class="wow-replaced" data-wow-delay=".1s">
+                            <td>
+                                <h6 class="td-title">@lang('Vendor')</h6>
+                            </td>
+                            @foreach ($products as $merchantProductId => $productData)
+                                @php
+                                    $merchantProduct = $productData['merchant_product'];
+                                @endphp
+                                <td>
+                                    <span class="table-pera">{{ $merchantProduct->user->shop_name ?? $merchantProduct->user->name }}</span>
                                 </td>
                             @endforeach
                         </tr>
@@ -56,40 +79,71 @@
                             <td>
                                 <h6 class="td-title">@lang('product price')</h6>
                             </td>
-                            @foreach ($products as $product)
-                                <td><span
-                                        class="table-pera">{{ App\Models\Product::find($product['item']['id'])->showPrice() }}</span>
+                            @foreach ($products as $merchantProductId => $productData)
+                                @php
+                                    $merchantProduct = $productData['merchant_product'];
+                                    $currency = \App\Models\Currency::where('is_default', 1)->first();
+                                @endphp
+                                <td>
+                                    <span class="table-pera">
+                                        {{ $currency->sign }}{{ number_format($merchantProduct->price * $currency->value, 2) }}
+                                        @if($merchantProduct->previous_price && $merchantProduct->previous_price > $merchantProduct->price)
+                                            <del>{{ $currency->sign }}{{ number_format($merchantProduct->previous_price * $currency->value, 2) }}</del>
+                                        @endif
+                                    </span>
                                 </td>
                             @endforeach
 
                         </tr>
                         <tr class="wow-replaced" data-wow-delay=".1s">
                             <td>
+                                <h6 class="td-title">@lang('Stock')</h6>
+                            </td>
+                            @foreach ($products as $merchantProductId => $productData)
+                                @php
+                                    $merchantProduct = $productData['merchant_product'];
+                                @endphp
+                                <td>
+                                    <span class="table-pera">
+                                        @if($merchantProduct->stock && $merchantProduct->stock > 0)
+                                            {{ $merchantProduct->stock }} @lang('in stock')
+                                        @elseif($merchantProduct->stock === 0)
+                                            @lang('Out of stock')
+                                        @else
+                                            @lang('Available')
+                                        @endif
+                                    </span>
+                                </td>
+                            @endforeach
+                        </tr>
+                        <tr class="wow-replaced" data-wow-delay=".1s">
+                            <td>
                                 <h6 class="td-title">@lang('Rating')</h6>
                             </td>
-                            @foreach ($products as $product)
+                            @foreach ($products as $merchantProductId => $productData)
                                 @php
-                                    $product = App\Models\Product::withCount('ratings')
+                                    $product = $productData['product'];
+                                    $productWithRatings = App\Models\Product::withCount('ratings')
                                         ->withAvg('ratings', 'rating')
-                                        ->find($product['item']['id']);
+                                        ->find($product->id);
                                 @endphp
-                                <td><span class="table-pera">{{ number_format($product->ratings_avg_rating, 1) }}
-                                        ({{ $product->ratings_count }} @lang('Review'))
+                                <td><span class="table-pera">{{ number_format($productWithRatings->ratings_avg_rating ?? 0, 1) }}
+                                        ({{ $productWithRatings->ratings_count ?? 0 }} @lang('Review'))
                                     </span></td>
                             @endforeach
-
-
-
                         </tr>
                         <tr class="wow-replaced" data-wow-delay=".1s">
                             <td>
                                 <h6 class="td-title">@lang('Description')</h6>
                             </td>
 
-                            @foreach ($products as $product)
+                            @foreach ($products as $merchantProductId => $productData)
+                                @php
+                                    $product = $productData['product'];
+                                @endphp
                                 <td>
                                     <span class="table-pera">
-                                        {{ strip_tags($product['item']['details']) }}
+                                        {{ strip_tags($product->details ?? '') }}
                                     </span>
                                 </td>
                             @endforeach
@@ -98,31 +152,34 @@
                             <td>
                                 <h6 class="td-title">@lang('Action')</h6>
                             </td>
-                            @foreach ($products as $product)
+                            @foreach ($products as $merchantProductId => $productData)
+                                @php
+                                    $product = $productData['product'];
+                                    $merchantProduct = $productData['merchant_product'];
+                                @endphp
                                 <td class="btn-wrapper">
-
-
                                     <div class="hover-area">
-                                        @if ($product['item']['product_type'] == 'affiliate')
-                                            <a href="javascript:;" data-href="{{ $product['item']['affiliate_link'] }}"
-                                                class="template-btn dark-btn w-10 add_to_cart_button affilate-btn"
-                                                aria-label="{{ __('Add To Cart') }}"></a>
+                                        @if ($product->product_type == 'affiliate')
+                                            <a href="javascript:;" data-href="{{ $product->affiliate_link }}"
+                                                class="template-btn dark-btn w-100 add_to_cart_button affilate-btn">
+                                                @lang('Buy Now')
+                                            </a>
                                         @else
-                                            @if ($product['item']->emptyStock())
-                                                <a class="template-btn dark-btn w-100" href="#"
-                                                    title="{{ __('Out Of Stock') }}"><i></i></a>
+                                            @if (!$merchantProduct->stock || $merchantProduct->stock == 0)
+                                                <span class="template-btn dark-btn w-100" title="{{ __('Out Of Stock') }}">
+                                                    @lang('Out Of Stock')
+                                                </span>
                                             @else
-                                                @if ($product['item']['type'] != 'Listing')
+                                                @if ($product->type != 'Listing')
                                                     <a href="javascript:;"
-                                                     data-href="{{ route('product.cart.add', $product['item']['id']) }}"
-                                                        class=" add_cart_click template-btn dark-btn w-100">
+                                                       data-href="{{ route('product.cart.add', $merchantProductId) }}"
+                                                        class="add_cart_click template-btn dark-btn w-100">
                                                         @lang('Add To Cart')
                                                     </a>
                                                 @endif
                                             @endif
                                         @endif
-
-
+                                    </div>
                                 </td>
                             @endforeach
 
@@ -131,9 +188,9 @@
                             <td>
                                 <h6 class="td-title">@lang('Remove')</h6>
                             </td>
-                            @foreach ($products as $product)
+                            @foreach ($products as $merchantProductId => $productData)
                                 <td>
-                                    <a href="{{ route('product.compare.remove', $product['item']['id']) }}"
+                                    <a href="{{ route('product.compare.remove', $merchantProductId) }}"
                                         class="template-btn dark-outline w-100">@lang('Remove')</a>
                                 </td>
                             @endforeach

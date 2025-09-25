@@ -120,7 +120,7 @@
                 @else
                     @php $showStock = is_object($gs) && property_exists($gs,'show_stock') ? $gs->show_stock : null; @endphp
                     <span class="text-success">
-                        {{ ($showStock === 0 || $showStock === '0') ? '' : ($product->stock ?? '') }} @lang('In Stock')
+                        {{ ($showStock === 0 || $showStock === '0') ? '' : ($product->vendorSizeStock() ?? '') }} @lang('In Stock')
                     </span>
                 @endif
             </div>

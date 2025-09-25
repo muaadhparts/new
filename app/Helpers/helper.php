@@ -1,14 +1,25 @@
 <?php
 
-function wishlistCheck($product_id)
+function wishlistCheck($product_id, $merchant_product_id = null)
 {
-    $wishlist = \App\Models\Wishlist::where('product_id', $product_id)->where('user_id', auth()->id())->first();
-    if ($wishlist) {
-        return true;
+    $query = \App\Models\Wishlist::where('user_id', auth()->id());
+
+    if ($merchant_product_id) {
+        // Check for specific merchant product
+        $query->where('merchant_product_id', $merchant_product_id);
     } else {
-        return false;
+        // Legacy: check if any vendor of this product is in wishlist
+        $query->where('product_id', $product_id);
     }
 
+    return $query->exists();
+}
+
+function merchantWishlistCheck($merchant_product_id)
+{
+    return \App\Models\Wishlist::where('merchant_product_id', $merchant_product_id)
+        ->where('user_id', auth()->id())
+        ->exists();
 }
 
 

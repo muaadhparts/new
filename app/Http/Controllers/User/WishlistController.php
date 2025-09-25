@@ -18,90 +18,163 @@ class WishlistController extends UserBaseController
         $sort = '';
         $pageby = $request->pageby;
         $user = $this->user;
-        $wishes = Wishlist::where('user_id','=',$user->id)->pluck('product_id');
         $page_count = isset($pageby) ? $pageby : $gs->wishlist_count;
 
+        // Get wishlist items with their effective merchant products
+        $wishlistQuery = Wishlist::where('user_id', $user->id)
+            ->with(['product', 'merchantProduct', 'merchantProduct.user']);
 
-        // Build base query: only include products that have at least one active merchant listing
-        $query = Product::status(1)
-            ->whereIn('id', $wishes);
-
-        // Apply sorting options.  Since pricing is stored per vendor on merchant_products,
-        // use subqueries to order by the minimum vendor price.  If no sort option
-        // provided, default to latest products by ID.
+        // Apply sorting
         if (!empty($request->sort)) {
             $sort = $request->sort;
             if ($sort == "id_desc") {
-                $query = $query->latest('products.id');
+                $wishlistQuery = $wishlistQuery->latest('wishlists.id');
             } elseif ($sort == "id_asc") {
-                $query = $query->oldest('products.id');
+                $wishlistQuery = $wishlistQuery->oldest('wishlists.id');
             } elseif ($sort == "price_asc") {
-                // Order by ascending minimum vendor price for each product
-                $query = $query->orderByRaw('(select min(price) from merchant_products where merchant_products.product_id = products.id and merchant_products.status = 1) asc');
+                $wishlistQuery = $wishlistQuery->join('merchant_products as mp', function($join) {
+                    $join->on('mp.id', '=', 'wishlists.merchant_product_id')
+                         ->orWhere(function($query) {
+                             $query->whereNull('wishlists.merchant_product_id')
+                                   ->on('mp.product_id', '=', 'wishlists.product_id')
+                                   ->where('mp.status', 1);
+                         });
+                })->orderBy('mp.price', 'asc');
             } elseif ($sort == "price_desc") {
-                // Order by descending minimum vendor price for each product
-                $query = $query->orderByRaw('(select min(price) from merchant_products where merchant_products.product_id = products.id and merchant_products.status = 1) desc');
+                $wishlistQuery = $wishlistQuery->join('merchant_products as mp', function($join) {
+                    $join->on('mp.id', '=', 'wishlists.merchant_product_id')
+                         ->orWhere(function($query) {
+                             $query->whereNull('wishlists.merchant_product_id')
+                                   ->on('mp.product_id', '=', 'wishlists.product_id')
+                                   ->where('mp.status', 1);
+                         });
+                })->orderBy('mp.price', 'desc');
             } else {
-                // Unknown sort option, fallback to latest
-                $query = $query->latest('products.id');
+                $wishlistQuery = $wishlistQuery->latest('wishlists.id');
             }
         } else {
-            // Default sort: latest products by ID
-            $query = $query->latest('products.id');
+            $wishlistQuery = $wishlistQuery->latest('wishlists.id');
         }
 
-        // Paginate the results
-        $wishlists = $query->paginate($page_count);
+        $wishlistItems = $wishlistQuery->paginate($page_count);
 
-        // Transform each product to compute the vendor price on the fly.  The price and
-        // stock are vendor specific, so we use vendorSizePrice() from the Product model
-        // to calculate the price including commissions and attribute adjustments.
-        $wishlists->getCollection()->transform(function ($item) {
-            $item->price = $item->vendorSizePrice();
-            return $item;
+        // Transform items to include effective merchant product data
+        $wishlistItems->getCollection()->transform(function ($wishlistItem) {
+            $effectiveMerchantProduct = $wishlistItem->getEffectiveMerchantProduct();
+
+            if ($effectiveMerchantProduct) {
+                $wishlistItem->effective_merchant_product = $effectiveMerchantProduct;
+                $wishlistItem->effective_price = $effectiveMerchantProduct->price;
+                $wishlistItem->effective_vendor = $effectiveMerchantProduct->user;
+            }
+
+            return $wishlistItem;
         });
 
         if ($request->ajax()) {
-            // Use consistent view path for AJAX wishlist loading.  front.ajax.wishlist
-            // and frontend.ajax.wishlist both refer to partials; choose one.
-            return view('frontend.ajax.wishlist', compact('user', 'wishlists', 'sort', 'pageby'));
+            return view('frontend.ajax.wishlist', compact('user', 'wishlistItems', 'sort', 'pageby'));
         }
-        return view('user.wishlist', compact('user', 'wishlists', 'sort', 'pageby'));
+
+        return view('user.wishlist', compact('user', 'wishlistItems', 'sort', 'pageby'));
     }
 
-    public function addwish($id)
+    /**
+     * Add merchant product to wishlist
+     * Expects merchant_product_id as parameter
+     */
+    public function addwish($merchantProductId)
     {
         $user = $this->user;
-
         $data[0] = 0;
-        $ck = Wishlist::where('user_id','=',$user->id)->where('product_id','=',$id)->get()->count();
-        if($ck > 0)
-        {
+
+        // Check if this specific merchant product is already in wishlist
+        $ck = Wishlist::where('user_id', $user->id)
+            ->where('merchant_product_id', $merchantProductId)
+            ->exists();
+
+        if ($ck) {
             $data['error'] = __('Already Added To The Wishlist.');
             return response()->json($data);
         }
+
+        // Get merchant product to also store product_id for backward compatibility
+        $merchantProduct = \App\Models\MerchantProduct::findOrFail($merchantProductId);
+
         $wish = new Wishlist();
         $wish->user_id = $user->id;
-        $wish->product_id = $id;
+        $wish->product_id = $merchantProduct->product_id;
+        $wish->merchant_product_id = $merchantProductId;
         $wish->save();
-        $data[0] = 1;
-        $data[1] = count($user->wishlists);
 
+        $data[0] = 1;
+        $data[1] = Wishlist::where('user_id', $user->id)->count();
         $data['success'] = __('Successfully Added To The Wishlist.');
         return response()->json($data);
+    }
 
+    /**
+     * Legacy method for backward compatibility
+     * Converts product_id to merchant_product_id
+     * Can optionally accept user parameter to specify vendor
+     */
+    public function addwishLegacy(Request $request, $productId)
+    {
+        $user = $this->user;
+        $data[0] = 0;
+
+        $userId = $request->get('user');
+
+        // If user parameter is provided, find specific merchant product for that vendor
+        if ($userId) {
+            $merchantProduct = \App\Models\MerchantProduct::where('product_id', $productId)
+                ->where('user_id', $userId)
+                ->where('status', 1)
+                ->first();
+        } else {
+            // Fallback: find the first active merchant product
+            $merchantProduct = \App\Models\MerchantProduct::where('product_id', $productId)
+                ->where('status', 1)
+                ->orderBy('price')
+                ->first();
+        }
+
+        if (!$merchantProduct) {
+            $data['error'] = __('Product not available from any vendor.');
+            return response()->json($data);
+        }
+
+        // Check if this specific merchant product is already in wishlist
+        $ck = Wishlist::where('user_id', $user->id)
+            ->where('merchant_product_id', $merchantProduct->id)
+            ->exists();
+
+        if ($ck) {
+            $data['error'] = __('Already Added To The Wishlist.');
+            return response()->json($data);
+        }
+
+        $wish = new Wishlist();
+        $wish->user_id = $user->id;
+        $wish->product_id = $productId;
+        $wish->merchant_product_id = $merchantProduct->id;
+        $wish->save();
+
+        $data[0] = 1;
+        $data[1] = Wishlist::where('user_id', $user->id)->count();
+        $data['success'] = __('Successfully Added To The Wishlist.');
+        return response()->json($data);
     }
 
     public function removewish($id)
     {
         $user = $this->user;
-        $wish = Wishlist::findOrFail($id);
+        $wish = Wishlist::where('user_id', $user->id)->findOrFail($id);
         $wish->delete();
+
         $data[0] = 1;
-        $data[1] = count($user->wishlists);
+        $data[1] = Wishlist::where('user_id', $user->id)->count();
         $data['success'] = __('Successfully Removed From Wishlist.');
         return response()->json($data);
-
     }
 
 }
