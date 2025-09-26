@@ -219,9 +219,7 @@
                                                     ->where('user_id', $currentUser->id)->first();
                                         }
 
-                                        $imgSrc = $prod?->photo
-                                            ? (filter_var($prod->photo, FILTER_VALIDATE_URL) ? $prod->photo : asset('assets/images/products/'.$prod->photo))
-                                            : asset('assets/images/noimage.png');
+                                        $imgSrc = \Illuminate\Support\Facades\Storage::url($prod->photo) ?? asset('assets/images/noimage.png');
 
                                         $catName   = $prod?->category?->name;
                                         $subName   = $prod?->subcategory?->name;

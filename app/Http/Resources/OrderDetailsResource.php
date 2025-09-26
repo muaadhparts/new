@@ -47,7 +47,7 @@ class OrderDetailsResource extends JsonResource
         'ordered_products' => $this->when(!empty($this->cart), function() {
           $cart = json_decode($this->cart,true);
           foreach($cart['items'] as $key=> $item){
-              $item['item']['photo'] = asset('assets/images/products/'.$item['item']['photo']);
+              $item['item']['photo'] = \Illuminate\Support\Facades\Storage::url($item['item']['photo']) ?? asset('assets/images/noimage.png');
               $new[$key.Str::random(3)]['item'] = $item;
           }
           return $new;

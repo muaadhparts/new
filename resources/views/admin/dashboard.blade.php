@@ -248,7 +248,7 @@
                                         <tbody>
                                             @foreach($poproducts as $data)
                                             <tr>
-                                            <td><img src="{{filter_var($data->photo, FILTER_VALIDATE_URL) ?$data->photo:asset('assets/images/products/'.$data->photo)}}"></td>
+                                            <td><img src="{{ \Illuminate\Support\Facades\Storage::url($data->photo) ?? asset('assets/images/noimage.png') }}"></td>
                                             <td>{{  mb_strlen(strip_tags($data->name),'UTF-8') > 50 ? mb_substr(strip_tags($data->name),0,50,'UTF-8').'...' : strip_tags($data->name) }}</td>
                                             <td>{{ $data->category->name }}
                                                     @if(isset($data->subcategory))
@@ -304,7 +304,7 @@
                                                 <tbody>
                                                     @foreach($pproducts as $data)
                                                     <tr>
-                                                    <td><img src="{{filter_var($data->photo, FILTER_VALIDATE_URL) ?$data->photo:asset('assets/images/products/'.$data->photo)}}"></td>
+                                                    <td><img src="{{ \Illuminate\Support\Facades\Storage::url($data->photo) ?? asset('assets/images/noimage.png') }}"></td>
                                                     <td>{{  mb_strlen(strip_tags($data->name),'UTF-8') > 50 ? mb_substr(strip_tags($data->name),0,50,'UTF-8').'...' : strip_tags($data->name) }}</td>
                                                     <td>{{ $data->category->name }}
                                                         @if(isset($data->subcategory))

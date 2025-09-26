@@ -5,13 +5,13 @@
           <div class="col-lg-5">
               <div class="xzoom-container">
                   <img class="xzoom5" id="xzoom-magnific"
-                    src="{{ filter_var($product->photo, FILTER_VALIDATE_URL) ?$product->photo:asset('assets/images/products/'.$product->photo) }}"
-                    xoriginal="{{ filter_var($product->photo, FILTER_VALIDATE_URL) ?$product->photo:asset('assets/images/products/'.$product->photo) }}" />
+                    src="{{ \Illuminate\Support\Facades\Storage::url($product->photo) ?? asset('assets/images/noimage.png') }}"
+                    xoriginal="{{ \Illuminate\Support\Facades\Storage::url($product->photo) ?? asset('assets/images/noimage.png') }}" />
                   <div class="xzoom-thumbs">
                     <div class="all-slider">
 
-                      <a href="{{filter_var($product->photo, FILTER_VALIDATE_URL) ?$product->photo:asset('assets/images/products/'.$product->photo)}}">
-                        <img class="xzoom-gallery5" width="80" src="{{ filter_var($product->photo, FILTER_VALIDATE_URL) ? $product->photo:asset('assets/images/products/'.$product->photo) }}">
+                      <a href="{{ \Illuminate\Support\Facades\Storage::url($product->photo) ?? asset('assets/images/noimage.png') }}">
+                        <img class="xzoom-gallery5" width="80" src="{{ \Illuminate\Support\Facades\Storage::url($product->photo) ?? asset('assets/images/noimage.png') }}">
                       </a>
 
                       @foreach($product->galleries as $gal)

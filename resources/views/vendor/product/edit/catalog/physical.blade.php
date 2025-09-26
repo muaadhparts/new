@@ -965,7 +965,7 @@
             $(document).ready(function() {
 
                 let html =
-                    `<img width="200" src="{{ empty($data->photo) ? asset('assets/images/noimage.png') : (filter_var($data->photo, FILTER_VALIDATE_URL) ? $data->photo : asset('assets/images/products/' . $data->photo)) }}" alt="">`;
+                    `<img width="200" src="{{ \Illuminate\Support\Facades\Storage::url($data->photo) ?? asset('assets/images/noimage.png') }}" alt="">`;
                 $(".span4.cropme").html(html);
 
                 $.ajaxSetup({

@@ -28,7 +28,7 @@
 
                     <a href="{{ $productUrl }}" class="product-image">
                         <img
-                            src="{{ $photo ? (filter_var($photo, FILTER_VALIDATE_URL) ? $photo : asset('assets/images/products/' . $photo)) : asset('assets/images/noimage.png') }}"
+                            src="{{ \Illuminate\Support\Facades\Storage::url($photo) ?? asset('assets/images/noimage.png') }}"
                             class="attachment-woocommerce_thumbnail size-woocommerce_thumbnail"
                             alt="Cart product">
                     </a>

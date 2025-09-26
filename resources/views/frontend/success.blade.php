@@ -347,11 +347,11 @@
                                 @foreach ($tempcart->items as $product)
                                     <tr class="wow-replaced" data-wow-delay=".1s">
                                         <td colspan="1" class="product-img d-none d-lg-table-cell">
-                                            <img src="{{ asset('assets/images/products/' . $product['item']['photo']) }}"
+                                            <img src="{{ \Illuminate\Support\Facades\Storage::url($product['item']['photo']) ?? asset('assets/images/noimage.png') }}"
                                                 alt="">
                                         </td>
                                         <td class="product-details">
-                                            <img src="{{ asset('assets/images/products/' . $product['item']['photo']) }}"
+                                            <img src="{{ \Illuminate\Support\Facades\Storage::url($product['item']['photo']) ?? asset('assets/images/noimage.png') }}"
                                                 alt="" class="d-lg-none d-table-cell pb-24 small-device-img">
                                             <h6><x-product-name :item="$product['item']" :vendor-id="$product['item']['user_id']" target="_blank" /></h6>
                                             <p><span>@lang('Quantity:')</span> {{ $product['qty'] }}</p>

@@ -34,7 +34,7 @@ class ProductlistResource extends JsonResource
         return [
             'id' => $this->id,
             'title' => $this->name,
-            'thumbnail' => url('/') . '/assets/images/thumbnails/'.$this->thumbnail,
+            'thumbnail' => \Illuminate\Support\Facades\Storage::url($this->thumbnail) ?? asset('assets/images/noimage.png'),
             'rating' =>  $this->ratings()->avg('rating') > 0 ? (string) round($this->ratings()->avg('rating'), 2) : (string) round(0.00, 2),
             'current_price' => $currentPrice,
             'previous_price' => $previousPrice,

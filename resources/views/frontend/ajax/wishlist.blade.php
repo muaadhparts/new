@@ -14,7 +14,7 @@
         </td>
         <td class="product-thumbnail">
             <a href="{{ route('front.product', ['slug' => $product->slug, 'user' => $vendorId]) }}">
-                <img src="{{ $product->photo ? asset('assets/images/products/'.$product->photo):asset('assets/images/noimage.png') }}" alt="">
+                <img src="{{ \Illuminate\Support\Facades\Storage::url($product->photo) ?? asset('assets/images/noimage.png') }}" alt="">
             </a>
         </td>
         <td class="product-name">

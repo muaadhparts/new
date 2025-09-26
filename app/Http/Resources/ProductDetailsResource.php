@@ -63,8 +63,8 @@ class ProductDetailsResource extends JsonResource
       'attributes'    => $this->attributes ? json_decode($this->attributes, true) : null,
 
       // صور
-      'thumbnail'     => url('/') . '/assets/images/thumbnails/' . $this->thumbnail,
-      'first_image'   => url('/') . '/assets/images/products/' . $this->photo,
+      'thumbnail'     => \Illuminate\Support\Facades\Storage::url($this->thumbnail) ?? asset('assets/images/noimage.png'),
+      'first_image'   => \Illuminate\Support\Facades\Storage::url($this->photo) ?? asset('assets/images/noimage.png'),
       'images'        => GalleryResource::collection($this->whenLoaded('galleries', $this->galleries)),
 
       // تقييم

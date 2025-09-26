@@ -671,7 +671,7 @@ $('.cropme').simpleCropper();
 
   $(document).ready(function() {
 
-    let html = `<img src="{{ empty($data->photo) ? asset('assets/images/noimage.png') : asset('assets/images/products/'.$data->photo) }}" alt="">`;
+    let html = `<img src="{{ \Illuminate\Support\Facades\Storage::url($data->photo) ?? asset('assets/images/noimage.png') }}" alt="">`;
     $(".span4.cropme").html(html);
 
     $.ajaxSetup({
