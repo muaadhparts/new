@@ -94,166 +94,166 @@ class FrontendController extends FrontBaseController
         })->count();
         $data['ratings'] = Rating::count();
 
-//        $data['hot_products'] = Product::whereHot(1)->whereStatus(1)
-//            ->take($gs->hot_count)
-//
-//            ->with(['user' => function ($query) {
-//                $query->select('id', 'is_vendor');
-//            }])
-//            ->when('user', function ($query) {
-//                foreach ($query as $q) {
-//                    if ($q->is_vendor == 2) {
-//                        return $q;
-//                    }
-//                }
-//            })
-//            ->withCount('ratings')
-//            ->withAvg('ratings', 'rating')
-//            ->orderby('id', 'desc')
-//            ->get();
+    //    $data['hot_products'] = Product::whereHot(1)->whereStatus(1)
+    //        ->take($gs->hot_count)
 
-//        $data['latest_products'] = Product::whereLatest(1)->whereStatus(1)
-//
-//            ->take($gs->new_count)
-//            ->with(['user' => function ($query) {
-//                $query->select('id', 'is_vendor');
-//            }])
-//            ->when('user', function ($query) {
-//                foreach ($query as $q) {
-//                    if ($q->is_vendor == 2) {
-//                        return $q;
-//                    }
-//                }
-//            })
-//            ->withCount('ratings')
-//            ->withAvg('ratings', 'rating')
-//            ->orderby('id', 'desc')
-//            ->get();
+    //        ->with(['user' => function ($query) {
+    //            $query->select('id', 'is_vendor');
+    //        }])
+    //        ->when('user', function ($query) {
+    //            foreach ($query as $q) {
+    //                if ($q->is_vendor == 2) {
+    //                    return $q;
+    //                }
+    //            }
+    //        })
+    //        ->withCount('ratings')
+    //        ->withAvg('ratings', 'rating')
+    //        ->orderby('id', 'desc')
+    //        ->get();
 
-//        $data['sale_products'] = Product::whereSale(1)->whereStatus(1)
-//
-//            ->take($gs->sale_count)
-//            ->with(['user' => function ($query) {
-//                $query->select('id', 'is_vendor');
-//            }])
-//            ->when('user', function ($query) {
-//                foreach ($query as $q) {
-//                    if ($q->is_vendor == 2) {
-//                        return $q;
-//                    }
-//                }
-//            })
-//            ->withCount('ratings')
-//            ->withAvg('ratings', 'rating')
-//            ->orderby('id', 'desc')
-//            ->get();
+    //    $data['latest_products'] = Product::whereLatest(1)->whereStatus(1)
 
-//        $data['best_products'] = Product::query()->whereStatus(1)->whereBest(1)
-//
-//            ->take($gs->best_seller_count)
-//        // get category id and created at
-//            ->with(['user' => function ($query) {
-//                $query->select('id', 'is_vendor');
-//            }])
-//            ->when('user', function ($query) {
-//                foreach ($query as $q) {
-//                    if ($q->is_vendor == 2) {
-//                        return $q;
-//                    }
-//                }
-//            })
-//
-//            ->withCount('ratings')
-//            ->withAvg('ratings', 'rating')
-//            ->orderby('id', 'desc')
-//            ->get();
+    //        ->take($gs->new_count)
+    //        ->with(['user' => function ($query) {
+    //            $query->select('id', 'is_vendor');
+    //        }])
+    //        ->when('user', function ($query) {
+    //            foreach ($query as $q) {
+    //                if ($q->is_vendor == 2) {
+    //                    return $q;
+    //                }
+    //            }
+    //        })
+    //        ->withCount('ratings')
+    //        ->withAvg('ratings', 'rating')
+    //        ->orderby('id', 'desc')
+    //        ->get();
 
-//        $data['popular_products'] = Product::whereStatus(1)->whereFeatured(1)
-//
-//            ->take($gs->popular_count)
-//            ->with(['user' => function ($query) {
-//                $query->select('id', 'is_vendor');
-//            }])
-//
-//            ->when('user', function ($query) {
-//                foreach ($query as $q) {
-//                    if ($q->is_vendor == 2) {
-//                        return $q;
-//                    }
-//                }
-//            })
-//            ->withCount('ratings')
-//            ->withAvg('ratings', 'rating')
-//            ->orderby('id', 'desc')
-//            ->get();
+    //    $data['sale_products'] = Product::whereSale(1)->whereStatus(1)
 
-//        $data['top_products'] = Product::whereStatus(1)->whereTop(1)
-//
-//            ->take($gs->top_rated_count)
-//            ->with(['user' => function ($query) {
-//                $query->select('id', 'is_vendor');
-//            }])
-//            ->when('user', function ($query) {
-//                foreach ($query as $q) {
-//                    if ($q->is_vendor == 2) {
-//                        return $q;
-//                    }
-//                }
-//            })
-//            ->orderby('id', 'desc')
-//            ->withCount('ratings')->withAvg('ratings', 'rating')
-//            ->get();
+    //        ->take($gs->sale_count)
+    //        ->with(['user' => function ($query) {
+    //            $query->select('id', 'is_vendor');
+    //        }])
+    //        ->when('user', function ($query) {
+    //            foreach ($query as $q) {
+    //                if ($q->is_vendor == 2) {
+    //                    return $q;
+    //                }
+    //            }
+    //        })
+    //        ->withCount('ratings')
+    //        ->withAvg('ratings', 'rating')
+    //        ->orderby('id', 'desc')
+    //        ->get();
 
-//        $data['big_products'] = Product::whereStatus(1)->whereBig(1)
-//
-//            ->take($gs->big_save_count)
-//            ->with(['user' => function ($query) {
-//                $query->select('id', 'is_vendor');
-//            }])
-//            ->when('user', function ($query) {
-//                foreach ($query as $q) {
-//                    if ($q->is_vendor == 2) {
-//                        return $q;
-//                    }
-//                }
-//            })
-//            ->orderby('id', 'desc')
-//            ->withCount('ratings')
-//            ->withAvg('ratings', 'rating')
-//            ->get();
+    //    $data['best_products'] = Product::query()->whereStatus(1)->whereBest(1)
 
-//        $data['trending_products'] = Product::whereStatus(1)->whereTrending(1)
-//
-//            ->take($gs->trending_count)
-//            ->with(['user' => function ($query) {
-//                $query->select('id', 'is_vendor');
-//            }])
-//            ->when('user', function ($query) {
-//                foreach ($query as $q) {
-//                    if ($q->is_vendor == 2) {
-//                        return $q;
-//                    }
-//                }
-//            })
-//            ->withCount('ratings')
-//            ->withAvg('ratings', 'rating')
-//            ->orderby('id', 'desc')
-//            ->get();
+    //        ->take($gs->best_seller_count)
+    //    // get category id and created at
+    //        ->with(['user' => function ($query) {
+    //            $query->select('id', 'is_vendor');
+    //        }])
+    //        ->when('user', function ($query) {
+    //            foreach ($query as $q) {
+    //                if ($q->is_vendor == 2) {
+    //                    return $q;
+    //                }
+    //            }
+    //        })
 
-//        $data['flash_products'] = Product::whereStatus(1)->whereIsDiscount(1)
-//            ->where('discount_date', '>=', date('Y-m-d'))
-//
-//            ->with(['user' => function ($query) {
-//                $query->select('id', 'is_vendor');
-//            }])
-//            ->when('user', function ($query) {
-//                foreach ($query as $q) {
-//                    if ($q->is_vendor == 2) {
-//                        return $q;
-//                    }
-//                }
-//            })
-//            ->latest()->first();
+    //        ->withCount('ratings')
+    //        ->withAvg('ratings', 'rating')
+    //        ->orderby('id', 'desc')
+    //        ->get();
+
+    //    $data['popular_products'] = Product::whereStatus(1)->whereFeatured(1)
+
+    //        ->take($gs->popular_count)
+    //        ->with(['user' => function ($query) {
+    //            $query->select('id', 'is_vendor');
+    //        }])
+
+    //        ->when('user', function ($query) {
+    //            foreach ($query as $q) {
+    //                if ($q->is_vendor == 2) {
+    //                    return $q;
+    //                }
+    //            }
+    //        })
+    //        ->withCount('ratings')
+    //        ->withAvg('ratings', 'rating')
+    //        ->orderby('id', 'desc')
+    //        ->get();
+
+    //    $data['top_products'] = Product::whereStatus(1)->whereTop(1)
+
+    //        ->take($gs->top_rated_count)
+    //        ->with(['user' => function ($query) {
+    //            $query->select('id', 'is_vendor');
+    //        }])
+    //        ->when('user', function ($query) {
+    //            foreach ($query as $q) {
+    //                if ($q->is_vendor == 2) {
+    //                    return $q;
+    //                }
+    //            }
+    //        })
+    //        ->orderby('id', 'desc')
+    //        ->withCount('ratings')->withAvg('ratings', 'rating')
+    //        ->get();
+
+    //    $data['big_products'] = Product::whereStatus(1)->whereBig(1)
+
+    //        ->take($gs->big_save_count)
+    //        ->with(['user' => function ($query) {
+    //            $query->select('id', 'is_vendor');
+    //        }])
+    //        ->when('user', function ($query) {
+    //            foreach ($query as $q) {
+    //                if ($q->is_vendor == 2) {
+    //                    return $q;
+    //                }
+    //            }
+    //        })
+    //        ->orderby('id', 'desc')
+    //        ->withCount('ratings')
+    //        ->withAvg('ratings', 'rating')
+    //        ->get();
+
+    //    $data['trending_products'] = Product::whereStatus(1)->whereTrending(1)
+
+    //        ->take($gs->trending_count)
+    //        ->with(['user' => function ($query) {
+    //            $query->select('id', 'is_vendor');
+    //        }])
+    //        ->when('user', function ($query) {
+    //            foreach ($query as $q) {
+    //                if ($q->is_vendor == 2) {
+    //                    return $q;
+    //                }
+    //            }
+    //        })
+    //        ->withCount('ratings')
+    //        ->withAvg('ratings', 'rating')
+    //        ->orderby('id', 'desc')
+    //        ->get();
+
+    //    $data['flash_products'] = Product::whereStatus(1)->whereIsDiscount(1)
+    //        ->where('discount_date', '>=', date('Y-m-d'))
+
+    //        ->with(['user' => function ($query) {
+    //            $query->select('id', 'is_vendor');
+    //        }])
+    //        ->when('user', function ($query) {
+    //            foreach ($query as $q) {
+    //                if ($q->is_vendor == 2) {
+    //                    return $q;
+    //                }
+    //            }
+    //        })
+    //        ->latest()->first();
 
         $data['blogs'] = Blog::latest()->take(2)->get();
 
