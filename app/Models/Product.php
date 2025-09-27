@@ -17,8 +17,8 @@ class Product extends Model
      */
     protected $fillable = [
         'brand_id', 'sku', 'product_type', 'affiliate_link', 'category_id', 'subcategory_id', 'childcategory_id',
-        'label_en', 'label_ar', 'attributes', 'name', 'slug', 'photo', 'thumbnail', 'file', 'weight', 'size',
-        'size_qty', 'size_price', 'policy', 'views', 'tags', 'features', 'is_meta', 'meta_tag', 'meta_description',
+        'label_en', 'label_ar', 'attributes', 'name', 'slug', 'photo', 'thumbnail', 'file', 'weight',
+        'policy', 'views', 'tags', 'features', 'is_meta', 'meta_tag', 'meta_description',
         'youtube', 'type', 'platform', 'region', 'measure', 'featured', 'best', 'top', 'hot', 'latest', 'big',
         'trending', 'sale', 'is_catalog', 'catalog_id', 'cross_products'
     ];
@@ -28,7 +28,7 @@ class Product extends Model
      */
     public $selectable = [
         'id', 'name', 'slug', 'features', 'thumbnail', 'attributes',
-        'category_id', 'type', 'weight', 'size', 'size_qty', 'size_price'
+        'category_id', 'type', 'weight'
     ];
 
     /* =========================================================================
@@ -459,6 +459,33 @@ class Product extends Model
         return $this->features; // Fallback to product features
     }
 
+    /**
+     * Get vendor-specific size from merchant product.
+     */
+    public function getVendorSize(?int $userId = null)
+    {
+        $mp = $this->activeMerchant($userId);
+        return $mp ? $mp->size : null;
+    }
+
+    /**
+     * Get vendor-specific size qty from merchant product.
+     */
+    public function getVendorSizeQty(?int $userId = null)
+    {
+        $mp = $this->activeMerchant($userId);
+        return $mp ? $mp->size_qty : null;
+    }
+
+    /**
+     * Get vendor-specific size price from merchant product.
+     */
+    public function getVendorSizePrice(?int $userId = null)
+    {
+        $mp = $this->activeMerchant($userId);
+        return $mp ? $mp->size_price : null;
+    }
+
 
     /**
      * Build tag cloud from products that have at least one active merchant listing.
@@ -506,7 +533,10 @@ class Product extends Model
             'stock' => 'vendorSizeStock',
             'price' => 'vendorPrice',
             'previous_price' => 'getVendorPreviousPrice',
-            'ship' => 'getVendorShip'
+            'ship' => 'getVendorShip',
+            'size' => 'getVendorSize',
+            'size_qty' => 'getVendorSizeQty',
+            'size_price' => 'getVendorSizePrice'
         ];
 
         if (array_key_exists($key, $vendorColumns)) {
@@ -533,20 +563,6 @@ class Product extends Model
     }
 
 
-    public function getSizeAttribute($value)
-    {
-        return $value === null ? '' : explode(',', $value);
-    }
-
-    public function getSizeQtyAttribute($value)
-    {
-        return $value === null ? '' : explode(',', $value);
-    }
-
-    public function getSizePriceAttribute($value)
-    {
-        return $value === null ? '' : explode(',', $value);
-    }
 
 
     public function getTagsAttribute($value)

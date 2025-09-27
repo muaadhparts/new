@@ -253,16 +253,16 @@
 									<div class="col-lg-12">
 										<ul class="list">
 											<li>
-												<input class="checkclickc" name="color_check" type="checkbox" id="check3" value="1" {{ !empty($data->color_all) ? "checked":"" }}>
+												<input class="checkclickc" name="color_check" type="checkbox" id="check3" value="1" {{ !empty($merchantProduct->color_all ?? '') ? "checked":"" }}>
 												<label for="check3">{{ __('Allow Product Colors') }}</label>
 											</li>
 										</ul>
 									</div>
 								</div>
 
-								<div class="{{ !empty($data->color_all) ? "":"showbox" }}">
+								<div class="{{ !empty($merchantProduct->color_all ?? '') ? "":"showbox" }}">
 									<div class="row">
-										@if(!empty($data->color_all)) 
+										@if(!empty($merchantProduct->color_all ?? '')) 
 										<div  class="col-lg-12">
 												<div class="left-area">
 													<h4 class="heading">
@@ -275,7 +275,7 @@
 											</div>
 											<div  class="col-lg-12">
 													<div class="select-input-color" id="color-section">
-														@foreach(array_unique(explode(',',$data->color_all)) as $ct)
+														@foreach(array_unique(explode(',', $merchantProduct->color_all ?? '')) as $ct)
 														<div class="color-area">
 															<span class="remove color-remove"><i class="fas fa-times"></i></span>
 															<div class="input-group colorpicker-component cp">
@@ -561,7 +561,7 @@
 										</div>
 									</div>
 									<div class="col-lg-12">
-										<input name="previous_price" step="0.1" type="number" class="input-field" placeholder="{{ __("e.g 20") }}" value="{{round($data->previous_price * $sign->value , 2)}}" min="0">
+										<input name="previous_price" step="0.1" type="number" class="input-field" placeholder="{{ __("e.g 20") }}" value="{{round(($merchantProduct->previous_price ?? 0) * $sign->value , 2)}}" min="0">
 									</div>
 								</div>
 
@@ -603,7 +603,7 @@
 
 																<div class="col-lg-6">
 																	<div class="input-group colorpicker-component cp">
-																	<input type="text" name="colors[]" value="{{ $data->colors[$key] }}" class="input-field cp"/>
+																	<input type="text" name="colors[]" value="{{ ($merchantProduct->colors ?? [])[$key] ?? '' }}" class="input-field cp"/>
 																	<span class="input-group-addon"><i></i></span>
 																	</div>
 																</div>

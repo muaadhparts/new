@@ -58,11 +58,34 @@ class ProductController extends VendorBaseController
         return view('vendor.product.catalogs', compact('datas', 'user'));
     }
 
-    //*** GET Request - Redirect to catalog selection (vendors don't create products, only offers)
+    //*** GET Request - Show create form based on product type
     public function create($slug)
     {
-        Session::flash('info', __('Please select a product from the catalog to create your offer.'));
-        return redirect()->route('vendor-prod-catalogs');
+        $user = $this->user;
+
+        if (Generalsetting::find(1)->verify_product == 1) {
+            if (!$user->checkStatus()) {
+                Session::flash('unsuccess', __('You must complete your verfication first.'));
+                return redirect()->route('vendor-verify');
+            }
+        }
+
+        $cats = Category::all();
+        $sign = $this->curr;
+
+        switch ($slug) {
+            case 'physical':
+                return view('vendor.product.create.physical', compact('cats', 'sign'));
+            case 'digital':
+                return view('vendor.product.create.digital', compact('cats', 'sign'));
+            case 'license':
+                return view('vendor.product.create.license', compact('cats', 'sign'));
+            case 'listing':
+                return view('vendor.product.create.listing', compact('cats', 'sign'));
+            default:
+                Session::flash('unsuccess', __('Invalid product type.'));
+                return redirect()->route('vendor-prod-types');
+        }
     }
 
     //*** GET Request - Create merchant offer for existing product
@@ -167,7 +190,7 @@ class ProductController extends VendorBaseController
         $user = $this->user;
         $package = $user->subscribes()->orderBy('id', 'desc')->first();
 
-        // عدّ عروض البائع لا عدد المنتجات
+        // Count merchant products
         $prods = $user->merchantProducts()->count();
 
         if (Generalsetting::find(1)->verify_product == 1) {
@@ -178,6 +201,9 @@ class ProductController extends VendorBaseController
 
         if ($prods < $package->allowed_products || $package->allowed_products == 0) {
             $log = "";
+            $successCount = 0;
+            $errorCount = 0;
+
             //--- Validation Section
             $request->validate([
                 'csvfile' => 'required',
@@ -187,7 +213,7 @@ class ProductController extends VendorBaseController
             if ($file = $request->file('csvfile')) {
                 $extensions = ['csv'];
                 if (!in_array($file->getClientOriginalExtension(), $extensions)) {
-                    return response()->json(array('errors' => ['Image format not supported']));
+                    return back()->with('unsuccess', __('Only CSV format is supported'));
                 }
                 $filename = time() . '-' . $file->getClientOriginalName();
                 $file->move('assets/temp_files', $filename);
@@ -195,148 +221,144 @@ class ProductController extends VendorBaseController
 
             $file = fopen(public_path('assets/temp_files/' . $filename), "r");
             $i = 1;
-
-            $defaultCurr = Currency::where('is_default', 1)->first();
+            $sign = $this->curr;
 
             while (($line = fgetcsv($file)) !== false) {
-                if ($i != 1) {
-                    $sku = $line[0] ?? null;
-                    if (!$sku) {
-                        $log .= "<br>" . __('Row No') . ": " . $i . " - " . __('Missing SKU!') . "<br>";
+                if ($i != 1) { // Skip header row
+                    $partNumber = trim($line[0] ?? '');
+
+                    if (empty($partNumber)) {
+                        $log .= "<br>" . __('Row') . " {$i}: " . __('Missing part number (SKU)') . "<br>";
+                        $errorCount++;
                         $i++;
                         continue;
                     }
 
-                    // 1) جهّز تعريف المنتج (هوية فقط)
-                    $data  = Product::firstOrNew(['sku' => $sku]);
-                    $isNew = !$data->exists;
+                    // 1. Find existing product by part_number (sku)
+                    $product = Product::where('sku', $partNumber)->first();
 
-                    $input = [];
-                    $input['type']            = 'Physical';
-                    $input['name']            = $line[4] ?? $sku;
-                    $input['details']         = $line[6] ?? null;
-                    $input['product_type']    = $line[19] ?? 'normal';
-                    $input['affiliate_link']  = $line[20] ?? null;
-
-                    // تصنيف
-                    $input['category_id']     = null;
-                    $input['subcategory_id']  = null;
-                    $input['childcategory_id']= null;
-
-                    $mcat = Category::where(DB::raw('lower(name)'), strtolower($line[1] ?? ''));
-                    if ($mcat->exists()) {
-                        $input['category_id'] = $mcat->first()->id;
-
-                        if (!empty($line[2])) {
-                            $scat = Subcategory::where(DB::raw('lower(name)'), strtolower($line[2]));
-                            if ($scat->exists()) {
-                                $input['subcategory_id'] = $scat->first()->id;
-                            }
-                        }
-                        if (!empty($line[3])) {
-                            $chcat = Childcategory::where(DB::raw('lower(name)'), strtolower($line[3]));
-                            if ($chcat->exists()) {
-                                $input['childcategory_id'] = $chcat->first()->id;
-                            }
-                        }
-                    } else {
-                        $log .= "<br>" . __('Row No') . ": " . $i . " - " . __('No Category Found!') . "<br>";
+                    if (!$product) {
+                        $log .= "<br>" . __('Row') . " {$i}: " . __('Product with part number') . " '{$partNumber}' " . __('not found in catalog') . "<br>";
+                        $errorCount++;
                         $i++;
                         continue;
                     }
 
-                    // صورة
-                    $image_url = $line[5] ?? null;
-                    $thumb_url = '';
-                    if ($image_url) {
-                        $ch = curl_init();
-                        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-                        curl_setopt($ch, CURLOPT_URL, $image_url);
-                        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 20);
-                        curl_setopt($ch, CURLOPT_USERAGENT, $_SERVER['HTTP_USER_AGENT'] ?? 'curl');
-                        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
-                        curl_setopt($ch, CURLOPT_HEADER, true);
-                        curl_setopt($ch, CURLOPT_NOBODY, true);
+                    // 2. Validate required merchant fields
+                    $price = floatval($line[1] ?? 0);
+                    $stock = intval($line[2] ?? 0);
 
-                        $content = curl_exec($ch);
-                        $contentType = curl_getinfo($ch, CURLINFO_CONTENT_TYPE);
+                    if ($price <= 0) {
+                        $log .= "<br>" . __('Row') . " {$i}: " . __('Invalid price for part number') . " '{$partNumber}'<br>";
+                        $errorCount++;
+                        $i++;
+                        continue;
+                    }
 
-                        if (strpos((string)$contentType, 'image/') !== false) {
-                            $fimg = Image::make($image_url)->resize(800, 800);
-                            $fphoto = time() . Str::random(8) . '.jpg';
-                            $fimg->save(public_path() . '/assets/images/products/' . $fphoto);
-                            $input['photo'] = $fphoto;
-                            $thumb_url = $image_url;
+                    if ($stock < 0) {
+                        $log .= "<br>" . __('Row') . " {$i}: " . __('Invalid stock for part number') . " '{$partNumber}'<br>";
+                        $errorCount++;
+                        $i++;
+                        continue;
+                    }
+
+                    // 3. Check if merchant already has this product
+                    $existingMerchantProduct = MerchantProduct::where('product_id', $product->id)
+                        ->where('user_id', $user->id)
+                        ->first();
+
+                    // 4. Prepare merchant product data
+                    $merchantData = [
+                        'product_id' => $product->id,
+                        'user_id' => $user->id,
+                        'price' => $price / $sign->value,
+                        'previous_price' => !empty($line[3]) ? (floatval($line[3]) / $sign->value) : null,
+                        'stock' => $stock,
+                        'product_condition' => intval($line[4] ?? 2), // Default to 'New'
+                        'minimum_qty' => !empty($line[5]) ? $line[5] : null,
+                        'ship' => !empty($line[6]) ? $line[6] : null,
+                        'preordered' => intval($line[7] ?? 0),
+                        'status' => 1,
+                    ];
+
+                    // Handle colors (comma-separated)
+                    if (!empty($line[8])) {
+                        $merchantData['color_all'] = $line[8];
+                    }
+
+                    // Handle color prices (comma-separated)
+                    if (!empty($line[9])) {
+                        $merchantData['color_price'] = $line[9];
+                    }
+
+                    // Handle wholesale quantities and discounts
+                    if (!empty($line[10])) {
+                        $merchantData['whole_sell_qty'] = $line[10];
+                    }
+
+                    if (!empty($line[11])) {
+                        $merchantData['whole_sell_discount'] = $line[11];
+                    }
+
+                    // Handle policy/details override (features not available in merchant_products)
+                    if (!empty($line[12])) {
+                        $merchantData['policy'] = $line[12];
+                    }
+                    if (!empty($line[13])) {
+                        $merchantData['details'] = $line[13];
+                    }
+
+                    // Handle license fields for license products
+                    if ($product->type === 'License') {
+                        if (!empty($line[14])) {
+                            $merchantData['licence_type'] = $line[14];
+                        }
+                        if (!empty($line[15])) {
+                            $merchantData['license'] = $line[15];
+                        }
+                        if (!empty($line[16])) {
+                            $merchantData['license_qty'] = $line[16];
+                        }
+                    }
+
+                    try {
+                        // 5. Create or update merchant product
+                        if ($existingMerchantProduct) {
+                            $existingMerchantProduct->update($merchantData);
+                            $log .= "<br>" . __('Row') . " {$i}: " . __('Updated merchant listing for') . " '{$partNumber}'<br>";
                         } else {
-                            $fimg = Image::make(public_path() . '/assets/images/noimage.png')->resize(800, 800);
-                            $fphoto = time() . Str::random(8) . '.jpg';
-                            $fimg->save(public_path() . '/assets/images/products/' . $fphoto);
-                            $input['photo'] = $fphoto;
-                            $thumb_url = public_path() . '/assets/images/noimage.png';
+                            MerchantProduct::create($merchantData);
+                            $log .= "<br>" . __('Row') . " {$i}: " . __('Created merchant listing for') . " '{$partNumber}'<br>";
                         }
+                        $successCount++;
+                    } catch (\Exception $e) {
+                        $log .= "<br>" . __('Row') . " {$i}: " . __('Error processing') . " '{$partNumber}': " . $e->getMessage() . "<br>";
+                        $errorCount++;
                     }
-
-                    if ($thumb_url) {
-                        $timg = Image::make($thumb_url)->resize(285, 285);
-                        $thumbnail = time() . Str::random(8) . '.jpg';
-                        $timg->save(public_path() . '/assets/images/thumbnails/' . $thumbnail);
-                        $input['thumbnail'] = $thumbnail;
-                    }
-
-                    // Slug
-                    $input['slug'] = Str::slug($input['name'], '-') . '-' . strtolower($sku);
-
-                    // الحقول التي لا نكتبها في products وفق السياسة:
-                    // (price, previous_price, stock, size, size_qty, size_price, color) ← إلى MerchantProduct فقط
-                    // ملاحظة: نسمح بحقل color_all الهوياتي إن كان موجودًا
-                    $input['color_all'] = $line[13] ?? null;
-
-                    $data->fill($input)->save();
-
-                    // 2) إنشاء/تحديث عرض البائع (MerchantProduct)
-                    // تحويل العملة
-                    $mpPrice         = isset($line[7]) && $line[7] !== '' ? ((float)$line[7] / ($defaultCurr->value ?: 1)) : 0.0;
-                    $mpPreviousPrice = isset($line[8]) && $line[8] !== '' ? ((float)$line[8] / ($defaultCurr->value ?: 1)) : null;
-
-                    $mpSize      = $line[10] ?? null;
-                    $mpSizeQty   = $line[11] ?? null;
-                    $mpSizePrice = $line[12] ?? null;
-
-                    if (!is_null($mpSizePrice) && $mpSizePrice !== '') {
-                        // لو كانت قائمة أسعار مفصولة بفواصل نحاول تحويل كل قيمة
-                        $parts = explode(',', $mpSizePrice);
-                        $parts = array_map(function ($v) use ($defaultCurr) {
-                            $v = trim($v);
-                            return ($v === '' ? '' : ((float)$v / ($defaultCurr->value ?: 1)));
-                        }, $parts);
-                        $mpSizePrice = implode(',', $parts);
-                    }
-
-                    MerchantProduct::updateOrCreate(
-                        ['product_id' => $data->id, 'user_id' => $user->id],
-                        [
-                            'price'               => $mpPrice,
-                            'previous_price'      => $mpPreviousPrice,
-                            'stock'               => (int)($line[9] ?? 0),
-                            'size'                => $mpSize,
-                            'size_qty'            => $mpSizeQty,
-                            'size_price'          => $mpSizePrice,
-                            'color_all'           => $line[13] ?? null,
-                            'status'              => 1,
-                        ]
-                    );
-
-                    $log .= "<br>" . __('Row No') . ": " . $i . " - " . ($isNew ? __('Created product & vendor listing.') : __('Attached vendor listing to existing product.')) . "<br>";
                 }
                 $i++;
             }
             fclose($file);
 
+            // Clean up temporary file
+            if (file_exists(public_path('assets/temp_files/' . $filename))) {
+                unlink(public_path('assets/temp_files/' . $filename));
+            }
+
             //--- Redirect Section
-            $msg = __("New Product Added Successfully.") . $log;
-            return back()->with('success', $msg);
+            $summary = "<br><strong>" . __('Import Summary') . ":</strong><br>";
+            $summary .= __('Successfully processed') . ": {$successCount}<br>";
+            $summary .= __('Errors') . ": {$errorCount}<br>";
+
+            $msg = __('Merchant product import completed.') . $summary . $log;
+
+            if ($successCount > 0) {
+                return back()->with('success', $msg);
+            } else {
+                return back()->with('unsuccess', $msg);
+            }
         } else {
-            return back()->with('unsuccess', __('You Can\'t Add More Product.'));
+            return back()->with('unsuccess', __('You Can\'t Add More Products. Package limit reached.'));
         }
     }
 
@@ -484,12 +506,12 @@ class ProductController extends VendorBaseController
         return response()->json(['status' => true, 'data' => [], 'error' => []]);
     }
 
-    //*** POST Request - Legacy store method (should redirect to new workflow)
+    //*** POST Request - New workflow for merchant products with part_number
     public function store(Request $request)
     {
         $user    = $this->user;
         $package = $user->subscribes()->latest('id')->first();
-        $prods   = $user->merchantProducts()->count(); // عدّ العروض لا المنتجات
+        $prods   = $user->merchantProducts()->count();
 
         if (Generalsetting::find(1)->verify_product == 1) {
             if (!$user->checkStatus()) {
@@ -501,223 +523,75 @@ class ProductController extends VendorBaseController
 
             //--- Validation Section
             $rules = [
-                'photo' => 'required',
-                'file'  => 'mimes:zip',
+                'part_number' => 'required|string',
+                'price' => 'required|numeric|min:0',
+                'stock' => 'required|integer|min:0',
+                'product_condition' => 'required|in:1,2',
             ];
             $request->validate($rules);
 
-            //--- Logic Section
-            // تعريف المنتج (هوية فقط)
-            $data  = new Product;
-            $sign  = $this->curr;
-            $input = $request->all();
+            $sign = $this->curr;
+            $partNumber = trim($request->part_number);
 
-            // ملف رقمي (إن وجد)
-            if ($file = $request->file('file')) {
-                $extensions = ['zip'];
-                if (!in_array($file->getClientOriginalExtension(), $extensions)) {
-                    return response()->json(array('errors' => ['Image format not supported']));
-                }
-                $name = \PriceHelper::ImageCreateName($file);
-                $file->move('assets/files', $name);
-                $input['file'] = $name;
+            // 1. Search for product by part_number (sku)
+            $product = Product::where('sku', $partNumber)->first();
+
+            if (!$product) {
+                return back()->with('unsuccess', __('Product with part number "' . $partNumber . '" not found in catalog.'));
             }
 
-            // صورة رئيسية (base64)
-            $image = $request->photo;
-            list($type, $image) = explode(';', $image);
-            list(, $image) = explode(',', $image);
-            $image = base64_decode($image);
-            $image_name = time() . Str::random(8) . '.png';
-            $path = 'assets/images/products/' . $image_name;
-            file_put_contents($path, $image);
-            $input['photo'] = $image_name;
+            // 2. Check if merchant already has this product
+            $existingMerchantProduct = MerchantProduct::where('product_id', $product->id)
+                ->where('user_id', $user->id)
+                ->first();
 
-            // تحقق SKU للمنتجات الفيزيائية/القوائم
-            if ($request->type == "Physical" || $request->type == "Listing") {
-                $rules = ['sku' => 'min:8|unique:products'];
-                $validator = Validator::make($request->all(), $rules);
-                if ($validator->fails()) {
-                    return response()->json(array('errors' => $validator->getMessageBag()->toArray()));
-                }
+            // 3. Prepare merchant product data
+            $merchantData = [
+                'product_id' => $product->id,
+                'user_id' => $user->id,
+                'price' => $request->price / $sign->value,
+                'previous_price' => $request->previous_price ? ($request->previous_price / $sign->value) : null,
+                'stock' => $request->stock,
+                'minimum_qty' => $request->minimum_qty ?: null,
+                'product_condition' => $request->product_condition,
+                'ship' => $request->ship ?: null,
+                'preordered' => $request->preordered ? 1 : 0,
+                'status' => 1,
+            ];
 
-                // These fields belong to merchant_products, not products - remove from product input
-                // They will be handled separately in merchant product creation
-                unset($input['product_condition'], $input['preordered'], $input['minimum_qty'], $input['ship'], $input['stock_check'], $input['color_all']);
-
-                // خصومات الجملة تُسجل لاحقًا في MP
-                if ($request->mesasure_check == "") {
-                    $input['measure'] = null;
+            // Handle colors
+            if ($request->color_check && !empty($request->color_all)) {
+                $merchantData['color_all'] = implode(',', $request->color_all);
+                if (!empty($request->color_price)) {
+                    $merchantData['color_price'] = implode(',', $request->color_price);
                 }
             }
 
-            // SEO
-            if (empty($request->seo_check)) {
-                $input['meta_tag'] = null;
-                $input['meta_description'] = null;
+            // Handle wholesale
+            if ($request->whole_check && !empty($request->whole_sell_qty)) {
+                $merchantData['whole_sell_qty'] = implode(',', $request->whole_sell_qty);
+                if (!empty($request->whole_sell_discount)) {
+                    $merchantData['whole_sell_discount'] = implode(',', $request->whole_sell_discount);
+                }
+            }
+
+            // Handle policy/details override (features not available in merchant_products)
+            if (!empty($request->policy)) {
+                $merchantData['policy'] = $request->policy;
+            }
+            if (!empty($request->details)) {
+                $merchantData['details'] = $request->details;
+            }
+
+            // 4. Create or update merchant product
+            if ($existingMerchantProduct) {
+                $existingMerchantProduct->update($merchantData);
+                $msg = __('Merchant product updated successfully.');
             } else {
-                if (!empty($request->meta_tag)) {
-                    $input['meta_tag'] = $request->meta_tag;
-                    $input['is_meta']  = 1;
-                }
+                MerchantProduct::create($merchantData);
+                $msg = __('Merchant product created successfully.');
             }
 
-            // License (هوية)
-            if ($request->type == "License") {
-                if (in_array(null, (array)$request->license) || in_array(null, (array)$request->license_qty)) {
-                    $input['license'] = null;
-                    $input['license_qty'] = null;
-                } else {
-                    $input['license'] = implode(',,', $request->license);
-                    $input['license_qty'] = implode(',', $request->license_qty);
-                }
-            }
-
-            // Features/Colors (هوية)
-            if (in_array(null, (array)$request->features)) {
-                $input['features'] = null;
-            } else {
-                $input['features'] = implode(',', str_replace(',', ' ', $request->features));
-            }
-
-            // Tags (هوية)
-            if (!empty($request->tags)) {
-                $input['tags'] = $request->tags;
-            }
-
-            // Remove merchant-specific data from product input (will be saved in MerchantProduct)
-            unset($input['price'], $input['previous_price'], $input['stock']);
-
-            // Attributes (هوية)
-            $attrArr = [];
-            if (!empty($request->category_id)) {
-                $catAttrs = Attribute::where('attributable_id', $request->category_id)->where('attributable_type', 'App\Models\Category')->get();
-                if (!empty($catAttrs)) {
-                    foreach ($catAttrs as $key => $catAttr) {
-                        $in_name = $catAttr->input_name;
-                        if ($request->has("$in_name")) {
-                            $attrArr["$in_name"]["values"] = $request["$in_name"];
-                            foreach ($request["$in_name" . "_price"] as $aprice) {
-                                $ttt["$in_name" . "_price"][] = $aprice / $sign->value;
-                            }
-                            $attrArr["$in_name"]["prices"] = $ttt["$in_name" . "_price"];
-                            $attrArr["$in_name"]["details_status"] = $catAttr->details_status ? 1 : 0;
-                        }
-                    }
-                }
-            }
-
-            if (!empty($request->subcategory_id)) {
-                $subAttrs = Attribute::where('attributable_id', $request->subcategory_id)->where('attributable_type', 'App\Models\Subcategory')->get();
-                if (!empty($subAttrs)) {
-                    foreach ($subAttrs as $key => $subAttr) {
-                        $in_name = $subAttr->input_name;
-                        if ($request->has("$in_name")) {
-                            $attrArr["$in_name"]["values"] = $request["$in_name"];
-                            foreach ($request["$in_name" . "_price"] as $aprice) {
-                                $ttt["$in_name" . "_price"][] = $aprice / $sign->value;
-                            }
-                            $attrArr["$in_name"]["prices"] = $ttt["$in_name" . "_price"];
-                            $attrArr["$in_name"]["details_status"] = $subAttr->details_status ? 1 : 0;
-                        }
-                    }
-                }
-            }
-
-            if (!empty($request->childcategory_id)) {
-                $childAttrs = Attribute::where('attributable_id', $request->childcategory_id)->where('attributable_type', 'App\Models\Childcategory')->get();
-                if (!empty($childAttrs)) {
-                    foreach ($childAttrs as $key => $childAttr) {
-                        $in_name = $childAttr->input_name;
-                        if ($request->has("$in_name")) {
-                            $attrArr["$in_name"]["values"] = $request["$in_name"];
-                            foreach ($request["$in_name" . "_price"] as $aprice) {
-                                $ttt["$in_name" . "_price"][] = $aprice / $sign->value;
-                            }
-                            $attrArr["$in_name"]["prices"] = $ttt["$in_name" . "_price"];
-                            $attrArr["$in_name"]["details_status"] = $childAttr->details_status ? 1 : 0;
-                        }
-                    }
-                }
-            }
-
-            $input['attributes'] = empty($attrArr) ? null : json_encode($attrArr);
-
-            // حفظ تعريف المنتج
-            $data->fill($input)->save();
-
-            // توليد الـ Slug + Thumbnail
-            $prod = Product::find($data->id);
-            if ($prod->type != 'Physical') {
-                $prod->slug = Str::slug($data->name, '-') . '-' . strtolower(Str::random(3) . $data->id . Str::random(3));
-            } else {
-                $prod->slug = Str::slug($data->name, '-') . '-' . strtolower($data->sku);
-            }
-
-            $img = Image::make(public_path() . '/assets/images/products/' . $prod->photo)->resize(285, 285);
-            $thumbnail = time() . Str::random(8) . '.jpg';
-            $img->save(public_path() . '/assets/images/thumbnails/' . $thumbnail);
-            $prod->thumbnail = $thumbnail;
-            $prod->update();
-
-            // إنشاء/تحديث عرض البائع (MerchantProduct)
-            $merchantInput = [];
-
-            // Sizes belong to products table, not merchant_products
-            // All size-related fields (size, size_qty, size_price) are handled in product creation
-
-            if (!empty($request->color_all)) {
-                $merchantInput['color_all'] = implode(',', (array)$request->color_all);
-            }
-
-            if (!empty($request->whole_sell_qty)) {
-                $merchantInput['whole_sell_qty'] = implode(',', (array)$request->whole_sell_qty);
-            }
-            if (!empty($request->whole_sell_discount)) {
-                $merchantInput['whole_sell_discount'] = implode(',', (array)$request->whole_sell_discount);
-            }
-
-            // الأسعار/المخزون (MP)
-            $merchantInput['price']          = (float) ($request->input('price', 0) / $sign->value);
-            $merchantInput['previous_price'] = $request->filled('previous_price') ? (float) ($request->input('previous_price') / $sign->value) : null;
-            $merchantInput['stock']          = (int) $request->input('stock', 0);
-            $merchantInput['preordered']     = $request->input('preordered', 0);
-            $merchantInput['minimum_qty']    = $request->input('minimum_qty') ?: null;
-            $merchantInput['stock_check']    = $request->input('stock_check', 0);
-            $merchantInput['ship']           = $request->input('ship') ?: null;
-            $merchantInput['product_condition'] = $request->input('product_condition', 0);
-            $merchantInput['status']         = 1;
-
-            $merchantInput['product_id']     = $prod->id;
-            $merchantInput['user_id']        = $user->id;
-
-            MerchantProduct::updateOrCreate(
-                ['product_id' => $prod->id, 'user_id' => $user->id],
-                $merchantInput
-            );
-            // // dd(['created_mp_for' => $prod->id, 'vendor' => $user->id]); // اختباري
-
-            // المعرض
-            $lastid = $data->id;
-            if ($files = $request->file('gallery')) {
-                foreach ($files as $key => $file) {
-                    $extensions = ['jpeg', 'jpg', 'png', 'svg'];
-                    if (!in_array($file->getClientOriginalExtension(), $extensions)) {
-                        return response()->json(array('errors' => ['Image format not supported']));
-                    }
-
-                    $gallery = new Gallery;
-                    $name = \PriceHelper::ImageCreateName($file);
-                    $img = Image::make($file->getRealPath())->resize(800, 800);
-                    $img->save(public_path() . '/assets/images/galleries/' . $name);
-                    $gallery['photo'] = $name;
-                    $gallery['product_id'] = $lastid;
-                    $gallery->save();
-                }
-            }
-
-            //--- Redirect Section
-            $msg = __('New Product Added Successfully.');
             return back()->with('success', $msg);
         } else {
             return back()->with('unsuccess', __('You Can\'t Add More Product.'));
@@ -745,14 +619,22 @@ class ProductController extends VendorBaseController
     {
         $cats = Category::all();
         $data = Product::findOrFail($id);
+
+        // Get merchant product data for this vendor
+        $merchantProduct = MerchantProduct::where('product_id', $id)
+            ->where('user_id', $this->user->id)
+            ->first();
+
         $sign = $this->curr;
 
         if ($data->type == 'Digital') {
-            return view('vendor.product.edit.catalog.digital', compact('cats', 'data', 'sign'));
+            return view('vendor.product.edit.catalog.digital', compact('cats', 'data', 'merchantProduct', 'sign'));
         } elseif ($data->type == 'License') {
-            return view('vendor.product.edit.catalog.license', compact('cats', 'data', 'sign'));
+            return view('vendor.product.edit.catalog.license', compact('cats', 'data', 'merchantProduct', 'sign'));
+        } elseif ($data->type == 'Listing') {
+            return view('vendor.product.edit.listing', compact('cats', 'data', 'merchantProduct', 'sign'));
         } else {
-            return view('vendor.product.edit.catalog.physical', compact('cats', 'data', 'sign'));
+            return view('vendor.product.edit.catalog.physical', compact('cats', 'data', 'merchantProduct', 'sign'));
         }
     }
 

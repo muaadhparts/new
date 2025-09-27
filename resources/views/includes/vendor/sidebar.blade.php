@@ -95,7 +95,7 @@
                 <li><a class="sidebar-sub-menu-item {{ request()->is('vendor/products') || request()->is('vendor/products/edit/*') ? 'active' : '' }}"
                         href="{{ route('vendor-prod-index') }}">@lang('All Product')</a></li>
                 <li><a class="sidebar-sub-menu-item {{ request()->is('vendor/products/catalogs') || request()->is('vendor/products/catalog/*') ? 'active' : '' }}"
-                        href="{{ route('admin-vendor-catalog-index') }}">@lang('Product Catalogs')</a></li>
+                        href="{{ route('vendor-prod-catalogs') }}">@lang('Product Catalogs')</a></li>
             </ul>
         </li>
 

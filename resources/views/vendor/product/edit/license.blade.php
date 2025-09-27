@@ -301,13 +301,13 @@
                         <div class="input-label-wrapper">
                             <label>@lang('Product Current Price') ({{$curr->name}})</label>
                             <input type="text" class="form-control" name="price"
-                                placeholder="{{ round($data->price * $sign->value, 2) }}">
+                                placeholder="{{ round(($merchantProduct->price ?? 0) * $sign->value, 2) }}">
                         </div>
                         <!-- Product Discount Price -->
                         <div class="input-label-wrapper">
                             <label>@lang('Product Discount Price* (Optional)')</label>
                             <input type="text" class="form-control" name="previous_price"
-                                placeholder="{{ round($data->previous_price * $sign->value, 2) }}">
+                                placeholder="{{ round(($merchantProduct->previous_price ?? 0) * $sign->value, 2) }}">
                         </div>
                         <!-- YouTube Video URL-->
                         <div class="input-label-wrapper">

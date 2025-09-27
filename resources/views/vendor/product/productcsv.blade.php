@@ -31,8 +31,39 @@
 
         <div class=" gs-vendor-bulk-product-upload">
             <div class="title-downdload-btn-wrapper">
-                <h4 class="title">@lang('Update a group of Products Using the Provided Smaple CSV')</h4>
-                <a href="{{ asset('assets/product-csv-format.csv') }}" class="template-btn black-btn" type="button">@lang('Downlod Sample CSV')</a>
+                <h4 class="title">@lang('Create merchant products for catalog items using CSV')</h4>
+                <a href="{{ asset('assets/merchant-product-csv-format.csv') }}" class="template-btn black-btn" type="button">@lang('Download Sample CSV')</a>
+            </div>
+
+            <div class="alert alert-info mb-4">
+                <h6>@lang('Important Notes:')</h6>
+                <ul class="mb-0">
+                    <li>@lang('This import creates merchant product listings for existing catalog products')</li>
+                    <li>@lang('Products must already exist in the catalog with the specified part numbers')</li>
+                    <li>@lang('Each row will create or update your merchant listing for that product')</li>
+                    <li>@lang('Use the part_number (SKU) column to reference existing catalog products')</li>
+                </ul>
+            </div>
+
+            <div class="alert alert-warning mb-4">
+                <h6>@lang('CSV Format:')</h6>
+                <p class="mb-2">@lang('Required columns:')</p>
+                <ul class="mb-2">
+                    <li><strong>part_number:</strong> @lang('Product SKU from catalog (required)')</li>
+                    <li><strong>price:</strong> @lang('Your selling price (required)')</li>
+                    <li><strong>stock:</strong> @lang('Your available quantity (required)')</li>
+                </ul>
+                <p class="mb-2">@lang('Optional columns:')</p>
+                <ul class="mb-0">
+                    <li><strong>previous_price:</strong> @lang('Original price for discount display')</li>
+                    <li><strong>product_condition:</strong> @lang('1=Used, 2=New (default: 2)')</li>
+                    <li><strong>minimum_qty:</strong> @lang('Minimum order quantity')</li>
+                    <li><strong>ship:</strong> @lang('Shipping time estimate')</li>
+                    <li><strong>color_all:</strong> @lang('Available colors (comma-separated hex codes)')</li>
+                    <li><strong>color_price:</strong> @lang('Prices for each color (comma-separated)')</li>
+                    <li><strong>policy_override:</strong> @lang('Custom return policy')</li>
+                    <li><strong>details_override:</strong> @lang('Custom product description')</li>
+                </ul>
             </div>
             <form class="dropzone upload-box" action="{{ route('vendor-prod-importsubmit') }}" method="POST" enctype="multipart/form-data">
 				@csrf
@@ -40,7 +71,7 @@
                 <div class="upload-box-texts-wrapper">
                     <input class="d-none" type="file" id="csvfile" name="csvfile" accept=".csv">
                     <h6 class="upload-box-title"><label for="csvfile" class="link">@lang('Choose the file')</label></h6>
-                    <p class="upload-box-des">@lang('Only CSV format allowed, no more than 500 rows')</p>
+                    <p class="upload-box-des">@lang('Only CSV format allowed, no more than 500 rows. Products must exist in catalog.')</p>
                 </div>
                 <button type="submit" class="template-btn cursor-pointer import-btn">@lang('Start Import')</button>
 				@error('csvfile')

@@ -17,14 +17,20 @@ class MerchantProduct extends Model
         'user_id',
         'price',
         'previous_price',
+        'stock',
         'is_discount',
         'discount_date',
         'whole_sell_qty',
         'whole_sell_discount',
-        'stock',
-        'stock_check',
-        'minimum_qty',
         'preordered',
+        'minimum_qty',
+        'stock_check',
+        'popular',
+        'status',
+        'is_popular',
+        'licence_type',
+        'license_qty',
+        'license',
         'ship',
         'product_condition',
         'color_all',
@@ -32,8 +38,10 @@ class MerchantProduct extends Model
         'details',
         'policy',
         'features',
-        'popular',
-        'is_popular'
+        'colors',
+        'size',
+        'size_qty',
+        'size_price'
     ];
 
     /**
@@ -162,6 +170,30 @@ class MerchantProduct extends Model
     public function getColorPriceAttribute($value)
     {
         return $value === null ? [] : (is_array($value) ? $value : explode(',', $value));
+    }
+
+    /**
+     * Get size as array
+     */
+    public function getSizeAttribute($value)
+    {
+        return $value === null ? '' : explode(',', $value);
+    }
+
+    /**
+     * Get size qty as array
+     */
+    public function getSizeQtyAttribute($value)
+    {
+        return $value === null ? '' : explode(',', $value);
+    }
+
+    /**
+     * Get size price as array
+     */
+    public function getSizePriceAttribute($value)
+    {
+        return $value === null ? '' : explode(',', $value);
     }
 
 }

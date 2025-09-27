@@ -102,13 +102,18 @@ class CartController extends FrontBaseController
         if (is_null($mp->stock) || $mp->stock === '') return 999999;
         return (int)$mp->stock;
     }
+    // داخل CartController
+
+    /** هويّة المنتج فقط من products (بدون ألوان) */
     private function fetchIdentity(int $id): ?Product
     {
+        // ملاحظة: تم نقل الألوان إلى merchant_products (color_all, color_price)
         return Product::query()->select([
-            'id','slug','sku','name','photo','color',
-            'weight','type','file','link','measure','attributes','color_all','cross_products'
+            'id','slug','sku','name','photo',
+            'weight','type','file','link','measure','attributes','cross_products',
         ])->find($id);
     }
+
     private function fetchListingOrFallback(Product $prod, ?int $vendorId): ?MerchantProduct
     {
         if ($vendorId) {
@@ -120,6 +125,9 @@ class CartController extends FrontBaseController
         }
         return $this->pickDefaultListing($prod->id);
     }
+    // داخل CartController
+
+    /** حقن سياق البائع في كائن المنتج (runtime) */
     private function injectMerchantContext(Product $prod, MerchantProduct $mp): void
     {
         $prod->vendor_user_id      = $mp->user_id;
@@ -129,6 +137,7 @@ class CartController extends FrontBaseController
         $prod->previous_price      = $mp->previous_price;
         $prod->stock               = $mp->stock;
 
+        // خصائص من عرض البائع
         $prod->setAttribute('size',       $mp->size);
         $prod->setAttribute('size_qty',   $mp->size_qty);
         $prod->setAttribute('size_price', $mp->size_price);
@@ -136,7 +145,11 @@ class CartController extends FrontBaseController
         $prod->setAttribute('minimum_qty',         $mp->minimum_qty ?? null);
         $prod->setAttribute('whole_sell_qty',      $mp->whole_sell_qty ?? null);
         $prod->setAttribute('whole_sell_discount', $mp->whole_sell_discount ?? null);
+
+        // الجديد: الألوان تأتي من merchant_products فقط
+        $prod->setAttribute('color_all',  $mp->color_all ?? null);
     }
+
     private function normNum($v, $default = 0.0) { return is_numeric($v) ? (float)$v : (float)$default; }
 
     private function recomputeTotals(Cart $cart): void
@@ -191,12 +204,13 @@ class CartController extends FrontBaseController
         $size = (string) request('size', '');
         if ($size === '') { [$size, $_] = $this->pickAvailableSize($mp->size, $mp->size_qty); }
 
-        $color = '';
-        // Get color from vendor colors (merchant_products.color_all)
-        $vendorColors = $prod->getVendorColors();
-        if (!empty($vendorColors)) {
-            $colors = $this->toArrayValues($vendorColors);
-            if (!empty($colors)) $color = $colors[0];
+        // اللون الافتراضي من عرض البائع (merchant_products.color_all)
+        $color = (string) request('color', '');
+        if ($color === '' && !empty($mp->color_all)) {
+            $colors = $this->toArrayValues($mp->color_all);
+            if (!empty($colors)) {
+                $color = ltrim((string)$colors[0], '#'); // إزالة #
+            }
         }
 
         $effStock = $this->effectiveStock($mp, $size);
@@ -227,12 +241,13 @@ class CartController extends FrontBaseController
         $size = (string) request('size','');
         if ($size === '') { [$size, $_] = $this->pickAvailableSize($mp->size, $mp->size_qty); }
 
-        $color = '';
-        // Get color from vendor colors (merchant_products.color_all)
-        $vendorColors = $prod->getVendorColors();
-        if (!empty($vendorColors)) {
-            $colors = $this->toArrayValues($vendorColors);
-            if (!empty($colors)) $color = $colors[0];
+        // اللون الافتراضي من عرض البائع
+        $color = (string) request('color', '');
+        if ($color === '' && !empty($mp->color_all)) {
+            $colors = $this->toArrayValues($mp->color_all);
+            if (!empty($colors)) {
+                $color = ltrim((string)$colors[0], '#');
+            }
         }
 
         $effStock = $this->effectiveStock($mp, $size);
@@ -250,6 +265,7 @@ class CartController extends FrontBaseController
         Session::put('cart', $cart);
         return redirect()->route('front.cart');
     }
+
 
     public function addnumcart(Request $request)
     {

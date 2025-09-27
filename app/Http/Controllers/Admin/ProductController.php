@@ -421,8 +421,8 @@ class ProductController extends AdminBaseController
 
         // Legacy fields removed - prices now handled via MerchantProduct
         // Store base product info only, vendor-specific data goes to merchant_products
-        $basePrice = ($input['price'] / $sign->value);
-        $basePreviousPrice = ($input['previous_price'] / $sign->value);
+        $basePrice = isset($input['price']) ? ($input['price'] / $sign->value) : 0;
+        $basePreviousPrice = isset($input['previous_price']) ? ($input['previous_price'] / $sign->value) : null;
 
         // Remove legacy fields from product table
         unset($input['price'], $input['previous_price'], $input['stock'], $input['user_id']);
@@ -887,8 +887,8 @@ class ProductController extends AdminBaseController
         }
 
         // Legacy fields removed - prices now handled via MerchantProduct
-        $basePrice = $input['price'] / $sign->value;
-        $basePreviousPrice = $input['previous_price'] / $sign->value;
+        $basePrice = isset($input['price']) ? ($input['price'] / $sign->value) : 0;
+        $basePreviousPrice = isset($input['previous_price']) ? ($input['previous_price'] / $sign->value) : null;
 
         // Remove legacy fields from product table
         unset($input['price'], $input['previous_price'], $input['stock'], $input['user_id']);
