@@ -178,15 +178,10 @@ class OrderCreateController extends AdminBaseController
         }
 
         if (empty($color)) {
-            if (!empty($prod->color)) {
-                $color = $prod->color[0];
-            }
-        }
-
-        
-        if (empty($color)) {
-            if (!empty($prod->color_all)) {
-                $color = $prod->color_all[0];
+            // Get color from vendor colors (merchant_products.color_all)
+            $vendorColors = $prod->getVendorColors();
+            if (!empty($vendorColors)) {
+                $color = $vendorColors[0];
             }
         }
 

@@ -69,19 +69,17 @@
                                     <div class="table-icon-btns-wrapper">
 
                                         @php
-                                            $ck =
-                                                $user
-                                                    ->products()
-                                                    ->where('catalog_id', '=', $data->id)
-                                                    ->count() > 0;
+                                            // Check if vendor already has an offer for this product
+                                            $hasOffer = $user->merchantProducts()
+                                                ->where('product_id', $data->id)
+                                                ->exists();
                                         @endphp
 
-
-                                        @if ($ck)
-                                            {{ __('Added To Catalog') }}
+                                        @if ($hasOffer)
+                                            <span class="badge bg-success">{{ __('Offer Created') }}</span>
                                         @else
-                                            <a href="{{ route('vendor-prod-catalog-edit', $data->id) }}"
-                                                class="view-btn edit-btn">
+                                            <a href="{{ route('vendor-prod-create-offer', $data->id) }}"
+                                                class="btn btn-primary btn-sm">
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12"
                                                     viewBox="0 0 12 12" fill="none">
                                                     <g clip-path="url(#clip0_1880_39494)">
@@ -95,7 +93,7 @@
                                                         </clipPath>
                                                     </defs>
                                                 </svg>
-
+                                                {{ __('Create Offer') }}
                                             </a>
                                         @endif
                                     </div>

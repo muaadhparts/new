@@ -461,8 +461,10 @@ class OrderController extends AdminBaseController
         }
 
         if (empty($color)) {
-            if (!empty($prod->color)) {
-                $color = $prod->color[0];
+            // Get color from vendor colors (merchant_products.color_all)
+            $vendorColors = $prod->getVendorColors();
+            if (!empty($vendorColors)) {
+                $color = $vendorColors[0];
             }
         }
 
@@ -643,8 +645,10 @@ class OrderController extends AdminBaseController
         }
 
         if (empty($color)) {
-            if (!empty($prod->color)) {
-                $color = $prod->color[0];
+            // Get color from vendor colors (merchant_products.color_all)
+            $vendorColors = $prod->getVendorColors();
+            if (!empty($vendorColors)) {
+                $color = $vendorColors[0];
             }
         }
         $color = str_replace('#', '', $color);

@@ -189,7 +189,7 @@
 
                   {{-- PRODUCT COLOR SECTION  --}}
 
-                  @if(!empty($product->color))
+                  @if(!empty($product->getVendorColors()))
 
                   <div class="mproduct-color">
                     <div class="title">{{ __('Color :') }}</div>

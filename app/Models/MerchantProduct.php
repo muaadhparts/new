@@ -17,27 +17,23 @@ class MerchantProduct extends Model
         'user_id',
         'price',
         'previous_price',
-        'stock',
         'is_discount',
         'discount_date',
         'whole_sell_qty',
         'whole_sell_discount',
-        'preordered',
-        'minimum_qty',
+        'stock',
         'stock_check',
-        'popular',
-        'status',
-        'is_popular',
-        'licence_type',
-        'license_qty',
-        'license',
+        'minimum_qty',
+        'preordered',
         'ship',
         'product_condition',
-        'size_price',
-        'size_qty',
-        'size',
         'color_all',
-        'size_all',
+        'color_price',
+        'details',
+        'policy',
+        'features',
+        'popular',
+        'is_popular'
     ];
 
     /**
@@ -151,4 +147,21 @@ class MerchantProduct extends Model
         $final = $this->vendorSizePrice();
         return Product::convertPrice($final);
     }
+
+    /**
+     * Get color list as array
+     */
+    public function getColorAllAttribute($value)
+    {
+        return $value === null ? [] : (is_array($value) ? $value : explode(',', $value));
+    }
+
+    /**
+     * Get color prices as array
+     */
+    public function getColorPriceAttribute($value)
+    {
+        return $value === null ? [] : (is_array($value) ? $value : explode(',', $value));
+    }
+
 }

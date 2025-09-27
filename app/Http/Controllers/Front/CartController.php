@@ -192,8 +192,10 @@ class CartController extends FrontBaseController
         if ($size === '') { [$size, $_] = $this->pickAvailableSize($mp->size, $mp->size_qty); }
 
         $color = '';
-        if (!empty($prod->color)) {
-            $colors = $this->toArrayValues($prod->color);
+        // Get color from vendor colors (merchant_products.color_all)
+        $vendorColors = $prod->getVendorColors();
+        if (!empty($vendorColors)) {
+            $colors = $this->toArrayValues($vendorColors);
             if (!empty($colors)) $color = $colors[0];
         }
 
@@ -226,8 +228,10 @@ class CartController extends FrontBaseController
         if ($size === '') { [$size, $_] = $this->pickAvailableSize($mp->size, $mp->size_qty); }
 
         $color = '';
-        if (!empty($prod->color)) {
-            $colors = $this->toArrayValues($prod->color);
+        // Get color from vendor colors (merchant_products.color_all)
+        $vendorColors = $prod->getVendorColors();
+        if (!empty($vendorColors)) {
+            $colors = $this->toArrayValues($vendorColors);
             if (!empty($colors)) $color = $colors[0];
         }
 

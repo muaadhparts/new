@@ -82,18 +82,20 @@ class ProductDetailsResource extends JsonResource
                             ? ($mp->product_condition == 2 ? 'New' : 'Used')
                             : null,
       'video'          => $this->youtube,
-      'stock_check'    => $mp ? $mp->stock_check : $this->stock_check,
-      'estimated_shipping_time' => $mp ? $mp->ship : $this->ship,
+      'stock_check'    => $mp ? $mp->stock_check : 0,
+      'estimated_shipping_time' => $mp ? $mp->ship : null,
 
-      'colors'         => $this->color,            // بقيت بهوية المنتج (اللون العام)
-      'sizes'          => $mp ? $mp->size : $this->size,
-      'size_quantity'  => $mp ? $mp->size_qty : $this->size_qty,
-      'size_price'     => $mp ? $mp->size_price : $this->size_price,
+      'colors'         => $mp ? $mp->color_all : [],     // Colors from merchant_products only
+      'color_prices'   => $mp ? $mp->color_price : [],   // Color prices from merchant_products
+      'sizes'          => $this->size,                   // Sizes from products (fixed at item level)
+      'size_quantity'  => $this->size_qty,               // Size quantities from products
+      'size_price'     => $this->size_price,             // Size prices from products
 
-      'details'        => strip_tags($this->details),
-      'policy'         => strip_tags($this->policy),
-      'whole_sell_quantity' => $mp ? $mp->whole_sell_qty : $this->whole_sell_qty,
-      'whole_sell_discount' => $mp ? $mp->whole_sell_discount : $this->whole_sell_discount,
+      'details'        => $mp && !empty($mp->details) ? strip_tags($mp->details) : strip_tags($this->policy),
+      'policy'         => $mp && !empty($mp->policy) ? strip_tags($mp->policy) : strip_tags($this->policy),
+      'features'       => $mp && !empty($mp->features) ? $mp->features : $this->features,
+      'whole_sell_quantity' => $mp ? $mp->whole_sell_qty : null,
+      'whole_sell_discount' => $mp ? $mp->whole_sell_discount : null,
 
       // علاقات
       'reviews'        => RatingResource::collection($this->whenLoaded('ratings', $this->ratings)),

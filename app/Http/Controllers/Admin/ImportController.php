@@ -241,12 +241,8 @@ class ImportController extends AdminBaseController
 
             // لا تكتب هذه في products
             unset($input['stock_check'], $input['size'], $input['size_qty'], $input['size_price'], $input['color']);
-            // ألوان الهوية العامة (color_all) تبقى كما هي إن رغبت
-            if(empty($request->color_check)) {
-                $input['color_all'] = null;
-            } else {
-                $input['color_all'] = implode(',', (array)$request->color_all);
-            }
+            // Colors belong to merchant_products, not products
+            // This will be handled separately in merchant product creation
 
             // قياسات عامة للهوية (إن أردت إبقاءها في products: size_all)
             if(empty($request->size_check)) {
@@ -281,12 +277,10 @@ class ImportController extends AdminBaseController
         }
 
         // Features / Colors (هوية)
-        if(in_array(null, (array)$request->features) || in_array(null, (array)$request->colors)) {
+        if(in_array(null, (array)$request->features)) {
             $input['features'] = null;
-            $input['colors'] = null;
         } else {
             $input['features'] = implode(',', str_replace(',',' ', $request->features));
-            $input['colors']   = implode(',', str_replace(',',' ', $request->colors));
         }
 
         if (!empty($request->tags)) {
@@ -476,11 +470,8 @@ class ImportController extends AdminBaseController
                 $input['stock_check'] = 1; // لأغراض العرض فقط إن كان لازال مستخدمًا في الواجهات
             }
 
-            if(empty($request->color_check)) {
-                $input['color_all'] = null;
-            } else {
-                $input['color_all'] = implode(',', (array)$request->color_all);
-            }
+            // Colors belong to merchant_products, not products
+            // This will be handled separately in merchant product update
 
             if(empty($request->size_check)) {
                 $input['size_all'] = null;
@@ -522,19 +513,15 @@ class ImportController extends AdminBaseController
             }
         }
 
-        // Features & Colors (هوية)
-        if(!in_array(null, (array)$request->features) && !in_array(null, (array)$request->colors)) {
+        // Features (هوية) - colors moved to merchant_products
+        if(!in_array(null, (array)$request->features)) {
             $input['features'] = implode(',', str_replace(',',' ', $request->features));
-            $input['colors'] = implode(',', str_replace(',',' ', $request->colors));
         } else {
-            if(in_array(null, (array)$request->features) || in_array(null, (array)$request->colors)) {
+            if(in_array(null, (array)$request->features)) {
                 $input['features'] = null;
-                $input['colors'] = null;
             } else {
                 $features = explode(',', (string)$data->features);
-                $colors   = explode(',', (string)$data->colors);
                 $input['features'] = implode(',', $features);
-                $input['colors']   = implode(',', $colors);
             }
         }
 

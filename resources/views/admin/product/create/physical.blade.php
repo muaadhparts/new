@@ -127,145 +127,16 @@
 
 
 
-                                        <div class="row">
-                                            <div class="col-lg-12">
-                                                <div class="left-area">
-
-                                                </div>
-                                            </div>
-                                            <div class="col-lg-12">
-                                                <ul class="list">
-                                                    <li>
-                                                        <input class="checkclick1" name="product_condition_check"
-                                                            type="checkbox" id="product_condition_check" value="1">
-                                                        <label
-                                                            for="product_condition_check">{{ __('Allow Product Condition') }}</label>
-                                                    </li>
-                                                </ul>
-                                            </div>
-                                        </div>
-
-                                        <div class="showbox">
-                                            <div class="row">
-                                                <div class="col-lg-12">
-                                                    <div class="left-area">
-                                                        <h4 class="heading">{{ __('Product Condition') }}*</h4>
-                                                    </div>
-                                                </div>
-                                                <div class="col-lg-12">
-                                                    <select name="product_condition">
-                                                        <option value="2">{{ __('New') }}</option>
-                                                        <option value="1">{{ __('Used') }}</option>
-                                                    </select>
-                                                </div>
-                                            </div>
-                                        </div>
+                                        <!-- Product Condition removed - belongs to merchant_products -->
 
 
-                                        <div class="row">
-                                            <div class="col-lg-12">
-                                                <div class="left-area">
-
-                                                </div>
-                                            </div>
-                                            <div class="col-lg-12">
-                                                <ul class="list">
-                                                    <li>
-                                                        <input class="checkclick1" name="preordered_check"
-                                                            type="checkbox" id="preorderedCheck" value="1">
-                                                        <label
-                                                            for="preorderedCheck">{{ __('Allow Product Preorder') }}</label>
-                                                    </li>
-                                                </ul>
-                                            </div>
-                                        </div>
+                                        <!-- Product Preorder removed - belongs to merchant_products -->
 
 
-                                        <div class="showbox">
-                                            <div class="row">
-                                                <div class="col-lg-12">
-                                                    <div class="left-area">
-                                                        <h4 class="heading">{{ __('Product Preorder') }}*</h4>
-                                                    </div>
-                                                </div>
-                                                <div class="col-lg-12">
-                                                    <select name="preordered">
-                                                        <option value="1">{{ __('Sale') }}</option>
-                                                        <option value="2">{{ __('Preordered') }}</option>
-                                                    </select>
-                                                </div>
-                                            </div>
-                                        </div>
+                                        <!-- Minimum Order Qty removed - belongs to merchant_products -->
 
 
-                                        <div class="row">
-                                            <div class="col-lg-12">
-                                                <div class="left-area">
-
-                                                </div>
-                                            </div>
-                                            <div class="col-lg-12">
-                                                <ul class="list">
-                                                    <li>
-                                                        <input class="checkclick1" name="minimum_qty_check"
-                                                            type="checkbox" id="check111" value="1">
-                                                        <label for="check111">{{ __('Allow Minimum Order Qty') }}</label>
-                                                    </li>
-                                                </ul>
-                                            </div>
-                                        </div>
-
-
-                                        <div class="showbox">
-                                            <div class="row">
-                                                <div class="col-lg-12">
-                                                    <div class="left-area">
-                                                        <h4 class="heading">{{ __('Product Minimum Order Qty') }}* </h4>
-                                                    </div>
-                                                </div>
-                                                <div class="col-lg-12">
-                                                    <input type="number" class="input-field" min="1"
-                                                        placeholder="{{ __('Minimum Order Qty') }}" name="minimum_qty">
-                                                </div>
-                                            </div>
-
-                                        </div>
-
-
-                                        <div class="row">
-                                            <div class="col-lg-12">
-                                                <div class="left-area">
-
-                                                </div>
-                                            </div>
-                                            <div class="col-lg-12">
-                                                <ul class="list">
-                                                    <li>
-                                                        <input class="checkclick1" name="shipping_time_check"
-                                                            type="checkbox" id="check1" value="1">
-                                                        <label
-                                                            for="check1">{{ __('Allow Estimated Shipping Time') }}</label>
-                                                    </li>
-                                                </ul>
-                                            </div>
-                                        </div>
-
-
-
-                                        <div class="showbox">
-                                            <div class="row">
-                                                <div class="col-lg-12">
-                                                    <div class="left-area">
-                                                        <h4 class="heading">{{ __('Product Estimated Shipping Time') }}*
-                                                        </h4>
-                                                    </div>
-                                                </div>
-                                                <div class="col-lg-12">
-                                                    <input type="text" class="input-field"
-                                                        placeholder="{{ __('Estimated Shipping Time') }}" name="ship">
-                                                </div>
-                                            </div>
-                                        </div>
+                                        <!-- Shipping Time removed - belongs to merchant_products -->
 
 
 
@@ -291,43 +162,6 @@
                                             </div>
                                         </div>
 
-                                        <div class="showbox">
-                                            <div class="row">
-                                                <div class="col-lg-12">
-                                                    <div class="left-area">
-
-                                                    </div>
-                                                </div>
-                                                <div class="col-lg-12">
-                                                    <div class="featured-keyword-area">
-                                                        <div class="feature-tag-top-filds" id="whole-section">
-                                                            <div class="feature-area">
-                                                                <span class="remove whole-remove"><i
-                                                                        class="fas fa-times"></i></span>
-                                                                <div class="row">
-                                                                    <div class="col-lg-6">
-                                                                        <input type="number" name="whole_sell_qty[]"
-                                                                            class="input-field"
-                                                                            placeholder="{{ __('Enter Quantity') }}"
-                                                                            min="0">
-                                                                    </div>
-
-                                                                    <div class="col-lg-6">
-                                                                        <input type="number" name="whole_sell_discount[]"
-                                                                            class="input-field"
-                                                                            placeholder="{{ __('Enter Discount Percentage') }}"
-                                                                            min="0" />
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-
-                                                        <a href="javascript:;" id="whole-btn" class="add-fild-btn"><i
-                                                                class="icofont-plus"></i> {{ __('Add More Field') }}</a>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
 
 
                                         <div class="row">
@@ -383,72 +217,11 @@
                                             </div>
                                             <div class="col-lg-12">
                                                 <ul class="list">
-                                                    <li>
-                                                        <input class="checkclickc" name="color_check" type="checkbox"
-                                                            id="check3" value="1">
-                                                        <label for="check3">{{ __('Allow Product Colors') }}</label>
-                                                    </li>
                                                 </ul>
                                             </div>
                                         </div>
 
 
-                                        <div class="showbox">
-
-                                            <div class="row">
-                                                <div class="col-lg-12">
-                                                    <div class="left-area">
-                                                        <h4 class="heading">
-                                                            {{ __('Product Colors') }}*
-                                                        </h4>
-                                                        <p class="sub-heading">
-                                                            {{ __('(Choose Your Favorite Colors)') }}
-                                                        </p>
-                                                    </div>
-                                                </div>
-                                                <div class="col-lg-12">
-                                                    <div class="select-input-color" id="color-section">
-                                                        <div class="size-area">
-                                                            <span class="remove size-remove"><i
-                                                                    class="fas fa-times"></i></span>
-                                                            <div class="row">
-                                                                <div class="col-md-12 col-sm-12">
-                                                                    <label>
-                                                                        {{ __('Color') }} :
-                                                                    </label>
-                                                                    <div class="color-area">
-                                                                        <div class="input-group colorpicker-component cp">
-                                                                            <input type="text" name="color_all[]"
-                                                                                value=""
-                                                                                class="input-field cp tcolor" />
-                                                                            <span class="input-group-addon"><i></i></span>
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-
-                                                                {{-- <div class="col-md-6 col-sm-6">
-                                                                    <label>
-                                                                        {{ __('Color Price') }} :
-                                                                        <span>
-                                                                            {{ __('(Added with base price)') }}
-                                                                        </span>
-                                                                    </label>
-                                                                    <input type="number" name="color_price[]" required
-                                                                        class="input-field"
-                                                                        placeholder="{{ __('Color Price') }}"
-                                                                        value="" min="0">
-                                                                </div> --}}
-
-
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    <a href="javascript:;" id="color-btn" class="add-more mt-4 mb-3"><i
-                                                            class="fas fa-plus"></i>{{ __('Add More Color') }} </a>
-                                                </div>
-                                            </div>
-
-                                        </div>
 
                                         <div class="row">
                                             <div class="col-lg-12">
@@ -527,19 +300,6 @@
                                             </div>
                                         </div>
 
-                                        <div class="row" id="default_stock">
-                                            <div class="col-lg-12">
-                                                <div class="left-area">
-                                                    <h4 class="heading">{{ __('Product Stock') }}*</h4>
-                                                    <p class="sub-heading">
-                                                        {{ __('(Leave Empty will Show Always Available)') }}</p>
-                                                </div>
-                                            </div>
-                                            <div class="col-lg-12">
-                                                <input name="stock" type="number" class="input-field"
-                                                    placeholder="e.g 20" value="" min="0">
-                                            </div>
-                                        </div>
 
 
 
@@ -667,37 +427,7 @@
                                             </div>
                                         </div>
 
-                                        <div class="row">
-                                            <div class="col-lg-12">
-                                                <div class="left-area">
-                                                    <h4 class="heading">
-                                                        {{ __('Product Current Price') }}*
-                                                    </h4>
-                                                    <p class="sub-heading">
-                                                        ({{ __('In') }} {{ $sign->name }})
-                                                    </p>
-                                                </div>
-                                            </div>
-                                            <div class="col-lg-12">
-                                                <input name="price" type="number" class="input-field"
-                                                    placeholder="{{ __('e.g 20') }}" step="0.1" required=""
-                                                    min="0">
-                                            </div>
-                                        </div>
 
-                                        <div class="row">
-                                            <div class="col-lg-12">
-                                                <div class="left-area">
-                                                    <h4 class="heading">{{ __('Product Discount Price') }}*</h4>
-                                                    <p class="sub-heading">{{ __('(Optional)') }}</p>
-                                                </div>
-                                            </div>
-                                            <div class="col-lg-12">
-                                                <input name="previous_price" step="0.1" type="number"
-                                                    class="input-field" placeholder="{{ __('e.g 20') }}"
-                                                    min="0">
-                                            </div>
-                                        </div>
 
                                         <div class="row">
                                             <div class="col-lg-12">

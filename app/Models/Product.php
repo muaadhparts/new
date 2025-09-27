@@ -16,22 +16,19 @@ class Product extends Model
      * vendor-specific data is stored on MerchantProduct.
      */
     protected $fillable = [
-        'category_id', 'product_type', 'affiliate_link', 'sku', 'subcategory_id', 'childcategory_id',
-        'attributes', 'name', 'photo', 'details', 'policy', 'views', 'tags', 'featured', 'best', 'top',
-        'hot', 'latest', 'big', 'trending', 'features', 'colors', 'meta_tag', 'meta_description', 'youtube',
-        'type', 'file', 'link', 'platform', 'region', 'licence_type', 'measure', 'catalog_id', 'slug',
-        'flash_count', 'hot_count', 'new_count', 'sale_count', 'best_seller_count', 'popular_count',
-        'top_rated_count', 'big_save_count', 'trending_count', 'page_count', 'seller_product_count',
-        'wishlist_count', 'vendor_page_count', 'min_price', 'max_price', 'product_page', 'post_count',
-        'cross_products'
+        'brand_id', 'sku', 'product_type', 'affiliate_link', 'category_id', 'subcategory_id', 'childcategory_id',
+        'label_en', 'label_ar', 'attributes', 'name', 'slug', 'photo', 'thumbnail', 'file', 'weight', 'size',
+        'size_qty', 'size_price', 'policy', 'views', 'tags', 'features', 'is_meta', 'meta_tag', 'meta_description',
+        'youtube', 'type', 'platform', 'region', 'measure', 'featured', 'best', 'top', 'hot', 'latest', 'big',
+        'trending', 'sale', 'is_catalog', 'catalog_id', 'cross_products'
     ];
 
     /**
      * Selectable columns for listing products (catalog-level only).
      */
     public $selectable = [
-        'id', 'name', 'slug', 'features', 'colors', 'thumbnail', 'attributes',
-        'category_id', 'details', 'type'
+        'id', 'name', 'slug', 'features', 'thumbnail', 'attributes',
+        'category_id', 'type', 'weight', 'size', 'size_qty', 'size_price'
     ];
 
     /* =========================================================================
@@ -397,16 +394,71 @@ class Product extends Model
     }
 
     /**
-     * Get vendor-specific sizes from merchant product.
+     * Get vendor-specific color prices from merchant product.
      */
-    public function getVendorSizes(?int $userId = null)
+    public function getVendorColorPrices(?int $userId = null)
     {
         $mp = $this->activeMerchant($userId);
-        if (!$mp || empty($mp->size_all)) {
+        if (!$mp || empty($mp->color_price)) {
             return [];
         }
-        return is_array($mp->size_all) ? $mp->size_all : explode(',', $mp->size_all);
+        return is_array($mp->color_price) ? $mp->color_price : explode(',', $mp->color_price);
     }
+
+    /**
+     * Get vendor-specific previous price from merchant product.
+     */
+    public function getVendorPreviousPrice(?int $userId = null)
+    {
+        $mp = $this->activeMerchant($userId);
+        return $mp ? $mp->previous_price : null;
+    }
+
+    /**
+     * Get vendor-specific ship from merchant product.
+     */
+    public function getVendorShip(?int $userId = null)
+    {
+        $mp = $this->activeMerchant($userId);
+        return $mp ? $mp->ship : null;
+    }
+
+    /**
+     * Get vendor-specific details from merchant product, fallback to product policy.
+     */
+    public function getVendorDetails(?int $userId = null)
+    {
+        $mp = $this->activeMerchant($userId);
+        if ($mp && !empty($mp->details)) {
+            return $mp->details;
+        }
+        return $this->policy; // Fallback to product policy
+    }
+
+    /**
+     * Get vendor-specific policy from merchant product, fallback to product policy.
+     */
+    public function getVendorPolicy(?int $userId = null)
+    {
+        $mp = $this->activeMerchant($userId);
+        if ($mp && !empty($mp->policy)) {
+            return $mp->policy;
+        }
+        return $this->policy; // Fallback to product policy
+    }
+
+    /**
+     * Get vendor-specific features from merchant product, fallback to product features.
+     */
+    public function getVendorFeatures(?int $userId = null)
+    {
+        $mp = $this->activeMerchant($userId);
+        if ($mp && !empty($mp->features)) {
+            return $mp->features;
+        }
+        return $this->features; // Fallback to product features
+    }
+
 
     /**
      * Build tag cloud from products that have at least one active merchant listing.
@@ -442,7 +494,7 @@ class Product extends Model
 
     /**
      * Legacy accessors for vendor-specific columns.
-     * These now redirect to the active merchant product.
+     * These now redirect to the active merchant product according to final schema.
      */
     public function __get($key)
     {
@@ -452,7 +504,9 @@ class Product extends Model
             'minimum_qty' => 'getMinimumQty',
             'stock_check' => 'getStockCheck',
             'stock' => 'vendorSizeStock',
-            'price' => 'vendorPrice'
+            'price' => 'vendorPrice',
+            'previous_price' => 'getVendorPreviousPrice',
+            'ship' => 'getVendorShip'
         ];
 
         if (array_key_exists($key, $vendorColumns)) {
@@ -460,28 +514,24 @@ class Product extends Model
             return $this->$method();
         }
 
-        // For color/size, check if it's vendor-specific first
-        if ($key === 'color' && $this->getVendorColors()) {
+        // Colors: Always redirect to vendor-specific colors from merchant_products
+        if ($key === 'color' || $key === 'colors' || $key === 'color_all') {
             return $this->getVendorColors();
         }
 
-        if ($key === 'size' && $this->getVendorSizes()) {
-            return $this->getVendorSizes();
+        if ($key === 'color_price') {
+            return $this->getVendorColorPrices();
+        }
+
+        // Policy/Features: Try merchant first, fallback to product
+        if ($key === 'details') {
+            return $this->getVendorDetails();
         }
 
         // Fall back to parent implementation
         return parent::__get($key);
     }
 
-    public function getColorallAttribute($value)
-    {
-        return $value === null ? '' : explode(",", $value);
-    }
-
-    public function getColorPriceAttribute($value)
-    {
-        return $value === null ? '' : explode(',', $value);
-    }
 
     public function getSizeAttribute($value)
     {
@@ -498,10 +548,6 @@ class Product extends Model
         return $value === null ? '' : explode(',', $value);
     }
 
-    public function getColorAttribute($value)
-    {
-        return $value === null ? '' : explode(',', $value);
-    }
 
     public function getTagsAttribute($value)
     {
@@ -518,10 +564,6 @@ class Product extends Model
         return $value === null ? '' : explode(',', $value);
     }
 
-    public function getColorsAttribute($value)
-    {
-        return $value === null ? '' : explode(',', $value);
-    }
 
     public function getLicenseAttribute($value)
     {

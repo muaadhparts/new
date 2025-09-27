@@ -587,4 +587,93 @@ class PriceHelper
         }
     }
 
+    /**
+     * Calculate shipping cost based on size and weight
+     * @param array $products Array of products with qty and weight
+     * @param string $shippingMethod Shipping method (standard, express, etc)
+     * @return float Calculated shipping cost
+     */
+    public static function calculateShippingByWeight($products, $shippingMethod = 'standard')
+    {
+        $totalWeight = 0;
+        $totalVolume = 0;
+
+        foreach ($products as $product) {
+            $qty = $product['qty'] ?? 1;
+            $weight = (float)($product['item']['weight'] ?? 1);
+            $size = $product['item']['size'] ?? null;
+
+            // Calculate total weight
+            $totalWeight += $qty * $weight;
+
+            // Calculate total volume if size is available
+            if ($size && is_array($size) && count($size) >= 3) {
+                $length = (float)($size[0] ?? 10);
+                $width = (float)($size[1] ?? 10);
+                $height = (float)($size[2] ?? 10);
+                $volume = ($length * $width * $height) / 1000000; // Convert to cubic meters
+                $totalVolume += $qty * $volume;
+            }
+        }
+
+        // Base shipping calculation
+        $baseRate = 5.00; // Base shipping rate
+        $weightRate = 0.50; // Per kg
+        $volumeRate = 10.00; // Per cubic meter
+
+        // Method multipliers
+        $methodMultipliers = [
+            'standard' => 1.0,
+            'express' => 1.5,
+            'overnight' => 2.0,
+            'tryoto' => 1.2
+        ];
+
+        $multiplier = $methodMultipliers[$shippingMethod] ?? 1.0;
+
+        $shippingCost = ($baseRate + ($totalWeight * $weightRate) + ($totalVolume * $volumeRate)) * $multiplier;
+
+        return round($shippingCost, 2);
+    }
+
+    /**
+     * Calculate shipping dimensions for products
+     * @param array $products Array of products
+     * @return array Combined dimensions and weight
+     */
+    public static function calculateShippingDimensions($products)
+    {
+        $totalWeight = 0;
+        $maxLength = 0;
+        $maxWidth = 0;
+        $totalHeight = 0;
+
+        foreach ($products as $product) {
+            $qty = $product['qty'] ?? 1;
+            $weight = (float)($product['item']['weight'] ?? 1);
+            $size = $product['item']['size'] ?? null;
+
+            $totalWeight += $qty * $weight;
+
+            if ($size && is_array($size) && count($size) >= 3) {
+                $length = (float)($size[0] ?? 0);
+                $width = (float)($size[1] ?? 0);
+                $height = (float)($size[2] ?? 0);
+
+                // Use maximum length and width, sum heights
+                $maxLength = max($maxLength, $length);
+                $maxWidth = max($maxWidth, $width);
+                $totalHeight += $qty * $height;
+            }
+        }
+
+        return [
+            'weight' => $totalWeight,
+            'length' => $maxLength,
+            'width' => $maxWidth,
+            'height' => $totalHeight,
+            'volume' => ($maxLength * $maxWidth * $totalHeight) / 1000000 // cubic meters
+        ];
+    }
+
 }

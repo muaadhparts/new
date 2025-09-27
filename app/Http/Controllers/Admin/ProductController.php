@@ -357,35 +357,17 @@ class ProductController extends AdminBaseController
                 return response()->json(array('errors' => $validator->getMessageBag()->toArray()));
             }
 
-            if ($request->product_condition_check == "") {
-                $input['product_condition'] = 0;
-            }
-
-            if ($request->preordered_check == "") {
-                $input['preordered'] = 0;
-            }
-
-            if ($request->minimum_qty_check == "") {
-                $input['minimum_qty'] = null;
-            }
-
-            if ($request->shipping_time_check == "") {
-                $input['ship'] = null;
-            }
-
-            if (empty($request->stock_check)) {
-                $input['stock_check'] = 0;
+            // Handle size data (belongs to products table)
+            if (empty($request->size_check)) {
                 $input['size'] = null;
                 $input['size_qty'] = null;
                 $input['size_price'] = null;
             } else {
                 if (in_array(null, $request->size) || in_array(null, $request->size_qty) || in_array(null, $request->size_price)) {
-                    $input['stock_check'] = 0;
                     $input['size'] = null;
                     $input['size_qty'] = null;
                     $input['size_price'] = null;
                 } else {
-                    $input['stock_check'] = 1;
                     $input['size'] = implode(',', $request->size);
                     $input['size_qty'] = implode(',', $request->size_qty);
                     $size_prices = $request->size_price;
@@ -397,25 +379,11 @@ class ProductController extends AdminBaseController
                 }
             }
 
-            if (empty($request->color_check)) {
-                $input['color_all'] = null;
-                $input['color_price'] = null;
-            } else {
-                $input['color_all'] = implode(',', $request->color_all);
-            }
+            // Colors belong to merchant_products, not products
+            // This will be handled separately in merchant product creation
 
-            if (empty($request->whole_check)) {
-                $input['whole_sell_qty'] = null;
-                $input['whole_sell_discount'] = null;
-            } else {
-                if (in_array(null, $request->whole_sell_qty) || in_array(null, $request->whole_sell_discount)) {
-                    $input['whole_sell_qty'] = null;
-                    $input['whole_sell_discount'] = null;
-                } else {
-                    $input['whole_sell_qty'] = implode(',', $request->whole_sell_qty);
-                    $input['whole_sell_discount'] = implode(',', $request->whole_sell_discount);
-                }
-            }
+            // whole_sell_qty and whole_sell_discount belong to merchant_products, not products
+            // This will be handled separately in merchant product creation
 
             if ($request->mesasure_check == "") {
                 $input['measure'] = null;
@@ -441,12 +409,10 @@ class ProductController extends AdminBaseController
             }
         }
 
-        if (in_array(null, $request->features) || in_array(null, $request->colors)) {
+        if (in_array(null, $request->features)) {
             $input['features'] = null;
-            $input['colors'] = null;
         } else {
             $input['features'] = implode(',', str_replace(',', ' ', $request->features));
-            $input['colors'] = implode(',', str_replace(',', ' ', $request->colors));
         }
 
         if (!empty($request->tags)) {
@@ -827,9 +793,8 @@ class ProductController extends AdminBaseController
             }
 
             // Check Shipping Time
-            if ($request->shipping_time_check == "") {
-                $input['ship'] = null;
-            }
+            // ship belongs to merchant_products, not products
+            // This will be handled separately in merchant product creation
 
             // Check Size
             if (empty($request->stock_check)) {
@@ -863,18 +828,8 @@ class ProductController extends AdminBaseController
             }
 
             // Check Whole Sale
-            if (empty($request->whole_check)) {
-                $input['whole_sell_qty'] = null;
-                $input['whole_sell_discount'] = null;
-            } else {
-                if (in_array(null, $request->whole_sell_qty) || in_array(null, $request->whole_sell_discount)) {
-                    $input['whole_sell_qty'] = null;
-                    $input['whole_sell_discount'] = null;
-                } else {
-                    $input['whole_sell_qty'] = implode(',', $request->whole_sell_qty);
-                    $input['whole_sell_discount'] = implode(',', $request->whole_sell_discount);
-                }
-            }
+            // whole_sell_qty and whole_sell_discount belong to merchant_products, not products
+            // This will be handled separately in merchant product creation
 
             // Check Measure
             if ($request->measure_check == "") {
@@ -911,21 +866,12 @@ class ProductController extends AdminBaseController
             }
         }
 
-        if (!in_array(null, $request->colors)) {
-            $input['colors'] = implode(',', str_replace(',', ' ', $request->colors));
-        } else {
-            if (in_array(null, $request->features)) {
-                $input['colors'] = null;
-            } else {
-                $colors = explode(',', $data->colors);
-                $input['colors'] = implode(',', $colors);
-            }
-        }
+        // colors field removed - now handled in merchant_products as color_all and color_price
 
-        if (!in_array(null, $request->features) && !in_array(null, $request->colors)) {
+        if (!in_array(null, $request->features)) {
             $input['features'] = implode(',', str_replace(',', ' ', $request->features));
         } else {
-            if (in_array(null, $request->features) || in_array(null, $request->colors)) {
+            if (in_array(null, $request->features)) {
                 $input['features'] = null;
             } else {
                 $features = explode(',', $data->features);

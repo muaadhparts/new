@@ -268,8 +268,10 @@ class Cart extends Model
             $color_cost = (float)$color_price;
         }
 
-        if (!empty($item->color)) {
-            $colors = $this->toArrayValues($item->color);
+        // Get color from vendor colors (merchant_products.color_all)
+        $vendorColors = $item->getVendorColors();
+        if (!empty($vendorColors)) {
+            $colors = $this->toArrayValues($vendorColors);
             if (!empty($colors)) $storedItem['color'] = $colors[0];
         }
         if (!empty($color)) $storedItem['color'] = $color;

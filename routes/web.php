@@ -1134,7 +1134,12 @@ Route::group(['middleware' => 'maintenance'], function () {
             Route::post('/products/import-submit', 'Vendor\ProductController@importSubmit')->name('vendor-prod-importsubmit');
 
             Route::get('/products/catalog/datatables', 'Vendor\ProductController@catalogdatatables')->name('admin-vendor-catalog-datatables');
-            Route::get('/products/catalogs', 'Vendor\ProductController@catalogs')->name('admin-vendor-catalog-index');
+            Route::get('/products/catalogs', 'Vendor\ProductController@catalogs')->name('vendor-prod-catalogs');
+
+            // NEW OFFER SYSTEM ROUTES
+            Route::get('/products/create-offer/{product_id}', 'Vendor\ProductController@createOffer')->name('vendor-prod-create-offer');
+            Route::post('/products/store-offer', 'Vendor\ProductController@storeOffer')->name('vendor-prod-store-offer');
+            Route::put('/products/update-offer/{merchantProductId}', 'Vendor\ProductController@updateOffer')->name('vendor-prod-update-offer');
 
             // CREATE SECTION
 

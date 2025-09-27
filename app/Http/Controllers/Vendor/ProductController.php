@@ -58,8 +58,15 @@ class ProductController extends VendorBaseController
         return view('vendor.product.catalogs', compact('datas', 'user'));
     }
 
-    //*** GET Request
+    //*** GET Request - Redirect to catalog selection (vendors don't create products, only offers)
     public function create($slug)
+    {
+        Session::flash('info', __('Please select a product from the catalog to create your offer.'));
+        return redirect()->route('vendor-prod-catalogs');
+    }
+
+    //*** GET Request - Create merchant offer for existing product
+    public function createOffer($product_id)
     {
         $user = $this->user;
         if (Generalsetting::find(1)->verify_product == 1) {
@@ -69,33 +76,23 @@ class ProductController extends VendorBaseController
             }
         }
 
-        $cats = Category::all();
-        $sign = $this->curr;
-        if ($slug == 'physical') {
-            if ($this->gs->physical == 1) {
-                return view('vendor.product.create.physical', compact('cats', 'sign'));
-            } else {
-                return back();
-            }
-        } else if ($slug == 'digital') {
-            if ($this->gs->digital == 1) {
-                return view('vendor.product.create.digital', compact('cats', 'sign'));
-            } else {
-                return back();
-            }
-        } else if (($slug == 'license')) {
-            if ($this->gs->license == 1) {
-                return view('vendor.product.create.license', compact('cats', 'sign'));
-            } else {
-                return back();
-            }
-        } else if (($slug == 'listing')) {
-            if ($this->gs->listing == 1) {
-                return view('vendor.product.create.listing', compact('cats', 'sign'));
-            } else {
-                return back();
-            }
+        // Check if product exists and is a catalog item
+        $product = Product::where('id', $product_id)
+            ->where('is_catalog', 1)
+            ->firstOrFail();
+
+        // Check if vendor already has an offer for this product
+        $existingOffer = MerchantProduct::where('product_id', $product_id)
+            ->where('user_id', $user->id)
+            ->first();
+
+        if ($existingOffer) {
+            Session::flash('unsuccess', __('You already have an offer for this product.'));
+            return redirect()->route('vendor-prod-catalogs');
         }
+
+        $sign = $this->curr;
+        return view('vendor.product.create.offer', compact('product', 'sign'));
     }
 
     //*** GET Request
@@ -343,7 +340,151 @@ class ProductController extends VendorBaseController
         }
     }
 
-    //*** POST Request
+    //*** POST Request - Store merchant offer for existing product
+    public function storeOffer(Request $request)
+    {
+        $user = $this->user;
+        $sign = $this->curr;
+
+        // Validate required fields
+        $rules = [
+            'product_id' => 'required|exists:products,id',
+            'price' => 'required|numeric|min:0',
+            'stock' => 'required|integer|min:0',
+            'product_condition' => 'required|in:1,2',
+        ];
+
+        $validator = Validator::make($request->all(), $rules);
+
+        if ($validator->fails()) {
+            return response()->json(array('errors' => $validator->getMessageBag()->toArray()));
+        }
+
+        // Check if vendor already has an offer for this product
+        $existingOffer = MerchantProduct::where('product_id', $request->product_id)
+            ->where('user_id', $user->id)
+            ->first();
+
+        if ($existingOffer) {
+            return response()->json(array('errors' => ['product_id' => ['You already have an offer for this product.']]));
+        }
+
+        // Prepare merchant product data
+        $merchantData = [
+            'product_id' => $request->product_id,
+            'user_id' => $user->id,
+            'price' => $request->price / $sign->value,
+            'previous_price' => $request->previous_price ? ($request->previous_price / $sign->value) : null,
+            'stock' => $request->stock,
+            'minimum_qty' => $request->minimum_qty ?: null,
+            'product_condition' => $request->product_condition,
+            'ship' => $request->ship ?: null,
+            'preordered' => $request->preordered ? 1 : 0,
+            'status' => 1,
+        ];
+
+        // Handle colors
+        if ($request->color_check && !empty($request->color_all)) {
+            $merchantData['color_all'] = implode(',', $request->color_all);
+            if (!empty($request->color_price)) {
+                $merchantData['color_price'] = implode(',', $request->color_price);
+            }
+        }
+
+        // Handle wholesale
+        if ($request->whole_check && !empty($request->whole_sell_qty)) {
+            $merchantData['whole_sell_qty'] = implode(',', $request->whole_sell_qty);
+            if (!empty($request->whole_sell_discount)) {
+                $merchantData['whole_sell_discount'] = implode(',', $request->whole_sell_discount);
+            }
+        }
+
+        // Handle policy/features/details override
+        if (!empty($request->policy)) {
+            $merchantData['policy'] = $request->policy;
+        }
+        if (!empty($request->features)) {
+            $merchantData['features'] = $request->features;
+        }
+        if (!empty($request->details)) {
+            $merchantData['details'] = $request->details;
+        }
+
+        // Create merchant product
+        MerchantProduct::create($merchantData);
+
+        return response()->json(['status' => true, 'data' => [], 'error' => []]);
+    }
+
+    //*** PUT Request - Update merchant offer
+    public function updateOffer(Request $request, $merchantProductId)
+    {
+        $user = $this->user;
+        $sign = $this->curr;
+
+        // Find the merchant product and ensure it belongs to this vendor
+        $merchantProduct = MerchantProduct::where('id', $merchantProductId)
+            ->where('user_id', $user->id)
+            ->firstOrFail();
+
+        // Validate required fields
+        $rules = [
+            'price' => 'required|numeric|min:0',
+            'stock' => 'required|integer|min:0',
+            'product_condition' => 'required|in:1,2',
+        ];
+
+        $validator = Validator::make($request->all(), $rules);
+
+        if ($validator->fails()) {
+            return response()->json(array('errors' => $validator->getMessageBag()->toArray()));
+        }
+
+        // Prepare merchant product data
+        $merchantData = [
+            'price' => $request->price / $sign->value,
+            'previous_price' => $request->previous_price ? ($request->previous_price / $sign->value) : null,
+            'stock' => $request->stock,
+            'minimum_qty' => $request->minimum_qty ?: null,
+            'product_condition' => $request->product_condition,
+            'ship' => $request->ship ?: null,
+            'preordered' => $request->preordered ? 1 : 0,
+        ];
+
+        // Handle colors
+        if ($request->color_check && !empty($request->color_all)) {
+            $merchantData['color_all'] = implode(',', $request->color_all);
+            if (!empty($request->color_price)) {
+                $merchantData['color_price'] = implode(',', $request->color_price);
+            }
+        } else {
+            $merchantData['color_all'] = null;
+            $merchantData['color_price'] = null;
+        }
+
+        // Handle wholesale
+        if ($request->whole_check && !empty($request->whole_sell_qty)) {
+            $merchantData['whole_sell_qty'] = implode(',', $request->whole_sell_qty);
+            if (!empty($request->whole_sell_discount)) {
+                $merchantData['whole_sell_discount'] = implode(',', $request->whole_sell_discount);
+            }
+        } else {
+            $merchantData['whole_sell_qty'] = null;
+            $merchantData['whole_sell_discount'] = null;
+        }
+
+        // Handle policy/features/details override
+        $merchantData['policy'] = $request->policy ?: null;
+        $merchantData['features'] = $request->features ?: null;
+        $merchantData['details'] = $request->details ?: null;
+
+        // Update merchant product
+        $merchantProduct->update($merchantData);
+
+        return response()->json(['status' => true, 'data' => [], 'error' => []]);
+    }
+
+    //*** POST Request - Legacy store method (should redirect to new workflow)
     public function store(Request $request)
     {
         $user    = $this->user;
@@ -400,21 +541,9 @@ class ProductController extends VendorBaseController
                     return response()->json(array('errors' => $validator->getMessageBag()->toArray()));
                 }
 
-                // حقول هويوية فقط
-                if ($request->product_condition_check == "") { $input['product_condition'] = 0; }
-                if ($request->preordered_check == "")       { $input['preordered']        = 0; }
-                if ($request->minimum_qty_check == "")      { $input['minimum_qty']       = null; }
-                if ($request->shipping_time_check == "")    { $input['ship']              = null; }
-
-                // مقاسات/مخزون/أسعار → إلى MerchantProduct لاحقًا، لذا لا نسجلها هنا
-                $input['stock_check'] = isset($request->stock_check) ? 1 : 0;
-
-                // الألوان العامة التعريفية (اختياري)
-                if (empty($request->color_check)) {
-                    $input['color_all'] = null;
-                } else {
-                    $input['color_all'] = implode(',', (array)$request->color_all);
-                }
+                // These fields belong to merchant_products, not products - remove from product input
+                // They will be handled separately in merchant product creation
+                unset($input['product_condition'], $input['preordered'], $input['minimum_qty'], $input['ship'], $input['stock_check'], $input['color_all']);
 
                 // خصومات الجملة تُسجل لاحقًا في MP
                 if ($request->mesasure_check == "") {
@@ -445,12 +574,10 @@ class ProductController extends VendorBaseController
             }
 
             // Features/Colors (هوية)
-            if (in_array(null, (array)$request->features) || in_array(null, (array)$request->colors)) {
+            if (in_array(null, (array)$request->features)) {
                 $input['features'] = null;
-                $input['colors']   = null;
             } else {
                 $input['features'] = implode(',', str_replace(',', ' ', $request->features));
-                $input['colors']   = implode(',', str_replace(',', ' ', $request->colors));
             }
 
             // Tags (هوية)
@@ -458,8 +585,8 @@ class ProductController extends VendorBaseController
                 $input['tags'] = $request->tags;
             }
 
-            // سعر/مخزون/مقاسات → لا تُكتب في products (سيتم تسجيلها في MP)
-            unset($input['price'], $input['previous_price'], $input['stock'], $input['size'], $input['size_qty'], $input['size_price'], $input['color']);
+            // Remove merchant-specific data from product input (will be saved in MerchantProduct)
+            unset($input['price'], $input['previous_price'], $input['stock']);
 
             // Attributes (هوية)
             $attrArr = [];
@@ -536,20 +663,8 @@ class ProductController extends VendorBaseController
             // إنشاء/تحديث عرض البائع (MerchantProduct)
             $merchantInput = [];
 
-            // المقاسات/الكميات/أسعار المقاسات (MP)
-            if (!empty($request->size)) {
-                $merchantInput['size'] = implode(',', (array)$request->size);
-            }
-            if (!empty($request->size_qty)) {
-                $merchantInput['size_qty'] = implode(',', (array)$request->size_qty);
-            }
-            if (!empty($request->size_price)) {
-                $size_prices = [];
-                foreach ((array)$request->size_price as $key => $sPrice) {
-                    $size_prices[$key] = $sPrice / $sign->value;
-                }
-                $merchantInput['size_price'] = implode(',', $size_prices);
-            }
+            // Sizes belong to products table, not merchant_products
+            // All size-related fields (size, size_qty, size_price) are handled in product creation
 
             if (!empty($request->color_all)) {
                 $merchantInput['color_all'] = implode(',', (array)$request->color_all);
@@ -612,25 +727,17 @@ class ProductController extends VendorBaseController
     //*** GET Request
     public function edit($id)
     {
-        $cats = Category::all();
         $data = Product::findOrFail($id);
 
         // Get merchant product data for this vendor
         $merchantProduct = MerchantProduct::where('product_id', $id)
             ->where('user_id', $this->user->id)
-            ->first();
+            ->firstOrFail(); // Vendor can only edit their own offers
 
         $sign = $this->curr;
 
-        if ($data->type == 'Digital') {
-            return view('vendor.product.edit.digital', compact('cats', 'data', 'merchantProduct', 'sign'));
-        } elseif ($data->type == 'License') {
-            return view('vendor.product.edit.license', compact('cats', 'data', 'merchantProduct', 'sign'));
-        } elseif ($data->type == 'Listing') {
-            return view('vendor.product.edit.listing', compact('cats', 'data', 'merchantProduct', 'sign'));
-        } else {
-            return view('vendor.product.edit.physical', compact('cats', 'data', 'merchantProduct', 'sign'));
-        }
+        // Use the new offer edit form (merchants only edit their offers, not catalog data)
+        return view('vendor.product.edit.offer', compact('data', 'merchantProduct', 'sign'));
     }
 
     //*** GET Request CATALOG
@@ -692,35 +799,20 @@ class ProductController extends VendorBaseController
                 return response()->json(array('errors' => $validator->getMessageBag()->toArray()));
             }
 
-            if ($request->product_condition_check == "") { $input['product_condition'] = 0; }
-            if ($request->preordered_check == "")       { $input['preordered']        = 0; }
-            if ($request->minimum_qty_check == "")      { $input['minimum_qty']       = null; }
-            if ($request->shipping_time_check == "")    { $input['ship']              = null; }
+            // These fields belong to merchant_products, not products - remove from product input
+            // They will be handled separately in merchant product update
+            unset($input['product_condition'], $input['preordered'], $input['minimum_qty'], $input['ship']);
 
-            // لا نكتب مقاسات/مخزون/أسعار في products
-            if (empty($request->stock_check)) {
-                $input['stock_check'] = 0;
-                $input['size'] = null;
-                $input['size_qty'] = null;
-                $input['size_price'] = null;
-                $input['color'] = null;
-            } else {
-                // إبقاء stock_check لأغراض العرض فقط إن كان لازال مستخدمًا بالواجهات
-                $input['stock_check'] = 1;
-                unset($input['size'], $input['size_qty'], $input['size_price'], $input['color']);
-            }
+            // stock_check and inventory fields belong to merchant_products, not products
+            // All inventory-related fields are handled in merchant_products
+            unset($input['stock_check']);
 
-            if (empty($request->color_check)) {
-                $input['color_all'] = null;
-            } else {
-                $input['color_all'] = implode(',', (array)$request->color_all);
-            }
+            // color_all belongs to merchant_products, not products - remove from product input
+            // This will be handled separately in merchant product update
+            unset($input['color_all']);
 
-            if (empty($request->whole_check)) {
-                // ستُدار في MP
-                $input['whole_sell_qty'] = null;
-                $input['whole_sell_discount'] = null;
-            }
+            // whole_sell_qty and whole_sell_discount belong to merchant_products, not products
+            unset($input['whole_sell_qty'], $input['whole_sell_discount']);
 
             if ($request->measure_check == "") {
                 $input['measure'] = null;
@@ -756,19 +848,15 @@ class ProductController extends VendorBaseController
             }
         }
 
-        // Features/Colors
-        if (!in_array(null, (array)$request->features) && !in_array(null, (array)$request->colors)) {
+        // Features (product-level only, colors moved to merchant_products)
+        if (!in_array(null, (array)$request->features)) {
             $input['features'] = implode(',', str_replace(',', ' ', $request->features));
-            $input['colors']   = implode(',', str_replace(',', ' ', $request->colors));
         } else {
-            if (in_array(null, (array)$request->features) || in_array(null, (array)$request->colors)) {
+            if (in_array(null, (array)$request->features)) {
                 $input['features'] = null;
-                $input['colors']   = null;
             } else {
                 $features = explode(',', (string)$data->features);
-                $colors   = explode(',', (string)$data->colors);
                 $input['features'] = implode(',', $features);
-                $input['colors']   = implode(',', $colors);
             }
         }
 
@@ -831,8 +919,8 @@ class ProductController extends VendorBaseController
 
         $input['attributes'] = empty($attrArr) ? null : json_encode($attrArr);
 
-        // لا نكتب price/previous_price/stock في Product
-        unset($input['price'], $input['previous_price'], $input['stock'], $input['size'], $input['size_qty'], $input['size_price'], $input['color']);
+        // Remove merchant-specific data from product input (will be saved in MerchantProduct)
+        unset($input['price'], $input['previous_price'], $input['stock']);
 
         $data->slug = Str::slug($data->name, '-') . '-' . strtolower($data->sku);
         $data->update($input);
@@ -841,25 +929,8 @@ class ProductController extends VendorBaseController
         $mp = [];
 
         // المقاسات (MP)
-        if (!empty($request->size)) {
-            $mp['size'] = implode(',', (array)$request->size);
-        } else {
-            $mp['size'] = null;
-        }
-        if (!empty($request->size_qty)) {
-            $mp['size_qty'] = implode(',', (array)$request->size_qty);
-        } else {
-            $mp['size_qty'] = null;
-        }
-        if (!empty($request->size_price)) {
-            $size_prices = [];
-            foreach ((array)$request->size_price as $key => $sPrice) {
-                $size_prices[$key] = $sPrice / $sign->value;
-            }
-            $mp['size_price'] = implode(',', $size_prices);
-        } else {
-            $mp['size_price'] = null;
-        }
+        // All size-related fields (size, size_qty, size_price) belong to products table
+        // These are handled in product update, not merchant_products
 
         if (!empty($request->color_all)) {
             $mp['color_all'] = implode(',', (array)$request->color_all);
@@ -958,19 +1029,9 @@ class ProductController extends VendorBaseController
             'status'         => 1,
         ];
 
-        if (!empty($request->size)) {
-            $mp['size'] = implode(',', (array)$request->size);
-        }
-        if (!empty($request->size_qty)) {
-            $mp['size_qty'] = implode(',', (array)$request->size_qty);
-        }
-        if (!empty($request->size_price)) {
-            $size_prices = [];
-            foreach ((array)$request->size_price as $key => $sPrice) {
-                $size_prices[$key] = $sPrice / $sign->value;
-            }
-            $mp['size_price'] = implode(',', $size_prices);
-        }
+        // All size-related fields (size, size_qty, size_price) belong to products table
+        // These are handled in product duplication, not merchant_products
+
         if (!empty($request->color_all)) {
             $mp['color_all'] = implode(',', (array)$request->color_all);
         }

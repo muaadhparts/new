@@ -363,33 +363,6 @@
 											</div>
 										</div>
 
-										<div class="row">
-											<div class="col-lg-12">
-												<div class="left-area">
-													<h4 class="heading">
-														{{ __('Product Current Price') }}*
-													</h4>
-													<p class="sub-heading">
-														({{ __('In') }} {{$sign->name}})
-													</p>
-												</div>
-											</div>
-											<div class="col-lg-12">
-												<input name="price" type="number" class="input-field" placeholder="e.g 20" step="0.1" min="0" value="{{round($data->price * $sign->value , 2)}}" required="">
-											</div>
-										</div>
-
-										<div class="row">
-											<div class="col-lg-12">
-												<div class="left-area">
-														<h4 class="heading">{{ __('Product Discount Price') }}*</h4>
-														<p class="sub-heading">{{ __('(Optional)') }}</p>
-												</div>
-											</div>
-											<div class="col-lg-12">
-												<input name="previous_price" step="0.1" type="number" class="input-field" placeholder="e.g 20" value="{{round($data->previous_price * $sign->value , 2)}}" min="0">
-											</div>
-										</div>
 
 										<div class="row">
 											<div class="col-lg-12">

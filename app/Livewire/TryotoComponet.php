@@ -189,15 +189,19 @@ class TryotoComponet extends Component
     }
 
     /**
-     * حساب الوزن الإجمالي
+     * حساب الوزن الإجمالي والأبعاد
      */
     public function getWeight(): void
     {
-        $this->weight = 0;
+        // Use PriceHelper to calculate dimensions and weight
+        $dimensions = \App\Helpers\PriceHelper::calculateShippingDimensions($this->products);
+
+        $this->weight = $dimensions['weight'];
+
+        // Update products array with calculated weights for display
         foreach ($this->products as $index => $product) {
             $product['weight_total'] = $product['qty'] * $product['item']['weight'];
             $this->products[$index] = $product;
-            $this->weight += $product['weight_total'];
         }
     }
 
@@ -239,13 +243,16 @@ class TryotoComponet extends Component
      */
     protected function checkOTODeliveryFee(): void
     {
+        // Calculate dimensions using PriceHelper
+        $dimensions = \App\Helpers\PriceHelper::calculateShippingDimensions($this->products);
+
         $response = Http::withToken($this->token)->post($this->url . '/rest/v2/checkOTODeliveryFee', [
             "originCity"      => "Riyadh",
             "destinationCity" => "Riyadh",
-            "weight"          => $this->weight,
-            // "xheight" => 30,
-            // "xwidth"  => 30,
-            // "xlength"=> 30
+            "weight"          => $dimensions['weight'],
+            "xheight"         => max(30, $dimensions['height']), // Minimum 30cm or calculated height
+            "xwidth"          => max(30, $dimensions['width']),  // Minimum 30cm or calculated width
+            "xlength"         => max(30, $dimensions['length'])  // Minimum 30cm or calculated length
         ]);
 
         if (!$response->successful()) {
