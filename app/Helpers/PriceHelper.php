@@ -651,24 +651,57 @@ class PriceHelper
         foreach ($products as $product) {
             $qty = $product['qty'] ?? 1;
             $weight = (float)($product['item']['weight'] ?? 1);
+
+            // Try to get dimensions from multiple possible sources
             $size = $product['item']['size'] ?? null;
+
+            // If size is stored as JSON string, decode it
+            if (is_string($size)) {
+                $size = json_decode($size, true);
+            }
 
             $totalWeight += $qty * $weight;
 
-            if ($size && is_array($size) && count($size) >= 3) {
-                $length = (float)($size[0] ?? 0);
-                $width = (float)($size[1] ?? 0);
-                $height = (float)($size[2] ?? 0);
+            // Handle different dimension formats
+            $length = 0;
+            $width = 0;
+            $height = 0;
 
-                // Use maximum length and width, sum heights
-                $maxLength = max($maxLength, $length);
-                $maxWidth = max($maxWidth, $width);
-                $totalHeight += $qty * $height;
+            if ($size && is_array($size)) {
+                if (count($size) >= 3) {
+                    // Array format [length, width, height]
+                    $length = (float)($size[0] ?? 0);
+                    $width = (float)($size[1] ?? 0);
+                    $height = (float)($size[2] ?? 0);
+                } elseif (isset($size['length']) || isset($size['width']) || isset($size['height'])) {
+                    // Associative array format
+                    $length = (float)($size['length'] ?? 0);
+                    $width = (float)($size['width'] ?? 0);
+                    $height = (float)($size['height'] ?? 0);
+                }
             }
+
+            // If no dimensions found, use default values based on weight
+            if ($length == 0 && $width == 0 && $height == 0) {
+                // Default dimensions based on weight (rough estimation)
+                $estimatedVolume = max(0.001, $weight * 0.0005); // 0.5L per kg minimum
+                $cubicRoot = pow($estimatedVolume, 1/3);
+                $length = $width = $height = max(10, $cubicRoot * 100); // minimum 10cm
+            }
+
+            // Use maximum length and width, sum heights for stacking
+            $maxLength = max($maxLength, $length);
+            $maxWidth = max($maxWidth, $width);
+            $totalHeight += $qty * $height;
         }
 
+        // Ensure minimum dimensions for shipping
+        $maxLength = max(10, $maxLength);  // minimum 10cm
+        $maxWidth = max(10, $maxWidth);    // minimum 10cm
+        $totalHeight = max(5, $totalHeight); // minimum 5cm
+
         return [
-            'weight' => $totalWeight,
+            'weight' => max(0.1, $totalWeight), // minimum 100g
             'length' => $maxLength,
             'width' => $maxWidth,
             'height' => $totalHeight,

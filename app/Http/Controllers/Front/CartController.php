@@ -680,14 +680,26 @@ class CartController extends FrontBaseController
 
         Session::put('is_tax', $tax);
 
-        $total  = (float) preg_replace('/[^0-9\.]/ui', '', $_GET['total'] ?? 0);
-        $stotal = ($total * $tax) / 100;
-        $sstotal= $stotal * $this->curr->value;
-        Session::put('current_tax', $sstotal);
+        $total = max(0, (float) $request->input('total', 0));
+        $shipping_cost = max(0, (float) $request->input('shipping_cost', 0));
 
-        $total = $total + $stotal;
-        $data[0] = round(Session::has('coupon') ? $total - (float) Session::get('coupon') : $total, 2);
+        // Apply coupon discount before tax calculation (standard accounting practice)
+        $coupon_discount = Session::has('coupon') ? (float) Session::get('coupon') : 0;
+        $subtotal_after_coupon = max(0, $total - $coupon_discount);
+
+        // Calculate tax on (subtotal after coupon + shipping)
+        $taxable_amount = $subtotal_after_coupon + $shipping_cost;
+        $tax_amount = ($taxable_amount * $tax) / 100;
+        $converted_tax = $tax_amount * $this->curr->value;
+
+        Session::put('current_tax', $converted_tax);
+        Session::put('current_tax_amount', $tax_amount);
+
+        $final_total = $taxable_amount + $tax_amount;
+        $data[0] = round($final_total, 2);
         $data[1] = $tax;
+        $data[2] = round($converted_tax, 2); // Converted tax amount for display (matches convertPrice)
+        $data[3] = round($shipping_cost, 2); // Shipping cost used
         return response()->json($data);
     }
 }

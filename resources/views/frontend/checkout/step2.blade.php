@@ -388,9 +388,9 @@
                                         </span>
                                     </div>
 
-                                    <div class="price-details tax_show d-none">
+                                    <div class="price-details tax_show">
                                         <span>@lang('Tax')</span>
-                                        <span class="right-side original_tax">0</span>
+                                        <span class="right-side original_tax">{{ Session::get('is_tax', 0) }}%</span>
                                     </div>
 
                                     @if (Session::has('coupon'))
@@ -654,16 +654,21 @@
   function tax_submit(country_id, state_id) {
     $('.gocover').show();
     var total = $("#ttotal").val();
-    var ship = 0;
+    var ship = parseFloat($('.shipping_cost_view').text().replace(/[^\d.]/g, '')) || 0;
     $.ajax({
       type: "GET",
       url: mainurl + "/country/tax/check",
-      data: { state_id: state_id, country_id: country_id, total: total, shipping_cost: ship },
+      data: {
+        total: total,
+        country_id: country_id,
+        state_id: state_id,
+        shipping_cost: ship
+      },
       success: function(data) {
         $('#grandtotal').val(data[0]);
         $('#tgrandtotal').val(data[0]);
         $('#original_tax').val(data[1]);
-        $('.tax_show').removeClass('d-none');
+        $('.tax_show').removeClass('d-none'); // Always show tax field for UX consistency
         $('#input_tax').val(data[11]);
         $('#input_tax_type').val(data[12]);
 
@@ -678,6 +683,11 @@
 
         recalcTotals();
         $('.gocover').hide();
+
+        // Notify user of successful tax update
+        if (typeof toastr !== 'undefined') {
+          toastr.success('@lang("Tax and total updated")');
+        }
       }
     });
   }
@@ -700,6 +710,16 @@
     }
   });
 
+  // Update tax when shipping cost changes
+  $(document).on('change', 'input[name^="shipping"]', function() {
+    var country_id = $('#select_country').val();
+    var state_id = $('#show_state').val() || 0;
+    if (country_id) {
+      setTimeout(function() {
+        tax_submit(country_id, state_id);
+      }, 500); // Small delay to allow shipping cost to update
+    }
+  });
 })();
 </script>
 @endsection

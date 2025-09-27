@@ -135,9 +135,9 @@
                                     </span>
                                 </div>
 
-                                <div class="price-details tax_show d-none">
-                                    <span>@lang('Tax')</span>
-                                    <span class="right-side original_tax">0</span>
+                                <div class="price-details tax_show">
+                                    <span>@lang('Tax') ({{ Session::get('is_tax', 0) }}%)</span>
+                                    <span class="right-side original_tax_amount">{{ App\Models\Product::convertPrice(Session::get('current_tax_amount', 0)) }}</span>
                                 </div>
 
                                 @if (Session::has('coupon'))
@@ -315,10 +315,12 @@
 
     $('#grandtotal').val(ftotal);
 
+    @php($shipping_cost = session('step2.shipping_cost') ?? ($shipping_cost ?? 0))
+
     function tax_submit(country_id, state_id) {
         $('.gocover').show();
         var total = $("#tgrandtotal").val();
-        var ship  = 0;
+        var ship  = {{ (float) $shipping_cost }};
         $.ajax({
             type: "GET",
             url: mainurl + "/country/tax/check",
@@ -328,21 +330,36 @@
                 $('#input_tax').val(data[11]);
                 $('#input_tax_type').val(data[12]);
 
-                // عرض النسبة (مع القيمة ممكن تضيفها لاحقًا إن رغبت)
+                // عرض النسبة وحفظ قيمة الضريبة
                 $('.original_tax').html(parseFloat(data[1]) + "%");
+                if(data[2]) {
+                    if (pos == 0) {
+                        $('.original_tax_amount').html('{{ $curr->sign }}' + parseFloat(data[2]).toFixed(2));
+                    } else {
+                        $('.original_tax_amount').html(parseFloat(data[2]).toFixed(2) + '{{ $curr->sign }}');
+                    }
+                }
 
-                var ttotal  = parseFloat($('#grandtotal').val());
-                var tttotal = parseFloat($('#grandtotal').val()) + (parseFloat(mship) + parseFloat(mpack));
+                // تحديث الإجمالي الجديد بعد الضريبة
+                var newTotal = parseFloat(data[0]);
+                $('#grandtotal').val(newTotal.toFixed(2));
+                $('#tgrandtotal').val(newTotal.toFixed(2));
+
+                var ttotal  = newTotal;
+                var tttotal = newTotal + parseFloat(mpack); // We don't add mship again because newTotal includes it.
                 ttotal  = parseFloat(ttotal).toFixed(2);
                 tttotal = parseFloat(tttotal).toFixed(2);
 
+                // تحديث العرض النهائي
                 if (pos == 0) {
                     $('#final-cost').html('{{ $curr->sign }}' + tttotal);
                     $('.total-cost-dum #total-cost').html('{{ $curr->sign }}' + ttotal);
+                    $('.total-amount').html('{{ $curr->sign }}' + tttotal);
                 } else {
                     $('#total-cost').html('');
                     $('#final-cost').html(tttotal + '{{ $curr->sign }}');
                     $('.total-cost-dum #total-cost').html(ttotal + '{{ $curr->sign }}');
+                    $('.total-amount').html(tttotal + '{{ $curr->sign }}');
                 }
                 $('.gocover').hide();
             }
@@ -371,7 +388,7 @@
     $(document).on("click", "#check_coupon", function () {
         var val = $("#code").val();
         var total = $("#ttotal").val();
-        var ship = 0;
+        var ship = {{ (float) $shipping_cost }};
         $.ajax({
             type: "GET",
             url: mainurl + "/carts/coupon/check",

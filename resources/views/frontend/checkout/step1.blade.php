@@ -281,7 +281,7 @@
 
                                     <div class="price-details tax_show d-none">
                                         <span>@lang('Tax')</span>
-                                        <span class="right-side original_tax">0</span>
+                                        <span class="right-side original_tax">0%</span>
                                     </div>
 
                                     @if (Session::has('coupon'))
@@ -527,8 +527,9 @@ document.addEventListener("DOMContentLoaded", function () {
             });
             if (matched) { $('#select_country').trigger('change'); }
         } else {
-            // ضيف: لا نعرض الضريبة قبل اختيار الدولة
-            $('.tax_show').addClass('d-none');
+            // ضيف: إظهار الضريبة مع قيمة افتراضية 0
+            $('.tax_show').removeClass('d-none');
+            $('.original_tax').html('0%');
         }
     });
 
@@ -559,15 +560,18 @@ document.addEventListener("DOMContentLoaded", function () {
                 ttotal  = parseFloat(ttotal).toFixed(2);
                 tttotal = parseFloat(tttotal).toFixed(2);
 
-                $('#grandtotal').val(data[0] + parseFloat(mship) + parseFloat(mpack));
+                var finalTotal = parseFloat(data[0]) + parseFloat(mship) + parseFloat(mpack);
+                $('#grandtotal').val(finalTotal.toFixed(2));
 
                 if (pos == 0) {
                     $('#final-cost').html('{{ $curr->sign }}' + tttotal);
                     $('.total-cost-dum #total-cost').html('{{ $curr->sign }}' + ttotal);
+                    $('.total-amount').html('{{ $curr->sign }}' + finalTotal.toFixed(2));
                 } else {
                     $('#total-cost').html('');
                     $('#final-cost').html(tttotal + '{{ $curr->sign }}');
                     $('.total-cost-dum #total-cost').html(ttotal + '{{ $curr->sign }}');
+                    $('.total-amount').html(finalTotal.toFixed(2) + '{{ $curr->sign }}');
                 }
                 $('.gocover').hide();
             }

@@ -161,10 +161,18 @@ class TryotoComponet extends Component
     protected string $_token;
     protected string $_webhook;
 
+    /** Cached general settings */
+    protected $generalSettings;
+
     public function mount(array $products, int $vendorId = 0)
     {
         $this->products = $products;
         $this->vendorId = $vendorId;
+
+        // Cache general settings to avoid repeated DB calls
+        $this->generalSettings = cache()->remember('generalsettings', now()->addMinutes(30), function () {
+            return \DB::table('generalsettings')->first();
+        });
 
         if (!config('services.tryoto.sandbox')) {
             $this->url = config('services.tryoto.live.url');
@@ -210,15 +218,31 @@ class TryotoComponet extends Component
      */
     protected function authorize(): void
     {
+        // First try to get cached token
+        $cachedToken = Cache::get('tryoto-token');
+        if ($cachedToken) {
+            $this->token = $cachedToken;
+            return;
+        }
+
+        // Get refresh token based on environment with multiple fallbacks
+        $refreshToken = config('services.tryoto.sandbox')
+            ? (config('services.tryoto.test.token') ?? config('services.tryoto.test.refresh_token') ?? env('TRYOTO_TEST_REFRESH_TOKEN'))
+            : (config('services.tryoto.live.token') ?? config('services.tryoto.live.refresh_token') ?? env('TRYOTO_REFRESH_TOKEN'));
+
         $response = Http::post($this->url . '/rest/v2/refreshToken', [
-            'refresh_token' => env('TRYOTO_REFRESH_TOKEN'),
+            'refresh_token' => $refreshToken,
         ]);
 
         if ($response->successful()) {
             $token = $response->json()['access_token'];
-            Cache::put('tryoto-token', $token, now()->addMinutes($response->json()['expires_in']));
+            $expiresIn = (int)($response->json()['expires_in'] ?? 3600);
+            $ttl = now()->addSeconds(max(300, $expiresIn - 60));
+            Cache::put('tryoto-token', $token, $ttl);
+            // dd(['__fn__' => __FUNCTION__, 'ttl' => $ttl->diffInSeconds(), 'sandbox' => config('services.tryoto.sandbox')]); // Quick Check
             $this->token = $token;
-            // // dd($this->token); // فحص سريع لو احتجت
+        } else {
+            throw new \Exception('Failed to get Tryoto access token: ' . $response->body());
         }
     }
 
@@ -246,13 +270,17 @@ class TryotoComponet extends Component
         // Calculate dimensions using PriceHelper
         $dimensions = \App\Helpers\PriceHelper::calculateShippingDimensions($this->products);
 
+        // Get cities from session data
+        $originCity = $this->getOriginCity();
+        $destinationCity = $this->getDestinationCity();
+
         $response = Http::withToken($this->token)->post($this->url . '/rest/v2/checkOTODeliveryFee', [
-            "originCity"      => "Riyadh",
-            "destinationCity" => "Riyadh",
+            "originCity"      => $originCity,
+            "destinationCity" => $destinationCity,
             "weight"          => $dimensions['weight'],
+            "xlength"         => max(30, $dimensions['length']), // Minimum 30cm or calculated length
             "xheight"         => max(30, $dimensions['height']), // Minimum 30cm or calculated height
             "xwidth"          => max(30, $dimensions['width']),  // Minimum 30cm or calculated width
-            "xlength"         => max(30, $dimensions['length'])  // Minimum 30cm or calculated length
         ]);
 
         if (!$response->successful()) {
@@ -263,5 +291,54 @@ class TryotoComponet extends Component
 
         // إعلان مبدئي لتحديث نص الشحن الافتراضي (أول خيار)
         $this->emit('shipping-updated', ['vendorId' => $this->vendorId]);
+    }
+
+    /**
+     * Get origin city (vendor/warehouse city)
+     */
+    protected function getOriginCity(): string
+    {
+        // Default to Riyadh if no vendor-specific city is found
+        $defaultCity = 'Riyadh';
+
+        // If vendorId is available, try to get vendor's city
+        if ($this->vendorId > 0) {
+            $vendor = \App\Models\User::find($this->vendorId);
+            if ($vendor && !empty($vendor->city)) {
+                return $vendor->city;
+            }
+        }
+
+        // Get from cached general settings or default
+        return $this->generalSettings->shop_city ?? $defaultCity;
+    }
+
+    /**
+     * Get destination city from customer data in session
+     */
+    protected function getDestinationCity(): string
+    {
+        // Default to Riyadh if no customer city is found
+        $defaultCity = 'Riyadh';
+
+        // Try to get customer city from step1 session data
+        if (\Session::has('step1')) {
+            $step1 = \Session::get('step1');
+
+            // Check if customer_city exists in step1 data
+            if (!empty($step1['customer_city'])) {
+                return $step1['customer_city'];
+            }
+        }
+
+        // If authenticated user, try to get from user profile
+        if (\Auth::check()) {
+            $user = \Auth::user();
+            if (!empty($user->city)) {
+                return $user->city;
+            }
+        }
+
+        return $defaultCity;
     }
 }
