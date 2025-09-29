@@ -42,7 +42,7 @@
     $displaySku = !empty($sku) ? $sku : '-';
 
     // Route generation
-    $productRoute = !empty($slug) ? route('front.product', ['slug' => $slug, 'user' => $userId]) : '#';
+    $productRoute = !empty($slug) ? route('front.product.user', ['slug' => $slug, 'user' => $userId]) : '#';
 @endphp
 
 <div class="{{ $class }}">

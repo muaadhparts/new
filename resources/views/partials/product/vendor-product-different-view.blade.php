@@ -6,7 +6,7 @@
           <div class="product type-product">
             <div class="product-wrapper">
               <div class="product-image">
-                <a href="{{ route('front.product', ['slug' => $product->slug, 'user' => $product->user_id]) }}" class="woocommerce-LoopProduct-link">
+                <a href="{{ route('front.product.user', ['slug' => $product->slug, 'user' => $product->user_id]) }}" class="woocommerce-LoopProduct-link">
                   <img src="{{ $product->thumbnail ? asset('assets/images/thumbnails/' . $product->thumbnail) : asset('assets/images/noimage.png') }}" alt="Product Image">
                 </a>
                 <div class="hover-area">
@@ -57,7 +57,7 @@
 
               <div class="product-info">
                 <h3 class="product-title">
-                  <a href="{{ route('front.product', ['slug' => $product->slug, 'user' => $product->user_id]) }}"><x-product-name :product="$product" :vendor-id="$product->user_id" target="_self" /></a>
+                  <a href="{{ route('front.product.user', ['slug' => $product->slug, 'user' => $product->user_id]) }}"><x-product-name :product="$product" :vendor-id="$product->user_id" target="_self" /></a>
                 </h3>
                 <div class="product-price">
                   <div class="price">
@@ -86,7 +86,7 @@
           <div class="product type-product">
             <div class="product-wrapper">
               <div class="product-image">
-                <a href="{{ route('front.product', ['slug' => $product->slug, 'user' => $product->user_id]) }}" class="woocommerce-LoopProduct-link">
+                <a href="{{ route('front.product.user', ['slug' => $product->slug, 'user' => $product->user_id]) }}" class="woocommerce-LoopProduct-link">
                   <img src="{{ $product->thumbnail ? asset('assets/images/thumbnails/' . $product->thumbnail) : asset('assets/images/noimage.png') }}" alt="Product Image">
                 </a>
                 <div class="hover-area">
@@ -138,7 +138,7 @@
 
               <div class="product-info">
                 <h3 class="product-title">
-                  <a href="{{ route('front.product', ['slug' => $product->slug, 'user' => $product->user_id]) }}"><x-product-name :product="$product" :vendor-id="$product->user_id" target="_self" /></a>
+                  <a href="{{ route('front.product.user', ['slug' => $product->slug, 'user' => $product->user_id]) }}"><x-product-name :product="$product" :vendor-id="$product->user_id" target="_self" /></a>
                 </h3>
                 <div class="product-price">
                   <div class="price">
@@ -168,7 +168,7 @@
         <div class="product type-product">
           <div class="product-wrapper">
             <div class="product-image">
-              <a href="{{ route('front.product', ['slug' => $product->slug, 'user' => $product->user_id]) }}" class="woocommerce-LoopProduct-link">
+              <a href="{{ route('front.product.user', ['slug' => $product->slug, 'user' => $product->user_id]) }}" class="woocommerce-LoopProduct-link">
                 <img src="{{ $product->thumbnail ? asset('assets/images/thumbnails/' . $product->thumbnail) : asset('assets/images/noimage.png') }}" alt="Product Image">
               </a>
               <div class="hover-area">
@@ -219,7 +219,7 @@
 
             <div class="product-info">
               <h3 class="product-title">
-                <a href="{{ route('front.product', ['slug' => $product->slug, 'user' => $product->user_id]) }}">{{ $product->showName() }}</a>
+                <a href="{{ route('front.product.user', ['slug' => $product->slug, 'user' => $product->user_id]) }}">{{ $product->showName() }}</a>
               </h3>
               <div class="product-price">
                 <div class="price">

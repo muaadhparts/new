@@ -144,7 +144,7 @@ table#example2 {
                                                                     <tbody>
                                                                         @foreach($data->products as $dt)
                                                                         <tr>
-                                                                        <td><a href="{{ route('front.product', $dt->slug) }}" target="_blank">{{ sprintf("%'.08d",$dt->id) }}</a></td>
+                                                                        <td><a href="{{ route('front.product.legacy', $dt->slug) }}" target="_blank">{{ sprintf("%'.08d",$dt->id) }}</a></td>
                                                                             <td>{{ $dt->type }}</td>
                                                                             @php 
                                                                             $stck = (string)$dt->stock;

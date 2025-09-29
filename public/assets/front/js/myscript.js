@@ -102,7 +102,15 @@
   // add to card
   $(document).on("click", ".add_cart_click", function (e) {
     e.preventDefault();
-    $.get($(this).attr("data-href"), function (data) {
+
+    // Get merchant product ID from data attribute
+    const mpId = $(this).data('merchant-product');
+    const href = $(this).attr("data-href");
+
+    // Use merchant product ID if available, otherwise fallback to href
+    const requestUrl = mpId ? href : href;
+
+    $.get(requestUrl, function (data) {
       if (data == "digital") {
         toastr.error(lang.cart_already);
       } else if (data[0] == 0) {

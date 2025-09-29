@@ -35,7 +35,7 @@
                                 @endphp
                                 <td>
                                     @if($product)
-                                        <a href="{{ route('front.product', ['slug' => $product->slug, 'user' => $productData['merchant_product']->user_id]) }}">
+                                        <a href="{{ route('front.product.mp', ['slug' => $product->slug, 'vendor_id' => $productData['merchant_product']->user_id, 'merchant_product_id' => $productData['merchant_product']->id]) }}">
                                             <img class="img-fluid w-150"
                                                 src="{{ $product->thumbnail ? asset('assets/images/thumbnails/' . $product->thumbnail) : asset('assets/images/noimage.png') }}"
                                                 alt="compare-img">
@@ -55,7 +55,7 @@
                                 @endphp
                                 <td>
                                     @if($product)
-                                        <a href="{{ route('front.product', ['slug' => $product->slug, 'user' => $productData['merchant_product']->user_id]) }}">
+                                        <a href="{{ route('front.product.mp', ['slug' => $product->slug, 'vendor_id' => $productData['merchant_product']->user_id, 'merchant_product_id' => $productData['merchant_product']->id]) }}">
                                             <h6 class="product-title">{{ $product->name }}</h6>
                                         </a>
                                     @endif
@@ -172,7 +172,7 @@
                                             @else
                                                 @if ($product->type != 'Listing')
                                                     <a href="javascript:;"
-                                                       data-href="{{ route('product.cart.add', $merchantProductId) }}"
+                                                       data-href="{{ route('merchant.cart.add', $merchantProductId) }}"
                                                         class="add_cart_click template-btn dark-btn w-100">
                                                         @lang('Add To Cart')
                                                     </a>
@@ -190,7 +190,7 @@
                             </td>
                             @foreach ($products as $merchantProductId => $productData)
                                 <td>
-                                    <a href="{{ route('product.compare.remove', $merchantProductId) }}"
+                                    <a href="{{ route('merchant.compare.remove', $merchantProductId) }}"
                                         class="template-btn dark-outline w-100">@lang('Remove')</a>
                                 </td>
                             @endforeach

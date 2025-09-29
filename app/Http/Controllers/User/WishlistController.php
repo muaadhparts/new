@@ -79,6 +79,38 @@ class WishlistController extends UserBaseController
     }
 
     /**
+     * Add merchant product to wishlist (New standardized method)
+     */
+    public function addMerchantWishlist($merchantProductId)
+    {
+        return $this->addwish($merchantProductId);
+    }
+
+    /**
+     * Remove merchant product from wishlist (New standardized method)
+     */
+    public function removeMerchantWishlist($merchantProductId)
+    {
+        $user = $this->user;
+
+        $wishlist = Wishlist::where('user_id', $user->id)
+            ->where('merchant_product_id', $merchantProductId)
+            ->first();
+
+        if ($wishlist) {
+            $wishlist->delete();
+            $data[0] = 1;
+            $data[1] = Wishlist::where('user_id', $user->id)->count();
+            $data['success'] = __('Successfully Removed From The Wishlist.');
+        } else {
+            $data[0] = 0;
+            $data['error'] = __('Item not found in wishlist.');
+        }
+
+        return response()->json($data);
+    }
+
+    /**
      * Add merchant product to wishlist
      * Expects merchant_product_id as parameter
      */

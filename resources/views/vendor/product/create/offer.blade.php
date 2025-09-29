@@ -98,6 +98,21 @@
                                 </div>
                             </div>
 
+                            <!-- Brand Quality -->
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">@lang('Brand Quality*')</label>
+                                    <select class="form-control" name="brand_quality_id" required>
+                                        <option value="">@lang('Select Brand Quality')</option>
+                                        @foreach(\App\Models\QualityBrand::active()->get() as $qualityBrand)
+                                            <option value="{{ $qualityBrand->id }}">
+                                                {{ $qualityBrand->display_name }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                            </div>
+
                             <!-- Shipping Time -->
                             <div class="col-md-6">
                                 <div class="mb-3">

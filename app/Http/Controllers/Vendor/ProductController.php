@@ -374,6 +374,7 @@ class ProductController extends VendorBaseController
             'price' => 'required|numeric|min:0',
             'stock' => 'required|integer|min:0',
             'product_condition' => 'required|in:1,2',
+            'brand_quality_id' => 'required|exists:quality_brands,id',
         ];
 
         $validator = Validator::make($request->all(), $rules);
@@ -382,19 +383,21 @@ class ProductController extends VendorBaseController
             return response()->json(array('errors' => $validator->getMessageBag()->toArray()));
         }
 
-        // Check if vendor already has an offer for this product
+        // Check if vendor already has an offer for this product with the same brand quality
         $existingOffer = MerchantProduct::where('product_id', $request->product_id)
             ->where('user_id', $user->id)
+            ->where('brand_quality_id', $request->brand_quality_id)
             ->first();
 
         if ($existingOffer) {
-            return response()->json(array('errors' => ['product_id' => ['You already have an offer for this product.']]));
+            return response()->json(array('errors' => ['brand_quality_id' => ['You already have an offer for this product with this brand quality.']]));
         }
 
         // Prepare merchant product data
         $merchantData = [
             'product_id' => $request->product_id,
             'user_id' => $user->id,
+            'brand_quality_id' => $request->brand_quality_id,
             'price' => $request->price / $sign->value,
             'previous_price' => $request->previous_price ? ($request->previous_price / $sign->value) : null,
             'stock' => $request->stock,
@@ -454,6 +457,7 @@ class ProductController extends VendorBaseController
             'price' => 'required|numeric|min:0',
             'stock' => 'required|integer|min:0',
             'product_condition' => 'required|in:1,2',
+            'brand_quality_id' => 'required|exists:brand_qualities,id',
         ];
 
         $validator = Validator::make($request->all(), $rules);
@@ -462,8 +466,20 @@ class ProductController extends VendorBaseController
             return response()->json(array('errors' => $validator->getMessageBag()->toArray()));
         }
 
+        // Check for brand quality conflicts when editing
+        $conflict = MerchantProduct::where('product_id', $merchantProduct->product_id)
+            ->where('user_id', $merchantProduct->user_id)
+            ->where('brand_quality_id', $request->brand_quality_id)
+            ->where('id', '<>', $merchantProduct->id)
+            ->exists();
+
+        if ($conflict) {
+            return response()->json(['errors' => ['brand_quality_id' => ['You already have an offer for this product with this brand quality.']]]);
+        }
+
         // Prepare merchant product data
         $merchantData = [
+            'brand_quality_id' => $request->brand_quality_id,
             'price' => $request->price / $sign->value,
             'previous_price' => $request->previous_price ? ($request->previous_price / $sign->value) : null,
             'stock' => $request->stock,

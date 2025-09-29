@@ -24,6 +24,42 @@ class CompareController extends FrontBaseController
     }
 
     /**
+     * Add merchant product to comparison (New standardized method)
+     */
+    public function addMerchantCompare($merchantProductId)
+    {
+        return $this->addcompare($merchantProductId);
+    }
+
+    /**
+     * Remove merchant product from comparison (New standardized method)
+     */
+    public function removeMerchantCompare($merchantProductId)
+    {
+        $data[0] = 0;
+        $oldCompare = Session::has('compare') ? Session::get('compare') : null;
+
+        if (!$oldCompare || !isset($oldCompare->items[$merchantProductId])) {
+            $data['error'] = __('Item not found in compare list.');
+            return response()->json($data);
+        }
+
+        $compare = new Compare($oldCompare);
+        $compare->removeItem($merchantProductId);
+
+        if (count($compare->items) > 0) {
+            Session::put('compare', $compare);
+        } else {
+            Session::forget('compare');
+        }
+
+        $data[0] = 1;
+        $data[1] = count($compare->items);
+        $data['success'] = __('Successfully Removed From Compare.');
+        return response()->json($data);
+    }
+
+    /**
      * Add merchant product to comparison
      * Expects merchant_product_id as parameter
      */

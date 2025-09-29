@@ -13,6 +13,66 @@ use Illuminate\Support\Facades\Session;
 
 class CartController extends FrontBaseController
 {
+    /* ===================== New Merchant-Product-Based Methods ===================== */
+
+    /**
+     * Add merchant product to cart (New standardized method)
+     */
+    public function addMerchantCart($merchantProductId)
+    {
+        $mp = MerchantProduct::with(['product', 'user', 'qualityBrand'])->findOrFail($merchantProductId);
+
+        if (!$mp || $mp->status !== 1 || $mp->stock <= 0) {
+            return response()->json(['error' => __('Product not available')]);
+        }
+
+        $prod = $mp->product;
+        $size = (string) request('size', '');
+        if ($size === '') {
+            [$size, $_] = $this->pickAvailableSize($mp->size, $mp->size_qty);
+        }
+
+        $color = (string) request('color', '');
+        if ($color === '' && !empty($mp->color_all)) {
+            $colors = $this->toArrayValues($mp->color_all);
+            if (!empty($colors)) {
+                $color = ltrim((string)$colors[0], '#');
+            }
+        }
+
+        $effStock = $this->effectiveStock($mp, $size);
+        if ($effStock <= 0) {
+            return response()->json(['error' => __('Out of stock')]);
+        }
+
+        // Inject merchant context into product for cart compatibility
+        $this->injectMerchantContext($prod, $mp);
+
+        $keys = (string) request('keys','');
+        $values = (string) request('values','');
+
+        $oldCart = Session::has('cart') ? Session::get('cart') : null;
+        $cart = new Cart($oldCart);
+        $cart->add($prod, $merchantProductId, $size, $color, $keys, $values);
+
+        $this->recomputeTotals($cart);
+        Session::put('cart', $cart);
+
+        return response()->json([
+            'cart_count' => $cart->totalQty,
+            'cart_total' => number_format($cart->totalPrice, 2),
+            'success' => __('Item added to cart successfully')
+        ]);
+    }
+
+    /**
+     * Quick add merchant product to cart
+     */
+    public function quickAddMerchantCart($merchantProductId)
+    {
+        return $this->addMerchantCart($merchantProductId);
+    }
+
     /* ===================== Cart pages ===================== */
 
     public function cart(Request $request)

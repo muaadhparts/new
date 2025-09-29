@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Front;
 
 use App\Models\Category;
 use App\Models\Childcategory;
+use App\Models\MerchantProduct;
 use App\Models\Product;
 use App\Models\Report;
 use App\Models\Subcategory;
@@ -47,6 +48,8 @@ class CatalogController extends FrontBaseController
         $minprice = ($minprice / $this->curr->value);
         $maxprice = ($maxprice / $this->curr->value);
         $type = $request->has('type') ?? '';
+        $brandQuality = (array) $request->brand_quality;
+        $user = $request->user;
 
         if (!empty($slug)) {
             $cat = Category::where('slug', $slug)->firstOrFail();
@@ -77,143 +80,164 @@ class CatalogController extends FrontBaseController
             ->take(5)
             ->get();
 
-        // Build product query based on categories and vendor-specific conditions
-        $prods = Product::query();
-        
-        // Filter by category
+        // Get merchant products (offers) instead of products for displaying multiple cards per product
+        // Build query for merchant products (offers) with their related products
+        $prods = MerchantProduct::with([
+            'user',
+            'qualityBrand',
+            'product' => function ($q) {
+                $q->withCount('ratings')->withAvg('ratings', 'rating');
+            },
+        ])
+            ->leftJoin('products', 'products.id', '=', 'merchant_products.product_id')
+            ->select('merchant_products.*') // Avoid column collisions
+            ->where('merchant_products.status', 1)
+            ->where('merchant_products.stock', '>=', 1)
+            ->whereHas('user', function ($user) {
+                $user->where('is_vendor', 2);
+            });
+
+        // Filter by product categories
         $prods = $prods->when($cat, function ($query, $cat) {
-            return $query->where('category_id', $cat->id);
-        });
-
-        // Filter by subcategory
-        $prods = $prods->when($subcat, function ($query, $subcat) {
-            return $query->where('subcategory_id', $subcat->id);
-        });
-
-        // Filter by child category
-        $prods = $prods->when($childcat, function ($query, $childcat) {
-            return $query->where('childcategory_id', $childcat->id);
-        });
-
-        // Search by name
-        $prods = $prods->when($search, function ($query, $search) {
-            return $query->where(function ($subQuery) use ($search) {
-                $subQuery->where('name', 'like', '%' . $search . '%')
-                    ->orWhere('name', 'like', $search . '%');
+            return $query->whereHas('product', function ($productQuery) use ($cat) {
+                $productQuery->where('category_id', $cat->id);
             });
         });
 
-        // Apply price, discount and stock filters via merchantProducts relationship
-        $prods = $prods->whereHas('merchantProducts', function ($q) use ($minprice, $maxprice, $type) {
-            $q->where('status', 1)
-                ->where('stock', '>=', 1)
-                ->when($minprice, function ($query) use ($minprice) {
-                    return $query->where('price', '>=', $minprice);
-                })
-                ->when($maxprice, function ($query) use ($maxprice) {
-                    return $query->where('price', '<=', $maxprice);
-                })
-                ->when($type, function ($query) {
-                    // `type` indicates discount filter: require discount to be active and not expired
-                    return $query->where('is_discount', 1)
-                        ->where('discount_date', '>=', date('Y-m-d'));
-                })
-                ->whereHas('user', function ($user) {
-                    $user->where('is_vendor', 2);
-                });
+        $prods = $prods->when($subcat, function ($query, $subcat) {
+            return $query->whereHas('product', function ($productQuery) use ($subcat) {
+                $productQuery->where('subcategory_id', $subcat->id);
+            });
         });
 
-        // Sorting options
+        $prods = $prods->when($childcat, function ($query, $childcat) {
+            return $query->whereHas('product', function ($productQuery) use ($childcat) {
+                $productQuery->where('childcategory_id', $childcat->id);
+            });
+        });
+
+        // Search by product name
+        $prods = $prods->when($search, function ($query, $search) {
+            return $query->whereHas('product', function ($productQuery) use ($search) {
+                $productQuery->where(function ($subQuery) use ($search) {
+                    $subQuery->where('name', 'like', '%' . $search . '%')
+                        ->orWhere('name', 'like', $search . '%');
+                });
+            });
+        });
+
+        // Price filters
+        $prods = $prods->when($minprice, function ($query) use ($minprice) {
+            return $query->where('price', '>=', $minprice);
+        });
+
+        $prods = $prods->when($maxprice, function ($query) use ($maxprice) {
+            return $query->where('price', '<=', $maxprice);
+        });
+
+        // Discount filter
+        $prods = $prods->when($type, function ($query) {
+            return $query->where('is_discount', 1)
+                ->where('discount_date', '>=', date('Y-m-d'));
+        });
+
+        // Brand Quality filter
+        $prods = $prods->when(!empty($brandQuality), fn($q) => $q->whereIn('brand_quality_id', $brandQuality));
+
+        // User (vendor) filter
+        $prods = $prods->when($request->filled('user'), function ($q) use ($request) {
+            $q->where('user_id', (int) $request->user);
+        });
+
+        // Sorting options - sort by merchant products
         $prods = $prods->when($sort, function ($query, $sort) {
             if ($sort == 'date_desc') {
-                return $query->latest('products.id');
+                return $query->latest('merchant_products.id');
             } elseif ($sort == 'date_asc') {
-                return $query->oldest('products.id');
+                return $query->oldest('merchant_products.id');
             } elseif ($sort == 'price_desc') {
-                // Order by minimum vendor price descending
-                return $query->orderByRaw('(select min(price) from merchant_products where merchant_products.product_id = products.id and merchant_products.status = 1) desc');
+                return $query->orderBy('merchant_products.price', 'desc');
             } elseif ($sort == 'price_asc') {
-                // Order by minimum vendor price ascending
-                return $query->orderByRaw('(select min(price) from merchant_products where merchant_products.product_id = products.id and merchant_products.status = 1) asc');
+                return $query->orderBy('merchant_products.price', 'asc');
+            } elseif ($sort == 'sku_asc') {
+                return $query->orderByRaw('CAST(products.sku AS UNSIGNED) asc, products.sku asc');
+            } elseif ($sort == 'sku_desc') {
+                return $query->orderByRaw('CAST(products.sku AS UNSIGNED) desc, products.sku desc');
             }
         });
-        
+
         // Default sorting if no sort option provided
         if (empty($sort)) {
-            $prods = $prods->latest('products.id');
+            $prods = $prods->latest('merchant_products.id');
         }
 
-        // Add ratings count and average
-        $prods = $prods->withCount('ratings')->withAvg('ratings', 'rating');
+        // Handle product attributes filtering through product relationship
+        $prods = $prods->whereHas('product', function ($productQuery) use ($cat, $subcat, $childcat, $request) {
+            $productQuery->where(function ($query) use ($cat, $subcat, $childcat, $request) {
+                $flag = 0;
+                if (!empty($cat)) {
+                    foreach ($cat->attributes as $key => $attribute) {
+                        $inname = $attribute->input_name;
+                        $chFilters = $request["$inname"];
 
-        $prods = $prods->where(function ($query) use ($cat, $subcat, $childcat, $type, $request) {
-            $flag = 0;
-            if (!empty($cat)) {
-                foreach ($cat->attributes as $key => $attribute) {
-                    $inname = $attribute->input_name;
-                    $chFilters = $request["$inname"];
-
-                    if (!empty($chFilters)) {
-                        $flag = 1;
-                        foreach ($chFilters as $key => $chFilter) {
-                            if ($key == 0) {
-                                $query->where('attributes', 'like', '%' . '"' . $chFilter . '"' . '%');
-                            } else {
-                                $query->orWhere('attributes', 'like', '%' . '"' . $chFilter . '"' . '%');
+                        if (!empty($chFilters)) {
+                            $flag = 1;
+                            foreach ($chFilters as $key => $chFilter) {
+                                if ($key == 0) {
+                                    $query->where('attributes', 'like', '%' . '"' . $chFilter . '"' . '%');
+                                } else {
+                                    $query->orWhere('attributes', 'like', '%' . '"' . $chFilter . '"' . '%');
+                                }
                             }
                         }
                     }
                 }
-            }
 
-            if (!empty($subcat)) {
-                foreach ($subcat->attributes as $attribute) {
-                    $inname = $attribute->input_name;
-                    $chFilters = $request["$inname"];
+                if (!empty($subcat)) {
+                    foreach ($subcat->attributes as $attribute) {
+                        $inname = $attribute->input_name;
+                        $chFilters = $request["$inname"];
 
-                    if (!empty($chFilters)) {
-                        $flag = 1;
-                        foreach ($chFilters as $key => $chFilter) {
-                            if ($key == 0 && $flag == 0) {
-                                $query->where('attributes', 'like', '%' . '"' . $chFilter . '"' . '%');
-                            } else {
-                                $query->orWhere('attributes', 'like', '%' . '"' . $chFilter . '"' . '%');
+                        if (!empty($chFilters)) {
+                            $flag = 1;
+                            foreach ($chFilters as $key => $chFilter) {
+                                if ($key == 0 && $flag == 0) {
+                                    $query->where('attributes', 'like', '%' . '"' . $chFilter . '"' . '%');
+                                } else {
+                                    $query->orWhere('attributes', 'like', '%' . '"' . $chFilter . '"' . '%');
+                                }
                             }
                         }
                     }
                 }
-            }
 
-            if (!empty($childcat)) {
-                foreach ($childcat->attributes as $attribute) {
-                    $inname = $attribute->input_name;
-                    $chFilters = $request["$inname"];
+                if (!empty($childcat)) {
+                    foreach ($childcat->attributes as $attribute) {
+                        $inname = $attribute->input_name;
+                        $chFilters = $request["$inname"];
 
-                    if (!empty($chFilters)) {
-                        $flag = 1;
-                        foreach ($chFilters as $key => $chFilter) {
-                            if ($key == 0 && $flag == 0) {
-                                $query->where('attributes', 'like', '%' . '"' . $chFilter . '"' . '%');
-                            } else {
-                                $query->orWhere('attributes', 'like', '%' . '"' . $chFilter . '"' . '%');
+                        if (!empty($chFilters)) {
+                            $flag = 1;
+                            foreach ($chFilters as $key => $chFilter) {
+                                if ($key == 0 && $flag == 0) {
+                                    $query->where('attributes', 'like', '%' . '"' . $chFilter . '"' . '%');
+                                } else {
+                                    $query->orWhere('attributes', 'like', '%' . '"' . $chFilter . '"' . '%');
+                                }
                             }
                         }
                     }
                 }
-            }
+            });
         });
         
         // dd($prods->toSql(), $prods->getBindings(), $prods->count());
 
 
-        // Paginate after applying filters and eager loading ratings.  Once paginated, transform each item
+        // Paginate the merchant products (offers)
         $prods = $prods->paginate(isset($pageby) ? $pageby : $this->gs->page_count);
-        
-        $prods->getCollection()->transform(function ($item) {
-            // Replace price with vendor size price (includes commission and attribute adjustments)
-            $item->price = $item->vendorSizePrice();
-            return $item;
-        });
+
+        // No need to transform ratings - they are already eager loaded with withCount and withAvg
         
         $data['prods'] = $prods;
         if ($request->ajax()) {

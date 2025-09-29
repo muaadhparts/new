@@ -15,6 +15,7 @@ class MerchantProduct extends Model
     protected $fillable = [
         'product_id',
         'user_id',
+        'brand_quality_id',
         'price',
         'previous_price',
         'stock',
@@ -56,6 +57,11 @@ class MerchantProduct extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id');
+    }
+
+    public function qualityBrand(): BelongsTo
+    {
+        return $this->belongsTo(QualityBrand::class, 'brand_quality_id');
     }
 
     /**

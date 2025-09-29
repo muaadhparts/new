@@ -19,15 +19,16 @@ use Illuminate\Support\Facades\Validator;
 class ProductDetailsController extends FrontBaseController
 {
     /**
-     * صفحة تفاصيل المنتج: /item/{slug}/{user}
-     * تربط المنتج بالبائع عبر merchant_products وليس عبر products.user_id.
+     * New preferred method: /item/{slug}/store/{vendor_id}/merchant_products/{merchant_product_id}
+     * Load Product by slug and MerchantProduct by id
+     * Assert merchant_products.product_id == products.id and vendor_id matches, else 404
      */
-    public function product(Request $request, $slug, $user)
+    public function showByMerchantProduct(Request $request, $slug, $vendor_id = null, $merchant_product_id = null)
     {
         $affilate_user = 0;
         $gs = $this->gs;
 
-        // منطق الأفلييت كما هو
+        // Affiliate logic
         if ($gs->product_affilate == 1 && $request->has('ref') && !empty($request->ref)) {
             $ref = $request->ref;
             $userRef = User::where('affilate_code', $ref)->first();
@@ -40,98 +41,180 @@ class ProductDetailsController extends FrontBaseController
             }
         }
 
-        // 1) هوية المنتج من الـ slug
+        // 1) Load product by slug
         $productt = Product::with(['galleries'])
             ->withCount('ratings')
             ->withAvg('ratings', 'rating')
             ->where('slug', $slug)
             ->first();
 
-        // If no product found, return 404
         if (!$productt) {
             return response()->view('errors.404')->setStatusCode(404);
         }
 
-        // 2) التأكد من {user}
-        $userId = (int) $user;
-        if ($userId <= 0) {
-            // ليس لدينا بائع صالح، نحاول تحويل المستخدم لأقرب بائع فعّال
-            $fallback = MerchantProduct::where('product_id', $productt->id)
-                ->where('status', 1)
-                ->orderByRaw('CASE WHEN (stock IS NULL OR stock = 0) THEN 1 ELSE 0 END ASC')
-                ->orderBy('price')
-                ->first();
+        // Handle different route formats
+        // Check if this is the old short route format by examining the number of route parameters
+        $routeParams = $request->route()->parameters();
 
-            return $fallback
-                ? redirect()->route('front.product', ['slug' => $slug, 'user' => $fallback->user_id])
-                : response()->view('errors.404')->setStatusCode(404);
+        if (count($routeParams) == 2) {
+            // Old short format: /item/{slug}/{merchant_product_id}
+            // $vendor_id actually contains the merchant_product_id
+            $merchant_product_id = $vendor_id;
+            $vendor_id = null;
+        }
+        // Otherwise it's the new format: /item/{slug}/store/{vendor_id}/product/{merchant_product_id}
+
+        // 2) Load merchant product by ID
+        $merchantProduct = MerchantProduct::with(['user', 'qualityBrand'])
+            ->find($merchant_product_id);
+
+        if (!$merchantProduct) {
+            return response()->view('errors.404')->setStatusCode(404);
         }
 
-        // 3) عرض البائع لهذا المنتج (لا تستخدم firstOrFail لتفادي الاستثناء)
-        $merchantProduct = MerchantProduct::where('product_id', $productt->id)
-            ->where('user_id', $userId)
-            ->first();
-
-        // إن لم يوجد أو غير مفعّل → إعادة توجيه لأقرب بائع فعّال إن وُجد، وإلا 404
-        if (!$merchantProduct || (int) $merchantProduct->status !== 1) {
-            $fallback = MerchantProduct::where('product_id', $productt->id)
-                ->where('status', 1)
-                ->orderByRaw('CASE WHEN (stock IS NULL OR stock = 0) THEN 1 ELSE 0 END ASC')
-                ->orderBy('price')
-                ->first();
-
-            return $fallback
-                ? redirect()->route('front.product', ['slug' => $slug, 'user' => $fallback->user_id])
-                : response()->view('errors.404')->setStatusCode(404);
+        // 3) Assert merchant_products.product_id == products.id
+        if ($merchantProduct->product_id != $productt->id) {
+            return response()->view('errors.404')->setStatusCode(404);
         }
 
-        // 4) بائعون آخرون لنفس المنتج (غير المختار)
+        // 4) Verify vendor_id matches if provided
+        if ($vendor_id !== null && $merchantProduct->user_id != $vendor_id) {
+            return response()->view('errors.404')->setStatusCode(404);
+        }
+
+        // 5) Check if merchant product is active
+        if ((int) $merchantProduct->status !== 1) {
+            return response()->view('errors.404')->setStatusCode(404);
+        }
+
+        // 5) Other sellers for same product
         $otherSellers = MerchantProduct::query()
             ->where('product_id', $productt->id)
             ->where('status', 1)
-            ->where('user_id', '<>', $merchantProduct->user_id)
-            ->with('user:id,shop_name,is_vendor')
+            ->where('id', '<>', $merchantProduct->id)
+            ->with(['user:id,shop_name,is_vendor', 'qualityBrand'])
             ->get();
 
-        // 5) منتجات أخرى لنفس البائع (عروض أخرى غير هذا المنتج)
+        // 6) Other listings from same vendor
         $vendorListings = MerchantProduct::query()
             ->where('user_id', $merchantProduct->user_id)
             ->where('status', 1)
-            ->where('product_id', '<>', $productt->id)
-            ->with(['product' => function ($q) {
-                $q->withCount('ratings')->withAvg('ratings', 'rating');
-            }])
-            ->latest('id')
-            ->take(9)
+            ->where('id', '<>', $merchantProduct->id)
+            ->with('product')
+            ->take(12)
             ->get();
 
-        // مصفوفة Products لتوافق القوالب القديمة
-        $vendor_products = $vendorListings->pluck('product');
+        // Set variables for view
+        $merchant = $merchantProduct;
+        $vendorId = $merchantProduct->user_id;
 
-        // 6) زيادة المشاهدات وتسجيل النقرات كما هو
-        $productt->increment('views');
+        // Track click
+        if (!session()->has('click_' . $productt->id)) {
+            ProductClick::create([
+                'product_id' => $productt->id,
+                'date' => Carbon::now()->format('Y-m-d'),
+                'clicks' => 1,
+            ]);
+            session()->put('click_' . $productt->id, 1);
+        }
 
-        $product_click = new ProductClick;
-        $product_click->product_id = $productt->id;
-        $product_click->date = Carbon::now()->format('Y-m-d');
-        $product_click->save();
+        return view('frontend.product', compact(
+            'productt', 'gs', 'otherSellers', 'vendorListings', 'affilate_user',
+            'merchant', 'vendorId'
+        ));
+    }
 
-        $curr = $this->curr;
+    /**
+     * Legacy method: /item/{slug}/{user}
+     * Pick deterministic default mp for that user, then redirect to front.product.mp
+     */
+    public function showByUser($slug, $user)
+    {
+        // Load product by slug
+        $productt = Product::where('slug', $slug)->first();
+        if (!$productt) {
+            return response()->view('errors.404')->setStatusCode(404);
+        }
 
-        // ملاحظة: في الـ Blade، السعر/المخزون يُقرأ من merchant (عرض البائع)،
-        // بينما الهوية/الصور/التقييمات من productt.
-        return view('frontend.product', [
-            'productt'        => $productt,
-            'curr'            => $curr,
-            'affilate_user'   => $affilate_user,
-            'vendor_products' => $vendor_products,
+        // Find merchant product for this user (in-stock then lowest price)
+        $merchantProduct = MerchantProduct::where('product_id', $productt->id)
+            ->where('user_id', $user)
+            ->where('status', 1)
+            ->orderByRaw('CASE WHEN (stock IS NULL OR stock = 0) THEN 1 ELSE 0 END ASC')
+            ->orderBy('price')
+            ->first();
 
-            // مُضاف حديثًا للسياسة الجديدة:
-            'merchant'        => $merchantProduct,      // عرض البائع الحالي
-            'vendorId'        => $merchantProduct->user_id,
-            'otherSellers'    => $otherSellers,
-            'vendorListings'  => $vendorListings,
-        ]);
+        if (!$merchantProduct) {
+            return response()->view('errors.404')->setStatusCode(404);
+        }
+
+        // Redirect to new preferred route
+        return redirect()->route('front.product.mp', [
+            'slug' => $slug,
+            'vendor_id' => $merchantProduct->user_id,
+            'merchant_product_id' => $merchantProduct->id
+        ], 302);
+    }
+
+    /**
+     * Very legacy method: /item/{slug}
+     * Resolve default mp globally, then redirect to front.product.mp
+     */
+    public function show($slug)
+    {
+        // Load product by slug
+        $productt = Product::where('slug', $slug)->first();
+        if (!$productt) {
+            return response()->view('errors.404')->setStatusCode(404);
+        }
+
+        // Find best merchant product globally (in-stock then lowest price)
+        $merchantProduct = MerchantProduct::where('product_id', $productt->id)
+            ->where('status', 1)
+            ->orderByRaw('CASE WHEN (stock IS NULL OR stock = 0) THEN 1 ELSE 0 END ASC')
+            ->orderBy('price')
+            ->first();
+
+        if (!$merchantProduct) {
+            return response()->view('errors.404')->setStatusCode(404);
+        }
+
+        // Redirect to new preferred route
+        return redirect()->route('front.product.mp', [
+            'slug' => $slug,
+            'vendor_id' => $merchantProduct->user_id,
+            'merchant_product_id' => $merchantProduct->id
+        ], 302);
+    }
+
+    /**
+     * Optional alternative: /item/{slug}/{user}/{brand_quality_id}
+     */
+    public function showByUserQuality($slug, $user, $brand_quality_id)
+    {
+        // Load product by slug
+        $productt = Product::where('slug', $slug)->first();
+        if (!$productt) {
+            return response()->view('errors.404')->setStatusCode(404);
+        }
+
+        // Find merchant product by user and brand quality
+        $merchantProduct = MerchantProduct::where('product_id', $productt->id)
+            ->where('user_id', $user)
+            ->where('brand_quality_id', $brand_quality_id)
+            ->where('status', 1)
+            ->first();
+
+        if (!$merchantProduct) {
+            return response()->view('errors.404')->setStatusCode(404);
+        }
+
+        // Redirect to new preferred route
+        return redirect()->route('front.product.mp', [
+            'slug' => $slug,
+            'vendor_id' => $merchantProduct->user_id,
+            'merchant_product_id' => $merchantProduct->id
+        ], 302);
     }
 
     // public function quickFragment(int $id)

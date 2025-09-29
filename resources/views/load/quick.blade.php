@@ -458,7 +458,7 @@
               @endif
 
               <div class="mt-2">
-                <a class="view_more_btn" href="{{ route('front.product',$product->slug) }}">{{__('Get More Details')}} <i class="fas fa-arrow-right"></i></a>
+                <a class="view_more_btn" href="{{ route('front.product.legacy',$product->slug) }}">{{__('Get More Details')}} <i class="fas fa-arrow-right"></i></a>
               </div>
 
 

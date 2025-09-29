@@ -22,6 +22,32 @@ function merchantWishlistCheck($merchant_product_id)
         ->exists();
 }
 
+function merchantCompareCheck($merchant_product_id)
+{
+    $compare = session('compare');
+    if (!$compare || !isset($compare->items)) {
+        return false;
+    }
+    return isset($compare->items[$merchant_product_id]);
+}
+
+function getMerchantDisplayName($merchantProduct)
+{
+    if (!$merchantProduct || !$merchantProduct->user) {
+        return '';
+    }
+
+    $vendor = $merchantProduct->user;
+    $displayName = $vendor->shop_name ?: $vendor->name;
+
+    // Add brand quality if available
+    if ($merchantProduct->qualityBrand) {
+        $displayName .= ' (' . $merchantProduct->qualityBrand->display_name . ')';
+    }
+
+    return $displayName;
+}
+
 
 if (! function_exists('getLocalizedLabel')) {
     function getLocalizedLabel($item): string

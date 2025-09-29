@@ -139,7 +139,7 @@
 
       <div class="mt-3">
         <a class="text-decoration-none"
-           href="{{ $hasVendor ? route('front.product', ['slug'=>$productt->slug, 'user'=>$vendorId]) : 'javascript:;' }}">
+           href="{{ $hasVendor ? route('front.product.user', ['slug'=>$productt->slug, 'user'=>$vendorId]) : 'javascript:;' }}">
           {{ __('View Details') }}
         </a>
       </div>

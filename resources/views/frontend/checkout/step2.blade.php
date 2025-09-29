@@ -228,7 +228,7 @@
                                             </div>
                                             <div class="content-wrapper">
                                                 <a class="art-title d-inline-block xproduct-title">
-                                                    <a href="{{ route('front.product', ['slug' => $product['item']['slug'], 'user' => $product['item']['user_id']]) }}">{{ $product['item']['sku'] }}</a>
+                                                    <a href="{{ route('front.product.user', ['slug' => $product['item']['slug'], 'user' => $product['item']['user_id']]) }}">{{ $product['item']['sku'] }}</a>
                                                 </a>
 
                                                 <h6>

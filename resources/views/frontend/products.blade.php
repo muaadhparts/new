@@ -167,6 +167,43 @@
                                 class="template-btn dark-btn w-100 mt-3">@lang('Clear Filter')</a>
                         </div>
 
+                        <!-- Brand Quality Filter -->
+                        <div class="single-product-widget">
+                            <h5 class="widget-title">@lang('Brand Quality')</h5>
+                            <div class="brand-quality-filter">
+                                @php
+                                    $qualityBrands = \App\Models\QualityBrand::active()->get();
+                                @endphp
+                                <ul>
+                                    @foreach($qualityBrands as $qualityBrand)
+                                        <li class="gs-checkbox-wrapper">
+                                            <input type="checkbox" class="brand-quality-input"
+                                                name="brand_quality[]"
+                                                {{ isset($_GET['brand_quality']) && in_array($qualityBrand->id, $_GET['brand_quality']) ? 'checked' : '' }}
+                                                id="brand_quality_{{ $qualityBrand->id }}"
+                                                value="{{ $qualityBrand->id }}">
+                                            <label class="icon-label" for="brand_quality_{{ $qualityBrand->id }}">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="12"
+                                                    height="12" viewBox="0 0 12 12" fill="none">
+                                                    <path d="M10 3L4.5 8.5L2 6" stroke="#EE1243"
+                                                        stroke-width="1.6666" stroke-linecap="round"
+                                                        stroke-linejoin="round" />
+                                                </svg>
+                                            </label>
+                                            <label for="brand_quality_{{ $qualityBrand->id }}">
+                                                @if($qualityBrand->logo_url)
+                                                    <img src="{{ $qualityBrand->logo_url }}"
+                                                         alt="{{ $qualityBrand->display_name }}"
+                                                         style="width: 20px; height: 20px; margin-right: 5px; vertical-align: middle;">
+                                                @endif
+                                                {{ $qualityBrand->display_name }}
+                                            </label>
+                                        </li>
+                                    @endforeach
+                                </ul>
+                            </div>
+                        </div>
+
 
 
                         @if (
@@ -282,7 +319,7 @@
                             <h5 class="widget-title">@lang('Recent Product')</h5>
                             <div class="gs-recent-post-widget">
                                 @foreach ($latest_products as $product)
-                                    <a href="{{ route('front.product', $product['slug']) }}">
+                                    <a href="{{ route('front.product.legacy', $product['slug']) }}">
 
                                         <div class="gs-single-recent-product-widget">
                                             <div class="img-wrapper">
@@ -331,7 +368,7 @@
 
                     <!-- product nav wrapper -->
                     <div class=" product-nav-wrapper">
-                        <h5>@lang('Total Products Found:') {{ $prods->count() }}</h5>
+                        <h5>@lang('Total Offers Found:') {{ $prods->total() }}</h5>
                         <div class="filter-wrapper">
                             <div class="sort-wrapper">
                                 <h5>@lang('Sort by:')</h5>
@@ -341,6 +378,8 @@
                                     <option value="date_asc">{{ __('Oldest Product') }}</option>
                                     <option value="price_asc">{{ __('Lowest Price') }}</option>
                                     <option value="price_desc">{{ __('Highest Price') }}</option>
+                                    <option value="sku_asc">{{ __('SKU A-Z') }}</option>
+                                    <option value="sku_desc">{{ __('SKU Z-A') }}</option>
                                 </select>
                             </div>
                             <!-- list and grid view tab btns  start -->
@@ -395,8 +434,8 @@
                             <div class="tab-pane fade {{ $view == 'list-view' ? 'show active' : '' }}"
                                 id="layout-list-pane" role="tabpanel" tabindex="0">
                                 <div class="row gy-4 gy-lg-5 mt-20 ">
-                                    @foreach ($prods as $product)
-                                        @include('includes.frontend.list_view_product')
+                                    @foreach ($prods as $mp)
+                                        @include('includes.frontend.list_view_product', ['product' => $mp->product, 'mp' => $mp])
                                     @endforeach
                                 </div>
                             </div>
@@ -404,9 +443,11 @@
                             <div class="tab-pane fade {{ $view == 'grid-view' ? 'show active' : '' }}  "
                                 id="layout-grid-pane" role="tabpanel" tabindex="0">
                                 <div class="row gy-4 gy-lg-5 mt-20">
-                                    @foreach ($prods as $product)
+                                    @foreach ($prods as $mp)
                                         @include('includes.frontend.home_product', [
                                             'class' => 'col-sm-6 col-md-6 col-xl-4',
+                                            'product' => $mp->product,
+                                            'mp' => $mp
                                         ])
                                     @endforeach
                                 </div>
@@ -453,7 +494,7 @@
 
 
         // when dynamic attribute changes
-        $(".attribute-input, #sortby, #pageby").on('change', function() {
+        $(".attribute-input, .brand-quality-input, #sortby, #pageby").on('change', function() {
             $(".ajax-loader").show();
             filter();
         });
@@ -466,6 +507,12 @@
 
 
             $(".attribute-input").each(function() {
+                if ($(this).is(':checked')) {
+                    params.append($(this).attr('name'), $(this).val());
+                }
+            });
+
+            $(".brand-quality-input").each(function() {
                 if ($(this).is(':checked')) {
                     params.append($(this).attr('name'), $(this).val());
                 }
@@ -511,6 +558,12 @@
                 let params = new URLSearchParams();
 
                 $(".attribute-input").each(function() {
+                    if ($(this).is(':checked')) {
+                        params.append($(this).attr('name'), $(this).val());
+                    }
+                });
+
+                $(".brand-quality-input").each(function() {
                     if ($(this).is(':checked')) {
                         params.append($(this).attr('name'), $(this).val());
                     }

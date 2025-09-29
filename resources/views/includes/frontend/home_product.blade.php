@@ -1,28 +1,34 @@
 @php
-  // If vendor_user_id is already set on the product (from wishlist), use that merchant product
-  if (isset($product->vendor_user_id) && $product->vendor_user_id) {
-      $mp = $product->merchantProducts()
-            ->where('user_id', $product->vendor_user_id)
-            ->where('status', 1)
-            ->first();
-      $vendorId = $product->vendor_user_id;
+  // Use the passed merchant product data instead of searching for it
+  // $mp is now passed from the main loop
+  if (!isset($mp)) {
+      // Fallback to original logic if $mp is not passed (for backward compatibility)
+      if (isset($product->vendor_user_id) && $product->vendor_user_id) {
+          $mp = $product->merchantProducts()
+                ->where('user_id', $product->vendor_user_id)
+                ->where('status', 1)
+                ->first();
+          $vendorId = $product->vendor_user_id;
+      } else {
+          $mp = $product->merchantProducts()
+                ->where('status', 1)
+                ->whereHas('user', function ($user) {
+                    $user->where('is_vendor', 2);
+                })
+                ->orderByRaw('CASE WHEN (stock IS NULL OR stock = 0) THEN 1 ELSE 0 END ASC')
+                ->orderBy('price')
+                ->first();
+          $vendorId = optional($mp)->user_id ?? 0;
+      }
   } else {
-      // اختيار عرض البائع: نشط أولاً، المتوفر قبل غير المتوفر، ثم الأرخص
-      $mp = $product->merchantProducts()
-            ->where('status', 1)
-            ->whereHas('user', function ($user) {
-                $user->where('is_vendor', 2);
-            })
-            ->orderByRaw('CASE WHEN (stock IS NULL OR stock = 0) THEN 1 ELSE 0 END ASC')
-            ->orderBy('price')
-            ->first();
-      $vendorId = optional($mp)->user_id ?? 0;
+      // Use the passed merchant product
+      $vendorId = $mp->user_id;
   }
 
   $hasVendor  = $vendorId > 0;
 
-  // رابط التفاصيل يتطلب تمرير {user}.. عند غياب بائع متاح نوقف الرابط
-  $detailsUrl = $hasVendor ? route('front.product', ['slug' => $product->slug, 'user' => $vendorId]) : 'javascript:;';
+  // Use new merchant-product-based route with slug and vendor for SEO
+  $detailsUrl = isset($mp) ? route('front.product.mp', ['slug' => $product->slug, 'vendor_id' => $mp->user_id, 'merchant_product_id' => $mp->id]) : ($hasVendor ? route('front.product.user', ['slug' => $product->slug, 'user' => $vendorId]) : 'javascript:;');
 
   // نسبة الخصم المعرَضة للمستخدم (من عرض البائع إن وجد وإلا من المنتج)
   $offPercent = null;
@@ -55,6 +61,16 @@
         <span class="product-badge">-{{ $offPercent }}%</span>
       @endif
 
+      {{-- Brand Quality Badge --}}
+      @if ($mp && $mp->qualityBrand)
+        <span class="brand-quality-badge" style="position: absolute; top: 40px; left: 10px; background: #007bff; color: white; padding: 2px 6px; border-radius: 3px; font-size: 10px; z-index: 10;">
+          @if ($mp->qualityBrand->logo_url)
+            <img src="{{ $mp->qualityBrand->logo_url }}" alt="{{ $mp->qualityBrand->display_name }}" style="width: 16px; height: 16px; margin-right: 2px;">
+          @endif
+          {{ $mp->qualityBrand->display_name }}
+        </span>
+      @endif
+
       {{-- Wishlist --}}
       @if (Auth::check())
         @if (isset($wishlist))
@@ -65,14 +81,9 @@
             </div>
           </a>
         @else
-          @if($mp && $mp->id)
-            <a href="javascript:;" class="wishlist"
-               data-href="{{ route('user-wishlist-add-merchant', $mp->id) }}">
-          @else
-            <a href="javascript:;" class="wishlist"
-               data-href="{{ route('user-wishlist-add', $product->id) }}">
-          @endif
-            <div class="add-to-wishlist-btn {{ ($mp && $mp->id) ? (merchantWishlistCheck($mp->id) ? 'active' : '') : (wishlistCheck($product->id) ? 'active' : '') }}">
+          <a href="javascript:;" class="wishlist"
+             data-href="{{ isset($mp) ? route('merchant.wishlist.add', $mp->id) : 'javascript:;' }}">
+            <div class="add-to-wishlist-btn {{ isset($mp) ? (merchantWishlistCheck($mp->id) ? 'active' : '') : (wishlistCheck($product->id) ? 'active' : '') }}">
               {{-- أيقونة --}}
             </div>
           </a>
@@ -95,8 +106,8 @@
         @if ($product->type != 'Listing')
           {{-- Compare --}}
           <a class="compare_product" href="javascript:;"
-             data-href="{{ ($mp && $mp->id) ? route('product.compare.add.merchant', $mp->id) : ($hasVendor ? route('product.compare.add', ['id'=>$product->id,'user'=>$vendorId]) : 'javascript:;') }}">
-            <div class="compare">…</div>
+             data-href="{{ isset($mp) ? route('merchant.compare.add', $mp->id) : 'javascript:;' }}">
+            <div class="compare {{ isset($mp) ? (merchantCompareCheck($mp->id) ? 'active' : '') : '' }}">…</div>
           </a>
         @endif
 
@@ -112,9 +123,9 @@
             @if ($product->type != 'Listing')
               <a href="javascript:;"
                  {{ $product->cross_products ? 'data-bs-target=#exampleModal' : '' }}
-                 data-href="{{ route('product.cart.add', ['id'=>$product->id,'user'=>$vendorId]) }}"
+                 data-href="{{ isset($mp) ? route('merchant.cart.add', $mp->id) : 'javascript:;' }}"
                  data-cross-href="{{ route('front.show.cross.product', $product->id) }}"
-                 data-user="{{ $vendorId }}"
+                 data-merchant-product="{{ $mp->id ?? '' }}"
                  data-product="{{ $product->id }}"
                  class="add_cart_click {{ $product->cross_products ? 'view_cross_product' : '' }}">
                 <div class="add-cart">@lang('Add To Cart')</div>
@@ -137,6 +148,14 @@
       <a href="{{ $detailsUrl }}">
         <h6 class="product-title"><x-product-name :product="$product" :vendor-id="$vendorId" target="_self" /></h6>
       </a>
+
+      {{-- Merchant Store Information --}}
+      @if($mp && $mp->user)
+        <p class="merchant-info text-muted">
+          <small>@lang('Sold by:') {{ getMerchantDisplayName($mp) }}</small>
+        </p>
+      @endif
+
       <p><span>@lang('Product SKU :')</span> <span>{{ $product->sku }}</span></p>
       <div class="price-wrapper">
         {{-- السعر الحالي --}}

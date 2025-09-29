@@ -13,12 +13,12 @@
             </div>
         </td>
         <td class="product-thumbnail">
-            <a href="{{ route('front.product', ['slug' => $product->slug, 'user' => $vendorId]) }}">
+            <a href="{{ route('front.product.user', ['slug' => $product->slug, 'user' => $vendorId]) }}">
                 <img src="{{ \Illuminate\Support\Facades\Storage::url($product->photo) ?? asset('assets/images/noimage.png') }}" alt="">
             </a>
         </td>
         <td class="product-name">
-            <a href="{{ route('front.product', ['slug' => $product->slug, 'user' => $vendorId]) }}">
+            <a href="{{ route('front.product.user', ['slug' => $product->slug, 'user' => $vendorId]) }}">
                 {{ $product->name }}
             </a>
             @if($merchantProduct && $merchantProduct->user)

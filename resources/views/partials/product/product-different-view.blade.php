@@ -30,7 +30,7 @@
                 <div class="product-wrapper">
 
                     <div class="product-image">
-                        <a href="{{ $vendorId ? route('front.product', ['slug' => $product->slug, 'user' => $vendorId]) : 'javascript:;' }}"
+                        <a href="{{ $vendorId ? route('front.product.user', ['slug' => $product->slug, 'user' => $vendorId]) : 'javascript:;' }}"
                            class="woocommerce-LoopProduct-link">
                             <img src="{{ $thumb }}" alt="Product Image">
                         </a>
@@ -88,7 +88,7 @@
 
                     <div class="product-info">
                         <h3 class="product-title">
-                            <a href="{{ $vendorId ? route('front.product', ['slug' => $product->slug, 'user' => $vendorId]) : 'javascript:;' }}">
+                            <a href="{{ $vendorId ? route('front.product.user', ['slug' => $product->slug, 'user' => $vendorId]) : 'javascript:;' }}">
                                 <x-product-name :product="$product" :vendor-id="$vendorId" target="_self" />
                             </a>
                         </h3>
@@ -148,7 +148,7 @@
                 <div class="product-wrapper">
 
                     <div class="product-image">
-                        <a href="{{ $vendorId ? route('front.product', ['slug' => $product->slug, 'user' => $vendorId]) : 'javascript:;' }}"
+                        <a href="{{ $vendorId ? route('front.product.user', ['slug' => $product->slug, 'user' => $vendorId]) : 'javascript:;' }}"
                            class="woocommerce-LoopProduct-link">
                             <img src="{{ $thumb }}" alt="Product Image">
                         </a>
@@ -206,7 +206,7 @@
 
                     <div class="product-info">
                         <h3 class="product-title">
-                            <a href="{{ $vendorId ? route('front.product', ['slug' => $product->slug, 'user' => $vendorId]) : 'javascript:;' }}">
+                            <a href="{{ $vendorId ? route('front.product.user', ['slug' => $product->slug, 'user' => $vendorId]) : 'javascript:;' }}">
                                 <x-product-name :product="$product" :vendor-id="$vendorId" target="_self" />
                             </a>
                         </h3>

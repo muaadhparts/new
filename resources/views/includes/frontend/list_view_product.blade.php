@@ -3,11 +3,12 @@
         <div class="img-wrapper">
             @php
                 /** @var \App\Models\Product $product */
-                /** @var \App\Models\MerchantProduct|null $merchant */
+                /** @var \App\Models\MerchantProduct|null $mp */
 
-                // اختر عرض البائع: نشط أولًا، المتوفر قبل غير المتوفر، ثم الأرخص
-                $merchant = $merchant
-                    ?? $product->merchantProducts()
+                // Use passed merchant product data or fallback to search
+                if (!isset($mp)) {
+                    // Fallback: search for merchant product
+                    $merchant = $product->merchantProducts()
                         ->where('status', 1)
                         ->whereHas('user', function ($user) {
                             $user->where('is_vendor', 2);
@@ -15,11 +16,15 @@
                         ->orderByRaw('CASE WHEN (stock IS NULL OR stock = 0) THEN 1 ELSE 0 END ASC')
                         ->orderBy('price')
                         ->first();
+                } else {
+                    // Use passed merchant product
+                    $merchant = $mp;
+                }
 
-                $vendorId  = $vendorId ?? optional($merchant)->user_id ?? 0;
+                $vendorId  = optional($merchant)->user_id ?? 0;
                 $hasVendor = $vendorId > 0;
 
-                // نسبة الخصم على مستوى البائع (اختياري)
+                // Calculate discount percentage for this merchant
                 $off = 0;
                 if ($merchant && $merchant->previous_price > 0 && $merchant->price > 0) {
                     $off = round((($merchant->previous_price - $merchant->price) * 100) / $merchant->previous_price);
@@ -30,10 +35,20 @@
                 <span class="product-badge">-{{ $off }}%</span>
             @endif
 
+            {{-- Brand Quality Badge --}}
+            @if ($merchant && $merchant->qualityBrand)
+                <span class="brand-quality-badge" style="position: absolute; top: 40px; left: 10px; background: #007bff; color: white; padding: 2px 6px; border-radius: 3px; font-size: 10px; z-index: 10;">
+                  @if ($merchant->qualityBrand->logo_url)
+                    <img src="{{ $merchant->qualityBrand->logo_url }}" alt="{{ $merchant->qualityBrand->display_name }}" style="width: 16px; height: 16px; margin-right: 2px;">
+                  @endif
+                  {{ $merchant->qualityBrand->display_name }}
+                </span>
+            @endif
+
             @if (Auth::check())
                 <a href="javascript:;" class="wishlist"
-                   data-href="{{ $hasVendor ? route('user-wishlist-add', ['id' => $product->id, 'user' => $vendorId]) : 'javascript:;' }}">
-                    <div class="add-to-wishlist-btn {{ wishlistCheck($product->id) ? 'active' : '' }}">
+                   data-href="{{ isset($merchant) ? route('merchant.wishlist.add', $merchant->id) : 'javascript:;' }}">
+                    <div class="add-to-wishlist-btn {{ isset($merchant) ? (merchantWishlistCheck($merchant->id) ? 'active' : '') : (wishlistCheck($product->id) ? 'active' : '') }}">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
                             <path fill-rule="evenodd" clip-rule="evenodd"
                                   d="M11.9932 5.13581C9.9938 2.7984 6.65975 2.16964 4.15469 4.31001C1.64964 6.45038 1.29697 10.029 3.2642 12.5604C4.89982 14.6651 9.84977 19.1041 11.4721 20.5408C11.6536 20.7016 11.7444 20.7819 11.8502 20.8135C11.9426 20.8411 12.0437 20.8411 12.1361 20.8135C12.2419 20.7819 12.3327 20.7016 12.5142 20.5408C14.1365 19.1041 19.0865 14.6651 20.7221 12.5604C22.6893 10.029 22.3797 6.42787 19.8316 4.31001C17.2835 2.19216 13.9925 2.7984 11.9932 5.13581Z"
@@ -63,13 +78,22 @@
         <div class="content-wrapper">
             @php
                 $vendorId  = $vendorId ?? optional($merchant)->user_id ?? 0;
-                $detailsUrl = $vendorId ? route('front.product', ['slug' => $product->slug, 'user' => $vendorId]) : 'javascript:;';
+                // Use new merchant-product-based route with slug and vendor for SEO
+                $detailsUrl = isset($merchant) ? route('front.product.mp', ['slug' => $product->slug, 'vendor_id' => $merchant->user_id, 'merchant_product_id' => $merchant->id]) : ($vendorId ? route('front.product.user', ['slug' => $product->slug, 'user' => $vendorId]) : 'javascript:;');
             @endphp
             <h4 class="xproduct-title">
                 <a href="{{ $detailsUrl }}"><x-product-name :product="$product" :vendor-id="$vendorId" target="_self" /></a>
             </h4>
 
             <h4 class="xproduct-title">{{ $product->label_ar }}</h4>
+
+            {{-- Merchant Store Information --}}
+            @if($merchant && $merchant->user)
+                <p class="merchant-info">
+                    <span>@lang('Sold by:') </span>
+                    <span class="text-primary">{{ getMerchantDisplayName($merchant) }}</span>
+                </p>
+            @endif
 
             <p class="">
                 <span>@lang('Product SKU :') </span>
@@ -146,10 +170,10 @@
                     </div>
                 </a>
 
-                {{-- Compare: يمرر vendorId --}}
+                {{-- Compare: يمرر merchant product ID --}}
                 <a href="javascript:;" class="compare_product"
-                   data-href="{{ $hasVendor ? route('product.compare.add', ['id' => $product->id, 'user' => $vendorId]) : 'javascript:;' }}">
-                    <div class="compare">
+                   data-href="{{ isset($merchant) ? route('merchant.compare.add', $merchant->id) : 'javascript:;' }}">
+                    <div class="compare {{ isset($merchant) ? (merchantCompareCheck($merchant->id) ? 'active' : '') : '' }}">
                         <svg class="icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
                             <path d="M18.1777 8C23.2737 8 23.2737 16 18.1777 16C13.0827 16 11.0447 8 5.43875 8C0.85375 8 0.85375 16 5.43875 16C11.0447 16 13.0828 8 18.1788 8H18.1777Z"
                                   stroke="#030712" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -167,9 +191,9 @@
                     @else
                         @if ($product->type != 'Listing')
                             <a {{ $product->cross_products ? 'data-bs-target=#exampleModal' : '' }} href="javascript:;"
-                               data-href="{{ route('product.cart.add', ['id' => $product->id, 'user' => $vendorId]) }}"
+                               data-href="{{ isset($merchant) ? route('merchant.cart.add', $merchant->id) : 'javascript:;' }}"
                                data-cross-href="{{ route('front.show.cross.product', $product->id) }}"
-                               data-user="{{ $vendorId }}"
+                               data-merchant-product="{{ $merchant->id ?? '' }}"
                                data-product="{{ $product->id }}"
                                class="add_cart_click {{ $product->cross_products ? 'view_cross_product' : '' }}">
                                 <div class="add-cart">@lang('Add To Cart')</div>

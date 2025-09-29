@@ -39,7 +39,7 @@
                                 $domKey = str_replace([':', '#', '.', ' ', '/', '\\'], '_', $row);
 
                                 // رابط تفاصيل المنتج مع تمرير {user}
-                                $productUrl = $vendorId ? route('front.product', ['slug' => $slug, 'user' => $vendorId]) : 'javascript:;';
+                                $productUrl = $vendorId ? route('front.product.user', ['slug' => $slug, 'user' => $vendorId]) : 'javascript:;';
                             @endphp
 
                             <tr>
