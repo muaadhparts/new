@@ -3,7 +3,7 @@
 /node_modules
 /public/build
 /public/uploads/
-/public/assets/imagesb
+/public/assets/images
 /public/hot
 /public/database-backup/
 /public/storage
@@ -11,6 +11,7 @@
 /storage/logs/*
 /storage/framework/cache/*
 .phpunit.result.cache
+/bootstrap/cache/*.php
 
 # بيئة العمل
 .env
