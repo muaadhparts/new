@@ -53,7 +53,12 @@ class GeniusMailer
             $body = preg_replace("/{website_title}/", $this->gs->title, $body);
 
 
-            $fileName = 'assets/temp_files/' . Str::random(4) . time() . '.pdf';
+            $dir = public_path('assets/temp_files');
+            if (!is_dir($dir)) {
+                @mkdir($dir, 0755, true);
+            }
+            // dd(['__fn__' => __FUNCTION__, 'dirExists' => is_dir($dir), 'dir' => $dir]); // فحص سريع
+            $fileName = $dir . DIRECTORY_SEPARATOR . Str::random(4) . time() . '.pdf';
 
             $pdf = PDF::loadView('pdf.order', compact('order', 'cart'))->save($fileName);
 

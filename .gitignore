@@ -1,34 +1,41 @@
-/public/build
+# Laravel & PHP
+/vendor
 /node_modules
+/public/build
 /public/uploads/
 /public/assets/imagesb
-/bootstrap/cache/packages.php
-/bootstrap/cache/services.php
 /public/hot
 /public/database-backup/
-/storage/temp/
-/storage/*.key
 /public/storage
 /storage/*.key
-/storage/log/*
-#/storage/framework
-/vendor
-/vendor00
-/vendor01
+/storage/logs/*
+/storage/framework/cache/*
+.phpunit.result.cache
+
+# بيئة العمل
 .env
 .env.backup
-.phpunit.result.cache
 Homestead.json
 Homestead.yaml
 auth.json
-npm-debug.log
-yarn-error.log
+
+# أدوات التطوير
 /.idea
 /.vscode
 .DS_Store
 phpstan-baseline.neon
 _ide_helper.php
 _ide_helper_models.php
-*.gz
-/green
+
+# سجلات وأخطاء
 *.log
+npm-debug.log
+yarn-error.log
+*.gz
+
+# مجلدات غير قياسية أو بها أخطاء إملائية
+/green
+/vendor00
+/vendor01
+/vendora
+/storaage
