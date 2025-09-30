@@ -28,7 +28,11 @@
   $hasVendor  = $vendorId > 0;
 
   // Use new merchant-product-based route with slug and vendor for SEO
-  $detailsUrl = isset($mp) ? route('front.product.mp', ['slug' => $product->slug, 'vendor_id' => $mp->user_id, 'merchant_product_id' => $mp->id]) : ($hasVendor ? route('front.product.user', ['slug' => $product->slug, 'user' => $vendorId]) : 'javascript:;');
+  // If no MP found, try to fetch one as fallback
+  if (!isset($mp) && $hasVendor) {
+      $mp = $product->merchantProducts()->where('user_id', $vendorId)->where('status', 1)->first();
+  }
+  $detailsUrl = isset($mp) ? route('front.product', ['slug' => $product->slug, 'vendor_id' => $mp->user_id, 'merchant_product_id' => $mp->id]) : 'javascript:;';
 
   // نسبة الخصم المعرَضة للمستخدم (من عرض البائع إن وجد وإلا من المنتج)
   $offPercent = null;

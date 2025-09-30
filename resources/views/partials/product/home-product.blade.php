@@ -1,8 +1,30 @@
+@php
+  // Check if $prod is a MerchantProduct or Product model
+  $isMerchantProduct = $prod instanceof \App\Models\MerchantProduct;
+
+  if ($isMerchantProduct) {
+      // $prod is MerchantProduct - use it directly
+      $merchantProductId = $prod->id;
+      $vendorId = $prod->user_id;
+      $productSlug = $prod->product->slug ?? $prod->slug;
+  } else {
+      // $prod is Product - get first active merchant product
+      $mp = $prod->merchantProducts()->where('status', 1)->orderBy('price')->first();
+      $merchantProductId = $mp->id ?? null;
+      $vendorId = $mp->user_id ?? null;
+      $productSlug = $prod->slug;
+  }
+
+  $productUrl = ($merchantProductId && $vendorId)
+      ? route('front.product', ['slug' => $productSlug, 'vendor_id' => $vendorId, 'merchant_product_id' => $merchantProductId])
+      : 'javascript:;';
+@endphp
+
 <div class="product type-product">
   <div class="product-wrapper">
     <div class="product-image">
 
-      <a href="{{ route('front.product', ['slug' => $prod->slug, 'user' => $prod->user_id]) }}" class="woocommerce-LoopProduct-link">
+      <a href="{{ $productUrl }}" class="woocommerce-LoopProduct-link">
         <img src="{{ $prod->thumbnail ? asset('assets/images/thumbnails/'.$prod->thumbnail) : asset('assets/images/noimage.png') }}" alt="Product Image">
       </a>
 
@@ -58,7 +80,7 @@
 
     <div class="product-info">
       <h3 class="product-title">
-        <a href="{{ route('front.product', ['slug' => $prod->slug, 'user' => $prod->user_id]) }}"><x-product-name :product="$prod" :vendor-id="$prod->user_id" target="_self" /></a>
+        <a href="{{ $productUrl }}"><x-product-name :product="$prod" :vendor-id="$vendorId" :merchant-product-id="$merchantProductId" target="_self" /></a>
       </h3>
       <div class="product-price">
         <div class="price">

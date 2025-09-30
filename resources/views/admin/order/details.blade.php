@@ -484,13 +484,13 @@
                                         $user = App\Models\User::find($product['item']['user_id']);
                                         @endphp
                                         @if(isset($user))
-                                        <x-product-name :item="$product" :vendor-id="$product['item']['user_id']" target="_blank" />
+                                        <x-product-name :item="$product" :vendor-id="$product['item']['user_id']" :merchant-product-id="$product['item']['id']" target="_blank" />
                                         @else
                                         {{-- <a target="_blank"
                                             href="{{ route('front.product', $product['item']['slug']) }}">{{mb_strlen($product['item']['name'],'utf-8')
                                             > 30 ? mb_substr($product['item']['name'],0,30,'utf-8').'...' :
                                             $product['item']['name']}}</a> --}}
-                                        <x-product-name :item="$product" :vendor-id="$product['item']['user_id']" target="_blank" />
+                                        <x-product-name :item="$product" :vendor-id="$product['item']['user_id']" :merchant-product-id="$product['item']['id']" target="_blank" />
 
                                         @endif
                                         @else

@@ -41,9 +41,9 @@ class ImportController extends VendorBaseController
                     ? mb_substr(strip_tags($product->name), 0, 50, 'UTF-8') . '...'
                     : strip_tags($product->name);
 
-                // تمرير {user} إجباريًا في الرابط
+                // تمرير {vendor_id} و {merchant_product_id} في الرابط
                 $id = '<small>' . __('Product ID') . ': <a href="' .
-                    route('front.product', ['slug' => $product->slug, 'user' => $data->user_id]) .
+                    route('front.product', ['slug' => $product->slug, 'vendor_id' => $data->user_id, 'merchant_product_id' => $data->id]) .
                     '" target="_blank">' . sprintf("%'.08d", $product->id) . '</a></small>';
 
                 return $name . '<br>' . $id;

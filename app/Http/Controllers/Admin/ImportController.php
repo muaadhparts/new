@@ -40,8 +40,9 @@ class ImportController extends AdminBaseController
                           ->first();
 
                     $vendorId = optional($mp)->user_id;
-                    $prodLink = $vendorId
-                        ? route('front.product', ['slug' => $data->slug, 'user' => $vendorId])
+                    $merchantProductId = optional($mp)->id;
+                    $prodLink = ($vendorId && $merchantProductId)
+                        ? route('front.product', ['slug' => $data->slug, 'vendor_id' => $vendorId, 'merchant_product_id' => $merchantProductId])
                         : '#';
 
                     $id  = '<small>'.__("Product ID").': <a href="'.$prodLink.'" target="_blank">'.sprintf("%'.08d",$data->id).'</a></small>';

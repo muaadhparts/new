@@ -79,7 +79,11 @@
             @php
                 $vendorId  = $vendorId ?? optional($merchant)->user_id ?? 0;
                 // Use new merchant-product-based route with slug and vendor for SEO
-                $detailsUrl = isset($merchant) ? route('front.product.mp', ['slug' => $product->slug, 'vendor_id' => $merchant->user_id, 'merchant_product_id' => $merchant->id]) : ($vendorId ? route('front.product.user', ['slug' => $product->slug, 'user' => $vendorId]) : 'javascript:;');
+                // If no merchant, try to fetch one as fallback
+                if (!isset($merchant) && $vendorId) {
+                    $merchant = $product->merchantProducts()->where('user_id', $vendorId)->where('status', 1)->first();
+                }
+                $detailsUrl = isset($merchant) ? route('front.product', ['slug' => $product->slug, 'vendor_id' => $merchant->user_id, 'merchant_product_id' => $merchant->id]) : 'javascript:;';
             @endphp
             <h4 class="xproduct-title">
                 <a href="{{ $detailsUrl }}"><x-product-name :product="$product" :vendor-id="$vendorId" target="_self" /></a>

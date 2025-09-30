@@ -2,11 +2,12 @@
 @php
   $mp = $prod->merchantProducts()->where('status',1)->orderBy('price')->first();
   $vendorId = optional($mp)->user_id;
+  $merchantProductId = optional($mp)->id;
   $thumb = $prod->thumbnail ? asset('assets/images/thumbnails/'.$prod->thumbnail) : asset('assets/images/noimage.png');
   $hasPrev = $mp && $mp->previous_price;
 @endphp
 
-<a href="{{ $vendorId ? route('front.product', ['slug' => $prod->slug, 'user' => $vendorId]) : 'javascript:;' }}" class="single-product-flas">
+<a href="{{ $vendorId && $merchantProductId ? route('front.product', ['slug' => $prod->slug, 'vendor_id' => $vendorId, 'merchant_product_id' => $merchantProductId]) : 'javascript:;' }}" class="single-product-flas">
     <div class="img">
         <img src="{{ $thumb }}" alt="">
         @if(!empty($prod->features))
@@ -21,7 +22,7 @@
     </div>
 
     <div class="content">
-        <h4 class="name"><x-product-name :product="$prod" :vendor-id="$vendorId" target="_self" /></h4>
+        <h4 class="name"><x-product-name :product="$prod" :vendor-id="$vendorId" :merchant-product-id="$merchantProductId" target="_self" /></h4>
 
         <ul class="stars d-flex">
             <div class="ratings">

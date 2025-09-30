@@ -168,14 +168,14 @@
                                         <div class="product type-product">
                                             <div class="product-wrapper">
                                                 <div class="product-image">
-                                                    <a href="{{ route('front.product', ['slug' => $prod['slug'], 'user' => $prod['user_id']]) }}"
+                                                    <a href="{{ route('front.product', ['slug' => $prod['slug'], 'vendor_id' => $prod['user_id'], 'merchant_product_id' => $prod['id']]) }}"
                                                         class="woocommerce-LoopProduct-link"><img
                                                             src="{{ $prod['thumbnail'] ? asset('assets/images/thumbnails/' . $prod['thumbnail']) : asset('assets/images/noimage.png') }}"
                                                             alt="Product Image"></a>
                                                     <div class="wishlist-view">
                                                         <div class="quickview-button">
                                                             <a class="quickview-btn quick-view"
-                                                                href="{{ route('front.product', ['slug' => $prod['slug'], 'user' => $prod['user_id']]) }}"
+                                                                href="{{ route('front.product', ['slug' => $prod['slug'], 'vendor_id' => $prod['user_id'], 'merchant_product_id' => $prod['id']]) }}"
                                                                 data-url="{{ route('modal.quickview', ['id' => $prod['id']]) }}"
                                                                 data-user="{{ $prod['user_id'] ?? '' }}"
                                                                 data-bs-toggle="tooltip" data-bs-placement="top" title=""
@@ -192,7 +192,7 @@
                                                 </div>
                                                 <div class="product-info">
                                                     <h3 class="product-title"><a
-                                                            href="{{ route('front.product', ['slug' => $prod['slug'], 'user' => $prod['user_id']]) }}" ><x-product-name :product="$prod" :vendor-id="$prod['user_id']" target="_self" /></a>
+                                                            href="{{ route('front.product', ['slug' => $prod['slug'], 'vendor_id' => $prod['user_id'], 'merchant_product_id' => $prod['id']]) }}" ><x-product-name :product="$prod" :vendor-id="$prod['user_id']" :merchant-product-id="$prod['id']" target="_self" /></a>
                                                     </h3>
                                                     <div class="product-price">
                                                         <div class="price">

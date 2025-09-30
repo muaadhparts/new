@@ -10,11 +10,12 @@
 
                     $slug     = data_get($product, 'item.slug');
                     $vendorId = data_get($product, 'item.user_id');
+                    $merchantProductId = data_get($product, 'item.id');
                     $name     = data_get($product, 'item.name');
                     $photo    = data_get($product, 'item.photo');
 
-                    $productUrl = $vendorId
-                        ? route('front.product', ['slug' => $slug, 'user' => $vendorId])
+                    $productUrl = ($vendorId && $merchantProductId)
+                        ? route('front.product', ['slug' => $slug, 'vendor_id' => $vendorId, 'merchant_product_id' => $merchantProductId])
                         : 'javascript:;';
                 @endphp
 

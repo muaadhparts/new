@@ -63,7 +63,7 @@
                                                 </td>
                                                 <td>
                                                     <a class="btn btn-outline-primary btn-sm"
-                                                       href="{{ route('front.product.user', ['slug' => $product->slug, 'user' => $mp->user_id]) }}">
+                                                       href="{{ route('front.product', ['slug' => $product->slug, 'vendor_id' => $mp->user_id, 'merchant_product_id' => $mp->id]) }}">
                                                         @lang('View')
                                                     </a>
                                                 </td>
@@ -102,7 +102,7 @@
                                                     </td>
                                                     <td>
                                                         <a class="btn btn-outline-primary btn-sm"
-                                                           href="{{ route('front.product.user', ['slug' => $product->slug, 'user' => $mp->user_id]) }}">
+                                                           href="{{ route('front.product', ['slug' => $product->slug, 'vendor_id' => $mp->user_id, 'merchant_product_id' => $mp->id]) }}">
                                                             @lang('View')
                                                         </a>
                                                     </td>
@@ -158,7 +158,7 @@
                                                                 {{ method_exists($mp, 'showPrice') ? $mp->showPrice() : \App\Models\Product::convertPrice($vp) }}
                                                             </p>
                                                             <p class="mb-2 small"><strong>@lang('Stock'):</strong> {{ (int)($mp->stock ?? 0) }}</p>
-                                                            <a href="{{ route('front.product.user', ['slug' => $product->slug, 'user' => $mp->user_id]) }}"
+                                                            <a href="{{ route('front.product', ['slug' => $product->slug, 'vendor_id' => $mp->user_id, 'merchant_product_id' => $mp->id]) }}"
                                                                class="btn btn-primary btn-sm w-100">
                                                                 @lang('View')
                                                             </a>
@@ -205,7 +205,7 @@
                                                                     {{ method_exists($mp, 'showPrice') ? $mp->showPrice() : \App\Models\Product::convertPrice($vp) }}
                                                                 </p>
                                                                 <p class="mb-2 small"><strong>@lang('Stock'):</strong> {{ (int)($mp->stock ?? 0) }}</p>
-                                                                <a href="{{ route('front.product.user', ['slug' => $product->slug, 'user' => $mp->user_id]) }}"
+                                                                <a href="{{ route('front.product', ['slug' => $product->slug, 'vendor_id' => $mp->user_id, 'merchant_product_id' => $mp->id]) }}"
                                                                    class="btn btn-primary btn-sm w-100">
                                                                     @lang('View')
                                                                 </a>

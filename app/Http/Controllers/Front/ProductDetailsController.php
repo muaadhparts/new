@@ -41,17 +41,6 @@ class ProductDetailsController extends FrontBaseController
             }
         }
 
-        // 1) Load product by slug
-        $productt = Product::with(['galleries'])
-            ->withCount('ratings')
-            ->withAvg('ratings', 'rating')
-            ->where('slug', $slug)
-            ->first();
-
-        if (!$productt) {
-            return response()->view('errors.404')->setStatusCode(404);
-        }
-
         // Handle different route formats
         // Check if this is the old short route format by examining the number of route parameters
         $routeParams = $request->route()->parameters();
@@ -62,19 +51,35 @@ class ProductDetailsController extends FrontBaseController
             $merchant_product_id = $vendor_id;
             $vendor_id = null;
         }
-        // Otherwise it's the new format: /item/{slug}/store/{vendor_id}/product/{merchant_product_id}
+        // Otherwise it's the new format: /item/{slug}/store/{vendor_id}/merchant_products/{merchant_product_id}
 
-        // 2) Load merchant product by ID
-        $merchantProduct = MerchantProduct::with(['user', 'qualityBrand'])
+        // 1) Load merchant product by ID first (with product relationship)
+        $merchantProduct = MerchantProduct::with(['user', 'qualityBrand', 'product.galleries'])
             ->find($merchant_product_id);
 
         if (!$merchantProduct) {
             return response()->view('errors.404')->setStatusCode(404);
         }
 
-        // 3) Assert merchant_products.product_id == products.id
-        if ($merchantProduct->product_id != $productt->id) {
+        // 2) Get the product from the merchant product
+        $productt = $merchantProduct->product;
+
+        if (!$productt) {
             return response()->view('errors.404')->setStatusCode(404);
+        }
+
+        // Load additional product data
+        $productt->loadCount('ratings');
+        $productt->loadAvg('ratings', 'rating');
+
+        // 3) Verify slug matches (in case the product was updated)
+        if ($productt->slug !== $slug) {
+            // Redirect to the correct slug
+            return redirect()->route('front.product', [
+                'slug' => $productt->slug,
+                'vendor_id' => $merchantProduct->user_id,
+                'merchant_product_id' => $merchantProduct->id
+            ], 301);
         }
 
         // 4) Verify vendor_id matches if provided
@@ -126,7 +131,7 @@ class ProductDetailsController extends FrontBaseController
 
     /**
      * Legacy method: /item/{slug}/{user}
-     * Pick deterministic default mp for that user, then redirect to front.product.mp
+     * Pick deterministic default mp for that user, then redirect to front.product
      */
     public function showByUser($slug, $user)
     {
@@ -149,7 +154,7 @@ class ProductDetailsController extends FrontBaseController
         }
 
         // Redirect to new preferred route
-        return redirect()->route('front.product.mp', [
+        return redirect()->route('front.product', [
             'slug' => $slug,
             'vendor_id' => $merchantProduct->user_id,
             'merchant_product_id' => $merchantProduct->id
@@ -158,7 +163,7 @@ class ProductDetailsController extends FrontBaseController
 
     /**
      * Very legacy method: /item/{slug}
-     * Resolve default mp globally, then redirect to front.product.mp
+     * Resolve default mp globally, then redirect to front.product
      */
     public function show($slug)
     {
@@ -180,7 +185,7 @@ class ProductDetailsController extends FrontBaseController
         }
 
         // Redirect to new preferred route
-        return redirect()->route('front.product.mp', [
+        return redirect()->route('front.product', [
             'slug' => $slug,
             'vendor_id' => $merchantProduct->user_id,
             'merchant_product_id' => $merchantProduct->id
@@ -210,7 +215,7 @@ class ProductDetailsController extends FrontBaseController
         }
 
         // Redirect to new preferred route
-        return redirect()->route('front.product.mp', [
+        return redirect()->route('front.product', [
             'slug' => $slug,
             'vendor_id' => $merchantProduct->user_id,
             'merchant_product_id' => $merchantProduct->id

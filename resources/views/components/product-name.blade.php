@@ -3,6 +3,7 @@
     'product' => null,
     'item' => null, // for cart items format
     'vendorId' => null,
+    'merchantProductId' => null,
     'showSku' => true,
     'target' => '_blank',
     'class' => '',
@@ -26,6 +27,14 @@
         $sku = $productData['item']['sku'] ?? '';
         $slug = $productData['item']['slug'] ?? '';
         $userId = $vendorId ?? $productData['item']['user_id'] ?? $productData['user_id'] ?? 0;
+        // For merchant_product_id: prioritize explicit prop, then try to infer
+        $mpId = $merchantProductId;
+        if (!$mpId) {
+            // Try to get MP ID if productData is actually a MerchantProduct
+            $mpId = ($productData instanceof \App\Models\MerchantProduct)
+                ? $productData->id
+                : ($productData['item']['id'] ?? $productData['id'] ?? null);
+        }
     } else {
         // Direct product object format: $product->name
         $name = $productData->name ?? $productData['name'] ?? '';
@@ -33,6 +42,18 @@
         $sku = $productData->sku ?? $productData['sku'] ?? '';
         $slug = $productData->slug ?? $productData['slug'] ?? '';
         $userId = $vendorId ?? $productData->user_id ?? $productData['user_id'] ?? 0;
+        // For merchant_product_id: prioritize explicit prop
+        $mpId = $merchantProductId;
+        if (!$mpId) {
+            // Check if this is a MerchantProduct or need to fetch one
+            if ($productData instanceof \App\Models\MerchantProduct) {
+                $mpId = $productData->id;
+            } elseif ($productData instanceof \App\Models\Product && $userId) {
+                // Fetch first active MP for this product and vendor
+                $mp = $productData->merchantProducts()->where('user_id', $userId)->where('status', 1)->first();
+                $mpId = $mp->id ?? null;
+            }
+        }
     }
 
     // Language-aware name selection
@@ -41,8 +62,10 @@
     // SKU display
     $displaySku = !empty($sku) ? $sku : '-';
 
-    // Route generation
-    $productRoute = !empty($slug) ? route('front.product.user', ['slug' => $slug, 'user' => $userId]) : '#';
+    // Route generation with new parameter structure
+    $productRoute = !empty($slug) && $userId && $mpId
+        ? route('front.product', ['slug' => $slug, 'vendor_id' => $userId, 'merchant_product_id' => $mpId])
+        : '#';
 @endphp
 
 <div class="{{ $class }}">

@@ -44,15 +44,17 @@ class ProductController extends AdminBaseController
                     ->first();
 
                 $vendorId = optional($mp)->user_id ?: 0;
+                $merchantProductId = optional($mp)->id ?: 0;
 
-                $prodLink = $vendorId
-                    ? route('front.product', ['slug' => $data->slug, 'user' => $vendorId])
+                $prodLink = ($vendorId && $merchantProductId)
+                    ? route('front.product', ['slug' => $data->slug, 'vendor_id' => $vendorId, 'merchant_product_id' => $merchantProductId])
                     : '#';
 
                 // Use the product name component
                 $nameComponent = view('components.product-name', [
                     'product' => $data,
                     'vendorId' => $vendorId,
+                    'merchantProductId' => $merchantProductId,
                     'target' => '_blank'
                 ])->render();
 
@@ -156,8 +158,9 @@ class ProductController extends AdminBaseController
                     ->first();
 
                 $vendorId = optional($mp)->user_id;
-                $prodLink = $vendorId
-                    ? route('front.product', ['slug' => $data->slug, 'user' => $vendorId])
+                $merchantProductId = optional($mp)->id;
+                $prodLink = ($vendorId && $merchantProductId)
+                    ? route('front.product', ['slug' => $data->slug, 'vendor_id' => $vendorId, 'merchant_product_id' => $merchantProductId])
                     : '#';
 
                 $id  = '<small>' . __("ID") . ': <a href="' . $prodLink . '" target="_blank">' . sprintf("%'.08d", $data->id) . '</a></small>';

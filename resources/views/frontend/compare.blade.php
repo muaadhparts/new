@@ -35,7 +35,7 @@
                                 @endphp
                                 <td>
                                     @if($product)
-                                        <a href="{{ route('front.product.mp', ['slug' => $product->slug, 'vendor_id' => $productData['merchant_product']->user_id, 'merchant_product_id' => $productData['merchant_product']->id]) }}">
+                                        <a href="{{ route('front.product', ['slug' => $product->slug, 'vendor_id' => $productData['merchant_product']->user_id, 'merchant_product_id' => $productData['merchant_product']->id]) }}">
                                             <img class="img-fluid w-150"
                                                 src="{{ $product->thumbnail ? asset('assets/images/thumbnails/' . $product->thumbnail) : asset('assets/images/noimage.png') }}"
                                                 alt="compare-img">
@@ -55,7 +55,7 @@
                                 @endphp
                                 <td>
                                     @if($product)
-                                        <a href="{{ route('front.product.mp', ['slug' => $product->slug, 'vendor_id' => $productData['merchant_product']->user_id, 'merchant_product_id' => $productData['merchant_product']->id]) }}">
+                                        <a href="{{ route('front.product', ['slug' => $product->slug, 'vendor_id' => $productData['merchant_product']->user_id, 'merchant_product_id' => $productData['merchant_product']->id]) }}">
                                             <h6 class="product-title">{{ $product->name }}</h6>
                                         </a>
                                     @endif

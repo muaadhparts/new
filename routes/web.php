@@ -1668,6 +1668,7 @@ Route::group(['middleware' => 'maintenance'], function () {
     Route::get('/contact/refresh_code', 'Front\FrontendController@refresh_code');
     // CONTACT SECTION  ENDS
 
+ 
     // PRODCT AUTO SEARCH SECTION
     Route::get('/autosearch/product/{slug}', 'Front\FrontendController@autosearch');
     // PRODCT AUTO SEARCH SECTION ENDS
@@ -1704,13 +1705,29 @@ Route::group(['middleware' => 'maintenance'], function () {
     // PRODCT SECTION
 
     // Legacy routes for backward compatibility
+
+    // المسار الجديد (الأساسي)
+    Route::get(
+    '/item/{slug}/store/{vendor_id}/merchant_products/{merchant_product_id}',
+    'Front\ProductDetailsController@showByMerchantProduct'
+    )->whereNumber('vendor_id')->whereNumber('merchant_product_id')
+    ->name('front.product');
+
+    // القديم مع {user} → يعيد توجيه للنمط الجديد
+    Route::get('/item/{slug}/{user}', 'Front\ProductDetailsController@showByUser')
+    ->name('front.product.user');
+
+    // الأقدم بدون {user} → يعيد توجيه للنمط الجديد
+    Route::get('/item/{slug}', 'Front\ProductDetailsController@show')
+    ->name('front.product.legacy');
+
     Route::get('/item/{slug}', 'Front\ProductDetailsController@show')->name('front.product.legacy');
     Route::get('/item/{slug}/{user}', 'Front\ProductDetailsController@showByUser')->name('front.product.user');
 
-    // New preferred route with vendor and merchant_product_id
-    Route::get('/item/{slug}/my/{vendor_id}/for/{merchant_product_id}', 'Front\ProductDetailsController@showByMerchantProduct')
+    // New preferred route with vendor and merchant_product_id (main route name: front.product)
+    Route::get('/item/{slug}/store/{vendor_id}/merchant_products/{merchant_product_id}', 'Front\ProductDetailsController@showByMerchantProduct')
          ->whereNumber('vendor_id')->whereNumber('merchant_product_id')
-         ->name('front.product.mp');
+         ->name('front.product');
 
     // Alternative shorter route (legacy compatibility)
     Route::get('/item/{slug}/{merchant_product_id}', 'Front\ProductDetailsController@showByMerchantProduct')
