@@ -29,6 +29,16 @@ class CatalogController extends FrontBaseController
        
         $data['categories'] = Category::with('subs')->where('status', 1)->get();
 
+        // Get distinct vendors with shop names for the dropdown
+        $data['vendors'] = MerchantProduct::select('merchant_products.user_id')
+            ->join('users', 'users.id', '=', 'merchant_products.user_id')
+            ->where('merchant_products.status', 1)
+            ->where('users.is_vendor', 2)
+            ->groupBy('merchant_products.user_id')
+            ->selectRaw('merchant_products.user_id, users.shop_name')
+            ->orderBy('users.shop_name', 'asc')
+            ->get();
+
         if ($request->view_check) {
             session::put('view', $request->view_check);
         }
@@ -147,6 +157,11 @@ class CatalogController extends FrontBaseController
         // User (vendor) filter
         $prods = $prods->when($request->filled('user'), function ($q) use ($request) {
             $q->where('user_id', (int) $request->user);
+        });
+
+        // Vendor filter via 'vendor' query param
+        $prods = $prods->when($request->filled('vendor'), function ($q) use ($request) {
+            $q->where('merchant_products.user_id', (int) $request->vendor);
         });
 
         // Sorting options - sort by merchant products

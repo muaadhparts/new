@@ -234,8 +234,10 @@
                                         <td><img class="table-img" src="{{ $imgSrc }}" alt=""></td>
                                         <td class="text-start">
                                             <div class="product-name">
-                                                @if($prod)
-                                                    <x-product-name :product="$prod" :vendor-id="$prod->user_id ?? 0" target="_blank" />
+                                                @if($prod && $mp)
+                                                    <x-product-name :product="$prod" :vendor-id="$currentUser->id" :merchant-product-id="$mp->id" target="_blank" />
+                                                @elseif($prod)
+                                                    <span class="content">{{ $prod->name }}</span>
                                                 @else
                                                     <span class="content">—</span>
                                                 @endif

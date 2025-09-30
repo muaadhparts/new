@@ -319,16 +319,25 @@
                             <h5 class="widget-title">@lang('Recent Product')</h5>
                             <div class="gs-recent-post-widget">
                                 @foreach ($latest_products as $product)
-                                    <a href="{{ route('front.product.legacy', $product['slug']) }}">
-
+                                    @php
+                                        $recentProduct = is_array($product) ? App\Models\Product::whereId($product['id'])->first() : $product;
+                                        $recentMerchant = $recentProduct ? $recentProduct->merchantProducts()->where('status', 1)->orderBy('price')->first() : null;
+                                        $recentVendorId = $recentMerchant->user_id ?? 0;
+                                        $recentMerchantId = $recentMerchant->id ?? null;
+                                    @endphp
+                                    @if($recentMerchantId)
+                                        <a href="{{ route('front.product', ['slug' => (is_array($product) ? $product['slug'] : $product->slug), 'vendor_id' => $recentVendorId, 'merchant_product_id' => $recentMerchantId]) }}">
+                                    @else
+                                        <span style="cursor: not-allowed;">
+                                    @endif
                                         <div class="gs-single-recent-product-widget">
                                             <div class="img-wrapper">
                                                 <img class="thumb"
-                                                    src="{{ $product['thumbnail'] ? asset('assets/images/thumbnails/' . $product['thumbnail']) : asset('assets/images/noimage.png') }}"
+                                                    src="{{ (is_array($product) ? $product['thumbnail'] : $product->thumbnail) ? asset('assets/images/thumbnails/' . (is_array($product) ? $product['thumbnail'] : $product->thumbnail)) : asset('assets/images/noimage.png') }}"
                                                     alt="product img">
                                             </div>
                                             <div class="content-wrapper">
-                                                <h6 class="title"><x-product-name :product="$product" :vendor-id="0" target="_self" /></h6>
+                                                <h6 class="title"><x-product-name :product="$recentProduct" :vendor-id="$recentVendorId" :merchant-product-id="$recentMerchantId" target="_self" /></h6>
                                                 <div class="price-wrapper">
                                                     <span
                                                         class="price">{{ PriceHelper::showPrice($product['price']) }}</span>
@@ -349,7 +358,11 @@
                                                 </div>
                                             </div>
                                         </div>
-                                    </a>
+                                    @if($recentMerchantId)
+                                        </a>
+                                    @else
+                                        </span>
+                                    @endif
                                 @endforeach
 
                             </div>
@@ -370,6 +383,18 @@
                     <div class=" product-nav-wrapper">
                         <h5>@lang('Total Offers Found:') {{ $prods->total() }}</h5>
                         <div class="filter-wrapper">
+                            <div class="sort-wrapper">
+                                <h5>@lang('Store by:')</h5>
+
+                                <select class="nice-select" id="vendorby" name="vendor">
+                                    <option value="">{{ __('All Stores') }}</option>
+                                    @foreach($vendors as $vendor)
+                                        <option value="{{ $vendor->user_id }}" {{ request('vendor') == $vendor->user_id ? 'selected' : '' }}>
+                                            {{ $vendor->shop_name }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
                             <div class="sort-wrapper">
                                 <h5>@lang('Sort by:')</h5>
 
@@ -494,7 +519,7 @@
 
 
         // when dynamic attribute changes
-        $(".attribute-input, .brand-quality-input, #sortby, #pageby").on('change', function() {
+        $(".attribute-input, .brand-quality-input, #sortby, #vendorby, #pageby").on('change', function() {
             $(".ajax-loader").show();
             filter();
         });
@@ -520,6 +545,10 @@
 
             if ($("#sortby").val() != '') {
                 params.append($("#sortby").attr('name'), $("#sortby").val());
+            }
+
+            if ($("#vendorby").val() != '') {
+                params.append($("#vendorby").attr('name'), $("#vendorby").val());
             }
 
             if ($("#start_value").val() != '') {
@@ -573,6 +602,9 @@
                     params.append('sort', $("#sortby").val());
                 }
 
+                if ($("#vendorby").val() != '') {
+                    params.append('vendor', $("#vendorby").val());
+                }
 
                 if ($("#pageby").val() != '') {
                     params.append('pageby', $("#pageby").val());

@@ -138,6 +138,12 @@
                             <tbody>
 
                                 @forelse ($pproducts as $data)
+                                    @php
+                                        $vendorMp = \App\Models\MerchantProduct::where('product_id', $data->id)
+                                            ->where('user_id', auth()->user()->id)
+                                            ->where('status', 1)
+                                            ->first();
+                                    @endphp
                                     <!-- table data row 1 start  -->
                                     <tr>
                                         <td>
@@ -147,7 +153,11 @@
                                         </td>
                                         <td class="text-start">
                                             <div class="product-name">
-                                                <x-product-name :product="$data" :vendor-id="$data->user_id ?? 0" target="_blank" />
+                                                @if($vendorMp)
+                                                    <x-product-name :product="$data" :vendor-id="auth()->user()->id" :merchant-product-id="$vendorMp->id" target="_blank" />
+                                                @else
+                                                    <span class="content">{{ $data->name }}</span>
+                                                @endif
                                             </div>
                                         </td>
                                         <td class="text-start">

@@ -51,7 +51,7 @@
             </td>
 
             <td>
-              <a href="{{ route('front.product.user', ['slug' => $product->slug, 'user' => $mp->user_id]) }}"
+              <a href="{{ route('front.product', ['slug' => $product->slug, 'vendor_id' => $mp->user_id, 'merchant_product_id' => $mp->id]) }}"
                 class="btn btn-sm btn-outline-primary quick-view"
                 data-id="{{ $product->id }}"
                 data-sku="{{ $product->sku }}"

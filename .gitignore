@@ -12,7 +12,7 @@
 /storage/framework/cache/*
 .phpunit.result.cache
 /bootstrap/cache/*.php
-
+nul
 # بيئة العمل
 .env
 .env.backup

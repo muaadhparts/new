@@ -362,10 +362,13 @@
                                                 @if ($product['item']['user_id'] != 0)
                                                     @php
                                                         $user = App\Models\User::find($product['item']['user_id']);
+                                                        $invoiceProduct = App\Models\Product::where('slug', $product['item']['slug'])->first();
+                                                        $invoiceMerchant = $invoiceProduct ? $invoiceProduct->merchantProducts()->where('user_id', $product['item']['user_id'])->where('status', 1)->first() : null;
+                                                        $invoiceMerchantId = $invoiceMerchant->id ?? null;
                                                     @endphp
                                                     <span class="content product-title d-inline-block">
                                                         @if (isset($user))
-                                                            <x-product-name :item="$product" :vendor-id="$product['item']['user_id']" target="_blank" class="d-inline-block" />
+                                                            <x-product-name :item="$product" :vendor-id="$product['item']['user_id']" :merchant-product-id="$invoiceMerchantId" target="_blank" class="d-inline-block" />
                                                         @else
                                                             <x-product-name :item="$product" target="_self" class="d-inline-block" />
                                                         @endif

@@ -159,22 +159,35 @@
                         <div class="item">
                             <div class="row row-cols-1">
                                 @foreach ($item as $prod)
-
+                                    @php
+                                        $catalogProduct = App\Models\Product::whereId($prod['id'])->first();
+                                        $catalogMerchant = $catalogProduct ? $catalogProduct->merchantProducts()->where('status', 1)->orderBy('price')->first() : null;
+                                        $catalogVendorId = $catalogMerchant->user_id ?? 0;
+                                        $catalogMerchantId = $catalogMerchant->id ?? null;
+                                    @endphp
                                     <div class="col mb-1">
                                         <div class="product type-product">
                                             <div class="product-wrapper">
                                                 <div class="product-image">
-                                                    <a href="{{ route('front.product.legacy', $prod['slug']) }}"
-                                                        class="woocommerce-LoopProduct-link"><img
-                                                            src="{{ $prod['thumbnail'] ? asset('assets/images/thumbnails/' . $prod['thumbnail']) : asset('assets/images/noimage.png') }}"
-                                                            alt="Product Image"></a>
+                                                    @if($catalogMerchantId)
+                                                        <a href="{{ route('front.product', ['slug' => $prod['slug'], 'vendor_id' => $catalogVendorId, 'merchant_product_id' => $catalogMerchantId]) }}"
+                                                            class="woocommerce-LoopProduct-link"><img
+                                                                src="{{ $prod['thumbnail'] ? asset('assets/images/thumbnails/' . $prod['thumbnail']) : asset('assets/images/noimage.png') }}"
+                                                                alt="Product Image"></a>
+                                                    @else
+                                                        <span class="woocommerce-LoopProduct-link" style="cursor: not-allowed;"><img
+                                                                src="{{ $prod['thumbnail'] ? asset('assets/images/thumbnails/' . $prod['thumbnail']) : asset('assets/images/noimage.png') }}"
+                                                                alt="Product Image"></span>
+                                                    @endif
                                                     <div class="wishlist-view">
                                                         <div class="quickview-button">
-                                                            <a class="quickview-btn"
-                                                                href="{{ route('front.product.legacy', $prod['slug']) }}"
-                                                                data-bs-toggle="tooltip" data-bs-placement="top" title=""
-                                                                data-bs-original-title="Quick View"
-                                                                aria-label="Quick View">{{ __('Quick View') }}</a>
+                                                            @if($catalogMerchantId)
+                                                                <a class="quickview-btn"
+                                                                    href="{{ route('front.product', ['slug' => $prod['slug'], 'vendor_id' => $catalogVendorId, 'merchant_product_id' => $catalogMerchantId]) }}"
+                                                                    data-bs-toggle="tooltip" data-bs-placement="top" title=""
+                                                                    data-bs-original-title="Quick View"
+                                                                    aria-label="Quick View">{{ __('Quick View') }}</a>
+                                                            @endif
                                                         </div>
                                                         <div class="whishlist-button">
                                                             <a class="add_to_wishlist" href="#" data-bs-toggle="tooltip"
@@ -185,8 +198,14 @@
                                                     </div>
                                                 </div>
                                                 <div class="product-info">
-                                                    <h3 class="product-title"><a
-                                                            href="{{ route('front.product.legacy', $prod['slug']) }}"><x-product-name :product="App\Models\Product::whereId($prod['id'])->first()" :vendor-id="0" target="_self" /></a>
+                                                    <h3 class="product-title">
+                                                        @if($catalogMerchantId)
+                                                            <a href="{{ route('front.product', ['slug' => $prod['slug'], 'vendor_id' => $catalogVendorId, 'merchant_product_id' => $catalogMerchantId]) }}">
+                                                                <x-product-name :product="$catalogProduct" :vendor-id="$catalogVendorId" :merchant-product-id="$catalogMerchantId" target="_self" />
+                                                            </a>
+                                                        @else
+                                                            <span><x-product-name :product="$catalogProduct" :vendor-id="0" target="_self" /></span>
+                                                        @endif
                                                     </h3>
                                                     <div class="product-price">
                                                         <div class="price">

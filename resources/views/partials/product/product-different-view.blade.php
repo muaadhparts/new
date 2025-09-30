@@ -30,10 +30,16 @@
                 <div class="product-wrapper">
 
                     <div class="product-image">
-                        <a href="{{ $vendorId ? route('front.product.user', ['slug' => $product->slug, 'user' => $vendorId]) : 'javascript:;' }}"
-                           class="woocommerce-LoopProduct-link">
-                            <img src="{{ $thumb }}" alt="Product Image">
-                        </a>
+                        @if($vendorId && $mp)
+                            <a href="{{ route('front.product', ['slug' => $product->slug, 'vendor_id' => $vendorId, 'merchant_product_id' => $mp->id]) }}"
+                               class="woocommerce-LoopProduct-link">
+                                <img src="{{ $thumb }}" alt="Product Image">
+                            </a>
+                        @else
+                            <span class="woocommerce-LoopProduct-link" style="cursor: not-allowed;">
+                                <img src="{{ $thumb }}" alt="Product Image">
+                            </span>
+                        @endif
 
                         <div class="hover-area">
                             @if($product->product_type == "affiliate")
@@ -88,9 +94,13 @@
 
                     <div class="product-info">
                         <h3 class="product-title">
-                            <a href="{{ $vendorId ? route('front.product.user', ['slug' => $product->slug, 'user' => $vendorId]) : 'javascript:;' }}">
-                                <x-product-name :product="$product" :vendor-id="$vendorId" target="_self" />
-                            </a>
+                            @if($vendorId && $mp)
+                                <a href="{{ route('front.product', ['slug' => $product->slug, 'vendor_id' => $vendorId, 'merchant_product_id' => $mp->id]) }}">
+                                    <x-product-name :product="$product" :vendor-id="$vendorId" :merchant-product-id="$mp->id" target="_self" />
+                                </a>
+                            @else
+                                <span><x-product-name :product="$product" :vendor-id="$vendorId" target="_self" /></span>
+                            @endif
                         </h3>
 
                         <div class="product-price">
@@ -148,10 +158,16 @@
                 <div class="product-wrapper">
 
                     <div class="product-image">
-                        <a href="{{ $vendorId ? route('front.product.user', ['slug' => $product->slug, 'user' => $vendorId]) : 'javascript:;' }}"
-                           class="woocommerce-LoopProduct-link">
-                            <img src="{{ $thumb }}" alt="Product Image">
-                        </a>
+                        @if($vendorId && $mp)
+                            <a href="{{ route('front.product', ['slug' => $product->slug, 'vendor_id' => $vendorId, 'merchant_product_id' => $mp->id]) }}"
+                               class="woocommerce-LoopProduct-link">
+                                <img src="{{ $thumb }}" alt="Product Image">
+                            </a>
+                        @else
+                            <span class="woocommerce-LoopProduct-link" style="cursor: not-allowed;">
+                                <img src="{{ $thumb }}" alt="Product Image">
+                            </span>
+                        @endif
 
                         <div class="hover-area">
                             @if($product->product_type == "affiliate")
@@ -206,9 +222,13 @@
 
                     <div class="product-info">
                         <h3 class="product-title">
-                            <a href="{{ $vendorId ? route('front.product.user', ['slug' => $product->slug, 'user' => $vendorId]) : 'javascript:;' }}">
-                                <x-product-name :product="$product" :vendor-id="$vendorId" target="_self" />
-                            </a>
+                            @if($vendorId && $mp)
+                                <a href="{{ route('front.product', ['slug' => $product->slug, 'vendor_id' => $vendorId, 'merchant_product_id' => $mp->id]) }}">
+                                    <x-product-name :product="$product" :vendor-id="$vendorId" :merchant-product-id="$mp->id" target="_self" />
+                                </a>
+                            @else
+                                <span><x-product-name :product="$product" :vendor-id="$vendorId" target="_self" /></span>
+                            @endif
                         </h3>
 
                         <div class="product-price">

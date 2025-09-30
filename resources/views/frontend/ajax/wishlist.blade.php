@@ -13,14 +13,24 @@
             </div>
         </td>
         <td class="product-thumbnail">
-            <a href="{{ route('front.product.user', ['slug' => $product->slug, 'user' => $vendorId]) }}">
-                <img src="{{ \Illuminate\Support\Facades\Storage::url($product->photo) ?? asset('assets/images/noimage.png') }}" alt="">
-            </a>
+            @if($merchantProduct)
+                <a href="{{ route('front.product', ['slug' => $product->slug, 'vendor_id' => $vendorId, 'merchant_product_id' => $merchantProduct->id]) }}">
+                    <img src="{{ \Illuminate\Support\Facades\Storage::url($product->photo) ?? asset('assets/images/noimage.png') }}" alt="">
+                </a>
+            @else
+                <span style="cursor: not-allowed;">
+                    <img src="{{ \Illuminate\Support\Facades\Storage::url($product->photo) ?? asset('assets/images/noimage.png') }}" alt="">
+                </span>
+            @endif
         </td>
         <td class="product-name">
-            <a href="{{ route('front.product.user', ['slug' => $product->slug, 'user' => $vendorId]) }}">
-                {{ $product->name }}
-            </a>
+            @if($merchantProduct)
+                <a href="{{ route('front.product', ['slug' => $product->slug, 'vendor_id' => $vendorId, 'merchant_product_id' => $merchantProduct->id]) }}">
+                    {{ $product->name }}
+                </a>
+            @else
+                <span>{{ $product->name }}</span>
+            @endif
             @if($merchantProduct && $merchantProduct->user)
                 <br><small class="text-muted">{{ __('Vendor:') }} {{ $merchantProduct->user->shop_name ?? $merchantProduct->user->name }}</small>
             @endif

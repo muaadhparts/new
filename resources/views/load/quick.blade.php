@@ -458,7 +458,14 @@
               @endif
 
               <div class="mt-2">
-                <a class="view_more_btn" href="{{ route('front.product.legacy',$product->slug) }}">{{__('Get More Details')}} <i class="fas fa-arrow-right"></i></a>
+                @php
+                    $quickVendorId = request()->get('user', $product->user_id);
+                    $quickMerchant = $product->merchantProducts()->where('user_id', $quickVendorId)->where('status', 1)->first();
+                    $quickMerchantId = $quickMerchant->id ?? null;
+                @endphp
+                @if($quickMerchantId)
+                    <a class="view_more_btn" href="{{ route('front.product', ['slug' => $product->slug, 'vendor_id' => $quickVendorId, 'merchant_product_id' => $quickMerchantId]) }}">{{__('Get More Details')}} <i class="fas fa-arrow-right"></i></a>
+                @endif
               </div>
 
 

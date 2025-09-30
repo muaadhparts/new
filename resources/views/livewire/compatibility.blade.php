@@ -1,5 +1,5 @@
 <div>
-    <span>@lang('Compatibility:')</span>
+    <span>@lang('')</span>
     <button type="button" class="btn zbtn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal{{$sku}}">
         <i class="fa fa-car fa-2xl"></i>
     </button>
@@ -9,7 +9,7 @@
         <div class="modal-dialog modal-dialog-centered modal-xl" style="width: 100%">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="exampleModalLabel">@lang('Compatibility:') {{$sku}}</h5>
+                    <h5 class="modal-title" id="exampleModalLabel">@lang('') {{$sku}}</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">

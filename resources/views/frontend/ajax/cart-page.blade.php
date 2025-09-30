@@ -38,8 +38,13 @@
                                 // نسخة آمنة للـ DOM
                                 $domKey = str_replace([':', '#', '.', ' ', '/', '\\'], '_', $row);
 
-                                // رابط تفاصيل المنتج مع تمرير {user}
-                                $productUrl = $vendorId ? route('front.product.user', ['slug' => $slug, 'user' => $vendorId]) : 'javascript:;';
+                                // Fetch merchant_product_id for cart item
+                                $itemProduct = \App\Models\Product::where('slug', $slug)->first();
+                                $itemMerchant = $itemProduct ? $itemProduct->merchantProducts()->where('user_id', $vendorId)->where('status', 1)->first() : null;
+                                $itemMerchantId = $itemMerchant->id ?? null;
+
+                                // رابط تفاصيل المنتج مع تمرير {vendor_id, merchant_product_id}
+                                $productUrl = ($vendorId && $itemMerchantId) ? route('front.product', ['slug' => $slug, 'vendor_id' => $vendorId, 'merchant_product_id' => $itemMerchantId]) : 'javascript:;';
                             @endphp
 
                             <tr>
@@ -47,7 +52,7 @@
                                     <div class="cart-product d-flex">
                                         <img src="{{ $photo ? \Illuminate\Support\Facades\Storage::url($photo) : asset('assets/images/noimage.png') }}" alt="">
                                         <div class="cart-product-info">
-                                            <x-product-name :item="$product['item']" :vendor-id="$vendorId" target="_blank" class="cart-title d-inline-block" />
+                                            <x-product-name :item="$product['item']" :vendor-id="$vendorId" :merchant-product-id="$itemMerchantId" target="_blank" class="cart-title d-inline-block" />
 
                                             @if (!empty($sku))
                                                 <p class="text-muted small mb-1">

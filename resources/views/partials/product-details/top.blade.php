@@ -138,10 +138,12 @@
       </form>
 
       <div class="mt-3">
-        <a class="text-decoration-none"
-           href="{{ $hasVendor ? route('front.product.user', ['slug'=>$productt->slug, 'user'=>$vendorId]) : 'javascript:;' }}">
-          {{ __('View Details') }}
-        </a>
+        @if($hasVendor && $merchant)
+          <a class="text-decoration-none"
+             href="{{ route('front.product', ['slug'=>$productt->slug, 'vendor_id'=>$vendorId, 'merchant_product_id'=>$merchant->id]) }}">
+            {{ __('View Details') }}
+          </a>
+        @endif
       </div>
     </div>
   </div>

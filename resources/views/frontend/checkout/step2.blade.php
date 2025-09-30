@@ -227,12 +227,22 @@
                                                 </a>
                                             </div>
                                             <div class="content-wrapper">
+                                                @php
+                                                    // Fetch merchant_product_id for the cart item
+                                                    $itemProduct = \App\Models\Product::where('slug', $product['item']['slug'])->first();
+                                                    $itemMerchant = $itemProduct ? $itemProduct->merchantProducts()->where('user_id', $product['item']['user_id'])->where('status', 1)->first() : null;
+                                                    $itemMerchantId = $itemMerchant->id ?? null;
+                                                @endphp
                                                 <a class="art-title d-inline-block xproduct-title">
-                                                    <a href="{{ route('front.product.user', ['slug' => $product['item']['slug'], 'user' => $product['item']['user_id']]) }}">{{ $product['item']['sku'] }}</a>
+                                                    @if($itemMerchantId)
+                                                        <a href="{{ route('front.product', ['slug' => $product['item']['slug'], 'vendor_id' => $product['item']['user_id'], 'merchant_product_id' => $itemMerchantId]) }}">{{ $product['item']['sku'] }}</a>
+                                                    @else
+                                                        <span>{{ $product['item']['sku'] }}</span>
+                                                    @endif
                                                 </a>
 
                                                 <h6>
-                                                    <x-product-name :item="$product['item']" :vendor-id="$product['item']['user_id']" target="_blank" class="product-title" />
+                                                    <x-product-name :item="$product['item']" :vendor-id="$product['item']['user_id']" :merchant-product-id="$itemMerchantId" target="_blank" class="product-title" />
                                                 </h6>
 
                                                 <ul class="product-specifications-list">

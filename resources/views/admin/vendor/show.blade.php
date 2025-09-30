@@ -143,8 +143,18 @@ table#example2 {
                                                                     </thead>
                                                                     <tbody>
                                                                         @foreach($data->products as $dt)
+                                                                        @php
+                                                                            $dtMerchant = $dt->merchantProducts()->where('user_id', $data->id)->where('status', 1)->first();
+                                                                            $dtMerchantId = $dtMerchant->id ?? null;
+                                                                        @endphp
                                                                         <tr>
-                                                                        <td><a href="{{ route('front.product.legacy', $dt->slug) }}" target="_blank">{{ sprintf("%'.08d",$dt->id) }}</a></td>
+                                                                        <td>
+                                                                            @if($dtMerchantId)
+                                                                                <a href="{{ route('front.product', ['slug' => $dt->slug, 'vendor_id' => $data->id, 'merchant_product_id' => $dtMerchantId]) }}" target="_blank">{{ sprintf("%'.08d",$dt->id) }}</a>
+                                                                            @else
+                                                                                <span>{{ sprintf("%'.08d",$dt->id) }}</span>
+                                                                            @endif
+                                                                        </td>
                                                                             <td>{{ $dt->type }}</td>
                                                                             @php 
                                                                             $stck = (string)$dt->stock;

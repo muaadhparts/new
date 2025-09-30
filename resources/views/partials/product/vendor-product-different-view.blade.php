@@ -2,13 +2,23 @@
   @if (Session::get('view') == 'list-view')
     <div class="row row-cols-xxl-2 row-cols-md-2 row-cols-1 g-3 product-style-1 shop-list product-list e-bg-light e-title-hover-primary e-hover-image-zoom">
       @foreach($vprods as $product)
+        @php
+          $merchantProduct = $product->merchantProducts()->where('user_id', $product->user_id)->where('status', 1)->first();
+          $merchantProductId = $merchantProduct->id ?? null;
+        @endphp
         <div class="col">
           <div class="product type-product">
             <div class="product-wrapper">
               <div class="product-image">
-                <a href="{{ route('front.product.user', ['slug' => $product->slug, 'user' => $product->user_id]) }}" class="woocommerce-LoopProduct-link">
-                  <img src="{{ $product->thumbnail ? asset('assets/images/thumbnails/' . $product->thumbnail) : asset('assets/images/noimage.png') }}" alt="Product Image">
-                </a>
+                @if($merchantProductId)
+                  <a href="{{ route('front.product', ['slug' => $product->slug, 'vendor_id' => $product->user_id, 'merchant_product_id' => $merchantProductId]) }}" class="woocommerce-LoopProduct-link">
+                    <img src="{{ $product->thumbnail ? asset('assets/images/thumbnails/' . $product->thumbnail) : asset('assets/images/noimage.png') }}" alt="Product Image">
+                  </a>
+                @else
+                  <span class="woocommerce-LoopProduct-link" style="cursor: not-allowed;">
+                    <img src="{{ $product->thumbnail ? asset('assets/images/thumbnails/' . $product->thumbnail) : asset('assets/images/noimage.png') }}" alt="Product Image">
+                  </span>
+                @endif
                 <div class="hover-area">
                   @if($product->product_type == "affiliate")
                     <div class="cart-button">
@@ -57,7 +67,13 @@
 
               <div class="product-info">
                 <h3 class="product-title">
-                  <a href="{{ route('front.product.user', ['slug' => $product->slug, 'user' => $product->user_id]) }}"><x-product-name :product="$product" :vendor-id="$product->user_id" target="_self" /></a>
+                  @if($merchantProductId)
+                    <a href="{{ route('front.product', ['slug' => $product->slug, 'vendor_id' => $product->user_id, 'merchant_product_id' => $merchantProductId]) }}">
+                      <x-product-name :product="$product" :vendor-id="$product->user_id" :merchant-product-id="$merchantProductId" target="_self" />
+                    </a>
+                  @else
+                    <span><x-product-name :product="$product" :vendor-id="$product->user_id" target="_self" /></span>
+                  @endif
                 </h3>
                 <div class="product-price">
                   <div class="price">
@@ -82,13 +98,23 @@
   @else
     <div class="row row-cols-xl-4 row-cols-md-3 row-cols-sm-2 row-cols-1 product-style-1 e-title-hover-primary e-image-bg-light e-hover-image-zoom e-info-center">
       @foreach($vprods as $product)
+        @php
+          $merchantProduct = $product->merchantProducts()->where('user_id', $product->user_id)->where('status', 1)->first();
+          $merchantProductId = $merchantProduct->id ?? null;
+        @endphp
         <div class="col">
           <div class="product type-product">
             <div class="product-wrapper">
               <div class="product-image">
-                <a href="{{ route('front.product.user', ['slug' => $product->slug, 'user' => $product->user_id]) }}" class="woocommerce-LoopProduct-link">
-                  <img src="{{ $product->thumbnail ? asset('assets/images/thumbnails/' . $product->thumbnail) : asset('assets/images/noimage.png') }}" alt="Product Image">
-                </a>
+                @if($merchantProductId)
+                  <a href="{{ route('front.product', ['slug' => $product->slug, 'vendor_id' => $product->user_id, 'merchant_product_id' => $merchantProductId]) }}" class="woocommerce-LoopProduct-link">
+                    <img src="{{ $product->thumbnail ? asset('assets/images/thumbnails/' . $product->thumbnail) : asset('assets/images/noimage.png') }}" alt="Product Image">
+                  </a>
+                @else
+                  <span class="woocommerce-LoopProduct-link" style="cursor: not-allowed;">
+                    <img src="{{ $product->thumbnail ? asset('assets/images/thumbnails/' . $product->thumbnail) : asset('assets/images/noimage.png') }}" alt="Product Image">
+                  </span>
+                @endif
                 <div class="hover-area">
                   @if($product->product_type == "affiliate")
                     <div class="cart-button">
@@ -138,7 +164,13 @@
 
               <div class="product-info">
                 <h3 class="product-title">
-                  <a href="{{ route('front.product.user', ['slug' => $product->slug, 'user' => $product->user_id]) }}"><x-product-name :product="$product" :vendor-id="$product->user_id" target="_self" /></a>
+                  @if($merchantProductId)
+                    <a href="{{ route('front.product', ['slug' => $product->slug, 'vendor_id' => $product->user_id, 'merchant_product_id' => $merchantProductId]) }}">
+                      <x-product-name :product="$product" :vendor-id="$product->user_id" :merchant-product-id="$merchantProductId" target="_self" />
+                    </a>
+                  @else
+                    <span><x-product-name :product="$product" :vendor-id="$product->user_id" target="_self" /></span>
+                  @endif
                 </h3>
                 <div class="product-price">
                   <div class="price">
@@ -164,13 +196,23 @@
 @else
   <div class="row row-cols-xl-4 row-cols-md-3 row-cols-sm-2 row-cols-1 product-style-1 e-title-hover-primary e-image-bg-light e-hover-image-zoom e-info-center">
     @foreach($vprods as $product)
+      @php
+        $merchantProduct = $product->merchantProducts()->where('user_id', $product->user_id)->where('status', 1)->first();
+        $merchantProductId = $merchantProduct->id ?? null;
+      @endphp
       <div class="col">
         <div class="product type-product">
           <div class="product-wrapper">
             <div class="product-image">
-              <a href="{{ route('front.product.user', ['slug' => $product->slug, 'user' => $product->user_id]) }}" class="woocommerce-LoopProduct-link">
-                <img src="{{ $product->thumbnail ? asset('assets/images/thumbnails/' . $product->thumbnail) : asset('assets/images/noimage.png') }}" alt="Product Image">
-              </a>
+              @if($merchantProductId)
+                <a href="{{ route('front.product', ['slug' => $product->slug, 'vendor_id' => $product->user_id, 'merchant_product_id' => $merchantProductId]) }}" class="woocommerce-LoopProduct-link">
+                  <img src="{{ $product->thumbnail ? asset('assets/images/thumbnails/' . $product->thumbnail) : asset('assets/images/noimage.png') }}" alt="Product Image">
+                </a>
+              @else
+                <span class="woocommerce-LoopProduct-link" style="cursor: not-allowed;">
+                  <img src="{{ $product->thumbnail ? asset('assets/images/thumbnails/' . $product->thumbnail) : asset('assets/images/noimage.png') }}" alt="Product Image">
+                </span>
+              @endif
               <div class="hover-area">
                 @if($product->product_type == "affiliate")
                   <div class="cart-button">
@@ -219,7 +261,11 @@
 
             <div class="product-info">
               <h3 class="product-title">
-                <a href="{{ route('front.product.user', ['slug' => $product->slug, 'user' => $product->user_id]) }}">{{ $product->showName() }}</a>
+                @if($merchantProductId)
+                  <a href="{{ route('front.product', ['slug' => $product->slug, 'vendor_id' => $product->user_id, 'merchant_product_id' => $merchantProductId]) }}">{{ $product->showName() }}</a>
+                @else
+                  <span>{{ $product->showName() }}</span>
+                @endif
               </h3>
               <div class="product-price">
                 <div class="price">

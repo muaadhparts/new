@@ -61,10 +61,20 @@
                            <tr>
                               <td><input type="hidden" value="{{$key1}}">{{ $product['item']['id'] }}</td>
                               <td>
+                                @php
+                                    // Fetch merchant_product_id for admin order view
+                                    $adminProduct = \App\Models\Product::where('slug', $product['item']['slug'])->first();
+                                    $adminMerchant = $adminProduct ? $adminProduct->merchantProducts()->where('user_id', $product['item']['user_id'])->where('status', 1)->first() : null;
+                                    $adminMerchantId = $adminMerchant->id ?? null;
+                                @endphp
                                 <img src="{{ \Illuminate\Support\Facades\Storage::url($product['item']['photo']) ?? asset('assets/images/noimage.png') }}" alt="">
                                 <br>
                                  <input type="hidden" value="{{ $product['license'] }}">
-                                <a target="_blank" href="{{ route('front.product.user', ['slug' => $product['item']['slug'], 'user' => $product['item']['user_id']]) }}" >{{mb_strlen($product['item']['name'],'utf-8') > 30 ? mb_substr($product['item']['name'],0,30,'utf-8').'...' : $product['item']['name']}}</a>
+                                @if($adminMerchantId)
+                                    <a target="_blank" href="{{ route('front.product', ['slug' => $product['item']['slug'], 'vendor_id' => $product['item']['user_id'], 'merchant_product_id' => $adminMerchantId]) }}" >{{mb_strlen($product['item']['name'],'utf-8') > 30 ? mb_substr($product['item']['name'],0,30,'utf-8').'...' : $product['item']['name']}}</a>
+                                @else
+                                    <span>{{mb_strlen($product['item']['name'],'utf-8') > 30 ? mb_substr($product['item']['name'],0,30,'utf-8').'...' : $product['item']['name']}}</span>
+                                @endif
                               </td>
                               <td class="product-price">
                                  <span>{{ App\Models\Product::convertPrice($product['item_price']) }}

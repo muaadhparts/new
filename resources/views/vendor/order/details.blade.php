@@ -340,14 +340,15 @@
 
                                             @if ($product['item']['user_id'] != 0)
                                             @php
-                                                $user = App\Models\User::find(
-                                                    $product['item']['user_id'],
-                                                );
+                                                $user = App\Models\User::find($product['item']['user_id']);
+                                                $orderProduct = App\Models\Product::where('slug', $product['item']['slug'])->first();
+                                                $orderMerchant = $orderProduct ? $orderProduct->merchantProducts()->where('user_id', $product['item']['user_id'])->where('status', 1)->first() : null;
+                                                $orderMerchantId = $orderMerchant->id ?? null;
                                             @endphp
                                             @if (isset($user))
-                                            <x-product-name :item="$product" :vendor-id="$product['item']['user_id']" target="_blank" class="title-hover-color content product-title d-inline-block" />
+                                            <x-product-name :item="$product" :vendor-id="$product['item']['user_id']" :merchant-product-id="$orderMerchantId" target="_blank" class="title-hover-color content product-title d-inline-block" />
                                             @else
-                                            <x-product-name :item="$product" :vendor-id="$product['item']['user_id']" target="_blank" class="title-hover-color content product-title d-inline-block" />
+                                            <x-product-name :item="$product" :vendor-id="$product['item']['user_id']" :merchant-product-id="$orderMerchantId" target="_blank" class="title-hover-color content product-title d-inline-block" />
                                             @endif
                                         @endif
 
