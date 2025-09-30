@@ -15,9 +15,12 @@ class Kernel extends ConsoleKernel
         // يجدد التوكن
         $schedule->command('nissan:refresh-token')->everyFiveMinutes();
 
-        // تحديث كامل: تنزيل + استيراد + تجميع يومياً الساعة 2:00 صباحاً
-        $schedule->command('stock:full-refresh')->dailyAt('02:00')->withoutOverlapping();
+        // تحديث كامل للتويجري (بائع واحد user_id=59): تنزيل + استيراد + تجميع + تحديث يومياً الساعة 2:00 صباحاً
+        $schedule->command('stock:manage full-refresh --user_id=59 --margin=1.3 --branch=ATWJRY')
+                ->dailyAt('02:00')
+                ->withoutOverlapping();
     }
+
 
     protected $commands = [
         \App\Console\Commands\ClearLog::class,

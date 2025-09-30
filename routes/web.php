@@ -74,23 +74,40 @@ use App\Http\Controllers\Front\ProductDetailsController;
 //     HTML;
 // });
 
+// Route::get('/refresh-stock/{token}', function ($token) {
+//     abort_unless($token === env('REFRESH_TOKEN'), 403);
+
+//     $output = [];
+
+//     // تنزيل + استيراد + تجميع
+//     Artisan::call('stock:full-refresh');
+//     $output[] = Artisan::output();
+
+//     // تحديث الأسعار
+//     Artisan::call('products:update-price');
+//     $output[] = Artisan::output();
+
+//     // نجمع كل المخرجات ونرجعها كـ نص
+//     return "<pre>" . implode("\n\n", $output) . "</pre>";
+// });
+
 Route::get('/refresh-stock/{token}', function ($token) {
     abort_unless($token === env('REFRESH_TOKEN'), 403);
 
     $output = [];
 
-    // تنزيل + استيراد + تجميع
-    Artisan::call('stock:full-refresh');
+    // تنزيل + استيراد + تجميع + تحديث مخزون وأسعار لبائع واحد (59) على فرع ATWJRY
+    Artisan::call('stock:manage', [
+        'action'    => 'full-refresh',
+        '--user_id' => 59,
+        '--margin'  => 1.3,
+        '--branch'  => 'ATWJRY',
+    ]);
     $output[] = Artisan::output();
 
-    // تحديث الأسعار
-    Artisan::call('products:update-price');
-    $output[] = Artisan::output();
-
-    // نجمع كل المخرجات ونرجعها كـ نص
+    // عرض النتائج
     return "<pre>" . implode("\n\n", $output) . "</pre>";
 });
-
 
 Route::get('/checkout/quick', 'Front\QuickCheckoutController@quick')->name('front.checkout.quick');
 
