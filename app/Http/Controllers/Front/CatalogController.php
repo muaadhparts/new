@@ -59,6 +59,7 @@ class CatalogController extends FrontBaseController
         $maxprice = ($maxprice / $this->curr->value);
         $type = $request->has('type') ?? '';
         $brandQuality = (array) $request->brand_quality;
+        $quality = $request->quality;
         $user = $request->user;
 
         if (!empty($slug)) {
@@ -153,6 +154,9 @@ class CatalogController extends FrontBaseController
 
         // Brand Quality filter
         $prods = $prods->when(!empty($brandQuality), fn($q) => $q->whereIn('brand_quality_id', $brandQuality));
+
+        // Quality filter from dropdown
+        $prods = $prods->when($quality, fn($q) => $q->where('brand_quality_id', $quality));
 
         // User (vendor) filter
         $prods = $prods->when($request->filled('user'), function ($q) use ($request) {

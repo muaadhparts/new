@@ -2,6 +2,9 @@
 
 @extends('layouts.front')
 
+@section('styles')
+@endsection
+
 @section('content')
     <section class="gs-breadcrumb-section bg-class"
         data-background="{{ $gs->breadcrumb_banner ? asset('assets/images/' . $gs->breadcrumb_banner) : asset('assets/images/noimage.png') }}">
@@ -167,8 +170,8 @@
                                 class="template-btn dark-btn w-100 mt-3">@lang('Clear Filter')</a>
                         </div>
 
-                        <!-- Brand Quality Filter -->
-                        <div class="single-product-widget">
+                        <!-- Brand Quality Filter - Hidden on desktop (use header dropdown instead) -->
+                        <div class="single-product-widget d-lg-none">
                             <h5 class="widget-title">@lang('Brand Quality')</h5>
                             <div class="brand-quality-filter">
                                 @php
@@ -396,15 +399,30 @@
                                 </select>
                             </div>
                             <div class="sort-wrapper">
+                                <h5>@lang('Quality by:')</h5>
+                                <select class="nice-select" id="qualityby" name="quality">
+                                    <option value="">{{ __('All Quality') }}</option>
+                                    @php
+                                        $qualityBrands = \App\Models\QualityBrand::where('is_active', 1)->get();
+                                    @endphp
+                                    @foreach($qualityBrands as $brand)
+                                        <option value="{{ $brand->id }}" {{ request('quality') == $brand->id ? 'selected' : '' }}>
+                                            {{ $brand->name_ar ?: $brand->name_en }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="sort-wrapper">
                                 <h5>@lang('Sort by:')</h5>
 
                                 <select class="nice-select" id="sortby" name="sort">
+                                    <option value="sku_asc">{{ __('SKU A-Z') }}</option>
+                                    <option value="sku_desc">{{ __('SKU Z-A') }}</option>
                                     <option value="date_desc">{{ __('Latest Product') }}</option>
                                     <option value="date_asc">{{ __('Oldest Product') }}</option>
                                     <option value="price_asc">{{ __('Lowest Price') }}</option>
                                     <option value="price_desc">{{ __('Highest Price') }}</option>
-                                    <option value="sku_asc">{{ __('SKU A-Z') }}</option>
-                                    <option value="sku_desc">{{ __('SKU Z-A') }}</option>
+
                                 </select>
                             </div>
                             <!-- list and grid view tab btns  start -->
@@ -518,6 +536,12 @@
 
 
 
+        // Quality dropdown - simple single select like Sort by
+        $("#qualityby").on('change', function() {
+            $(".ajax-loader").show();
+            filter();
+        });
+
         // when dynamic attribute changes
         $(".attribute-input, .brand-quality-input, #sortby, #vendorby, #pageby").on('change', function() {
             $(".ajax-loader").show();
@@ -542,6 +566,10 @@
                     params.append($(this).attr('name'), $(this).val());
                 }
             });
+
+            if ($("#qualityby").val() != '') {
+                params.append('quality', $("#qualityby").val());
+            }
 
             if ($("#sortby").val() != '') {
                 params.append($("#sortby").attr('name'), $("#sortby").val());
@@ -597,6 +625,10 @@
                         params.append($(this).attr('name'), $(this).val());
                     }
                 });
+
+                if ($("#qualityby").val() != '') {
+                    params.append('quality', $("#qualityby").val());
+                }
 
                 if ($("#sortby").val() != '') {
                     params.append('sort', $("#sortby").val());
