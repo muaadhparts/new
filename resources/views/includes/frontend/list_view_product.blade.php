@@ -153,8 +153,8 @@
             @if($merchant && $merchant->qualityBrand && $merchant->qualityBrand->logo)
                 <img src="{{ \Illuminate\Support\Facades\Storage::url($merchant->qualityBrand->logo) }}" width="100" height="100" alt="{{ $product->brand?->name ?? 'brand' }}">
 
-            @elseif($product->brand?->photo)
-                <img src="{{ asset('assets/images/brand/' . $product->brand->photo) }}" width="100" height="100" alt="brand">
+            {{-- @elseif($product->brand?->photo)
+                <img src="{{ asset('assets/images/brand/' . $product->brand->photo) }}" width="100" height="100" alt="brand"> --}}
             @endif
 
             @if($merchant->qualityBrand)

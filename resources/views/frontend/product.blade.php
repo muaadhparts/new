@@ -193,6 +193,20 @@
                                         </li>
                                     @endif
 
+                                    @if($productt->brand)
+                                        <li>
+                                            <span><b>@lang('Brand :') </b></span>
+                                            <span>{{ Str::ucfirst($productt->brand->name) }}</span>
+                                        </li>
+                                    @endif
+
+                                    @if(isset($merchant) && $merchant->qualityBrand)
+                                        <li>
+                                            <span><b>@lang('Brand qualities :') </b></span>
+                                            <span>{{ app()->getLocale() == 'ar' && $merchant->qualityBrand->name_ar ? $merchant->qualityBrand->name_ar : $merchant->qualityBrand->name_en }}</span>
+                                        </li>
+                                    @endif
+
                                     @if ($productt->type == 'License')
                                         @if ($productt->platform != null)
                                             <span><b>@lang('Platform:') </b></span>

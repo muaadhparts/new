@@ -428,6 +428,25 @@
 
               @endif
 
+              @if($product->brand)
+              <div class="product-id">
+                {{ __('Brand:') }}
+                <span>{{ Str::ucfirst($product->brand->name) }}</span>
+              </div>
+              @endif
+
+              @php
+                $quickVendorId = request()->get('user', $product->user_id);
+                $quickMerchant = $product->merchantProducts()->where('user_id', $quickVendorId)->where('status', 1)->first();
+              @endphp
+
+              @if($quickMerchant && $quickMerchant->qualityBrand)
+              <div class="product-id">
+                {{ __('Brand qualities:') }}
+                <span>{{ app()->getLocale() == 'ar' && $quickMerchant->qualityBrand->name_ar ? $quickMerchant->qualityBrand->name_ar : $quickMerchant->qualityBrand->name_en }}</span>
+              </div>
+              @endif
+
               {{-- PRODUCT OTHER DETAILS SECTION ENDS --}}
 
               {{-- PRODUCT LICENSE SECTION --}}
