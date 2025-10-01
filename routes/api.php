@@ -192,7 +192,7 @@ Route::group(['prefix' => 'front'], function () {
 
     //------------ Vendor Controller ------------
 
-    Route::get('/store/{shop_name}','Api\Front\VendorController@index')->name('front.vendor');
+    Route::get('/store/{shop_name}','Api\Front\VendorController@index')->name('api.front.vendor');
     Route::post('/store/contact','Api\Front\VendorController@vendorcontact');
 
     //------------ Vendor Controller ------------

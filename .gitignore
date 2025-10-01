@@ -13,6 +13,12 @@
 .phpunit.result.cache
 /bootstrap/cache/*.php
 nul
+
+/bootstrap/cache/*.php
+/bootstrap/cache/*.tmp
+/storage/*.key
+/storage/logs/*.log
+/public/build
 # بيئة العمل
 .env
 .env.backup

@@ -1761,7 +1761,9 @@ Route::group(['middleware' => 'maintenance'], function () {
     Route::get('/item/show/cross/products/{id}', 'Front\ProductDetailsController@showCrossProduct')->name('front.show.cross.product');
     Route::get('/afbuy/{slug}', 'Front\ProductDetailsController@affProductRedirect')->name('affiliate.product');
     Route::get('/item/quick/view/{id}/', 'Front\ProductDetailsController@quick')->name('product.quick');
-    Route::post('/item/review', 'Front\ProductDetailsController@reviewsubmit')->name('front.review.submit');
+    // Route::post('/item/review', 'Front\ProductDetailsController@reviewsubmit')->name('front.review.submit');
+    Route::post('/item/review', 'Front\ProductDetailsController@reviewsubmit')->name('front.item.review.submit'); // اسم فريد
+
     Route::get('/item/view/review/{id}', 'Front\ProductDetailsController@reviews')->name('front.reviews');
     Route::get('/item/view/side/review/{id}', 'Front\ProductDetailsController@sideReviews')->name('front.side.reviews');
     // PRODCT SECTION ENDS
@@ -1928,7 +1930,7 @@ Route::group(['middleware' => 'maintenance'], function () {
 
     //flutter
     Route::post('/api/flutter/submit', 'Api\Payment\FlutterWaveController@store')->name('api.flutter.submit');
-    Route::post('/api/flutter/notify', 'Api\Payment\FlutterWaveController@notify')->name('api.flutter.notify');
+    Route::post('/api/flutter/notify', 'Api\Payment\FlutterWaveController@notify')->name('api.payment.flutter.notify');
 
     // ssl Routes
     Route::post('/api/ssl/submit', 'Api\Payment\SslController@store')->name('api.ssl.submit');
