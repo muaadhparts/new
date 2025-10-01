@@ -246,6 +246,20 @@
                                                 </h6>
 
                                                 <ul class="product-specifications-list">
+                                                    @if($itemProduct && $itemProduct->brand)
+                                                        <li>
+                                                            <span class="specification-name">@lang('Brand:')</span>
+                                                            <span class="specification">{{ Str::ucfirst($itemProduct->brand->name) }}</span>
+                                                        </li>
+                                                    @endif
+
+                                                    @if($itemMerchant && $itemMerchant->qualityBrand)
+                                                        <li>
+                                                            <span class="specification-name">@lang('Brand qualities:')</span>
+                                                            <span class="specification">{{ app()->getLocale() == 'ar' && $itemMerchant->qualityBrand->name_ar ? $itemMerchant->qualityBrand->name_ar : $itemMerchant->qualityBrand->name_en }}</span>
+                                                        </li>
+                                                    @endif
+
                                                     <li>
                                                         <span class="specification-name">@lang('Price :')</span>
                                                         <span class="specification">

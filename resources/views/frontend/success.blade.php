@@ -354,6 +354,25 @@
                                             <img src="{{ \Illuminate\Support\Facades\Storage::url($product['item']['photo']) ?? asset('assets/images/noimage.png') }}"
                                                 alt="" class="d-lg-none d-table-cell pb-24 small-device-img">
                                             <h6><x-product-name :item="$product['item']" :vendor-id="$product['item']['user_id']" target="_blank" /></h6>
+
+                                            @php
+                                                $successProduct = \App\Models\Product::find($product['item']['id']);
+                                                $successVendorId = $product['item']['user_id'] ?? 0;
+                                                $successMerchant = $successProduct && $successVendorId ? $successProduct->merchantProducts()->where('user_id', $successVendorId)->where('status', 1)->first() : null;
+                                            @endphp
+
+                                            @if(!empty($product['item']['sku']))
+                                                <p><span>@lang('SKU:')</span> {{ $product['item']['sku'] }}</p>
+                                            @endif
+
+                                            @if($successProduct && $successProduct->brand)
+                                                <p><span>@lang('Brand:')</span> {{ Str::ucfirst($successProduct->brand->name) }}</p>
+                                            @endif
+
+                                            @if($successMerchant && $successMerchant->qualityBrand)
+                                                <p><span>@lang('Brand qualities:')</span> {{ app()->getLocale() == 'ar' && $successMerchant->qualityBrand->name_ar ? $successMerchant->qualityBrand->name_ar : $successMerchant->qualityBrand->name_en }}</p>
+                                            @endif
+
                                             <p><span>@lang('Quantity:')</span> {{ $product['qty'] }}</p>
                                             <p><span>Size:</span>
                                                 @if (!empty($product['size']))

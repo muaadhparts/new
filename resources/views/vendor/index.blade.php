@@ -163,6 +163,12 @@
                                         <td class="text-start">
                                             <div class="category">
                                                 <span class="content">
+                                                    @if($data->brand)
+                                                        <strong>@lang('Brand:'):</strong> {{ Str::ucfirst($data->brand->name) }}<br>
+                                                    @endif
+                                                    @if($vendorMp && $vendorMp->qualityBrand)
+                                                        <strong>@lang('Brand qualities:'):</strong> {{ app()->getLocale() == 'ar' && $vendorMp->qualityBrand->name_ar ? $vendorMp->qualityBrand->name_ar : $vendorMp->qualityBrand->name_en }}<br>
+                                                    @endif
                                                     {{ $data->category->name }}
                                                     @if (isset($data->subcategory))
                                                         <br>

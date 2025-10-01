@@ -515,6 +515,30 @@
 
                                     </td>
                                     <td>
+                                        @php
+                                            $orderProduct = \App\Models\Product::find($product['item']['id']);
+                                            $orderVendorId = $product['item']['user_id'] ?? 0;
+                                            $orderMerchant = $orderProduct && $orderVendorId ? $orderProduct->merchantProducts()->where('user_id', $orderVendorId)->where('status', 1)->first() : null;
+                                        @endphp
+
+                                        @if(!empty($product['item']['sku']))
+                                        <p>
+                                            <strong>{{ __('SKU') }} :</strong> {{ $product['item']['sku'] }}
+                                        </p>
+                                        @endif
+
+                                        @if($orderProduct && $orderProduct->brand)
+                                        <p>
+                                            <strong>{{ __('Brand:') }} :</strong> {{ Str::ucfirst($orderProduct->brand->name) }}
+                                        </p>
+                                        @endif
+
+                                        @if($orderMerchant && $orderMerchant->qualityBrand)
+                                        <p>
+                                            <strong>{{ __('Brand qualities:') }} :</strong> {{ app()->getLocale() == 'ar' && $orderMerchant->qualityBrand->name_ar ? $orderMerchant->qualityBrand->name_ar : $orderMerchant->qualityBrand->name_en }}
+                                        </p>
+                                        @endif
+
                                         @if($product['size'])
                                         <p>
                                             <strong>{{ __('Size') }} :</strong> {{str_replace('-','

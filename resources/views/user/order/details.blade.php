@@ -373,6 +373,24 @@
 
                                         <td>
                                             <ul>
+                                                @php
+                                                    $userOrderProduct = \App\Models\Product::find($product['item']['id']);
+                                                    $userOrderVendorId = $product['item']['user_id'] ?? 0;
+                                                    $userOrderMerchant = $userOrderProduct && $userOrderVendorId ? $userOrderProduct->merchantProducts()->where('user_id', $userOrderVendorId)->where('status', 1)->first() : null;
+                                                @endphp
+
+                                                @if(!empty($product['item']['sku']))
+                                                    <li><b><span>@lang('SKU:')</span></b> {{ $product['item']['sku'] }}</li>
+                                                @endif
+
+                                                @if($userOrderProduct && $userOrderProduct->brand)
+                                                    <li><b><span>@lang('Brand:')</span></b> {{ Str::ucfirst($userOrderProduct->brand->name) }}</li>
+                                                @endif
+
+                                                @if($userOrderMerchant && $userOrderMerchant->qualityBrand)
+                                                    <li><b><span>@lang('Brand qualities:')</span></b> {{ app()->getLocale() == 'ar' && $userOrderMerchant->qualityBrand->name_ar ? $userOrderMerchant->qualityBrand->name_ar : $userOrderMerchant->qualityBrand->name_en }}</li>
+                                                @endif
+
                                                 <li><b><span>@lang('Quantity:')</span></b> {{ $product['qty'] }}</li>
                                                 @if (!empty($product['size']))
                                                     <li><b><span>@lang('Size:')</span></b>

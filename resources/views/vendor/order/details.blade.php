@@ -369,6 +369,27 @@
                                         <td class="text-start">
                                             <div class="rider">
 
+                                                @if(!empty($product['item']['sku']))
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <span class="key">@lang('SKU :')</span>
+                                                    <span class="value">{{ $product['item']['sku'] }}</span>
+                                                </div>
+                                                @endif
+
+                                                @if($orderProduct && $orderProduct->brand)
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <span class="key">@lang('Brand:')</span>
+                                                    <span class="value">{{ Str::ucfirst($orderProduct->brand->name) }}</span>
+                                                </div>
+                                                @endif
+
+                                                @if($orderMerchant && $orderMerchant->qualityBrand)
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <span class="key">@lang('Brand qualities:')</span>
+                                                    <span class="value">{{ app()->getLocale() == 'ar' && $orderMerchant->qualityBrand->name_ar ? $orderMerchant->qualityBrand->name_ar : $orderMerchant->qualityBrand->name_en }}</span>
+                                                </div>
+                                                @endif
+
                                                 @if ($product['size'])
                                                 <div class="d-flex align-items-center gap-2">
                                                     <span class="key">@lang('Size :')</span>

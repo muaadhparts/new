@@ -11,6 +11,8 @@
           <tr>
             <th>@lang('Part Number')</th>
             <th>@lang('Name')</th>
+            <th>@lang('Brand:')</th>
+            <th>@lang('Brand qualities:')</th>
             <th>@lang('Stock')</th>
             <th>@lang('Price')</th>
             <th>@lang('Quick View')</th>
@@ -36,6 +38,10 @@
             <td class="fw-semibold">{{ $product->sku }}</td>
 
             <td>{{ e($name) }}</td>
+
+            <td>{{ $product->brand ? Str::ucfirst($product->brand->name) : '-' }}</td>
+
+            <td>{{ $mp->qualityBrand ? (app()->getLocale() == 'ar' && $mp->qualityBrand->name_ar ? $mp->qualityBrand->name_ar : $mp->qualityBrand->name_en) : '-' }}</td>
 
             <td>
               <span class="badge bg-{{ ($mp->stock ?? 0) > 0 ? 'success' : 'secondary' }}">

@@ -389,6 +389,27 @@
                                             <td class="text-start">
                                                 <div class="rider">
 
+                                                    @if(!empty($product['item']['sku']))
+                                                        <div class="d-flex align-items-center gap-2">
+                                                            <span class="key">@lang('SKU :')</span>
+                                                            <span class="value">{{ $product['item']['sku'] }}</span>
+                                                        </div>
+                                                    @endif
+
+                                                    @if($invoiceProduct && $invoiceProduct->brand)
+                                                        <div class="d-flex align-items-center gap-2">
+                                                            <span class="key">@lang('Brand:')</span>
+                                                            <span class="value">{{ Str::ucfirst($invoiceProduct->brand->name) }}</span>
+                                                        </div>
+                                                    @endif
+
+                                                    @if($invoiceMerchant && $invoiceMerchant->qualityBrand)
+                                                        <div class="d-flex align-items-center gap-2">
+                                                            <span class="key">@lang('Brand qualities:')</span>
+                                                            <span class="value">{{ app()->getLocale() == 'ar' && $invoiceMerchant->qualityBrand->name_ar ? $invoiceMerchant->qualityBrand->name_ar : $invoiceMerchant->qualityBrand->name_en }}</span>
+                                                        </div>
+                                                    @endif
+
                                                     @if ($product['size'])
                                                         <div class="d-flex align-items-center gap-2">
                                                             <span class="key">@lang('Size :')</span>

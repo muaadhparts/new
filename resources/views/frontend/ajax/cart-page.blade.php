@@ -53,11 +53,25 @@
                                         <img src="{{ $photo ? \Illuminate\Support\Facades\Storage::url($photo) : asset('assets/images/noimage.png') }}" alt="">
                                         <div class="cart-product-info">
                                             <x-product-name :item="$product['item']" :vendor-id="$vendorId" :merchant-product-id="$itemMerchantId" target="_blank" class="cart-title d-inline-block" />
-
+{{-- 
                                             @if (!empty($sku))
                                                 <p class="text-muted small mb-1">
                                                     <span class="fw-medium">@lang('SKU'):</span>
                                                     <a href="{{ $productUrl }}" class="text-primary text-decoration-none">{{ $sku }}</a>
+                                                </p>
+                                            @endif --}}
+
+                                            @if($itemProduct && $itemProduct->brand)
+                                                <p class="text-muted small mb-1">
+                                                    <span class="fw-medium">@lang('Brand:'):</span>
+                                                    <span>{{ Str::ucfirst($itemProduct->brand->name) }}</span>
+                                                </p>
+                                            @endif
+
+                                            @if($itemMerchant && $itemMerchant->qualityBrand)
+                                                <p class="text-muted small mb-1">
+                                                    <span class="fw-medium">@lang('Brand qualities:'):</span>
+                                                    <span>{{ app()->getLocale() == 'ar' && $itemMerchant->qualityBrand->name_ar ? $itemMerchant->qualityBrand->name_ar : $itemMerchant->qualityBrand->name_en }}</span>
                                                 </p>
                                             @endif
 

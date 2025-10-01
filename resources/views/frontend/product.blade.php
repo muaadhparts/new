@@ -152,20 +152,6 @@
                             <div class="product-stocks-wraper">
                                 <ul>
                                     <li>
-                                        @if($productt->brand)
-                                            <span style="display: block; margin-top: 8px;">
-                                                <b>@lang('Brand :')</b>
-                                                {{ Str::ucfirst($productt->brand->name) }}
-                                            </span>
-                                        @endif
-
-                                        @if(isset($merchant) && $merchant->qualityBrand)
-                                            <span style="display: block; margin-top: 8px;">
-                                                <b>@lang('Brand qualities :')</b>
-                                                {{ app()->getLocale() == 'ar' && $merchant->qualityBrand->name_ar ? $merchant->qualityBrand->name_ar : $merchant->qualityBrand->name_en }}
-                                            </span>
-                                        @endif
-                                        
                                         @if ($productt->type == 'Physical')
                                             <span><b>@lang('Availability :') </b></span>
                                             @php $mpStock = $merchant ? (int) $merchant->stock : null; @endphp

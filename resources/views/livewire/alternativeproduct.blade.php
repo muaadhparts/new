@@ -35,6 +35,8 @@
                                     <tr>
                                         <th>@lang('Part Number')</th>
                                         <th>@lang('Name')</th>
+                                        <th>@lang('Brand:')</th>
+                                        <th>@lang('Brand qualities:')</th>
                                         <th>@lang('Stock')</th>
                                         <th>@lang('Price')</th>
                                         <th>@lang('View')</th>
@@ -57,6 +59,8 @@
                                             <tr @if($highlight) style="background-color:#f0fff4;" @endif>
                                                 <td>{{ $product->sku }}</td>
                                                 <td>{{ e($name) }}</td>
+                                                <td>{{ $product->brand ? Str::ucfirst($product->brand->name) : '-' }}</td>
+                                                <td>{{ $mp->qualityBrand ? (app()->getLocale() == 'ar' && $mp->qualityBrand->name_ar ? $mp->qualityBrand->name_ar : $mp->qualityBrand->name_en) : '-' }}</td>
                                                 <td>{{ (int)($mp->stock ?? 0) }}</td>
                                                 <td class="fw-bold {{ $highlight ? 'text-success' : '' }}">
                                                     {{ method_exists($mp, 'showPrice') ? $mp->showPrice() : \App\Models\Product::convertPrice($vp) }}
@@ -70,7 +74,7 @@
                                             </tr>
                                         @empty
                                             <tr>
-                                                <td colspan="5" class="text-center">@lang('No data found')</td>
+                                                <td colspan="7" class="text-center">@lang('No data found')</td>
                                             </tr>
                                         @endforelse
 
@@ -96,6 +100,8 @@
                                                 <tr @if($highlight) style="background-color:#f0fff4;" @endif>
                                                     <td>{{ $product->sku }}</td>
                                                     <td>{{ e($name) }}</td>
+                                                    <td>{{ $product->brand ? Str::ucfirst($product->brand->name) : '-' }}</td>
+                                                    <td>{{ $mp->qualityBrand ? (app()->getLocale() == 'ar' && $mp->qualityBrand->name_ar ? $mp->qualityBrand->name_ar : $mp->qualityBrand->name_en) : '-' }}</td>
                                                     <td>{{ (int)($mp->stock ?? 0) }}</td>
                                                     <td class="fw-bold {{ $highlight ? 'text-success' : '' }}">
                                                         {{ method_exists($mp, 'showPrice') ? $mp->showPrice() : \App\Models\Product::convertPrice($vp) }}
@@ -118,7 +124,7 @@
                                             })
                                         )
                                             <tr>
-                                                <td colspan="5" class="text-center">@lang('No data found')</td>
+                                                <td colspan="7" class="text-center">@lang('No data found')</td>
                                             </tr>
                                         @endif
                                     @endif
@@ -154,6 +160,12 @@
                                                         <div class="card-body p-2">
                                                             <h6 class="card-title mb-1">{{ e($name) }}</h6>
                                                             <p class="mb-1 small text-muted"><strong>@lang('Part Number'):</strong> {{ $product->sku }}</p>
+                                                            @if($product->brand)
+                                                                <p class="mb-1 small"><strong>@lang('Brand:'):</strong> {{ Str::ucfirst($product->brand->name) }}</p>
+                                                            @endif
+                                                            @if($mp->qualityBrand)
+                                                                <p class="mb-1 small"><strong>@lang('Brand qualities:'):</strong> {{ app()->getLocale() == 'ar' && $mp->qualityBrand->name_ar ? $mp->qualityBrand->name_ar : $mp->qualityBrand->name_en }}</p>
+                                                            @endif
                                                             <p class="mb-1 fw-bold {{ $highlight ? 'text-success' : '' }}">
                                                                 {{ method_exists($mp, 'showPrice') ? $mp->showPrice() : \App\Models\Product::convertPrice($vp) }}
                                                             </p>
@@ -201,6 +213,12 @@
                                                             <div class="card-body p-2">
                                                                 <h6 class="card-title mb-1">{{ e($name) }}</h6>
                                                                 <p class="mb-1 small text-muted"><strong>@lang('Part Number'):</strong> {{ $product->sku }}</p>
+                                                                @if($product->brand)
+                                                                    <p class="mb-1 small"><strong>@lang('Brand:'):</strong> {{ Str::ucfirst($product->brand->name) }}</p>
+                                                                @endif
+                                                                @if($mp->qualityBrand)
+                                                                    <p class="mb-1 small"><strong>@lang('Brand qualities:'):</strong> {{ app()->getLocale() == 'ar' && $mp->qualityBrand->name_ar ? $mp->qualityBrand->name_ar : $mp->qualityBrand->name_en }}</p>
+                                                                @endif
                                                                 <p class="mb-1 fw-bold {{ $highlight ? 'text-success' : '' }}">
                                                                     {{ method_exists($mp, 'showPrice') ? $mp->showPrice() : \App\Models\Product::convertPrice($vp) }}
                                                                 </p>
