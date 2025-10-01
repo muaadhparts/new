@@ -156,11 +156,16 @@
       {{-- Merchant Store Information --}}
       @if($mp && $mp->user)
         <p class="merchant-info text-muted">
-          <small>@lang('Sold by:') {{ getMerchantDisplayName($mp) }}</small>
+          <small>@lang('Sold by:') {{ $mp->user->shop_name ?? $mp->user->name }}</small>
         </p>
+        @if($mp->qualityBrand)
+          <p class="brand-quality-info text-muted">
+            <small>@lang('Brand qualities:') {{ app()->getLocale() == 'ar' && $mp->qualityBrand->name_ar ? $mp->qualityBrand->name_ar : $mp->qualityBrand->name_en }}</small>
+          </p>
+        @endif
       @endif
 
-      <p><span>@lang('Product SKU :')</span> <span>{{ $product->sku }}</span></p>
+      {{-- <p><span>@lang('Product SKU :')</span> <span>{{ $product->sku }}</span></p> --}}
       <div class="price-wrapper">
         {{-- السعر الحالي --}}
         <h6>

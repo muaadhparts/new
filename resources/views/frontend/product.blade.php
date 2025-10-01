@@ -82,7 +82,7 @@
                         <!-- product-info-wrapper  -->
                         <div class="product-info-wrapper  {{ $productt->type != 'Physical' ? 'mb-3' : '' }}">
                             <h3><x-product-name :product="$productt" :vendor-id="$vendorId" target="_self" /></h3>
-                            <h3>{{ $productt->label_ar }}</h3>
+                            {{-- <h3>{{ $productt->label_ar }}</h3> --}}
 
                             {{-- السعر: Vendor-aware --}}
                             @php
@@ -141,6 +141,20 @@
                             <div class="product-stocks-wraper">
                                 <ul>
                                     <li>
+                                        @if($productt->brand)
+                                            <span style="display: block; margin-top: 8px;">
+                                                <b>@lang('Brand :')</b>
+                                                {{ Str::ucfirst($productt->brand->name) }}
+                                            </span>
+                                        @endif
+
+                                        @if(isset($merchant) && $merchant->qualityBrand)
+                                            <span style="display: block; margin-top: 8px;">
+                                                <b>@lang('Brand qualities :')</b>
+                                                {{ app()->getLocale() == 'ar' && $merchant->qualityBrand->name_ar ? $merchant->qualityBrand->name_ar : $merchant->qualityBrand->name_en }}
+                                            </span>
+                                        @endif
+                                        
                                         @if ($productt->type == 'Physical')
                                             <span><b>@lang('Availability :') </b></span>
                                             @php $mpStock = $merchant ? (int) $merchant->stock : null; @endphp
@@ -158,6 +172,7 @@
                                             <span>{{ $productt->ship }}</span>
                                         </li>
                                     @endif
+
                                     @if ($productt->sku != null)
                                         <li>
                                             <span><b>@lang('Product SKU :') </b></span>
@@ -466,7 +481,7 @@
                         <div class="store-seller-wrapper">
                             <span><b>@lang('Sold By :')</b>
                                 @if ($productt->user_id != 0)
-                                    @if (isset($productt->user)) {{ $productt->user->shop_name }} @endif
+                                    @if (isset($productt->user)) {{ $productt->user->shop_name ?? $productt->user->name }} @endif
                                     @if ($productt->user->checkStatus())
                                         <a class="verify-link" href="javascript:;" data-original-title="">
                                             {{ __('Verified') }} <i class="fas fa-check-circle"></i>
@@ -476,6 +491,20 @@
                                     {{ App\Models\Admin::find(1)->shop_name }}
                                 @endif
                             </span>
+
+                            @if($productt->brand)
+                                <span style="display: block; margin-top: 8px;">
+                                    <b>@lang('Brand:')</b>
+                                    {{ Str::ucfirst($productt->brand->name) }}
+                                </span>
+                            @endif
+
+                            @if(isset($merchant) && $merchant->qualityBrand)
+                                <span style="display: block; margin-top: 8px;">
+                                    <b>@lang('Brand qualities:')</b>
+                                    {{ app()->getLocale() == 'ar' && $merchant->qualityBrand->name_ar ? $merchant->qualityBrand->name_ar : $merchant->qualityBrand->name_en }}
+                                </span>
+                            @endif
 
                             <div class="action-btns-wrapper">
                                 @if ($productt->user_id != 0)

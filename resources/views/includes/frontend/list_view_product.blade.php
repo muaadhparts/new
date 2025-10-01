@@ -21,7 +21,7 @@
                     $merchant = $mp;
                 }
 
-                $vendorId  = optional($merchant)->user_id ?? 0;
+                $vendorId  = optional($merchant)->user_id;
                 $hasVendor = $vendorId > 0;
 
                 // Calculate discount percentage for this merchant
@@ -77,7 +77,7 @@
 
         <div class="content-wrapper">
             @php
-                $vendorId  = $vendorId ?? optional($merchant)->user_id ?? 0;
+                $vendorId  = $vendorId ?? optional($merchant)->user_id;
                 // Use new merchant-product-based route with slug and vendor for SEO
                 // If no merchant, try to fetch one as fallback
                 if (!isset($merchant) && $vendorId) {
@@ -88,23 +88,41 @@
             <h4 class="xproduct-title">
                 <a href="{{ $detailsUrl }}"><x-product-name :product="$product" :vendor-id="$vendorId" target="_self" /></a>
             </h4>
+            {{-- <p class="">
+                <span>@lang('Product SKU :') </span>
+                <a href="{{ route('search.result', $product->sku) }}">
+                    <span class="text-primary">{{ $product->sku }} </span>
+                </a>
+            </p> --}}
 
-            <h4 class="xproduct-title">{{ $product->label_ar }}</h4>
+            {{-- <h4 class="xproduct-title">{{ $product->label_ar }}</h4> --}}
 
             {{-- Merchant Store Information --}}
             @if($merchant && $merchant->user)
                 <p class="merchant-info">
                     <span>@lang('Sold by:') </span>
-                    <span class="text-primary">{{ getMerchantDisplayName($merchant) }}</span>
+                    <span class="text-primary">{{ $merchant->user->shop_name ?? $merchant->user->name }}</span>
                 </p>
+                @if($product->brand)
+                    <p>
+                        <span>@lang('Brand:')</span>
+                        <span class="text-primary"> {{ Str::ucfirst($product->brand->name) }}</span>
+                    </p>
+                @endif
+                {{-- @if($merchant->qualityBrand)
+                    <p class="brand-quality-info">
+                        <span>@lang('Brand qualities:') </span>
+                        <span class="text-primary">{{ app()->getLocale() == 'ar' && $merchant->qualityBrand->name_ar ? $merchant->qualityBrand->name_ar : $merchant->qualityBrand->name_en }}</span>
+                    </p>
+                @endif --}}
             @endif
 
-            <p class="">
+            {{-- <p class="">
                 <span>@lang('Product SKU :') </span>
                 <a href="{{ route('search.result', $product->sku) }}">
                     <span class="text-primary">{{ $product->sku }} </span>
                 </a>
-            </p>
+            </p> --}}
 
             @php
                 $stockQty = optional($merchant)->stock;
@@ -127,17 +145,24 @@
             </p>
 
             <p>
-                <span>@lang('Make:')</span>
-                <span class="text-primary"> {{ Str::ucfirst($product->brand?->name) }}</span>
-            </p>
-
-            <p>
                 <livewire:compatibility :sku="$product->sku" wire:key="$product->sku" />
             </p>
         </div>
 
         <div class="content-wrapper align-content-center align-items-center">
-            <img src="{{ asset('assets/images/brand/' . $product->brand?->photo) }}" width="100" height="100" alt="brand">
+            @if($merchant && $merchant->qualityBrand && $merchant->qualityBrand->logo)
+                <img src="{{ \Illuminate\Support\Facades\Storage::url($merchant->qualityBrand->logo) }}" width="100" height="100" alt="{{ $product->brand?->name ?? 'brand' }}">
+
+            @elseif($product->brand?->photo)
+                <img src="{{ asset('assets/images/brand/' . $product->brand->photo) }}" width="100" height="100" alt="brand">
+            @endif
+
+            @if($merchant->qualityBrand)
+                    <p class="brand-quality-info">
+                        <span>@lang('Brand qualities:') </span>
+                        <span class="text-primary">{{ app()->getLocale() == 'ar' && $merchant->qualityBrand->name_ar ? $merchant->qualityBrand->name_ar : $merchant->qualityBrand->name_en }}</span>
+                    </p>
+                @endif
 
             @if($merchant)
                 <div class="price-wrapper">
