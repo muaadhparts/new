@@ -19,6 +19,7 @@
         "instamojo/instamojo-php": "^1.0",
         "intervention/image": "^2.7",
         "laravel/framework": "^10.10",
+        "laravel/nightwatch": "^1.14",
         "laravel/sanctum": "^3.2",
         "laravel/socialite": "^5.9",
         "laravel/tinker": "^2.8",

@@ -111,46 +111,67 @@ class FrontBaseController extends Controller
         }
     }
 
+    // داخل App\Http\Controllers\Front\FrontBaseController
     function getOS()
     {
+        // ⚠️ يدعم التشغيل من CLI أو أي سياق بلا HTTP_USER_AGENT
+        // نحاول القراءة من request() أولاً، ثم $_SERVER، ثم نضع قيمة افتراضية.
+        $user_agent = null;
 
-        $user_agent     =   $_SERVER['HTTP_USER_AGENT'];
+        // جرّب عبر Laravel request() إن وُجدت
+        try {
+            if (function_exists('request') && request()) {
+                $ua = request()->header('User-Agent');
+                if (is_string($ua) && strlen($ua) > 0) {
+                    $user_agent = $ua;
+                }
+            }
+        } catch (\Throwable $e) {
+            // تجاهل أي أخطاء حال عدم توفر request() في CLI
+        }
 
-        $os_platform    =   "Unknown OS Platform";
+        // fallback إلى $_SERVER إن لم نجد via request()
+        if ($user_agent === null) {
+            $user_agent = $_SERVER['HTTP_USER_AGENT'] ?? null;
+        }
 
-        $os_array       =   array(
+        // قيمة افتراضية في حال عدم التوفر (CLI / Job)
+        if ($user_agent === null) {
+            $user_agent = 'Console/CLI';
+        }
+
+        $os_platform = "Unknown OS Platform";
+
+        $os_array = array(
             '/windows nt 10/i'     =>  'Windows 10',
-            '/windows nt 6.3/i'     =>  'Windows 8.1',
-            '/windows nt 6.2/i'     =>  'Windows 8',
-            '/windows nt 6.1/i'     =>  'Windows 7',
-            '/windows nt 6.0/i'     =>  'Windows Vista',
-            '/windows nt 5.2/i'     =>  'Windows Server 2003/XP x64',
-            '/windows nt 5.1/i'     =>  'Windows XP',
-            '/windows xp/i'         =>  'Windows XP',
-            '/windows nt 5.0/i'     =>  'Windows 2000',
-            '/windows me/i'         =>  'Windows ME',
-            '/win98/i'              =>  'Windows 98',
-            '/win95/i'              =>  'Windows 95',
-            '/win16/i'              =>  'Windows 3.11',
-            '/macintosh|mac os x/i' =>  'Mac OS X',
-            '/mac_powerpc/i'        =>  'Mac OS 9',
-            '/linux/i'              =>  'Linux',
-            '/ubuntu/i'             =>  'Ubuntu',
-            '/iphone/i'             =>  'iPhone',
-            '/ipod/i'               =>  'iPod',
-            '/ipad/i'               =>  'iPad',
-            '/android/i'            =>  'Android',
-            '/blackberry/i'         =>  'BlackBerry',
-            '/webos/i'              =>  'Mobile'
+            '/windows nt 6\.3/i'   =>  'Windows 8.1',
+            '/windows nt 6\.2/i'   =>  'Windows 8',
+            '/windows nt 6\.1/i'   =>  'Windows 7',
+            '/windows nt 6\.0/i'   =>  'Windows Vista',
+            '/windows nt 5\.2/i'   =>  'Windows Server 2003/XP x64',
+            '/windows nt 5\.1/i'   =>  'Windows XP',
+            '/windows xp/i'        =>  'Windows XP',
+            '/macintosh|mac os x/i'=>  'Mac OS X',
+            '/mac_powerpc/i'       =>  'Mac OS 9',
+            '/linux/i'             =>  'Linux',
+            '/ubuntu/i'            =>  'Ubuntu',
+            '/iphone/i'            =>  'iPhone',
+            '/ipod/i'              =>  'iPod',
+            '/ipad/i'              =>  'iPad',
+            '/android/i'           =>  'Android',
+            '/blackberry/i'        =>  'BlackBerry',
+            '/webos/i'             =>  'Mobile'
         );
 
         foreach ($os_array as $regex => $value) {
-
             if (preg_match($regex, $user_agent)) {
-                $os_platform    =   $value;
+                $os_platform = $value;
+                break;
             }
         }
+
         return $os_platform;
+        // dd($os_platform); // للاختبار لاحقًا عند الحاجة
     }
 
 
