@@ -78,6 +78,17 @@
                 </div>
 
                 <div class="col-lg-6 wow-replaced" data-wow-delay=".2s">
+                    @if(isset($merchant) && $merchant->qualityBrand && $merchant->qualityBrand->logo)
+                        <div class="mb-3 d-flex align-items-center">
+                            <img src="{{ \Illuminate\Support\Facades\Storage::url($merchant->qualityBrand->logo) }}" width="100" height="100" alt="Brand Quality Logo" class="me-2">
+                            <div>
+                                <p class="mb-0">
+                                    <span>@lang('Brand qualities:') </span>
+                                    <span class="text-primary">{{ app()->getLocale() == 'ar' && $merchant->qualityBrand->name_ar ? $merchant->qualityBrand->name_ar : $merchant->qualityBrand->name_en }}</span>
+                                </p>
+                            </div>
+                        </div>
+                    @endif
                     <form>
                         <!-- product-info-wrapper  -->
                         <div class="product-info-wrapper  {{ $productt->type != 'Physical' ? 'mb-3' : '' }}">
