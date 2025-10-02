@@ -142,6 +142,100 @@
     @stack('scripts')
   @yield('script')
     @livewireScripts
+
+    {{-- Global Cart State Manager --}}
+    <script>
+    (function() {
+      'use strict';
+
+      /**
+       * Global cart state updater - single source of truth
+       * Normalizes cart data and updates all UI elements
+       */
+      window.applyCartState = function(data) {
+        if (!data) return;
+
+        // Normalize input (support both new unified format and legacy array format)
+        const count = data.cart_count ?? data.totalQty ?? (Array.isArray(data) ? data[0] : null);
+        const total = data.cart_total ?? (Array.isArray(data) && data[1] ? data[1] : null);
+        const totalQty = data.totalQty ?? count;
+        const totalPrice = data.totalPrice ?? null;
+
+        // Update all cart counter badges simultaneously
+        const selectors = [
+          '[data-cart-count]',
+          '#cart-count',
+          '.header-cart-count',
+          '.cart-count',
+          '.mini-cart-count'
+        ];
+
+        selectors.forEach(function(sel) {
+          const elements = document.querySelectorAll(sel);
+          elements.forEach(function(el) {
+            if (el && count != null) {
+              el.textContent = count;
+              // Also update data attribute if present
+              if (el.hasAttribute('data-cart-count')) {
+                el.setAttribute('data-cart-count', count);
+              }
+            }
+          });
+        });
+
+        // Update mini-cart total if present
+        if (total) {
+          const totalElements = document.querySelectorAll('.mini-cart-total, [data-cart-total]');
+          totalElements.forEach(function(el) {
+            if (el) el.textContent = total;
+          });
+        }
+
+        // Dispatch browser event for vanilla JS/Alpine.js
+        window.dispatchEvent(new CustomEvent('cart:updated', {
+          detail: {
+            ok: data.ok ?? true,
+            cart_count: count,
+            cart_total: total,
+            totalQty: totalQty,
+            totalPrice: totalPrice
+          }
+        }));
+
+        // Dispatch Livewire event if available
+        if (window.Livewire && typeof window.Livewire.dispatch === 'function') {
+          window.Livewire.dispatch('cartUpdated', {
+            ok: data.ok ?? true,
+            cart_count: count,
+            cart_total: total,
+            totalQty: totalQty,
+            totalPrice: totalPrice
+          });
+        }
+      };
+
+      /**
+       * Fallback: fetch cart summary if needed
+       */
+      window.refreshCartState = function() {
+        return fetch('/cart/summary', {
+          headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(function(r) { return r.ok ? r.json() : null; })
+        .then(function(data) {
+          if (data && typeof window.applyCartState === 'function') {
+            window.applyCartState(data);
+          }
+          return data;
+        })
+        .catch(function(err) {
+          console.warn('Cart summary fetch failed:', err);
+          return null;
+        });
+      };
+    })();
+    </script>
+
     <script src="{{ asset('assets/front/js/ill/illustrated.js') }}"></script>
 
     @stack('scripts')

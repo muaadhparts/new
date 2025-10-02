@@ -587,30 +587,16 @@
       fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
         .then(r => r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`)))
         .then(data => {
-          // تحديث عدّاد السلة إن وُجد
-          try {
-            const count = data.cart_count ?? data.totalQty ?? (Array.isArray(data) ? data[0] : null);
-            const badge = document.querySelector('[data-cart-count], #cart-count, .header-cart-count, .cart-count');
-            if (badge != null && count != null) badge.textContent = count;
-
-            // Dispatch cart:updated event for Livewire/Alpine
-            window.dispatchEvent(new CustomEvent('cart:updated', {
-              detail: {
-                cart_count: count,
-                cart_total: data.cart_total ?? data.totalPrice,
-                totalQty: data.totalQty ?? count
-              }
-            }));
-
-            // Also dispatch Livewire event if available
-            if (window.Livewire) {
-              window.Livewire.dispatch('cartUpdated', {
-                cart_count: count,
-                cart_total: data.cart_total ?? data.totalPrice,
-                totalQty: data.totalQty ?? count
-              });
-            }
-          } catch (_) {}
+          // Use global cart state updater
+          if (typeof window.applyCartState === 'function') {
+            window.applyCartState(data);
+          } else {
+            // Fallback: fetch cart summary if global updater not available
+            fetch('/cart/summary', { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+              .then(r => r.ok ? r.json() : null)
+              .then(s => s && window.applyCartState && window.applyCartState(s))
+              .catch(() => {});
+          }
 
           const ok = data.success ?? t('messages.added_to_cart');
           if (window.toastr) toastr.success(ok); else alert(ok);

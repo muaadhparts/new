@@ -345,7 +345,7 @@
                     @endphp
                     <div class="icon-circle">
                         <a href="{{ route('front.cart') }}">
-                            <span class="cart-count" id="cart-count">
+                            <span class="cart-count" id="cart-count" data-cart-count="{{ $cart ? count($cart) : 0 }}">
                                 {{ $cart ? count($cart) : 0 }}
                             </span>
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"

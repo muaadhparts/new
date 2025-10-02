@@ -13,6 +13,35 @@ use Illuminate\Support\Facades\Session;
 
 class CartController extends FrontBaseController
 {
+    /* ===================== Cart Summary Endpoint ===================== */
+
+    /**
+     * Get cart summary (for fallback/refresh)
+     */
+    public function cartSummary()
+    {
+        if (!Session::has('cart')) {
+            return response()->json([
+                'ok' => true,
+                'cart_count' => 0,
+                'cart_total' => $this->curr->sign . '0.00',
+                'totalQty' => 0,
+                'totalPrice' => 0
+            ]);
+        }
+
+        $oldCart = Session::get('cart');
+        $cart = new Cart($oldCart);
+
+        return response()->json([
+            'ok' => true,
+            'cart_count' => count($cart->items),
+            'cart_total' => \PriceHelper::showCurrencyPrice($cart->totalPrice * $this->curr->value),
+            'totalQty' => $cart->totalQty,
+            'totalPrice' => $cart->totalPrice
+        ]);
+    }
+
     /* ===================== New Merchant-Product-Based Methods ===================== */
 
     /**
@@ -59,8 +88,11 @@ class CartController extends FrontBaseController
         Session::put('cart', $cart);
 
         return response()->json([
-            'cart_count' => $cart->totalQty,
-            'cart_total' => number_format($cart->totalPrice, 2),
+            'ok' => true,
+            'cart_count' => count($cart->items),
+            'cart_total' => \PriceHelper::showCurrencyPrice($cart->totalPrice * $this->curr->value),
+            'totalQty' => $cart->totalQty,
+            'totalPrice' => $cart->totalPrice,
             'success' => __('Item added to cart successfully')
         ]);
     }
@@ -257,9 +289,13 @@ class CartController extends FrontBaseController
     /* ===================== addcart / addtocart / addnumcart / addtonumcart ===================== */
     public function addcart($id)
     {
-        $prod = $this->fetchIdentity($id); if (!$prod) return 0;
+        $prod = $this->fetchIdentity($id); if (!$prod) {
+            return response()->json(['ok' => false, 'error' => __('Product not found')], 404);
+        }
         $vendorId = (int) request('user');
-        $mp = $this->fetchListingOrFallback($prod, $vendorId); if (!$mp) return 0;
+        $mp = $this->fetchListingOrFallback($prod, $vendorId); if (!$mp) {
+            return response()->json(['ok' => false, 'error' => __('Vendor listing not found')], 404);
+        }
 
         $size = (string) request('size', '');
         if ($size === '') { [$size, $_] = $this->pickAvailableSize($mp->size, $mp->size_qty); }
@@ -274,7 +310,9 @@ class CartController extends FrontBaseController
         }
 
         $effStock = $this->effectiveStock($mp, $size);
-        if ($effStock <= 0) return 0;
+        if ($effStock <= 0) {
+            return response()->json(['ok' => false, 'error' => __('Out of stock')], 422);
+        }
 
         $this->injectMerchantContext($prod, $mp);
         $keys   = (string) request('keys','');
@@ -286,7 +324,14 @@ class CartController extends FrontBaseController
 
         $this->recomputeTotals($cart);
         Session::put('cart', $cart);
-        return response()->json([count($cart->items)]);
+        return response()->json([
+            'ok' => true,
+            'cart_count' => count($cart->items),
+            'cart_total' => \PriceHelper::showCurrencyPrice($cart->totalPrice * $this->curr->value),
+            'totalQty' => $cart->totalQty,
+            'totalPrice' => $cart->totalPrice,
+            'success' => __('Item added to cart successfully')
+        ]);
     }
 
     public function addtocart($id)
@@ -368,6 +413,7 @@ class CartController extends FrontBaseController
         $this->recomputeTotals($cart);
         Session::put('cart', $cart);
         return response()->json([
+            'ok' => true,
             'cart_count' => count($cart->items),
             'cart_total' => \PriceHelper::showCurrencyPrice($cart->totalPrice * $curr->value),
             'totalQty' => $cart->totalQty,

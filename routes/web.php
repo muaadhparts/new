@@ -1788,6 +1788,9 @@ Route::group(['middleware' => 'maintenance'], function () {
     Route::get('/cart/add/merchant/{merchantProductId}', 'Front\CartController@addMerchantCart')->name('merchant.cart.add');
     Route::get('/cart/quickadd/merchant/{merchantProductId}', 'Front\CartController@quickAddMerchantCart')->name('merchant.cart.quickadd');
 
+    // Cart summary endpoint (AJAX only)
+    Route::get('/cart/summary', 'Front\CartController@cartSummary')->name('cart.summary');
+
     // Legacy cart routes (fallback for old links)
     Route::get('/addcart/{id}', 'Front\CartController@addcart')->name('product.cart.add');
     Route::get('/addtocart/{id}', 'Front\CartController@addtocart')->name('product.cart.quickadd');
