@@ -181,14 +181,14 @@
 
                                     @if($productt->brand)
                                         <li>
-                                            <span><b>@lang('Brand :') </b></span>
+                                            <span><b>@lang('Brand:') </b></span>
                                             <span>{{ Str::ucfirst($productt->brand->name) }}</span>
                                         </li>
                                     @endif
 
                                     @if(isset($merchant) && $merchant->qualityBrand)
                                         <li>
-                                            <span><b>@lang('Brand qualities :') </b></span>
+                                            <span><b>@lang('Brand qualities:') </b></span>
                                             <span>{{ app()->getLocale() == 'ar' && $merchant->qualityBrand->name_ar ? $merchant->qualityBrand->name_ar : $merchant->qualityBrand->name_en }}</span>
                                         </li>
                                     @endif

@@ -368,8 +368,11 @@ class CartController extends FrontBaseController
         $this->recomputeTotals($cart);
         Session::put('cart', $cart);
         return response()->json([
-            count($cart->items),
-            \PriceHelper::showCurrencyPrice($cart->totalPrice * $curr->value),
+            'cart_count' => count($cart->items),
+            'cart_total' => \PriceHelper::showCurrencyPrice($cart->totalPrice * $curr->value),
+            'totalQty' => $cart->totalQty,
+            'totalPrice' => $cart->totalPrice,
+            'success' => __('Item added to cart successfully')
         ]);
     }
 

@@ -99,6 +99,7 @@ window.i18n = {
     "messages.no_matches": "@lang('messages.no_matches')",
     "messages.api_error": "@lang('messages.api_error')",
     "messages.load_failed": "@lang('messages.load_failed')",
+    "messages.added_to_cart": "@lang('messages.added_to_cart')",
 
     /* مفاتيح الامتدادات */
     "ext.partCode": "@lang('ext.partCode')",

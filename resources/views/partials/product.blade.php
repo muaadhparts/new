@@ -78,10 +78,10 @@
             <x-product-name :product="$product" :vendor-id="$vendorId" target="_blank" />
         </h3>
 
-        {{-- تسمية ثانوية (اختياري) --}}
+        {{-- تسمية ثانوية (اختياري)
         @if(!empty($secondaryLabel))
             <h5 class="text-muted mb-3">{{ $secondaryLabel }}</h5>
-        @endif
+        @endif --}}
 
         {{-- التقييم (اختياري) --}}
         @if(!empty($avg))
@@ -105,11 +105,11 @@
         </div>
 
         {{-- SKU --}}
-        @if(!empty($product->sku))
+        {{-- @if(!empty($product->sku))
             <div class="mb-2">
                 <strong>@lang('SKU'):</strong> <span>{{ $product->sku }}</span>
             </div>
-        @endif
+        @endif --}}
 
         {{-- المخزون (للمنتجات الفيزيائية) --}}
         @if(($product->type ?? '') === 'Physical')
@@ -154,7 +154,7 @@
                 data-user="{{ $vendorId }}"
                 data-addtonum-url="{{ url('/addtonumcart') }}"
                 data-carts-url="{{ url('/carts') }}"
-            >@lang('Purchase Now')</button>
+            >@lang('buttons.purchase_now')</button>
         </div>
     </div>
 </div>

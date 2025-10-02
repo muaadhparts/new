@@ -18,8 +18,8 @@
 
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="button" class="btn btn-primary">Save changes</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">@lang('buttons.close')</button>
+                    <button type="button" class="btn btn-primary">@lang('buttons.save_changes')</button>
                 </div>
             </div>
         </div>

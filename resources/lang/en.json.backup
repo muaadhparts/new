@@ -4,7 +4,7 @@
     "all stores": "all Stock",
     "Quality by": "Quality by",
     "#Order": "#Order",
-
+    "Brand qualities:": "Qualities:",
     "#Service Area": "#Service Area",
     "#Sl": "#Sl",
     "(Added with base price)": "(Added with base price)",
@@ -239,6 +239,9 @@
     "Brand": "Brand",
     "brands": "brands",
     "Brands": "Brands",
+    "Brand qualities": "Brand qualities",
+    "Brand:": "Brand:",
+    "Sold by": "Sold by",
     "Breadcrumb Banner": "Breadcrumb Banner",
     "Bulk Item Upload": "Bulk Item Upload",
     "Bulk Product File Imported Successfully.": "Bulk Product File Imported Successfully.",

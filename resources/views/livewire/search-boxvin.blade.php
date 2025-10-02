@@ -39,7 +39,7 @@
                 <div class="progress" style="width: 100%; max-width: 520px; height: 6px;">
                     <div class="progress-bar progress-bar-striped progress-bar-animated bg-primary" style="width: 40%"></div>
                 </div>
-                <span class="text-primary fw-bold small">{{ __('Fetching vehicle information…') }}</span>
+                <span class="text-primary fw-bold small">{{ __('search.fetching_vehicle_info') }}</span>
             </div>
         @endif
     </div>
