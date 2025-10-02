@@ -105,7 +105,7 @@
                                         <div class="d-flex justify-content-between align-items-lg-baseline">
                                             <a href="{{ route('front.category', $category->slug) }}"
                                                 class="{{ $isCategoryActive ? 'sidebar-active-color' : '' }}">
-                                                {{ $category->name }}
+                                                {{ $category->localized_name }}
                                             </a>
 
                                             <button data-bs-toggle="collapse"
@@ -177,7 +177,7 @@
                                     <li>
                                         <a href="{{ route('front.category', $category->slug) }}"
                                             class="{{ Request::segment(2) === $category->slug ? 'active' : '' }}">
-                                            {{ $category->name }}
+                                            {{ $category->localized_name }}
                                         </a>
                                     </li>
                                 @endif
@@ -221,7 +221,7 @@
                                 @foreach ($categories as $category)
                                     <li>
                                         <a class="dropdown-item dropdown__item"
-                                            href="javascript:;">{{ $category->name }}</a>
+                                            href="javascript:;">{{ $category->localized_name }}</a>
                                     </li>
                                 @endforeach
                             </ul>

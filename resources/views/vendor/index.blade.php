@@ -169,14 +169,14 @@
                                                     @if($vendorMp && $vendorMp->qualityBrand)
                                                         <strong>@lang('Brand qualities:'):</strong> {{ app()->getLocale() == 'ar' && $vendorMp->qualityBrand->name_ar ? $vendorMp->qualityBrand->name_ar : $vendorMp->qualityBrand->name_en }}<br>
                                                     @endif
-                                                    {{ $data->category->name }}
+                                                    {{ $data->category->localized_name }}
                                                     @if (isset($data->subcategory))
                                                         <br>
-                                                        {{ $data->subcategory->name }}
+                                                        {{ $data->subcategory->localized_name }}
                                                     @endif
                                                     @if (isset($data->childcategory))
                                                         <br>
-                                                        {{ $data->childcategory->name }}
+                                                        {{ $data->childcategory->localized_name }}
                                                     @endif
                                                 </span>
                                             </div>

@@ -81,9 +81,9 @@
 
                                 <div class="view-options2 xview-options__body--filters ">
 
-                                    <div class="view-options__label" style="top:-10px">{{ $category->name }}
+                                    <div class="view-options__label" style="top:-10px">{{ $category->localized_name }}
 {{--                                        @dd($category)--}}
-                                        {{-- <img class="image__tag flex-fill" src="{{env('NISSAN_URL').$category->thumbnailImage }}" alt="{{$category->name}}">  --}}
+                                        {{-- <img class="image__tag flex-fill" src="{{env('NISSAN_URL').$category->thumbnailImage }}" alt="{{$category->localized_name}}">  --}}
                                     </div>
                                     @php
                                     // dd($category->images);
@@ -119,7 +119,7 @@
 
 
                                     <div id="zoom_container">
-                                        <img id="image" src="{{ $image }}" alt="{{ $category->name }}"
+                                        <img id="image" src="{{ $image }}" alt="{{ $category->localized_name }}"
                                             width="80" />
                                         <div class="landmarks" data-show-at-zoom="0" data-allow-drag="false"></div>
                                     </div>

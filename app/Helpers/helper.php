@@ -110,6 +110,15 @@ if (!function_exists('localizedPartLabel')) {
 }
 
 
+if (! function_exists('catLabel')) {
+    function catLabel($model): string {
+        if (!$model) return '';
+        return $model->localized_name
+            ?? (app()->getLocale()==='ar' && !empty($model->name_ar) ? $model->name_ar : ($model->name ?? ''));
+    }
+}
+
+
 function addon($name)
 {
 

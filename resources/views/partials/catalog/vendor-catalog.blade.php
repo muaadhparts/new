@@ -12,7 +12,7 @@
 
                         <li class="cat-item cat-parent">
                             <a href="{{route('front.category', $category->slug)}}{{!empty(request()->input('search')) ? '?search=' . request()->input('search') : ''}}"
-                                class="category-link" id="cat">{{ $category->name }} <span class="count"></span></a>
+                                class="category-link" id="cat">{{ $category->localized_name }} <span class="count"></span></a>
 
                             @if($category->subs->count() > 0)
                                 <span class="has-child"></span>
@@ -20,18 +20,18 @@
                                     @foreach (App\Models\Subcategory::where('category_id', $category->id)->get() as $subcategory)
                                         <li class="cat-item cat-parent">
                                             <a href="{{route('front.category', [$category->slug, $subcategory->slug])}}{{!empty(request()->input('search')) ? '?search=' . request()->input('search') : ''}}"
-                                                class="category-link {{ isset($subcat) ? ($subcat->id == $subcategory->id ? 'active' : '') : '' }}">{{$subcategory->name}}
+                                                class="category-link {{ isset($subcat) ? ($subcat->id == $subcategory->id ? 'active' : '') : '' }}">{{$subcategory->localized_name}}
                                                 <span class="count"></span></a>
 
 
                                             @if($subcategory->childs->count() != 0)
                                                 <span class="has-child"></span>
                                                 <ul class="children">
-                                                    @foreach (DB::table('childcategories')->where('subcategory_id', $subcategory->id)->get() as $key => $childelement)
+                                                    @foreach (App\Models\Childcategory::where('subcategory_id', $subcategory->id)->get() as $key => $childelement)
                                                         <li class="cat-item ">
                                                             <a href="{{route('front.category', [$category->slug, $subcategory->slug, $childelement->slug])}}{{!empty(request()->input('search')) ? '?search=' . request()->input('search') : ''}}"
                                                                 class="category-link {{ isset($childcat) ? ($childcat->id == $childelement->id ? 'active' : '') : '' }}">
-                                                                {{$childelement->name}} <span class="count"></span></a>
+                                                                {{$childelement->localized_name}} <span class="count"></span></a>
                                                         </li>
                                                     @endforeach
                                                 </ul>

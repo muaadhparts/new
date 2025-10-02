@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Filament\Resources\StockResource\Pages;
+namespace app\Filament\Resources\Pages;
 
 use App\Actions\DownloadStock;
 use App\Actions\ImportStock;

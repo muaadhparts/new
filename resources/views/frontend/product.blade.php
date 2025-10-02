@@ -26,20 +26,20 @@
                         <li><a href="{{ route('front.index') }}">@lang('home')</a></li>
                         <li>
                             <a href="{{ route('front.category', $productt->category->slug) }}">
-                                {{ $productt->category->name }}
+                                {{ $productt->category->localized_name }}
                             </a>
                         </li>
                         @if ($productt->subcategory_id)
                             <li>
                                 <a href="{{ route('front.category', [$productt->category->slug, $productt->subcategory->slug]) }}">
-                                    {{ $productt->subcategory->name }}
+                                    {{ $productt->subcategory->localized_name }}
                                 </a>
                             </li>
                         @endif
                         @if ($productt->childcategory_id)
                             <li>
                                 <a href="{{ route('front.category', [$productt->category->slug, $productt->subcategory->slug, $productt->childcategory->slug]) }}">
-                                    {{ $productt->childcategory->name }}
+                                    {{ $productt->childcategory->localized_name }}
                                 </a>
                             </li>
                         @endif

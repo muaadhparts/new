@@ -28,4 +28,12 @@ class Childcategory extends Model
     public function attributes() {
         return $this->morphMany('App\Models\Attribute', 'attributable');
     }
+
+    public function getLocalizedNameAttribute(): string
+    {
+        $isAr = app()->getLocale() === 'ar';
+        $ar   = trim((string)($this->name_ar ?? ''));
+        $en   = trim((string)($this->name ?? ''));
+        return $isAr && $ar !== '' ? $ar : $en;
+    }
 }

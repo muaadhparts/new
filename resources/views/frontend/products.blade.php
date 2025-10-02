@@ -13,11 +13,11 @@
                 <div class="col-12">
                     <h2 class="breadcrumb-title">
                         @if(!empty($childcat))
-                            {{ $childcat->name }}
+                            {{ $childcat->localized_name }}
                         @elseif(!empty($subcat))
-                            {{ $subcat->name }}
+                            {{ $subcat->localized_name }}
                         @elseif(!empty($cat))
-                            {{ $cat->name }}
+                            {{ $cat->localized_name }}
                         @else
                             @lang('Product')
                         @endif
@@ -25,13 +25,13 @@
                     <ul class="bread-menu">
                         <li><a href="{{ route('front.index') }}">@lang('Home')</a></li>
                         @if(!empty($cat))
-                            <li><a href="{{ route('front.category', $cat->slug) }}">{{ $cat->name }}</a></li>
+                            <li><a href="{{ route('front.category', $cat->slug) }}">{{ $cat->localized_name }}</a></li>
                         @endif
                         @if(!empty($subcat))
-                            <li><a href="{{ route('front.category', [$cat->slug, $subcat->slug]) }}">{{ $subcat->name }}</a></li>
+                            <li><a href="{{ route('front.category', [$cat->slug, $subcat->slug]) }}">{{ $subcat->localized_name }}</a></li>
                         @endif
                         @if(!empty($childcat))
-                            <li><a href="javascript:;">{{ $childcat->name }}</a></li>
+                            <li><a href="javascript:;">{{ $childcat->localized_name }}</a></li>
                         @else
                             <li><a href="javascript:;">@lang('Product')</a></li>
                         @endif
@@ -87,7 +87,7 @@
                                                 <div class="d-flex justify-content-between align-items-lg-baseline">
                                                     <a href="{{ route('front.category', $category->slug) }}"
                                                         class="{{ $isCategoryActive ? 'sidebar-active-color' : '' }}">
-                                                        {{ $category->name }}
+                                                        {{ $category->localized_name }}
                                                     </a>
 
                                                     <button data-bs-toggle="collapse"
@@ -118,7 +118,7 @@
                                                                    aria-controls="inner{{ $subcategory->slug }}_level_2_1"
                                                                    aria-expanded="{{ $isSubcategoryActive ? 'true' : 'false' }}"
                                                                    class="{{ $isSubcategoryActive ? '' : 'collapsed' }}" @endif>
-                                                                    {{ $subcategory->name }}
+                                                                    {{ $subcategory->localized_name }}
                                                                 </a>
 
                                                                 @if ($subcategory->childs->count() > 0)
@@ -145,7 +145,7 @@
                                                                         <li>
                                                                             <a href="{{ route('front.category', [$category->slug, $subcategory->slug, $child->slug]) }}"
                                                                                 class="{{ $isChildActive ? 'sidebar-active-color' : '' }}">
-                                                                                {{ $child->name }}
+                                                                                {{ $child->localized_name }}
                                                                             </a>
                                                                         </li>
                                                                     @endforeach
@@ -160,7 +160,7 @@
                                             <li>
                                                 <a href="{{ route('front.category', $category->slug) }}"
                                                     class="{{ Request::segment(2) === $category->slug ? 'active' : '' }}">
-                                                    {{ $category->name }}
+                                                    {{ $category->localized_name }}
                                                 </a>
                                             </li>
                                         @endif

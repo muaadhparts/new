@@ -146,11 +146,11 @@
             <div class="products-view">
                 <div class="products-view__options view-options view-options--offcanvas--mobile">
                     <div class="view-options2 xview-options__body--filters">
-                        <div class="view-options__label" style="top:-10px">{{ $category->name }}</div>
+                        <div class="view-options__label" style="top:-10px">{{ $category->localized_name }}</div>
                         <div id="zoom_container">
                             <img id="image"
                                  src="{{ Storage::url($category->images) }}"
-                                 alt="{{ $category->name }}"
+                                 alt="{{ $category->localized_name }}"
                                  width="100%" height="100%" />
                             <div class="landmarks" data-show-at-zoom="0" data-allow-drag="false"></div>
                         </div>
