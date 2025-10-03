@@ -86,6 +86,12 @@
   const callouts  = Array.isArray(window.calloutsFromDB) ? window.calloutsFromDB : [];
 
   console.log('🔄 Using old working method - callouts from window:', callouts.length);
+  console.log('📦 Context loaded:', {
+    section: section ? `ID: ${section.id}` : '❌ NULL',
+    category: category ? `ID: ${category.id}, Code: ${category.full_code}` : '❌ NULL',
+    brandName: brandName || '❌ NULL',
+    callouts: callouts.length
+  });
 
   // Cache للبيانات
   let cachedCallouts = callouts;
@@ -400,16 +406,44 @@
   }
 
   /* ========================= API ========================= */
-  async function fetchCalloutData(calloutKey) {
+  async function fetchCalloutData(calloutKey, retryCount = 0) {
+    const MAX_RETRIES = 2;
+
+    // ✅ التحقق من البيانات المطلوبة
+    if (!section || !category) {
+      console.error('❌ Missing context data:', { section, category });
+      throw new Error('Context data not loaded');
+    }
+
     const params = new URLSearchParams({
       section_id   : section?.id,
       category_id  : category?.id,
       catalog_code : category?.catalog?.code || '',
       callout      : calloutKey,
     });
-    const res = await fetch(`/api/callouts?${params.toString()}`, { headers:{ 'Accept':'application/json' } });
-    if (!res.ok) throw new Error(`API error ${res.status}`);
-    return await res.json();
+
+    console.log('📡 Fetching callout data:', params.toString());
+
+    try {
+      const res = await fetch(`/api/callouts?${params.toString()}`, { headers:{ 'Accept':'application/json' } });
+
+      if (!res.ok) {
+        // ✅ إذا فشل ولدينا محاولات متبقية، أعد المحاولة
+        if (retryCount < MAX_RETRIES && res.status >= 500) {
+          console.warn(`⚠️ API error ${res.status}, retrying (${retryCount + 1}/${MAX_RETRIES})...`);
+          await new Promise(resolve => setTimeout(resolve, 1000)); // انتظر ثانية
+          return fetchCalloutData(calloutKey, retryCount + 1);
+        }
+        throw new Error(`API error ${res.status}`);
+      }
+
+      const data = await res.json();
+      console.log('✅ Callout data loaded:', data);
+      return data;
+    } catch (err) {
+      console.error('❌ Fetch error:', err);
+      throw err;
+    }
   }
 
   /* ========================= Section Navigation ========================= */
@@ -812,12 +846,32 @@
   }
   function autoOpen() {
     if (window.__ill_autoOpened) return;
-    const calloutKey = qs('callout'); const autoFlag = qs('auto_open');
+    const calloutKey = qs('callout');
+    const autoFlag = qs('auto_open');
     if (!(calloutKey && (autoFlag === '1' || autoFlag === 'true'))) return;
+
+    console.log('🚀 Auto-opening callout:', calloutKey);
+
+    // ✅ تأكد من أن البيانات محملة قبل الفتح
+    if (!section || !category) {
+      console.warn('⚠️ Context data not ready, retrying in 500ms...');
+      setTimeout(() => {
+        window.__ill_autoOpened = false; // أعد المحاولة
+        autoOpen();
+      }, 500);
+      return;
+    }
+
     window.__ill_autoOpened = true;
     const found = byKey[calloutKey];
-    if (found && String(found.callout_type || '').toLowerCase() === 'section') { goToSection(calloutKey); }
-    else { openCallout(calloutKey); }
+
+    if (found && String(found.callout_type || '').toLowerCase() === 'section') {
+      console.log('🔀 Redirecting to section:', calloutKey);
+      goToSection(calloutKey);
+    } else {
+      console.log('📖 Opening callout modal:', calloutKey);
+      openCallout(calloutKey);
+    }
   }
 
   /* ========================= Boot ========================= */

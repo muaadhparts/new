@@ -123,6 +123,10 @@ class Illustrations extends Component
         return view('livewire.illustrations', [
             'illustrations' => $this->illustrations,
             'callouts' => $this->callouts,
+            'section' => $this->section,      // ✅ تمرير section
+            'category' => $this->category,    // ✅ تمرير category
+            'brand' => $this->brand,          // ✅ تمرير brand
+            'catalog' => $this->catalog,      // ✅ تمرير catalog
         ]);
     }
 }
