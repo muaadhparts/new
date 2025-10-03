@@ -1,6 +1,8 @@
 (function ($) {
   'use strict';
 
+  console.log('🚀 illustrated.js loaded - Version 2.1.2');
+
   /* ========================= Helpers ========================= */
   function qs(key) {
     try { return new URLSearchParams(window.location.search).get(key); } catch { return null; }
@@ -77,15 +79,17 @@
     return '';
   }
 
-  /* ========================= Globals from Blade ========================= */
+  /* ========================= Context from Blade (Old Working Method) ========================= */
   const section   = window.sectionData  || null;
   const category  = window.categoryData || null;
   const brandName = window.brandName    || null;
   const callouts  = Array.isArray(window.calloutsFromDB) ? window.calloutsFromDB : [];
-  const byKey = callouts.reduce((m, it) => {
-    const k1 = normKey(it.callout_key), k2 = normKey(it.callout);
-    if (k1) m[k1] = it; if (k2) m[k2] = it; return m;
-  }, {});
+
+  console.log('🔄 Using old working method - callouts from window:', callouts.length);
+
+  // Cache للبيانات
+  let cachedCallouts = callouts;
+  let byKey = {};
 
   /* ========================= Modal Elements ========================= */
   const stack = []; // كل عنصر يمثل "شاشة حالية"؛ أعلى المكدس = الشاشة المعروضة الآن
@@ -400,7 +404,7 @@
     const params = new URLSearchParams({
       section_id   : section?.id,
       category_id  : category?.id,
-      catalog_code : category?.catalog?.code || category?.catalog_code || '',
+      catalog_code : category?.catalog?.code || '',
       callout      : calloutKey,
     });
     const res = await fetch(`/api/callouts?${params.toString()}`, { headers:{ 'Accept':'application/json' } });
@@ -410,11 +414,13 @@
 
   /* ========================= Section Navigation ========================= */
   function goToSection(sectionKey2) {
-    const catalogCode = category?.catalog?.code || category?.catalog_code || '';
-    const key1 = category?.parents_key || category?.parentsKey || '';
-    const key2 = String(sectionKey2 || '');
-    if (!brandName || !catalogCode || !key1 || !key2) return;
-    const url = `/catlogs/${encodeURIComponent(brandName)}/${encodeURIComponent(catalogCode)}/${encodeURIComponent(key1)}/${encodeURIComponent(key2)}`;
+    // OLD METHOD: استخدام brandName و category من window
+    const bn = brandName || '';
+    const cc = category?.catalog?.code || '';
+    const k1 = category?.parent?.full_code || category?.parent_code || '';
+    const k2 = String(sectionKey2 || '');
+    if (!bn || !cc || !k1 || !k2) return;
+    const url = `/catlogs/${encodeURIComponent(bn)}/${encodeURIComponent(cc)}/${encodeURIComponent(k1)}/${encodeURIComponent(k2)}`;
     window.location.href = url;
   }
 
@@ -498,12 +504,24 @@
 
   /* ========================= Dynamic Events ========================= */
   function bindDynamicEvents() {
-    /* فتح الكول آوت من الصورة */
-    $(document).off('click.ill_open').on('click.ill_open', '.callout-label', function () {
-      const type = ($(this).data('calloutType') || 'part').toString().toLowerCase();
-      const key  = ($(this).data('calloutKey')  || '').toString();
-      if (type === 'section') { goToSection(key); return; }
-      if (key) openCallout(key);
+    /* فتح الكول آوت من الصورة - دعم النقر والتاتش */
+    $(document).off('click.ill_open touchend.ill_open').on('click.ill_open touchend.ill_open', '.callout-label, .bbdover', function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+
+      const $el = $(this).hasClass('callout-label') ? $(this) : $(this).closest('.callout-label');
+      const type = ($el.data('calloutType') || 'part').toString().toLowerCase();
+      const key  = ($el.data('calloutKey')  || '').toString();
+
+      console.log('🖱️ Callout clicked:', { key, type });
+
+      if (type === 'section') {
+        goToSection(key);
+        return;
+      }
+      if (key) {
+        openCallout(key);
+      }
     });
 
     /* رقم القطعة */
@@ -638,56 +656,147 @@
 
   /* ========================= Landmarks & Hover ========================= */
   function addLandmarks() {
-    if (window.__ill_addedLandmarks) return;
+    console.log('🎯 addLandmarks called - OLD METHOD');
+    if (window.__ill_addedLandmarks) {
+      console.log('⚠️ addLandmarks already executed, skipping');
+      return;
+    }
     window.__ill_addedLandmarks = true;
+
+    console.log(`📦 Using callouts from window.calloutsFromDB: ${callouts.length} items`);
+
+    // طباعة أول callout لرؤية البنية
+    if (callouts.length > 0) {
+      console.log('📋 First callout structure:', callouts[0]);
+      console.log('📐 Available fields:', Object.keys(callouts[0]));
+    }
+
+    // بناء index للبحث السريع
+    byKey = callouts.reduce((m, it) => {
+      const k1 = normKey(it.callout_key), k2 = normKey(it.callout);
+      if (k1) m[k1] = it; if (k2) m[k2] = it; return m;
+    }, {});
+
     const $img = $('#image');
-    callouts.forEach(item => {
-      const left = item.rectangle_left ?? item.left ?? 0;
-      const top  = item.rectangle_top  ?? item.top  ?? 0;
-      const key  = normKey(item.callout_key || item.callout || item.code || '');
-      const type = (item.callout_type || item.type || 'part').toLowerCase();
+    console.log(`🏷️ Adding ${callouts.length} landmarks to image`);
+
+    callouts.forEach((item, index) => {
+      // ✅ استخدام الأبعاد من البيانات بالضبط كما في النسخة القديمة
+      const left   = item.rectangle_left ?? item.x ?? item.left ?? 0;
+      const top    = item.rectangle_top  ?? item.y ?? item.top  ?? 0;
+      const width  = item.rectangle_width  ?? item.width  ?? 150;
+      const height = item.rectangle_height ?? item.height ?? 30;
+      const key    = normKey(item.callout_key || item.callout || item.code || '');
+      const type   = (item.callout_type || item.type || 'part').toLowerCase();
+
+      // ✅ تحويل الأبعاد إلى px (smoothZoom يحتاج px في data-size)
+      const widthPx  = (typeof width  === 'number') ? `${width}px`  : (String(width).includes('px')  ? String(width)  : `${width}px`);
+      const heightPx = (typeof height === 'number') ? `${height}px` : (String(height).includes('px') ? String(height) : `${height}px`);
+
+      console.log(`  Landmark ${index + 1}: key="${key}", type="${type}", pos=(${left},${top}), size=(${widthPx},${heightPx})`);
+
+      // ✅ بناء HTML كما في النسخة القديمة - smoothZoom يتحكم في الموضع والحجم عبر data-*
       const html = `
         <div class="item lable lable-single pointer correct-callout callout-label"
              data-callout-key="${String(key)}"
              data-callout-type="${String(type)}"
              data-container="body"
              data-allow-scale="true"
-             data-size="150px,30px"
+             data-size="${widthPx},${heightPx}"
              data-position="${left},${top}">
-          <div class="bbdover" id="part_${item.index || item.id || ''}" data-codeonimage="${String(key)}"
-               style="position:absolute;width:150px;height:30px;background-color:transparent;opacity:0.7;"></div>
+          <div class="bbdover"
+               id="part_${item.index || item.id || ''}"
+               data-codeonimage="${String(key)}"
+               data-callout-key="${String(key)}"
+               data-callout-type="${String(type)}"
+               style="position:absolute;width:${widthPx};height:${heightPx};background-color:transparent;opacity:0.7;"></div>
         </div>`;
-      try { $img.smoothZoom('addLandmark', [html]); } catch (e) { console.warn('addLandmark error', e); }
+      try {
+        $img.smoothZoom('addLandmark', [html]);
+        console.log(`    ✅ Landmark ${index + 1} added successfully`);
+      } catch (e) {
+        console.error(`    ❌ Failed to add landmark ${index + 1}:`, e);
+      }
     });
+
+    console.log(`🎉 Finished adding landmarks. Total: ${callouts.length}`);
+
+    // ✅ الأحداث مربوطة بالفعل عبر event delegation في boot
+    // لا حاجة لـ setTimeout - smoothZoom يضيف العناصر مباشرة
   }
   function bindHover() {
     if (window.__ill_hoverBound) return;
     window.__ill_hoverBound = true;
+
+    console.log('🖱️ Binding hover events...');
+
     $(document)
       .on('mouseenter', '.bbdover', function () {
         const code = $(this).data('codeonimage');
+        console.log('🔵 Hover enter on:', code);
         $(this).addClass('hovered');
         $(`.bbdover[data-codeonimage="${code}"]`).addClass('hovered');
       })
       .on('mouseleave', '.bbdover', function () {
         const code = $(this).data('codeonimage');
+        console.log('⚪ Hover leave on:', code);
         $(this).removeClass('hovered');
         $(`.bbdover[data-codeonimage="${code}"]`).removeClass('hovered');
       });
+
+    console.log('✅ Hover events bound');
   }
 
   /* ========================= Zoom Init & Auto Open ========================= */
   function initZoom() {
-    const $img = $('#image'); if (!$img.length) return;
+    const $img = $('#image');
+    if (!$img.length) {
+      console.warn('⚠️ No #image element found');
+      return;
+    }
+
+    console.log('🔍 Initializing smoothZoom with OLD settings...');
+
+    // ✅ إعدادات smoothZoom بالضبط كما في النسخة القديمة
     $img.smoothZoom({
-      width:800, height:500, responsive:true, container:'zoom_container',
-      responsive_maintain_ratio:true, zoom_SINGLE_STEP:false,
-      animation_SMOOTHNESS:3, animation_SPEED_ZOOM:3, animation_SPEED_PAN:3,
-      initial_POSITION:'200, 300', zoom_MAX:200, button_SIZE:20,
-      button_AUTO_HIDE:'YES', button_AUTO_HIDE_DELAY:2, button_ALIGN:'top right',
-      mouse_DOUBLE_CLICK:false, mouse_WHEEL:true, use_3D_Transform:true, border_TRANSPARENCY:0,
-      on_IMAGE_LOAD:function(){ addLandmarks(); autoOpen(); }
+      width: 800,
+      height: 500,
+      responsive: true,
+      container: 'zoom_container',
+      responsive_maintain_ratio: true,
+      max_WIDTH: '',
+      max_HEIGHT: '',
+      zoom_SINGLE_STEP: false,
+      animation_SMOOTHNESS: 3,
+      animation_SPEED_ZOOM: 3,
+      animation_SPEED_PAN: 3,
+      initial_POSITION: '200, 300',
+      zoom_MAX: 200,
+      button_SIZE: 20,
+      button_AUTO_HIDE: 'YES',
+      button_AUTO_HIDE_DELAY: 2,
+      button_ALIGN: 'top right',
+      mouse_DOUBLE_CLICK: false,
+      mouse_WHEEL: true,
+      use_3D_Transform: true,
+      border_TRANSPARENCY: 0,
+      on_IMAGE_LOAD: function() {
+        console.log('📸 ✅ on_IMAGE_LOAD fired - image fully loaded');
+        addLandmarks();
+        autoOpen();
+      },
+      on_ZOOM_PAN_UPDATE: function() {
+        // console.log('🔄 Zoom/Pan updated');
+      },
+      on_ZOOM_PAN_COMPLETE: function() {
+        // console.log('✅ Zoom/Pan complete');
+      },
+      on_LANDMARK_STATE_CHANGE: function() {
+        console.log('🏷️ Landmark state changed');
+      }
     });
+
+    console.log('✅ smoothZoom initialized with callbacks');
   }
   function autoOpen() {
     if (window.__ill_autoOpened) return;
@@ -701,18 +810,29 @@
 
   /* ========================= Boot ========================= */
   $(function () {
-    initZoom(); bindHover(); bindDynamicEvents();
-    const imgEl = document.getElementById('image');
-    if (imgEl && imgEl.complete) { addLandmarks(); autoOpen(); }
+    console.log('🚀 Initializing illustration viewer...');
+
+    // ✅ ربط الأحداث أولاً قبل initZoom
+    bindHover();
+    bindDynamicEvents();
+
+    // ✅ initZoom سيستدعي addLandmarks داخل on_IMAGE_LOAD فقط
+    initZoom();
+
+    // ⚠️ لا نستدعي addLandmarks هنا - فقط من داخل on_IMAGE_LOAD
+    // لأن smoothZoom يحتاج الصورة محملة بالكامل للحصول على المقاس الصحيح
 
     // نظّم حالة زر الرجوع عند التحميل
     setBackVisible();
 
     // عند إغلاق المودال: صفّر المكدس
     $(document).off('hidden.bs.modal.ill').on('hidden.bs.modal.ill', '#modal', function () {
+      console.log('🔄 Modal closed, clearing stack');
       stack.length = 0;
       setBackVisible();
     });
+
+    console.log('✅ Illustration viewer initialized - waiting for on_IMAGE_LOAD');
   });
 
   // API: لتفعيل الفتح من أماكن أخرى

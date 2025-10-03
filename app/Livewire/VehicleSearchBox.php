@@ -4,6 +4,8 @@ namespace App\Livewire;
 
 use App\Models\Catalog;
 use App\Models\NewCategory;
+use App\Services\CatalogSessionManager;
+use App\Traits\NormalizesInput;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Livewire\Component;
@@ -11,6 +13,8 @@ use Exception;
 
 class VehicleSearchBox extends Component
 {
+    use NormalizesInput;
+
     public string $query = '';
     public $catalog;
     public array $results = [];
@@ -45,6 +49,9 @@ class VehicleSearchBox extends Component
         'setSearchScope' => 'setSearchScope',
     ];
 
+    /** Service للتعامل مع الجلسة */
+    protected CatalogSessionManager $sessionManager;
+
     /** ================== مفاتيح الترجمة لرسائل الخطأ ================== */
     private const ERR_LOAD       = 'errors.load_failed';
     private const ERR_SHORT_NUM  = 'errors.part_number_too_short';
@@ -73,23 +80,6 @@ class VehicleSearchBox extends Component
         return "{$base}_{$code}";
     }
 
-    protected function dyn(string $base, string $catalogCode): string
-    {
-        $this->ensureValidCatalogCode($catalogCode);
-        return strtolower("{$base}_{$catalogCode}");
-    }
-
-    protected function ensureValidCatalogCode($catalogCode): void
-    {
-        if (!preg_match('/^[A-Za-z0-9_]+$/', (string)$catalogCode)) {
-            throw new \Exception('Invalid catalog code');
-        }
-    }
-
-    protected function sanitizeInput($input): string
-    {
-        return trim(strip_tags((string)$input));
-    }
 
     /** تبديل النطاق (section | catalog) */
     public function setSearchScope($scope = 'section'): void
@@ -116,12 +106,15 @@ class VehicleSearchBox extends Component
         $this->resetSearchState();
     }
 
+    public function boot(CatalogSessionManager $sessionManager)
+    {
+        $this->sessionManager = $sessionManager;
+    }
+
     protected function getEffectiveAllowedCodes(): array
     {
         // القائمة الكاملة المفلترة على المواصفات من الجلسة
-        $allFromSession = array_values(array_filter(
-            array_map('strval', (array) session('preloaded_full_code', []))
-        ));
+        $allFromSession = $this->sessionManager->getAllowedLevel3Codes();
 
         // وضع Catalog → كل الأكواد المسموح بها في الجلسة
         if ($this->searchScope === 'catalog') {
@@ -320,15 +313,6 @@ class VehicleSearchBox extends Component
         return $fallback->filter()->unique()->values()->toArray();
     }
 
-    protected function normalizeArabic($string): string
-    {
-        $string = trim((string)$string);
-        $string = str_replace(['أ', 'إ', 'آ'], 'ا', $string);
-        $string = str_replace('ى', 'ي', $string);
-        $string = preg_replace('/[\.\/\\\\\|\:]+/', ' ', $string);
-        $string = preg_replace('/[^\x{0600}-\x{06FF}\x{0750}-\x{077F}\x{08A0}-\x{08FF}\sA-Za-z0-9\-\(\)\/]/u', '', $string);
-        return $string;
-    }
 
     // الباحث الرئيسي
     public function searchFromInput(): void

@@ -122,6 +122,7 @@ Route::prefix('modal')->name('modal.')->group(function () {
 
 Route::prefix('api')->middleware('web')->group(function () {
     Route::get('/callouts', [CalloutController::class, 'show'])->name('api.callouts.show');
+    Route::get('/callouts/metadata', [CalloutController::class, 'metadata'])->name('api.callouts.metadata');
 });
 
 
@@ -1551,7 +1552,7 @@ Route::group(['middleware' => 'maintenance'], function () {
         Route::get('/api/checkout/instamojo/notify', 'Api\User\Payment\InstamojoController@notify')->name('api.user.deposit.instamojo.notify');
 
         Route::post('/api/paystack/submit', 'Api\User\Payment\PaystackController@store')->name('api.user.deposit.paystack.submit');
-        Route::post('/api/voguepay/submit', 'Api\User\Payment\VoguepayController@store')->name('api.user.deposit.voguepay.submit');
+        // Route::post('/api/voguepay/submit', 'Api\User\Payment\VoguepayController@store')->name('api.user.deposit.voguepay.submit'); // Controller file missing
 
         Route::post('/api/instamojo/submit', 'Api\User\Payment\InstamojoController@store')->name('api.user.deposit.instamojo.submit');
         Route::post('/api/paypal-submit', 'Api\User\Payment\PaymentController@store')->name('api.user.deposit.paypal.submit');

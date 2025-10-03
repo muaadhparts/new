@@ -9,7 +9,7 @@ use App\Models\Specification;
 use App\Models\SpecificationItem;
 use App\Models\VinDecodedCache;
 use App\Models\VinSpecMapped;
-use Illuminate\Support\Facades\Session;
+use App\Services\CatalogSessionManager;
 
 class Attributes extends Component
 {
@@ -25,18 +25,18 @@ class Attributes extends Component
     public $availableYears = [];
     public $availableMonths = [];
 
+    protected CatalogSessionManager $sessionManager;
+
+    public function boot(CatalogSessionManager $sessionManager)
+    {
+        $this->sessionManager = $sessionManager;
+    }
+
     public function mount($catalog = null, $vin = null)
     {
         // 🧹 حذف الجلسات القديمة عند الدخول من الصفحة الرئيسية
         if (request()->routeIs('front.index')) {
-            Session::forget([
-                'vin',
-                'current_catalog',
-                'selected_filters',
-                'selected_filters_labeled',
-                'attributes',
-                'filtered_level3_codes',
-            ]);
+            $this->sessionManager->clearAll();
         }
 
         $this->catalog = is_string($catalog)
@@ -47,8 +47,8 @@ class Attributes extends Component
 
         $this->generateAvailableDateRanges();
 
-        // 🧠 تحميل الفلاتر من الجلسة
-        $this->data = Session::get('selected_filters', []);
+        // 🧠 تحميل الفلاتر من الخدمة الموحدة
+        $this->data = $this->sessionManager->getSelectedFilters();
         foreach ($this->data as $key => $item) {
             if (!is_array($item)) {
                 $this->data[$key] = [
@@ -130,7 +130,7 @@ class Attributes extends Component
             ];
         }
 
-        Session::put('selected_filters', $this->data);
+        $this->sessionManager->setSelectedFilters($this->data);
     }
 
     protected function loadFiltersFromCatalog()
@@ -173,11 +173,11 @@ class Attributes extends Component
     public function save()
     {
         if (!$this->vin) {
-            Session::put('selected_filters', $this->data);
+            $this->sessionManager->setSelectedFilters($this->data);
         }
 
-        $labeledData = $this->generateLabeledData(Session::get('selected_filters', []));
-        Session::put('selected_filters_labeled', $labeledData);
+        $labeledData = $this->generateLabeledData($this->sessionManager->getSelectedFilters());
+        $this->sessionManager->setLabeledFilters($labeledData);
 
         $this->emit('filtersSelected', $labeledData);
     }
@@ -221,8 +221,7 @@ class Attributes extends Component
         if ($this->vin) return;
 
         $this->data = [];
-        Session::forget('selected_filters');
-        Session::forget('selected_filters_labeled');
+        $this->sessionManager->clearFilters();
         $this->loadFilters();
     }
 

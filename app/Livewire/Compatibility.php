@@ -2,46 +2,50 @@
 
 namespace App\Livewire;
 
-use Illuminate\Support\Facades\DB;
+use App\Services\CompatibilityService;
 use Livewire\Component;
 
+/**
+ * مكون موحد لعرض توافق القطعة مع الكتالوجات
+ * الآن يستخدم CompatibilityService
+ */
 class Compatibility extends Component
 {
     public $sku;
+    public $results;
+    public $displayMode = 'list'; // أو 'tabs'
 
+    protected CompatibilityService $compatibilityService;
+
+    public function boot(CompatibilityService $compatibilityService)
+    {
+        $this->compatibilityService = $compatibilityService;
+    }
+
+    public function mount($sku, $displayMode = 'list')
+    {
+        $this->sku = $sku;
+        $this->displayMode = $displayMode;
+        $this->results = $this->compatibilityService->getCompatibleCatalogs($sku);
+    }
+
+    /**
+     * للتوافق مع الكود القديم
+     */
     public function getCompatibility()
     {
-        // جلب الكاتالوجات المرتبطة برقم القطعة
-        $parts = DB::table('parts_index')
-            ->join('catalogs', 'catalogs.code', '=', 'parts_index.catalog_code')
-            ->select(
-                'parts_index.part_number',
-                'parts_index.catalog_code',
-                'catalogs.label_en',
-                'catalogs.label_ar',
-                'catalogs.beginYear',
-                'catalogs.endYear'
-            )
-            ->where('parts_index.part_number', $this->sku)
-            ->get();
-
-        return $parts->map(function ($part) {
-            return (object)[
-                'part_number'   => $part->part_number,
-                'catalog_code'  => $part->catalog_code,
-                'label'         => app()->getLocale() === 'ar' ? $part->label_ar : $part->label_en,
-                'begin_year'    => $part->beginYear,
-                'end_year'      => $part->endYear ?: 'حتى الآن',
-            ];
-        });
+        return $this->results;
     }
 
     public function render()
     {
-        $results = $this->getCompatibility();
+        // اختيار View بناءً على displayMode
+        $viewName = $this->displayMode === 'tabs'
+            ? 'livewire.compatibility-tabs'
+            : 'livewire.compatibility';
 
-        return view('livewire.compatibility', [
-            'results' => $results,
+        return view($viewName, [
+            'results' => $this->results,
             'sku' => $this->sku,
         ]);
     }

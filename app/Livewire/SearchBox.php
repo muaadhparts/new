@@ -4,9 +4,12 @@ namespace App\Livewire;
 
 use Livewire\Component;
 use App\Models\Product;
+use App\Traits\NormalizesInput;
 
 class SearchBox extends Component
 {
+    use NormalizesInput;
+
     public string $query = '';
     public array $results = [];
 
@@ -90,23 +93,6 @@ class SearchBox extends Component
     }
 
 
-    private function normalizeArabic(string $text): string
-    {
-        $replacements = [
-            'أ' => 'ا', 'إ' => 'ا', 'آ' => 'ا',
-            'ى' => 'ي', 'ؤ' => 'و', 'ئ' => 'ي', 'ة' => 'ه',
-            'َ' => '', 'ً' => '', 'ُ' => '', 'ٌ' => '',
-            'ِ' => '', 'ٍ' => '', 'ْ' => '', 'ّ' => '', 'ٰ' => '',
-        ];
-
-        return strtr($text, $replacements);
-    }
-
-    private function cleanInput(?string $input): string
-    {
-        // يحذف المسافات والشرطات والنقاط والفواصل
-        return strtoupper(preg_replace('/[\s\-.,]+/', '', trim((string) $input)));
-    }
 
     public function render()
     {

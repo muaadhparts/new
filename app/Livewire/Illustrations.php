@@ -7,11 +7,15 @@ use App\Models\Catalog;
 use App\Models\NewCategory;
 use App\Models\Section;
 use App\Models\Illustration;
+use App\Services\CatalogSessionManager;
+use App\Traits\LoadsCatalogData;
 use Livewire\Component;
 use Illuminate\Support\Facades\Log;
 
 class Illustrations extends Component
 {
+    use LoadsCatalogData;
+
     public $brand;
     public $catalog;
     public $parentCategory1;
@@ -22,27 +26,26 @@ class Illustrations extends Component
     public $illustrations;
     public $callouts;
 
+    protected CatalogSessionManager $sessionManager;
+
+    public function boot(CatalogSessionManager $sessionManager)
+    {
+        $this->sessionManager = $sessionManager;
+    }
+
     public function mount($id, $data, $key1, $key2, $key3)
     {
         try {
-
             // ✅ حفظ VIN في الجلسة لو تم تمريره من الرابط
             if (request()->has('vin')) {
-                session()->put('vin', request()->get('vin'));
-            }
-            // Load brand
-            $this->brand = Brand::where('name', $id)->first();
-            if (! $this->brand) {
-                session()->flash('error', 'العلامة التجارية غير موجودة');
-                return;
+                $this->sessionManager->setVin(request()->get('vin'));
             }
 
-            // Load catalog
-            $this->catalog = Catalog::where('code', $data)
-                ->where('brand_id', $this->brand->id)
-                ->first();
-            if (! $this->catalog) {
-                session()->flash('error', 'الكتالوج غير موجود');
+            // استخدام Trait لتحميل Brand و Catalog
+            $this->loadBrandAndCatalog($id, $data);
+
+            if (!$this->brand || !$this->catalog) {
+                session()->flash('error', 'البيانات غير موجودة');
                 return;
             }
 

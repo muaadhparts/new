@@ -5,16 +5,26 @@ namespace App\Livewire;
 use Livewire\Component;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Session;
+use App\Services\CatalogSessionManager;
+use App\Traits\NormalizesInput;
 
 class SearchBoxvin extends Component
 {
+    use NormalizesInput;
+
     public string $query = '';
     public bool $isLoading = false;
     public bool $notFound = false;
     public string $userMessage = '';
     public bool $is_vin = false;
     public array $results = [];
+
+    protected CatalogSessionManager $sessionManager;
+
+    public function boot(CatalogSessionManager $sessionManager)
+    {
+        $this->sessionManager = $sessionManager;
+    }
 
     public function submitSearch()
     {
@@ -75,8 +85,8 @@ class SearchBoxvin extends Component
 
         $brandName = DB::table('brands')->where('id', $vinData->brand_id)->value('name');
 
-        Session::put('vin', $vinData->vin);
-        Session::put('current_catalog', json_decode(json_encode($vinData), true));
+        $this->sessionManager->setVin($vinData->vin);
+        $this->sessionManager->setCurrentCatalog(json_decode(json_encode($vinData), true));
 
         // Livewire v2: emit | v3: dispatch. أبقينا emit كما كان لديك.
         $this->emit('vinSelected');
@@ -113,10 +123,6 @@ class SearchBoxvin extends Component
         }
     }
 
-    private function cleanInput(?string $input): string
-    {
-        return strtoupper(preg_replace('/[\s\-.,]+/', '', trim((string) $input)));
-    }
 
     /**
      * يعيد بيانات الـ VIN المهيكلة ويحفظها في الجلسة عند النجاح.
@@ -268,9 +274,9 @@ class SearchBoxvin extends Component
                 $structured['month'] = ['value_id' => str_pad($month, 2, '0', STR_PAD_LEFT), 'source' => 'vin'];
             }
 
-            Session::put('vin', $vin);
-            Session::put('selected_filters', $structured);
-            Session::put('current_catalog', json_decode(json_encode($cached), true));
+            $this->sessionManager->setVin($vin);
+            $this->sessionManager->setSelectedFilters($structured);
+            $this->sessionManager->setCurrentCatalog(json_decode(json_encode($cached), true));
 
             return [
                 'source'      => 'api',

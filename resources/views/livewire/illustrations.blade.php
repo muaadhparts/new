@@ -2,6 +2,7 @@
     @php use Illuminate\Support\Str; @endphp
 
     <style>
+        /* ⚙️ الهيكل الأساسي للـ landmarks - لا تغيير */
         #zoom_container .landmarks {
             position: absolute;
             z-index: 10;
@@ -20,6 +21,7 @@
             background-color: #bce8f1 !important;
         }
 
+        /* ⚙️ تنسيق العناصر داخل landmarks - يجب أن يكون position:absolute فقط */
         div[id*='zoom_container'] .landmarks .lable div {
             z-index: 19999;
             text-align: center;
@@ -33,6 +35,21 @@
             position: absolute;
             border-radius: 999px;
             font: bold 15px tahoma, arial, verdana, sans-serif;
+            /* ❌ لا transform أو scale هنا - smoothZoom يتحكم في التحجيم */
+        }
+
+        /* ⚙️ تحسين القابلية للنقر دون تعارض مع smoothZoom */
+        .callout-label,
+        .correct-callout,
+        .bbdover {
+            cursor: pointer !important;
+            -webkit-tap-highlight-color: rgba(0, 123, 255, 0.2);
+        }
+
+        .callout-label:hover .bbdover,
+        .bbdover:hover {
+            background-color: rgba(0, 123, 255, 0.3) !important;
+            opacity: 1 !important;
         }
 
         .inner-card { height: 20px; background-color: #eee; }
@@ -45,27 +62,54 @@
 
         /* Mobile polish */
         @media (max-width: 768px) {
-            .smoothZoom_controls { display: none !important; }
+            /* تصغير أزرار التكبير/التصغير على الجوال بدلاً من إخفائها */
+            .smoothZoom_controls {
+                transform: scale(0.6) !important;
+                transform-origin: top right !important;
+            }
+
+            .smoothZoom_controls a {
+                width: 24px !important;
+                height: 24px !important;
+                font-size: 16px !important;
+                line-height: 24px !important;
+            }
+
             body { overscroll-behavior-y: contain; }
             #zoom_container img { touch-action: pan-x pan-y; max-width: 100%; height: auto; }
+
+            /* تحسين القيم القابلة للضغط على الجوال */
+            .callout-label {
+                cursor: pointer !important;
+                -webkit-tap-highlight-color: rgba(0, 123, 255, 0.3);
+            }
+
+            .bbdover {
+                cursor: pointer !important;
+                min-width: 40px !important;
+                min-height: 40px !important;
+            }
         }
     </style>
 
-    <div class="container">
+    <div class="container py-3">
         <div class="row">
             <div class="col-12">
-                <div class="product-nav-wrapper">
+                <div class="product-nav-wrapper mb-3">
                     <nav aria-label="breadcrumb">
-                        <ol class="breadcrumb text-uppercase">
+                        <ol class="breadcrumb text-uppercase mb-0 flex-wrap">
                             {{-- Home --}}
                             <li class="breadcrumb-item">
-                                <a class="text-black" href="{{ route('front.index') }}">Home</a>
+                                <a class="text-black text-decoration-none" href="{{ route('front.index') }}">
+                                    <i class="fas fa-home d-md-none"></i>
+                                    <span class="d-none d-md-inline">Home</span>
+                                </a>
                             </li>
 
                             {{-- Brand --}}
                             @if($brand)
                                 <li class="breadcrumb-item">
-                                    <a class="text-black" href="{{ route('catlogs.index', ['id' => $brand->name]) }}">
+                                    <a class="text-black text-decoration-none" href="{{ route('catlogs.index', ['id' => $brand->name]) }}">
                                         {{ strtoupper($brand->name) }}
                                     </a>
                                 </li>
@@ -74,20 +118,22 @@
                             {{-- VIN --}}
                             @if(Session::get('vin'))
                                 <li class="breadcrumb-item">
-                                    <a class="text-black" href="{{ route('tree.level1', [
+                                    <a class="text-black text-decoration-none" href="{{ route('tree.level1', [
                                         'id'   => $brand->name,
                                         'data' => $catalog->code,
                                         'vin'  => Session::get('vin')
                                     ]) }}">
-                                        {{ Session::get('vin') }}
+                                        <i class="fas fa-car d-md-none"></i>
+                                        <span class="d-none d-md-inline">{{ Session::get('vin') }}</span>
+                                        <span class="d-md-none">VIN</span>
                                     </a>
                                 </li>
                             @endif
 
                             {{-- Catalog --}}
                             @if($catalog)
-                                <li class="breadcrumb-item">
-                                    <a class="text-black" href="{{ route('tree.level1', [
+                                <li class="breadcrumb-item d-none d-sm-block">
+                                    <a class="text-black text-decoration-none" href="{{ route('tree.level1', [
                                         'id'   => $brand->name,
                                         'data' => $catalog->code
                                     ]) }}">
@@ -98,8 +144,8 @@
 
                             {{-- Level 1 --}}
                             @if($parentCategory1)
-                                <li class="breadcrumb-item">
-                                    <a class="text-black" href="{{ route('tree.level2', [
+                                <li class="breadcrumb-item d-none d-md-block">
+                                    <a class="text-black text-decoration-none" href="{{ route('tree.level2', [
                                         'id'   => $brand->name,
                                         'data' => $catalog->code,
                                         'key1' => $parentCategory1->full_code
@@ -111,8 +157,8 @@
 
                             {{-- Level 2 --}}
                             @if($parentCategory2)
-                                <li class="breadcrumb-item">
-                                    <a class="text-black" href="{{ route('tree.level3', [
+                                <li class="breadcrumb-item d-none d-lg-block">
+                                    <a class="text-black text-decoration-none" href="{{ route('tree.level3', [
                                         'id'   => $brand->name,
                                         'data' => $catalog->code,
                                         'key1' => $parentCategory1->full_code,
@@ -125,8 +171,8 @@
 
                             {{-- Level 3 (current) --}}
                             @if($parentCategory3)
-                                <li class="breadcrumb-item active text-primary text-uppercase" aria-current="page">
-                                    {{ strtoupper($parentCategory3->Applicability ?? $parentCategory3->full_code) }}
+                                <li class="breadcrumb-item active text-primary" aria-current="page">
+                                    <strong>{{ strtoupper($parentCategory3->Applicability ?? $parentCategory3->full_code) }}</strong>
                                 </li>
                             @endif
                         </ol>
@@ -141,18 +187,29 @@
         :catalog="$catalog->code"
         :allowed-codes-override="[$category->full_code]" />
 
-    <div class="container m-md-2 d-flex justify-content-center">
-        <div class="col-md-8 bg-white panel-body text-center">
-            <div class="products-view">
-                <div class="products-view__options view-options view-options--offcanvas--mobile">
-                    <div class="view-options2 xview-options__body--filters">
-                        <div class="view-options__label" style="top:-10px">{{ $category->localized_name }}</div>
-                        <div id="zoom_container">
-                            <img id="image"
-                                 src="{{ Storage::url($category->images) }}"
-                                 alt="{{ $category->localized_name }}"
-                                 width="100%" height="100%" />
-                            <div class="landmarks" data-show-at-zoom="0" data-allow-drag="false"></div>
+    {{-- Illustration Image Container - Responsive --}}
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-12 col-md-10 col-lg-8">
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-white border-0 py-3">
+                        <h5 class="mb-0 text-center text-md-start">
+                            <i class="fas fa-image me-2 d-none d-md-inline"></i>
+                            {{ $category->localized_name }}
+                        </h5>
+                    </div>
+                    <div class="card-body p-2 p-md-3">
+                        <div class="products-view">
+                            <div class="products-view__options view-options">
+                                <div class="view-options__body">
+                                    <div id="zoom_container">
+                                        <img id="image"
+                                             src="{{ Storage::url($category->images) }}"
+                                             alt="{{ $category->localized_name }}" />
+                                        <div class="landmarks" data-show-at-zoom="0" data-allow-drag="false"></div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -161,29 +218,19 @@
     </div>
 
 @push('scripts')
-    {{-- مرّر الداتا للواجهة --}}
+    {{-- ⚙️ الطريقة القديمة الشغالة: تمرير البيانات الكاملة --}}
     <script>
         window.sectionData    = @json($section);
-        window.categoryData   = @json($category->loadMissing('catalog')); // يضمن وجود catalog->code
+        window.categoryData   = @json($category->loadMissing('catalog'));
         window.calloutsFromDB = @json($callouts);
         window.brandName      = @json(optional($brand)->name);
-        const callouts = window.calloutsFromDB ?? [];
         let csrf = "{{ csrf_token() }}";
-        // dd() // للتحقق لاحقًا:
-        // console.log({section: window.sectionData, category: window.categoryData, brand: window.brandName, calloutsCount: (callouts||[]).length});
     </script>
 
-    {{-- جهّز نسخة آمنة من رقم الإصدار للسكربت --}}
-    @php
-        $jsRel  = 'assets/front/js/ill/illustrated.js';
-        $jsPath = public_path($jsRel);
-        $jsVer  = file_exists($jsPath) ? filemtime($jsPath) : time();
-    @endphp
-
-    {{-- سكربتات التكبير ثم سكربتنا مع ?v= --}}
+    {{-- سكربتات التكبير ثم سكربتنا --}}
     <script src="{{ asset('assets/front/js/jq-zoom.js') }}"></script>
     <script src="{{ asset('assets/front/js/preview.js') }}"></script>
-    <script src="{{ asset($jsRel) }}?v={{ $jsVer }}"></script>
+    <script src="{{ asset('assets/front/js/ill/illustrated.js') }}?v={{ time() }}"></script>
 @endpush
 
     <livewire:callout-modal />

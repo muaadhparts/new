@@ -11,42 +11,44 @@
     data-bs-backdrop="static"
     data-bs-keyboard="false"
 >
-    <div class="modal-dialog modal-xl modal-dialog-centered" role="document">
-        <div class="modal-content shadow-lg rounded-3 border-0">
-            
-            {{-- Header --}}
-            <div class="modal-header bg-primary text-white border-0">
-                <h5 class="modal-title">
+    {{-- Responsive Modal Dialog --}}
+    <div class="modal-dialog modal-fullscreen-sm-down modal-xl modal-dialog-centered modal-dialog-scrollable" role="document">
+        <div class="modal-content shadow-lg rounded-0 rounded-md-3 border-0">
+
+            {{-- Header - Responsive --}}
+            <div class="modal-header bg-primary text-white border-0 py-2 py-md-3">
+                <h5 class="modal-title fs-6 fs-md-5 mb-0">
                     <span id="ill-modal-title">🔧 @lang('catalog.modal.title')</span>
                 </h5>
 
-                <div class="d-flex align-items-center gap-2">
+                <div class="d-flex align-items-center gap-1 gap-md-2">
                     <button type="button"
                             id="ill-back-btn"
-                            class="btn btn-sm btn-light d-none"
+                            class="btn btn-sm btn-light d-none px-2 py-1 px-md-3 py-md-2"
                             title="@lang('catalog.modal.back')">
-                        ← @lang('catalog.modal.back')
+                        <i class="fas fa-arrow-left d-md-none"></i>
+                        <span class="d-none d-md-inline">← @lang('catalog.modal.back')</span>
                     </button>
                     <button type="button"
-                            class="btn-close"
+                            class="btn-close btn-close-white"
                             data-bs-dismiss="modal"
                             aria-label="@lang('catalog.modal.close')"></button>
                 </div>
             </div>
 
-            {{-- Body --}}
+            {{-- Body - Responsive Padding --}}
             <div class="modal-body p-0 bg-light">
-                <div id="api-callout-body" class="p-4">
-                    <div class="text-center p-5">
+                <div id="api-callout-body" class="p-2 p-md-4">
+                    <div class="text-center p-3 p-md-5">
                         <div class="spinner-border text-primary mb-3" role="status"></div>
                         <div class="fw-bold text-muted">@lang('catalog.modal.loading')</div>
                     </div>
                 </div>
             </div>
 
-            {{-- Footer --}}
-            <div class="modal-footer bg-light border-0">
-                <small class="text-muted">
+            {{-- Footer - Responsive --}}
+            <div class="modal-footer bg-light border-0 py-2 py-md-3">
+                <small class="text-muted text-center text-md-start w-100">
                     <span id="ill-modal-footnote">@lang('catalog.modal.match_info')</span>
                 </small>
             </div>
@@ -147,7 +149,7 @@ window.ILL_ROUTES = {
 
 @once
 <style id="ill-modal-styles">
-  /* جسم المودال */
+  /* جسم المودال - Responsive */
   #api-callout-body {
       max-height: 70vh;
       overflow: auto;
@@ -155,11 +157,41 @@ window.ILL_ROUTES = {
       transition: opacity .2s ease-in-out;
   }
 
-  /* الجدول */
+  @media (max-width: 768px) {
+      #api-callout-body {
+          max-height: 80vh;
+          padding: 0.5rem;
+      }
+  }
+
+  /* الجدول - Responsive */
   #api-callout-body .table {
       border-radius: .5rem;
       overflow: hidden;
+      font-size: 0.875rem;
   }
+
+  @media (max-width: 768px) {
+      #api-callout-body .table {
+          font-size: 0.75rem;
+          border-radius: 0;
+      }
+
+      /* تصغير Padding للخلايا على الموبايل */
+      #api-callout-body .table th,
+      #api-callout-body .table td {
+          padding: 0.25rem 0.15rem !important;
+          font-size: 0.7rem;
+      }
+
+      /* إخفاء بعض الأعمدة على الشاشات الصغيرة جداً */
+      @media (max-width: 576px) {
+          #api-callout-body .table .d-sm-none {
+              display: none !important;
+          }
+      }
+  }
+
   #api-callout-body .table thead th {
       position: sticky;
       top: 0;
@@ -167,10 +199,13 @@ window.ILL_ROUTES = {
       background: #f1f3f5;
       font-weight: 600;
       color: #333;
+      white-space: nowrap;
   }
+
   #api-callout-body .table-hover tbody tr:hover {
       background-color: #f8f9fa;
   }
+
   #api-callout-body .table th,
   #api-callout-body .table td {
       vertical-align: middle;
@@ -181,22 +216,59 @@ window.ILL_ROUTES = {
   #api-callout-body .table td:first-child a {
       font-weight: 700;
       text-decoration: none;
+      font-size: 0.85rem;
   }
 
-  /* شارات */
+  @media (max-width: 768px) {
+      #api-callout-body .table td:first-child a {
+          font-size: 0.7rem;
+      }
+  }
+
+  /* شارات - Responsive */
   #api-callout-body .table .badge {
       font-size: .75rem;
   }
 
-  /* أزرار الأكشن */
+  @media (max-width: 768px) {
+      #api-callout-body .table .badge {
+          font-size: 0.6rem;
+          padding: 0.15em 0.4em;
+      }
+  }
+
+  /* أزرار الأكشن - Responsive */
   #api-callout-body .ill-actions {
       display: flex;
       gap: .25rem;
       justify-content: center;
+      flex-wrap: wrap;
+  }
+
+  @media (max-width: 768px) {
+      #api-callout-body .ill-actions {
+          gap: 0.15rem;
+      }
+
+      #api-callout-body .ill-actions .btn {
+          font-size: 0.65rem;
+          padding: 0.2rem 0.4rem;
+      }
+
+      #api-callout-body .ill-actions .btn i {
+          font-size: 0.7rem;
+      }
   }
 
   #ill-back-btn.d-none {
       display: none !important;
+  }
+
+  /* Modal Footer - Responsive */
+  @media (max-width: 768px) {
+      .modal-footer small {
+          font-size: 0.7rem;
+      }
   }
 </style>
 @endonce

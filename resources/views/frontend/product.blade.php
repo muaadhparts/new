@@ -5,12 +5,14 @@
 
 @section('content')
     <!-- breadcrumb start  -->
-    <section class="col-lg py-4">
+    <section class="col-lg py-2 py-md-4">
         <livewire:search-box/>
-        <!-- زر فتح المودال -->
-        <div class="text-center mt-3">
-            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#vinSearchModal">
-                @lang('Search by VIN')
+        <!-- زر فتح المودال - Responsive -->
+        <div class="text-center mt-2 mt-md-3">
+            <button type="button" class="btn btn-primary btn-sm btn-md-md" data-bs-toggle="modal" data-bs-target="#vinSearchModal">
+                <i class="fas fa-search d-md-none"></i>
+                <span class="d-none d-md-inline">@lang('Search by VIN')</span>
+                <span class="d-md-none">VIN</span>
             </button>
         </div>
     </section>
@@ -19,25 +21,30 @@
     <!-- single product details content wrapper start -->
     <div class="single-product-details-content-wrapper">
         <div class="container">
-            <div class="row gy-4">
+            <div class="row gy-3 gy-md-4">
                 <div class="col-12">
-                    <!-- product-breadcrumb -->
-                    <ul class="product-breadcrumb">
-                        <li><a href="{{ route('front.index') }}">@lang('home')</a></li>
+                    <!-- product-breadcrumb - Responsive -->
+                    <ul class="product-breadcrumb flex-wrap small">
                         <li>
+                            <a href="{{ route('front.index') }}">
+                                <i class="fas fa-home d-md-none"></i>
+                                <span class="d-none d-md-inline">@lang('home')</span>
+                            </a>
+                        </li>
+                        <li class="d-none d-sm-block">
                             <a href="{{ route('front.category', $productt->category->slug) }}">
                                 {{ $productt->category->localized_name }}
                             </a>
                         </li>
                         @if ($productt->subcategory_id)
-                            <li>
+                            <li class="d-none d-md-block">
                                 <a href="{{ route('front.category', [$productt->category->slug, $productt->subcategory->slug]) }}">
                                     {{ $productt->subcategory->localized_name }}
                                 </a>
                             </li>
                         @endif
                         @if ($productt->childcategory_id)
-                            <li>
+                            <li class="d-none d-lg-block">
                                 <a href="{{ route('front.category', [$productt->category->slug, $productt->subcategory->slug, $productt->childcategory->slug]) }}">
                                     {{ $productt->childcategory->localized_name }}
                                 </a>
@@ -79,10 +86,13 @@
 
                 <div class="col-lg-6 wow-replaced" data-wow-delay=".2s">
                     @if(isset($merchant) && $merchant->qualityBrand && $merchant->qualityBrand->logo)
-                        <div class="mb-3 d-flex align-items-center">
-                            <img src="{{ \Illuminate\Support\Facades\Storage::url($merchant->qualityBrand->logo) }}" width="100" height="100" alt="Brand Quality Logo" class="me-2">
+                        <div class="mb-2 mb-md-3 d-flex align-items-center">
+                            <img src="{{ \Illuminate\Support\Facades\Storage::url($merchant->qualityBrand->logo) }}"
+                                 class="me-2"
+                                 style="width: 60px; height: 60px;"
+                                 alt="Brand Quality Logo">
                             <div>
-                                <p class="mb-0">
+                                <p class="mb-0 small">
                                     <span>@lang('Brand qualities:') </span>
                                     <span class="text-primary">{{ app()->getLocale() == 'ar' && $merchant->qualityBrand->name_ar ? $merchant->qualityBrand->name_ar : $merchant->qualityBrand->name_en }}</span>
                                 </p>
@@ -90,10 +100,9 @@
                         </div>
                     @endif
                     <form>
-                        <!-- product-info-wrapper  -->
-                        <div class="product-info-wrapper  {{ $productt->type != 'Physical' ? 'mb-3' : '' }}">
-                            <h3><x-product-name :product="$productt" :vendor-id="$vendorId" target="_self" /></h3>
-                            {{-- <h3>{{ $productt->label_ar }}</h3> --}}
+                        <!-- product-info-wrapper - Responsive -->
+                        <div class="product-info-wrapper {{ $productt->type != 'Physical' ? 'mb-2 mb-md-3' : '' }}">
+                            <h3 class="fs-5 fs-md-4"><x-product-name :product="$productt" :vendor-id="$vendorId" target="_self" /></h3>
 
                             {{-- السعر: Vendor-aware --}}
                             @php
@@ -357,20 +366,24 @@
                         <input type="hidden" id="curr_pos" value="{{ $gs->currency_format }}">
                         <input type="hidden" id="curr_sign" value="{{ $curr->sign }}">
 
-                        <!-- add to cart buy btn wrapper -->
-                        <div class="row row-cols-2 py-3">
+                        <!-- add to cart buy btn wrapper - Responsive -->
+                        <div class="row row-cols-2 py-2 py-md-3 g-2">
                             <livewire:compatibility :sku="$productt->sku" wire:key="$productt->sku" />
                             <livewire:alternativeproduct :sku="$productt->sku" />
                         </div>
-                        <div class="row row-cols-2">
+                        <div class="row row-cols-2 g-2">
                             <div class="col">
-                                <button type="button" class="template-btn dark-btn w-100" id="addtodetailscart">
-                                    @lang('add to cart')
+                                <button type="button" class="template-btn dark-btn w-100 btn-sm btn-md-md" id="addtodetailscart">
+                                    <i class="fas fa-cart-plus d-md-none"></i>
+                                    <span class="d-none d-md-inline">@lang('add to cart')</span>
+                                    <span class="d-md-none small">@lang('Cart')</span>
                                 </button>
                             </div>
                             <div class="col">
-                                <button type="button" class="template-btn w-100" id="addtobycard">
-                                    @lang('buy now')
+                                <button type="button" class="template-btn w-100 btn-sm btn-md-md" id="addtobycard">
+                                    <i class="fas fa-shopping-bag d-md-none"></i>
+                                    <span class="d-none d-md-inline">@lang('buy now')</span>
+                                    <span class="d-md-none small">@lang('Buy')</span>
                                 </button>
                             </div>
                         </div>
@@ -577,37 +590,54 @@
     </div>
     <!-- single product details content wrapper end -->
 
-    <!--  tab-product-des-wrapper start -->
+    <!--  tab-product-des-wrapper start - Responsive -->
     <div class="tab-product-des-wrapper wow-replaced" data-wow-delay=".1s">
         <div class="container">
-            <ul class="nav nav-tabs" id="myTab" role="tablist">
+            <ul class="nav nav-tabs flex-wrap" id="myTab" role="tablist">
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link active" id="description-tab" data-bs-toggle="tab"
+                    <button class="nav-link active small" id="description-tab" data-bs-toggle="tab"
                             data-bs-target="#description-tab-pane" type="button" role="tab"
                             aria-controls="description-tab-pane" aria-selected="true">
-                        @lang('Description')
+                        <i class="fas fa-info-circle d-md-none"></i>
+                        <span class="d-none d-md-inline">@lang('Description')</span>
+                        <span class="d-md-none">@lang('Info')</span>
                     </button>
                 </li>
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="buy-return-policy-tab" data-bs-toggle="tab"
+                    <button class="nav-link small" id="buy-return-policy-tab" data-bs-toggle="tab"
                             data-bs-target="#buy-return-policy-tab-pane" type="button" role="tab"
                             aria-controls="buy-return-policy-tab-pane" aria-selected="false">
-                        @lang('Buy / Return Policy')
+                        <i class="fas fa-undo d-md-none"></i>
+                        <span class="d-none d-md-inline">@lang('Buy / Return Policy')</span>
+                        <span class="d-md-none">@lang('Policy')</span>
                     </button>
                 </li>
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="reviews-tab" data-bs-toggle="tab" data-bs-target="#reviews-tab-pane"
+                    <button class="nav-link small" id="reviews-tab" data-bs-toggle="tab" data-bs-target="#reviews-tab-pane"
                             type="button" role="tab" aria-controls="reviews-tab-pane" aria-selected="false">
+                        <i class="fas fa-star d-md-none"></i>
                         @lang('Reviews')
+                    </button>
+                </li>
+
+                {{-- Fits Vehicles Tab --}}
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link small" id="fits-vehicles-tab" data-bs-toggle="tab" data-bs-target="#fits-vehicles-tab-pane"
+                            type="button" role="tab" aria-controls="fits-vehicles-tab-pane" aria-selected="false">
+                        <i class="fas fa-car d-md-none"></i>
+                        <span class="d-none d-md-inline">{{ __('Fits Vehicles') }}</span>
+                        <span class="d-md-none">{{ __('Fits') }}</span>
                     </button>
                 </li>
 
                 @if ($productt->whole_sell_qty != null && $productt->whole_sell_qty != '')
                     <li class="nav-item" role="presentation">
-                        <button class="nav-link" id="whole-sell-tab" data-bs-toggle="tab"
+                        <button class="nav-link small" id="whole-sell-tab" data-bs-toggle="tab"
                                 data-bs-target="#whole-sell-tab-pane" type="button" role="tab"
                                 aria-controls="whole-sell-tab-pane" aria-selected="false">
-                            @lang('Whole sell')
+                            <i class="fas fa-boxes d-md-none"></i>
+                            <span class="d-none d-md-inline">@lang('Whole sell')</span>
+                            <span class="d-md-none">@lang('Wholesale')</span>
                         </button>
                     </li>
                 @endif
@@ -707,6 +737,17 @@
                     </div>
                 </div>
                 <!-- Reviews tab content end -->
+
+                {{-- Fits Vehicles Tab content start --}}
+                <div class="tab-pane fade" id="fits-vehicles-tab-pane" role="tabpanel" aria-labelledby="fits-vehicles-tab" tabindex="0">
+                    <div class="row">
+                        <div class="col-12">
+                            <h4 class="mb-4">{{ __('Compatible Vehicles') }}</h4>
+                            <livewire:compatibility :sku="$productt->sku" display-mode="tabs" wire:key="compatibility-{{ $productt->sku }}" />
+                        </div>
+                    </div>
+                </div>
+                {{-- Fits Vehicles Tab content end --}}
 
                 @if ($productt->whole_sell_qty != null && $productt->whole_sell_qty != '')
                     <!-- Wholesell Tab content start  -->
