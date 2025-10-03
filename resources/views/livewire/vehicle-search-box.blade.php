@@ -501,10 +501,10 @@
             @endif --}}
         </div>
     </div>
-</div>
 
-<script>
-function selectSuggestion(suggestion) {
+    {{-- ✅ نقل الـ script داخل الـ div الجذري لتجنب تحذير Multiple root elements --}}
+    <script>
+    function selectSuggestion(suggestion) {
     const input = document.getElementById('searchInput');
     input.value = suggestion;
     const dd = document.getElementById('suggestionsDropdown');
@@ -588,5 +588,7 @@ window.addEventListener('vehicle-search-error', (e) => {
         alertEl.focus({preventScroll: false});
         alertEl.scrollIntoView({behavior:'smooth', block:'center'});
     }
-});
-</script>
+    });
+    </script>
+</div>
+{{-- ✅ إغلاق الـ div الجذري هنا - كل المحتوى داخل div واحد --}}

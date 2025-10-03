@@ -60,9 +60,9 @@
         .animate-pulse { animation: pulse 2s cubic-bezier(.4, 0, .6, 1) infinite; }
         @keyframes pulse { 50% { opacity: .2; } }
 
-        /* Mobile polish */
+        /* ⚙️ Mobile adjustments - لا transform على #zoom_container أو الآباء */
         @media (max-width: 768px) {
-            /* تصغير أزرار التكبير/التصغير على الجوال بدلاً من إخفائها */
+            /* ✅ تصغير أزرار التكبير/التصغير فقط - بدون تأثير على الحاوية */
             .smoothZoom_controls {
                 transform: scale(0.6) !important;
                 transform-origin: top right !important;
@@ -75,8 +75,30 @@
                 line-height: 24px !important;
             }
 
+            /* ❌ إزالة أي transform/padding/border قد يؤثر على التموضع */
+            .vehicle-search-wrapper,
+            .container,
+            main,
+            body {
+                transform: none !important;
+                zoom: 1 !important;
+            }
+
+            /* ✅ حاوية محايدة بدون padding */
+            #zoom_container {
+                margin: 0 auto !important;
+                padding: 0 !important;
+                border: 0 !important;
+                transform: none !important;
+            }
+
+            /* ✅ الصورة block بدون margins */
+            #zoom_container img#image {
+                display: block;
+                margin: 0;
+            }
+
             body { overscroll-behavior-y: contain; }
-            #zoom_container img { touch-action: pan-x pan-y; max-width: 100%; height: auto; }
 
             /* تحسين القيم القابلة للضغط على الجوال */
             .callout-label {
@@ -88,6 +110,17 @@
                 cursor: pointer !important;
                 min-width: 40px !important;
                 min-height: 40px !important;
+            }
+
+            /* ✅ إزالة padding من card-body حول الصورة على الموبايل */
+            .card-body .products-view,
+            .card-body .view-options__body {
+                padding: 0 !important;
+            }
+
+            /* ✅ التأكد من عدم وجود margins على الحاويات الوسيطة */
+            .products-view__options {
+                margin: 0 !important;
             }
         }
     </style>

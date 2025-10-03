@@ -504,16 +504,28 @@
 
   /* ========================= Dynamic Events ========================= */
   function bindDynamicEvents() {
+    // ✅ منع double-fire من click + touchend على الموبايل
+    let lastClickTime = 0;
+    const CLICK_DELAY = 300; // ms
+
     /* فتح الكول آوت من الصورة - دعم النقر والتاتش */
     $(document).off('click.ill_open touchend.ill_open').on('click.ill_open touchend.ill_open', '.callout-label, .bbdover', function (e) {
       e.preventDefault();
       e.stopPropagation();
 
+      // ✅ تجنب double-fire
+      const now = Date.now();
+      if (now - lastClickTime < CLICK_DELAY) {
+        console.log('⏭️ Skipping duplicate event');
+        return;
+      }
+      lastClickTime = now;
+
       const $el = $(this).hasClass('callout-label') ? $(this) : $(this).closest('.callout-label');
       const type = ($el.data('calloutType') || 'part').toString().toLowerCase();
       const key  = ($el.data('calloutKey')  || '').toString();
 
-      console.log('🖱️ Callout clicked:', { key, type });
+      console.log('🖱️ Callout clicked:', { key, type, eventType: e.type });
 
       if (type === 'section') {
         goToSection(key);
@@ -825,11 +837,31 @@
     // نظّم حالة زر الرجوع عند التحميل
     setBackVisible();
 
-    // عند إغلاق المودال: صفّر المكدس
+    // عند إغلاق المودال: صفّر المكدس وحرر focus
     $(document).off('hidden.bs.modal.ill').on('hidden.bs.modal.ill', '#modal', function () {
       console.log('🔄 Modal closed, clearing stack');
       stack.length = 0;
       setBackVisible();
+
+      // ✅ حرر focus من المودال لتجنب تحذير ARIA
+      const modal = document.getElementById('modal');
+      if (modal) {
+        modal.setAttribute('aria-hidden', 'true');
+        // إرجاع focus للعنصر الذي فتح المودال
+        const trigger = document.activeElement;
+        if (trigger && trigger !== document.body) {
+          trigger.blur();
+        }
+      }
+    });
+
+    // عند فتح المودال: تأكد من إزالة aria-hidden
+    $(document).off('shown.bs.modal.ill').on('shown.bs.modal.ill', '#modal', function () {
+      console.log('📖 Modal opened');
+      const modal = document.getElementById('modal');
+      if (modal) {
+        modal.setAttribute('aria-hidden', 'false');
+      }
     });
 
     console.log('✅ Illustration viewer initialized - waiting for on_IMAGE_LOAD');
