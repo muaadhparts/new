@@ -38,29 +38,56 @@ class CalloutController extends Controller
         }
 
         try {
-            // جلب callouts من جدول illustrations
+            // ✅ التحقق من وجود جدول callouts
+            $tablesExist = DB::table('information_schema.tables')
+                ->where('table_schema', DB::getDatabaseName())
+                ->whereIn('table_name', ['callouts', 'illustrations'])
+                ->count();
+
+            if ($tablesExist < 2) {
+                \Log::warning('CalloutController: Missing tables', [
+                    'section_id' => $sectionId,
+                    'tables_found' => $tablesExist
+                ]);
+
+                return response()->json([
+                    'ok'       => true,
+                    'callouts' => [],
+                    'note'     => 'No callouts table found - using empty data'
+                ]);
+            }
+
+            // جلب callouts من جدول illustrations - مع جميع الأبعاد المطلوبة
             $callouts = DB::table('callouts')
                 ->join('illustrations', 'illustrations.id', '=', 'callouts.illustration_id')
                 ->where('illustrations.section_id', $sectionId)
                 ->select(
                     'callouts.id',
-                    'callouts.callout',
                     'callouts.callout_key',
                     'callouts.callout_type',
+                    'callouts.applicable',
+                    'callouts.selective_fit',
                     'callouts.rectangle_left',
                     'callouts.rectangle_top',
-                    'callouts.index'
+                    'callouts.rectangle_right',
+                    'callouts.rectangle_bottom'
                 )
                 ->get()
                 ->map(function ($c) {
+                    // حساب العرض والارتفاع من right/bottom
+                    $width = ($c->rectangle_right ?? 0) - ($c->rectangle_left ?? 0);
+                    $height = ($c->rectangle_bottom ?? 0) - ($c->rectangle_top ?? 0);
+
                     return [
-                        'id'             => $c->id,
-                        'callout'        => $c->callout,
-                        'callout_key'    => $c->callout_key,
-                        'callout_type'   => $c->callout_type ?? 'part',
-                        'rectangle_left' => $c->rectangle_left ?? 0,
-                        'rectangle_top'  => $c->rectangle_top ?? 0,
-                        'index'          => $c->index ?? 0,
+                        'id'               => $c->id,
+                        'callout_key'      => $c->callout_key,
+                        'callout_type'     => $c->callout_type ?? 'part',
+                        'applicable'       => $c->applicable,
+                        'selective_fit'    => $c->selective_fit,
+                        'rectangle_left'   => $c->rectangle_left ?? 0,
+                        'rectangle_top'    => $c->rectangle_top ?? 0,
+                        'rectangle_width'  => $width > 0 ? $width : 150,
+                        'rectangle_height' => $height > 0 ? $height : 30,
                     ];
                 });
 
@@ -70,9 +97,17 @@ class CalloutController extends Controller
             ]);
 
         } catch (\Exception $e) {
+            \Log::error('CalloutController metadata error', [
+                'section_id'   => $sectionId,
+                'category_id'  => $categoryId,
+                'catalog_code' => $catalogCode,
+                'error'        => $e->getMessage(),
+                'trace'        => $e->getTraceAsString()
+            ]);
+
             return response()->json([
                 'ok'       => false,
-                'error'    => 'Failed to fetch callout metadata',
+                'error'    => 'Failed to fetch callout metadata: ' . $e->getMessage(),
                 'callouts' => [],
             ], 500);
         }

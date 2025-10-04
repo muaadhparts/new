@@ -67,19 +67,29 @@ class Illustrations extends Component
                 ->where('level', 3)
                 ->first();
 
-            // Load actual category
-            $this->category = NewCategory::where('catalog_id', $this->catalog->id)
-                ->where('brand_id', $this->brand->id)
-                ->where('full_code', $key3)
-                ->where('level', 3)->first();
+            // ✅ إذا جاء من البحث مع category_id في الـ URL، استخدمه مباشرة
+            if (request()->has('category_id')) {
+                $this->category = NewCategory::find(request()->get('category_id'));
+            } else {
+                // Load actual category من الـ route parameters
+                $this->category = NewCategory::where('catalog_id', $this->catalog->id)
+                    ->where('brand_id', $this->brand->id)
+                    ->where('full_code', $key3)
+                    ->where('level', 3)->first();
+            }
 
             if (! $this->category) {
                 session()->flash('error', 'التصنيف غير موجود');
                 return;
             }
 
-            // Load section
-            $this->section = Section::where('category_id', $this->category->id)->first();
+            // ✅ إذا جاء من البحث مع section_id في الـ URL، استخدمه مباشرة
+            if (request()->has('section_id')) {
+                $this->section = Section::find(request()->get('section_id'));
+            } else {
+                // Load section بناءً على category
+                $this->section = Section::where('category_id', $this->category->id)->first();
+            }
 
             // Initialize collections
             $this->illustrations = collect();

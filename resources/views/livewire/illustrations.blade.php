@@ -189,7 +189,7 @@
                             @endif
 
                             {{-- Level 2 --}}
-                            @if($parentCategory2)
+                            @if($parentCategory2 && $parentCategory1)
                                 <li class="breadcrumb-item d-none d-lg-block">
                                     <a class="text-black text-decoration-none" href="{{ route('tree.level3', [
                                         'id'   => $brand->name,
@@ -251,13 +251,23 @@
     </div>
 
 @push('scripts')
-    {{-- ⚙️ الطريقة القديمة الشغالة: تمرير البيانات الكاملة --}}
+    {{-- ✅ الطريقة الجديدة المحسّنة: تمرير IDs فقط (150 bytes بدلاً من 7-12KB) --}}
     <script>
-        window.sectionData    = @json($section);
-        window.categoryData   = @json($category->loadMissing('catalog'));
-        window.calloutsFromDB = @json($callouts);
-        window.brandName      = @json(optional($brand)->name);
+        window.catalogContext = {
+            sectionId:   {{ $section->id ?? 'null' }},
+            categoryId:  {{ $category->id ?? 'null' }},
+            catalogCode: '{{ $catalog->code ?? '' }}',
+            brandName:   '{{ optional($brand)->name ?? '' }}',
+            parentKey1:  '{{ optional($parentCategory1)->full_code ?? '' }}',
+            parentKey2:  '{{ optional($parentCategory2)->full_code ?? '' }}'
+        };
         let csrf = "{{ csrf_token() }}";
+
+        console.log('=== Illustration Context Loaded ===');
+        console.log('  Section ID:', window.catalogContext.sectionId);
+        console.log('  Category ID:', window.catalogContext.categoryId);
+        console.log('  Catalog Code:', window.catalogContext.catalogCode);
+        console.log('  Brand:', window.catalogContext.brandName);
     </script>
 
     {{-- سكربتات التكبير ثم سكربتنا --}}

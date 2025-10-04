@@ -94,8 +94,11 @@
                             <h6 class="product-title text-dark fw-bold text-uppercase mb-1 fs-6 fs-md-5">
                                 {{ $cat->full_code }}
                             </h6>
-                            @if($cat->label)
-                                <p class="text-muted small mb-0 d-none d-md-block">{{ $cat->label }}</p>
+
+                            {{-- ✅ تعديل هنا: لا تستخدم $cat->label مباشرة --}}
+                            @php($label = $cat->label_ar ?? $cat->label_en ?? null)
+                            @if(!empty($label))
+                                <p class="text-muted small mb-0 d-none d-md-block">{{ $label }}</p>
                             @endif
                         </div>
                     </div>
