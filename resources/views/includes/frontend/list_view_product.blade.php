@@ -1,5 +1,5 @@
 @php
-    /** @var \App\Models\Product $product */
+    /** @var \App\Models\Product $product*/
     /** @var \App\Models\MerchantProduct|null $mp */
 
     // Use passed merchant product data or fallback to search
