@@ -15,6 +15,7 @@ class Alternativeproduct extends Component
     public string $sku;
     public Collection $alternatives;
     public bool $includeSelf = false;
+    public ?string $displayMode = null; // 'inline' or null (modal)
 
     protected AlternativeService $alternativeService;
 
@@ -23,10 +24,11 @@ class Alternativeproduct extends Component
         $this->alternativeService = $alternativeService;
     }
 
-    public function mount(string $sku, bool $includeSelf = false): void
+    public function mount(string $sku, bool $includeSelf = false, ?string $displayMode = null): void
     {
         $this->sku = $sku;
         $this->includeSelf = $includeSelf;
+        $this->displayMode = $displayMode;
         $this->alternatives = $this->alternativeService->getAlternatives($sku, $includeSelf);
     }
 
@@ -34,6 +36,7 @@ class Alternativeproduct extends Component
     {
         return view('livewire.alternativeproduct', [
             'alternatives' => $this->alternatives,
+            'displayMode' => $this->displayMode,
         ]);
     }
 

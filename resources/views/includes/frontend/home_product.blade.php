@@ -65,92 +65,79 @@
         <span class="product-badge">-{{ $offPercent }}%</span>
       @endif
 
-      {{-- Brand Quality Badge --}}
-      @if ($mp && $mp->qualityBrand)
-        <span class="badge bg-primary position-absolute"
-              style="top: 3.5rem; left: 0.75rem; font-size: 0.7rem; z-index: 3; box-shadow: var(--box-shadow-sm);">
-          @if ($mp->qualityBrand->logo_url)
-            <img src="{{ $mp->qualityBrand->logo_url }}"
-                 alt="{{ $mp->qualityBrand->display_name }}"
-                 style="width: 14px; height: 14px; margin-right: 3px; vertical-align: middle;">
-          @endif
-          {{ Str::limit($mp->qualityBrand->display_name, 12) }}
-        </span>
-      @endif
-
-      {{-- Wishlist Button --}}
-      <div class="position-absolute top-0 end-0 p-2" style="z-index: 3;">
-        @if (Auth::check())
-          @if (isset($wishlist))
-            <a href="javascript:;" class="removewishlist btn btn-sm btn-danger rounded-circle p-2"
-               data-href="{{ route('user-wishlist-remove', isset($product->wishlist_item_id) ? $product->wishlist_item_id : App\Models\Wishlist::where('user_id', Auth::id())->where('product_id',$product->id)->first()->id ?? 0) }}"
-               title="@lang('Remove from Wishlist')">
-              <i class="fas fa-trash"></i>
-            </a>
-          @else
-            <a href="javascript:;" class="wishlist btn btn-sm rounded-circle p-2 {{ isset($mp) ? (merchantWishlistCheck($mp->id) ? 'btn-danger' : 'btn-outline-light') : (wishlistCheck($product->id) ? 'btn-danger' : 'btn-outline-light') }}"
-               data-href="{{ isset($mp) ? route('merchant.wishlist.add', $mp->id) : 'javascript:;' }}"
-               title="@lang('Add to Wishlist')">
-              <i class="fas fa-heart"></i>
-            </a>
-          @endif
-        @else
-          <a href="{{ route('user.login') }}" class="btn btn-sm btn-outline-light rounded-circle p-2" title="@lang('Login to Add Wishlist')">
-            <i class="far fa-heart"></i>
-          </a>
-        @endif
-      </div>
-
       {{-- صورة المنتج --}}
-      <a href="{{ $detailsUrl }}" class="d-block">
-        <img class="w-100 h-100"
-             style="object-fit: contain;"
+      <a href="{{ $detailsUrl }}" class="d-block product-image-link">
+        <img class="product-card-img"
              src="{{ \Illuminate\Support\Facades\Storage::url($product->photo) ?? asset('assets/images/noimage.png') }}"
              alt="{{ $product->name }}"
              loading="lazy">
       </a>
 
-      {{-- Quick Action Buttons (Hover) --}}
-      <div class="product-quick-actions position-absolute bottom-0 start-0 end-0 p-2"
-           style="background: linear-gradient(to top, rgba(0,0,0,0.7), transparent); opacity: 0; transition: opacity 0.3s ease;">
+      {{-- Quick Action Buttons (Always Visible at Bottom) --}}
+      <div class="product-quick-actions position-absolute bottom-0 start-0 end-0 p-2">
         <div class="d-flex gap-2 justify-content-center">
+          {{-- Quick View --}}
+          <a href="{{ $detailsUrl }}" class="btn btn-sm btn-primary" title="@lang('View')">
+            <i class="fas fa-eye"></i>
+          </a>
+
+          {{-- Wishlist Button --}}
+          @if (Auth::check())
+            @if (isset($wishlist))
+              <a href="javascript:;" class="removewishlist btn btn-sm btn-danger"
+                 data-href="{{ route('user-wishlist-remove', isset($product->wishlist_item_id) ? $product->wishlist_item_id : App\Models\Wishlist::where('user_id', Auth::id())->where('product_id',$product->id)->first()->id ?? 0) }}"
+                 title="@lang('Remove from Wishlist')">
+                <i class="fas fa-trash"></i>
+              </a>
+            @else
+              <a href="javascript:;" class="wishlist btn btn-sm {{ isset($mp) ? (merchantWishlistCheck($mp->id) ? 'btn-danger' : 'btn-outline-danger') : (wishlistCheck($product->id) ? 'btn-danger' : 'btn-outline-danger') }}"
+                 data-href="{{ isset($mp) ? route('merchant.wishlist.add', $mp->id) : 'javascript:;' }}"
+                 title="@lang('Add to Wishlist')">
+                <i class="fas fa-heart"></i>
+              </a>
+            @endif
+          @else
+            <a href="{{ route('user.login') }}" class="btn btn-sm btn-outline-danger" title="@lang('Login to Add Wishlist')">
+              <i class="far fa-heart"></i>
+            </a>
+          @endif
+
           {{-- Compare --}}
           @if ($product->type != 'Listing')
-            <a class="compare_product btn btn-sm btn-light rounded-circle" href="javascript:;"
+            <a class="compare_product btn btn-sm btn-outline-secondary" href="javascript:;"
                data-href="{{ isset($mp) ? route('merchant.compare.add', $mp->id) : 'javascript:;' }}"
                title="@lang('Compare')">
               <i class="fas fa-balance-scale {{ isset($mp) ? (merchantCompareCheck($mp->id) ? 'text-primary' : '') : '' }}"></i>
             </a>
           @endif
-
-          {{-- Quick View --}}
-          <a href="{{ $detailsUrl }}" class="btn btn-sm btn-light rounded-circle" title="@lang('Quick View')">
-            <i class="fas fa-eye"></i>
-          </a>
         </div>
       </div>
     </div>
 
     <div class="product-card-body">
+      {{-- Quality Brand Badge (Outside Image) --}}
+      @if ($mp && $mp->qualityBrand)
+        <div class="quality-brand-mini mb-2">
+          @if ($mp->qualityBrand->logo_url)
+            <img src="{{ $mp->qualityBrand->logo_url }}" alt="{{ $mp->qualityBrand->display_name }}">
+          @endif
+          <span>{{ $mp->qualityBrand->display_name }}</span>
+        </div>
+      @endif
+
       {{-- Product Title --}}
       <a href="{{ $detailsUrl }}" class="text-decoration-none">
-        <h6 class="product-title mb-2">
+        <h6 class="product-title mb-2" title="{{ strip_tags($product->name) }}">
           <x-product-name :product="$product" :vendor-id="$vendorId" target="_self" />
         </h6>
       </a>
 
       {{-- Merchant Info --}}
       @if($mp && $mp->user)
-        <p class="text-muted small mb-1">
+        <p class="text-muted small mb-2">
           <i class="fas fa-store me-1"></i>
           {{ Str::limit($mp->user->shop_name ?? $mp->user->name, 20) }}
         </p>
-        @if($mp->qualityBrand)
-          <p class="text-muted small mb-2">
-            <i class="fas fa-award me-1"></i>
-            {{ Str::limit(app()->getLocale() == 'ar' && $mp->qualityBrand->name_ar ? $mp->qualityBrand->name_ar : $mp->qualityBrand->name_en, 20) }}
-          </p>
-        @endif
       @endif
 
       {{-- Price --}}
@@ -209,40 +196,161 @@
 </div>
 
 <style>
-/* Product Card Hover Effects */
-.product-card:hover .product-quick-actions {
-    opacity: 1 !important;
-}
-
+/* Product Card Image Section */
 .product-card-image {
     position: relative;
     overflow: hidden;
     background: #f8f9fa;
     aspect-ratio: 1 / 1;
     border-radius: var(--border-radius) var(--border-radius) 0 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
 }
 
-.product-card-image img {
+.product-image-link {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.product-card-img {
+    width: 100%;
+    height: 100%;
+    max-height: 200px;
+    object-fit: contain;
     transition: transform 0.4s ease;
 }
 
-.product-card:hover .product-card-image img {
+.product-card:hover .product-card-img {
     transform: scale(1.05);
+}
+
+/* Quick Actions - Always Visible */
+.product-quick-actions {
+    background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+    padding: 1rem 0.5rem 0.75rem !important;
+}
+
+.product-quick-actions .btn {
+    background: rgba(255, 255, 255, 0.95);
+    border: none;
+    padding: 0.5rem;
+    width: 36px;
+    height: 36px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.product-quick-actions .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.product-quick-actions .btn-primary {
+    background: var(--primary-color) !important;
+    color: #fff;
+}
+
+.product-quick-actions .btn-outline-danger {
+    background: rgba(255, 255, 255, 0.95) !important;
+    color: var(--danger-color);
+    border: 1.5px solid var(--danger-color);
+}
+
+.product-quick-actions .btn-danger {
+    background: var(--danger-color) !important;
+    color: #fff;
+}
+
+.product-quick-actions .btn-outline-secondary {
+    background: rgba(255, 255, 255, 0.95) !important;
+    color: #6c757d;
+    border: 1.5px solid #6c757d;
+}
+
+/* Product Title - Multi-line with dynamic height */
+.product-title {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-height: 3.5rem;
+    max-height: 4.5rem;
+    line-height: 1.4;
+    font-size: 0.9rem;
+    font-weight: 600;
+    word-break: break-word;
+    hyphens: auto;
+}
+
+/* Quality Brand Mini Badge */
+.quality-brand-mini {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.35rem 0.75rem;
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+    border: 1px solid rgba(102, 126, 234, 0.3);
+    border-radius: 2rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--primary-color);
+}
+
+.quality-brand-mini img {
+    width: 18px;
+    height: 18px;
+    object-fit: contain;
+    border-radius: 50%;
+    background: #fff;
+    padding: 2px;
 }
 
 /* Responsive adjustments */
 @media (max-width: 576px) {
+    .product-card-image {
+        padding: 0.75rem;
+    }
+
+    .product-card-img {
+        max-height: 150px;
+    }
+
+    .product-quick-actions .btn {
+        width: 32px;
+        height: 32px;
+        padding: 0.4rem;
+    }
+
     .product-card-body {
         padding: 0.875rem !important;
     }
 
     .product-title {
         font-size: 0.85rem !important;
-        min-height: 2.5rem !important;
+        min-height: 2.25rem !important;
     }
 
     .product-price {
         font-size: 1.1rem !important;
+    }
+
+    .quality-brand-mini {
+        font-size: 0.7rem;
+        padding: 0.25rem 0.5rem;
+    }
+
+    .quality-brand-mini img {
+        width: 16px;
+        height: 16px;
     }
 }
 </style>

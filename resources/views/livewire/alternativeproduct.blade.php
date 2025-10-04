@@ -1,24 +1,28 @@
 <div>
     @if($alternatives && $alternatives->count() > 0)
-        <div class="col">
-            <button type="button" class="template-btn w-100" data-bs-toggle="modal" data-bs-target="#alternativeModal">
-                @lang('Alternatives')
-            </button>
-        </div>
 
-        <!-- Modal -->
-        <div class="modal fade" id="alternativeModal" tabindex="-1" aria-labelledby="alternativeModalLabel" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered modal-xl">
-                <div class="modal-content">
-                    <div class="modal-header d-flex justify-content-between align-items-center">
-                        <h5 class="modal-title fw-bold" id="alternativeModalLabel">@lang('Product Alternatives'): {{ $sku }}</h5>
-                        <button type="button" class="btn btn-light rounded-circle shadow-sm"
-                                style="width: 35px; height: 35px; display: flex; align-items: center; justify-content: center;"
-                                data-bs-dismiss="modal" aria-label="Close">
-                            <i class="fas fa-times text-danger"></i>
-                        </button>
-                    </div>
-                    <div class="modal-body">
+        @if(!isset($displayMode) || $displayMode !== 'inline')
+            {{-- Button Mode (Default) --}}
+            <div class="col">
+                <button type="button" class="template-btn w-100" data-bs-toggle="modal" data-bs-target="#alternativeModal">
+                    @lang('Alternatives')
+                </button>
+            </div>
+
+            <!-- Modal -->
+            <div class="modal fade" id="alternativeModal" tabindex="-1" aria-labelledby="alternativeModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered modal-xl">
+                    <div class="modal-content">
+                        <div class="modal-header d-flex justify-content-between align-items-center">
+                            <h5 class="modal-title fw-bold" id="alternativeModalLabel">@lang('Product Alternatives'): {{ $sku }}</h5>
+                            <button type="button" class="btn btn-light rounded-circle shadow-sm"
+                                    style="width: 35px; height: 35px; display: flex; align-items: center; justify-content: center;"
+                                    data-bs-dismiss="modal" aria-label="Close">
+                                <i class="fas fa-times text-danger"></i>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+        @endif
 
                         @php
                             // نوع العناصر: MerchantProduct أو Product
@@ -250,9 +254,20 @@
                             </div>
                         </div>
 
+        @if(!isset($displayMode) || $displayMode !== 'inline')
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
+        @endif
+
+    @else
+        {{-- No Alternatives Found (Only for inline mode) --}}
+        @if(isset($displayMode) && $displayMode === 'inline')
+            <div class="alert alert-info text-center" role="alert">
+                <i class="fas fa-info-circle me-2"></i>
+                @lang('No alternative products found for this item.')
+            </div>
+        @endif
     @endif
 </div>

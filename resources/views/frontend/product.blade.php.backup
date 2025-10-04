@@ -85,33 +85,41 @@
                 </div>
 
                 <div class="col-lg-6 wow-replaced" data-wow-delay=".2s">
-                    {{-- Quality Brand Badge --}}
                     @if(isset($merchant) && $merchant->qualityBrand && $merchant->qualityBrand->logo)
-                        <div class="quality-brand-badge mb-3">
+                        <div class="mb-2 mb-md-3 d-flex align-items-center">
                             <img src="{{ \Illuminate\Support\Facades\Storage::url($merchant->qualityBrand->logo) }}"
-                                 alt="{{ $merchant->qualityBrand->display_name }}">
-                            <div class="quality-brand-info">
-                                <span class="quality-brand-label">@lang('Brand qualities:')</span>
-                                <span class="quality-brand-name">{{ app()->getLocale() == 'ar' && $merchant->qualityBrand->name_ar ? $merchant->qualityBrand->name_ar : $merchant->qualityBrand->name_en }}</span>
+                                 class="me-2"
+                                 style="width: 60px; height: 60px;"
+                                 alt="Brand Quality Logo">
+                            <div>
+                                <p class="mb-0 small">
+                                    <span>@lang('Brand qualities:') </span>
+                                    <span class="text-primary">{{ app()->getLocale() == 'ar' && $merchant->qualityBrand->name_ar ? $merchant->qualityBrand->name_ar : $merchant->qualityBrand->name_en }}</span>
+                                </p>
                             </div>
                         </div>
                     @endif
                     <form>
-                        {{-- Product Title & Main Info --}}
-                        <div class="product-header-info mb-3">
-                            <h1 class="product-title mb-3">
-                                <x-product-name :product="$productt" :vendor-id="$vendorId" target="_self" />
-                            </h1>
+                        <!-- product-info-wrapper - Responsive -->
+                        <div class="product-info-wrapper {{ $productt->type != 'Physical' ? 'mb-2 mb-md-3' : '' }}">
+                            <h3 class="fs-5 fs-md-4"><x-product-name :product="$productt" :vendor-id="$vendorId" target="_self" /></h3>
 
-                            {{-- Price & Discount Calculation --}}
+                            {{-- السعر: Vendor-aware --}}
                             @php
+                                // vendorId القادم من الكنترولر ProductDetailsController
                                 $vendorId = $vendorId ?? (isset($merchant) ? $merchant->user_id : 0);
+
+                                // السعر الحالي
                                 $currentPrice = $merchant
                                     ? (method_exists($merchant, 'showPrice') ? $merchant->showPrice() : \App\Models\Product::convertPrice($merchant->price))
                                     : $productt->showPrice();
+
+                                // السعر السابق
                                 $previousPrice = ($merchant && $merchant->previous_price)
                                     ? \App\Models\Product::convertPrice($merchant->previous_price)
                                     : $productt->showPreviousPrice();
+
+                                // نسبة الخصم من عرض البائع إن وُجد وإلا من المنتج
                                 $offPercent = null;
                                 if ($merchant && $merchant->previous_price > 0 && $merchant->price > 0) {
                                     $offPercent = round((1 - ($merchant->price / $merchant->previous_price)) * 100);
@@ -120,101 +128,97 @@
                                 }
                             @endphp
 
-                            <div class="product-price-section d-flex align-items-center gap-3 mb-3">
-                                <h3 class="product-current-price mb-0" id="sizeprice">{{ $currentPrice }}</h3>
-                                @if($previousPrice != $currentPrice)
-                                    <h5 class="product-old-price mb-0 text-muted"><del>{{ $previousPrice }}</del></h5>
-                                @endif
+                            <div class="price-wrapper">
+                                <h5 id="sizeprice">{{ $currentPrice }}</h5>
+                                <h5><del>{{ $previousPrice }}</del></h5>
+
                                 @if(!is_null($offPercent) && $offPercent > 0)
-                                    <span class="discount-badge">-{{ $offPercent }}%</span>
+                                    <span class="product-badge">-{{ $offPercent }}%</span>
                                 @endif
                             </div>
 
-                            {{-- Rating --}}
-                            <div class="product-rating d-flex align-items-center gap-2 mb-3">
-                                <div class="rating-stars text-warning">
-                                    <i class="fas fa-star"></i>
-                                    <span class="rating-value fw-bold">{{ number_format($productt->ratings_avg_rating, 1) }}</span>
-                                </div>
-                                <span class="rating-count text-muted">
+                            <div class="rating-wrapper">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="23" viewBox="0 0 24 23" fill="none">
+                                    <path d="M12 0.5L14.6942 8.7918H23.4127L16.3593 13.9164L19.0534 22.2082L12 17.0836L4.94658 22.2082L7.64074 13.9164L0.587322 8.7918H9.30583L12 0.5Z" fill="#EEAE0B"/>
+                                </svg>
+                                <span class="rating">
+                                    {{ number_format($productt->ratings_avg_rating, 1) }}
                                     ({{ App\Models\Rating::ratingCount($productt->id) }} @lang('Reviews'))
                                 </span>
                             </div>
                         </div>
 
-                        {{-- Product Details --}}
-                        <div class="product-details-info mb-3">
-                            <div class="details-list">
-                                {{-- Stock Availability --}}
-                                @if ($productt->type == 'Physical')
-                                    @php $mpStock = $merchant ? (int) $merchant->stock : null; @endphp
-                                    <div class="detail-item">
-                                        <span class="detail-label">@lang('Availability :')</span>
-                                        @if (is_null($mpStock) || $mpStock <= 0)
-                                            <span class="badge bg-danger">{{ __('Out Of Stock') }}</span>
-                                        @else
-                                            <span class="badge bg-success">{{ ($gs->show_stock == 0 ? '' : $mpStock . ' ') }}{{ __('In Stock') }}</span>
+                        <!-- product stocks -->
+                        @if (
+                            $productt->ship != null ||
+                            $productt->sku != null ||
+                            $productt->platform != null ||
+                            $productt->region != null ||
+                            $productt->licence_type != null
+                        )
+                            <hr>
+
+                            <div class="product-stocks-wraper">
+                                <ul>
+                                    <li>
+                                        @if ($productt->type == 'Physical')
+                                            <span><b>@lang('Availability :') </b></span>
+                                            @php $mpStock = $merchant ? (int) $merchant->stock : null; @endphp
+                                            @if (is_null($mpStock) || $mpStock <= 0)
+                                                <div class="stock-availability out-stock">{{ __('Out Of Stock') }}</div>
+                                            @else
+                                                {{ ($gs->show_stock == 0 ? '' : $mpStock) }} {{ __('In Stock') }}
+                                            @endif
                                         @endif
-                                    </div>
-                                @endif
+                                    </li>
 
-                                {{-- SKU --}}
-                                @if ($productt->sku != null)
-                                    <div class="detail-item">
-                                        <span class="detail-label">@lang('Product SKU :')</span>
-                                        <a href="{{ route('search.result', $productt->sku) }}" target="_blank" class="text-primary fw-bold">
-                                            {{ $productt->sku }}
-                                        </a>
-                                    </div>
-                                @endif
-
-                                {{-- Brand --}}
-                                @if($productt->brand)
-                                    <div class="detail-item">
-                                        <span class="detail-label">@lang('Brand:')</span>
-                                        <span class="detail-value">{{ Str::ucfirst($productt->brand->name) }}</span>
-                                    </div>
-                                @endif
-
-                                {{-- Quality Brand --}}
-                                @if(isset($merchant) && $merchant->qualityBrand)
-                                    <div class="detail-item">
-                                        <span class="detail-label">@lang('Brand qualities:')</span>
-                                        <span class="detail-value">{{ app()->getLocale() == 'ar' && $merchant->qualityBrand->name_ar ? $merchant->qualityBrand->name_ar : $merchant->qualityBrand->name_en }}</span>
-                                    </div>
-                                @endif
-
-                                {{-- Shipping Time --}}
-                                @if ($productt->ship != null)
-                                    <div class="detail-item">
-                                        <span class="detail-label">@lang('Estimated Shipping Time :')</span>
-                                        <span class="detail-value">{{ $productt->ship }}</span>
-                                    </div>
-                                @endif
-
-                                {{-- License Details --}}
-                                @if ($productt->type == 'License')
-                                    @if ($productt->platform != null)
-                                        <div class="detail-item">
-                                            <span class="detail-label">@lang('Platform:')</span>
-                                            <span class="detail-value">{{ $productt->platform }}</span>
-                                        </div>
+                                    @if ($productt->ship != null)
+                                        <li>
+                                            <span><b>@lang('Estimated Shipping Time :') </b></span>
+                                            <span>{{ $productt->ship }}</span>
+                                        </li>
                                     @endif
-                                    @if ($productt->region != null)
-                                        <div class="detail-item">
-                                            <span class="detail-label">@lang('Region:')</span>
-                                            <span class="detail-value">{{ $productt->region }}</span>
-                                        </div>
+
+                                    @if ($productt->sku != null)
+                                        <li>
+                                            <span><b>@lang('Product SKU :') </b></span>
+                                            <a href="{{ route('search.result', $productt->sku) }}" target="_blank">
+                                                <span class="text-primary">{{ $productt->sku }} </span>
+                                            </a>
+                                        </li>
                                     @endif
-                                    @if ($productt->licence_type != null)
-                                        <div class="detail-item">
-                                            <span class="detail-label">@lang('License Type:')</span>
-                                            <span class="detail-value">{{ $productt->licence_type }}</span>
-                                        </div>
+
+                                    @if($productt->brand)
+                                        <li>
+                                            <span><b>@lang('Brand:') </b></span>
+                                            <span>{{ Str::ucfirst($productt->brand->name) }}</span>
+                                        </li>
                                     @endif
-                                @endif
+
+                                    @if(isset($merchant) && $merchant->qualityBrand)
+                                        <li>
+                                            <span><b>@lang('Brand qualities:') </b></span>
+                                            <span>{{ app()->getLocale() == 'ar' && $merchant->qualityBrand->name_ar ? $merchant->qualityBrand->name_ar : $merchant->qualityBrand->name_en }}</span>
+                                        </li>
+                                    @endif
+
+                                    @if ($productt->type == 'License')
+                                        @if ($productt->platform != null)
+                                            <span><b>@lang('Platform:') </b></span>
+                                            <span>{{ $productt->platform }} </span>
+                                        @endif
+                                        @if ($productt->region != null)
+                                            <span><b>@lang('Region:') </b></span>
+                                            <span>{{ $productt->region }} </span>
+                                        @endif
+                                        @if ($productt->licence_type != null)
+                                            <span><b>@lang('License Type:') </b></span>
+                                            <span>{{ $productt->licence_type }} </span>
+                                        @endif
+                                    @endif
+                                </ul>
                             </div>
-                        </div>
+                        @endif
 
                         @if (!empty($productt->attributes))
                             @php $attrArr = json_decode($productt->attributes, true); @endphp
@@ -362,35 +366,25 @@
                         <input type="hidden" id="curr_pos" value="{{ $gs->currency_format }}">
                         <input type="hidden" id="curr_sign" value="{{ $curr->sign }}">
 
-                        {{-- Compatibility & Alternative Products --}}
-                        <div class="product-actions-top mb-3">
-                            <div class="row g-2">
-                                <div class="col-6">
-                                    <livewire:compatibility :sku="$productt->sku" wire:key="'compat-'.$productt->sku" />
-                                </div>
-                                <div class="col-6">
-                                    <livewire:alternativeproduct :sku="$productt->sku" wire:key="'alt-'.$productt->sku" />
-                                </div>
-                            </div>
+                        <!-- add to cart buy btn wrapper - Responsive -->
+                        <div class="row row-cols-2 py-2 py-md-3 g-2">
+                            <livewire:compatibility :sku="$productt->sku" wire:key="$productt->sku" />
+                            <livewire:alternativeproduct :sku="$productt->sku" />
                         </div>
-
-                        {{-- Add to Cart & Buy Now Buttons --}}
-                        <div class="product-purchase-actions mb-3">
-                            <div class="row g-2">
-                                <div class="col-6">
-                                    <button type="button" class="btn btn-outline-primary w-100" id="addtodetailscart">
-                                        <i class="fas fa-cart-plus me-1"></i>
-                                        <span class="d-none d-md-inline">@lang('add to cart')</span>
-                                        <span class="d-md-none">@lang('Cart')</span>
-                                    </button>
-                                </div>
-                                <div class="col-6">
-                                    <button type="button" class="btn btn-primary w-100" id="addtobycard">
-                                        <i class="fas fa-shopping-bag me-1"></i>
-                                        <span class="d-none d-md-inline">@lang('buy now')</span>
-                                        <span class="d-md-none">@lang('Buy')</span>
-                                    </button>
-                                </div>
+                        <div class="row row-cols-2 g-2">
+                            <div class="col">
+                                <button type="button" class="template-btn dark-btn w-100 btn-sm btn-md-md" id="addtodetailscart">
+                                    <i class="fas fa-cart-plus d-md-none"></i>
+                                    <span class="d-none d-md-inline">@lang('add to cart')</span>
+                                    <span class="d-md-none small">@lang('Cart')</span>
+                                </button>
+                            </div>
+                            <div class="col">
+                                <button type="button" class="template-btn w-100 btn-sm btn-md-md" id="addtobycard">
+                                    <i class="fas fa-shopping-bag d-md-none"></i>
+                                    <span class="d-none d-md-inline">@lang('buy now')</span>
+                                    <span class="d-md-none small">@lang('Buy')</span>
+                                </button>
                             </div>
                         </div>
 
@@ -507,83 +501,86 @@
                         </div>
                         <script async src="https://static.addtoany.com/menu/page.js"></script>
 
-                        {{-- Seller Information Card --}}
-                        <div class="seller-info-card card shadow-sm">
-                            <div class="card-body">
-                                <h6 class="card-title mb-3">
-                                    <i class="fas fa-store me-2 text-primary"></i>
-                                    @lang('Seller Information')
-                                </h6>
-
-                                <div class="seller-details mb-3">
-                                    <div class="seller-name mb-2">
-                                        <strong>@lang('Sold By :')</strong>
-                                        @if ($productt->user_id != 0)
-                                            <span class="fw-bold">
-                                                @if (isset($productt->user)) {{ $productt->user->shop_name ?? $productt->user->name }} @endif
-                                            </span>
-                                            @if ($productt->user->checkStatus())
-                                                <span class="badge bg-success ms-2">
-                                                    <i class="fas fa-check-circle"></i>
-                                                    {{ __('Verified') }}
-                                                </span>
-                                            @endif
-                                        @else
-                                            <span class="fw-bold">{{ App\Models\Admin::find(1)->shop_name }}</span>
-                                        @endif
-                                    </div>
-                                </div>
-
-                                <div class="seller-actions d-flex flex-wrap gap-2">
-                                    @if ($productt->user_id != 0)
-                                        <a class="btn btn-outline-primary btn-sm" href="{{ route('front.vendor', str_replace(' ', '-', $productt->user->shop_name)) }}">
-                                            <i class="fas fa-store me-1"></i>
-                                            @lang('visit store')
+                        <!-- store & seller -->
+                        <div class="store-seller-wrapper">
+                            <span><b>@lang('Sold By :')</b>
+                                @if ($productt->user_id != 0)
+                                    @if (isset($productt->user)) {{ $productt->user->shop_name ?? $productt->user->name }} @endif
+                                    @if ($productt->user->checkStatus())
+                                        <a class="verify-link" href="javascript:;" data-original-title="">
+                                            {{ __('Verified') }} <i class="fas fa-check-circle"></i>
                                         </a>
                                     @endif
+                                @else
+                                    {{ App\Models\Admin::find(1)->shop_name }}
+                                @endif
+                            </span>
 
-                                    @if ($gs->is_contact_seller == 1)
-                                        @if (Auth::check())
-                                            @if ($productt->user_id != 0)
-                                                <a class="btn btn-outline-secondary btn-sm" href="javascript:;" data-bs-toggle="modal" data-bs-target="#vendorform">
-                                                    <i class="fas fa-comment me-1"></i>
-                                                    {{ __('Contact Seller') }}
-                                                </a>
-                                            @else
-                                                <a class="btn btn-outline-secondary btn-sm" href="javascript:;" data-bs-toggle="modal" data-bs-target="#sendMessage">
-                                                    <i class="fas fa-comment me-1"></i>
-                                                    @lang('contact seller')
-                                                </a>
-                                            @endif
-                                        @else
-                                            <a class="btn btn-outline-secondary btn-sm" href="{{ route('user.login') }}">
-                                                <i class="fas fa-comment me-1"></i>
+                            @if($productt->brand)
+                                <span style="display: block; margin-top: 8px;">
+                                    <b>@lang('Brand:')</b>
+                                    {{ Str::ucfirst($productt->brand->name) }}
+                                </span>
+                            @endif
+
+                            @if(isset($merchant) && $merchant->qualityBrand)
+                                <span style="display: block; margin-top: 8px;">
+                                    <b>@lang('Brand qualities:')</b>
+                                    {{ app()->getLocale() == 'ar' && $merchant->qualityBrand->name_ar ? $merchant->qualityBrand->name_ar : $merchant->qualityBrand->name_en }}
+                                </span>
+                            @endif
+
+                            <div class="action-btns-wrapper">
+                                @if ($productt->user_id != 0)
+                                    <a class="template-btn dark-outline"
+                                       href="{{ route('front.vendor', str_replace(' ', '-', $productt->user->shop_name)) }}">
+                                        @lang('visit store')
+                                    </a>
+                                @endif
+
+                                @if ($gs->is_contact_seller == 1)
+                                    @if (Auth::check())
+                                        @if ($productt->user_id != 0)
+                                            <a class="template-btn dark-outline" href="javascript:;"
+                                               data-bs-toggle="modal" data-bs-target="#vendorform">
+                                                <i class="icofont-ui-chat"></i>
                                                 {{ __('Contact Seller') }}
                                             </a>
-                                        @endif
-                                    @endif
-
-                                    @if ($productt->user_id != 0)
-                                        @if (Auth::check())
-                                            @if (Auth::user()->favorites()->where('vendor_id', '=', $productt->user_id)->get()->count() > 0)
-                                                <a class="btn btn-success btn-sm" href="javascript:;">
-                                                    <i class="fas fa-check me-1"></i>
-                                                    {{ __('Favorite') }}
-                                                </a>
-                                            @else
-                                                <a class="btn btn-outline-success btn-sm favorite-prod" href="javascript:;" data-href="{{ route('user-favorite', [Auth::user()->id, $productt->user_id]) }}">
-                                                    <i class="fas fa-plus me-1"></i>
-                                                    {{ __('Add To Favorite Seller') }}
-                                                </a>
-                                            @endif
                                         @else
-                                            <a class="btn btn-outline-success btn-sm" href="{{ route('user.login') }}">
-                                                <i class="fas fa-plus me-1"></i>
+                                            <a class="template-btn dark-outline" href="javascript:;"
+                                               data-bs-toggle="modal" data-bs-target="#sendMessage">
+                                                @lang('contact seller')
+                                            </a>
+                                        @endif
+                                    @else
+                                        <a class="template-btn dark-outline" href="{{ route('user.login') }}">
+                                            <i class="icofont-ui-chat"></i>
+                                            {{ __('Contact Seller') }}
+                                        </a>
+                                    @endif
+                                @endif
+
+                                @if ($productt->user_id != 0)
+                                    @if (Auth::check())
+                                        @if (Auth::user()->favorites()->where('vendor_id', '=', $productt->user_id)->get()->count() > 0)
+                                            <a class="template-btn dark-outline" href="javascript:;" >
+                                                <i class="fas fa-check"></i>
+                                                {{ __('Favorite') }}
+                                            </a>
+                                        @else
+                                            <a class="template-btn dark-outline favorite-prod" href="javascript:;"
+                                               data-href="{{ route('user-favorite', [Auth::user()->id, $productt->user_id]) }}">
+                                                <i class="icofont-plus"></i>
                                                 {{ __('Add To Favorite Seller') }}
                                             </a>
                                         @endif
+                                    @else
+                                        <a class="template-btn dark-outline" href="{{ route('user.login') }}">
+                                            <i class="icofont-plus"></i>
+                                            {{ __('Add To Favorite Seller') }}
+                                        </a>
                                     @endif
-                                </div>
+                                @endif
                             </div>
                         </div>
                     </form>
@@ -598,9 +595,9 @@
         <div class="container">
             <ul class="nav nav-tabs flex-wrap" id="myTab" role="tablist">
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link small" id="description-tab" data-bs-toggle="tab"
+                    <button class="nav-link active small" id="description-tab" data-bs-toggle="tab"
                             data-bs-target="#description-tab-pane" type="button" role="tab"
-                            aria-controls="description-tab-pane" aria-selected="false">
+                            aria-controls="description-tab-pane" aria-selected="true">
                         <i class="fas fa-info-circle d-md-none"></i>
                         <span class="d-none d-md-inline">@lang('Description')</span>
                         <span class="d-md-none">@lang('Info')</span>
@@ -633,16 +630,6 @@
                     </button>
                 </li>
 
-                {{-- Alternatives Tab - Active by Default --}}
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link active small" id="alternatives-tab" data-bs-toggle="tab" data-bs-target="#alternatives-tab-pane"
-                            type="button" role="tab" aria-controls="alternatives-tab-pane" aria-selected="true">
-                        <i class="fas fa-exchange-alt d-md-none"></i>
-                        <span class="d-none d-md-inline">{{ __('Alternatives') }}</span>
-                        <span class="d-md-none">{{ __('Alt') }}</span>
-                    </button>
-                </li>
-
                 @if ($productt->whole_sell_qty != null && $productt->whole_sell_qty != '')
                     <li class="nav-item" role="presentation">
                         <button class="nav-link small" id="whole-sell-tab" data-bs-toggle="tab"
@@ -657,7 +644,7 @@
             </ul>
 
             <div class="tab-content" id="myTabContent">
-                <div class="tab-pane fade wow-replaced" data-wow-delay=".1s" id="description-tab-pane"
+                <div class="tab-pane show active wow-replaced" data-wow-delay=".1s" id="description-tab-pane"
                      role="tabpanel" aria-labelledby="description-tab" tabindex="0">
                     {!! clean($productt->details, ['Attr.EnableID' => true]) !!}
                 </div>
@@ -762,26 +749,6 @@
                 </div>
                 {{-- Fits Vehicles Tab content end --}}
 
-                {{-- Alternatives Tab content start - Active by Default --}}
-                <div class="tab-pane fade show active" id="alternatives-tab-pane" role="tabpanel" aria-labelledby="alternatives-tab" tabindex="0">
-                    <div class="alternatives-content-wrapper">
-                        <div class="mb-4">
-                            <h5 class="mb-3">
-                                <i class="fas fa-exchange-alt text-primary me-2"></i>
-                                {{ __('Alternative Products') }}
-                            </h5>
-                            <p class="text-muted">
-                                {{ __('Browse alternative products that are compatible with your vehicle') }}
-                            </p>
-                        </div>
-
-                        <div class="alternatives-products-grid">
-                            @livewire('alternativeproduct', ['sku' => $productt->sku, 'displayMode' => 'inline'], key('alternatives-tab-'.$productt->sku))
-                        </div>
-                    </div>
-                </div>
-                {{-- Alternatives Tab content end --}}
-
                 @if ($productt->whole_sell_qty != null && $productt->whole_sell_qty != '')
                     <!-- Wholesell Tab content start  -->
                     <div class="tab-pane fade" id="whole-sell-tab-pane" role="tabpanel" aria-labelledby="whole-sell-tab" tabindex="0">
@@ -815,6 +782,17 @@
         </div>
     </div>
     <!--  tab-product-des-wrapper end -->
+
+    <!-- Related Products slider start -->
+    <div class="gs-product-cards-slider-section wow-replaced" data-wow-delay=".1s">
+        <div class="gs-product-cards-slider-area">
+            <div class="container">
+                <h2 class="title text-center">@lang('Related Products')</h2>
+                @livewire('alternativerelatedproduct', ['sku' => $productt->sku], key('alt-rel-'.$productt->sku))
+            </div>
+        </div>
+    </div>
+    <!-- Related Products slider end -->
 
     <!-- More Products By Seller slider start -->
     @if ($productt->user_id != 0 && $vendor_products->count() > 0)
@@ -1047,53 +1025,16 @@
         border-radius: var(--border-radius);
         padding: 1.5rem;
         box-shadow: var(--box-shadow-sm);
-        overflow: hidden;
     }
 
-    .product-main-slider {
-        margin-bottom: 1rem;
-        overflow: hidden;
-        border-radius: var(--border-radius-sm);
-        background: #fff;
-    }
-
-    .product-main-slider img {
-        width: 100%;
-        height: auto;
-        max-height: 500px;
-        object-fit: contain;
+    .product-main-slider img,
+    .product-nav-slider img {
         border-radius: var(--border-radius-sm);
         transition: transform var(--transition);
-        display: block;
     }
 
     .product-main-slider img:hover {
         transform: scale(1.02);
-    }
-
-    .product-nav-slider {
-        display: flex;
-        gap: 0.5rem;
-        overflow-x: auto;
-        padding: 0.5rem 0;
-    }
-
-    .product-nav-slider img {
-        width: 80px;
-        height: 80px;
-        object-fit: contain;
-        border-radius: var(--border-radius-sm);
-        border: 2px solid #dee2e6;
-        cursor: pointer;
-        transition: all var(--transition);
-        background: #fff;
-        flex-shrink: 0;
-    }
-
-    .product-nav-slider img:hover,
-    .product-nav-slider img.active {
-        border-color: var(--primary-color);
-        box-shadow: 0 2px 8px rgba(13, 110, 253, 0.25);
     }
 
     /* Product Details */
@@ -1305,15 +1246,6 @@
             padding: 1rem;
         }
 
-        .product-main-slider img {
-            max-height: 350px;
-        }
-
-        .product-nav-slider img {
-            width: 60px;
-            height: 60px;
-        }
-
         .product-breadcrumb {
             font-size: 0.875rem;
         }
@@ -1323,329 +1255,6 @@
         }
 
         .nav-tabs .nav-link {
-            padding: 0.75rem 1rem;
-            font-size: 0.9rem;
-        }
-
-        .product-title {
-            font-size: 1.25rem !important;
-        }
-
-        .product-current-price {
-            font-size: 1.5rem !important;
-        }
-
-        .detail-item {
-            font-size: 0.9rem;
-        }
-    }
-
-    /* ========================================
-       NEW ENHANCED PRODUCT PAGE STYLES
-       ======================================== */
-
-    /* Quality Brand Badge */
-    .quality-brand-badge {
-        display: flex;
-        align-items: center;
-        gap: 1rem;
-        padding: 1rem;
-        background: linear-gradient(135deg, rgba(102, 126, 234, 0.05), rgba(118, 75, 162, 0.05));
-        border-radius: var(--border-radius);
-        border: 1.5px solid rgba(102, 126, 234, 0.2);
-    }
-
-    .quality-brand-badge img {
-        width: 60px;
-        height: 60px;
-        object-fit: contain;
-        border-radius: var(--border-radius-sm);
-        background: #fff;
-        padding: 0.5rem;
-    }
-
-    .quality-brand-info {
-        display: flex;
-        flex-direction: column;
-        gap: 0.25rem;
-    }
-
-    .quality-brand-label {
-        font-size: 0.875rem;
-        color: #6c757d;
-        font-weight: 500;
-    }
-
-    .quality-brand-name {
-        font-size: 1rem;
-        color: var(--primary-color);
-        font-weight: 700;
-    }
-
-    /* Product Header Info */
-    .product-header-info .product-title {
-        font-size: 1.75rem;
-        font-weight: 700;
-        color: var(--dark-color);
-        line-height: 1.3;
-    }
-
-    .product-current-price {
-        font-size: 2rem;
-        font-weight: 700;
-        color: var(--primary-color);
-    }
-
-    .product-old-price {
-        font-size: 1.25rem;
-        color: #6c757d;
-    }
-
-    .discount-badge {
-        background: linear-gradient(135deg, #dc3545, #c82333);
-        color: #fff;
-        padding: 0.5rem 1rem;
-        border-radius: 2rem;
-        font-weight: 700;
-        font-size: 0.875rem;
-        box-shadow: 0 2px 8px rgba(220, 53, 69, 0.3);
-    }
-
-    .product-rating {
-        padding: 0.75rem 0;
-    }
-
-    .rating-stars {
-        font-size: 1.1rem;
-    }
-
-    .rating-value {
-        margin-left: 0.25rem;
-        color: #ffc107;
-    }
-
-    .rating-count {
-        font-size: 0.9rem;
-    }
-
-    /* Product Details Info */
-    .product-details-info {
-        background: #f8f9fa;
-        border-radius: var(--border-radius);
-        padding: 1.25rem;
-    }
-
-    .details-list {
-        display: flex;
-        flex-direction: column;
-        gap: 0.75rem;
-    }
-
-    .detail-item {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 0.5rem 0;
-        border-bottom: 1px solid #dee2e6;
-    }
-
-    .detail-item:last-child {
-        border-bottom: none;
-    }
-
-    .detail-label {
-        font-weight: 600;
-        color: #495057;
-        font-size: 0.95rem;
-    }
-
-    .detail-value {
-        color: #212529;
-        font-weight: 500;
-    }
-
-    /* Product Actions */
-    .product-actions-top,
-    .product-purchase-actions {
-        margin: 1.5rem 0;
-    }
-
-    .product-purchase-actions .btn {
-        padding: 0.875rem 1.5rem;
-        font-weight: 600;
-        border-radius: var(--border-radius-sm);
-        transition: all 0.3s ease;
-        font-size: 1rem;
-    }
-
-    .product-purchase-actions .btn:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    }
-
-    /* Seller Info Card */
-    .seller-info-card {
-        border: 1.5px solid #dee2e6;
-        border-radius: var(--border-radius);
-        margin-top: 1.5rem;
-        transition: all 0.3s ease;
-    }
-
-    .seller-info-card:hover {
-        border-color: var(--primary-color);
-        box-shadow: 0 4px 16px rgba(13, 110, 253, 0.15);
-    }
-
-    .seller-info-card .card-title {
-        color: var(--dark-color);
-        font-weight: 700;
-        font-size: 1.1rem;
-        border-bottom: 2px solid #f8f9fa;
-        padding-bottom: 0.75rem;
-    }
-
-    .seller-details .seller-name {
-        font-size: 1rem;
-        color: #212529;
-    }
-
-    .seller-actions .btn-sm {
-        padding: 0.5rem 1rem;
-        font-size: 0.875rem;
-        font-weight: 600;
-        transition: all 0.3s ease;
-    }
-
-    .seller-actions .btn-sm:hover {
-        transform: translateY(-1px);
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
-    }
-
-    /* Responsive Improvements */
-    @media (max-width: 991px) {
-        .product-header-info .product-title {
-            font-size: 1.5rem;
-        }
-
-        .product-current-price {
-            font-size: 1.75rem;
-        }
-
-        .product-purchase-actions .btn {
-            padding: 0.75rem 1rem;
-            font-size: 0.9rem;
-        }
-    }
-
-    @media (max-width: 575px) {
-        .quality-brand-badge {
-            padding: 0.75rem;
-        }
-
-        .quality-brand-badge img {
-            width: 50px;
-            height: 50px;
-        }
-
-        .product-details-info {
-            padding: 1rem;
-        }
-
-        .detail-item {
-            flex-direction: column;
-            align-items: flex-start;
-            gap: 0.25rem;
-        }
-
-        .seller-actions {
-            flex-direction: column;
-        }
-
-        .seller-actions .btn-sm {
-            width: 100%;
-        }
-    }
-
-    /* ========================================
-       ALTERNATIVES TAB STYLES
-       ======================================== */
-
-    .alternatives-content-wrapper {
-        padding: 2rem;
-        background: #f8f9fa;
-        border-radius: var(--border-radius);
-        min-height: 400px;
-    }
-
-    .alternatives-content-wrapper h5 {
-        color: var(--dark-color);
-        font-weight: 700;
-        font-size: 1.5rem;
-    }
-
-    .alternatives-content-wrapper .text-muted {
-        font-size: 1rem;
-        line-height: 1.6;
-    }
-
-    .alternatives-products-grid {
-        background: #fff;
-        padding: 1.5rem;
-        border-radius: var(--border-radius);
-        box-shadow: var(--box-shadow-sm);
-    }
-
-    /* Tab Navigation Enhancement */
-    .tab-product-des-wrapper .nav-tabs {
-        border-bottom: 2px solid #dee2e6;
-        gap: 0.5rem;
-    }
-
-    .tab-product-des-wrapper .nav-link {
-        border: none;
-        border-bottom: 3px solid transparent;
-        color: #6c757d;
-        font-weight: 600;
-        padding: 1rem 1.5rem;
-        transition: all 0.3s ease;
-    }
-
-    .tab-product-des-wrapper .nav-link:hover {
-        color: var(--primary-color);
-        background: rgba(13, 110, 253, 0.05);
-    }
-
-    .tab-product-des-wrapper .nav-link.active {
-        color: var(--primary-color);
-        border-bottom-color: var(--primary-color);
-        background: transparent;
-    }
-
-    .tab-product-des-wrapper .nav-link i {
-        margin-right: 0.5rem;
-    }
-
-    /* Responsive for Alternatives Tab */
-    @media (max-width: 991px) {
-        .alternatives-content-wrapper {
-            padding: 1.5rem;
-        }
-
-        .alternatives-content-wrapper h5 {
-            font-size: 1.25rem;
-        }
-    }
-
-    @media (max-width: 767px) {
-        .alternatives-content-wrapper {
-            padding: 1rem;
-        }
-
-        .alternatives-products-grid {
-            padding: 1rem;
-        }
-
-        .tab-product-des-wrapper .nav-link {
             padding: 0.75rem 1rem;
             font-size: 0.9rem;
         }

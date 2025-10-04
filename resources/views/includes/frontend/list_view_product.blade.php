@@ -47,37 +47,11 @@
             </span>
           @endif
 
-          {{-- Brand Quality Badge --}}
-          @if ($merchant && $merchant->qualityBrand)
-            <span class="badge bg-primary position-absolute" style="top: 2.5rem; left: 0.5rem; z-index: 3; font-size: 0.7rem;">
-              @if ($merchant->qualityBrand->logo_url)
-                <img src="{{ $merchant->qualityBrand->logo_url }}" alt="{{ $merchant->qualityBrand->display_name }}" style="width: 14px; height: 14px; margin-right: 3px; vertical-align: middle;">
-              @endif
-              {{ Str::limit($merchant->qualityBrand->display_name, 12) }}
-            </span>
-          @endif
-
-          {{-- Wishlist Button --}}
-          <div class="position-absolute top-0 end-0 p-2" style="z-index: 3;">
-            @if (Auth::check())
-              <a href="javascript:;" class="wishlist btn btn-sm rounded-circle p-2 {{ isset($merchant) ? (merchantWishlistCheck($merchant->id) ? 'btn-danger' : 'btn-outline-light') : (wishlistCheck($product->id) ? 'btn-danger' : 'btn-outline-light') }}"
-                 data-href="{{ isset($merchant) ? route('merchant.wishlist.add', $merchant->id) : 'javascript:;' }}"
-                 title="@lang('Add to Wishlist')">
-                <i class="fas fa-heart"></i>
-              </a>
-            @else
-              <a href="{{ route('user.login') }}" class="btn btn-sm btn-outline-light rounded-circle p-2" title="@lang('Login to Add Wishlist')">
-                <i class="far fa-heart"></i>
-              </a>
-            @endif
-          </div>
-
           {{-- Product Image --}}
           <a href="{{ $detailsUrl }}" class="d-block h-100">
             <img src="{{ \Illuminate\Support\Facades\Storage::url($product->photo) ?? asset('assets/images/noimage.png') }}"
                  alt="{{ $product->name }}"
-                 class="w-100 h-100"
-                 style="object-fit: contain; min-height: 200px; background: #f8f9fa;"
+                 class="product-list-img"
                  loading="lazy">
           </a>
         </div>
@@ -87,9 +61,19 @@
       <div class="col-md-6 col-lg-7">
         <div class="card-body">
 
+          {{-- Quality Brand Badge (Outside Image) --}}
+          @if ($merchant && $merchant->qualityBrand)
+            <div class="quality-brand-mini mb-2">
+              @if ($merchant->qualityBrand->logo_url)
+                <img src="{{ $merchant->qualityBrand->logo_url }}" alt="{{ $merchant->qualityBrand->display_name }}">
+              @endif
+              <span>{{ $merchant->qualityBrand->display_name }}</span>
+            </div>
+          @endif
+
           {{-- Product Title --}}
-          <h5 class="card-title mb-2">
-            <a href="{{ $detailsUrl }}" class="text-decoration-none text-dark fw-bold">
+          <h5 class="card-title mb-2 product-list-title">
+            <a href="{{ $detailsUrl }}" class="text-decoration-none text-dark fw-bold" title="{{ strip_tags($product->name) }}">
               <x-product-name :product="$product" :vendor-id="$vendorId" target="_self" />
             </a>
           </h5>
@@ -150,7 +134,7 @@
 
             {{-- Compatibility --}}
             <div class="col-12">
-              <livewire:compatibility :sku="$product->sku" wire:key="$product->sku" />
+              {{-- <livewire:compatibility :sku="$product->sku" wire:key="$product->sku" /> --}}
             </div>
           </div>
 
@@ -160,6 +144,20 @@
               <i class="fas fa-eye me-1"></i>
               @lang('View')
             </a>
+
+            {{-- Wishlist Button (Mobile) --}}
+            @if (Auth::check())
+              <a href="javascript:;" class="wishlist btn btn-sm {{ isset($merchant) ? (merchantWishlistCheck($merchant->id) ? 'btn-danger' : 'btn-outline-danger') : (wishlistCheck($product->id) ? 'btn-danger' : 'btn-outline-danger') }}"
+                 data-href="{{ isset($merchant) ? route('merchant.wishlist.add', $merchant->id) : 'javascript:;' }}"
+                 title="@lang('Add to Wishlist')">
+                <i class="fas fa-heart"></i>
+              </a>
+            @else
+              <a href="{{ route('user.login') }}" class="btn btn-sm btn-outline-danger" title="@lang('Login to Add Wishlist')">
+                <i class="far fa-heart"></i>
+              </a>
+            @endif
+
             @if ($product->type != 'Listing')
               <a href="javascript:;" class="compare_product btn btn-sm btn-outline-secondary"
                  data-href="{{ isset($merchant) ? route('merchant.compare.add', $merchant->id) : 'javascript:;' }}"
@@ -212,6 +210,20 @@
               <a href="{{ $detailsUrl }}" class="btn btn-sm btn-outline-primary" title="@lang('View Details')">
                 <i class="fas fa-eye"></i>
               </a>
+
+              {{-- Wishlist Button --}}
+              @if (Auth::check())
+                <a href="javascript:;" class="wishlist btn btn-sm {{ isset($merchant) ? (merchantWishlistCheck($merchant->id) ? 'btn-danger' : 'btn-outline-danger') : (wishlistCheck($product->id) ? 'btn-danger' : 'btn-outline-danger') }}"
+                   data-href="{{ isset($merchant) ? route('merchant.wishlist.add', $merchant->id) : 'javascript:;' }}"
+                   title="@lang('Add to Wishlist')">
+                  <i class="fas fa-heart"></i>
+                </a>
+              @else
+                <a href="{{ route('user.login') }}" class="btn btn-sm btn-outline-danger" title="@lang('Login to Add Wishlist')">
+                  <i class="far fa-heart"></i>
+                </a>
+              @endif
+
               @if ($product->type != 'Listing')
                 <a href="javascript:;" class="compare_product btn btn-sm btn-outline-secondary"
                    data-href="{{ isset($merchant) ? route('merchant.compare.add', $merchant->id) : 'javascript:;' }}"
@@ -274,20 +286,77 @@
     background: #f8f9fa;
     min-height: 200px;
     overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
 }
 
-.product-list-image img {
+.product-list-img {
+    width: 100%;
+    height: 100%;
+    max-height: 280px;
+    object-fit: contain;
     transition: transform var(--transition-slow);
 }
 
-.product-list-card:hover .product-list-image img {
+.product-list-card:hover .product-list-img {
     transform: scale(1.05);
+}
+
+/* Quality Brand Mini Badge */
+.quality-brand-mini {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.35rem 0.75rem;
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+    border: 1px solid rgba(102, 126, 234, 0.3);
+    border-radius: 2rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--primary-color);
+}
+
+.quality-brand-mini img {
+    width: 18px;
+    height: 18px;
+    object-fit: contain;
+    border-radius: 50%;
+    background: #fff;
+    padding: 2px;
+}
+
+/* Product List Title - Multi-line */
+.product-list-title {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-height: 3.5rem;
+    max-height: 5rem;
+    line-height: 1.4;
+    word-break: break-word;
+    hyphens: auto;
+}
+
+.product-list-title a {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
 }
 
 /* Responsive Adjustments */
 @media (max-width: 767px) {
     .product-list-image {
         min-height: 250px;
+        padding: 0.75rem;
+    }
+
+    .product-list-img {
+        max-height: 250px;
     }
 
     .product-list-card .card-body {
@@ -296,6 +365,22 @@
 
     .product-list-card .card-title {
         font-size: 1rem;
+    }
+
+    .product-list-title {
+        min-height: 3rem;
+        max-height: 4rem;
+        font-size: 0.95rem;
+    }
+
+    .quality-brand-mini {
+        font-size: 0.7rem;
+        padding: 0.25rem 0.5rem;
+    }
+
+    .quality-brand-mini img {
+        width: 16px;
+        height: 16px;
     }
 }
 

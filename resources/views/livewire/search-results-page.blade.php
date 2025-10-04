@@ -1,19 +1,20 @@
 <div>
-
-    <div class="gs-blog-wrapper">
-
+    {{-- Search Results Page --}}
+    <section class="search-results-section py-4">
         <div class="container">
-            <livewire:search-box/>
-            <!-- زر فتح المودال -->
-            <div class="text-center mt-3">
-                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#vinSearchModal">
-                    @lang('Search by VIN')
-                </button>
+            {{-- Search Box --}}
+            <div class="search-box-wrapper mb-4">
+                <livewire:search-box/>
+                <div class="text-center mt-3">
+                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#vinSearchModal">
+                        <i class="fas fa-search me-2"></i>
+                        @lang('Search by VIN')
+                    </button>
+                </div>
             </div>
 
-            <div class="row flex-column-reverse flex-lg-row">
-
-                <div class="col-12 col-lg-12 col-xl-12 gs-main-blog-wrapper">
+            <div class="row">
+                <div class="col-12">
 
                     @php
                         // نثبت العرض على list-view حاليًا
@@ -39,18 +40,35 @@
                         }
                     @endphp
 
-                    <!-- product nav wrapper -->
-                    <div class="product-nav-wrapper">
-                        <h5>
-                            @lang('Total Listings Found:') {{ $totalListings }}
-                            <small class="text-muted ms-2">(@lang('Query') : {{ $sku }})</small>
-                        </h5>
+                    {{-- Results Header --}}
+                    <div class="results-header card shadow-sm mb-4">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+                                <div>
+                                    <h4 class="mb-1">
+                                        <i class="fas fa-box-open text-primary me-2"></i>
+                                        @lang('Total Listings Found:')
+                                        <span class="badge bg-primary">{{ $totalListings }}</span>
+                                    </h4>
+                                    <p class="text-muted mb-0">
+                                        <i class="fas fa-search me-1"></i>
+                                        @lang('Query') : <strong>{{ $sku }}</strong>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     @if (!isset($prods) || $prods->count() == 0)
-                        <!-- product nav wrapper for no data found -->
-                        <div class="product-nav-wrapper d-flex justify-content-center ">
-                            <h5>@lang('No Product Found')</h5>
+                        {{-- No Results Found --}}
+                        <div class="no-results-wrapper text-center py-5">
+                            <div class="card shadow-sm">
+                                <div class="card-body py-5">
+                                    <i class="fas fa-search fa-3x text-muted mb-3"></i>
+                                    <h4 class="text-muted">@lang('No Product Found')</h4>
+                                    <p class="text-muted mb-0">@lang('Try searching with a different SKU or keyword')</p>
+                                </div>
+                            </div>
                         </div>
                     @else
                         <!-- main content -->
@@ -84,10 +102,15 @@
 
                             {{-- بدائل القطعة: نعرض لكل بديل كل البائعين الفعّالين أيضاً --}}
                             @if(isset($alternatives) && $alternatives->count())
-                                <div class="tab-pane fade {{ $view == 'list-view' ? 'show active' : '' }}"
-                                     id="layout-list-pane" role="tabpanel" tabindex="0">
-                                    <h4 class="mt-3"> {{ trans('Substitutions') }}</h4>
-                                    <div class="row gy-4 gy-lg-5 mt-2 ">
+                                <div class="alternatives-section mt-5">
+                                    <div class="section-header mb-4">
+                                        <h3 class="text-primary">
+                                            <i class="fas fa-exchange-alt me-2"></i>
+                                            {{ trans('Substitutions') }}
+                                        </h3>
+                                        <hr class="border-primary">
+                                    </div>
+                                    <div class="row gy-4 gy-lg-5">
 
                                         @foreach ($alternatives as $product)
                                             @php
@@ -109,14 +132,73 @@
                                     </div>
                                 </div>
                             @endif
-                            <!-- product grid view end  -->
                         </div>
-                        {{-- {{ $prods->links('includes.frontend.pagination') }} --}}
                     @endif
 
                 </div>
             </div>
         </div>
-    </div>
+    </section>
 
+    <style>
+    /* Search Results Page Styles */
+    .search-results-section {
+        background: #f8f9fa;
+        min-height: 100vh;
+    }
+
+    .search-box-wrapper {
+        background: #fff;
+        border-radius: var(--border-radius);
+        padding: 1.5rem;
+        box-shadow: var(--box-shadow-sm);
+    }
+
+    .results-header {
+        border: 1.5px solid #dee2e6;
+        border-radius: var(--border-radius);
+        transition: all 0.3s ease;
+    }
+
+    .results-header:hover {
+        border-color: var(--primary-color);
+        box-shadow: 0 4px 16px rgba(13, 110, 253, 0.1);
+    }
+
+    .results-header h4 {
+        color: var(--dark-color);
+        font-weight: 700;
+    }
+
+    .no-results-wrapper .card {
+        border: 1.5px solid #dee2e6;
+        border-radius: var(--border-radius);
+    }
+
+    .alternatives-section .section-header h3 {
+        font-weight: 700;
+        position: relative;
+        display: inline-block;
+        padding-bottom: 0.5rem;
+    }
+
+    .alternatives-section .section-header hr {
+        border-width: 2px;
+        opacity: 0.3;
+    }
+
+    @media (max-width: 767px) {
+        .search-box-wrapper {
+            padding: 1rem;
+        }
+
+        .results-header h4 {
+            font-size: 1.25rem;
+        }
+
+        .alternatives-section .section-header h3 {
+            font-size: 1.5rem;
+        }
+    }
+    </style>
 </div>
