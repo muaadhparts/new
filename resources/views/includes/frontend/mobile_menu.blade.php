@@ -1,12 +1,14 @@
 <!-- mobile menu -->
-<div class="mobile-menu">
+<div class="mobile-menu" id="mobileMenu">
     <div class="mobile-menu-top">
-        <img src="{{ asset('assets/images/' . $gs->footer_logo) }}" alt="">
-        <svg class="close" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
-            fill="none">
-            <path d="M18 6L6 18M6 6L18 18" stroke="white" stroke-width="2" stroke-linecap="round"
-                stroke-linejoin="round" />
-        </svg>
+        <img src="{{ asset('assets/images/' . $gs->footer_logo) }}" alt="{{ $gs->title ?? 'Logo' }}">
+        <button class="close-menu-btn" id="closeMobileMenu" aria-label="Close menu">
+            <svg class="close" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                fill="none">
+                <path d="M18 6L6 18M6 6L18 18" stroke="white" stroke-width="2" stroke-linecap="round"
+                    stroke-linejoin="round" />
+            </svg>
+        </button>
     </div>
     <nav>
         <div class="nav justify-content-between pt-24" id="nav-tab" role="tablist">
@@ -190,6 +192,420 @@
     </div>
 </div>
 
+<style>
+/* ========================================
+   ENHANCED MOBILE MENU STYLES - COMPLETE UX OVERHAUL
+   ======================================== */
+
+/* Mobile Menu Container */
+.mobile-menu {
+    position: fixed;
+    top: 0;
+    right: -100%;
+    width: 320px;
+    height: 100vh;
+    background: linear-gradient(to bottom, #1a1a2e 0%, #16213e 100%);
+    box-shadow: -4px 0 20px rgba(0,0,0,0.3);
+    z-index: 9999;
+    overflow-y: auto;
+    overflow-x: hidden;
+    transition: right 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.mobile-menu.active {
+    right: 0;
+}
+
+/* Mobile Menu Top */
+.mobile-menu-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 1.5rem;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.mobile-menu-top img {
+    max-height: 40px;
+    max-width: 150px;
+    object-fit: contain;
+    transition: transform 0.3s ease;
+}
+
+.mobile-menu-top img:hover {
+    transform: scale(1.05);
+}
+
+.close-menu-btn {
+    background: transparent;
+    border: none;
+    padding: 0.5rem;
+    cursor: pointer;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.close-menu-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: rotate(90deg);
+}
+
+.close-menu-btn:active {
+    transform: rotate(90deg) scale(0.9);
+}
+
+/* Tab Navigation */
+.mobile-menu .nav {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 0;
+    overflow: hidden;
+    position: sticky;
+    top: 76px;
+    z-index: 9;
+    backdrop-filter: blur(10px);
+}
+
+.mobile-menu .nav button {
+    color: rgba(255, 255, 255, 0.7);
+    background: transparent;
+    border: none;
+    padding: 1rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: all 0.3s ease;
+    border-bottom: 3px solid transparent;
+    font-size: 0.875rem;
+}
+
+.mobile-menu .nav button.active,
+.mobile-menu .nav button:hover {
+    color: #fff;
+    background: rgba(255, 255, 255, 0.1);
+    border-bottom-color: #ffc107;
+}
+
+.mobile-menu .nav button:active {
+    transform: scale(0.98);
+}
+
+/* Accordion Menu */
+.mobile-menu .accordion {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.mobile-menu .accordion > li {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    animation: fadeInUp 0.4s ease backwards;
+}
+
+.mobile-menu .accordion > li:nth-child(1) { animation-delay: 0.1s; }
+.mobile-menu .accordion > li:nth-child(2) { animation-delay: 0.15s; }
+.mobile-menu .accordion > li:nth-child(3) { animation-delay: 0.2s; }
+.mobile-menu .accordion > li:nth-child(4) { animation-delay: 0.25s; }
+.mobile-menu .accordion > li:nth-child(5) { animation-delay: 0.3s; }
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.mobile-menu .accordion > li > a,
+.mobile-menu .accordion > li > div > a {
+    display: block;
+    padding: 1rem 1.25rem;
+    color: #fff;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    position: relative;
+    text-decoration: none;
+    font-size: 0.95rem;
+}
+
+.mobile-menu .accordion > li > a:hover,
+.mobile-menu .accordion > li > a.sidebar-active-color,
+.mobile-menu .accordion > li > div > a:hover,
+.mobile-menu .accordion > li > div > a.sidebar-active-color {
+    background: linear-gradient(to right, rgba(102, 126, 234, 0.25), transparent);
+    padding-left: 1.75rem;
+    color: #ffc107;
+}
+
+.mobile-menu .accordion > li > a::before,
+.mobile-menu .accordion > li > div > a::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 3px;
+    height: 0;
+    background: linear-gradient(to bottom, #ffc107, #ff9800);
+    transition: height 0.3s ease;
+}
+
+.mobile-menu .accordion > li > a:hover::before,
+.mobile-menu .accordion > li > a.sidebar-active-color::before,
+.mobile-menu .accordion > li > div > a:hover::before,
+.mobile-menu .accordion > li > div > a.sidebar-active-color::before {
+    height: 100%;
+}
+
+.mobile-menu .accordion > li > a:active,
+.mobile-menu .accordion > li > div > a:active {
+    transform: scale(0.98);
+}
+
+/* Nested Accordion */
+.mobile-menu .accordion-collapse {
+    background: rgba(0, 0, 0, 0.25);
+    overflow: hidden;
+}
+
+.mobile-menu .accordion-collapse.show {
+    animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        max-height: 0;
+    }
+    to {
+        opacity: 1;
+        max-height: 500px;
+    }
+}
+
+.mobile-menu .accordion-collapse li a {
+    display: block;
+    padding: 0.75rem 1.25rem 0.75rem 2.5rem;
+    color: rgba(255, 255, 255, 0.85);
+    transition: all 0.3s ease;
+    text-decoration: none;
+    font-size: 0.9rem;
+    position: relative;
+}
+
+.mobile-menu .accordion-collapse li a::before {
+    content: '›';
+    position: absolute;
+    left: 1.5rem;
+    color: rgba(255, 255, 255, 0.4);
+    transition: all 0.3s ease;
+}
+
+.mobile-menu .accordion-collapse li a:hover {
+    color: #fff;
+    background: rgba(255, 255, 255, 0.12);
+    padding-left: 2.75rem;
+}
+
+.mobile-menu .accordion-collapse li a:hover::before {
+    left: 1.75rem;
+    color: #ffc107;
+}
+
+/* Collapse Toggle Buttons */
+.mobile-menu button[data-bs-toggle="collapse"] {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.7);
+    padding: 0.5rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border-radius: 6px;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.mobile-menu button[data-bs-toggle="collapse"]:hover {
+    color: #ffc107;
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 193, 7, 0.3);
+    transform: scale(1.05);
+}
+
+.mobile-menu button[data-bs-toggle="collapse"]:active {
+    transform: scale(0.95);
+}
+
+.mobile-menu button[data-bs-toggle="collapse"] .fa-minus {
+    display: none;
+}
+
+.mobile-menu button[data-bs-toggle="collapse"]:not(.collapsed) .fa-plus {
+    display: none;
+}
+
+.mobile-menu button[data-bs-toggle="collapse"]:not(.collapsed) .fa-minus {
+    display: inline-block;
+}
+
+.mobile-menu button[data-bs-toggle="collapse"]:not(.collapsed) {
+    background: rgba(255, 193, 7, 0.15);
+    border-color: rgba(255, 193, 7, 0.4);
+    color: #ffc107;
+    transform: rotate(180deg);
+}
+
+/* Auth Action Buttons */
+.mobile-menu .auth-actions-btn {
+    padding: 1.5rem 1.25rem 2rem;
+    margin-top: 1rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.mobile-menu .auth-actions-btn .template-btn {
+    display: block;
+    width: 100%;
+    padding: 1rem 1.5rem;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #fff;
+    text-align: center;
+    font-weight: 600;
+    border-radius: 12px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+    text-decoration: none;
+    position: relative;
+    overflow: hidden;
+    font-size: 0.95rem;
+}
+
+.mobile-menu .auth-actions-btn .template-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    transition: left 0.5s ease;
+}
+
+.mobile-menu .auth-actions-btn .template-btn:hover::before {
+    left: 100%;
+}
+
+.mobile-menu .auth-actions-btn .template-btn:hover {
+    background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+}
+
+.mobile-menu .auth-actions-btn .template-btn:active {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+}
+
+/* Mobile Menu Scrollbar */
+.mobile-menu::-webkit-scrollbar {
+    width: 8px;
+}
+
+.mobile-menu::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.mobile-menu::-webkit-scrollbar-thumb {
+    background: linear-gradient(to bottom, rgba(102, 126, 234, 0.5), rgba(118, 75, 162, 0.5));
+    border-radius: 10px;
+    border: 2px solid transparent;
+    background-clip: padding-box;
+}
+
+.mobile-menu::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(to bottom, rgba(102, 126, 234, 0.7), rgba(118, 75, 162, 0.7));
+    background-clip: padding-box;
+}
+
+/* RTL Support */
+[dir="rtl"] .mobile-menu {
+    right: auto;
+    left: -100%;
+}
+
+[dir="rtl"] .mobile-menu.active {
+    left: 0;
+    right: auto;
+}
+
+[dir="rtl"] .mobile-menu .accordion > li > a::before,
+[dir="rtl"] .mobile-menu .accordion > li > div > a::before {
+    left: auto;
+    right: 0;
+}
+
+[dir="rtl"] .mobile-menu .accordion > li > a:hover,
+[dir="rtl"] .mobile-menu .accordion > li > div > a:hover {
+    padding-left: 1.25rem;
+    padding-right: 1.75rem;
+}
+
+[dir="rtl"] .mobile-menu .accordion-collapse li a {
+    padding-left: 1.25rem;
+    padding-right: 2.5rem;
+}
+
+[dir="rtl"] .mobile-menu .accordion-collapse li a::before {
+    content: '‹';
+    left: auto;
+    right: 1.5rem;
+}
+
+[dir="rtl"] .mobile-menu .accordion-collapse li a:hover {
+    padding-left: 1.25rem;
+    padding-right: 2.75rem;
+}
+
+[dir="rtl"] .mobile-menu .accordion-collapse li a:hover::before {
+    left: auto;
+    right: 1.75rem;
+}
+
+/* Mobile-only display */
+@media (min-width: 992px) {
+    .mobile-menu {
+        display: none !important;
+    }
+}
+
+/* Responsive adjustments */
+@media (max-width: 360px) {
+    .mobile-menu {
+        width: 100%;
+    }
+
+    .mobile-menu-top {
+        padding: 1rem;
+    }
+
+    .mobile-menu .nav button {
+        font-size: 0.8rem;
+        padding: 0.875rem;
+    }
+}
+</style>
+
 <!-- search bar -->
 <div class="search-bar" id="searchBar">
     <div class="container">
@@ -245,3 +661,94 @@
         </div>
     </div>
 </div>
+
+<style>
+/* ========================================
+   ENHANCED SEARCH BAR STYLES
+   ======================================== */
+
+/* Search Bar Enhancement */
+.search-bar {
+    background: #fff;
+    box-shadow: var(--box-shadow-lg);
+    padding: 1.5rem 0;
+}
+
+.search-bar .input__group {
+    border-radius: var(--border-radius-lg);
+    overflow: hidden;
+    border: 2px solid var(--primary-color);
+    background: #fff;
+    transition: all var(--transition);
+}
+
+.search-bar .input__group:focus-within {
+    border-color: #0b5ed7;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.15);
+}
+
+.search-bar .form__control {
+    border: none;
+    padding: 1rem 1.25rem;
+    font-size: 1rem;
+    font-weight: 500;
+}
+
+.search-bar .form__control:focus {
+    box-shadow: none;
+    border: none;
+}
+
+.search-bar .search-category-dropdown {
+    background: #f8f9fa;
+    border: none;
+    color: var(--dark-color);
+    font-weight: 500;
+    padding: 1rem 1.25rem;
+    border-radius: 0;
+    transition: all var(--transition);
+}
+
+.search-bar .search-category-dropdown:hover {
+    background: #e9ecef;
+}
+
+.search-bar .dropdown-menu {
+    border-radius: var(--border-radius-sm);
+    box-shadow: var(--box-shadow);
+    border: none;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.search-bar .dropdown__item {
+    padding: 0.75rem 1.25rem;
+    transition: all var(--transition-fast);
+}
+
+.search-bar .dropdown__item:hover {
+    background: linear-gradient(to right, rgba(13, 110, 253, 0.1), transparent);
+    color: var(--primary-color);
+    padding-left: 1.5rem;
+}
+
+.search-bar .search-icn {
+    background: var(--primary-color);
+    border: none;
+    padding: 1rem 1.5rem;
+    border-radius: 0;
+    transition: all var(--transition);
+}
+
+.search-bar .search-icn:hover {
+    background: #0b5ed7;
+    transform: scale(1.05);
+}
+
+.search-separator {
+    width: 1px;
+    background: var(--border-color);
+    display: inline-block;
+    height: 100%;
+}
+</style>

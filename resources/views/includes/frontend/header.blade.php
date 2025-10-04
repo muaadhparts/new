@@ -369,3 +369,264 @@
     </div>
 
 </header>
+
+<style>
+/* ========================================
+   ENHANCED HEADER STYLES
+   ======================================== */
+
+/* Info Bar Enhancement */
+.info-bar {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 0.75rem 0;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.info-bar a {
+    color: #fff;
+    transition: all var(--transition-fast);
+    font-weight: 500;
+}
+
+.info-bar a:hover {
+    color: #ffc107;
+    transform: translateX(2px);
+}
+
+/* Dropdown Enhancements */
+.info-bar .dropdown-toggle {
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: #fff;
+    padding: 0.375rem 1rem;
+    border-radius: var(--border-radius-sm);
+    font-weight: 500;
+    transition: all var(--transition);
+}
+
+.info-bar .dropdown-toggle:hover {
+    background: rgba(255, 255, 255, 0.3);
+    border-color: rgba(255, 255, 255, 0.5);
+}
+
+.info-bar .dropdown-menu {
+    border-radius: var(--border-radius-sm);
+    box-shadow: var(--box-shadow);
+    border: none;
+}
+
+.info-bar .dropdown__item {
+    padding: 0.5rem 1rem;
+    transition: all var(--transition-fast);
+}
+
+.info-bar .dropdown__item:hover {
+    background: linear-gradient(to right, rgba(13, 110, 253, 0.1), transparent);
+    padding-left: 1.25rem;
+}
+
+.info-bar .dropdown__item.active {
+    background: var(--primary-color);
+    color: #fff;
+}
+
+/* Header Top Enhancement */
+.header-top {
+    background: #fff;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    padding: 1rem 0;
+}
+
+.header-logo-wrapper {
+    transition: all var(--transition);
+}
+
+.header-logo-wrapper:hover {
+    transform: scale(1.05);
+}
+
+/* Mobile Menu Toggle */
+.mobile-menu-toggle {
+    background: none;
+    border: 2px solid var(--border-color);
+    padding: 0.5rem;
+    border-radius: var(--border-radius-sm);
+    transition: all var(--transition);
+}
+
+.mobile-menu-toggle:hover {
+    border-color: var(--primary-color);
+    background: rgba(13, 110, 253, 0.1);
+}
+
+/* Navigation Menu Enhancement */
+.nav-menus {
+    gap: 0.5rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.nav-menus > li > a {
+    padding: 0.75rem 1.25rem;
+    border-radius: var(--border-radius-sm);
+    transition: all var(--transition);
+    font-weight: 500;
+}
+
+.nav-menus > li > a:hover,
+.nav-menus > li > a.active {
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+    color: var(--primary-color);
+}
+
+/* Megamenu Enhancement */
+.megamenu {
+    background: #fff;
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow-lg);
+    border: none;
+    padding: 2rem;
+}
+
+.megamenu .single-menu h5 a {
+    color: var(--dark-color);
+    font-weight: 600;
+    font-size: 1.1rem;
+    transition: color var(--transition-fast);
+}
+
+.megamenu .single-menu h5 a:hover {
+    color: var(--primary-color);
+}
+
+.megamenu ul {
+    list-style: none;
+    padding: 0;
+}
+
+.megamenu ul li a {
+    padding: 0.5rem 0;
+    display: block;
+    color: #6c757d;
+    transition: all var(--transition-fast);
+}
+
+.megamenu ul li a:hover {
+    color: var(--primary-color);
+    padding-left: 0.5rem;
+}
+
+/* Search Bar Enhancement */
+.search-bar-wrapper {
+    position: relative;
+}
+
+.search-bar-wrapper .form-control {
+    border-radius: var(--border-radius-lg);
+    border: 2px solid var(--border-color);
+    padding: 0.75rem 3rem 0.75rem 1rem;
+    transition: all var(--transition);
+}
+
+.search-bar-wrapper .form-control:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.15);
+}
+
+/* Cart & Wishlist Icons */
+.cart-icon-wrapper,
+.wishlist-icon-wrapper {
+    position: relative;
+    padding: 0.5rem;
+    border-radius: var(--border-radius-sm);
+    transition: all var(--transition);
+}
+
+.cart-icon-wrapper:hover,
+.wishlist-icon-wrapper:hover {
+    background: rgba(13, 110, 253, 0.1);
+    transform: translateY(-2px);
+}
+
+.cart-icon-wrapper .badge,
+.wishlist-icon-wrapper .badge {
+    position: absolute;
+    top: 0;
+    right: 0;
+    background: var(--danger-color);
+    color: #fff;
+    font-size: 0.7rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 2rem;
+    box-shadow: var(--box-shadow-sm);
+}
+
+/* Sticky Header Enhancement */
+.header-stikcy.sticky {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    animation: slideDown 0.3s ease;
+    box-shadow: var(--box-shadow-lg);
+}
+
+@keyframes slideDown {
+    from {
+        transform: translateY(-100%);
+    }
+    to {
+        transform: translateY(0);
+    }
+}
+
+/* Responsive Adjustments */
+@media (max-width: 1199px) {
+    .nav-center {
+        display: none;
+    }
+
+    .mobile-menu-toggle {
+        display: flex !important;
+    }
+}
+
+@media (max-width: 767px) {
+    .info-bar {
+        padding: 0.5rem 0;
+        font-size: 0.875rem;
+    }
+
+    .header-top {
+        padding: 0.75rem 0;
+    }
+
+    .info-bar .dropdown-toggle {
+        padding: 0.25rem 0.75rem;
+        font-size: 0.875rem;
+    }
+}
+
+/* Enhanced Submenu */
+.has-submenu .submenu {
+    background: #fff;
+    border-radius: var(--border-radius-sm);
+    box-shadow: var(--box-shadow);
+    border: none;
+    padding: 0.5rem 0;
+}
+
+.has-submenu .submenu li a {
+    padding: 0.5rem 1rem;
+    transition: all var(--transition-fast);
+    display: block;
+}
+
+.has-submenu .submenu li a:hover {
+    background: linear-gradient(to right, rgba(13, 110, 253, 0.1), transparent);
+    color: var(--primary-color);
+    padding-left: 1.25rem;
+}
+</style>

@@ -37,6 +37,9 @@
         rel="stylesheet">
 @endif
 
+{{-- ✨ Enhanced Theme CSS --}}
+<link rel="stylesheet" href="{{ asset('assets/front/css/enhanced-theme.css') }}?v={{ time() }}">
+
 {{--<link rel="stylesheet"--}}
 {{--    href="{{ asset('assets/front/css/styles.php?color=' . str_replace('#', '', $gs->colors) . '&header_color=' . $gs->header_color) }}">--}}
 

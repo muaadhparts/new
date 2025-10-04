@@ -317,7 +317,7 @@
 
                         {{-- <a href="{{ route('front.category') }}" class="template-btn dark-btn">Clear Filter</a> --}}
 
-                        <!-- Recent Product-->
+                        <!-- Recent Product -->
                         <div class="single-product-widget">
                             <h5 class="widget-title">@lang('Recent Product')</h5>
                             <div class="gs-recent-post-widget">
@@ -677,4 +677,292 @@
 
         })(jQuery);
     </script>
+
+    <style>
+    /* ========================================
+       ENHANCED PRODUCTS LISTING PAGE
+       ======================================== */
+
+    /* Sidebar Enhancement */
+    .sidebar {
+        background: #fff;
+        border-radius: var(--border-radius);
+        padding: 1.5rem;
+        box-shadow: var(--box-shadow-sm);
+        position: sticky;
+        top: 100px;
+    }
+
+    .sidebar .widget {
+        margin-bottom: 2rem;
+        padding-bottom: 2rem;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .sidebar .widget:last-child {
+        border-bottom: none;
+        margin-bottom: 0;
+        padding-bottom: 0;
+    }
+
+    .sidebar .widget-title {
+        font-size: 1.125rem;
+        font-weight: 700;
+        color: var(--dark-color);
+        margin-bottom: 1rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 2px solid var(--primary-color);
+    }
+
+    /* Filter Lists */
+    .sidebar .filter-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .sidebar .filter-list li {
+        margin-bottom: 0.75rem;
+    }
+
+    .sidebar .filter-list li a,
+    .sidebar .filter-list li label {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: #6c757d;
+        text-decoration: none;
+        transition: all var(--transition-fast);
+        padding: 0.5rem;
+        border-radius: var(--border-radius-sm);
+    }
+
+    .sidebar .filter-list li a:hover,
+    .sidebar .filter-list li label:hover {
+        color: var(--primary-color);
+        background: rgba(13, 110, 253, 0.05);
+        padding-left: 1rem;
+    }
+
+    .sidebar .filter-list li a.active {
+        color: var(--primary-color);
+        background: rgba(13, 110, 253, 0.1);
+        font-weight: 600;
+    }
+
+    /* Price Slider */
+    #slider-range {
+        background: #e9ecef;
+        border: none;
+        border-radius: var(--border-radius-sm);
+        height: 8px;
+    }
+
+    #slider-range .ui-slider-handle {
+        background: var(--primary-color);
+        border: none;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        cursor: pointer;
+        box-shadow: var(--box-shadow-sm);
+        top: -6px;
+    }
+
+    #slider-range .ui-slider-range {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+
+    #amount {
+        border: 1.5px solid var(--border-color);
+        border-radius: var(--border-radius-sm);
+        padding: 0.75rem 1rem;
+        font-weight: 600;
+        color: var(--primary-color);
+        background: #f8f9fa;
+        text-align: center;
+    }
+
+    /* Products Grid/List View */
+    .products-header {
+        background: #fff;
+        border-radius: var(--border-radius);
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        box-shadow: var(--box-shadow-sm);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .products-header .view-options {
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    .products-header .view-options button {
+        background: transparent;
+        border: 1.5px solid var(--border-color);
+        padding: 0.5rem 1rem;
+        border-radius: var(--border-radius-sm);
+        transition: all var(--transition-fast);
+    }
+
+    .products-header .view-options button.active,
+    .products-header .view-options button:hover {
+        background: var(--primary-color);
+        border-color: var(--primary-color);
+        color: #fff;
+    }
+
+    .products-header select {
+        border: 1.5px solid var(--border-color);
+        border-radius: var(--border-radius-sm);
+        padding: 0.5rem 1rem;
+        font-weight: 500;
+        transition: all var(--transition-fast);
+    }
+
+    .products-header select:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.15);
+    }
+
+    /* Category Banner */
+    .category-banner {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: var(--border-radius);
+        padding: 3rem 2rem;
+        margin-bottom: 2rem;
+        box-shadow: var(--box-shadow);
+        color: #fff;
+        text-align: center;
+    }
+
+    .category-banner h1 {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        color: #fff;
+    }
+
+    .category-banner .breadcrumb {
+        background: transparent;
+        margin: 0;
+        padding: 0;
+        justify-content: center;
+    }
+
+    .category-banner .breadcrumb-item a {
+        color: rgba(255, 255, 255, 0.8);
+    }
+
+    .category-banner .breadcrumb-item.active {
+        color: #fff;
+    }
+
+    /* No Products Found */
+    .no-products {
+        text-align: center;
+        padding: 4rem 2rem;
+        background: #f8f9fa;
+        border-radius: var(--border-radius);
+        margin: 2rem 0;
+    }
+
+    .no-products i {
+        font-size: 5rem;
+        color: #dee2e6;
+        margin-bottom: 2rem;
+    }
+
+    .no-products h3 {
+        color: #6c757d;
+        margin-bottom: 1rem;
+    }
+
+    .no-products p {
+        color: #adb5bd;
+        margin-bottom: 2rem;
+    }
+
+    /* Active Filters Display */
+    .active-filters {
+        background: #fff;
+        border-radius: var(--border-radius);
+        padding: 1rem;
+        margin-bottom: 1.5rem;
+        box-shadow: var(--box-shadow-sm);
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        align-items: center;
+    }
+
+    .active-filters .filter-tag {
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+        border: 1px solid var(--primary-color);
+        color: var(--primary-color);
+        padding: 0.5rem 1rem;
+        border-radius: 2rem;
+        font-size: 0.875rem;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .active-filters .filter-tag button {
+        background: none;
+        border: none;
+        color: var(--primary-color);
+        cursor: pointer;
+        padding: 0;
+        margin: 0;
+    }
+
+    .active-filters .clear-all {
+        background: var(--danger-color);
+        color: #fff;
+        border: none;
+        padding: 0.5rem 1rem;
+        border-radius: var(--border-radius-sm);
+        font-weight: 600;
+        transition: all var(--transition-fast);
+    }
+
+    .active-filters .clear-all:hover {
+        background: #c82333;
+        transform: translateY(-2px);
+    }
+
+    /* Responsive */
+    @media (max-width: 991px) {
+        .sidebar {
+            position: relative;
+            top: 0;
+            margin-bottom: 2rem;
+        }
+
+        .category-banner h1 {
+            font-size: 2rem;
+        }
+    }
+
+    @media (max-width: 767px) {
+        .products-header {
+            padding: 1rem;
+        }
+
+        .category-banner {
+            padding: 2rem 1rem;
+        }
+
+        .category-banner h1 {
+            font-size: 1.5rem;
+        }
+    }
+    </style>
 @endsection

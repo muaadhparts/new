@@ -43,4 +43,38 @@
             }
         });
     </script>
+
+    <style>
+    /* Compatibility Button Enhancement */
+    .zbtn-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+        color: #fff;
+        padding: 0.5rem 1rem;
+        border-radius: var(--border-radius-sm);
+        transition: all var(--transition);
+        box-shadow: var(--box-shadow-sm);
+        font-weight: 600;
+    }
+
+    .zbtn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--box-shadow);
+        background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+    }
+
+    .zbtn-primary i {
+        transition: transform var(--transition);
+    }
+
+    .zbtn-primary:hover i {
+        transform: scale(1.1);
+    }
+
+    /* RTL Support */
+    [dir="rtl"] .zbtn-primary i {
+        margin-left: 0.5rem;
+        margin-right: 0;
+    }
+    </style>
 </div>

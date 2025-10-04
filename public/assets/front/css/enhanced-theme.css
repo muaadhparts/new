@@ -1,0 +1,845 @@
+/**
+ * ========================================
+ * Enhanced Theme CSS - Auto Parts Project
+ * ========================================
+ * Modern, responsive design improvements
+ * Mobile-first approach with smooth animations
+ */
+
+/* ========================================
+   MOBILE MENU - ENHANCED UX & PERFORMANCE
+   ======================================== */
+
+/* Hide mobile menu on desktop (>= 992px) */
+@media (min-width: 992px) {
+    .mobile-menu,
+    .search-bar {
+        display: none !important;
+    }
+}
+
+/* Mobile/Tablet view (< 992px) */
+@media (max-width: 991px) {
+    /* Search bar visible on mobile */
+    .search-bar {
+        display: block;
+        position: fixed;
+        top: -100%;
+        left: 0;
+        right: 0;
+        z-index: 9997;
+        transition: top 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+    }
+
+    .search-bar.show {
+        top: 0;
+    }
+
+    /* Body scroll lock when menu is active */
+    body.menu-open {
+        overflow: hidden;
+        position: fixed;
+        width: 100%;
+    }
+}
+
+/* Overlay enhancements */
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+    z-index: 9998;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.4s ease;
+}
+
+.overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+:root {
+    --primary-color: #0d6efd;
+    --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    --success-color: #28a745;
+    --danger-color: #dc3545;
+    --warning-color: #ffc107;
+    --info-color: #17a2b8;
+    --dark-color: #212529;
+    --light-color: #f8f9fa;
+    --border-color: #dee2e6;
+    --border-radius: 0.875rem;
+    --border-radius-sm: 0.5rem;
+    --border-radius-lg: 1.25rem;
+    --box-shadow-sm: 0 2px 6px rgba(0,0,0,0.08);
+    --box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    --box-shadow-lg: 0 8px 24px rgba(0,0,0,0.15);
+    --transition-fast: 0.15s ease;
+    --transition: 0.2s ease;
+    --transition-slow: 0.3s ease;
+}
+
+/* ========================================
+   GLOBAL ENHANCEMENTS
+   ======================================== */
+
+* {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+    font-size: 16px;
+    line-height: 1.6;
+    color: var(--dark-color);
+}
+
+/* Smooth scrolling */
+html {
+    scroll-behavior: smooth;
+}
+
+/* Better focus states */
+*:focus-visible {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
+    border-radius: var(--border-radius-sm);
+}
+
+/* ========================================
+   ENHANCED BUTTONS
+   ======================================== */
+
+.btn {
+    border-radius: var(--border-radius-sm);
+    font-weight: 500;
+    transition: all var(--transition);
+    border-width: 1.5px;
+    box-shadow: var(--box-shadow-sm);
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--box-shadow);
+}
+
+.btn:active {
+    transform: translateY(0);
+}
+
+.btn-primary {
+    background: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+.btn-primary:hover {
+    background: #0b5ed7;
+    border-color: #0a58ca;
+}
+
+.btn-gradient {
+    background: var(--primary-gradient);
+    border: none;
+    color: #fff;
+}
+
+.btn-gradient:hover {
+    opacity: 0.9;
+    color: #fff;
+}
+
+/* ========================================
+   ENHANCED CARDS
+   ======================================== */
+
+.card {
+    border-radius: var(--border-radius);
+    border: 1.5px solid var(--border-color);
+    box-shadow: var(--box-shadow-sm);
+    transition: all var(--transition);
+    overflow: hidden;
+}
+
+.card:hover {
+    box-shadow: var(--box-shadow);
+    transform: translateY(-4px);
+}
+
+.card-header {
+    background: linear-gradient(to bottom, #f8f9fa 0%, #ffffff 100%);
+    border-bottom: 1.5px solid var(--border-color);
+    font-weight: 600;
+}
+
+/* ========================================
+   ENHANCED BADGES
+   ======================================== */
+
+.badge {
+    border-radius: 2rem;
+    padding: 0.4rem 0.9rem;
+    font-weight: 600;
+    font-size: 0.85rem;
+    letter-spacing: 0.3px;
+}
+
+.badge-gradient {
+    background: var(--primary-gradient);
+    color: #fff;
+}
+
+/* ========================================
+   ENHANCED FORMS
+   ======================================== */
+
+.form-control,
+.form-select {
+    border-radius: var(--border-radius-sm);
+    border: 1.5px solid var(--border-color);
+    transition: all var(--transition);
+    font-size: 1rem;
+}
+
+.form-control:focus,
+.form-select:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.15);
+}
+
+.form-label {
+    font-weight: 500;
+    color: var(--dark-color);
+    margin-bottom: 0.5rem;
+}
+
+/* ========================================
+   ENHANCED ALERTS
+   ======================================== */
+
+.alert {
+    border-radius: var(--border-radius);
+    border: none;
+    box-shadow: var(--box-shadow-sm);
+}
+
+.alert-success {
+    background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+    color: #155724;
+}
+
+.alert-danger {
+    background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+    color: #721c24;
+}
+
+.alert-warning {
+    background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+    color: #856404;
+}
+
+.alert-info {
+    background: linear-gradient(135deg, #d1ecf1 0%, #bee5eb 100%);
+    color: #0c5460;
+}
+
+/* ========================================
+   ENHANCED BREADCRUMBS
+   ======================================== */
+
+.breadcrumb {
+    background: transparent;
+    padding: 0.75rem 0;
+    margin-bottom: 1rem;
+}
+
+.breadcrumb-item {
+    font-size: 0.9rem;
+}
+
+.breadcrumb-item + .breadcrumb-item::before {
+    content: "›";
+    font-size: 1.2rem;
+    color: var(--border-color);
+}
+
+.breadcrumb-item a {
+    color: var(--dark-color);
+    text-decoration: none;
+    transition: color var(--transition-fast);
+}
+
+.breadcrumb-item a:hover {
+    color: var(--primary-color);
+}
+
+.breadcrumb-item.active {
+    color: var(--primary-color);
+    font-weight: 600;
+}
+
+/* ========================================
+   ENHANCED PRODUCT CARDS
+   ======================================== */
+
+.product-card {
+    position: relative;
+    border-radius: var(--border-radius);
+    overflow: hidden;
+    background: #fff;
+    transition: all var(--transition);
+    border: 1.5px solid var(--border-color);
+}
+
+.product-card:hover {
+    transform: translateY(-6px);
+    box-shadow: var(--box-shadow-lg);
+    border-color: var(--primary-color);
+}
+
+.product-card-image {
+    position: relative;
+    overflow: hidden;
+    background: #f8f9fa;
+    aspect-ratio: 1 / 1;
+}
+
+.product-card-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    transition: transform var(--transition-slow);
+}
+
+.product-card:hover .product-card-image img {
+    transform: scale(1.08);
+}
+
+.product-badge {
+    position: absolute;
+    top: 0.75rem;
+    right: 0.75rem;
+    background: var(--danger-color);
+    color: #fff;
+    padding: 0.35rem 0.75rem;
+    border-radius: 2rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    z-index: 2;
+    box-shadow: var(--box-shadow);
+}
+
+.product-card-body {
+    padding: 1.25rem;
+}
+
+.product-title {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: var(--dark-color);
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    min-height: 3rem;
+}
+
+.product-price {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    margin-bottom: 0.5rem;
+}
+
+.product-price-old {
+    font-size: 1rem;
+    color: #6c757d;
+    text-decoration: line-through;
+    margin-left: 0.5rem;
+}
+
+/* ========================================
+   ENHANCED PAGINATION
+   ======================================== */
+
+.pagination {
+    gap: 0.5rem;
+}
+
+.page-item .page-link {
+    border-radius: var(--border-radius-sm);
+    border: 1.5px solid var(--border-color);
+    color: var(--dark-color);
+    font-weight: 500;
+    transition: all var(--transition-fast);
+}
+
+.page-item .page-link:hover {
+    background: var(--primary-color);
+    color: #fff;
+    border-color: var(--primary-color);
+    transform: translateY(-2px);
+}
+
+.page-item.active .page-link {
+    background: var(--primary-color);
+    border-color: var(--primary-color);
+    box-shadow: var(--box-shadow);
+}
+
+/* ========================================
+   ENHANCED TABLES
+   ======================================== */
+
+.table {
+    border-radius: var(--border-radius);
+    overflow: hidden;
+}
+
+.table thead th {
+    background: linear-gradient(to bottom, #f8f9fa 0%, #e9ecef 100%);
+    border-bottom: 2px solid var(--border-color);
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    letter-spacing: 0.5px;
+}
+
+.table tbody tr {
+    transition: background-color var(--transition-fast);
+}
+
+.table tbody tr:hover {
+    background-color: rgba(13, 110, 253, 0.05);
+}
+
+/* ========================================
+   ENHANCED MODALS
+   ======================================== */
+
+.modal-content {
+    border-radius: var(--border-radius-lg);
+    border: none;
+    box-shadow: var(--box-shadow-lg);
+}
+
+.modal-header {
+    background: var(--primary-gradient);
+    color: #fff;
+    border-bottom: none;
+    border-radius: var(--border-radius-lg) var(--border-radius-lg) 0 0;
+}
+
+.modal-header .btn-close {
+    filter: brightness(0) invert(1);
+}
+
+.modal-footer {
+    border-top: 1.5px solid var(--border-color);
+    background: #f8f9fa;
+}
+
+/* ========================================
+   LOADING STATES
+   ======================================== */
+
+.skeleton {
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: loading 1.5s ease-in-out infinite;
+    border-radius: var(--border-radius-sm);
+}
+
+@keyframes loading {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+.spinner-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+}
+
+/* ========================================
+   RESPONSIVE UTILITIES
+   ======================================== */
+
+/* Mobile-first spacing */
+@media (max-width: 576px) {
+    .container {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+
+    .btn {
+        font-size: 0.9rem;
+        padding: 0.5rem 1rem;
+    }
+
+    .product-card-body {
+        padding: 1rem;
+    }
+
+    .product-title {
+        font-size: 0.9rem;
+        min-height: 2.7rem;
+    }
+
+    .product-price {
+        font-size: 1.25rem;
+    }
+}
+
+/* Tablet adjustments */
+@media (min-width: 768px) and (max-width: 991px) {
+    .product-card-body {
+        padding: 1.1rem;
+    }
+}
+
+/* Desktop enhancements */
+@media (min-width: 1200px) {
+    .container {
+        max-width: 1200px;
+    }
+}
+
+/* ========================================
+   ACCESSIBILITY
+   ======================================== */
+
+.sr-only-focusable:focus {
+    position: static;
+    width: auto;
+    height: auto;
+}
+
+/* Reduced motion for users who prefer it */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* ========================================
+   PRINT STYLES
+   ======================================== */
+
+@media print {
+    .no-print,
+    header,
+    footer,
+    .sidebar,
+    nav,
+    .btn {
+        display: none !important;
+    }
+
+    body {
+        background: #fff;
+        color: #000;
+    }
+
+    .container {
+        max-width: 100%;
+    }
+}
+
+/* ========================================
+   CUSTOM SCROLLBAR
+   ======================================== */
+
+::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--primary-color);
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #0b5ed7;
+}
+
+/* Firefox */
+* {
+    scrollbar-width: thin;
+    scrollbar-color: var(--primary-color) #f1f1f1;
+}
+
+/* ========================================
+   RTL SUPPORT (Arabic Language)
+   ======================================== */
+
+[dir="rtl"] body {
+    text-align: right;
+    direction: rtl;
+}
+
+/* RTL Buttons */
+[dir="rtl"] .btn i {
+    margin-right: 0;
+    margin-left: 0.5rem;
+}
+
+/* RTL Breadcrumbs */
+[dir="rtl"] .breadcrumb-item + .breadcrumb-item::before {
+    content: "‹";
+    padding-right: 0;
+    padding-left: 0.5rem;
+}
+
+[dir="rtl"] .breadcrumb-item::before {
+    float: left;
+    padding-right: 0;
+    padding-left: 0.5rem;
+}
+
+/* RTL Product Cards */
+[dir="rtl"] .product-card-body {
+    text-align: right;
+}
+
+[dir="rtl"] .product-badge {
+    right: auto;
+    left: 0.75rem;
+}
+
+[dir="rtl"] .product-quick-actions {
+    left: auto;
+    right: 0;
+}
+
+/* RTL Forms */
+[dir="rtl"] .form-label {
+    text-align: right;
+}
+
+[dir="rtl"] .input-group-text {
+    border-radius: 0 var(--border-radius-sm) var(--border-radius-sm) 0;
+}
+
+[dir="rtl"] .form-control:first-child {
+    border-radius: 0 var(--border-radius-sm) var(--border-radius-sm) 0;
+}
+
+[dir="rtl"] .form-control:last-child {
+    border-radius: var(--border-radius-sm) 0 0 var(--border-radius-sm);
+}
+
+/* RTL Icons */
+[dir="rtl"] .fas,
+[dir="rtl"] .far,
+[dir="rtl"] .fab {
+    margin-left: 0.5rem;
+    margin-right: 0;
+}
+
+/* RTL Lists */
+[dir="rtl"] ul,
+[dir="rtl"] ol {
+    padding-left: 0;
+    padding-right: 1.5rem;
+}
+
+/* RTL Modals */
+[dir="rtl"] .modal-header .btn-close {
+    margin: -0.5rem auto -0.5rem -0.5rem;
+}
+
+/* RTL Pagination */
+[dir="rtl"] .pagination {
+    flex-direction: row-reverse;
+}
+
+/* RTL Tables */
+[dir="rtl"] .table {
+    text-align: right;
+}
+
+[dir="rtl"] .table th,
+[dir="rtl"] .table td {
+    text-align: right;
+}
+
+/* RTL Dropdowns */
+[dir="rtl"] .dropdown-menu {
+    right: 0;
+    left: auto;
+    text-align: right;
+}
+
+/* RTL Navigation */
+[dir="rtl"] .navbar-nav {
+    flex-direction: row-reverse;
+}
+
+/* RTL Alert Icons */
+[dir="rtl"] .alert i {
+    margin-left: 0.5rem;
+    margin-right: 0;
+}
+
+/* RTL Badges */
+[dir="rtl"] .badge i {
+    margin-left: 0.25rem;
+    margin-right: 0;
+}
+
+/* RTL Product List View */
+[dir="rtl"] .product-list-card .card-body {
+    text-align: right;
+}
+
+[dir="rtl"] .product-list-image {
+    border-radius: 0 var(--border-radius) var(--border-radius) 0;
+}
+
+/* RTL Search */
+[dir="rtl"] .input-group .btn {
+    border-radius: var(--border-radius-lg) 0 0 var(--border-radius-lg);
+}
+
+[dir="rtl"] .input-group .form-control {
+    border-radius: 0 var(--border-radius-lg) var(--border-radius-lg) 0;
+}
+
+/* RTL Sidebar */
+[dir="rtl"] .sidebar {
+    text-align: right;
+}
+
+/* RTL Header */
+[dir="rtl"] .header-logo-wrapper {
+    margin-right: 0;
+    margin-left: auto;
+}
+
+/* RTL Footer */
+[dir="rtl"] .footer-row {
+    text-align: right;
+}
+
+[dir="rtl"] .social-icons {
+    flex-direction: row-reverse;
+}
+
+/* RTL Mobile Menu */
+[dir="rtl"] .mobile-menu {
+    right: auto;
+    left: 0;
+}
+
+[dir="rtl"] .mobile-menu-top {
+    text-align: right;
+}
+
+/* RTL Transitions Fix */
+[dir="rtl"] a:hover,
+[dir="rtl"] button:hover {
+    transform: translateX(2px);
+}
+
+/* RTL Chevrons and Arrows */
+[dir="rtl"] .fa-chevron-right::before {
+    content: "\f053";
+}
+
+[dir="rtl"] .fa-chevron-left::before {
+    content: "\f054";
+}
+
+[dir="rtl"] .fa-arrow-right::before {
+    content: "\f060";
+}
+
+[dir="rtl"] .fa-arrow-left::before {
+    content: "\f061";
+}
+
+/* RTL Price Display */
+[dir="rtl"] .product-price,
+[dir="rtl"] .price-wrapper {
+    text-align: right;
+}
+
+[dir="rtl"] .product-price-old {
+    margin-left: 0;
+    margin-right: 0.5rem;
+}
+
+/* RTL Flexbox Fixes */
+[dir="rtl"] .d-flex {
+    direction: rtl;
+}
+
+[dir="rtl"] .justify-content-start {
+    justify-content: flex-end !important;
+}
+
+[dir="rtl"] .justify-content-end {
+    justify-content: flex-start !important;
+}
+
+[dir="rtl"] .text-start {
+    text-align: right !important;
+}
+
+[dir="rtl"] .text-end {
+    text-align: left !important;
+}
+
+/* RTL Margin/Padding Fixes */
+[dir="rtl"] .me-1 { margin-right: 0 !important; margin-left: 0.25rem !important; }
+[dir="rtl"] .me-2 { margin-right: 0 !important; margin-left: 0.5rem !important; }
+[dir="rtl"] .me-3 { margin-right: 0 !important; margin-left: 1rem !important; }
+[dir="rtl"] .me-4 { margin-right: 0 !important; margin-left: 1.5rem !important; }
+
+[dir="rtl"] .ms-1 { margin-left: 0 !important; margin-right: 0.25rem !important; }
+[dir="rtl"] .ms-2 { margin-left: 0 !important; margin-right: 0.5rem !important; }
+[dir="rtl"] .ms-3 { margin-left: 0 !important; margin-right: 1rem !important; }
+[dir="rtl"] .ms-4 { margin-left: 0 !important; margin-right: 1.5rem !important; }
+
+[dir="rtl"] .pe-1 { padding-right: 0 !important; padding-left: 0.25rem !important; }
+[dir="rtl"] .pe-2 { padding-right: 0 !important; padding-left: 0.5rem !important; }
+[dir="rtl"] .pe-3 { padding-right: 0 !important; padding-left: 1rem !important; }
+
+[dir="rtl"] .ps-1 { padding-left: 0 !important; padding-right: 0.25rem !important; }
+[dir="rtl"] .ps-2 { padding-left: 0 !important; padding-right: 0.5rem !important; }
+[dir="rtl"] .ps-3 { padding-left: 0 !important; padding-right: 1rem !important; }
+[dir="rtl"] .ps-4 { padding-left: 0 !important; padding-right: 1.5rem !important; }
+
+/* RTL Float Fixes */
+[dir="rtl"] .float-start {
+    float: right !important;
+}
+
+[dir="rtl"] .float-end {
+    float: left !important;
+}

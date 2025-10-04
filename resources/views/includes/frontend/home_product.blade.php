@@ -56,9 +56,9 @@
   }
 @endphp
 
-<div class="{{ isset($class) ? $class : 'col-md-6 col-lg-4 col-xl-3' }}">
-  <div class="single-product">
-    <div class="img-wrapper">
+<div class="{{ isset($class) ? $class : 'col-6 col-sm-6 col-md-4 col-lg-3' }}">
+  <div class="product-card shadow-sm">
+    <div class="product-card-image">
 
       {{-- Badge الخصم (من عرض البائع إن وُجد) --}}
       @if (!is_null($offPercent) && $offPercent > 0)
@@ -67,129 +67,182 @@
 
       {{-- Brand Quality Badge --}}
       @if ($mp && $mp->qualityBrand)
-        <span class="brand-quality-badge" style="position: absolute; top: 40px; left: 10px; background: #007bff; color: white; padding: 2px 6px; border-radius: 3px; font-size: 10px; z-index: 10;">
+        <span class="badge bg-primary position-absolute"
+              style="top: 3.5rem; left: 0.75rem; font-size: 0.7rem; z-index: 3; box-shadow: var(--box-shadow-sm);">
           @if ($mp->qualityBrand->logo_url)
-            <img src="{{ $mp->qualityBrand->logo_url }}" alt="{{ $mp->qualityBrand->display_name }}" style="width: 16px; height: 16px; margin-right: 2px;">
+            <img src="{{ $mp->qualityBrand->logo_url }}"
+                 alt="{{ $mp->qualityBrand->display_name }}"
+                 style="width: 14px; height: 14px; margin-right: 3px; vertical-align: middle;">
           @endif
-          {{ $mp->qualityBrand->display_name }}
+          {{ Str::limit($mp->qualityBrand->display_name, 12) }}
         </span>
       @endif
 
-      {{-- Wishlist --}}
-      @if (Auth::check())
-        @if (isset($wishlist))
-          <a href="javascript:;" class="removewishlist"
-             data-href="{{ route('user-wishlist-remove', isset($product->wishlist_item_id) ? $product->wishlist_item_id : App\Models\Wishlist::where('user_id', Auth::id())->where('product_id',$product->id)->first()->id ?? 0) }}">
-            <div class="add-to-wishlist-btn bg-danger">
-              <i class="fas fa-trash text-white"></i>
-            </div>
-          </a>
-        @else
-          <a href="javascript:;" class="wishlist"
-             data-href="{{ isset($mp) ? route('merchant.wishlist.add', $mp->id) : 'javascript:;' }}">
-            <div class="add-to-wishlist-btn {{ isset($mp) ? (merchantWishlistCheck($mp->id) ? 'active' : '') : (wishlistCheck($product->id) ? 'active' : '') }}">
-              {{-- أيقونة --}}
-            </div>
-          </a>
-        @endif
-      @else
-        <a href="{{ route('user.login') }}">
-          <div class="add-to-wishlist-btn">…</div>
-        </a>
-      @endif
-
-      {{-- صورة --}}
-      <a class="test-popup-link" href="{{ \Illuminate\Support\Facades\Storage::url($product->photo) ?? asset('assets/images/noimage.png') }}">
-        <img class="product-img"
-             src="{{ \Illuminate\Support\Facades\Storage::url($product->photo) ?? asset('assets/images/noimage.png') }}"
-             alt="product img">
-      </a>
-
-      {{-- أزرار --}}
-      <div class="add-to-cart">
-        @if ($product->type != 'Listing')
-          {{-- Compare --}}
-          <a class="compare_product" href="javascript:;"
-             data-href="{{ isset($mp) ? route('merchant.compare.add', $mp->id) : 'javascript:;' }}">
-            <div class="compare {{ isset($mp) ? (merchantCompareCheck($mp->id) ? 'active' : '') : '' }}">…</div>
-          </a>
-        @endif
-
-        {{-- Affiliate / Add to Cart --}}
-        @if ($product->product_type == 'affiliate')
-          <a href="{{ $product->affiliate_link }}" class="add_to_cart_button">
-            <div class="add-cart">@lang('Add To Cart')</div>
-          </a>
-        @else
-          @if (!$hasVendor || !$inStock)
-            <div class="add-cart">{{ __('Out of Stock') }}</div>
+      {{-- Wishlist Button --}}
+      <div class="position-absolute top-0 end-0 p-2" style="z-index: 3;">
+        @if (Auth::check())
+          @if (isset($wishlist))
+            <a href="javascript:;" class="removewishlist btn btn-sm btn-danger rounded-circle p-2"
+               data-href="{{ route('user-wishlist-remove', isset($product->wishlist_item_id) ? $product->wishlist_item_id : App\Models\Wishlist::where('user_id', Auth::id())->where('product_id',$product->id)->first()->id ?? 0) }}"
+               title="@lang('Remove from Wishlist')">
+              <i class="fas fa-trash"></i>
+            </a>
           @else
-            @if ($product->type != 'Listing')
-              <a href="javascript:;"
-                 {{ $product->cross_products ? 'data-bs-target=#exampleModal' : '' }}
-                 data-href="{{ isset($mp) ? route('merchant.cart.add', $mp->id) : 'javascript:;' }}"
-                 data-cross-href="{{ route('front.show.cross.product', $product->id) }}"
-                 data-merchant-product="{{ $mp->id ?? '' }}"
-                 data-product="{{ $product->id }}"
-                 class="add_cart_click {{ $product->cross_products ? 'view_cross_product' : '' }}">
-                <div class="add-cart">@lang('Add To Cart')</div>
-              </a>
-            @endif
+            <a href="javascript:;" class="wishlist btn btn-sm rounded-circle p-2 {{ isset($mp) ? (merchantWishlistCheck($mp->id) ? 'btn-danger' : 'btn-outline-light') : (wishlistCheck($product->id) ? 'btn-danger' : 'btn-outline-light') }}"
+               data-href="{{ isset($mp) ? route('merchant.wishlist.add', $mp->id) : 'javascript:;' }}"
+               title="@lang('Add to Wishlist')">
+              <i class="fas fa-heart"></i>
+            </a>
           @endif
-        @endif
-
-        {{-- Details --}}
-        @if ($product->type != 'Listing')
-          <a href="{{ $detailsUrl }}">
-            <div class="details">…</div>
-            <div class="details">…</div>
+        @else
+          <a href="{{ route('user.login') }}" class="btn btn-sm btn-outline-light rounded-circle p-2" title="@lang('Login to Add Wishlist')">
+            <i class="far fa-heart"></i>
           </a>
         @endif
       </div>
-    </div>
 
-    <div class="content-wrapper">
-      <a href="{{ $detailsUrl }}">
-        <h6 class="product-title"><x-product-name :product="$product" :vendor-id="$vendorId" target="_self" /></h6>
+      {{-- صورة المنتج --}}
+      <a href="{{ $detailsUrl }}" class="d-block">
+        <img class="w-100 h-100"
+             style="object-fit: contain;"
+             src="{{ \Illuminate\Support\Facades\Storage::url($product->photo) ?? asset('assets/images/noimage.png') }}"
+             alt="{{ $product->name }}"
+             loading="lazy">
       </a>
 
-      {{-- Merchant Store Information --}}
+      {{-- Quick Action Buttons (Hover) --}}
+      <div class="product-quick-actions position-absolute bottom-0 start-0 end-0 p-2"
+           style="background: linear-gradient(to top, rgba(0,0,0,0.7), transparent); opacity: 0; transition: opacity 0.3s ease;">
+        <div class="d-flex gap-2 justify-content-center">
+          {{-- Compare --}}
+          @if ($product->type != 'Listing')
+            <a class="compare_product btn btn-sm btn-light rounded-circle" href="javascript:;"
+               data-href="{{ isset($mp) ? route('merchant.compare.add', $mp->id) : 'javascript:;' }}"
+               title="@lang('Compare')">
+              <i class="fas fa-balance-scale {{ isset($mp) ? (merchantCompareCheck($mp->id) ? 'text-primary' : '') : '' }}"></i>
+            </a>
+          @endif
+
+          {{-- Quick View --}}
+          <a href="{{ $detailsUrl }}" class="btn btn-sm btn-light rounded-circle" title="@lang('Quick View')">
+            <i class="fas fa-eye"></i>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <div class="product-card-body">
+      {{-- Product Title --}}
+      <a href="{{ $detailsUrl }}" class="text-decoration-none">
+        <h6 class="product-title mb-2">
+          <x-product-name :product="$product" :vendor-id="$vendorId" target="_self" />
+        </h6>
+      </a>
+
+      {{-- Merchant Info --}}
       @if($mp && $mp->user)
-        <p class="merchant-info text-muted">
-          <small>@lang('Sold by:') {{ $mp->user->shop_name ?? $mp->user->name }}</small>
+        <p class="text-muted small mb-1">
+          <i class="fas fa-store me-1"></i>
+          {{ Str::limit($mp->user->shop_name ?? $mp->user->name, 20) }}
         </p>
         @if($mp->qualityBrand)
-          <p class="brand-quality-info text-muted">
-            <small>@lang('Brand qualities:') {{ app()->getLocale() == 'ar' && $mp->qualityBrand->name_ar ? $mp->qualityBrand->name_ar : $mp->qualityBrand->name_en }}</small>
+          <p class="text-muted small mb-2">
+            <i class="fas fa-award me-1"></i>
+            {{ Str::limit(app()->getLocale() == 'ar' && $mp->qualityBrand->name_ar ? $mp->qualityBrand->name_ar : $mp->qualityBrand->name_en, 20) }}
           </p>
         @endif
       @endif
 
-      {{-- <p><span>@lang('Product SKU :')</span> <span>{{ $product->sku }}</span></p> --}}
-      <div class="price-wrapper">
-        {{-- السعر الحالي --}}
-        <h6>
-          @if ($mp && method_exists($mp, 'showPrice'))
-            {{ $mp->showPrice() }}
-          @elseif ($mp && isset($mp->price))
-            {{ \App\Helpers\PriceHelper::showCurrencyPrice(\App\Models\Product::convertPrice($mp->price)) }}
-          @else
-            {{ $product->showPrice() }}
-          @endif
-        </h6>
-
-        {{-- السعر السابق --}}
-        <h6>
-          <del>
-            @if ($mp && !is_null($mp->previous_price))
-              {{ \App\Models\Product::convertPrice($mp->previous_price) }}
+      {{-- Price --}}
+      <div class="d-flex align-items-center justify-content-between mb-3">
+        <div>
+          <div class="product-price mb-0">
+            @if ($mp && method_exists($mp, 'showPrice'))
+              {{ $mp->showPrice() }}
+            @elseif ($mp && isset($mp->price))
+              {{ \App\Helpers\PriceHelper::showCurrencyPrice(\App\Models\Product::convertPrice($mp->price)) }}
             @else
-              {{ $product->showPreviousPrice() }}
+              {{ $product->showPrice() }}
             @endif
-          </del>
-        </h6>
+          </div>
+          @if ($mp && !is_null($mp->previous_price) && $mp->previous_price > $mp->price)
+            <div class="product-price-old">
+              {{ \App\Models\Product::convertPrice($mp->previous_price) }}
+            </div>
+          @elseif($product->showPreviousPrice() != $product->showPrice())
+            <div class="product-price-old">
+              {{ $product->showPreviousPrice() }}
+            </div>
+          @endif
+        </div>
       </div>
-      {{-- تقييمات … --}}
+
+      {{-- Add to Cart Button --}}
+      @if ($product->product_type == 'affiliate')
+        <a href="{{ $product->affiliate_link }}" class="btn btn-primary w-100 btn-sm" target="_blank">
+          <i class="fas fa-external-link-alt me-1"></i>
+          @lang('View Product')
+        </a>
+      @else
+        @if (!$hasVendor || !$inStock)
+          <button class="btn btn-outline-secondary w-100 btn-sm" disabled>
+            <i class="fas fa-times-circle me-1"></i>
+            {{ __('Out of Stock') }}
+          </button>
+        @else
+          @if ($product->type != 'Listing')
+            <a href="javascript:;"
+               {{ $product->cross_products ? 'data-bs-target=#exampleModal' : '' }}
+               data-href="{{ isset($mp) ? route('merchant.cart.add', $mp->id) : 'javascript:;' }}"
+               data-cross-href="{{ route('front.show.cross.product', $product->id) }}"
+               data-merchant-product="{{ $mp->id ?? '' }}"
+               data-product="{{ $product->id }}"
+               class="btn btn-primary w-100 btn-sm add_cart_click {{ $product->cross_products ? 'view_cross_product' : '' }}">
+              <i class="fas fa-shopping-cart me-1"></i>
+              @lang('Add To Cart')
+            </a>
+          @endif
+        @endif
+      @endif
     </div>
   </div>
 </div>
+
+<style>
+/* Product Card Hover Effects */
+.product-card:hover .product-quick-actions {
+    opacity: 1 !important;
+}
+
+.product-card-image {
+    position: relative;
+    overflow: hidden;
+    background: #f8f9fa;
+    aspect-ratio: 1 / 1;
+    border-radius: var(--border-radius) var(--border-radius) 0 0;
+}
+
+.product-card-image img {
+    transition: transform 0.4s ease;
+}
+
+.product-card:hover .product-card-image img {
+    transform: scale(1.05);
+}
+
+/* Responsive adjustments */
+@media (max-width: 576px) {
+    .product-card-body {
+        padding: 0.875rem !important;
+    }
+
+    .product-title {
+        font-size: 0.85rem !important;
+        min-height: 2.5rem !important;
+    }
+
+    .product-price {
+        font-size: 1.1rem !important;
+    }
+}
+</style>

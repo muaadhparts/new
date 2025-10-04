@@ -40,17 +40,65 @@ $(document).ready(function () {
     );
   });
 
-  //****** 2. MOBILE MENU ******//
+  //****** 2. MOBILE MENU - ENHANCED UX ******//
   const $overlay = $(".overlay");
-  const $mobileMenu = $(".mobile-menu");
+  const $mobileMenu = $("#mobileMenu");
+  const $searchBar = $("#searchBar");
+  const $body = $("body");
 
-  $(".header-toggle").on("click", function () {
-    $mobileMenu.toggleClass("active");
+  // Open mobile menu
+  $(".header-toggle, .mobile-menu-toggle").on("click", function (e) {
+    e.preventDefault();
+    $mobileMenu.addClass("active");
     $overlay.addClass("active");
+    $body.css("overflow", "hidden"); // Prevent body scroll when menu is open
   });
-  $(".close").on("click", function () {
+
+  // Close mobile menu with close button
+  $(".close, #closeMobileMenu, .close-menu-btn").on("click", function (e) {
+    e.preventDefault();
+    closeMobileMenu();
+  });
+
+  // Close mobile menu when clicking on overlay
+  $overlay.on("click", function () {
+    closeMobileMenu();
+    $searchBar.removeClass("show");
+  });
+
+  // Close mobile menu when clicking on any menu link (not collapse toggles or parent links)
+  $(document).on("click", ".mobile-menu .accordion li a", function (e) {
+    // Don't close if it's a collapse toggle or has no href
+    const href = $(this).attr("href");
+    const hasCollapse = $(this).attr("data-bs-toggle");
+
+    if (!hasCollapse && href && href !== "#" && href !== "javascript:;" && href !== "javascript:void(0)") {
+      // Add smooth closing with slight delay for better UX
+      setTimeout(function () {
+        closeMobileMenu();
+      }, 200);
+    }
+  });
+
+  // Close mobile menu on ESC key
+  $(document).on("keydown", function (e) {
+    if (e.key === "Escape" && $mobileMenu.hasClass("active")) {
+      closeMobileMenu();
+    }
+  });
+
+  // Function to close mobile menu
+  function closeMobileMenu() {
     $mobileMenu.removeClass("active");
     $overlay.removeClass("active");
+    $body.css("overflow", ""); // Restore body scroll
+  }
+
+  // Prevent menu closing when clicking inside menu (except on links)
+  $mobileMenu.on("click", function (e) {
+    if (!$(e.target).is("a") && !$(e.target).closest("a").length) {
+      e.stopPropagation();
+    }
   });
 
   //****** 3. STICKY HEADER ******//

@@ -1,130 +1,273 @@
-<div class="container mb-5 text-center" style="position: relative;" x-data="{ vinModal: false }">
+<div class="container mb-5" style="position: relative;" x-data="{ vinModal: false }">
 
-    {{-- الحقل --}}
-    <div class="search-row">
+  {{-- Enhanced Search Box --}}
+  <div class="enhanced-search-wrapper">
+    <div class="search-container">
+      <div class="input-group input-group-lg shadow-sm">
+        <span class="input-group-text bg-white border-end-0 ps-4">
+          <i class="fas fa-search text-primary"></i>
+        </span>
         <input
-            type="text"
-            class="search-input"
-            placeholder="{{ __('Enter part number or name') }}"
-            wire:model.debounce.300ms="query"
-            wire:keydown.enter="submitSearch"
-            aria-label="{{ __('Search by part number or name') }}"
+          type="text"
+          class="form-control form-control-lg border-start-0 ps-0"
+          placeholder="{{ __('Enter part number or name') }}"
+          wire:model.debounce.300ms="query"
+          wire:keydown.enter="submitSearch"
+          aria-label="{{ __('Search by part number or name') }}"
         >
+        <button class="btn btn-primary px-4" wire:click="submitSearch" type="button">
+          <i class="fas fa-search me-2"></i>
+          <span class="d-none d-sm-inline">{{ __('Search') }}</span>
+        </button>
+      </div>
 
-        {{-- قائمة التلميحات --}}
-        @if (!empty($results))
-            <div class="suggestion-box">
-                @foreach ($results as $result)
-                    <div class="suggestion-item" wire:click="selectItem('{{ $result['sku'] }}')">
-                        <div class="result-sku">{{ $result['sku'] }}</div>
-                        <div class="result-label">
-                            {{ getLocalizedLabel($result) }}
-                        </div>
+      {{-- Suggestions Dropdown --}}
+      @if (!empty($results))
+        <div class="suggestions-dropdown card shadow-lg">
+          <div class="card-body p-0">
+            <div class="list-group list-group-flush">
+              @foreach ($results as $result)
+                <div class="list-group-item list-group-item-action border-0 suggestion-item-enhanced"
+                     wire:click="selectItem('{{ $result['sku'] }}')"
+                     role="button">
+                  <div class="d-flex align-items-center">
+                    <div class="flex-shrink-0 me-3">
+                      <div class="suggestion-icon">
+                        <i class="fas fa-cube text-primary"></i>
+                      </div>
                     </div>
-                @endforeach
+                    <div class="flex-grow-1">
+                      <div class="suggestion-sku fw-bold text-primary mb-1">
+                        {{ $result['sku'] }}
+                      </div>
+                      <div class="suggestion-label text-muted small">
+                        {{ getLocalizedLabel($result) }}
+                      </div>
+                    </div>
+                    <div class="flex-shrink-0">
+                      <i class="fas fa-chevron-right text-muted"></i>
+                    </div>
+                  </div>
+                </div>
+              @endforeach
             </div>
-        @endif
+          </div>
+        </div>
+      @endif
     </div>
 
-    {{-- التلميح --}}
-    <p class="search-hint mt-2">
-        {{ __('Example :') }} <code dir="ltr">1520831U0B</code>
-    </p>
-    <!-- Modal -->
-    <div class="modal fade" id="vinSearchModal" tabindex="-1" aria-labelledby="vinSearchModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg"> <!-- modal-lg لو حابب يكون واسع -->
-        <div class="modal-content">
-        <div class="modal-header">
-            <h5 class="modal-title" id="vinSearchModalLabel">@lang('Search by VIN')</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="@lang('Close')"></button>
+    {{-- Search Hint --}}
+    <div class="text-center mt-3">
+      <p class="search-hint-enhanced mb-0">
+        <i class="fas fa-info-circle me-1"></i>
+        <span class="text-muted">{{ __('Example :') }}</span>
+        <code class="bg-light px-2 py-1 rounded ms-1" dir="ltr">1520831U0B</code>
+      </p>
+    </div>
+  </div>
+
+  {{-- VIN Search Modal --}}
+  <div class="modal fade" id="vinSearchModal" tabindex="-1" aria-labelledby="vinSearchModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header bg-primary bg-gradient text-white">
+          <h5 class="modal-title" id="vinSearchModalLabel">
+            <i class="fas fa-car me-2"></i>
+            @lang('Search by VIN')
+          </h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="@lang('Close')"></button>
         </div>
         <div class="modal-body">
-            <livewire:search-boxvin/>
+          <livewire:search-boxvin/>
         </div>
-        </div>
+      </div>
     </div>
-    </div>
+  </div>
+
+</div>
 
 <style>
-    [x-cloak] { display: none !important; }
+[x-cloak] { display: none !important; }
 
-    /* حاوية البحث */
-    .search-row{
-        position: relative;
-        display:flex; 
-        justify-content:center; 
-        align-items:center; 
-        flex-wrap:wrap;
-        width: 100%;
-    }
+/* Enhanced Search Wrapper */
+.enhanced-search-wrapper {
+  max-width: 800px;
+  margin: 0 auto;
+}
 
-    .search-input{
-        padding: 12px 18px;
-        font-size: 16px;
-        border: 2px solid #007bff;
-        border-radius: 30px;
-        box-shadow: 0 0 6px rgba(0,123,255,0.2);
-        outline: none;
-        width: 100%;
-        max-width: 520px; 
-        margin: auto;
-        transition: all 0.3s ease-in-out;
-    }
-    .search-input:focus{
-        border-color:#0056b3;
-        box-shadow:0 0 8px rgba(1, 21, 43, 0.3);
-        max-width: 650px;
-    }
+.search-container {
+  position: relative;
+}
 
-    .search-hint{
-        font-size: 13px;
-        color: #6c757d;
-        margin-bottom: 0;
-    }
+/* Enhanced Input Group */
+.enhanced-search-wrapper .input-group {
+  border-radius: var(--border-radius-lg);
+  overflow: hidden;
+  border: 2px solid var(--primary-color);
+  background: #fff;
+  transition: all var(--transition);
+}
 
-    /* صندوق التلميحات */
-    .suggestion-box{
-        position: absolute;
-        top: 100%;
-        left: 50%;
-        transform: translateX(-50%);
-        width: 100%;
-        max-width: 520px;
-        background: #fff;
-        border: 1px solid #ddd;
-        border-radius: 10px;
-        margin-top: 6px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        max-height: 350px;
-        overflow-y: auto;
-        z-index: 1000;
-    }
-    .suggestion-item{
-        padding: 10px 14px;
-        text-align: left;
-        cursor: pointer;
-        transition: background 0.2s ease-in-out;
-    }
-    .suggestion-item:hover{ background: #f8f9fa; }
+.enhanced-search-wrapper .input-group:focus-within {
+  border-color: #0b5ed7;
+  box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.15);
+  transform: translateY(-2px);
+}
 
-    .result-sku{
-        font-weight: bold;
-        font-size: 15px;
-        color: rgb(73, 103, 236);
-    }
-    .result-label-ar{
-        font-weight: 600;
-        font-size: 10px;
-        color: #333;
-    }
-    .result-label-en{
-        font-weight: 500;
-        font-size: 10px;
-        color: #004085;
-    }
+.enhanced-search-wrapper .input-group-text {
+  border: none;
+  background: transparent;
+}
 
-    @media (max-width: 576px){
-        .search-input{ max-width: 100%; }
-        .suggestion-box{ max-width: 100%; }
-    }
+.enhanced-search-wrapper .form-control {
+  border: none;
+  font-size: 1.1rem;
+  font-weight: 500;
+}
+
+.enhanced-search-wrapper .form-control:focus {
+  box-shadow: none;
+  border: none;
+}
+
+.enhanced-search-wrapper .btn-primary {
+  border: none;
+  font-weight: 600;
+  border-radius: 0;
+  padding: 0.75rem 2rem;
+}
+
+/* Suggestions Dropdown */
+.suggestions-dropdown {
+  position: absolute;
+  top: calc(100% + 0.75rem);
+  left: 0;
+  right: 0;
+  z-index: 1050;
+  max-height: 400px;
+  overflow-y: auto;
+  border: none;
+  border-radius: var(--border-radius);
+  animation: slideDown 0.2s ease;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.suggestion-item-enhanced {
+  padding: 1rem;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.suggestion-item-enhanced:last-child {
+  border-bottom: none;
+}
+
+.suggestion-item-enhanced:hover {
+  background: linear-gradient(to right, rgba(13, 110, 253, 0.05), transparent);
+  padding-left: 1.25rem;
+}
+
+.suggestion-icon {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(13, 110, 253, 0.1);
+  border-radius: var(--border-radius-sm);
+}
+
+.suggestion-sku {
+  font-size: 1rem;
+  letter-spacing: 0.5px;
+}
+
+.suggestion-label {
+  font-size: 0.875rem;
+  line-height: 1.4;
+}
+
+/* Search Hint */
+.search-hint-enhanced {
+  font-size: 0.9rem;
+}
+
+.search-hint-enhanced code {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--primary-color);
+  border: 1px solid var(--border-color);
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+  .enhanced-search-wrapper {
+    padding: 0 1rem;
+  }
+
+  .enhanced-search-wrapper .input-group {
+    flex-wrap: nowrap;
+  }
+
+  .enhanced-search-wrapper .form-control {
+    font-size: 1rem;
+  }
+
+  .enhanced-search-wrapper .btn-primary {
+    padding: 0.75rem 1rem;
+  }
+
+  .suggestion-item-enhanced {
+    padding: 0.875rem;
+  }
+
+  .suggestion-icon {
+    width: 35px;
+    height: 35px;
+  }
+}
+
+@media (max-width: 576px) {
+  .enhanced-search-wrapper .input-group-text {
+    padding-left: 1rem;
+  }
+
+  .enhanced-search-wrapper .btn-primary span {
+    display: none !important;
+  }
+
+  .enhanced-search-wrapper .btn-primary {
+    padding: 0.75rem 1.25rem;
+  }
+}
+
+/* Custom Scrollbar for Suggestions */
+.suggestions-dropdown::-webkit-scrollbar {
+  width: 8px;
+}
+
+.suggestions-dropdown::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+.suggestions-dropdown::-webkit-scrollbar-thumb {
+  background: var(--primary-color);
+  border-radius: 10px;
+}
+
+.suggestions-dropdown::-webkit-scrollbar-thumb:hover {
+  background: #0b5ed7;
+}
 </style>

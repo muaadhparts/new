@@ -240,6 +240,51 @@
 
     @stack('scripts')
     @yield('script')
+
+    {{-- Performance and UX Enhancements --}}
+    <script>
+    // Smooth scroll to top button
+    window.addEventListener('scroll', function() {
+        const scrollBtn = document.getElementById('scrollToTop');
+        if (scrollBtn) {
+            if (window.pageYOffset > 300) {
+                scrollBtn.style.display = 'block';
+            } else {
+                scrollBtn.style.display = 'none';
+            }
+        }
+    });
+
+    // Lazy loading images enhancement
+    if ('loading' in HTMLImageElement.prototype) {
+        const images = document.querySelectorAll('img[loading="lazy"]');
+        images.forEach(img => {
+            img.src = img.dataset.src || img.src;
+        });
+    }
+
+    // RTL Direction Fix for Slick Sliders
+    @if(app()->getLocale() === 'ar')
+    jQuery(document).ready(function($) {
+        $('.slick-slider').not('.slick-initialized').each(function() {
+            $(this).slick('setOption', 'rtl', true, true);
+        });
+    });
+    @endif
+    </script>
+
+    {{-- Scroll to Top Button --}}
+    <button id="scrollToTop" onclick="window.scrollTo({top: 0, behavior: 'smooth'})"
+            style="display: none; position: fixed; bottom: 30px; {{ app()->getLocale() === 'ar' ? 'left' : 'right' }}: 30px; z-index: 999; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #fff; border: none; width: 50px; height: 50px; border-radius: 50%; cursor: pointer; box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3); transition: all 0.3s ease;">
+        <i class="fas fa-arrow-up"></i>
+    </button>
+
+    <style>
+    #scrollToTop:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 20px rgba(102, 126, 234, 0.5);
+    }
+    </style>
 </body>
 
 </html>

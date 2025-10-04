@@ -90,3 +90,32 @@
         </small>
     @endif
 </div>
+
+<style>
+/* Product Name Component Styles */
+.product-name-component a {
+    color: var(--dark-color);
+    text-decoration: none;
+    transition: color var(--transition-fast);
+    font-weight: 600;
+}
+
+.product-name-component a:hover {
+    color: var(--primary-color);
+}
+
+.product-name-component small a {
+    color: #6c757d;
+    font-weight: 500;
+}
+
+.product-name-component small a:hover {
+    color: var(--primary-color);
+    text-decoration: underline;
+}
+
+/* RTL Support */
+[dir="rtl"] .product-name-component {
+    text-align: right;
+}
+</style>

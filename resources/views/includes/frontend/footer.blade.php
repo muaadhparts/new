@@ -197,3 +197,267 @@
         </div>
     </div>
 </footer>
+
+<style>
+/* ========================================
+   ENHANCED FOOTER STYLES
+   ======================================== */
+
+/* Footer Section */
+.gs-footer-section {
+    background: linear-gradient(to bottom, #1a1a2e 0%, #16213e 100%);
+    color: #fff;
+    padding: 4rem 0 0;
+}
+
+/* Footer Logo */
+.gs-footer-section .logo {
+    max-height: 60px;
+    margin-bottom: 2rem;
+    transition: transform var(--transition);
+}
+
+.gs-footer-section .logo:hover {
+    transform: scale(1.05);
+}
+
+/* Footer Links */
+.gs-footer-section a {
+    color: rgba(255, 255, 255, 0.8);
+    transition: all var(--transition-fast);
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.5rem 0;
+}
+
+.gs-footer-section a:hover {
+    color: #ffc107;
+    padding-left: 0.5rem;
+}
+
+.gs-footer-section a svg {
+    transition: transform var(--transition);
+}
+
+.gs-footer-section a:hover svg {
+    transform: scale(1.1);
+}
+
+/* Footer Headings */
+.gs-footer-section h3,
+.gs-footer-section h4,
+.gs-footer-section h5 {
+    color: #fff;
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+    position: relative;
+    padding-bottom: 0.75rem;
+}
+
+.gs-footer-section h3::after,
+.gs-footer-section h4::after,
+.gs-footer-section h5::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 50px;
+    height: 3px;
+    background: linear-gradient(to right, #ffc107, transparent);
+}
+
+/* Footer Lists */
+.gs-footer-section ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.gs-footer-section ul li {
+    margin-bottom: 0.75rem;
+}
+
+.gs-footer-section ul li a {
+    color: rgba(255, 255, 255, 0.7);
+    transition: all var(--transition-fast);
+    position: relative;
+}
+
+.gs-footer-section ul li a::before {
+    content: '\2192';
+    margin-right: 0.5rem;
+    opacity: 0;
+    transition: all var(--transition-fast);
+}
+
+.gs-footer-section ul li a:hover::before {
+    opacity: 1;
+    margin-right: 0.75rem;
+}
+
+/* Social Media Icons */
+.gs-footer-section .social-icons {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+
+.gs-footer-section .social-icons a {
+    width: 45px;
+    height: 45px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    transition: all var(--transition);
+    padding: 0;
+}
+
+.gs-footer-section .social-icons a:hover {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+    padding-left: 0;
+}
+
+/* Newsletter Form */
+.newslatter {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 3rem 0;
+    margin-bottom: 4rem;
+    border-radius: var(--border-radius-lg);
+}
+
+.newslatter h2 {
+    color: #fff;
+    font-weight: 700;
+    margin-bottom: 0;
+}
+
+.news-latter-input {
+    padding: 1rem 1.5rem;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: var(--border-radius-lg);
+    background: rgba(255, 255, 255, 0.2);
+    color: #fff;
+    font-weight: 500;
+    transition: all var(--transition);
+}
+
+.news-latter-input::placeholder {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.news-latter-input:focus {
+    background: rgba(255, 255, 255, 0.3);
+    border-color: #fff;
+    box-shadow: 0 0 0 0.25rem rgba(255, 255, 255, 0.15);
+}
+
+.newsletter-btn {
+    padding: 1rem 2.5rem;
+    background: #fff;
+    color: #667eea;
+    font-weight: 700;
+    border: none;
+    border-radius: var(--border-radius-lg);
+    transition: all var(--transition);
+    box-shadow: var(--box-shadow);
+}
+
+.newsletter-btn:hover {
+    background: #ffc107;
+    color: #fff;
+    transform: translateY(-2px);
+    box-shadow: var(--box-shadow-lg);
+}
+
+/* Footer Bottom */
+.footer-bottom {
+    background: rgba(0, 0, 0, 0.3);
+    padding: 1.5rem 0;
+    margin-top: 3rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.footer-bottom-content p {
+    margin: 0;
+    color: rgba(255, 255, 255, 0.7);
+    text-align: center;
+}
+
+.footer-bottom-content a {
+    color: #ffc107;
+    font-weight: 600;
+}
+
+.footer-bottom-content a:hover {
+    color: #fff;
+    text-decoration: underline;
+}
+
+/* Payment Icons */
+.payment-icons {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    margin-top: 1rem;
+}
+
+.payment-icons img {
+    height: 30px;
+    opacity: 0.7;
+    transition: opacity var(--transition);
+}
+
+.payment-icons img:hover {
+    opacity: 1;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 991px) {
+    .gs-footer-section {
+        padding: 3rem 0 0;
+    }
+
+    .footer-row {
+        text-align: center;
+    }
+
+    .gs-footer-section h3::after,
+    .gs-footer-section h4::after,
+    .gs-footer-section h5::after {
+        left: 50%;
+        transform: translateX(-50%);
+    }
+
+    .social-icons {
+        justify-content: center;
+    }
+}
+
+@media (max-width: 767px) {
+    .gs-footer-section {
+        padding: 2rem 0 0;
+        font-size: 0.9rem;
+    }
+
+    .newslatter {
+        padding: 2rem 0;
+        margin-bottom: 2rem;
+    }
+
+    .newsletter-btn {
+        padding: 0.875rem 1.5rem;
+        font-size: 0.9rem;
+    }
+
+    .footer-bottom {
+        padding: 1rem 0;
+        margin-top: 2rem;
+    }
+}
+</style>
