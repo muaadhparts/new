@@ -13,6 +13,7 @@
             <th>@lang('Name')</th>
             <th>@lang('Brand:')</th>
             <th>@lang('Brand qualities:')</th>
+            <th>@lang('Store')</th>
             <th>@lang('Stock')</th>
             <th>@lang('Price')</th>
             <th>@lang('Quick View')</th>
@@ -42,6 +43,8 @@
             <td>{{ $product->brand ? Str::ucfirst($product->brand->name) : '-' }}</td>
 
             <td>{{ $mp->qualityBrand ? (app()->getLocale() == 'ar' && $mp->qualityBrand->name_ar ? $mp->qualityBrand->name_ar : $mp->qualityBrand->name_en) : '-' }}</td>
+
+            <td>{{ $mp->user ? ($mp->user->shop_name ?: $mp->user->name) : '-' }}</td>
 
             <td>
               <span class="badge bg-{{ ($mp->stock ?? 0) > 0 ? 'success' : 'secondary' }}">

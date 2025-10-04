@@ -13,10 +13,16 @@ class AlternativeService
 {
     /**
      * جلب البدائل لـ SKU معين
+     * يجلب البدائل من sku_alternatives + جميع العروض المختلفة لنفس المنتج
      */
     public function getAlternatives(string $sku, bool $includeSelf = false): Collection
     {
         $skuAlt = SkuAlternative::where('sku', $sku)->first();
+        $product = \App\Models\Product::where('sku', $sku)->first();
+
+        if (!$product) {
+            return collect();
+        }
 
         $skus = [];
 
@@ -24,6 +30,7 @@ class AlternativeService
             $skus[] = $sku;
         }
 
+        // جلب البدائل من جدول sku_alternatives
         if ($skuAlt && $skuAlt->group_id) {
             $groupSkus = SkuAlternative::where('group_id', $skuAlt->group_id)
                 ->where('sku', '<>', $sku)
@@ -32,11 +39,37 @@ class AlternativeService
             $skus = array_merge($skus, $groupSkus);
         }
 
-        if (empty($skus)) {
-            return collect();
-        }
+        // جلب جميع merchant_products للبدائل
+        $alternatives = empty($skus) ? collect() : $this->fetchMerchantProducts($skus);
 
-        return $this->fetchMerchantProducts($skus);
+        // جلب جميع merchant_products لنفس product_id (العروض المختلفة)
+        $sameProductVariants = $this->fetchSameProductVariants($product->id, $includeSelf);
+
+        // دمج النتائج وإزالة التكرار
+        $combined = $alternatives->merge($sameProductVariants)->unique('id');
+
+        return $this->sortByPriority($combined);
+    }
+
+    /**
+     * جلب جميع العروض لنفس المنتج (variants من شركات مختلفة)
+     */
+    protected function fetchSameProductVariants(int $productId, bool $includeSelf): Collection
+    {
+        // جلب جميع merchant_products لنفس product_id
+        return MerchantProduct::with([
+                'product' => function ($q) {
+                    $q->select('id', 'sku', 'slug', 'label_en', 'label_ar', 'photo', 'brand_id');
+                },
+                'user:id,is_vendor,name,shop_name',
+                'qualityBrand:id,name_en,name_ar,logo',
+            ])
+            ->where('status', 1)
+            ->where('product_id', $productId)
+            ->whereHas('user', function ($u) {
+                $u->where('is_vendor', 2);
+            })
+            ->get();
     }
 
     /**
@@ -48,7 +81,8 @@ class AlternativeService
                 'product' => function ($q) {
                     $q->select('id', 'sku', 'slug', 'label_en', 'label_ar', 'photo', 'brand_id');
                 },
-                'user:id,is_vendor',
+                'user:id,is_vendor,name,shop_name',
+                'qualityBrand:id,name_en,name_ar,logo',
             ])
             ->where('status', 1)
             ->whereHas('user', function ($u) {
