@@ -16,39 +16,15 @@
             <div class="row">
                 <div class="col-12">
 
-                    @php
-                        // نثبت العرض على list-view حاليًا
-                        $view = 'list-view';
-
-                        // إجمالي العروض (قوائم البائعين الفعّالة) للمنتجات الأساسية
-                        $totalListings = 0;
-                        if (isset($prods) && $prods->count()) {
-                            foreach ($prods as $p) {
-                                $totalListings += $p->merchantProducts()
-                                    ->where('status', 1)
-                                    ->count();
-                            }
-                        }
-
-                        // إجمالي العروض للبدائل (إن كانت بدائل عبارة عن منتجات)
-                        if (isset($alternatives) && $alternatives instanceof \Illuminate\Support\Collection && $alternatives->count()) {
-                            foreach ($alternatives as $p) {
-                                $totalListings += $p->merchantProducts()
-                                    ->where('status', 1)
-                                    ->count();
-                            }
-                        }
-                    @endphp
-
-                    {{-- Results Header --}}
+                    {{-- Results Header & Filters --}}
                     <div class="results-header card shadow-sm mb-4">
                         <div class="card-body">
-                            <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+                            <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-3">
                                 <div>
                                     <h4 class="mb-1">
                                         <i class="fas fa-box-open text-primary me-2"></i>
                                         @lang('Total Listings Found:')
-                                        <span class="badge bg-primary">{{ $totalListings }}</span>
+                                        <span class="badge bg-primary">{{ $filteredMerchants->count() }}</span>
                                     </h4>
                                     <p class="text-muted mb-0">
                                         <i class="fas fa-search me-1"></i>
@@ -56,10 +32,73 @@
                                     </p>
                                 </div>
                             </div>
+
+                            {{-- Filters Row --}}
+                            <div class="filters-row d-flex flex-wrap gap-3 align-items-center">
+                                {{-- Store Filter --}}
+                                <div class="filter-item">
+                                    <label class="filter-label mb-1">
+                                        <i class="fas fa-store text-primary me-1"></i>
+                                        <strong>@lang('Stock by'):</strong>
+                                    </label>
+                                    <select wire:model.live="storeFilter" class="form-select form-select-sm">
+                                        <option value="all">@lang('All Stores')</option>
+                                        @foreach($availableStores as $store)
+                                            <option value="{{ $store->id }}">
+                                                {{ $store->shop_name ?? $store->name }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </div>
+
+                                {{-- Quality Filter --}}
+                                <div class="filter-item">
+                                    <label class="filter-label mb-1">
+                                        <i class="fas fa-award text-primary me-1"></i>
+                                        <strong>@lang('Quality by'):</strong>
+                                    </label>
+                                    <select wire:model.live="qualityFilter" class="form-select form-select-sm">
+                                        <option value="all">@lang('All Quality')</option>
+                                        @foreach($availableQualities as $quality)
+                                            <option value="{{ $quality->id }}">
+                                                {{ app()->getLocale() == 'ar' && $quality->name_ar ? $quality->name_ar : $quality->name_en }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </div>
+
+                                {{-- Sort Filter --}}
+                                <div class="filter-item">
+                                    <label class="filter-label mb-1">
+                                        <i class="fas fa-sort text-primary me-1"></i>
+                                        <strong>@lang('Sort by'):</strong>
+                                    </label>
+                                    <select wire:model.live="sortBy" class="form-select form-select-sm">
+                                        <option value="sku_asc">@lang('SKU A-Z')</option>
+                                        <option value="sku_desc">@lang('SKU Z-A')</option>
+                                        <option value="price_asc">@lang('Price: Low to High')</option>
+                                        <option value="price_desc">@lang('Price: High to Low')</option>
+                                        <option value="stock_desc">@lang('Stock: High to Low')</option>
+                                        <option value="newest">@lang('Newest First')</option>
+                                    </select>
+                                </div>
+
+                                {{-- Reset Filters --}}
+                                @if($storeFilter !== 'all' || $qualityFilter !== 'all' || $sortBy !== 'sku_asc')
+                                    <div class="filter-item">
+                                        <label class="filter-label mb-1 d-none d-md-block">&nbsp;</label>
+                                        <button wire:click="$set('storeFilter', 'all'); $set('qualityFilter', 'all'); $set('sortBy', 'sku_asc')"
+                                                class="btn btn-sm btn-outline-secondary">
+                                            <i class="fas fa-redo me-1"></i>
+                                            @lang('Reset')
+                                        </button>
+                                    </div>
+                                @endif
+                            </div>
                         </div>
                     </div>
 
-                    @if (!isset($prods) || $prods->count() == 0)
+                    @if ($filteredMerchants->isEmpty())
                         {{-- No Results Found --}}
                         <div class="no-results-wrapper text-center py-5">
                             <div class="card shadow-sm">
@@ -74,64 +113,49 @@
                         <!-- main content -->
                         <div class="tab-content" id="myTabContent">
                             <!-- product list view start  -->
-                            <div class="tab-pane fade {{ $view == 'list-view' ? 'show active' : '' }}"
-                                 id="layout-list-pane" role="tabpanel" tabindex="0">
-                                <div class="row gy-4 gy-lg-5 mt-20 ">
+                            <div class="tab-pane fade show active" id="layout-list-pane" role="tabpanel" tabindex="0">
+                                <div class="row gy-4 gy-lg-5">
 
-                                    {{-- لكل منتج، أعرض كل سجلات البائعين الفعّالة --}}
-                                    @foreach ($prods as $product)
-                                        @php
-                                            $merchants = $product->merchantProducts()
-                                                ->where('status', 1)
-                                                ->with('user:id,is_vendor')
-                                                ->get();
-                                        @endphp
+                                    {{-- عرض كل المنتجات المفلترة --}}
+                                    @php
+                                        $mainProducts = $filteredMerchants->where('is_alternative', false);
+                                        $alternativeProducts = $filteredMerchants->where('is_alternative', true);
+                                    @endphp
 
-                                        @foreach ($merchants as $merchant)
-                                            {{-- نمرر vendorId و merchant للـ partial ليُبنى الكرت وفق البائع المحدد --}}
+                                    {{-- Main Products --}}
+                                    @foreach ($mainProducts as $item)
+                                        @include('includes.frontend.list_view_product', [
+                                            'product'  => $item['product'],
+                                            'vendorId' => $item['merchant']->user_id,
+                                            'mp'       => $item['merchant'],
+                                        ])
+                                    @endforeach
+
+                                    {{-- Alternatives Section --}}
+                                    @if($alternativeProducts->count() > 0)
+                                        <div class="col-12">
+                                            <div class="alternatives-section mt-4">
+                                                <div class="section-header mb-4">
+                                                    <h3 class="text-primary">
+                                                        <i class="fas fa-exchange-alt me-2"></i>
+                                                        {{ trans('Substitutions') }}
+                                                    </h3>
+                                                    <hr class="border-primary">
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        @foreach ($alternativeProducts as $item)
                                             @include('includes.frontend.list_view_product', [
-                                                'product'  => $product,
-                                                'vendorId' => $merchant->user_id,
-                                                'merchant' => $merchant,
+                                                'product'  => $item['product'],
+                                                'vendorId' => $item['merchant']->user_id,
+                                                'mp'       => $item['merchant'],
                                             ])
                                         @endforeach
-                                    @endforeach
+                                    @endif
 
                                 </div>
                             </div>
-
-                            {{-- بدائل القطعة: نعرض لكل بديل كل البائعين الفعّالين أيضاً --}}
-                            @if(isset($alternatives) && $alternatives->count())
-                                <div class="alternatives-section mt-5">
-                                    <div class="section-header mb-4">
-                                        <h3 class="text-primary">
-                                            <i class="fas fa-exchange-alt me-2"></i>
-                                            {{ trans('Substitutions') }}
-                                        </h3>
-                                        <hr class="border-primary">
-                                    </div>
-                                    <div class="row gy-4 gy-lg-5">
-
-                                        @foreach ($alternatives as $product)
-                                            @php
-                                                $merchants = $product->merchantProducts()
-                                                    ->where('status', 1)
-                                                    ->with('user:id,is_vendor')
-                                                    ->get();
-                                            @endphp
-
-                                            @foreach ($merchants as $merchant)
-                                                @include('includes.frontend.list_view_product', [
-                                                    'product'  => $product,
-                                                    'vendorId' => $merchant->user_id,
-                                                    'merchant' => $merchant,
-                                                ])
-                                            @endforeach
-                                        @endforeach
-
-                                    </div>
-                                </div>
-                            @endif
                         </div>
                     @endif
 
@@ -187,6 +211,33 @@
         opacity: 0.3;
     }
 
+    /* Filters Styling */
+    .filters-row {
+        padding-top: 1rem;
+        border-top: 1px solid #dee2e6;
+    }
+
+    .filter-item {
+        min-width: 180px;
+    }
+
+    .filter-label {
+        font-size: 0.875rem;
+        color: #495057;
+        display: block;
+    }
+
+    .filter-item .form-select {
+        min-width: 180px;
+        border-color: #dee2e6;
+        transition: all 0.3s ease;
+    }
+
+    .filter-item .form-select:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.1);
+    }
+
     @media (max-width: 767px) {
         .search-box-wrapper {
             padding: 1rem;
@@ -198,6 +249,19 @@
 
         .alternatives-section .section-header h3 {
             font-size: 1.5rem;
+        }
+
+        .filter-item {
+            min-width: 100%;
+            flex: 1 1 100%;
+        }
+
+        .filter-item .form-select {
+            min-width: 100%;
+        }
+
+        .filters-row {
+            flex-direction: column;
         }
     }
     </style>

@@ -461,12 +461,12 @@
                                             @lang('Sort by:')
                                         </label>
                                         <select class="form-select form-select-sm" id="sortby" name="sort">
-                                            <option value="sku_asc">{{ __('SKU A-Z') }}</option>
-                                            <option value="sku_desc">{{ __('SKU Z-A') }}</option>
-                                            <option value="date_desc">{{ __('Latest Product') }}</option>
-                                            <option value="date_asc">{{ __('Oldest Product') }}</option>
-                                            <option value="price_asc">{{ __('Lowest Price') }}</option>
-                                            <option value="price_desc">{{ __('Highest Price') }}</option>
+                                            <option value="sku_asc" {{ request('sort') == 'sku_asc' ? 'selected' : '' }}>{{ __('SKU A-Z') }}</option>
+                                            <option value="sku_desc" {{ request('sort') == 'sku_desc' ? 'selected' : '' }}>{{ __('SKU Z-A') }}</option>
+                                            <option value="date_desc" {{ request('sort') == 'date_desc' ? 'selected' : '' }}>{{ __('Latest Product') }}</option>
+                                            <option value="date_asc" {{ request('sort') == 'date_asc' ? 'selected' : '' }}>{{ __('Oldest Product') }}</option>
+                                            <option value="price_asc" {{ request('sort') == 'price_asc' ? 'selected' : '' }}>{{ __('Lowest Price') }}</option>
+                                            <option value="price_desc" {{ request('sort') == 'price_desc' ? 'selected' : '' }}>{{ __('Highest Price') }}</option>
                                         </select>
                                     </div>
 
@@ -615,6 +615,7 @@
         // Update links on page load
         $(document).ready(function() {
             updateCategoryLinks();
+            addToPagination();
         });
 
         // Update links when view changes
@@ -714,7 +715,7 @@
                     params.append('vendor', $("#vendorby").val());
                 }
 
-                if ($("#pageby").val() != '') {
+                if ($("#pageby").length && $("#pageby").val() && $("#pageby").val() !== 'undefined') {
                     params.append('pageby', $("#pageby").val());
                 }
 

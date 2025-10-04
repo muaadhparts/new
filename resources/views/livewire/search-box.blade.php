@@ -68,16 +68,17 @@
 
   {{-- VIN Search Modal --}}
   <div class="modal fade" id="vinSearchModal" tabindex="-1" aria-labelledby="vinSearchModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
       <div class="modal-content">
         <div class="modal-header bg-primary bg-gradient text-white">
           <h5 class="modal-title" id="vinSearchModalLabel">
             <i class="fas fa-car me-2"></i>
-            @lang('Search by VIN')
+            <span class="d-none d-sm-inline">@lang('Search by VIN')</span>
+            <span class="d-sm-none">VIN</span>
           </h5>
           <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="@lang('Close')"></button>
         </div>
-        <div class="modal-body">
+        <div class="modal-body p-2 p-sm-3">
           <livewire:search-boxvin/>
         </div>
       </div>
@@ -213,42 +214,114 @@
 /* Responsive Adjustments */
 @media (max-width: 768px) {
   .enhanced-search-wrapper {
-    padding: 0 1rem;
+    padding: 0 0.5rem;
+    max-width: 100%;
   }
 
   .enhanced-search-wrapper .input-group {
     flex-wrap: nowrap;
+    border-radius: var(--border-radius);
   }
 
   .enhanced-search-wrapper .form-control {
-    font-size: 1rem;
+    font-size: 0.95rem;
+    padding: 0.625rem 0.5rem;
   }
 
   .enhanced-search-wrapper .btn-primary {
-    padding: 0.75rem 1rem;
+    padding: 0.625rem 1rem;
+    font-size: 0.9rem;
+  }
+
+  .enhanced-search-wrapper .input-group-text {
+    padding-left: 0.75rem;
+    padding-right: 0.5rem;
   }
 
   .suggestion-item-enhanced {
-    padding: 0.875rem;
+    padding: 0.75rem;
   }
 
   .suggestion-icon {
-    width: 35px;
-    height: 35px;
+    width: 32px;
+    height: 32px;
+  }
+
+  .suggestion-sku {
+    font-size: 0.9rem;
+  }
+
+  .suggestion-label {
+    font-size: 0.8rem;
   }
 }
 
 @media (max-width: 576px) {
+  .enhanced-search-wrapper {
+    padding: 0;
+  }
+
+  .enhanced-search-wrapper .input-group {
+    border-width: 1.5px;
+  }
+
   .enhanced-search-wrapper .input-group-text {
-    padding-left: 1rem;
+    padding-left: 0.5rem;
+    padding-right: 0.25rem;
+  }
+
+  .enhanced-search-wrapper .form-control {
+    font-size: 0.875rem;
+    padding: 0.5rem 0.25rem;
+  }
+
+  .enhanced-search-wrapper .btn-primary {
+    padding: 0.5rem 0.875rem;
+  }
+
+  .enhanced-search-wrapper .btn-primary .me-2 {
+    margin-right: 0 !important;
   }
 
   .enhanced-search-wrapper .btn-primary span {
     display: none !important;
   }
 
+  .search-hint-enhanced {
+    font-size: 0.8rem;
+  }
+
+  .search-hint-enhanced code {
+    font-size: 0.8rem;
+    padding: 0.25rem 0.5rem !important;
+  }
+
+  .suggestion-item-enhanced {
+    padding: 0.625rem 0.5rem;
+  }
+
+  .suggestion-icon {
+    width: 28px;
+    height: 28px;
+    margin-right: 0.5rem !important;
+  }
+
+  .suggestion-icon i {
+    font-size: 0.875rem;
+  }
+}
+
+@media (max-width: 375px) {
+  .enhanced-search-wrapper .form-control {
+    font-size: 0.8rem;
+  }
+
   .enhanced-search-wrapper .btn-primary {
-    padding: 0.75rem 1.25rem;
+    padding: 0.5rem 0.75rem;
+  }
+
+  .enhanced-search-wrapper .input-group-text i {
+    font-size: 0.9rem;
   }
 }
 
@@ -269,5 +342,25 @@
 
 .suggestions-dropdown::-webkit-scrollbar-thumb:hover {
   background: #0b5ed7;
+}
+
+/* VIN Modal Mobile Optimization */
+@media (max-width: 576px) {
+  #vinSearchModal .modal-dialog {
+    margin: 0.5rem;
+    max-width: calc(100% - 1rem);
+  }
+
+  #vinSearchModal .modal-header {
+    padding: 0.75rem 1rem;
+  }
+
+  #vinSearchModal .modal-title {
+    font-size: 1rem;
+  }
+
+  #vinSearchModal .modal-body {
+    padding: 1rem 0.5rem !important;
+  }
 }
 </style>

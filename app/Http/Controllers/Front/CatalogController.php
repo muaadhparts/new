@@ -53,7 +53,7 @@ class CatalogController extends FrontBaseController
         $maxprice = $request->max;
         $sort = $request->sort;
         $search = $request->search;
-        $pageby = $request->pageby;
+        $pageby = $request->pageby && $request->pageby !== 'undefined' && is_numeric($request->pageby) ? (int)$request->pageby : null;
 
         $minprice = ($minprice / $this->curr->value);
         $maxprice = ($maxprice / $this->curr->value);
@@ -179,9 +179,9 @@ class CatalogController extends FrontBaseController
             } elseif ($sort == 'price_asc') {
                 return $query->orderBy('merchant_products.price', 'asc');
             } elseif ($sort == 'sku_asc') {
-                return $query->orderByRaw('CAST(products.sku AS UNSIGNED) asc, products.sku asc');
+                return $query->orderBy('products.sku', 'asc');
             } elseif ($sort == 'sku_desc') {
-                return $query->orderByRaw('CAST(products.sku AS UNSIGNED) desc, products.sku desc');
+                return $query->orderBy('products.sku', 'desc');
             }
         });
 

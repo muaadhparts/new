@@ -54,7 +54,7 @@
                 </div>
 
                 <!-- gs-product-details-gallery-wrapper -->
-                <div class="col-lg-6 wow-replaced" data-wow-delay=".1s">
+                <div class="col-lg-6">
                     <div class="gs-product-details-gallery-wrapper">
                         <div class="product-main-slider">
                             <img
@@ -84,7 +84,7 @@
                     </div>
                 </div>
 
-                <div class="col-lg-6 wow-replaced" data-wow-delay=".2s">
+                <div class="col-lg-6">
                     {{-- Quality Brand Badge --}}
                     @if(isset($merchant) && $merchant->qualityBrand && $merchant->qualityBrand->logo)
                         <div class="quality-brand-badge mb-3">
@@ -594,7 +594,7 @@
     <!-- single product details content wrapper end -->
 
     <!--  tab-product-des-wrapper start - Responsive -->
-    <div class="tab-product-des-wrapper wow-replaced" data-wow-delay=".1s">
+    <div class="tab-product-des-wrapper">
         <div class="container">
             <ul class="nav nav-tabs flex-wrap" id="myTab" role="tablist">
                 <li class="nav-item" role="presentation">
@@ -657,7 +657,7 @@
             </ul>
 
             <div class="tab-content" id="myTabContent">
-                <div class="tab-pane fade wow-replaced" data-wow-delay=".1s" id="description-tab-pane"
+                <div class="tab-pane fade" id="description-tab-pane"
                      role="tabpanel" aria-labelledby="description-tab" tabindex="0">
                     {!! clean($productt->details, ['Attr.EnableID' => true]) !!}
                 </div>
@@ -818,7 +818,7 @@
 
     <!-- More Products By Seller slider start -->
     @if ($productt->user_id != 0 && $vendor_products->count() > 0)
-        <div class="gs-product-cards-slider-section more-products-by-seller wow-replaced" data-wow-delay=".1s">
+        <div class="gs-product-cards-slider-section more-products-by-seller">
             <div class="gs-product-cards-slider-area more-products-by-seller">
                 <div class="container">
                     <h2 class="title text-center">@lang('More Products By Seller')</h2>
@@ -918,26 +918,68 @@
 @endsection
 
 @section('script')
-    <script src="{{ asset('assets/front/js/jquery.elevatezoom.js') }}"></script>
-
     <script type="text/javascript">
         (function($) {
             "use strict";
 
-            //initiate the plugin and pass the id of the div containing gallery images
-            $("#single-image-zoom").elevateZoom({
-                gallery: 'gallery_09',
-                zoomType: "inner",
-                cursor: "crosshair",
-                galleryActiveClass: 'active',
-                imageCrossfade: true,
-                loadingIcon: 'http://www.elevateweb.co.uk/spinner.gif'
-            });
-            //pass the images to Fancybox
-            $("#single-image-zoom").bind("click", function(e) {
-                var ez = $('#single-image-zoom').data('elevateZoom');
-                $.fancybox(ez.getGalleryList());
-                return false;
+            // Product Image Gallery
+            $(document).ready(function() {
+                // Initialize main image display
+                let currentIndex = 0;
+                const $mainImages = $('.product-main-slider img');
+                const $navImages = $('.product-nav-slider img');
+
+                // Show first image
+                $mainImages.hide().eq(0).show();
+                $navImages.eq(0).addClass('active');
+
+                // Nav thumbnail click handler
+                $navImages.on('click', function() {
+                    const index = $(this).index();
+                    $navImages.removeClass('active');
+                    $(this).addClass('active');
+                    $mainImages.hide().eq(index).fadeIn(300);
+                    currentIndex = index;
+                });
+
+                // Optional: Click main image to zoom (open in new tab)
+                $mainImages.on('click', function() {
+                    const src = $(this).attr('src');
+                    window.open(src, '_blank');
+                });
+
+                // Initialize product slider for "More Products By Seller" if exists
+                if ($('.product-cards-slider').length && typeof $.fn.slick !== 'undefined') {
+                    $('.product-cards-slider').slick({
+                        slidesToShow: 4,
+                        slidesToScroll: 1,
+                        autoplay: true,
+                        autoplaySpeed: 3000,
+                        arrows: true,
+                        dots: false,
+                        rtl: {{ app()->getLocale() === 'ar' ? 'true' : 'false' }},
+                        responsive: [
+                            {
+                                breakpoint: 1024,
+                                settings: {
+                                    slidesToShow: 3
+                                }
+                            },
+                            {
+                                breakpoint: 768,
+                                settings: {
+                                    slidesToShow: 2
+                                }
+                            },
+                            {
+                                breakpoint: 480,
+                                settings: {
+                                    slidesToShow: 1
+                                }
+                            }
+                        ]
+                    });
+                }
             });
 
             $(document).on("submit", "#emailreply", function() {

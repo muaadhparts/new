@@ -870,7 +870,7 @@
   function initZoom() {
     const $img = $('#image');
     if (!$img.length) {
-      console.warn('⚠️ No #image element found');
+      // Silently skip if no #image element - this is normal on most pages
       return;
     }
 

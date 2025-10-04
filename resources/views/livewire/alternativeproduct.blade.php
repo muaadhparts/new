@@ -41,6 +41,7 @@
                                         <th>@lang('Name')</th>
                                         <th>@lang('Brand:')</th>
                                         <th>@lang('Brand qualities:')</th>
+                                        <th>@lang('Store')</th>
                                         <th>@lang('Stock')</th>
                                         <th>@lang('Price')</th>
                                         <th>@lang('View')</th>
@@ -65,6 +66,7 @@
                                                 <td>{{ e($name) }}</td>
                                                 <td>{{ $product->brand ? Str::ucfirst($product->brand->name) : '-' }}</td>
                                                 <td>{{ $mp->qualityBrand ? (app()->getLocale() == 'ar' && $mp->qualityBrand->name_ar ? $mp->qualityBrand->name_ar : $mp->qualityBrand->name_en) : '-' }}</td>
+                                                <td>{{ $mp->user ? ($mp->user->shop_name ?: $mp->user->name) : '-' }}</td>
                                                 <td>{{ (int)($mp->stock ?? 0) }}</td>
                                                 <td class="fw-bold {{ $highlight ? 'text-success' : '' }}">
                                                     {{ method_exists($mp, 'showPrice') ? $mp->showPrice() : \App\Models\Product::convertPrice($vp) }}
@@ -78,7 +80,7 @@
                                             </tr>
                                         @empty
                                             <tr>
-                                                <td colspan="7" class="text-center">@lang('No data found')</td>
+                                                <td colspan="8" class="text-center">@lang('No data found')</td>
                                             </tr>
                                         @endforelse
 
@@ -88,7 +90,7 @@
                                             @php
                                                 $merchants = $product->merchantProducts()
                                                     ->where('status', 1)
-                                                    ->with('user:id,is_vendor')
+                                                    ->with(['user:id,is_vendor,name,shop_name', 'qualityBrand:id,name_en,name_ar'])
                                                     ->get();
                                             @endphp
 
@@ -106,6 +108,7 @@
                                                     <td>{{ e($name) }}</td>
                                                     <td>{{ $product->brand ? Str::ucfirst($product->brand->name) : '-' }}</td>
                                                     <td>{{ $mp->qualityBrand ? (app()->getLocale() == 'ar' && $mp->qualityBrand->name_ar ? $mp->qualityBrand->name_ar : $mp->qualityBrand->name_en) : '-' }}</td>
+                                                    <td>{{ $mp->user ? ($mp->user->shop_name ?: $mp->user->name) : '-' }}</td>
                                                     <td>{{ (int)($mp->stock ?? 0) }}</td>
                                                     <td class="fw-bold {{ $highlight ? 'text-success' : '' }}">
                                                         {{ method_exists($mp, 'showPrice') ? $mp->showPrice() : \App\Models\Product::convertPrice($vp) }}
@@ -128,7 +131,7 @@
                                             })
                                         )
                                             <tr>
-                                                <td colspan="7" class="text-center">@lang('No data found')</td>
+                                                <td colspan="8" class="text-center">@lang('No data found')</td>
                                             </tr>
                                         @endif
                                     @endif
@@ -170,6 +173,9 @@
                                                             @if($mp->qualityBrand)
                                                                 <p class="mb-1 small"><strong>@lang('Brand qualities:'):</strong> {{ app()->getLocale() == 'ar' && $mp->qualityBrand->name_ar ? $mp->qualityBrand->name_ar : $mp->qualityBrand->name_en }}</p>
                                                             @endif
+                                                            @if($mp->user)
+                                                                <p class="mb-1 small"><strong>@lang('Store'):</strong> {{ $mp->user->shop_name ?: $mp->user->name }}</p>
+                                                            @endif
                                                             <p class="mb-1 fw-bold {{ $highlight ? 'text-success' : '' }}">
                                                                 {{ method_exists($mp, 'showPrice') ? $mp->showPrice() : \App\Models\Product::convertPrice($vp) }}
                                                             </p>
@@ -193,7 +199,7 @@
                                         @php
                                             $merchants = $product->merchantProducts()
                                                 ->where('status', 1)
-                                                ->with('user:id,is_vendor')
+                                                ->with(['user:id,is_vendor,name,shop_name', 'qualityBrand:id,name_en,name_ar'])
                                                 ->get();
                                         @endphp
 
@@ -222,6 +228,9 @@
                                                                 @endif
                                                                 @if($mp->qualityBrand)
                                                                     <p class="mb-1 small"><strong>@lang('Brand qualities:'):</strong> {{ app()->getLocale() == 'ar' && $mp->qualityBrand->name_ar ? $mp->qualityBrand->name_ar : $mp->qualityBrand->name_en }}</p>
+                                                                @endif
+                                                                @if($mp->user)
+                                                                    <p class="mb-1 small"><strong>@lang('Store'):</strong> {{ $mp->user->shop_name ?: $mp->user->name }}</p>
                                                                 @endif
                                                                 <p class="mb-1 fw-bold {{ $highlight ? 'text-success' : '' }}">
                                                                     {{ method_exists($mp, 'showPrice') ? $mp->showPrice() : \App\Models\Product::convertPrice($vp) }}

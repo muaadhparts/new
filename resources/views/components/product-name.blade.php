@@ -5,10 +5,11 @@
     'vendorId' => null,
     'merchantProductId' => null,
     'showSku' => true,
-    'target' => '_blank',
+    'target' => '_self',
     'class' => '',
     'nameClass' => '',
-    'skuClass' => 'text-muted small'
+    'skuClass' => 'text-muted small',
+    'useSearchRoute' => null // null = auto detect, true = force search route, false = force product route
 ])
 
 @php
@@ -62,10 +63,39 @@
     // SKU display
     $displaySku = !empty($sku) ? $sku : '-';
 
-    // Route generation with new parameter structure
-    $productRoute = !empty($slug) && $userId && $mpId
-        ? route('front.product', ['slug' => $slug, 'vendor_id' => $userId, 'merchant_product_id' => $mpId])
-        : '#';
+    // Determine which route to use
+    $shouldUseSearchRoute = $useSearchRoute;
+    if ($shouldUseSearchRoute === null) {
+        // Auto-detect: use search route unless we're in specific contexts
+        $currentRouteName = request()->route() ? request()->route()->getName() : '';
+        $currentPath = request()->path();
+
+        // Keep product route for:
+        // 1. search-results-page and category pages (front.category)
+        // 2. admin dashboard
+        // 3. vendor dashboard
+        // 4. cart, checkout, and order pages
+        $keepProductRoute =
+            in_array($currentRouteName, ['search.result', 'front.category']) ||
+            str_starts_with($currentPath, 'admin/') ||
+            str_starts_with($currentPath, 'vendor/') ||
+            str_starts_with($currentPath, 'user/order') ||
+            str_contains($currentPath, '/cart') ||
+            str_contains($currentPath, '/checkout');
+
+        $shouldUseSearchRoute = !$keepProductRoute;
+    }
+
+    // Route generation
+    if ($shouldUseSearchRoute && !empty($sku)) {
+        // Use search route: result/{sku}
+        $productRoute = route('search.result', $sku);
+    } else {
+        // Use product details route
+        $productRoute = !empty($slug) && $userId && $mpId
+            ? route('front.product', ['slug' => $slug, 'vendor_id' => $userId, 'merchant_product_id' => $mpId])
+            : '#';
+    }
 @endphp
 
 <div class="{{ $class }}">

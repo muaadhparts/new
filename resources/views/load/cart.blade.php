@@ -34,7 +34,7 @@
                             alt="Cart product">
                     </a>
 
-                    <x-product-name :item="$product['item']" :vendor-id="$vendorId" target="_blank" class="product-name" />
+                    <x-product-name :item="$product['item']" :vendor-id="$vendorId" :merchantProductId="$merchantProductId" target="_self" :useSearchRoute="false" class="product-name" />
 
                     <div class="cart-item-quantity">
                         <span class="cart-product-qty" id="cqt{{ $domKey }}">{{ $product['qty'] }}</span>
