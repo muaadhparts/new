@@ -33,68 +33,6 @@
                                 </div>
                             </div>
 
-                            {{-- Filters Row --}}
-                            <div class="filters-row d-flex flex-wrap gap-3 align-items-center">
-                                {{-- Store Filter --}}
-                                <div class="filter-item">
-                                    <label class="filter-label mb-1">
-                                        <i class="fas fa-store text-primary me-1"></i>
-                                        <strong>@lang('Stock by'):</strong>
-                                    </label>
-                                    <select wire:model.live="storeFilter" class="form-select form-select-sm">
-                                        <option value="all">@lang('All Stores')</option>
-                                        @foreach($availableStores as $store)
-                                            <option value="{{ $store->id }}">
-                                                {{ $store->shop_name ?? $store->name }}
-                                            </option>
-                                        @endforeach
-                                    </select>
-                                </div>
-
-                                {{-- Quality Filter --}}
-                                <div class="filter-item">
-                                    <label class="filter-label mb-1">
-                                        <i class="fas fa-award text-primary me-1"></i>
-                                        <strong>@lang('Quality by'):</strong>
-                                    </label>
-                                    <select wire:model.live="qualityFilter" class="form-select form-select-sm">
-                                        <option value="all">@lang('All Quality')</option>
-                                        @foreach($availableQualities as $quality)
-                                            <option value="{{ $quality->id }}">
-                                                {{ app()->getLocale() == 'ar' && $quality->name_ar ? $quality->name_ar : $quality->name_en }}
-                                            </option>
-                                        @endforeach
-                                    </select>
-                                </div>
-
-                                {{-- Sort Filter --}}
-                                <div class="filter-item">
-                                    <label class="filter-label mb-1">
-                                        <i class="fas fa-sort text-primary me-1"></i>
-                                        <strong>@lang('Sort by'):</strong>
-                                    </label>
-                                    <select wire:model.live="sortBy" class="form-select form-select-sm">
-                                        <option value="sku_asc">@lang('SKU A-Z')</option>
-                                        <option value="sku_desc">@lang('SKU Z-A')</option>
-                                        <option value="price_asc">@lang('Price: Low to High')</option>
-                                        <option value="price_desc">@lang('Price: High to Low')</option>
-                                        <option value="stock_desc">@lang('Stock: High to Low')</option>
-                                        <option value="newest">@lang('Newest First')</option>
-                                    </select>
-                                </div>
-
-                                {{-- Reset Filters --}}
-                                @if($storeFilter !== 'all' || $qualityFilter !== 'all' || $sortBy !== 'sku_asc')
-                                    <div class="filter-item">
-                                        <label class="filter-label mb-1 d-none d-md-block">&nbsp;</label>
-                                        <button wire:click="$set('storeFilter', 'all'); $set('qualityFilter', 'all'); $set('sortBy', 'sku_asc')"
-                                                class="btn btn-sm btn-outline-secondary">
-                                            <i class="fas fa-redo me-1"></i>
-                                            @lang('Reset')
-                                        </button>
-                                    </div>
-                                @endif
-                            </div>
                         </div>
                     </div>
 
