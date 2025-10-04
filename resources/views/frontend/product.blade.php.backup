@@ -162,7 +162,7 @@
                                 <ul>
                                     <li>
                                         @if ($productt->type == 'Physical')
-                                            <span><b>@lang('Availability :') </b></span>
+                                            <span><b>@lang('Availability:') </b></span>
                                             @php $mpStock = $merchant ? (int) $merchant->stock : null; @endphp
                                             @if (is_null($mpStock) || $mpStock <= 0)
                                                 <div class="stock-availability out-stock">{{ __('Out Of Stock') }}</div>
@@ -503,7 +503,7 @@
 
                         <!-- store & seller -->
                         <div class="store-seller-wrapper">
-                            <span><b>@lang('Sold By :')</b>
+                            <span><b>@lang('Sold By:')</b>
                                 @if ($productt->user_id != 0)
                                     @if (isset($productt->user)) {{ $productt->user->shop_name ?? $productt->user->name }} @endif
                                     @if ($productt->user->checkStatus())

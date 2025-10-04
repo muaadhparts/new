@@ -149,7 +149,7 @@
                                 @if ($productt->type == 'Physical')
                                     @php $mpStock = $merchant ? (int) $merchant->stock : null; @endphp
                                     <div class="detail-item">
-                                        <span class="detail-label">@lang('Availability :')</span>
+                                        <span class="detail-label">@lang('Availability:')</span>
                                         @if (is_null($mpStock) || $mpStock <= 0)
                                             <span class="badge bg-danger">{{ __('Out Of Stock') }}</span>
                                         @else
@@ -517,7 +517,7 @@
 
                                 <div class="seller-details mb-3">
                                     <div class="seller-name mb-2">
-                                        <strong>@lang('Sold By :')</strong>
+                                        <strong>@lang('Sold By:')</strong>
                                         @if ($productt->user_id != 0)
                                             <span class="fw-bold">
                                                 @if (isset($productt->user)) {{ $productt->user->shop_name ?? $productt->user->name }} @endif
