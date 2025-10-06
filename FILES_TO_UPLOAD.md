@@ -13,9 +13,10 @@ public/assets/front/js/script.js
 ```
 public/assets/front/js/ill/illustrated.js
 ```
-- ✅ إضافة timeout handling (30s metadata, 45s data)
-- ✅ إضافة retry logic (max 2 retries)
-- ✅ تحسين error messages
+- ✅ إضافة timeout handling (60s metadata, 90s data)
+- ✅ إضافة retry logic (max 3 retries)
+- ✅ تحسين error messages مع تعليمات للـ admin
+- ✅ رسالة واضحة عند timeout تشرح الحل
 - 🎯 يحل: request timeout + better UX
 
 ```

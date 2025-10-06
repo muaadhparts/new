@@ -467,7 +467,7 @@
    * ✅ جلب metadata (coordinates) فقط من API
    */
   async function fetchCalloutMetadata() {
-    const METADATA_TIMEOUT = 30000; // 30 seconds timeout for metadata
+    const METADATA_TIMEOUT = 60000; // 60 seconds timeout for metadata (production without indexes)
 
     if (metadataLoaded) {
       console.log('📦 Callouts metadata already loaded from memory cache');
@@ -586,8 +586,8 @@
    * جلب بيانات المنتجات لـ callout معين مع دعم pagination
    */
   async function fetchCalloutData(calloutKey, page = 1, perPage = 50, retryCount = 0) {
-    const MAX_RETRIES = 2;
-    const FETCH_TIMEOUT = 45000; // 45 seconds timeout
+    const MAX_RETRIES = 3;
+    const FETCH_TIMEOUT = 90000; // 90 seconds timeout (production without indexes)
 
     if (!sectionId || !categoryId || !catalogCode) {
       console.error('❌ Missing context data:', { sectionId, categoryId, catalogCode });
@@ -634,10 +634,10 @@
         console.error('❌ Request timeout after', FETCH_TIMEOUT / 1000, 'seconds');
         if (retryCount < MAX_RETRIES) {
           console.warn(`⚠️ Retrying due to timeout (${retryCount + 1}/${MAX_RETRIES})...`);
-          await new Promise(resolve => setTimeout(resolve, 2000));
+          await new Promise(resolve => setTimeout(resolve, 3000));
           return fetchCalloutData(calloutKey, page, perPage, retryCount + 1);
         }
-        throw new Error('Request timeout - server too slow');
+        throw new Error('Server response is too slow. Please contact administrator to add database indexes.');
       }
       console.error('❌ Fetch error:', err);
       throw err;
@@ -720,7 +720,22 @@
     }).catch(err=>{
       const body = modalBodyEl(); if (!body) return;
       const msg  = t('messages.load_failed');
-      body.innerHTML = `<div class="alert alert-danger">${escapeHtml(msg)}: ${escapeHtml(err?.message||String(err))}</div>`;
+      const isTimeout = err?.message?.includes('slow') || err?.message?.includes('timeout');
+
+      const errorHtml = isTimeout
+        ? `<div class="alert alert-danger">
+             <h5><i class="fas fa-exclamation-triangle"></i> ${escapeHtml(msg)}</h5>
+             <p class="mb-2">${escapeHtml(err?.message||String(err))}</p>
+             <hr>
+             <p class="mb-0 small">
+               <strong>💡 Tip:</strong> This issue is usually caused by missing database indexes.
+               Contact your administrator to run:<br>
+               <code>CREATE INDEX idx_illustrations_section_code ON illustrations(section_id, code);</code>
+             </p>
+           </div>`
+        : `<div class="alert alert-danger">${escapeHtml(msg)}: ${escapeHtml(err?.message||String(err))}</div>`;
+
+      body.innerHTML = errorHtml;
       setBackVisible();
     });
   }
