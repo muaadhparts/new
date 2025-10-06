@@ -113,7 +113,7 @@ $(document).ready(function () {
 
   //******  4. SEARCH BAR ******//
   const $searchIcon = $("#searchIcon");
-  const $searchBar = $("#searchBar");
+  // $searchBar already declared above - reuse it
 
   $searchIcon.on("click", function () {
     $searchBar.addClass("show");
