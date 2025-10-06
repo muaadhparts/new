@@ -225,7 +225,7 @@
   }
 
   /* ========================= Table Renderer ========================= */
-  function renderProducts(products){
+  function renderProducts(products, pagination = null){
     if(!Array.isArray(products)||products.length===0){
       const noData=t('messages.no_matches');
       return `<div class="text-center p-5 text-muted"><i class="bi bi-search display-6"></i><div class="mt-3 fw-bold">${escapeHtml(noData)}</div></div>`;
@@ -399,7 +399,66 @@
         }).join('')}
       </div>`;
 
-    return desktop + mobile;
+    // ✅ إضافة Pagination UI إذا كانت موجودة
+    let paginationHtml = '';
+    if (pagination && pagination.last_page > 1) {
+      const { current_page, last_page, total, from, to } = pagination;
+
+      const showingText = t('pagination.showing') || 'Showing';
+      const ofText = t('pagination.of') || 'of';
+      const previousText = t('pagination.previous') || 'Previous';
+      const nextText = t('pagination.next') || 'Next';
+
+      paginationHtml = `
+        <div class="d-flex justify-content-between align-items-center mt-4 px-3">
+          <div class="text-muted small">
+            ${escapeHtml(showingText)} ${from}-${to} ${escapeHtml(ofText)} ${total}
+          </div>
+          <nav aria-label="Page navigation">
+            <ul class="pagination pagination-sm mb-0">
+              ${current_page > 1 ? `
+                <li class="page-item">
+                  <a class="page-link pagination-link" href="javascript:;" data-page="${current_page - 1}">
+                    ${escapeHtml(previousText)}
+                  </a>
+                </li>
+              ` : ''}
+
+              ${Array.from({ length: Math.min(5, last_page) }, (_, i) => {
+                let pageNum;
+                if (last_page <= 5) {
+                  pageNum = i + 1;
+                } else if (current_page <= 3) {
+                  pageNum = i + 1;
+                } else if (current_page >= last_page - 2) {
+                  pageNum = last_page - 4 + i;
+                } else {
+                  pageNum = current_page - 2 + i;
+                }
+
+                return `
+                  <li class="page-item ${pageNum === current_page ? 'active' : ''}">
+                    <a class="page-link pagination-link" href="javascript:;" data-page="${pageNum}">
+                      ${pageNum}
+                    </a>
+                  </li>
+                `;
+              }).join('')}
+
+              ${current_page < last_page ? `
+                <li class="page-item">
+                  <a class="page-link pagination-link" href="javascript:;" data-page="${current_page + 1}">
+                    ${escapeHtml(nextText)}
+                  </a>
+                </li>
+              ` : ''}
+            </ul>
+          </nav>
+        </div>
+      `;
+    }
+
+    return desktop + mobile + paginationHtml;
   }
 
   /* ========================= API ========================= */
@@ -409,13 +468,47 @@
    */
   async function fetchCalloutMetadata() {
     if (metadataLoaded) {
-      console.log('📦 Callouts metadata already loaded from cache');
+      console.log('📦 Callouts metadata already loaded from memory cache');
       return cachedCallouts;
     }
 
     if (!sectionId || !categoryId || !catalogCode) {
       console.error('❌ Missing context data for metadata:', { sectionId, categoryId, catalogCode });
       throw new Error('Context data not loaded');
+    }
+
+    // ✅ محاولة جلب من localStorage أولاً
+    const cacheKey = `callouts_${sectionId}_${categoryId}`;
+    const cacheTTL = 30 * 60 * 1000; // 30 دقيقة
+
+    try {
+      const cached = localStorage.getItem(cacheKey);
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        const now = Date.now();
+
+        // التحقق من صلاحية الـ cache
+        if (parsed.timestamp && (now - parsed.timestamp) < cacheTTL) {
+          console.log('✅ Callouts loaded from localStorage cache');
+          cachedCallouts = parsed.data || [];
+          metadataLoaded = true;
+
+          // بناء index للبحث السريع
+          byKey = cachedCallouts.reduce((m, it) => {
+            const k1 = normKey(it.callout_key);
+            if (k1) m[k1] = it;
+            return m;
+          }, {});
+
+          return cachedCallouts;
+        } else {
+          // cache منتهي الصلاحية - احذفه
+          localStorage.removeItem(cacheKey);
+        }
+      }
+    } catch (e) {
+      console.warn('⚠️ localStorage read error:', e);
+      // استمر في جلب من API
     }
 
     const params = new URLSearchParams({
@@ -445,6 +538,18 @@
         cachedCallouts = data.callouts;
         metadataLoaded = true;
 
+        // ✅ حفظ في localStorage
+        try {
+          localStorage.setItem(cacheKey, JSON.stringify({
+            data: cachedCallouts,
+            timestamp: Date.now()
+          }));
+          console.log('💾 Callouts saved to localStorage cache');
+        } catch (e) {
+          console.warn('⚠️ localStorage write error (quota?):', e);
+          // لا مشكلة - استمر بدون cache
+        }
+
         // بناء index للبحث السريع - استخدام callout_key فقط
         byKey = cachedCallouts.reduce((m, it) => {
           const k1 = normKey(it.callout_key);
@@ -465,9 +570,9 @@
   }
 
   /**
-   * جلب بيانات المنتجات لـ callout معين
+   * جلب بيانات المنتجات لـ callout معين مع دعم pagination
    */
-  async function fetchCalloutData(calloutKey, retryCount = 0) {
+  async function fetchCalloutData(calloutKey, page = 1, perPage = 50, retryCount = 0) {
     const MAX_RETRIES = 2;
 
     if (!sectionId || !categoryId || !catalogCode) {
@@ -480,6 +585,8 @@
       category_id  : categoryId,
       catalog_code : catalogCode,
       callout      : calloutKey,
+      page         : page,
+      per_page     : perPage,
     });
 
     // console.log('📡 Fetching callout data:', params.toString());
@@ -491,7 +598,7 @@
         if (retryCount < MAX_RETRIES && res.status >= 500) {
           console.warn(`⚠️ API error ${res.status}, retrying (${retryCount + 1}/${MAX_RETRIES})...`);
           await new Promise(resolve => setTimeout(resolve, 1000));
-          return fetchCalloutData(calloutKey, retryCount + 1);
+          return fetchCalloutData(calloutKey, page, perPage, retryCount + 1);
         }
         throw new Error(`API error ${res.status}`);
       }
@@ -568,14 +675,15 @@
         return;
       }
       const prods = data.products || [];
+      const pagination = data.pagination || null;
 
-      // اعرض الجدول ثم سجّل "الجذر" كأول شاشة في المكدس
-      const html = renderProducts(prods);
+      // اعرض الجدول مع pagination ثم سجّل "الجذر" كأول شاشة في المكدس
+      const html = renderProducts(prods, pagination);
       body.innerHTML = html;
       afterInject(body);
       body.scrollTop = 0;
 
-      pushView({ title: titleRoot, html });
+      pushView({ title: titleRoot, html, calloutKey: key, pagination });
       setBackVisible(); // مخفي لأن length=1
     }).catch(err=>{
       const body = modalBodyEl(); if (!body) return;
@@ -698,6 +806,44 @@
     $(document).off('click.ill_fits').on('click.ill_fits', '.fits-link', function (e) {
       e.preventDefault();
       openCompatibilityInline($(this).data('sku'));
+    });
+
+    /* ✅ Pagination Links */
+    $(document).off('click.ill_pagination').on('click.ill_pagination', '.pagination-link', function (e) {
+      e.preventDefault();
+      const page = parseInt($(this).data('page'), 10);
+      if (isNaN(page) || page < 1) return;
+
+      const currentView = stack[stack.length - 1];
+      if (!currentView || !currentView.calloutKey) return;
+
+      const body = modalBodyEl();
+      if (body) body.innerHTML = renderSpinner();
+
+      fetchCalloutData(currentView.calloutKey, page).then(data => {
+        const body = modalBodyEl(); if (!body) return;
+        if (!data.ok) {
+          const msg = t('messages.api_error');
+          body.innerHTML = `<div class="alert alert-danger">${escapeHtml(msg)}: ${escapeHtml(data.error||'')}</div>`;
+          return;
+        }
+
+        const prods = data.products || [];
+        const pagination = data.pagination || null;
+        const html = renderProducts(prods, pagination);
+
+        body.innerHTML = html;
+        afterInject(body);
+        body.scrollTop = 0;
+
+        // تحديث الـ current view في الـ stack
+        currentView.html = html;
+        currentView.pagination = pagination;
+      }).catch(err => {
+        const body = modalBodyEl(); if (!body) return;
+        const msg = t('messages.load_failed');
+        body.innerHTML = `<div class="alert alert-danger">${escapeHtml(msg)}: ${escapeHtml(err?.message||String(err))}</div>`;
+      });
     });
 
     /* ============== أزرار السلة ============== */

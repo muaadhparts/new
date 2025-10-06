@@ -151,6 +151,10 @@ class CalloutController extends Controller
         $catalogCode = (string) $request->query('catalog_code');
         $calloutKey  = (string) $request->query('callout');
 
+        // ✅ Pagination parameters
+        $page     = max(1, (int) $request->query('page', 1));
+        $perPage  = min(100, max(10, (int) $request->query('per_page', 50))); // بين 10 و 100
+
         if (!$sectionId || !$categoryId || !$catalogCode || !$calloutKey) {
             return response()->json([
                 'ok'    => false,
@@ -267,16 +271,31 @@ class CalloutController extends Controller
             return strcmp($a['part_number'], $b['part_number']);
         });
 
-        // إلحاق التفاصيل + الامتدادات (بدون حقول متجر)
-        $products = collect($matchedBasic)->map(function ($p) use ($sectionId, $catalogCode, $category) {
+        // ✅ حساب pagination
+        $total = count($matchedBasic);
+        $offset = ($page - 1) * $perPage;
+        $paginatedBasic = array_slice($matchedBasic, $offset, $perPage);
+
+        // إلحاق التفاصيل + الامتدادات (بدون حقول متجر) - فقط للصفحة الحالية
+        $products = collect($paginatedBasic)->map(function ($p) use ($sectionId, $catalogCode, $category) {
             return $this->appendDetails($p, $sectionId, $catalogCode, $category->catalog_id);
         })->values()->all();
 
         $elapsed = (int) round((microtime(true) - $t0) * 1000);
+
         return response()->json([
             'ok'         => true,
             'elapsed_ms' => $elapsed,
             'products'   => $products,
+            // ✅ Pagination metadata
+            'pagination' => [
+                'total'        => $total,
+                'per_page'     => $perPage,
+                'current_page' => $page,
+                'last_page'    => (int) ceil($total / $perPage),
+                'from'         => $offset + 1,
+                'to'           => min($offset + $perPage, $total),
+            ],
             // للحفاظ على التوافق مع واجهات قديمة
             'rawResults' => $products,
         ]);
