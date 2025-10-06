@@ -44,6 +44,7 @@
                 </li>
 
                 {{-- Level 1 --}}
+                @if($parentCategory1)
                 <li class="breadcrumb-item d-none d-lg-block">
                     <a class="text-black text-decoration-none" href="{{ route('tree.level2', [
                         'id' => $brand->name,
@@ -53,11 +54,14 @@
                         {{ strtoupper($parentCategory1->slug ?? $parentCategory1->full_code) }}
                     </a>
                 </li>
+                @endif
 
                 {{-- Level 2 - Current --}}
+                @if($parentCategory2)
                 <li class="breadcrumb-item active text-primary" aria-current="page">
                     <strong>{{ strtoupper($parentCategory2->slug ?? $parentCategory2->full_code) }}</strong>
                 </li>
+                @endif
             </ol>
         </nav>
     </div>

@@ -1,7 +1,7 @@
 (function ($) {
   'use strict';
 
-  console.log('🚀 illustrated.js loaded - Version 3.0.0 - API Optimized');
+  // console.log('🚀 illustrated.js loaded - Version 3.0.0 - API Optimized');
 
   /* ========================= Helpers ========================= */
   function qs(key) {
@@ -85,17 +85,9 @@
   const categoryId  = ctx.categoryId  || null;
   const catalogCode = ctx.catalogCode || '';
   const brandName   = ctx.brandName   || '';
-  const parentKey1  = ctx.parentKey1  || '';
-  const parentKey2  = ctx.parentKey2  || '';
 
-  console.log('✅ Using NEW optimized method - fetching from API');
-  console.log('📦 Context loaded:', {
-    sectionId,
-    categoryId,
-    catalogCode,
-    brandName,
-    dataTransfer: '~150 bytes (98% reduction!)'
-  });
+  // console.log('✅ Using NEW optimized method - fetching from API');
+  // console.log('📦 Context loaded:', { sectionId, categoryId, catalogCode, brandName });
 
   // Cache للبيانات
   let cachedCallouts = [];
@@ -432,21 +424,22 @@
       catalog_code : catalogCode,
     });
 
-    console.log('📡 Fetching callout metadata from API:', params.toString());
+    // console.log('📡 Fetching callout metadata from API:', params.toString());
 
     try {
       const res = await fetch(`/api/callouts/metadata?${params.toString()}`, {
         headers: { 'Accept': 'application/json' }
       });
 
-      console.log('📊 Metadata API response status:', res.status);
+      // console.log('📊 Metadata API response status:', res.status);
 
       if (!res.ok) {
+        console.error('❌ Metadata API error:', res.status);
         throw new Error(`API error ${res.status}`);
       }
 
       const data = await res.json();
-      console.log('✅ Metadata loaded:', data);
+      // console.log('✅ Metadata loaded:', data);
 
       if (data.ok && Array.isArray(data.callouts)) {
         cachedCallouts = data.callouts;
@@ -459,9 +452,10 @@
           return m;
         }, {});
 
-        console.log(`✅ Metadata cached: ${cachedCallouts.length} callouts`);
+        // console.log(`✅ Metadata cached: ${cachedCallouts.length} callouts`);
         return cachedCallouts;
       } else {
+        console.error('❌ Invalid metadata response');
         throw new Error('Invalid metadata response');
       }
     } catch (err) {
@@ -488,7 +482,7 @@
       callout      : calloutKey,
     });
 
-    console.log('📡 Fetching callout data:', params.toString());
+    // console.log('📡 Fetching callout data:', params.toString());
 
     try {
       const res = await fetch(`/api/callouts?${params.toString()}`, { headers:{ 'Accept':'application/json' } });
@@ -503,7 +497,7 @@
       }
 
       const data = await res.json();
-      console.log('✅ Callout data loaded:', data);
+      // console.log('✅ Callout data loaded:', data);
       return data;
     } catch (err) {
       console.error('❌ Fetch error:', err);
@@ -512,18 +506,34 @@
   }
 
   /* ========================= Section Navigation ========================= */
-  function goToSection(sectionKey2) {
-    // NEW METHOD: استخدام المتغيرات من catalogContext
-    const bn = brandName || '';
-    const cc = catalogCode || '';
-    const k1 = parentKey1 || '';
-    const k2 = String(sectionKey2 || '');
-    if (!bn || !cc || !k1 || !k2) {
-      console.warn('⚠️ Missing navigation data:', { bn, cc, k1, k2 });
+  function goToSection(sectionKey) {
+    // ✅ البحث عن callout بـ sectionKey والحصول على parents_key
+    const callout = cachedCallouts.find(c => c.callout_type === 'section' && c.callout_key === sectionKey);
+
+    if (!callout) {
+      console.error('❌ Section callout not found:', sectionKey);
       return;
     }
-    const url = `/catlogs/${encodeURIComponent(bn)}/${encodeURIComponent(cc)}/${encodeURIComponent(k1)}/${encodeURIComponent(k2)}`;
-    console.log('🔀 Navigating to section:', url);
+
+    if (!callout.parents_key) {
+      console.error('❌ No parents_key found in callout:', callout);
+      return;
+    }
+
+    const bn = brandName || '';
+    const cc = catalogCode || '';
+    const pk = callout.parents_key; // parents_key من level 3 category المستهدفة
+    const sk = sectionKey; // callout_key نفسه
+
+    if (!bn || !cc || !pk || !sk) {
+      console.error('❌ Missing navigation data:', { bn, cc, parentsKey: pk, sectionKey: sk });
+      return;
+    }
+
+    // بناء الرابط: /catlogs/{brand}/{catalog}/{parents_key}/{callout_key}
+    const url = `/catlogs/${encodeURIComponent(bn)}/${encodeURIComponent(cc)}/${encodeURIComponent(pk)}/${encodeURIComponent(sk)}`;
+
+    console.log('🔀 Navigating to section:', url, 'from callout:', callout);
     window.location.href = url;
   }
 
@@ -628,7 +638,7 @@
       const type = ($el.data('calloutType') || 'part').toString().toLowerCase();
       const key  = ($el.data('calloutKey')  || '').toString();
 
-      console.log('🖱️ Callout clicked:', { key, type, eventType: e.type });
+      // console.log('🖱️ Callout clicked:', { key, type, eventType: e.type });
 
       if (type === 'section') {
         goToSection(key);
@@ -771,9 +781,9 @@
 
   /* ========================= Landmarks & Hover ========================= */
   async function addLandmarks() {
-    console.log('🎯 addLandmarks called - NEW API METHOD');
+    // console.log('🎯 addLandmarks called - NEW API METHOD');
     if (window.__ill_addedLandmarks) {
-      console.log('⚠️ addLandmarks already executed, skipping');
+      // console.log('⚠️ addLandmarks already executed, skipping');
       return;
     }
     window.__ill_addedLandmarks = true;
@@ -781,19 +791,15 @@
     try {
       // جلب البيانات من API
       const callouts = await fetchCalloutMetadata();
-      console.log(`📦 Loaded ${callouts.length} callouts from API`);
+      // console.log(`📦 Loaded ${callouts.length} callouts from API`);
 
       if (callouts.length === 0) {
         console.warn('⚠️ No callouts found');
         return;
       }
 
-      // طباعة أول callout لرؤية البنية
-      console.log('📋 First callout structure:', callouts[0]);
-      console.log('📐 Available fields:', Object.keys(callouts[0]));
-
       const $img = $('#image');
-      console.log(`🏷️ Adding ${callouts.length} landmarks to image`);
+      // console.log(`🏷️ Adding ${callouts.length} landmarks to image`);
 
       callouts.forEach((item, index) => {
         // ✅ استخدام الأبعاد من API
@@ -808,7 +814,7 @@
         const widthPx  = (typeof width  === 'number') ? `${width}px`  : (String(width).includes('px')  ? String(width)  : `${width}px`);
         const heightPx = (typeof height === 'number') ? `${height}px` : (String(height).includes('px') ? String(height) : `${height}px`);
 
-        console.log(`  Landmark ${index + 1}: key="${key}", type="${type}", pos=(${left},${top}), size=(${widthPx},${heightPx})`);
+        // console.log(`  Landmark ${index + 1}: key="${key}", type="${type}", pos=(${left},${top}), size=(${widthPx},${heightPx})`);
 
         // ✅ بناء HTML
         const html = `
@@ -828,13 +834,13 @@
           </div>`;
         try {
           $img.smoothZoom('addLandmark', [html]);
-          console.log(`    ✅ Landmark ${index + 1} added successfully`);
+          // console.log(`    ✅ Landmark ${index + 1} added successfully`);
         } catch (e) {
           console.error(`    ❌ Failed to add landmark ${index + 1}:`, e);
         }
       });
 
-      console.log(`🎉 Finished adding landmarks. Total: ${callouts.length}`);
+      // console.log(`🎉 Finished adding landmarks. Total: ${callouts.length}`);
     } catch (err) {
       console.error('❌ Failed to add landmarks:', err);
       // عرض رسالة خطأ للمستخدم
@@ -847,23 +853,23 @@
     if (window.__ill_hoverBound) return;
     window.__ill_hoverBound = true;
 
-    console.log('🖱️ Binding hover events...');
+    // console.log('🖱️ Binding hover events...');
 
     $(document)
       .on('mouseenter', '.bbdover', function () {
         const code = $(this).data('codeonimage');
-        console.log('🔵 Hover enter on:', code);
+        // console.log('🔵 Hover enter on:', code);
         $(this).addClass('hovered');
         $(`.bbdover[data-codeonimage="${code}"]`).addClass('hovered');
       })
       .on('mouseleave', '.bbdover', function () {
         const code = $(this).data('codeonimage');
-        console.log('⚪ Hover leave on:', code);
+        // console.log('⚪ Hover leave on:', code);
         $(this).removeClass('hovered');
         $(`.bbdover[data-codeonimage="${code}"]`).removeClass('hovered');
       });
 
-    console.log('✅ Hover events bound');
+    // console.log('✅ Hover events bound');
   }
 
   /* ========================= Zoom Init & Auto Open ========================= */
@@ -874,7 +880,7 @@
       return;
     }
 
-    console.log('🔍 Initializing smoothZoom with OLD settings...');
+    // console.log('🔍 Initializing smoothZoom with OLD settings...');
 
     // ✅ إعدادات smoothZoom بالضبط كما في النسخة القديمة
     $img.smoothZoom({
@@ -900,9 +906,12 @@
       use_3D_Transform: true,
       border_TRANSPARENCY: 0,
       on_IMAGE_LOAD: function() {
-        console.log('📸 ✅ on_IMAGE_LOAD fired - image fully loaded');
-        addLandmarks();
-        autoOpen();
+        // console.log('📸 ✅ on_IMAGE_LOAD fired - image fully loaded');
+        addLandmarks().then(() => {
+          autoOpen();
+        }).catch(err => {
+          console.error('❌ addLandmarks failed:', err);
+        });
       },
       on_ZOOM_PAN_UPDATE: function() {
         // console.log('🔄 Zoom/Pan updated');
@@ -911,11 +920,11 @@
         // console.log('✅ Zoom/Pan complete');
       },
       on_LANDMARK_STATE_CHANGE: function() {
-        console.log('🏷️ Landmark state changed');
+        // console.log('🏷️ Landmark state changed');
       }
     });
 
-    console.log('✅ smoothZoom initialized with callbacks');
+    // console.log('✅ smoothZoom initialized with callbacks');
   }
   function autoOpen() {
     if (window.__ill_autoOpened) return;
@@ -923,11 +932,21 @@
     const autoFlag = qs('auto_open');
     if (!(calloutKey && (autoFlag === '1' || autoFlag === 'true'))) return;
 
-    console.log('🚀 Auto-opening callout:', calloutKey);
+    // console.log('🚀 Auto-opening callout:', calloutKey);
 
-    // ✅ تأكد من أن metadata محملة قبل الفتح
+    // ✅ تأكد من أن metadata محملة قبل الفتح - مع حد أقصى للمحاولات
     if (!metadataLoaded) {
-      console.warn('⚠️ Metadata not ready, retrying in 500ms...');
+      const maxRetries = 10; // حد أقصى 5 ثواني (10 × 500ms)
+      const currentRetry = window.__ill_autoOpenRetries || 0;
+
+      if (currentRetry >= maxRetries) {
+        console.error('❌ Auto-open failed: metadata not loaded after', maxRetries, 'retries');
+        window.__ill_autoOpened = true; // أوقف المحاولات
+        return;
+      }
+
+      // console.warn('⚠️ Metadata not ready, retrying in 500ms... (attempt', currentRetry + 1, '/', maxRetries, ')');
+      window.__ill_autoOpenRetries = currentRetry + 1;
       setTimeout(() => {
         window.__ill_autoOpened = false;
         autoOpen();
@@ -936,20 +955,21 @@
     }
 
     window.__ill_autoOpened = true;
+    window.__ill_autoOpenRetries = 0; // إعادة تعيين العداد
     const found = byKey[calloutKey];
 
     if (found && String(found.callout_type || '').toLowerCase() === 'section') {
-      console.log('🔀 Redirecting to section:', calloutKey);
+      // console.log('🔀 Redirecting to section:', calloutKey);
       goToSection(calloutKey);
     } else {
-      console.log('📖 Opening callout modal:', calloutKey);
+      // console.log('📖 Opening callout modal:', calloutKey);
       openCallout(calloutKey);
     }
   }
 
   /* ========================= Boot ========================= */
   $(function () {
-    console.log('🚀 Initializing illustration viewer...');
+    // console.log('🚀 Initializing illustration viewer...');
 
     // ✅ ربط الأحداث أولاً قبل initZoom
     bindHover();
@@ -966,7 +986,7 @@
 
     // عند إغلاق المودال: صفّر المكدس وحرر focus
     $(document).off('hidden.bs.modal.ill').on('hidden.bs.modal.ill', '#modal', function () {
-      console.log('🔄 Modal closed, clearing stack');
+      // console.log('🔄 Modal closed, clearing stack');
       stack.length = 0;
       setBackVisible();
 
@@ -984,14 +1004,14 @@
 
     // عند فتح المودال: تأكد من إزالة aria-hidden
     $(document).off('shown.bs.modal.ill').on('shown.bs.modal.ill', '#modal', function () {
-      console.log('📖 Modal opened');
+      // console.log('📖 Modal opened');
       const modal = document.getElementById('modal');
       if (modal) {
         modal.setAttribute('aria-hidden', 'false');
       }
     });
 
-    console.log('✅ Illustration viewer initialized - waiting for on_IMAGE_LOAD');
+    // console.log('✅ Illustration viewer initialized - waiting for on_IMAGE_LOAD');
   });
 
   // API: لتفعيل الفتح من أماكن أخرى

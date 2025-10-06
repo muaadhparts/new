@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\NewCategory;
+use App\Models\Illustration;
+use App\Models\Section;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
@@ -29,7 +31,15 @@ class CalloutController extends Controller
         $categoryId  = (int) $request->query('category_id');
         $catalogCode = (string) $request->query('catalog_code');
 
+        // Debug logging
+        \Log::info('CalloutController metadata called', [
+            'section_id' => $sectionId,
+            'category_id' => $categoryId,
+            'catalog_code' => $catalogCode
+        ]);
+
         if (!$sectionId || !$categoryId || !$catalogCode) {
+            \Log::warning('CalloutController: Missing parameters');
             return response()->json([
                 'ok'       => false,
                 'error'    => 'Missing required parameters',
@@ -38,58 +48,63 @@ class CalloutController extends Controller
         }
 
         try {
-            // ✅ التحقق من وجود جدول callouts
-            $tablesExist = DB::table('information_schema.tables')
-                ->where('table_schema', DB::getDatabaseName())
-                ->whereIn('table_name', ['callouts', 'illustrations'])
-                ->count();
+            // ✅ استخدام Eloquent Models بدلاً من DB مباشرة (نفس طريقة Livewire)
+            \Log::info('🔍 Fetching illustration', ['section_id' => $sectionId, 'category_id' => $categoryId]);
 
-            if ($tablesExist < 2) {
-                \Log::warning('CalloutController: Missing tables', [
-                    'section_id' => $sectionId,
-                    'tables_found' => $tablesExist
-                ]);
+            // جلب illustration مع callouts من Model
+            $illustration = Illustration::with('callouts')
+                ->where('section_id', $sectionId)
+                ->first();
 
-                return response()->json([
-                    'ok'       => true,
-                    'callouts' => [],
-                    'note'     => 'No callouts table found - using empty data'
-                ]);
+            \Log::info('📊 Query result', [
+                'found' => $illustration ? 'yes' : 'no',
+                'illustration_id' => $illustration?->id,
+                'callouts_count' => $illustration?->callouts?->count() ?? 0
+            ]);
+
+            if (!$illustration) {
+                \Log::warning('⚠️ No illustration found', ['section_id' => $sectionId]);
+                return response()->json(['ok' => true, 'callouts' => [], 'note' => 'No illustration']);
             }
 
-            // جلب callouts من جدول illustrations - مع جميع الأبعاد المطلوبة
-            $callouts = DB::table('callouts')
-                ->join('illustrations', 'illustrations.id', '=', 'callouts.illustration_id')
-                ->where('illustrations.section_id', $sectionId)
-                ->select(
-                    'callouts.id',
-                    'callouts.callout_key',
-                    'callouts.callout_type',
-                    'callouts.applicable',
-                    'callouts.selective_fit',
-                    'callouts.rectangle_left',
-                    'callouts.rectangle_top',
-                    'callouts.rectangle_right',
-                    'callouts.rectangle_bottom'
-                )
-                ->get()
-                ->map(function ($c) {
-                    // حساب العرض والارتفاع من right/bottom
-                    $width = ($c->rectangle_right ?? 0) - ($c->rectangle_left ?? 0);
-                    $height = ($c->rectangle_bottom ?? 0) - ($c->rectangle_top ?? 0);
+            if ($illustration->callouts->isEmpty()) {
+                \Log::warning('⚠️ No callouts for illustration', ['illustration_id' => $illustration->id]);
+                return response()->json(['ok' => true, 'callouts' => [], 'note' => 'No callouts']);
+            }
 
-                    return [
-                        'id'               => $c->id,
-                        'callout_key'      => $c->callout_key,
-                        'callout_type'     => $c->callout_type ?? 'part',
-                        'applicable'       => $c->applicable,
-                        'selective_fit'    => $c->selective_fit,
-                        'rectangle_left'   => $c->rectangle_left ?? 0,
-                        'rectangle_top'    => $c->rectangle_top ?? 0,
-                        'rectangle_width'  => $width > 0 ? $width : 150,
-                        'rectangle_height' => $height > 0 ? $height : 30,
-                    ];
-                });
+            // تحويل callouts إلى الصيغة المطلوبة للـ JS
+            $callouts = $illustration->callouts->map(function ($c) use ($catalogCode) {
+                // حساب العرض والارتفاع من right/bottom
+                $width = ($c->rectangle_right ?? 0) - ($c->rectangle_left ?? 0);
+                $height = ($c->rectangle_bottom ?? 0) - ($c->rectangle_top ?? 0);
+
+                $data = [
+                    'id'               => $c->id,
+                    'callout_key'      => $c->callout_key ?? $c->callout ?? '',
+                    'callout_type'     => $c->callout_type ?? 'part',
+                    'applicable'       => $c->applicable ?? null,
+                    'selective_fit'    => $c->selective_fit ?? null,
+                    'rectangle_left'   => $c->rectangle_left ?? 0,
+                    'rectangle_top'    => $c->rectangle_top ?? 0,
+                    'rectangle_width'  => $width > 0 ? $width : 150,
+                    'rectangle_height' => $height > 0 ? $height : 30,
+                ];
+
+                // ✅ إذا كان callout من نوع section، أضف parents_key للـ navigation
+                if (($c->callout_type ?? 'part') === 'section' && !empty($c->callout_key)) {
+                    // ابحث عن أول category في level 3 بـ full_code يبدأ بـ callout_key
+                    $targetCategory = NewCategory::where('full_code', 'LIKE', $c->callout_key . '%')
+                        ->where('level', 3)
+                        ->orderBy('id')
+                        ->first(['parents_key']);
+
+                    if ($targetCategory && !empty($targetCategory->parents_key)) {
+                        $data['parents_key'] = $targetCategory->parents_key;
+                    }
+                }
+
+                return $data;
+            })->values();
 
             return response()->json([
                 'ok'       => true,

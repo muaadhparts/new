@@ -5,7 +5,8 @@
       "Bash(grep:*)",
       "Bash(php artisan schema:dump:*)",
       "Bash(php artisan make:migration:*)",
-      "Bash(php:*)"
+      "Bash(php:*)",
+      "Read(//c/Users/hp/Herd/backmain/**)"
     ],
     "deny": [],
     "ask": []

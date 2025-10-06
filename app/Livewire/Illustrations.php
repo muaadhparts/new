@@ -83,6 +83,16 @@ class Illustrations extends Component
                 return;
             }
 
+            // ✅ Log category data for debugging
+            Log::info('📍 Illustrations category loaded', [
+                'category_id' => $this->category->id,
+                'full_code' => $this->category->full_code,
+                'spec_key' => $this->category->spec_key,
+                'parents_key' => $this->category->parents_key,
+                'level' => $this->category->level,
+                'parent_id' => $this->category->parent_id
+            ]);
+
             // ✅ إذا جاء من البحث مع section_id في الـ URL، استخدمه مباشرة
             if (request()->has('section_id')) {
                 $this->section = Section::find(request()->get('section_id'));
