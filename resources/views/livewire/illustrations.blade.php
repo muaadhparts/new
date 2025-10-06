@@ -1,6 +1,9 @@
 <div>
     @php use Illuminate\Support\Str; @endphp
 
+    {{-- Modal Component - في البداية --}}
+    <livewire:callout-modal />
+
     <style>
         /* ⚙️ الهيكل الأساسي للـ landmarks - لا تغيير */
         #zoom_container .landmarks {
@@ -250,23 +253,21 @@
         </div>
     </div>
 
-@push('scripts')
-    {{-- ✅ الطريقة الجديدة المحسّنة: تمرير IDs فقط (150 bytes بدلاً من 7-12KB) --}}
-    <script>
-        window.catalogContext = {
-            sectionId:   {{ $section->id ?? 'null' }},
-            categoryId:  {{ $category->id ?? 'null' }},
-            catalogCode: '{{ $catalog->code ?? '' }}',
-            brandName:   '{{ optional($brand)->name ?? '' }}'
-        };
-        let csrf = "{{ csrf_token() }}";
-    </script>
+    @push('scripts')
+        {{-- ✅ الطريقة الجديدة المحسّنة: تمرير IDs فقط (150 bytes بدلاً من 7-12KB) --}}
+        <script>
+            window.catalogContext = {
+                sectionId:   {{ $section->id ?? 'null' }},
+                categoryId:  {{ $category->id ?? 'null' }},
+                catalogCode: '{{ $catalog->code ?? '' }}',
+                brandName:   '{{ optional($brand)->name ?? '' }}'
+            };
+            let csrf = "{{ csrf_token() }}";
+        </script>
 
-    {{-- سكربتات التكبير ثم سكربتنا --}}
-    <script src="{{ asset('assets/front/js/jq-zoom.js') }}"></script>
-    <script src="{{ asset('assets/front/js/preview.js') }}"></script>
-    <script src="{{ asset('assets/front/js/ill/illustrated.js') }}?v={{ time() }}"></script>
-@endpush
-
-    <livewire:callout-modal />
+        {{-- سكربتات التكبير ثم سكربتنا --}}
+        <script src="{{ asset('assets/front/js/jq-zoom.js') }}"></script>
+        <script src="{{ asset('assets/front/js/preview.js') }}"></script>
+        <script src="{{ asset('assets/front/js/ill/illustrated.js') }}?v={{ time() }}"></script>
+    @endpush
 </div>

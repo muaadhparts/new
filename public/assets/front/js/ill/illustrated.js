@@ -467,6 +467,8 @@
    * ✅ جلب metadata (coordinates) فقط من API
    */
   async function fetchCalloutMetadata() {
+    const METADATA_TIMEOUT = 30000; // 30 seconds timeout for metadata
+
     if (metadataLoaded) {
       console.log('📦 Callouts metadata already loaded from memory cache');
       return cachedCallouts;
@@ -520,9 +522,16 @@
     // console.log('📡 Fetching callout metadata from API:', params.toString());
 
     try {
+      // ✅ إضافة timeout للطلب
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), METADATA_TIMEOUT);
+
       const res = await fetch(`/api/callouts/metadata?${params.toString()}`, {
-        headers: { 'Accept': 'application/json' }
+        headers: { 'Accept': 'application/json' },
+        signal: controller.signal
       });
+
+      clearTimeout(timeoutId);
 
       // console.log('📊 Metadata API response status:', res.status);
 
@@ -564,6 +573,10 @@
         throw new Error('Invalid metadata response');
       }
     } catch (err) {
+      if (err.name === 'AbortError') {
+        console.error('❌ Metadata request timeout after', METADATA_TIMEOUT / 1000, 'seconds');
+        throw new Error('Metadata request timeout - server too slow');
+      }
       console.error('❌ Fetch metadata error:', err);
       throw err;
     }
@@ -574,6 +587,7 @@
    */
   async function fetchCalloutData(calloutKey, page = 1, perPage = 50, retryCount = 0) {
     const MAX_RETRIES = 2;
+    const FETCH_TIMEOUT = 45000; // 45 seconds timeout
 
     if (!sectionId || !categoryId || !catalogCode) {
       console.error('❌ Missing context data:', { sectionId, categoryId, catalogCode });
@@ -592,7 +606,16 @@
     // console.log('📡 Fetching callout data:', params.toString());
 
     try {
-      const res = await fetch(`/api/callouts?${params.toString()}`, { headers:{ 'Accept':'application/json' } });
+      // ✅ إضافة timeout للطلب
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), FETCH_TIMEOUT);
+
+      const res = await fetch(`/api/callouts?${params.toString()}`, {
+        headers: { 'Accept': 'application/json' },
+        signal: controller.signal
+      });
+
+      clearTimeout(timeoutId);
 
       if (!res.ok) {
         if (retryCount < MAX_RETRIES && res.status >= 500) {
@@ -607,6 +630,15 @@
       // console.log('✅ Callout data loaded:', data);
       return data;
     } catch (err) {
+      if (err.name === 'AbortError') {
+        console.error('❌ Request timeout after', FETCH_TIMEOUT / 1000, 'seconds');
+        if (retryCount < MAX_RETRIES) {
+          console.warn(`⚠️ Retrying due to timeout (${retryCount + 1}/${MAX_RETRIES})...`);
+          await new Promise(resolve => setTimeout(resolve, 2000));
+          return fetchCalloutData(calloutKey, page, perPage, retryCount + 1);
+        }
+        throw new Error('Request timeout - server too slow');
+      }
       console.error('❌ Fetch error:', err);
       throw err;
     }
