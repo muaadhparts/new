@@ -10,6 +10,7 @@ use App\Services\CatalogSessionManager;
 use App\Services\CategoryFilterService;
 use App\Traits\LoadsCatalogData;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Cache;
 
 class CatlogTreeLevel3 extends Component
 {
@@ -37,13 +38,6 @@ class CatlogTreeLevel3 extends Component
                 $this->sessionManager->setVin(request()->get('vin'));
             }
 
-            Log::info('🔍 CatlogTreeLevel3 mount', [
-                'brand' => $id,
-                'catalog' => $data,
-                'key1' => $key1,
-                'key2' => $key2
-            ]);
-
             // تحميل البيانات الأساسية
             $this->loadBasicData($id, $data, $key1, $key2);
 
@@ -51,14 +45,25 @@ class CatlogTreeLevel3 extends Component
             $filterDate = $this->sessionManager->getFilterDate();
             $specItemIds = $this->sessionManager->getSpecItemIds($this->catalog);
 
-            // تحميل فئات Level3 المفلترة
-            $this->categories = $this->filterService->loadLevel3Categories(
-                $this->catalog,
-                $this->brand,
-                $this->parentCategory2,
-                $filterDate,
-                $specItemIds
+            // تحميل فئات Level3 المفلترة مع Cache
+            $cacheKey = sprintf(
+                'catalog_level3_%d_%d_%d_%s_%s',
+                $this->catalog->id,
+                $this->brand->id,
+                $this->parentCategory2->id,
+                $filterDate ?? 'no_date',
+                md5(serialize($specItemIds))
             );
+
+            $this->categories = Cache::remember($cacheKey, 3600, function() use ($filterDate, $specItemIds) {
+                return $this->filterService->loadLevel3Categories(
+                    $this->catalog,
+                    $this->brand,
+                    $this->parentCategory2,
+                    $filterDate,
+                    $specItemIds
+                );
+            });
 
         } catch (\Exception $e) {
             Log::error("❌ Error in CatlogTreeLevel3 mount: " . $e->getMessage(), [
@@ -75,11 +80,6 @@ class CatlogTreeLevel3 extends Component
 
     protected function loadBasicData($brandName, $catalogCode, $parentsKey, $specKey)
     {
-        Log::info('🔎 loadBasicData called', [
-            'parentsKey' => $parentsKey,
-            'specKey' => $specKey
-        ]);
-
         $this->brand = Brand::where('name', $brandName)->firstOrFail();
 
         $this->catalog = Catalog::where('code', $catalogCode)
@@ -98,7 +98,6 @@ class CatlogTreeLevel3 extends Component
             ->first();
 
         if (!$level2Category) {
-            Log::error('❌ Level 2 category not found', ['specKey' => $specKey]);
             throw new \Exception("Category not found for spec_key: {$specKey}");
         }
 
@@ -108,20 +107,6 @@ class CatlogTreeLevel3 extends Component
         $this->parentCategory1 = NewCategory::where('id', $level2Category->parent_id)
             ->where('level', 1)
             ->firstOrFail();
-
-        // ✅ التحقق من أن parents_key يطابق ما تم تمريره
-        if ($parentsKey && $this->parentCategory1->full_code !== $parentsKey && $this->parentCategory1->spec_key !== $parentsKey) {
-            Log::warning('⚠️ parents_key mismatch', [
-                'expected' => $parentsKey,
-                'found_full_code' => $this->parentCategory1->full_code,
-                'found_spec_key' => $this->parentCategory1->spec_key
-            ]);
-        }
-
-        Log::info('✅ Categories loaded', [
-            'parentCategory1' => $this->parentCategory1->full_code,
-            'parentCategory2' => $this->parentCategory2->spec_key
-        ]);
     }
 
     public function render()

@@ -9,6 +9,7 @@ use App\Services\CatalogSessionManager;
 use App\Services\CategoryFilterService;
 use App\Traits\LoadsCatalogData;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Cache;
 
 class CatlogTreeLevel1 extends Component
 {
@@ -49,15 +50,28 @@ class CatlogTreeLevel1 extends Component
             // حفظ الأكواد في الجلسة
             $this->sessionManager->setAllowedLevel3Codes($allowedLevel3Codes);
 
-            // تحميل فئات Level1
+            // تحميل فئات Level1 مع Cache
             $labelField = app()->getLocale() === 'ar' ? 'label_ar' : 'label_en';
-            $this->categories = $this->filterService->loadLevel1Categories(
-                $this->catalog,
-                $this->brand,
+
+            // إنشاء cache key فريد بناءً على الفلاتر
+            $cacheKey = sprintf(
+                'catalog_level1_%d_%d_%s_%s_%s',
+                $this->catalog->id,
+                $this->brand->id,
                 $labelField,
-                $filterDate,
-                $allowedLevel3Codes
+                $filterDate ?? 'no_date',
+                md5(serialize($allowedLevel3Codes))
             );
+
+            $this->categories = Cache::remember($cacheKey, 3600, function() use ($labelField, $filterDate, $allowedLevel3Codes) {
+                return $this->filterService->loadLevel1Categories(
+                    $this->catalog,
+                    $this->brand,
+                    $labelField,
+                    $filterDate,
+                    $allowedLevel3Codes
+                );
+            });
 
         } catch (\Exception $e) {
             Log::error("❌ Error in CatlogTreeLevel1 mount: " . $e->getMessage());

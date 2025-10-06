@@ -11,6 +11,7 @@ use App\Services\CatalogSessionManager;
 use App\Services\CategoryFilterService;
 use App\Traits\LoadsCatalogData;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Cache;
 
 class CatlogTreeLevel2 extends Component
 {
@@ -46,16 +47,27 @@ class CatlogTreeLevel2 extends Component
             $filterDate = $this->sessionManager->getFilterDate();
             $specItemIds = $this->sessionManager->getSpecItemIds($this->catalog);
 
-            // تحميل فئات Level2 المفلترة
-            $this->categories = $this->filterService->loadLevel2Categories(
-                $this->catalog,
-                $this->brand,
-                $this->category,
-                $filterDate,
-                $specItemIds
+            // تحميل فئات Level2 المفلترة مع Cache
+            $cacheKey = sprintf(
+                'catalog_level2_%d_%d_%d_%s_%s',
+                $this->catalog->id,
+                $this->brand->id,
+                $this->category->id,
+                $filterDate ?? 'no_date',
+                md5(serialize($specItemIds))
             );
 
-            // تحميل الأقسام
+            $this->categories = Cache::remember($cacheKey, 3600, function() use ($filterDate, $specItemIds) {
+                return $this->filterService->loadLevel2Categories(
+                    $this->catalog,
+                    $this->brand,
+                    $this->category,
+                    $filterDate,
+                    $specItemIds
+                );
+            });
+
+            // تحميل الأقسام (لا نستخدم cache هنا لأنه يعتمد على categories المتغيرة)
             $this->sections = $this->loadSectionsForCategories($this->categories);
 
             // حساب الأكواد المسموح بها لوضع Section
