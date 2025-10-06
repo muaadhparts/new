@@ -10,6 +10,7 @@ use App\Models\Section;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\Cache;
 
 class CalloutController extends Controller
 {
@@ -92,14 +93,21 @@ class CalloutController extends Controller
 
                 // ✅ إذا كان callout من نوع section، أضف parents_key للـ navigation
                 if (($c->callout_type ?? 'part') === 'section' && !empty($c->callout_key)) {
-                    // ابحث عن أول category في level 3 بـ full_code يبدأ بـ callout_key
-                    $targetCategory = NewCategory::where('full_code', 'LIKE', $c->callout_key . '%')
-                        ->where('level', 3)
-                        ->orderBy('id')
-                        ->first(['parents_key']);
+                    // استخدام cache للـ section callouts (لتحسين الأداء)
+                    $cacheKey = "section_parents_key_{$c->callout_key}";
 
-                    if ($targetCategory && !empty($targetCategory->parents_key)) {
-                        $data['parents_key'] = $targetCategory->parents_key;
+                    $parentsKey = Cache::remember($cacheKey, 7200, function() use ($c) {
+                        // ابحث عن أول category في level 3 بـ full_code يبدأ بـ callout_key
+                        $targetCategory = NewCategory::where('full_code', 'LIKE', $c->callout_key . '%')
+                            ->where('level', 3)
+                            ->orderBy('id')
+                            ->first(['parents_key']);
+
+                        return $targetCategory ? $targetCategory->parents_key : null;
+                    });
+
+                    if (!empty($parentsKey)) {
+                        $data['parents_key'] = $parentsKey;
                     }
                 }
 
