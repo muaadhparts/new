@@ -12,7 +12,7 @@
                 <div class="info-right">
                     <ul class="d-flex wows align-items-center">
 
-                        {{-- @if (Auth::guard('web')->check() && Auth::guard('web')->user()->is_vendor == 2)
+                       @if (Auth::guard('web')->check() && Auth::guard('web')->user()->is_vendor == 2)
                             <li class="d-none d-lg-block"><a class="border px-3 py-1"
                                     href="{{ route('vendor.dashboard') }}">{{ __('Vendor Panel') }}</a>
                             </li>
@@ -29,7 +29,7 @@
                                     @lang('Rider Login')
                                 </a>
                             </li>
-                        @endif --}}
+                        @endif 
 
 
 
