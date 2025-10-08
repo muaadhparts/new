@@ -1,93 +1,5 @@
 <div class="container mb-5" style="position: relative;" x-data="{ vinModal: false }">
-
-  {{-- Enhanced Search Box --}}
-  <div class="enhanced-search-wrapper">
-    <div class="search-container">
-      <div class="input-group input-group-lg shadow-sm">
-        <span class="input-group-text bg-white border-end-0 ps-4">
-          <i class="fas fa-search text-primary"></i>
-        </span>
-        <input
-          type="text"
-          class="form-control form-control-lg border-start-0 ps-0"
-          placeholder="{{ __('Enter part number or name') }}"
-          wire:model.debounce.300ms="query"
-          wire:keydown.enter="submitSearch"
-          aria-label="{{ __('Search by part number or name') }}"
-        >
-        <button class="btn btn-primary px-4" wire:click="submitSearch" type="button">
-          <i class="fas fa-search me-2"></i>
-          <span class="d-none d-sm-inline">{{ __('Search') }}</span>
-        </button>
-      </div>
-
-      {{-- Suggestions Dropdown --}}
-      @if (!empty($results))
-        <div class="suggestions-dropdown card shadow-lg">
-          <div class="card-body p-0">
-            <div class="list-group list-group-flush">
-              @foreach ($results as $result)
-                <div class="list-group-item list-group-item-action border-0 suggestion-item-enhanced"
-                     wire:click="selectItem('{{ $result['sku'] }}')"
-                     role="button">
-                  <div class="d-flex align-items-center">
-                    <div class="flex-shrink-0 me-3">
-                      <div class="suggestion-icon">
-                        <i class="fas fa-cube text-primary"></i>
-                      </div>
-                    </div>
-                    <div class="flex-grow-1">
-                      <div class="suggestion-sku fw-bold text-primary mb-1">
-                        {{ $result['sku'] }}
-                      </div>
-                      <div class="suggestion-label text-muted small">
-                        {{ getLocalizedLabel($result) }}
-                      </div>
-                    </div>
-                    <div class="flex-shrink-0">
-                      <i class="fas fa-chevron-right text-muted"></i>
-                    </div>
-                  </div>
-                </div>
-              @endforeach
-            </div>
-          </div>
-        </div>
-      @endif
-    </div>
-
-    {{-- Search Hint --}}
-    <div class="text-center mt-3">
-      <p class="search-hint-enhanced mb-0">
-        <i class="fas fa-info-circle me-1"></i>
-        <span class="text-muted">{{ __('Example :') }}</span>
-        <code class="bg-light px-2 py-1 rounded ms-1" dir="ltr">1520831U0B</code>
-      </p>
-    </div>
-  </div>
-
-  {{-- VIN Search Modal --}}
-  <div class="modal fade" id="vinSearchModal" tabindex="-1" aria-labelledby="vinSearchModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
-      <div class="modal-content">
-        <div class="modal-header bg-primary bg-gradient text-white">
-          <h5 class="modal-title" id="vinSearchModalLabel">
-            <i class="fas fa-car me-2"></i>
-            <span class="d-none d-sm-inline">@lang('Search by VIN')</span>
-            <span class="d-sm-none">VIN</span>
-          </h5>
-          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="@lang('Close')"></button>
-        </div>
-        <div class="modal-body p-2 p-sm-3">
-          <livewire:search-boxvin/>
-        </div>
-      </div>
-    </div>
-  </div>
-
-</div>
-
-<style>
+  <style>
 [x-cloak] { display: none !important; }
 
 /* Enhanced Search Wrapper */
@@ -363,4 +275,91 @@
     padding: 1rem 0.5rem !important;
   }
 }
-</style>
+  </style>
+
+  {{-- Enhanced Search Box --}}
+  <div class="enhanced-search-wrapper">
+    <div class="search-container">
+      <div class="input-group input-group-lg shadow-sm">
+        <span class="input-group-text bg-white border-end-0 ps-4">
+          <i class="fas fa-search text-primary"></i>
+        </span>
+        <input
+          type="text"
+          class="form-control form-control-lg border-start-0 ps-0"
+          placeholder="{{ __('Enter part number or name') }}"
+          wire:model.debounce.300ms="query"
+          wire:keydown.enter="submitSearch"
+          aria-label="{{ __('Search by part number or name') }}"
+        >
+        <button class="btn btn-primary px-4" wire:click="submitSearch" type="button">
+          <i class="fas fa-search me-2"></i>
+          <span class="d-none d-sm-inline">{{ __('Search') }}</span>
+        </button>
+      </div>
+
+      {{-- Suggestions Dropdown --}}
+      @if (!empty($results))
+        <div class="suggestions-dropdown card shadow-lg">
+          <div class="card-body p-0">
+            <div class="list-group list-group-flush">
+              @foreach ($results as $result)
+                <div class="list-group-item list-group-item-action border-0 suggestion-item-enhanced"
+                     wire:click="selectItem('{{ $result['sku'] }}')"
+                     role="button">
+                  <div class="d-flex align-items-center">
+                    <div class="flex-shrink-0 me-3">
+                      <div class="suggestion-icon">
+                        <i class="fas fa-cube text-primary"></i>
+                      </div>
+                    </div>
+                    <div class="flex-grow-1">
+                      <div class="suggestion-sku fw-bold text-primary mb-1">
+                        {{ $result['sku'] }}
+                      </div>
+                      <div class="suggestion-label text-muted small">
+                        {{ getLocalizedLabel($result) }}
+                      </div>
+                    </div>
+                    <div class="flex-shrink-0">
+                      <i class="fas fa-chevron-right text-muted"></i>
+                    </div>
+                  </div>
+                </div>
+              @endforeach
+            </div>
+          </div>
+        </div>
+      @endif
+    </div>
+
+    {{-- Search Hint --}}
+    <div class="text-center mt-3">
+      <p class="search-hint-enhanced mb-0">
+        <i class="fas fa-info-circle me-1"></i>
+        <span class="text-muted">{{ __('Example :') }}</span>
+        <code class="bg-light px-2 py-1 rounded ms-1" dir="ltr">1520831U0B</code>
+      </p>
+    </div>
+  </div>
+
+  {{-- VIN Search Modal --}}
+  <div class="modal fade" id="vinSearchModal" tabindex="-1" aria-labelledby="vinSearchModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header bg-primary bg-gradient text-white">
+          <h5 class="modal-title" id="vinSearchModalLabel">
+            <i class="fas fa-car me-2"></i>
+            <span class="d-none d-sm-inline">@lang('Search by VIN')</span>
+            <span class="d-sm-none">VIN</span>
+          </h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="@lang('Close')"></button>
+        </div>
+        <div class="modal-body p-2 p-sm-3">
+          <livewire:search-boxvin/>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
