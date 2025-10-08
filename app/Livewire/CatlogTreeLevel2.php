@@ -88,23 +88,28 @@ class CatlogTreeLevel2 extends Component
 
     protected function loadBasicData($brandName, $catalogCode, $parentFullCode)
     {
-        // ✅ eager loading للبراند مع المناطق
-        $this->brand = Brand::with('regions')->where('name', $brandName)->firstOrFail();
+        // dd(['hook' => 'CatlogTreeLevel2@loadBasicData']); ///
 
-        // ✅ eager loading للكتالوج مع البراند
-        $this->catalog = Catalog::with(['brand', 'brandRegion'])
-            ->where('code', $catalogCode)
-            ->where('brand_id', $this->brand->id)
-            ->firstOrFail();
+        // ✅ استخدام الدالة المركزية لتحميل Brand + Catalog
+        $pair = $this->sessionManager->loadBrandAndCatalog($brandName, $catalogCode);
+        $this->brand = $pair['brand'];     // regions محمّلة
+        $this->catalog = $pair['catalog']; // brand/brandRegion محمّلة
 
-        // ✅ eager loading للـ category مع العلاقات الأساسية
-        $this->category = NewCategory::with(['catalog', 'brand', 'periods'])
-            ->where([
-                ['catalog_id', $this->catalog->id],
-                ['brand_id', $this->brand->id],
-                ['full_code', $parentFullCode],
-                ['level', 1],
-            ])->firstOrFail();
+        if (!$this->brand || !$this->catalog) {
+            throw new \RuntimeException('Brand or Catalog not found');
+        }
+
+        // ✅ استخدام الدالة المركزية لتحميل Category مع العلاقات
+        $this->category = $this->sessionManager->loadCategoryWithRelations(
+            $this->catalog->id,
+            $this->brand->id,
+            $parentFullCode,
+            1 // level
+        );
+
+        if (!$this->category) {
+            throw new \RuntimeException('Parent category (level 1) not found');
+        }
     }
 
     protected function loadSectionsForCategories($categories)

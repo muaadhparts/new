@@ -80,14 +80,16 @@ class CatlogTreeLevel3 extends Component
 
     protected function loadBasicData($brandName, $catalogCode, $parentsKey, $specKey)
     {
-        // ✅ eager loading للبراند مع المناطق
-        $this->brand = Brand::with('regions')->where('name', $brandName)->firstOrFail();
+        // dd(['hook' => 'CatlogTreeLevel3@loadBasicData']); ///
 
-        // ✅ eager loading للكتالوج مع البراند
-        $this->catalog = Catalog::with(['brand', 'brandRegion'])
-            ->where('code', $catalogCode)
-            ->where('brand_id', $this->brand->id)
-            ->firstOrFail();
+        // ✅ استخدام الدالة المركزية لتحميل Brand + Catalog
+        $pair = $this->sessionManager->loadBrandAndCatalog($brandName, $catalogCode);
+        $this->brand = $pair['brand'];     // regions محمّلة
+        $this->catalog = $pair['catalog']; // brand/brandRegion محمّلة
+
+        if (!$this->brand || !$this->catalog) {
+            throw new \RuntimeException('Brand or Catalog not found');
+        }
 
         // ✅ الطريقة الصحيحة: نبحث أولاً عن الـ level 2 category بـ spec_key مع eager loading
         $level2Category = NewCategory::with(['catalog', 'brand', 'periods', 'trueParent'])

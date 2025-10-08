@@ -31,9 +31,16 @@ class CatlogTreeLevel1 extends Component
     public function mount($id, $data)
     {
         try {
-            // ✅ تحميل Brand و Catalog مع eager loading للعلاقات الأساسية
-            $this->brand = Brand::with('regions')->where('name', $id)->firstOrFail();
-            $this->catalog = Catalog::with(['brand', 'brandRegion'])->where('code', $data)->where('brand_id', $this->brand->id)->firstOrFail();
+            // ✅ استخدام الدالة المركزية لتحميل Brand + Catalog
+            // dd(['hook' => 'CatlogTreeLevel1@mount', 'brand' => $id, 'catalog' => $data]); ///
+            $pair = $this->sessionManager->loadBrandAndCatalog($id, $data);
+            $this->brand = $pair['brand'];
+            $this->catalog = $pair['catalog'];
+
+            if (!$this->brand || !$this->catalog) {
+                session()->flash('error', __('Brand or catalog not found.'));
+                return;
+            }
 
             // الحصول على الفلاتر من الخدمة
             $specItemIds = $this->sessionManager->getSpecItemIds($this->catalog);
