@@ -41,7 +41,7 @@ class Illustrations extends Component
                 $this->sessionManager->setVin(request()->get('vin'));
             }
 
-            // استخدام Trait لتحميل Brand و Catalog
+            // ✅ استخدام Trait لتحميل Brand و Catalog مع eager loading
             $this->loadBrandAndCatalog($id, $data);
 
             if (!$this->brand || !$this->catalog) {
@@ -49,30 +49,35 @@ class Illustrations extends Component
                 return;
             }
 
-            // Load category hierarchy
-            $this->parentCategory1 = NewCategory::where('catalog_id', $this->catalog->id)
+            // ✅ Load category hierarchy مع eager loading للعلاقات
+            $this->parentCategory1 = NewCategory::with(['catalog', 'brand', 'periods'])
+                ->where('catalog_id', $this->catalog->id)
                 ->where('brand_id', $this->brand->id)
                 ->where('full_code', $key1)
                 ->where('level', 1)->first();
 
-            $this->parentCategory2 = NewCategory::where('catalog_id', $this->catalog->id)
+            $this->parentCategory2 = NewCategory::with(['catalog', 'brand', 'periods'])
+                ->where('catalog_id', $this->catalog->id)
                 ->where('brand_id', $this->brand->id)
                 ->where('full_code', $key2)
                 ->where('level', 2)->first();
 
-            $this->parentCategory3 = NewCategory::where('catalog_id', $this->catalog->id)
+            $this->parentCategory3 = NewCategory::with(['catalog', 'brand', 'periods'])
+                ->where('catalog_id', $this->catalog->id)
                 ->where('brand_id', $this->brand->id)
                 ->where('full_code', $key3)
                 // ->where('full_code', $key4) // هذا الشرط الجديد لضمان الدقة
                 ->where('level', 3)
                 ->first();
 
-            // ✅ إذا جاء من البحث مع category_id في الـ URL، استخدمه مباشرة
+            // ✅ إذا جاء من البحث مع category_id في الـ URL، استخدمه مباشرة مع eager loading
             if (request()->has('category_id')) {
-                $this->category = NewCategory::find(request()->get('category_id'));
+                $this->category = NewCategory::with(['catalog', 'brand', 'periods', 'sections'])
+                    ->find(request()->get('category_id'));
             } else {
-                // Load actual category من الـ route parameters
-                $this->category = NewCategory::where('catalog_id', $this->catalog->id)
+                // Load actual category من الـ route parameters مع eager loading
+                $this->category = NewCategory::with(['catalog', 'brand', 'periods', 'sections'])
+                    ->where('catalog_id', $this->catalog->id)
                     ->where('brand_id', $this->brand->id)
                     ->where('full_code', $key3)
                     ->where('level', 3)->first();
@@ -83,28 +88,31 @@ class Illustrations extends Component
                 return;
             }
 
-            // ✅ إذا جاء من البحث مع section_id في الـ URL، استخدمه مباشرة
+            // ✅ إذا جاء من البحث مع section_id في الـ URL، استخدمه مباشرة مع eager loading
             if (request()->has('section_id')) {
-                $this->section = Section::find(request()->get('section_id'));
+                $this->section = Section::with(['category', 'catalog', 'illustrations.callouts'])
+                    ->find(request()->get('section_id'));
             } else {
-                // Load section بناءً على category
-                $this->section = Section::where('category_id', $this->category->id)->first();
+                // ✅ Load section بناءً على category مع eager loading
+                $this->section = Section::with(['category', 'catalog', 'illustrations.callouts'])
+                    ->where('category_id', $this->category->id)
+                    ->first();
             }
 
             // Initialize collections
             $this->illustrations = collect();
             $this->callouts = collect();
 
-            // Load illustration with callouts
+            // ✅ Load illustration with callouts - استخدام العلاقة المحملة إن أمكن
             if ($this->section) {
-                $illustration = Illustration::with('callouts')
-                    ->where('section_id', $this->section->id)
-                    ->where('code', $this->category->full_code) // لازم يكون مطابق للكود الكامل
+                // استخدام العلاقة المحملة أولاً
+                $illustration = $this->section->illustrations
+                    ->where('code', $this->category->full_code)
                     ->first();
 
                 if ($illustration) {
                     $this->illustrations = collect([$illustration]);
-                    $this->callouts = $illustration->callouts;
+                    $this->callouts = $illustration->callouts ?? collect();
                 }
             } else {
                 $this->illustrations = collect([$this->category]);

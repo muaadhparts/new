@@ -68,4 +68,28 @@ class NewCategory extends Model
     {
         return $this->belongsTo(Catalog::class, 'catalog_id');
     }
+
+    /**
+     * 🔗 العلاقة مع البراند
+     */
+    public function brand(): BelongsTo
+    {
+        return $this->belongsTo(Brand::class, 'brand_id');
+    }
+
+    /**
+     * 🔗 الأقسام (Sections) المرتبطة بهذا التصنيف
+     */
+    public function sections(): HasMany
+    {
+        return $this->hasMany(Section::class, 'category_id');
+    }
+
+    /**
+     * 🔗 مجموعات المواصفات المرتبطة بهذا التصنيف
+     */
+    public function specGroups()
+    {
+        return $this->hasMany(\App\Models\CategorySpecGroup::class, 'category_id');
+    }
 }

@@ -96,6 +96,22 @@ class Catalog extends Model
     }
 
     /**
+     * 🔗 المنطقة (BrandRegion) المرتبطة بالكتالوج
+     */
+    public function brandRegion(): BelongsTo
+    {
+        return $this->belongsTo(BrandRegion::class, 'brand_region_id');
+    }
+
+    /**
+     * 🔗 الأقسام (Sections) المرتبطة بالكتالوج
+     */
+    public function sections(): HasMany
+    {
+        return $this->hasMany(Section::class, 'catalog_id');
+    }
+
+    /**
      * 🏭 دعم Laravel Factories (لو كنت تستخدمه من modules)
      */
     protected static function factory()

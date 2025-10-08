@@ -22,16 +22,18 @@ class Catlogs extends Component
         $this->resetFilters();
 
         try {
-            // Get brand by name
-            $this->brand = Brand::whereRaw('LOWER(name) = ?', [strtolower($id)])->first();
+            // ✅ Get brand by name with regions eager loaded
+            $this->brand = Brand::with('regions')
+                ->whereRaw('LOWER(name) = ?', [strtolower($id)])
+                ->first();
 
             if (!$this->brand) {
                 session()->flash('error', __('Brand not found.'));
                 return;
             }
 
-            // Select first region by default
-            $this->region = $this->brand->regions()->value('code');
+            // ✅ Select first region by default - استخدام collection المحملة بدل استعلام جديد
+            $this->region = $this->brand->regions->first()?->code;
 
         } catch (\Exception $e) {
             session()->flash('error', __('An error occurred while loading data.'));
@@ -60,13 +62,14 @@ class Catlogs extends Component
         $years = $this->getYearRange();
 
         try {
-            // Get region ID
-            $brandRegionId = $this->brand?->regions()
+            // ✅ Get region ID from already loaded regions collection
+            $brandRegionId = $this->brand?->regions
                 ->where('code', $this->region)
-                ->value('id');
+                ->first()
+                ?->id;
 
-            // Query catalogs
-            $catlogs = Catalog::query()
+            // ✅ Query catalogs with brand eager loaded (if not already)
+            $catlogs = Catalog::with('brand:id,name')
                 ->where('brand_id', $this->brand->id)
                 ->when($brandRegionId, fn($q) => $q->where('brand_region_id', $brandRegionId))
                 ->when($this->searchName, fn($q) =>
@@ -103,7 +106,8 @@ class Catlogs extends Component
         }
 
         try {
-            $regions = $this->brand->regions()->get();
+            // ✅ استخدام regions المحملة مسبقاً بدل استعلام جديد
+            $regions = $this->brand->regions;
 
             return $regions->mapWithKeys(function ($region) {
                 return [$region->code => getLocalizedLabel($region)];

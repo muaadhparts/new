@@ -173,4 +173,43 @@ class CatalogSessionManager
             'filtered_level3_codes',
         ]);
     }
+
+    /**
+     * تحميل معلومات Brand و Catalog معاً بـ eager loading
+     * لتجنب تكرار الاستعلامات
+     */
+    public function loadBrandAndCatalog(string $brandName, string $catalogCode): array
+    {
+        $brand = \App\Models\Brand::with('regions')
+            ->where('name', $brandName)
+            ->first();
+
+        if (!$brand) {
+            return ['brand' => null, 'catalog' => null];
+        }
+
+        $catalog = \App\Models\Catalog::with(['brand', 'brandRegion'])
+            ->where('code', $catalogCode)
+            ->where('brand_id', $brand->id)
+            ->first();
+
+        return [
+            'brand' => $brand,
+            'catalog' => $catalog,
+        ];
+    }
+
+    /**
+     * تحميل NewCategory بكافة العلاقات الضرورية
+     * لتقليل الاستعلامات في مكونات Livewire
+     */
+    public function loadCategoryWithRelations(int $catalogId, int $brandId, string $fullCode, int $level)
+    {
+        return \App\Models\NewCategory::with(['catalog', 'brand', 'periods'])
+            ->where('catalog_id', $catalogId)
+            ->where('brand_id', $brandId)
+            ->where('full_code', $fullCode)
+            ->where('level', $level)
+            ->first();
+    }
 }

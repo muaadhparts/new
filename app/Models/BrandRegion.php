@@ -12,4 +12,12 @@ class BrandRegion extends Model
     {
         return $this->belongsTo(Brand::class, 'brand_id');
     }
+
+    /**
+     * 🔗 الكتالوجات المرتبطة بهذه المنطقة
+     */
+    public function catalogs()
+    {
+        return $this->hasMany(Catalog::class, 'brand_region_id');
+    }
 }

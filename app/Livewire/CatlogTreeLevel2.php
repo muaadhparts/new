@@ -88,18 +88,23 @@ class CatlogTreeLevel2 extends Component
 
     protected function loadBasicData($brandName, $catalogCode, $parentFullCode)
     {
-        $this->brand = Brand::where('name', $brandName)->firstOrFail();
+        // ✅ eager loading للبراند مع المناطق
+        $this->brand = Brand::with('regions')->where('name', $brandName)->firstOrFail();
 
-        $this->catalog = Catalog::where('code', $catalogCode)
+        // ✅ eager loading للكتالوج مع البراند
+        $this->catalog = Catalog::with(['brand', 'brandRegion'])
+            ->where('code', $catalogCode)
             ->where('brand_id', $this->brand->id)
             ->firstOrFail();
 
-        $this->category = NewCategory::where([
-            ['catalog_id', $this->catalog->id],
-            ['brand_id', $this->brand->id],
-            ['full_code', $parentFullCode],
-            ['level', 1],
-        ])->firstOrFail();
+        // ✅ eager loading للـ category مع العلاقات الأساسية
+        $this->category = NewCategory::with(['catalog', 'brand', 'periods'])
+            ->where([
+                ['catalog_id', $this->catalog->id],
+                ['brand_id', $this->brand->id],
+                ['full_code', $parentFullCode],
+                ['level', 1],
+            ])->firstOrFail();
     }
 
     protected function loadSectionsForCategories($categories)

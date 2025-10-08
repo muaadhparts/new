@@ -80,15 +80,18 @@ class CatlogTreeLevel3 extends Component
 
     protected function loadBasicData($brandName, $catalogCode, $parentsKey, $specKey)
     {
-        $this->brand = Brand::where('name', $brandName)->firstOrFail();
+        // ✅ eager loading للبراند مع المناطق
+        $this->brand = Brand::with('regions')->where('name', $brandName)->firstOrFail();
 
-        $this->catalog = Catalog::where('code', $catalogCode)
+        // ✅ eager loading للكتالوج مع البراند
+        $this->catalog = Catalog::with(['brand', 'brandRegion'])
+            ->where('code', $catalogCode)
             ->where('brand_id', $this->brand->id)
             ->firstOrFail();
 
-        // ✅ الطريقة الصحيحة: نبحث أولاً عن الـ level 2 category بـ spec_key
-        // ثم نجلب الـ parent منها (level 1)
-        $level2Category = NewCategory::where('catalog_id', $this->catalog->id)
+        // ✅ الطريقة الصحيحة: نبحث أولاً عن الـ level 2 category بـ spec_key مع eager loading
+        $level2Category = NewCategory::with(['catalog', 'brand', 'periods', 'trueParent'])
+            ->where('catalog_id', $this->catalog->id)
             ->where('brand_id', $this->brand->id)
             ->where('level', 2)
             ->where(function($query) use ($specKey) {
@@ -103,10 +106,16 @@ class CatlogTreeLevel3 extends Component
 
         $this->parentCategory2 = $level2Category;
 
-        // جلب الـ parent (level 1) من parent_id
-        $this->parentCategory1 = NewCategory::where('id', $level2Category->parent_id)
-            ->where('level', 1)
-            ->firstOrFail();
+        // ✅ استخدام العلاقة المحملة بدل استعلام جديد
+        $this->parentCategory1 = $level2Category->trueParent;
+
+        if (!$this->parentCategory1 || $this->parentCategory1->level != 1) {
+            // fallback في حالة العلاقة غير محملة
+            $this->parentCategory1 = NewCategory::with(['catalog', 'brand', 'periods'])
+                ->where('id', $level2Category->parent_id)
+                ->where('level', 1)
+                ->firstOrFail();
+        }
     }
 
     public function render()

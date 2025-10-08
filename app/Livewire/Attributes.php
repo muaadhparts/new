@@ -94,9 +94,20 @@ class Attributes extends Component
         $vinData = VinDecodedCache::where('vin', $this->vin)->first();
         if (!$vinData) return;
 
-        $mappings = VinSpecMapped::with(['specification', 'specificationItem'])
-            ->where('vin_id', $vinData->id)
-            ->get();
+        // ✅ Eager load specifications and specification items
+        $mappings = VinSpecMapped::with([
+            'specification',
+            'specificationItem'
+        ])->where('vin_id', $vinData->id)->get();
+
+        // ✅ جمع specification IDs لجلب جميع items دفعة واحدة
+        $specIds = $mappings->pluck('specification.id')->unique()->filter();
+
+        // ✅ تحميل جميع specification items مرة واحدة بدل حلقة
+        $allItems = SpecificationItem::whereIn('specification_id', $specIds->toArray())
+            ->when($this->catalog, fn($q) => $q->where('catalog_id', $this->catalog->id))
+            ->get()
+            ->groupBy('specification_id');
 
         foreach ($mappings as $map) {
             $spec = $map->specification;
@@ -107,9 +118,8 @@ class Attributes extends Component
                 'source' => 'vin',
             ];
 
-            $items = SpecificationItem::where('specification_id', $spec->id)
-                ->when($this->catalog, fn($q) => $q->where('catalog_id', $this->catalog->id))
-                ->get();
+            // ✅ استخدام البيانات المحملة مسبقاً بدل استعلام جديد
+            $items = $allItems->get($spec->id, collect());
 
             $this->filters[$spec->name] = [
                 'label' => $spec->label,
@@ -135,7 +145,8 @@ class Attributes extends Component
 
     protected function loadFiltersFromCatalog()
     {
-        $specs = Specification::with(['items' => fn($q) =>
+        // ✅ Eager load specifications with their items filtered by catalog
+        $specs = \App\Models\Specification::with(['items' => fn($q) =>
             $q->where('catalog_id', $this->catalog->id)
         ])->get();
 
