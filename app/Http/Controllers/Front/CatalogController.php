@@ -9,6 +9,7 @@ use App\Models\Product;
 use App\Models\Report;
 use App\Models\Subcategory;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
 
 class CatalogController extends FrontBaseController
@@ -108,22 +109,38 @@ class CatalogController extends FrontBaseController
                 $user->where('is_vendor', 2);
             });
 
-        // Filter by product categories
+        // Filter by product_fitments (vehicle tree source of truth)
+        // Use EXISTS against product_fitments instead of products.category_id
         $prods = $prods->when($cat, function ($query, $cat) {
             return $query->whereHas('product', function ($productQuery) use ($cat) {
-                $productQuery->where('category_id', $cat->id);
+                $productQuery->whereExists(function ($exists) use ($cat) {
+                    $exists->selectRaw(1)
+                        ->from('product_fitments')
+                        ->whereColumn('product_fitments.product_id', 'products.id')
+                        ->where('product_fitments.category_id', $cat->id);
+                });
             });
         });
 
         $prods = $prods->when($subcat, function ($query, $subcat) {
             return $query->whereHas('product', function ($productQuery) use ($subcat) {
-                $productQuery->where('subcategory_id', $subcat->id);
+                $productQuery->whereExists(function ($exists) use ($subcat) {
+                    $exists->selectRaw(1)
+                        ->from('product_fitments')
+                        ->whereColumn('product_fitments.product_id', 'products.id')
+                        ->where('product_fitments.subcategory_id', $subcat->id);
+                });
             });
         });
 
         $prods = $prods->when($childcat, function ($query, $childcat) {
             return $query->whereHas('product', function ($productQuery) use ($childcat) {
-                $productQuery->where('childcategory_id', $childcat->id);
+                $productQuery->whereExists(function ($exists) use ($childcat) {
+                    $exists->selectRaw(1)
+                        ->from('product_fitments')
+                        ->whereColumn('product_fitments.product_id', 'products.id')
+                        ->where('product_fitments.childcategory_id', $childcat->id);
+                });
             });
         });
 
@@ -168,12 +185,27 @@ class CatalogController extends FrontBaseController
             $q->where('merchant_products.user_id', (int) $request->vendor);
         });
 
+        // Store by vendor ID filter (accepts integer vendor ID)
+        $prods = $prods->when($request->filled('store'), function ($q) use ($request) {
+            $q->where('merchant_products.user_id', (int) $request->store);
+        });
+
         // Sorting options - sort by merchant products
         $prods = $prods->when($sort, function ($query, $sort) {
             if ($sort == 'date_desc') {
                 return $query->latest('merchant_products.id');
             } elseif ($sort == 'date_asc') {
                 return $query->oldest('merchant_products.id');
+            } elseif ($sort == 'latest_product') {
+                // Latest Product = order by maximum beginYear DESC
+                return $query->leftJoin(\DB::raw('(SELECT product_id, MAX(beginYear) AS max_year FROM product_fitments GROUP BY product_id) AS pf_max'),
+                    'pf_max.product_id', '=', 'merchant_products.product_id')
+                    ->orderBy('pf_max.max_year', 'desc');
+            } elseif ($sort == 'oldest_product') {
+                // Oldest Product = order by maximum beginYear ASC
+                return $query->leftJoin(\DB::raw('(SELECT product_id, MAX(beginYear) AS max_year FROM product_fitments GROUP BY product_id) AS pf_max'),
+                    'pf_max.product_id', '=', 'merchant_products.product_id')
+                    ->orderBy('pf_max.max_year', 'asc');
             } elseif ($sort == 'price_desc') {
                 return $query->orderBy('merchant_products.price', 'desc');
             } elseif ($sort == 'price_asc') {
