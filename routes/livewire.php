@@ -6,7 +6,6 @@ use App\Livewire\CatlogTree;
 use App\Livewire\CatlogTreeLevel1;
 use App\Livewire\CatlogTreeLevel2;
 use App\Livewire\CatlogTreeLevel3;
-use App\Livewire\Level1Tree;
 use App\Livewire\CalloutModal; // ✅ استدعاء مكون CalloutViewer
 use Illuminate\Support\Facades\Route;
 
@@ -24,5 +23,4 @@ Route::get('/callout-modal', CalloutModal::class);
 
 // Route::get('/CalloutModal/{data}/{code}/{callout}', CalloutModal::class)->name('CalloutModal'); // ✅ هذا هو المطلوب
 
-Route::get('{id}/{data}/products/{query}', CatlogsProducts::class)->name('catlogs.products');
 Route::get('result/{sku}', \App\Livewire\SearchResultsPage::class)->name('search.result');
