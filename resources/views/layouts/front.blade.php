@@ -48,23 +48,22 @@
     <!-- header area -->
     @include('includes.frontend.header')
 
-    <!-- if route is user panel then show vendor.mobile-header else show frontend.mobile_menu -->
+    <!-- Mobile menu based on route and authentication -->
 
     @php
-        $url = url()->current();
-        $explodeUrl = explode('/',$url);
-
+        $isUserRoute   = request()->is('user/*');
+        $isVendorRoute = request()->is('vendor/*');
+        $isRiderRoute  = request()->is('rider/*');
     @endphp
 
-    @if(in_array('user',$explodeUrl))
-    <!-- frontend mobile menu -->
-    @include('includes.user.mobile-header')
-    @elseif(in_array("rider",$explodeUrl))
-    @include('includes.rider.mobile-header')
-    @else 
-    @include('includes.frontend.mobile_menu')
-        <!-- user panel mobile sidebar -->
-
+    @if($isRiderRoute && Auth::guard('rider')->check())
+        @include('includes.rider.mobile-header')
+    @elseif($isVendorRoute && Auth::guard('web')->check() && auth()->user()->is_vendor == 2)
+        @include('includes.vendor.vendor-mobile-header')
+    @elseif($isUserRoute && Auth::guard('web')->check())
+        @include('includes.user.mobile-header')
+    @else
+        @include('includes.frontend.mobile_menu')
     @endif
    
 
