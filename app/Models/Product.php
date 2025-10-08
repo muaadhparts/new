@@ -89,6 +89,14 @@ class Product extends Model
         return $this->hasMany(MerchantProduct::class, 'product_id');
     }
 
+    /**
+     * Product fitments (vehicle tree assignments).
+     */
+    public function fitments()
+    {
+        return $this->hasMany(ProductFitment::class, 'product_id');
+    }
+
     public function wishlist()
     {
         return $this->belongsTo('App\Models\Wishlist')->withDefault();
