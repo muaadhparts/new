@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Payment\Subscription;
 
 use App\{
     Models\Subscription,
-    Classes\GeniusMailer,
+    Classes\MuaadhMailer,
     Models\Generalsetting,
     Models\UserSubscription
 };
@@ -77,7 +77,7 @@ class WalletPaymentController extends SubscriptionBaseController
                 'aemail' => "",
                 'onumber' => "",
             ];
-            $mailer = new GeniusMailer();
+            $mailer = new MuaadhMailer();
             $mailer->sendAutoMail($data);        
             }
             else

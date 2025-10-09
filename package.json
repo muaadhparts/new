@@ -1,4 +1,7 @@
 {
+    "name": "muaadh-epc",
+    "author": "MUAADH",
+    "license": "UNLICENSED",
     "private": true,
     "type": "module",
     "scripts": {

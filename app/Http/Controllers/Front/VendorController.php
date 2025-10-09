@@ -6,7 +6,7 @@ use App\{
     Models\User,
     Models\Message,
     Models\Product,
-    Classes\GeniusMailer,
+    Classes\MuaadhMailer,
     Models\Conversation
 };
 use App\Models\Category;
@@ -158,7 +158,7 @@ class VendorController extends FrontBaseController
                 'body'    => $msg,
             ];
 
-            $mailer = new GeniusMailer();
+            $mailer = new MuaadhMailer();
             $mailer->sendCustomMail($data);
         } else {
             $headers = "From: " . $gs->from_name . "<" . $gs->from_email . ">";

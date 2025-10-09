@@ -20,7 +20,7 @@
     $(document).on("click", ".status", function () {
       var link = $(this).attr("data-href");
       $.get(link, function (data) {}).done(function (data) {
-        $("#geniustable").DataTable().ajax.reload();
+        $("#muaadhtable").DataTable().ajax.reload();
         $(".alert-danger").hide();
         $(".alert-success").show();
         $(".alert-success p").html(data);
@@ -275,7 +275,7 @@
     $(document).on("change", ".data-droplinks", function (e) {
       $("#confirm-delete1").modal("show");
       $("#confirm-delete1").find(".btn-ok").attr("href", $(this).val());
-      $("#geniustable").DataTable().ajax.reload();
+      $("#muaadhtable").DataTable().ajax.reload();
       var data = $(this).children("option:selected").html();
       if (data == "Pending") {
         $("#t-txt").addClass("d-none");
@@ -290,7 +290,7 @@
     $(document).on("change", ".vendor-droplinks", function (e) {
       $("#status-modal").modal("show");
       $("#status-modal").find(".btn-ok").attr("href", $(this).val());
-      $("#geniustable").DataTable().ajax.reload();
+      $("#muaadhtable").DataTable().ajax.reload();
     });
 
     $(document).on("change", ".order-droplinks", function (e) {
@@ -459,7 +459,7 @@
 
     // ADD / EDIT FORM SUBMIT FOR DATA TABLE
 
-    $(document).on("submit", "#geniusformdata", function (e) {
+    $(document).on("submit", "#muaadhformdata", function (e) {
       e.preventDefault();
       if (admin_loader == 1) {
         $(".submit-loader").show();
@@ -489,12 +489,12 @@
             $("#modal1 .modal-content .modal-body .alert-danger").focus();
             $("button.addProductSubmit-btn").prop("disabled", false);
             $(
-              "#geniusformdata input , #geniusformdata select , #geniusformdata textarea"
+              "#muaadhformdata input , #muaadhformdata select , #muaadhformdata textarea"
             )
               .eq(1)
               .focus();
           } else {
-            $("#geniustable").DataTable().ajax.reload();
+            $("#muaadhtable").DataTable().ajax.reload();
             $(".alert-success").show();
             $(".alert-success p").html(data);
             if (admin_loader == 1) {
@@ -574,7 +574,7 @@
         url: $(this).attr("href"),
         success: function (data) {
           $("#catalog-modal").modal("toggle");
-          $("#geniustable").DataTable().ajax.reload();
+          $("#muaadhtable").DataTable().ajax.reload();
           $(".alert-danger").hide();
           $(".alert-success").show();
           $(".alert-success p").html(data);
@@ -613,7 +613,7 @@
         processData: false,
         success: function (data) {
           $("#confirm-delete").modal("toggle");
-          $("#geniustable").DataTable().ajax.reload();
+          $("#muaadhtable").DataTable().ajax.reload();
           $(".alert-danger").hide();
           $(".alert-success").show();
           $(".alert-success p").html(data);
@@ -635,7 +635,7 @@
         url: $(this).attr("href"),
         success: function (data) {
           $("#confirm-delete").modal("toggle");
-          $("#geniustable").DataTable().ajax.reload();
+          $("#muaadhtable").DataTable().ajax.reload();
           $(".alert-danger").hide();
           $(".alert-success").show();
           $(".alert-success p").html(data);
@@ -658,7 +658,7 @@
         url: $(this).attr("href"),
         success: function (data) {
           $("#status-modal").modal("toggle");
-          $("#geniustable").DataTable().ajax.reload();
+          $("#muaadhtable").DataTable().ajax.reload();
           $(".alert-danger").hide();
           $(".alert-success").show();
           $(".alert-success p").html(data);
@@ -681,7 +681,7 @@
         url: $(this).attr("href"),
         success: function (data) {
           $("#status-modal1").modal("toggle");
-          $("#geniustable").DataTable().ajax.reload();
+          $("#muaadhtable").DataTable().ajax.reload();
           $(".alert-danger").hide();
           $(".alert-success").show();
           $(".alert-success p").html(data);
@@ -704,7 +704,7 @@
         url: $(this).attr("href"),
         success: function (data) {
           $("#confirm-delete1").modal("toggle");
-          $("#geniustable").DataTable().ajax.reload();
+          $("#muaadhtable").DataTable().ajax.reload();
           $(".alert-danger").hide();
           $(".alert-success").show();
           $(".alert-success p").html(data[0]);
@@ -765,7 +765,7 @@
 
   // NORMAL FORM
 
-  $(document).on("submit", "#geniusform", function (e) {
+  $(document).on("submit", "#muaadhform", function (e) {
     e.preventDefault();
     if (admin_loader == 1) {
       $(".gocover").show();
@@ -793,7 +793,7 @@
       });
     }
 
-    var geniusform = $(this);
+    var muaadhform = $(this);
     $("button.addProductSubmit-btn").prop("disabled", true);
     $.ajax({
       method: "POST",
@@ -804,18 +804,18 @@
       processData: false,
       success: function (data) {
         if (data.errors) {
-          geniusform.parent().find(".alert-success").hide();
-          geniusform.parent().find(".alert-danger").show();
-          geniusform.parent().find(".alert-danger ul").html("");
+          muaadhform.parent().find(".alert-success").hide();
+          muaadhform.parent().find(".alert-danger").show();
+          muaadhform.parent().find(".alert-danger ul").html("");
           for (var error in data.errors) {
             $(".alert-danger ul").append("<li>" + data.errors[error] + "</li>");
           }
-          geniusform.find("input , select , textarea").eq(1).focus();
+          muaadhform.find("input , select , textarea").eq(1).focus();
         } else {
-          geniusform.parent().find(".alert-danger").hide();
-          geniusform.parent().find(".alert-success").show();
-          geniusform.parent().find(".alert-success p").html(data);
-          geniusform.find("input , select , textarea").eq(1).focus();
+          muaadhform.parent().find(".alert-danger").hide();
+          muaadhform.parent().find(".alert-success").show();
+          muaadhform.parent().find(".alert-success p").html(data);
+          muaadhform.find("input , select , textarea").eq(1).focus();
         }
         if (admin_loader == 1) {
           $(".gocover").hide();

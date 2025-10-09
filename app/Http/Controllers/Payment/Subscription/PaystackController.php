@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Payment\Subscription;
 
 use App\{
     Models\Subscription,
-    Classes\GeniusMailer,
+    Classes\MuaadhMailer,
     Models\Generalsetting,
     Models\UserSubscription
 };
@@ -72,7 +72,7 @@ class PaystackController extends SubscriptionBaseController
                 'aemail' => "",
                 'onumber' => "",
             ];
-            $mailer = new GeniusMailer();
+            $mailer = new MuaadhMailer();
             $mailer->sendAutoMail($data);
         } else {
             $headers = "From: " . $settings->from_name . "<" . $settings->from_email . ">";

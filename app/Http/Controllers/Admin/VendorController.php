@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Classes\GeniusMailer;
+use App\Classes\MuaadhMailer;
 use App\Models\Generalsetting;
 use App\Models\Subscription;
 use App\Models\User;
@@ -97,7 +97,7 @@ class VendorController extends AdminBaseController
                 'aemail' => "",
                 'onumber' => "",
             ];
-            $mailer = new GeniusMailer();
+            $mailer = new MuaadhMailer();
             $mailer->sendAutoMail($data);
         } else {
             $headers = "From: " . $settings->from_name . "<" . $settings->from_email . ">";
@@ -304,7 +304,7 @@ class VendorController extends AdminBaseController
                 'aemail' => "",
                 'onumber' => "",
             ];
-            $mailer = new GeniusMailer();
+            $mailer = new MuaadhMailer();
             $mailer->sendAutoMail($data);
         } else {
             $headers = "From: " . $settings->from_name . "<" . $settings->from_email . ">";

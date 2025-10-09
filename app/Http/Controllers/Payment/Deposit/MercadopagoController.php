@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Payment\Deposit;
 
-use App\Classes\GeniusMailer;
+use App\Classes\MuaadhMailer;
 use App\Models\Deposit;
 use App\Models\PaymentGateway;
 use App\Models\Transaction;
@@ -91,7 +91,7 @@ class MercadopagoController extends DepositBaseController
                 'aemail' => "",
                 'onumber' => "",
             ];
-            $mailer = new GeniusMailer();
+            $mailer = new MuaadhMailer();
             $mailer->sendAutoMail($data);
 
             return redirect()->route('user-dashboard')->with('success', __('Balance has been added to your account.'));

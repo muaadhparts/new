@@ -16,7 +16,7 @@
     </div>
     <!-- breadcrumb end -->
 
-    <form id="geniusform" action="{{ route('vendor-prod-store-offer') }}" method="POST" enctype="multipart/form-data">
+    <form id="muaadhform" action="{{ route('vendor-prod-store-offer') }}" method="POST" enctype="multipart/form-data">
         @csrf
         <input type="hidden" name="product_id" value="{{ $product->id }}">
 

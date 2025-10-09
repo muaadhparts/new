@@ -12,7 +12,6 @@ use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
 use InvalidArgumentException;
-use Markury\MarkuryPost;
 
 class FrontBaseController extends Controller
 {
@@ -209,25 +208,9 @@ class FrontBaseController extends Controller
         imagepng($image, $actual_path . "assets/images/capcha_code.png");
     }
 
-    // -------------------------------- INSTALL SECTION ----------------------------------------
+    // -------------------------------- INSTALL SECTION (REMOVED) ----------------------------------------
 
-    function auth_guests()
-    {
-        $chk = MarkuryPost::marcuryBase();
-        $chkData = MarkuryPost::marcurryBase();
-        $actual_path = str_replace('project', '', base_path());
-        if ($chk != MarkuryPost::maarcuryBase()) {
-            if ($chkData < MarkuryPost::marrcuryBase()) {
-                if (is_dir($actual_path . '/install')) {
-                    header("Location: " . url('/install'));
-                    die();
-                } else {
-                    echo MarkuryPost::marcuryBasee();
-                    die();
-                }
-            }
-        }
-    }
+    // Legacy activation logic removed - MUAADH EPC is self-contained
 
     public function deleteDir($dirPath)
     {

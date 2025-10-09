@@ -9,7 +9,7 @@
                     <div class="product-description">
                       <div class="body-area" id="modalEdit">
                         @include('includes.admin.form-error') 
-                      <form id="geniusformdata" action="{{route('admin-featuredlink-update',$data->id)}}" method="POST" enctype="multipart/form-data">
+                      <form id="muaadhformdata" action="{{route('admin-featuredlink-update',$data->id)}}" method="POST" enctype="multipart/form-data">
                         {{csrf_field()}}
 
                         <div class="row">

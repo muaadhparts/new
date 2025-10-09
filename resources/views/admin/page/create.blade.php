@@ -36,7 +36,7 @@
 
                         @include('alerts.admin.form-both')
 
-                      <form id="geniusform" action="{{route('admin-page-create')}}" method="POST" enctype="multipart/form-data">
+                      <form id="muaadhform" action="{{route('admin-page-create')}}" method="POST" enctype="multipart/form-data">
 
                         {{csrf_field()}}
 

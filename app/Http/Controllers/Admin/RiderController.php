@@ -6,7 +6,7 @@ use App\{
     Models\Rider,
     Models\Withdraw,
     Models\Transaction,
-    Classes\GeniusMailer,
+    Classes\MuaadhMailer,
 };
 
 use Illuminate\{

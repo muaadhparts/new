@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Api\User;
 
-use App\Classes\GeniusMailer;
+use App\Classes\MuaadhMailer;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\ConversationMessageResource;
 use App\Http\Resources\ConversationResource;
@@ -65,7 +65,7 @@ class MessageController extends Controller
                     'body' => $msg,
                 ];
 
-                $mailer = new GeniusMailer();
+                $mailer = new MuaadhMailer();
                 $mailer->sendCustomMail($data);
             } else {
                 $headers = "From: " . $gs->from_name . "<" . $gs->from_email . ">";

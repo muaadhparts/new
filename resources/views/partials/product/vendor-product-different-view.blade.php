@@ -11,11 +11,11 @@
             <div class="product-wrapper">
               <div class="product-image">
                 @if($merchantProductId)
-                  <a href="{{ route('front.product', ['slug' => $product->slug, 'vendor_id' => $product->user_id, 'merchant_product_id' => $merchantProductId]) }}" class="woocommerce-LoopProduct-link">
+                  <a href="{{ route('front.product', ['slug' => $product->slug, 'vendor_id' => $product->user_id, 'merchant_product_id' => $merchantProductId]) }}" class="MUAADH-LoopProduct-link">
                     <img src="{{ $product->thumbnail ? asset('assets/images/thumbnails/' . $product->thumbnail) : asset('assets/images/noimage.png') }}" alt="Product Image">
                   </a>
                 @else
-                  <span class="woocommerce-LoopProduct-link" style="cursor: not-allowed;">
+                  <span class="MUAADH-LoopProduct-link" style="cursor: not-allowed;">
                     <img src="{{ $product->thumbnail ? asset('assets/images/thumbnails/' . $product->thumbnail) : asset('assets/images/noimage.png') }}" alt="Product Image">
                   </span>
                 @endif
@@ -107,11 +107,11 @@
             <div class="product-wrapper">
               <div class="product-image">
                 @if($merchantProductId)
-                  <a href="{{ route('front.product', ['slug' => $product->slug, 'vendor_id' => $product->user_id, 'merchant_product_id' => $merchantProductId]) }}" class="woocommerce-LoopProduct-link">
+                  <a href="{{ route('front.product', ['slug' => $product->slug, 'vendor_id' => $product->user_id, 'merchant_product_id' => $merchantProductId]) }}" class="MUAADH-LoopProduct-link">
                     <img src="{{ $product->thumbnail ? asset('assets/images/thumbnails/' . $product->thumbnail) : asset('assets/images/noimage.png') }}" alt="Product Image">
                   </a>
                 @else
-                  <span class="woocommerce-LoopProduct-link" style="cursor: not-allowed;">
+                  <span class="MUAADH-LoopProduct-link" style="cursor: not-allowed;">
                     <img src="{{ $product->thumbnail ? asset('assets/images/thumbnails/' . $product->thumbnail) : asset('assets/images/noimage.png') }}" alt="Product Image">
                   </span>
                 @endif
@@ -205,11 +205,11 @@
           <div class="product-wrapper">
             <div class="product-image">
               @if($merchantProductId)
-                <a href="{{ route('front.product', ['slug' => $product->slug, 'vendor_id' => $product->user_id, 'merchant_product_id' => $merchantProductId]) }}" class="woocommerce-LoopProduct-link">
+                <a href="{{ route('front.product', ['slug' => $product->slug, 'vendor_id' => $product->user_id, 'merchant_product_id' => $merchantProductId]) }}" class="MUAADH-LoopProduct-link">
                   <img src="{{ $product->thumbnail ? asset('assets/images/thumbnails/' . $product->thumbnail) : asset('assets/images/noimage.png') }}" alt="Product Image">
                 </a>
               @else
-                <span class="woocommerce-LoopProduct-link" style="cursor: not-allowed;">
+                <span class="MUAADH-LoopProduct-link" style="cursor: not-allowed;">
                   <img src="{{ $product->thumbnail ? asset('assets/images/thumbnails/' . $product->thumbnail) : asset('assets/images/noimage.png') }}" alt="Product Image">
                 </span>
               @endif

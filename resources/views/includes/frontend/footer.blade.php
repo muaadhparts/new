@@ -1,5 +1,5 @@
-<footer class="gs-footer-section {{ $gs->theme == 'theme3' ? 'home-3' : '' }}">
-    {{-- <div class="newslatter {{ $gs->theme != 'theme1' ? 'newslatter2' : '' }}">
+<footer class="gs-footer-section {{ $gs->theme == 'muaadh_minimal' ? 'home-3' : '' }}">
+    {{-- <div class="newslatter {{ $gs->theme != 'muaadh_oem' ? 'newslatter2' : '' }}">
         <div class="container">
             <div class="row newslatter-row">
                 <div class="col-lg-7 col-md-6 col-12 newslatter-area">

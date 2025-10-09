@@ -36,9 +36,9 @@
             @endif
         </td>
         <td class="product-price">
-            <span class="woocommerce-Price-amount amount">
+            <span class="MUAADH-Price-amount amount">
                 <bdi>
-                    <span class="woocommerce-Price-currencySymbol">
+                    <span class="MUAADH-Price-currencySymbol">
                         @if($merchantProduct)
                             {{ $curr->sign }}{{ number_format($merchantProduct->price * $curr->value, 2) }}
                             @if($merchantProduct->previous_price && $merchantProduct->previous_price > $merchantProduct->price)

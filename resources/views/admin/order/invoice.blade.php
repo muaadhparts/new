@@ -27,7 +27,7 @@
                 <div class="row">
                     <div class="col-sm-6">
                         <div class="invoice__logo text-left">
-                           <img src="{{ asset('assets/images/'.$gs->invoice_logo) }}" alt="woo commerce logo">
+                           <img src="{{ asset('assets/images/'.$gs->invoice_logo) }}" alt="logo">
                         </div>
                     </div>
                     <div class="col-lg-6 text-right">

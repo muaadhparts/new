@@ -6,7 +6,7 @@ use App\{
     Models\Cart,
     Models\Order,
     Classes\Instamojo,
-    Classes\GeniusMailer,
+    Classes\MuaadhMailer,
     Models\PaymentGateway
 };
 use App\Helpers\PriceHelper;
@@ -258,7 +258,7 @@ class InstamojoController extends CheckoutBaseControlller
                 'onumber' => $order->order_number,
             ];
 
-            $mailer = new GeniusMailer();
+            $mailer = new MuaadhMailer();
             $mailer->sendAutoOrderMail($data, $order->id);
 
             //Sending Email To Admin
@@ -267,7 +267,7 @@ class InstamojoController extends CheckoutBaseControlller
                 'subject' => "New Order Recieved!!",
                 'body' => "Hello Admin!<br>Your store has received a new order.<br>Order Number is " . $order->order_number . ".Please login to your panel to check. <br>Thank you.",
             ];
-            $mailer = new GeniusMailer();
+            $mailer = new MuaadhMailer();
             $mailer->sendCustomMail($data);
 
             return redirect($success_url);

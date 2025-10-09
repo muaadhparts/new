@@ -22,7 +22,7 @@
     <div class="product type-product">
         <div class="product-wrapper">
             <div class="product-image">
-                <a href="{{ $productUrl }}" class="woocommerce-LoopProduct-link"><img src="{{ $prod->thumbnail ? asset('assets/images/thumbnails/'.$prod->thumbnail):asset('assets/images/noimage.png') }}" alt="Product Image"></a>
+                <a href="{{ $productUrl }}" class="MUAADH-LoopProduct-link"><img src="{{ $prod->thumbnail ? asset('assets/images/thumbnails/'.$prod->thumbnail):asset('assets/images/noimage.png') }}" alt="Product Image"></a>
                 @if (round($prod->offPercentage() )>0)
                 <div class="on-sale">-{{ round($prod->offPercentage() )}}%</div>
                 @endif

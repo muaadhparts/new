@@ -6,7 +6,7 @@ use App\{
 	Models\User,
     Traits\Paytm,
 	Models\Subscription,
-    Classes\GeniusMailer,
+    Classes\MuaadhMailer,
     Models\PaymentGateway,
 	Models\UserSubscription
 };
@@ -137,7 +137,7 @@ class PaytmController extends SubscriptionBaseController
                 'aemail' => "",
                 'onumber' => '',
             ];
-            $mailer = new GeniusMailer();
+            $mailer = new MuaadhMailer();
             $mailer->sendAutoMail($maildata);
         
             return redirect()->route('user-dashboard')->with('success',__('Vendor Account Activated Successfully'));

@@ -12,7 +12,7 @@
             method="GET">
 
             <div id="woocommerce_product_categories-4"
-                class="widget woocommerce widget_product_categories widget-toggle">
+                class="widget MUAADH widget_product_categories widget-toggle">
                 <h2 class="widget-title">{{ __('Product categories') }}</h2>
                 <ul class="product-categories">
                     @foreach ($categories as $category)
@@ -83,7 +83,7 @@
                     @foreach ($cat->attributes as $key => $attr)
 
                         <div id="bigbazar-attributes-filter-{{$attr->name}}"
-                            class="widget woocommerce bigbazar-attributes-filter widget_layered_nav widget-toggle">
+                            class="widget MUAADH bigbazar-attributes-filter widget_layered_nav widget-toggle">
                             <h2 class="widget-title">{{$attr->name}}</h2>
                             <ul class="swatch-filter-pa_color">
                                 @if (!empty($attr->attribute_options))
@@ -104,7 +104,7 @@
                 @if (!empty($subcat) && !empty(json_decode($subcat->attributes, true)))
                     @foreach ($subcat->attributes as $key => $attr)
                         <div id="bigbazar-attributes-filter-{{$attr->name}}"
-                            class="widget woocommerce bigbazar-attributes-filter widget_layered_nav widget-toggle">
+                            class="widget MUAADH bigbazar-attributes-filter widget_layered_nav widget-toggle">
                             <h2 class="widget-title">{{$attr->name}}</h2>
                             <ul class="swatch-filter-pa_color">
                                 @if (!empty($attr->attribute_options))
@@ -125,7 +125,7 @@
                 @if (!empty($childcat) && !empty(json_decode($childcat->attributes, true)))
                     @foreach ($childcat->attributes as $key => $attr)
                         <div id="bigbazar-attributes-filter-{{$attr->name}}"
-                            class="widget woocommerce bigbazar-attributes-filter widget_layered_nav widget-toggle px-3">
+                            class="widget MUAADH bigbazar-attributes-filter widget_layered_nav widget-toggle px-3">
                             <h2 class="widget-title">{{$attr->name}}</h2>
                             <ul class="swatch-filter-pa_color">
                                 @if (!empty($attr->attribute_options))
@@ -169,7 +169,7 @@
                                             <div class="product-wrapper">
                                                 <div class="product-image">
                                                     <a href="{{ route('front.product', ['slug' => $prod['slug'], 'vendor_id' => $prod['user_id'], 'merchant_product_id' => $prod['id']]) }}"
-                                                        class="woocommerce-LoopProduct-link"><img
+                                                        class="MUAADH-LoopProduct-link"><img
                                                             src="{{ $prod['thumbnail'] ? asset('assets/images/thumbnails/' . $prod['thumbnail']) : asset('assets/images/noimage.png') }}"
                                                             alt="Product Image"></a>
                                                     <div class="wishlist-view">

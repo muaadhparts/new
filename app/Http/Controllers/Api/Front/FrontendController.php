@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Api\Front;
 
-use App\Classes\GeniusMailer;
+use App\Classes\MuaadhMailer;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\BannerResource;
 use App\Http\Resources\BlogResource;use App\Http\Resources\FaqResource;
@@ -472,7 +472,7 @@ class FrontendController extends Controller
                     'body' => $msg,
                 ];
 
-                $mailer = new GeniusMailer();
+                $mailer = new MuaadhMailer();
                 $mailer->sendCustomMail($data);
             } else {
                 $headers = "From: " . $name . "<" . $from . ">";

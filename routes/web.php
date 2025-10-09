@@ -1995,7 +1995,7 @@ Route::group(['middleware' => 'maintenance'], function () {
 
     // CRONJOB ENDS
 
-    Route::post('the/genius/ocean/2441139', 'Front\FrontendController@subscription');
+    Route::post('the/muaadh/ocean/2441139', 'Front\FrontendController@subscription');
     Route::get('finalize', 'Front\FrontendController@finalize');
     Route::get('update-finalize', 'Front\FrontendController@updateFinalize');
 
@@ -2019,6 +2019,6 @@ Route::group(['prefix' => 'tryoto'], function () {
 });
 
 
-Route::post('the/genius/ocean/2441139', 'Front\FrontendController@subscription');
+Route::post('the/muaadh/ocean/2441139', 'Front\FrontendController@subscription');
 Route::get('finalize', 'Front\FrontendController@finalize');
 

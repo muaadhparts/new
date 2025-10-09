@@ -32,7 +32,7 @@
                             </h4>
                         </div>
 
-                        <form class="uplogo-form" id="geniusform" action="{{ route('admin-gs-update') }}" method="POST" enctype="multipart/form-data">
+                        <form class="uplogo-form" id="muaadhform" action="{{ route('admin-gs-update') }}" method="POST" enctype="multipart/form-data">
                           {{csrf_field()}}   
 
                   @include('alerts.admin.form-both')  
@@ -57,7 +57,7 @@
                           </h4>
                       </div>
 
-                      <form class="uplogo-form" id="geniusform" action="{{ route('admin-gs-update') }}" method="POST" enctype="multipart/form-data">
+                      <form class="uplogo-form" id="muaadhform" action="{{ route('admin-gs-update') }}" method="POST" enctype="multipart/form-data">
                         {{csrf_field()}}   
 
               @include('alerts.admin.form-both')  
@@ -82,7 +82,7 @@
                             </h4>
                         </div>
 
-                        <form class="uplogo-form" id="geniusform" action="{{ route('admin-gs-update') }}" method="POST" enctype="multipart/form-data">
+                        <form class="uplogo-form" id="muaadhform" action="{{ route('admin-gs-update') }}" method="POST" enctype="multipart/form-data">
                           {{csrf_field()}}   
 
                            @include('alerts.admin.form-both')  

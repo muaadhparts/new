@@ -305,7 +305,7 @@
                                             </li>
                                         </ul>
                                         <div class="tab-content" id="menu-and-categoryContent">
-                                            <div class="tab-pane fade show active woocommerce-Tabs-panel woocommerce-Tabs-panel--description"
+                                            <div class="tab-pane fade show active MUAADH-Tabs-panel MUAADH-Tabs-panel--description"
                                                 id="pills-push-menu" role="tabpanel"
                                                 aria-labelledby="pills-push-menu-tab">
                                                 <div class="push-navbar">

@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Api\User;
 
-use App\Classes\GeniusMailer;
+use App\Classes\MuaadhMailer;
 use App\Http\Controllers\Controller;
 use App\Models\Generalsetting;
 use App\Models\Subscription;
@@ -179,7 +179,7 @@ class PackageController extends Controller
                     'aemail' => "",
                     'onumber' => "",
                 ];
-                $mailer = new GeniusMailer();
+                $mailer = new MuaadhMailer();
                 $mailer->sendAutoMail($data);
             } else {
                 $headers = "From: " . $settings->from_name . "<" . $settings->from_email . ">";

@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Classes\GeniusMailer;
+use App\Classes\MuaadhMailer;
 use App\Models\Generalsetting;
 use App\Models\Admin;
 use Illuminate\Support\Facades\Hash;
@@ -79,7 +79,7 @@ class LoginController extends Controller
                   'body' => $msg,
           ];
 
-          $mailer = new GeniusMailer();
+          $mailer = new MuaadhMailer();
           $mailer->sendCustomMail($data);
       }
       else

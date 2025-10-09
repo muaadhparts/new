@@ -7,7 +7,7 @@ use App\{
     Classes\Instamojo,
     Models\Deposit,
     Models\Transaction,
-    Classes\GeniusMailer,
+    Classes\MuaadhMailer,
     Models\PaymentGateway
 };
 
@@ -131,7 +131,7 @@ class InstamojoController extends DepositBaseController
                             'aemail' => "",
                             'onumber' => "",
                         ];
-                        $mailer = new GeniusMailer();
+                        $mailer = new MuaadhMailer();
                         $mailer->sendAutoMail($maildata);
 
 

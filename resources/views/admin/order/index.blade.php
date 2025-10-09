@@ -40,7 +40,7 @@
                             <div class="gocover"
                                 style="background: url({{ asset('assets/images/' . $gs->admin_loader) }}) no-repeat scroll center center rgba(45, 45, 45, 0.5);">
                             </div>
-                            <table id="geniustable" class="table table-hover dt-responsive" cellspacing="0" width="100%">
+                            <table id="muaadhtable" class="table table-hover dt-responsive" cellspacing="0" width="100%">
                                 <thead>
                                     <tr>
                                         <th>{{ __('Customer Email') }}</th>
@@ -182,7 +182,7 @@
         (function($) {
             "use strict";
 
-            var table = $('#geniustable').DataTable({
+            var table = $('#muaadhtable').DataTable({
                 ordering: false,
                 processing: true,
                 serverSide: true,

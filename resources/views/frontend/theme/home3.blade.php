@@ -238,10 +238,8 @@
             <div class="row mb-60 justify-content-center">
                 <div class="col-lg-7">
                     <div class="gs-title-box text-center">
-                        <h2 class="title wow-replaced">@lang('Best Month offer') </h2>
-                        <p class="des mb-0 wow-replaced" data-wow-delay=".1s">@lang('Erat pellentesque curabitur euismod dui
-                                                etiam pellentesque rhoncus fermentum tristique lobortis lectus magnis. Consequat porta turpis
-                                                maecenas')</p>
+                        <h2 class="title wow-replaced">@lang('MUAADH Special Offers') </h2>
+                        <p class="des mb-0 wow-replaced" data-wow-delay=".1s">@lang('Discover exclusive deals on genuine OEM and aftermarket parts. Premium quality at competitive prices for all vehicle models.')</p>
                     </div>
                 </div>
             </div>
@@ -372,8 +370,7 @@
                     <div class="col-lg-7">
                         <div class="gs-title-box text-center">
                             <h2 class="title wow-replaced">@lang('Latest Post') </h2>
-                            <p class="des mb-0 wow-replaced" data-wow-delay=".1s">@lang('Cillum eu id enim aliquip aute ullamco
-                                                    anim. Culpa deserunt nostrud excepteur voluptate velit ipsum esse enim.')</p>
+                            <p class="des mb-0 wow-replaced" data-wow-delay=".1s">@lang('Stay updated with the latest news, technical insights, and industry trends from MUAADH EPC.')</p>
                         </div>
                     </div>
                 </div>

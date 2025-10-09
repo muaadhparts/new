@@ -16,7 +16,7 @@ use Illuminate\Http\Request;
 use Validator;
 use Illuminate\Support\Str;
 use JWTAuth;
-use App\Classes\GeniusMailer;
+use App\Classes\MuaadhMailer;
 use Auth;
 class AuthController extends Controller
 {
@@ -72,7 +72,7 @@ class AuthController extends Controller
             'body' => $msg,
           ];
 
-          $mailer = new GeniusMailer();
+          $mailer = new MuaadhMailer();
           $mailer->sendCustomMail($data);
         } else {
           $headers = "From: " . $gs->from_name . "<" . $gs->from_email . ">";
@@ -274,7 +274,7 @@ class AuthController extends Controller
           'body' => $msg,
         ];
 
-        $mailer = new GeniusMailer();
+        $mailer = new MuaadhMailer();
         $mailer->sendCustomMail($data);
       } else {
         $headers = "From: " . $gs->from_name . "<" . $gs->from_email . ">";

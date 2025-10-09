@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Payment\Subscription;
 use App\{
     Models\User,
     Models\Subscription,
-    Classes\GeniusMailer,
+    Classes\MuaadhMailer,
     Models\PaymentGateway,
     Models\UserSubscription
 };
@@ -175,7 +175,7 @@ class PaypalController extends SubscriptionBaseController
                 'aemail' => "",
                 'onumber' => "",
             ];
-            $mailer = new GeniusMailer();
+            $mailer = new MuaadhMailer();
             $mailer->sendAutoMail($maildata);
 
             Session::forget('payment_id');

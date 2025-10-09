@@ -6,7 +6,7 @@ use App\{
     Models\User,
     Classes\Instamojo,
     Models\Subscription,
-    Classes\GeniusMailer,
+    Classes\MuaadhMailer,
     Models\PaymentGateway,
     Models\UserSubscription
 };
@@ -169,7 +169,7 @@ public function notify(Request $request){
                 'aemail' => "",
                 'onumber' => "",
             ];
-            $mailer = new GeniusMailer();
+            $mailer = new MuaadhMailer();
             $mailer->sendAutoMail($maildata);
 
 

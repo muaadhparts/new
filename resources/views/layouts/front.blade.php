@@ -5,7 +5,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ $gs->title }}</title>
+    <title>{{ config('app.name') }} — @yield('title', $gs->title ?? 'EPC')</title>
+    <meta name="application-name" content="{{ config('app.name') }}">
+    <meta property="og:site_name" content="{{ config('app.name') }}">
+    <meta property="og:title" content="{{ config('app.name') }} — @yield('title', 'Auto Parts Catalog')">
     @livewireStyles
 
     <!--Essential css files-->

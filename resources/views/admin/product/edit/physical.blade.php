@@ -29,7 +29,7 @@
                 </div>
             </div>
         </div>
-        <form id="geniusform" action="{{ route('admin-prod-update', $data->id) }}" method="POST"
+        <form id="muaadhform" action="{{ route('admin-prod-update', $data->id) }}" method="POST"
             enctype="multipart/form-data">
             {{ csrf_field() }}
             @include('alerts.admin.form-both')

@@ -29,7 +29,7 @@
                         @include('includes.admin.form-success')  
 
                     <div class="table-responsive">
-                        <table id="geniustable" class="table table-hover dt-responsive" cellspacing="0" width="100%">
+                        <table id="muaadhtable" class="table table-hover dt-responsive" cellspacing="0" width="100%">
                           <thead>
                             <tr>
                                           <th>Icon</th>
@@ -117,7 +117,7 @@
 (function($) {
 		"use strict";
 
-    var table = $('#geniustable').DataTable({
+    var table = $('#muaadhtable').DataTable({
          ordering: false,
                processing: true,
                serverSide: true,

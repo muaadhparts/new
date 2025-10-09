@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Auth\User;
 
-use App\Classes\GeniusMailer;
+use App\Classes\MuaadhMailer;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 
@@ -48,7 +48,7 @@ class ForgotController extends Controller
                 'body' => $msg,
             ];
 
-            $mailer = new GeniusMailer();
+            $mailer = new MuaadhMailer();
             $mailer->sendCustomMail($data);
 
             return back()->with('success', 'New Password has been sent to your email.');

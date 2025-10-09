@@ -10,7 +10,7 @@
 
                                             @include('alerts.admin.form-error') 
                                             
-                                            <form id="geniusformdata" action="{{route('admin-user-vendor-update',$data->id)}}" method="POST" enctype="multipart/form-data">
+                                            <form id="muaadhformdata" action="{{route('admin-user-vendor-update',$data->id)}}" method="POST" enctype="multipart/form-data">
                                                 
                                                 {{csrf_field()}}
                                                 

@@ -129,7 +129,7 @@
                                 <div class="time-count time-box text-center my-30 flex-between w-75"
                                     data-countdown="{{ $gs->deal_time }}"></div>
                                 <a href="{{ route('front.category') . '?type=flash'  }}"
-                                    class="btn btn-dark text-uppercase rounded-0">{{ __('Shop Now') }}</a>
+                                    class="btn btn-dark text-uppercase rounded-0">{{ __('Browse Parts') }}</a>
                             </div>
                         </div>
                     </div>
@@ -268,7 +268,7 @@
             <div class="row justify-content-center">
                 <div class="col-lg-5">
                     <h2 class="main-title mb-4 text-center text-secondary">{{ __('Latest Post') }}</h2>
-                    <span class="mb-30 sub-title text-general font-medium ordenery-font font-400 text-center">{{ __('Cillum eu id enim aliquip aute ullamco anim. Culpa deserunt nostrud excepteur voluptate velit ipsum esse enim.') }}</span>
+                    <span class="mb-30 sub-title text-general font-medium ordenery-font font-400 text-center">{{ __('Stay updated with the latest news, technical insights, and industry trends from MUAADH EPC.') }}</span>
                 </div>
             </div>
             <div class="row row-cols-lg-2 row-cols-1">

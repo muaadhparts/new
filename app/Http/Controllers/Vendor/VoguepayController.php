@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Vendor;
 
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
-use App\Classes\GeniusMailer;
+use App\Classes\MuaadhMailer;
 use App\Models\Generalsetting;
 use App\Models\Subscription;
 use App\Models\UserSubscription;
@@ -93,7 +93,7 @@ class VoguepayController extends Controller
                         'aemail' => "",
                         'onumber' => "",
                     ];
-                    $mailer = new GeniusMailer();
+                    $mailer = new MuaadhMailer();
                     $mailer->sendAutoMail($data);
                     }
                     else

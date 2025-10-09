@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Auth\Rider;
 
 use App\{
     Models\Rider,
-    Classes\GeniusMailer,
+    Classes\MuaadhMailer,
     Http\Controllers\Controller
 };
 
@@ -52,7 +52,7 @@ class ForgotController extends Controller
         'body' => $msg,
       ];
 
-      $mailer = new GeniusMailer();
+      $mailer = new MuaadhMailer();
       $mailer->sendCustomMail($data);
 
       return back()->with('success',__('Verification Link Sent Successfully!. Please Check your email.'));

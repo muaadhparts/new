@@ -1,10 +1,10 @@
 <div class="products-header d-flex justify-content-between align-items-center py-10 px-20 bg-light md-mt-30">
     <div class="products-header-left d-flex align-items-center">
-       <h6 class="woocommerce-products-header__title page-title"> <strong> {{ __('Products')  }}</strong>  </h6>
-       <div class="woocommerce-result-count"></div> 
+       <h6 class="MUAADH-products-header__title page-title"> <strong> {{ __('Products')  }}</strong>  </h6>
+       <div class="MUAADH-result-count"></div> 
     </div>
     <div class="products-header-right">
-       <form class="woocommerce-ordering" method="get">
+       <form class="MUAADH-ordering" method="get">
           <select name="sort" class="orderby short-item" aria-label="Shop order" id="sortby">
              <option value="date_desc">{{ __('Latest Product') }}</option>
              <option value="date_asc">{{ __('Oldest Product') }}</option>

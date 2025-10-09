@@ -6,7 +6,7 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Models\Generalsetting;
 use App\Models\User;
-use App\Classes\GeniusMailer;
+use App\Classes\MuaadhMailer;
 use App\Http\Controllers\Front\FrontBaseController;
 use App\Models\Notification;
 use Auth;

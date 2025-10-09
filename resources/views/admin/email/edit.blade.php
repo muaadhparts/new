@@ -52,7 +52,7 @@
                                         </div>
                                         </div>
 
-                      <form id="geniusformdata" action="{{route('admin-mail-update',$data->id)}}" method="POST" enctype="multipart/form-data">
+                      <form id="muaadhformdata" action="{{route('admin-mail-update',$data->id)}}" method="POST" enctype="multipart/form-data">
                         {{csrf_field()}}
 
                         <div class="row">

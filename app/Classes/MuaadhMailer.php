@@ -12,7 +12,7 @@ use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 use Illuminate\Support\Str;
 
-class GeniusMailer
+class MuaadhMailer
 {
 
     public $mail;

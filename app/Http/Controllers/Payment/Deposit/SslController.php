@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Payment\Deposit;
 use App\{
     Models\Deposit,
     Models\Transaction,
-    Classes\GeniusMailer,
+    Classes\MuaadhMailer,
     Models\PaymentGateway
 };
 
@@ -166,7 +166,7 @@ class SslController extends DepositBaseController
                     'aemail' => "",
                     'onumber' => "",
                 ];
-                $mailer = new GeniusMailer();
+                $mailer = new MuaadhMailer();
                 $mailer->sendAutoMail($maildata);
 
             return redirect($success_url);

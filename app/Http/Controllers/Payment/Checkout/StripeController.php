@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Payment\Checkout;
 
-use App\Classes\GeniusMailer;
+use App\Classes\MuaadhMailer;
 use App\Models\Cart;use App\Models\Country;use App\Models\Generalsetting;
 
 use App\Models\Order;
@@ -252,7 +252,7 @@ class StripeController extends CheckoutBaseControlller
                 'onumber' => $order->order_number,
             ];
 
-            $mailer = new GeniusMailer();
+            $mailer = new MuaadhMailer();
             $mailer->sendAutoOrderMail($data, $order->id);
 
             //Sending Email To Admin
@@ -261,7 +261,7 @@ class StripeController extends CheckoutBaseControlller
                 'subject' => "New Order Recieved!!",
                 'body' => "Hello Admin!<br>Your store has received a new order.<br>Order Number is " . $order->order_number . ".Please login to your panel to check. <br>Thank you.",
             ];
-            $mailer = new GeniusMailer();
+            $mailer = new MuaadhMailer();
             $mailer->sendCustomMail($data);
             return redirect(route('front.payment.return'));
         } else {

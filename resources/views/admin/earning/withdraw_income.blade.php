@@ -47,7 +47,7 @@
 							 @include('includes.admin.form-success') 
 							 <div class="mr-table allproduct">
 								<div class="table-responsive">
-								   <table id="geniustable" class="table table-hover dt-responsive" cellspacing="0" width="100%">
+								   <table id="muaadhtable" class="table table-hover dt-responsive" cellspacing="0" width="100%">
 									  <thead>
 										 <tr>
 											<th width="5%">{{ __('#') }}</th>
@@ -94,7 +94,7 @@
 
 @section('scripts')
 <script type="text/javascript">
-	$('#geniustable').DataTable();	
+	$('#muaadhtable').DataTable();	
 	$(document).on('click','#reset',function(){
 	$('.discount_date').val('');
 	location.href = '{{route('admin-withdraw-income')}}';

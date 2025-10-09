@@ -33,7 +33,7 @@
                 </div>
             </div>
         </div>
-        <form id="geniusform" action="{{route('admin-prod-store')}}" method="POST" enctype="multipart/form-data">
+        <form id="muaadhform" action="{{route('admin-prod-store')}}" method="POST" enctype="multipart/form-data">
             {{csrf_field()}}
             @include('alerts.admin.form-both')
             <div class="row">
@@ -790,7 +790,7 @@
   $(document).on('click', '#prod_gallery' ,function() {
     $('#uploadgallery').click();
      $('.selected-image .row').html('');
-    $('#geniusform').find('.removegal').val(0);
+    $('#muaadhform').find('.removegal').val(0);
   });
 
 
@@ -809,7 +809,7 @@
                                         '</div>'+
                                   '</div> '
                                       );
-      $('#geniusform').append('<input type="hidden" name="galval[]" id="galval'+i+'" class="removegal" value="'+i+'">')
+      $('#muaadhform').append('<input type="hidden" name="galval[]" id="galval'+i+'" class="removegal" value="'+i+'">')
      }
 
   });

@@ -29,7 +29,7 @@
                   <div class="col-lg-12">
 					<div class="heading-area">
 						@include('includes.admin.form-both') 
-						<form id="geniusform" action="{{route('admin-reward-info-update')}}" method="POST">
+						<form id="muaadhform" action="{{route('admin-reward-info-update')}}" method="POST">
 							@csrf
 						<h4 class="title">
 							{{ __('Rewards') }} :
@@ -63,7 +63,7 @@
 
                         
 						@include('includes.admin.form-both') 
-                      <form id="geniusform" action="{{route('admin-reward-update')}}" method="POST">
+                      <form id="muaadhform" action="{{route('admin-reward-update')}}" method="POST">
 
                         @csrf
 

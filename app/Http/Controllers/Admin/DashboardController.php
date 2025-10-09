@@ -159,12 +159,12 @@ class DashboardController extends AdminBaseController
 
     public function activation_submit(Request $request)
     {
-        //return config('services.genius.ocean');
+        //return config('services.muaadh.ocean');
         $purchase_code = $request->pcode;
         $my_script = 'Royal eCommerce';
         $my_domain = url('/');
 
-        $varUrl = str_replace(' ', '%20', config('services.genius.ocean') . 'purchase112662activate.php?code=' . $purchase_code . '&domain=' . $my_domain . '&script=' . $my_script);
+        $varUrl = str_replace(' ', '%20', config('services.muaadh.ocean') . 'purchase112662activate.php?code=' . $purchase_code . '&domain=' . $my_domain . '&script=' . $my_script);
 
         if (ini_get('allow_url_fopen')) {
             $contents = file_get_contents($varUrl);
@@ -200,7 +200,7 @@ class DashboardController extends AdminBaseController
             return response()->json($msg);
             //return redirect('admin/dashboard')->with('success','Congratulation!! Your System is successfully Activated.');
         }
-        //return config('services.genius.ocean');
+        //return config('services.muaadh.ocean');
     }
 
     public function setUp($mtFile, $goFileData)
@@ -230,7 +230,7 @@ class DashboardController extends AdminBaseController
 
         $this->recurse_copy($src, $destination);
         $files = public_path();
-        $bkupname = 'Muaadh-shop-By-GeniusOcean-' . date('Y-m-d') . '.zip';
+        $bkupname = 'MUAADH-EPC-Backup-' . date('Y-m-d') . '.zip';
 
         $zip = new \ZipArchive();
         $zip->open($bkupname, \ZipArchive::CREATE | \ZipArchive::OVERWRITE);

@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Payment\Subscription;
 
 use App\{
     Models\Subscription,
-    Classes\GeniusMailer,
+    Classes\MuaadhMailer,
     Models\PaymentGateway,
     Models\UserSubscription
 };
@@ -153,7 +153,7 @@ class StripeController extends SubscriptionBaseController
                 'aemail' => "",
                 'onumber' => "",
             ];
-            $mailer = new GeniusMailer();
+            $mailer = new MuaadhMailer();
             $mailer->sendAutoMail($maildata);
             Session::forget('subscription_data');
             return redirect()->route('user-dashboard')->with('success', __('Subscription Activated Successfully'));

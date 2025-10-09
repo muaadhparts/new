@@ -28,7 +28,7 @@
 
                         @include('alerts.admin.form-both')  
 
-                  <form class="uplogo-form" id="geniusform"  action="{{ route('admin-gs-update') }}" method="POST" enctype="multipart/form-data">
+                  <form class="uplogo-form" id="muaadhform"  action="{{ route('admin-gs-update') }}" method="POST" enctype="multipart/form-data">
                     {{csrf_field()}}
                     <div class="currrent-logo">
                       <h4 class="title">

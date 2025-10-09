@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Classes\GeniusMailer;use App\Models\AffliateBonus;
+use App\Classes\MuaadhMailer;use App\Models\AffliateBonus;
 use App\Models\Cart;use App\Models\DeliveryRider;
 use App\Models\Generalsetting;
 use App\Models\Order;
@@ -108,7 +108,7 @@ class OrderController extends AdminBaseController
                 'body' => $request->message,
             ];
 
-            $mailer = new GeniusMailer();
+            $mailer = new MuaadhMailer();
             $mailer->sendCustomMail($data);
         } else {
             $data = 0;
@@ -247,7 +247,7 @@ class OrderController extends AdminBaseController
                         'body' => "Hello " . $data->customer_name . "," . "\n Thank you for shopping with us. We are looking forward to your next visit.",
                     ];
 
-                    $mailer = new GeniusMailer();
+                    $mailer = new MuaadhMailer();
                     $mailer->sendCustomMail($maildata);
                 }
                 if ($input['status'] == "declined") {
@@ -311,7 +311,7 @@ class OrderController extends AdminBaseController
                         'subject' => 'Your order ' . $data->order_number . ' is Declined!',
                         'body' => "Hello " . $data->customer_name . "," . "\n We are sorry for the inconvenience caused. We are looking forward to your next visit.",
                     ];
-                    $mailer = new GeniusMailer();
+                    $mailer = new MuaadhMailer();
                     $mailer->sendCustomMail($maildata);
                 }
 

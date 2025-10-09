@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Payment\Checkout;
 
-use App\{Classes\GeniusMailer, Models\Cart, Models\Order, Models\PaymentGateway};
+use App\{Classes\MuaadhMailer, Models\Cart, Models\Order, Models\PaymentGateway};
 use App\Helpers\PriceHelper;
 use App\Models\Country;
 use App\Models\Reward;
@@ -285,7 +285,7 @@ class PaypalController2 extends CheckoutBaseControlller
                 'wtitle' => "",
                 'onumber' => $order->order_number,
             ];
-            $mailer = new GeniusMailer();
+            $mailer = new MuaadhMailer();
             $mailer->sendAutoOrderMail($data, $order->id);
 
             //Sending Email To Admin
@@ -294,7 +294,7 @@ class PaypalController2 extends CheckoutBaseControlller
                 'subject' => "New Order Recieved!!",
                 'body' => "Hello Admin!<br>Your store has received a new order.<br>Order Number is " . $order->order_number . ".Please login to your panel to check. <br>Thank you.",
             ];
-            $mailer = new GeniusMailer();
+            $mailer = new MuaadhMailer();
             $mailer->sendCustomMail($data);
 
             return redirect($success_url);

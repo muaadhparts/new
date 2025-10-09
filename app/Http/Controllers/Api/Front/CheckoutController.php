@@ -3,7 +3,7 @@ namespace App\Http\Controllers\Api\Front;
 
 use App\Models\MerchantProduct;
 // // dd('use MerchantProduct injected'); // اختباري
-use App\Classes\GeniusMailer;
+use App\Classes\MuaadhMailer;
 use App\Helpers\OrderHelper;
 use App\Helpers\PriceHelper;
 use App\Http\Controllers\Controller;
@@ -284,7 +284,7 @@ class CheckoutController extends Controller
                 'wtitle'  => "",
                 'onumber' => $order->order_number,
             ];
-            $mailer = new GeniusMailer();
+            $mailer = new MuaadhMailer();
             $mailer->sendAutoOrderMail($data, $order->id);
 
             // Email للأدمن
@@ -294,7 +294,7 @@ class CheckoutController extends Controller
                 'subject' => "New Order Recieved!!",
                 'body'    => "Hello Admin!<br>Your store has received a new order.<br>Order Number is " . $order->order_number . ".Please login to your panel to check. <br>Thank you.",
             ];
-            $mailer = new GeniusMailer();
+            $mailer = new MuaadhMailer();
             $mailer->sendCustomMail($data);
 
             unset($order['cart']);
@@ -347,7 +347,7 @@ class CheckoutController extends Controller
                             'subject' => 'Your order ' . $data->order_number . ' is Confirmed!',
                             'body'    => "Hello " . $data->customer_name . "," . "\n Thank you for shopping with us. We are looking forward to your next visit.",
                         ];
-                        $mailer = new GeniusMailer();
+                        $mailer = new MuaadhMailer();
                         $mailer->sendCustomMail($maildata);
                     } else {
                         $to = $data->customer_email;
@@ -381,7 +381,7 @@ class CheckoutController extends Controller
                             'subject' => 'Your order ' . $data->order_number . ' is Declined!',
                             'body'    => "Hello " . $data->customer_name . "," . "\n We are sorry for the inconvenience caused. We are looking forward to your next visit.",
                         ];
-                        $mailer = new GeniusMailer();
+                        $mailer = new MuaadhMailer();
                         $mailer->sendCustomMail($maildata);
                     } else {
                         $to = $data->customer_email;
@@ -849,7 +849,7 @@ class CheckoutController extends Controller
 
 // use App\Models\MerchantProduct;
 // // // dd('use MerchantProduct injected'); // اختباري
-// use App\Classes\GeniusMailer;
+// use App\Classes\MuaadhMailer;
 // use App\Helpers\OrderHelper;
 // use App\Helpers\PriceHelper;
 // use App\Http\Controllers\Controller;
@@ -1117,7 +1117,7 @@ class CheckoutController extends Controller
 //                 'onumber' => $order->order_number,
 //             ];
 
-//             $mailer = new GeniusMailer();
+//             $mailer = new MuaadhMailer();
 //             $mailer->sendAutoOrderMail($data, $order->id);
 //             $ps = Pagesetting::find(1);
 //             //Sending Email To Admin
@@ -1126,7 +1126,7 @@ class CheckoutController extends Controller
 //                 'subject' => "New Order Recieved!!",
 //                 'body' => "Hello Admin!<br>Your store has received a new order.<br>Order Number is " . $order->order_number . ".Please login to your panel to check. <br>Thank you.",
 //             ];
-//             $mailer = new GeniusMailer();
+//             $mailer = new MuaadhMailer();
 //             $mailer->sendCustomMail($data);
 
 //             unset($order['cart']);
@@ -1179,7 +1179,7 @@ class CheckoutController extends Controller
 //                             'body' => "Hello " . $data->customer_name . "," . "\n Thank you for shopping with us. We are looking forward to your next visit.",
 //                         ];
 
-//                         $mailer = new GeniusMailer();
+//                         $mailer = new MuaadhMailer();
 //                         $mailer->sendCustomMail($maildata);
 //                     } else {
 //                         $to = $data->customer_email;
@@ -1233,7 +1233,7 @@ class CheckoutController extends Controller
 //                             'subject' => 'Your order ' . $data->order_number . ' is Declined!',
 //                             'body' => "Hello " . $data->customer_name . "," . "\n We are sorry for the inconvenience caused. We are looking forward to your next visit.",
 //                         ];
-//                         $mailer = new GeniusMailer();
+//                         $mailer = new MuaadhMailer();
 //                         $mailer->sendCustomMail($maildata);
 //                     } else {
 //                         $to = $data->customer_email;

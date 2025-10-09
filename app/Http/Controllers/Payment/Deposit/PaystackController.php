@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Payment\Deposit;
 use App\{
     Models\Deposit,
     Models\Transaction,
-    Classes\GeniusMailer
+    Classes\MuaadhMailer
 };
 
 use Illuminate\Http\Request;
@@ -61,7 +61,7 @@ class PaystackController extends DepositBaseController
             'aemail' => "",
             'onumber' => "",
         ];
-        $mailer = new GeniusMailer();
+        $mailer = new MuaadhMailer();
         $mailer->sendAutoMail($data);
 
         return redirect()->route('user-dashboard')->with('success',__('Balance has been added to your account successfully.'));

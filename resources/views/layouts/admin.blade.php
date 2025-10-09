@@ -5,7 +5,7 @@
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<meta name="author" content="GeniusOcean">
+	<meta name="author" content="MUAADH">
 	<meta name="csrf-token" content="{{ csrf_token() }}">
 	<!-- Title -->
 	<title>{{$gs->title}}</title>
@@ -230,7 +230,7 @@
 
 	@if($gs->is_admin_loader == 0)
 		<style>
-			div#geniustable_processing {
+			div#muaadhtable_processing {
 				display: none !important;
 			}
 		</style>

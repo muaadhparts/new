@@ -15,7 +15,7 @@
     </div>
     <!-- breadcrumb end -->
 
-    <form id="geniusform" action="{{ route('vendor-prod-update-offer', $merchantProduct->id) }}" method="POST" enctype="multipart/form-data">
+    <form id="muaadhform" action="{{ route('vendor-prod-update-offer', $merchantProduct->id) }}" method="POST" enctype="multipart/form-data">
         @csrf
         @method('PUT')
 

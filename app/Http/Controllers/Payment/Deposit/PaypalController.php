@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Payment\Deposit;
 
 use App\{
     Models\Deposit,
-    Classes\GeniusMailer,
+    Classes\MuaadhMailer,
     Models\PaymentGateway
 };
 
@@ -148,7 +148,7 @@ class PaypalController extends DepositBaseController
                 'onumber' => "",
             ];
 
-            $mailer = new GeniusMailer();
+            $mailer = new MuaadhMailer();
             $mailer->sendAutoMail($maildata);
 
             Session::forget('deposit');

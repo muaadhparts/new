@@ -31,8 +31,8 @@ return [
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
 
-    'genius' => [
-        'ocean' => 'https://geniusocean.com/verify/'
+    'muaadh' => [
+        'ocean' => 'https://MUAADH.com/verify/'
     ],
 
     'tryoto' => [

@@ -1,12 +1,16 @@
 {
-    "name": "muaadh/epc-catalog",
+    "name": "muaadh/epc",
     "type": "project",
-    "description": "The skeleton application for the Laravel framework.",
+    "description": "MUAADH EPC — AI-assisted OEM/Aftermarket parts catalog (callout-first search, Laravel + Livewire)",
     "keywords": [
+        "muaadh",
+        "epc",
+        "auto-parts",
+        "catalog",
         "laravel",
-        "framework"
+        "callout"
     ],
-    "license": "MIT",
+    "license": "Proprietary",
     "require": {
         "php": "^8.1",
         "anhskohbo/no-captcha": "^3.5",
@@ -58,8 +62,7 @@
         "psr-4": {
             "App\\": "app/",
             "Database\\Factories\\": "database/factories/",
-            "Database\\Seeders\\": "database/seeders/",
-            "Markury\\": "vendor/markury/src/Adapter"
+            "Database\\Seeders\\": "database/seeders/"
         },
         "files": [
             "app/Helpers/helper.php"

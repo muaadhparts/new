@@ -5,9 +5,9 @@
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<meta http-equiv="X-UA-Compatible" content="ie=edge">
-	<meta name="description" content="GeniusCart-New - Multivendor Ecommerce system">
-	<meta name="author" content="GeniusOcean">
-	<title>{{$gs->title}}-@lang('checkout')</title>
+	<meta name="description" content="MUAADH EPC — AI-assisted OEM/Aftermarket parts catalog with callout-first search">
+	<meta name="author" content="MUAADH">
+	<title>{{ config('app.name') }} - @lang('checkout')</title>
 	<link rel="icon" type="image/x-icon" href="{{asset('assets/images/' . $gs->favicon)}}" />
 	<!-- Google Font -->
 	@if ($default_font->font_value)

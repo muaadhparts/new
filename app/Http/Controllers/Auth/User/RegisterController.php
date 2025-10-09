@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Auth\User;
 
-use App\Classes\GeniusMailer;
+use App\Classes\MuaadhMailer;
 use App\Http\Controllers\Controller;
 use App\Models\Generalsetting;
 use App\Models\Notification;
@@ -80,7 +80,7 @@ class RegisterController extends Controller
                 'body' => $msg,
             ];
 
-            $mailer = new GeniusMailer();
+            $mailer = new MuaadhMailer();
             $mailer->sendCustomMail($data);
 
             return back()->with('success', 'We need to verify your email address. We have sent an email to ' . $to . ' to verify your email address. Please click link in that email to continue.');
@@ -103,7 +103,7 @@ class RegisterController extends Controller
                 'aemail' => "",
                 'onumber' => "",
             ];
-            $mailer = new GeniusMailer();
+            $mailer = new MuaadhMailer();
             $mailer->sendAutoMail($data);
 
             Auth::login($user);
@@ -134,7 +134,7 @@ class RegisterController extends Controller
                     'aemail' => "",
                     'onumber' => "",
                 ];
-                $mailer = new GeniusMailer();
+                $mailer = new MuaadhMailer();
                 $mailer->sendAutoMail($data);
 
                 Auth::login($user);

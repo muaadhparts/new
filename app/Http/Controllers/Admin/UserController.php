@@ -7,7 +7,7 @@ use App\{
     Models\Withdraw,
     Models\Transaction,
     Models\Subscription,
-    Classes\GeniusMailer,
+    Classes\MuaadhMailer,
     Models\UserSubscription
 };
 
@@ -133,7 +133,7 @@ class UserController extends AdminBaseController
 				'aemail' => "",
 				'onumber' => "",
 			];
-			$mailer = new GeniusMailer();
+			$mailer = new MuaadhMailer();
 			$mailer->sendAutoMail($data);  
 
             $msg = __('New Customer Added Successfully.');

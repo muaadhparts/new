@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\{
-    Classes\GeniusMailer,
+    Classes\MuaadhMailer,
     Models\EmailTemplate,
     Models\Generalsetting,
     Models\User
@@ -63,7 +63,7 @@ class EmailController extends AdminBaseController
                     'body' => $request->body,
                 ];
 
-                $mailer = new GeniusMailer();
+                $mailer = new MuaadhMailer();
                 $mailer->sendCustomMail($data);            
             }
             else
@@ -95,7 +95,7 @@ class EmailController extends AdminBaseController
                     'body' => $request->body,
                 ];
 
-                $mailer = new GeniusMailer();
+                $mailer = new MuaadhMailer();
                 $mailer->sendCustomMail($data);            
             }
             else

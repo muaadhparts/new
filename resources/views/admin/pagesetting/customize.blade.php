@@ -32,7 +32,7 @@
             <div class="gocover"
               style="background: url({{asset('assets/images/'.$gs->admin_loader)}}) no-repeat scroll center center rgba(45, 45, 45, 0.5);">
             </div>
-            <form id="geniusform" action="{{ route('admin-ps-homeupdate') }}" method="POST"
+            <form id="muaadhform" action="{{ route('admin-ps-homeupdate') }}" method="POST"
               enctype="multipart/form-data">
               @csrf
 

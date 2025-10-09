@@ -32,11 +32,11 @@
                     <div class="product-image">
                         @if($vendorId && $mp)
                             <a href="{{ route('front.product', ['slug' => $product->slug, 'vendor_id' => $vendorId, 'merchant_product_id' => $mp->id]) }}"
-                               class="woocommerce-LoopProduct-link">
+                               class="MUAADH-LoopProduct-link">
                                 <img src="{{ $thumb }}" alt="Product Image">
                             </a>
                         @else
-                            <span class="woocommerce-LoopProduct-link" style="cursor: not-allowed;">
+                            <span class="MUAADH-LoopProduct-link" style="cursor: not-allowed;">
                                 <img src="{{ $thumb }}" alt="Product Image">
                             </span>
                         @endif
@@ -160,11 +160,11 @@
                     <div class="product-image">
                         @if($vendorId && $mp)
                             <a href="{{ route('front.product', ['slug' => $product->slug, 'vendor_id' => $vendorId, 'merchant_product_id' => $mp->id]) }}"
-                               class="woocommerce-LoopProduct-link">
+                               class="MUAADH-LoopProduct-link">
                                 <img src="{{ $thumb }}" alt="Product Image">
                             </a>
                         @else
-                            <span class="woocommerce-LoopProduct-link" style="cursor: not-allowed;">
+                            <span class="MUAADH-LoopProduct-link" style="cursor: not-allowed;">
                                 <img src="{{ $thumb }}" alt="Product Image">
                             </span>
                         @endif

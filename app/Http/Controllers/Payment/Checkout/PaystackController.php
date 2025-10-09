@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Payment\Checkout;
 use App\{
     Models\Cart,
     Models\Order,
-    Classes\GeniusMailer
+    Classes\MuaadhMailer
 };
 use App\Models\Country;
 use App\Models\Reward;
@@ -199,7 +199,7 @@ class PaystackController extends CheckoutBaseControlller
             'onumber' => $order->order_number,
         ];
 
-        $mailer = new GeniusMailer();
+        $mailer = new MuaadhMailer();
         $mailer->sendAutoOrderMail($data,$order->id);
 
         //Sending Email To Admin
@@ -208,7 +208,7 @@ class PaystackController extends CheckoutBaseControlller
             'subject' => "New Order Recieved!!",
             'body' => "Hello Admin!<br>Your store has received a new order.<br>Order Number is ".$order->order_number.".Please login to your panel to check. <br>Thank you.",
         ];
-        $mailer = new GeniusMailer();
+        $mailer = new MuaadhMailer();
         $mailer->sendCustomMail($data);
 
         return redirect($success_url);

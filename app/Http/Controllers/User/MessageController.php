@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\User;
 
-use App\Classes\GeniusMailer;
+use App\Classes\MuaadhMailer;
 use App\Models\AdminUserConversation;
 use App\Models\AdminUserMessage;
 use App\Models\Conversation;
@@ -75,7 +75,7 @@ class MessageController extends UserBaseController
             'body' => $msg,
         ];
 
-        $mailer = new GeniusMailer();
+        $mailer = new MuaadhMailer();
         $mailer->sendCustomMail($data);
 
         $conv = Conversation::where('sent_user', '=', $user->id)->where('subject', '=', $subject)->first();
@@ -184,7 +184,7 @@ class MessageController extends UserBaseController
             'body' => $msg,
         ];
 
-        $mailer = new GeniusMailer();
+        $mailer = new MuaadhMailer();
         $mailer->sendCustomMail($data);
 
         if ($request->type == 'Ticket') {

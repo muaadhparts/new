@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Classes\GeniusMailer;
+use App\Classes\MuaadhMailer;
 use App\Models\AdminUserConversation;
 use App\Models\AdminUserMessage;use App\Models\Order;
 use App\Models\Rider;
@@ -109,7 +109,7 @@ class MessageController extends AdminBaseController
                 'subject' => $subject,
                 'body' => $msg,
             ];
-            $mailer = new GeniusMailer();
+            $mailer = new MuaadhMailer();
             $mailer->sendCustomMail($datas);
 
             return response()->json($data);
@@ -131,7 +131,7 @@ class MessageController extends AdminBaseController
             'subject' => $subject,
             'body' => $msg,
         ];
-        $mailer = new GeniusMailer();
+        $mailer = new MuaadhMailer();
         $mailer->sendCustomMail($datas);
 
         if ($request->type == 'Ticket') {

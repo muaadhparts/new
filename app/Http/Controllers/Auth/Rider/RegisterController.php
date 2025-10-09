@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Auth\Rider;
 use App\{
 	Models\Rider,
 	Models\Notification,
-	Classes\GeniusMailer,
+	Classes\MuaadhMailer,
 	Models\Generalsetting,
 	Http\Controllers\Controller
 };
@@ -61,7 +61,7 @@ class RegisterController extends Controller
 				'body' => $msg,
 			];
 
-			$mailer = new GeniusMailer();
+			$mailer = new MuaadhMailer();
 			$mailer->sendCustomMail($data);
 
 			return back()->with('success', 'We need to verify your email address. We have sent an email to ' . $to . ' to verify your email address. Please click link in that email to continue.');
@@ -81,7 +81,7 @@ class RegisterController extends Controller
 				'aemail' => "",
 				'onumber' => "",
 			];
-			$mailer = new GeniusMailer();
+			$mailer = new MuaadhMailer();
 			$mailer->sendAutoMail($data);
 			Auth::guard('rider')->login($rider);
 			return redirect()->route('rider-dashboard');
@@ -109,7 +109,7 @@ class RegisterController extends Controller
 					'aemail' => "",
 					'onumber' => "",
 				];
-				$mailer = new GeniusMailer();
+				$mailer = new MuaadhMailer();
 				$mailer->sendAutoMail($data);
 
 

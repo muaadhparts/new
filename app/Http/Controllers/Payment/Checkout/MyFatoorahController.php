@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Payment\Checkout;
 
-use App\Classes\GeniusMailer;
+use App\Classes\MuaadhMailer;
 use App\Helpers\OrderHelper;
 use App\Helpers\PriceHelper;
 use App\Http\Controllers\Controller;
@@ -221,7 +221,7 @@ class MyFatoorahController extends CheckoutBaseControlller {
         ];
 
 
-        (new GeniusMailer())->sendAutoOrderMail($customerData, $order->id);
+        (new MuaadhMailer())->sendAutoOrderMail($customerData, $order->id);
 
         // Email to Admin
         $adminData = [
@@ -229,7 +229,7 @@ class MyFatoorahController extends CheckoutBaseControlller {
             'subject' => "New Order Received!!",
             'body' => "Hello Admin!<br>Your store has received a new order.<br>Order Number is {$order->order_number}. Please login to your panel to check.<br>Thank you.",
         ];
-        (new GeniusMailer())->sendCustomMail($adminData);
+        (new MuaadhMailer())->sendCustomMail($adminData);
     }
 
 

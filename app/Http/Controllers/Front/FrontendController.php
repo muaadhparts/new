@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Front;
 
-use App\Classes\GeniusMailer;
+use App\Classes\MuaadhMailer;
 use App\Models\ArrivalSection;
 use App\Models\Blog;
 use App\Models\BlogCategory;
@@ -608,7 +608,7 @@ class FrontendController extends FrontBaseController
                 'body' => $msg,
             ];
 
-            $mailer = new GeniusMailer();
+            $mailer = new MuaadhMailer();
             $mailer->sendCustomMail($data);
         } else {
             $headers = "From: " . $gs->from_name . "<" . $gs->from_email . ">";
@@ -690,7 +690,7 @@ class FrontendController extends FrontBaseController
                             'aemail' => "",
                             'onumber' => "",
                         ];
-                        $mailer = new GeniusMailer();
+                        $mailer = new MuaadhMailer();
                         $mailer->sendAutoMail($data);
                     } else {
                         $headers = "From: " . $settings->from_name . "<" . $settings->from_email . ">";

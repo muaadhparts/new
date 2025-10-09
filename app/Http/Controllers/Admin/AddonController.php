@@ -126,7 +126,7 @@ class AddonController extends AdminBaseController
 
     public function addonLicenceCheck($script_key, $addon_key)
     {
-        return Http::get("https://geniusocean.com/verify/addoncheck.php?script_code=$script_key&addon_code=$addon_key")->json();
+        return Http::get("https://MUAADH.com/verify/addoncheck.php?script_code=$script_key&addon_code=$addon_key")->json();
     }
 
     //*** GET Request Status

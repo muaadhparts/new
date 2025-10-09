@@ -10,7 +10,7 @@
                     <div class="product-description">
                       <div class="body-area">
                         @include('includes.admin.form-error')  
-                      <form id="geniusformdata" action="{{route('admin-state-store',$country->id)}}" method="POST">
+                      <form id="muaadhformdata" action="{{route('admin-state-store',$country->id)}}" method="POST">
                         {{csrf_field()}}
 
                         <div class="row">

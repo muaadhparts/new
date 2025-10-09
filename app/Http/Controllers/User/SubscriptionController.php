@@ -4,7 +4,7 @@ namespace App\Http\Controllers\User;
 
 use App\{
     Models\Subscription,
-    Classes\GeniusMailer,
+    Classes\MuaadhMailer,
     Models\UserSubscription,
     Models\PaymentGateway
 };
@@ -90,7 +90,7 @@ class SubscriptionController extends UserBaseController
                 'aemail' => "",
                 'onumber' => "",
             ];
-            $mailer = new GeniusMailer();
+            $mailer = new MuaadhMailer();
             $mailer->sendAutoMail($data);
 
             return redirect($success_url)->with('success',__('Vendor Account Activated Successfully'));

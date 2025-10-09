@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Payment\Deposit;
 use App\{
     Models\Deposit,
     Models\Transaction,
-    Classes\GeniusMailer
+    Classes\MuaadhMailer
 };
 
 use Illuminate\Http\Request;
@@ -39,7 +39,7 @@ class ManualPaymentController extends DepositBaseController
             'aemail' => "",
             'onumber' => "",
         ];
-        $mailer = new GeniusMailer();
+        $mailer = new MuaadhMailer();
         $mailer->sendAutoMail($data);
 
         return redirect()->route('user-dashboard')->with('success',__('Your payment needs to verify. we\'ll confirm you soon.'));

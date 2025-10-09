@@ -31,7 +31,7 @@
 	</div>
 
 	<div class="gocover" style="background: url({{asset('assets/images/'.$gs->admin_loader)}}) no-repeat scroll center center rgba(45, 45, 45, 0.5);"></div>
-	<form id="geniusform" action="{{route('admin-import-store')}}" method="POST" enctype="multipart/form-data">
+	<form id="muaadhform" action="{{route('admin-import-store')}}" method="POST" enctype="multipart/form-data">
 	  {{csrf_field()}}
 
 	  @include('alerts.admin.form-both')
@@ -627,7 +627,7 @@
   $(document).on('click', '#prod_gallery' ,function() {
     $('#uploadgallery').click();
      $('.selected-image .row').html('');
-    $('#geniusform').find('.removegal').val(0);
+    $('#muaadhform').find('.removegal').val(0);
   });
                                         
                                 
@@ -646,7 +646,7 @@
                                         '</div>'+
                                   '</div> '
                                       );
-      $('#geniusform').append('<input type="hidden" name="galval[]" id="galval'+i+'" class="removegal" value="'+i+'">')
+      $('#muaadhform').append('<input type="hidden" name="galval[]" id="galval'+i+'" class="removegal" value="'+i+'">')
      }
 
   });
