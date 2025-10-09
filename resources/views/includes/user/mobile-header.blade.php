@@ -1,5 +1,5 @@
 <!-- mobile menu -->
-<div class="mobile-menu">
+<div class="mobile-menu" id="mobileMenu">
     <div class="mobile-menu-top">
         <img src="{{ asset('assets/images/' . $gs->footer_logo) }}" alt="">
         <svg class="close" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
