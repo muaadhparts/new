@@ -6,7 +6,9 @@
       "Bash(php artisan schema:dump:*)",
       "Bash(php artisan make:migration:*)",
       "Bash(php:*)",
-      "Read(//c/Users/hp/Herd/backmain/**)"
+      "Read(//c/Users/hp/Herd/backmain/**)",
+      "Read(//c/Users/hp/Herd/P/resources/views/includes/user/**)",
+      "Read(//c/Users/hp/Herd/P/**)"
     ],
     "deny": [],
     "ask": []
