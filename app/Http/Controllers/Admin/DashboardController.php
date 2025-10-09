@@ -230,7 +230,7 @@ class DashboardController extends AdminBaseController
 
         $this->recurse_copy($src, $destination);
         $files = public_path();
-        $bkupname = 'Genius-shop-By-GeniusOcean-' . date('Y-m-d') . '.zip';
+        $bkupname = 'Muaadh-shop-By-GeniusOcean-' . date('Y-m-d') . '.zip';
 
         $zip = new \ZipArchive();
         $zip->open($bkupname, \ZipArchive::CREATE | \ZipArchive::OVERWRITE);

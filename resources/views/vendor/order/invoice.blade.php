@@ -46,7 +46,7 @@
             <!-- order address info -->
             <div class="user-purchase-title-wrapper">
                 <div>
-                    <h4 class="order-number">@lang('Genius Shop')</h4>
+                    <h4 class="order-number">@lang('Muaadh Shop')</h4>
                 </div>
 
                 <a href="{{route('vendor-order-print',$order->order_number)}}" class="template-btn dark-btn" type="button">
