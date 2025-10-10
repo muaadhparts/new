@@ -960,6 +960,35 @@
   $(document).ready(function() {
     setTimeout(restoreSavedShippingSelections, 2500);
   });
+
+  // 🔧 FIX: ضمان إرسال بيانات الشحن مع الـ form
+  // المشكلة: Bootstrap modals قد لا ترسل البيانات بشكل موثوق
+  // الحل: إضافة hidden inputs ديناميكية قبل إرسال الـ form
+  $('form.address-wrapper').on('submit', function(e) {
+    console.log('Form submitting - checking shipping selections...');
+
+    // إزالة hidden inputs القديمة (لتجنب التكرار)
+    $(this).find('input[name^="shipping["]').filter('[type="hidden"]').remove();
+
+    // البحث عن جميع radio buttons المختارة للشحن داخل الـ modals
+    $('input[type="radio"][name^="shipping["]:checked').each(function() {
+      var name = $(this).attr('name');
+      var value = $(this).val();
+
+      console.log('Adding hidden input:', name, '=', value);
+
+      // إنشاء hidden input جديد وإضافته للـ form
+      $('<input>')
+        .attr('type', 'hidden')
+        .attr('name', name)
+        .val(value)
+        .appendTo('form.address-wrapper');
+    });
+
+    console.log('Form data ready for submission');
+    // السماح بإرسال الـ form
+    return true;
+  });
 })();
 </script>
 @endsection
