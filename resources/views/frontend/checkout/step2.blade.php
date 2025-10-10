@@ -795,10 +795,7 @@
         recalcTotals();
         $('.gocover').hide();
 
-        // Notify user of successful tax update
-        if (typeof toastr !== 'undefined') {
-          toastr.success('@lang("Tax and total updated")');
-        }
+        // تم إزالة إشعار toastr المزعج - التحديث يتم بهدوء
       }
     });
   }
@@ -825,15 +822,143 @@
     }
   });
 
-  // Update tax when shipping cost changes
+  // Update tax when shipping cost changes (silent - no toastr)
   $(document).on('change', 'input[name^="shipping"]', function() {
     var country_id = $('#select_country').val();
     var state_id = $('#show_state').val() || 0;
+
+    // حفظ اختيار الشحن في Session
+    saveShippingSelection();
+
     if (country_id) {
       setTimeout(function() {
         tax_submit(country_id, state_id);
-      }, 500); // Small delay to allow shipping cost to update
+      }, 500);
     }
+  });
+
+  // حفظ اختيارات الشحن في Session عبر AJAX
+  function saveShippingSelection() {
+    var shippingData = {};
+
+    document.querySelectorAll('input[type="radio"][name^="shipping["]:checked').forEach(function(input) {
+      var name = input.getAttribute('name');
+      var match = name.match(/shipping\[(\d+)\]/);
+      if (match) {
+        var vendorId = match[1];
+
+        // حفظ القيمة الكاملة (deliveryOptionId#CompanyName#price)
+        // هذا يضمن التفريق بين نفس الشركة بأسعار مختلفة
+        shippingData[vendorId] = {
+          value: input.value, // القيمة الكاملة الفريدة
+          companyName: input.getAttribute('data-form') || '',
+          price: input.getAttribute('data-price') || '0',
+          logo: input.getAttribute('data-logo') || '',
+          service: input.getAttribute('data-service') || '',
+          viewPrice: input.getAttribute('view') || ''
+        };
+
+        console.log('Saving shipping for vendor', vendorId, ':', shippingData[vendorId]);
+      }
+    });
+
+    // حفظ في Session فوراً
+    if (Object.keys(shippingData).length > 0) {
+      $.ajax({
+        url: '{{ route("checkout.save-shipping-selection") }}',
+        method: 'POST',
+        data: {
+          _token: '{{ csrf_token() }}',
+          shipping_selection: shippingData
+        },
+        async: true,
+        success: function(response) {
+          console.log('Shipping selections saved successfully');
+        },
+        error: function(xhr, status, error) {
+          console.error('Failed to save shipping selection:', error);
+        }
+      });
+    }
+  }
+
+  // استعادة الاختيارات المحفوظة عند تحميل الصفحة
+  function restoreSavedShippingSelections() {
+    @if(Session::has('shipping_selection'))
+      var savedSelection = @json(Session::get('shipping_selection'));
+      console.log('Restoring saved selections:', savedSelection);
+
+      // تطبيق الاختيارات المحفوظة لكل تاجر
+      $.each(savedSelection, function(vendorId, data) {
+        console.log('Restoring for vendor', vendorId, ':', data);
+
+        // البحث بالقيمة الكاملة (deliveryOptionId#CompanyName#price)
+        var input = $('input[type="radio"][name="shipping[' + vendorId + ']"][value="' + data.value + '"]');
+
+        if (input.length > 0) {
+          console.log('Found input for vendor', vendorId, ', checking it');
+          input.prop('checked', true);
+
+          // تحديث العرض للـ Tryoto (مع الشعار والخدمة)
+          if (data.logo || data.service) {
+            console.log('Restoring Tryoto display for vendor', vendorId);
+
+            // استخدام الدالة العامة إذا كانت متاحة
+            var updateFunc = window['updateTryotoShippingDisplay_' + vendorId];
+            if (typeof updateFunc === 'function') {
+              console.log('Using global update function for vendor', vendorId);
+              updateFunc(input[0]);
+            } else {
+              console.log('Using fallback display for vendor', vendorId);
+              // Fallback: عرض مباشر
+              var shippingText = $('#shipping_text' + vendorId);
+              if (shippingText.length > 0) {
+                var viewPrice = data.viewPrice || input.attr('view') || '';
+                var html = '<div style="display: flex; align-items: center; gap: 10px;">';
+                if (data.logo) {
+                  html += '<img src="' + data.logo + '" alt="' + data.companyName + '" style="max-width: 40px; max-height: 40px; object-fit: contain; border-radius: 4px;">';
+                }
+                html += '<div style="display: flex; flex-direction: column;">';
+                html += '<span style="font-weight: 600; color: #4C3533;">' + data.companyName + '</span>';
+                if (data.service) {
+                  html += '<small style="color: #6c757d;">' + data.service + '</small>';
+                }
+                html += '</div>';
+                if (viewPrice) {
+                  html += '<span style="margin-left: auto; font-weight: 600; color: #EE1243;">+ ' + viewPrice + '</span>';
+                }
+                html += '</div>';
+                shippingText.html(html);
+              }
+            }
+          } else {
+            console.log('Restoring regular shipping for vendor', vendorId);
+            // اختيار عادي من manual أو debts
+            input.trigger('change');
+          }
+        } else {
+          console.warn('Could not find input for vendor', vendorId, 'with value', data.value);
+        }
+      });
+
+      // إعادة حساب الإجمالي بعد استعادة الاختيارات
+      console.log('Recalculating totals after restoration');
+      setTimeout(function() {
+        recalcTotals();
+      }, 500);
+    @else
+      console.log('No saved shipping selections found');
+    @endif
+  }
+
+  // استدعاء دالة الاستعادة بعد تحميل Livewire
+  document.addEventListener('livewire:load', function() {
+    setTimeout(restoreSavedShippingSelections, 2000);
+  });
+
+  // Fallback: استدعاء عادي إذا لم يتم تحميل Livewire
+  $(document).ready(function() {
+    setTimeout(restoreSavedShippingSelections, 2500);
   });
 })();
 </script>

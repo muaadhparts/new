@@ -460,6 +460,17 @@ class CheckoutController extends FrontBaseController
 //         return redirect()->route('front.checkout.step3');
 //     }
 
+    /**
+     * حفظ اختيار الشحن في Session (يُستدعى عبر AJAX)
+     */
+    public function saveShippingSelection(Request $request)
+    {
+        $shippingSelection = $request->input('shipping_selection', []);
+        Session::put('shipping_selection', $shippingSelection);
+
+        return response()->json(['success' => true]);
+    }
+
     public function checkoutStep2Submit(Request $request)
     {
         $step2  = $request->all();

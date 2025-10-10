@@ -25,6 +25,8 @@
                                data-price="{{ round($company['price'] * $curr->value, 2) }}"
                                view="{{ round($company['price'] * $curr->value, 2) }} {{ $company['currency'] }}"
                                data-form="{{ $company['deliveryCompanyName'] }}"
+                               data-logo="{{ $company['logo'] ?? '' }}"
+                               data-service="{{ $company['avgDeliveryTime'] ?? '' }}"
                                id="{{ $inputId }}"
                                name="shipping[{{ $vendor_id ?? $vendorId ?? 0 }}]"
                                value="{{ $value }}"
