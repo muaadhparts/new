@@ -8,6 +8,17 @@
         </div>
         <!-- breadcrumb end -->
 
+        <!-- Warehouse Alert start -->
+        @if(empty(auth()->user()->warehouse_city))
+        <div class="alert alert-warning alert-dismissible fade show" role="alert">
+            <strong>@lang('Warehouse Location Not Set!')</strong>
+            @lang('Please set your warehouse location for accurate shipping calculations.')
+            <a href="{{ route('vendor-warehouse-index') }}" class="alert-link">@lang('Set Location Now')</a>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        @endif
+        <!-- Warehouse Alert end -->
+
         <!-- Info cards area start -->
         <div class="row row-cols-1 row-cols-sm-2 row-cols-xl-3 row-cols-xxl-4 gy-4">
             <div class="col">

@@ -26,10 +26,11 @@ class Shipping extends Model
 
     protected $fillable = [
         'user_id',
+        'provider',
         'title',
         'subtitle',
         'price',
-        // أضف أعمدة أخرى لديك هنا إن وُجدت
+        'free_above',
     ];
 
     /**

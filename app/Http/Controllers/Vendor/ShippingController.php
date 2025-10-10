@@ -29,7 +29,12 @@ class ShippingController extends VendorBaseController
     public function store(Request $request)
     {
         //--- Validation Section
-        $rules = ['title' => 'unique:shippings'];
+        $rules = [
+            'title' => 'unique:shippings',
+            'provider' => 'required|in:manual,tryoto',
+            'price' => 'required|numeric|min:0',
+            'free_above' => 'nullable|numeric|min:0',
+        ];
         $customs = ['title.unique' => __('This title has already been taken.')];
         $request->validate($rules,$customs);
         //--- Validation Section Ends
@@ -39,7 +44,9 @@ class ShippingController extends VendorBaseController
         $data = new Shipping();
         $input = $request->all();
         $input['user_id'] = $this->user->id;
+        $input['provider'] = $input['provider'] ?? 'manual';
         $input['price'] = ($input['price'] / $sign->value);
+        $input['free_above'] = !empty($input['free_above']) ? ($input['free_above'] / $sign->value) : 0;
         $data->fill($input)->save();
         //--- Logic Section Ends
 
@@ -58,18 +65,25 @@ class ShippingController extends VendorBaseController
     public function update(Request $request, $id)
     {
         //--- Validation Section
-        $rules = ['title' => 'unique:shippings,title,'.$id];
+        $rules = [
+            'title' => 'unique:shippings,title,'.$id,
+            'provider' => 'required|in:manual,tryoto',
+            'price' => 'required|numeric|min:0',
+            'free_above' => 'nullable|numeric|min:0',
+        ];
         $customs = ['title.unique' => __('This title has already been taken.')];
         $request->validate($rules,$customs);
         //--- Logic Section
         $sign = $this->curr;
         $data = Shipping::findOrFail($id);
         $input = $request->all();
+        $input['provider'] = $input['provider'] ?? 'manual';
         $input['price'] = ($input['price'] / $sign->value);
+        $input['free_above'] = !empty($input['free_above']) ? ($input['free_above'] / $sign->value) : 0;
         $data->update($input);
         //--- Logic Section Ends
 
-        return back()->with('success',__('Shipping Updated Successfully'));     
+        return back()->with('success',__('Shipping Updated Successfully'));
     }
 
     //*** GET Request Delete

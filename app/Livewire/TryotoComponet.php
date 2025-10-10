@@ -301,11 +301,21 @@ class TryotoComponet extends Component
         // Default to Riyadh if no vendor-specific city is found
         $defaultCity = 'Riyadh';
 
-        // If vendorId is available, try to get vendor's city
+        // If vendorId is available, try to get vendor's warehouse city
         if ($this->vendorId > 0) {
             $vendor = \App\Models\User::find($this->vendorId);
-            if ($vendor && !empty($vendor->city)) {
-                return $vendor->city;
+
+            // أولاً: نحاول الحصول على مدينة المستودع
+            if ($vendor && !empty($vendor->warehouse_city)) {
+                return $vendor->warehouse_city;
+            }
+
+            // ثانياً: إذا لم توجد مدينة المستودع، نحاول الحصول على مدينة المتجر من city_id
+            if ($vendor && !empty($vendor->city_id)) {
+                $city = \App\Models\City::find($vendor->city_id);
+                if ($city && !empty($city->city_name)) {
+                    return $city->city_name;
+                }
             }
         }
 

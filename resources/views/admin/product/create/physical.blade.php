@@ -76,6 +76,45 @@
                                             </div>
                                         </div>
 
+                                        <div class="row">
+                                            <div class="col-lg-12">
+                                                <div class="left-area">
+                                                    <h4 class="heading">{{ __('Product Dimensions') }} </h4>
+                                                    <p class="sub-heading">{{ __('(For accurate shipping calculation)') }}</p>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="row">
+                                            <div class="col-lg-4">
+                                                <label>{{ __('Length (cm)') }}</label>
+                                                <input type="number" step="0.01" class="input-field"
+                                                    placeholder="{{ __('Length') }}" name="length" value="">
+                                            </div>
+                                            <div class="col-lg-4">
+                                                <label>{{ __('Width (cm)') }}</label>
+                                                <input type="number" step="0.01" class="input-field"
+                                                    placeholder="{{ __('Width') }}" name="width" value="">
+                                            </div>
+                                            <div class="col-lg-4">
+                                                <label>{{ __('Height (cm)') }}</label>
+                                                <input type="number" step="0.01" class="input-field"
+                                                    placeholder="{{ __('Height') }}" name="height" value="">
+                                            </div>
+                                        </div>
+
+                                        <div class="row">
+                                            <div class="col-lg-12">
+                                                <div class="left-area">
+                                                    <h4 class="heading">{{ __('Product Weight (kg)') }} </h4>
+                                                    <p class="sub-heading">{{ __('(For shipping calculation)') }}</p>
+                                                </div>
+                                            </div>
+                                            <div class="col-lg-12">
+                                                <input type="number" step="0.01" class="input-field"
+                                                    placeholder="{{ __('Enter Product Weight') }}" name="weight" value="">
+                                            </div>
+                                        </div>
 
                                         <div class="row">
                                             <div class="col-lg-12">

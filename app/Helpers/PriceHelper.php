@@ -337,7 +337,12 @@ class PriceHelper
                             if ($id > 0) {
                                 $ship = Shipping::find($id);
                                 if ($ship) {
-                                    $shipping_cost += (float)$ship->price;
+                                    // تطبيق منطق free_above
+                                    $shippingPrice = (float)$ship->price;
+                                    if ($ship->free_above > 0 && $totalAmount >= $ship->free_above) {
+                                        $shippingPrice = 0.0; // شحن مجاني
+                                    }
+                                    $shipping_cost += $shippingPrice;
                                 }
                             }
                         }
@@ -551,7 +556,14 @@ class PriceHelper
                             $id = (int)$val;
                             if ($id > 0) {
                                 $ship = Shipping::find($id);
-                                if ($ship) $shipping_cost += (float)$ship->price;
+                                if ($ship) {
+                                    $shippingPrice = (float)$ship->price;
+                                    // تطبيق free_above
+                                    if ($ship->free_above > 0 && $totalAmount >= $ship->free_above) {
+                                        $shippingPrice = 0.0;
+                                    }
+                                    $shipping_cost += $shippingPrice;
+                                }
                             }
                         }
                     }

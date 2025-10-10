@@ -18,6 +18,7 @@ class Product extends Model
     protected $fillable = [
         'brand_id', 'sku', 'product_type', 'affiliate_link', 'category_id', 'subcategory_id', 'childcategory_id',
         'label_en', 'label_ar', 'attributes', 'name', 'slug', 'photo', 'thumbnail', 'file', 'weight',
+        'length', 'width', 'height',
         'policy', 'views', 'tags', 'features', 'is_meta', 'meta_tag', 'meta_description',
         'youtube', 'type', 'platform', 'region', 'measure', 'featured', 'best', 'top', 'hot', 'latest', 'big',
         'trending', 'sale', 'is_catalog', 'catalog_id', 'cross_products'

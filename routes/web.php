@@ -1216,6 +1216,14 @@ Route::group(['middleware' => 'maintenance'], function () {
 
             //------------ ADMIN SHIPPING ENDS ------------
 
+            //------------ VENDOR WAREHOUSE SETTINGS ------------
+
+            Route::get('/warehouse', 'Vendor\WarehouseController@index')->name('vendor-warehouse-index');
+            Route::post('/warehouse/update', 'Vendor\WarehouseController@update')->name('vendor-warehouse-update');
+            Route::get('/warehouse/get-cities', 'Vendor\WarehouseController@getCities')->name('vendor-warehouse-get-cities');
+
+            //------------ VENDOR WAREHOUSE ENDS ------------
+
             //------------ ADMIN PACKAGE ------------
 
             Route::get('/package/datatables', 'Vendor\PackageController@datatables')->name('vendor-package-datatables');
