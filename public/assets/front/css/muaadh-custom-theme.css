@@ -1,0 +1,551 @@
+/*
+========================================
+MUAADH EPC - Custom Theme Styling
+========================================
+Version: 1.0.0
+Purpose: تخصيص الشكل العام للموقع بدون تعديل ملفات الثيم الأساسية
+Last Updated: 2025-01-XX
+
+ملاحظات:
+- هذا الملف يعمل فوق التصميم الأساسي (override)
+- يمكن تعديل الألوان والخطوط والمسافات بسهولة
+- لتفعيل التغييرات: امسح الكاش بعد التعديل
+========================================
+*/
+
+/* ========================================
+   1. متغيرات الألوان - MUAADH EPC Brand Colors
+   ======================================== */
+:root {
+    /* الألوان الأساسية - Primary Colors */
+    --muaadh-primary: #1a73e8;        /* أزرق احترافي */
+    --muaadh-primary-dark: #1557b0;   /* أزرق داكن */
+    --muaadh-primary-light: #4285f4;  /* أزرق فاتح */
+
+    /* الألوان الثانوية - Secondary Colors */
+    --muaadh-secondary: #ff9800;      /* برتقالي مميز */
+    --muaadh-secondary-dark: #f57c00; /* برتقالي داكن */
+    --muaadh-secondary-light: #ffb74d;/* برتقالي فاتح */
+
+    /* ألوان الخلفية - Background Colors */
+    --muaadh-bg-white: #ffffff;
+    --muaadh-bg-light: #f8f9fa;
+    --muaadh-bg-gray: #e9ecef;
+    --muaadh-bg-dark: #212529;
+
+    /* ألوان النص - Text Colors */
+    --muaadh-text-primary: #212529;
+    --muaadh-text-secondary: #6c757d;
+    --muaadh-text-light: #adb5bd;
+    --muaadh-text-white: #ffffff;
+
+    /* ألوان الحالات - Status Colors */
+    --muaadh-success: #28a745;
+    --muaadh-warning: #ffc107;
+    --muaadh-danger: #dc3545;
+    --muaadh-info: #17a2b8;
+
+    /* الظلال - Shadows */
+    --muaadh-shadow-sm: 0 2px 4px rgba(0,0,0,0.05);
+    --muaadh-shadow-md: 0 4px 8px rgba(0,0,0,0.1);
+    --muaadh-shadow-lg: 0 8px 16px rgba(0,0,0,0.15);
+    --muaadh-shadow-xl: 0 16px 32px rgba(0,0,0,0.2);
+
+    /* الانتقالات - Transitions */
+    --muaadh-transition: all 0.3s ease;
+    --muaadh-transition-fast: all 0.15s ease;
+    --muaadh-transition-slow: all 0.5s ease;
+
+    /* الحدود - Borders */
+    --muaadh-border-radius: 8px;
+    --muaadh-border-radius-sm: 4px;
+    --muaadh-border-radius-lg: 12px;
+    --muaadh-border-radius-xl: 16px;
+
+    /* المسافات - Spacing */
+    --muaadh-spacing-xs: 0.25rem;
+    --muaadh-spacing-sm: 0.5rem;
+    --muaadh-spacing-md: 1rem;
+    --muaadh-spacing-lg: 1.5rem;
+    --muaadh-spacing-xl: 2rem;
+    --muaadh-spacing-2xl: 3rem;
+}
+
+/* ========================================
+   2. تخصيص الهيدر - Header Customization
+   ======================================== */
+.gs-header,
+header {
+    background: linear-gradient(135deg, var(--muaadh-primary) 0%, var(--muaadh-primary-dark) 100%);
+    box-shadow: var(--muaadh-shadow-md);
+    transition: var(--muaadh-transition);
+}
+
+.gs-header .logo img,
+header .logo img {
+    filter: brightness(0) invert(1); /* جعل اللوجو أبيض */
+    transition: var(--muaadh-transition);
+}
+
+.gs-header .navbar-nav .nav-link,
+header .navbar-nav .nav-link {
+    color: var(--muaadh-text-white) !important;
+    font-weight: 500;
+    padding: 0.75rem 1.25rem;
+    border-radius: var(--muaadh-border-radius-sm);
+    transition: var(--muaadh-transition);
+}
+
+.gs-header .navbar-nav .nav-link:hover,
+header .navbar-nav .nav-link:hover {
+    background: rgba(255, 255, 255, 0.1);
+    transform: translateY(-2px);
+}
+
+.gs-header .navbar-nav .nav-link.active,
+header .navbar-nav .nav-link.active {
+    background: rgba(255, 255, 255, 0.2);
+    font-weight: 600;
+}
+
+/* ========================================
+   3. تخصيص الأزرار - Buttons Customization
+   ======================================== */
+.btn-primary,
+.template-btn,
+.gs-btn-primary {
+    background: linear-gradient(135deg, var(--muaadh-primary) 0%, var(--muaadh-primary-dark) 100%);
+    border: none;
+    color: var(--muaadh-text-white);
+    padding: 0.75rem 2rem;
+    border-radius: var(--muaadh-border-radius);
+    font-weight: 600;
+    transition: var(--muaadh-transition);
+    box-shadow: var(--muaadh-shadow-sm);
+}
+
+.btn-primary:hover,
+.template-btn:hover,
+.gs-btn-primary:hover {
+    background: linear-gradient(135deg, var(--muaadh-primary-dark) 0%, var(--muaadh-primary) 100%);
+    transform: translateY(-3px);
+    box-shadow: var(--muaadh-shadow-lg);
+}
+
+.btn-secondary,
+.gs-btn-secondary {
+    background: linear-gradient(135deg, var(--muaadh-secondary) 0%, var(--muaadh-secondary-dark) 100%);
+    border: none;
+    color: var(--muaadh-text-white);
+    padding: 0.75rem 2rem;
+    border-radius: var(--muaadh-border-radius);
+    font-weight: 600;
+    transition: var(--muaadh-transition);
+}
+
+.btn-secondary:hover,
+.gs-btn-secondary:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--muaadh-shadow-lg);
+}
+
+/* ========================================
+   4. تخصيص البطاقات - Cards Customization
+   ======================================== */
+.product-card,
+.gs-product-card,
+.single-product {
+    border-radius: var(--muaadh-border-radius-lg);
+    overflow: hidden;
+    transition: var(--muaadh-transition);
+    box-shadow: var(--muaadh-shadow-sm);
+    border: 1px solid var(--muaadh-bg-gray);
+}
+
+.product-card:hover,
+.gs-product-card:hover,
+.single-product:hover {
+    transform: translateY(-8px);
+    box-shadow: var(--muaadh-shadow-xl);
+    border-color: var(--muaadh-primary-light);
+}
+
+.product-card img,
+.gs-product-card img,
+.single-product img {
+    transition: var(--muaadh-transition-slow);
+}
+
+.product-card:hover img,
+.gs-product-card:hover img,
+.single-product:hover img {
+    transform: scale(1.05);
+}
+
+/* ========================================
+   5. تخصيص الفوتر - Footer Customization
+   ======================================== */
+.gs-footer-section,
+footer {
+    background: linear-gradient(180deg, #1a1a2e 0%, #0f0f1e 100%);
+    color: var(--muaadh-text-white);
+    padding: 4rem 0 2rem;
+}
+
+.gs-footer-section h3,
+.gs-footer-section h4,
+.gs-footer-section h5,
+footer h3,
+footer h4,
+footer h5 {
+    color: var(--muaadh-text-white);
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+    position: relative;
+    padding-bottom: 0.75rem;
+}
+
+.gs-footer-section h3::after,
+.gs-footer-section h4::after,
+.gs-footer-section h5::after,
+footer h3::after,
+footer h4::after,
+footer h5::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 60px;
+    height: 3px;
+    background: linear-gradient(90deg, var(--muaadh-secondary) 0%, transparent 100%);
+}
+
+.gs-footer-section a,
+footer a {
+    color: rgba(255, 255, 255, 0.8);
+    transition: var(--muaadh-transition);
+    text-decoration: none;
+}
+
+.gs-footer-section a:hover,
+footer a:hover {
+    color: var(--muaadh-secondary);
+    padding-left: 0.5rem;
+}
+
+/* ========================================
+   6. تخصيص النماذج - Forms Customization
+   ======================================== */
+.form-control,
+.gs-input,
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+textarea,
+select {
+    border: 2px solid var(--muaadh-bg-gray);
+    border-radius: var(--muaadh-border-radius);
+    padding: 0.75rem 1.25rem;
+    transition: var(--muaadh-transition);
+    font-size: 1rem;
+}
+
+.form-control:focus,
+.gs-input:focus,
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="password"]:focus,
+input[type="number"]:focus,
+textarea:focus,
+select:focus {
+    border-color: var(--muaadh-primary);
+    box-shadow: 0 0 0 4px rgba(26, 115, 232, 0.1);
+    outline: none;
+}
+
+/* ========================================
+   7. تخصيص البحث - Search Customization
+   ======================================== */
+.search-box,
+.gs-search-box {
+    border-radius: var(--muaadh-border-radius-xl);
+    overflow: hidden;
+    box-shadow: var(--muaadh-shadow-md);
+    background: var(--muaadh-bg-white);
+}
+
+.search-box input,
+.gs-search-box input {
+    border: none;
+    padding: 1rem 1.5rem;
+    font-size: 1.1rem;
+}
+
+.search-box button,
+.gs-search-box button {
+    background: var(--muaadh-primary);
+    color: var(--muaadh-text-white);
+    border: none;
+    padding: 1rem 2rem;
+    font-weight: 600;
+    transition: var(--muaadh-transition);
+}
+
+.search-box button:hover,
+.gs-search-box button:hover {
+    background: var(--muaadh-primary-dark);
+}
+
+/* ========================================
+   8. تخصيص الشارات - Badges Customization
+   ======================================== */
+.badge-primary,
+.gs-badge-primary {
+    background: var(--muaadh-primary);
+    color: var(--muaadh-text-white);
+    padding: 0.5rem 1rem;
+    border-radius: var(--muaadh-border-radius);
+    font-weight: 600;
+    font-size: 0.875rem;
+}
+
+.badge-sale,
+.badge-new,
+.badge-hot {
+    padding: 0.5rem 1rem;
+    border-radius: var(--muaadh-border-radius-sm);
+    font-weight: 700;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.badge-sale {
+    background: var(--muaadh-danger);
+    color: var(--muaadh-text-white);
+}
+
+.badge-new {
+    background: var(--muaadh-success);
+    color: var(--muaadh-text-white);
+}
+
+.badge-hot {
+    background: var(--muaadh-warning);
+    color: var(--muaadh-text-primary);
+}
+
+/* ========================================
+   9. تخصيص السلايدر - Slider Customization
+   ======================================== */
+.gs-hero-section,
+.hero-slider-wrapper {
+    position: relative;
+    overflow: hidden;
+}
+
+.gs-hero-section::before,
+.hero-slider-wrapper::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(26, 115, 232, 0.8) 0%, rgba(21, 87, 176, 0.9) 100%);
+    z-index: 1;
+}
+
+.hero-content {
+    position: relative;
+    z-index: 2;
+}
+
+.hero-content h1 {
+    font-size: 3.5rem;
+    font-weight: 800;
+    line-height: 1.2;
+    text-shadow: var(--muaadh-shadow-md);
+}
+
+.hero-content p {
+    font-size: 1.25rem;
+    line-height: 1.6;
+    opacity: 0.95;
+}
+
+/* ========================================
+   10. تخصيص الأقسام - Sections Customization
+   ======================================== */
+.section-title,
+.gs-title-box h2 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--muaadh-text-primary);
+    margin-bottom: 1rem;
+    position: relative;
+    display: inline-block;
+}
+
+.section-title::after,
+.gs-title-box h2::after {
+    content: '';
+    position: absolute;
+    bottom: -10px;
+    left: 0;
+    width: 60%;
+    height: 4px;
+    background: linear-gradient(90deg, var(--muaadh-primary) 0%, var(--muaadh-secondary) 100%);
+    border-radius: var(--muaadh-border-radius);
+}
+
+.section-subtitle,
+.gs-title-box p {
+    font-size: 1.1rem;
+    color: var(--muaadh-text-secondary);
+    line-height: 1.8;
+}
+
+/* ========================================
+   11. تخصيص التنقل - Navigation Customization
+   ======================================== */
+.pagination {
+    gap: 0.5rem;
+}
+
+.page-link {
+    border: 2px solid var(--muaadh-bg-gray);
+    border-radius: var(--muaadh-border-radius);
+    color: var(--muaadh-text-primary);
+    padding: 0.75rem 1.25rem;
+    font-weight: 600;
+    transition: var(--muaadh-transition);
+}
+
+.page-link:hover {
+    background: var(--muaadh-primary);
+    border-color: var(--muaadh-primary);
+    color: var(--muaadh-text-white);
+    transform: translateY(-2px);
+}
+
+.page-item.active .page-link {
+    background: var(--muaadh-primary);
+    border-color: var(--muaadh-primary);
+}
+
+/* ========================================
+   12. الرسوم المتحركة - Animations
+   ======================================== */
+@keyframes muaadh-fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes muaadh-pulse {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.05);
+    }
+}
+
+.muaadh-fade-in-up {
+    animation: muaadh-fadeInUp 0.6s ease-out;
+}
+
+.muaadh-pulse {
+    animation: muaadh-pulse 2s infinite;
+}
+
+/* ========================================
+   13. التصميم المتجاوب - Responsive Design
+   ======================================== */
+@media (max-width: 991px) {
+    .hero-content h1 {
+        font-size: 2.5rem;
+    }
+
+    .section-title,
+    .gs-title-box h2 {
+        font-size: 2rem;
+    }
+
+    .gs-header .navbar-nav {
+        padding: 1rem 0;
+    }
+
+    .gs-header .navbar-nav .nav-link {
+        padding: 0.75rem 1rem;
+        margin: 0.25rem 0;
+    }
+}
+
+@media (max-width: 767px) {
+    .hero-content h1 {
+        font-size: 2rem;
+    }
+
+    .section-title,
+    .gs-title-box h2 {
+        font-size: 1.75rem;
+    }
+
+    .btn-primary,
+    .template-btn {
+        padding: 0.625rem 1.5rem;
+        font-size: 0.9rem;
+    }
+}
+
+/* ========================================
+   14. إضافات خاصة - Special Additions
+   ======================================== */
+
+/* شريط التحميل */
+.loading-bar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background: linear-gradient(90deg, var(--muaadh-primary) 0%, var(--muaadh-secondary) 100%);
+    z-index: 9999;
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.3s ease;
+}
+
+/* أيقونات وسائل التواصل */
+.social-links a,
+.social-icons a {
+    width: 45px;
+    height: 45px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--muaadh-bg-gray);
+    color: var(--muaadh-text-primary);
+    border-radius: 50%;
+    transition: var(--muaadh-transition);
+    margin: 0 0.25rem;
+}
+
+.social-links a:hover,
+.social-icons a:hover {
+    background: var(--muaadh-primary);
+    color: var(--muaadh-text-white);
+    transform: translateY(-5px) rotate(360deg);
+    box-shadow: var(--muaadh-shadow-lg);
+}
+
+/* نهاية الملف */
+/* © 2025 MUAADH EPC - All Rights Reserved */
