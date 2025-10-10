@@ -8,6 +8,7 @@ use App\Models\Country;
 use App\Models\Order;
 use App\Models\Reward;
 use App\Models\State;
+use App\Traits\CreatesTryotoShipments;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
@@ -15,6 +16,7 @@ use Illuminate\Support\Str;
 
 class CashOnDeliveryController extends CheckoutBaseControlller
 {
+    use CreatesTryotoShipments;
     public function store(Request $request)
     {
         $input = $request->all();
@@ -135,6 +137,10 @@ class CashOnDeliveryController extends CheckoutBaseControlller
         }
 
         $order->fill($input)->save();
+
+        // ⭐ Create Tryoto shipment for COD orders
+        $this->createOtoShipments($order, $input);
+
         $order->tracks()->create(['title' => 'Pending', 'text' => 'You have successfully placed your order.']);
         $order->notifications()->create();
 

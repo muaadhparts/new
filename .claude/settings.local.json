@@ -8,7 +8,10 @@
       "Bash(php:*)",
       "Read(//c/Users/hp/Herd/backmain/**)",
       "Read(//c/Users/hp/Herd/P/resources/views/includes/user/**)",
-      "Read(//c/Users/hp/Herd/P/**)"
+      "Read(//c/Users/hp/Herd/P/**)",
+      "Bash(curl -X POST \"http://new.test/webhooks/tryoto\" -H \"Content-Type: application/json\" -H \"Accept: application/json\" -d '{\"\"trackingNumber\"\":\"\"TRY-TEST-1760087221\"\",\"\"shipmentId\"\":\"\"SHIP-68e8ccb51168f\"\",\"\"status\"\":\"\"picked_up\"\",\"\"location\"\":\"\"Riyadh Warehouse\"\",\"\"message\"\":\"\"Package picked up\"\"}')",
+      "Bash(curl -X POST \"http://new.test/webhooks/tryoto\" -H \"Content-Type: application/json\" -H \"Accept: application/json\" -d '{\"\"trackingNumber\"\":\"\"TRY-TEST-1760087221\"\",\"\"shipmentId\"\":\"\"SHIP-68e8ccb51168f\"\",\"\"status\"\":\"\"in_transit\"\",\"\"location\"\":\"\"Riyadh Distribution Center\"\",\"\"latitude\"\":24.7136,\"\"longitude\"\":46.6753,\"\"message\"\":\"\"Package in transit\"\",\"\"statusDate\"\":\"\"2025-10-10 09:30:00\"\"}')",
+      "Bash(curl -X POST \"http://new.test/webhooks/tryoto\" -H \"Content-Type: application/json\" -d '{\"\"trackingNumber\"\":\"\"TRY-TEST-1760087221\"\",\"\"shipmentId\"\":\"\"SHIP-68e8ccb51168f\"\",\"\"status\"\":\"\"delivered\"\",\"\"location\"\":\"\"AlKharj - Customer Address\"\",\"\"message\"\":\"\"Package delivered successfully\"\",\"\"statusDate\"\":\"\"2025-10-10 10:00:00\"\"}')"
     ],
     "deny": [],
     "ask": []

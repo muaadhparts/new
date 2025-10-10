@@ -27,7 +27,7 @@ class VerifyCsrfToken extends Middleware
         'user/deposit/razorpay-notify',
         'dflutter/notify',
         'user/deposit/ssl-notify',
-        // api 
+        // api
         '/api/flutter/notify',
         '/api/razorpay-callback',
         '/api/paytm-callback',
@@ -35,6 +35,9 @@ class VerifyCsrfToken extends Middleware
         '/user/api/flutter/notify',
         '/user/api/paytm-callback',
         '/user/api/razorpay-callback',
-        '/user/api/ssl/notify'
+        '/user/api/ssl/notify',
+        // TRYOTO WEBHOOK
+        '/webhooks/tryoto',
+        'webhooks/tryoto'
     ];
 }

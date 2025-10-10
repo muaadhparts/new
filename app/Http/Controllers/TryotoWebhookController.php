@@ -109,12 +109,23 @@ class TryotoWebhookController extends Controller
             // إرسال Notification للتاجر عند التغييرات المهمة
             if (in_array($status, ['picked_up', 'delivered', 'failed', 'returned'])) {
                 if ($existingLog->vendor_id) {
-                    $notification = new UserNotification();
-                    $notification->user_id = $existingLog->vendor_id;
-                    $notification->order_number = $existingLog->order->order_number ?? 'N/A';
-                    $notification->order_id = $existingLog->order_id;
-                    $notification->is_read = 0;
-                    $notification->save();
+                    try {
+                        $notification = new UserNotification();
+                        $notification->user_id = $existingLog->vendor_id;
+                        $notification->order_number = $existingLog->order->order_number ?? 'N/A';
+                        // فقط إضافة order_id إذا كان العمود موجوداً
+                        if (\Schema::hasColumn('user_notifications', 'order_id')) {
+                            $notification->order_id = $existingLog->order_id;
+                        }
+                        $notification->is_read = 0;
+                        $notification->save();
+                    } catch (\Exception $notifError) {
+                        // تجاهل أخطاء الـ notification - ليست حرجة
+                        Log::warning('Tryoto Webhook: Notification failed', [
+                            'error' => $notifError->getMessage(),
+                            'vendor_id' => $existingLog->vendor_id,
+                        ]);
+                    }
                 }
             }
 
