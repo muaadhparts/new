@@ -345,6 +345,7 @@
                                                 <div class="gs-radio-wrapper">
                                                     <input type="radio" class="shipping"
                                                         data-price="{{ round($data->price * $curr->value, 2) }}"
+                                                        data-free-above="{{ round(($data->free_above ?? 0) * $curr->value, 2) }}"
                                                         data-form="{{ $data->title }}"
                                                         id="free-shepping{{ $data->id }}"
                                                         name="shipping_id"
@@ -357,11 +358,16 @@
                                                         </svg>
                                                     </label>
                                                     <label for="free-shepping{{ $data->id }}">
-                                                        {{ $data->title }}
+                                                        <span>{{ $data->title }}</span>
                                                         @if ($data->price != 0)
-                                                            + {{ $curr->sign }}{{ round($data->price * $curr->value, 2) }}
+                                                            <span> + {{ $curr->sign }}{{ round($data->price * $curr->value, 2) }}</span>
                                                         @endif
-                                                        <small>{{ $data->subtitle }}</small>
+                                                        <small class="d-block">{{ $data->subtitle }}</small>
+                                                        @if(($data->free_above ?? 0) > 0)
+                                                            <small class="text-success d-block">
+                                                                @lang('Free shipping if order above') {{ $curr->sign }}{{ round($data->free_above * $curr->value, 2) }}
+                                                            </small>
+                                                        @endif
                                                     </label>
                                                 </div>
                                             @endforeach
@@ -413,8 +419,8 @@
                                     </div>
 
                                     <div class="price-details tax_show">
-                                        <span>@lang('Tax')</span>
-                                        <span class="right-side original_tax">{{ Session::get('is_tax', 0) }}%</span>
+                                        <span>@lang('Tax') (<span class="tax-percentage">{{ Session::get('is_tax', 0) }}</span>%)</span>
+                                        <span class="right-side tax-amount">{{ App\Models\Product::convertPrice(0) }}</span>
                                     </div>
 
                                     @if (Session::has('coupon'))
@@ -606,26 +612,43 @@
     recalcTotals();
   }
 
-  // إعادة حساب الإجمالي
+  // إعادة حساب الإجمالي مع تطبيق free_above
   function recalcTotals() {
     mship = 0; mpack = 0;
+    var freeShippingApplied = false;
+    var freeShippingDiscount = 0;
+
+    // حساب سعر السلة قبل الضريبة والشحن (base amount)
+    var subtotal = toNum($('.cart-total').text());
+    var discountAmt = toNum($('#discount').text());
+    var baseAmount = Math.max(0, subtotal - discountAmt);
 
     document.querySelectorAll('input.shipping:checked').forEach(function(el){
-      mship += parseFloat(el.getAttribute('data-price')) || 0;
+      var originalPrice = parseFloat(el.getAttribute('data-price')) || 0;
+      var freeAbove = parseFloat(el.getAttribute('data-free-above')) || 0;
+
+      // تطبيق منطق free_above
+      if (freeAbove > 0 && baseAmount >= freeAbove) {
+        freeShippingApplied = true;
+        freeShippingDiscount += originalPrice;
+        // الشحن يصبح مجاني - لا نضيف السعر
+      } else {
+        mship += originalPrice;
+      }
     });
+
     document.querySelectorAll('input.packing:checked').forEach(function(el){
       mpack += parseFloat(el.getAttribute('data-price')) || 0;
     });
 
-    // تحديث الملخص (يمين الصفحة)
-    var subtotal = toNum($('.cart-total').text());
-    var discountAmt = toNum($('#discount').text());
-    var base = Math.max(0, subtotal - discountAmt);
+    // حساب الضريبة على (المبلغ الأساسي + الشحن + التغليف)
     var taxPct = parseFloat($('#original_tax').val()) || 0;
-    var taxAmt = base * taxPct / 100;
+    var taxableBase = baseAmount + mship + mpack;
+    var taxAmt = taxableBase * taxPct / 100;
 
-    var tttotal = base + taxAmt + mship + mpack;
+    var tttotal = baseAmount + taxAmt + mship + mpack;
 
+    // عرض الإجمالي النهائي
     if (pos == 0) {
       $('#final-cost').html('{{ $curr->sign }}' + tttotal.toFixed(2));
     } else {
@@ -633,8 +656,30 @@
     }
     $('#grandtotal').val(tttotal.toFixed(2));
 
-    $('.shipping_cost_view').html('{{ $curr->sign }}' + mship.toFixed(2));
-    $('.packing_cost_view').html('{{ $curr->sign }}' + mpack.toFixed(2));
+    // عرض قيمة الشحن مع رسالة الشحن المجاني
+    var shippingDisplay = '';
+    if (freeShippingApplied) {
+      if (pos == 0) {
+        shippingDisplay = '<span style="text-decoration: line-through; color: #999;">{{ $curr->sign }}' + freeShippingDiscount.toFixed(2) + '</span> ';
+        shippingDisplay += '<span style="color: #28a745; font-weight: 600;">{{ $curr->sign }}0.00</span> ';
+        shippingDisplay += '<small style="color: #28a745; display: block;">@lang("Free Shipping Applied")</small>';
+      } else {
+        shippingDisplay = '<span style="text-decoration: line-through; color: #999;">' + freeShippingDiscount.toFixed(2) + '{{ $curr->sign }}</span> ';
+        shippingDisplay += '<span style="color: #28a745; font-weight: 600;">0.00{{ $curr->sign }}</span> ';
+        shippingDisplay += '<small style="color: #28a745; display: block;">@lang("Free Shipping Applied")</small>';
+      }
+    } else {
+      shippingDisplay = (pos == 0 ? '{{ $curr->sign }}' : '') + mship.toFixed(2) + (pos == 1 ? '{{ $curr->sign }}' : '');
+    }
+    $('.shipping_cost_view').html(shippingDisplay);
+
+    var packDisplay = (pos == 0 ? '{{ $curr->sign }}' : '') + mpack.toFixed(2) + (pos == 1 ? '{{ $curr->sign }}' : '');
+    $('.packing_cost_view').html(packDisplay);
+
+    // عرض الضريبة بالتنسيق الموحد: Tax (15%) ثم المبلغ
+    $('.tax-percentage').text(taxPct);
+    var taxAmtWithSign = (pos == 0) ? '{{ $curr->sign }}' + taxAmt.toFixed(2) : taxAmt.toFixed(2) + '{{ $curr->sign }}';
+    $('.tax-amount').html(taxAmtWithSign);
   }
 
   // (single shipping) من يمين الصفحة
@@ -692,19 +737,15 @@
         $('#grandtotal').val(data[0]);
         $('#tgrandtotal').val(data[0]);
         $('#original_tax').val(data[1]);
-        $('.tax_show').removeClass('d-none'); // Always show tax field for UX consistency
+        $('.tax_show').removeClass('d-none');
         $('#input_tax').val(data[11]);
         $('#input_tax_type').val(data[12]);
 
+        // حفظ نسبة الضريبة لاستخدامها في recalcTotals
         var taxPct = parseFloat(data[1]) || 0;
-        var subtotal = toNum($('.cart-total').text());
-        var discountAmt = toNum($('#discount').text());
-        var taxableBase = Math.max(0, subtotal - discountAmt);
-        var taxAmt = (taxableBase * taxPct / 100);
-        var taxAmtFixed = taxAmt.toFixed(2);
-        var taxAmtWithSign = (pos == 0) ? '{{ $curr->sign }}' + taxAmtFixed : taxAmtFixed + '{{ $curr->sign }}';
-        $('.original_tax').html(taxPct + "% (" + taxAmtWithSign + ")");
+        $('#original_tax').val(taxPct);
 
+        // سيتم حساب الضريبة الصحيحة في recalcTotals على (baseAmount + ship + pack)
         recalcTotals();
         $('.gocover').hide();
 
@@ -722,6 +763,10 @@
     let is_state = $('#is_state').val();
     let state_url = $('#state_url').val();
 
+    // استدعاء recalcTotals فوراً لعرض الشحن والتغليف والضريبة المبدئية
+    recalcTotals();
+
+    // ثم استدعاء tax_submit للحصول على نسبة الضريبة من السيرفر
     if (is_state == 1) {
       $('.select_state').removeClass('d-none');
       $.get(state_url, function(response) {

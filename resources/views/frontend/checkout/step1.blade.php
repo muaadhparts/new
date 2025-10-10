@@ -279,9 +279,9 @@
                                         </span>
                                     </div>
 
-                                    <div class="price-details tax_show d-none">
-                                        <span>@lang('Tax')</span>
-                                        <span class="right-side original_tax">0%</span>
+                                    <div class="price-details tax_show">
+                                        <span>@lang('Tax') (<span class="tax-percentage">0</span>%)</span>
+                                        <span class="right-side tax-amount">{{ App\Models\Product::convertPrice(0) }}</span>
                                     </div>
 
                                     @if (Session::has('coupon'))
@@ -533,44 +533,46 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 
-    // استدعاء حساب الضريبة من السيرفر فقط
+    // استدعاء حساب الضريبة من السيرفر
     function tax_submit(country_id, state_id) {
         if (!country_id) return;
 
         $('.gocover').show();
         var total = $("#ttotal").val();
-        var ship  = 0;
+        var ship  = 0;  // في step1 لا يوجد شحن بعد
 
         $.ajax({
             type: "GET",
             url: mainurl + "/country/tax/check",
             data: { state_id: state_id, country_id: country_id, total: total, shipping_cost: ship },
             success: function(data) {
-                $('#grandtotal').val(data[0]);
-                $('#tgrandtotal').val(data[0]);
-                $('#original_tax').val(data[1]);
-
+                var taxPct = parseFloat(data[1]) || 0;
+                $('#original_tax').val(taxPct);
                 $('.tax_show').removeClass('d-none');
                 $('#input_tax').val(data[11]);
                 $('#input_tax_type').val(data[12]);
-                $('.original_tax').html(parseFloat(data[1]) + "%");
 
-                var ttotal  = parseFloat($('#grandtotal').val());
-                var tttotal = parseFloat($('#grandtotal').val()) + (parseFloat(mship) + parseFloat(mpack));
-                ttotal  = parseFloat(ttotal).toFixed(2);
-                tttotal = parseFloat(tttotal).toFixed(2);
+                // حساب مبلغ الضريبة بناءً على النسبة والقاعدة الضريبية
+                var subtotal = parseFloat($("#ttotal").val()) || 0;
+                var discountAmt = parseFloat($('#discount').text().replace(/[^0-9.-]/g, '')) || 0;
+                var taxableBase = Math.max(0, subtotal - discountAmt);
+                var taxAmt = (taxableBase * taxPct / 100);
 
-                var finalTotal = parseFloat(data[0]) + parseFloat(mship) + parseFloat(mpack);
+                // عرض الضريبة بالتنسيق الموحد: Tax (15%) ثم المبلغ
+                $('.tax-percentage').text(taxPct);
+                var taxAmtWithSign = (pos == 0) ? '{{ $curr->sign }}' + taxAmt.toFixed(2) : taxAmt.toFixed(2) + '{{ $curr->sign }}';
+                $('.tax-amount').html(taxAmtWithSign);
+
+                // حساب الإجمالي النهائي
+                var finalTotal = taxableBase + taxAmt + parseFloat(mship) + parseFloat(mpack);
                 $('#grandtotal').val(finalTotal.toFixed(2));
+                $('#tgrandtotal').val(finalTotal.toFixed(2));
 
                 if (pos == 0) {
-                    $('#final-cost').html('{{ $curr->sign }}' + tttotal);
-                    $('.total-cost-dum #total-cost').html('{{ $curr->sign }}' + ttotal);
+                    $('#final-cost').html('{{ $curr->sign }}' + finalTotal.toFixed(2));
                     $('.total-amount').html('{{ $curr->sign }}' + finalTotal.toFixed(2));
                 } else {
-                    $('#total-cost').html('');
-                    $('#final-cost').html(tttotal + '{{ $curr->sign }}');
-                    $('.total-cost-dum #total-cost').html(ttotal + '{{ $curr->sign }}');
+                    $('#final-cost').html(finalTotal.toFixed(2) + '{{ $curr->sign }}');
                     $('.total-amount').html(finalTotal.toFixed(2) + '{{ $curr->sign }}');
                 }
                 $('.gocover').hide();

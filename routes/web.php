@@ -2024,6 +2024,45 @@ Route::group(['prefix' => 'tryoto'], function () {
     Route::get('set-webhook', [TryOtoController::class, 'setWebhook'])->name('tryoto.set-webhook');
     Route::post('webhook/callback', [TryOtoController::class, 'listenWebhook'])->name('tryoto.callback');
 
+    // Debug route for testing Tryoto API
+    Route::get('test-api', function () {
+        $refreshToken = config('services.tryoto.sandbox')
+            ? config('services.tryoto.test.token')
+            : config('services.tryoto.live.token');
+
+        $url = config('services.tryoto.sandbox')
+            ? config('services.tryoto.test.url')
+            : config('services.tryoto.live.url');
+
+        $output = ['step1_authorize' => []];
+
+        // Step 1: Get access token
+        $response = Http::post($url . '/rest/v2/refreshToken', ['refresh_token' => $refreshToken]);
+        $output['step1_authorize']['status'] = $response->status();
+        $output['step1_authorize']['body'] = $response->json();
+
+        if (!$response->successful()) {
+            return response()->json($output, 500);
+        }
+
+        $token = $response->json()['access_token'];
+
+        // Step 2: Test checkOTODeliveryFee
+        $output['step2_check_fee'] = [];
+        $feeResponse = Http::withToken($token)->post($url . '/rest/v2/checkOTODeliveryFee', [
+            'originCity' => 'Riyadh',
+            'destinationCity' => 'Riyadh',
+            'weight' => 100,
+            'xlength' => 30,
+            'xheight' => 30,
+            'xwidth' => 30
+        ]);
+
+        $output['step2_check_fee']['status'] = $feeResponse->status();
+        $output['step2_check_fee']['body'] = $feeResponse->json();
+
+        return response()->json($output);
+    })->name('tryoto.test-api');
 });
 
 

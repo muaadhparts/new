@@ -466,6 +466,12 @@ class CheckoutController extends FrontBaseController
         $oldCart = Session::get('cart');
         $input  = Session::get('step1') + $step2;
 
+        // حساب المبلغ الأساسي (قبل الضريبة والشحن) لتطبيق free_above
+        $cart = new Cart($oldCart);
+        $baseAmount = $cart->totalPrice;
+        $coupon = Session::has('coupon') ? Session::get('coupon') : 0;
+        $baseAmount = $baseAmount - $coupon;
+
         // إجمالي تكلفة الشحن + أسماء الشركات (قد يكون متعدد البائعين)
         $shipping_cost_total = 0.0;
         $shipping_names = [];
@@ -480,18 +486,26 @@ class CheckoutController extends FrontBaseController
                     $company = $parts[1] ?? '';
                     $price   = (float)($parts[2] ?? 0);
 
+                    // Tryoto لا يدعم free_above حالياً - يتم إضافة السعر مباشرة
                     $shipping_cost_total += $price;
                     if ($company !== '') {
                         $shipping_names[] = $company;
                     }
                 } else {
-                    // تنسيق ID عادي من جدول shippings
+                    // تنسيق ID عادي من جدول shippings - تطبيق منطق free_above
                     $id = (int)$val;
                     if ($id > 0) {
                         $ship = \App\Models\Shipping::find($id);
                         if ($ship) {
-                            $shipping_cost_total += (float)$ship->price;
-                            $shipping_names[] = $ship->title;
+                            // تطبيق منطق free_above
+                            $freeAbove = (float)($ship->free_above ?? 0);
+                            if ($freeAbove > 0 && $baseAmount >= $freeAbove) {
+                                // الشحن مجاني - لا نضيف السعر
+                                $shipping_names[] = $ship->title . ' (Free Shipping)';
+                            } else {
+                                $shipping_cost_total += (float)$ship->price;
+                                $shipping_names[] = $ship->title;
+                            }
                         }
                     }
                 }
@@ -503,8 +517,15 @@ class CheckoutController extends FrontBaseController
             if ($id > 0) {
                 $ship = \App\Models\Shipping::find($id);
                 if ($ship) {
-                    $shipping_cost_total += (float)$ship->price;
-                    $shipping_names[] = $ship->title;
+                    // تطبيق منطق free_above
+                    $freeAbove = (float)($ship->free_above ?? 0);
+                    if ($freeAbove > 0 && $baseAmount >= $freeAbove) {
+                        // الشحن مجاني - لا نضيف السعر
+                        $shipping_names[] = $ship->title . ' (Free Shipping)';
+                    } else {
+                        $shipping_cost_total += (float)$ship->price;
+                        $shipping_names[] = $ship->title;
+                    }
                 }
             }
         }
