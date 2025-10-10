@@ -56,35 +56,46 @@ class MyFatoorahController extends CheckoutBaseControlller {
      * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Foundation\Application|\Illuminate\Http\RedirectResponse|Response|\Illuminate\Routing\Redirector
      */
     public function index() {
-//        dd($this->mfConfig);
         $cancel_url = route('front.checkout.step2');
+
         try {
-            //For example: pmid=0 for MyFatoorah invoice or pmid=1 for Knet in test mode
+            // حفظ بيانات الطلب في Session قبل التوجيه لـ MyFatoorah
+            $input = array_merge(
+                Session::get('step1', []),
+                Session::get('step2', []),
+                request()->all()
+            );
+            Session::put('input_data', $input);
+
+            // For example: pmid=0 for MyFatoorah invoice or pmid=1 for Knet in test mode
             $paymentId = request('pmid') ?: 0;
             $sessionId = request('sid') ?: null;
+            $orderId = request('oid') ?: null;
 
-//              $$orderId =  Order::max(id);
-//            dd($this->mfConfig ,request()->all());
-            $orderId  = request('oid') ?: 147;
-            $orderId  = request('oid') ?: null;
-            $curlData = $this->getPayLoadData();
-//            dd($curlData );
-            $mfObj   = new MyFatoorahPayment($this->mfConfig);
-//            dd($mfObj ,$curlData);
+            $curlData = $this->getPayLoadData($orderId);
+            $mfObj = new MyFatoorahPayment($this->mfConfig);
             $payment = $mfObj->getInvoiceURL($curlData, $paymentId, $orderId, $sessionId);
 
-//            dd($payment);
+            Log::info('MyFatoorah Invoice Created', [
+                'invoice_url' => $payment['invoiceURL'],
+                'payment_id' => $paymentId,
+                'user_id' => Auth::id()
+            ]);
+
             return redirect($payment['invoiceURL']);
         } catch (Exception $ex) {
+            Log::error('MyFatoorah Invoice Creation Failed', [
+                'error' => $ex->getMessage(),
+                'user_id' => Auth::id()
+            ]);
+
             $exMessage = __('myfatoorah.' . $ex->getMessage());
             return redirect($cancel_url)->with('unsuccess', __($exMessage));
-//            return response()->json(['IsSuccess' => 'false', 'Message' => $exMessage]);
         }
     }
 
     public function notify(Request $request)
     {
-//        dd($request->all());
         $success_url = route('front.payment.return');
         $cancel_url = route('front.checkout.step2');
 
@@ -92,35 +103,51 @@ class MyFatoorahController extends CheckoutBaseControlller {
         $step1 = Session::get('step1');
         $step2 = Session::get('step2');
 
-        // dd($input ,$step1,$step2);
         $input = array_merge($step1, $step2);
-//        $response =    $this->callback();
 
         try {
             $paymentId = request('paymentId');
 
-            $mfObj = new MyFatoorahPaymentStatus($this->mfConfig);
-            $data  = $mfObj->getPaymentStatus($paymentId, 'PaymentId');
-            $message = $this->getTestMessage($data->InvoiceStatus, $data->InvoiceError);
-            if($data->InvoiceStatus !== 'Paid'){
-//                $response = ['IsSuccess' => true, 'Message' => $message, 'Data' => $data];
-//                dd($cancel_url ,$data->InvoiceStatus ,'ss');
-                return redirect($cancel_url)->with('unsuccess', __($message));
-//                return  $response  = ['IsSuccess' => 'false', 'Message' => $exMessage];
-
+            if (!$paymentId) {
+                Log::warning('MyFatoorah Callback: Missing PaymentId');
+                return redirect($cancel_url)->with('unsuccess', __('معرف الدفع مفقود'));
             }
-//
-         } catch (Exception $ex) {
+
+            $mfObj = new MyFatoorahPaymentStatus($this->mfConfig);
+            $data = $mfObj->getPaymentStatus($paymentId, 'PaymentId');
+
+            Log::info('MyFatoorah Payment Status', [
+                'payment_id' => $paymentId,
+                'status' => $data->InvoiceStatus,
+                'invoice_id' => $data->InvoiceId ?? null,
+                'user_id' => Auth::id()
+            ]);
+
+            // التحقق من حالة الدفع
+            if ($data->InvoiceStatus !== 'Paid') {
+                $message = $this->getPaymentErrorMessage($data->InvoiceStatus, $data->InvoiceError);
+
+                Log::warning('MyFatoorah Payment Not Completed', [
+                    'payment_id' => $paymentId,
+                    'status' => $data->InvoiceStatus,
+                    'error' => $data->InvoiceError ?? 'N/A'
+                ]);
+
+                return redirect($cancel_url)->with('unsuccess', __($message));
+            }
+
+        } catch (Exception $ex) {
+            Log::error('MyFatoorah Callback Failed', [
+                'error' => $ex->getMessage(),
+                'payment_id' => request('paymentId'),
+                'user_id' => Auth::id()
+            ]);
+
             $exMessage = __('myfatoorah.' . $ex->getMessage());
             return redirect($cancel_url)->with('unsuccess', __($exMessage));
-//            $response  = ['IsSuccess' => 'false', 'Message' => $exMessage];
         }
 
-//        dd($message , $data ,$data->InvoiceId  );
-//        return response()->json($response);
-
-
-
+        // ✅ الدفع نجح - إنشاء الطلب
         $oldCart = Session::get('cart');
         $cart = new Cart($oldCart);
         // OrderHelper::license_check($cart); // For License Checking
@@ -199,15 +226,15 @@ class MyFatoorahController extends CheckoutBaseControlller {
         $input['order_number'] = Str::random(4) . time();
         $input['wallet_price'] = $input['wallet_price'] / $this->curr->value;
         $input['payment_status'] = "Completed";
+        $input['method'] = "MyFatoorah";  // ✅ إضافة Payment Method Name
+        $input['txnid'] = $data->InvoiceId;  // ✅ رقم المعاملة من MyFatoorah
+
         if ($input['tax_type'] == 'state_tax') {
             $input['tax_location'] = State::findOrFail($input['tax'])->state;
         } else {
             $input['tax_location'] = Country::findOrFail($input['tax'])->country_name;
         }
         $input['tax'] = Session::get('current_tax');
-
-//        $input['txnid'] = $response->getData()['transactions'][0]['related_resources'][0]['sale']['id'];
-        $input['txnid'] = $data->InvoiceId;
 
         if ($input['dp'] == 1) {
             $input['status'] = 'completed';
@@ -507,6 +534,33 @@ class MyFatoorahController extends CheckoutBaseControlller {
         }
     }
 
+    /**
+     * Get user-friendly payment error message based on status
+     *
+     * @param string $status
+     * @param string $error
+     * @return string
+     */
+    private function getPaymentErrorMessage($status, $error) {
+        switch ($status) {
+            case 'Failed':
+                return 'فشل الدفع: ' . ($error ?: 'حدث خطأ أثناء معالجة الدفع');
+
+            case 'Expired':
+                return 'انتهت صلاحية رابط الدفع. الرجاء المحاولة مرة أخرى.';
+
+            case 'Pending':
+                return 'الدفع قيد المعالجة. الرجاء الانتظار أو المحاولة مرة أخرى.';
+
+            case 'Canceled':
+            case 'Cancelled':
+                return 'تم إلغاء عملية الدفع.';
+
+            default:
+                return 'حالة الدفع غير معروفة: ' . $status;
+        }
+    }
+
 //-----------------------------------------------------------------------------------------------------------------------------------------
 
     /**
@@ -545,10 +599,6 @@ class MyFatoorahController extends CheckoutBaseControlller {
 
         // Shipment destination: Preferably shipping fields, then customer, then default
         $destinationCity = $order->shipping_city ?: $order->customer_city ?: 'Riyadh';
-
-        // Shipment origin: from generalsettings->shop_city or default
-        $gs = \DB::table('generalsettings')->first();
-        $originCity = $gs->shop_city ?? 'Riyadh';
 
         // Preparing cart items for dimension/weight calculations
         $cartRaw = $order->cart;
@@ -592,6 +642,16 @@ class MyFatoorahController extends CheckoutBaseControlller {
             [$deliveryOptionId, $company, $price] = explode('#', $value);
             $codAmount = ($order->method === 'cod' || $order->payment_status === 'Cash On Delivery') ? (float)$order->pay_amount : 0.0;
 
+            // ⭐ الحصول على warehouse address من التاجر
+            $vendor = \App\Models\User::find($vendorId);
+            $originCity = $vendor && $vendor->warehouse_city
+                ? $vendor->warehouse_city
+                : ($vendor && $vendor->shop_city ? $vendor->shop_city : 'Riyadh');
+
+            $originAddress = $vendor && $vendor->warehouse_address
+                ? $vendor->warehouse_address
+                : ($vendor && $vendor->shop_address ? $vendor->shop_address : '');
+
             $payload = [
                 'deliveryOptionId' => $deliveryOptionId,
                 'originCity' => $originCity,
@@ -610,16 +670,63 @@ class MyFatoorahController extends CheckoutBaseControlller {
 
             if ($res->successful()) {
                 $data = $res->json();
+                $shipmentId = $data['shipmentId'] ?? null;
+                $trackingNumber = $data['trackingNumber'] ?? null;
+
                 $otoPayloads[] = [
                     'vendor_id' => (string)$vendorId,
                     'company' => $company,
                     'price' => (float)$price,
                     'deliveryOptionId'=> $deliveryOptionId,
-                    'shipmentId' => $data['shipmentId'] ?? null,
-                    'trackingNumber' => $data['trackingNumber'] ?? null,
+                    'shipmentId' => $shipmentId,
+                    'trackingNumber' => $trackingNumber,
                 ];
+
+                // ⭐ حفظ Initial Log في shipment_status_logs
+                if ($trackingNumber) {
+                    \DB::table('shipment_status_logs')->insert([
+                        'order_id' => $order->id,
+                        'vendor_id' => $vendorId,
+                        'tracking_number' => $trackingNumber,
+                        'shipment_id' => $shipmentId,
+                        'company_name' => $company,
+                        'status' => 'created',
+                        'status_ar' => 'تم إنشاء الشحنة',
+                        'message' => 'Shipment created successfully',
+                        'message_ar' => 'تم إنشاء الشحنة بنجاح. في انتظار استلام السائق من المستودع.',
+                        'location' => $originCity,
+                        'status_date' => now(),
+                        'raw_data' => json_encode($data),
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ]);
+
+                    // ⭐ إرسال Notification للتاجر
+                    if ($vendor) {
+                        $notification = new \App\Models\UserNotification();
+                        $notification->user_id = $vendorId;
+                        $notification->order_number = $order->order_number;
+                        $notification->order_id = $order->id;
+                        $notification->is_read = 0;
+                        $notification->save();
+
+                        // يمكن إضافة Email notification هنا لاحقاً
+                    }
+                }
+
+                Log::info('Tryoto Shipment Created', [
+                    'order_id' => $order->id,
+                    'vendor_id' => $vendorId,
+                    'tracking_number' => $trackingNumber,
+                    'company' => $company,
+                ]);
             } else {
-                Log::error('Tryoto createShipment failed', ['payload' => $payload, 'body' => $res->body()]);
+                Log::error('Tryoto createShipment failed', [
+                    'order_id' => $order->id,
+                    'vendor_id' => $vendorId,
+                    'payload' => $payload,
+                    'body' => $res->body()
+                ]);
             }
         }
 

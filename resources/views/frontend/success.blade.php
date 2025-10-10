@@ -54,6 +54,45 @@
                 <div class=" success-invoice-body wow-replaced" data-wow-delay=".1s">
                     <h4>@lang('Order#') {{ $order->order_number }}</h4>
                     <p>@lang('Order Date') {{ date('d-M-Y', strtotime($order->created_at)) }}</p>
+
+                    @php
+                        // استخراج tracking numbers من vendor_shipping_id
+                        $trackingInfo = [];
+                        if ($order->vendor_shipping_id) {
+                            $shippingData = is_string($order->vendor_shipping_id)
+                                ? json_decode($order->vendor_shipping_id, true)
+                                : $order->vendor_shipping_id;
+
+                            if (isset($shippingData['oto']) && is_array($shippingData['oto'])) {
+                                $trackingInfo = $shippingData['oto'];
+                            }
+                        }
+                    @endphp
+
+                    @if(!empty($trackingInfo))
+                        <div class="tracking-info mt-3">
+                            <h5>@lang('Tracking Information')</h5>
+                            @foreach($trackingInfo as $info)
+                                @if(!empty($info['trackingNumber']))
+                                    <div class="tracking-item" style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 10px;">
+                                        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
+                                            <div>
+                                                <strong style="color: #EE1243;">{{ $info['company'] ?? 'Shipping Company' }}</strong>
+                                                <p style="margin: 5px 0; font-size: 14px;">
+                                                    @lang('Tracking#'): <span style="font-weight: 600;">{{ $info['trackingNumber'] }}</span>
+                                                </p>
+                                            </div>
+                                            <a href="{{ route('front.track.search', $info['trackingNumber']) }}"
+                                               class="template-btn"
+                                               style="margin-top: 10px;">
+                                                @lang('Track Shipment')
+                                            </a>
+                                        </div>
+                                    </div>
+                                @endif
+                            @endforeach
+                        </div>
+                    @endif
                 </div>
                 <div class="row order-details-area wow-replaced" data-wow-delay=".1s">
 

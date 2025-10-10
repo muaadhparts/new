@@ -711,9 +711,30 @@ class FrontendController extends FrontBaseController
 
     public function trackload($id)
     {
+        // يمكن أن يكون $id هو order_number أو tracking_number
         $order = Order::where('order_number', '=', $id)->first();
+
+        // إذا لم نجد Order، نبحث في tracking numbers
+        $shipmentLogs = [];
+        if (!$order) {
+            $shipmentLogs = \App\Models\ShipmentStatusLog::where('tracking_number', $id)
+                           ->orderBy('status_date', 'desc')
+                           ->orderBy('created_at', 'desc')
+                           ->get();
+
+            if ($shipmentLogs->isNotEmpty()) {
+                $order = Order::find($shipmentLogs->first()->order_id);
+            }
+        } else {
+            // إذا وجدنا Order، نجلب جميع shipment logs له
+            $shipmentLogs = \App\Models\ShipmentStatusLog::where('order_id', $order->id)
+                           ->orderBy('status_date', 'desc')
+                           ->orderBy('created_at', 'desc')
+                           ->get();
+        }
+
         $datas = array('Pending', 'Processing', 'On Delivery', 'Completed');
-        return view('load.track-load', compact('order', 'datas'));
+        return view('load.track-load', compact('order', 'datas', 'shipmentLogs'));
     }
 
     // -------------------------------- ORDER TRACK SECTION ENDS ----------------------------------------

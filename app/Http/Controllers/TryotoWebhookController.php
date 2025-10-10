@@ -1,0 +1,251 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\Order;
+use App\Models\ShipmentStatusLog;
+use App\Models\UserNotification;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+
+class TryotoWebhookController extends Controller
+{
+    /**
+     * Webhook Secret Key - يجب أن يكون نفسه في Tryoto Dashboard
+     */
+    private const WEBHOOK_SECRET = 'tryoto_webhook_secret_key_2025';
+
+    /**
+     * Handle Tryoto webhook notifications
+     *
+     * Tryoto will POST to this endpoint when shipment status changes
+     */
+    public function handle(Request $request)
+    {
+        try {
+            // ✅ Security Layer 1: IP Whitelist (اختياري - حدد IPs Tryoto)
+            if (!$this->verifyTrustedSource($request)) {
+                Log::warning('Tryoto Webhook: Untrusted IP', ['ip' => $request->ip()]);
+                return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
+            }
+
+            // ✅ Security Layer 2: Signature Verification
+            if (!$this->verifySignature($request)) {
+                Log::warning('Tryoto Webhook: Invalid signature', ['ip' => $request->ip()]);
+                return response()->json(['success' => false, 'message' => 'Invalid signature'], 403);
+            }
+
+            // ✅ Security Layer 3: Rate Limiting (منع spam)
+            if (!$this->checkRateLimit($request)) {
+                Log::warning('Tryoto Webhook: Rate limit exceeded', ['ip' => $request->ip()]);
+                return response()->json(['success' => false, 'message' => 'Too many requests'], 429);
+            }
+
+            // Log incoming webhook
+            Log::info('Tryoto Webhook Received', ['payload' => $request->all()]);
+
+            // استخراج البيانات من Webhook
+            $trackingNumber = $request->input('trackingNumber');
+            $shipmentId = $request->input('shipmentId');
+            $status = $request->input('status'); // picked_up, in_transit, delivered, etc
+            $location = $request->input('location');
+            $latitude = $request->input('latitude');
+            $longitude = $request->input('longitude');
+            $message = $request->input('message');
+            $statusDate = $request->input('statusDate') ?: now();
+
+            if (!$trackingNumber) {
+                Log::warning('Tryoto Webhook: Missing tracking number');
+                return response()->json(['success' => false, 'message' => 'Tracking number required'], 400);
+            }
+
+            // البحث عن الشحنة في النظام
+            $existingLog = ShipmentStatusLog::where('tracking_number', $trackingNumber)
+                                            ->latest('created_at')
+                                            ->first();
+
+            if (!$existingLog) {
+                Log::warning('Tryoto Webhook: Tracking number not found', ['tracking' => $trackingNumber]);
+                return response()->json(['success' => false, 'message' => 'Tracking number not found'], 404);
+            }
+
+            // ترجمة الحالة للعربية
+            $statusAr = $this->getStatusArabic($status);
+            $messageAr = $this->getMessageArabic($status, $location);
+
+            // حفظ الحالة الجديدة
+            $newLog = ShipmentStatusLog::create([
+                'order_id' => $existingLog->order_id,
+                'vendor_id' => $existingLog->vendor_id,
+                'tracking_number' => $trackingNumber,
+                'shipment_id' => $shipmentId ?: $existingLog->shipment_id,
+                'company_name' => $existingLog->company_name,
+                'status' => $status,
+                'status_ar' => $statusAr,
+                'message' => $message,
+                'message_ar' => $messageAr,
+                'location' => $location,
+                'latitude' => $latitude,
+                'longitude' => $longitude,
+                'status_date' => $statusDate,
+                'raw_data' => $request->all(),
+            ]);
+
+            // تحديث حالة Order إذا تم التسليم
+            if ($status === 'delivered') {
+                $order = Order::find($existingLog->order_id);
+                if ($order && $order->status !== 'completed') {
+                    $order->status = 'completed';
+                    $order->save();
+
+                    // إضافة Track
+                    $order->tracks()->create([
+                        'title' => 'Completed',
+                        'text' => 'Order delivered successfully - Tracking: ' . $trackingNumber,
+                    ]);
+                }
+            }
+
+            // إرسال Notification للتاجر عند التغييرات المهمة
+            if (in_array($status, ['picked_up', 'delivered', 'failed', 'returned'])) {
+                if ($existingLog->vendor_id) {
+                    $notification = new UserNotification();
+                    $notification->user_id = $existingLog->vendor_id;
+                    $notification->order_number = $existingLog->order->order_number ?? 'N/A';
+                    $notification->order_id = $existingLog->order_id;
+                    $notification->is_read = 0;
+                    $notification->save();
+                }
+            }
+
+            Log::info('Tryoto Webhook Processed Successfully', [
+                'tracking' => $trackingNumber,
+                'status' => $status,
+                'order_id' => $existingLog->order_id,
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Webhook processed successfully',
+                'data' => [
+                    'tracking_number' => $trackingNumber,
+                    'status' => $status,
+                    'status_ar' => $statusAr,
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Tryoto Webhook Error', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'payload' => $request->all(),
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Internal server error',
+            ], 500);
+        }
+    }
+
+    /**
+     * Get Arabic translation for status
+     */
+    private function getStatusArabic($status)
+    {
+        $translations = ShipmentStatusLog::getStatusTranslations();
+        return $translations[$status] ?? $status;
+    }
+
+    /**
+     * Get Arabic message based on status
+     */
+    private function getMessageArabic($status, $location = null)
+    {
+        $messages = [
+            'picked_up' => 'تم استلام الشحنة من المستودع بنجاح',
+            'in_transit' => $location ? "الشحنة في الطريق - الموقع الحالي: {$location}" : 'الشحنة في الطريق',
+            'out_for_delivery' => 'الشحنة خرجت للتوصيل - سيصل السائق قريباً',
+            'delivered' => 'تم تسليم الشحنة بنجاح للعميل',
+            'failed' => 'فشل محاولة التوصيل - سيتم إعادة المحاولة',
+            'returned' => 'تم إرجاع الشحنة إلى المستودع',
+            'cancelled' => 'تم إلغاء الشحنة',
+        ];
+
+        return $messages[$status] ?? 'تم تحديث حالة الشحنة';
+    }
+
+    /**
+     * Test endpoint to check webhook is working
+     */
+    public function test()
+    {
+        return response()->json([
+            'success' => true,
+            'message' => 'Tryoto Webhook endpoint is working',
+            'timestamp' => now()->toDateTimeString(),
+        ]);
+    }
+
+    /**
+     * ✅ Security: Verify trusted source (IP Whitelist)
+     */
+    private function verifyTrustedSource(Request $request)
+    {
+        // إذا كنت تريد تفعيل IP whitelist، أضف IPs Tryoto هنا
+        $trustedIps = [
+            // '185.123.45.67', // Tryoto IP 1
+            // '185.123.45.68', // Tryoto IP 2
+        ];
+
+        // إذا كانت القائمة فارغة، نسمح بجميع الـ IPs (للتطوير)
+        if (empty($trustedIps)) {
+            return true;
+        }
+
+        $clientIp = $request->ip();
+        return in_array($clientIp, $trustedIps);
+    }
+
+    /**
+     * ✅ Security: Verify webhook signature
+     */
+    private function verifySignature(Request $request)
+    {
+        $signature = $request->header('X-Tryoto-Signature');
+
+        // إذا لم يكن هناك signature في الـ header (للتطوير)
+        if (!$signature) {
+            // في Production، يجب أن ترجع false
+            // return false;
+
+            // في Development، نسمح بدون signature
+            return true;
+        }
+
+        // حساب الـ signature المتوقع
+        $payload = json_encode($request->all());
+        $expectedSignature = hash_hmac('sha256', $payload, self::WEBHOOK_SECRET);
+
+        return hash_equals($expectedSignature, $signature);
+    }
+
+    /**
+     * ✅ Security: Rate limiting
+     */
+    private function checkRateLimit(Request $request)
+    {
+        $key = 'webhook_rate_limit:' . $request->ip();
+        $maxAttempts = 60; // 60 requests
+        $decayMinutes = 1; // per minute
+
+        $attempts = cache()->get($key, 0);
+
+        if ($attempts >= $maxAttempts) {
+            return false;
+        }
+
+        cache()->put($key, $attempts + 1, now()->addMinutes($decayMinutes));
+        return true;
+    }
+}

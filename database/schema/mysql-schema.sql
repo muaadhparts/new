@@ -197,13 +197,13 @@ DROP TABLE IF EXISTS `brand_qualities`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `brand_qualities` (
   `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `code` varchar(64) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `name_en` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `name_ar` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `logo` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `country` varchar(128) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `website` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `description` text COLLATE utf8mb4_unicode_ci,
+  `code` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `name_en` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `name_ar` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `logo` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `country` varchar(128) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `website` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `description` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
   `is_active` tinyint(1) NOT NULL DEFAULT '1',
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
@@ -236,6 +236,16 @@ CREATE TABLE `brands` (
   `photo` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `name` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `cache`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `cache` (
+  `key` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `value` mediumtext COLLATE utf8mb4_unicode_ci,
+  `expiration` int DEFAULT NULL,
+  PRIMARY KEY (`key`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `callouts`;
@@ -602,6 +612,21 @@ CREATE TABLE `email_templates` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `failed_jobs`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `failed_jobs` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `uuid` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `connection` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `queue` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `payload` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `exception` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `failed_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `failed_jobs_uuid_unique` (`uuid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `faqs`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
@@ -651,7 +676,7 @@ CREATE TABLE `generalsettings` (
   `logo` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `favicon` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `title` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
-  `sign` varchar(10) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `sign` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `colors` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `loader` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `admin_loader` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
@@ -753,7 +778,8 @@ CREATE TABLE `generalsettings` (
   `deal_details` varchar(600) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `deal_time` date DEFAULT NULL,
   `deal_background` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `theme` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'theme1',
+  `theme` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'theme4',
+  `facebook_pixel` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -845,9 +871,9 @@ CREATE TABLE `merchant_products` (
   `policy` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
   `features` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
   `colors` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
-  `size` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `size_qty` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `size_price` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `size` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `size_qty` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `size_price` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `uniq_product_user` (`product_id`,`user_id`,`brand_quality_id`),
   KEY `fk_mp_user` (`user_id`),
@@ -1158,6 +1184,34 @@ CREATE TABLE `pagesettings` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `part_extensions_template`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `part_extensions_template` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `part_id` bigint unsigned NOT NULL,
+  `section_id` bigint unsigned NOT NULL,
+  `group_id` bigint unsigned NOT NULL,
+  `extension_key` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `extension_value` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `part_period_id` bigint unsigned DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx_pe_group` (`group_id`),
+  KEY `idx_pe_key` (`extension_key`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `part_periods_template`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `part_periods_template` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `part_id` bigint unsigned NOT NULL,
+  `begin_date` date NOT NULL,
+  `end_date` date DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx_part_period` (`part_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `part_periods_y61gl`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
@@ -1192,1814 +1246,6 @@ CREATE TABLE `part_spec_group_items_y61gl` (
   KEY `idx_psGi_spec_item` (`specification_item_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `part_spec_groups_h15egl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `part_spec_groups_h15egl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `part_id` bigint unsigned NOT NULL,
-  `section_id` bigint unsigned NOT NULL,
-  `catalog_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  `group_index` int NOT NULL,
-  `part_period_id` bigint unsigned DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_psG_part_section` (`part_id`,`section_id`),
-  KEY `idx_psG_group_lookup` (`part_id`,`section_id`,`catalog_id`,`category_id`,`group_index`,`part_period_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `part_spec_groups_h41gl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `part_spec_groups_h41gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `part_id` bigint unsigned NOT NULL,
-  `section_id` bigint unsigned NOT NULL,
-  `catalog_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  `group_index` int NOT NULL,
-  `part_period_id` bigint unsigned DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_psG_part_section` (`part_id`,`section_id`),
-  KEY `idx_psG_group_lookup` (`part_id`,`section_id`,`catalog_id`,`category_id`,`group_index`,`part_period_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `part_spec_groups_hv36gl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `part_spec_groups_hv36gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `part_id` bigint unsigned NOT NULL,
-  `section_id` bigint unsigned NOT NULL,
-  `catalog_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  `group_index` int NOT NULL,
-  `part_period_id` bigint unsigned DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_psG_part_section` (`part_id`,`section_id`),
-  KEY `idx_psG_group_lookup` (`part_id`,`section_id`,`catalog_id`,`category_id`,`group_index`,`part_period_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `part_spec_groups_hy10gl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `part_spec_groups_hy10gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `part_id` bigint unsigned NOT NULL,
-  `section_id` bigint unsigned NOT NULL,
-  `catalog_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  `group_index` int NOT NULL,
-  `part_period_id` bigint unsigned DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_psG_part_section` (`part_id`,`section_id`),
-  KEY `idx_psG_group_lookup` (`part_id`,`section_id`,`catalog_id`,`category_id`,`group_index`,`part_period_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `part_spec_groups_j10egl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `part_spec_groups_j10egl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `part_id` bigint unsigned NOT NULL,
-  `section_id` bigint unsigned NOT NULL,
-  `catalog_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  `group_index` int NOT NULL,
-  `part_period_id` bigint unsigned DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_psG_part_section` (`part_id`,`section_id`),
-  KEY `idx_psG_group_lookup` (`part_id`,`section_id`,`catalog_id`,`category_id`,`group_index`,`part_period_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `part_spec_groups_j10zgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `part_spec_groups_j10zgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `part_id` bigint unsigned NOT NULL,
-  `section_id` bigint unsigned NOT NULL,
-  `catalog_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  `group_index` int NOT NULL,
-  `part_period_id` bigint unsigned DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_psG_part_section` (`part_id`,`section_id`),
-  KEY `idx_psG_group_lookup` (`part_id`,`section_id`,`catalog_id`,`category_id`,`group_index`,`part_period_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `part_spec_groups_j11egl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `part_spec_groups_j11egl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `part_id` bigint unsigned NOT NULL,
-  `section_id` bigint unsigned NOT NULL,
-  `catalog_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  `group_index` int NOT NULL,
-  `part_period_id` bigint unsigned DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_psG_part_section` (`part_id`,`section_id`),
-  KEY `idx_psG_group_lookup` (`part_id`,`section_id`,`catalog_id`,`category_id`,`group_index`,`part_period_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `part_spec_groups_j11zgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `part_spec_groups_j11zgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `part_id` bigint unsigned NOT NULL,
-  `section_id` bigint unsigned NOT NULL,
-  `catalog_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  `group_index` int NOT NULL,
-  `part_period_id` bigint unsigned DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_psG_part_section` (`part_id`,`section_id`),
-  KEY `idx_psG_group_lookup` (`part_id`,`section_id`,`catalog_id`,`category_id`,`group_index`,`part_period_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `part_spec_groups_j12egl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `part_spec_groups_j12egl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `part_id` bigint unsigned NOT NULL,
-  `section_id` bigint unsigned NOT NULL,
-  `catalog_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  `group_index` int NOT NULL,
-  `part_period_id` bigint unsigned DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_psG_part_section` (`part_id`,`section_id`),
-  KEY `idx_psG_group_lookup` (`part_id`,`section_id`,`catalog_id`,`category_id`,`group_index`,`part_period_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `part_spec_groups_j30gl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `part_spec_groups_j30gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `part_id` bigint unsigned NOT NULL,
-  `section_id` bigint unsigned NOT NULL,
-  `catalog_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  `group_index` int NOT NULL,
-  `part_period_id` bigint unsigned DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_psG_part_section` (`part_id`,`section_id`),
-  KEY `idx_psG_group_lookup` (`part_id`,`section_id`,`catalog_id`,`category_id`,`group_index`,`part_period_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `part_spec_groups_j31zgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `part_spec_groups_j31zgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `part_id` bigint unsigned NOT NULL,
-  `section_id` bigint unsigned NOT NULL,
-  `catalog_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  `group_index` int NOT NULL,
-  `part_period_id` bigint unsigned DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_psG_part_section` (`part_id`,`section_id`),
-  KEY `idx_psG_group_lookup` (`part_id`,`section_id`,`catalog_id`,`category_id`,`group_index`,`part_period_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `part_spec_groups_j32gl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `part_spec_groups_j32gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `part_id` bigint unsigned NOT NULL,
-  `section_id` bigint unsigned NOT NULL,
-  `catalog_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  `group_index` int NOT NULL,
-  `part_period_id` bigint unsigned DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_psG_part_section` (`part_id`,`section_id`),
-  KEY `idx_psG_group_lookup` (`part_id`,`section_id`,`catalog_id`,`category_id`,`group_index`,`part_period_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `part_spec_groups_j32twgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `part_spec_groups_j32twgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `part_id` bigint unsigned NOT NULL,
-  `section_id` bigint unsigned NOT NULL,
-  `catalog_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  `group_index` int NOT NULL,
-  `part_period_id` bigint unsigned DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_psG_part_section` (`part_id`,`section_id`),
-  KEY `idx_psG_group_lookup` (`part_id`,`section_id`,`catalog_id`,`category_id`,`group_index`,`part_period_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `part_spec_groups_j32zgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `part_spec_groups_j32zgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `part_id` bigint unsigned NOT NULL,
-  `section_id` bigint unsigned NOT NULL,
-  `catalog_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  `group_index` int NOT NULL,
-  `part_period_id` bigint unsigned DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_psG_part_section` (`part_id`,`section_id`),
-  KEY `idx_psG_group_lookup` (`part_id`,`section_id`,`catalog_id`,`category_id`,`group_index`,`part_period_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `part_spec_groups_j50gl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `part_spec_groups_j50gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `part_id` bigint unsigned NOT NULL,
-  `section_id` bigint unsigned NOT NULL,
-  `catalog_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  `group_index` int NOT NULL,
-  `part_period_id` bigint unsigned DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_psG_part_section` (`part_id`,`section_id`),
-  KEY `idx_psG_group_lookup` (`part_id`,`section_id`,`catalog_id`,`category_id`,`group_index`,`part_period_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `part_spec_groups_j50zgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `part_spec_groups_j50zgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `part_id` bigint unsigned NOT NULL,
-  `section_id` bigint unsigned NOT NULL,
-  `catalog_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  `group_index` int NOT NULL,
-  `part_period_id` bigint unsigned DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_psG_part_section` (`part_id`,`section_id`),
-  KEY `idx_psG_group_lookup` (`part_id`,`section_id`,`catalog_id`,`category_id`,`group_index`,`part_period_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `part_spec_groups_j55xgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `part_spec_groups_j55xgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `part_id` bigint unsigned NOT NULL,
-  `section_id` bigint unsigned NOT NULL,
-  `catalog_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  `group_index` int NOT NULL,
-  `part_period_id` bigint unsigned DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_psG_part_section` (`part_id`,`section_id`),
-  KEY `idx_psG_group_lookup` (`part_id`,`section_id`,`catalog_id`,`category_id`,`group_index`,`part_period_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `part_spec_groups_j55zgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `part_spec_groups_j55zgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `part_id` bigint unsigned NOT NULL,
-  `section_id` bigint unsigned NOT NULL,
-  `catalog_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  `group_index` int NOT NULL,
-  `part_period_id` bigint unsigned DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_psG_part_section` (`part_id`,`section_id`),
-  KEY `idx_psG_group_lookup` (`part_id`,`section_id`,`catalog_id`,`category_id`,`group_index`,`part_period_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `part_spec_groups_jd23fgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `part_spec_groups_jd23fgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `part_id` bigint unsigned NOT NULL,
-  `section_id` bigint unsigned NOT NULL,
-  `catalog_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  `group_index` int NOT NULL,
-  `part_period_id` bigint unsigned DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_psG_part_section` (`part_id`,`section_id`),
-  KEY `idx_psG_group_lookup` (`part_id`,`section_id`,`catalog_id`,`category_id`,`group_index`,`part_period_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `part_spec_groups_jd23ttgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `part_spec_groups_jd23ttgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `part_id` bigint unsigned NOT NULL,
-  `section_id` bigint unsigned NOT NULL,
-  `catalog_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  `group_index` int NOT NULL,
-  `part_period_id` bigint unsigned DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_psG_part_section` (`part_id`,`section_id`),
-  KEY `idx_psG_group_lookup` (`part_id`,`section_id`,`catalog_id`,`category_id`,`group_index`,`part_period_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `part_spec_groups_jf15gl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `part_spec_groups_jf15gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `part_id` bigint unsigned NOT NULL,
-  `section_id` bigint unsigned NOT NULL,
-  `catalog_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  `group_index` int NOT NULL,
-  `part_period_id` bigint unsigned DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_psG_part_section` (`part_id`,`section_id`),
-  KEY `idx_psG_group_lookup` (`part_id`,`section_id`,`catalog_id`,`category_id`,`group_index`,`part_period_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `part_spec_groups_jj10egl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `part_spec_groups_jj10egl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `part_id` bigint unsigned NOT NULL,
-  `section_id` bigint unsigned NOT NULL,
-  `catalog_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  `group_index` int NOT NULL,
-  `part_period_id` bigint unsigned DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_psG_part_section` (`part_id`,`section_id`),
-  KEY `idx_psG_group_lookup` (`part_id`,`section_id`,`catalog_id`,`category_id`,`group_index`,`part_period_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `part_spec_groups_jr50gl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `part_spec_groups_jr50gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `part_id` bigint unsigned NOT NULL,
-  `section_id` bigint unsigned NOT NULL,
-  `catalog_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  `group_index` int NOT NULL,
-  `part_period_id` bigint unsigned DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_psG_part_section` (`part_id`,`section_id`),
-  KEY `idx_psG_group_lookup` (`part_id`,`section_id`,`catalog_id`,`category_id`,`group_index`,`part_period_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `part_spec_groups_k12egl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `part_spec_groups_k12egl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `part_id` bigint unsigned NOT NULL,
-  `section_id` bigint unsigned NOT NULL,
-  `catalog_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  `group_index` int NOT NULL,
-  `part_period_id` bigint unsigned DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_psG_part_section` (`part_id`,`section_id`),
-  KEY `idx_psG_group_lookup` (`part_id`,`section_id`,`catalog_id`,`category_id`,`group_index`,`part_period_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `part_spec_groups_k13bbgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `part_spec_groups_k13bbgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `part_id` bigint unsigned NOT NULL,
-  `section_id` bigint unsigned NOT NULL,
-  `catalog_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  `group_index` int NOT NULL,
-  `part_period_id` bigint unsigned DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_psG_part_section` (`part_id`,`section_id`),
-  KEY `idx_psG_group_lookup` (`part_id`,`section_id`,`catalog_id`,`category_id`,`group_index`,`part_period_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `part_spec_groups_k13bgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `part_spec_groups_k13bgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `part_id` bigint unsigned NOT NULL,
-  `section_id` bigint unsigned NOT NULL,
-  `catalog_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  `group_index` int NOT NULL,
-  `part_period_id` bigint unsigned DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_psG_part_section` (`part_id`,`section_id`),
-  KEY `idx_psG_group_lookup` (`part_id`,`section_id`,`catalog_id`,`category_id`,`group_index`,`part_period_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `part_spec_groups_k13kgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `part_spec_groups_k13kgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `part_id` bigint unsigned NOT NULL,
-  `section_id` bigint unsigned NOT NULL,
-  `catalog_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  `group_index` int NOT NULL,
-  `part_period_id` bigint unsigned DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_psG_part_section` (`part_id`,`section_id`),
-  KEY `idx_psG_group_lookup` (`part_id`,`section_id`,`catalog_id`,`category_id`,`group_index`,`part_period_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `part_spec_groups_k13kkgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `part_spec_groups_k13kkgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `part_id` bigint unsigned NOT NULL,
-  `section_id` bigint unsigned NOT NULL,
-  `catalog_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  `group_index` int NOT NULL,
-  `part_period_id` bigint unsigned DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_psG_part_section` (`part_id`,`section_id`),
-  KEY `idx_psG_group_lookup` (`part_id`,`section_id`,`catalog_id`,`category_id`,`group_index`,`part_period_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `part_spec_groups_k13wgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `part_spec_groups_k13wgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `part_id` bigint unsigned NOT NULL,
-  `section_id` bigint unsigned NOT NULL,
-  `catalog_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  `group_index` int NOT NULL,
-  `part_period_id` bigint unsigned DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_psG_part_section` (`part_id`,`section_id`),
-  KEY `idx_psG_group_lookup` (`part_id`,`section_id`,`catalog_id`,`category_id`,`group_index`,`part_period_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `part_spec_groups_k13wwgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `part_spec_groups_k13wwgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `part_id` bigint unsigned NOT NULL,
-  `section_id` bigint unsigned NOT NULL,
-  `catalog_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  `group_index` int NOT NULL,
-  `part_period_id` bigint unsigned DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_psG_part_section` (`part_id`,`section_id`),
-  KEY `idx_psG_group_lookup` (`part_id`,`section_id`,`catalog_id`,`category_id`,`group_index`,`part_period_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `part_spec_groups_k13xgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `part_spec_groups_k13xgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `part_id` bigint unsigned NOT NULL,
-  `section_id` bigint unsigned NOT NULL,
-  `catalog_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  `group_index` int NOT NULL,
-  `part_period_id` bigint unsigned DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_psG_part_section` (`part_id`,`section_id`),
-  KEY `idx_psG_group_lookup` (`part_id`,`section_id`,`catalog_id`,`category_id`,`group_index`,`part_period_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `part_spec_groups_k13zgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `part_spec_groups_k13zgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `part_id` bigint unsigned NOT NULL,
-  `section_id` bigint unsigned NOT NULL,
-  `catalog_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  `group_index` int NOT NULL,
-  `part_period_id` bigint unsigned DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_psG_part_section` (`part_id`,`section_id`),
-  KEY `idx_psG_group_lookup` (`part_id`,`section_id`,`catalog_id`,`category_id`,`group_index`,`part_period_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `part_spec_groups_k14frgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `part_spec_groups_k14frgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `part_id` bigint unsigned NOT NULL,
-  `section_id` bigint unsigned NOT NULL,
-  `catalog_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  `group_index` int NOT NULL,
-  `part_period_id` bigint unsigned DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_psG_part_section` (`part_id`,`section_id`),
-  KEY `idx_psG_group_lookup` (`part_id`,`section_id`,`catalog_id`,`category_id`,`group_index`,`part_period_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `part_spec_groups_l10bbgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `part_spec_groups_l10bbgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `part_id` bigint unsigned NOT NULL,
-  `section_id` bigint unsigned NOT NULL,
-  `catalog_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  `group_index` int NOT NULL,
-  `part_period_id` bigint unsigned DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_psG_part_section` (`part_id`,`section_id`),
-  KEY `idx_psG_group_lookup` (`part_id`,`section_id`,`catalog_id`,`category_id`,`group_index`,`part_period_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `part_spec_groups_l10bgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `part_spec_groups_l10bgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `part_id` bigint unsigned NOT NULL,
-  `section_id` bigint unsigned NOT NULL,
-  `catalog_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  `group_index` int NOT NULL,
-  `part_period_id` bigint unsigned DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_psG_part_section` (`part_id`,`section_id`),
-  KEY `idx_psG_group_lookup` (`part_id`,`section_id`,`catalog_id`,`category_id`,`group_index`,`part_period_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `part_spec_groups_l10hgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `part_spec_groups_l10hgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `part_id` bigint unsigned NOT NULL,
-  `section_id` bigint unsigned NOT NULL,
-  `catalog_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  `group_index` int NOT NULL,
-  `part_period_id` bigint unsigned DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_psG_part_section` (`part_id`,`section_id`),
-  KEY `idx_psG_group_lookup` (`part_id`,`section_id`,`catalog_id`,`category_id`,`group_index`,`part_period_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `part_spec_groups_l10hhgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `part_spec_groups_l10hhgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `part_id` bigint unsigned NOT NULL,
-  `section_id` bigint unsigned NOT NULL,
-  `catalog_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  `group_index` int NOT NULL,
-  `part_period_id` bigint unsigned DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_psG_part_section` (`part_id`,`section_id`),
-  KEY `idx_psG_group_lookup` (`part_id`,`section_id`,`catalog_id`,`category_id`,`group_index`,`part_period_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `part_spec_groups_l10pgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `part_spec_groups_l10pgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `part_id` bigint unsigned NOT NULL,
-  `section_id` bigint unsigned NOT NULL,
-  `catalog_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  `group_index` int NOT NULL,
-  `part_period_id` bigint unsigned DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_psG_part_section` (`part_id`,`section_id`),
-  KEY `idx_psG_group_lookup` (`part_id`,`section_id`,`catalog_id`,`category_id`,`group_index`,`part_period_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `part_spec_groups_l10twgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `part_spec_groups_l10twgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `part_id` bigint unsigned NOT NULL,
-  `section_id` bigint unsigned NOT NULL,
-  `catalog_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  `group_index` int NOT NULL,
-  `part_period_id` bigint unsigned DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_psG_part_section` (`part_id`,`section_id`),
-  KEY `idx_psG_group_lookup` (`part_id`,`section_id`,`catalog_id`,`category_id`,`group_index`,`part_period_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `part_spec_groups_l10zgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `part_spec_groups_l10zgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `part_id` bigint unsigned NOT NULL,
-  `section_id` bigint unsigned NOT NULL,
-  `catalog_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  `group_index` int NOT NULL,
-  `part_period_id` bigint unsigned DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_psG_part_section` (`part_id`,`section_id`),
-  KEY `idx_psG_group_lookup` (`part_id`,`section_id`,`catalog_id`,`category_id`,`group_index`,`part_period_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `part_spec_groups_l11wgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `part_spec_groups_l11wgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `part_id` bigint unsigned NOT NULL,
-  `section_id` bigint unsigned NOT NULL,
-  `catalog_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  `group_index` int NOT NULL,
-  `part_period_id` bigint unsigned DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_psG_part_section` (`part_id`,`section_id`),
-  KEY `idx_psG_group_lookup` (`part_id`,`section_id`,`catalog_id`,`category_id`,`group_index`,`part_period_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `part_spec_groups_l11wwgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `part_spec_groups_l11wwgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `part_id` bigint unsigned NOT NULL,
-  `section_id` bigint unsigned NOT NULL,
-  `catalog_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  `group_index` int NOT NULL,
-  `part_period_id` bigint unsigned DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_psG_part_section` (`part_id`,`section_id`),
-  KEY `idx_psG_group_lookup` (`part_id`,`section_id`,`catalog_id`,`category_id`,`group_index`,`part_period_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `part_spec_groups_l11zgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `part_spec_groups_l11zgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `part_id` bigint unsigned NOT NULL,
-  `section_id` bigint unsigned NOT NULL,
-  `catalog_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  `group_index` int NOT NULL,
-  `part_period_id` bigint unsigned DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_psG_part_section` (`part_id`,`section_id`),
-  KEY `idx_psG_group_lookup` (`part_id`,`section_id`,`catalog_id`,`category_id`,`group_index`,`part_period_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `part_spec_groups_l12pgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `part_spec_groups_l12pgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `part_id` bigint unsigned NOT NULL,
-  `section_id` bigint unsigned NOT NULL,
-  `catalog_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  `group_index` int NOT NULL,
-  `part_period_id` bigint unsigned DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_psG_part_section` (`part_id`,`section_id`),
-  KEY `idx_psG_group_lookup` (`part_id`,`section_id`,`catalog_id`,`category_id`,`group_index`,`part_period_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `part_spec_groups_l31gl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `part_spec_groups_l31gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `part_id` bigint unsigned NOT NULL,
-  `section_id` bigint unsigned NOT NULL,
-  `catalog_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  `group_index` int NOT NULL,
-  `part_period_id` bigint unsigned DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_psG_part_section` (`part_id`,`section_id`),
-  KEY `idx_psG_group_lookup` (`part_id`,`section_id`,`catalog_id`,`category_id`,`group_index`,`part_period_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `part_spec_groups_l32gl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `part_spec_groups_l32gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `part_id` bigint unsigned NOT NULL,
-  `section_id` bigint unsigned NOT NULL,
-  `catalog_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  `group_index` int NOT NULL,
-  `part_period_id` bigint unsigned DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_psG_part_section` (`part_id`,`section_id`),
-  KEY `idx_psG_group_lookup` (`part_id`,`section_id`,`catalog_id`,`category_id`,`group_index`,`part_period_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `part_spec_groups_l33zgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `part_spec_groups_l33zgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `part_id` bigint unsigned NOT NULL,
-  `section_id` bigint unsigned NOT NULL,
-  `catalog_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  `group_index` int NOT NULL,
-  `part_period_id` bigint unsigned DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_psG_part_section` (`part_id`,`section_id`),
-  KEY `idx_psG_group_lookup` (`part_id`,`section_id`,`catalog_id`,`category_id`,`group_index`,`part_period_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `part_spec_groups_l34gl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `part_spec_groups_l34gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `part_id` bigint unsigned NOT NULL,
-  `section_id` bigint unsigned NOT NULL,
-  `catalog_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  `group_index` int NOT NULL,
-  `part_period_id` bigint unsigned DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_psG_part_section` (`part_id`,`section_id`),
-  KEY `idx_psG_group_lookup` (`part_id`,`section_id`,`catalog_id`,`category_id`,`group_index`,`part_period_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `part_spec_groups_l34zgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `part_spec_groups_l34zgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `part_id` bigint unsigned NOT NULL,
-  `section_id` bigint unsigned NOT NULL,
-  `catalog_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  `group_index` int NOT NULL,
-  `part_period_id` bigint unsigned DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_psG_part_section` (`part_id`,`section_id`),
-  KEY `idx_psG_group_lookup` (`part_id`,`section_id`,`catalog_id`,`category_id`,`group_index`,`part_period_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `part_spec_groups_l50gl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `part_spec_groups_l50gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `part_id` bigint unsigned NOT NULL,
-  `section_id` bigint unsigned NOT NULL,
-  `catalog_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  `group_index` int NOT NULL,
-  `part_period_id` bigint unsigned DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_psG_part_section` (`part_id`,`section_id`),
-  KEY `idx_psG_group_lookup` (`part_id`,`section_id`,`catalog_id`,`category_id`,`group_index`,`part_period_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `part_spec_groups_l51gl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `part_spec_groups_l51gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `part_id` bigint unsigned NOT NULL,
-  `section_id` bigint unsigned NOT NULL,
-  `catalog_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  `group_index` int NOT NULL,
-  `part_period_id` bigint unsigned DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_psG_part_section` (`part_id`,`section_id`),
-  KEY `idx_psG_group_lookup` (`part_id`,`section_id`,`catalog_id`,`category_id`,`group_index`,`part_period_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `part_spec_groups_l51zgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `part_spec_groups_l51zgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `part_id` bigint unsigned NOT NULL,
-  `section_id` bigint unsigned NOT NULL,
-  `catalog_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  `group_index` int NOT NULL,
-  `part_period_id` bigint unsigned DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_psG_part_section` (`part_id`,`section_id`),
-  KEY `idx_psG_group_lookup` (`part_id`,`section_id`,`catalog_id`,`category_id`,`group_index`,`part_period_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `part_spec_groups_l9mgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `part_spec_groups_l9mgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `part_id` bigint unsigned NOT NULL,
-  `section_id` bigint unsigned NOT NULL,
-  `catalog_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  `group_index` int NOT NULL,
-  `part_period_id` bigint unsigned DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_psG_part_section` (`part_id`,`section_id`),
-  KEY `idx_psG_group_lookup` (`part_id`,`section_id`,`catalog_id`,`category_id`,`group_index`,`part_period_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `part_spec_groups_lcd22sgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `part_spec_groups_lcd22sgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `part_id` bigint unsigned NOT NULL,
-  `section_id` bigint unsigned NOT NULL,
-  `catalog_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  `group_index` int NOT NULL,
-  `part_period_id` bigint unsigned DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_psG_part_section` (`part_id`,`section_id`),
-  KEY `idx_psG_group_lookup` (`part_id`,`section_id`,`catalog_id`,`category_id`,`group_index`,`part_period_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `part_spec_groups_lcd22tgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `part_spec_groups_lcd22tgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `part_id` bigint unsigned NOT NULL,
-  `section_id` bigint unsigned NOT NULL,
-  `catalog_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  `group_index` int NOT NULL,
-  `part_period_id` bigint unsigned DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_psG_part_section` (`part_id`,`section_id`),
-  KEY `idx_psG_group_lookup` (`part_id`,`section_id`,`catalog_id`,`category_id`,`group_index`,`part_period_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `part_spec_groups_m11gl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `part_spec_groups_m11gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `part_id` bigint unsigned NOT NULL,
-  `section_id` bigint unsigned NOT NULL,
-  `catalog_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  `group_index` int NOT NULL,
-  `part_period_id` bigint unsigned DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_psG_part_section` (`part_id`,`section_id`),
-  KEY `idx_psG_group_lookup` (`part_id`,`section_id`,`catalog_id`,`category_id`,`group_index`,`part_period_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `part_spec_groups_m20ffgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `part_spec_groups_m20ffgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `part_id` bigint unsigned NOT NULL,
-  `section_id` bigint unsigned NOT NULL,
-  `catalog_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  `group_index` int NOT NULL,
-  `part_period_id` bigint unsigned DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_psG_part_section` (`part_id`,`section_id`),
-  KEY `idx_psG_group_lookup` (`part_id`,`section_id`,`catalog_id`,`category_id`,`group_index`,`part_period_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `part_spec_groups_m20fgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `part_spec_groups_m20fgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `part_id` bigint unsigned NOT NULL,
-  `section_id` bigint unsigned NOT NULL,
-  `catalog_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  `group_index` int NOT NULL,
-  `part_period_id` bigint unsigned DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_psG_part_section` (`part_id`,`section_id`),
-  KEY `idx_psG_group_lookup` (`part_id`,`section_id`,`catalog_id`,`category_id`,`group_index`,`part_period_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `part_spec_groups_m20mgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `part_spec_groups_m20mgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `part_id` bigint unsigned NOT NULL,
-  `section_id` bigint unsigned NOT NULL,
-  `catalog_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  `group_index` int NOT NULL,
-  `part_period_id` bigint unsigned DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_psG_part_section` (`part_id`,`section_id`),
-  KEY `idx_psG_group_lookup` (`part_id`,`section_id`,`catalog_id`,`category_id`,`group_index`,`part_period_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `part_spec_groups_mk13bgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `part_spec_groups_mk13bgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `part_id` bigint unsigned NOT NULL,
-  `section_id` bigint unsigned NOT NULL,
-  `catalog_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  `group_index` int NOT NULL,
-  `part_period_id` bigint unsigned DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_psG_part_section` (`part_id`,`section_id`),
-  KEY `idx_psG_group_lookup` (`part_id`,`section_id`,`catalog_id`,`category_id`,`group_index`,`part_period_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `part_spec_groups_mk13xgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `part_spec_groups_mk13xgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `part_id` bigint unsigned NOT NULL,
-  `section_id` bigint unsigned NOT NULL,
-  `catalog_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  `group_index` int NOT NULL,
-  `part_period_id` bigint unsigned DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_psG_part_section` (`part_id`,`section_id`),
-  KEY `idx_psG_group_lookup` (`part_id`,`section_id`,`catalog_id`,`category_id`,`group_index`,`part_period_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `part_spec_groups_n16egl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `part_spec_groups_n16egl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `part_id` bigint unsigned NOT NULL,
-  `section_id` bigint unsigned NOT NULL,
-  `catalog_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  `group_index` int NOT NULL,
-  `part_period_id` bigint unsigned DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_psG_part_section` (`part_id`,`section_id`),
-  KEY `idx_psG_group_lookup` (`part_id`,`section_id`,`catalog_id`,`category_id`,`group_index`,`part_period_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `part_spec_groups_n16ggl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `part_spec_groups_n16ggl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `part_id` bigint unsigned NOT NULL,
-  `section_id` bigint unsigned NOT NULL,
-  `catalog_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  `group_index` int NOT NULL,
-  `part_period_id` bigint unsigned DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_psG_part_section` (`part_id`,`section_id`),
-  KEY `idx_psG_group_lookup` (`part_id`,`section_id`,`catalog_id`,`category_id`,`group_index`,`part_period_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `part_spec_groups_n16gl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `part_spec_groups_n16gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `part_id` bigint unsigned NOT NULL,
-  `section_id` bigint unsigned NOT NULL,
-  `catalog_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  `group_index` int NOT NULL,
-  `part_period_id` bigint unsigned DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_psG_part_section` (`part_id`,`section_id`),
-  KEY `idx_psG_group_lookup` (`part_id`,`section_id`,`catalog_id`,`category_id`,`group_index`,`part_period_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `part_spec_groups_n17bbgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `part_spec_groups_n17bbgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `part_id` bigint unsigned NOT NULL,
-  `section_id` bigint unsigned NOT NULL,
-  `catalog_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  `group_index` int NOT NULL,
-  `part_period_id` bigint unsigned DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_psG_part_section` (`part_id`,`section_id`),
-  KEY `idx_psG_group_lookup` (`part_id`,`section_id`,`catalog_id`,`category_id`,`group_index`,`part_period_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `part_spec_groups_n17bgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `part_spec_groups_n17bgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `part_id` bigint unsigned NOT NULL,
-  `section_id` bigint unsigned NOT NULL,
-  `catalog_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  `group_index` int NOT NULL,
-  `part_period_id` bigint unsigned DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_psG_part_section` (`part_id`,`section_id`),
-  KEY `idx_psG_group_lookup` (`part_id`,`section_id`,`catalog_id`,`category_id`,`group_index`,`part_period_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `part_spec_groups_n17gggl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `part_spec_groups_n17gggl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `part_id` bigint unsigned NOT NULL,
-  `section_id` bigint unsigned NOT NULL,
-  `catalog_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  `group_index` int NOT NULL,
-  `part_period_id` bigint unsigned DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_psG_part_section` (`part_id`,`section_id`),
-  KEY `idx_psG_group_lookup` (`part_id`,`section_id`,`catalog_id`,`category_id`,`group_index`,`part_period_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `part_spec_groups_n17ggl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `part_spec_groups_n17ggl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `part_id` bigint unsigned NOT NULL,
-  `section_id` bigint unsigned NOT NULL,
-  `catalog_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  `group_index` int NOT NULL,
-  `part_period_id` bigint unsigned DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_psG_part_section` (`part_id`,`section_id`),
-  KEY `idx_psG_group_lookup` (`part_id`,`section_id`,`catalog_id`,`category_id`,`group_index`,`part_period_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `part_spec_groups_n17hgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `part_spec_groups_n17hgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `part_id` bigint unsigned NOT NULL,
-  `section_id` bigint unsigned NOT NULL,
-  `catalog_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  `group_index` int NOT NULL,
-  `part_period_id` bigint unsigned DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_psG_part_section` (`part_id`,`section_id`),
-  KEY `idx_psG_group_lookup` (`part_id`,`section_id`,`catalog_id`,`category_id`,`group_index`,`part_period_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `part_spec_groups_n17hhgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `part_spec_groups_n17hhgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `part_id` bigint unsigned NOT NULL,
-  `section_id` bigint unsigned NOT NULL,
-  `catalog_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  `group_index` int NOT NULL,
-  `part_period_id` bigint unsigned DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_psG_part_section` (`part_id`,`section_id`),
-  KEY `idx_psG_group_lookup` (`part_id`,`section_id`,`catalog_id`,`category_id`,`group_index`,`part_period_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `part_spec_groups_n17kgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `part_spec_groups_n17kgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `part_id` bigint unsigned NOT NULL,
-  `section_id` bigint unsigned NOT NULL,
-  `catalog_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  `group_index` int NOT NULL,
-  `part_period_id` bigint unsigned DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_psG_part_section` (`part_id`,`section_id`),
-  KEY `idx_psG_group_lookup` (`part_id`,`section_id`,`catalog_id`,`category_id`,`group_index`,`part_period_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `part_spec_groups_n17kkgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `part_spec_groups_n17kkgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `part_id` bigint unsigned NOT NULL,
-  `section_id` bigint unsigned NOT NULL,
-  `catalog_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  `group_index` int NOT NULL,
-  `part_period_id` bigint unsigned DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_psG_part_section` (`part_id`,`section_id`),
-  KEY `idx_psG_group_lookup` (`part_id`,`section_id`,`catalog_id`,`category_id`,`group_index`,`part_period_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `part_spec_groups_n17mmgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `part_spec_groups_n17mmgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `part_id` bigint unsigned NOT NULL,
-  `section_id` bigint unsigned NOT NULL,
-  `catalog_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  `group_index` int NOT NULL,
-  `part_period_id` bigint unsigned DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_psG_part_section` (`part_id`,`section_id`),
-  KEY `idx_psG_group_lookup` (`part_id`,`section_id`,`catalog_id`,`category_id`,`group_index`,`part_period_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `part_spec_groups_n17pgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `part_spec_groups_n17pgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `part_id` bigint unsigned NOT NULL,
-  `section_id` bigint unsigned NOT NULL,
-  `catalog_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  `group_index` int NOT NULL,
-  `part_period_id` bigint unsigned DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_psG_part_section` (`part_id`,`section_id`),
-  KEY `idx_psG_group_lookup` (`part_id`,`section_id`,`catalog_id`,`category_id`,`group_index`,`part_period_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `part_spec_groups_n17xgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `part_spec_groups_n17xgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `part_id` bigint unsigned NOT NULL,
-  `section_id` bigint unsigned NOT NULL,
-  `catalog_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  `group_index` int NOT NULL,
-  `part_period_id` bigint unsigned DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_psG_part_section` (`part_id`,`section_id`),
-  KEY `idx_psG_group_lookup` (`part_id`,`section_id`,`catalog_id`,`category_id`,`group_index`,`part_period_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `part_spec_groups_n17zgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `part_spec_groups_n17zgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `part_id` bigint unsigned NOT NULL,
-  `section_id` bigint unsigned NOT NULL,
-  `catalog_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  `group_index` int NOT NULL,
-  `part_period_id` bigint unsigned DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_psG_part_section` (`part_id`,`section_id`),
-  KEY `idx_psG_group_lookup` (`part_id`,`section_id`,`catalog_id`,`category_id`,`group_index`,`part_period_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `part_spec_groups_n18xgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `part_spec_groups_n18xgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `part_id` bigint unsigned NOT NULL,
-  `section_id` bigint unsigned NOT NULL,
-  `catalog_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  `group_index` int NOT NULL,
-  `part_period_id` bigint unsigned DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_psG_part_section` (`part_id`,`section_id`),
-  KEY `idx_psG_group_lookup` (`part_id`,`section_id`,`catalog_id`,`category_id`,`group_index`,`part_period_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `part_spec_groups_n50gl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `part_spec_groups_n50gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `part_id` bigint unsigned NOT NULL,
-  `section_id` bigint unsigned NOT NULL,
-  `catalog_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  `group_index` int NOT NULL,
-  `part_period_id` bigint unsigned DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_psG_part_section` (`part_id`,`section_id`),
-  KEY `idx_psG_group_lookup` (`part_id`,`section_id`,`catalog_id`,`category_id`,`group_index`,`part_period_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `part_spec_groups_nl10zgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `part_spec_groups_nl10zgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `part_id` bigint unsigned NOT NULL,
-  `section_id` bigint unsigned NOT NULL,
-  `catalog_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  `group_index` int NOT NULL,
-  `part_period_id` bigint unsigned DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_psG_part_section` (`part_id`,`section_id`),
-  KEY `idx_psG_group_lookup` (`part_id`,`section_id`,`catalog_id`,`category_id`,`group_index`,`part_period_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `part_spec_groups_p11egl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `part_spec_groups_p11egl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `part_id` bigint unsigned NOT NULL,
-  `section_id` bigint unsigned NOT NULL,
-  `catalog_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  `group_index` int NOT NULL,
-  `part_period_id` bigint unsigned DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_psG_part_section` (`part_id`,`section_id`),
-  KEY `idx_psG_group_lookup` (`part_id`,`section_id`,`catalog_id`,`category_id`,`group_index`,`part_period_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `part_spec_groups_p11gl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `part_spec_groups_p11gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `part_id` bigint unsigned NOT NULL,
-  `section_id` bigint unsigned NOT NULL,
-  `catalog_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  `group_index` int NOT NULL,
-  `part_period_id` bigint unsigned DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_psG_part_section` (`part_id`,`section_id`),
-  KEY `idx_psG_group_lookup` (`part_id`,`section_id`,`catalog_id`,`category_id`,`group_index`,`part_period_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `part_spec_groups_p15bbgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `part_spec_groups_p15bbgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `part_id` bigint unsigned NOT NULL,
-  `section_id` bigint unsigned NOT NULL,
-  `catalog_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  `group_index` int NOT NULL,
-  `part_period_id` bigint unsigned DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_psG_part_section` (`part_id`,`section_id`),
-  KEY `idx_psG_group_lookup` (`part_id`,`section_id`,`catalog_id`,`category_id`,`group_index`,`part_period_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `part_spec_groups_p15bgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `part_spec_groups_p15bgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `part_id` bigint unsigned NOT NULL,
-  `section_id` bigint unsigned NOT NULL,
-  `catalog_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  `group_index` int NOT NULL,
-  `part_period_id` bigint unsigned DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_psG_part_section` (`part_id`,`section_id`),
-  KEY `idx_psG_group_lookup` (`part_id`,`section_id`,`catalog_id`,`category_id`,`group_index`,`part_period_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `part_spec_groups_p15tgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `part_spec_groups_p15tgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `part_id` bigint unsigned NOT NULL,
-  `section_id` bigint unsigned NOT NULL,
-  `catalog_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  `group_index` int NOT NULL,
-  `part_period_id` bigint unsigned DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_psG_part_section` (`part_id`,`section_id`),
-  KEY `idx_psG_group_lookup` (`part_id`,`section_id`,`catalog_id`,`category_id`,`group_index`,`part_period_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `part_spec_groups_p15wgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `part_spec_groups_p15wgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `part_id` bigint unsigned NOT NULL,
-  `section_id` bigint unsigned NOT NULL,
-  `catalog_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  `group_index` int NOT NULL,
-  `part_period_id` bigint unsigned DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_psG_part_section` (`part_id`,`section_id`),
-  KEY `idx_psG_group_lookup` (`part_id`,`section_id`,`catalog_id`,`category_id`,`group_index`,`part_period_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `part_spec_groups_p15zgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `part_spec_groups_p15zgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `part_id` bigint unsigned NOT NULL,
-  `section_id` bigint unsigned NOT NULL,
-  `catalog_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  `group_index` int NOT NULL,
-  `part_period_id` bigint unsigned DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_psG_part_section` (`part_id`,`section_id`),
-  KEY `idx_psG_group_lookup` (`part_id`,`section_id`,`catalog_id`,`category_id`,`group_index`,`part_period_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `part_spec_groups_r20gl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `part_spec_groups_r20gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `part_id` bigint unsigned NOT NULL,
-  `section_id` bigint unsigned NOT NULL,
-  `catalog_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  `group_index` int NOT NULL,
-  `part_period_id` bigint unsigned DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_psG_part_section` (`part_id`,`section_id`),
-  KEY `idx_psG_group_lookup` (`part_id`,`section_id`,`catalog_id`,`category_id`,`group_index`,`part_period_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `part_spec_groups_r35gl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `part_spec_groups_r35gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `part_id` bigint unsigned NOT NULL,
-  `section_id` bigint unsigned NOT NULL,
-  `catalog_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  `group_index` int NOT NULL,
-  `part_period_id` bigint unsigned DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_psG_part_section` (`part_id`,`section_id`),
-  KEY `idx_psG_group_lookup` (`part_id`,`section_id`,`catalog_id`,`category_id`,`group_index`,`part_period_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `part_spec_groups_r50gl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `part_spec_groups_r50gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `part_id` bigint unsigned NOT NULL,
-  `section_id` bigint unsigned NOT NULL,
-  `catalog_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  `group_index` int NOT NULL,
-  `part_period_id` bigint unsigned DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_psG_part_section` (`part_id`,`section_id`),
-  KEY `idx_psG_group_lookup` (`part_id`,`section_id`,`catalog_id`,`category_id`,`group_index`,`part_period_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `part_spec_groups_r51gl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `part_spec_groups_r51gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `part_id` bigint unsigned NOT NULL,
-  `section_id` bigint unsigned NOT NULL,
-  `catalog_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  `group_index` int NOT NULL,
-  `part_period_id` bigint unsigned DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_psG_part_section` (`part_id`,`section_id`),
-  KEY `idx_psG_group_lookup` (`part_id`,`section_id`,`catalog_id`,`category_id`,`group_index`,`part_period_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `part_spec_groups_r51mgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `part_spec_groups_r51mgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `part_id` bigint unsigned NOT NULL,
-  `section_id` bigint unsigned NOT NULL,
-  `catalog_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  `group_index` int NOT NULL,
-  `part_period_id` bigint unsigned DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_psG_part_section` (`part_id`,`section_id`),
-  KEY `idx_psG_group_lookup` (`part_id`,`section_id`,`catalog_id`,`category_id`,`group_index`,`part_period_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `part_spec_groups_r52gl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `part_spec_groups_r52gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `part_id` bigint unsigned NOT NULL,
-  `section_id` bigint unsigned NOT NULL,
-  `catalog_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  `group_index` int NOT NULL,
-  `part_period_id` bigint unsigned DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_psG_part_section` (`part_id`,`section_id`),
-  KEY `idx_psG_group_lookup` (`part_id`,`section_id`,`catalog_id`,`category_id`,`group_index`,`part_period_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `part_spec_groups_r52hvgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `part_spec_groups_r52hvgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `part_id` bigint unsigned NOT NULL,
-  `section_id` bigint unsigned NOT NULL,
-  `catalog_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  `group_index` int NOT NULL,
-  `part_period_id` bigint unsigned DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_psG_part_section` (`part_id`,`section_id`),
-  KEY `idx_psG_group_lookup` (`part_id`,`section_id`,`catalog_id`,`category_id`,`group_index`,`part_period_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `part_spec_groups_r53gl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `part_spec_groups_r53gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `part_id` bigint unsigned NOT NULL,
-  `section_id` bigint unsigned NOT NULL,
-  `catalog_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  `group_index` int NOT NULL,
-  `part_period_id` bigint unsigned DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_psG_part_section` (`part_id`,`section_id`),
-  KEY `idx_psG_group_lookup` (`part_id`,`section_id`,`catalog_id`,`category_id`,`group_index`,`part_period_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `part_spec_groups_s14gl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `part_spec_groups_s14gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `part_id` bigint unsigned NOT NULL,
-  `section_id` bigint unsigned NOT NULL,
-  `catalog_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  `group_index` int NOT NULL,
-  `part_period_id` bigint unsigned DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_psG_part_section` (`part_id`,`section_id`),
-  KEY `idx_psG_group_lookup` (`part_id`,`section_id`,`catalog_id`,`category_id`,`group_index`,`part_period_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `part_spec_groups_s35gl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `part_spec_groups_s35gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `part_id` bigint unsigned NOT NULL,
-  `section_id` bigint unsigned NOT NULL,
-  `catalog_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  `group_index` int NOT NULL,
-  `part_period_id` bigint unsigned DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_psG_part_section` (`part_id`,`section_id`),
-  KEY `idx_psG_group_lookup` (`part_id`,`section_id`,`catalog_id`,`category_id`,`group_index`,`part_period_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `part_spec_groups_s50gl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `part_spec_groups_s50gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `part_id` bigint unsigned NOT NULL,
-  `section_id` bigint unsigned NOT NULL,
-  `catalog_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  `group_index` int NOT NULL,
-  `part_period_id` bigint unsigned DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_psG_part_section` (`part_id`,`section_id`),
-  KEY `idx_psG_group_lookup` (`part_id`,`section_id`,`catalog_id`,`category_id`,`group_index`,`part_period_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `part_spec_groups_s51gl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `part_spec_groups_s51gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `part_id` bigint unsigned NOT NULL,
-  `section_id` bigint unsigned NOT NULL,
-  `catalog_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  `group_index` int NOT NULL,
-  `part_period_id` bigint unsigned DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_psG_part_section` (`part_id`,`section_id`),
-  KEY `idx_psG_group_lookup` (`part_id`,`section_id`,`catalog_id`,`category_id`,`group_index`,`part_period_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `part_spec_groups_sc11gl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `part_spec_groups_sc11gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `part_id` bigint unsigned NOT NULL,
-  `section_id` bigint unsigned NOT NULL,
-  `catalog_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  `group_index` int NOT NULL,
-  `part_period_id` bigint unsigned DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_psG_part_section` (`part_id`,`section_id`),
-  KEY `idx_psG_group_lookup` (`part_id`,`section_id`,`catalog_id`,`category_id`,`group_index`,`part_period_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `part_spec_groups_sc11xgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `part_spec_groups_sc11xgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `part_id` bigint unsigned NOT NULL,
-  `section_id` bigint unsigned NOT NULL,
-  `catalog_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  `group_index` int NOT NULL,
-  `part_period_id` bigint unsigned DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_psG_part_section` (`part_id`,`section_id`),
-  KEY `idx_psG_group_lookup` (`part_id`,`section_id`,`catalog_id`,`category_id`,`group_index`,`part_period_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `part_spec_groups_sy31gl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `part_spec_groups_sy31gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `part_id` bigint unsigned NOT NULL,
-  `section_id` bigint unsigned NOT NULL,
-  `catalog_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  `group_index` int NOT NULL,
-  `part_period_id` bigint unsigned DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_psG_part_section` (`part_id`,`section_id`),
-  KEY `idx_psG_group_lookup` (`part_id`,`section_id`,`catalog_id`,`category_id`,`group_index`,`part_period_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `part_spec_groups_t30gl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `part_spec_groups_t30gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `part_id` bigint unsigned NOT NULL,
-  `section_id` bigint unsigned NOT NULL,
-  `catalog_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  `group_index` int NOT NULL,
-  `part_period_id` bigint unsigned DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_psG_part_section` (`part_id`,`section_id`),
-  KEY `idx_psG_group_lookup` (`part_id`,`section_id`,`catalog_id`,`category_id`,`group_index`,`part_period_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `part_spec_groups_t31gl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `part_spec_groups_t31gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `part_id` bigint unsigned NOT NULL,
-  `section_id` bigint unsigned NOT NULL,
-  `catalog_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  `group_index` int NOT NULL,
-  `part_period_id` bigint unsigned DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_psG_part_section` (`part_id`,`section_id`),
-  KEY `idx_psG_group_lookup` (`part_id`,`section_id`,`catalog_id`,`category_id`,`group_index`,`part_period_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `part_spec_groups_t31pgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `part_spec_groups_t31pgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `part_id` bigint unsigned NOT NULL,
-  `section_id` bigint unsigned NOT NULL,
-  `catalog_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  `group_index` int NOT NULL,
-  `part_period_id` bigint unsigned DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_psG_part_section` (`part_id`,`section_id`),
-  KEY `idx_psG_group_lookup` (`part_id`,`section_id`,`catalog_id`,`category_id`,`group_index`,`part_period_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `part_spec_groups_t31zgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `part_spec_groups_t31zgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `part_id` bigint unsigned NOT NULL,
-  `section_id` bigint unsigned NOT NULL,
-  `catalog_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  `group_index` int NOT NULL,
-  `part_period_id` bigint unsigned DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_psG_part_section` (`part_id`,`section_id`),
-  KEY `idx_psG_group_lookup` (`part_id`,`section_id`,`catalog_id`,`category_id`,`group_index`,`part_period_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `part_spec_groups_t32gl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `part_spec_groups_t32gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `part_id` bigint unsigned NOT NULL,
-  `section_id` bigint unsigned NOT NULL,
-  `catalog_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  `group_index` int NOT NULL,
-  `part_period_id` bigint unsigned DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_psG_part_section` (`part_id`,`section_id`),
-  KEY `idx_psG_group_lookup` (`part_id`,`section_id`,`catalog_id`,`category_id`,`group_index`,`part_period_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `part_spec_groups_t32hgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `part_spec_groups_t32hgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `part_id` bigint unsigned NOT NULL,
-  `section_id` bigint unsigned NOT NULL,
-  `catalog_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  `group_index` int NOT NULL,
-  `part_period_id` bigint unsigned DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_psG_part_section` (`part_id`,`section_id`),
-  KEY `idx_psG_group_lookup` (`part_id`,`section_id`,`catalog_id`,`category_id`,`group_index`,`part_period_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `part_spec_groups_t32wgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `part_spec_groups_t32wgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `part_id` bigint unsigned NOT NULL,
-  `section_id` bigint unsigned NOT NULL,
-  `catalog_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  `group_index` int NOT NULL,
-  `part_period_id` bigint unsigned DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_psG_part_section` (`part_id`,`section_id`),
-  KEY `idx_psG_group_lookup` (`part_id`,`section_id`,`catalog_id`,`category_id`,`group_index`,`part_period_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `part_spec_groups_t32wwgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `part_spec_groups_t32wwgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `part_id` bigint unsigned NOT NULL,
-  `section_id` bigint unsigned NOT NULL,
-  `catalog_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  `group_index` int NOT NULL,
-  `part_period_id` bigint unsigned DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_psG_part_section` (`part_id`,`section_id`),
-  KEY `idx_psG_group_lookup` (`part_id`,`section_id`,`catalog_id`,`category_id`,`group_index`,`part_period_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `part_spec_groups_t32zgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `part_spec_groups_t32zgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `part_id` bigint unsigned NOT NULL,
-  `section_id` bigint unsigned NOT NULL,
-  `catalog_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  `group_index` int NOT NULL,
-  `part_period_id` bigint unsigned DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_psG_part_section` (`part_id`,`section_id`),
-  KEY `idx_psG_group_lookup` (`part_id`,`section_id`,`catalog_id`,`category_id`,`group_index`,`part_period_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `part_spec_groups_t33gl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `part_spec_groups_t33gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `part_id` bigint unsigned NOT NULL,
-  `section_id` bigint unsigned NOT NULL,
-  `catalog_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  `group_index` int NOT NULL,
-  `part_period_id` bigint unsigned DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_psG_part_section` (`part_id`,`section_id`),
-  KEY `idx_psG_group_lookup` (`part_id`,`section_id`,`catalog_id`,`category_id`,`group_index`,`part_period_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `part_spec_groups_t33zgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `part_spec_groups_t33zgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `part_id` bigint unsigned NOT NULL,
-  `section_id` bigint unsigned NOT NULL,
-  `catalog_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  `group_index` int NOT NULL,
-  `part_period_id` bigint unsigned DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_psG_part_section` (`part_id`,`section_id`),
-  KEY `idx_psG_group_lookup` (`part_id`,`section_id`,`catalog_id`,`category_id`,`group_index`,`part_period_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `part_spec_groups_ta60gl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `part_spec_groups_ta60gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `part_id` bigint unsigned NOT NULL,
-  `section_id` bigint unsigned NOT NULL,
-  `catalog_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  `group_index` int NOT NULL,
-  `part_period_id` bigint unsigned DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_psG_part_section` (`part_id`,`section_id`),
-  KEY `idx_psG_group_lookup` (`part_id`,`section_id`,`catalog_id`,`category_id`,`group_index`,`part_period_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `part_spec_groups_template`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
@@ -3014,618 +1260,10 @@ CREATE TABLE `part_spec_groups_template` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `part_spec_groups_tk3gl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `part_spec_groups_tk3gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `part_id` bigint unsigned NOT NULL,
-  `section_id` bigint unsigned NOT NULL,
-  `catalog_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  `group_index` int NOT NULL,
-  `part_period_id` bigint unsigned DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_psG_part_section` (`part_id`,`section_id`),
-  KEY `idx_psG_group_lookup` (`part_id`,`section_id`,`catalog_id`,`category_id`,`group_index`,`part_period_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `part_spec_groups_ty61gl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `part_spec_groups_ty61gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `part_id` bigint unsigned NOT NULL,
-  `section_id` bigint unsigned NOT NULL,
-  `catalog_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  `group_index` int NOT NULL,
-  `part_period_id` bigint unsigned DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_psG_part_section` (`part_id`,`section_id`),
-  KEY `idx_psG_group_lookup` (`part_id`,`section_id`,`catalog_id`,`category_id`,`group_index`,`part_period_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `part_spec_groups_u11gl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `part_spec_groups_u11gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `part_id` bigint unsigned NOT NULL,
-  `section_id` bigint unsigned NOT NULL,
-  `catalog_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  `group_index` int NOT NULL,
-  `part_period_id` bigint unsigned DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_psG_part_section` (`part_id`,`section_id`),
-  KEY `idx_psG_group_lookup` (`part_id`,`section_id`,`catalog_id`,`category_id`,`group_index`,`part_period_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `part_spec_groups_u12gl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `part_spec_groups_u12gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `part_id` bigint unsigned NOT NULL,
-  `section_id` bigint unsigned NOT NULL,
-  `catalog_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  `group_index` int NOT NULL,
-  `part_period_id` bigint unsigned DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_psG_part_section` (`part_id`,`section_id`),
-  KEY `idx_psG_group_lookup` (`part_id`,`section_id`,`catalog_id`,`category_id`,`group_index`,`part_period_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `part_spec_groups_u13gl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `part_spec_groups_u13gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `part_id` bigint unsigned NOT NULL,
-  `section_id` bigint unsigned NOT NULL,
-  `catalog_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  `group_index` int NOT NULL,
-  `part_period_id` bigint unsigned DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_psG_part_section` (`part_id`,`section_id`),
-  KEY `idx_psG_group_lookup` (`part_id`,`section_id`,`catalog_id`,`category_id`,`group_index`,`part_period_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `part_spec_groups_u15zgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `part_spec_groups_u15zgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `part_id` bigint unsigned NOT NULL,
-  `section_id` bigint unsigned NOT NULL,
-  `catalog_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  `group_index` int NOT NULL,
-  `part_period_id` bigint unsigned DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_psG_part_section` (`part_id`,`section_id`),
-  KEY `idx_psG_group_lookup` (`part_id`,`section_id`,`catalog_id`,`category_id`,`group_index`,`part_period_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `part_spec_groups_uj55xgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `part_spec_groups_uj55xgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `part_id` bigint unsigned NOT NULL,
-  `section_id` bigint unsigned NOT NULL,
-  `catalog_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  `group_index` int NOT NULL,
-  `part_period_id` bigint unsigned DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_psG_part_section` (`part_id`,`section_id`),
-  KEY `idx_psG_group_lookup` (`part_id`,`section_id`,`catalog_id`,`category_id`,`group_index`,`part_period_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `part_spec_groups_uky51gl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `part_spec_groups_uky51gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `part_id` bigint unsigned NOT NULL,
-  `section_id` bigint unsigned NOT NULL,
-  `catalog_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  `group_index` int NOT NULL,
-  `part_period_id` bigint unsigned DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_psG_part_section` (`part_id`,`section_id`),
-  KEY `idx_psG_group_lookup` (`part_id`,`section_id`,`catalog_id`,`category_id`,`group_index`,`part_period_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `part_spec_groups_v35gl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `part_spec_groups_v35gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `part_id` bigint unsigned NOT NULL,
-  `section_id` bigint unsigned NOT NULL,
-  `catalog_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  `group_index` int NOT NULL,
-  `part_period_id` bigint unsigned DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_psG_part_section` (`part_id`,`section_id`),
-  KEY `idx_psG_group_lookup` (`part_id`,`section_id`,`catalog_id`,`category_id`,`group_index`,`part_period_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `part_spec_groups_v36gl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `part_spec_groups_v36gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `part_id` bigint unsigned NOT NULL,
-  `section_id` bigint unsigned NOT NULL,
-  `catalog_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  `group_index` int NOT NULL,
-  `part_period_id` bigint unsigned DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_psG_part_section` (`part_id`,`section_id`),
-  KEY `idx_psG_group_lookup` (`part_id`,`section_id`,`catalog_id`,`category_id`,`group_index`,`part_period_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `part_spec_groups_v37gl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `part_spec_groups_v37gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `part_id` bigint unsigned NOT NULL,
-  `section_id` bigint unsigned NOT NULL,
-  `catalog_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  `group_index` int NOT NULL,
-  `part_period_id` bigint unsigned DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_psG_part_section` (`part_id`,`section_id`),
-  KEY `idx_psG_group_lookup` (`part_id`,`section_id`,`catalog_id`,`category_id`,`group_index`,`part_period_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `part_spec_groups_v37zgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `part_spec_groups_v37zgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `part_id` bigint unsigned NOT NULL,
-  `section_id` bigint unsigned NOT NULL,
-  `catalog_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  `group_index` int NOT NULL,
-  `part_period_id` bigint unsigned DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_psG_part_section` (`part_id`,`section_id`),
-  KEY `idx_psG_group_lookup` (`part_id`,`section_id`,`catalog_id`,`category_id`,`group_index`,`part_period_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `part_spec_groups_v42gl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `part_spec_groups_v42gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `part_id` bigint unsigned NOT NULL,
-  `section_id` bigint unsigned NOT NULL,
-  `catalog_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  `group_index` int NOT NULL,
-  `part_period_id` bigint unsigned DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_psG_part_section` (`part_id`,`section_id`),
-  KEY `idx_psG_group_lookup` (`part_id`,`section_id`,`catalog_id`,`category_id`,`group_index`,`part_period_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `part_spec_groups_ve24gl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `part_spec_groups_ve24gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `part_id` bigint unsigned NOT NULL,
-  `section_id` bigint unsigned NOT NULL,
-  `catalog_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  `group_index` int NOT NULL,
-  `part_period_id` bigint unsigned DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_psG_part_section` (`part_id`,`section_id`),
-  KEY `idx_psG_group_lookup` (`part_id`,`section_id`,`catalog_id`,`category_id`,`group_index`,`part_period_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `part_spec_groups_w41gl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `part_spec_groups_w41gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `part_id` bigint unsigned NOT NULL,
-  `section_id` bigint unsigned NOT NULL,
-  `catalog_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  `group_index` int NOT NULL,
-  `part_period_id` bigint unsigned DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_psG_part_section` (`part_id`,`section_id`),
-  KEY `idx_psG_group_lookup` (`part_id`,`section_id`,`catalog_id`,`category_id`,`group_index`,`part_period_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `part_spec_groups_wd21gl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `part_spec_groups_wd21gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `part_id` bigint unsigned NOT NULL,
-  `section_id` bigint unsigned NOT NULL,
-  `catalog_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  `group_index` int NOT NULL,
-  `part_period_id` bigint unsigned DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_psG_part_section` (`part_id`,`section_id`),
-  KEY `idx_psG_group_lookup` (`part_id`,`section_id`,`catalog_id`,`category_id`,`group_index`,`part_period_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `part_spec_groups_wd22bgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `part_spec_groups_wd22bgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `part_id` bigint unsigned NOT NULL,
-  `section_id` bigint unsigned NOT NULL,
-  `catalog_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  `group_index` int NOT NULL,
-  `part_period_id` bigint unsigned DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_psG_part_section` (`part_id`,`section_id`),
-  KEY `idx_psG_group_lookup` (`part_id`,`section_id`,`catalog_id`,`category_id`,`group_index`,`part_period_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `part_spec_groups_y10gl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `part_spec_groups_y10gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `part_id` bigint unsigned NOT NULL,
-  `section_id` bigint unsigned NOT NULL,
-  `catalog_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  `group_index` int NOT NULL,
-  `part_period_id` bigint unsigned DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_psG_part_section` (`part_id`,`section_id`),
-  KEY `idx_psG_group_lookup` (`part_id`,`section_id`,`catalog_id`,`category_id`,`group_index`,`part_period_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `part_spec_groups_y33gl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `part_spec_groups_y33gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `part_id` bigint unsigned NOT NULL,
-  `section_id` bigint unsigned NOT NULL,
-  `catalog_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  `group_index` int NOT NULL,
-  `part_period_id` bigint unsigned DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_psG_part_section` (`part_id`,`section_id`),
-  KEY `idx_psG_group_lookup` (`part_id`,`section_id`,`catalog_id`,`category_id`,`group_index`,`part_period_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `part_spec_groups_y50gl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `part_spec_groups_y50gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `part_id` bigint unsigned NOT NULL,
-  `section_id` bigint unsigned NOT NULL,
-  `catalog_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  `group_index` int NOT NULL,
-  `part_period_id` bigint unsigned DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_psG_part_section` (`part_id`,`section_id`),
-  KEY `idx_psG_group_lookup` (`part_id`,`section_id`,`catalog_id`,`category_id`,`group_index`,`part_period_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `part_spec_groups_y51gl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `part_spec_groups_y51gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `part_id` bigint unsigned NOT NULL,
-  `section_id` bigint unsigned NOT NULL,
-  `catalog_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  `group_index` int NOT NULL,
-  `part_period_id` bigint unsigned DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_psG_part_section` (`part_id`,`section_id`),
-  KEY `idx_psG_group_lookup` (`part_id`,`section_id`,`catalog_id`,`category_id`,`group_index`,`part_period_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `part_spec_groups_y51hvgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `part_spec_groups_y51hvgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `part_id` bigint unsigned NOT NULL,
-  `section_id` bigint unsigned NOT NULL,
-  `catalog_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  `group_index` int NOT NULL,
-  `part_period_id` bigint unsigned DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_psG_part_section` (`part_id`,`section_id`),
-  KEY `idx_psG_group_lookup` (`part_id`,`section_id`,`catalog_id`,`category_id`,`group_index`,`part_period_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `part_spec_groups_y60gl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `part_spec_groups_y60gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `part_id` bigint unsigned NOT NULL,
-  `section_id` bigint unsigned NOT NULL,
-  `catalog_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  `group_index` int NOT NULL,
-  `part_period_id` bigint unsigned DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_psG_part_section` (`part_id`,`section_id`),
-  KEY `idx_psG_group_lookup` (`part_id`,`section_id`,`catalog_id`,`category_id`,`group_index`,`part_period_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `part_spec_groups_y61gl`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `part_spec_groups_y61gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `part_id` bigint unsigned NOT NULL,
-  `section_id` bigint unsigned NOT NULL,
-  `catalog_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  `group_index` int NOT NULL,
-  `part_period_id` bigint unsigned DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_psG_part_section` (`part_id`,`section_id`),
-  KEY `idx_psG_group_lookup` (`part_id`,`section_id`,`catalog_id`,`category_id`,`group_index`,`part_period_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `part_spec_groups_y62gl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `part_spec_groups_y62gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `part_id` bigint unsigned NOT NULL,
-  `section_id` bigint unsigned NOT NULL,
-  `catalog_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  `group_index` int NOT NULL,
-  `part_period_id` bigint unsigned DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_psG_part_section` (`part_id`,`section_id`),
-  KEY `idx_psG_group_lookup` (`part_id`,`section_id`,`catalog_id`,`category_id`,`group_index`,`part_period_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `part_spec_groups_z12gl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `part_spec_groups_z12gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `part_id` bigint unsigned NOT NULL,
-  `section_id` bigint unsigned NOT NULL,
-  `catalog_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  `group_index` int NOT NULL,
-  `part_period_id` bigint unsigned DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_psG_part_section` (`part_id`,`section_id`),
-  KEY `idx_psG_group_lookup` (`part_id`,`section_id`,`catalog_id`,`category_id`,`group_index`,`part_period_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `part_spec_groups_z33gl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `part_spec_groups_z33gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `part_id` bigint unsigned NOT NULL,
-  `section_id` bigint unsigned NOT NULL,
-  `catalog_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  `group_index` int NOT NULL,
-  `part_period_id` bigint unsigned DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_psG_part_section` (`part_id`,`section_id`),
-  KEY `idx_psG_group_lookup` (`part_id`,`section_id`,`catalog_id`,`category_id`,`group_index`,`part_period_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `part_spec_groups_z34gl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `part_spec_groups_z34gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `part_id` bigint unsigned NOT NULL,
-  `section_id` bigint unsigned NOT NULL,
-  `catalog_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  `group_index` int NOT NULL,
-  `part_period_id` bigint unsigned DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_psG_part_section` (`part_id`,`section_id`),
-  KEY `idx_psG_group_lookup` (`part_id`,`section_id`,`catalog_id`,`category_id`,`group_index`,`part_period_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `part_spec_groups_z50gl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `part_spec_groups_z50gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `part_id` bigint unsigned NOT NULL,
-  `section_id` bigint unsigned NOT NULL,
-  `catalog_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  `group_index` int NOT NULL,
-  `part_period_id` bigint unsigned DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_psG_part_section` (`part_id`,`section_id`),
-  KEY `idx_psG_group_lookup` (`part_id`,`section_id`,`catalog_id`,`category_id`,`group_index`,`part_period_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `part_spec_groups_z51gl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `part_spec_groups_z51gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `part_id` bigint unsigned NOT NULL,
-  `section_id` bigint unsigned NOT NULL,
-  `catalog_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  `group_index` int NOT NULL,
-  `part_period_id` bigint unsigned DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_psG_part_section` (`part_id`,`section_id`),
-  KEY `idx_psG_group_lookup` (`part_id`,`section_id`,`catalog_id`,`category_id`,`group_index`,`part_period_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `part_spec_groups_z51zgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `part_spec_groups_z51zgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `part_id` bigint unsigned NOT NULL,
-  `section_id` bigint unsigned NOT NULL,
-  `catalog_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  `group_index` int NOT NULL,
-  `part_period_id` bigint unsigned DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_psG_part_section` (`part_id`,`section_id`),
-  KEY `idx_psG_group_lookup` (`part_id`,`section_id`,`catalog_id`,`category_id`,`group_index`,`part_period_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `part_spec_groups_z52gl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `part_spec_groups_z52gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `part_id` bigint unsigned NOT NULL,
-  `section_id` bigint unsigned NOT NULL,
-  `catalog_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  `group_index` int NOT NULL,
-  `part_period_id` bigint unsigned DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_psG_part_section` (`part_id`,`section_id`),
-  KEY `idx_psG_group_lookup` (`part_id`,`section_id`,`catalog_id`,`category_id`,`group_index`,`part_period_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `part_spec_groups_z52hvgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `part_spec_groups_z52hvgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `part_id` bigint unsigned NOT NULL,
-  `section_id` bigint unsigned NOT NULL,
-  `catalog_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  `group_index` int NOT NULL,
-  `part_period_id` bigint unsigned DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_psG_part_section` (`part_id`,`section_id`),
-  KEY `idx_psG_group_lookup` (`part_id`,`section_id`,`catalog_id`,`category_id`,`group_index`,`part_period_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `part_spec_groups_z52zgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `part_spec_groups_z52zgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `part_id` bigint unsigned NOT NULL,
-  `section_id` bigint unsigned NOT NULL,
-  `catalog_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  `group_index` int NOT NULL,
-  `part_period_id` bigint unsigned DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_psG_part_section` (`part_id`,`section_id`),
-  KEY `idx_psG_group_lookup` (`part_id`,`section_id`,`catalog_id`,`category_id`,`group_index`,`part_period_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `part_spec_groups_z62gl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `part_spec_groups_z62gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `part_id` bigint unsigned NOT NULL,
-  `section_id` bigint unsigned NOT NULL,
-  `catalog_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  `group_index` int NOT NULL,
-  `part_period_id` bigint unsigned DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_psG_part_section` (`part_id`,`section_id`),
-  KEY `idx_psG_group_lookup` (`part_id`,`section_id`,`catalog_id`,`category_id`,`group_index`,`part_period_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `part_spec_groups_ze0egl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `part_spec_groups_ze0egl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `part_id` bigint unsigned NOT NULL,
-  `section_id` bigint unsigned NOT NULL,
-  `catalog_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  `group_index` int NOT NULL,
-  `part_period_id` bigint unsigned DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_psG_part_section` (`part_id`,`section_id`),
-  KEY `idx_psG_group_lookup` (`part_id`,`section_id`,`catalog_id`,`category_id`,`group_index`,`part_period_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `part_spec_groups_ze0ugl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `part_spec_groups_ze0ugl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `part_id` bigint unsigned NOT NULL,
-  `section_id` bigint unsigned NOT NULL,
-  `catalog_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  `group_index` int NOT NULL,
-  `part_period_id` bigint unsigned DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_psG_part_section` (`part_id`,`section_id`),
-  KEY `idx_psG_group_lookup` (`part_id`,`section_id`,`catalog_id`,`category_id`,`group_index`,`part_period_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `part_spec_groups_ze1egl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `part_spec_groups_ze1egl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `part_id` bigint unsigned NOT NULL,
-  `section_id` bigint unsigned NOT NULL,
-  `catalog_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  `group_index` int NOT NULL,
-  `part_period_id` bigint unsigned DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_psG_part_section` (`part_id`,`section_id`),
-  KEY `idx_psG_group_lookup` (`part_id`,`section_id`,`catalog_id`,`category_id`,`group_index`,`part_period_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `part_spec_groups_ze1ugl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `part_spec_groups_ze1ugl` (
   `id` bigint unsigned NOT NULL AUTO_INCREMENT,
   `part_id` bigint unsigned NOT NULL,
   `section_id` bigint unsigned NOT NULL,
@@ -3765,14 +1403,14 @@ DROP TABLE IF EXISTS `parts_all`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `parts_all` (
   `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `part_number` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `catalog_code` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `part_number` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `catalog_code` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `catalog_id` bigint unsigned NOT NULL,
   `brand_id` bigint unsigned NOT NULL,
-  `label_en` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `label_ar` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `label_en` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `label_ar` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `qty` int DEFAULT NULL,
-  `callout` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `callout` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `is_synced` tinyint(1) NOT NULL DEFAULT '0',
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -7262,6 +4900,16 @@ CREATE TABLE `parts_ze1ugl` (
   UNIQUE KEY `unique_part` (`part_number`,`label_en`,`qty`,`callout`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `password_reset_tokens`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `password_reset_tokens` (
+  `email` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `token` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`email`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `payment_gateways`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
@@ -7299,6 +4947,25 @@ CREATE TABLE `payment_gateways_myfatorah` (
   `subscription` int NOT NULL DEFAULT '1',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `personal_access_tokens`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `personal_access_tokens` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `tokenable_type` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `tokenable_id` bigint unsigned NOT NULL,
+  `name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `token` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `abilities` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  `last_used_at` timestamp NULL DEFAULT NULL,
+  `expires_at` timestamp NULL DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `personal_access_tokens_token_unique` (`token`),
+  KEY `personal_access_tokens_tokenable_type_tokenable_id_index` (`tokenable_type`,`tokenable_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `pickup_points`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -7361,7 +5028,7 @@ CREATE TABLE `products` (
   `id` int unsigned NOT NULL AUTO_INCREMENT,
   `brand_id` int NOT NULL DEFAULT '2',
   `sku` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `product_type` enum('normal','affiliate') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'normal',
+  `product_type` enum('normal','affiliate') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'normal',
   `affiliate_link` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
   `parent_category` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `category_id` int unsigned NOT NULL,
@@ -7372,10 +5039,13 @@ CREATE TABLE `products` (
   `attributes` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
   `name` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `slug` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
-  `photo` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'LargePNG/SVG/noimage.png',
-  `thumbnail` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'SmallPNG/SVG/noimage.png',
+  `photo` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'LargePNG/SVG/noimage.png',
+  `thumbnail` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'SmallPNG/SVG/noimage.png',
   `file` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `weight` decimal(10,2) DEFAULT '1.00',
+  `length` decimal(8,2) DEFAULT NULL,
+  `width` decimal(8,2) DEFAULT NULL,
+  `height` decimal(8,2) DEFAULT NULL,
   `policy` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
   `views` int unsigned NOT NULL DEFAULT '0',
   `tags` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
@@ -7384,7 +5054,7 @@ CREATE TABLE `products` (
   `meta_tag` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
   `meta_description` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
   `youtube` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `type` enum('Physical','Digital','License','Listing') COLLATE utf8mb4_unicode_ci NOT NULL,
+  `type` enum('Physical','Digital','License','Listing') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `link` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
   `platform` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `region` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
@@ -7402,8 +5072,6 @@ CREATE TABLE `products` (
   `is_catalog` tinyint(1) NOT NULL DEFAULT '0',
   `catalog_id` int NOT NULL DEFAULT '0',
   `cross_products` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `length` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `height` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `uq_sku` (`sku`) USING BTREE,
   KEY `idx_products_sku` (`sku`),
@@ -7681,2550 +5349,6 @@ CREATE TABLE `roles` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_160gl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_160gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_720gl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_720gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_a31gl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_a31gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_a32gl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_a32gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_a35gl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_a35gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_a36gl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_a36gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_a36zgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_a36zgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_a60gl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_a60gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_b10rsgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_b10rsgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_b11gl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_b11gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_b12gl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_b12gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_b13gl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_b13gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_b13xgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_b13xgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_b13xxgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_b13xxgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_b14gl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_b14gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_b14xgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_b14xgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_b15xgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_b15xgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_b16xgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_b16xgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_b17gggl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_b17gggl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_b17ggl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_b17ggl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_b17tgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_b17tgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_b17ttgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_b17ttgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_b17ugl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_b17ugl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_b17wgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_b17wgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_b17wwgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_b17wwgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_b17zgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_b17zgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_b18wgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_b18wgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_b18xgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_b18xgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_b18zgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_b18zgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_be0zgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_be0zgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_c11gl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_c11gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_c11twgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_c11twgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_c11xgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_c11xgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_c11zgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_c11zgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_c120gl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_c120gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_c12tgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_c12tgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_c12ttgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_c12ttgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_c12wgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_c12wgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_c12wwgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_c12wwgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_c12zgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_c12zgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_c13zgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_c13zgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_c32gl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_c32gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_ca33gl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_ca33gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_cl32gl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_cl32gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_cv36gl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_cv36gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_cv37gl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_cv37gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_d21gl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_d21gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_d22bgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_d22bgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_d22ffgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_d22ffgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_d22fgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_d22fgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_d22gggl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_d22gggl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_d22ggl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_d22ggl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_d22gl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_d22gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_d22qgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_d22qgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_d22ssgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_d22ssgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_d22sssgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_d22sssgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_d22xgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_d22xgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_d23agggl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_d23agggl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_d23aggl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_d23aggl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_d23fgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_d23fgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_d23mgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_d23mgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_d23sgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_d23sgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_d23tgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_d23tgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_d23ttgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_d23ttgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_d23xgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_d23xgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_d40bbgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_d40bbgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_d40bgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_d40bgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_d40gl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_d40gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_d40tgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_d40tgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_d40ttgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_d40ttgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_d41gl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_d41gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_e12xgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_e12xgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_e23gl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_e23gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_e24gl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_e24gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_e25gl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_e25gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_e26gl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_e26gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_e52gl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_e52gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_f15egl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_f15egl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_f15gl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_f15gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_f16egl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_f16egl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_f24ffgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_f24ffgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_f24fgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_f24fgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_f24mgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_f24mgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_f24wgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_f24wgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_f50gl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_f50gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_f80gl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_f80gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_fe0gl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_fe0gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_fgy33gl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_fgy33gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_g11twgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_g11twgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_g11zgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_g11zgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_gc22gl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_gc22gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_gcty61gl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_gcty61gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_gcy61gl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_gcy61gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_h10gl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_h10gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_h15egl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_h15egl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_h41gl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_h41gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_hv36gl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_hv36gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_hy10gl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_hy10gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_j10egl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_j10egl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_j10zgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_j10zgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_j11egl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_j11egl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_j11zgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_j11zgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_j12egl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_j12egl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_j12zgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_j12zgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_j30gl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_j30gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_j31zgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_j31zgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_j32gl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_j32gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_j32twgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_j32twgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_j32zgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_j32zgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_j50gl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_j50gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_j50zgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_j50zgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_j55xgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_j55xgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_j55zgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_j55zgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_jd23fgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_jd23fgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_jd23ttgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_jd23ttgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_jf15gl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_jf15gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_jj10egl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_jj10egl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_jr50gl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_jr50gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_k12egl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_k12egl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_k13bbgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_k13bbgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_k13bgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_k13bgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_k13kgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_k13kgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_k13kkgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_k13kkgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_k13wgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_k13wgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_k13wwgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_k13wwgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_k13xgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_k13xgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_k13zgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_k13zgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_k14frgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_k14frgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_l10bbgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_l10bbgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_l10bgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_l10bgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_l10hgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_l10hgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_l10hhgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_l10hhgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_l10pgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_l10pgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_l10twgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_l10twgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_l10zgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_l10zgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_l11wgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_l11wgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_l11wwgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_l11wwgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_l11zgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_l11zgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_l12pgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_l12pgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_l31gl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_l31gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_l32gl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_l32gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_l33zgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_l33zgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_l34gl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_l34gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_l34zgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_l34zgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_l50gl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_l50gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_l51gl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_l51gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_l51zgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_l51zgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_l9mgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_l9mgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_lcd22sgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_lcd22sgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_lcd22tgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_lcd22tgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_m11gl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_m11gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_m20ffgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_m20ffgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_m20fgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_m20fgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_m20mgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_m20mgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_mk13bgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_mk13bgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_mk13xgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_mk13xgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_n16egl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_n16egl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_n16ggl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_n16ggl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_n16gl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_n16gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_n17bbgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_n17bbgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_n17bgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_n17bgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_n17gggl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_n17gggl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_n17ggl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_n17ggl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_n17hgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_n17hgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_n17hhgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_n17hhgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_n17kgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_n17kgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_n17kkgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_n17kkgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_n17mmgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_n17mmgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_n17pgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_n17pgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_n17xgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_n17xgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_n17zgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_n17zgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_n18xgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_n18xgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_n50gl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_n50gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_nl10zgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_nl10zgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_p11egl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_p11egl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_p11gl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_p11gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_p15bbgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_p15bbgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_p15bgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_p15bgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_p15tgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_p15tgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_p15wgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_p15wgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_p15zgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_p15zgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_p16xgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_p16xgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_pp15bbgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_pp15bbgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_r20gl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_r20gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_r35gl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_r35gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_r50gl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_r50gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_r51gl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_r51gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_r51mgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_r51mgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_r52gl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_r52gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_r52hvgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_r52hvgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_r53gl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_r53gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_r53zgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_r53zgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_s14gl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_s14gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_s35gl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_s35gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_s50gl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_s50gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_s51gl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_s51gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_sc11gl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_sc11gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_sc11xgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_sc11xgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_sy31gl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_sy31gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_t30gl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_t30gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_t31gl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_t31gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_t31pgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_t31pgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_t31zgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_t31zgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_t32gl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_t32gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_t32hgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_t32hgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_t32wgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_t32wgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_t32wwgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_t32wwgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_t32zgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_t32zgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_t33gl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_t33gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_t33wgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_t33wgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_t33zgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_t33zgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_ta60gl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_ta60gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `section_parts_template`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
@@ -10237,490 +5361,10 @@ CREATE TABLE `section_parts_template` (
   UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_tk3gl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_tk3gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_ty61gl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_ty61gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_u11gl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_u11gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_u12gl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_u12gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_u13gl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_u13gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_u15zgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_u15zgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_uj55xgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_uj55xgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_uky51gl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_uky51gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_v35gl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_v35gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_v36gl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_v36gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_v37gl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_v37gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_v37zgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_v37zgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_v42gl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_v42gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_ve24gl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_ve24gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_w41gl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_w41gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_wd21gl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_wd21gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_wd22bgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_wd22bgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_y10gl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_y10gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_y33gl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_y33gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_y50gl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_y50gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_y51gl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_y51gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_y51hvgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_y51hvgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_y60gl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_y60gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `section_parts_y61gl`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `section_parts_y61gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_y62gl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_y62gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_y63gl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_y63gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_z12gl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_z12gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_z33gl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_z33gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_z34gl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_z34gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_z50gl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_z50gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_z51gl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_z51gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_z51zgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_z51zgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_z52gl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_z52gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_z52hvgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_z52hvgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_z52zgl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_z52zgl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_z62gl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_z62gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_z63gl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_z63gl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_ze0egl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_ze0egl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_ze0ugl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_ze0ugl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_ze1egl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_ze1egl` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `section_id` bigint unsigned NOT NULL,
-  `part_id` bigint unsigned NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_section_part` (`section_id`,`part_id`,`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `section_parts_ze1ugl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `section_parts_ze1ugl` (
   `id` bigint unsigned NOT NULL AUTO_INCREMENT,
   `section_id` bigint unsigned NOT NULL,
   `part_id` bigint unsigned NOT NULL,
@@ -10795,10 +5439,13 @@ DROP TABLE IF EXISTS `shippings`;
 CREATE TABLE `shippings` (
   `id` int NOT NULL AUTO_INCREMENT,
   `user_id` int NOT NULL DEFAULT '0',
+  `provider` varchar(50) NOT NULL DEFAULT 'manual',
   `title` text,
   `subtitle` text,
   `price` double NOT NULL DEFAULT '0',
-  PRIMARY KEY (`id`)
+  `free_above` double NOT NULL DEFAULT '0',
+  PRIMARY KEY (`id`),
+  KEY `idx_shippings_provider` (`provider`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `sku_alternative_item`;
@@ -10987,13 +5634,16 @@ DROP TABLE IF EXISTS `stock_all`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `stock_all` (
   `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `part_number` varchar(120) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `part_number` varchar(120) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `sku` varchar(120) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `brand_quality_id` int unsigned NOT NULL DEFAULT '1',
   `qty` int DEFAULT '0',
   `cost_price` decimal(18,4) DEFAULT '0.0000',
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `stock_all_part_unique` (`part_number`)
+  UNIQUE KEY `stock_all_part_unique` (`part_number`),
+  UNIQUE KEY `uq_stock_all_sku_bq` (`sku`,`brand_quality_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `stock_patromin`;
@@ -11014,9 +5664,9 @@ DROP TABLE IF EXISTS `stocks`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `stocks` (
   `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `part_number` varchar(120) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `part_number` varchar(120) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `branch_id` int unsigned NOT NULL,
-  `location` varchar(120) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `location` varchar(120) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `qty` int DEFAULT '0',
   `sell_price` decimal(18,4) DEFAULT NULL,
   `comp_cost` decimal(18,4) DEFAULT NULL,
@@ -11213,6 +5863,11 @@ CREATE TABLE `users` (
   `owner_name` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
   `shop_number` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
   `shop_address` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  `warehouse_city` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `warehouse_state` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `warehouse_address` text COLLATE utf8mb4_unicode_ci,
+  `warehouse_lat` decimal(10,7) DEFAULT NULL,
+  `warehouse_lng` decimal(10,7) DEFAULT NULL,
   `reg_number` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
   `shop_message` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
   `shop_details` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
@@ -11235,7 +5890,8 @@ CREATE TABLE `users` (
   `admin_commission` double NOT NULL DEFAULT '0',
   `reward` double NOT NULL DEFAULT '0',
   `email_token` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`),
+  KEY `idx_users_warehouse_city` (`warehouse_city`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `vehicles`;
@@ -11439,6 +6095,402 @@ CREATE TABLE `withdraws` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `CreateDynamicIndexes` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `CreateDynamicIndexes`()
+BEGIN
+    DECLARE done INT DEFAULT FALSE;
+    DECLARE catalog_code VARCHAR(50);
+    DECLARE table_name VARCHAR(100);
+    DECLARE index_exists INT;
+
+    -- Cursor لجلب جميع أكواد الكتالوج من جدول catalogs
+    DECLARE catalog_cursor CURSOR FOR
+        SELECT LOWER(code) FROM catalogs WHERE code IS NOT NULL AND code != '';
+
+    DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = TRUE;
+
+    OPEN catalog_cursor;
+
+    catalog_loop: LOOP
+        FETCH catalog_cursor INTO catalog_code;
+        IF done THEN
+            LEAVE catalog_loop;
+        END IF;
+
+        -- ========================================================================
+        -- 1.1 فهارس جدول parts_{catalog_code}
+        -- ========================================================================
+        SET table_name = CONCAT('parts_', catalog_code);
+
+        -- التحقق من وجود الجدول
+        IF (SELECT COUNT(*) FROM information_schema.tables
+            WHERE table_schema = DATABASE()
+            AND table_name = table_name) > 0 THEN
+
+            -- Index على part_number (للبحث بـ prefix)
+            SET index_exists = (SELECT COUNT(*) FROM information_schema.statistics
+                WHERE table_schema = DATABASE()
+                AND table_name = table_name
+                AND index_name = 'idx_part_number');
+
+            IF index_exists = 0 THEN
+                SET @sql = CONCAT('ALTER TABLE `', table_name, '` ADD INDEX `idx_part_number` (`part_number`(50))');
+                PREPARE stmt FROM @sql;
+                EXECUTE stmt;
+                DEALLOCATE PREPARE stmt;
+            END IF;
+
+            -- Index على callout (للبحث السريع)
+            SET index_exists = (SELECT COUNT(*) FROM information_schema.statistics
+                WHERE table_schema = DATABASE()
+                AND table_name = table_name
+                AND index_name = 'idx_callout');
+
+            IF index_exists = 0 THEN
+                SET @sql = CONCAT('ALTER TABLE `', table_name, '` ADD INDEX `idx_callout` (`callout`(50))');
+                PREPARE stmt FROM @sql;
+                EXECUTE stmt;
+                DEALLOCATE PREPARE stmt;
+            END IF;
+
+            -- Index على label_en (للبحث بالاسم)
+            SET index_exists = (SELECT COUNT(*) FROM information_schema.statistics
+                WHERE table_schema = DATABASE()
+                AND table_name = table_name
+                AND index_name = 'idx_label_en');
+
+            IF index_exists = 0 THEN
+                SET @sql = CONCAT('ALTER TABLE `', table_name, '` ADD INDEX `idx_label_en` (`label_en`(100))');
+                PREPARE stmt FROM @sql;
+                EXECUTE stmt;
+                DEALLOCATE PREPARE stmt;
+            END IF;
+
+            -- Index على label_ar (للبحث بالعربي)
+            SET index_exists = (SELECT COUNT(*) FROM information_schema.statistics
+                WHERE table_schema = DATABASE()
+                AND table_name = table_name
+                AND index_name = 'idx_label_ar');
+
+            IF index_exists = 0 THEN
+                SET @sql = CONCAT('ALTER TABLE `', table_name, '` ADD INDEX `idx_label_ar` (`label_ar`(100))');
+                PREPARE stmt FROM @sql;
+                EXECUTE stmt;
+                DEALLOCATE PREPARE stmt;
+            END IF;
+
+            -- Composite Index على part_number + callout (لأداء أفضل)
+            SET index_exists = (SELECT COUNT(*) FROM information_schema.statistics
+                WHERE table_schema = DATABASE()
+                AND table_name = table_name
+                AND index_name = 'idx_part_callout');
+
+            IF index_exists = 0 THEN
+                SET @sql = CONCAT('ALTER TABLE `', table_name, '` ADD INDEX `idx_part_callout` (`part_number`(50), `callout`(50))');
+                PREPARE stmt FROM @sql;
+                EXECUTE stmt;
+                DEALLOCATE PREPARE stmt;
+            END IF;
+
+        END IF;
+
+        -- ========================================================================
+        -- 1.2 فهارس جدول section_parts_{catalog_code}
+        -- ========================================================================
+        SET table_name = CONCAT('section_parts_', catalog_code);
+
+        IF (SELECT COUNT(*) FROM information_schema.tables
+            WHERE table_schema = DATABASE()
+            AND table_name = table_name) > 0 THEN
+
+            -- Index على part_id (JOIN مع parts)
+            SET index_exists = (SELECT COUNT(*) FROM information_schema.statistics
+                WHERE table_schema = DATABASE()
+                AND table_name = table_name
+                AND index_name = 'idx_part_id');
+
+            IF index_exists = 0 THEN
+                SET @sql = CONCAT('ALTER TABLE `', table_name, '` ADD INDEX `idx_part_id` (`part_id`)');
+                PREPARE stmt FROM @sql;
+                EXECUTE stmt;
+                DEALLOCATE PREPARE stmt;
+            END IF;
+
+            -- Index على section_id (للفلترة)
+            SET index_exists = (SELECT COUNT(*) FROM information_schema.statistics
+                WHERE table_schema = DATABASE()
+                AND table_name = table_name
+                AND index_name = 'idx_section_id');
+
+            IF index_exists = 0 THEN
+                SET @sql = CONCAT('ALTER TABLE `', table_name, '` ADD INDEX `idx_section_id` (`section_id`)');
+                PREPARE stmt FROM @sql;
+                EXECUTE stmt;
+                DEALLOCATE PREPARE stmt;
+            END IF;
+
+            -- Composite Index على section_id + part_id (للاستعلامات المتكررة)
+            SET index_exists = (SELECT COUNT(*) FROM information_schema.statistics
+                WHERE table_schema = DATABASE()
+                AND table_name = table_name
+                AND index_name = 'idx_section_part');
+
+            IF index_exists = 0 THEN
+                SET @sql = CONCAT('ALTER TABLE `', table_name, '` ADD INDEX `idx_section_part` (`section_id`, `part_id`)');
+                PREPARE stmt FROM @sql;
+                EXECUTE stmt;
+                DEALLOCATE PREPARE stmt;
+            END IF;
+
+        END IF;
+
+        -- ========================================================================
+        -- 1.3 فهارس جدول part_periods_{catalog_code}
+        -- ========================================================================
+        SET table_name = CONCAT('part_periods_', catalog_code);
+
+        IF (SELECT COUNT(*) FROM information_schema.tables
+            WHERE table_schema = DATABASE()
+            AND table_name = table_name) > 0 THEN
+
+            -- Index على part_id
+            SET index_exists = (SELECT COUNT(*) FROM information_schema.statistics
+                WHERE table_schema = DATABASE()
+                AND table_name = table_name
+                AND index_name = 'idx_part_id');
+
+            IF index_exists = 0 THEN
+                SET @sql = CONCAT('ALTER TABLE `', table_name, '` ADD INDEX `idx_part_id` (`part_id`)');
+                PREPARE stmt FROM @sql;
+                EXECUTE stmt;
+                DEALLOCATE PREPARE stmt;
+            END IF;
+
+            -- Index على begin_date و end_date (للفلترة بالفترات)
+            SET index_exists = (SELECT COUNT(*) FROM information_schema.statistics
+                WHERE table_schema = DATABASE()
+                AND table_name = table_name
+                AND index_name = 'idx_dates');
+
+            IF index_exists = 0 THEN
+                SET @sql = CONCAT('ALTER TABLE `', table_name, '` ADD INDEX `idx_dates` (`begin_date`, `end_date`)');
+                PREPARE stmt FROM @sql;
+                EXECUTE stmt;
+                DEALLOCATE PREPARE stmt;
+            END IF;
+
+        END IF;
+
+        -- ========================================================================
+        -- 1.4 فهارس جدول part_spec_groups_{catalog_code}
+        -- ========================================================================
+        SET table_name = CONCAT('part_spec_groups_', catalog_code);
+
+        IF (SELECT COUNT(*) FROM information_schema.tables
+            WHERE table_schema = DATABASE()
+            AND table_name = table_name) > 0 THEN
+
+            -- Index على part_id
+            SET index_exists = (SELECT COUNT(*) FROM information_schema.statistics
+                WHERE table_schema = DATABASE()
+                AND table_name = table_name
+                AND index_name = 'idx_part_id');
+
+            IF index_exists = 0 THEN
+                SET @sql = CONCAT('ALTER TABLE `', table_name, '` ADD INDEX `idx_part_id` (`part_id`)');
+                PREPARE stmt FROM @sql;
+                EXECUTE stmt;
+                DEALLOCATE PREPARE stmt;
+            END IF;
+
+            -- Index على section_id
+            SET index_exists = (SELECT COUNT(*) FROM information_schema.statistics
+                WHERE table_schema = DATABASE()
+                AND table_name = table_name
+                AND index_name = 'idx_section_id');
+
+            IF index_exists = 0 THEN
+                SET @sql = CONCAT('ALTER TABLE `', table_name, '` ADD INDEX `idx_section_id` (`section_id`)');
+                PREPARE stmt FROM @sql;
+                EXECUTE stmt;
+                DEALLOCATE PREPARE stmt;
+            END IF;
+
+            -- Index على catalog_id
+            SET index_exists = (SELECT COUNT(*) FROM information_schema.statistics
+                WHERE table_schema = DATABASE()
+                AND table_name = table_name
+                AND index_name = 'idx_catalog_id');
+
+            IF index_exists = 0 THEN
+                SET @sql = CONCAT('ALTER TABLE `', table_name, '` ADD INDEX `idx_catalog_id` (`catalog_id`)');
+                PREPARE stmt FROM @sql;
+                EXECUTE stmt;
+                DEALLOCATE PREPARE stmt;
+            END IF;
+
+            -- Index على part_period_id
+            SET index_exists = (SELECT COUNT(*) FROM information_schema.statistics
+                WHERE table_schema = DATABASE()
+                AND table_name = table_name
+                AND index_name = 'idx_part_period_id');
+
+            IF index_exists = 0 THEN
+                SET @sql = CONCAT('ALTER TABLE `', table_name, '` ADD INDEX `idx_part_period_id` (`part_period_id`)');
+                PREPARE stmt FROM @sql;
+                EXECUTE stmt;
+                DEALLOCATE PREPARE stmt;
+            END IF;
+
+            -- Composite Index (الاستعلام الأكثر تكراراً)
+            SET index_exists = (SELECT COUNT(*) FROM information_schema.statistics
+                WHERE table_schema = DATABASE()
+                AND table_name = table_name
+                AND index_name = 'idx_part_section_catalog');
+
+            IF index_exists = 0 THEN
+                SET @sql = CONCAT('ALTER TABLE `', table_name, '` ADD INDEX `idx_part_section_catalog` (`part_id`, `section_id`, `catalog_id`)');
+                PREPARE stmt FROM @sql;
+                EXECUTE stmt;
+                DEALLOCATE PREPARE stmt;
+            END IF;
+
+        END IF;
+
+        -- ========================================================================
+        -- 1.5 فهارس جدول part_spec_group_items_{catalog_code}
+        -- ========================================================================
+        SET table_name = CONCAT('part_spec_group_items_', catalog_code);
+
+        IF (SELECT COUNT(*) FROM information_schema.tables
+            WHERE table_schema = DATABASE()
+            AND table_name = table_name) > 0 THEN
+
+            -- Index على group_id
+            SET index_exists = (SELECT COUNT(*) FROM information_schema.statistics
+                WHERE table_schema = DATABASE()
+                AND table_name = table_name
+                AND index_name = 'idx_group_id');
+
+            IF index_exists = 0 THEN
+                SET @sql = CONCAT('ALTER TABLE `', table_name, '` ADD INDEX `idx_group_id` (`group_id`)');
+                PREPARE stmt FROM @sql;
+                EXECUTE stmt;
+                DEALLOCATE PREPARE stmt;
+            END IF;
+
+            -- Index على specification_item_id
+            SET index_exists = (SELECT COUNT(*) FROM information_schema.statistics
+                WHERE table_schema = DATABASE()
+                AND table_name = table_name
+                AND index_name = 'idx_specification_item_id');
+
+            IF index_exists = 0 THEN
+                SET @sql = CONCAT('ALTER TABLE `', table_name, '` ADD INDEX `idx_specification_item_id` (`specification_item_id`)');
+                PREPARE stmt FROM @sql;
+                EXECUTE stmt;
+                DEALLOCATE PREPARE stmt;
+            END IF;
+
+        END IF;
+
+        -- ========================================================================
+        -- 1.6 فهارس جدول part_extensions_{catalog_code}
+        -- ========================================================================
+        SET table_name = CONCAT('part_extensions_', catalog_code);
+
+        IF (SELECT COUNT(*) FROM information_schema.tables
+            WHERE table_schema = DATABASE()
+            AND table_name = table_name) > 0 THEN
+
+            -- Index على part_id
+            SET index_exists = (SELECT COUNT(*) FROM information_schema.statistics
+                WHERE table_schema = DATABASE()
+                AND table_name = table_name
+                AND index_name = 'idx_part_id');
+
+            IF index_exists = 0 THEN
+                SET @sql = CONCAT('ALTER TABLE `', table_name, '` ADD INDEX `idx_part_id` (`part_id`)');
+                PREPARE stmt FROM @sql;
+                EXECUTE stmt;
+                DEALLOCATE PREPARE stmt;
+            END IF;
+
+            -- Index على section_id
+            SET index_exists = (SELECT COUNT(*) FROM information_schema.statistics
+                WHERE table_schema = DATABASE()
+                AND table_name = table_name
+                AND index_name = 'idx_section_id');
+
+            IF index_exists = 0 THEN
+                SET @sql = CONCAT('ALTER TABLE `', table_name, '` ADD INDEX `idx_section_id` (`section_id`)');
+                PREPARE stmt FROM @sql;
+                EXECUTE stmt;
+                DEALLOCATE PREPARE stmt;
+            END IF;
+
+            -- Index على group_id
+            SET index_exists = (SELECT COUNT(*) FROM information_schema.statistics
+                WHERE table_schema = DATABASE()
+                AND table_name = table_name
+                AND index_name = 'idx_group_id');
+
+            IF index_exists = 0 THEN
+                SET @sql = CONCAT('ALTER TABLE `', table_name, '` ADD INDEX `idx_group_id` (`group_id`)');
+                PREPARE stmt FROM @sql;
+                EXECUTE stmt;
+                DEALLOCATE PREPARE stmt;
+            END IF;
+
+            -- Index على extension_key (للبحث السريع)
+            SET index_exists = (SELECT COUNT(*) FROM information_schema.statistics
+                WHERE table_schema = DATABASE()
+                AND table_name = table_name
+                AND index_name = 'idx_extension_key');
+
+            IF index_exists = 0 THEN
+                SET @sql = CONCAT('ALTER TABLE `', table_name, '` ADD INDEX `idx_extension_key` (`extension_key`(50))');
+                PREPARE stmt FROM @sql;
+                EXECUTE stmt;
+                DEALLOCATE PREPARE stmt;
+            END IF;
+
+            -- Composite Index (الاستعلام الأكثر شيوعاً)
+            SET index_exists = (SELECT COUNT(*) FROM information_schema.statistics
+                WHERE table_schema = DATABASE()
+                AND table_name = table_name
+                AND index_name = 'idx_part_section_group');
+
+            IF index_exists = 0 THEN
+                SET @sql = CONCAT('ALTER TABLE `', table_name, '` ADD INDEX `idx_part_section_group` (`part_id`, `section_id`, `group_id`)');
+                PREPARE stmt FROM @sql;
+                EXECUTE stmt;
+                DEALLOCATE PREPARE stmt;
+            END IF;
+
+        END IF;
+
+    END LOOP;
+
+    CLOSE catalog_cursor;
+
+    SELECT CONCAT('✅ تم إنشاء الفهارس بنجاح لجميع الكتالوجات') AS Result;
+
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
@@ -11446,3 +6498,7 @@ CREATE TABLE `withdraws` (
 /*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (1,'2014_10_12_000000_create_users_table',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (2,'2014_10_12_100000_create_password_reset_tokens_table',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (3,'2019_08_19_000000_create_failed_jobs_table',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (4,'2019_12_14_000001_create_personal_access_tokens_table',1);

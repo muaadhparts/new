@@ -29,6 +29,86 @@ class Order extends Model
         return $this->hasMany('App\Models\OrderTrack','order_id');
     }
 
+    /**
+     * علاقة مع ShipmentStatusLog
+     */
+    public function shipmentLogs()
+    {
+        return $this->hasMany('App\Models\ShipmentStatusLog', 'order_id')->orderBy('status_date', 'desc');
+    }
+
+    /**
+     * Get latest shipment status for this order
+     */
+    public function getLatestShipmentStatus()
+    {
+        return $this->shipmentLogs()->first();
+    }
+
+    /**
+     * Get all tracking numbers for this order
+     */
+    public function getTrackingNumbers()
+    {
+        return $this->shipmentLogs()->pluck('tracking_number')->unique()->values();
+    }
+
+    /**
+     * Check if order has active shipments
+     */
+    public function hasShipments()
+    {
+        return $this->shipmentLogs()->count() > 0;
+    }
+
+    /**
+     * Get shipment info from vendor_shipping_id JSON
+     */
+    public function getShipmentInfo()
+    {
+        if (!$this->vendor_shipping_id) {
+            return [];
+        }
+
+        $shippingData = is_string($this->vendor_shipping_id)
+            ? json_decode($this->vendor_shipping_id, true)
+            : $this->vendor_shipping_id;
+
+        return isset($shippingData['oto']) && is_array($shippingData['oto'])
+            ? $shippingData['oto']
+            : [];
+    }
+
+    /**
+     * Check if all shipments are delivered (Optimized - Single Query)
+     */
+    public function allShipmentsDelivered()
+    {
+        // استخدام subquery للحصول على آخر حالة لكل tracking number في استعلام واحد
+        $latestStatuses = DB::table('shipment_status_logs as s1')
+            ->select('s1.tracking_number', 's1.status')
+            ->leftJoin('shipment_status_logs as s2', function($join) {
+                $join->on('s1.tracking_number', '=', 's2.tracking_number')
+                     ->whereRaw('s1.status_date < s2.status_date OR (s1.status_date = s2.status_date AND s1.id < s2.id)');
+            })
+            ->whereNull('s2.id')
+            ->where('s1.order_id', $this->id)
+            ->get();
+
+        if ($latestStatuses->isEmpty()) {
+            return false;
+        }
+
+        // التحقق من أن جميع الشحنات delivered
+        foreach ($latestStatuses as $status) {
+            if ($status->status !== 'delivered') {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     public static function getShipData($cart)
     {
 //        dd($cart);

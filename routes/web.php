@@ -1847,6 +1847,10 @@ Route::group(['middleware' => 'maintenance'], function () {
     Route::get('/checkout/payment/myfatoorah/myfatoorah-notify', 'App\Http\Controllers\MyFatoorahController@notify')->name('front.myfatoorah.notify');
 //    Route::post('/checkout/payment/myfatoorah/submit', 'Payment\Checkout\MyFatoorahController@store')->name('front.myfatoorah.submit');
 
+    // Tryoto Webhook (يجب أن يكون بدون middleware auth)
+    Route::post('/webhooks/tryoto', 'App\Http\Controllers\TryotoWebhookController@handle')->name('webhooks.tryoto');
+    Route::get('/webhooks/tryoto/test', 'App\Http\Controllers\TryotoWebhookController@test')->name('webhooks.tryoto.test');
+
 //    Route::get('/checkout/payment/paypal-notify', 'Payment\Checkout\PaypalController@notify')->name('front.paypal.notify');
 
 
