@@ -28,44 +28,42 @@
     const modalId = '{{ $modalId }}';
     const vendorId = {{ $vendor_id }};
 
-    // دالة لتحديث نص الشحن مع الشعار
+    // دالة لتحديث نص الشحن - استخدام updateVendorShippingText المركزية
     function updateTryotoShippingDisplay_{{ $vendor_id }}(selectedRadio) {
-        if (!selectedRadio) return;
+        // استخدام الدالة المركزية لضمان العرض الموحد
+        if (typeof updateVendorShippingText === 'function') {
+            updateVendorShippingText(vendorId);
+        } else {
+            // Fallback إذا لم تكن الدالة موجودة
+            if (!selectedRadio) return;
 
-        const shippingText = document.getElementById('shipping_text' + vendorId);
-        const value = selectedRadio.value;
-        const logo = selectedRadio.getAttribute('data-logo') || '';
-        const service = selectedRadio.getAttribute('data-service') || '';
-        const companyName = selectedRadio.getAttribute('data-form') || '';
-        const viewPrice = selectedRadio.getAttribute('view') || '';
+            const shippingText = document.getElementById('shipping_text' + vendorId);
+            const logo = selectedRadio.getAttribute('data-logo') || '';
+            const service = selectedRadio.getAttribute('data-service') || '';
+            const companyName = selectedRadio.getAttribute('data-form') || '';
+            const viewPrice = selectedRadio.getAttribute('view') || '';
 
-        if (shippingText) {
-            // عرض: الشعار + اسم الشركة + الخدمة + السعر
-            let html = '<div style="display: flex; align-items: center; gap: 10px;">';
-
-            // الشعار
-            if (logo) {
-                html += '<img src="' + logo + '" alt="' + companyName + '" style="max-width: 40px; max-height: 40px; object-fit: contain; border-radius: 4px;">';
+            if (shippingText) {
+                let html = '<div style="display: flex; align-items: center; gap: 10px;">';
+                if (logo) {
+                    html += '<img src="' + logo + '" alt="' + companyName + '" style="max-width: 40px; max-height: 40px; object-fit: contain; border-radius: 4px;">';
+                }
+                html += '<div style="display: flex; flex-direction: column;">';
+                html += '<span style="font-weight: 600; color: #4C3533;">' + companyName + '</span>';
+                if (service) {
+                    html += '<small style="color: #6c757d;">' + service + '</small>';
+                }
+                html += '</div>';
+                if (viewPrice) {
+                    html += '<span style="margin-left: auto; font-weight: 600; color: #EE1243;">+ ' + viewPrice + '</span>';
+                }
+                html += '</div>';
+                shippingText.innerHTML = html;
             }
 
-            // التفاصيل
-            html += '<div style="display: flex; flex-direction: column;">';
-            html += '<span style="font-weight: 600; color: #4C3533;">' + companyName + '</span>';
-            if (service) {
-                html += '<small style="color: #6c757d;">' + service + '</small>';
+            if (typeof recalcTotals === 'function') {
+                recalcTotals();
             }
-            html += '</div>';
-
-            // السعر
-            html += '<span style="margin-left: auto; font-weight: 600; color: #EE1243;">+ ' + viewPrice + '</span>';
-            html += '</div>';
-
-            shippingText.innerHTML = html;
-        }
-
-        // Trigger recalculation of totals
-        if (typeof recalcTotals === 'function') {
-            recalcTotals();
         }
     }
 
@@ -92,19 +90,13 @@
             }
         });
 
-        // اختيار أول عنصر تلقائياً عند تحميل الصفحة
+        // تحديث العرض للعنصر المختار فقط (بدون اختيار تلقائي)
         setTimeout(function() {
-            const firstRadio = modal.querySelector('input[type="radio"][name="shipping[' + vendorId + ']"]:first-of-type');
-            if (firstRadio && !document.querySelector('input[type="radio"][name="shipping[' + vendorId + ']"]:checked')) {
-                firstRadio.checked = true;
-                updateTryotoShippingDisplay_{{ $vendor_id }}(firstRadio);
-            } else {
-                const checkedRadio = modal.querySelector('input[type="radio"][name="shipping[' + vendorId + ']"]:checked');
-                if (checkedRadio) {
-                    updateTryotoShippingDisplay_{{ $vendor_id }}(checkedRadio);
-                }
+            const checkedRadio = modal.querySelector('input[type="radio"][name="shipping[' + vendorId + ']"]:checked');
+            if (checkedRadio) {
+                updateTryotoShippingDisplay_{{ $vendor_id }}(checkedRadio);
             }
-        }, 1500);
+        }, 500);
     }
 
     // Listen for Livewire events

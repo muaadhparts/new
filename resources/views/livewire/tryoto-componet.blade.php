@@ -30,8 +30,7 @@
                                id="{{ $inputId }}"
                                name="shipping[{{ $vendor_id ?? $vendorId ?? 0 }}]"
                                value="{{ $value }}"
-                               wire:change="selectedOption($event.target.value)"
-                               {{ $loop->first ? 'checked' : '' }}>
+                               wire:change="selectedOption($event.target.value)">
                     </td>
 
                     <!-- Company Name -->

@@ -1829,7 +1829,6 @@ Route::group(['middleware' => 'maintenance'], function () {
 
     Route::get('/checkout/step2', 'Front\CheckoutController@checkoutstep2')->name('front.checkout.step2');
     Route::post('/checkout/step2/submit', 'Front\CheckoutController@checkoutStep2Submit')->name('front.checkout.step2.submit');
-    Route::post('/checkout/save-shipping-selection', 'Front\CheckoutController@saveShippingSelection')->name('checkout.save-shipping-selection');
 
     Route::get('/checkout/step3', 'Front\CheckoutController@checkoutstep3')->name('front.checkout.step3');
 

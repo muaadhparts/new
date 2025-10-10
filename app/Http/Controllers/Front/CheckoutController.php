@@ -461,15 +461,8 @@ class CheckoutController extends FrontBaseController
 //     }
 
     /**
-     * حفظ اختيار الشحن في Session (يُستدعى عبر AJAX)
+     * تم إزالة saveShippingSelection - الحفظ الآن يتم فقط عند Submit
      */
-    public function saveShippingSelection(Request $request)
-    {
-        $shippingSelection = $request->input('shipping_selection', []);
-        Session::put('shipping_selection', $shippingSelection);
-
-        return response()->json(['success' => true]);
-    }
 
     public function checkoutStep2Submit(Request $request)
     {

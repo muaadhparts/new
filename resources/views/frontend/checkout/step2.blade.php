@@ -395,7 +395,7 @@
                                                         data-form="{{ $data->title }}"
                                                         id="free-shepping{{ $data->id }}"
                                                         name="shipping_id"
-                                                        value="{{ $data->id }}" {{ $loop->first ? 'checked' : '' }}>
+                                                        value="{{ $data->id }}">
                                                     <label class="icon-label" for="free-shepping{{ $data->id }}">
                                                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="none">
                                                             <rect x="0.5" y="0.5" width="19" height="19" rx="9.5" fill="#FDFDFD" />
@@ -431,7 +431,7 @@
                                                         data-form="{{ $data->title }}"
                                                         id="free-package{{ $data->id }}"
                                                         name="packeging_id"
-                                                        value="{{ $data->id }}" {{ $loop->first ? 'checked' : '' }}>
+                                                        value="{{ $data->id }}">
                                                     <label class="icon-label" for="free-package{{ $data->id }}">
                                                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="none">
                                                             <rect x="0.5" y="0.5" width="19" height="19" rx="9.5" fill="#FDFDFD" />
@@ -554,8 +554,8 @@
                 </div>
 
                 @if ($gs->multiple_shipping == 0 && $digital == 0)
-                    <input type="hidden" name="shipping_id" id="multi_shipping_id" value="{{ isset($shipping_data[0]) ? $shipping_data[0]->id : '' }}">
-                    <input type="hidden" name="packaging_id" id="multi_packaging_id" value="{{ isset($package_data[0]) ? $package_data[0]->id : '' }}">
+                    <input type="hidden" name="shipping_id" id="multi_shipping_id" value="">
+                    <input type="hidden" name="packaging_id" id="multi_packaging_id" value="">
                 @endif
 
                 <input type="hidden" name="dp" value="{{ $digital }}">
@@ -628,17 +628,48 @@
   }
   $('#grandtotal').val(ftotal);
 
-  // تحديث نص الشحن للبائع
+  // تحديث نص الشحن للبائع - شكل موحد دائماً
   function updateVendorShippingText(vendorId) {
     var selector = 'input.shipping[name="shipping[' + vendorId + ']"]:checked';
     var input = document.querySelector(selector);
-    if (!input) return;
+    var shippingText = document.getElementById('shipping_text' + vendorId);
 
-    var label = (input.getAttribute('data-form') || '').trim();
-    var view  = (input.getAttribute('view') || '').trim();
+    if (!shippingText) return;
 
-    var p = document.getElementById('shipping_text' + vendorId);
-    if (p) { p.textContent = (label ? label : '') + (view ? ('+' + view) : ''); }
+    // إذا لم يتم الاختيار
+    if (!input) {
+      shippingText.innerHTML = '<span style="color: #999;">@lang("Not Selected")</span>';
+      return;
+    }
+
+    // إذا تم الاختيار - عرض موحد
+    var companyName = (input.getAttribute('data-form') || '').trim();
+    var logo = input.getAttribute('data-logo') || '';
+    var service = input.getAttribute('data-service') || '';
+    var viewPrice = (input.getAttribute('view') || '').trim();
+
+    var html = '<div style="display: flex; align-items: center; gap: 10px;">';
+
+    // الشعار (إن وُجد)
+    if (logo) {
+      html += '<img src="' + logo + '" alt="' + companyName + '" style="max-width: 40px; max-height: 40px; object-fit: contain; border-radius: 4px;">';
+    }
+
+    // التفاصيل
+    html += '<div style="display: flex; flex-direction: column;">';
+    html += '<span style="font-weight: 600; color: #4C3533;">' + companyName + '</span>';
+    if (service) {
+      html += '<small style="color: #6c757d;">' + service + '</small>';
+    }
+    html += '</div>';
+
+    // السعر
+    if (viewPrice) {
+      html += '<span style="margin-left: auto; font-weight: 600; color: #EE1243;">+ ' + viewPrice + '</span>';
+    }
+    html += '</div>';
+
+    shippingText.innerHTML = html;
 
     recalcTotals();
   }
@@ -827,8 +858,7 @@
     var country_id = $('#select_country').val();
     var state_id = $('#show_state').val() || 0;
 
-    // حفظ اختيار الشحن في Session
-    saveShippingSelection();
+    // تم إزالة AJAX save - الحفظ سيكون فقط عند Submit
 
     if (country_id) {
       setTimeout(function() {
@@ -837,156 +867,81 @@
     }
   });
 
-  // حفظ اختيارات الشحن في Session عبر AJAX
-  function saveShippingSelection() {
-    var shippingData = {};
+  // تم إزالة AJAX save/restore - سيتم الحفظ فقط عند Submit
 
-    document.querySelectorAll('input[type="radio"][name^="shipping["]:checked').forEach(function(input) {
-      var name = input.getAttribute('name');
-      var match = name.match(/shipping\[(\d+)\]/);
-      if (match) {
-        var vendorId = match[1];
+  // 🔧 VALIDATION: التحقق من اختيار شحن لجميع التجار
+  $('form.address-wrapper').on('submit', function(e) {
+    console.log('Form submitting - validating shipping selections...');
 
-        // حفظ القيمة الكاملة (deliveryOptionId#CompanyName#price)
-        // هذا يضمن التفريق بين نفس الشركة بأسعار مختلفة
-        shippingData[vendorId] = {
-          value: input.value, // القيمة الكاملة الفريدة
-          companyName: input.getAttribute('data-form') || '',
-          price: input.getAttribute('data-price') || '0',
-          logo: input.getAttribute('data-logo') || '',
-          service: input.getAttribute('data-service') || '',
-          viewPrice: input.getAttribute('view') || ''
+    // جمع جميع التجار الذين يحتاجون شحن
+    var vendorsNeedingShipping = [];
+    $('[id^="shipping_text"]').each(function() {
+      var vendorId = $(this).attr('id').replace('shipping_text', '');
+      vendorsNeedingShipping.push(vendorId);
+    });
+
+    console.log('Vendors needing shipping:', vendorsNeedingShipping);
+
+    // التحقق من اختيار شحن لكل تاجر
+    var missingVendors = [];
+    var allSelections = {};
+
+    vendorsNeedingShipping.forEach(function(vendorId) {
+      var selected = $('input[type="radio"][name="shipping[' + vendorId + ']"]:checked');
+      if (selected.length === 0) {
+        missingVendors.push(vendorId);
+      } else {
+        allSelections[vendorId] = {
+          name: selected.attr('name'),
+          value: selected.val()
         };
-
-        console.log('Saving shipping for vendor', vendorId, ':', shippingData[vendorId]);
       }
     });
 
-    // حفظ في Session فوراً
-    if (Object.keys(shippingData).length > 0) {
-      $.ajax({
-        url: '{{ route("checkout.save-shipping-selection") }}',
-        method: 'POST',
-        data: {
-          _token: '{{ csrf_token() }}',
-          shipping_selection: shippingData
-        },
-        async: true,
-        success: function(response) {
-          console.log('Shipping selections saved successfully');
-        },
-        error: function(xhr, status, error) {
-          console.error('Failed to save shipping selection:', error);
-        }
+    // إذا لم يختر المستخدم شحن لأحد التجار
+    if (missingVendors.length > 0) {
+      e.preventDefault(); // منع الإرسال
+
+      // عرض رسالة خطأ
+      if (typeof toastr !== 'undefined') {
+        toastr.error('@lang("Please select shipping method for all vendors")');
+      } else {
+        alert('@lang("Please select shipping method for all vendors")');
+      }
+
+      console.error('Missing shipping for vendors:', missingVendors);
+
+      // تمييز التجار الذين لم يختر لهم شحن
+      missingVendors.forEach(function(vendorId) {
+        var textElement = $('#shipping_text' + vendorId);
+        textElement.css({
+          'color': 'red',
+          'font-weight': 'bold'
+        });
+        textElement.text('@lang("Please select shipping!")');
       });
+
+      return false;
     }
-  }
 
-  // استعادة الاختيارات المحفوظة عند تحميل الصفحة
-  function restoreSavedShippingSelections() {
-    @if(Session::has('shipping_selection'))
-      var savedSelection = @json(Session::get('shipping_selection'));
-      console.log('Restoring saved selections:', savedSelection);
+    // ✅ كل التجار لديهم شحن - نضيف hidden inputs
+    console.log('All vendors have shipping selected. Adding hidden inputs...');
 
-      // تطبيق الاختيارات المحفوظة لكل تاجر
-      $.each(savedSelection, function(vendorId, data) {
-        console.log('Restoring for vendor', vendorId, ':', data);
-
-        // البحث بالقيمة الكاملة (deliveryOptionId#CompanyName#price)
-        var input = $('input[type="radio"][name="shipping[' + vendorId + ']"][value="' + data.value + '"]');
-
-        if (input.length > 0) {
-          console.log('Found input for vendor', vendorId, ', checking it');
-          input.prop('checked', true);
-
-          // تحديث العرض للـ Tryoto (مع الشعار والخدمة)
-          if (data.logo || data.service) {
-            console.log('Restoring Tryoto display for vendor', vendorId);
-
-            // استخدام الدالة العامة إذا كانت متاحة
-            var updateFunc = window['updateTryotoShippingDisplay_' + vendorId];
-            if (typeof updateFunc === 'function') {
-              console.log('Using global update function for vendor', vendorId);
-              updateFunc(input[0]);
-            } else {
-              console.log('Using fallback display for vendor', vendorId);
-              // Fallback: عرض مباشر
-              var shippingText = $('#shipping_text' + vendorId);
-              if (shippingText.length > 0) {
-                var viewPrice = data.viewPrice || input.attr('view') || '';
-                var html = '<div style="display: flex; align-items: center; gap: 10px;">';
-                if (data.logo) {
-                  html += '<img src="' + data.logo + '" alt="' + data.companyName + '" style="max-width: 40px; max-height: 40px; object-fit: contain; border-radius: 4px;">';
-                }
-                html += '<div style="display: flex; flex-direction: column;">';
-                html += '<span style="font-weight: 600; color: #4C3533;">' + data.companyName + '</span>';
-                if (data.service) {
-                  html += '<small style="color: #6c757d;">' + data.service + '</small>';
-                }
-                html += '</div>';
-                if (viewPrice) {
-                  html += '<span style="margin-left: auto; font-weight: 600; color: #EE1243;">+ ' + viewPrice + '</span>';
-                }
-                html += '</div>';
-                shippingText.html(html);
-              }
-            }
-          } else {
-            console.log('Restoring regular shipping for vendor', vendorId);
-            // اختيار عادي من manual أو debts
-            input.trigger('change');
-          }
-        } else {
-          console.warn('Could not find input for vendor', vendorId, 'with value', data.value);
-        }
-      });
-
-      // إعادة حساب الإجمالي بعد استعادة الاختيارات
-      console.log('Recalculating totals after restoration');
-      setTimeout(function() {
-        recalcTotals();
-      }, 500);
-    @else
-      console.log('No saved shipping selections found');
-    @endif
-  }
-
-  // استدعاء دالة الاستعادة بعد تحميل Livewire
-  document.addEventListener('livewire:load', function() {
-    setTimeout(restoreSavedShippingSelections, 2000);
-  });
-
-  // Fallback: استدعاء عادي إذا لم يتم تحميل Livewire
-  $(document).ready(function() {
-    setTimeout(restoreSavedShippingSelections, 2500);
-  });
-
-  // 🔧 FIX: ضمان إرسال بيانات الشحن مع الـ form
-  // المشكلة: Bootstrap modals قد لا ترسل البيانات بشكل موثوق
-  // الحل: إضافة hidden inputs ديناميكية قبل إرسال الـ form
-  $('form.address-wrapper').on('submit', function(e) {
-    console.log('Form submitting - checking shipping selections...');
-
-    // إزالة hidden inputs القديمة (لتجنب التكرار)
+    // إزالة hidden inputs القديمة
     $(this).find('input[name^="shipping["]').filter('[type="hidden"]').remove();
 
-    // البحث عن جميع radio buttons المختارة للشحن داخل الـ modals
-    $('input[type="radio"][name^="shipping["]:checked').each(function() {
-      var name = $(this).attr('name');
-      var value = $(this).val();
+    // إضافة hidden inputs للشحن المختار
+    $.each(allSelections, function(vendorId, data) {
+      console.log('Adding hidden input:', data.name, '=', data.value);
 
-      console.log('Adding hidden input:', name, '=', value);
-
-      // إنشاء hidden input جديد وإضافته للـ form
       $('<input>')
         .attr('type', 'hidden')
-        .attr('name', name)
-        .val(value)
+        .attr('name', data.name)
+        .val(data.value)
         .appendTo('form.address-wrapper');
     });
 
-    console.log('Form data ready for submission');
-    // السماح بإرسال الـ form
+    console.log('✅ Form validation passed - submitting...');
     return true;
   });
 })();

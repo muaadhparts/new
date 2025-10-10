@@ -20,8 +20,7 @@
                                            view="{{ $curr->sign }}{{ round($data->price * $curr->value, 2) }}"
                                            data-form="{{ $data->title }}"
                                            id="{{ $provider }}-shipping-{{ $vendor_id }}-{{ $data->id }}"
-                                           name="shipping[{{ $vendor_id }}]" value="{{ $data->id }}"
-                                           {{ $index === 0 ? 'checked' : '' }}>
+                                           name="shipping[{{ $vendor_id }}]" value="{{ $data->id }}">
 
                                     <label class="icon-label" for="{{ $provider }}-shipping-{{ $vendor_id }}-{{ $data->id }}">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="none">
@@ -94,11 +93,12 @@
                 });
             });
 
-            // Auto-select first option and update text on modal show
+            // تم إزالة auto-select - المستخدم يجب أن يختار يدوياً
+            // فقط نحدّث العرض إذا كان هناك اختيار موجود
             modal.addEventListener('shown.bs.modal', function() {
-                const firstRadio = modal.querySelector('input.shipping[ref="{{ $vendor_id }}"]:checked');
-                if (firstRadio) {
-                    firstRadio.dispatchEvent(new Event('change'));
+                const checkedRadio = modal.querySelector('input.shipping[ref="{{ $vendor_id }}"]:checked');
+                if (checkedRadio) {
+                    checkedRadio.dispatchEvent(new Event('change'));
                 }
             });
         }
