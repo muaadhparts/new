@@ -191,27 +191,73 @@
                             @endphp
 
                             <div class="product-infos-wrapper wow-replaced" data-wow-delay=".2s">
-                                {{-- ===== زر اختيار الشحن قبل قائمة الأصناف (للشحن المتعدد) ===== --}}
+                                {{-- ===== أزرار اختيار الشحن الديناميكية (للشحن المتعدد) ===== --}}
                                 @if ($gs->multiple_shipping == 1 && $vendor_has_physical)
+                                    @php
+                                        // تجميع الشحن حسب provider ديناميكياً
+                                        $groupedShipping = $shipping->groupBy('provider');
+
+                                        // أسماء providers للعرض
+                                        $providerLabels = [
+                                            'manual' => __('Manual Shipping'),
+                                            'debts' => __('Debts Shipping'),
+                                            'tryoto' => __('Smart Shipping (Tryoto)'),
+                                        ];
+                                    @endphp
+
                                     <div class="shop-info-wrapper">
-                                        <div class="d-flex flex-wrap gap-2 mb-3 bg-light-white p-4">
+                                        <div class="d-flex flex-wrap gap-2 mb-3 bg-light-white p-4 align-items-center">
                                             <span class="label mr-2">
-                                                <b>{{ __('Shipping :') }}</b>
+                                                <b>{{ __('Shipping Methods:') }}</b>
                                             </span>
-                                            <p id="shipping_text{{ $vendor_id }}">
-                                                {{ isset($shipping[0])
-                                                    ? $shipping[0]['title'] . '+' . $curr->sign . round($shipping[0]['price'] * $curr->value, 2)
-                                                    : __('Package not found') }}
+
+                                            {{-- أزرار ديناميكية لكل provider --}}
+                                            @foreach($groupedShipping as $provider => $methods)
+                                                @php
+                                                    $providerLabel = $providerLabels[$provider] ?? ucfirst($provider);
+                                                    $modalId = "vendor_{$provider}_shipping_{$vendor_id}";
+                                                @endphp
+
+                                                <button type="button" class="template-btn sm-btn"
+                                                        data-bs-toggle="modal"
+                                                        data-bs-target="#{{ $modalId }}">
+                                                    {{ $providerLabel }}
+                                                </button>
+                                            @endforeach
+
+                                            {{-- نص عرض الشحن المختار --}}
+                                            <p id="shipping_text{{ $vendor_id }}" class="ms-auto mb-0">
+                                                @lang('Not Selected')
                                             </p>
-                                            <button type="button" class="template-btn sm-btn" data-bs-toggle="modal"
-                                                    data-bs-target="#vendor_shipping{{ $vendor_id }}">
-                                                {{ __('Select Shipping') }}
-                                            </button>
                                         </div>
-                                        @include('includes.frontend.vendor_shipping', [
-                                            'shipping'  => $shipping,
-                                            'vendor_id' => $vendor_id,
-                                        ])
+
+                                        {{-- Modals منفصلة لكل provider --}}
+                                        @foreach($groupedShipping as $provider => $methods)
+                                            @php
+                                                $modalId = "vendor_{$provider}_shipping_{$vendor_id}";
+                                                $providerLabel = $providerLabels[$provider] ?? ucfirst($provider);
+                                            @endphp
+
+                                            @if($provider === 'tryoto')
+                                                {{-- Modal خاص بـ Tryoto --}}
+                                                @include('includes.frontend.tryoto_shipping_modal', [
+                                                    'modalId' => $modalId,
+                                                    'providerLabel' => $providerLabel,
+                                                    'vendor_id' => $vendor_id,
+                                                    'array_product' => $array_product,
+                                                ])
+                                            @else
+                                                {{-- Modal عادي لباقي providers --}}
+                                                @include('includes.frontend.provider_shipping_modal', [
+                                                    'modalId' => $modalId,
+                                                    'providerLabel' => $providerLabel,
+                                                    'provider' => $provider,
+                                                    'methods' => $methods,
+                                                    'vendor_id' => $vendor_id,
+                                                    'curr' => $curr,
+                                                ])
+                                            @endif
+                                        @endforeach
                                     </div>
                                 @endif
 
