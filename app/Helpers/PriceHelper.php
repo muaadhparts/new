@@ -600,6 +600,17 @@ class PriceHelper
     }
 
     /**
+     * Return JSON response with proper Arabic text encoding
+     * @param mixed $data The data to return (string or array)
+     * @param int $status HTTP status code (default 200)
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public static function jsonResponse($data, $status = 200)
+    {
+        return response()->json($data, $status, [], JSON_UNESCAPED_UNICODE);
+    }
+
+    /**
      * Calculate shipping cost based on size and weight
      * @param array $products Array of products with qty and weight
      * @param string $shippingMethod Shipping method (standard, express, etc)

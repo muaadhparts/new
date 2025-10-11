@@ -1,5 +1,9 @@
 @extends('layouts.admin')
 
+@section('styles')
+<link rel="stylesheet" href="{{ asset('assets/admin/css/order-table-enhancements.css') }}">
+@endsection
+
 @section('content')
 <div class="content-area">
     <div class="mr-breadcrumb">
@@ -88,22 +92,22 @@
                 <div class="col-sm-12">
                     <div class="invoice_table">
                         <div class="mr-table">
-                            <div class="table-responsive">
-                                <table id="example2" class="table table-hover dt-responsive" cellspacing="0"
+                            <div class="table-responsive order-table-responsive">
+                                <table id="example2" class="table table-hover order-table-enhanced" cellspacing="0"
                                     width="100%" >
                                     <thead>
                                         <tr>
-                                            <th>{{ __('Product') }}</th>
-                                            <th>{{ __('SKU') }}</th>
-                                            <th>{{ __('Brand') }}</th>
-                                            <th>{{ __('Manufacturer') }}</th>
-                                            <th>{{ __('Shop Name') }}</th>
-                                            <th>{{ __('Size') }}</th>
-                                            <th>{{ __('Color') }}</th>
-                                            <th>{{ __('Price') }}</th>
-                                            <th>{{ __('Qty') }}</th>
-                                            <th>{{ __('Discount') }}</th>
-                                            <th>{{ __('Total') }}</th>
+                                            <th class="col-title">{{ __('Product') }}</th>
+                                            <th class="col-sku">{{ __('SKU') }}</th>
+                                            <th class="col-brand">{{ __('Brand') }}</th>
+                                            <th class="col-manufacturer">{{ __('Manufacturer') }}</th>
+                                            <th class="col-shop">{{ __('Shop Name') }}</th>
+                                            <th class="col-size">{{ __('Size') }}</th>
+                                            <th class="col-color">{{ __('Color') }}</th>
+                                            <th class="col-price">{{ __('Price') }}</th>
+                                            <th class="col-qty">{{ __('Qty') }}</th>
+                                            <th class="col-discount">{{ __('Discount') }}</th>
+                                            <th class="col-total">{{ __('Total') }}</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -120,38 +124,77 @@
                                         @endphp
                                         <tr>
                                             {{-- Product --}}
-                                            <td>
-                                                @if($product['item']['user_id'] != 0)
-                                                    @if(isset($vendorUser))
-                                                    <x-product-name :item="$product" :vendor-id="$product['item']['user_id']" :merchant-product-id="$product['item']['id']" target="_blank" />
-                                                    @else
-                                                    <x-product-name :item="$product" target="_self" />
+                                            <td class="col-title">
+                                                @php
+                                                    $productName = $product['item']['name'] ?? '';
+                                                @endphp
+                                                <div class="tooltip-wrapper">
+                                                    <span class="text-truncate-custom">
+                                                        @if($product['item']['user_id'] != 0)
+                                                            @if(isset($vendorUser))
+                                                            <x-product-name :item="$product" :vendor-id="$product['item']['user_id']" :merchant-product-id="$product['item']['id']" target="_blank" />
+                                                            @else
+                                                            <x-product-name :item="$product" target="_self" />
+                                                            @endif
+                                                        @else
+                                                            <x-product-name :item="$product" target="_self" />
+                                                        @endif
+                                                    </span>
+                                                    @if(mb_strlen($productName) > 50)
+                                                        <span class="tooltip-text">{{ $productName }}</span>
                                                     @endif
-                                                @else
-                                                    <x-product-name :item="$product" target="_self" />
-                                                @endif
+                                                </div>
                                             </td>
 
                                             {{-- SKU --}}
-                                            <td>{{ $product['item']['sku'] ?? '-' }}</td>
+                                            <td class="col-sku">
+                                                @if($product['item']['sku'])
+                                                    <span class="badge-custom badge-sku">{{ $product['item']['sku'] }}</span>
+                                                @else
+                                                    -
+                                                @endif
+                                            </td>
 
                                             {{-- Brand --}}
-                                            <td>{{ $orderProduct && $orderProduct->brand ? Str::ucfirst($orderProduct->brand->name) : '-' }}</td>
+                                            <td class="col-brand">
+                                                @php
+                                                    $brandName = $orderProduct && $orderProduct->brand ? Str::ucfirst($orderProduct->brand->name) : '-';
+                                                @endphp
+                                                <div class="tooltip-wrapper">
+                                                    <span class="text-truncate-custom">{{ $brandName }}</span>
+                                                    @if(mb_strlen($brandName) > 15)
+                                                        <span class="tooltip-text">{{ $brandName }}</span>
+                                                    @endif
+                                                </div>
+                                            </td>
 
                                             {{-- Manufacturer --}}
-                                            <td>
+                                            <td class="col-manufacturer">
                                                 @if($orderMerchant && $orderMerchant->qualityBrand)
-                                                    {{ app()->getLocale() == 'ar' && $orderMerchant->qualityBrand->name_ar ? $orderMerchant->qualityBrand->name_ar : $orderMerchant->qualityBrand->name_en }}
+                                                    @php
+                                                        $manufacturerName = app()->getLocale() == 'ar' && $orderMerchant->qualityBrand->name_ar ? $orderMerchant->qualityBrand->name_ar : $orderMerchant->qualityBrand->name_en;
+                                                    @endphp
+                                                    <div class="tooltip-wrapper">
+                                                        <span class="text-truncate-custom">{{ $manufacturerName }}</span>
+                                                        @if(mb_strlen($manufacturerName) > 15)
+                                                            <span class="tooltip-text">{{ $manufacturerName }}</span>
+                                                        @endif
+                                                    </div>
                                                 @else
                                                     -
                                                 @endif
                                             </td>
 
                                             {{-- Shop Name --}}
-                                            <td>
+                                            <td class="col-shop">
                                                 @if($product['item']['user_id'] != 0)
                                                     @if(isset($vendorUser))
-                                                        {{ $vendorUser->shop_name }}
+                                                        <div class="tooltip-wrapper">
+                                                            <span class="text-truncate-custom">{{ $vendorUser->shop_name }}</span>
+                                                            @if(mb_strlen($vendorUser->shop_name) > 20)
+                                                                <span class="tooltip-text">{{ $vendorUser->shop_name }}</span>
+                                                            @endif
+                                                        </div>
                                                     @else
                                                         {{ __('Vendor Removed') }}
                                                     @endif
@@ -161,28 +204,31 @@
                                             </td>
 
                                             {{-- Size --}}
-                                            <td>{{ $product['size'] ? str_replace('-', ' ', $product['size']) : '-' }}</td>
+                                            <td class="col-size">{{ $product['size'] ? str_replace('-', ' ', $product['size']) : '-' }}</td>
 
                                             {{-- Color --}}
-                                            <td>
+                                            <td class="col-color">
                                                 @if($product['color'])
-                                                    <span style="width: 20px; height: 20px; display: inline-block; vertical-align: middle; border-radius: 50%; background: #{{$product['color']}};"></span>
+                                                    <div class="tooltip-wrapper">
+                                                        <span class="color-circle" style="background: #{{$product['color']}};"></span>
+                                                        <span class="tooltip-text">#{{ strtoupper($product['color']) }}</span>
+                                                    </div>
                                                 @else
                                                     -
                                                 @endif
                                             </td>
 
                                             {{-- Price --}}
-                                            <td>{{ \PriceHelper::showCurrencyPrice(($product['item_price'] ) * $order->currency_value) }}</td>
+                                            <td class="col-price">{{ \PriceHelper::showCurrencyPrice(($product['item_price'] ) * $order->currency_value) }}</td>
 
                                             {{-- Qty --}}
-                                            <td>{{$product['qty']}} {{ $product['item']['measure'] }}</td>
+                                            <td class="col-qty">{{$product['qty']}} {{ $product['item']['measure'] }}</td>
 
                                             {{-- Discount --}}
-                                            <td>{{ $product['discount'] == 0 ? '-' : $product['discount'].'%' }}</td>
+                                            <td class="col-discount">{{ $product['discount'] == 0 ? '-' : $product['discount'].'%' }}</td>
 
                                             {{-- Total --}}
-                                            <td>{{ \PriceHelper::showCurrencyPrice($product['price'] * $order->currency_value) }}</td>
+                                            <td class="col-total">{{ \PriceHelper::showCurrencyPrice($product['price'] * $order->currency_value) }}</td>
 
                                             @php
                                             $subtotal += round(($product['price'] / $order->currency_value) * $order->currency_value, 2);

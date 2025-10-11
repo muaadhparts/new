@@ -2,6 +2,8 @@
 
 @section('styles')
 
+<link rel="stylesheet" href="{{ asset('assets/admin/css/order-table-enhancements.css') }}">
+
 <style type="text/css">
     .order-table-wrap table#example2 {
         margin: 10px 20px;
@@ -402,25 +404,25 @@
                         __('Products Ordered By') }} - <strong>{{$vendor->shop_name}}</strong>
 
                     </h4>
-                    <div class="table-responsive">
-                        <table class="table table-hover dt-responsive" cellspacing="0" width="100%">
+                    <div class="table-responsive order-table-responsive">
+                        <table class="table table-hover order-table-enhanced" cellspacing="0" width="100%">
                             <thead>
 
                                 <tr>
-                                    <th>{{ __('Product ID#') }}</th>
-                                    <th>{{ __('Product Title') }}</th>
-                                    <th>{{ __('SKU') }}</th>
-                                    <th>{{ __('Brand') }}</th>
-                                    <th>{{ __('Manufacturer') }}</th>
-                                    <th>{{ __('Shop Name') }}</th>
-                                    <th>{{ __('Size') }}</th>
-                                    <th>{{ __('Color') }}</th>
-                                    <th>{{ __('Price') }}</th>
-                                    <th>{{ __('Qty') }}</th>
-                                    <th>{{ __('Discount') }}</th>
-                                    <th>{{ __('Vendor Status') }}</th>
-                                    <th>{{ __('Total Price') }}</th>
-                                    <th>{{ __('Action') }}</th>
+                                    <th class="col-id">{{ __('Product ID#') }}</th>
+                                    <th class="col-title">{{ __('Product Title') }}</th>
+                                    <th class="col-sku">{{ __('SKU') }}</th>
+                                    <th class="col-brand">{{ __('Brand') }}</th>
+                                    <th class="col-manufacturer">{{ __('Manufacturer') }}</th>
+                                    <th class="col-shop">{{ __('Shop Name') }}</th>
+                                    <th class="col-size">{{ __('Size') }}</th>
+                                    <th class="col-color">{{ __('Color') }}</th>
+                                    <th class="col-price">{{ __('Price') }}</th>
+                                    <th class="col-qty">{{ __('Qty') }}</th>
+                                    <th class="col-discount">{{ __('Discount') }}</th>
+                                    <th class="col-status">{{ __('Vendor Status') }}</th>
+                                    <th class="col-total">{{ __('Total Price') }}</th>
+                                    <th class="col-action">{{ __('Action') }}</th>
 
                                 </tr>
                             </thead>
@@ -440,21 +442,33 @@
                                     $vendorOrder = App\Models\VendorOrder::where('order_id','=',$order->id)->where('user_id','=',$product['item']['user_id'])->first();
                                 @endphp
                                 <tr>
-                                    <td><input type="hidden" value="{{$key1}}">{{ $product['item']['id'] }}</td>
+                                    <td class="col-id"><input type="hidden" value="{{$key1}}">{{ $product['item']['id'] }}</td>
 
                                     {{-- Product Title --}}
-                                    <td>
+                                    <td class="col-title">
                                         <input type="hidden" value="{{ $product['license'] }}">
 
-                                        @if($product['item']['user_id'] != 0)
-                                            @if(isset($vendorUser))
-                                            <x-product-name :item="$product" :vendor-id="$product['item']['user_id']" :merchant-product-id="$product['item']['id']" target="_blank" />
-                                            @else
-                                            <x-product-name :item="$product" :vendor-id="$product['item']['user_id']" :merchant-product-id="$product['item']['id']" target="_blank" />
+                                        @php
+                                            $productName = $product['item']['name'] ?? '';
+                                            $truncatedName = mb_strlen($productName) > 50 ? mb_substr($productName, 0, 50) . '...' : $productName;
+                                        @endphp
+
+                                        <div class="tooltip-wrapper">
+                                            <span class="text-truncate-custom">
+                                                @if($product['item']['user_id'] != 0)
+                                                    @if(isset($vendorUser))
+                                                    <x-product-name :item="$product" :vendor-id="$product['item']['user_id']" :merchant-product-id="$product['item']['id']" target="_blank" />
+                                                    @else
+                                                    <x-product-name :item="$product" :vendor-id="$product['item']['user_id']" :merchant-product-id="$product['item']['id']" target="_blank" />
+                                                    @endif
+                                                @else
+                                                    <x-product-name :item="$product" :vendor-id="$product['item']['user_id']" target="_blank" />
+                                                @endif
+                                            </span>
+                                            @if(mb_strlen($productName) > 50)
+                                                <span class="tooltip-text">{{ $productName }}</span>
                                             @endif
-                                        @else
-                                            <x-product-name :item="$product" :vendor-id="$product['item']['user_id']" target="_blank" />
-                                        @endif
+                                        </div>
 
                                         @if($product['license'] != '')
                                         <br><a href="javascript:;" data-toggle="modal" data-target="#confirm-delete"
@@ -469,25 +483,54 @@
                                     </td>
 
                                     {{-- SKU --}}
-                                    <td>{{ $product['item']['sku'] ?? '-' }}</td>
+                                    <td class="col-sku">
+                                        @if($product['item']['sku'])
+                                            <span class="badge-custom badge-sku">{{ $product['item']['sku'] }}</span>
+                                        @else
+                                            -
+                                        @endif
+                                    </td>
 
                                     {{-- Brand --}}
-                                    <td>{{ $orderProduct && $orderProduct->brand ? Str::ucfirst($orderProduct->brand->name) : '-' }}</td>
+                                    <td class="col-brand">
+                                        @php
+                                            $brandName = $orderProduct && $orderProduct->brand ? Str::ucfirst($orderProduct->brand->name) : '-';
+                                        @endphp
+                                        <div class="tooltip-wrapper">
+                                            <span class="text-truncate-custom">{{ $brandName }}</span>
+                                            @if(mb_strlen($brandName) > 15)
+                                                <span class="tooltip-text">{{ $brandName }}</span>
+                                            @endif
+                                        </div>
+                                    </td>
 
                                     {{-- Manufacturer --}}
-                                    <td>
+                                    <td class="col-manufacturer">
                                         @if($orderMerchant && $orderMerchant->qualityBrand)
-                                            {{ app()->getLocale() == 'ar' && $orderMerchant->qualityBrand->name_ar ? $orderMerchant->qualityBrand->name_ar : $orderMerchant->qualityBrand->name_en }}
+                                            @php
+                                                $manufacturerName = app()->getLocale() == 'ar' && $orderMerchant->qualityBrand->name_ar ? $orderMerchant->qualityBrand->name_ar : $orderMerchant->qualityBrand->name_en;
+                                            @endphp
+                                            <div class="tooltip-wrapper">
+                                                <span class="text-truncate-custom">{{ $manufacturerName }}</span>
+                                                @if(mb_strlen($manufacturerName) > 15)
+                                                    <span class="tooltip-text">{{ $manufacturerName }}</span>
+                                                @endif
+                                            </div>
                                         @else
                                             -
                                         @endif
                                     </td>
 
                                     {{-- Shop Name --}}
-                                    <td>
+                                    <td class="col-shop">
                                         @if($product['item']['user_id'] != 0)
                                             @if(isset($vendorUser))
-                                            <a target="_blank" href="{{route('admin-vendor-show',$vendorUser->id)}}">{{$vendorUser->shop_name}}</a>
+                                                <div class="tooltip-wrapper">
+                                                    <a target="_blank" href="{{route('admin-vendor-show',$vendorUser->id)}}" class="text-truncate-custom">{{$vendorUser->shop_name}}</a>
+                                                    @if(mb_strlen($vendorUser->shop_name) > 20)
+                                                        <span class="tooltip-text">{{ $vendorUser->shop_name }}</span>
+                                                    @endif
+                                                </div>
                                             @else
                                             {{ __('Vendor Removed') }}
                                             @endif
@@ -497,28 +540,31 @@
                                     </td>
 
                                     {{-- Size --}}
-                                    <td>{{ $product['size'] ? str_replace('-', ' ', $product['size']) : '-' }}</td>
+                                    <td class="col-size">{{ $product['size'] ? str_replace('-', ' ', $product['size']) : '-' }}</td>
 
                                     {{-- Color --}}
-                                    <td>
+                                    <td class="col-color">
                                         @if($product['color'])
-                                            <span style="width: 20px; height: 20px; display: inline-block; vertical-align: middle; border-radius: 50%; background: #{{$product['color']}};"></span>
+                                            <div class="tooltip-wrapper">
+                                                <span class="color-circle" style="background: #{{$product['color']}};"></span>
+                                                <span class="tooltip-text">#{{ strtoupper($product['color']) }}</span>
+                                            </div>
                                         @else
                                             -
                                         @endif
                                     </td>
 
                                     {{-- Price --}}
-                                    <td>{{ \PriceHelper::showCurrencyPrice(($product['item_price'] ) * $order->currency_value) }}</td>
+                                    <td class="col-price">{{ \PriceHelper::showCurrencyPrice(($product['item_price'] ) * $order->currency_value) }}</td>
 
                                     {{-- Qty --}}
-                                    <td>{{$product['qty']}} {{ $product['item']['measure'] }}</td>
+                                    <td class="col-qty">{{$product['qty']}} {{ $product['item']['measure'] }}</td>
 
                                     {{-- Discount --}}
-                                    <td>{{ $product['discount'] == 0 ? '-' : $product['discount'].'%' }}</td>
+                                    <td class="col-discount">{{ $product['discount'] == 0 ? '-' : $product['discount'].'%' }}</td>
 
                                     {{-- Vendor Status --}}
-                                    <td>
+                                    <td class="col-status">
                                         @if($product['item']['user_id'] != 0)
                                             @if($order->dp == 1 && $order->payment_status == 'Completed')
                                                 <span class="badge badge-success">{{ __('Completed') }}</span>
@@ -539,10 +585,10 @@
                                     </td>
 
                                     {{-- Total Price --}}
-                                    <td>{{ \PriceHelper::showCurrencyPrice($product['price'] * $order->currency_value) }}</td>
+                                    <td class="col-total">{{ \PriceHelper::showCurrencyPrice($product['price'] * $order->currency_value) }}</td>
 
                                     {{-- Action --}}
-                                    <td>
+                                    <td class="col-action">
                                         <div class="action-list">
                                             @if (App\Models\Product::whereId($product['item']['id'])->exists())
                                             <a class="add-btn edit-product"data-href="{{ route('admin-order-product-edit',[$itemKey, $product['item']['id'] ,$order->id]) }}"

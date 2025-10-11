@@ -15,7 +15,7 @@
 
               @php
                   $vendorId = $order->user_id ?? 0;
-                  $vendorSizes = $productt->getVendorSizes($vendorId);
+                  $vendorSizes = $productt->getVendorSize($vendorId);
               @endphp
               @if(!empty($vendorSizes))
 
@@ -53,8 +53,19 @@
                       <span class="box" data-color="{{ $vendorColors[$key] ?? '' }}" style="background-color: {{ $vendorColors[$key] ?? '' }}">
 
                         @php
-                            $vendorSizeQty = $productt->getVendorSizeQty($vendorId, $key);
-                            $vendorSizePrice = $productt->getVendorSizePrice($vendorId, $key);
+                            $allVendorSizeQty = $productt->getVendorSizeQty($vendorId);
+                            $allVendorSizePrice = $productt->getVendorSizePrice($vendorId);
+
+                            // Parse if they are strings (JSON or comma-separated)
+                            if (is_string($allVendorSizeQty)) {
+                                $allVendorSizeQty = json_decode($allVendorSizeQty, true) ?: explode(',', $allVendorSizeQty);
+                            }
+                            if (is_string($allVendorSizePrice)) {
+                                $allVendorSizePrice = json_decode($allVendorSizePrice, true) ?: explode(',', $allVendorSizePrice);
+                            }
+
+                            $vendorSizeQty = $allVendorSizeQty[$key] ?? 0;
+                            $vendorSizePrice = $allVendorSizePrice[$key] ?? 0;
                         @endphp
                         <input type="hidden" class="size" value="{{ $vendorSizes[$key] ?? '' }}">
                         <input type="hidden" class="size_qty" value="{{ $vendorSizeQty }}">
@@ -79,7 +90,12 @@
               @if(!empty($vendorSizes))
 
                 @php
-                    $firstSizeQty = $productt->getVendorSizeQty($vendorId, 0);
+                    $allVendorSizeQtyForStock = $productt->getVendorSizeQty($vendorId);
+                    // Parse if string
+                    if (is_string($allVendorSizeQtyForStock)) {
+                        $allVendorSizeQtyForStock = json_decode($allVendorSizeQtyForStock, true) ?: explode(',', $allVendorSizeQtyForStock);
+                    }
+                    $firstSizeQty = $allVendorSizeQtyForStock[0] ?? 0;
                 @endphp
                 <input type="hidden" class="product-stock" value="{{@$item['size_key'] ??  $firstSizeQty }}">
 

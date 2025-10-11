@@ -9,6 +9,7 @@
                 <div class="gs-dashboard-user-content-wrapper gs-dashboard-outlet">
                     <div class="gs-edit-profile-section">
                         <h3>@lang('Edit Profile')</h3>
+                        @include('includes.form-success')
                         <form action="{{ route('user-profile-update') }}" method="POST" enctype="multipart/form-data">
                             @csrf
                             <div class="edit-profile-area">

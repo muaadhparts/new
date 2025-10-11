@@ -59,7 +59,7 @@ class UserController extends UserBaseController
         }
         $data->update($input);
 
-        return back()->with('success', __('Profile Updated Successfully!'));
+        return redirect()->route('user-profile')->with('success', __('Profile Updated Successfully!'));
     }
 
     public function pricingPlans()
