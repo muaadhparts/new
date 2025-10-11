@@ -372,69 +372,82 @@
 
 <style>
 /* ========================================
-   ENHANCED HEADER STYLES
+   MODERN REDESIGNED HEADER STYLES
    ======================================== */
 
-/* Info Bar Enhancement */
+/* Info Bar - Teal/Cyan Theme */
 .info-bar {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    padding: 0.75rem 0;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    background: linear-gradient(90deg, #0d9488 0%, #14b8a6 50%, #2dd4bf 100%);
+    padding: 0.6rem 0;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    font-size: 0.9rem;
 }
 
 .info-bar a {
-    color: #fff;
-    transition: all var(--transition-fast);
-    font-weight: 500;
+    color: rgba(255, 255, 255, 0.95);
+    transition: all 0.25s ease;
+    font-weight: 600;
+    letter-spacing: 0.3px;
 }
 
 .info-bar a:hover {
-    color: #ffc107;
-    transform: translateX(2px);
+    color: #fde047;
+    transform: translateY(-1px);
 }
 
-/* Dropdown Enhancements */
+/* Dropdown Modern Design */
 .info-bar .dropdown-toggle {
-    background: rgba(255, 255, 255, 0.2);
-    border: 1px solid rgba(255, 255, 255, 0.3);
+    background: rgba(255, 255, 255, 0.15);
+    border: 1.5px solid rgba(255, 255, 255, 0.25);
     color: #fff;
-    padding: 0.375rem 1rem;
-    border-radius: var(--border-radius-sm);
-    font-weight: 500;
-    transition: all var(--transition);
+    padding: 0.4rem 1.1rem;
+    border-radius: 20px;
+    font-weight: 600;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    font-size: 0.9rem;
 }
 
 .info-bar .dropdown-toggle:hover {
-    background: rgba(255, 255, 255, 0.3);
-    border-color: rgba(255, 255, 255, 0.5);
+    background: rgba(255, 255, 255, 0.25);
+    border-color: rgba(255, 255, 255, 0.4);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
 }
 
 .info-bar .dropdown-menu {
-    border-radius: var(--border-radius-sm);
-    box-shadow: var(--box-shadow);
+    border-radius: 12px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.12);
     border: none;
+    padding: 0.5rem;
+    margin-top: 0.5rem;
 }
 
 .info-bar .dropdown__item {
-    padding: 0.5rem 1rem;
-    transition: all var(--transition-fast);
+    padding: 0.65rem 1.2rem;
+    transition: all 0.2s ease;
+    border-radius: 8px;
+    margin-bottom: 0.25rem;
+    font-weight: 500;
 }
 
 .info-bar .dropdown__item:hover {
-    background: linear-gradient(to right, rgba(13, 110, 253, 0.1), transparent);
-    padding-left: 1.25rem;
+    background: linear-gradient(to right, rgba(13, 184, 166, 0.15), rgba(45, 212, 191, 0.05));
+    padding-left: 1.4rem;
+    color: #0d9488;
 }
 
 .info-bar .dropdown__item.active {
-    background: var(--primary-color);
+    background: linear-gradient(135deg, #0d9488 0%, #14b8a6 100%);
     color: #fff;
+    font-weight: 600;
 }
 
-/* Header Top Enhancement */
+/* Header Top Modern Enhancement */
 .header-top {
-    background: #fff;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-    padding: 1rem 0;
+    background: #ffffff;
+    box-shadow: 0 3px 16px rgba(0,0,0,0.06);
+    padding: 1.2rem 0;
+    border-bottom: 2px solid #f0fdfa;
 }
 
 .header-logo-wrapper {
@@ -459,34 +472,55 @@
     background: rgba(13, 110, 253, 0.1);
 }
 
-/* Navigation Menu Enhancement */
+/* Navigation Menu Modern Design */
 .nav-menus {
-    gap: 0.5rem;
+    gap: 0.25rem;
     margin: 0;
     padding: 0;
     list-style: none;
 }
 
 .nav-menus > li > a {
-    padding: 0.75rem 1.25rem;
-    border-radius: var(--border-radius-sm);
-    transition: all var(--transition);
-    font-weight: 500;
+    padding: 0.7rem 1.3rem;
+    border-radius: 10px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    font-weight: 600;
+    font-size: 0.95rem;
+    letter-spacing: 0.3px;
+    position: relative;
+}
+
+.nav-menus > li > a::before {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%) scaleX(0);
+    width: 80%;
+    height: 3px;
+    background: linear-gradient(90deg, #0d9488, #2dd4bf);
+    border-radius: 2px;
+    transition: transform 0.3s ease;
 }
 
 .nav-menus > li > a:hover,
 .nav-menus > li > a.active {
-    background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
-    color: var(--primary-color);
+    background: linear-gradient(135deg, rgba(13, 148, 136, 0.08), rgba(45, 212, 191, 0.08));
+    color: #0d9488;
 }
 
-/* Megamenu Enhancement */
+.nav-menus > li > a:hover::before,
+.nav-menus > li > a.active::before {
+    transform: translateX(-50%) scaleX(1);
+}
+
+/* Megamenu Modern Enhancement */
 .megamenu {
-    background: #fff;
-    border-radius: var(--border-radius);
-    box-shadow: var(--box-shadow-lg);
-    border: none;
-    padding: 2rem;
+    background: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 15px 50px rgba(0,0,0,0.1);
+    border: 1px solid #f0fdfa;
+    padding: 2.5rem;
 }
 
 .megamenu .single-menu h5 a {
@@ -534,32 +568,40 @@
     box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.15);
 }
 
-/* Cart & Wishlist Icons */
-.cart-icon-wrapper,
-.wishlist-icon-wrapper {
+/* Cart & Wishlist Icons - Modern */
+.icon-circle {
     position: relative;
-    padding: 0.5rem;
-    border-radius: var(--border-radius-sm);
-    transition: all var(--transition);
+    padding: 0.6rem;
+    border-radius: 12px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    background: #f0fdfa;
 }
 
-.cart-icon-wrapper:hover,
-.wishlist-icon-wrapper:hover {
-    background: rgba(13, 110, 253, 0.1);
-    transform: translateY(-2px);
+.icon-circle:hover {
+    background: linear-gradient(135deg, rgba(13, 148, 136, 0.15), rgba(45, 212, 191, 0.15));
+    transform: translateY(-3px) scale(1.05);
+    box-shadow: 0 8px 20px rgba(13, 148, 136, 0.15);
 }
 
-.cart-icon-wrapper .badge,
-.wishlist-icon-wrapper .badge {
+.icon-circle .cart-count {
     position: absolute;
-    top: 0;
-    right: 0;
-    background: var(--danger-color);
+    top: -5px;
+    right: -5px;
+    background: linear-gradient(135deg, #f43f5e 0%, #ef4444 100%);
     color: #fff;
     font-size: 0.7rem;
+    font-weight: 700;
     padding: 0.25rem 0.5rem;
-    border-radius: 2rem;
-    box-shadow: var(--box-shadow-sm);
+    border-radius: 50px;
+    box-shadow: 0 4px 12px rgba(244, 63, 94, 0.4);
+    min-width: 20px;
+    text-align: center;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
 }
 
 /* Sticky Header Enhancement */

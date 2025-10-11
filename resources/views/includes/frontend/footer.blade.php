@@ -200,14 +200,26 @@
 
 <style>
 /* ========================================
-   ENHANCED FOOTER STYLES
+   MODERN REDESIGNED FOOTER STYLES
    ======================================== */
 
-/* Footer Section */
+/* Footer Section - Teal/Dark Theme */
 .gs-footer-section {
-    background: linear-gradient(to bottom, #1a1a2e 0%, #16213e 100%);
-    color: #fff;
-    padding: 4rem 0 0;
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+    color: rgba(255, 255, 255, 0.9);
+    padding: 4.5rem 0 0;
+    position: relative;
+    overflow: hidden;
+}
+
+.gs-footer-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #0d9488 0%, #14b8a6 50%, #2dd4bf 100%);
 }
 
 /* Footer Logo */
@@ -221,39 +233,46 @@
     transform: scale(1.05);
 }
 
-/* Footer Links */
+/* Footer Links - Modern */
 .gs-footer-section a {
-    color: rgba(255, 255, 255, 0.8);
-    transition: all var(--transition-fast);
+    color: rgba(255, 255, 255, 0.75);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     text-decoration: none;
     display: inline-flex;
     align-items: center;
-    gap: 0.75rem;
-    padding: 0.5rem 0;
+    gap: 0.8rem;
+    padding: 0.6rem 0;
+    font-weight: 500;
+    border-radius: 6px;
 }
 
 .gs-footer-section a:hover {
-    color: #ffc107;
-    padding-left: 0.5rem;
+    color: #5eead4;
+    padding-left: 0.75rem;
+    background: rgba(94, 234, 212, 0.05);
 }
 
 .gs-footer-section a svg {
-    transition: transform var(--transition);
+    transition: all 0.3s ease;
+    filter: drop-shadow(0 2px 4px rgba(94, 234, 212, 0.2));
 }
 
 .gs-footer-section a:hover svg {
-    transform: scale(1.1);
+    transform: scale(1.15) rotate(5deg);
+    filter: drop-shadow(0 4px 8px rgba(94, 234, 212, 0.4));
 }
 
-/* Footer Headings */
+/* Footer Headings - Modern */
 .gs-footer-section h3,
 .gs-footer-section h4,
 .gs-footer-section h5 {
     color: #fff;
-    font-weight: 600;
-    margin-bottom: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 1.8rem;
     position: relative;
-    padding-bottom: 0.75rem;
+    padding-bottom: 1rem;
+    font-size: 1.2rem;
+    letter-spacing: 0.5px;
 }
 
 .gs-footer-section h3::after,
@@ -263,9 +282,11 @@
     position: absolute;
     left: 0;
     bottom: 0;
-    width: 50px;
-    height: 3px;
-    background: linear-gradient(to right, #ffc107, transparent);
+    width: 60px;
+    height: 4px;
+    background: linear-gradient(90deg, #0d9488 0%, #14b8a6 50%, #2dd4bf 100%);
+    border-radius: 2px;
+    box-shadow: 0 2px 8px rgba(20, 184, 166, 0.4);
 }
 
 /* Footer Lists */
@@ -297,29 +318,36 @@
     margin-right: 0.75rem;
 }
 
-/* Social Media Icons */
+/* Social Media Icons - Modern */
+.gs-footer-section .social-links,
 .gs-footer-section .social-icons {
     display: flex;
-    gap: 1rem;
-    margin-top: 1.5rem;
+    gap: 0.8rem;
+    margin-top: 2rem;
+    flex-wrap: wrap;
 }
 
+.gs-footer-section .social-links a,
 .gs-footer-section .social-icons a {
-    width: 45px;
-    height: 45px;
+    width: 50px;
+    height: 50px;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 50%;
-    transition: all var(--transition);
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 14px;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     padding: 0;
+    border: 1.5px solid rgba(255, 255, 255, 0.1);
+    font-size: 1.2rem;
 }
 
+.gs-footer-section .social-links a:hover,
 .gs-footer-section .social-icons a:hover {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    transform: translateY(-5px);
-    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+    background: linear-gradient(135deg, #0d9488 0%, #14b8a6 50%, #2dd4bf 100%);
+    transform: translateY(-6px) rotate(8deg) scale(1.1);
+    box-shadow: 0 10px 25px rgba(20, 184, 166, 0.4);
+    border-color: #2dd4bf;
     padding-left: 0;
 }
 

@@ -1,6 +1,209 @@
 @extends('layouts.vendor')
 
 @section('content')
+    <style>
+        /* Modern Teal/Cyan Vendor Dashboard Theme */
+        .gs-vendor-outlet {
+            background: linear-gradient(135deg, #f0fdfa 0%, #ffffff 100%);
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        .gs-vendor-breadcrumb {
+            background: linear-gradient(135deg, #0d9488 0%, #14b8a6 100%);
+            padding: 2rem;
+            border-radius: 18px;
+            margin-bottom: 2.5rem;
+            box-shadow: 0 8px 24px rgba(13, 148, 136, 0.2);
+        }
+
+        .gs-vendor-breadcrumb h4 {
+            color: #ffffff !important;
+            font-size: 1.8rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            margin: 0;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Info Cards - Teal Theme */
+        .vendor-panel-info-card {
+            background: linear-gradient(135deg, #ffffff 0%, #f0fdfa 100%);
+            border-radius: 18px;
+            padding: 1.8rem;
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 2px solid #e0f2fe;
+            box-shadow: 0 4px 12px rgba(13, 148, 136, 0.08);
+        }
+
+        .vendor-panel-info-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 12px 32px rgba(13, 148, 136, 0.2);
+            border-color: #14b8a6;
+        }
+
+        .vendor-panel-info-card img {
+            width: 60px;
+            height: 60px;
+            filter: drop-shadow(0 4px 8px rgba(13, 148, 136, 0.2));
+            transition: transform 0.3s ease;
+        }
+
+        .vendor-panel-info-card:hover img {
+            transform: scale(1.15) rotate(8deg);
+        }
+
+        .vendor-panel-info-card .title {
+            color: #64748b;
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            letter-spacing: 0.3px;
+        }
+
+        .vendor-panel-info-card .value {
+            background: linear-gradient(135deg, #0d9488 0%, #14b8a6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-size: 2rem;
+            font-weight: 800;
+            margin: 0;
+        }
+
+        /* Alert Styling */
+        .alert-warning {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            border: 2px solid #fbbf24;
+            border-radius: 14px;
+            color: #92400e;
+            font-weight: 500;
+        }
+
+        .alert-warning .alert-link {
+            color: #0d9488;
+            font-weight: 700;
+            text-decoration: underline;
+        }
+
+        .alert-warning .alert-link:hover {
+            color: #14b8a6;
+        }
+
+        /* Table Styling - Modern Teal */
+        .vendor-table-wrapper {
+            background: #ffffff;
+            border-radius: 20px;
+            padding: 2rem;
+            margin-top: 2.5rem;
+            box-shadow: 0 4px 16px rgba(13, 148, 136, 0.1);
+            border: 2px solid #e0f2fe;
+        }
+
+        .table-title {
+            color: #0f172a;
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 3px solid;
+            border-image: linear-gradient(90deg, #0d9488 0%, #14b8a6 50%, #2dd4bf 100%) 1;
+        }
+
+        .gs-data-table thead {
+            background: linear-gradient(135deg, #0d9488 0%, #14b8a6 100%);
+        }
+
+        .gs-data-table thead th {
+            border: none !important;
+            padding: 1.2rem 1rem;
+            color: #ffffff !important;
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            letter-spacing: 0.5px;
+        }
+
+        .gs-data-table thead th:first-child {
+            border-radius: 12px 0 0 0;
+        }
+
+        .gs-data-table thead th:last-child {
+            border-radius: 0 12px 0 0;
+        }
+
+        .gs-data-table tbody tr {
+            transition: all 0.3s ease;
+            border-bottom: 1px solid #e0f2fe;
+        }
+
+        .gs-data-table tbody tr:hover {
+            background: linear-gradient(135deg, #f0fdfa 0%, #e0f2fe 100%);
+            transform: scale(1.01);
+            box-shadow: 0 2px 8px rgba(13, 148, 136, 0.1);
+        }
+
+        .gs-data-table tbody td {
+            padding: 1.2rem 1rem;
+            vertical-align: middle;
+            color: #334155;
+            font-weight: 500;
+        }
+
+        .view-btn {
+            background: linear-gradient(135deg, #0d9488 0%, #14b8a6 100%);
+            width: 40px;
+            height: 40px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 12px rgba(13, 148, 136, 0.3);
+        }
+
+        .view-btn:hover {
+            transform: translateY(-4px) rotate(8deg) scale(1.1);
+            box-shadow: 0 8px 20px rgba(13, 148, 136, 0.4);
+            background: linear-gradient(135deg, #14b8a6 0%, #2dd4bf 100%);
+        }
+
+        /* Chart Styling */
+        .gs-chart-wrapper {
+            background: #ffffff;
+            border-radius: 20px;
+            padding: 2rem;
+            margin-top: 2.5rem;
+            box-shadow: 0 4px 16px rgba(13, 148, 136, 0.1);
+            border: 2px solid #e0f2fe;
+        }
+
+        .chart-title {
+            color: #0f172a;
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(135deg, #0d9488 0%, #14b8a6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .table-img {
+            border-radius: 12px;
+            border: 2px solid #e0f2fe;
+            transition: all 0.3s ease;
+        }
+
+        .table-img:hover {
+            border-color: #14b8a6;
+            transform: scale(1.1);
+        }
+    </style>
+
     <div class="gs-vendor-outlet">
         <!-- breadcrumb start  -->
         <div class="gs-vendor-breadcrumb has-mb">
@@ -305,7 +508,7 @@
             "use strict";
 
             var options = {
-                colors: ['#27BE69'],
+                colors: ['#14b8a6'],
                 series: [{
                         name: 'Net Profit',
                         data: [{!! $sales !!}]
@@ -321,7 +524,7 @@
                         horizontal: false,
                         columnWidth: '20%',
                         endingShape: 'rounded',
-                        borderRadius: 8,
+                        borderRadius: 12,
                         borderRadiusApplication: 'end',
                         borderRadiusWhenStacked: 'last'
                     },

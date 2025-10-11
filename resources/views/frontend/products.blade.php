@@ -760,17 +760,19 @@
        ENHANCED PRODUCTS LISTING PAGE
        ======================================== */
 
-    /* Products Header Section */
+    /* Products Header Section - Modern Teal */
     .products-header-section {
-        border: 1.5px solid #dee2e6;
-        border-radius: var(--border-radius);
-        transition: all 0.3s ease;
-        background: #fff;
+        border: 2px solid #e0f2fe;
+        border-radius: 16px;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        background: linear-gradient(135deg, #ffffff 0%, #f0fdfa 100%);
+        box-shadow: 0 2px 8px rgba(13, 148, 136, 0.05);
     }
 
     .products-header-section:hover {
-        border-color: var(--primary-color);
-        box-shadow: 0 4px 16px rgba(13, 110, 253, 0.1);
+        border-color: #14b8a6;
+        box-shadow: 0 8px 24px rgba(13, 148, 136, 0.15);
+        transform: translateY(-2px);
     }
 
     .products-count h5 {
@@ -785,33 +787,37 @@
         font-weight: 700;
     }
 
-    /* View Toggle Buttons */
+    /* View Toggle Buttons - Modern */
     .view-toggle-buttons {
-        background: #f8f9fa;
-        padding: 0.25rem;
-        border-radius: var(--border-radius-sm);
+        background: linear-gradient(135deg, #f0fdfa 0%, #e0f2fe 100%);
+        padding: 0.35rem;
+        border-radius: 12px;
+        border: 1.5px solid #ccfbf1;
     }
 
     .view-btn {
         background: transparent;
         border: none;
-        padding: 0.5rem 1rem;
-        border-radius: var(--border-radius-sm);
-        color: #6c757d;
+        padding: 0.6rem 1.2rem;
+        border-radius: 10px;
+        color: #64748b;
         cursor: pointer;
-        transition: all 0.3s ease;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         font-size: 1.1rem;
+        font-weight: 600;
     }
 
     .view-btn:hover {
-        background: rgba(13, 110, 253, 0.1);
-        color: var(--primary-color);
+        background: rgba(13, 148, 136, 0.1);
+        color: #0d9488;
+        transform: scale(1.05);
     }
 
     .view-btn.active {
-        background: var(--primary-color);
+        background: linear-gradient(135deg, #0d9488 0%, #14b8a6 100%);
         color: #fff;
-        box-shadow: 0 2px 8px rgba(13, 110, 253, 0.3);
+        box-shadow: 0 4px 12px rgba(13, 148, 136, 0.3);
+        transform: scale(1.05);
     }
 
     /* Filter Items */
