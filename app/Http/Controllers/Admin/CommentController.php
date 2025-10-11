@@ -16,16 +16,14 @@ class CommentController extends AdminBaseController
 		return Datatables::of($datas)
 			->addColumn('product', function (Comment $data) {
 				$name =  mb_strlen(strip_tags($data->product->name), 'utf-8') > 50 ? mb_substr(strip_tags($data->product->name), 0, 50, 'utf-8') . '...' : strip_tags($data->product->name);
-				$mp = $data->product->merchantProducts()
-					->where('status', 1)
-					->orderByRaw('CASE WHEN (stock IS NULL OR stock = 0) THEN 1 ELSE 0 END ASC')
-					->orderBy('price')
-					->first();
-				$vendorId = optional($mp)->user_id;
-				$merchantProductId = optional($mp)->id;
-				$prodLink = ($vendorId && $merchantProductId)
-					? route('front.product', ['slug' => $data->product->slug, 'vendor_id' => $vendorId, 'merchant_product_id' => $merchantProductId])
-					: '#';
+
+				// في صفحات الأدمن، نستخدم route('search.result', sku)
+				if ($data->product->sku) {
+					$prodLink = route('search.result', $data->product->sku);
+				} else {
+					$prodLink = '#';
+				}
+
 				$product = '<a href="'.$prodLink.'" target="_blank">'.$name.'</a>';
 				return $product;
 			})

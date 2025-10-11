@@ -32,9 +32,31 @@ class DashboardController extends AdminBaseController
         $data['users'] = User::count();
         $data['products'] = Product::count();
         $data['blogs'] = Blog::count();
-        $data['pproducts'] = Product::latest('id')->take(5)->get();
+
+        // جلب أحدث المنتجات من merchant_products (المنتجات النشطة فقط)
+        $data['pproducts'] = \App\Models\MerchantProduct::with(['product.brand', 'user', 'qualityBrand'])
+            ->where('status', 1)
+            ->whereHas('product', function($q) {
+                $q->where('status', 1);
+            })
+            ->latest('id')
+            ->take(5)
+            ->get();
+
         $data['rorders'] = Order::latest('id')->take(5)->get();
-        $data['poproducts'] = Product::latest('views')->take(5)->get();
+
+        // جلب المنتجات الشائعة من merchant_products (حسب views من products)
+        $data['poproducts'] = \App\Models\MerchantProduct::with(['product.brand', 'user', 'qualityBrand'])
+            ->where('status', 1)
+            ->whereHas('product', function($q) {
+                $q->where('status', 1)->orderBy('views', 'desc');
+            })
+            ->take(5)
+            ->get()
+            ->sortByDesc(function($mp) {
+                return $mp->product->views ?? 0;
+            });
+
         $data['rusers'] = User::latest('id')->take(5)->get();
         $data['referrals'] = Counter::where('type', 'referral')->latest('total_count')->take(5)->get();
         $data['browsers'] = Counter::where('type', 'browser')->latest('total_count')->take(5)->get();
