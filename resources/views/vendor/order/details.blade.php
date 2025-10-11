@@ -271,12 +271,16 @@
                 <table  class="gs-data-table w-100">
                     <thead>
                         <tr>
-                            <th><span class="header-title">@lang('Product ID#')</span></th>
+                            <th><span class="header-title">@lang('Image')</span></th>
+                            <th><span class="header-title">@lang('Name')</span></th>
+                            <th><span class="header-title">@lang('Part Number')</span></th>
                             <th><span class="header-title">@lang('Shop Name')</span></th>
+                            <th><span class="header-title">@lang('Brand')</span></th>
+                            <th><span class="header-title">@lang('Brand Quality')</span></th>
+                            <th><span class="header-title">@lang('Price')</span></th>
+                            <th><span class="header-title">@lang('Quantity')</span></th>
+                            <th><span class="header-title">@lang('Total')</span></th>
                             <th><span class="header-title">@lang('Status')</span></th>
-                            <th><span class="header-title">@lang('Product Title')</span></th>
-                            <th><span class="header-title">@lang('Details')</span></th>
-                            <th><span class="header-title">@lang('Total Price')</span></th>
                         </tr>
                     </thead>
                     <tbody>
@@ -284,156 +288,123 @@
                         @foreach ($cart['items'] as $key => $product)
                             @if ($product['item']['user_id'] != 0)
                                 @if ($product['item']['user_id'] == $user->id)
+                                    @php
+                                        $vendorUser = App\Models\User::find($product['item']['user_id']);
+                                        $orderProduct = App\Models\Product::where('slug', $product['item']['slug'])->first();
+                                        $orderMerchant = $orderProduct && $vendorUser ? $orderProduct->merchantProducts()->with('user')->where('user_id', $product['item']['user_id'])->where('status', 1)->first() : null;
+                                        $orderMerchantId = $orderMerchant->id ?? null;
+                                        $shopName = $orderMerchant && $orderMerchant->user ? ($orderMerchant->user->shop_name ?? $orderMerchant->user->name) : '-';
+                                        $vendorOrderStatus = App\Models\VendorOrder::where('order_id', '=', $order->id)
+                                            ->where('user_id', '=', $product['item']['user_id'])
+                                            ->first();
+                                    @endphp
                                     <tr>
-                                        <!-- Product ID# -->
-                                        <td class="text-start"><span class="content ">{{ $product['item']['id'] }}</span>
+                                        <!-- Image -->
+                                        <td class="product-img">
+                                            <img src="{{ \Illuminate\Support\Facades\Storage::url($product['item']['photo']) ?? asset('assets/images/noimage.png') }}"
+                                                alt="" style="width: 80px; height: 80px; object-fit: cover;">
                                         </td>
+
+                                        <!-- Name -->
+                                        <td class="text-start">
+                                            <x-product-name :item="$product['item']" :vendor-id="$product['item']['user_id']" :merchant-product-id="$orderMerchantId" :showSku="false" target="_blank" class="title-hover-color content product-title d-inline-block" />
+
+                                            @if (!empty($product['color']) || !empty($product['size']))
+                                                <div class="d-flex align-items-center gap-2 mt-2">
+                                                    @if (!empty($product['color']))
+                                                        <span class="text-muted small">@lang('Color'): </span>
+                                                        <span class="d-inline-block rounded-2" style="border:10px solid #{{ $product['color']==''?'white':$product['color'] }};"></span>
+                                                    @endif
+                                                    @if (!empty($product['size']))
+                                                        <span class="text-muted small">@lang('Size'): {{ $product['size'] }}</span>
+                                                    @endif
+                                                </div>
+                                            @endif
+                                            @if (!empty($product['keys']))
+                                                <div class="mt-2">
+                                                    @foreach (array_combine(explode(',', $product['keys']), explode(',', $product['values'])) as $key => $value)
+                                                        <small class="text-muted d-block">{{ ucwords(str_replace('_', ' ', $key)) }}: {{ $value }}</small>
+                                                    @endforeach
+                                                </div>
+                                            @endif
+
+                                            @if ($product['license'] != '')
+                                                <div class="mt-2">
+                                                    <a href="javascript:;" data-toggle="modal"
+                                                        data-target="#confirm-delete"
+                                                        class="btn btn-info product-btn" id="license"
+                                                        style="padding: 5px 12px;">
+                                                        <i class="fa fa-eye"></i>
+                                                        {{ __('View License') }}
+                                                    </a>
+                                                </div>
+                                            @endif
+                                        </td>
+
+                                        <!-- Part Number -->
+                                        <td class="text-start">
+                                            <span class="content">{{ $product['item']['sku'] ?? '-' }}</span>
+                                        </td>
+
                                         <!-- Shop Name -->
                                         <td class="text-start">
-                                                @if ($product['item']['user_id'] != 0)
-                                                    @php
-                                                        $user = App\Models\User::find($product['item']['user_id']);
-                                                    @endphp
-                                                    @if (isset($user))
-                                                        <a class="title-hover-color content" target="_blank"
-                                                            href="{{ route('admin-vendor-show', $user->id) }}">{{ $user->shop_name }}</a>
-                                                    @else
-                                                        {{ __('Vendor Removed') }}
-                                                    @endif
-                                                @endif
+                                            @if ($vendorUser)
+                                                <a class="title-hover-color content" target="_blank"
+                                                    href="{{ route('admin-vendor-show', $vendorUser->id) }}">{{ $shopName }}</a>
+                                            @else
+                                                <span class="content">{{ __('Vendor Removed') }}</span>
+                                            @endif
                                         </td>
+
+                                        <!-- Brand -->
+                                        <td class="text-start">
+                                            <span class="content">{{ $orderProduct && $orderProduct->brand ? Str::ucfirst($orderProduct->brand->name) : '-' }}</span>
+                                        </td>
+
+                                        <!-- Brand Quality -->
+                                        <td class="text-start">
+                                            <span class="content">{{ $orderMerchant && $orderMerchant->qualityBrand ? (app()->getLocale() == 'ar' && $orderMerchant->qualityBrand->name_ar ? $orderMerchant->qualityBrand->name_ar : $orderMerchant->qualityBrand->name_en) : '-' }}</span>
+                                        </td>
+
+                                        <!-- Price -->
+                                        <td class="text-start">
+                                            <span class="content">{{ \PriceHelper::showOrderCurrencyPrice($product['item_price'] * $order->currency_value, $order->currency_sign) }}</span>
+                                        </td>
+
+                                        <!-- Quantity -->
+                                        <td class="text-start">
+                                            <span class="content">{{ $product['qty'] }}</span>
+                                        </td>
+
+                                        <!-- Total -->
+                                        <td class="text-start">
+                                            <span class="content">
+                                                {{ \PriceHelper::showOrderCurrencyPrice($product['price'] * $order->currency_value, $order->currency_sign) }}
+                                                @if($product['discount'] != 0)
+                                                    <br><small>{{ $product['discount'] }}% {{ __('Off') }}</small>
+                                                @endif
+                                            </span>
+                                        </td>
+
                                         <!-- Status -->
                                         <td>
-                                            @if ($product['item']['user_id'] != 0)
-                                                @php
-                                                    $user = App\Models\VendorOrder::where('order_id', '=', $order->id)
-                                                        ->where('user_id', '=', $product['item']['user_id'])
-                                                        ->first();
-                                                @endphp
-
-                                                @if ($order->dp == 1 && $order->payment_status == 'Completed')
-                                                    <span
-                                                        class="template-btn bg-success sm-btn">{{ __('Completed') }}</span>
-                                                @else
-                                                    @if ($user->status == 'pending')
-                                                        <span
-                                                            class="template-btn bg-warning sm-btn">{{ ucwords($user->status) }}</span>
-                                                    @elseif($user->status == 'processing')
-                                                        <span
-                                                            class="template-btn bg-info sm-btn">{{ ucwords($user->status) }}</span>
-                                                    @elseif($user->status == 'on delivery')
-                                                        <span
-                                                            class="template-btn bg-info sm-btn">{{ ucwords($user->status) }}</span>
-                                                    @elseif($user->status == 'completed')
-                                                        <span
-                                                            class="template-btn bg-success sm-btn">{{ ucwords($user->status) }}</span>
-                                                    @elseif($user->status == 'declined')
-                                                        <span
-                                                            class="template-btn bg-danger sm-btn">{{ ucwords($user->status) }}</span>
+                                            @if ($order->dp == 1 && $order->payment_status == 'Completed')
+                                                <span class="template-btn bg-success sm-btn">{{ __('Completed') }}</span>
+                                            @else
+                                                @if ($vendorOrderStatus)
+                                                    @if ($vendorOrderStatus->status == 'pending')
+                                                        <span class="template-btn bg-warning sm-btn">{{ ucwords($vendorOrderStatus->status) }}</span>
+                                                    @elseif($vendorOrderStatus->status == 'processing')
+                                                        <span class="template-btn bg-info sm-btn">{{ ucwords($vendorOrderStatus->status) }}</span>
+                                                    @elseif($vendorOrderStatus->status == 'on delivery')
+                                                        <span class="template-btn bg-info sm-btn">{{ ucwords($vendorOrderStatus->status) }}</span>
+                                                    @elseif($vendorOrderStatus->status == 'completed')
+                                                        <span class="template-btn bg-success sm-btn">{{ ucwords($vendorOrderStatus->status) }}</span>
+                                                    @elseif($vendorOrderStatus->status == 'declined')
+                                                        <span class="template-btn bg-danger sm-btn">{{ ucwords($vendorOrderStatus->status) }}</span>
                                                     @endif
                                                 @endif
                                             @endif
-                                        </td>
-
-                                        <!-- Product Title -->
-                                        <td>
-
-                                            @if ($product['item']['user_id'] != 0)
-                                            @php
-                                                $user = App\Models\User::find($product['item']['user_id']);
-                                                $orderProduct = App\Models\Product::where('slug', $product['item']['slug'])->first();
-                                                $orderMerchant = $orderProduct ? $orderProduct->merchantProducts()->where('user_id', $product['item']['user_id'])->where('status', 1)->first() : null;
-                                                $orderMerchantId = $orderMerchant->id ?? null;
-                                            @endphp
-                                            @if (isset($user))
-                                            <x-product-name :item="$product" :vendor-id="$product['item']['user_id']" :merchant-product-id="$orderMerchantId" target="_blank" class="title-hover-color content product-title d-inline-block" />
-                                            @else
-                                            <x-product-name :item="$product" :vendor-id="$product['item']['user_id']" :merchant-product-id="$orderMerchantId" target="_blank" class="title-hover-color content product-title d-inline-block" />
-                                            @endif
-                                        @endif
-
-
-                                        @if ($product['license'] != '')
-                                            <a href="javascript:;" data-toggle="modal"
-                                                data-target="#confirm-delete"
-                                                class="btn btn-info product-btn" id="license"
-                                                style="padding: 5px 12px;"><i class="fa fa-eye"></i>
-                                                {{ __('View License') }}</a>
-                                        @endif
-
-
-
-
-                                        </td>
-                                        <!-- Details -->
-                                        <td class="text-start">
-                                            <div class="rider">
-
-                                                @if(!empty($product['item']['sku']))
-                                                <div class="d-flex align-items-center gap-2">
-                                                    <span class="key">@lang('SKU :')</span>
-                                                    <span class="value">{{ $product['item']['sku'] }}</span>
-                                                </div>
-                                                @endif
-
-                                                @if($orderProduct && $orderProduct->brand)
-                                                <div class="d-flex align-items-center gap-2">
-                                                    <span class="key">@lang('Brand:')</span>
-                                                    <span class="value">{{ Str::ucfirst($orderProduct->brand->name) }}</span>
-                                                </div>
-                                                @endif
-
-                                                @if($orderMerchant && $orderMerchant->qualityBrand)
-                                                <div class="d-flex align-items-center gap-2">
-                                                    <span class="key">@lang('Brand qualities:')</span>
-                                                    <span class="value">{{ app()->getLocale() == 'ar' && $orderMerchant->qualityBrand->name_ar ? $orderMerchant->qualityBrand->name_ar : $orderMerchant->qualityBrand->name_en }}</span>
-                                                </div>
-                                                @endif
-
-                                                @if ($product['size'])
-                                                <div class="d-flex align-items-center gap-2">
-                                                    <span class="key">@lang('Size :')</span>
-                                                    <span class="value">{{ str_replace('-','',$product['size'],) }}</span>
-                                                </div>
-                                                @endif
-
-                                                @if ($product['color'])
-                                                <div class="d-flex align-items-center gap-2">
-                                                    <span class="key">{{ __('Color') }} :</span>
-                                                    <span style="width: 20px; height: 20px; display: inline-block; vertical-align: middle; border-radius: 50%; background: #{{ $product['color'] }};" class="value"></span>
-                                                </div>
-                                                @endif
-
-                                                <div class="d-flex align-items-center gap-2">
-                                                    <span class="key">@lang('Price :')</span>
-                                                    <span class="value">{{ \PriceHelper::showOrderCurrencyPrice($product['item_price'] * $order->currency_value, $order->currency_sign) }}</span>
-                                                </div>
-
-
-
-                                                <div class="d-flex align-items-center gap-2">
-                                                    <span class="key">@lang('Qty :')</span>
-                                                    <span class="value">{{ $product['qty'] }}
-                                                        {{ $product['item']['measure'] }}</span>
-                                                </div>
-
-                                                @if (!empty($product['keys']))
-                                                            @foreach (array_combine(explode(',', $product['keys']), explode(',', $product['values'])) as $key => $value)
-                                                <div class="d-flex align-items-center gap-2">
-                                                    <span class="key">{{ ucwords(str_replace('_', ' ', $key)) }} :</span>
-                                                    <span class="value">{{ $value }}</span>
-                                                </div>
-                                                @endforeach
-                                                @endif
-
-                                            </div>
-                                        </td>
-                                        <!-- Total Price -->
-                                        <td class="text-start">
-                                            <span class="content ">
-                                                {{ \PriceHelper::showOrderCurrencyPrice($product['price'] * $order->currency_value, $order->currency_sign) }}
-                                                        <small>{{ $product['discount'] == 0 ? '' : '(' . $product['discount'] . '% ' . __('Off') . ')' }}</small>
-                                            </span>
                                         </td>
                                     </tr>
                                 @endif

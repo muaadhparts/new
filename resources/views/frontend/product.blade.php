@@ -100,7 +100,7 @@
                         {{-- Product Title & Main Info --}}
                         <div class="product-header-info mb-3">
                             <h1 class="product-title mb-3">
-                                <x-product-name :product="$productt" :vendor-id="$vendorId" target="_self" />
+                                <x-product-name :product="$productt" :vendor-id="$vendorId" :showSku="false" target="_self" />
                             </h1>
 
                             {{-- Price & Discount Calculation --}}
@@ -518,11 +518,11 @@
                                 <div class="seller-details mb-3">
                                     <div class="seller-name mb-2">
                                         <strong>@lang('Sold By:')</strong>
-                                        @if ($productt->user_id != 0)
+                                        @if (isset($merchant) && $merchant->user)
                                             <span class="fw-bold">
-                                                @if (isset($productt->user)) {{ $productt->user->shop_name ?? $productt->user->name }} @endif
+                                                {{ $merchant->user->shop_name ?? $merchant->user->name }}
                                             </span>
-                                            @if ($productt->user->checkStatus())
+                                            @if ($merchant->user->checkStatus())
                                                 <span class="badge bg-success ms-2">
                                                     <i class="fas fa-check-circle"></i>
                                                     {{ __('Verified') }}
@@ -535,8 +535,8 @@
                                 </div>
 
                                 <div class="seller-actions d-flex flex-wrap gap-2">
-                                    @if ($productt->user_id != 0)
-                                        <a class="btn btn-outline-primary btn-sm" href="{{ route('front.vendor', str_replace(' ', '-', $productt->user->shop_name)) }}">
+                                    @if (isset($merchant) && $merchant->user)
+                                        <a class="btn btn-outline-primary btn-sm" href="{{ route('front.vendor', str_replace(' ', '-', $merchant->user->shop_name)) }}">
                                             <i class="fas fa-store me-1"></i>
                                             @lang('visit store')
                                         </a>
@@ -544,7 +544,7 @@
 
                                     @if ($gs->is_contact_seller == 1)
                                         @if (Auth::check())
-                                            @if ($productt->user_id != 0)
+                                            @if (isset($merchant) && $merchant->user)
                                                 <a class="btn btn-outline-secondary btn-sm" href="javascript:;" data-bs-toggle="modal" data-bs-target="#vendorform">
                                                     <i class="fas fa-comment me-1"></i>
                                                     {{ __('Contact Seller') }}
@@ -563,15 +563,15 @@
                                         @endif
                                     @endif
 
-                                    @if ($productt->user_id != 0)
+                                    @if (isset($merchant) && $merchant->user)
                                         @if (Auth::check())
-                                            @if (Auth::user()->favorites()->where('vendor_id', '=', $productt->user_id)->get()->count() > 0)
+                                            @if (Auth::user()->favorites()->where('vendor_id', '=', $merchant->user_id)->get()->count() > 0)
                                                 <a class="btn btn-success btn-sm" href="javascript:;">
                                                     <i class="fas fa-check me-1"></i>
                                                     {{ __('Favorite') }}
                                                 </a>
                                             @else
-                                                <a class="btn btn-outline-success btn-sm favorite-prod" href="javascript:;" data-href="{{ route('user-favorite', [Auth::user()->id, $productt->user_id]) }}">
+                                                <a class="btn btn-outline-success btn-sm favorite-prod" href="javascript:;" data-href="{{ route('user-favorite', [Auth::user()->id, $merchant->user_id]) }}">
                                                     <i class="fas fa-plus me-1"></i>
                                                     {{ __('Add To Favorite Seller') }}
                                                 </a>
@@ -817,14 +817,14 @@
     <!--  tab-product-des-wrapper end -->
 
     <!-- More Products By Seller slider start -->
-    @if ($productt->user_id != 0 && $vendor_products->count() > 0)
+    @if (isset($merchant) && $merchant->user && isset($vendorListings) && $vendorListings->count() > 0)
         <div class="gs-product-cards-slider-section more-products-by-seller">
             <div class="gs-product-cards-slider-area more-products-by-seller">
                 <div class="container">
                     <h2 class="title text-center">@lang('More Products By Seller')</h2>
                     <div class="product-cards-slider">
-                        @foreach ($vendor_products as $product)
-                            @include('includes.frontend.home_product', ['class' => 'not'])
+                        @foreach ($vendorListings as $merchantProduct)
+                            @include('includes.frontend.home_product', ['product' => $merchantProduct->product, 'class' => 'not'])
                         @endforeach
                     </div>
                 </div>
@@ -884,7 +884,7 @@
 
                     <input type="hidden" name="name" value="{{ Auth::user() ? Auth::user()->name : '' }}">
                     <input type="hidden" name="user_id" value="{{ Auth::user() ? Auth::user()->id : '' }}">
-                    <input type="hidden" name="vendor_id" value="{{ $productt->user_id }}">
+                    <input type="hidden" name="vendor_id" value="{{ $merchant->user_id ?? '' }}">
                 </div>
 
                 <button class="template-btn" data-bs-dismiss="modal" type="submit">@lang('Send Message')</button>

@@ -261,97 +261,98 @@
                                     </div>
                                 @endif
 
-                                <!-- قائمة المنتجات -->
-                                <div class="product-list">
-                                    @foreach ($array_product as $product)
-                                        <div class="checkout-single-product wow-replaced" data-wow-delay=".1s">
-                                            <div class="img-wrapper">
-                                                <a href="#">
-                                                    <img width="200" class="img-cls"
-                                                        src="{{ \Illuminate\Support\Facades\Storage::url($product['item']['photo']) }}"
-                                                        alt="product">
-                                                </a>
-                                            </div>
-                                            <div class="content-wrapper">
+                                <!-- قائمة المنتجات في جدول -->
+                                <div class="product-list table-responsive">
+                                    <table class="table table-bordered">
+                                        <thead>
+                                            <tr>
+                                                <th>@lang('Image')</th>
+                                                <th>@lang('Name')</th>
+                                                <th>@lang('Part Number')</th>
+                                                <th>@lang('Shop Name')</th>
+                                                <th>@lang('Brand')</th>
+                                                <th>@lang('Brand Quality')</th>
+                                                <th>@lang('Price')</th>
+                                                <th>@lang('Quantity')</th>
+                                                <th>@lang('Total')</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach ($array_product as $product)
                                                 @php
                                                     // Fetch merchant_product_id for the cart item
                                                     $itemProduct = \App\Models\Product::where('slug', $product['item']['slug'])->first();
-                                                    $itemMerchant = $itemProduct ? $itemProduct->merchantProducts()->where('user_id', $product['item']['user_id'])->where('status', 1)->first() : null;
+                                                    $itemMerchant = $itemProduct ? $itemProduct->merchantProducts()->with('user')->where('user_id', $product['item']['user_id'])->where('status', 1)->first() : null;
                                                     $itemMerchantId = $itemMerchant->id ?? null;
+                                                    $shopName = $itemMerchant && $itemMerchant->user ? ($itemMerchant->user->shop_name ?? $itemMerchant->user->name) : '-';
                                                 @endphp
-                                                <a class="art-title d-inline-block xproduct-title">
-                                                    @if($itemMerchantId)
-                                                        <a href="{{ route('front.product', ['slug' => $product['item']['slug'], 'vendor_id' => $product['item']['user_id'], 'merchant_product_id' => $itemMerchantId]) }}">{{ $product['item']['sku'] }}</a>
-                                                    @else
-                                                        <span>{{ $product['item']['sku'] }}</span>
-                                                    @endif
-                                                </a>
+                                                <tr>
+                                                    {{-- Image --}}
+                                                    <td>
+                                                        <img src="{{ \Illuminate\Support\Facades\Storage::url($product['item']['photo']) }}"
+                                                             alt="product"
+                                                             style="width: 80px; height: 80px; object-fit: cover;">
+                                                    </td>
 
-                                                <h6>
-                                                    <x-product-name :item="$product['item']" :vendor-id="$product['item']['user_id']" :merchant-product-id="$itemMerchantId" target="_blank" class="product-title" />
-                                                </h6>
+                                                    {{-- Name --}}
+                                                    <td>
+                                                        <x-product-name :item="$product['item']" :vendor-id="$product['item']['user_id']" :merchant-product-id="$itemMerchantId" :showSku="false" target="_blank" />
+                                                        @if (!empty($product['size']) || !empty($product['color']))
+                                                            <div class="mt-2 small text-muted">
+                                                                @if (!empty($product['color']))
+                                                                    <span>@lang('Color'): </span>
+                                                                    <span style="display: inline-block; width: 20px; height: 20px; border: 2px solid #{{ $product['color'] == '' ? 'white' : $product['color'] }}; vertical-align: middle;"></span>
+                                                                @endif
+                                                                @if (!empty($product['size']))
+                                                                    <span class="ms-2">@lang('Size'): {{ str_replace('-', ' ', $product['size']) }}</span>
+                                                                @endif
+                                                            </div>
+                                                        @endif
+                                                    </td>
 
-                                                <ul class="product-specifications-list">
-                                                    @if($itemProduct && $itemProduct->brand)
-                                                        <li>
-                                                            <span class="specification-name">@lang('Brand:')</span>
-                                                            <span class="specification">{{ Str::ucfirst($itemProduct->brand->name) }}</span>
-                                                        </li>
-                                                    @endif
+                                                    {{-- Part Number (SKU) --}}
+                                                    <td>
+                                                        @if($itemMerchantId)
+                                                            <a href="{{ route('front.product', ['slug' => $product['item']['slug'], 'vendor_id' => $product['item']['user_id'], 'merchant_product_id' => $itemMerchantId]) }}" target="_blank">
+                                                                {{ $product['item']['sku'] ?? '-' }}
+                                                            </a>
+                                                        @else
+                                                            {{ $product['item']['sku'] ?? '-' }}
+                                                        @endif
+                                                    </td>
 
-                                                    @if($itemMerchant && $itemMerchant->qualityBrand)
-                                                        <li>
-                                                            <span class="specification-name">@lang('Brand qualities:')</span>
-                                                            <span class="specification">{{ app()->getLocale() == 'ar' && $itemMerchant->qualityBrand->name_ar ? $itemMerchant->qualityBrand->name_ar : $itemMerchant->qualityBrand->name_en }}</span>
-                                                        </li>
-                                                    @endif
+                                                    {{-- Shop Name --}}
+                                                    <td>{{ $shopName }}</td>
 
-                                                    <li>
-                                                        <span class="specification-name">@lang('Price :')</span>
-                                                        <span class="specification">
-                                                            {{ App\Models\Product::convertPrice($product['item_price']) }}
-                                                        </span>
-                                                    </li>
-                                                    <li>
-                                                        <span class="specification-name">@lang('Quantity :')</span>
-                                                        <span class="specification">{{ $product['qty'] }}</span>
-                                                    </li>
+                                                    {{-- Brand --}}
+                                                    <td>{{ $itemProduct && $itemProduct->brand ? Str::ucfirst($itemProduct->brand->name) : '-' }}</td>
 
-                                                    @if (!empty($product['size']))
-                                                        <li>
-                                                            <span class="specification-name">{{ __('Size') }} : </span>
-                                                            <span class="specification">{{ str_replace('-', ' ', $product['size']) }}</span>
-                                                        </li>
-                                                    @endif
+                                                    {{-- Brand Quality --}}
+                                                    <td>
+                                                        {{ $itemMerchant && $itemMerchant->qualityBrand
+                                                            ? (app()->getLocale() == 'ar' && $itemMerchant->qualityBrand->name_ar
+                                                                ? $itemMerchant->qualityBrand->name_ar
+                                                                : $itemMerchant->qualityBrand->name_en)
+                                                            : '-' }}
+                                                    </td>
 
-                                                    @if (!empty($product['color']))
-                                                        <li>
-                                                            <span class="specification-name">@lang('Color :') </span>
-                                                            <span class="specification"
-                                                                  style="border: 10px solid {{ $product['color'] == '' ? ' white' : '#' . $product['color'] }};"></span>
-                                                        </li>
-                                                    @endif
+                                                    {{-- Price --}}
+                                                    <td>{{ App\Models\Product::convertPrice($product['item_price']) }}</td>
 
-                                                    @if (!empty($product['keys']))
-                                                        @foreach (array_combine(explode(',', $product['keys']), explode(',', $product['values'])) as $key => $value)
-                                                            <li>
-                                                                <span class="specification-name">{{ ucwords(str_replace('_', ' ', $key)) }} : </span>
-                                                                <span class="specification">{{ $value }}</span>
-                                                            </li>
-                                                        @endforeach
-                                                    @endif
+                                                    {{-- Quantity --}}
+                                                    <td>{{ $product['qty'] }}</td>
 
-                                                    <li>
-                                                        <span class="specification-name">@lang('Total Price :') </span>
-                                                        <span class="specification">
-                                                            {{ App\Models\Product::convertPrice($product['price']) }}
-                                                            {{ $product['discount'] == 0 ? '' : '(' . $product['discount'] . '%' . __('Off') . ')' }}
-                                                        </span>
-                                                    </li>
-                                                </ul>
-                                            </div>
-                                        </div>
-                                    @endforeach
+                                                    {{-- Total --}}
+                                                    <td>
+                                                        {{ App\Models\Product::convertPrice($product['price']) }}
+                                                        @if ($product['discount'] > 0)
+                                                            <br><small class="text-success">({{ $product['discount'] }}% {{ __('Off') }})</small>
+                                                        @endif
+                                                    </td>
+                                                </tr>
+                                            @endforeach
+                                        </tbody>
+                                    </table>
                                 </div>
 
                                 {{-- عند الشحن المفرد، نعرض معلومات المتجر فقط --}}

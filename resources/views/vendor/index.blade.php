@@ -138,9 +138,11 @@
                                     <th>
                                         <span class="header-title">@lang('Product Name')</span>
                                     </th>
-                                    <th><span class="header-title">@lang('Category')</span></th>
-                                    <th><span class="header-title">@lang('Type')</span></th>
-                                    <th><span class="header-title">@lang('price')</span></th>
+                                    <th><span class="header-title">@lang('Part Number')</span></th>
+                                    <th><span class="header-title">@lang('Shop Name')</span></th>
+                                    <th><span class="header-title">@lang('Brand')</span></th>
+                                    <th><span class="header-title">@lang('Brand Quality')</span></th>
+                                    <th><span class="header-title">@lang('Price')</span></th>
                                     <th class="text-center">
                                         <span class="header-title">@lang('Details')</span>
                                     </th>
@@ -154,6 +156,11 @@
                                             ->where('user_id', auth()->user()->id)
                                             ->where('status', 1)
                                             ->first();
+
+                                        // متغيرات للرابط الأمامي
+                                        $slug = $data->slug ?? null;
+                                        $vendorId = auth()->user()->id;
+                                        $merchantProductId = $vendorMp ? $vendorMp->id : null;
                                     @endphp
                                     <!-- table data row 1 start  -->
                                     <tr>
@@ -164,39 +171,34 @@
                                         </td>
                                         <td class="text-start">
                                             <div class="product-name">
-                                                @if($vendorMp)
-                                                    <x-product-name :product="$data" :vendor-id="auth()->user()->id" :merchant-product-id="$vendorMp->id" target="_blank" />
-                                                @else
-                                                    <span class="content">{{ $data->name }}</span>
-                                                @endif
-                                            </div>
-                                        </td>
-                                        <td class="text-start">
-                                            <div class="category">
                                                 <span class="content">
-                                                    @if($data->brand)
-                                                        <strong>@lang('Brand:'):</strong> {{ Str::ucfirst($data->brand->name) }}<br>
-                                                    @endif
-                                                    @if($vendorMp && $vendorMp->qualityBrand)
-                                                        <strong>@lang('Brand qualities:'):</strong> {{ app()->getLocale() == 'ar' && $vendorMp->qualityBrand->name_ar ? $vendorMp->qualityBrand->name_ar : $vendorMp->qualityBrand->name_en }}<br>
-                                                    @endif
-                                                    {{ $data->category->localized_name }}
-                                                    @if (isset($data->subcategory))
-                                                        <br>
-                                                        {{ $data->subcategory->localized_name }}
-                                                    @endif
-                                                    @if (isset($data->childcategory))
-                                                        <br>
-                                                        {{ $data->childcategory->localized_name }}
-                                                    @endif
+                                                    @php
+                                                        // القاعدة: إذا عربي -> label_ar أولاً، ثم name | إذا إنجليزي -> name
+                                                        if (app()->getLocale() == 'ar') {
+                                                            $productName = !empty($data->label_ar) ? $data->label_ar : ($data->name ?? '-');
+                                                        } else {
+                                                            $productName = $data->name ?? '-';
+                                                        }
+                                                    @endphp
+                                                    {{ $productName }}
                                                 </span>
                                             </div>
                                         </td>
-                                        <td><span class="content">{{ $data->type }}</span></td>
+                                        <td><span class="content">{{ $data->sku ?? '-' }}</span></td>
+                                        <td><span class="content">{{ auth()->user()->shop_name ?? '-' }}</span></td>
+                                        <td><span class="content">{{ $data->brand ? $data->brand->name : '-' }}</span></td>
+                                        <td><span class="content">
+                                            {{ $vendorMp && $vendorMp->qualityBrand
+                                                ? (app()->getLocale() == 'ar' && $vendorMp->qualityBrand->name_ar
+                                                    ? $vendorMp->qualityBrand->name_ar
+                                                    : $vendorMp->qualityBrand->name_en)
+                                                : '-' }}
+                                        </span></td>
                                         <td><span class="content">{{ $data->showPrice() }}</span></td>
                                         <td>
                                             <div class="table-icon-btns-wrapper">
-                                                <a href="{{ route('vendor-prod-edit', $data->id) }}" class="view-btn">
+                                                @if($slug && $vendorId && $merchantProductId)
+                                                    <a href="{{ route('front.product', ['slug' => $slug, 'vendor_id' => $vendorId, 'merchant_product_id' => $merchantProductId]) }}" target="_blank" class="view-btn">
                                                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
                                                         xmlns="http://www.w3.org/2000/svg">
                                                         <g clip-path="url(#clip0_548_165892)">
@@ -210,14 +212,15 @@
                                                             </clipPath>
                                                         </defs>
                                                     </svg>
-                                                </a>
+                                                    </a>
+                                                @endif
                                             </div>
                                         </td>
                                     </tr>
                                     <!-- table data row 1 end  -->
                                 @empty
                                     <tr>
-                                        <td colspan="6" class="text-center">@lang('No Data Available')</td>
+                                        <td colspan="8" class="text-center">@lang('No Data Available')</td>
                                     </tr>
                                 @endforelse
                             </tbody>

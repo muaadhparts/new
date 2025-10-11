@@ -615,15 +615,15 @@ class ProductController extends VendorBaseController
     }
 
     //*** GET Request
-    public function edit($id)
+    public function edit($merchantProductId)
     {
-        $data = Product::findOrFail($id);
-
-        // Get merchant product data for this vendor
-        $merchantProduct = MerchantProduct::where('product_id', $id)
+        // Get merchant product data for this vendor by merchant_product_id
+        $merchantProduct = MerchantProduct::where('id', $merchantProductId)
             ->where('user_id', $this->user->id)
+            ->with('product') // Load the product relationship
             ->firstOrFail(); // Vendor can only edit their own offers
 
+        $data = $merchantProduct->product;
         $sign = $this->curr;
 
         // Use the new offer edit form (merchants only edit their offers, not catalog data)
@@ -655,7 +655,7 @@ class ProductController extends VendorBaseController
     }
 
     //*** POST Request
-    public function update(Request $request, $id)
+    public function update(Request $request, $merchantProductId)
     {
         //--- Validation Section
         $rules = [
@@ -666,15 +666,17 @@ class ProductController extends VendorBaseController
             return response()->json(array('errors' => $validator->getMessageBag()->toArray()));
         }
 
+        // عرض البائع
+        $merchant = MerchantProduct::where('id', $merchantProductId)
+            ->where('user_id', $this->user->id)
+            ->with('product')
+            ->firstOrFail();
+
         // تعريف المنتج (هوية)
-        $data  = Product::findOrFail($id);
+        $data  = $merchant->product;
+        $id    = $data->id; // للاستخدام في الكود القديم
         $sign  = $this->curr;
         $input = $request->all();
-
-        // عرض البائع
-        $merchant = MerchantProduct::where('product_id', $id)
-            ->where('user_id', $this->user->id)
-            ->firstOrFail();
 
         //Check Types (ملف/رابط)
         if ($request->type_check == 1) {

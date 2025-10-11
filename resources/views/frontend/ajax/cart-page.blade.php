@@ -9,7 +9,12 @@
                     <table class="table">
                         <thead>
                         <tr>
-                            <th scope="col">@lang('Product Name')</th>
+                            <th scope="col">@lang('Image')</th>
+                            <th scope="col">@lang('Name')</th>
+                            <th scope="col">@lang('Part Number')</th>
+                            <th scope="col">@lang('Shop Name')</th>
+                            <th scope="col">@lang('Brand')</th>
+                            <th scope="col">@lang('Brand Quality')</th>
                             <th scope="col">@lang('Price')</th>
                             <th scope="col">@lang('Quantity')</th>
                             <th scope="col">@lang('Subtotal')</th>
@@ -40,55 +45,57 @@
 
                                 // Fetch merchant_product_id for cart item
                                 $itemProduct = \App\Models\Product::where('slug', $slug)->first();
-                                $itemMerchant = $itemProduct ? $itemProduct->merchantProducts()->where('user_id', $vendorId)->where('status', 1)->first() : null;
+                                $itemMerchant = $itemProduct ? $itemProduct->merchantProducts()->with('user')->where('user_id', $vendorId)->where('status', 1)->first() : null;
                                 $itemMerchantId = $itemMerchant->id ?? null;
+                                $shopName = $itemMerchant && $itemMerchant->user ? ($itemMerchant->user->shop_name ?? $itemMerchant->user->name) : '-';
 
                                 // رابط تفاصيل المنتج مع تمرير {vendor_id, merchant_product_id}
                                 $productUrl = ($vendorId && $itemMerchantId) ? route('front.product', ['slug' => $slug, 'vendor_id' => $vendorId, 'merchant_product_id' => $itemMerchantId]) : 'javascript:;';
                             @endphp
 
                             <tr>
-                                <td class="cart-product-area">
-                                    <div class="cart-product d-flex">
-                                        <img src="{{ $photo ? \Illuminate\Support\Facades\Storage::url($photo) : asset('assets/images/noimage.png') }}" alt="">
-                                        <div class="cart-product-info">
-                                            <x-product-name :item="$product['item']" :vendor-id="$vendorId" :merchant-product-id="$itemMerchantId" target="_blank" class="cart-title d-inline-block" />
-
-                                            @if (!empty($sku))
-                                                <p class="text-muted small mb-1">
-                                                    <span class="fw-medium">@lang('SKU'):</span>
-                                                    <span>{{ $sku }}</span>
-                                                </p>
-                                            @endif
-
-                                            @if($itemProduct && $itemProduct->brand)
-                                                <p class="text-muted small mb-1">
-                                                    <span class="fw-medium">@lang('Brand:'):</span>
-                                                    <span>{{ Str::ucfirst($itemProduct->brand->name) }}</span>
-                                                </p>
-                                            @endif
-
-                                            @if($itemMerchant && $itemMerchant->qualityBrand)
-                                                <p class="text-muted small mb-1">
-                                                    <span class="fw-medium">@lang('Brand qualities:'):</span>
-                                                    <span>{{ app()->getLocale() == 'ar' && $itemMerchant->qualityBrand->name_ar ? $itemMerchant->qualityBrand->name_ar : $itemMerchant->qualityBrand->name_en }}</span>
-                                                </p>
-                                            @endif
-
-                                            <div class="d-flex align-items-center gap-2">
-                                                @if (!empty($product['color']))
-                                                    @lang('Color') :
-                                                    <p class="cart-color d-inline-block rounded-2" style="border:10px solid #{{ $product['color']==''?'white':$product['color'] }};"></p>
-                                                @endif
-                                                @if (!empty($product['size']))
-                                                    @lang('Size') :
-                                                    <p class="d-inline-block">{{ $product['size'] }}</p>
-                                                @endif
-                                            </div>
-                                        </div>
-                                    </div>
+                                {{-- Image Column --}}
+                                <td class="cart-image">
+                                    <img src="{{ $photo ? \Illuminate\Support\Facades\Storage::url($photo) : asset('assets/images/noimage.png') }}" alt="" style="width: 80px; height: 80px; object-fit: cover;">
                                 </td>
 
+                                {{-- Name Column --}}
+                                <td class="cart-name">
+                                    <x-product-name :item="$product['item']" :vendor-id="$vendorId" :merchant-product-id="$itemMerchantId" :showSku="false" target="_blank" />
+                                    @if (!empty($product['color']) || !empty($product['size']))
+                                        <div class="d-flex align-items-center gap-2 mt-2">
+                                            @if (!empty($product['color']))
+                                                <span class="text-muted small">@lang('Color'): </span>
+                                                <span class="cart-color d-inline-block rounded-2" style="border:10px solid #{{ $product['color']==''?'white':$product['color'] }};"></span>
+                                            @endif
+                                            @if (!empty($product['size']))
+                                                <span class="text-muted small">@lang('Size'): {{ $product['size'] }}</span>
+                                            @endif
+                                        </div>
+                                    @endif
+                                </td>
+
+                                {{-- Part Number (SKU) Column --}}
+                                <td class="cart-sku">
+                                    <span>{{ $sku ?? '-' }}</span>
+                                </td>
+
+                                {{-- Shop Name Column --}}
+                                <td class="cart-shop">
+                                    <span>{{ $shopName }}</span>
+                                </td>
+
+                                {{-- Brand Column --}}
+                                <td class="cart-brand">
+                                    <span>{{ $itemProduct && $itemProduct->brand ? Str::ucfirst($itemProduct->brand->name) : '-' }}</span>
+                                </td>
+
+                                {{-- Brand Quality Column --}}
+                                <td class="cart-quality">
+                                    <span>{{ $itemMerchant && $itemMerchant->qualityBrand ? (app()->getLocale() == 'ar' && $itemMerchant->qualityBrand->name_ar ? $itemMerchant->qualityBrand->name_ar : $itemMerchant->qualityBrand->name_en) : '-' }}</span>
+                                </td>
+
+                                {{-- Price Column --}}
                                 <td class="cart-price">
                                     {{ App\Models\Product::convertPrice($product['item_price']) }}
                                 </td>

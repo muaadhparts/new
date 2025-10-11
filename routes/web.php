@@ -1165,8 +1165,8 @@ Route::group(['middleware' => 'maintenance'], function () {
             // CREATE SECTION
 
             // EDIT SECTION
-            Route::get('/products/edit/{id}', 'Vendor\ProductController@edit')->name('vendor-prod-edit');
-            Route::post('/products/edit/{id}', 'Vendor\ProductController@update')->name('vendor-prod-update');
+            Route::get('/products/edit/{merchantProductId}', 'Vendor\ProductController@edit')->name('vendor-prod-edit');
+            Route::post('/products/edit/{merchantProductId}', 'Vendor\ProductController@update')->name('vendor-prod-update');
 
             Route::get('/products/catalog/{id}', 'Vendor\ProductController@catalogedit')->name('vendor-prod-catalog-edit');
             Route::post('/products/catalog/{id}', 'Vendor\ProductController@catalogupdate')->name('vendor-prod-catalog-update');

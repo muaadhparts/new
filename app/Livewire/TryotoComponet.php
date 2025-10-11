@@ -53,7 +53,7 @@ class TryotoComponet extends Component
             $this->_webhook = 'https://request-dinleyici-url-buraya-yazilmali';
         }
 
-        $this->authorize();
+        $this->authenticateTryoto();
         $this->getWeight();
         $this->checkOTODeliveryFee();
 
@@ -85,7 +85,7 @@ class TryotoComponet extends Component
     /**
      * جلب توكن Tryoto
      */
-    protected function authorize(): void
+    protected function authenticateTryoto(): void
     {
         // First try to get cached token
         $cachedToken = Cache::get('tryoto-token');
@@ -146,8 +146,8 @@ class TryotoComponet extends Component
         // // dd($company, $price); // فحص سريع لو احتجت
 
         // نبث حدثًا للواجهة لتحدّث نص "الشحن:" والسعر
-        $this->emit('shipping-updated', ['vendorId' => $this->vendorId]);
-        // // dd('emit:shipping-updated', $this->vendorId); // فحص
+        $this->dispatch('shipping-updated', vendorId: $this->vendorId);
+        // // dd('dispatch:shipping-updated', $this->vendorId); // فحص
     }
 
     /**
@@ -190,7 +190,7 @@ class TryotoComponet extends Component
         $this->deliveryCompany = $response->json()['deliveryCompany'] ?? [];
 
         // إعلان مبدئي لتحديث نص الشحن الافتراضي (أول خيار)
-        $this->emit('shipping-updated', ['vendorId' => $this->vendorId]);
+        $this->dispatch('shipping-updated', vendorId: $this->vendorId);
     }
 
     /**

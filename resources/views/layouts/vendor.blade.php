@@ -26,11 +26,11 @@
     <!--favicon-->
 
 </head>
+
+<body>
 @php
     $user = auth()->user();
 @endphp
-
-<body>
 
     @include('includes.vendor.vendor-mobile-header')
 

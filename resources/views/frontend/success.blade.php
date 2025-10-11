@@ -371,87 +371,78 @@
                 <div class="ordered-products wow-replaced" data-wow-delay=".1s">
                     <h4>@lang('Ordered Products:')</h4>
                     <div class="table-responsive">
-                        <table>
+                        <table class="table table-bordered">
                             <thead>
                                 <tr class="wow-replaced" data-wow-delay=".1s">
-                                    <th class="d-none d-lg-table-cell">@lang('Product Image')</th>
-                                    <th>@lang('Product Details')</th>
-                                    <th class="d-none d-lg-table-cell">@lang('Unit Price')</th>
-                                    <th class="d-none d-lg-table-cell">@lang('Total')</th>
+                                    <th>@lang('Image')</th>
+                                    <th>@lang('Name')</th>
+                                    <th>@lang('Part Number')</th>
+                                    <th>@lang('Shop Name')</th>
+                                    <th>@lang('Brand')</th>
+                                    <th>@lang('Brand Quality')</th>
+                                    <th>@lang('Price')</th>
+                                    <th>@lang('Quantity')</th>
+                                    <th>@lang('Total')</th>
                                 </tr>
                             </thead>
                             <tbody>
-
-
                                 @foreach ($tempcart->items as $product)
+                                    @php
+                                        $successProduct = \App\Models\Product::where('slug', $product['item']['slug'])->first();
+                                        $successVendorId = $product['item']['user_id'] ?? 0;
+                                        $successMerchant = $successProduct && $successVendorId ? $successProduct->merchantProducts()->with('user')->where('user_id', $successVendorId)->where('status', 1)->first() : null;
+                                        $successMerchantId = $successMerchant->id ?? null;
+                                        $shopName = $successMerchant && $successMerchant->user ? ($successMerchant->user->shop_name ?? $successMerchant->user->name) : '-';
+                                    @endphp
                                     <tr class="wow-replaced" data-wow-delay=".1s">
-                                        <td colspan="1" class="product-img d-none d-lg-table-cell">
+                                        <td class="product-img">
                                             <img src="{{ \Illuminate\Support\Facades\Storage::url($product['item']['photo']) ?? asset('assets/images/noimage.png') }}"
-                                                alt="">
+                                                alt="" style="width: 80px; height: 80px; object-fit: cover;">
                                         </td>
-                                        <td class="product-details">
-                                            <img src="{{ \Illuminate\Support\Facades\Storage::url($product['item']['photo']) ?? asset('assets/images/noimage.png') }}"
-                                                alt="" class="d-lg-none d-table-cell pb-24 small-device-img">
-                                            <h6><x-product-name :item="$product['item']" :vendor-id="$product['item']['user_id']" target="_blank" /></h6>
-
-                                            @php
-                                                $successProduct = \App\Models\Product::find($product['item']['id']);
-                                                $successVendorId = $product['item']['user_id'] ?? 0;
-                                                $successMerchant = $successProduct && $successVendorId ? $successProduct->merchantProducts()->where('user_id', $successVendorId)->where('status', 1)->first() : null;
-                                            @endphp
-
-                                            @if(!empty($product['item']['sku']))
-                                                <p><span>@lang('SKU:')</span> {{ $product['item']['sku'] }}</p>
+                                        <td class="product-name">
+                                            <x-product-name :item="$product['item']" :vendor-id="$successVendorId" :merchant-product-id="$successMerchantId" :showSku="false" target="_blank" />
+                                            @if (!empty($product['color']) || !empty($product['size']))
+                                                <div class="d-flex align-items-center gap-2 mt-2">
+                                                    @if (!empty($product['color']))
+                                                        <span class="text-muted small">@lang('Color'): </span>
+                                                        <span class="d-inline-block rounded-2" style="border:10px solid #{{ $product['color']==''?'white':$product['color'] }};"></span>
+                                                    @endif
+                                                    @if (!empty($product['size']))
+                                                        <span class="text-muted small">@lang('Size'): {{ $product['size'] }}</span>
+                                                    @endif
+                                                </div>
                                             @endif
-
-                                            @if($successProduct && $successProduct->brand)
-                                                <p><span>@lang('Brand:')</span> {{ Str::ucfirst($successProduct->brand->name) }}</p>
-                                            @endif
-
-                                            @if($successMerchant && $successMerchant->qualityBrand)
-                                                <p><span>@lang('Brand qualities:')</span> {{ app()->getLocale() == 'ar' && $successMerchant->qualityBrand->name_ar ? $successMerchant->qualityBrand->name_ar : $successMerchant->qualityBrand->name_en }}</p>
-                                            @endif
-
-                                            <p><span>@lang('Quantity:')</span> {{ $product['qty'] }}</p>
-                                            <p><span>Size:</span>
-                                                @if (!empty($product['size']))
-                                                    <b>{{ __('Size') }}</b>:
-                                                    {{ $product['item']['measure'] }}{{ str_replace('-', '                                                                ', $product['size']) }}
-                                                    <br>
-                                                @endif
-
-                                            </p>
-                                            <p><span>@lang('Color:')</span>
-
-                                                @if (!empty($product['color']))
-                                                    <div class="d-flex mt-2">
-                                                        <b>{{ __('Color') }}</b>: <span class="color-show-btn mt-1 ms-3" id="color-bar"
-                                                            style="background-color: #{{ $product['color'] == '' ? ' white' : $product['color'] }};"></span>
-                                                    </div>
-                                                @endif
-                                            </p>
-
                                             @if (!empty($product['keys']))
-                                                @foreach (array_combine(explode(',', $product['keys']), explode(',', $product['values'])) as $key => $value)
-                                                    <p><span>{{ ucwords(str_replace('_', ' ', $key)) }}:</span>
-                                                        {{ $value }}</p>
-                                                @endforeach
+                                                <div class="mt-2">
+                                                    @foreach (array_combine(explode(',', $product['keys']), explode(',', $product['values'])) as $key => $value)
+                                                        <small class="text-muted d-block">{{ ucwords(str_replace('_', ' ', $key)) }}: {{ $value }}</small>
+                                                    @endforeach
+                                                </div>
                                             @endif
-
-                                            <p class="d-lg-none d-table-cell"><span>@lang('Unit Price:')</span>
-                                                {{ \PriceHelper::showCurrencyPrice($product['item_price'] * $order->currency_value) }}
-                                            </p>
-                                            <p class="d-lg-none"><span>@lang('Total Price:')</span>{{ \PriceHelper::showCurrencyPrice($product['price'] * $order->currency_value) }}
-                                                <small>{{ $product['discount'] == 0 ? '' : '(' . $product['discount'] . '% ' . __('Off') . ')' }}</small>
-                                            </p>
-
                                         </td>
-                                        <td class="d-none d-lg-table-cell">
+                                        <td>
+                                            <span>{{ $product['item']['sku'] ?? '-' }}</span>
+                                        </td>
+                                        <td>
+                                            <span>{{ $shopName }}</span>
+                                        </td>
+                                        <td>
+                                            <span>{{ $successProduct && $successProduct->brand ? Str::ucfirst($successProduct->brand->name) : '-' }}</span>
+                                        </td>
+                                        <td>
+                                            <span>{{ $successMerchant && $successMerchant->qualityBrand ? (app()->getLocale() == 'ar' && $successMerchant->qualityBrand->name_ar ? $successMerchant->qualityBrand->name_ar : $successMerchant->qualityBrand->name_en) : '-' }}</span>
+                                        </td>
+                                        <td>
                                             {{ \PriceHelper::showCurrencyPrice($product['item_price'] * $order->currency_value) }}
                                         </td>
-                                        <td class="d-none d-lg-table-cell">
+                                        <td>
+                                            {{ $product['qty'] }}
+                                        </td>
+                                        <td>
                                             {{ \PriceHelper::showCurrencyPrice($product['price'] * $order->currency_value) }}
-                                            <small>{{ $product['discount'] == 0 ? '' : '(' . $product['discount'] . '% ' . __('Off') . ')' }}</small>
+                                            @if($product['discount'] != 0)
+                                                <br><small>{{ $product['discount'] }}% {{ __('Off') }}</small>
+                                            @endif
                                         </td>
                                     </tr>
                                 @endforeach
