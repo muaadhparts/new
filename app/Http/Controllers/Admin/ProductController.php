@@ -27,14 +27,22 @@ class ProductController extends AdminBaseController
         // // dd(['admin_datatables' => true]); // اختباري
 
         if ($request->type == 'all') {
-            $datas = \App\Models\Product::whereProductType('normal')->latest('id')->take(50)->get();
+            $datas = \App\Models\Product::whereProductType('normal')->latest('id')->limit(50);
         } elseif ($request->type == 'deactive') {
-            $datas = \App\Models\Product::whereProductType('normal')->whereStatus(0)->latest('id')->take(50)->get();
+            $datas = \App\Models\Product::whereProductType('normal')->whereStatus(0)->latest('id')->limit(50);
         } else {
-            $datas = \App\Models\Product::latest('id')->take(50)->get();
+            $datas = \App\Models\Product::latest('id')->limit(50);
         }
 
         return \Datatables::of($datas)
+            ->filterColumn('name', function ($query, $keyword) {
+                $query->where(function($q) use ($keyword) {
+                    $q->where('name', 'like', "%{$keyword}%")
+                      ->orWhere('sku', 'like', "%{$keyword}%")
+                      ->orWhere('label_ar', 'like', "%{$keyword}%")
+                      ->orWhere('label_en', 'like', "%{$keyword}%");
+                });
+            })
             ->editColumn('name', function (\App\Models\Product $data) {
                 // استخرج أول/أرخص عرض بائع نشط لهذا المنتج (المتوفر أولاً ثم الأرخص)
                 $mp = $data->merchantProducts()
@@ -50,21 +58,28 @@ class ProductController extends AdminBaseController
                     ? route('front.product', ['slug' => $data->slug, 'vendor_id' => $vendorId, 'merchant_product_id' => $merchantProductId])
                     : '#';
 
-                // Use the product name component
+                // Use the product name component WITHOUT showing SKU
                 $nameComponent = view('components.product-name', [
                     'product' => $data,
                     'vendorId' => $vendorId,
                     'merchantProductId' => $merchantProductId,
-                    'target' => '_blank'
+                    'target' => '_blank',
+                    'showSku' => false  // إخفاء SKU من عمود الاسم
                 ])->render();
 
                 $id  = '<small>' . __("ID") . ': <a href="' . $prodLink . '" target="_blank">' . sprintf("%'.08d", $data->id) . '</a></small>';
-                $id3 = $data->type == 'Physical'
-                    ? '<small class="ml-2"> ' . __("SKU") . ': <a href="' . $prodLink . '" target="_blank">' . $data->sku . '</a>'
-                    : '';
 
                 // checkVendor() تم تحديثها لقراءة أول بائع نشط
-                return $nameComponent . '<br>' . $id . $id3 . $data->checkVendor();
+                return $nameComponent . '<br>' . $id . $data->checkVendor();
+            })
+            ->addColumn('sku', function (\App\Models\Product $data) {
+                if ($data->type != 'Physical' || !$data->sku) {
+                    return '-';
+                }
+
+                // في صفحات الأدمن، نستخدم route('search.result', sku)
+                $prodLink = route('search.result', $data->sku);
+                return '<a href="' . $prodLink . '" target="_blank">' . $data->sku . '</a>';
             })
             ->editColumn('price', function (\App\Models\Product $data) {
                 // أقل سعر نشط من عروض البائعين
@@ -134,7 +149,7 @@ class ProductController extends AdminBaseController
                             <a href="javascript:;" data-href="' . route('admin-prod-delete', $data->id) . '" data-toggle="modal" data-target="#confirm-delete" class="delete"><i class="fas fa-trash-alt"></i> ' . __("Delete") . '</a>
                         </div></div>';
             })
-            ->rawColumns(['name', 'status', 'action', 'photo'])
+            ->rawColumns(['name', 'sku', 'status', 'action', 'photo'])
             ->toJson();
     }
 
@@ -148,62 +163,42 @@ class ProductController extends AdminBaseController
         //--- Integrating This Collection Into Datatables
         return Datatables::of($datas)
             ->editColumn('name', function (Product $data) {
-                $name = mb_strlen($data->name, 'UTF-8') > 50 ? mb_substr($data->name, 0, 50, 'UTF-8') . '...' : $data->name;
-
-                // تمرير vendorId الصحيح بدل product->user_id
+                // استخرج أول/أرخص عرض بائع نشط لهذا المنتج (المتوفر أولاً ثم الأرخص)
                 $mp = $data->merchantProducts()
                     ->where('status', 1)
                     ->orderByRaw('CASE WHEN (stock IS NULL OR stock = 0) THEN 1 ELSE 0 END ASC')
                     ->orderBy('price')
                     ->first();
 
-                $vendorId = optional($mp)->user_id;
-                $merchantProductId = optional($mp)->id;
+                $vendorId = optional($mp)->user_id ?: 0;
+                $merchantProductId = optional($mp)->id ?: 0;
+
                 $prodLink = ($vendorId && $merchantProductId)
                     ? route('front.product', ['slug' => $data->slug, 'vendor_id' => $vendorId, 'merchant_product_id' => $merchantProductId])
                     : '#';
 
+                // Use the product name component WITHOUT showing SKU
+                $nameComponent = view('components.product-name', [
+                    'product' => $data,
+                    'vendorId' => $vendorId,
+                    'merchantProductId' => $merchantProductId,
+                    'target' => '_blank',
+                    'showSku' => false  // إخفاء SKU من عمود الاسم
+                ])->render();
+
                 $id  = '<small>' . __("ID") . ': <a href="' . $prodLink . '" target="_blank">' . sprintf("%'.08d", $data->id) . '</a></small>';
-                $id3 = $data->type == 'Physical'
-                    ? '<small class="ml-2"> ' . __("SKU") . ': <a href="' . $prodLink . '" target="_blank">' . $data->sku . '</a>'
-                    : '';
 
-                return $name . '<br>' . $id . $id3 . $data->checkVendor();
+                // checkVendor() تم تحديثها لقراءة أول بائع نشط
+                return $nameComponent . '<br>' . $id . $data->checkVendor();
             })
-            ->editColumn('price', function (Product $data) {
-                // أقل سعر نشط من عروض البائعين (بدل القراءة من products.price)
-                $min = DB::table('merchant_products')
-                    ->where('product_id', $data->id)
-                    ->where('status', 1)
-                    ->min('price');
-
-                if ($min === null) {
-                    return \PriceHelper::showAdminCurrencyPrice(0);
+            ->addColumn('sku', function (\App\Models\Product $data) {
+                if ($data->type != 'Physical' || !$data->sku) {
+                    return '-';
                 }
 
-                $gs = cache()->remember(
-                    'generalsettings',
-                    now()->addDay(),
-                    fn () => DB::table('generalsettings')->first()
-                );
-
-                $base = (float) $min
-                      + (float) $gs->fixed_commission
-                      + ((float) $min * (float) $gs->percentage_commission / 100);
-
-                return \PriceHelper::showAdminCurrencyPrice($base * $this->curr->value);
-            })
-            ->editColumn('stock', function (Product $data) {
-                // مجموع مخزون العروض النشطة (بدل products.stock)
-                $sum = DB::table('merchant_products')
-                    ->where('product_id', $data->id)
-                    ->where('status', 1)
-                    ->sum('stock');
-
-                if ($sum === 0) {
-                    return __("Out Of Stock");
-                }
-                return $sum;
+                // في صفحات الأدمن، نستخدم route('search.result', sku)
+                $prodLink = route('search.result', $data->sku);
+                return '<a href="' . $prodLink . '" target="_blank">' . $data->sku . '</a>';
             })
             ->addColumn('status', function (Product $data) {
                 $class = $data->status == 1 ? 'drop-success' : 'drop-danger';
@@ -214,7 +209,7 @@ class ProductController extends AdminBaseController
             ->addColumn('action', function (Product $data) {
                 return '<div class="godropdown"><button class="go-dropdown-toggle">  ' . __("Actions") . '<i class="fas fa-chevron-down"></i></button><div class="action-list"><a href="' . route('admin-prod-edit', $data->id) . '"> <i class="fas fa-edit"></i> ' . __("Edit") . '</a><a href="javascript" class="set-gallery" data-toggle="modal" data-target="#setgallery"><input type="hidden" value="' . $data->id . '"><i class="fas fa-eye"></i> ' . __("View Gallery") . '</a><a data-href="' . route('admin-prod-feature', $data->id) . '" class="feature" data-toggle="modal" data-target="#modal2"> <i class="fas fa-star"></i> ' . __("Highlight") . '</a><a href="javascript:;" data-href="' . route('admin-prod-catalog', ['id1' => $data->id, 'id2' => 0]) . '" data-toggle="modal" data-target="#catalog-modal"><i class="fas fa-trash-alt"></i> ' . __("Remove Catalog") . '</a></div></div>';
             })
-            ->rawColumns(['name', 'status', 'action'])
+            ->rawColumns(['name', 'sku', 'status', 'action'])
             ->toJson(); //--- Returning Json Data To Client Side
     }
 
@@ -364,21 +359,13 @@ class ProductController extends AdminBaseController
             if (empty($request->size_check)) {
                 $input['size'] = null;
                 $input['size_qty'] = null;
-                $input['size_price'] = null;
             } else {
-                if (in_array(null, $request->size) || in_array(null, $request->size_qty) || in_array(null, $request->size_price)) {
+                if (in_array(null, $request->size) || in_array(null, $request->size_qty)) {
                     $input['size'] = null;
                     $input['size_qty'] = null;
-                    $input['size_price'] = null;
                 } else {
                     $input['size'] = implode(',', $request->size);
                     $input['size_qty'] = implode(',', $request->size_qty);
-                    $size_prices = $request->size_price;
-                    $s_price = array();
-                    foreach ($size_prices as $key => $sPrice) {
-                        $s_price[$key] = $sPrice / $sign->value;
-                    }
-                    $input['size_price'] = implode(',', $s_price);
                 }
             }
 
@@ -504,9 +491,6 @@ class ProductController extends AdminBaseController
                     'price' => $basePrice,
                     'previous_price' => $basePreviousPrice,
                     'stock' => (int) $request->input('stock', 0),
-                    'size' => $input['size'] ?? null,
-                    'size_qty' => $input['size_qty'] ?? null,
-                    'size_price' => $input['size_price'] ?? null,
                     'minimum_qty' => $request->input('minimum_qty') ?: null,
                     'whole_sell_qty' => $input['whole_sell_qty'] ?? null,
                     'whole_sell_discount' => $input['whole_sell_discount'] ?? null,
@@ -634,7 +618,6 @@ class ProductController extends AdminBaseController
                         $csvStock = $line[9];
                         $input['size'] = $line[10];
                         $input['size_qty'] = $line[11];
-                        $input['size_price'] = $line[12];
                         $input['youtube'] = $line[15];
                         $input['policy'] = $line[16];
                         $input['meta_tag'] = $line[17];
@@ -693,9 +676,6 @@ class ProductController extends AdminBaseController
                             'price' => $convertedPrice,
                             'previous_price' => $convertedPreviousPrice,
                             'stock' => (int) $csvStock,
-                            'size' => $input['size'] ?? null,
-                            'size_qty' => $input['size_qty'] ?? null,
-                            'size_price' => $input['size_price'] ?? null,
                             'status' => 1
                         ]);
 
@@ -804,23 +784,15 @@ class ProductController extends AdminBaseController
                 $input['stock_check'] = 0;
                 $input['size'] = null;
                 $input['size_qty'] = null;
-                $input['size_price'] = null;
             } else {
-                if (in_array(null, $request->size) || in_array(null, $request->size_qty) || in_array(null, $request->size_price)) {
+                if (in_array(null, $request->size) || in_array(null, $request->size_qty)) {
                     $input['stock_check'] = 0;
                     $input['size'] = null;
                     $input['size_qty'] = null;
-                    $input['size_price'] = null;
                 } else {
                     $input['stock_check'] = 1;
                     $input['size'] = implode(',', $request->size);
                     $input['size_qty'] = implode(',', $request->size_qty);
-                    $size_prices = $request->size_price;
-                    $s_price = array();
-                    foreach ($size_prices as $key => $sPrice) {
-                        $s_price[$key] = $sPrice / $sign->value;
-                    }
-                    $input['size_price'] = implode(',', $s_price);
                 }
             }
 
@@ -971,9 +943,6 @@ class ProductController extends AdminBaseController
                     'price' => $basePrice,
                     'previous_price' => $basePreviousPrice,
                     'stock' => (int) $request->input('stock', 0),
-                    'size' => $input['size'] ?? null,
-                    'size_qty' => $input['size_qty'] ?? null,
-                    'size_price' => $input['size_price'] ?? null,
                     'minimum_qty' => $request->input('minimum_qty') ?: null,
                     'whole_sell_qty' => $input['whole_sell_qty'] ?? null,
                     'whole_sell_discount' => $input['whole_sell_discount'] ?? null,

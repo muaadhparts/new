@@ -451,7 +451,7 @@
                                                             <div class="size-area">
                                                                 <span class="remove size-remove"><i class="fas fa-times"></i></span>
                                                                 <div  class="row">
-                                                                    <div class="col-md-3 col-sm-6">
+                                                                    <div class="col-md-4 col-sm-6">
                                                                         <label>
                                                                             {{ __('Size Name') }} :
                                                                             <span>
@@ -460,7 +460,7 @@
                                                                         </label>
                                                                         <select name="size[]" class="input-field size-name"></select>
                                                                     </div>
-                                                                    <div class="col-md-3 col-sm-6">
+                                                                    <div class="col-md-4 col-sm-6">
                                                                         <label>
                                                                             {{ __('Size Qty') }} :
                                                                             <span>
@@ -469,16 +469,7 @@
                                                                         </label>
                                                                         <input type="number" name="size_qty[]" class="input-field" placeholder="{{ __('Size Qty') }}" value="1" min="1">
                                                                     </div>
-                                                                    <div class="col-md-3 col-sm-6">
-                                                                        <label>
-                                                                            {{ __('Size Price') }} :
-                                                                            <span>
-                                                                                {{ __('(Added with base price)') }}
-                                                                            </span>
-                                                                        </label>
-                                                                        <input type="number" name="size_price[]" class="input-field" placeholder="{{ __('Size Price') }}" value="0" min="0">
-                                                                    </div>
-                                                                    <div class="col-md-3 col-sm-6">
+                                                                    <div class="col-md-4 col-sm-6">
                                                                         <label>
                                                                             {{ __('Size Color') }} :
                                                                             <span>

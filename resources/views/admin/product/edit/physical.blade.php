@@ -217,7 +217,7 @@
                                                                     $checked = 0;
                                                                 @endphp
                                                                 <div class="row">
-                                                                    <div class="col-lg-5">
+                                                                    <div class="col-lg-12">
                                                                         <div class="custom-control custom-checkbox">
                                                                             <input type="checkbox"
                                                                                 id="{{ $catAttribute->input_name }}{{ $option->id }}"
@@ -233,29 +233,6 @@
                                                                             >
                                                                             <label class="custom-control-label"
                                                                                 for="{{ $catAttribute->input_name }}{{ $option->id }}">{{ $option->name }}</label>
-                                                                        </div>
-                                                                    </div>
-
-                                                                    <div
-                                                                        class="col-lg-7 {{ $catAttribute->price_status == 0 ? 'd-none' : '' }}">
-                                                                        <div class="row">
-                                                                            <div class="col-2">
-                                                                                +
-                                                                            </div>
-                                                                            <div class="col-10">
-                                                                                <div class="price-container">
-                                                                                    <span
-                                                                                        class="price-curr">{{ $sign->sign }}</span>
-                                                                                    <input type="text"
-                                                                                        class="input-field price-input"
-                                                                                        id="{{ $catAttribute->input_name }}{{ $option->id }}_price"
-                                                                                        data-name="{{ $catAttribute->input_name }}_price[]"
-                                                                                        placeholder="0.00 (Additional Price)"
-                                                                                        value="{{ !empty($selectedAttrs["$inName"]['prices'][$i]) && $checked == 1
-                                                                                            ? round($selectedAttrs["$inName"]['prices'][$i] * $sign->value, 2)
-                                                                                            : '' }}">
-                                                                                </div>
-                                                                            </div>
                                                                         </div>
                                                                     </div>
                                                                 </div>
@@ -298,7 +275,7 @@
                                                                 @endphp
 
                                                                 <div class="row">
-                                                                    <div class="col-lg-5">
+                                                                    <div class="col-lg-12">
                                                                         <div class="custom-control custom-checkbox">
 
                                                                             <input type="checkbox"
@@ -319,28 +296,6 @@
 
                                                                             <label class="custom-control-label"
                                                                                 for="{{ $subAttribute->input_name }}{{ $option->id }}">{{ $option->name }}</label>
-                                                                        </div>
-                                                                    </div>
-                                                                    <div
-                                                                        class="col-lg-7 {{ $subAttribute->price_status == 0 ? 'd-none' : '' }}">
-                                                                        <div class="row">
-                                                                            <div class="col-2">
-                                                                                +
-                                                                            </div>
-                                                                            <div class="col-10">
-                                                                                <div class="price-container">
-                                                                                    <span
-                                                                                        class="price-curr">{{ $sign->sign }}</span>
-                                                                                    <input type="text"
-                                                                                        class="input-field price-input"
-                                                                                        id="{{ $subAttribute->input_name }}{{ $option->id }}_price"
-                                                                                        data-name="{{ $subAttribute->input_name }}_price[]"
-                                                                                        placeholder="0.00 (Additional Price)"
-                                                                                        value="{{ !empty($selectedAttrs["$inName"]['prices'][$i]) && $checked == 1
-                                                                                            ? round($selectedAttrs["$inName"]['prices'][$i] * $sign->value, 2)
-                                                                                            : '' }}">
-                                                                                </div>
-                                                                            </div>
                                                                         </div>
                                                                     </div>
                                                                 </div>
@@ -382,7 +337,7 @@
                                                                     $checked = 0;
                                                                 @endphp
                                                                 <div class="row">
-                                                                    <div class="col-lg-5">
+                                                                    <div class="col-lg-12">
                                                                         <div class="custom-control custom-checkbox">
                                                                             <input type="checkbox"
                                                                                 id="{{ $childAttribute->input_name }}{{ $option->id }}"
@@ -405,34 +360,6 @@
                                                                         </div>
                                                                     </div>
 
-
-                                                                    <div
-                                                                        class="col-lg-7 {{ $childAttribute->price_status == 0 ? 'd-none' : '' }}">
-                                                                        <div class="row">
-                                                                            <div class="col-2">
-                                                                                +
-                                                                            </div>
-                                                                            <div class="col-10">
-                                                                                <div class="price-container">
-                                                                                    <span
-                                                                                        class="price-curr">{{ $sign->sign }}</span>
-                                                                                    <input type="text"
-                                                                                        class="input-field price-input"
-                                                                                        id="{{ $childAttribute->input_name }}{{ $option->id }}_price"
-                                                                                        data-name="{{ $childAttribute->input_name }}_price[]"
-                                                                                        placeholder="0.00 (Additional Price)"
-                                                                                        value="{{ !empty(
-                                                                                            $selectedAttrs[
-                                                                                                "
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        																		$inName"
-                                                                                            ]['prices'][$i]
-                                                                                        ) && $checked == 1
-                                                                                            ? round($selectedAttrs["$inName"]['prices'][$i] * $sign->value, 2)
-                                                                                            : '' }}">
-                                                                                </div>
-                                                                            </div>
-                                                                        </div>
-                                                                    </div>
                                                                 </div>
                                                                 @php
                                                                     if ($checked == 1) {
@@ -575,7 +502,7 @@
                                                                 <span class="remove size-remove"><i
                                                                         class="fas fa-times"></i></span>
                                                                 <div class="row">
-                                                                    <div class="col-md-4 col-sm-4">
+                                                                    <div class="col-md-6 col-sm-6">
                                                                         <label>
                                                                             {{ __('Size Name') }} :
                                                                             <span>
@@ -587,7 +514,7 @@
                                                                             placeholder="{{ __('Enter Product Size') }}"
                                                                             value="{{ $size }}" required="">
                                                                     </div>
-                                                                    <div class="col-md-4 col-sm-4">
+                                                                    <div class="col-md-6 col-sm-6">
                                                                         <label>
                                                                             {{ __('Size Qty') }} :
                                                                             <span>
@@ -599,19 +526,6 @@
                                                                             placeholder="{{ __('Size Qty') }}"
                                                                             value="{{ $data->size_qty[$key] }}"
                                                                             min="1">
-                                                                    </div>
-                                                                    <div class="col-md-4 col-sm-4">
-                                                                        <label>
-                                                                            {{ __('Size Price') }} :
-                                                                            <span>
-                                                                                {{ __('(Added with base price)') }}
-                                                                            </span>
-                                                                        </label>
-                                                                        <input type="number" name="size_price[]" required
-                                                                            class="input-field"
-                                                                            placeholder="{{ __('Size Price') }}"
-                                                                            value="{{ round($data->size_price[$key] * $curr->value, 2) }}"
-                                                                            min="0">
                                                                     </div>
 
 

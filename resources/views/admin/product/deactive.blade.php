@@ -33,9 +33,8 @@
 													<thead>
 														<tr>
 									                        <th>{{ __("Name") }}</th>
+									                        <th>{{ __("SKU") }}</th>
 									                        <th>{{ __("Type") }}</th>
-									                        <th>{{ __("Stock") }}</th>
-									                        <th>{{ __("Price") }}</th>
 									                        <th>{{ __("Status") }}</th>
 									                        <th>{{ __("Options") }}</th>
 														</tr>
@@ -211,9 +210,8 @@
                ajax: '{{ route('admin-prod-datatables') }}?type=deactive',
                columns: [
                         { data: 'name', name: 'name' },
+                        { data: 'sku', name: 'sku' },
                         { data: 'type', name: 'type' },
-                        { data: 'stock', name: 'stock' },
-                        { data: 'price', name: 'price' },
                         { data: 'status', searchable: false, orderable: false},
             			{ data: 'action', searchable: false, orderable: false }
                      ],

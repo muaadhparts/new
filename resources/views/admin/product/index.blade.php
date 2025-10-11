@@ -33,9 +33,8 @@
                                     <tr>
                                         <th>{{ __('Image') }}</th>
                                         <th>{{ __('Name') }}</th>
+                                        <th>{{ __('SKU') }}</th>
                                         <th>{{ __('Type') }}</th>
-                                        <th>{{ __('Stock') }}</th>
-                                        <th>{{ __('Price') }}</th>
                                         <th>{{ __('Status') }}</th>
                                         <th>{{ __('Options') }}</th>
                                     </tr>
@@ -209,23 +208,21 @@
                 columns: [
 					{
                         data: 'photo',
-                        name: 'photo'
+                        name: 'photo',
+                        searchable: false,
+                        orderable: false
                     },
 					{
                         data: 'name',
                         name: 'name'
                     },
                     {
+                        data: 'sku',
+                        name: 'sku'
+                    },
+                    {
                         data: 'type',
                         name: 'type'
-                    },
-                    {
-                        data: 'stock',
-                        name: 'stock'
-                    },
-                    {
-                        data: 'price',
-                        name: 'price'
                     },
                     {
                         data: 'status',

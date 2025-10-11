@@ -70,15 +70,22 @@
         $currentRouteName = request()->route() ? request()->route()->getName() : '';
         $currentPath = request()->path();
 
+        // Use search route (result/{sku}) for admin pages EXCEPT orders/invoices
+        $isAdminPage = str_starts_with($currentPath, 'admin/');
+        $isAdminOrderOrInvoice = $isAdminPage && (
+            str_contains($currentPath, '/order') ||
+            str_contains($currentPath, '/invoice')
+        );
+
         // Keep product route for:
         // 1. search-results-page and category pages (front.category)
-        // 2. admin dashboard
-        // 3. vendor dashboard
-        // 4. cart, checkout, and order pages
+        // 2. vendor dashboard (all vendor pages)
+        // 3. admin orders and invoices (merchant-specific pages)
+        // 4. cart, checkout, and order pages (user)
         $keepProductRoute =
             in_array($currentRouteName, ['search.result', 'front.category']) ||
-            str_starts_with($currentPath, 'admin/') ||
             str_starts_with($currentPath, 'vendor/') ||
+            $isAdminOrderOrInvoice ||
             str_starts_with($currentPath, 'user/order') ||
             str_contains($currentPath, '/cart') ||
             str_contains($currentPath, '/checkout');
