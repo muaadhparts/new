@@ -408,10 +408,17 @@
 
                                 <tr>
                                     <th>{{ __('Product ID#') }}</th>
-                                    <th>{{ __('Shop Name') }}</th>
-                                    <th>{{ __('Vendor Status') }}</th>
                                     <th>{{ __('Product Title') }}</th>
-                                    <th>{{ __('Details') }}</th>
+                                    <th>{{ __('SKU') }}</th>
+                                    <th>{{ __('Brand') }}</th>
+                                    <th>{{ __('Manufacturer') }}</th>
+                                    <th>{{ __('Shop Name') }}</th>
+                                    <th>{{ __('Size') }}</th>
+                                    <th>{{ __('Color') }}</th>
+                                    <th>{{ __('Price') }}</th>
+                                    <th>{{ __('Qty') }}</th>
+                                    <th>{{ __('Discount') }}</th>
+                                    <th>{{ __('Vendor Status') }}</th>
                                     <th>{{ __('Total Price') }}</th>
                                     <th>{{ __('Action') }}</th>
 
@@ -425,180 +432,131 @@
                                 @php
                                 $vendor_total += $product['price'];
                                 @endphp
+                                @php
+                                    $orderProduct = \App\Models\Product::find($product['item']['id']);
+                                    $orderVendorId = $product['item']['user_id'] ?? 0;
+                                    $orderMerchant = $orderProduct && $orderVendorId ? $orderProduct->merchantProducts()->where('user_id', $orderVendorId)->where('status', 1)->first() : null;
+                                    $vendorUser = App\Models\User::find($product['item']['user_id']);
+                                    $vendorOrder = App\Models\VendorOrder::where('order_id','=',$order->id)->where('user_id','=',$product['item']['user_id'])->first();
+                                @endphp
                                 <tr>
                                     <td><input type="hidden" value="{{$key1}}">{{ $product['item']['id'] }}</td>
 
-                                    <td>
-                                        @if($product['item']['user_id'] != 0)
-                                        @php
-                                        $user = App\Models\User::find($product['item']['user_id']);
-                                        @endphp
-                                        @if(isset($user))
-                                        <a target="_blank"
-                                            href="{{route('admin-vendor-show',$user->id)}}">{{$user->shop_name}}</a>
-                                        @else
-                                        {{ __('Vendor Removed') }}
-                                        @endif
-                                        @else
-                                        <a href="javascript:;">{{ App\Models\Admin::find(1)->shop_name }}</a>
-                                        @endif
-
-                                    </td>
-                                    <td>
-                                        @if($product['item']['user_id'] != 0)
-                                        @php
-                                        $user = App\Models\VendorOrder::where('order_id','=',$order->id)->where('user_id','=',$product['item']['user_id'])->first();
-
-
-                                        @endphp
-
-                                        @if($order->dp == 1 && $order->payment_status == 'Completed')
-
-                                        <span class="badge badge-success">{{ __('Completed') }}</span>
-
-                                        @else
-                                        {{-- @if($user->status == 'pending')
-                                        <span class="badge badge-warning">{{ucwords($user->status)}}</span> --}}
-                                        @if($user && $user->status == 'pending')
-                                        <span class="badge badge-warning">{{ ucwords($user->status) }}</span>
-                                        @elseif($user && $user->status == 'processing')
-                                        <span class="badge badge-info">{{ucwords($user->status)}}</span>
-                                        @elseif($user && $user->status == 'on delivery')
-                                        <span class="badge badge-primary">{{ucwords($user->status)}}</span>
-                                        @elseif($user && $user->status == 'completed')
-                                        <span class="badge badge-success">{{ucwords($user->status)}}</span>
-                                        @elseif($user && $user->status == 'declined')
-                                        <span class="badge badge-danger">{{ucwords($user->status)}}</span>
-                                        @endif
-                                        @endif
-
-                                        @endif
-                                    </td>
-
-
+                                    {{-- Product Title --}}
                                     <td>
                                         <input type="hidden" value="{{ $product['license'] }}">
 
                                         @if($product['item']['user_id'] != 0)
-                                        @php
-                                        $user = App\Models\User::find($product['item']['user_id']);
-                                        @endphp
-                                        @if(isset($user))
-                                        <x-product-name :item="$product" :vendor-id="$product['item']['user_id']" :merchant-product-id="$product['item']['id']" target="_blank" />
+                                            @if(isset($vendorUser))
+                                            <x-product-name :item="$product" :vendor-id="$product['item']['user_id']" :merchant-product-id="$product['item']['id']" target="_blank" />
+                                            @else
+                                            <x-product-name :item="$product" :vendor-id="$product['item']['user_id']" :merchant-product-id="$product['item']['id']" target="_blank" />
+                                            @endif
                                         @else
-                                        {{-- <a target="_blank"
-                                            href="{{ route('front.product', $product['item']['slug']) }}">{{mb_strlen($product['item']['name'],'utf-8')
-                                            > 30 ? mb_substr($product['item']['name'],0,30,'utf-8').'...' :
-                                            $product['item']['name']}}</a> --}}
-                                        <x-product-name :item="$product" :vendor-id="$product['item']['user_id']" :merchant-product-id="$product['item']['id']" target="_blank" />
-
+                                            <x-product-name :item="$product" :vendor-id="$product['item']['user_id']" target="_blank" />
                                         @endif
-                                        @else
-
-                                        <x-product-name :item="$product" :vendor-id="$product['item']['user_id']" target="_blank" />
-
-                                        @endif
-
 
                                         @if($product['license'] != '')
-                                        <a href="javascript:;" data-toggle="modal" data-target="#confirm-delete"
+                                        <br><a href="javascript:;" data-toggle="modal" data-target="#confirm-delete"
                                             class="btn btn-info product-btn license" style="padding: 5px 12px;"><i
                                                 class="fa fa-eye"></i> {{ __('View License') }}</a>
                                         @endif
 
                                         @if($product['affilate_user'] != 0)
-                                        <p>
-                                            <strong>{{ __('Referral User') }} :</strong> {{
-                                            \App\Models\User::find($product['affilate_user'])->name }}
-                                        </p>
+                                        <br><small><strong>{{ __('Referral User') }} :</strong> {{
+                                            \App\Models\User::find($product['affilate_user'])->name }}</small>
                                         @endif
-
                                     </td>
+
+                                    {{-- SKU --}}
+                                    <td>{{ $product['item']['sku'] ?? '-' }}</td>
+
+                                    {{-- Brand --}}
+                                    <td>{{ $orderProduct && $orderProduct->brand ? Str::ucfirst($orderProduct->brand->name) : '-' }}</td>
+
+                                    {{-- Manufacturer --}}
                                     <td>
-                                        @php
-                                            $orderProduct = \App\Models\Product::find($product['item']['id']);
-                                            $orderVendorId = $product['item']['user_id'] ?? 0;
-                                            $orderMerchant = $orderProduct && $orderVendorId ? $orderProduct->merchantProducts()->where('user_id', $orderVendorId)->where('status', 1)->first() : null;
-                                        @endphp
-
-                                        @if(!empty($product['item']['sku']))
-                                        <p>
-                                            <strong>{{ __('SKU') }} :</strong> {{ $product['item']['sku'] }}
-                                        </p>
-                                        @endif
-
-                                        @if($orderProduct && $orderProduct->brand)
-                                        <p>
-                                            <strong>{{ __('Brand:') }} :</strong> {{ Str::ucfirst($orderProduct->brand->name) }}
-                                        </p>
-                                        @endif
-
                                         @if($orderMerchant && $orderMerchant->qualityBrand)
-                                        <p>
-                                            <strong>{{ __('Brand qualities:') }} :</strong> {{ app()->getLocale() == 'ar' && $orderMerchant->qualityBrand->name_ar ? $orderMerchant->qualityBrand->name_ar : $orderMerchant->qualityBrand->name_en }}
-                                        </p>
+                                            {{ app()->getLocale() == 'ar' && $orderMerchant->qualityBrand->name_ar ? $orderMerchant->qualityBrand->name_ar : $orderMerchant->qualityBrand->name_en }}
+                                        @else
+                                            -
                                         @endif
-
-                                        @if($product['size'])
-                                        <p>
-                                            <strong>{{ __('Size') }} :</strong> {{str_replace('-','
-                                            ',$product['size'])}}
-                                        </p>
-                                        @endif
-                                        @if($product['color'])
-                                        <p>
-                                            <strong>{{ __('color') }} :</strong> <span
-                                                style="width: 20px; height: 20px; display: inline-block; vertical-align: middle; border-radius: 50%; background: #{{$product['color']}};"></span>
-                                        </p>
-                                        @endif
-                                        <p>
-                                            <strong>{{ __('Price') }} :</strong> {{
-                                            \PriceHelper::showCurrencyPrice(($product['item_price'] ) *
-                                            $order->currency_value) }}
-                                        </p>
-                                        <p>
-                                            <strong>{{ __('Qty') }} :</strong> {{$product['qty']}} {{
-                                            $product['item']['measure'] }}
-                                        </p>
-                                        @if(!empty($product['keys']))
-
-                                        @foreach( array_combine(explode(',', $product['keys']), explode(',',
-                                        $product['values'])) as $key => $value)
-                                        <p>
-                                            <b>{{ ucwords(str_replace('_', ' ', $key)) }} : </b> {{ $value }}
-                                        </p>
-                                        @endforeach
-
-                                        @endif
-
                                     </td>
 
-                                    <td> {{ \PriceHelper::showCurrencyPrice($product['price'] *
-                                        $order->currency_value)
-                                        }} <small>{{ $product['discount'] == 0 ? '' : '('.$product['discount'].'%
-                                            '.__('Off').')' }}</small>
-                                    </td>
-
-
+                                    {{-- Shop Name --}}
                                     <td>
+                                        @if($product['item']['user_id'] != 0)
+                                            @if(isset($vendorUser))
+                                            <a target="_blank" href="{{route('admin-vendor-show',$vendorUser->id)}}">{{$vendorUser->shop_name}}</a>
+                                            @else
+                                            {{ __('Vendor Removed') }}
+                                            @endif
+                                        @else
+                                            <a href="javascript:;">{{ App\Models\Admin::find(1)->shop_name }}</a>
+                                        @endif
+                                    </td>
 
+                                    {{-- Size --}}
+                                    <td>{{ $product['size'] ? str_replace('-', ' ', $product['size']) : '-' }}</td>
+
+                                    {{-- Color --}}
+                                    <td>
+                                        @if($product['color'])
+                                            <span style="width: 20px; height: 20px; display: inline-block; vertical-align: middle; border-radius: 50%; background: #{{$product['color']}};"></span>
+                                        @else
+                                            -
+                                        @endif
+                                    </td>
+
+                                    {{-- Price --}}
+                                    <td>{{ \PriceHelper::showCurrencyPrice(($product['item_price'] ) * $order->currency_value) }}</td>
+
+                                    {{-- Qty --}}
+                                    <td>{{$product['qty']}} {{ $product['item']['measure'] }}</td>
+
+                                    {{-- Discount --}}
+                                    <td>{{ $product['discount'] == 0 ? '-' : $product['discount'].'%' }}</td>
+
+                                    {{-- Vendor Status --}}
+                                    <td>
+                                        @if($product['item']['user_id'] != 0)
+                                            @if($order->dp == 1 && $order->payment_status == 'Completed')
+                                                <span class="badge badge-success">{{ __('Completed') }}</span>
+                                            @else
+                                                @if($vendorOrder && $vendorOrder->status == 'pending')
+                                                <span class="badge badge-warning">{{ ucwords($vendorOrder->status) }}</span>
+                                                @elseif($vendorOrder && $vendorOrder->status == 'processing')
+                                                <span class="badge badge-info">{{ucwords($vendorOrder->status)}}</span>
+                                                @elseif($vendorOrder && $vendorOrder->status == 'on delivery')
+                                                <span class="badge badge-primary">{{ucwords($vendorOrder->status)}}</span>
+                                                @elseif($vendorOrder && $vendorOrder->status == 'completed')
+                                                <span class="badge badge-success">{{ucwords($vendorOrder->status)}}</span>
+                                                @elseif($vendorOrder && $vendorOrder->status == 'declined')
+                                                <span class="badge badge-danger">{{ucwords($vendorOrder->status)}}</span>
+                                                @endif
+                                            @endif
+                                        @endif
+                                    </td>
+
+                                    {{-- Total Price --}}
+                                    <td>{{ \PriceHelper::showCurrencyPrice($product['price'] * $order->currency_value) }}</td>
+
+                                    {{-- Action --}}
+                                    <td>
                                         <div class="action-list">
-
                                             @if (App\Models\Product::whereId($product['item']['id'])->exists())
                                             <a class="add-btn edit-product"data-href="{{ route('admin-order-product-edit',[$itemKey, $product['item']['id'] ,$order->id]) }}"
                                                 data-toggle="modal" data-target="#edit-product-modal">
                                                 <i class="fas fa-edit"></i> {{ __("Edit") }}
                                             </a>
                                             @endif
-                                            
+
                                             <a class="add-btn delete-product"
                                                 data-href="{{ route('admin-order-product-delete',[$itemKey,$order->id]) }}"
                                                 data-toggle="modal" data-target="#delete-product-modal">
                                                 <i class="fas fa-trash"></i>
                                             </a>
-
                                         </div>
-
                                     </td>
 
                                 </tr>
@@ -623,37 +581,39 @@
                                 }
 
                                 @endphp
-                                <td colspan="7">
-                                    <div class="text-right mx-4">
-                                        @if ($shipping)
-                                        <p>
-                                            {{ __('Shipping Method') }} :
-                                            <strong>{{$shipping->title}} | {{
-                                                \PriceHelper::showCurrencyPrice($shipping->price *
-                                                $order->currency_value) }}</strong>
-                                        </p>
-                                        @endif
-                                        @if ($package)
+                                <tr>
+                                    <td colspan="14" class="text-right">
+                                        <div class="mx-4">
+                                            @if ($shipping)
+                                            <p>
+                                                {{ __('Shipping Method') }} :
+                                                <strong>{{$shipping->title}} | {{
+                                                    \PriceHelper::showCurrencyPrice($shipping->price *
+                                                    $order->currency_value) }}</strong>
+                                            </p>
+                                            @endif
+                                            @if ($package)
 
-                                        <p>
-                                            {{ __('Packaging Method') }} :
-                                            <strong>{{$package->title}} | {{
-                                                \PriceHelper::showCurrencyPrice($package->price *
-                                                $order->currency_value) }}</strong>
-                                        </p>
+                                            <p>
+                                                {{ __('Packaging Method') }} :
+                                                <strong>{{$package->title}} | {{
+                                                    \PriceHelper::showCurrencyPrice($package->price *
+                                                    $order->currency_value) }}</strong>
+                                            </p>
 
-                                        @endif
-                                        <p>
-                                            {{ __('Total Amount') }} :
-                                            <strong>
-                                                {{ \PriceHelper::showCurrencyPrice(($vendor_total +
-                                                @$shipping->price + @$package->price ) *
-                                                $order->currency_value )}}
-                                            </strong>
-                                        </p>
+                                            @endif
+                                            <p>
+                                                {{ __('Total Amount') }} :
+                                                <strong>
+                                                    {{ \PriceHelper::showCurrencyPrice(($vendor_total +
+                                                    @$shipping->price + @$package->price ) *
+                                                    $order->currency_value )}}
+                                                </strong>
+                                            </p>
 
-                                    </div>
-                                </td>
+                                        </div>
+                                    </td>
+                                </tr>
 
                             </tbody>
                         </table>

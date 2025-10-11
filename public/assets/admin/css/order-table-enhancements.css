@@ -1,0 +1,400 @@
+/* ======================================
+   Order Table Enhancements - Responsive & Tooltips
+   ====================================== */
+
+/* === Responsive Table Wrapper === */
+.order-table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    position: relative;
+}
+
+/* === Table Base Styles === */
+.order-table-enhanced {
+    min-width: 100%;
+    white-space: nowrap;
+}
+
+.order-table-enhanced thead th {
+    background: #f8f9fa;
+    font-weight: 600;
+    font-size: 13px;
+    padding: 12px 8px !important;
+    border-bottom: 2px solid #dee2e6 !important;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    vertical-align: middle;
+}
+
+.order-table-enhanced tbody td {
+    padding: 10px 8px !important;
+    font-size: 13px;
+    vertical-align: middle;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.order-table-enhanced tbody tr:hover {
+    background-color: #f8f9fa;
+    transition: background-color 0.2s ease;
+}
+
+/* === Column Specific Widths === */
+.order-table-enhanced th.col-id,
+.order-table-enhanced td.col-id {
+    width: 60px;
+    min-width: 60px;
+}
+
+.order-table-enhanced th.col-title,
+.order-table-enhanced td.col-title {
+    min-width: 180px;
+    max-width: 250px;
+    white-space: normal;
+}
+
+.order-table-enhanced th.col-sku,
+.order-table-enhanced td.col-sku {
+    min-width: 100px;
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+}
+
+.order-table-enhanced th.col-brand,
+.order-table-enhanced td.col-brand,
+.order-table-enhanced th.col-manufacturer,
+.order-table-enhanced td.col-manufacturer {
+    min-width: 120px;
+    max-width: 180px;
+}
+
+.order-table-enhanced th.col-shop,
+.order-table-enhanced td.col-shop {
+    min-width: 140px;
+    max-width: 200px;
+}
+
+.order-table-enhanced th.col-size,
+.order-table-enhanced td.col-size,
+.order-table-enhanced th.col-color,
+.order-table-enhanced td.col-color {
+    min-width: 80px;
+    text-align: center;
+}
+
+.order-table-enhanced th.col-price,
+.order-table-enhanced td.col-price,
+.order-table-enhanced th.col-qty,
+.order-table-enhanced td.col-qty,
+.order-table-enhanced th.col-discount,
+.order-table-enhanced td.col-discount,
+.order-table-enhanced th.col-total,
+.order-table-enhanced td.col-total {
+    min-width: 90px;
+    text-align: right;
+}
+
+.order-table-enhanced th.col-status,
+.order-table-enhanced td.col-status {
+    min-width: 100px;
+}
+
+.order-table-enhanced th.col-action,
+.order-table-enhanced td.col-action {
+    min-width: 120px;
+    text-align: center;
+}
+
+/* === Tooltip Styles === */
+.tooltip-wrapper {
+    position: relative;
+    display: inline-block;
+}
+
+.tooltip-text {
+    visibility: hidden;
+    opacity: 0;
+    position: absolute;
+    z-index: 1000;
+    background-color: #333;
+    color: #fff;
+    text-align: center;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    white-space: normal;
+    max-width: 250px;
+    min-width: 150px;
+    bottom: 125%;
+    left: 50%;
+    transform: translateX(-50%);
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    line-height: 1.4;
+}
+
+.tooltip-text::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    margin-left: -5px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: #333 transparent transparent transparent;
+}
+
+.tooltip-wrapper:hover .tooltip-text {
+    visibility: visible;
+    opacity: 1;
+}
+
+/* === Truncated Text with Ellipsis === */
+.text-truncate-custom {
+    display: block;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* === Color Display === */
+.color-circle {
+    display: inline-block;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    border: 2px solid #ddd;
+    vertical-align: middle;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* === Badge Styles === */
+.badge-custom {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+.badge-sku {
+    background: #e8f4f8;
+    color: #0277bd;
+    font-family: 'Courier New', monospace;
+}
+
+/* === Responsive Breakpoints === */
+
+/* Large Desktop (1400px+) */
+@media (min-width: 1400px) {
+    .order-table-enhanced th,
+    .order-table-enhanced td {
+        padding: 12px 10px !important;
+    }
+}
+
+/* Desktop (1200px - 1399px) */
+@media (max-width: 1399px) {
+    .order-table-enhanced {
+        font-size: 12px;
+    }
+
+    .order-table-enhanced th,
+    .order-table-enhanced td {
+        padding: 10px 6px !important;
+    }
+}
+
+/* Tablet Landscape (992px - 1199px) */
+@media (max-width: 1199px) {
+    .order-table-enhanced {
+        font-size: 11px;
+    }
+
+    .order-table-enhanced th.col-title,
+    .order-table-enhanced td.col-title {
+        max-width: 180px;
+    }
+
+    .order-table-enhanced th.col-brand,
+    .order-table-enhanced td.col-brand,
+    .order-table-enhanced th.col-manufacturer,
+    .order-table-enhanced td.col-manufacturer {
+        max-width: 140px;
+    }
+}
+
+/* Tablet Portrait (768px - 991px) */
+@media (max-width: 991px) {
+    .order-table-responsive {
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+    }
+
+    .order-table-enhanced {
+        font-size: 11px;
+    }
+
+    /* Add scroll indicator */
+    .order-table-responsive::after {
+        content: "← Scroll →";
+        display: block;
+        text-align: center;
+        padding: 8px;
+        background: #f8f9fa;
+        color: #6c757d;
+        font-size: 11px;
+        font-weight: 600;
+        border-top: 1px solid #dee2e6;
+    }
+}
+
+/* Mobile Large (576px - 767px) */
+@media (max-width: 767px) {
+    .order-table-enhanced {
+        font-size: 10px;
+    }
+
+    .order-table-enhanced th,
+    .order-table-enhanced td {
+        padding: 8px 5px !important;
+    }
+
+    .order-table-enhanced th.col-title,
+    .order-table-enhanced td.col-title {
+        min-width: 140px;
+        max-width: 160px;
+    }
+}
+
+/* Mobile (max 575px) */
+@media (max-width: 575px) {
+    .order-table-enhanced {
+        font-size: 9px;
+    }
+
+    .order-table-enhanced th,
+    .order-table-enhanced td {
+        padding: 6px 4px !important;
+    }
+
+    /* Reduce column widths for mobile */
+    .order-table-enhanced th.col-id,
+    .order-table-enhanced td.col-id {
+        width: 50px;
+        min-width: 50px;
+    }
+
+    .order-table-enhanced th.col-title,
+    .order-table-enhanced td.col-title {
+        min-width: 120px;
+        max-width: 140px;
+    }
+
+    .order-table-enhanced th.col-brand,
+    .order-table-enhanced td.col-brand,
+    .order-table-enhanced th.col-manufacturer,
+    .order-table-enhanced td.col-manufacturer {
+        min-width: 100px;
+        max-width: 120px;
+    }
+
+    .color-circle {
+        width: 18px;
+        height: 18px;
+    }
+}
+
+/* === Sticky First Column (Optional - for better UX) === */
+.order-table-enhanced.sticky-first-col tbody td:first-child,
+.order-table-enhanced.sticky-first-col thead th:first-child {
+    position: sticky;
+    left: 0;
+    background: #fff;
+    z-index: 5;
+    box-shadow: 2px 0 4px rgba(0, 0, 0, 0.05);
+}
+
+.order-table-enhanced.sticky-first-col thead th:first-child {
+    z-index: 15;
+    background: #f8f9fa;
+}
+
+/* === Loading State === */
+.order-table-enhanced.loading {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+.order-table-enhanced.loading::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 40px;
+    height: 40px;
+    margin: -20px 0 0 -20px;
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #2d3274;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* === Print Styles === */
+@media print {
+    .order-table-responsive {
+        overflow: visible !important;
+    }
+
+    .order-table-enhanced {
+        font-size: 10px;
+    }
+
+    .order-table-enhanced th,
+    .order-table-enhanced td {
+        padding: 6px 4px !important;
+    }
+
+    .tooltip-text {
+        display: none !important;
+    }
+
+    .order-table-enhanced tbody tr:nth-child(even) {
+        background-color: #f9f9f9;
+    }
+}
+
+/* === Accessibility === */
+.order-table-enhanced th {
+    outline: none;
+}
+
+.order-table-enhanced tbody tr:focus-within {
+    outline: 2px solid #2d3274;
+    outline-offset: -2px;
+}
+
+/* === Dark Mode Support (Optional) === */
+@media (prefers-color-scheme: dark) {
+    .order-table-enhanced thead th {
+        background: #2d3274;
+        color: #fff;
+        border-bottom-color: #495057;
+    }
+
+    .order-table-enhanced tbody td {
+        border-bottom-color: #495057;
+    }
+
+    .order-table-enhanced tbody tr:hover {
+        background-color: #343a40;
+    }
+}

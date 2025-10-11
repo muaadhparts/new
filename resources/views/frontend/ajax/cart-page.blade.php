@@ -53,13 +53,13 @@
                                         <img src="{{ $photo ? \Illuminate\Support\Facades\Storage::url($photo) : asset('assets/images/noimage.png') }}" alt="">
                                         <div class="cart-product-info">
                                             <x-product-name :item="$product['item']" :vendor-id="$vendorId" :merchant-product-id="$itemMerchantId" target="_blank" class="cart-title d-inline-block" />
-{{-- 
+
                                             @if (!empty($sku))
                                                 <p class="text-muted small mb-1">
                                                     <span class="fw-medium">@lang('SKU'):</span>
-                                                    <a href="{{ $productUrl }}" class="text-primary text-decoration-none">{{ $sku }}</a>
+                                                    <span>{{ $sku }}</span>
                                                 </p>
-                                            @endif --}}
+                                            @endif
 
                                             @if($itemProduct && $itemProduct->brand)
                                                 <p class="text-muted small mb-1">
