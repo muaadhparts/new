@@ -74,9 +74,18 @@
           {{-- Product Title --}}
           <h5 class="card-title mb-2 product-list-title">
             <a href="{{ $detailsUrl }}" class="text-decoration-none text-dark fw-bold" title="{{ strip_tags($product->name) }}">
-              <x-product-name :product="$product" :vendor-id="$vendorId" target="_self" :useSearchRoute="false" />
+              {{ app()->getLocale() == 'ar' && !empty($product->label_ar) ? $product->label_ar : $product->name }}
             </a>
           </h5>
+
+          {{-- Product SKU --}}
+          <div class="mb-2">
+            <small class="text-muted">
+              <a href="{{ $detailsUrl }}" class="text-decoration-none text-muted">
+                @lang('SKU'): {{ $product->sku ?? '-' }}
+              </a>
+            </small>
+          </div>
 
           {{-- Ratings --}}
           <div class="mb-2">

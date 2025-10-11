@@ -818,13 +818,13 @@
 
     <!-- More Products By Seller slider start -->
     @if (isset($merchant) && $merchant->user && isset($vendorListings) && $vendorListings->count() > 0)
-        <div class="gs-product-cards-slider-section more-products-by-seller">
+        <div class="gs-product-cards-slider-section more-products-by-seller" dir="{{ app()->getLocale() === 'ar' ? 'rtl' : 'ltr' }}">
             <div class="gs-product-cards-slider-area more-products-by-seller">
                 <div class="container">
                     <h2 class="title text-center">@lang('More Products By Seller')</h2>
                     <div class="product-cards-slider">
                         @foreach ($vendorListings as $merchantProduct)
-                            @include('includes.frontend.home_product', ['product' => $merchantProduct->product, 'class' => 'not'])
+                            @include('includes.frontend.home_product', ['product' => $merchantProduct->product, 'class' => 'slick-slide-item', 'mp' => $merchantProduct])
                         @endforeach
                     </div>
                 </div>
@@ -950,6 +950,8 @@
 
                 // Initialize product slider for "More Products By Seller" if exists
                 if ($('.product-cards-slider').length && typeof $.fn.slick !== 'undefined') {
+                    var isRTL = {{ app()->getLocale() === 'ar' ? 'true' : 'false' }};
+
                     $('.product-cards-slider').slick({
                         slidesToShow: 4,
                         slidesToScroll: 1,
@@ -957,24 +959,35 @@
                         autoplaySpeed: 3000,
                         arrows: true,
                         dots: false,
-                        rtl: {{ app()->getLocale() === 'ar' ? 'true' : 'false' }},
+                        rtl: isRTL,
+                        infinite: true,
+                        speed: 500,
+                        cssEase: 'linear',
+                        adaptiveHeight: false,
+                        variableWidth: false,
+                        swipeToSlide: true,
+                        touchThreshold: 10,
                         responsive: [
                             {
-                                breakpoint: 1024,
+                                breakpoint: 1200,
                                 settings: {
-                                    slidesToShow: 3
+                                    slidesToShow: 3,
+                                    slidesToScroll: 1
                                 }
                             },
                             {
                                 breakpoint: 768,
                                 settings: {
-                                    slidesToShow: 2
+                                    slidesToShow: 2,
+                                    slidesToScroll: 1
                                 }
                             },
                             {
-                                breakpoint: 480,
+                                breakpoint: 576,
                                 settings: {
-                                    slidesToShow: 1
+                                    slidesToShow: 1,
+                                    slidesToScroll: 1,
+                                    centerMode: false
                                 }
                             }
                         ]

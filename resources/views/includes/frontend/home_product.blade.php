@@ -56,7 +56,7 @@
   }
 @endphp
 
-<div class="{{ isset($class) ? $class : 'col-6 col-sm-6 col-md-4 col-lg-3' }}">
+<div class="{{ isset($class) ? $class : 'col-6 col-sm-6 col-md-4 col-lg-3' }}" style="display: block !important; visibility: visible !important; opacity: 1 !important;">
   <div class="product-card shadow-sm">
     <div class="product-card-image">
 
