@@ -14,14 +14,16 @@ use App\Models\Font;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Session;
-use Illuminate\Support\Facades\Response;
 
 
 class AppServiceProvider extends ServiceProvider
 {
     public function boot()
     {
+        Cache::flush();
         Paginator::useBootstrap();
+
+
 
         if ($this->app->environment('production')) {
             URL::forceScheme('https');
