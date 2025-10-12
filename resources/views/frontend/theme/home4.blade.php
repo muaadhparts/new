@@ -10,9 +10,9 @@
             <div class="col-lg-10">
                 <!-- Hero Title -->
                 <div class="hero-content text-center mb-5">
-                    <h1 class="hero-title">@lang('Genuine Parts Catalogues')</h1>
+                    <h1 class="hero-title">@lang('HI BYBY YAMY YAMY')</h1>
                     <p class="hero-subtitle">
-                        @lang('Explore genuine OEM parts catalogues for all vehicle models. Fast search. precise results, and certified quality guaranteed.')
+                        @lang("If you don't know the correct part number for your vehicle, search below using your VIN, the category tree, or the catalogues.")
                     </p>
                 </div>
 
@@ -28,11 +28,13 @@
 <!-- Brands Section -->
 <section class="brands-showcase-section">
     <div class="container">
+
         <!-- Section Header -->
         <div class="section-header text-center mb-5">
-            <span class="section-badge">@lang('Trusted Brands')</span>
-            <h2 class="section-title">@lang('Explore By Brand')</h2>
-            <p class="section-description">@lang('Select your vehicle brand to find the perfect parts')</p>
+            <span class="section-badge">@lang('Genuine Parts Catalogues')</span>
+            <h2 class="section-title">@lang('Explore genuine OEM parts catalogues for all vehicle models. Fast search. precise results, and certified quality guaranteed.
+
+                Genuine Parts Catalogues')</h2>
 
             <!-- VIN Search Button -->
             <div class="text-center mt-4">
@@ -41,6 +43,8 @@
                     @lang('Search by VIN')
                 </button>
             </div>
+
+            <p class="section-description mt-3">@lang('Search by VIN Number or Select your vehicle brand to find the perfect parts')</p>
         </div>
 
         <!-- Brands Grid -->
@@ -161,7 +165,7 @@
 }
 
 .hero-title {
-    font-size: 3.5rem;
+    font-size: 1.8rem;
     font-weight: 800;
     color: #fff;
     margin-bottom: 1.5rem;
@@ -170,7 +174,7 @@
 }
 
 .hero-subtitle {
-    font-size: 1.25rem;
+    font-size: 1rem;
     color: rgba(255, 255, 255, 0.95);
     max-width: 700px;
     margin: 0 auto;
@@ -186,10 +190,10 @@
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     border: 2px solid transparent;
     color: #fff;
-    padding: 1rem 2.5rem;
+    padding: 0.75rem 2rem;
     border-radius: 50px;
     font-weight: 600;
-    font-size: 1.1rem;
+    font-size: 0.95rem;
     transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
 }
@@ -217,7 +221,7 @@
     color: #fff;
     padding: 0.5rem 1.5rem;
     border-radius: 50px;
-    font-size: 0.875rem;
+    font-size: 0.75rem;
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 1px;
@@ -225,14 +229,14 @@
 }
 
 .section-title {
-    font-size: 2.75rem;
+    font-size: 0.95rem;
     font-weight: 800;
     color: #1e293b;
     margin-bottom: 1rem;
 }
 
 .section-description {
-    font-size: 1.125rem;
+    font-size: 0.95rem;
     color: #64748b;
     max-width: 600px;
     margin: 0 auto;
@@ -319,7 +323,7 @@
 .brand-name {
     font-weight: 600;
     color: #1e293b;
-    font-size: 1.125rem;
+    font-size: 0.95rem;
 }
 
 .brand-arrow {
@@ -412,14 +416,14 @@
 }
 
 .category-title {
-    font-size: 1.125rem;
+    font-size: 0.95rem;
     font-weight: 700;
     color: #1e293b;
     margin-bottom: 0.5rem;
 }
 
 .category-subtitle {
-    font-size: 0.875rem;
+    font-size: 0.8rem;
     color: #64748b;
     margin-bottom: 0;
 }
@@ -506,14 +510,14 @@
 }
 
 .service-title {
-    font-size: 1.25rem;
+    font-size: 1rem;
     font-weight: 700;
     color: #1e293b;
     margin-bottom: 0.75rem;
 }
 
 .service-description {
-    font-size: 0.95rem;
+    font-size: 0.85rem;
     color: #64748b;
     line-height: 1.7;
     margin: 0;
@@ -549,11 +553,11 @@
 
 @media (max-width: 991px) {
     .hero-title {
-        font-size: 2.75rem;
+        font-size: 1.6rem;
     }
 
     .section-title {
-        font-size: 2.25rem;
+        font-size: 0.9rem;
     }
 
     .brands-grid {
@@ -571,15 +575,15 @@
     }
 
     .hero-title {
-        font-size: 2rem;
+        font-size: 1.5rem;
     }
 
     .hero-subtitle {
-        font-size: 1rem;
+        font-size: 0.9rem;
     }
 
     .section-title {
-        font-size: 1.875rem;
+        font-size: 0.85rem;
     }
 
     .brands-grid {
@@ -615,12 +619,12 @@
 
 @media (max-width: 575px) {
     .hero-title {
-        font-size: 1.75rem;
+        font-size: 1.3rem;
     }
 
     .btn-vin-search {
-        padding: 0.875rem 1.75rem;
-        font-size: 0.95rem;
+        padding: 0.65rem 1.5rem;
+        font-size: 0.85rem;
     }
 
     .brands-grid {
