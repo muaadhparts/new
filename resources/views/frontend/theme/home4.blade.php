@@ -29,22 +29,21 @@
 <section class="brands-showcase-section">
     <div class="container">
 
+        <!-- VIN Search Button -->
+        <div class="text-center mb-5">
+            <button type="button" class="btn-vin-search" data-bs-toggle="modal" data-bs-target="#vinSearchModalHome">
+                <i class="fas fa-car me-2"></i>
+                @lang('Search by VIN')
+            </button>
+            <p class="section-description mt-3 mb-5">@lang('Search by VIN Number or Select your vehicle brand to find the perfect parts')</p>
+        </div>
+
         <!-- Section Header -->
         <div class="section-header text-center mb-5">
             <span class="section-badge">@lang('Genuine Parts Catalogues')</span>
             <h2 class="section-title">@lang('Explore genuine OEM parts catalogues for all vehicle models. Fast search. precise results, and certified quality guaranteed.
 
                 Genuine Parts Catalogues')</h2>
-
-            <!-- VIN Search Button -->
-            <div class="text-center mt-4">
-                <button type="button" class="btn-vin-search" data-bs-toggle="modal" data-bs-target="#vinSearchModalHome">
-                    <i class="fas fa-car me-2"></i>
-                    @lang('Search by VIN')
-                </button>
-            </div>
-
-            <p class="section-description mt-3">@lang('Search by VIN Number or Select your vehicle brand to find the perfect parts')</p>
         </div>
 
         <!-- Brands Grid -->
@@ -184,6 +183,14 @@
 .hero-search-wrapper {
     position: relative;
     z-index: 2;
+}
+
+.hero-vin-description {
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.95);
+    max-width: 600px;
+    margin: 0 auto;
+    line-height: 1.6;
 }
 
 .btn-vin-search {

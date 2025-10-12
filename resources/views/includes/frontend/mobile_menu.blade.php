@@ -74,6 +74,50 @@
                     </li>
                 </ul>
 
+                <!-- Language & Currency Section -->
+                <div class="mobile-settings-section">
+                    <h6 class="mobile-settings-title">@lang('Settings')</h6>
+
+                    <!-- Language Selector -->
+                    <div class="mobile-setting-item">
+                        <label class="setting-label">
+                            <i class="fas fa-language"></i>
+                            @lang('Language')
+                        </label>
+                        <div class="setting-options">
+                            @php
+                                $currentLang = Session::has('language')
+                                    ? $languges->where('id', Session::get('language'))->first()
+                                    : $languges->where('is_default', 1)->first();
+                            @endphp
+                            @foreach ($languges as $language)
+                                <a href="{{ route('front.language', $language->id) }}"
+                                   class="setting-option {{ Session::has('language') && Session::get('language') == $language->id ? 'active' : (!Session::has('language') && $language->is_default == 1 ? 'active' : '') }}">
+                                    {{ $language->language }}
+                                </a>
+                            @endforeach
+                        </div>
+                    </div>
+
+                    <!-- Currency Selector -->
+                    @if ($gs->is_currency == 1)
+                        <div class="mobile-setting-item">
+                            <label class="setting-label">
+                                <i class="fas fa-coins"></i>
+                                @lang('Currency')
+                            </label>
+                            <div class="setting-options">
+                                @foreach ($currencies as $currency)
+                                    <a href="{{ route('front.currency', $currency->id) }}"
+                                       class="setting-option {{ Session::has('currency') && Session::get('currency') == $currency->id ? 'active' : (!Session::has('currency') && $currency->is_default == 1 ? 'active' : '') }}">
+                                        {{ $currency->name }}
+                                    </a>
+                                @endforeach
+                            </div>
+                        </div>
+                    @endif
+                </div>
+
                 <!-- Auth Actions -->
                 <div class="mobile-auth-actions">
                     @if (Auth::guard('web')->check() && Auth::guard('web')->user()->is_vendor == 2)
@@ -353,6 +397,74 @@
     font-weight: 600;
     color: #667eea !important;
     background: rgba(102, 126, 234, 0.1) !important;
+}
+
+/* Mobile Settings Section */
+.mobile-settings-section {
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 2px solid #e2e8f0;
+}
+
+.mobile-settings-title {
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 1rem;
+    padding: 0 0.5rem;
+}
+
+.mobile-setting-item {
+    margin-bottom: 1.5rem;
+}
+
+.setting-label {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-weight: 600;
+    color: #1e293b;
+    margin-bottom: 0.75rem;
+    padding: 0 0.5rem;
+    font-size: 0.95rem;
+}
+
+.setting-label i {
+    width: 20px;
+    text-align: center;
+    color: #667eea;
+}
+
+.setting-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.setting-option {
+    padding: 0.65rem 1.25rem;
+    background: #f8fafc;
+    border: 2px solid #e2e8f0;
+    border-radius: 25px;
+    color: #64748b;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.875rem;
+    transition: all 0.3s ease;
+}
+
+.setting-option:hover {
+    background: rgba(102, 126, 234, 0.1);
+    border-color: #667eea;
+    color: #667eea;
+}
+
+.setting-option.active {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-color: #667eea;
+    color: #fff;
 }
 
 /* Mobile Auth Actions */
