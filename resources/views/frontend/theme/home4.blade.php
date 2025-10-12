@@ -10,7 +10,7 @@
             <div class="col-lg-10">
                 <!-- Hero Title -->
                 <div class="hero-content text-center mb-5">
-                    <h1 class="hero-title">@lang('HI BYBY YAMY YAMY')</h1>
+                    <h1 class="hero-title">@lang('Search By Part Number Or Name')</h1>
                     <p class="hero-subtitle">
                         @lang("If you don't know the correct part number for your vehicle, search below using your VIN, the category tree, or the catalogues.")
                     </p>
