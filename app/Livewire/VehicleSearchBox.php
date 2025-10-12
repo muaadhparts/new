@@ -66,9 +66,7 @@ class VehicleSearchBox extends Component
         // $msg هنا إما نص مترجم أو مفتاح ترجمة مسبق
         $this->errorMessage = $msg ?? '';
         // بثّ حدث للواجهة (اختياري للسكرول/الفوكس)
-        $this->dispatchBrowserEvent('vehicle-search-error', [
-            'message' => $this->errorMessage,
-        ]);
+        $this->dispatch('vehicle-search-error', message: $this->errorMessage);
         // dd($this->errorMessage); // // لأغراض فحص لاحقة بإزالة التعليق
     }
     /** ============================================================ */
@@ -96,7 +94,7 @@ class VehicleSearchBox extends Component
             $this->resetSearchState();
 
             // أرسل حدث للواجهة لتحديث لون الأزرار
-            $this->dispatchBrowserEvent('search-scope-updated', ['scope' => $this->searchScope]);
+            $this->dispatch('search-scope-updated', scope: $this->searchScope);
         }
     }
 
@@ -160,7 +158,7 @@ class VehicleSearchBox extends Component
             $this->setError('');
 
             // عند التحميل: أرسل حدث لتلوين الأزرار حسب النطاق الحالي
-            $this->dispatchBrowserEvent('search-scope-updated', ['scope' => $this->searchScope]);
+            $this->dispatch('search-scope-updated', scope: $this->searchScope);
         } catch (Exception $e) {
             Log::error('VehicleSearchBox mount error', ['error' => $e->getMessage()]);
             $this->setError( __(self::ERR_LOAD) );
@@ -329,9 +327,7 @@ class VehicleSearchBox extends Component
                 if (!empty($this->results)) {
                     $firstItem = $this->results[0] ?? null;
                     if ($firstItem && isset($firstItem['callout'])) {
-                        $this->dispatchBrowserEvent('open-callout-from-search', [
-                            'part' => $firstItem
-                        ]);
+                        $this->dispatch('open-callout-from-search', part: $firstItem);
                     }
                 }
             }

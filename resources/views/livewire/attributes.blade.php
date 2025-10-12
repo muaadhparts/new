@@ -136,7 +136,7 @@
         if (canvas) {
             canvas.addEventListener('hidden.bs.offcanvas', function () {
                 @if (!Session::has('vin'))
-                    Livewire.find('{{ $attributes['wire:id'] ?? $this->id }}')?.call('save');
+                    @this.call('save');
                 @endif
             });
         }
