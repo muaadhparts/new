@@ -251,9 +251,11 @@
           type="text"
           class="form-control form-control-lg border-start-0 border-end-0 ps-0"
           placeholder="{{ __('Enter VIN') }}"
-          wire:model.lazy="query"
+          wire:model="query"
+          wire:keydown.enter="submitSearch"
           aria-label="{{ __('Search by VIN') }}"
           dir="ltr"
+          maxlength="17"
         >
         <button
           type="submit"
@@ -317,7 +319,7 @@
     @endif
 
     {{-- VIN Results Card --}}
-    @if (!empty($results) && $is_vin)
+    @if (!empty($results) && $is_vin && !empty($query))
       <div class="mt-4">
         <div class="card border-0 shadow-sm vin-result-card" wire:click="selectedVin('{{ json_encode($results) }}')" role="button">
           <div class="card-body p-4">

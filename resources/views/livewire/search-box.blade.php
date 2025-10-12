@@ -1,4 +1,4 @@
-<div class="container mb-5" style="position: relative;" x-data="{ vinModal: false }">
+<div class="container mb-5" style="position: relative;">
   <style>
 [x-cloak] { display: none !important; }
 
@@ -288,7 +288,7 @@
           type="text"
           class="form-control form-control-lg border-start-0 ps-0"
           placeholder="{{ __('Enter part number or name') }}"
-          wire:model.debounce.300ms="query"
+          wire:model.live.debounce.300ms="query"
           wire:keydown.enter="submitSearch"
           aria-label="{{ __('Search by part number or name') }}"
         >
@@ -299,7 +299,7 @@
       </div>
 
       {{-- Suggestions Dropdown --}}
-      @if (!empty($results))
+      @if (!empty($results) && !empty($query))
         <div class="suggestions-dropdown card shadow-lg">
           <div class="card-body p-0">
             <div class="list-group list-group-flush">
@@ -346,20 +346,77 @@
   {{-- VIN Search Modal --}}
   <div class="modal fade" id="vinSearchModal" tabindex="-1" aria-labelledby="vinSearchModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
-      <div class="modal-content">
-        <div class="modal-header bg-primary bg-gradient text-white">
+      <div class="modal-content modern-modal">
+        <div class="modal-header modern-modal-header">
           <h5 class="modal-title" id="vinSearchModalLabel">
             <i class="fas fa-car me-2"></i>
             <span class="d-none d-sm-inline">@lang('Search by VIN')</span>
             <span class="d-sm-none">VIN</span>
           </h5>
-          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="@lang('Close')"></button>
+          <button type="button" class="btn-close modern-close" data-bs-dismiss="modal" aria-label="@lang('Close')"></button>
         </div>
-        <div class="modal-body p-2 p-sm-3">
+        <div class="modal-body modern-modal-body p-4">
           <livewire:search-boxvin/>
         </div>
       </div>
     </div>
   </div>
+
+  <style>
+  /* Modern Modal Styles */
+  .modern-modal {
+    border: none;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  }
+
+  .modern-modal-header {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    color: #fff;
+    padding: 1.5rem 2rem;
+    border: none;
+  }
+
+  .modern-modal-header .modal-title {
+    font-weight: 700;
+    font-size: 1.25rem;
+  }
+
+  .modern-close {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    width: 35px;
+    height: 35px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 1;
+    transition: all 0.3s ease;
+  }
+
+  .modern-close:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: rotate(90deg);
+  }
+
+  .modern-modal-body {
+    background: #f8fafc;
+  }
+
+  @media (max-width: 576px) {
+    .modern-modal {
+      border-radius: 15px;
+    }
+
+    .modern-modal-header {
+      padding: 1rem 1.5rem;
+    }
+
+    .modern-modal-body {
+      padding: 1.5rem !important;
+    }
+  }
+  </style>
 
 </div>

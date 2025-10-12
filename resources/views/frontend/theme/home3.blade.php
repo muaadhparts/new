@@ -1,37 +1,37 @@
 @extends('layouts.front')
 
 @section('content')
-{{--    <!-- hero section start -->--}}
-{{--    <section class="hero-slider-wrapper" dir="ltr">--}}
-{{--        @foreach ($sliders as $slider)--}}
-{{--            <div class="gs-hero-section" data-background="{{ asset('assets/images/sliders/' . $slider->photo) }}">--}}
-{{--                <div class="container">--}}
-{{--                    <div class="row align-items-center">--}}
-{{--                        <div class="col-12 col-md-6 col-lg-6">--}}
-{{--                            <div class="hero-content">--}}
-{{--                                <h6 class="subtitle wow-replaced" style="color:{{ $slider->subtitle_color }}">--}}
-{{--                                    {{ $slider->subtitle_text }}</h6>--}}
-{{--                                <h1 class="title wow-replaced" data-wow-delay=".1s" style="color:{{ $slider->title_color }}">--}}
-{{--                                    {{ $slider->title_text }}</h1>--}}
-{{--                                <p class="des wow-replaced" data-wow-delay=".2s" style="color:{{ $slider->title_color }}">--}}
-{{--                                    {{ $slider->details_text }}--}}
-{{--                                    @php--}}
+   <!-- hero section start -->
+   <section class="hero-slider-wrapper" dir="ltr">
+       @foreach ($sliders as $slider)
+           <div class="gs-hero-section" data-background="{{ asset('assets/images/sliders/' . $slider->photo) }}">
+               <div class="container">
+                   <div class="row align-items-center">
+                       <div class="col-12 col-md-6 col-lg-6">
+                           <div class="hero-content">
+                               <h6 class="subtitle wow-replaced" style="color:{{ $slider->subtitle_color }}">
+                                   {{ $slider->subtitle_text }}</h6>
+                               <h1 class="title wow-replaced" data-wow-delay=".1s" style="color:{{ $slider->title_color }}">
+                                   {{ $slider->title_text }}</h1>
+                               <p class="des wow-replaced" data-wow-delay=".2s" style="color:{{ $slider->title_color }}">
+                                   {{ $slider->details_text }}
+                                   @php
 
-{{--                                    @endphp--}}
-{{--                                </p>--}}
-{{--                                <a class="template-btn hero-shop-now-btn wow-replaced " data-wow-delay=".3s"--}}
-{{--                                    href="{{ $slider->link }}">--}}
-{{--                                    @lang('Shop Now')--}}
-{{--                                </a>--}}
+                                   @endphp
+                               </p>
+                               <a class="template-btn hero-shop-now-btn wow-replaced " data-wow-delay=".3s"
+                                   href="{{ $slider->link }}">
+                                   @lang('Shop Now')
+                               </a>
 
-{{--                            </div>--}}
-{{--                        </div>--}}
-{{--                    </div>--}}
-{{--                </div>--}}
-{{--            </div>--}}
-{{--        @endforeach--}}
+                           </div>
+                       </div>
+                   </div>
+               </div>
+           </div>
+       @endforeach
 
-{{--    </section>--}}
+   </section>
     <!-- hero section end -->
 
 
@@ -177,58 +177,58 @@
 
 
 
-{{--    <!-- explore product section start -->--}}
-{{--    <section class="gs-explore-product-section bg-light-white">--}}
-{{--        <div class="container">--}}
-{{--            <!-- title box  & nav-tab -->--}}
-{{--            <div class="row mb-36 justify-content-center">--}}
-{{--                <div class="col-12">--}}
-{{--                    <div class="gs-title-box text-center">--}}
-{{--                        <h2 class="title wow-replaced">@lang('Explore Our Products')</h2>--}}
-{{--                    </div>--}}
-{{--                    <!-- product nav  -->--}}
-{{--                    <ul class="nav explore-tab-navbar wow-replaced" data-wow-delay=".1s" id="myTab" role="tablist">--}}
-{{--                        <li class="nav-item" role="presentation">--}}
-{{--                            <button class="nav-link active" id="ex-product-1" data-bs-toggle="tab"--}}
-{{--                                data-bs-target="#ex-product-1-pane" type="button" role="tab"--}}
-{{--                                aria-controls="ex-product-1-pane" aria-selected="true">@lang('NEW ARRIVAL')</button>--}}
-{{--                        </li>--}}
-{{--                        <li class="nav-item" role="presentation">--}}
-{{--                            <button class="nav-link" id="ex-product-2" data-bs-toggle="tab"--}}
-{{--                                data-bs-target="#ex-product-2-pane" type="button" role="tab"--}}
-{{--                                aria-controls="ex-product-2-pane" aria-selected="false">@lang('TRENDING')</button>--}}
-{{--                        </li>--}}
+   <!-- explore product section start -->
+   <section class="gs-explore-product-section bg-light-white">
+       <div class="container">
+           <!-- title box  & nav-tab -->
+           <div class="row mb-36 justify-content-center">
+               <div class="col-12">
+                   <div class="gs-title-box text-center">
+                       <h2 class="title wow-replaced">@lang('Explore Our Products')</h2>
+                   </div>
+                   <!-- product nav  -->
+                   <ul class="nav explore-tab-navbar wow-replaced" data-wow-delay=".1s" id="myTab" role="tablist">
+                       <li class="nav-item" role="presentation">
+                           <button class="nav-link active" id="ex-product-1" data-bs-toggle="tab"
+                               data-bs-target="#ex-product-1-pane" type="button" role="tab"
+                               aria-controls="ex-product-1-pane" aria-selected="true">@lang('NEW ARRIVAL')</button>
+                       </li>
+                       <li class="nav-item" role="presentation">
+                           <button class="nav-link" id="ex-product-2" data-bs-toggle="tab"
+                               data-bs-target="#ex-product-2-pane" type="button" role="tab"
+                               aria-controls="ex-product-2-pane" aria-selected="false">@lang('TRENDING')</button>
+                       </li>
 
-{{--                    </ul>--}}
-{{--                </div>--}}
-{{--            </div>--}}
-
-
-{{--            <!-- tab content -->--}}
-{{--            <div class="tab-content" id="myTabContent">--}}
-{{--                <div class="tab-pane fade show active" id="ex-product-1-pane" role="tabpanel"--}}
-{{--                    aria-labelledby="ex-product-1" tabindex="0">--}}
-{{--                    <div class="row gy-4">--}}
-{{--                        @foreach ($latest_products as $product)--}}
-{{--                            @include('includes.frontend.home_product')--}}
-{{--                        @endforeach--}}
-{{--                    </div>--}}
-{{--                </div>--}}
+                   </ul>
+               </div>
+           </div>
 
 
-{{--                <div class="tab-pane fade" id="ex-product-2-pane" role="tabpanel" aria-labelledby="ex-product-2"--}}
-{{--                    tabindex="0">--}}
+           <!-- tab content -->
+           <div class="tab-content" id="myTabContent">
+               <div class="tab-pane fade show active" id="ex-product-1-pane" role="tabpanel"
+                   aria-labelledby="ex-product-1" tabindex="0">
+                   <div class="row gy-4">
+                       @foreach ($latest_products as $product)
+                           @include('includes.frontend.home_product')
+                       @endforeach
+                   </div>
+               </div>
 
-{{--                    <div class="row gy-4">--}}
-{{--                        @foreach ($trending_products as $product)--}}
-{{--                            @include('includes.frontend.home_product')--}}
-{{--                        @endforeach--}}
-{{--                    </div>--}}
-{{--                </div>--}}
-{{--            </div>--}}
-{{--        </div>--}}
-{{--    </section>--}}
-{{--    <!-- explore product section end -->--}}
+
+               <div class="tab-pane fade" id="ex-product-2-pane" role="tabpanel" aria-labelledby="ex-product-2"
+                   tabindex="0">
+
+                   <div class="row gy-4">
+                       @foreach ($trending_products as $product)
+                           @include('includes.frontend.home_product')
+                       @endforeach
+                   </div>
+               </div>
+           </div>
+       </div>
+   </section>
+   <!-- explore product section end -->
 
 
     <!-- product offer section start -->
@@ -300,24 +300,24 @@
     <!-- product offer section end -->
 
 
-{{--    <!-- Faetured Products Section Started -->--}}
-{{--    <section class="gs-explore-product-section bg-light-white">--}}
-{{--        <div class="container">--}}
-{{--            <!-- title box -->--}}
-{{--            <div class="mb-60">--}}
-{{--                <div class="gs-title-box ">--}}
-{{--                    <h2 class="title wow-replaced">@lang('Our Featured Products') </h2>--}}
-{{--                </div>--}}
-{{--            </div>--}}
-{{--            <!--  content -->--}}
-{{--            <div class="row product-cards-slider gy-4 mt-4 mt-lg-0">--}}
-{{--                @foreach ($popular_products as $product)--}}
-{{--                    @include('includes.frontend.home_product')--}}
-{{--                @endforeach--}}
-{{--            </div>--}}
-{{--        </div>--}}
-{{--    </section>--}}
-{{--    <!-- Featured Product Section Completed -->--}}
+   <!-- Faetured Products Section Started -->
+   <section class="gs-explore-product-section bg-light-white">
+       <div class="container">
+           <!-- title box -->
+           <div class="mb-60">
+               <div class="gs-title-box ">
+                   <h2 class="title wow-replaced">@lang('Our Featured Products') </h2>
+               </div>
+           </div>
+           <!--  content -->
+           <div class="row product-cards-slider gy-4 mt-4 mt-lg-0">
+               @foreach ($popular_products as $product)
+                   @include('includes.frontend.home_product')
+               @endforeach
+           </div>
+       </div>
+   </section>
+   <!-- Featured Product Section Completed -->
 
     <!-- Service Section -->
     <section class="gs-service-section px-4  bg-light-white">
@@ -341,25 +341,25 @@
     </section>
     <!-- Service Section Completed -->
 
-{{--    <!-- Explore Product Section -->--}}
-{{--    <section class="gs-explore-product-section bg-light-white">--}}
-{{--        <div class="container">--}}
-{{--            <!-- title box -->--}}
-{{--            <div class=" mb-60">--}}
-{{--                <div class="gs-title-box ">--}}
-{{--                    <h2 class="title wow-replaced">@lang('Best Selling Products') </h2>--}}
-{{--                </div>--}}
-{{--            </div>--}}
+   <!-- Explore Product Section -->
+   <section class="gs-explore-product-section bg-light-white">
+       <div class="container">
+           <!-- title box -->
+           <div class=" mb-60">
+               <div class="gs-title-box ">
+                   <h2 class="title wow-replaced">@lang('Best Selling Products') </h2>
+               </div>
+           </div>
 
-{{--            <div class="product-cards-slider">--}}
-{{--                @foreach ($best_products as $product)--}}
-{{--                    @include('includes.frontend.home_product')--}}
-{{--                @endforeach--}}
-{{--            </div>--}}
+           <div class="product-cards-slider">
+               @foreach ($best_products as $product)
+                   @include('includes.frontend.home_product')
+               @endforeach
+           </div>
 
-{{--        </div>--}}
-{{--    </section>--}}
-{{--    <!-- Explore Product Section Completed -->--}}
+       </div>
+   </section>
+   <!-- Explore Product Section Completed -->
 
 
     @if ($ps->blog == 1)
