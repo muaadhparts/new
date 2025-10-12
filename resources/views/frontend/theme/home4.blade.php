@@ -620,8 +620,7 @@
     }
 
     .btn-vin-search {
-        padding: 0.875rem 2rem;
-        font-size: 1rem;
+        display: none;
     }
 
     .brands-grid {

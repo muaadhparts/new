@@ -344,7 +344,7 @@
   </div>
 
   {{-- VIN Search Modal --}}
-  <div class="modal fade" id="vinSearchModal" tabindex="-1" aria-labelledby="vinSearchModalLabel" aria-hidden="true">
+  <div class="modal fade" id="vinSearchModal" tabindex="-1" aria-labelledby="vinSearchModalLabel" aria-hidden="true" wire:ignore.self>
     <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
       <div class="modal-content modern-modal">
         <div class="modal-header modern-modal-header">
@@ -355,8 +355,8 @@
           </h5>
           <button type="button" class="btn-close modern-close" data-bs-dismiss="modal" aria-label="@lang('Close')"></button>
         </div>
-        <div class="modal-body modern-modal-body p-4">
-          <livewire:search-boxvin/>
+        <div class="modal-body modern-modal-body p-4" wire:ignore>
+          <livewire:search-boxvin key="vin-search-component" />
         </div>
       </div>
     </div>

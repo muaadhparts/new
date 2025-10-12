@@ -171,36 +171,6 @@
     </div>
 </div>
 
-<!-- Search Bar -->
-<div class="search-bar" id="searchBar">
-    <div class="container">
-        <div class="search-bar-content">
-            <button class="search-close-btn" aria-label="Close Search">
-                <i class="fas fa-times"></i>
-            </button>
-            <form class="search-form" action="{{ route('front.category', [Request::route('category'), Request::route('subcategory'), Request::route('childcategory')]) }}">
-                @if (!empty(request()->input('sort')))
-                    <input type="hidden" name="sort" value="{{ request()->input('sort') }}">
-                @endif
-                @if (!empty(request()->input('minprice')))
-                    <input type="hidden" name="minprice" value="{{ request()->input('minprice') }}">
-                @endif
-                @if (!empty(request()->input('maxprice')))
-                    <input type="hidden" name="maxprice" value="{{ request()->input('maxprice') }}">
-                @endif
-
-                <div class="search-input-group">
-                    <i class="fas fa-search search-icon"></i>
-                    <input type="text" class="search-input" name="search" placeholder="@lang('Search Any Product Here')" autofocus>
-                    <button type="submit" class="search-submit-btn">
-                        <i class="fas fa-arrow-right"></i>
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-
 <style>
 /* ========================================
    MODERN MOBILE MENU
@@ -414,113 +384,6 @@
     box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
 }
 
-/* ========================================
-   SEARCH BAR
-   ======================================== */
-.search-bar {
-    position: fixed;
-    top: -100%;
-    left: 0;
-    width: 100%;
-    height: 100vh;
-    background: rgba(0, 0, 0, 0.95);
-    z-index: 9998;
-    display: flex;
-    align-items: center;
-    transition: top 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.search-bar.active {
-    top: 0;
-}
-
-.search-bar-content {
-    width: 100%;
-    position: relative;
-}
-
-.search-close-btn {
-    position: absolute;
-    top: -4rem;
-    right: 1rem;
-    width: 50px;
-    height: 50px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: rgba(255, 255, 255, 0.1);
-    border: 2px solid rgba(255, 255, 255, 0.2);
-    border-radius: 50%;
-    color: #fff;
-    font-size: 1.5rem;
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-.search-close-btn:hover {
-    background: rgba(255, 255, 255, 0.2);
-    transform: rotate(90deg);
-}
-
-.search-input-group {
-    position: relative;
-    max-width: 800px;
-    margin: 0 auto;
-}
-
-.search-icon {
-    position: absolute;
-    left: 2rem;
-    top: 50%;
-    transform: translateY(-50%);
-    color: rgba(255, 255, 255, 0.5);
-    font-size: 1.5rem;
-}
-
-.search-input {
-    width: 100%;
-    padding: 1.75rem 6rem 1.75rem 5rem;
-    background: rgba(255, 255, 255, 0.1);
-    border: 2px solid rgba(255, 255, 255, 0.2);
-    border-radius: 50px;
-    color: #fff;
-    font-size: 1.25rem;
-    font-weight: 500;
-    transition: all 0.3s ease;
-}
-
-.search-input:focus {
-    outline: none;
-    background: rgba(255, 255, 255, 0.15);
-    border-color: #667eea;
-    box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.2);
-}
-
-.search-input::placeholder {
-    color: rgba(255, 255, 255, 0.5);
-}
-
-.search-submit-btn {
-    position: absolute;
-    right: 0.5rem;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 60px;
-    height: 60px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    border: none;
-    border-radius: 50%;
-    color: #fff;
-    font-size: 1.25rem;
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-.search-submit-btn:hover {
-    transform: translateY(-50%) scale(1.05);
-    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
-}
-
 /* Overlay */
 .overlay {
     position: fixed;
@@ -545,16 +408,6 @@
     .modern-mobile-menu {
         width: 100%;
         max-width: 100%;
-    }
-
-    .search-input {
-        font-size: 1rem;
-        padding: 1.5rem 5rem 1.5rem 4rem;
-    }
-
-    .search-submit-btn {
-        width: 50px;
-        height: 50px;
     }
 }
 </style>
@@ -598,24 +451,5 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById(targetTab)?.classList.add('active');
         });
     });
-
-    // Search Bar Toggle
-    const searchIcon = document.getElementById('searchIcon');
-    const searchBar = document.getElementById('searchBar');
-    const searchCloseBtn = document.querySelector('.search-close-btn');
-
-    function openSearchBar() {
-        searchBar?.classList.add('active');
-        document.body.style.overflow = 'hidden';
-    }
-
-    function closeSearchBar() {
-        searchBar?.classList.remove('active');
-        document.body.style.overflow = '';
-    }
-
-    searchIcon?.addEventListener('click', openSearchBar);
-    searchCloseBtn?.addEventListener('click', closeSearchBar);
-    overlay?.addEventListener('click', closeSearchBar);
 });
 </script>
