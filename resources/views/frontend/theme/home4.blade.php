@@ -20,14 +20,6 @@
                 <div class="hero-search-wrapper">
                     <livewire:search-box/>
                 </div>
-
-                <!-- VIN Search Button -->
-                <div class="text-center mt-4">
-                    <button type="button" class="btn-vin-search" data-bs-toggle="modal" data-bs-target="#vinSearchModal">
-                        <i class="fas fa-car me-2"></i>
-                        @lang('Search by VIN')
-                    </button>
-                </div>
             </div>
         </div>
     </div>
@@ -41,6 +33,14 @@
             <span class="section-badge">@lang('Trusted Brands')</span>
             <h2 class="section-title">@lang('Explore By Brand')</h2>
             <p class="section-description">@lang('Select your vehicle brand to find the perfect parts')</p>
+
+            <!-- VIN Search Button -->
+            <div class="text-center mt-4">
+                <button type="button" class="btn-vin-search" data-bs-toggle="modal" data-bs-target="#vinSearchModalHome">
+                    <i class="fas fa-car me-2"></i>
+                    @lang('Search by VIN')
+                </button>
+            </div>
         </div>
 
         <!-- Brands Grid -->
@@ -183,24 +183,23 @@
 }
 
 .btn-vin-search {
-    background: rgba(255, 255, 255, 0.15);
-    backdrop-filter: blur(10px);
-    border: 2px solid rgba(255, 255, 255, 0.3);
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: 2px solid transparent;
     color: #fff;
     padding: 1rem 2.5rem;
     border-radius: 50px;
     font-weight: 600;
     font-size: 1.1rem;
     transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
 }
 
 .btn-vin-search:hover {
     background: #fff;
     color: #667eea;
-    border-color: #fff;
+    border-color: #667eea;
     transform: translateY(-3px);
-    box-shadow: 0 12px 35px rgba(0, 0, 0, 0.25);
+    box-shadow: 0 12px 35px rgba(102, 126, 234, 0.4);
 }
 
 /* ========================================
@@ -620,7 +619,8 @@
     }
 
     .btn-vin-search {
-        display: none;
+        padding: 0.875rem 1.75rem;
+        font-size: 0.95rem;
     }
 
     .brands-grid {
@@ -629,6 +629,111 @@
 
     .categories-grid {
         grid-template-columns: repeat(2, 1fr);
+    }
+}
+</style>
+
+<!-- VIN Search Modal - Home Page Only -->
+<div class="modal fade" id="vinSearchModalHome" tabindex="-1" aria-labelledby="vinSearchModalHomeLabel" aria-hidden="true" data-bs-backdrop="true" data-bs-keyboard="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content modern-modal-home">
+            <div class="modal-header modern-modal-header-home">
+                <h5 class="modal-title" id="vinSearchModalHomeLabel">
+                    <i class="fas fa-car me-2"></i>
+                    <span class="d-none d-sm-inline">@lang('Search by VIN')</span>
+                    <span class="d-sm-none">VIN</span>
+                </h5>
+                <button type="button" class="btn-close modern-close-home" data-bs-dismiss="modal" aria-label="@lang('Close')"></button>
+            </div>
+            <div class="modal-body modern-modal-body-home p-4">
+                @livewire('search-boxvin', key('vin-home-brand-search'))
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<style>
+/* Modern Modal Styles - Home Page Specific */
+.modern-modal-home {
+    border-radius: 20px;
+    border: none;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.modern-modal-header-home {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #fff;
+    padding: 1.5rem 2rem;
+    border-bottom: none;
+}
+
+.modern-modal-header-home .modal-title {
+    font-weight: 700;
+    font-size: 1.25rem;
+}
+
+.modern-modal-header-home .btn-close {
+    filter: brightness(0) invert(1);
+    opacity: 0.8;
+    transition: all 0.3s ease;
+}
+
+.modern-modal-header-home .btn-close:hover {
+    opacity: 1;
+    transform: rotate(90deg);
+}
+
+.modern-modal-body-home {
+    background: #f8fafc;
+    min-height: 300px;
+}
+
+/* Ensure modal is on top */
+#vinSearchModalHome {
+    z-index: 1055 !important;
+}
+
+#vinSearchModalHome .modal-backdrop {
+    z-index: 1050 !important;
+}
+
+/* Responsive Modal */
+@media (max-width: 768px) {
+    #vinSearchModalHome .modal-dialog {
+        margin: 1rem;
+    }
+
+    .modern-modal-header-home {
+        padding: 1.25rem 1.5rem;
+    }
+
+    .modern-modal-header-home .modal-title {
+        font-size: 1.1rem;
+    }
+
+    .modern-modal-body-home {
+        padding: 1.5rem !important;
+    }
+}
+
+@media (max-width: 576px) {
+    #vinSearchModalHome .modal-dialog {
+        margin: 0.5rem;
+    }
+
+    .modern-modal-header-home {
+        padding: 1rem 1.25rem;
+    }
+
+    .modern-modal-header-home .modal-title {
+        font-size: 1rem;
+    }
+
+    .modern-modal-body-home {
+        padding: 1.25rem !important;
+        min-height: 250px;
     }
 }
 </style>

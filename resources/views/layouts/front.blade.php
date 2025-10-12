@@ -277,7 +277,7 @@
 
     {{-- Scroll to Top Button --}}
     <button id="scrollToTop" onclick="window.scrollTo({top: 0, behavior: 'smooth'})"
-            style="display: none; position: fixed; bottom: 30px; {{ app()->getLocale() === 'ar' ? 'left' : 'right' }}: 30px; z-index: 999; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #fff; border: none; width: 50px; height: 50px; border-radius: 50%; cursor: pointer; box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3); transition: all 0.3s ease;">
+            style="display: none; position: fixed; bottom: 30px; {{ app()->getLocale() === 'ar' ? 'left' : 'right' }}: 30px; z-index: 1040; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #fff; border: none; width: 50px; height: 50px; border-radius: 50%; cursor: pointer; box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3); transition: all 0.3s ease;">
         <i class="fas fa-arrow-up"></i>
     </button>
 
@@ -286,7 +286,33 @@
         transform: translateY(-5px);
         box-shadow: 0 8px 20px rgba(102, 126, 234, 0.5);
     }
+
+    /* Hide scroll button when modal is open */
+    body.modal-open #scrollToTop {
+        display: none !important;
+    }
     </style>
+
+    <script>
+    // Hide scroll to top button when any modal is opened
+    document.addEventListener('DOMContentLoaded', function() {
+        // Listen for modal show events
+        document.addEventListener('show.bs.modal', function() {
+            const scrollBtn = document.getElementById('scrollToTop');
+            if (scrollBtn) {
+                scrollBtn.style.display = 'none';
+            }
+        });
+
+        // Listen for modal hide events
+        document.addEventListener('hide.bs.modal', function() {
+            const scrollBtn = document.getElementById('scrollToTop');
+            if (scrollBtn && window.pageYOffset > 300) {
+                scrollBtn.style.display = 'block';
+            }
+        });
+    });
+    </script>
 </body>
 
 </html>
