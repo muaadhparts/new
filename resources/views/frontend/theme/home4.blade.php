@@ -11,15 +11,16 @@
                 <!-- Hero Title -->
                 <div class="hero-content text-center mb-5">
                     <h1 class="hero-title">@lang('Search By Part Number Or Name')</h1>
-                    <p class="hero-subtitle">
-                        @lang("If you don't know the correct part number for your vehicle, search below using your VIN, the category tree, or the catalogues.")
-                    </p>
                 </div>
 
                 <!-- Search Box Component -->
-                <div class="hero-search-wrapper">
+                <div class="hero-search-wrapper mb-3">
                     <livewire:search-box/>
                 </div>
+
+                <p class="hero-subtitle text-center mt-3">
+                    @lang("If you don't know the correct part number for your vehicle, search below using your VIN, the category tree, or the catalogues.")
+                </p>
             </div>
         </div>
     </div>
@@ -41,10 +42,7 @@
         <!-- Section Header -->
         <div class="section-header text-center mb-5">
             <span class="section-badge">@lang('Genuine Parts Catalogues')</span>
-            <h2 class="section-title">@lang('Explore genuine OEM parts catalogues for all vehicle models. Fast search. precise results, and certified quality guaranteed.
-
-                Genuine Parts Catalogues')</h2>
-        </div>
+            <h2 class="section-title">@lang('Explore genuine OEM parts catalogues for all vehicle models. Fast search. precise results, and certified quality guaranteed.')</h2></div>
 
         <!-- Brands Grid -->
         <div class="brands-grid">
