@@ -88,8 +88,8 @@ class SearchBoxvin extends Component
         $this->sessionManager->setVin($vinData->vin);
         $this->sessionManager->setCurrentCatalog(json_decode(json_encode($vinData), true));
 
-        // Livewire v2: emit | v3: dispatch. أبقينا emit كما كان لديك.
-        $this->emit('vinSelected');
+        // Livewire v3: dispatch
+        $this->dispatch('vinSelected');
 
         return redirect()->route('tree.level1', [
             'id'   => $brandName,

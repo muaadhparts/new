@@ -465,7 +465,7 @@
                 type="text"
                 class="form-control border-start-0 ps-0"
                 placeholder="{{ $searchType === 'number' ? __('ui.enter_part_number') : __('ui.enter_part_name') }}"
-                wire:model.debounce.500ms="query"
+                wire:model.live.debounce.500ms="query"
                 wire:keydown.enter="searchFromInput"
                 wire:loading.attr="disabled"
                 wire:target="searchFromInput"

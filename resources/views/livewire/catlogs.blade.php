@@ -13,14 +13,14 @@
             <div class="row mb-4">
                 <!-- Search Input -->
                 <div class="col-md-3 mb-3">
-                    <input type="text" class="form-control" wire:model.debounce.500ms="searchName"
+                    <input type="text" class="form-control" wire:model.live.debounce.500ms="searchName"
                            placeholder="{{ __('Search') }}">
                 </div>
 
                 <!-- Region Filter -->
                 @if($this->regionOptions && count($this->regionOptions) > 0)
                     <div class="col-md-3 mb-3">
-                        <select class="form-select" wire:model="region">
+                        <select class="form-select" wire:model.live="region">
                             @foreach ($this->regionOptions as $value => $label)
                                 <option value="{{ $value }}">{{ $label }}</option>
                             @endforeach
@@ -30,7 +30,7 @@
 
                 <!-- Year Filter Dropdown -->
                 <div class="col-md-3 mb-3">
-                    <select class="form-select" wire:model="searchYear">
+                    <select class="form-select" wire:model.live="searchYear">
                         <option value="">{{ __('Filter by Year') }}</option>
                         @foreach ($years as $year)
                             <option value="{{ $year }}">{{ $year }}</option>

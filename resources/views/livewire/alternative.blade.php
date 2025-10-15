@@ -1,3 +1,4 @@
+<div>
 <div class="ill-alt p-3">
   @if($alternatives && $alternatives->count() > 0)
 
@@ -119,3 +120,4 @@
 }
 </style>
 @endonce
+</div>

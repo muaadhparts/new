@@ -416,7 +416,7 @@ class VehicleSearchBox extends Component
                         'category_id'   => $opt['category_id'] ?? null,
                     ]);
 
-                    $this->emit('single-callout-ready');
+                    $this->dispatch('single-callout-ready');
                 } elseif ($count > 1) {
                     $this->showCalloutPicker = true;
                 } else {

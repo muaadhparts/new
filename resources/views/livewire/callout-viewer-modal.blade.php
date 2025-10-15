@@ -1,6 +1,6 @@
-
 {{-- resources\views\livewire\callout-viewer-modal.blade.php --}}
 
+<div>
 <div
     id="modal"
     wire:ignore.self
@@ -272,4 +272,4 @@ window.ILL_ROUTES = {
   }
 </style>
 @endonce
-
+</div>
