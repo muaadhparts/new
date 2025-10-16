@@ -1,19 +1,20 @@
 <div class="vehicle-search-wrapper">
     <style>
-        /* ===== Enhanced Mobile-first Design ===== */
+        /* ===== Compact Modern Design ===== */
         .vehicle-search-wrapper {
-            background: linear-gradient(to bottom, #f8f9fa 0%, #ffffff 100%);
-            border-radius: 1rem;
-            padding: 1.5rem 1rem;
-            margin: 1rem auto;
+            background: #fff;
+            border-radius: 0.75rem;
+            padding: 1rem;
+            margin: 0.5rem auto;
             max-width: 1200px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+            border: 1px solid #e9ecef;
         }
 
         @media (min-width: 768px) {
             .vehicle-search-wrapper {
-                padding: 2rem 2.5rem;
-                margin: 1.5rem auto;
+                padding: 1.25rem 1.5rem;
+                margin: 0.75rem auto;
             }
         }
 
@@ -32,35 +33,41 @@
             background-color: #0d6efd;
             color: #fff;
             border-color: #0d6efd;
-            box-shadow: 0 4px 12px rgba(13,110,253,0.3);
+            box-shadow: 0 2px 6px rgba(13,110,253,0.25);
         }
-        .vehicle-search-wrapper .btn-outline-primary {
+        .vehicle-search-wrapper .btn-outline-secondary {
             background: #fff;
-            border: 1.5px solid #e9ecef;
+            border: 1px solid #dee2e6;
+            color: #6c757d;
+            font-size: 0.875rem;
+        }
+        .vehicle-search-wrapper .btn-outline-secondary:hover {
+            background: #f8f9fa;
+            border-color: #adb5bd;
+        }
+        .vehicle-search-wrapper .btn-sm {
+            padding: 0.375rem 0.75rem;
+            font-size: 0.875rem;
         }
 
-        .vehicle-search-wrapper .input-group-lg .input-group-text {
-            min-width: 52px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: #fff;
-            border: 1.5px solid #e9ecef;
-            font-size: 1.25rem;
+        .vehicle-search-wrapper .input-group .input-group-text {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-right: 0;
         }
 
-        .vehicle-search-wrapper .input-group-lg .form-control {
-            border: 1.5px solid #e9ecef;
-            font-size: 1rem;
+        .vehicle-search-wrapper .input-group .form-control {
+            border: 1px solid #dee2e6;
+            border-left: 0;
+            border-right: 0;
         }
-        .vehicle-search-wrapper .input-group-lg .form-control:focus {
+        .vehicle-search-wrapper .input-group .form-control:focus {
             border-color: #0d6efd;
-            box-shadow: 0 0 0 0.2rem rgba(13,110,253,0.15);
+            box-shadow: none;
         }
 
-        .vehicle-search-wrapper .btn-primary {
-            padding: 0.75rem 1.5rem;
-            font-weight: 600;
+        .vehicle-search-wrapper .input-group .btn-primary {
+            border-left: 1px solid #0d6efd;
         }
 
         /* Suggestions */
@@ -169,44 +176,42 @@
         /* Compact & clean on phones */
         @media (max-width: 576px) {
             .vehicle-search-wrapper {
-                padding: 1rem 0.75rem;
-                margin: 0.5rem;
-                border-radius: 0.75rem;
+                padding: 0.85rem;
+                margin: 0.35rem;
+                border-radius: 0.65rem;
             }
 
-            .vehicle-search-wrapper .segmented {
-                display: grid;
-                grid-template-columns: 1fr 1fr;
-                gap: 0.5rem;
+            .vehicle-search-wrapper .btn-group-sm .btn {
+                font-size: 0.8rem;
+                padding: 0.35rem 0.5rem;
             }
-            .vehicle-search-wrapper .segmented .btn {
-                border-radius: 0.75rem !important;
-                font-size: 0.9rem;
-                padding: 0.625rem 0.5rem;
+
+            .vehicle-search-wrapper .input-group .form-control {
+                font-size: 14px;
+                padding: 0.5rem;
             }
-            .vehicle-search-wrapper .input-group-lg .form-control,
-            .vehicle-search-wrapper .input-group-lg .input-group-text,
-            .vehicle-search-wrapper .input-group-lg .btn {
-                height: 48px;
-                font-size: 16px;
+
+            .vehicle-search-wrapper .input-group .input-group-text {
+                font-size: 14px;
+                padding: 0.5rem;
             }
-            .vehicle-search-wrapper .btn-primary {
-                padding: 0.625rem 1rem;
+
+            .vehicle-search-wrapper .input-group .btn {
+                font-size: 14px;
+                padding: 0.5rem 0.75rem;
             }
+
             .vehicle-search-wrapper #searchHelp {
-                font-size: 0.85rem;
-                color: #6c757d;
-                margin-top: 0.5rem;
+                font-size: 0.75rem;
+                margin-top: 0.35rem;
             }
-            .vehicle-search-wrapper .callout-table {
-                font-size: 0.875rem;
-            }
-            .vehicle-search-wrapper .callout-table th,
-            .vehicle-search-wrapper .callout-table td {
-                white-space: nowrap;
-            }
+
             .vehicle-search-wrapper .callout-card .card-body {
-                padding: 0.875rem 1rem;
+                padding: 0.75rem 0.85rem;
+            }
+
+            .compact-search-controls .btn-group {
+                flex-wrap: wrap;
             }
         }
     </style>
@@ -216,70 +221,75 @@
     .specs-bar {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         border: none;
-        border-radius: 1rem;
-        padding: 1rem 1.25rem;
-        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+        border-radius: 0.75rem;
+        padding: 0.75rem 1rem;
+        box-shadow: 0 2px 8px rgba(102, 126, 234, 0.15);
     }
     .specs-bar strong {
         color: #fff;
-        font-size: 1rem;
+        font-size: 0.875rem;
         letter-spacing: 0.3px;
     }
     .specs-bar .badge {
-        background: rgba(255,255,255,0.3);
+        background: rgba(255,255,255,0.25);
         color: #fff;
-        border: 1px solid rgba(255,255,255,0.5);
+        border: 1px solid rgba(255,255,255,0.4);
         font-weight: 600;
+        font-size: 0.75rem;
+        padding: 0.25rem 0.5rem;
     }
     .specs-rail {
         display: flex;
         flex-wrap: nowrap;
-        gap: 0.75rem;
+        gap: 0.5rem;
         overflow: auto;
         overscroll-behavior: contain;
         scrollbar-width: thin;
-        margin-top: 0.75rem;
+        margin-top: 0.5rem;
     }
     .spec-chip {
         white-space: nowrap;
-        border: 1.5px solid rgba(255,255,255,0.3);
+        border: 1px solid rgba(255,255,255,0.3);
         background: rgba(255,255,255,0.95);
-        border-radius: 2rem;
-        padding: 0.5rem 1rem;
+        border-radius: 1.5rem;
+        padding: 0.35rem 0.75rem;
         display: flex;
         align-items: center;
-        gap: 0.5rem;
-        font-size: 0.9rem;
-        box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+        gap: 0.4rem;
+        font-size: 0.8rem;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.08);
         transition: all .2s ease;
     }
     .spec-chip:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        transform: translateY(-1px);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.12);
     }
     .spec-chip .k {
         color: #6c757d;
         font-weight: 500;
+        font-size: 0.75rem;
     }
     .spec-chip .v {
-        font-weight: 700;
+        font-weight: 600;
         color: #212529;
+        font-size: 0.8rem;
     }
     .spec-chip .src {
-        font-size: 0.7rem;
+        font-size: 0.65rem;
         background: #667eea;
         color: #fff;
-        border-radius: 1rem;
-        padding: 0.15rem 0.5rem;
+        border-radius: 0.75rem;
+        padding: 0.1rem 0.4rem;
         font-weight: 600;
     }
     @media (max-width:576px) {
         .spec-chip {
-            font-size: 0.85rem;
-            padding: 0.4rem 0.8rem;
+            font-size: 0.75rem;
+            padding: 0.3rem 0.6rem;
         }
         .specs-bar {
-            padding: 0.875rem 1rem;
+            padding: 0.65rem 0.85rem;
+            border-radius: 0.65rem;
         }
     }
     </style>
@@ -385,85 +395,64 @@
         </div>
     @endif
 
-    {{-- Search Scope Toggle --}}
-    <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
-        <div class="d-flex align-items-center gap-2" aria-live="polite">
-            <span class="text-muted small fw-medium">{{ __('ui.search_scope') }}:</span>
-            @if($searchScope === 'section')
-                <span class="badge bg-info bg-gradient px-3 py-2">
-                    <i class="fas fa-layer-group me-1"></i>
-                    {{ __('ui.section_only') }}
-                </span>
-            @else
-                <span class="badge bg-primary bg-gradient px-3 py-2">
-                    <i class="fas fa-globe me-1"></i>
-                    {{ __('ui.catalog_wide') }}
-                </span>
-            @endif
-        </div>
+    {{-- Compact Search Controls --}}
+    <div class="compact-search-controls mb-3">
+        <div class="d-flex align-items-center justify-content-between gap-2 flex-wrap">
+            {{-- Search Scope - Compact --}}
+            <div class="btn-group btn-group-sm" role="group" aria-label="{{ __('ui.search_scope') }}">
+                <button type="button"
+                        class="btn btn-sm {{ $searchScope === 'catalog' ? 'btn-primary' : 'btn-outline-secondary' }}"
+                        wire:click="setSearchScope('catalog')"
+                        title="{{ __('ui.catalog_all') }}">
+                    <i class="fas fa-globe"></i>
+                    <span class="d-none d-md-inline ms-1">{{ __('ui.catalog_all') }}</span>
+                </button>
+                <button type="button"
+                        class="btn btn-sm {{ $searchScope === 'section' ? 'btn-primary' : 'btn-outline-secondary' }}"
+                        wire:click="setSearchScope('section')"
+                        title="{{ __('ui.this_section') }}">
+                    <i class="fas fa-layer-group"></i>
+                    <span class="d-none d-md-inline ms-1">{{ __('ui.this_section') }}</span>
+                </button>
+            </div>
 
-        <div class="btn-group btn-group-sm shadow-sm" role="group" aria-label="{{ __('ui.search_scope') }}">
-            <button type="button"
-                    class="btn {{ $searchScope === 'catalog' ? 'btn-primary' : 'btn-outline-primary' }}"
-                    wire:click="setSearchScope('catalog')">
-                <i class="fas fa-globe d-none d-sm-inline me-1"></i>
-                {{ __('ui.catalog_all') }}
-            </button>
-            <button type="button"
-                    class="btn {{ $searchScope === 'section' ? 'btn-primary' : 'btn-outline-primary' }}"
-                    wire:click="setSearchScope('section')">
-                <i class="fas fa-layer-group d-none d-sm-inline me-1"></i>
-                {{ __('ui.this_section') }}
-            </button>
-        </div>
-    </div>
-
-    {{-- Search Type Segmented Toggle --}}
-    <div class="mb-4">
-        <label class="form-label fw-semibold text-dark mb-3 d-flex align-items-center gap-2">
-            <i class="fas fa-filter text-primary"></i>
-            {{ __('ui.search_type') }}
-        </label>
-        <div class="btn-group w-100 d-flex segmented shadow-sm" role="group" aria-label="{{ __('ui.search_type') }}">
-            @foreach ([
-                'number' => ['icon' => '🔢', 'label' => __('ui.part_number'), 'desc' => __('ui.search_by_part_number')],
-                'label'  => ['icon' => '📄', 'label' => __('ui.part_name'),   'desc' => __('ui.search_by_part_name')]
-            ] as $type => $config)
-                <input
-                    type="radio"
-                    class="btn-check"
-                    name="searchType"
-                    id="searchBy{{ ucfirst($type) }}"
-                    autocomplete="off"
-                    value="{{ $type }}"
-                    wire:model="searchType"
-                >
-                <label class="btn btn-outline-primary flex-fill d-flex align-items-center justify-content-center gap-2"
-                       for="searchBy{{ ucfirst($type) }}"
-                       title="{{ $config['desc'] }}">
-                    <span class="d-none d-sm-inline fs-5">{{ $config['icon'] }}</span>
-                    <span>{{ $config['label'] }}</span>
-                </label>
-            @endforeach
+            {{-- Search Type - Compact --}}
+            <div class="btn-group btn-group-sm" role="group" aria-label="{{ __('ui.search_type') }}">
+                @foreach ([
+                    'number' => ['icon' => 'fa-hashtag', 'label' => __('ui.part_number')],
+                    'label'  => ['icon' => 'fa-tag', 'label' => __('ui.part_name')]
+                ] as $type => $config)
+                    <input
+                        type="radio"
+                        class="btn-check"
+                        name="searchType"
+                        id="searchBy{{ ucfirst($type) }}"
+                        autocomplete="off"
+                        value="{{ $type }}"
+                        wire:model="searchType"
+                    >
+                    <label class="btn btn-sm btn-outline-secondary"
+                           for="searchBy{{ ucfirst($type) }}"
+                           title="{{ $config['label'] }}">
+                        <i class="fas {{ $config['icon'] }}"></i>
+                        <span class="d-none d-md-inline ms-1">{{ $config['label'] }}</span>
+                    </label>
+                @endforeach
+            </div>
         </div>
     </div>
 
-    {{-- Search Input --}}
-    <div class="mb-4 position-relative">
-        <label for="searchInput" class="form-label fw-semibold text-dark mb-3 d-flex align-items-center gap-2">
-            <i class="fas fa-search text-primary"></i>
-            {{ $searchType === 'number' ? __('ui.enter_part_number') : __('ui.enter_part_name') }}
-        </label>
-
-        <div class="input-group input-group-lg shadow-sm">
-            <span class="input-group-text bg-white border-end-0" aria-hidden="true">
-                <i class="fas {{ $searchType === 'number' ? 'fa-hashtag' : 'fa-tag' }} text-primary"></i>
+    {{-- Compact Search Input --}}
+    <div class="mb-3 position-relative">
+        <div class="input-group shadow-sm">
+            <span class="input-group-text bg-white" aria-hidden="true">
+                <i class="fas {{ $searchType === 'number' ? 'fa-hashtag' : 'fa-tag' }} text-muted"></i>
             </span>
 
             <input
                 id="searchInput"
                 type="text"
-                class="form-control border-start-0 ps-0"
+                class="form-control"
                 placeholder="{{ $searchType === 'number' ? __('ui.enter_part_number') : __('ui.enter_part_name') }}"
                 wire:model.live.debounce.500ms="query"
                 wire:keydown.enter="searchFromInput"
@@ -479,7 +468,7 @@
             >
 
             <button
-                class="btn btn-primary px-4"
+                class="btn btn-primary"
                 type="button"
                 wire:click="searchFromInput"
                 wire:loading.attr="disabled"
@@ -489,22 +478,22 @@
                         ? strlen(preg_replace('/[^0-9A-Za-z]+/', '', $query)) < 5
                         : mb_strlen($query, 'UTF-8') < 2) disabled @endif
             >
-                <span class="spinner-border spinner-border-sm me-2"
+                <span class="spinner-border spinner-border-sm"
                     role="status"
                     aria-hidden="true"
                     wire:loading
                     wire:target="searchFromInput"></span>
                 <i class="fas fa-search" wire:loading.remove wire:target="searchFromInput"></i>
-                <span class="d-none d-md-inline ms-2" wire:loading.remove wire:target="searchFromInput">
+                <span class="d-none d-lg-inline ms-2" wire:loading.remove wire:target="searchFromInput">
                     {{ __('ui.search') }}
                 </span>
             </button>
         </div>
 
-        <div id="searchHelp" class="form-text mt-2 {{ $tooShort ? 'text-danger fw-medium' : 'text-muted' }}">
-            <i class="fas fa-info-circle me-1"></i>
+        <small id="searchHelp" class="form-text {{ $tooShort ? 'text-danger' : 'text-muted' }}">
+            <i class="fas fa-info-circle"></i>
             {{ $searchType === 'number' ? __('ui.part_number_help') : __('ui.part_name_help') }}
-        </div>
+        </small>
 
         {{-- Suggestions Dropdown --}}
         @if($searchType === 'label' && !empty($results) && is_array($results) && !$isLoading && mb_strlen($query, 'UTF-8') >= 2 && isset($results[0]) && is_string($results[0]))

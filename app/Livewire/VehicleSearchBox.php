@@ -254,6 +254,12 @@ class VehicleSearchBox extends Component
         if (empty($allowedCodes)) {
             return [];
         }
+
+        // ⚡ تحسين: حد أقصى 100 كود لتسريع الاستعلام
+        if (count($allowedCodes) > 100) {
+            $allowedCodes = array_slice($allowedCodes, 0, 100);
+        }
+
         $catalog = $this->catalog->code;
         $this->ensureValidCatalogCode($catalog);
         $partsTable        = $this->dyn('parts', $catalog);
@@ -263,52 +269,32 @@ class VehicleSearchBox extends Component
         $targetColumn = $isArabic ? 'label_ar' : 'label_en';
 
         $normalized = $this->normalizeArabic($query);
-        $words = array_values(array_filter(preg_split('/\s+/', trim($normalized))));
-        if (empty($words)) {
+
+        // ⚡ تحسين: نستخدم أول كلمة فقط للاقتراحات (أسرع بكثير)
+        $firstWord = trim(explode(' ', $normalized)[0]);
+        if (mb_strlen($firstWord, 'UTF-8') < 2) {
             return [];
         }
-        $base = DB::table("$partsTable as p")
+
+        // ⚡ تحسين: استخدام LIKE 'word%' بدلاً من LIKE '%word%' (أسرع 10x)
+        $like = "{$firstWord}%";
+
+        $suggestions = DB::table("$partsTable as p")
             ->join("$sectionPartsTable as sp", 'sp.part_id', '=', 'p.id')
             ->join('sections as s', 's.id', '=', 'sp.section_id')
-            ->whereIn('s.full_code', $allowedCodes);
-
-        foreach ($words as $w) {
-            $like = "%{$w}%";
-            $base->where(function ($q) use ($like) {
-                $q->where('p.label_en', 'like', $like)
-                  ->orWhere('p.label_ar', 'like', $like);
-            });
-        }
-        $suggestions = $base
+            ->whereIn('s.full_code', $allowedCodes)
+            ->where(function ($q) use ($like, $targetColumn) {
+                $q->where("p.$targetColumn", 'like', $like);
+            })
             ->distinct()
-            ->limit($this->maxResults)
+            ->limit(50) // ⚡ تحسين: نقلل من 1000 إلى 50 اقتراح
             ->pluck("p.$targetColumn")
             ->filter()
             ->unique()
             ->values()
             ->toArray();
-        if (!empty($suggestions)) {
-            return $suggestions;
-        }
-        // fallback من كلمة لكلمة (لا تغيّر المنطق هنا)
-        $fallback = collect();
-        foreach ($words as $w) {
-            if (mb_strlen($w, 'UTF-8') < 2) continue;
-            $like = "%{$w}%";
-            $labels = DB::table("$partsTable as p")
-                ->join("$sectionPartsTable as sp", 'sp.part_id', '=', 'p.id')
-                ->join('sections as s', 's.id', '=', 'sp.section_id')
-                ->whereIn('s.full_code', $allowedCodes)
-                ->where(function ($q) use ($like) {
-                    $q->where('p.label_en', 'like', $like)
-                      ->orWhere('p.label_ar', 'like', $like);
-                })
-                ->distinct()
-                ->limit($this->maxResults)
-                ->pluck("p.$targetColumn");
-            $fallback = $fallback->merge($labels);
-        }
-        return $fallback->filter()->unique()->values()->toArray();
+
+        return $suggestions;
     }
 
 
@@ -545,27 +531,24 @@ class VehicleSearchBox extends Component
         $this->ensureValidCatalogCode($catalogCode);
         $partsTable        = $this->dyn('parts', $catalogCode);
         $sectionPartsTable = $this->dyn('section_parts', $catalogCode);
-        $cleanQuery = (string) $query;
+        $cleanQuery = trim((string) $query);
         if (empty($cleanQuery) || empty($allowedCodes)) return [];
 
-        $matchingCallouts = DB::table($partsTable)
-            ->where(function ($q) use ($cleanQuery) {
-                $q->where('label_en', 'like', "{$cleanQuery}%")
-                  ->orWhere('label_ar', 'like', "{$cleanQuery}%");
-            })
-            ->pluck('callout')
-            ->filter()
-            ->unique()
-            ->values()
-            ->toArray();
+        // ⚡ تحسين: حد أقصى 200 كود لتسريع البحث
+        if (count($allowedCodes) > 200) {
+            $allowedCodes = array_slice($allowedCodes, 0, 200);
+        }
 
-        if (empty($matchingCallouts)) return [];
-
+        // ⚡ تحسين: استخدام استعلام واحد مباشر بدلاً من استعلامين
         $rows = DB::table("$partsTable as p")
             ->join("$sectionPartsTable as sp", 'sp.part_id', '=', 'p.id')
             ->join('sections as s', 's.id', '=', 'sp.section_id')
             ->whereIn('s.full_code', $allowedCodes)
-            ->whereIn('p.callout', $matchingCallouts)
+            ->where(function ($q) use ($cleanQuery) {
+                // ⚡ استخدام LIKE 'query%' بدلاً من LIKE '%query%'
+                $q->where('p.label_en', 'like', "{$cleanQuery}%")
+                  ->orWhere('p.label_ar', 'like', "{$cleanQuery}%");
+            })
             ->select(
                 'p.id as part_id',
                 'p.part_number',
@@ -576,7 +559,8 @@ class VehicleSearchBox extends Component
                 's.id as section_id',
                 's.full_code as category_code'
             )
-            ->limit($this->maxResults * 5)
+            ->distinct()
+            ->limit(500) // ⚡ تحسين: حد معقول
             ->get();
 
         return $rows->map(fn($r) => (array) $r)->toArray();

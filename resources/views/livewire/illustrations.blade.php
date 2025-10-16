@@ -5,6 +5,86 @@
     <livewire:callout-modal />
 
     <style>
+        /* ===== Compact Breadcrumb Styles ===== */
+        .compact-breadcrumb-wrapper {
+            background: #fff;
+            border-radius: 0.5rem;
+            padding: 0.5rem 0.75rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+            border: 1px solid #e9ecef;
+        }
+
+        .compact-breadcrumb {
+            margin: 0;
+            padding: 0;
+            background: transparent;
+            font-size: 0.85rem;
+        }
+
+        .compact-breadcrumb .breadcrumb-item {
+            padding: 0;
+        }
+
+        .compact-breadcrumb .breadcrumb-item + .breadcrumb-item::before {
+            content: "›";
+            color: #6c757d;
+            padding: 0 0.4rem;
+            font-size: 1rem;
+        }
+
+        .compact-breadcrumb a {
+            color: #495057;
+            text-decoration: none;
+            transition: color 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+        }
+
+        .compact-breadcrumb a:hover {
+            color: #0d6efd;
+        }
+
+        .compact-breadcrumb .active span {
+            color: #0d6efd;
+            font-weight: 600;
+        }
+
+        .compact-breadcrumb i {
+            font-size: 0.875rem;
+        }
+
+        @media (max-width: 576px) {
+            .compact-breadcrumb-wrapper {
+                padding: 0.4rem 0.6rem;
+                border-radius: 0.4rem;
+            }
+
+            .compact-breadcrumb {
+                font-size: 0.75rem;
+                flex-wrap: nowrap;
+                overflow-x: auto;
+                scrollbar-width: none;
+                -ms-overflow-style: none;
+            }
+
+            .compact-breadcrumb::-webkit-scrollbar {
+                display: none;
+            }
+
+            .compact-breadcrumb .breadcrumb-item {
+                white-space: nowrap;
+            }
+
+            .compact-breadcrumb .breadcrumb-item + .breadcrumb-item::before {
+                padding: 0 0.3rem;
+                font-size: 0.9rem;
+            }
+
+            .compact-breadcrumb i {
+                font-size: 0.8rem;
+            }
+        }
+
         /* ⚙️ الهيكل الأساسي للـ landmarks - لا تغيير */
         #zoom_container .landmarks {
             position: absolute;
@@ -128,87 +208,86 @@
         }
     </style>
 
-    <div class="container py-3">
+    <div class="container py-2">
         <div class="row">
             <div class="col-12">
-                <div class="product-nav-wrapper mb-3">
+                <div class="compact-breadcrumb-wrapper mb-3">
                     <nav aria-label="breadcrumb">
-                        <ol class="breadcrumb text-uppercase mb-0 flex-wrap">
+                        <ol class="breadcrumb compact-breadcrumb mb-0">
                             {{-- Home --}}
                             <li class="breadcrumb-item">
-                                <a class="text-black text-decoration-none" href="{{ route('front.index') }}">
-                                    <i class="fas fa-home d-md-none"></i>
-                                    <span class="d-none d-md-inline">Home</span>
+                                <a href="{{ route('front.index') }}">
+                                    <i class="fas fa-home"></i>
+                                    <span class="d-none d-sm-inline ms-1">Home</span>
                                 </a>
                             </li>
 
                             {{-- Brand --}}
                             @if($brand)
                                 <li class="breadcrumb-item">
-                                    <a class="text-black text-decoration-none" href="{{ route('catlogs.index', ['id' => $brand->name]) }}">
-                                        {{ strtoupper($brand->name) }}
+                                    <a href="{{ route('catlogs.index', ['id' => $brand->name]) }}">
+                                        {{ Str::limit($brand->name, 15) }}
                                     </a>
                                 </li>
                             @endif
 
                             {{-- VIN --}}
                             @if(Session::get('vin'))
-                                <li class="breadcrumb-item">
-                                    <a class="text-black text-decoration-none" href="{{ route('tree.level1', [
+                                <li class="breadcrumb-item d-none d-sm-block">
+                                    <a href="{{ route('tree.level1', [
                                         'id'   => $brand->name,
                                         'data' => $catalog->code,
                                         'vin'  => Session::get('vin')
                                     ]) }}">
-                                        <i class="fas fa-car d-md-none"></i>
-                                        <span class="d-none d-md-inline">{{ Session::get('vin') }}</span>
-                                        <span class="d-md-none">VIN</span>
+                                        <i class="fas fa-car me-1"></i>
+                                        {{ Str::limit(Session::get('vin'), 12) }}
                                     </a>
                                 </li>
                             @endif
 
                             {{-- Catalog --}}
                             @if($catalog)
-                                <li class="breadcrumb-item d-none d-sm-block">
-                                    <a class="text-black text-decoration-none" href="{{ route('tree.level1', [
+                                <li class="breadcrumb-item d-none d-md-block">
+                                    <a href="{{ route('tree.level1', [
                                         'id'   => $brand->name,
                                         'data' => $catalog->code
                                     ]) }}">
-                                        {{ strtoupper($catalog->shortName ?? $catalog->name ?? $catalog->code) }}
+                                        {{ Str::limit($catalog->shortName ?? $catalog->name ?? $catalog->code, 20) }}
                                     </a>
                                 </li>
                             @endif
 
                             {{-- Level 1 --}}
                             @if($parentCategory1)
-                                <li class="breadcrumb-item d-none d-md-block">
-                                    <a class="text-black text-decoration-none" href="{{ route('tree.level2', [
+                                <li class="breadcrumb-item d-none d-lg-block">
+                                    <a href="{{ route('tree.level2', [
                                         'id'   => $brand->name,
                                         'data' => $catalog->code,
                                         'key1' => $parentCategory1->full_code
                                     ]) }}">
-                                        {{ strtoupper($parentCategory1->slug ?? $parentCategory1->full_code) }}
+                                        {{ Str::limit($parentCategory1->slug ?? $parentCategory1->full_code, 25) }}
                                     </a>
                                 </li>
                             @endif
 
                             {{-- Level 2 --}}
                             @if($parentCategory2 && $parentCategory1)
-                                <li class="breadcrumb-item d-none d-lg-block">
-                                    <a class="text-black text-decoration-none" href="{{ route('tree.level3', [
+                                <li class="breadcrumb-item d-none d-xl-block">
+                                    <a href="{{ route('tree.level3', [
                                         'id'   => $brand->name,
                                         'data' => $catalog->code,
                                         'key1' => $parentCategory1->full_code,
                                         'key2' => $parentCategory2->full_code
                                     ]) }}">
-                                        {{ strtoupper($parentCategory2->slug ?? $parentCategory2->full_code) }}
+                                        {{ Str::limit($parentCategory2->slug ?? $parentCategory2->full_code, 25) }}
                                     </a>
                                 </li>
                             @endif
 
                             {{-- Level 3 (current) --}}
                             @if($parentCategory3)
-                                <li class="breadcrumb-item active text-primary" aria-current="page">
-                                    <strong>{{ strtoupper($parentCategory3->Applicability ?? $parentCategory3->full_code) }}</strong>
+                                <li class="breadcrumb-item active" aria-current="page">
+                                    <span>{{ Str::limit($parentCategory3->Applicability ?? $parentCategory3->full_code, 30) }}</span>
                                 </li>
                             @endif
                         </ol>
