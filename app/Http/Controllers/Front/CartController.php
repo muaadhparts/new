@@ -9,6 +9,7 @@ use App\Models\MerchantProduct;
 use App\Models\Product;
 use App\Models\State;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
 
 class CartController extends FrontBaseController
@@ -42,6 +43,90 @@ class CartController extends FrontBaseController
         ]);
     }
 
+    /* ===================== Stock Reservation (Atomic) ===================== */
+
+    /**
+     * Reserve stock atomically with size support
+     * @throws \Exception if insufficient stock
+     */
+    private function reserveStock(int $merchantProductId, int $deltaQty, ?string $size = null): void
+    {
+        DB::transaction(function() use ($merchantProductId, $deltaQty, $size) {
+            $row = DB::table('merchant_products')->where('id', $merchantProductId)->lockForUpdate()->first();
+            if (!$row) {
+                throw new \Exception('Merchant product not found');
+            }
+
+            // دعم المقاسات: إذا كان المنتج له مقاسات
+            if ($size && !empty($row->size) && !empty($row->size_qty)) {
+                $sizes = $this->toArrayValues($row->size);
+                $qtys = $this->toArrayValues($row->size_qty);
+                $idx = $this->findSizeIndex($sizes, $size);
+
+                if ($idx !== false && isset($qtys[$idx])) {
+                    // تحديث المقاس المحدد
+                    $currentSizeQty = (int)$qtys[$idx];
+                    $newSizeQty = $currentSizeQty - $deltaQty;
+
+                    if ($newSizeQty < 0) {
+                        throw new \Exception('Insufficient stock for size: ' . $size);
+                    }
+
+                    $qtys[$idx] = (string)$newSizeQty;
+                    $newSizeQtyStr = implode(',', $qtys);
+
+                    DB::table('merchant_products')
+                        ->where('id', $merchantProductId)
+                        ->update(['size_qty' => $newSizeQtyStr, 'updated_at' => now()]);
+                    return;
+                }
+            }
+
+            // السقوط إلى stock العام إذا لم يكن هناك مقاس
+            $newStock = (int)$row->stock - $deltaQty;
+            if ($newStock < 0) {
+                throw new \Exception('Insufficient stock');
+            }
+
+            DB::table('merchant_products')
+                ->where('id', $merchantProductId)
+                ->update(['stock' => $newStock, 'updated_at' => now()]);
+        });
+    }
+
+    /**
+     * Return stock atomically with size support
+     */
+    private function returnStock(int $merchantProductId, int $deltaQty, ?string $size = null): void
+    {
+        DB::transaction(function() use ($merchantProductId, $deltaQty, $size) {
+            $row = DB::table('merchant_products')->where('id', $merchantProductId)->lockForUpdate()->first();
+            if (!$row) return; // المنتج محذوف، تجاهل
+
+            // دعم المقاسات: إرجاع للمقاس المحدد
+            if ($size && !empty($row->size) && !empty($row->size_qty)) {
+                $sizes = $this->toArrayValues($row->size);
+                $qtys = $this->toArrayValues($row->size_qty);
+                $idx = $this->findSizeIndex($sizes, $size);
+
+                if ($idx !== false && isset($qtys[$idx])) {
+                    $qtys[$idx] = (string)((int)$qtys[$idx] + $deltaQty);
+                    $newSizeQtyStr = implode(',', $qtys);
+
+                    DB::table('merchant_products')
+                        ->where('id', $merchantProductId)
+                        ->update(['size_qty' => $newSizeQtyStr, 'updated_at' => now()]);
+                    return;
+                }
+            }
+
+            // السقوط إلى stock العام
+            DB::table('merchant_products')
+                ->where('id', $merchantProductId)
+                ->increment('stock', $deltaQty);
+        });
+    }
+
     /* ===================== New Merchant-Product-Based Methods ===================== */
 
     /**
@@ -51,11 +136,14 @@ class CartController extends FrontBaseController
     {
         $mp = MerchantProduct::with(['product', 'user', 'qualityBrand'])->findOrFail($merchantProductId);
 
-        if (!$mp || $mp->status !== 1 || $mp->stock <= 0) {
-            return response()->json(['error' => __('Product not available')]);
+        if (!$mp || $mp->status !== 1) {
+            return response()->json(['status' => 'error', 'msg' => __('Product not available')], 400);
         }
 
+        $qty = max(1, (int) request('qty', 1));
         $prod = $mp->product;
+
+        // تحديد المقاس
         $size = (string) request('size', '');
         if ($size === '') {
             [$size, $_] = $this->pickAvailableSize($mp->size, $mp->size_qty);
@@ -69,9 +157,11 @@ class CartController extends FrontBaseController
             }
         }
 
-        $effStock = $this->effectiveStock($mp, $size);
-        if ($effStock <= 0) {
-            return response()->json(['error' => __('Out of stock')]);
+        // حجز المخزون ذرياً مع المقاس
+        try {
+            $this->reserveStock($merchantProductId, $qty, $size);
+        } catch (\Exception $e) {
+            return response()->json(['status' => 'error', 'msg' => __('Out Of Stock')], 422);
         }
 
         // Inject merchant context into product for cart compatibility
@@ -82,7 +172,17 @@ class CartController extends FrontBaseController
 
         $oldCart = Session::has('cart') ? Session::get('cart') : null;
         $cart = new Cart($oldCart);
-        $cart->add($prod, $merchantProductId, $size, $color, $keys, $values);
+
+        // إضافة الكمية للسلة (المخزون محجوز مسبقاً)
+        if ($qty == 1) {
+            $cart->add($prod, $merchantProductId, $size, $color, $keys, $values);
+        } else {
+            $cart->addnum(
+                $prod, $merchantProductId, $qty, $size, $color,
+                '', 0, 0, '',
+                $keys, $values, request('affilate_user', '0')
+            );
+        }
 
         $this->recomputeTotals($cart);
         Session::put('cart', $cart);
@@ -477,7 +577,9 @@ class CartController extends FrontBaseController
 
     public function increaseItem(Request $request)
     {
-        if (!Session::has('cart')) return response()->json(['status'=>'error','msg'=>'No cart'], 400);
+        if (!Session::has('cart')) {
+            return response()->json(['status'=>'error','msg'=>'No cart'], 400);
+        }
 
         $row = (string)$request->input('row', '');
         $oldCart = Session::get('cart');
@@ -489,20 +591,23 @@ class CartController extends FrontBaseController
 
         $rowData  = $cart->items[$row];
         $item     = $rowData['item'];
-        $productId= (int)($item->id ?? 0);
-        $vendorId = (int)($item->vendor_user_id ?? $item->user_id ?? 0);
+        $mpId     = (int)($item->merchant_product_id ?? 0);
         $size     = (string)($rowData['size'] ?? '');
-        $qtyNow   = (int)($rowData['qty'] ?? 0);
 
-        $mp = MerchantProduct::where('product_id', $productId)
-                ->where('user_id', $vendorId)->first();
+        if (!$mpId) {
+            return response()->json(['status'=>'error','msg'=>'Invalid merchant product'], 400);
+        }
+
+        $mp = MerchantProduct::where('id', $mpId)->first();
         if (!$mp || (int)$mp->status !== 1) {
             return response()->json(['status'=>'error','msg'=>'Vendor listing invalid'], 400);
         }
 
-        $avail = $this->effectiveStock($mp, $size);
-        if ($qtyNow + 1 > $avail) {
-            return response()->json(['status'=>'error','msg'=>__('Out Of Stock'), 'max'=>$avail], 422);
+        // حجز المخزون ذرياً مع المقاس
+        try {
+            $this->reserveStock($mpId, 1, $size);
+        } catch (\Exception $e) {
+            return response()->json(['status'=>'error','msg'=>__('Out Of Stock')], 422);
         }
 
         $cart->adding($item, $row, $rowData['size_qty'] ?? '', 0);
@@ -521,7 +626,9 @@ class CartController extends FrontBaseController
 
     public function decreaseItem(Request $request)
     {
-        if (!Session::has('cart')) return response()->json(['status'=>'error','msg'=>'No cart'], 400);
+        if (!Session::has('cart')) {
+            return response()->json(['status'=>'error','msg'=>'No cart'], 400);
+        }
 
         $row = (string)$request->input('row', '');
         $oldCart = Session::get('cart');
@@ -533,10 +640,26 @@ class CartController extends FrontBaseController
 
         $rowData = $cart->items[$row];
         $item    = $rowData['item'];
+        $mpId    = (int)($item->merchant_product_id ?? 0);
+        $size    = (string)($rowData['size'] ?? '');
         $qtyNow  = (int)($rowData['qty'] ?? 0);
-        if ($qtyNow <= 1) {
-            return response()->json(['status'=>'error','msg'=>'Min qty reached'], 422);
+
+        if (!$mpId) {
+            return response()->json(['status'=>'error','msg'=>'Invalid merchant product'], 400);
         }
+
+        if ($qtyNow <= 1) {
+            // إرجاع المخزون الكامل عند الحذف
+            $this->returnStock($mpId, 1, $size);
+            $cart->removeItem($row);
+            $this->recomputeTotals($cart);
+            Session::put('cart', $cart);
+            if (empty($cart->items)) { Session::forget('cart'); }
+            return response()->json(['status'=>'ok','msg'=>'Item removed','qty'=>0]);
+        }
+
+        // إرجاع قطعة واحدة للمخزون
+        $this->returnStock($mpId, 1, $size);
 
         $cart->reducing($item, $row, $rowData['size_qty'] ?? '', 0);
         $this->recomputeTotals($cart);
@@ -757,6 +880,17 @@ class CartController extends FrontBaseController
         }
 
         if ($rowKey && isset($cart->items[$rowKey])) {
+            // إرجاع المخزون قبل الحذف
+            $rowData = $cart->items[$rowKey];
+            $item    = $rowData['item'] ?? null;
+            if ($item) {
+                $mpId = (int)($item->merchant_product_id ?? 0);
+                $size = (string)($rowData['size'] ?? '');
+                $qty  = (int)($rowData['qty'] ?? 0);
+                if ($mpId > 0 && $qty > 0) {
+                    $this->returnStock($mpId, $qty, $size);
+                }
+            }
             $cart->removeItem($rowKey);
         }
 
