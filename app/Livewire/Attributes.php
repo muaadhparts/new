@@ -184,13 +184,29 @@ class Attributes extends Component
     public function save()
     {
         if (!$this->vin) {
-            $this->sessionManager->setSelectedFilters($this->data);
+            // تنظيف البيانات - إزالة القيم الفارغة
+            $cleanedData = array_filter($this->data, function($item) {
+                if (is_array($item)) {
+                    return !empty($item['value_id']);
+                }
+                return !empty($item);
+            });
+
+            $this->sessionManager->setSelectedFilters($cleanedData);
         }
 
-        $labeledData = $this->generateLabeledData($this->sessionManager->getSelectedFilters());
-        $this->sessionManager->setLabeledFilters($labeledData);
+        $savedFilters = $this->sessionManager->getSelectedFilters();
 
-        $this->emit('filtersSelected', $labeledData);
+        // فقط إنشاء labeled data إذا كان هناك فلاتر محفوظة
+        if (!empty($savedFilters)) {
+            $labeledData = $this->generateLabeledData($savedFilters);
+            $this->sessionManager->setLabeledFilters($labeledData);
+        } else {
+            $this->sessionManager->setLabeledFilters([]);
+        }
+
+        // إرسال الحدث للـ JavaScript لإعادة تحميل الصفحة
+        $this->dispatch('filtersSelected');
     }
 
     protected function generateLabeledData($mergedData)
@@ -231,14 +247,33 @@ class Attributes extends Component
     {
         if ($this->vin) return;
 
-        $this->data = [];
+        // مسح البيانات من الجلسة أولاً
         $this->sessionManager->clearFilters();
+
+        // إعادة تعيين البيانات المحلية بقيم فارغة
+        $this->data = [];
+        $this->filters = [];
+
+        // إعادة تحميل الفلاتر بدون قيم محددة
         $this->loadFilters();
+
+        // تهيئة $data بقيم فارغة لكل filter موجود
+        foreach ($this->filters as $key => $filter) {
+            $this->data[$key] = ['value_id' => '', 'source' => 'manual'];
+        }
+
+        // إرسال حدث لإعادة تحميل الصفحة بعد المسح
+        $this->dispatch('filtersCleared');
     }
 
     public function render()
     {
-        return view('livewire.attributes');
+        return view('livewire.attributes', [
+            'catalogName' => $this->catalog->name ?? null,
+            'shortName' => $this->catalog->shortName ?? null,
+            'catalogCode' => $this->catalog->code ?? null,
+            'source' => $this->vin ? 'VIN' : null,
+        ]);
     }
 }
 

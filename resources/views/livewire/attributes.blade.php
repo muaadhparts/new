@@ -52,7 +52,7 @@
                         <div class="input-group">
                             @if(isset($filters['month']))
                                 <select class="form-select me-2"
-                                        wire:model.defer="data.month.value_id"
+                                        wire:model="data.month.value_id"
                                         name="data[month][value_id]"
                                         @if($isFromVin) disabled @endif>
                                     <option value="">Month</option>
@@ -66,7 +66,7 @@
 
                             @if(isset($filters['year']))
                                 <select class="form-select"
-                                        wire:model.defer="data.year.value_id"
+                                        wire:model="data.year.value_id"
                                         name="data[year][value_id]"
                                         @if($isFromVin) disabled @endif>
                                     <option value="">Year</option>
@@ -89,7 +89,7 @@
                                 {{ $attribute['label'] ?? $index }}
                             </label>
                             <select class="form-select"
-                                    wire:model.defer="data.{{ $index }}.value_id"
+                                    wire:model="data.{{ $index }}.value_id"
                                     name="data[{{ $index }}][value_id]"
                                     @if($isFromVin) disabled @endif>
                                 <option value="">-- Choose --</option>
@@ -129,17 +129,23 @@
 </div> <!-- /offcanvas -->
 </form>
 
-<!-- الحفظ عند الإغلاق إذا لم يكن VIN -->
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        var canvas = document.getElementById('offcanvasForm');
-        if (canvas) {
-            canvas.addEventListener('hidden.bs.offcanvas', function () {
-                @if (!Session::has('vin'))
-                    @this.call('save');
-                @endif
-            });
-        }
+(function() {
+    document.addEventListener('livewire:init', function() {
+        Livewire.on('filtersSelected', function() {
+            console.log('Filters saved - reloading');
+            setTimeout(function() {
+                window.location.reload();
+            }, 300);
+        });
+
+        Livewire.on('filtersCleared', function() {
+            console.log('Filters cleared - reloading');
+            setTimeout(function() {
+                window.location.reload();
+            }, 300);
+        });
     });
+})();
 </script>
 </div> <!-- /wrapper div -->
