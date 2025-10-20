@@ -1,10 +1,9 @@
-<?php 
+<?php
 
 namespace App\Livewire;
 
 use App\Models\Catalog;
 use App\Models\NewCategory;
-use App\Services\CatalogSessionManager;
 use App\Traits\NormalizesInput;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -34,23 +33,8 @@ class VehicleSearchBox extends Component
 
     public $preloadedCategories = [];
 
-    /** نطاق البحث: section أو catalog (الافتراضي: catalog عند أول دخول) */
-    public string $searchScope = 'catalog';
-
-    /** كاش داخلي لقائمة أكواد الكتالوج عند اختيار catalog */
-    protected ?array $allCatalogCodesCache = null;
-
-    /** مفاتيح سيشن أساسية (ستُربط بالكود لاحقًا) */
+    /** مفاتيح سيشن أساسية */
     private const SS_SEARCH_TYPE  = 'search_type';
-    private const SS_SEARCH_SCOPE = 'search_scope';
-
-    /** استقبال حدث خارجي للتبديل بين section/catalog */
-    protected $listeners = [
-        'setSearchScope' => 'setSearchScope',
-    ];
-
-    /** Service للتعامل مع الجلسة */
-    protected CatalogSessionManager $sessionManager;
 
     /** ================== مفاتيح الترجمة لرسائل الخطأ ================== */
     private const ERR_LOAD       = 'errors.load_failed';
@@ -63,78 +47,47 @@ class VehicleSearchBox extends Component
 
     private function setError(?string $msg): void
     {
-        // $msg هنا إما نص مترجم أو مفتاح ترجمة مسبق
         $this->errorMessage = $msg ?? '';
-        // بثّ حدث للواجهة (اختياري للسكرول/الفوكس)
         $this->dispatch('vehicle-search-error', message: $this->errorMessage);
-        // dd($this->errorMessage); // // لأغراض فحص لاحقة بإزالة التعليق
     }
-    /** ============================================================ */
 
-    /** إنشاء مفتاح سيشن مربوط بكود الكاتلوج (يُستدعى بعد ضبط $catalog) */
+    /** إنشاء مفتاح سيشن مربوط بكود الكاتلوج */
     private function ssKey(string $base): string
     {
         $code = $this->catalog->code ?? 'default';
         return "{$base}_{$code}";
     }
 
-
-    /** تبديل النطاق (section | catalog) */
-    public function setSearchScope($scope = 'section'): void
+    protected function dyn(string $base, string $catalogCode): string
     {
-        $scope = $scope === 'catalog' ? 'catalog' : 'section';
-        if ($this->searchScope !== $scope) {
-            $this->searchScope = $scope;
+        $this->ensureValidCatalogCode($catalogCode);
+        return strtolower("{$base}_{$catalogCode}");
+    }
 
-            // حفظ في السيشن (بعد الكاتلوج وبمفتاح مرتبط به)
-            if ($this->catalog && $this->catalog->code) {
-                session([$this->ssKey(self::SS_SEARCH_SCOPE) => $this->searchScope]);
-            }
-
-            $this->resetSearchState();
-
-            // أرسل حدث للواجهة لتحديث لون الأزرار
-            $this->dispatch('search-scope-updated', scope: $this->searchScope);
+    protected function ensureValidCatalogCode($catalogCode): void
+    {
+        if (!preg_match('/^[A-Za-z0-9_]+$/', (string)$catalogCode)) {
+            throw new \Exception('Invalid catalog code');
         }
     }
 
-    // داخل VehicleSearchBox
     public function clearSearch(): void
     {
         $this->resetSearchState();
     }
 
-    public function boot(CatalogSessionManager $sessionManager)
-    {
-        $this->sessionManager = $sessionManager;
-    }
-
+    /** ✅ المنطق القديم - جلب الأكواد مباشرة من السيشن */
     protected function getEffectiveAllowedCodes(): array
     {
         // القائمة الكاملة المفلترة على المواصفات من الجلسة
-        $allFromSession = $this->sessionManager->getAllowedLevel3Codes();
-
-        // وضع Catalog → كل الأكواد المسموح بها في الجلسة
-        if ($this->searchScope === 'catalog') {
-            return $allFromSession;
-        }
-
-        // وضع Section → نفلتر الـ override بما يتوافق مع القائمة الكاملة
-        if (!empty($this->allowedCodesOverride)) {
-            return array_values(array_intersect(
-                $allFromSession,
-                array_map('strval', $this->allowedCodesOverride)
-            ));
-        }
-
-        // في حال ما فيه override، نرجع القائمة الكاملة
-        return $allFromSession;
+        return array_values(array_filter(
+            array_map('strval', (array) session('preloaded_full_code', []))
+        ));
     }
 
     public function mount($catalog, $vin = null): void
     {
         try {
-            // 1) ضبط الكاتلوج أولًا
             $this->catalog = is_string($catalog)
                 ? Catalog::with('brand')->where('code', $catalog)->first()
                 : $catalog;
@@ -145,20 +98,11 @@ class VehicleSearchBox extends Component
 
             $this->vin = $this->sanitizeInput($vin);
 
-            // 2) بعد ضبط الكاتلوج: استعادة السيشن بمفاتيح مربوطة بالكاتلوج
-            $sessionType  = session($this->ssKey(self::SS_SEARCH_TYPE));
-            $sessionScope = session($this->ssKey(self::SS_SEARCH_SCOPE));
-
-            // نوع البحث: default → number
-            $this->searchType  = $sessionType === 'label' ? 'label' : 'number';
-
-            // نطاق البحث: default → catalog (كما طلبت للدخول الأول)
-            $this->searchScope = $sessionScope === 'section' ? 'section' : 'catalog';
+            // استعادة نوع البحث من السيشن
+            $sessionType = session($this->ssKey(self::SS_SEARCH_TYPE));
+            $this->searchType = $sessionType === 'label' ? 'label' : 'number';
 
             $this->setError('');
-
-            // عند التحميل: أرسل حدث لتلوين الأزرار حسب النطاق الحالي
-            $this->dispatch('search-scope-updated', scope: $this->searchScope);
         } catch (Exception $e) {
             Log::error('VehicleSearchBox mount error', ['error' => $e->getMessage()]);
             $this->setError( __(self::ERR_LOAD) );
@@ -167,7 +111,6 @@ class VehicleSearchBox extends Component
 
     public function updatedSearchType($value): void
     {
-        // حفظ في السيشن بعد الكاتلوج وبمفتاح مرتبط به
         $val = $value === 'label' ? 'label' : 'number';
         if ($this->catalog && $this->catalog->code) {
             session([$this->ssKey(self::SS_SEARCH_TYPE) => $val]);
@@ -186,18 +129,8 @@ class VehicleSearchBox extends Component
         $this->singleRedirectUrl = null;
     }
 
-    // public function updatedQuery(): void
-    // {
-    //     if ($this->searchType === 'label') {
-    //         $this->updatedQueryForLabel();
-    //     } else {
-    //         $this->updatedQueryForNumber();
-    //     }
-    // }
-
     public function updatedQuery(): void
     {
-        // حرر أي تحديد سابق إذا بدأ المستخدم يكتب قيمة مختلفة
         $current = $this->sanitizeInput($this->query);
         if ($this->selectedItem !== null && $this->selectedItem !== $current) {
             $this->selectedItem      = null;
@@ -205,17 +138,14 @@ class VehicleSearchBox extends Component
             $this->singleRedirectUrl = null;
             $this->calloutOptions    = [];
             $this->setError('');
-            // dd(['reset_on_typing' => $current]); // اختبار سريع عند الحاجة
         }
 
-        // تابع المسار المعتاد حسب نوع البحث
         if ($this->searchType === 'label') {
             $this->updatedQueryForLabel();
         } else {
             $this->updatedQueryForNumber();
         }
     }
-
 
     protected function updatedQueryForNumber(): void
     {
@@ -236,7 +166,6 @@ class VehicleSearchBox extends Component
     {
         try {
             $this->setError('');
-            // ⚠️ منطق التلميحات كما هو
             $this->results = $this->getLabelSuggestions($this->query);
         } catch (Exception $e) {
             $this->setError( __(self::ERR_LOAD) );
@@ -244,7 +173,7 @@ class VehicleSearchBox extends Component
         }
     }
 
-    // اقتراحات بالاسم، مفلترة بالallowedCodes:
+    /** ✅ المنطق القديم - البحث بكل الكلمات مع fallback */
     protected function getLabelSuggestions($query): array
     {
         if (mb_strlen(trim($query ?? ''), 'UTF-8') < 2) {
@@ -253,11 +182,6 @@ class VehicleSearchBox extends Component
         $allowedCodes = $this->getEffectiveAllowedCodes();
         if (empty($allowedCodes)) {
             return [];
-        }
-
-        // ⚡ تحسين: حد أقصى 100 كود لتسريع الاستعلام
-        if (count($allowedCodes) > 100) {
-            $allowedCodes = array_slice($allowedCodes, 0, 100);
         }
 
         $catalog = $this->catalog->code;
@@ -269,36 +193,59 @@ class VehicleSearchBox extends Component
         $targetColumn = $isArabic ? 'label_ar' : 'label_en';
 
         $normalized = $this->normalizeArabic($query);
-
-        // ⚡ تحسين: نستخدم أول كلمة فقط للاقتراحات (أسرع بكثير)
-        $firstWord = trim(explode(' ', $normalized)[0]);
-        if (mb_strlen($firstWord, 'UTF-8') < 2) {
+        $words = array_values(array_filter(preg_split('/\s+/', trim($normalized))));
+        if (empty($words)) {
             return [];
         }
 
-        // ⚡ تحسين: استخدام LIKE 'word%' بدلاً من LIKE '%word%' (أسرع 10x)
-        $like = "{$firstWord}%";
-
-        $suggestions = DB::table("$partsTable as p")
+        // البحث بكل الكلمات مع AND
+        $base = DB::table("$partsTable as p")
             ->join("$sectionPartsTable as sp", 'sp.part_id', '=', 'p.id')
             ->join('sections as s', 's.id', '=', 'sp.section_id')
-            ->whereIn('s.full_code', $allowedCodes)
-            ->where(function ($q) use ($like, $targetColumn) {
-                $q->where("p.$targetColumn", 'like', $like);
-            })
+            ->whereIn('s.full_code', $allowedCodes);
+
+        foreach ($words as $w) {
+            $like = "%{$w}%";
+            $base->where(function ($q) use ($like) {
+                $q->where('p.label_en', 'like', $like)
+                  ->orWhere('p.label_ar', 'like', $like);
+            });
+        }
+
+        $suggestions = $base
             ->distinct()
-            ->limit(50) // ⚡ تحسين: نقلل من 1000 إلى 50 اقتراح
+            ->limit($this->maxResults)
             ->pluck("p.$targetColumn")
             ->filter()
             ->unique()
             ->values()
             ->toArray();
 
-        return $suggestions;
+        if (!empty($suggestions)) {
+            return $suggestions;
+        }
+
+        // fallback من كلمة لكلمة
+        $fallback = collect();
+        foreach ($words as $w) {
+            if (mb_strlen($w, 'UTF-8') < 2) continue;
+            $like = "%{$w}%";
+            $labels = DB::table("$partsTable as p")
+                ->join("$sectionPartsTable as sp", 'sp.part_id', '=', 'p.id')
+                ->join('sections as s', 's.id', '=', 'sp.section_id')
+                ->whereIn('s.full_code', $allowedCodes)
+                ->where(function ($q) use ($like) {
+                    $q->where('p.label_en', 'like', $like)
+                      ->orWhere('p.label_ar', 'like', $like);
+                })
+                ->distinct()
+                ->limit($this->maxResults)
+                ->pluck("p.$targetColumn");
+            $fallback = $fallback->merge($labels);
+        }
+        return $fallback->filter()->unique()->values()->toArray();
     }
 
-
-    // الباحث الرئيسي
     public function searchFromInput(): void
     {
         $startTime = microtime(true);
@@ -309,7 +256,6 @@ class VehicleSearchBox extends Component
             if ($this->searchType === 'number') {
                 $this->query = $this->sanitizeInput($this->query);
 
-                // حدث اختياري
                 if (!empty($this->results)) {
                     $firstItem = $this->results[0] ?? null;
                     if ($firstItem && isset($firstItem['callout'])) {
@@ -322,11 +268,10 @@ class VehicleSearchBox extends Component
                 $this->setError( $this->searchType === 'number' ? __(self::ERR_SHORT_NUM) : __(self::ERR_SHORT_LBL) );
                 return;
             }
-            
-            if ($this->selectedItem !== null && $this->selectedItem !== $this->query) {
-                $this->selectedItem = null; // لا تسمح للقيمة القديمة أن تتغلب على المكتوبة الآن
-            }
 
+            if ($this->selectedItem !== null && $this->selectedItem !== $this->query) {
+                $this->selectedItem = null;
+            }
 
             $this->query = $this->selectedItem ?? $this->query;
             $this->selectedItem = $this->query;
@@ -337,10 +282,6 @@ class VehicleSearchBox extends Component
                 return;
             }
 
-            // ⚠️ مفاتيح رسالة "لا يوجد كول آوت" تختلف حسب التبويب
-            // يجب تعريف الثابتين التاليين في أعلى الكلاس:
-            // private const ERR_NO_CALLOUT_NUM   = 'errors.no_matching_callout_number';
-            // private const ERR_NO_CALLOUT_LABEL = 'errors.no_matching_callout_label';
             $noCalloutKey = $this->searchType === 'number'
                 ? self::ERR_NO_CALLOUT_NUM
                 : self::ERR_NO_CALLOUT_LABEL;
@@ -349,15 +290,8 @@ class VehicleSearchBox extends Component
             $rows = $this->searchType === 'number'
                 ? $this->fetchCalloutsByNumber($this->catalog->code, $this->query, $allowedCodes)
                 : $this->fetchCalloutsByLabel($this->catalog->code, $this->query, $allowedCodes);
-                // dd([
-                //     'scope'               => $this->searchScope,          // section or catalog
-                //     'allowedCodes_count'  => count($allowedCodes),
-                //     'allowedCodes_sample' => array_slice($allowedCodes, 0, 1000),
-                //     'rows_count'          => count($rows),
-                //     'rows_cats_unique'    => array_values(array_unique(array_column($rows, 'category_code'))),
-                // ]);
 
-            // نبني الخيارات الفريدة (callout + section + code)
+            // نبني الخيارات الفريدة
             $this->calloutOptions = collect($rows)
                 ->filter(fn($r) => !empty($r['part_callout']) && !empty($r['section_id']) && !empty($r['category_code']))
                 ->map(fn($r) => [
@@ -393,7 +327,6 @@ class VehicleSearchBox extends Component
                         'key2'          => $opt['key2'],
                         'key3'          => $opt['key3'],
                         'vin'           => session('vin'),
-                        // بارامترات الـ API لفتح المودال تلقائياً
                         'callout'       => $opt['callout'],
                         'auto_open'     => 1,
                         'section_id'    => $opt['section_id'],
@@ -406,13 +339,11 @@ class VehicleSearchBox extends Component
                 } elseif ($count > 1) {
                     $this->showCalloutPicker = true;
                 } else {
-                    // لا توجد نتائج مناسبة لهذا التبويب
                     $this->setError( __($noCalloutKey) );
                 }
             } elseif ($count > 1) {
                 $this->showCalloutPicker = true;
             } else {
-                // لا توجد نتائج مناسبة لهذا التبويب
                 $this->setError( __($noCalloutKey) );
             }
 
@@ -421,7 +352,6 @@ class VehicleSearchBox extends Component
                 'type'           => $this->searchType,
                 'execution_time' => round((microtime(true) - $startTime) * 1000, 2),
                 'callouts_count' => $count,
-                'scope'          => $this->searchScope,
             ]);
         } catch (Exception $e) {
             $this->setError( __(self::ERR_LOAD) );
@@ -431,24 +361,20 @@ class VehicleSearchBox extends Component
         }
     }
 
-    // إثراء calloutOptions بمفاتيح route
     protected function enrichCalloutOptionsWithKeys(array $options): array
     {
         if (empty($options)) {
             return [];
         }
 
-        // 1) جهّز قائمة الأكواد والـ IDs
         $codes = collect($options)->pluck('category_code')->filter()->unique()->values()->all();
 
-        // newcategories: نجيب id, parents_key, spec_key, Applicability
         $cats = NewCategory::query()
             ->where('catalog_id', $this->catalog->id)
             ->whereIn('full_code', $codes)
             ->get(['id','full_code','parents_key','spec_key','Applicability'])
             ->keyBy('full_code');
 
-        // 2) periods: من الجدول category_periods (قد يكون عدة صفوف لنفس الكاتيجري → ناخذ المدى العام)
         $catIds = $cats->pluck('id')->filter()->unique()->values()->all();
 
         $periods = empty($catIds) ? collect() :
@@ -463,7 +389,6 @@ class VehicleSearchBox extends Component
                 ->get()
                 ->keyBy('category_id');
 
-        // 3) رجّع المصفوفة بعد الإثراء
         return array_map(function (array $o) use ($cats, $periods) {
             $cat    = $cats[$o['category_code']] ?? null;
             $catId  = $cat->id ?? null;
@@ -482,7 +407,7 @@ class VehicleSearchBox extends Component
         }, $options);
     }
 
-    // جلب الكول آوت بالرقم، مفلتر بالallowedCodes
+    /** ✅ المنطق القديم - استعلامين منفصلين */
     protected function fetchCalloutsByNumber(string $catalogCode, string $query, array $allowedCodes): array
     {
         $this->ensureValidCatalogCode($catalogCode);
@@ -525,30 +450,33 @@ class VehicleSearchBox extends Component
         return $rows->map(fn($r) => (array) $r)->toArray();
     }
 
-    // جلب الكول آوت بالاسم، مفلتر بالallowedCodes
+    /** ✅ المنطق القديم - استعلامين منفصلين */
     protected function fetchCalloutsByLabel(string $catalogCode, string $query, array $allowedCodes): array
     {
         $this->ensureValidCatalogCode($catalogCode);
         $partsTable        = $this->dyn('parts', $catalogCode);
         $sectionPartsTable = $this->dyn('section_parts', $catalogCode);
-        $cleanQuery = trim((string) $query);
+        $cleanQuery = (string) $query;
         if (empty($cleanQuery) || empty($allowedCodes)) return [];
 
-        // ⚡ تحسين: حد أقصى 200 كود لتسريع البحث
-        if (count($allowedCodes) > 200) {
-            $allowedCodes = array_slice($allowedCodes, 0, 200);
-        }
+        $matchingCallouts = DB::table($partsTable)
+            ->where(function ($q) use ($cleanQuery) {
+                $q->where('label_en', 'like', "{$cleanQuery}%")
+                  ->orWhere('label_ar', 'like', "{$cleanQuery}%");
+            })
+            ->pluck('callout')
+            ->filter()
+            ->unique()
+            ->values()
+            ->toArray();
 
-        // ⚡ تحسين: استخدام استعلام واحد مباشر بدلاً من استعلامين
+        if (empty($matchingCallouts)) return [];
+
         $rows = DB::table("$partsTable as p")
             ->join("$sectionPartsTable as sp", 'sp.part_id', '=', 'p.id')
             ->join('sections as s', 's.id', '=', 'sp.section_id')
             ->whereIn('s.full_code', $allowedCodes)
-            ->where(function ($q) use ($cleanQuery) {
-                // ⚡ استخدام LIKE 'query%' بدلاً من LIKE '%query%'
-                $q->where('p.label_en', 'like', "{$cleanQuery}%")
-                  ->orWhere('p.label_ar', 'like', "{$cleanQuery}%");
-            })
+            ->whereIn('p.callout', $matchingCallouts)
             ->select(
                 'p.id as part_id',
                 'p.part_number',
@@ -559,8 +487,7 @@ class VehicleSearchBox extends Component
                 's.id as section_id',
                 's.full_code as category_code'
             )
-            ->distinct()
-            ->limit(500) // ⚡ تحسين: حد معقول
+            ->limit($this->maxResults * 5)
             ->get();
 
         return $rows->map(fn($r) => (array) $r)->toArray();

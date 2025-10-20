@@ -92,15 +92,15 @@
             padding-left: 1.25rem !important;
         }
 
-        /* ==== Vertical callout picker ==== */
+        /* ==== Vertical callout picker - Compact & Elegant ==== */
         .vehicle-search-wrapper .callout-rail {
             display: flex;
             flex-direction: column;
             align-items: stretch;
-            gap: 1rem;
+            gap: 0.75rem;
             overflow-y: auto;
-            max-height: clamp(320px, 60vh, 800px);
-            padding: 0.5rem;
+            max-height: clamp(280px, 55vh, 600px);
+            padding: 0.35rem;
             scroll-snap-type: y proximity;
             overscroll-behavior: contain;
             scrollbar-width: thin;
@@ -109,49 +109,37 @@
         .vehicle-search-wrapper .callout-card {
             flex: 0 0 auto;
             width: 100%;
-            border: 1.5px solid #e9ecef;
-            border-radius: 0.875rem;
+            border: 1px solid #e9ecef;
+            border-radius: 0.65rem;
             background: #fff;
-            box-shadow: 0 2px 6px rgba(0,0,0,.08);
+            box-shadow: 0 1px 4px rgba(0,0,0,.06);
             scroll-snap-align: start;
             transition: all .2s ease;
         }
         .vehicle-search-wrapper .callout-card:hover {
             border-color: #0d6efd;
-            box-shadow: 0 4px 12px rgba(13,110,253,0.15);
-            transform: translateY(-2px);
+            box-shadow: 0 3px 10px rgba(13,110,253,0.12);
+            transform: translateY(-1px);
         }
         .vehicle-search-wrapper .callout-card .card-body {
-            padding: 1rem 1.25rem;
+            padding: 0.85rem 1rem;
         }
         .vehicle-search-wrapper .callout-card .meta {
             display: flex;
             align-items: center;
-            gap: 0.625rem;
+            gap: 0.5rem;
             flex-wrap: wrap;
         }
         .vehicle-search-wrapper .badge-soft {
             background: #f1f3f5;
             border: 1px solid #dee2e6;
             color: #495057;
-            padding: 0.35rem 0.75rem;
+            padding: 0.25rem 0.6rem;
             font-weight: 500;
+            font-size: 0.75rem;
         }
         .vehicle-search-wrapper .rail-nav {
-            display: flex;
-            justify-content: space-between;
-            gap: 0.75rem;
-            margin-top: 0.75rem;
-        }
-        .vehicle-search-wrapper .rail-nav .btn {
-            min-width: 48px;
-            border-radius: 0.5rem;
-            transition: all .2s ease;
-        }
-        .vehicle-search-wrapper .rail-nav .btn:hover {
-            background: #0d6efd;
-            color: #fff;
-            transform: translateY(-2px);
+            display: none; /* ❌ مخفي - النافذة أصبحت scrollable */
         }
         .text-truncate-3{
         display:-webkit-box;
@@ -207,11 +195,26 @@
             }
 
             .vehicle-search-wrapper .callout-card .card-body {
-                padding: 0.75rem 0.85rem;
+                padding: 0.65rem 0.75rem;
+            }
+
+            .vehicle-search-wrapper .callout-card h6 {
+                font-size: 0.85rem !important;
+                line-height: 1.2 !important;
+            }
+
+            .vehicle-search-wrapper .badge-soft {
+                font-size: 0.7rem;
+                padding: 0.2rem 0.5rem;
             }
 
             .compact-search-controls .btn-group {
                 flex-wrap: wrap;
+            }
+
+            .vehicle-search-wrapper .callout-rail {
+                max-height: clamp(250px, 50vh, 500px);
+                gap: 0.6rem;
             }
         }
     </style>
@@ -379,43 +382,9 @@
         </div>
     @endif
 
-    {{-- تلميح اختياري عند انعدام النتائج في Section فقط --}}
-    @if($errorMessage && $searchScope === 'section' && str_contains(__($errorMessage), __(\App\Livewire\VehicleSearchBox::ERR_NO_CALLOUT)))
-        <div class="alert alert-warning border-0 shadow-sm py-3 mb-3" role="status" aria-live="polite">
-            <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
-                <div class="d-flex align-items-center">
-                    <i class="fas fa-lightbulb me-2 fs-5"></i>
-                    <span>{{ __('ui.scope_hint_try_catalog') }}</span>
-                </div>
-                <button type="button" class="btn btn-sm btn-primary" wire:click="setSearchScope('catalog')">
-                    <i class="fas fa-search me-1"></i>
-                    {{ __('ui.catalog_all') }}
-                </button>
-            </div>
-        </div>
-    @endif
-
     {{-- Compact Search Controls --}}
     <div class="compact-search-controls mb-3">
         <div class="d-flex align-items-center justify-content-between gap-2 flex-wrap">
-            {{-- Search Scope - Compact --}}
-            <div class="btn-group btn-group-sm" role="group" aria-label="{{ __('ui.search_scope') }}">
-                <button type="button"
-                        class="btn btn-sm {{ $searchScope === 'catalog' ? 'btn-primary' : 'btn-outline-secondary' }}"
-                        wire:click="setSearchScope('catalog')"
-                        title="{{ __('ui.catalog_all') }}">
-                    <i class="fas fa-globe"></i>
-                    <span class="d-none d-md-inline ms-1">{{ __('ui.catalog_all') }}</span>
-                </button>
-                <button type="button"
-                        class="btn btn-sm {{ $searchScope === 'section' ? 'btn-primary' : 'btn-outline-secondary' }}"
-                        wire:click="setSearchScope('section')"
-                        title="{{ __('ui.this_section') }}">
-                    <i class="fas fa-layer-group"></i>
-                    <span class="d-none d-md-inline ms-1">{{ __('ui.this_section') }}</span>
-                </button>
-            </div>
-
             {{-- Search Type - Compact --}}
             <div class="btn-group btn-group-sm" role="group" aria-label="{{ __('ui.search_type') }}">
                 @foreach ([
@@ -528,21 +497,22 @@
         </div>
     @endif
 
-    {{-- Callout Picker Modal --}}
+    {{-- Callout Picker Modal - Compact & Elegant --}}
     @if($showCalloutPicker && !empty($calloutOptions))
-        <div class="modal fade show d-block" tabindex="-1" style="background: rgba(0,0,0,0.5); z-index:1050; backdrop-filter: blur(4px);">
-            <div class="modal-dialog modal-xl modal-dialog-centered modal-fullscreen-sm-down">
-                <div class="modal-content border-0 shadow-lg">
-                    <div class="modal-header bg-primary bg-gradient text-white border-0 py-3">
-                        <h5 class="modal-title fw-semibold d-flex align-items-center gap-2 mb-0">
+        <div class="modal fade show d-block" tabindex="-1" style="background: rgba(0,0,0,0.6); z-index:1050; backdrop-filter: blur(3px);">
+            <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable modal-fullscreen-sm-down">
+                <div class="modal-content border-0 shadow-lg" style="border-radius: 1rem; overflow: hidden;">
+                    <div class="modal-header bg-primary text-white border-0 py-2 px-3" style="min-height: 50px;">
+                        <h6 class="modal-title fw-semibold d-flex align-items-center gap-2 mb-0">
                             <i class="fas fa-list-ul"></i>
-                            {{ __('ui.select_matching_callout') }}
-                            <span class="badge bg-white text-primary ms-2">{{ count($calloutOptions) }}</span>
-                        </h5>
-                        <button type="button" class="btn-close btn-close-white" wire:click="$set('showCalloutPicker', false)" aria-label="{{ __('ui.close') }}"></button>
+                            <span class="d-none d-md-inline">{{ __('ui.select_matching_callout') }}</span>
+                            <span class="d-md-none">{{ __('ui.results') }}</span>
+                            <span class="badge bg-white text-primary" style="font-size: 0.75rem;">{{ count($calloutOptions) }}</span>
+                        </h6>
+                        <button type="button" class="btn-close btn-close-white" wire:click="$set('showCalloutPicker', false)" aria-label="{{ __('ui.close') }}" style="font-size: 0.875rem;"></button>
                     </div>
 
-                    <div class="modal-body p-3 p-md-4 bg-light">
+                    <div class="modal-body p-2 p-md-3 bg-light">
                                 <div id="calloutRail"
                                     class="callout-rail"
                                     role="listbox"
@@ -556,38 +526,16 @@
                                         @endphp
                                         <article class="card callout-card" role="option" aria-selected="false">
                                             <div class="card-body">
-                                                <div class="d-flex justify-content-between align-items-start mb-2">
-                                                    <div class="d-flex align-items-center gap-2">
-                                                        <span class="badge bg-primary bg-gradient px-3 py-2 fs-6">
+                                                <div class="d-flex justify-content-between align-items-start mb-2 flex-wrap gap-2">
+                                                    <div class="d-flex align-items-center gap-2 flex-wrap">
+                                                        <span class="badge bg-primary px-2 py-1" style="font-size: 0.9rem;">
                                                             <i class="fas fa-tag me-1"></i>
                                                             {{ $opt['callout'] }}
                                                         </span>
-                                                        <span class="badge bg-secondary bg-gradient px-2 py-1">
+                                                        <span class="badge bg-secondary" style="font-size: 0.75rem;">
                                                             {{ __('ui.qty') }}: {{ $opt['qty'] ?? '—' }}
                                                         </span>
                                                     </div>
-                                                </div>
-
-                                                <h6 class="fw-semibold mb-2 text-truncate-2 text-dark">
-                                                    {{ localizedPartLabel($opt['label_en'] ?? null, $opt['label_ar'] ?? null) }}
-                                                </h6>
-
-                                                <div class="meta small mb-2">
-                                                    <span class="badge badge-soft">
-                                                        <i class="fas fa-calendar-alt me-1"></i>
-                                                        {{ formatYearRange($fromYear, $toYear) }}
-                                                    </span>
-                                                    <span class="badge badge-soft">
-                                                        <i class="fas fa-code me-1"></i>
-                                                        {{ $opt['key2'] ?? '—' }}
-                                                    </span>
-                                                </div>
-
-                                                <div class="text-muted small text-truncate-3 mb-3 fst-italic">
-                                                    {{ $opt['applicability'] ?? '—' }}
-                                                </div>
-
-                                                <div class="d-grid">
                                                     @if($canOpen)
                                                         <a href="{{ route('illustrations', [
                                                             'id'            => $catalog->brand->name,
@@ -602,44 +550,50 @@
                                                             'category_code' => $opt['category_code'],
                                                             'catalog_code'  => $catalog->code,
                                                             'category_id'   => $opt['category_id'] ?? null,
-                                                        ]) }}" class="btn btn-primary btn-sm shadow-sm">
-                                                            <i class="fas fa-arrow-right me-2"></i>
-                                                            {{ __('ui.open') }}
+                                                        ]) }}" class="btn btn-primary btn-sm">
+                                                            <i class="fas fa-arrow-right me-1"></i>
+                                                            <span class="d-none d-md-inline">{{ __('ui.open') }}</span>
                                                         </a>
-                                                    @else
-                                                        <button class="btn btn-outline-secondary btn-sm" disabled>
-                                                            <i class="fas fa-lock me-2"></i>
-                                                            {{ __('ui.open') }}
-                                                        </button>
                                                     @endif
                                                 </div>
+
+                                                <h6 class="fw-semibold mb-2 text-truncate-2 text-dark" style="font-size: 0.95rem; line-height: 1.3;">
+                                                    {{ localizedPartLabel($opt['label_en'] ?? null, $opt['label_ar'] ?? null) }}
+                                                </h6>
+
+                                                <div class="meta mb-2">
+                                                    <span class="badge badge-soft">
+                                                        <i class="fas fa-calendar-alt me-1"></i>
+                                                        {{ formatYearRange($fromYear, $toYear) }}
+                                                    </span>
+                                                    <span class="badge badge-soft">
+                                                        <i class="fas fa-code me-1"></i>
+                                                        {{ Str::limit($opt['key2'] ?? '—', 15) }}
+                                                    </span>
+                                                </div>
+
+                                                @if(!empty($opt['applicability']))
+                                                    <div class="text-muted text-truncate-2" style="font-size: 0.8rem; line-height: 1.2;">
+                                                        {{ $opt['applicability'] }}
+                                                    </div>
+                                                @endif
                                             </div>
                                         </article>
                                     @endforeach
                                 </div>
 
-                                <div class="rail-nav mt-3">
-                                    <button class="btn btn-outline-primary btn-sm shadow-sm" type="button" onclick="scrollRail(-1)" aria-label="{{ __('ui.prev') }}">
-                                        <i class="fas fa-chevron-up me-1"></i>
-                                        <span class="d-none d-md-inline">{{ __('ui.prev') }}</span>
-                                    </button>
-                                    <button class="btn btn-outline-primary btn-sm shadow-sm" type="button" onclick="scrollRail(1)" aria-label="{{ __('ui.next') }}">
-                                        <span class="d-none d-md-inline">{{ __('ui.next') }}</span>
-                                        <i class="fas fa-chevron-down ms-1"></i>
-                                    </button>
-                                </div>
-
-                                <div class="alert alert-info border-0 shadow-sm mt-3 mb-0" role="status" aria-live="polite">
+                                {{-- Info hint - compact --}}
+                                <div class="alert alert-info border-0 mt-2 mb-0 py-2 px-3" role="status" aria-live="polite" style="font-size: 0.85rem;">
                                     <div class="d-flex align-items-center gap-2">
-                                        <i class="fas fa-info-circle fs-5"></i>
+                                        <i class="fas fa-info-circle"></i>
                                         <div>{{ __('ui.go_to_part_page_hint') }}</div>
                                     </div>
                                 </div>
                             </div>
 
-                            <div class="modal-footer bg-white border-0 py-3">
-                                <button class="btn btn-outline-secondary px-4" wire:click="$set('showCalloutPicker', false)">
-                                    <i class="fas fa-times me-2"></i>
+                            <div class="modal-footer bg-white border-0 py-2">
+                                <button class="btn btn-outline-secondary btn-sm px-3" wire:click="$set('showCalloutPicker', false)">
+                                    <i class="fas fa-times me-1"></i>
                                     {{ __('ui.close') }}
                                 </button>
                             </div>
@@ -651,37 +605,32 @@
     {{-- ✅ JavaScript داخل الـ div الجذري لتجنب تحذير Multiple root elements --}}
     <script>
     function selectSuggestion(suggestion) {
-    const input = document.getElementById('searchInput');
-    input.value = suggestion;
-    const dd = document.getElementById('suggestionsDropdown');
-    if (dd) dd.style.display = 'none';
-    @this.set('query', suggestion);
-    @this.call('searchFromInput');
-}
-
-const inputEl = document.getElementById('searchInput');
-if (inputEl) {
-  inputEl.addEventListener('focus', function() {
-    const dd = document.getElementById('suggestionsDropdown');
-    if (dd) dd.style.display = 'block';
-  });
-}
-
-// Hide suggestions when clicking outside
-document.addEventListener('click', function(event) {
-    const input = document.getElementById('searchInput');
-    const dd = document.getElementById('suggestionsDropdown');
-    if (!dd) return;
-    if (!input.contains(event.target) && !dd.contains(event.target)) {
-        dd.style.display = 'none';
+        const input = document.getElementById('searchInput');
+        input.value = suggestion;
+        const dd = document.getElementById('suggestionsDropdown');
+        if (dd) dd.style.display = 'none';
+        @this.set('query', suggestion);
+        @this.call('searchFromInput');
     }
-});
 
-// Show suggestions on input focus (if available)
-document.getElementById('searchInput').addEventListener('focus', function() {
-    const dd = document.getElementById('suggestionsDropdown');
-    if (dd) dd.style.display = 'block';
-});
+    // ✅ تجنب التكرار - event listener واحد فقط
+    const inputEl = document.getElementById('searchInput');
+    if (inputEl) {
+        inputEl.addEventListener('focus', function() {
+            const dd = document.getElementById('suggestionsDropdown');
+            if (dd) dd.style.display = 'block';
+        });
+    }
+
+    // Hide suggestions when clicking outside
+    document.addEventListener('click', function(event) {
+        const input = document.getElementById('searchInput');
+        const dd = document.getElementById('suggestionsDropdown');
+        if (!dd || !input) return;
+        if (!input.contains(event.target) && !dd.contains(event.target)) {
+            dd.style.display = 'none';
+        }
+    });
 
 // Livewire redirect (single callout)
 document.addEventListener('livewire:load', () => {

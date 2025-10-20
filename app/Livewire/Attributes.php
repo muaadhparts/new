@@ -10,6 +10,7 @@ use App\Models\SpecificationItem;
 use App\Models\VinDecodedCache;
 use App\Models\VinSpecMapped;
 use App\Services\CatalogSessionManager;
+use App\Services\CategoryFilterService;
 
 class Attributes extends Component
 {
@@ -26,10 +27,12 @@ class Attributes extends Component
     public $availableMonths = [];
 
     protected CatalogSessionManager $sessionManager;
+    protected CategoryFilterService $filterService;
 
-    public function boot(CatalogSessionManager $sessionManager)
+    public function boot(CatalogSessionManager $sessionManager, CategoryFilterService $filterService)
     {
         $this->sessionManager = $sessionManager;
+        $this->filterService = $filterService;
     }
 
     public function mount($catalog = null, $vin = null)
@@ -205,6 +208,24 @@ class Attributes extends Component
             $this->sessionManager->setLabeledFilters([]);
         }
 
+        // ✅ تحديث preloaded_full_code بناءً على الفلاتر الجديدة
+        if ($this->catalog) {
+            $brand = Brand::find($this->catalog->brand_id);
+            if ($brand) {
+                $specItemIds = $this->sessionManager->getSpecItemIds($this->catalog);
+                $filterDate = $this->sessionManager->getFilterDate();
+
+                $allowedLevel3Codes = $this->filterService->getFilteredLevel3FullCodes(
+                    $this->catalog,
+                    $brand,
+                    $filterDate,
+                    $specItemIds
+                );
+
+                $this->sessionManager->setAllowedLevel3Codes($allowedLevel3Codes);
+            }
+        }
+
         // إرسال الحدث للـ JavaScript لإعادة تحميل الصفحة
         $this->dispatch('filtersSelected');
     }
@@ -260,6 +281,21 @@ class Attributes extends Component
         // تهيئة $data بقيم فارغة لكل filter موجود
         foreach ($this->filters as $key => $filter) {
             $this->data[$key] = ['value_id' => '', 'source' => 'manual'];
+        }
+
+        // ✅ تحديث preloaded_full_code - كل الأكواد بدون فلترة
+        if ($this->catalog) {
+            $brand = Brand::find($this->catalog->brand_id);
+            if ($brand) {
+                $allowedLevel3Codes = $this->filterService->getFilteredLevel3FullCodes(
+                    $this->catalog,
+                    $brand,
+                    null, // no date filter
+                    []    // no spec filters
+                );
+
+                $this->sessionManager->setAllowedLevel3Codes($allowedLevel3Codes);
+            }
         }
 
         // إرسال حدث لإعادة تحميل الصفحة بعد المسح
