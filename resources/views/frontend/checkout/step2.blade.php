@@ -478,24 +478,26 @@
                                         <span class="right-side tax-amount">{{ App\Models\Product::convertPrice(0) }}</span>
                                     </div>
 
-                                    @if (Session::has('coupon'))
-                                        <div class="price-details">
-                                            <span>@lang('Discount')
-                                                <span class="dpercent">
-                                                    {{ Session::get('coupon_percentage') == 0 ? '' : '(' . Session::get('coupon_percentage') . ')' }}
+                                    @if (!isset($is_vendor_checkout) || !$is_vendor_checkout)
+                                        @if (Session::has('coupon'))
+                                            <div class="price-details">
+                                                <span>@lang('Discount')
+                                                    <span class="dpercent">
+                                                        {{ Session::get('coupon_percentage') == 0 ? '' : '(' . Session::get('coupon_percentage') . ')' }}
+                                                    </span>
                                                 </span>
-                                            </span>
-                                            @if ($gs->currency_format == 0)
+                                                @if ($gs->currency_format == 0)
+                                                    <span id="discount" class="right-side">{{ $curr->sign }}{{ Session::get('coupon') }}</span>
+                                                @else
+                                                    <span id="discount" class="right-side">{{ Session::get('coupon') }}{{ $curr->sign }}</span>
+                                                @endif
+                                            </div>
+                                        @else
+                                            <div class="price-details d-none">
+                                                <span>@lang('Discount') <span class="dpercent"></span></span>
                                                 <span id="discount" class="right-side">{{ $curr->sign }}{{ Session::get('coupon') }}</span>
-                                            @else
-                                                <span id="discount" class="right-side">{{ Session::get('coupon') }}{{ $curr->sign }}</span>
-                                            @endif
-                                        </div>
-                                    @else
-                                        <div class="price-details d-none">
-                                            <span>@lang('Discount') <span class="dpercent"></span></span>
-                                            <span id="discount" class="right-side">{{ $curr->sign }}{{ Session::get('coupon') }}</span>
-                                        </div>
+                                            </div>
+                                        @endif
                                     @endif
 
                                     @if ($digital == 0)
@@ -513,17 +515,7 @@
                                 <hr>
                                 <div class="final-price">
                                     <span>@lang('Final Price')</span>
-                                    @if (Session::has('coupon_total'))
-                                        @if ($gs->currency_format == 0)
-                                            <span class="total-amount" id="final-cost">{{ $curr->sign }}{{ $totalPrice }}</span>
-                                        @else
-                                            <span class="total-amount" id="final-cost">{{ $totalPrice }}{{ $curr->sign }}</span>
-                                        @endif
-                                    @elseif(Session::has('coupon_total1'))
-                                        <span class="total-amount" id="final-cost">{{ Session::get('coupon_total1') }}</span>
-                                    @else
-                                        <span class="total-amount" id="final-cost">{{ App\Models\Product::convertPrice($totalPrice) }}</span>
-                                    @endif
+                                    <span class="total-amount" id="final-cost">{{ App\Models\Product::convertPrice($totalPrice) }}</span>
                                 </div>
                             </div>
 
