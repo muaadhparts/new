@@ -469,7 +469,7 @@
                                     <div class="price-details">
                                         <span>@lang('Total MRP')</span>
                                         <span class="right-side cart-total">
-                                            {{ Session::has('cart') ? App\Models\Product::convertPrice(Session::get('cart')->totalPrice) : '0.00' }}
+                                            {{ App\Models\Product::convertPrice($totalPrice) }}
                                         </span>
                                     </div>
 

@@ -214,7 +214,7 @@
 
                                     <div class="cart-summary-item d-flex justify-content-between" style="padding: 1rem 0; border-bottom: 1px solid #e0f2fe;">
                                         <p class="cart-summary-subtitle" style="color: #64748b; font-weight: 600; margin: 0;">
-                                            @lang('Subtotal') ({{ $vendorData['count'] }} @lang('Items'))
+                                            @lang('Total MRP') ({{ $vendorData['count'] }} @lang('Items'))
                                         </p>
                                         <p class="cart-summary-price" style="color: #0d9488; font-weight: 700; font-size: 1.1rem; margin: 0;">
                                             {{ App\Models\Product::convertPrice($vendorSubtotal) }}
