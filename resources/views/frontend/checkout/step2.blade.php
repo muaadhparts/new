@@ -843,15 +843,18 @@
     recalcTotals();
 
     // ثم استدعاء tax_submit للحصول على نسبة الضريبة من السيرفر
-    if (is_state == 1) {
-      $('.select_state').removeClass('d-none');
-      $.get(state_url, function(response) {
-        $('#show_state').html(response.data);
-        tax_submit(country_id, response.state);
-      });
-    } else {
-      tax_submit(country_id, state_id);
-      hide_state();
+    // IMPORTANT: Only call if we have a country selected from step1
+    if (country_id && country_id != '') {
+      if (is_state == 1) {
+        $('.select_state').removeClass('d-none');
+        $.get(state_url, function(response) {
+          $('#show_state').html(response.data);
+          tax_submit(country_id, response.state);
+        });
+      } else {
+        tax_submit(country_id, state_id);
+        hide_state();
+      }
     }
   });
 

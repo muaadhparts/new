@@ -41,7 +41,9 @@ namespace App\Http\Controllers\Front;
 
 use App\Helpers\PriceHelper;
 use App\Http\Controllers\MyFatoorahController;
-use App\Models\Cart;use App\Models\City;
+use App\Models\Cart;
+use App\Models\City;
+use App\Models\Country;
 use App\Models\Order;
 use App\Models\PaymentGateway;
 use App\Models\State;
@@ -1162,6 +1164,10 @@ class CheckoutController extends FrontBaseController
         $pickups = DB::table('pickups')->get();
         $curr = $this->curr;
 
+        // Get country and state for tax calculation
+        $country = Country::where('country_name', $step1->customer_country)->first();
+        $isState = isset($step1->customer_state) ? 1 : 0;
+
         // Group products by vendor (will contain single vendor only)
         // This avoids code duplication in view
         $productsByVendor = $this->groupProductsByVendor($vendorProducts);
@@ -1180,6 +1186,8 @@ class CheckoutController extends FrontBaseController
             'vendor_shipping_id' => $vendorId,
             'vendor_packing_id' => $vendorId,
             'step1' => $step1,
+            'country' => $country, // For tax calculation
+            'isState' => $isState, // For tax calculation
             'is_vendor_checkout' => true,
             'vendor_id' => $vendorId
         ]);
