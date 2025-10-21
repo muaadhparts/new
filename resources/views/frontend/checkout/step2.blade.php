@@ -162,17 +162,25 @@
                         </div>
 
                         @php
-                            // تقسيم المنتجات لكل بائع
-                            foreach ($products as $key => $item) {
-                                $userId = $item['user_id'];
-                                if (!isset($resultArray[$userId])) {
-                                    $resultArray[$userId] = [];
+                            // For vendor-specific checkout, products are already grouped
+                            // For normal checkout, group them if not already grouped
+                            if (!isset($productsByVendor)) {
+                                // Fallback: Group products by vendor if not passed from controller
+                                $productsByVendor = [];
+                                foreach ($products as $key => $item) {
+                                    $userId = $item['user_id'] ?? 0;
+                                    if (!isset($productsByVendor[$userId])) {
+                                        $productsByVendor[$userId] = ['products' => []];
+                                    }
+                                    $productsByVendor[$userId]['products'][$key] = $item;
                                 }
-                                $resultArray[$userId][$key] = $item;
                             }
                         @endphp
 
-                        @foreach ($resultArray as $vendor_id => $array_product)
+                        @foreach ($productsByVendor as $vendor_id => $vendorData)
+                            @php
+                                $array_product = $vendorData['products'];
+                            @endphp
                             @php
                                 // تهيئة بيانات البائع + شحن/تغليف
                                 if ($vendor_id != 0) {
@@ -280,9 +288,9 @@
                                         <tbody>
                                             @foreach ($array_product as $product)
                                                 @php
-                                                    // Fetch merchant_product_id for the cart item
+                                                    // Fetch merchant data using helper method (avoids code duplication)
                                                     $itemProduct = \App\Models\Product::where('slug', $product['item']['slug'])->first();
-                                                    $itemMerchant = $itemProduct ? $itemProduct->merchantProducts()->with('user')->where('user_id', $product['item']['user_id'])->where('status', 1)->first() : null;
+                                                    $itemMerchant = $itemProduct ? $itemProduct->getMerchantProduct($product['item']['user_id']) : null;
                                                     $itemMerchantId = $itemMerchant->id ?? null;
                                                     $shopName = $itemMerchant && $itemMerchant->user ? ($itemMerchant->user->shop_name ?? $itemMerchant->user->name) : '-';
                                                 @endphp

@@ -979,6 +979,55 @@ class CheckoutController extends FrontBaseController
     /* ===================== Vendor-Specific Checkout ===================== */
 
     /**
+     * Helper: Get vendor products and calculate totals
+     *
+     * Filters cart to show ONLY vendor's products and calculates:
+     * - Total price
+     * - Total quantity
+     * - Digital/Physical flag
+     *
+     * @param int $vendorId
+     * @return array [vendorProducts, totalPrice, totalQty, digital]
+     */
+    private function getVendorCartData($vendorId): array
+    {
+        $oldCart = Session::get('cart');
+        $cart = new Cart($oldCart);
+
+        $vendorProducts = [];
+        foreach ($cart->items as $rowKey => $product) {
+            $productVendorId = data_get($product, 'item.user_id') ?? data_get($product, 'item.vendor_user_id') ?? 0;
+            if ($productVendorId == $vendorId) {
+                $vendorProducts[$rowKey] = $product;
+            }
+        }
+
+        // Calculate totals
+        $totalPrice = 0;
+        $totalQty = 0;
+        foreach ($vendorProducts as $product) {
+            $totalPrice += (float)($product['price'] ?? 0);
+            $totalQty += (int)($product['qty'] ?? 1);
+        }
+
+        // Check if all products are digital
+        $dp = 1;
+        foreach ($vendorProducts as $prod) {
+            if ($prod['item']['type'] == 'Physical') {
+                $dp = 0;
+                break;
+            }
+        }
+
+        return [
+            'vendorProducts' => $vendorProducts,
+            'totalPrice' => $totalPrice,
+            'totalQty' => $totalQty,
+            'digital' => $dp
+        ];
+    }
+
+    /**
      * Step 1 - Display checkout page for a SPECIFIC vendor only
      *
      * MULTI-VENDOR LOGIC:
@@ -1000,36 +1049,15 @@ class CheckoutController extends FrontBaseController
         // Save vendor_id in session for tracking throughout checkout
         Session::put('checkout_vendor_id', $vendorId);
 
-        // تصفية منتجات السلة لعرض منتجات هذا التاجر فقط
-        $oldCart = Session::get('cart');
-        $cart = new Cart($oldCart);
-
-        $vendorProducts = [];
-        foreach ($cart->items as $rowKey => $product) {
-            $productVendorId = data_get($product, 'item.user_id') ?? data_get($product, 'item.vendor_user_id') ?? 0;
-            if ($productVendorId == $vendorId) {
-                $vendorProducts[$rowKey] = $product;
-            }
-        }
+        // Get vendor cart data using helper method (avoids code duplication)
+        $cartData = $this->getVendorCartData($vendorId);
+        $vendorProducts = $cartData['vendorProducts'];
+        $totalPrice = $cartData['totalPrice'];
+        $totalQty = $cartData['totalQty'];
+        $dp = $cartData['digital'];
 
         if (empty($vendorProducts)) {
             return redirect()->route('front.cart')->with('unsuccess', __("No products found for this vendor."));
-        }
-
-        // حساب المجموع لمنتجات هذا التاجر
-        $totalPrice = 0;
-        $totalQty = 0;
-        foreach ($vendorProducts as $product) {
-            $totalPrice += (float)($product['price'] ?? 0);
-            $totalQty += (int)($product['qty'] ?? 1);
-        }
-
-        $dp = 1;
-        foreach ($vendorProducts as $prod) {
-            if ($prod['item']['type'] == 'Physical') {
-                $dp = 0;
-                break;
-            }
         }
 
         // جلب طرق الشحن الخاصة بهذا التاجر فقط
@@ -1112,33 +1140,12 @@ class CheckoutController extends FrontBaseController
 
         $step1 = (object) Session::get('vendor_step1_' . $vendorId);
 
-        // تصفية منتجات السلة لعرض منتجات هذا التاجر فقط
-        $oldCart = Session::get('cart');
-        $cart = new Cart($oldCart);
-
-        $vendorProducts = [];
-        foreach ($cart->items as $rowKey => $product) {
-            $productVendorId = data_get($product, 'item.user_id') ?? data_get($product, 'item.vendor_user_id') ?? 0;
-            if ($productVendorId == $vendorId) {
-                $vendorProducts[$rowKey] = $product;
-            }
-        }
-
-        // حساب المجموع
-        $totalPrice = 0;
-        $totalQty = 0;
-        foreach ($vendorProducts as $product) {
-            $totalPrice += (float)($product['price'] ?? 0);
-            $totalQty += (int)($product['qty'] ?? 1);
-        }
-
-        $dp = 1;
-        foreach ($vendorProducts as $prod) {
-            if ($prod['item']['type'] == 'Physical') {
-                $dp = 0;
-                break;
-            }
-        }
+        // Get vendor cart data using helper method (avoids code duplication)
+        $cartData = $this->getVendorCartData($vendorId);
+        $vendorProducts = $cartData['vendorProducts'];
+        $totalPrice = $cartData['totalPrice'];
+        $totalQty = $cartData['totalQty'];
+        $dp = $cartData['digital'];
 
         // جلب طرق الشحن الخاصة بهذا التاجر فقط
         $shipping_data = DB::table('shippings')->where('user_id', $vendorId)->get();
@@ -1155,8 +1162,13 @@ class CheckoutController extends FrontBaseController
         $pickups = DB::table('pickups')->get();
         $curr = $this->curr;
 
+        // Group products by vendor (will contain single vendor only)
+        // This avoids code duplication in view
+        $productsByVendor = $this->groupProductsByVendor($vendorProducts);
+
         return view('frontend.checkout.step2', [
-            'products' => $vendorProducts,
+            'productsByVendor' => $productsByVendor, // Grouped products (single vendor)
+            'products' => $vendorProducts, // Keep for backward compatibility
             'totalPrice' => $totalPrice,
             'pickups' => $pickups,
             'totalQty' => $totalQty,
@@ -1283,33 +1295,12 @@ class CheckoutController extends FrontBaseController
         $step1 = (object) Session::get('vendor_step1_' . $vendorId);
         $step2 = (object) Session::get('vendor_step2_' . $vendorId);
 
-        // Filter cart to show ONLY this vendor's products
-        $oldCart = Session::get('cart');
-        $cart = new Cart($oldCart);
-
-        $vendorProducts = [];
-        foreach ($cart->items as $rowKey => $product) {
-            $productVendorId = data_get($product, 'item.user_id') ?? data_get($product, 'item.vendor_user_id') ?? 0;
-            if ($productVendorId == $vendorId) {
-                $vendorProducts[$rowKey] = $product;
-            }
-        }
-
-        // Calculate totals for this vendor ONLY
-        $totalPrice = 0;
-        $totalQty = 0;
-        foreach ($vendorProducts as $product) {
-            $totalPrice += (float)($product['price'] ?? 0);
-            $totalQty += (int)($product['qty'] ?? 1);
-        }
-
-        $dp = 1;
-        foreach ($vendorProducts as $prod) {
-            if ($prod['item']['type'] == 'Physical') {
-                $dp = 0;
-                break;
-            }
-        }
+        // Get vendor cart data using helper method (avoids code duplication)
+        $cartData = $this->getVendorCartData($vendorId);
+        $vendorProducts = $cartData['vendorProducts'];
+        $totalPrice = $cartData['totalPrice'];
+        $totalQty = $cartData['totalQty'];
+        $dp = $cartData['digital'];
 
         // Get payment gateways for THIS vendor ONLY (NO FALLBACK)
         // CRITICAL: Only show payment methods owned by this vendor
@@ -1365,5 +1356,40 @@ class CheckoutController extends FrontBaseController
             'is_vendor_checkout' => true,
             'vendor_id' => $vendorId
         ]);
+    }
+
+    /**
+     * Helper: Group products by vendor ID
+     *
+     * AVOIDS CODE DUPLICATION - This method eliminates the need to repeat
+     * vendor grouping logic in Blade views. Used by all checkout steps.
+     *
+     * @param array $products Cart items
+     * @return array Grouped products by vendor_id with metadata
+     */
+    private function groupProductsByVendor(array $products): array
+    {
+        $grouped = [];
+
+        foreach ($products as $rowKey => $product) {
+            $vendorId = data_get($product, 'item.user_id') ?? 0;
+
+            if (!isset($grouped[$vendorId])) {
+                $vendor = \App\Models\User::find($vendorId);
+                $grouped[$vendorId] = [
+                    'vendor_id' => $vendorId,
+                    'vendor_name' => $vendor ? ($vendor->shop_name ?? $vendor->name) : 'Unknown',
+                    'products' => [],
+                    'total' => 0,
+                    'count' => 0,
+                ];
+            }
+
+            $grouped[$vendorId]['products'][$rowKey] = $product;
+            $grouped[$vendorId]['total'] += (float)($product['price'] ?? 0);
+            $grouped[$vendorId]['count'] += (int)($product['qty'] ?? 1);
+        }
+
+        return $grouped;
     }
 }

@@ -31,8 +31,6 @@
     <div class="row gs-cart-row">
 
         @if (Session::has('cart'))
-            @php $discount = 0; @endphp
-
             <div class="col-lg-12">
                 {{-- Loop through each vendor section independently --}}
                 @foreach($productsByVendor as $vendorId => $vendorData)
@@ -73,12 +71,6 @@
                         <tbody class="t_body">
                         @foreach ($vendorData['products'] as $rowKey => $product)
                             @php
-                                if (!empty($product['discount'])) {
-                                    $total_itemprice = (float)($product['item_price'] ?? 0) * (int)($product['qty'] ?? 1);
-                                    $tdiscount       = ($total_itemprice * (float)$product['discount']) / 100;
-                                    $discount       += $tdiscount;
-                                }
-
                                 // معلومات أساسية
                                 $currentVendorId = data_get($product, 'item.user_id') ?? 0;
                                 $slug     = data_get($product, 'item.slug');
@@ -91,9 +83,9 @@
                                 // نسخة آمنة للـ DOM
                                 $domKey = str_replace([':', '#', '.', ' ', '/', '\\'], '_', $row);
 
-                                // Fetch merchant_product_id for cart item
+                                // Fetch merchant data using helper method (avoids code duplication)
                                 $itemProduct = \App\Models\Product::where('slug', $slug)->first();
-                                $itemMerchant = $itemProduct ? $itemProduct->merchantProducts()->with('user')->where('user_id', $currentVendorId)->where('status', 1)->first() : null;
+                                $itemMerchant = $itemProduct ? $itemProduct->getMerchantProduct($currentVendorId) : null;
                                 $itemMerchantId = $itemMerchant->id ?? null;
 
                                 // رابط تفاصيل المنتج مع تمرير {vendor_id, merchant_product_id}

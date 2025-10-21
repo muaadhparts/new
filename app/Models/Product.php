@@ -767,4 +767,36 @@ class Product extends Model
         $sizes = array_unique($this->size);
         return in_array($value, $sizes);
     }
+
+    /**
+     * Get merchant product data for a specific vendor
+     *
+     * AVOIDS CODE DUPLICATION - This helper eliminates repeated logic
+     * for fetching merchant product in cart and checkout views
+     *
+     * @param int $vendorId The vendor user ID
+     * @return \App\Models\MerchantProduct|null
+     */
+    public function getMerchantProduct(int $vendorId)
+    {
+        return $this->merchantProducts()
+            ->with('user')
+            ->where('user_id', $vendorId)
+            ->where('status', 1)
+            ->first();
+    }
+
+    /**
+     * Get merchant product ID for a specific vendor
+     *
+     * Shorthand for getMerchantProduct()->id
+     *
+     * @param int $vendorId The vendor user ID
+     * @return int|null Merchant product ID or null if not found
+     */
+    public function getMerchantProductId(int $vendorId): ?int
+    {
+        $merchant = $this->getMerchantProduct($vendorId);
+        return $merchant ? $merchant->id : null;
+    }
 }
