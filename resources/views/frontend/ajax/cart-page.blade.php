@@ -1,18 +1,66 @@
+{{--
+    ====================================================================
+    MULTI-VENDOR CART SYSTEM
+    ====================================================================
+
+    This view implements a per-vendor cart display system where:
+
+    1. Each vendor has their own independent cart section
+    2. Each vendor section contains:
+       - Vendor header with vendor name/ID
+       - Products table (only this vendor's products)
+       - Independent Cart Summary (subtotal, discount, total)
+       - Dedicated "Checkout This Vendor" button
+
+    3. NO GLOBAL SUMMARY exists - all calculations are per-vendor
+    4. Each checkout processes ONLY one vendor at a time
+    5. After order completion, only that vendor's products are removed
+
+    Key Variables:
+    - $productsByVendor: Array grouped by vendor_id
+    - $vendorData: Contains vendor_id, vendor_name, products, total, count
+
+    Flow:
+    Cart Page → Checkout Vendor {id} → Step1 → Step2 → Step3 → Order Creation
+
+    Modified: 2025-01-XX for Multi-Vendor Checkout System
+    ====================================================================
+--}}
+
 <div class="container gs-cart-container">
     <div class="row gs-cart-row">
 
         @if (Session::has('cart'))
             @php $discount = 0; @endphp
 
-            <div class="col-lg-8">
-                <div class="cart-table table-responsive">
-                    <table class="table">
+            <div class="col-lg-12">
+                {{-- Loop through each vendor section independently --}}
+                @foreach($productsByVendor as $vendorId => $vendorData)
+                <div class="vendor-cart-section mb-5" style="background: #ffffff; border-radius: 20px; box-shadow: 0 8px 24px rgba(13, 148, 136, 0.1); border: 2px solid #e0f2fe; overflow: hidden;">
+                    {{-- Vendor Header --}}
+                    <div class="vendor-header" style="background: linear-gradient(135deg, #0d9488 0%, #14b8a6 100%); padding: 1.5rem; color: white;">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h4 class="mb-1" style="font-weight: 800; letter-spacing: 0.5px;">
+                                    <i class="fas fa-store me-2"></i>{{ $vendorData['vendor_name'] }}
+                                </h4>
+                                <p class="mb-0" style="opacity: 0.9; font-size: 0.95rem;">
+                                    <i class="fas fa-box me-1"></i>{{ $vendorData['count'] }} @lang('Items')
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row g-0">
+                        {{-- Products Table --}}
+                        <div class="col-lg-8">
+                            <div class="cart-table table-responsive" style="padding: 2rem;">
+                                <table class="table">
                         <thead>
                         <tr>
                             <th scope="col">@lang('Image')</th>
                             <th scope="col">@lang('Name')</th>
                             <th scope="col">@lang('Part Number')</th>
-                            <th scope="col">@lang('Shop Name')</th>
                             <th scope="col">@lang('Brand')</th>
                             <th scope="col">@lang('Brand Quality')</th>
                             <th scope="col">@lang('Price')</th>
@@ -23,7 +71,7 @@
                         </thead>
 
                         <tbody class="t_body">
-                        @foreach ($products as $rowKey => $product)
+                        @foreach ($vendorData['products'] as $rowKey => $product)
                             @php
                                 if (!empty($product['discount'])) {
                                     $total_itemprice = (float)($product['item_price'] ?? 0) * (int)($product['qty'] ?? 1);
@@ -32,7 +80,7 @@
                                 }
 
                                 // معلومات أساسية
-                                $vendorId = data_get($product, 'item.user_id') ?? 0;
+                                $currentVendorId = data_get($product, 'item.user_id') ?? 0;
                                 $slug     = data_get($product, 'item.slug');
                                 $name     = data_get($product, 'item.name');
                                 $sku      = data_get($product, 'item.sku');
@@ -45,12 +93,11 @@
 
                                 // Fetch merchant_product_id for cart item
                                 $itemProduct = \App\Models\Product::where('slug', $slug)->first();
-                                $itemMerchant = $itemProduct ? $itemProduct->merchantProducts()->with('user')->where('user_id', $vendorId)->where('status', 1)->first() : null;
+                                $itemMerchant = $itemProduct ? $itemProduct->merchantProducts()->with('user')->where('user_id', $currentVendorId)->where('status', 1)->first() : null;
                                 $itemMerchantId = $itemMerchant->id ?? null;
-                                $shopName = $itemMerchant && $itemMerchant->user ? ($itemMerchant->user->shop_name ?? $itemMerchant->user->name) : '-';
 
                                 // رابط تفاصيل المنتج مع تمرير {vendor_id, merchant_product_id}
-                                $productUrl = ($vendorId && $itemMerchantId) ? route('front.product', ['slug' => $slug, 'vendor_id' => $vendorId, 'merchant_product_id' => $itemMerchantId]) : 'javascript:;';
+                                $productUrl = ($currentVendorId && $itemMerchantId) ? route('front.product', ['slug' => $slug, 'vendor_id' => $currentVendorId, 'merchant_product_id' => $itemMerchantId]) : 'javascript:;';
                             @endphp
 
                             <tr>
@@ -61,7 +108,7 @@
 
                                 {{-- Name Column --}}
                                 <td class="cart-name">
-                                    <x-product-name :item="$product['item']" :vendor-id="$vendorId" :merchant-product-id="$itemMerchantId" :showSku="false" target="_blank" />
+                                    <x-product-name :item="$product['item']" :vendor-id="$currentVendorId" :merchant-product-id="$itemMerchantId" :showSku="false" target="_blank" />
                                     @if (!empty($product['color']) || !empty($product['size']))
                                         <div class="d-flex align-items-center gap-2 mt-2">
                                             @if (!empty($product['color']))
@@ -78,11 +125,6 @@
                                 {{-- Part Number (SKU) Column --}}
                                 <td class="cart-sku">
                                     <span>{{ $sku ?? '-' }}</span>
-                                </td>
-
-                                {{-- Shop Name Column --}}
-                                <td class="cart-shop">
-                                    <span>{{ $shopName }}</span>
                                 </td>
 
                                 {{-- Brand Column --}}
@@ -154,50 +196,76 @@
                         @endforeach
                         </tbody>
                     </table>
-                </div>
-            </div>
+                            </div>
+                        </div>
 
-            <div class="col-lg-4">
-                <div class="cart-summary">
-                    <h4 class="cart-summary-title">@lang('Cart Summary')</h4>
-                    <div class="cart-summary-content">
-                        <div class="cart-summary-item d-flex justify-content-between">
-                            <p class="cart-summary-subtitle">
-                                @lang('Subtotal')({{ count(Session::get('cart')->items) }} @lang('Items'))
-                            </p>
-                            <p class="cart-summary-price">
-                                {{ Session::has('cart') ? App\Models\Product::convertPrice(($totalPrice ?? 0) + ($discount ?? 0)) : '0.00' }}
-                            </p>
-                        </div>
-                        <div class="cart-summary-item d-flex justify-content-between">
-                            <p class="cart-summary-subtitle">@lang('Discount')</p>
-                            <p class="cart-summary-price">{{ App\Models\Product::convertPrice($discount) }}</p>
-                        </div>
-                        <div class="cart-summary-item d-flex justify-content-between">
-                            <p class="cart-summary-subtitle">@lang('Total')</p>
-                            <p class="cart-summary-price total-cart-price">
-                                {{ Session::has('cart') ? App\Models\Product::convertPrice($mainTotal ?? 0) : '0.00' }}
-                            </p>
-                        </div>
-                        <div class="cart-summary-btn">
-                            @auth
-                                <a href="{{ route('front.checkout') }}" class="template-btn w-100">
-                                    @lang('Proceed to Checkout')
-                                </a>
-                            @else
-                                @if (Route::has('user.register'))
-                                    <a href="{{ route('user.register', ['redirect' => 'cart']) }}" class="template-btn w-100">
-                                        @lang('Proceed to Checkout')
-                                    </a>
-                                @else
-                                    <a href="{{ route('user.login', ['redirect' => 'cart']) }}" class="template-btn w-100">
-                                        @lang('Proceed to Checkout')
-                                    </a>
-                                @endif
-                            @endauth
+                        {{-- Vendor Cart Summary --}}
+                        <div class="col-lg-4">
+                            <div class="cart-summary" style="margin: 2rem; background: linear-gradient(135deg, #ffffff 0%, #f0fdfa 100%); border-radius: 16px; padding: 2rem; border: 2px solid #14b8a6;">
+                                <h5 class="cart-summary-title" style="color: #0f172a; font-size: 1.5rem; font-weight: 800; margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 3px solid; border-image: linear-gradient(90deg, #0d9488 0%, #14b8a6 50%, #2dd4bf 100%) 1; background: linear-gradient(135deg, #0d9488 0%, #14b8a6 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">
+                                    @lang('Cart Summary')
+                                </h5>
+                                <div class="cart-summary-content">
+                                    @php
+                                        // Calculate discount for THIS vendor only (not global)
+                                        // Each vendor has independent discount calculations
+                                        $vendorDiscount = 0;
+                                        foreach ($vendorData['products'] as $product) {
+                                            if (!empty($product['discount'])) {
+                                                $total_itemprice = (float)($product['item_price'] ?? 0) * (int)($product['qty'] ?? 1);
+                                                $tdiscount = ($total_itemprice * (float)$product['discount']) / 100;
+                                                $vendorDiscount += $tdiscount;
+                                            }
+                                        }
+                                        $vendorSubtotal = $vendorData['total'] + $vendorDiscount;
+                                    @endphp
+
+                                    <div class="cart-summary-item d-flex justify-content-between" style="padding: 1rem 0; border-bottom: 1px solid #e0f2fe;">
+                                        <p class="cart-summary-subtitle" style="color: #64748b; font-weight: 600; margin: 0;">
+                                            @lang('Subtotal') ({{ $vendorData['count'] }} @lang('Items'))
+                                        </p>
+                                        <p class="cart-summary-price" style="color: #0d9488; font-weight: 700; font-size: 1.1rem; margin: 0;">
+                                            {{ App\Models\Product::convertPrice($vendorSubtotal) }}
+                                        </p>
+                                    </div>
+
+                                    @if($vendorDiscount > 0)
+                                    <div class="cart-summary-item d-flex justify-content-between" style="padding: 1rem 0; border-bottom: 1px solid #e0f2fe;">
+                                        <p class="cart-summary-subtitle" style="color: #64748b; font-weight: 600; margin: 0;">
+                                            @lang('Discount')
+                                        </p>
+                                        <p class="cart-summary-price" style="color: #ef4444; font-weight: 700; font-size: 1.1rem; margin: 0;">
+                                            - {{ App\Models\Product::convertPrice($vendorDiscount) }}
+                                        </p>
+                                    </div>
+                                    @endif
+
+                                    <div class="cart-summary-item d-flex justify-content-between" style="padding: 1rem 0; border-bottom: 2px solid #14b8a6;">
+                                        <p class="cart-summary-subtitle" style="color: #0f172a; font-weight: 700; margin: 0; font-size: 1.1rem;">
+                                            @lang('Total')
+                                        </p>
+                                        <p class="cart-summary-price total-cart-price" style="color: #0d9488; font-weight: 800; font-size: 1.3rem; margin: 0;">
+                                            {{ App\Models\Product::convertPrice($vendorData['total']) }}
+                                        </p>
+                                    </div>
+
+                                    <div class="cart-summary-btn" style="margin-top: 1.5rem;">
+                                        @auth
+                                            <a href="{{ route('front.checkout.vendor', $vendorId) }}" class="template-btn w-100" style="background: linear-gradient(135deg, #0d9488 0%, #14b8a6 100%); color: #ffffff; border: none; padding: 1rem 2rem; border-radius: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 8px 20px rgba(13, 148, 136, 0.3); text-align: center; display: block; text-decoration: none;">
+                                                <i class="fas fa-shopping-cart me-2"></i>@lang('Checkout This Vendor')
+                                            </a>
+                                        @else
+                                            <a href="{{ route('user.login', ['redirect' => 'cart']) }}" class="template-btn w-100" style="background: linear-gradient(135deg, #0d9488 0%, #14b8a6 100%); color: #ffffff; border: none; padding: 1rem 2rem; border-radius: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 8px 20px rgba(13, 148, 136, 0.3); text-align: center; display: block; text-decoration: none;">
+                                                <i class="fas fa-shopping-cart me-2"></i>@lang('Checkout This Vendor')
+                                            </a>
+                                        @endauth
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
+                @endforeach
             </div>
 
         @else

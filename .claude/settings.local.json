@@ -15,7 +15,8 @@
       "Bash(awk:*)",
       "Bash(composer show:*)",
       "Bash(composer require:*)",
-      "Bash(composer audit:*)"
+      "Bash(composer audit:*)",
+      "Bash(git add:*)"
     ],
     "deny": [],
     "ask": []

@@ -1,5 +1,32 @@
 <?php
 
+/**
+ * ====================================================================
+ * MULTI-VENDOR CASH ON DELIVERY PAYMENT CONTROLLER
+ * ====================================================================
+ *
+ * This controller handles COD payment in a multi-vendor system:
+ *
+ * Key Features:
+ * 1. Uses HandlesVendorCheckout trait for vendor isolation
+ * 2. Detects if checkout is vendor-specific via checkout_vendor_id session
+ * 3. Filters cart to process ONLY vendor's products
+ * 4. Creates order with ONLY vendor's products
+ * 5. Removes ONLY vendor's products from cart after order
+ * 6. Redirects to /carts if other vendors remain, else to success page
+ *
+ * Multi-Vendor Logic Flow:
+ * 1. getVendorCheckoutData() - Checks if vendor checkout
+ * 2. getCheckoutSteps() - Gets vendor_step1_{id} and vendor_step2_{id}
+ * 3. filterCartForVendor() - Filters cart items
+ * 4. Order creation - Uses only filtered products
+ * 5. removeVendorProductsFromCart() - Removes vendor products only
+ * 6. getSuccessUrl() - Determines redirect based on remaining items
+ *
+ * Modified: 2025-01-XX for Multi-Vendor Checkout System
+ * ====================================================================
+ */
+
 namespace App\Http\Controllers\Payment\Checkout;
 
 use App\Classes\MuaadhMailer;use App\Helpers\OrderHelper;use App\Helpers\PriceHelper;
@@ -9,6 +36,7 @@ use App\Models\Order;
 use App\Models\Reward;
 use App\Models\State;
 use App\Traits\CreatesTryotoShipments;
+use App\Traits\HandlesVendorCheckout;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
@@ -16,13 +44,35 @@ use Illuminate\Support\Str;
 
 class CashOnDeliveryController extends CheckoutBaseControlller
 {
-    use CreatesTryotoShipments;
+    use CreatesTryotoShipments, HandlesVendorCheckout;
+
+    /**
+     * Process COD payment for single vendor or complete cart
+     *
+     * MULTI-VENDOR LOGIC:
+     * 1. Detects vendor checkout via checkout_vendor_id session
+     * 2. Loads vendor-specific session data (vendor_step1_{id}, vendor_step2_{id})
+     * 3. Filters cart to include ONLY this vendor's products
+     * 4. Creates order with filtered products only
+     * 5. Removes only this vendor's products from cart
+     * 6. Redirects to /carts if other vendors remain
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\RedirectResponse
+     */
     public function store(Request $request)
     {
         $input = $request->all();
-        $step1 = Session::get('step1');
-        $step2 = Session::get('step2');
-        $input = array_merge($step1, $step2, $input);
+
+        // Detect if this is a vendor-specific checkout
+        // Uses HandlesVendorCheckout trait methods
+        $vendorData = $this->getVendorCheckoutData();
+        $vendorId = $vendorData['vendor_id'];
+        $isVendorCheckout = $vendorData['is_vendor_checkout'];
+
+        // Load step data from vendor-specific or global session
+        $steps = $this->getCheckoutSteps($vendorId, $isVendorCheckout);
+        $input = array_merge($steps['step1'], $steps['step2'], $input);
 
         if ($request->pass_check) {
             $auth = OrderHelper::auth_check($input); // For Authentication Checking
@@ -37,9 +87,15 @@ class CashOnDeliveryController extends CheckoutBaseControlller
 
         $oldCart = Session::get('cart');
         $cart = new Cart($oldCart);
+
+        // CRITICAL: Filter cart to include ONLY this vendor's products
+        // This ensures order contains only vendor's items
+        if ($isVendorCheckout) {
+            $cart = $this->filterCartForVendor($cart, $vendorId);
+        }
+
         OrderHelper::license_check($cart); // For License Checking
-        $t_oldCart = Session::get('cart');
-        $t_cart = new Cart($t_oldCart);
+        $t_cart = $cart;
         $new_cart = [];
         $new_cart['totalQty'] = $t_cart->totalQty;
         $new_cart['totalPrice'] = $t_cart->totalPrice;
@@ -102,7 +158,11 @@ class CashOnDeliveryController extends CheckoutBaseControlller
         }
 
         $order = new Order;
-        $success_url = route('front.payment.return');
+
+        // Determine redirect URL:
+        // - If other vendors remain in cart: Redirect to /carts
+        // - If cart is now empty: Redirect to success page
+        $success_url = $this->getSuccessUrl($vendorId, $oldCart);
         $input['user_id'] = Auth::check() ? Auth::user()->id : null;
         $input['cart'] = $new_cart;
         $input['affilate_users'] = $affilate_users;
@@ -171,12 +231,11 @@ class CashOnDeliveryController extends CheckoutBaseControlller
 
         Session::put('temporder', $order);
         Session::put('tempcart', $cart);
-        Session::forget('cart');
-        Session::forget('already');
-        Session::forget('coupon');
-        Session::forget('coupon_total');
-        Session::forget('coupon_total1');
-        Session::forget('coupon_percentage');
+
+        // CRITICAL: Remove ONLY this vendor's products from cart
+        // Other vendors' products remain for separate checkout
+        // Uses HandlesVendorCheckout trait method
+        $this->removeVendorProductsFromCart($vendorId, $oldCart);
 
         if ($order->user_id != 0 && $order->wallet_price != 0) {
             OrderHelper::add_to_transaction($order, $order->wallet_price); // Store To Transactions

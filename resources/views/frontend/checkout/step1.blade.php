@@ -27,7 +27,7 @@
             </div>
 
             <!-- address-->
-            <form class="address-wrapper" action="{{ route('front.checkout.step1.submit') }}" method="POST">
+            <form class="address-wrapper" action="{{ isset($is_vendor_checkout) && $is_vendor_checkout ? route('front.checkout.vendor.step1.submit', $vendor_id) : route('front.checkout.step1.submit') }}" method="POST">
                 @csrf
                 <div class="row gy-4">
                     <div class="col-lg-7 col-xl-8 wow fadeInUp" data-wow-delay=".2s">

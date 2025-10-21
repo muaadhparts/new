@@ -1,5 +1,21 @@
 <?php
 
+/**
+ * ====================================================================
+ * MULTI-VENDOR CART CONTROLLER
+ * ====================================================================
+ *
+ * This controller handles cart operations in a multi-vendor system:
+ *
+ * Key Features:
+ * 1. Groups cart products by vendor_id using groupProductsByVendor()
+ * 2. Each vendor has independent product listing and calculations
+ * 3. Passes $productsByVendor to views for separate vendor sections
+ *
+ * Modified: 2025-01-XX for Multi-Vendor Checkout System
+ * ====================================================================
+ */
+
 namespace App\Http\Controllers\Front;
 
 use App\Models\Cart;
@@ -223,10 +239,43 @@ class CartController extends FrontBaseController
         $totalPrice = $cart->totalPrice;
         $mainTotal  = $totalPrice;
 
+        // تجميع المنتجات حسب التاجر
+        $productsByVendor = $this->groupProductsByVendor($products);
+
         if ($request->ajax()) {
-            return view('frontend.ajax.cart-page', compact('products', 'totalPrice', 'mainTotal'));
+            return view('frontend.ajax.cart-page', compact('products', 'totalPrice', 'mainTotal', 'productsByVendor'));
         }
-        return view('frontend.cart', compact('products', 'totalPrice', 'mainTotal'));
+        return view('frontend.cart', compact('products', 'totalPrice', 'mainTotal', 'productsByVendor'));
+    }
+
+    /**
+     * تجميع منتجات السلة حسب التاجر
+     */
+    private function groupProductsByVendor(array $products): array
+    {
+        $grouped = [];
+
+        foreach ($products as $rowKey => $product) {
+            $vendorId = data_get($product, 'item.user_id') ?? data_get($product, 'item.vendor_user_id') ?? 0;
+
+            if (!isset($grouped[$vendorId])) {
+                // جلب معلومات التاجر
+                $vendor = \App\Models\User::find($vendorId);
+                $grouped[$vendorId] = [
+                    'vendor_id' => $vendorId,
+                    'vendor_name' => $vendor ? ($vendor->shop_name ?? $vendor->name) : 'Unknown Vendor',
+                    'products' => [],
+                    'total' => 0,
+                    'count' => 0,
+                ];
+            }
+
+            $grouped[$vendorId]['products'][$rowKey] = $product;
+            $grouped[$vendorId]['total'] += (float)($product['price'] ?? 0);
+            $grouped[$vendorId]['count'] += (int)($product['qty'] ?? 1);
+        }
+
+        return $grouped;
     }
 
     public function cartview() { return view('load.cart'); }
@@ -242,7 +291,11 @@ class CartController extends FrontBaseController
         $products   = $cart->items;
         $totalPrice = $cart->totalPrice;
         $mainTotal  = $totalPrice;
-        return view('frontend.ajax.cart-page', compact('products', 'totalPrice', 'mainTotal'));
+
+        // تجميع المنتجات حسب التاجر
+        $productsByVendor = $this->groupProductsByVendor($products);
+
+        return view('frontend.ajax.cart-page', compact('products', 'totalPrice', 'mainTotal', 'productsByVendor'));
     }
 
     /* ===================== Utilities ===================== */

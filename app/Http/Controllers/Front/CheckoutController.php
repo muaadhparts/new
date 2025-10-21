@@ -1,5 +1,42 @@
 <?php
 
+/**
+ * ====================================================================
+ * MULTI-VENDOR CHECKOUT CONTROLLER
+ * ====================================================================
+ *
+ * This controller handles checkout operations in a multi-vendor system:
+ *
+ * Key Features:
+ * 1. VENDOR-SPECIFIC CHECKOUT ROUTES:
+ *    - checkoutVendor($vendorId): Step 1 - Customer info for specific vendor
+ *    - checkoutVendorStep1(): Save customer data to vendor_step1_{vendor_id}
+ *    - checkoutVendorStep2($vendorId): Step 2 - Show shipping for this vendor ONLY
+ *    - checkoutVendorStep2Submit(): Save shipping to vendor_step2_{vendor_id}
+ *    - checkoutVendorStep3($vendorId): Step 3 - Show payment gateways for this vendor ONLY
+ *
+ * 2. VENDOR ISOLATION:
+ *    - Filters cart items to show only products from specified vendor
+ *    - Shows ONLY shipping companies where user_id = vendor_id
+ *    - Shows ONLY payment gateways where user_id = vendor_id
+ *    - NO FALLBACK to global/admin shipping or payment methods
+ *
+ * 3. SESSION MANAGEMENT:
+ *    - checkout_vendor_id: Current vendor being processed
+ *    - vendor_step1_{vendor_id}: Customer data per vendor
+ *    - vendor_step2_{vendor_id}: Shipping data per vendor
+ *
+ * 4. ERROR HANDLING:
+ *    - If no payment methods exist for vendor: Show error message
+ *    - If no products for vendor: Redirect to cart
+ *
+ * Flow:
+ * Cart → /checkout/vendor/{id} → Step1 → Step2 → Step3 → Payment Controller → Order
+ *
+ * Modified: 2025-01-XX for Multi-Vendor Checkout System
+ * ====================================================================
+ */
+
 namespace App\Http\Controllers\Front;
 
 use App\Helpers\PriceHelper;
@@ -937,5 +974,396 @@ class CheckoutController extends FrontBaseController
         }
 
         return view('frontend.success', compact('tempcart', 'order'));
+    }
+
+    /* ===================== Vendor-Specific Checkout ===================== */
+
+    /**
+     * Step 1 - Display checkout page for a SPECIFIC vendor only
+     *
+     * MULTI-VENDOR LOGIC:
+     * 1. Saves vendor_id in session (checkout_vendor_id)
+     * 2. Filters cart to show ONLY this vendor's products
+     * 3. Shows ONLY shipping methods where user_id = vendor_id
+     * 4. Shows ONLY packaging methods where user_id = vendor_id
+     * 5. NO global fallback - vendor must have their own methods
+     *
+     * @param int $vendorId The vendor's user_id
+     * @return \Illuminate\View\View|\Illuminate\Http\RedirectResponse
+     */
+    public function checkoutVendor($vendorId)
+    {
+        if (!Session::has('cart')) {
+            return redirect()->route('front.cart')->with('success', __("You don't have any product to checkout."));
+        }
+
+        // Save vendor_id in session for tracking throughout checkout
+        Session::put('checkout_vendor_id', $vendorId);
+
+        // تصفية منتجات السلة لعرض منتجات هذا التاجر فقط
+        $oldCart = Session::get('cart');
+        $cart = new Cart($oldCart);
+
+        $vendorProducts = [];
+        foreach ($cart->items as $rowKey => $product) {
+            $productVendorId = data_get($product, 'item.user_id') ?? data_get($product, 'item.vendor_user_id') ?? 0;
+            if ($productVendorId == $vendorId) {
+                $vendorProducts[$rowKey] = $product;
+            }
+        }
+
+        if (empty($vendorProducts)) {
+            return redirect()->route('front.cart')->with('unsuccess', __("No products found for this vendor."));
+        }
+
+        // حساب المجموع لمنتجات هذا التاجر
+        $totalPrice = 0;
+        $totalQty = 0;
+        foreach ($vendorProducts as $product) {
+            $totalPrice += (float)($product['price'] ?? 0);
+            $totalQty += (int)($product['qty'] ?? 1);
+        }
+
+        $dp = 1;
+        foreach ($vendorProducts as $prod) {
+            if ($prod['item']['type'] == 'Physical') {
+                $dp = 0;
+                break;
+            }
+        }
+
+        // جلب طرق الشحن الخاصة بهذا التاجر فقط
+        $shipping_data = DB::table('shippings')->where('user_id', $vendorId)->get();
+        if ($shipping_data->isEmpty()) {
+            $shipping_data = DB::table('shippings')->where('user_id', 0)->get();
+        }
+
+        // جلب طرق التغليف الخاصة بهذا التاجر فقط
+        $package_data = DB::table('packages')->where('user_id', $vendorId)->get();
+        if ($package_data->isEmpty()) {
+            $package_data = DB::table('packages')->where('user_id', 0)->get();
+        }
+
+        $pickups = DB::table('pickups')->get();
+        $curr = $this->curr;
+
+        return view('frontend.checkout.step1', [
+            'products' => $vendorProducts,
+            'totalPrice' => $totalPrice,
+            'pickups' => $pickups,
+            'totalQty' => $totalQty,
+            'shipping_cost' => 0,
+            'digital' => $dp,
+            'curr' => $curr,
+            'shipping_data' => $shipping_data,
+            'package_data' => $package_data,
+            'vendor_shipping_id' => $vendorId,
+            'vendor_packing_id' => $vendorId,
+            'is_vendor_checkout' => true,
+            'vendor_id' => $vendorId
+        ]);
+    }
+
+    /**
+     * Step 1 Submit - Save customer data for specific vendor
+     *
+     * MULTI-VENDOR LOGIC:
+     * - Data saved to vendor_step1_{vendor_id} session (NOT global step1)
+     * - Each vendor has independent customer data storage
+     *
+     * @param Request $request
+     * @param int $vendorId
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function checkoutVendorStep1(Request $request, $vendorId)
+    {
+        $step1 = $request->all();
+
+        $validator = Validator::make($step1, [
+            'customer_name' => 'required|string|max:255',
+            'customer_email' => 'required|email|max:255',
+            'customer_phone' => 'required|numeric',
+            'customer_address' => 'required|string|max:255',
+            'customer_zip' => 'nullable|string|max:20',
+            'customer_country' => 'required|string|max:255',
+            'customer_state' => 'required|string|max:255',
+        ]);
+
+        if ($validator->fails()) {
+            return back()->withErrors($validator->errors());
+        }
+
+        Session::put('vendor_step1_' . $vendorId, $step1);
+        return redirect()->route('front.checkout.vendor.step2', $vendorId);
+    }
+
+    /**
+     * Step 2 - عرض صفحة اختيار الشحن للتاجر المحدد
+     */
+    public function checkoutVendorStep2($vendorId)
+    {
+        if (!Session::has('vendor_step1_' . $vendorId)) {
+            return redirect()->route('front.checkout.vendor', $vendorId)->with('success', __("Please fill up step 1."));
+        }
+
+        if (!Session::has('cart')) {
+            return redirect()->route('front.cart')->with('success', __("You don't have any product to checkout."));
+        }
+
+        $step1 = (object) Session::get('vendor_step1_' . $vendorId);
+
+        // تصفية منتجات السلة لعرض منتجات هذا التاجر فقط
+        $oldCart = Session::get('cart');
+        $cart = new Cart($oldCart);
+
+        $vendorProducts = [];
+        foreach ($cart->items as $rowKey => $product) {
+            $productVendorId = data_get($product, 'item.user_id') ?? data_get($product, 'item.vendor_user_id') ?? 0;
+            if ($productVendorId == $vendorId) {
+                $vendorProducts[$rowKey] = $product;
+            }
+        }
+
+        // حساب المجموع
+        $totalPrice = 0;
+        $totalQty = 0;
+        foreach ($vendorProducts as $product) {
+            $totalPrice += (float)($product['price'] ?? 0);
+            $totalQty += (int)($product['qty'] ?? 1);
+        }
+
+        $dp = 1;
+        foreach ($vendorProducts as $prod) {
+            if ($prod['item']['type'] == 'Physical') {
+                $dp = 0;
+                break;
+            }
+        }
+
+        // جلب طرق الشحن الخاصة بهذا التاجر فقط
+        $shipping_data = DB::table('shippings')->where('user_id', $vendorId)->get();
+        if ($shipping_data->isEmpty()) {
+            $shipping_data = DB::table('shippings')->where('user_id', 0)->get();
+        }
+
+        // جلب طرق التغليف الخاصة بهذا التاجر فقط
+        $package_data = DB::table('packages')->where('user_id', $vendorId)->get();
+        if ($package_data->isEmpty()) {
+            $package_data = DB::table('packages')->where('user_id', 0)->get();
+        }
+
+        $pickups = DB::table('pickups')->get();
+        $curr = $this->curr;
+
+        return view('frontend.checkout.step2', [
+            'products' => $vendorProducts,
+            'totalPrice' => $totalPrice,
+            'pickups' => $pickups,
+            'totalQty' => $totalQty,
+            'shipping_cost' => 0,
+            'digital' => $dp,
+            'curr' => $curr,
+            'shipping_data' => $shipping_data,
+            'package_data' => $package_data,
+            'vendor_shipping_id' => $vendorId,
+            'vendor_packing_id' => $vendorId,
+            'step1' => $step1,
+            'is_vendor_checkout' => true,
+            'vendor_id' => $vendorId
+        ]);
+    }
+
+    /**
+     * Step 2 Submit - حفظ بيانات الشحن للتاجر المحدد
+     */
+    public function checkoutVendorStep2Submit(Request $request, $vendorId)
+    {
+        $step2 = $request->all();
+        $oldCart = Session::get('cart');
+        $input = Session::get('vendor_step1_' . $vendorId) + $step2;
+
+        // حساب المبلغ الأساسي (قبل الضريبة والشحن) لتطبيق free_above
+        $cart = new Cart($oldCart);
+
+        // تصفية منتجات هذا التاجر فقط
+        $vendorTotal = 0;
+        foreach ($cart->items as $product) {
+            $productVendorId = data_get($product, 'item.user_id') ?? data_get($product, 'item.vendor_user_id') ?? 0;
+            if ($productVendorId == $vendorId) {
+                $vendorTotal += (float)($product['price'] ?? 0);
+            }
+        }
+
+        $baseAmount = $vendorTotal;
+        $coupon = Session::has('coupon_vendor_' . $vendorId) ? Session::get('coupon_vendor_' . $vendorId) : 0;
+        $baseAmount = $baseAmount - $coupon;
+
+        $shipping_cost_total = 0.0;
+        $shipping_names = [];
+
+        if (isset($step2['shipping']) && is_array($step2['shipping'])) {
+            foreach (array_values($step2['shipping']) as $val) {
+                if (is_string($val) && strpos($val, '#') !== false) {
+                    $parts = explode('#', $val);
+                    $company = $parts[1] ?? '';
+                    $price = (float)($parts[2] ?? 0);
+                    $shipping_cost_total += $price;
+                    if ($company !== '') {
+                        $shipping_names[] = $company;
+                    }
+                } else {
+                    $id = (int)$val;
+                    if ($id > 0) {
+                        $ship = \App\Models\Shipping::find($id);
+                        if ($ship) {
+                            $freeAbove = (float)($ship->free_above ?? 0);
+                            if ($freeAbove > 0 && $baseAmount >= $freeAbove) {
+                                $shipping_names[] = $ship->title . ' (Free Shipping)';
+                            } else {
+                                $shipping_cost_total += (float)$ship->price;
+                                $shipping_names[] = $ship->title;
+                            }
+                        }
+                    }
+                }
+            }
+        } elseif (isset($step2['shipping_id'])) {
+            $id = (int)$step2['shipping_id'];
+            if ($id > 0) {
+                $ship = \App\Models\Shipping::find($id);
+                if ($ship) {
+                    $freeAbove = (float)($ship->free_above ?? 0);
+                    if ($freeAbove > 0 && $baseAmount >= $freeAbove) {
+                        $shipping_names[] = $ship->title . ' (Free Shipping)';
+                    } else {
+                        $shipping_cost_total += (float)$ship->price;
+                        $shipping_names[] = $ship->title;
+                    }
+                }
+            }
+        }
+
+        $shipping_name = count($shipping_names) ? implode(' + ', array_unique($shipping_names)) : null;
+
+        $step2['shipping_company'] = $shipping_name;
+        $step2['shipping_cost'] = $shipping_cost_total;
+
+        Session::put('vendor_step2_' . $vendorId, $step2);
+
+        return redirect()->route('front.checkout.vendor.step3', $vendorId);
+    }
+
+    /**
+     * Step 3 - Display payment methods for specific vendor ONLY
+     *
+     * CRITICAL MULTI-VENDOR LOGIC:
+     * 1. Shows ONLY payment gateways where user_id = vendor_id
+     * 2. NO FALLBACK to global/admin payment methods
+     * 3. If vendor has no payment methods: ERROR and redirect
+     * 4. Filters cart to vendor's products only
+     * 5. Calculates totals for this vendor only
+     *
+     * This ensures each vendor uses ONLY their configured payment methods
+     *
+     * @param int $vendorId
+     * @return \Illuminate\View\View|\Illuminate\Http\RedirectResponse
+     */
+    public function checkoutVendorStep3($vendorId)
+    {
+        if (!Session::has('vendor_step1_' . $vendorId)) {
+            return redirect()->route('front.checkout.vendor', $vendorId)->with('success', __("Please fill up step 1."));
+        }
+        if (!Session::has('vendor_step2_' . $vendorId)) {
+            return redirect()->route('front.checkout.vendor.step2', $vendorId)->with('success', __("Please fill up step 2."));
+        }
+        if (!Session::has('cart')) {
+            return redirect()->route('front.cart')->with('success', __("You don't have any product to checkout."));
+        }
+
+        $step1 = (object) Session::get('vendor_step1_' . $vendorId);
+        $step2 = (object) Session::get('vendor_step2_' . $vendorId);
+
+        // Filter cart to show ONLY this vendor's products
+        $oldCart = Session::get('cart');
+        $cart = new Cart($oldCart);
+
+        $vendorProducts = [];
+        foreach ($cart->items as $rowKey => $product) {
+            $productVendorId = data_get($product, 'item.user_id') ?? data_get($product, 'item.vendor_user_id') ?? 0;
+            if ($productVendorId == $vendorId) {
+                $vendorProducts[$rowKey] = $product;
+            }
+        }
+
+        // Calculate totals for this vendor ONLY
+        $totalPrice = 0;
+        $totalQty = 0;
+        foreach ($vendorProducts as $product) {
+            $totalPrice += (float)($product['price'] ?? 0);
+            $totalQty += (int)($product['qty'] ?? 1);
+        }
+
+        $dp = 1;
+        foreach ($vendorProducts as $prod) {
+            if ($prod['item']['type'] == 'Physical') {
+                $dp = 0;
+                break;
+            }
+        }
+
+        // Get payment gateways for THIS vendor ONLY (NO FALLBACK)
+        // CRITICAL: Only show payment methods owned by this vendor
+        $gateways = PaymentGateway::where('user_id', $vendorId)
+            ->where('status', 1)
+            ->whereHas('currencyValues', function($q) {
+                $q->where('currency_id', $this->curr->id);
+            })
+            ->get();
+
+        // If vendor has no payment methods, show error (NO FALLBACK to admin methods)
+        if ($gateways->isEmpty()) {
+            return redirect()->route('front.cart')->with('unsuccess', __("No payment methods available for this vendor currently."));
+        }
+
+        // جلب طرق الشحن
+        $shipping_data = DB::table('shippings')->where('user_id', $vendorId)->get();
+        if ($shipping_data->isEmpty()) {
+            $shipping_data = DB::table('shippings')->where('user_id', 0)->get();
+        }
+
+        // جلب طرق التغليف
+        $package_data = DB::table('packages')->where('user_id', $vendorId)->get();
+        if ($package_data->isEmpty()) {
+            $package_data = DB::table('packages')->where('user_id', 0)->get();
+        }
+
+        $pickups = DB::table('pickups')->get();
+        $curr = $this->curr;
+
+        $paystack = PaymentGateway::whereKeyword('paystack')->first();
+        $paystackData = $paystack ? $paystack->convertAutoData() : [];
+
+        $coupon = Session::has('coupon_vendor_' . $vendorId) ? Session::get('coupon_vendor_' . $vendorId) : 0;
+        $total = $totalPrice - $coupon;
+
+        return view('frontend.checkout.step3', [
+            'products' => $vendorProducts,
+            'totalPrice' => $total,
+            'pickups' => $pickups,
+            'totalQty' => $totalQty,
+            'gateways' => $gateways,
+            'shipping_cost' => $step2->shipping_cost ?? 0,
+            'digital' => $dp,
+            'curr' => $curr,
+            'shipping_data' => $shipping_data,
+            'package_data' => $package_data,
+            'vendor_shipping_id' => $vendorId,
+            'vendor_packing_id' => $vendorId,
+            'paystack' => $paystackData,
+            'step2' => $step2,
+            'step1' => $step1,
+            'is_vendor_checkout' => true,
+            'vendor_id' => $vendorId
+        ]);
     }
 }
