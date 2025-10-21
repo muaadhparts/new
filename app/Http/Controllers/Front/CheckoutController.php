@@ -1304,12 +1304,9 @@ class CheckoutController extends FrontBaseController
 
         // Get payment gateways for THIS vendor ONLY (NO FALLBACK)
         // CRITICAL: Only show payment methods owned by this vendor
-        $gateways = PaymentGateway::where('user_id', $vendorId)
-            ->where('status', 1)
-            ->whereHas('currencyValues', function($q) {
-                $q->where('currency_id', $this->curr->id);
-            })
-            ->get();
+        $allGateways = PaymentGateway::scopeHasGateway($this->curr->id);
+        $gateways = $allGateways->where('user_id', $vendorId)
+            ->where('status', 1);
 
         // If vendor has no payment methods, show error (NO FALLBACK to admin methods)
         if ($gateways->isEmpty()) {
