@@ -569,23 +569,24 @@
                 <input type="hidden" name="currency_name" value="{{ $curr->name }}">
                 <input type="hidden" name="currency_value" value="{{ $curr->value }}">
 
-                @if (Session::has('coupon_total'))
-                    <input type="hidden" name="total" id="grandtotal" value="{{ round($totalPrice * $curr->value, 2) }}">
-                    <input type="hidden" id="tgrandtotal" value="{{ $totalPrice }}">
-                @elseif(Session::has('coupon_total1'))
-                    <input type="hidden" name="total" id="grandtotal" value="{{ preg_replace(' /[^0-9,.]/', '', Session::get('coupon_total1')) }}">
-                    <input type="hidden" id="tgrandtotal" value="{{ preg_replace(' /[^0-9,.]/', '', Session::get('coupon_total1')) }}">
-                @else
-                    <input type="hidden" name="total" id="grandtotal" value="{{ round($totalPrice * $curr->value, 2) }}">
-                    <input type="hidden" id="tgrandtotal" value="{{ round($totalPrice * $curr->value, 2) }}">
-                @endif
+                {{-- Use vendor-specific totalPrice (already calculated by controller) --}}
+                <input type="hidden" name="total" id="grandtotal" value="{{ round($totalPrice * $curr->value, 2) }}">
+                <input type="hidden" id="tgrandtotal" value="{{ round($totalPrice * $curr->value, 2) }}">
+                <input type="hidden" id="ttotal" value="{{ $totalPrice }}">
 
                 <input type="hidden" id="original_tax" value="0">
                 <input type="hidden" id="wallet-price" name="wallet_price" value="0">
-                <input type="hidden" id="ttotal" value="{{ Session::has('cart') ? App\Models\Product::convertPrice(Session::get('cart')->totalPrice) : '0' }}">
-                <input type="hidden" name="coupon_code" id="coupon_code" value="{{ Session::has('coupon_code') ? Session::get('coupon_code') : '' }}">
-                <input type="hidden" name="coupon_discount" id="coupon_discount" value="{{ Session::has('coupon') ? Session::get('coupon') : '' }}">
-                <input type="hidden" name="coupon_id" id="coupon_id" value="{{ Session::has('coupon') ? Session::get('coupon_id') : '' }}">
+
+                @if (!isset($is_vendor_checkout) || !$is_vendor_checkout)
+                    <input type="hidden" name="coupon_code" id="coupon_code" value="{{ Session::has('coupon_code') ? Session::get('coupon_code') : '' }}">
+                    <input type="hidden" name="coupon_discount" id="coupon_discount" value="{{ Session::has('coupon') ? Session::get('coupon') : '' }}">
+                    <input type="hidden" name="coupon_id" id="coupon_id" value="{{ Session::has('coupon') ? Session::get('coupon_id') : '' }}">
+                @else
+                    <input type="hidden" name="coupon_code" id="coupon_code" value="">
+                    <input type="hidden" name="coupon_discount" id="coupon_discount" value="">
+                    <input type="hidden" name="coupon_id" id="coupon_id" value="">
+                @endif
+
                 <input type="hidden" name="user_id" id="user_id" value="{{ Auth::guard('web')->check() ? Auth::guard('web')->user()->id : '' }}">
             </form>
         </div>

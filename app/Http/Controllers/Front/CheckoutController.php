@@ -1257,8 +1257,14 @@ class CheckoutController extends FrontBaseController
 
         $shipping_name = count($shipping_names) ? implode(' + ', array_unique($shipping_names)) : null;
 
+        // Calculate total for this vendor (products + shipping)
+        // This will be used in step3
+        $vendorProductsTotal = $vendorTotal; // Products total (may have discount already applied)
+        $finalTotal = $vendorProductsTotal + $shipping_cost_total;
+
         $step2['shipping_company'] = $shipping_name;
         $step2['shipping_cost'] = $shipping_cost_total;
+        $step2['total'] = $finalTotal; // Save total in session for step3
 
         Session::put('vendor_step2_' . $vendorId, $step2);
 
@@ -1331,12 +1337,13 @@ class CheckoutController extends FrontBaseController
         $paystack = PaymentGateway::whereKeyword('paystack')->first();
         $paystackData = $paystack ? $paystack->convertAutoData() : [];
 
-        $coupon = Session::has('coupon_vendor_' . $vendorId) ? Session::get('coupon_vendor_' . $vendorId) : 0;
-        $total = $totalPrice - $coupon;
+        // Use total from step2 (products + shipping)
+        // step2 already calculated: vendorTotal + shipping_cost
+        $finalTotal = $step2->total ?? $totalPrice;
 
         return view('frontend.checkout.step3', [
             'products' => $vendorProducts,
-            'totalPrice' => $total,
+            'totalPrice' => $finalTotal, // Total including shipping
             'pickups' => $pickups,
             'totalQty' => $totalQty,
             'gateways' => $gateways,
