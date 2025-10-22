@@ -133,7 +133,7 @@
                                 <div class="price-details">
                                     <span>@lang('Total MRP')</span>
                                     <span class="right-side cart-total">
-                                        {{ App\Models\Product::convertPrice($totalPrice) }}
+                                        {{ App\Models\Product::convertPrice($productsTotal) }}
                                     </span>
                                 </div>
 
@@ -314,7 +314,9 @@
     function tax_submit(country_id, state_id) {
         $('.gocover').show();
         var total = $("#tgrandtotal").val();
-        var ship  = {{ (float) $shipping_cost }};
+        // IMPORTANT: tgrandtotal already includes shipping from step2
+        // So we pass 0 to avoid double-counting shipping in tax calculation
+        var ship  = 0;
         $.ajax({
             type: "GET",
             url: mainurl + "/country/tax/check",

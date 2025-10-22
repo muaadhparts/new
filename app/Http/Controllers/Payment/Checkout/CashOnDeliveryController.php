@@ -104,58 +104,98 @@ class CashOnDeliveryController extends CheckoutBaseControlller
         $temp_affilate_users = OrderHelper::product_affilate_check($cart); // For Product Based Affilate Checking
         $affilate_users = $temp_affilate_users == null ? null : json_encode($temp_affilate_users);
 
-        $orderCalculate = PriceHelper::getOrderTotal($input, $cart);
+        // ✅ استخدام المبلغ القادم من step3 مباشرة (المبلغ الصحيح المحسوب مسبقاً)
+        // بدلاً من إعادة الحساب باستخدام PriceHelper::getOrderTotal
+        $orderTotal = (float) ($input['total'] ?? 0) / $this->curr->value;
 
-        if (isset($orderCalculate['success']) && $orderCalculate['success'] == false) {
-            return redirect()->back()->with('unsuccess', $orderCalculate['message']);
+        // Prepare vendor IDs from cart
+        $vendor_ids = [];
+        foreach ($cart->items as $item) {
+            if (!in_array($item['item']['user_id'], $vendor_ids)) {
+                $vendor_ids[] = $item['item']['user_id'];
+            }
         }
 
-        if ($this->gs->multiple_shipping == 0) {
-            $orderTotal = $orderCalculate['total_amount'];
-            $shipping = $orderCalculate['shipping'];
-            $packeing = $orderCalculate['packeing'];
-            $is_shipping = $orderCalculate['is_shipping'];
-            $vendor_shipping_ids = $orderCalculate['vendor_shipping_ids'];
-            $vendor_packing_ids = $orderCalculate['vendor_packing_ids'];
-            $vendor_ids = $orderCalculate['vendor_ids'];
+        // تحضير بيانات الشحن والتغليف - تأكد من تحويل كل القيم إلى JSON
+        $input['vendor_ids'] = json_encode($vendor_ids);
 
-            $input['shipping_title'] = @$shipping->title;
-            $input['vendor_shipping_id'] = @$shipping->id;
-            $input['packing_title'] = @$packeing->title;
-            $input['vendor_packing_id'] = @$packeing->id;
-            $input['shipping_cost'] = @$packeing->price ?? 0;
-            $input['packing_cost'] = @$packeing->price ?? 0;
-            $input['is_shipping'] = $is_shipping;
-            $input['vendor_shipping_ids'] = $vendor_shipping_ids;
-            $input['vendor_packing_ids'] = $vendor_packing_ids;
-            $input['vendor_ids'] = $vendor_ids;
+        if ($isVendorCheckout) {
+            // Vendor checkout
+            $input['is_shipping'] = 0;
+            $input['shipping_title'] = '';
+            $input['packing_title'] = '';
+            $input['shipping_cost'] = 0;
+            $input['packing_cost'] = 0;
+            $input['vendor_shipping_ids'] = json_encode([$vendorId => (int)($input['vendor_shipping_id'] ?? 0)]);
+            $input['vendor_packing_ids'] = json_encode([$vendorId => (int)($input['vendor_packing_id'] ?? 0)]);
         } else {
+            // Regular checkout
+            if ($this->gs->multiple_shipping == 0) {
+                // Single shipping
+                $input['is_shipping'] = 0;
+                $input['shipping_title'] = $input['shipping_title'] ?? '';
+                $input['packing_title'] = $input['packing_title'] ?? '';
+                $input['shipping_cost'] = (float)($input['shipping_cost'] ?? 0);
+                $input['packing_cost'] = (float)($input['packing_cost'] ?? 0);
 
-            // multi shipping
+                // تحويل إلى JSON إذا كانت مصفوفات
+                if (isset($input['vendor_shipping_ids']) && is_array($input['vendor_shipping_ids'])) {
+                    $input['vendor_shipping_ids'] = json_encode($input['vendor_shipping_ids']);
+                } elseif (!isset($input['vendor_shipping_ids'])) {
+                    $input['vendor_shipping_ids'] = json_encode([]);
+                }
 
-            $orderTotal = $orderCalculate['total_amount'];
-            $shipping = $orderCalculate['shipping'];
-            $packeing = $orderCalculate['packeing'];
-            $is_shipping = $orderCalculate['is_shipping'];
-            $vendor_shipping_ids = $orderCalculate['vendor_shipping_ids'];
-            $vendor_packing_ids = $orderCalculate['vendor_packing_ids'];
-            $vendor_ids = $orderCalculate['vendor_ids'];
-            $shipping_cost = $orderCalculate['shipping_cost'];
-            $packing_cost = $orderCalculate['packing_cost'];
+                if (isset($input['vendor_packing_ids']) && is_array($input['vendor_packing_ids'])) {
+                    $input['vendor_packing_ids'] = json_encode($input['vendor_packing_ids']);
+                } elseif (!isset($input['vendor_packing_ids'])) {
+                    $input['vendor_packing_ids'] = json_encode([]);
+                }
+            } else {
+                // Multi shipping
+                $input['is_shipping'] = 1;
+                $input['shipping_cost'] = (float)($input['shipping_cost'] ?? 0);
+                $input['packing_cost'] = (float)($input['packing_cost'] ?? 0);
 
-            $input['shipping_title'] = $vendor_shipping_ids;
-            $input['vendor_shipping_id'] = $vendor_shipping_ids;
-            $input['packing_title'] = $vendor_packing_ids;
-            $input['vendor_packing_id'] = $vendor_packing_ids;
-            $input['shipping_cost'] = $shipping_cost;
-            $input['packing_cost'] = $packing_cost;
-            $input['is_shipping'] = $is_shipping;
-            $input['vendor_shipping_ids'] = $vendor_shipping_ids;
-            $input['vendor_packing_ids'] = $vendor_packing_ids;
-            $input['vendor_ids'] = $vendor_ids;
-            unset($input['shipping']);
-            unset($input['packeging']);
+                // تحويل المصفوفات إلى JSON
+                if (isset($input['shipping']) && is_array($input['shipping'])) {
+                    $input['vendor_shipping_ids'] = json_encode($input['shipping']);
+                    $input['shipping_title'] = json_encode($input['shipping']);
+                    $input['vendor_shipping_id'] = json_encode($input['shipping']);
+                    unset($input['shipping']);
+                } elseif (isset($input['vendor_shipping_ids'])) {
+                    if (is_array($input['vendor_shipping_ids'])) {
+                        $input['vendor_shipping_ids'] = json_encode($input['vendor_shipping_ids']);
+                    }
+                    $input['shipping_title'] = $input['vendor_shipping_ids'];
+                    $input['vendor_shipping_id'] = $input['vendor_shipping_ids'];
+                } else {
+                    $input['vendor_shipping_ids'] = json_encode([]);
+                    $input['shipping_title'] = json_encode([]);
+                    $input['vendor_shipping_id'] = json_encode([]);
+                }
+
+                if (isset($input['packeging']) && is_array($input['packeging'])) {
+                    $input['vendor_packing_ids'] = json_encode($input['packeging']);
+                    $input['packing_title'] = json_encode($input['packeging']);
+                    $input['vendor_packing_id'] = json_encode($input['packeging']);
+                    unset($input['packeging']);
+                } elseif (isset($input['vendor_packing_ids'])) {
+                    if (is_array($input['vendor_packing_ids'])) {
+                        $input['vendor_packing_ids'] = json_encode($input['vendor_packing_ids']);
+                    }
+                    $input['packing_title'] = $input['vendor_packing_ids'];
+                    $input['vendor_packing_id'] = $input['vendor_packing_ids'];
+                } else {
+                    $input['vendor_packing_ids'] = json_encode([]);
+                    $input['packing_title'] = json_encode([]);
+                    $input['vendor_packing_id'] = json_encode([]);
+                }
+            }
         }
+
+        // تأكد من إزالة أي مصفوفات متبقية
+        unset($input['shipping']);
+        unset($input['packeging']);
 
         $order = new Order;
 

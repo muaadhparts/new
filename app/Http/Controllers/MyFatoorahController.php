@@ -61,7 +61,7 @@ class MyFatoorahController extends CheckoutBaseControlller {
         $cancel_url = route('front.checkout.step2');
 
         try {
-            // حفظ بيانات الطلب في Session قبل التوجيه لـ MyFatoorah
+            // حفظ بيانات الطلب في Session
             $input = array_merge(
                 Session::get('step1', []),
                 Session::get('step2', []),
@@ -69,22 +69,50 @@ class MyFatoorahController extends CheckoutBaseControlller {
             );
             Session::put('input_data', $input);
 
-            // For example: pmid=0 for MyFatoorah invoice or pmid=1 for Knet in test mode
+            // استخدام المبلغ القادم من step3 مباشرة (المبلغ الصحيح المحسوب مسبقاً)
+            $totalAmount = (float)request('total', 0);
+
+            if ($totalAmount <= 0) {
+                return redirect($cancel_url)->with('unsuccess', __('المبلغ الإجمالي غير صحيح'));
+            }
+
+            // تحويل المبلغ من العملة الحالية إلى العملة الافتراضية (إذا لزم الأمر)
+            $finalAmount = $totalAmount / $this->curr->value;
+
+            // إعداد بيانات الفاتورة
             $paymentId = request('pmid') ?: 0;
             $sessionId = request('sid') ?: null;
             $orderId = request('oid') ?: null;
 
-            $curlData = $this->getPayLoadData($orderId);
+            $curlData = [
+                "NotificationOption" => "ALL",
+                'CustomerName'       => $input['customer_name'] ?? 'Guest',
+                'InvoiceValue'       => $finalAmount,
+                'DisplayCurrencyIso' => $input['currency_name'] ?? 'SAR',
+                'CustomerEmail'      => $input['customer_email'] ?? 'guest@example.com',
+                'CallBackUrl'        => route('front.myfatoorah.notify'),
+                'ErrorUrl'           => route('front.myfatoorah.notify'),
+                'MobileCountryCode'  => '+966',
+                'CustomerMobile'     => $input['customer_phone'] ?? '0000000000',
+                'Language'           => 'en',
+                'CustomerReference'  => 'order_' . time(),
+                'SourceInfo'         => 'Laravel ' . app()::VERSION . ' - MyFatoorah Package ' . MYFATOORAH_LARAVEL_PACKAGE_VERSION
+            ];
+
             $mfObj = new MyFatoorahPayment($this->mfConfig);
             $payment = $mfObj->getInvoiceURL($curlData, $paymentId, $orderId, $sessionId);
 
             Log::info('MyFatoorah Invoice Created', [
                 'invoice_url' => $payment['invoiceURL'],
                 'payment_id' => $paymentId,
+                'total_from_step3' => $totalAmount,
+                'final_amount' => $finalAmount,
+                'currency' => $input['currency_name'] ?? 'SAR',
                 'user_id' => Auth::id()
             ]);
 
             return redirect($payment['invoiceURL']);
+
         } catch (Exception $ex) {
             Log::error('MyFatoorah Invoice Creation Failed', [
                 'error' => $ex->getMessage(),
@@ -102,8 +130,8 @@ class MyFatoorahController extends CheckoutBaseControlller {
         $cancel_url = route('front.checkout.step2');
 
         $input = Session::get('input_data');
-        $step1 = Session::get('step1');
-        $step2 = Session::get('step2');
+        $step1 = Session::get('step1', []);
+        $step2 = Session::get('step2', []);
 
         $input = array_merge($step1, $step2);
 
@@ -163,58 +191,88 @@ class MyFatoorahController extends CheckoutBaseControlller {
         $temp_affilate_users = OrderHelper::product_affilate_check($cart); // For Product Based Affilate Checking
         $affilate_users = $temp_affilate_users == null ? null : json_encode($temp_affilate_users);
 
+        // ✅ استخدام المبلغ المحفوظ من input_data بدلاً من إعادة الحساب
+        $orderTotal = (float)($input['total'] ?? 0);
 
-        $orderCalculate = PriceHelper::getOrderTotal($input, $cart);
-            $input['tax'] = data_get($orderCalculate, 'tax', 0);
-//         dd($orderCalculate,'multi');
-        if (isset($orderCalculate['success']) && $orderCalculate['success'] == false) {
-            return redirect()->back()->with('unsuccess', $orderCalculate['message']);
-        }
-
+        // استخراج بيانات الشحن والتغليف من input_data
         if ($this->gs->multiple_shipping == 0) {
-            $orderTotal = $orderCalculate['total_amount'];
-            $shipping = $orderCalculate['shipping'];
-            $packeing = $orderCalculate['packeing'];
-            $is_shipping = $orderCalculate['is_shipping'];
-            $vendor_shipping_ids = $orderCalculate['vendor_shipping_ids'];
-            $vendor_packing_ids = $orderCalculate['vendor_packing_ids'];
-            $vendor_ids = $orderCalculate['vendor_ids'];
+            // Single shipping mode
+            $input['is_shipping'] = 0;
 
-            $input['shipping_title'] = @$shipping->title;
-            $input['vendor_shipping_id'] = @$shipping->id;
-            $input['packing_title'] = @$packeing->title;
-            $input['vendor_packing_id'] = @$packeing->id;
-            $input['shipping_cost'] = @$packeing->price ?? 0;
-            $input['packing_cost'] = @$packeing->price ?? 0;
-            $input['is_shipping'] = $is_shipping;
-            $input['vendor_shipping_ids'] = $vendor_shipping_ids;
-            $input['vendor_packing_ids'] = $vendor_packing_ids;
-            $input['vendor_ids'] = $vendor_ids;
+            // تأكد أن القيم موجودة ولها قيم افتراضية
+            if (!isset($input['shipping_title'])) $input['shipping_title'] = '';
+            if (!isset($input['vendor_shipping_id'])) $input['vendor_shipping_id'] = 0;
+            if (!isset($input['packing_title'])) $input['packing_title'] = '';
+            if (!isset($input['vendor_packing_id'])) $input['vendor_packing_id'] = 0;
+            if (!isset($input['shipping_cost'])) $input['shipping_cost'] = 0;
+            if (!isset($input['packing_cost'])) $input['packing_cost'] = 0;
+
+            // تحويل القيم المصفوفية إلى JSON إذا كانت مصفوفات
+            if (!isset($input['vendor_shipping_ids']) || empty($input['vendor_shipping_ids'])) {
+                $input['vendor_shipping_ids'] = json_encode([]);
+            } elseif (is_array($input['vendor_shipping_ids'])) {
+                $input['vendor_shipping_ids'] = json_encode($input['vendor_shipping_ids']);
+            }
+
+            if (!isset($input['vendor_packing_ids']) || empty($input['vendor_packing_ids'])) {
+                $input['vendor_packing_ids'] = json_encode([]);
+            } elseif (is_array($input['vendor_packing_ids'])) {
+                $input['vendor_packing_ids'] = json_encode($input['vendor_packing_ids']);
+            }
+
+            if (!isset($input['vendor_ids']) || empty($input['vendor_ids'])) {
+                $input['vendor_ids'] = json_encode([]);
+            } elseif (is_array($input['vendor_ids'])) {
+                $input['vendor_ids'] = json_encode($input['vendor_ids']);
+            }
         } else {
+            // Multi shipping mode
+            $input['is_shipping'] = 1;
 
+            // تحويل المصفوفات إلى JSON للحفظ في قاعدة البيانات
+            if (isset($input['shipping']) && is_array($input['shipping'])) {
+                $input['vendor_shipping_ids'] = json_encode($input['shipping']);
+                $input['shipping_title'] = json_encode($input['shipping']);
+                $input['vendor_shipping_id'] = json_encode($input['shipping']);
+            } elseif (isset($input['vendor_shipping_ids'])) {
+                if (is_array($input['vendor_shipping_ids'])) {
+                    $input['vendor_shipping_ids'] = json_encode($input['vendor_shipping_ids']);
+                }
+                $input['shipping_title'] = $input['vendor_shipping_ids'];
+                $input['vendor_shipping_id'] = $input['vendor_shipping_ids'];
+            } else {
+                $input['vendor_shipping_ids'] = json_encode([]);
+                $input['shipping_title'] = json_encode([]);
+                $input['vendor_shipping_id'] = json_encode([]);
+            }
 
-            // multi shipping
+            if (isset($input['packeging']) && is_array($input['packeging'])) {
+                $input['vendor_packing_ids'] = json_encode($input['packeging']);
+                $input['packing_title'] = json_encode($input['packeging']);
+                $input['vendor_packing_id'] = json_encode($input['packeging']);
+            } elseif (isset($input['vendor_packing_ids'])) {
+                if (is_array($input['vendor_packing_ids'])) {
+                    $input['vendor_packing_ids'] = json_encode($input['vendor_packing_ids']);
+                }
+                $input['packing_title'] = $input['vendor_packing_ids'];
+                $input['vendor_packing_id'] = $input['vendor_packing_ids'];
+            } else {
+                $input['vendor_packing_ids'] = json_encode([]);
+                $input['packing_title'] = json_encode([]);
+                $input['vendor_packing_id'] = json_encode([]);
+            }
 
-            $orderTotal = $orderCalculate['total_amount'];
-            $shipping = $orderCalculate['shipping'];
-            $packeing = $orderCalculate['packeing'];
-            $is_shipping = $orderCalculate['is_shipping'];
-            $vendor_shipping_ids = $orderCalculate['vendor_shipping_ids'];
-            $vendor_packing_ids = $orderCalculate['vendor_packing_ids'];
-            $vendor_ids = $orderCalculate['vendor_ids'];
-            $shipping_cost = $orderCalculate['shipping_cost'];
-            $packing_cost = $orderCalculate['packing_cost'];
+            if (isset($input['vendor_ids'])) {
+                if (is_array($input['vendor_ids'])) {
+                    $input['vendor_ids'] = json_encode($input['vendor_ids']);
+                }
+            } else {
+                $input['vendor_ids'] = json_encode([]);
+            }
 
-            $input['shipping_title'] = $vendor_shipping_ids;
-            $input['vendor_shipping_id'] = $vendor_shipping_ids;
-            $input['packing_title'] = $vendor_packing_ids;
-            $input['vendor_packing_id'] = $vendor_packing_ids;
-            $input['shipping_cost'] = $shipping_cost;
-            $input['packing_cost'] = $packing_cost;
-            $input['is_shipping'] = $is_shipping;
-            $input['vendor_shipping_ids'] = $vendor_shipping_ids;
-            $input['vendor_packing_ids'] = $vendor_packing_ids;
-            $input['vendor_ids'] = $vendor_ids;
+            if (!isset($input['shipping_cost'])) $input['shipping_cost'] = 0;
+            if (!isset($input['packing_cost'])) $input['packing_cost'] = 0;
+
             unset($input['shipping']);
             unset($input['packeging']);
         }
@@ -342,32 +400,6 @@ class MyFatoorahController extends CheckoutBaseControlller {
      * 
      * @return array
      */
-    private function getPayLoadData($orderId = null) {
-//        $callbackURL = route('myfatoorah.callback');
-        $callbackURL = route('front.myfatoorah.notify');
-
-//        $cancel_url = route('front.payment.cancle');
-//        $notify_url = route('front.paypal.notify');
-
-
-        //You can get the data using the order object in your system
-        $order = $this->getTestOrderData($orderId);
-//            dd($order);
-        return [
-            "NotificationOption" => "ALL",
-            'CustomerName'       =>  $order['customer_name'],
-            'InvoiceValue'       => $order['total'],
-            'DisplayCurrencyIso' => $order['currency_name'] ?? 'SAR',
-            'CustomerEmail'      =>  $order['customer_email'],
-            'CallBackUrl'        => $callbackURL,
-            'ErrorUrl'           => $callbackURL,
-            'MobileCountryCode'  => '+966',
-            'CustomerMobile'     =>   $order['customer_phone'],
-            'Language'           => 'en',
-            'CustomerReference'  => $orderId,
-            'SourceInfo'         => 'Laravel ' . app()::VERSION . ' - MyFatoorah Package ' . MYFATOORAH_LARAVEL_PACKAGE_VERSION
-        ];
-    }
 
 //-----------------------------------------------------------------------------------------------------------------------------------------
 
@@ -508,22 +540,6 @@ class MyFatoorahController extends CheckoutBaseControlller {
         return ['IsSuccess' => true, 'Message' => $message, 'Data' => $inputData];
     }
 
-//-----------------------------------------------------------------------------------------------------------------------------------------
-    private function getTestOrderData($orderId) {
-        $input = Session::get('input_data');
-        $step1 = Session::get('step1');
-        $step2 = Session::get('step2');
-        $input = ['currency' => 'SAR'];
-        $input = array_merge($step1, $step2, $input);
-
-//        dd($input);
-        return  $input;
-//        dd($input);
-        return [
-            'total'    => 1,
-            'currency' => 'SAR'
-        ];
-    }
 
 //-----------------------------------------------------------------------------------------------------------------------------------------
     private function getTestMessage($status, $error) {

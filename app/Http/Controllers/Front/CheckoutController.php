@@ -1312,15 +1312,16 @@ class CheckoutController extends FrontBaseController
         // Get vendor cart data using helper method (avoids code duplication)
         $cartData = $this->getVendorCartData($vendorId);
         $vendorProducts = $cartData['vendorProducts'];
-        $totalPrice = $cartData['totalPrice'];
+        $productsTotal = $cartData['totalPrice']; // Products only (no shipping)
         $totalQty = $cartData['totalQty'];
         $dp = $cartData['digital'];
 
         // Get payment gateways for THIS vendor ONLY (NO FALLBACK)
         // CRITICAL: Only show payment methods owned by this vendor
+        // scopeHasGateway returns a Collection, so we filter it
         $allGateways = PaymentGateway::scopeHasGateway($this->curr->id);
         $gateways = $allGateways->where('user_id', $vendorId)
-            ->where('status', 1);
+            ->where('checkout', 1); // checkout=1 means enabled for checkout
 
         // If vendor has no payment methods, show error (NO FALLBACK to admin methods)
         if ($gateways->isEmpty()) {
@@ -1345,13 +1346,15 @@ class CheckoutController extends FrontBaseController
         $paystack = PaymentGateway::whereKeyword('paystack')->first();
         $paystackData = $paystack ? $paystack->convertAutoData() : [];
 
-        // Use total from step2 (products + shipping)
+        // CRITICAL: Use total from step2 (products + shipping + any adjustments)
         // step2 already calculated: vendorTotal + shipping_cost
-        $finalTotal = $step2->total ?? $totalPrice;
+        // This is the ONLY source of truth for final total
+        $finalTotal = $step2->total ?? $productsTotal;
 
         return view('frontend.checkout.step3', [
             'products' => $vendorProducts,
-            'totalPrice' => $finalTotal, // Total including shipping
+            'productsTotal' => $productsTotal, // Products only for "Total MRP" display
+            'totalPrice' => $finalTotal, // Total including shipping for calculations
             'pickups' => $pickups,
             'totalQty' => $totalQty,
             'gateways' => $gateways,
