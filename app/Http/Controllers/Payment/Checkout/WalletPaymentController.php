@@ -36,77 +36,11 @@ class WalletPaymentController extends CheckoutBaseControlller
 
         $oldCart = Session::get('cart');
         $cart = new Cart($oldCart);
-        $orderCalculate = PriceHelper::getOrderTotal($input, $cart);
+// ✅ استخدام الدالة الموحدة من CheckoutBaseControlller
+        $prepared = $this->prepareOrderData($input, $cart);
+        $input = $prepared['input'];
+        $orderTotal = $prepared['order_total'];
 
-        if (!Auth::check()) {
-            return redirect()->back()->with('unsuccess', 'Please login to continue');
-        } else {
-            $user = Auth::user();
-            if ($user->balance < $orderCalculate['total_amount']) {
-                return redirect()->back()->with('unsuccess', 'You do not have enough balance in your wallet');
-            }
-        }
-
-        OrderHelper::license_check($cart); // For License Checking
-        $t_oldCart = Session::get('cart');
-        $t_cart = new Cart($t_oldCart);
-        $new_cart = [];
-        $new_cart['totalQty'] = $t_cart->totalQty;
-        $new_cart['totalPrice'] = $t_cart->totalPrice;
-        $new_cart['items'] = $t_cart->items;
-        $new_cart = json_encode($new_cart);
-        $temp_affilate_users = OrderHelper::product_affilate_check($cart); // For Product Based Affilate Checking
-        $affilate_users = $temp_affilate_users == null ? null : json_encode($temp_affilate_users);
-
-        if (isset($orderCalculate['success']) && $orderCalculate['success'] == false) {
-            return redirect()->back()->with('unsuccess', $orderCalculate['message']);
-        }
-
-        if ($this->gs->multiple_shipping == 0) {
-            $orderTotal = $orderCalculate['total_amount'];
-            $shipping = $orderCalculate['shipping'];
-            $packeing = $orderCalculate['packeing'];
-            $is_shipping = $orderCalculate['is_shipping'];
-            $vendor_shipping_ids = $orderCalculate['vendor_shipping_ids'];
-            $vendor_packing_ids = $orderCalculate['vendor_packing_ids'];
-            $vendor_ids = $orderCalculate['vendor_ids'];
-
-            $input['shipping_title'] = @$shipping->title;
-            $input['vendor_shipping_id'] = @$shipping->id;
-            $input['packing_title'] = @$packeing->title;
-            $input['vendor_packing_id'] = @$packeing->id;
-            $input['shipping_cost'] = @$packeing->price ?? 0;
-            $input['packing_cost'] = @$packeing->price ?? 0;
-            $input['is_shipping'] = $is_shipping;
-            $input['vendor_shipping_ids'] = $vendor_shipping_ids;
-            $input['vendor_packing_ids'] = $vendor_packing_ids;
-            $input['vendor_ids'] = $vendor_ids;
-        } else {
-
-            // multi shipping
-
-            $orderTotal = $orderCalculate['total_amount'];
-            $shipping = $orderCalculate['shipping'];
-            $packeing = $orderCalculate['packeing'];
-            $is_shipping = $orderCalculate['is_shipping'];
-            $vendor_shipping_ids = $orderCalculate['vendor_shipping_ids'];
-            $vendor_packing_ids = $orderCalculate['vendor_packing_ids'];
-            $vendor_ids = $orderCalculate['vendor_ids'];
-            $shipping_cost = $orderCalculate['shipping_cost'];
-            $packing_cost = $orderCalculate['packing_cost'];
-
-            $input['shipping_title'] = $vendor_shipping_ids;
-            $input['vendor_shipping_id'] = $vendor_shipping_ids;
-            $input['packing_title'] = $vendor_packing_ids;
-            $input['vendor_packing_id'] = $vendor_packing_ids;
-            $input['shipping_cost'] = $shipping_cost;
-            $input['packing_cost'] = $packing_cost;
-            $input['is_shipping'] = $is_shipping;
-            $input['vendor_shipping_ids'] = $vendor_shipping_ids;
-            $input['vendor_packing_ids'] = $vendor_packing_ids;
-            $input['vendor_ids'] = $vendor_ids;
-            unset($input['shipping']);
-            unset($input['packeging']);
         }
 
         $order = new Order;
