@@ -77,26 +77,13 @@ class MyFatoorahController extends CheckoutBaseControlller {
         $affilateUsers = OrderHelper::product_affilate_check($cart);
         $input['affilate_users'] = $affilateUsers ? json_encode($affilateUsers) : null;
 
-        $orderCalculation = PriceHelper::getOrderTotal($input, $cart);
-        if (isset($orderCalculation['success']) && !$orderCalculation['success']) {
-            return redirect()->back()->with('unsuccess', $orderCalculation['message']);
-        }
+        // ✅ استخدام الدالة الموحدة من CheckoutBaseControlller
+        $prepared = $this->prepareOrderData($input, $cart);
+        $input = $prepared['input'];
+        $orderTotal = $prepared['order_total'];
 
-        // Merge shipping and packaging details into input
-        $input = array_merge($input, [
-            'shipping_title' => $orderCalculation['vendor_shipping_ids'],
-            'vendor_shipping_id' => $orderCalculation['vendor_shipping_ids'],
-            'packing_title' => $orderCalculation['vendor_packing_ids'],
-            'vendor_packing_id' => $orderCalculation['vendor_packing_ids'],
-            'shipping_cost' => $orderCalculation['shipping_cost'],
-            'packing_cost' => $orderCalculation['packing_cost'],
-            'is_shipping' => $orderCalculation['is_shipping'],
-            'vendor_ids' => $orderCalculation['vendor_ids'],
-            'pay_amount' => $orderCalculation['total_amount'],
-            'order_number' => Str::random(4) . time(),
-        ]);
-
-        unset($input['shipping'], $input['packeging']);
+        $input['pay_amount'] = $orderTotal;
+        $input['order_number'] = Str::random(4) . time();
 
         // Handle tax location
         if ($input['tax_type'] === 'state_tax') {

@@ -59,7 +59,8 @@ class InstamojoController extends CheckoutBaseControlller
             $api = new Instamojo($paydata['key'], $paydata['token']);
         }
 
-        $total = PriceHelper::getOrderTotalAmount($input, Session::get('cart'));
+        // ✅ استخدام المبلغ من step3 مباشرة (لا إعادة حساب)
+        $total = round($total / $this->curr->value, 2);
 
 
         try {

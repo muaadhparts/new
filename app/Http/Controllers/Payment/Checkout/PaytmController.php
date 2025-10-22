@@ -49,8 +49,9 @@ class PaytmController extends CheckoutBaseControlller
 
         $order['item_name'] = $this->gs->title . " Order";
         $order['item_number'] = Str::random(4) . time();
-        $total = PriceHelper::getOrderTotalAmount($input, Session::get('cart'));
 
+        // ✅ استخدام المبلغ من step3 مباشرة (لا إعادة حساب)
+        $total = round($total / $this->curr->value, 2);
         $order['item_amount'] = $total;
         $cancel_url = route('front.payment.cancle');
 

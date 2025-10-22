@@ -64,7 +64,8 @@ class RazorpayController extends CheckoutBaseControlller
         $cancel_url = route('front.payment.cancle');
         $notify_url = route('front.razorpay.notify');
 
-        $total = PriceHelper::getOrderTotalAmount($input, Session::get('cart'));
+        // ✅ استخدام المبلغ من step3 مباشرة (لا إعادة حساب)
+        $total = round($total / $this->curr->value, 2);
       
 
         $orderData = [
