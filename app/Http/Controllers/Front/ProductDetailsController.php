@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Front;
 
+use App\Helpers\ProductContextHelper;
 use App\Models\Comment;
 use App\Models\Order;
 use App\Models\Product;
@@ -239,21 +240,9 @@ class ProductDetailsController extends FrontBaseController
                 ->first();
 
             if ($mp) {
-                $effectivePrice = method_exists($mp, 'vendorSizePrice')
-                    ? (float) $mp->vendorSizePrice()
-                    : (float) $mp->price;
-
-                $product->setAttribute('vendor_user_id', $mp->user_id);
-                $product->setAttribute('price', $effectivePrice);
-
-                if (isset($mp->previous_price)) $product->setAttribute('previous_price', $mp->previous_price);
-                if (isset($mp->stock))          $product->setAttribute('stock', $mp->stock);
-
-                foreach (['size','size_qty','size_price','license','license_qty'] as $f) {
-                    if (isset($mp->{$f})) $product->setAttribute($f, $mp->{$f});
-                }
+                // Use ProductContextHelper for consistency
+                ProductContextHelper::apply($product, $mp);
             }
-
         }
 
         return response()->view('partials.product', compact('product'));

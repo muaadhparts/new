@@ -18,6 +18,7 @@
 
 namespace App\Http\Controllers\Front;
 
+use App\Helpers\ProductContextHelper;
 use App\Models\Cart;
 use App\Models\Country;
 use App\Models\Generalsetting;
@@ -170,27 +171,17 @@ class CartController extends FrontBaseController
 
         $qty = max(1, (int) request('qty', 1));
 
-        // CRITICAL FIX: إنشاء Product instance جديد وملء البيانات يدوياً لتجنب ANY caching
-        // المشكلة الجذرية المكتشفة بعد تحليل عميق وشامل:
-        // 1. Cart::add() يحفظ reference إلى $item (Cart.php السطر 99: 'item' => $item)
-        // 2. Laravel Eloquent يُخزن Models في internal cache حتى مع query()->first()
-        // 3. عندما نطلب نفس product_id عدة مرات، Laravel يُعيد نفس الكائن أو يُشارك البيانات
-        // 4. setAttribute/setRawAttributes لا تحل المشكلة بسبب shared internal arrays
-        // 5. النتيجة: كل combinations من (product_id, user_id, brand_quality_id) تأخذ نفس السعر!
-        // الحل الوحيد المضمون: إنشاء Product instance جديد تماماً وملء البيانات بشكل يدوي
-        $productData = DB::table('products')->where('id', $mp->product_id)->first();
-
-        if (!$productData) {
+        // CRITICAL: استخدام ProductContextHelper لإنشاء Product مع سياق merchant
+        // Helper يضمن:
+        // - Product instance جديد تماماً (لا يوجد Eloquent caching)
+        // - حقن السعر الصحيح من MerchantProduct::vendorSizePrice()
+        // - كل combination من (product_id, user_id, brand_quality_id) مستقل
+        // - القيم المحقونة لها الأولوية على Product::__get() magic methods
+        try {
+            $prod = ProductContextHelper::createWithContext($mp);
+        } catch (\Exception $e) {
             return response()->json(['status' => 'error', 'msg' => __('Product not found')], 404);
         }
-
-        // Create new Product instance and manually set attributes from raw data
-        $prod = new Product();
-        foreach ((array)$productData as $key => $value) {
-            $prod->$key = $value;
-        }
-        $prod->exists = true;
-        $prod->wasRecentlyCreated = false;
 
         // تحديد المقاس
         $size = (string) request('size', '');
@@ -213,8 +204,7 @@ class CartController extends FrontBaseController
             return response()->json(['status' => 'error', 'msg' => __('Out Of Stock')], 422);
         }
 
-        // Inject merchant context into product for cart compatibility
-        $this->injectMerchantContext($prod, $mp);
+        // Merchant context already injected by ProductContextHelper::createWithContext()
 
         $keys = (string) request('keys','');
         $values = (string) request('values','');
@@ -402,40 +392,6 @@ class CartController extends FrontBaseController
             if ($mp) return $mp;
         }
         return $this->pickDefaultListing($prod->id);
-    }
-    // داخل CartController
-
-    /** حقن سياق البائع في كائن المنتج (runtime) */
-    private function injectMerchantContext(Product $prod, MerchantProduct $mp): void
-    {
-        // CRITICAL FIX (مع تعديل Product::__get):
-        // المشكلة الجذرية: Product::__get() كان يستدعي vendorPrice() دائماً عند قراءة price
-        // vendorPrice() تستدعي activeMerchant() التي تُعيد أول merchant، مما يؤدي لسعر خاطئ!
-        // الحل: تم تعديل Product::__get() للتحقق من $attributes أولاً قبل استدعاء vendorPrice()
-        // الآن يمكننا حقن السعر مباشرة في attributes وسيتم استخدامه بدلاً من vendorPrice()
-        $calculatedPrice = method_exists($mp, 'vendorSizePrice') ? $mp->vendorSizePrice() : (float)$mp->price;
-
-        // Inject merchant-specific values into attributes
-        // These will take precedence over vendorColumns methods in __get()
-        $prod->vendor_user_id = $mp->user_id;
-        $prod->user_id = $mp->user_id;
-        $prod->merchant_product_id = $mp->id;
-        $prod->brand_quality_id = $mp->brand_quality_id; // CRITICAL: distinguish same product with different brand
-        $prod->price = $calculatedPrice; // Now __get() will return this instead of vendorPrice()
-        $prod->previous_price = $mp->previous_price;
-        $prod->stock = $mp->stock;
-
-        // Merchant-specific attributes
-        $prod->size = $mp->size;
-        $prod->size_qty = $mp->size_qty;
-        $prod->size_price = $mp->size_price;
-        $prod->stock_check = $mp->stock_check ?? null;
-        $prod->minimum_qty = $mp->minimum_qty ?? null;
-        $prod->whole_sell_qty = $mp->whole_sell_qty ?? null;
-        $prod->whole_sell_discount = $mp->whole_sell_discount ?? null;
-
-        // Colors come from merchant_products only
-        $prod->color_all = $mp->color_all ?? null;
     }
 
     private function normNum($v, $default = 0.0) { return is_numeric($v) ? (float)$v : (float)$default; }

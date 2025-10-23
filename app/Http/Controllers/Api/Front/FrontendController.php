@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\Front;
 
 use App\Classes\MuaadhMailer;
+use App\Helpers\ProductContextHelper;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\BannerResource;
 use App\Http\Resources\BlogResource;use App\Http\Resources\FaqResource;
@@ -71,13 +72,13 @@ class FrontendController extends Controller
 
             $merchantProducts = $merchantProductsQuery->get();
 
-            // Extract products and inject vendor context
+            // Extract products and inject vendor context using ProductContextHelper
             $prods = $merchantProducts->map(function($mp) use ($user) {
                 if (!$mp->product) return null;
 
                 $product = $mp->product;
-                // Inject vendor context for the resource
-                $product->setAttribute('vendor_user_id', $user->id);
+                // Use ProductContextHelper for consistency
+                ProductContextHelper::apply($product, $mp);
                 return $product;
             })->filter()->values();
 
