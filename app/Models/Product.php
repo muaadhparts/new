@@ -534,6 +534,14 @@ class Product extends Model
      */
     public function __get($key)
     {
+        // CRITICAL FIX: Check if attribute exists in $attributes array FIRST
+        // This allows manually injected values (e.g., in cart context) to take precedence
+        // over computed vendor methods. Without this check, cart items would always
+        // get the price from activeMerchant() (first merchant), not the specific merchant.
+        if (array_key_exists($key, $this->attributes)) {
+            return $this->attributes[$key];
+        }
+
         // Handle vendor-specific columns that were moved to merchant_products
         $vendorColumns = [
             'product_condition' => 'getProductCondition',

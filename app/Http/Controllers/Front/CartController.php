@@ -169,7 +169,28 @@ class CartController extends FrontBaseController
         }
 
         $qty = max(1, (int) request('qty', 1));
-        $prod = $mp->product;
+
+        // CRITICAL FIX: إنشاء Product instance جديد وملء البيانات يدوياً لتجنب ANY caching
+        // المشكلة الجذرية المكتشفة بعد تحليل عميق وشامل:
+        // 1. Cart::add() يحفظ reference إلى $item (Cart.php السطر 99: 'item' => $item)
+        // 2. Laravel Eloquent يُخزن Models في internal cache حتى مع query()->first()
+        // 3. عندما نطلب نفس product_id عدة مرات، Laravel يُعيد نفس الكائن أو يُشارك البيانات
+        // 4. setAttribute/setRawAttributes لا تحل المشكلة بسبب shared internal arrays
+        // 5. النتيجة: كل combinations من (product_id, user_id, brand_quality_id) تأخذ نفس السعر!
+        // الحل الوحيد المضمون: إنشاء Product instance جديد تماماً وملء البيانات بشكل يدوي
+        $productData = DB::table('products')->where('id', $mp->product_id)->first();
+
+        if (!$productData) {
+            return response()->json(['status' => 'error', 'msg' => __('Product not found')], 404);
+        }
+
+        // Create new Product instance and manually set attributes from raw data
+        $prod = new Product();
+        foreach ((array)$productData as $key => $value) {
+            $prod->$key = $value;
+        }
+        $prod->exists = true;
+        $prod->wasRecentlyCreated = false;
 
         // تحديد المقاس
         $size = (string) request('size', '');
@@ -387,25 +408,34 @@ class CartController extends FrontBaseController
     /** حقن سياق البائع في كائن المنتج (runtime) */
     private function injectMerchantContext(Product $prod, MerchantProduct $mp): void
     {
-        $prod->vendor_user_id      = $mp->user_id;
-        $prod->user_id             = $mp->user_id;
+        // CRITICAL FIX (مع تعديل Product::__get):
+        // المشكلة الجذرية: Product::__get() كان يستدعي vendorPrice() دائماً عند قراءة price
+        // vendorPrice() تستدعي activeMerchant() التي تُعيد أول merchant، مما يؤدي لسعر خاطئ!
+        // الحل: تم تعديل Product::__get() للتحقق من $attributes أولاً قبل استدعاء vendorPrice()
+        // الآن يمكننا حقن السعر مباشرة في attributes وسيتم استخدامه بدلاً من vendorPrice()
+        $calculatedPrice = method_exists($mp, 'vendorSizePrice') ? $mp->vendorSizePrice() : (float)$mp->price;
+
+        // Inject merchant-specific values into attributes
+        // These will take precedence over vendorColumns methods in __get()
+        $prod->vendor_user_id = $mp->user_id;
+        $prod->user_id = $mp->user_id;
         $prod->merchant_product_id = $mp->id;
-        $prod->brand_quality_id    = $mp->brand_quality_id; // CRITICAL: لتمييز نفس المنتج بـ brand مختلف
-        $prod->price               = method_exists($mp, 'vendorSizePrice') ? $mp->vendorSizePrice() : (float)$mp->price;
-        $prod->previous_price      = $mp->previous_price;
-        $prod->stock               = $mp->stock;
+        $prod->brand_quality_id = $mp->brand_quality_id; // CRITICAL: distinguish same product with different brand
+        $prod->price = $calculatedPrice; // Now __get() will return this instead of vendorPrice()
+        $prod->previous_price = $mp->previous_price;
+        $prod->stock = $mp->stock;
 
-        // خصائص من عرض البائع
-        $prod->setAttribute('size',       $mp->size);
-        $prod->setAttribute('size_qty',   $mp->size_qty);
-        $prod->setAttribute('size_price', $mp->size_price);
-        $prod->setAttribute('stock_check',         $mp->stock_check ?? null);
-        $prod->setAttribute('minimum_qty',         $mp->minimum_qty ?? null);
-        $prod->setAttribute('whole_sell_qty',      $mp->whole_sell_qty ?? null);
-        $prod->setAttribute('whole_sell_discount', $mp->whole_sell_discount ?? null);
+        // Merchant-specific attributes
+        $prod->size = $mp->size;
+        $prod->size_qty = $mp->size_qty;
+        $prod->size_price = $mp->size_price;
+        $prod->stock_check = $mp->stock_check ?? null;
+        $prod->minimum_qty = $mp->minimum_qty ?? null;
+        $prod->whole_sell_qty = $mp->whole_sell_qty ?? null;
+        $prod->whole_sell_discount = $mp->whole_sell_discount ?? null;
 
-        // الجديد: الألوان تأتي من merchant_products فقط
-        $prod->setAttribute('color_all',  $mp->color_all ?? null);
+        // Colors come from merchant_products only
+        $prod->color_all = $mp->color_all ?? null;
     }
 
     private function normNum($v, $default = 0.0) { return is_numeric($v) ? (float)$v : (float)$default; }
