@@ -472,7 +472,7 @@ class CartController extends FrontBaseController
             return response()->json(['ok' => false, 'error' => __('Out of stock')], 422);
         }
 
-        $this->injectMerchantContext($prod, $mp);
+        ProductContextHelper::apply($prod, $mp);
         $keys   = (string) request('keys','');
         $values = (string) request('values','');
 
@@ -538,7 +538,7 @@ class CartController extends FrontBaseController
         $effStock = $this->effectiveStock($mp, $size);
         if ($effStock <= 0) return redirect()->route('front.cart')->with('unsuccess', __('Out Of Stock.'));
 
-        $this->injectMerchantContext($prod, $mp);
+        ProductContextHelper::apply($prod, $mp);
         $keys   = (string) request('keys','');
         $values = (string) request('values','');
 
@@ -604,7 +604,7 @@ class CartController extends FrontBaseController
         $effStock = $this->effectiveStock($mp, $size);
         if ($effStock <= 0 || $qty > $effStock) return 0;
 
-        $this->injectMerchantContext($prod, $mp);
+        ProductContextHelper::apply($prod, $mp);
         if (!empty($prices)) foreach ((array)$prices as $p) $prod->price += ((float)$p / $curr->value);
 
         $oldCart = Session::has('cart') ? Session::get('cart') : null;
@@ -683,7 +683,7 @@ class CartController extends FrontBaseController
             return redirect()->route('front.cart')->with('unsuccess', __('Out Of Stock.'));
         }
 
-        $this->injectMerchantContext($prod, $mp);
+        ProductContextHelper::apply($prod, $mp);
         if (!empty($pricesArr) && !empty($pricesArr[0])) {
             foreach ($pricesArr as $p) $prod->price += ((float)$p / $curr->value);
         }
