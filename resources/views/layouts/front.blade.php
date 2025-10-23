@@ -97,7 +97,7 @@
 
     <script src="{{ asset('assets/front/js/script.js') }}"  ></script>
 
-    <script src="{{ asset('assets/front/js/myscript.js') }}"  ></script>
+    <script src="{{ asset('assets/front/js/myscript.js') }}?v={{ time() }}"  ></script>
 
     <script src="https://cdn.jsdelivr.net/npm/@tarekraafat/autocomplete.js@10.2.9/dist/autoComplete.min.js"></script>
 

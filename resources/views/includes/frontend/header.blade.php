@@ -739,5 +739,16 @@ document.addEventListener('DOMContentLoaded', function() {
         overlay?.classList.add('active');
         document.body.style.overflow = 'hidden';
     });
+
+    // Debug: Check if cart count element exists
+    console.log('🔍 Checking cart elements on page load:');
+    const cartCountEl = document.getElementById('cart-count');
+    const cartCount1El = document.getElementById('cart-count1');
+    console.log('   #cart-count:', cartCountEl ? '✅ Found' : '❌ Not found');
+    console.log('   #cart-count1:', cartCount1El ? '✅ Found' : '❌ Not found');
+    if (cartCountEl) {
+        console.log('   Current value:', cartCountEl.textContent);
+    }
+    console.log('   window.applyCartState:', typeof window.applyCartState);
 });
 </script>

@@ -1,6 +1,88 @@
 (function ($) {
   "use strict";
 
+  console.log('🚀 myscript.js loaded - v2.0.0 - Cart Update Fixed');
+
+  // ✅ Global cart state updater function
+  window.applyCartState = function(data) {
+    if (!data) {
+      console.warn('⚠️ applyCartState called with empty data');
+      return;
+    }
+
+    const cartCount = data.cart_count || data[0] || 0;
+    const cartTotal = data.cart_total || data[1];
+
+    console.log('🔄 Applying cart state:', { cartCount, cartTotal, data });
+
+    // Update all cart count elements with multiple methods for reliability
+    const $cartCount = $("#cart-count");
+    const $cartCount1 = $("#cart-count1");
+    const $headerCartCount = $(".header-cart-count");
+
+    console.log('📍 Found elements:', {
+      cartCount: $cartCount.length,
+      cartCount1: $cartCount1.length,
+      headerCartCount: $headerCartCount.length
+    });
+
+    // Try jQuery first
+    if ($cartCount.length) {
+      $cartCount.html(cartCount);
+      $cartCount.text(cartCount);
+      console.log('✅ Updated #cart-count to:', cartCount);
+    } else {
+      console.warn('⚠️ #cart-count element not found with jQuery!');
+    }
+
+    if ($cartCount1.length) {
+      $cartCount1.html(cartCount);
+      $cartCount1.text(cartCount);
+      console.log('✅ Updated #cart-count1 to:', cartCount);
+    }
+
+    if ($headerCartCount.length) {
+      $headerCartCount.html(cartCount);
+      $headerCartCount.text(cartCount);
+      console.log('✅ Updated .header-cart-count to:', cartCount);
+    }
+
+    // Fallback: Try vanilla JavaScript
+    const cartCountEl = document.getElementById('cart-count');
+    const cartCount1El = document.getElementById('cart-count1');
+
+    if (cartCountEl) {
+      cartCountEl.textContent = cartCount;
+      cartCountEl.innerHTML = cartCount;
+      console.log('✅ Updated #cart-count via vanilla JS to:', cartCount);
+    } else {
+      console.error('❌ #cart-count not found even with vanilla JS!');
+    }
+
+    if (cartCount1El) {
+      cartCount1El.textContent = cartCount;
+      cartCount1El.innerHTML = cartCount;
+      console.log('✅ Updated #cart-count1 via vanilla JS to:', cartCount);
+    }
+
+    // Also update by class
+    document.querySelectorAll('.header-cart-count').forEach(el => {
+      el.textContent = cartCount;
+      el.innerHTML = cartCount;
+      console.log('✅ Updated .header-cart-count via vanilla JS');
+    });
+
+    // Update total if provided
+    if (cartTotal) {
+      $("#total-cost").html(cartTotal);
+    }
+
+    // Reload cart popup
+    if (typeof mainurl !== 'undefined') {
+      $(".cart-popup").load(mainurl + "/carts/view");
+    }
+  };
+
 
 
   //   wishlist
@@ -110,18 +192,25 @@
     // Use merchant product ID if available, otherwise fallback to href
     const requestUrl = mpId ? href : href;
 
+    console.log('🛒 Adding to cart:', requestUrl);
+
     $.get(requestUrl, function (data) {
+      console.log('📦 Cart response:', data);
+
       if (data == "digital") {
         toastr.error(lang.cart_already);
-      } else if (data[0] == 0) {
-        toastr.error(lang.cart_out);
+      } else if (data.ok === false || data[0] == 0) {
+        toastr.error(data.msg || data.error || lang.cart_out);
       } else {
-        $("#cart-count").html(data[0]);
-        $("#cart-count1").html(data[0]);
-        $("#total-cost").html(data[1]);
-        $(".cart-popup").load(mainurl + "/carts/view");
-        toastr.success(lang.cart_success);
+        // Use global cart state updater
+        window.applyCartState(data);
+
+        const successMsg = data.success || lang.cart_success;
+        toastr.success(successMsg);
       }
+    }).fail(function(xhr, status, error) {
+      console.error('❌ Cart add failed:', error, xhr.responseText);
+      toastr.error('Failed to add to cart. Please try again.');
     });
     return true;
   });
@@ -350,16 +439,14 @@
       success: function (data) {
         if (data == "digital") {
           toastr.error("Already Added To Cart");
-        } else if (data == 0) {
-          toastr.error("Out Of Stock");
+        } else if (data == 0 || data.ok === false) {
+          toastr.error(data.msg || data.error || "Out Of Stock");
         } else if (data[3]) {
           toastr.error(lang.minimum_qty_error + " " + data[4]);
         } else {
-          $("#cart-count").html(data[0]);
-          $("#cart-count1").html(data[0]);
-          $(".cart-popup").load(mainurl + "/carts/view");
-          $("#cart-items").load(mainurl + "/carts/view");
-          toastr.success("Successfully Added To Cart");
+          // Use global cart state updater
+          window.applyCartState(data);
+          toastr.success(data.success || "Successfully Added To Cart");
         }
       },
     });

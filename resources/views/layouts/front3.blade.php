@@ -85,7 +85,7 @@
     <script src="{{ asset('assets/front/js/toastr.min.js') }}"></script>
 
     <script src="{{ asset('assets/front') }}/js/script.js"></script>
-    <script src="{{ asset('assets/front/js/myscript.js') }}"></script>
+    <script src="{{ asset('assets/front/js/myscript.js') }}?v={{ time() }}"></script>
     <script src="{{ asset('assets/front/js/jquery.magnific-popup.js') }}"  ></script>
 
 
