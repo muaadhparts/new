@@ -147,56 +147,10 @@ class PaypalController extends CheckoutBaseControlller
             $temp_affilate_users = OrderHelper::product_affilate_check($cart); // For Product Based Affilate Checking
             $affilate_users = $temp_affilate_users == null ? null : json_encode($temp_affilate_users);
 
-
-            // ✅ استخدام المبلغ من step3 مباشرة
-            $orderTotal = (float)($input['total'] ?? 0) / $this->curr->value;
-
-            // تحضير vendor_ids
-            $vendor_ids = [];
-            foreach ($cart->items as $item) {
-                $vid = $item['item']['user_id'] ?? 0;
-                if (!in_array($vid, $vendor_ids)) $vendor_ids[] = $vid;
-            }
-            $input['vendor_ids'] = json_encode($vendor_ids);
-
-            // تحضير بيانات الشحن والتغليف
-            if ($this->gs->multiple_shipping == 0) {
-                $input['is_shipping'] = 0;
-                if (!isset($input['vendor_shipping_ids'])) $input['vendor_shipping_ids'] = json_encode([]);
-                elseif (is_array($input['vendor_shipping_ids'])) $input['vendor_shipping_ids'] = json_encode($input['vendor_shipping_ids']);
-
-                if (!isset($input['vendor_packing_ids'])) $input['vendor_packing_ids'] = json_encode([]);
-                elseif (is_array($input['vendor_packing_ids'])) $input['vendor_packing_ids'] = json_encode($input['vendor_packing_ids']);
-            } else {
-                $input['is_shipping'] = 1;
-
-                if (isset($input['shipping']) && is_array($input['shipping'])) {
-                    $input['vendor_shipping_ids'] = json_encode($input['shipping']);
-                    $input['shipping_title'] = json_encode($input['shipping']);
-                    $input['vendor_shipping_id'] = json_encode($input['shipping']);
-                } elseif (isset($input['vendor_shipping_ids']) && is_array($input['vendor_shipping_ids'])) {
-                    $input['vendor_shipping_ids'] = json_encode($input['vendor_shipping_ids']);
-                    $input['shipping_title'] = $input['vendor_shipping_ids'];
-                    $input['vendor_shipping_id'] = $input['vendor_shipping_ids'];
-                } else {
-                    $input['vendor_shipping_ids'] = json_encode([]);
-                }
-
-                if (isset($input['packeging']) && is_array($input['packeging'])) {
-                    $input['vendor_packing_ids'] = json_encode($input['packeging']);
-                    $input['packing_title'] = json_encode($input['packeging']);
-                    $input['vendor_packing_id'] = json_encode($input['packeging']);
-                } elseif (isset($input['vendor_packing_ids']) && is_array($input['vendor_packing_ids'])) {
-                    $input['vendor_packing_ids'] = json_encode($input['vendor_packing_ids']);
-                    $input['packing_title'] = $input['vendor_packing_ids'];
-                    $input['vendor_packing_id'] = $input['vendor_packing_ids'];
-                } else {
-                    $input['vendor_packing_ids'] = json_encode([]);
-                }
-
-                unset($input['shipping']);
-                unset($input['packeging']);
-            }
+            // ✅ استخدام الدالة الموحدة من CheckoutBaseControlller
+            $prepared = $this->prepareOrderData($input, $cart);
+            $input = $prepared['input'];
+            $orderTotal = $prepared['order_total'];
 
 
             $order = new Order;

@@ -49,7 +49,20 @@
                     </svg>
                     <h3>@lang('THANK YOU FOR YOUR PURCHASE')</h3>
                     <h5>@lang("We'll email you an order confirmation with details and tracking info")</h5>
-                    <a href="{{ route('front.index') }}" class="template-btn btn-success-page">@lang('Get Back to Our Homepage')</a>
+                    @php
+                        // Check if there are remaining items in cart (from other vendors)
+                        $hasRemainingCart = Session::has('cart') && count(Session::get('cart')->items ?? []) > 0;
+
+                        // تحديد الـ URL بناءً على وجود سلة
+                        if ($hasRemainingCart) {
+                            $buttonUrl = route('front.cart');
+                            $buttonText = __('Continue Shopping - Cart');
+                        } else {
+                            $buttonUrl = route('front.index');
+                            $buttonText = __('Back to Homepage');
+                        }
+                    @endphp
+                    <a href="{{ $buttonUrl }}" class="template-btn btn-success-page">{{ $buttonText }}</a>
                 </div>
                 <div class=" success-invoice-body wow-replaced" data-wow-delay=".1s">
                     <h4>@lang('Order#') {{ $order->order_number }}</h4>
@@ -358,6 +371,23 @@
 
                                 @if ($order->shipping == 'shipto')
                                     <p>{{ __('Ship To Address') }}</p>
+                                    @if($order->shipping_title)
+                                        @php
+                                            $shippingTitles = json_decode($order->shipping_title, true);
+                                        @endphp
+                                        @if(is_array($shippingTitles))
+                                            @foreach($shippingTitles as $vendorId => $shippingId)
+                                                @php
+                                                    $shipping = \App\Models\Shipping::find($shippingId);
+                                                @endphp
+                                                @if($shipping)
+                                                    <p><strong>{{ __('Shipping:') }}</strong> {{ $shipping->title }}</p>
+                                                @endif
+                                            @endforeach
+                                        @else
+                                            <p><strong>{{ __('Shipping:') }}</strong> {{ $order->shipping_title }}</p>
+                                        @endif
+                                    @endif
                                 @else
                                     <p>{{ __('Pick Up') }}</p>
                                 @endif

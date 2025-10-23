@@ -477,7 +477,27 @@
                 @if (Auth::user()->id == $order->vendor_shipping_id)
                     @if ($order->shipping_cost != 0)
                         <li class="calculation-list-item">
-                            <span class="amount-type">@lang('Shipping Cost')</span> <span
+                            <span class="amount-type">
+                                @if($order->shipping_title)
+                                    @php
+                                        $shippingTitles = is_string($order->shipping_title) ? json_decode($order->shipping_title, true) : $order->shipping_title;
+                                    @endphp
+                                    @if(is_array($shippingTitles))
+                                        @foreach($shippingTitles as $vendorId => $shippingId)
+                                            @if($vendorId == Auth::user()->id)
+                                                @php
+                                                    $shipping = \App\Models\Shipping::find($shippingId);
+                                                @endphp
+                                                {{ $shipping ? $shipping->title : __('Shipping Cost') }}
+                                            @endif
+                                        @endforeach
+                                    @else
+                                        {{ $order->shipping_title }}
+                                    @endif
+                                @else
+                                    @lang('Shipping Cost')
+                                @endif
+                            </span> <span
                                 class="amount">{{ \PriceHelper::showOrderCurrencyPrice($order->shipping_cost, $order->currency_sign) }}</span>
                         </li>
 

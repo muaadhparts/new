@@ -32,18 +32,22 @@ class Cart extends Model
     }
 
     /**
-     * أنشئ مفتاح العنصر في السلة مع تمييز البائع.
-     * الشكل: id : u{vendor} : {size_key|size} : {color} : {values-clean}
+     * أنشئ مفتاح العنصر في السلة مع تمييز البائع و merchant_product_id.
+     * الشكل: id : u{vendor} : mp{merchant_product_id} : {size_key|size} : {color} : {values-clean}
+     *
+     * IMPORTANT: merchant_product_id ضروري لتمييز نفس المنتج من نفس التاجر لكن بـ brand_quality مختلف
      */
     protected function makeKey($item, $size = '', $color = '', $values = '', $size_key = '')
     {
         $vendor = $this->vendorIdFromItem($item);
+        $merchantProductId = $item->merchant_product_id ?? 0;
         $cleanValues = is_string($values) ? str_replace([' ', ','], '', $values) : (string)$values;
         $dim = ($size_key !== '' && $size_key !== null) ? $size_key : $size;
 
         return implode(':', [
             $item->id,
             'u' . $vendor,
+            'mp' . $merchantProductId,
             (string)$dim,
             (string)$color,
             (string)$cleanValues,
@@ -81,23 +85,25 @@ class Cart extends Model
     public function add($item, $id, $size, $color, $keys, $values)
     {
         $storedItem = [
-            'user_id'      => $this->vendorIdFromItem($item),
-            'qty'          => 0,
-            'size_key'     => 0,
-            'size_qty'     => $item->size_qty,
-            'size_price'   => $item->size_price,
-            'size'         => $item->size,
-            'color'        => $item->color,
-            'stock'        => $item->stock,
-            'price'        => $item->price,
-            'item'         => $item,
-            'license'      => '',
-            'dp'           => '0',
-            'keys'         => $keys,
-            'values'       => $values,
-            'item_price'   => $item->price,
-            'discount'     => 0,
-            'affilate_user'=> 0
+            'user_id'             => $this->vendorIdFromItem($item),
+            'merchant_product_id' => $item->merchant_product_id ?? 0,
+            'brand_quality_id'    => $item->brand_quality_id ?? null,
+            'qty'                 => 0,
+            'size_key'            => 0,
+            'size_qty'            => $item->size_qty,
+            'size_price'          => $item->size_price,
+            'size'                => $item->size,
+            'color'               => $item->color,
+            'stock'               => $item->stock,
+            'price'               => $item->price,
+            'item'                => $item,
+            'license'             => '',
+            'dp'                  => '0',
+            'keys'                => $keys,
+            'values'              => $values,
+            'item_price'          => $item->price,
+            'discount'            => 0,
+            'affilate_user'       => 0
         ];
 
         // مفتاح Vendor-aware

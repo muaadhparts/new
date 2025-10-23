@@ -12,6 +12,7 @@ class CheckoutBaseControlller extends Controller
     protected $gs;
     protected $ps;
     protected $curr;
+    protected $language;
 
     public function __construct()
     {
@@ -22,7 +23,7 @@ class CheckoutBaseControlller extends Controller
 
         $this->middleware(function ($request, $next) {
 
-            if (Session::has('language')) 
+            if (Session::has('language'))
             {
                 $this->language = DB::table('languages')->find(Session::get('language'));
             }

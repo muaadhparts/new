@@ -15,6 +15,8 @@ class RiderController extends RiderBaseController
     {
         $user = $this->rider;
         $orders = DeliveryRider::where('rider_id', $this->rider->id)
+            ->whereNotNull('order_id')
+            ->with(['order', 'pickup'])
             ->orderby('id', 'desc')->take(8)->get();
         return view('rider.dashbaord', compact('orders', 'user'));
     }
@@ -157,10 +159,14 @@ class RiderController extends RiderBaseController
     {
         if ($request->type == 'complete') {
             $orders = DeliveryRider::where('rider_id', $this->rider->id)
+                ->whereNotNull('order_id')
+                ->with(['order', 'pickup'])
                 ->where('status', 'delivered')->orderby('id', 'desc')->paginate(10);
             return view('rider.orders', compact('orders'));
         } else {
             $orders = DeliveryRider::where('rider_id', $this->rider->id)
+                ->whereNotNull('order_id')
+                ->with(['order', 'pickup'])
                 ->where('status', '!=', 'delivered')->orderby('id', 'desc')->paginate(10);
             return view('rider.orders', compact('orders'));
         }
@@ -168,7 +174,16 @@ class RiderController extends RiderBaseController
 
     public function orderDetails($id)
     {
-        $data = DeliveryRider::with('order')->where('rider_id', $this->rider->id)->where('id', $id)->first();
+        $data = DeliveryRider::with(['order', 'pickup', 'vendor'])
+            ->where('rider_id', $this->rider->id)
+            ->where('id', $id)
+            ->whereNotNull('order_id')
+            ->first();
+
+        if (!$data) {
+            return redirect()->route('rider-orders')->with('unsuccess', __('Order not found'));
+        }
+
         return view('rider.order_details', compact('data'));
     }
 

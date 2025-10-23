@@ -35,7 +35,7 @@
                           <a href="javascript:;" data-bs-toggle="modal"
                              data-cross-href="{{ route('front.show.cross.product', $product->id) }}"
                              {{ $product->cross_products ? 'data-bs-target=#exampleModal' : '' }}
-                             data-href="{{ route('product.cart.add', ['product' => $product->id, 'user' => $product->user_id]) }}"
+                             data-href="{{ $merchantProductId ? route('merchant.cart.add', $merchantProductId) : 'javascript:;' }}"
                              class="add-cart button add_to_cart_button {{ $product->cross_products ? 'view_cross_product' : '' }}"
                              data-bs-toggle="tooltip" data-bs-placement="right" aria-label="{{ __('Add To Cart') }}"></a>
                         </div>
@@ -131,7 +131,7 @@
                           <a href="javascript:;" data-bs-toggle="modal"
                              data-cross-href="{{ route('front.show.cross.product', $product->id) }}"
                              {{ $product->cross_products ? 'data-bs-target=#exampleModal' : '' }}
-                             data-href="{{ route('product.cart.add', ['product' => $product->id, 'user' => $product->user_id]) }}"
+                             data-href="{{ $merchantProductId ? route('merchant.cart.add', $merchantProductId) : 'javascript:;' }}"
                              class="add-cart button add_to_cart_button {{ $product->cross_products ? 'view_cross_product' : '' }}"
                              data-bs-toggle="tooltip" data-bs-placement="right" aria-label="{{ __('Add To Cart') }}"></a>
                         </div>
@@ -229,7 +229,7 @@
                         <a href="javascript:;" data-bs-toggle="modal"
                            data-cross-href="{{ route('front.show.cross.product', $product->id) }}"
                            {{ $product->cross_products ? 'data-bs-target=#exampleModal' : '' }}
-                           data-href="{{ route('product.cart.add', ['product' => $product->id, 'user' => $product->user_id]) }}"
+                           data-href="{{ $merchantProductId ? route('merchant.cart.add', $merchantProductId) : 'javascript:;' }}"
                            class="add-cart button add_to_cart_button {{ $product->cross_products ? 'view_cross_product' : '' }}"
                            data-bs-toggle="tooltip" data-bs-placement="right" aria-label="{{ __('Add To Cart') }}"></a>
                       </div>

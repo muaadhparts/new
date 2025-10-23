@@ -243,15 +243,32 @@
                                             <td>{{ \PriceHelper::showCurrencyPrice($subtotal  * $order->currency_value) }}</td>
                                         </tr>
                                         @if($order->shipping_cost != 0)
-                                        @php
-                                        $price = round(($order->shipping_cost / $order->currency_value),2);
-                                        @endphp
-                                            @if(DB::table('shippings')->where('price','=',$price)->count() > 0)
                                             <tr>
-                                                <td colspan="10" class="text-right"><strong>{{ DB::table('shippings')->where('price','=',$price)->first()->title }}({{$order->currency_sign}})</strong></td>
+                                                <td colspan="10" class="text-right">
+                                                    <strong>
+                                                        @if($order->shipping_title)
+                                                            @php
+                                                                $shippingTitles = is_string($order->shipping_title) ? json_decode($order->shipping_title, true) : $order->shipping_title;
+                                                            @endphp
+                                                            @if(is_array($shippingTitles))
+                                                                @foreach($shippingTitles as $vendorId => $shippingId)
+                                                                    @php
+                                                                        $shipping = \App\Models\Shipping::find($shippingId);
+                                                                    @endphp
+                                                                    {{ $shipping ? $shipping->title : __('Shipping') }}
+                                                                    @if(!$loop->last), @endif
+                                                                @endforeach
+                                                            @else
+                                                                {{ $order->shipping_title }}
+                                                            @endif
+                                                        @else
+                                                            {{ __('Shipping Cost') }}
+                                                        @endif
+                                                        ({{$order->currency_sign}})
+                                                    </strong>
+                                                </td>
                                                 <td>{{ \PriceHelper::showOrderCurrencyPrice($order->shipping_cost,$order->currency_sign) }}</td>
                                             </tr>
-                                            @endif
                                         @endif
 
                                         @if($order->packing_cost != 0)

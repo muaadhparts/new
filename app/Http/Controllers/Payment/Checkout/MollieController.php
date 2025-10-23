@@ -95,11 +95,16 @@ class MollieController extends CheckoutBaseControlller
             $temp_affilate_users = OrderHelper::product_affilate_check($cart); // For Product Based Affilate Checking
             $affilate_users = $temp_affilate_users == null ? null : json_encode($temp_affilate_users);
 
+            // ✅ استخدام الدالة الموحدة من CheckoutBaseControlller
+            $prepared = $this->prepareOrderData($input, $cart);
+            $input = $prepared['input'];
+            $orderTotal = $prepared['order_total'];
+
             $order = new Order;
             $input['cart'] = $new_cart;
             $input['user_id'] = Auth::check() ? Auth::user()->id : NULL;
             $input['affilate_users'] = $affilate_users;
-            $input['pay_amount'] = $order_data['item_amount'] / $this->curr->value;
+            $input['pay_amount'] = $orderTotal;
             $input['order_number'] = $order_data['item_number'];
             $input['wallet_price'] = $input['wallet_price'] / $this->curr->value;
             $input['payment_status'] = "Completed";

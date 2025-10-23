@@ -74,7 +74,7 @@
                     @if ($prod->type != 'Listing')
                         <li>
                             <span class="cart-btn add-to-cart add-to-cart-btn"
-                                  data-href="{{ $vendorId ? route('product.cart.add', ['product'=>$prod->id,'user'=>$vendorId]) : route('product.cart.add',$prod->id) }}"
+                                  data-href="{{ $merchantProductId ? route('merchant.cart.add', $merchantProductId) : 'javascript:;' }}"
                                   title="{{ __('Add To Cart') }}">
                                 <i class="icofont-cart"></i>
                             </span>

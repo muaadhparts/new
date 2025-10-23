@@ -87,6 +87,7 @@
                                 <th><span class="header-title">{{ __('View') }}</span></th>
                             </tr>
                             @forelse ($orders as $order)
+                                @if($order->order)
                                 <tr>
                                     <td data-label="{{ __('#Order') }}">
                                         {{ $order->order->order_number }}
@@ -163,6 +164,7 @@
 
                                     </td>
                                 </tr>
+                                @endif
                             @empty
                                 <tr>
                                     <td colspan="6">{{ __('No orders found') }}</td>

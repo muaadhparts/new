@@ -48,13 +48,11 @@ class VoguepayController extends CheckoutBaseControlller
         $new_cart = json_encode($new_cart);
         $temp_affilate_users = OrderHelper::product_affilate_check($cart); // For Product Based Affilate Checking
         $affilate_users = $temp_affilate_users == null ? null : json_encode($temp_affilate_users);
-// ✅ استخدام الدالة الموحدة من CheckoutBaseControlller
+
+        // ✅ استخدام الدالة الموحدة من CheckoutBaseControlller
         $prepared = $this->prepareOrderData($input, $cart);
         $input = $prepared['input'];
         $orderTotal = $prepared['order_total'];
-
-        }
-
 
         $order = new Order;
         $success_url = route('front.payment.return');

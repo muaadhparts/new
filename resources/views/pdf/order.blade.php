@@ -1453,7 +1453,29 @@ table.dataTable thead .sorting_desc_disabled::after {
                                         @if($order->shipping_cost != 0)
                                         <tr class="no-border">
                                             <td colspan="1"></td>
-                                            <td><strong>{{ __('Shipping Cost') }}({{$order->currency_sign}})</strong></td>
+                                            <td>
+                                                <strong>
+                                                    @if($order->shipping_title)
+                                                        @php
+                                                            $shippingTitles = is_string($order->shipping_title) ? json_decode($order->shipping_title, true) : $order->shipping_title;
+                                                        @endphp
+                                                        @if(is_array($shippingTitles))
+                                                            @foreach($shippingTitles as $vendorId => $shippingId)
+                                                                @php
+                                                                    $shipping = \App\Models\Shipping::find($shippingId);
+                                                                @endphp
+                                                                {{ $shipping ? $shipping->title : __('Shipping') }}
+                                                                @if(!$loop->last), @endif
+                                                            @endforeach
+                                                        @else
+                                                            {{ $order->shipping_title }}
+                                                        @endif
+                                                    @else
+                                                        {{ __('Shipping Cost') }}
+                                                    @endif
+                                                    ({{$order->currency_sign}})
+                                                </strong>
+                                            </td>
                                             <td>{{ \PriceHelper::showOrderCurrencyPrice($order->shipping_cost,$order->currency_sign) }}</td>
                                         </tr>
                                         @endif

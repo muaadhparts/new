@@ -2,6 +2,7 @@
   /** @var \App\Models\Product $productt */
   /** @var \App\Models\MerchantProduct|null $merchant */
   $vendorId  = $vendorId ?? optional($merchant)->user_id ?? 0;
+  $merchantProductId = $merchant->id ?? null;
   $hasVendor = $vendorId > 0;
 
   // حساب السعر/الخصم Vendor-aware
@@ -123,7 +124,7 @@
         <div class="d-flex gap-2">
           {{-- زر إضافة للسلة (Ajax) --}}
           <a href="javascript:;" id="addToCartBtn"
-             data-href="{{ $hasVendor ? route('product.cart.add', ['id'=>$productt->id,'user'=>$vendorId]) : 'javascript:;' }}"
+             data-href="{{ $merchantProductId ? route('merchant.cart.add', $merchantProductId) : 'javascript:;' }}"
              data-cross-href="{{ route('front.show.cross.product', $productt->id) }}"
              data-user="{{ $vendorId }}" data-product="{{ $productt->id }}"
              class="btn btn-primary add_cart_click {{ $productt->cross_products ? 'view_cross_product' : '' }}">

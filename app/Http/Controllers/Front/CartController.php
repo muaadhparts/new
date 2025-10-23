@@ -150,9 +150,21 @@ class CartController extends FrontBaseController
      */
     public function addMerchantCart($merchantProductId)
     {
+        // Logging: تسجيل كل إضافة مع المعرفات
+        \Log::info('Cart Addition - addMerchantCart', [
+            'merchant_product_id' => $merchantProductId,
+            'request_data' => request()->all(),
+            'user_id' => auth()->id() ?? 'guest',
+            'ip' => request()->ip()
+        ]);
+
         $mp = MerchantProduct::with(['product', 'user', 'qualityBrand'])->findOrFail($merchantProductId);
 
         if (!$mp || $mp->status !== 1) {
+            \Log::warning('Cart Addition Failed - Product Unavailable', [
+                'merchant_product_id' => $merchantProductId,
+                'status' => $mp->status ?? 'not_found'
+            ]);
             return response()->json(['status' => 'error', 'msg' => __('Product not available')], 400);
         }
 
@@ -378,6 +390,7 @@ class CartController extends FrontBaseController
         $prod->vendor_user_id      = $mp->user_id;
         $prod->user_id             = $mp->user_id;
         $prod->merchant_product_id = $mp->id;
+        $prod->brand_quality_id    = $mp->brand_quality_id; // CRITICAL: لتمييز نفس المنتج بـ brand مختلف
         $prod->price               = method_exists($mp, 'vendorSizePrice') ? $mp->vendorSizePrice() : (float)$mp->price;
         $prod->previous_price      = $mp->previous_price;
         $prod->stock               = $mp->stock;
@@ -445,7 +458,13 @@ class CartController extends FrontBaseController
         $prod = $this->fetchIdentity($id); if (!$prod) {
             return response()->json(['ok' => false, 'error' => __('Product not found')], 404);
         }
+
+        // IMPORTANT: user parameter مطلوب لتجنب fallback
         $vendorId = (int) request('user');
+        if (!$vendorId) {
+            \Log::warning('addcart called without user parameter', ['product_id' => $id, 'request' => request()->all()]);
+        }
+
         $mp = $this->fetchListingOrFallback($prod, $vendorId); if (!$mp) {
             return response()->json(['ok' => false, 'error' => __('Vendor listing not found')], 404);
         }
@@ -489,12 +508,34 @@ class CartController extends FrontBaseController
 
     public function addtocart($id)
     {
+        // Logging: تسجيل محاولة الإضافة
+        \Log::info('Cart Addition - addtocart', [
+            'product_id' => $id,
+            'vendor_id' => request('user', 0),
+            'request_data' => request()->all(),
+            'user_id' => auth()->id() ?? 'guest',
+            'ip' => request()->ip()
+        ]);
+
         $prod = $this->fetchIdentity($id);
-        if (!$prod) return redirect()->route('front.cart')->with('unsuccess', __('Product not found.'));
+        if (!$prod) {
+            \Log::warning('Cart Addition Failed - Product Not Found', ['product_id' => $id]);
+            return redirect()->route('front.cart')->with('unsuccess', __('Product not found.'));
+        }
 
         $vendorId = (int) request('user', 0);
+        if (!$vendorId) {
+            \Log::warning('addtocart called without user parameter', ['product_id' => $id, 'request' => request()->all()]);
+        }
+
         $mp = $this->fetchListingOrFallback($prod, $vendorId);
-        if (!$mp) return redirect()->route('front.cart')->with('unsuccess', __('Vendor listing not found or inactive.'));
+        if (!$mp) {
+            \Log::warning('Cart Addition Failed - Vendor Listing Not Found', [
+                'product_id' => $id,
+                'vendor_id' => $vendorId
+            ]);
+            return redirect()->route('front.cart')->with('unsuccess', __('Vendor listing not found or inactive.'));
+        }
 
         $size = (string) request('size','');
         if ($size === '') { [$size, $_] = $this->pickAvailableSize($mp->size, $mp->size_qty); }
@@ -542,11 +583,36 @@ class CartController extends FrontBaseController
         $prices   = $request->input('prices', 0);
         $curr     = $this->curr;
 
-        $prod = $this->fetchIdentity($id); if (!$prod) return 0;
+        // Logging: تسجيل محاولة الإضافة
+        \Log::info('Cart Addition - addnumcart', [
+            'product_id' => $id,
+            'vendor_id' => $request->input('user', 0),
+            'qty' => $qty,
+            'request_data' => $request->all(),
+            'user_id' => auth()->id() ?? 'guest',
+            'ip' => request()->ip()
+        ]);
+
+        $prod = $this->fetchIdentity($id);
+        if (!$prod) {
+            \Log::warning('Cart Addition Failed - Product Not Found', ['product_id' => $id]);
+            return 0;
+        }
         if ($prod->type != 'Physical') { $qty = 1; }
 
         $vendorId = (int) $request->input('user', 0);
-        $mp = $this->fetchListingOrFallback($prod, $vendorId); if (!$mp) return 0;
+        if (!$vendorId) {
+            \Log::warning('addnumcart called without user parameter', ['product_id' => $id, 'request' => request()->all()]);
+        }
+
+        $mp = $this->fetchListingOrFallback($prod, $vendorId);
+        if (!$mp) {
+            \Log::warning('Cart Addition Failed - Vendor Listing Not Found', [
+                'product_id' => $id,
+                'vendor_id' => $vendorId
+            ]);
+            return 0;
+        }
 
         if ($size === '') { [$size, $_] = $this->pickAvailableSize($mp->size, $mp->size_qty); }
         $effStock = $this->effectiveStock($mp, $size);
@@ -594,13 +660,36 @@ class CartController extends FrontBaseController
         $values = !$valsArr ? '' : implode(',', $valsArr);
         $curr   = $this->curr;
 
+        // Logging: تسجيل محاولة الإضافة
+        \Log::info('Cart Addition - addtonumcart', [
+            'product_id' => $id,
+            'vendor_id' => $request->input('user', 0),
+            'qty' => $qty,
+            'request_data' => $request->all(),
+            'user_id' => auth()->id() ?? 'guest',
+            'ip' => request()->ip()
+        ]);
+
         $prod = $this->fetchIdentity($id);
-        if (!$prod) return redirect()->route('front.cart')->with('unsuccess', __('Product not found.'));
+        if (!$prod) {
+            \Log::warning('Cart Addition Failed - Product Not Found', ['product_id' => $id]);
+            return redirect()->route('front.cart')->with('unsuccess', __('Product not found.'));
+        }
         if ($prod->type != 'Physical') { $qty = 1; }
 
         $vendorId = (int) $request->input('user', 0);
+        if (!$vendorId) {
+            \Log::warning('addtonumcart called without user parameter', ['product_id' => $id, 'request' => request()->all()]);
+        }
+
         $mp = $this->fetchListingOrFallback($prod, $vendorId);
-        if (!$mp) return redirect()->route('front.cart')->with('unsuccess', __('Vendor listing not found or inactive.'));
+        if (!$mp) {
+            \Log::warning('Cart Addition Failed - Vendor Listing Not Found', [
+                'product_id' => $id,
+                'vendor_id' => $vendorId
+            ]);
+            return redirect()->route('front.cart')->with('unsuccess', __('Vendor listing not found or inactive.'));
+        }
 
         if ($size === '') { [$size, $_] = $this->pickAvailableSize($mp->size, $mp->size_qty); }
         $effStock = $this->effectiveStock($mp, $size);

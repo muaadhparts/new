@@ -8,6 +8,12 @@
                 @php
                     $order = $data->order;
                 @endphp
+
+                @if(!$order)
+                    <div class="alert alert-danger">
+                        {{ __('Order not found') }}
+                    </div>
+                @else
                 <!-- main content -->
                 <div class="gs-dashboard-user-content-wrapper gs-dashboard-outlet">
                     <div class="ud-page-title-box gap-4">
@@ -224,6 +230,7 @@
                     <!-- account information -->
 
                 </div>
+                @endif
             </div>
         </div>
     </div>

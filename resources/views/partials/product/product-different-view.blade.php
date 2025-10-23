@@ -60,7 +60,7 @@
                                             <a href="javascript:;" data-bs-toggle="modal"
                                                data-cross-href="{{ route('front.show.cross.product', $product->id) }}"
                                                {{ $product->cross_products ? 'data-bs-target=#exampleModal' : '' }}
-                                               data-href="{{ $vendorId ? route('product.cart.add', ['id'=>$product->id,'user'=>$vendorId]) : route('product.cart.add', $product->id) }}"
+                                               data-href="{{ $merchantProductId ? route('merchant.cart.add', $merchantProductId) : 'javascript:;' }}"
                                                class="add-cart button add_to_cart_button {{ $product->cross_products ? 'view_cross_product' : '' }}"
                                                aria-label="{{ __('Add To Cart') }}"></a>
                                         </div>
@@ -188,7 +188,7 @@
                                             <a href="javascript:;" data-bs-toggle="modal"
                                                data-cross-href="{{ route('front.show.cross.product', $product->id) }}"
                                                {{ $product->cross_products ? 'data-bs-target=#exampleModal' : '' }}
-                                               data-href="{{ $vendorId ? route('product.cart.add', ['id'=>$product->id,'user'=>$vendorId]) : route('product.cart.add', $product->id) }}"
+                                               data-href="{{ $merchantProductId ? route('merchant.cart.add', $merchantProductId) : 'javascript:;' }}"
                                                class="add-cart button add_to_cart_button {{ $product->cross_products ? 'view_cross_product' : '' }}"
                                                aria-label="{{ __('Add To Cart') }}"></a>
                                         </div>

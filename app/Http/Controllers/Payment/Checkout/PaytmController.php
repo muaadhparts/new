@@ -102,13 +102,11 @@ class PaytmController extends CheckoutBaseControlller
 
                 $temp_affilate_users = OrderHelper::product_affilate_check($cart); // For Product Based Affilate Checking
                 $affilate_users = $temp_affilate_users == null ? null : json_encode($temp_affilate_users);
-// ✅ استخدام الدالة الموحدة من CheckoutBaseControlller
-        $prepared = $this->prepareOrderData($input, $cart);
-        $input = $prepared['input'];
-        $orderTotal = $prepared['order_total'];
 
-                }
-
+                // ✅ استخدام الدالة الموحدة من CheckoutBaseControlller
+                $prepared = $this->prepareOrderData($input, $cart);
+                $input = $prepared['input'];
+                $orderTotal = $prepared['order_total'];
 
                 $order = new Order;
                 $input['cart'] = $new_cart;

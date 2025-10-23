@@ -36,12 +36,21 @@ class WalletPaymentController extends CheckoutBaseControlller
 
         $oldCart = Session::get('cart');
         $cart = new Cart($oldCart);
-// ✅ استخدام الدالة الموحدة من CheckoutBaseControlller
+        OrderHelper::license_check($cart); // For License Checking
+        $t_oldCart = Session::get('cart');
+        $t_cart = new Cart($t_oldCart);
+        $new_cart = [];
+        $new_cart['totalQty'] = $t_cart->totalQty;
+        $new_cart['totalPrice'] = $t_cart->totalPrice;
+        $new_cart['items'] = $t_cart->items;
+        $new_cart = json_encode($new_cart);
+        $temp_affilate_users = OrderHelper::product_affilate_check($cart); // For Product Based Affilate Checking
+        $affilate_users = $temp_affilate_users == null ? null : json_encode($temp_affilate_users);
+
+        // ✅ استخدام الدالة الموحدة من CheckoutBaseControlller
         $prepared = $this->prepareOrderData($input, $cart);
         $input = $prepared['input'];
         $orderTotal = $prepared['order_total'];
-
-        }
 
         $order = new Order;
         $success_url = route('front.payment.return');

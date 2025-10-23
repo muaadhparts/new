@@ -709,6 +709,7 @@
         $("#maddcrt").on("click", function(){
             var qty = $('.modal-total').val() ? $('.modal-total').val() : 1;
             var pid = $(this).parent().parent().parent().parent().parent().find("#mproduct_id").val();
+            var user_id = {{ $quickVendorId ?? 0 }};
 
           if($('.mproduct-attr').length > 0)
           {
@@ -740,7 +741,7 @@
             $.ajax({
                 type: "GET",
                 url:mainurl+"/addnumcart",
-                data:{id:pid,qty:qty,size:sizes,color:colors,size_qty:size_qty,size_price:size_price,size_key:size_key,keys:keys,values:values,prices:prices},
+                data:{id:pid,user:user_id,qty:qty,size:sizes,color:colors,size_qty:size_qty,size_price:size_price,size_key:size_key,keys:keys,values:values,prices:prices},
                 success:function(data){
                     if(data == 'digital') {
                         toastr.error("{{ __('Already Added To Cart.') }}");
@@ -766,6 +767,7 @@
           var qty = $('.modal-total').val();
           var minimum_qty = $('#mproduct_minimum_qty').val();
           var pid = $(this).parent().parent().parent().parent().parent().find("#mproduct_id").val();
+          var user_id = {{ $quickVendorId ?? 0 }};
 
           if($('.mproduct-attr').length > 0)
           {
@@ -797,7 +799,7 @@
             return false;
           }
 
-         window.location = mainurl+"/addtonumcart?id="+pid+"&qty="+qty+"&size="+sizes+"&color="+colors.substring(1, colors.length)+"&size_qty="+size_qty+"&size_price="+size_price+"&size_key="+size_key+"&keys="+keys+"&values="+values+"&prices="+prices;
+         window.location = mainurl+"/addtonumcart?id="+pid+"&user="+user_id+"&qty="+qty+"&size="+sizes+"&color="+colors.substring(1, colors.length)+"&size_qty="+size_qty+"&size_price="+size_price+"&size_key="+size_key+"&keys="+keys+"&values="+values+"&prices="+prices;
 
          });
 
