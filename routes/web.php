@@ -13,6 +13,11 @@ use Siberfx\LaravelTryoto\app\Http\Controllers\Api\TryOtoController;
 use App\Http\Controllers\Api\CalloutController;
 use App\Http\Controllers\Front\ProductDetailsController;
 
+// Google Maps Demo Route
+Route::get('/google-maps-demo', function () {
+    return view('google-maps-demo');
+});
+
 
 
 // Route::get('/refresh-stock/{token}', function ($token) {

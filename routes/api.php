@@ -2,6 +2,7 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\GeocodingController;
 
 /*
 |--------------------------------------------------------------------------
@@ -13,6 +14,15 @@ use Illuminate\Support\Facades\Route;
 | is assigned the "api" middleware group. Enjoy building your API!
 |
 */
+
+// --------------------- GOOGLE MAPS GEOCODING ROUTES ---------------------
+Route::prefix('geocoding')->group(function () {
+    Route::post('/reverse', [GeocodingController::class, 'reverseGeocode']);
+    Route::get('/countries', [GeocodingController::class, 'getCountries']);
+    Route::get('/states', [GeocodingController::class, 'getStatesByCountry']);
+    Route::get('/cities', [GeocodingController::class, 'getCitiesByState']);
+});
+// --------------------- GOOGLE MAPS GEOCODING ROUTES END ---------------------
 
 
 Route::group(['prefix' => 'user'], function () {

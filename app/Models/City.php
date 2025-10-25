@@ -9,8 +9,16 @@ class City extends Model
 {
     use HasFactory;
 
-    public function state() {
-        return $this->belongsTo(State::class,'state_id');
-    }
+    protected $fillable = ['state_id', 'city_name', 'city_name_ar', 'status', 'country_id'];
     public $timestamps = false;
+
+    public function state()
+    {
+        return $this->belongsTo(State::class, 'state_id');
+    }
+
+    public function country()
+    {
+        return $this->belongsTo(Country::class, 'country_id');
+    }
 }
