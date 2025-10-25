@@ -215,6 +215,63 @@
     return true;
   });
 
+  // حذف عنصر من المقارنة (Compare)
+  $(document).on('click', 'a[href*="compare/remove"]', function (e) {
+    e.preventDefault();
+
+    const $btn = $(this);
+    const removeUrl = $btn.attr('href');
+
+    if (!removeUrl) {
+      console.error('Remove URL not found');
+      return;
+    }
+
+    console.log('🗑️ Removing from compare:', removeUrl);
+
+    // إزالة صامتة بدون تأكيد
+    $.ajax({
+      url: removeUrl,
+      type: 'GET',
+      dataType: 'json',
+      headers: {
+        'X-Requested-With': 'XMLHttpRequest',
+        'Accept': 'application/json'
+      },
+      success: function(data) {
+        console.log('✅ Compare remove response:', data);
+
+        if (data.ok || data.success) {
+          toastr.success(data.success || 'Item removed from comparison');
+
+          // Remove the column from table
+          const $td = $btn.closest('td');
+          const columnIndex = $td.index();
+
+          // Remove all cells in this column
+          $td.closest('table').find('tr').each(function() {
+            $(this).find('td, th').eq(columnIndex).fadeOut(300, function() {
+              $(this).remove();
+            });
+          });
+
+          // If no items left, reload page to show empty state
+          setTimeout(function() {
+            if (data.compare_count === 0) {
+              location.reload();
+            }
+          }, 400);
+        } else {
+          toastr.error(data.error || 'Failed to remove item');
+        }
+      },
+      error: function(xhr, status, error) {
+        console.error('❌ Compare remove failed:', error);
+        toastr.error('Failed to remove item. Please try again.');
+      }
+    });
+  });
+
   // زيادة الكمية (+)
   $(document).on('click', '.quantity-up', function (e) {
     e.preventDefault();

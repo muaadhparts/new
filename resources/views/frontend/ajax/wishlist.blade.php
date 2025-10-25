@@ -68,7 +68,13 @@
         </td>
         <td class="product-add-to-cart">
             @if($merchantProduct && ($merchantProduct->stock > 0 || !$merchantProduct->stock))
-                <button type="submit" data-merchant-product-id="{{ $merchantProduct->id }}" class="single_add_to_cart_button button alt single_add_to_cart_ajax_button">{{ __('Add to cart') }}</button>
+                <a href="javascript:;"
+                   data-href="{{ route('merchant.cart.add', $merchantProduct->id) }}"
+                   data-merchant-product="{{ $merchantProduct->id }}"
+                   data-product="{{ $product->id }}"
+                   class="add_cart_click single_add_to_cart_button button alt">
+                    {{ __('Add to cart') }}
+                </a>
             @else
                 <button type="button" disabled class="single_add_to_cart_button button alt">{{ __('Out of Stock') }}</button>
             @endif

@@ -34,14 +34,18 @@ class CompareController extends FrontBaseController
     /**
      * Remove merchant product from comparison (New standardized method)
      */
-    public function removeMerchantCompare($merchantProductId)
+    public function removeMerchantCompare(Request $request, $merchantProductId)
     {
-        $data[0] = 0;
         $oldCompare = Session::has('compare') ? Session::get('compare') : null;
 
         if (!$oldCompare || !isset($oldCompare->items[$merchantProductId])) {
-            $data['error'] = __('Item not found in compare list.');
-            return response()->json($data);
+            if ($request->expectsJson() || $request->ajax()) {
+                return response()->json([
+                    'ok' => false,
+                    'error' => __('Item not found in compare list.')
+                ]);
+            }
+            return back()->with('unsuccess', __('Item not found in compare list.'));
         }
 
         $compare = new Compare($oldCompare);
@@ -53,10 +57,17 @@ class CompareController extends FrontBaseController
             Session::forget('compare');
         }
 
-        $data[0] = 1;
-        $data[1] = count($compare->items);
-        $data['success'] = __('Successfully Removed From Compare.');
-        return response()->json($data);
+        // Return JSON for Ajax requests
+        if ($request->expectsJson() || $request->ajax()) {
+            return response()->json([
+                'ok' => true,
+                'compare_count' => count($compare->items),
+                'success' => __('Successfully Removed From Compare.')
+            ]);
+        }
+
+        // Return redirect for normal requests
+        return back()->with('success', __('Successfully Removed From Compare.'));
     }
 
     /**

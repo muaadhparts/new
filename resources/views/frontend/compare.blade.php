@@ -37,8 +37,9 @@
                                     @if($product)
                                         <a href="{{ route('front.product', ['slug' => $product->slug, 'vendor_id' => $productData['merchant_product']->user_id, 'merchant_product_id' => $productData['merchant_product']->id]) }}">
                                             <img class="img-fluid w-150"
-                                                src="{{ $product->thumbnail ? asset('assets/images/thumbnails/' . $product->thumbnail) : asset('assets/images/noimage.png') }}"
-                                                alt="compare-img">
+                                                src="{{ $product->photo ? \Illuminate\Support\Facades\Storage::url($product->photo) : asset('assets/images/noimage.png') }}"
+                                                alt="compare-img"
+                                                style="max-width: 150px; height: auto; object-fit: cover;">
                                         </a>
                                     @endif
                                 </td>
@@ -173,6 +174,8 @@
                                                 @if ($product->type != 'Listing')
                                                     <a href="javascript:;"
                                                        data-href="{{ route('merchant.cart.add', $merchantProductId) }}"
+                                                       data-merchant-product="{{ $merchantProductId }}"
+                                                       data-product="{{ $product->id }}"
                                                         class="add_cart_click template-btn dark-btn w-100">
                                                         @lang('Add To Cart')
                                                     </a>
