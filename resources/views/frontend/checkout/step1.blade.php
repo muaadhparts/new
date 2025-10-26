@@ -186,6 +186,16 @@
                                     </div>
                                 </div>
 
+                                <!-- Google Maps Location Picker -->
+                                <div class="col-lg-12">
+                                    <div class="mt-3 mb-3">
+                                        <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#google-maps-modal">
+                                            <i class="fas fa-map-marker-alt"></i> @lang('Select Location from Map')
+                                        </button>
+                                        <small class="text-muted d-block mt-2">@lang('Click to open map and select your exact location')</small>
+                                    </div>
+                                </div>
+
                                 <!-- chekbox -->
                                 <div class="col-lg-12  {{ $digital == 1 ? 'd-none' : '' }}" id="ship_deff">
                                     <div class="gs-checkbox-wrapper" data-bs-toggle="collapse"
@@ -592,5 +602,59 @@ document.addEventListener("DOMContentLoaded", function () {
         }
         $('#show_shipping_address input[name="order_notes"]').prop('required', false);
     });
+
+    // Google Maps Location Picker Integration
+    let locationPicker;
+
+    function initLocationPicker() {
+        locationPicker = new GoogleMapsLocationPicker({
+            containerId: 'map-picker-container',
+            mapId: 'location-map',
+            onLocationSelect: function(data) {
+                // Update form fields
+                $('#select_country').val(data.country.id).trigger('change');
+                $('#address').val(data.address.ar || data.address.en);
+                $('#latitude').val(data.coordinates.latitude);
+                $('#longitude').val(data.coordinates.longitude);
+
+                // Show selected location info
+                $('#location-info-display').addClass('show');
+                $('#confirm-location-btn').prop('disabled', false);
+            }
+        });
+
+        locationPicker.init();
+    }
+
+    // Initialize when modal is shown
+    $('#google-maps-modal').on('shown.bs.modal', function() {
+        if (!locationPicker) {
+            initLocationPicker();
+        }
+    });
+
+    // Confirm location button
+    $(document).on('click', '#confirm-location-btn', function() {
+        const location = locationPicker.getSelectedLocation();
+        if (location) {
+            toastr.success('@lang("Location selected successfully!")');
+            $('#google-maps-modal').modal('hide');
+        }
+    });
+
+    // Reset button
+    $(document).on('click', '#reset-location-btn', function() {
+        if (locationPicker) {
+            locationPicker.reset();
+            $('#confirm-location-btn').prop('disabled', true);
+        }
+    });
 </script>
+@endpush
+
+{{-- Include Google Maps Modal --}}
+@include('components.google-maps-picker', ['showAsModal' => true])
+
+@push('scripts')
+<script src="{{ asset('assets/front/js/google-maps-location-picker.js') }}"></script>
 @endpush

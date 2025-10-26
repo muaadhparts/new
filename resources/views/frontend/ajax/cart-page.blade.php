@@ -251,6 +251,11 @@
                                                 <i class="fas fa-shopping-cart me-2"></i>@lang('Checkout This Vendor')
                                             </a>
                                         @endauth
+
+                                        {{-- Google Maps Location Button --}}
+                                        <button type="button" class="btn btn-outline-primary w-100 mt-3" data-bs-toggle="modal" data-bs-target="#google-maps-modal-cart" style="padding: 0.8rem 1.5rem; border-radius: 14px; font-weight: 600; border: 2px solid #0d9488;">
+                                            <i class="fas fa-map-marker-alt me-2"></i>@lang('Set Delivery Location')
+                                        </button>
                                     </div>
                                 </div>
                             </div>

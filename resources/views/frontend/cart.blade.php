@@ -275,4 +275,58 @@
     <section class="gs-cart-section load_cart">
         @include('frontend.ajax.cart-page')
     </section>
+
+    {{-- Include Google Maps Modal for Cart --}}
+    @include('components.google-maps-picker', ['showAsModal' => true, 'modalId' => 'google-maps-modal-cart'])
 @endsection
+
+@push('scripts')
+<script src="{{ asset('assets/front/js/google-maps-location-picker.js') }}"></script>
+<script>
+    // Google Maps Location Picker for Cart
+    let cartLocationPicker;
+
+    function initCartLocationPicker() {
+        cartLocationPicker = new GoogleMapsLocationPicker({
+            containerId: 'map-picker-container',
+            mapId: 'location-map',
+            onLocationSelect: function(data) {
+                // Store location in session/localStorage for checkout
+                localStorage.setItem('delivery_location', JSON.stringify(data));
+
+                // Show selected location info
+                $('#location-info-display').addClass('show');
+                $('#confirm-location-btn').prop('disabled', false);
+
+                toastr.success('@lang("Delivery location saved!")');
+            }
+        });
+
+        cartLocationPicker.init();
+    }
+
+    // Initialize when modal is shown
+    $('#google-maps-modal-cart').on('shown.bs.modal', function() {
+        if (!cartLocationPicker) {
+            initCartLocationPicker();
+        }
+    });
+
+    // Confirm location button
+    $(document).on('click', '#confirm-location-btn', function() {
+        const location = cartLocationPicker.getSelectedLocation();
+        if (location) {
+            toastr.success('@lang("Location will be used during checkout!")');
+            $('#google-maps-modal-cart').modal('hide');
+        }
+    });
+
+    // Reset button
+    $(document).on('click', '#reset-location-btn', function() {
+        if (cartLocationPicker) {
+            cartLocationPicker.reset();
+            $('#confirm-location-btn').prop('disabled', true);
+        }
+    });
+</script>
+@endpush
