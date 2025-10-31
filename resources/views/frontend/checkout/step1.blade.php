@@ -870,58 +870,190 @@ function useLocation() {
     const fullAddress = selectedLocationData.address?.ar || selectedLocationData.address?.en || '';
     $('#address').val(fullAddress);
 
-    // Update country dropdown
-    const countryName = selectedLocationData.country?.name || '';
-    if (countryName) {
-        // Find and select the country option
-        $('#select_country option').each(function() {
-            if ($(this).text().trim().toLowerCase() === countryName.toLowerCase() ||
-                $(this).val().toLowerCase() === countryName.toLowerCase()) {
-                $(this).prop('selected', true);
-                $('#select_country').trigger('change');
-                return false;
+    // Step 1: Find and select country by comparing with country names from API
+    const countryNameEn = selectedLocationData.country?.name || '';
+    const countryNameAr = selectedLocationData.country?.name_ar || '';
+
+    let countryFound = false;
+
+    $('#select_country option').each(function() {
+        const optionText = $(this).text().trim();
+        const optionValue = $(this).val();
+
+        // Try to match by text or value (case insensitive)
+        if (optionValue && (
+            optionText.toLowerCase() === countryNameEn.toLowerCase() ||
+            optionText.toLowerCase() === countryNameAr.toLowerCase() ||
+            optionValue.toLowerCase() === countryNameEn.toLowerCase() ||
+            optionValue.toLowerCase() === countryNameAr.toLowerCase()
+        )) {
+            $(this).prop('selected', true);
+            countryFound = true;
+
+            // Update NiceSelect for country if it exists
+            if (typeof NiceSelect !== 'undefined') {
+                const countryEl = document.getElementById('select_country');
+                if (countryEl && countryEl.nextElementSibling && countryEl.nextElementSibling.classList.contains('nice-select')) {
+                    NiceSelect.bind(countryEl, {searchable: true});
+                }
             }
-        });
+
+            // Manually trigger change to load states
+            $('#select_country').trigger('change');
+
+            // Now wait for states to load via AJAX
+            waitForStatesAndSelect();
+
+            return false; // break loop
+        }
+    });
+
+    if (!countryFound) {
+        if (typeof toastr !== 'undefined') {
+            toastr.warning('تم حفظ الموقع ولكن لم يتم العثور على الدولة في القائمة');
+        }
+        $('#mapModal').modal('hide');
+    }
+}
+
+// Wait for states dropdown to be populated, then select the state
+function waitForStatesAndSelect() {
+    const stateNameAr = selectedLocationData.state?.name_ar || '';
+    const stateNameEn = selectedLocationData.state?.name || '';
+
+    if (!stateNameAr && !stateNameEn) {
+        // No state data, just close modal
+        if (typeof toastr !== 'undefined') {
+            toastr.success('تم حفظ الموقع بنجاح!');
+        }
+        $('#mapModal').modal('hide');
+        return;
     }
 
-    // Wait for state dropdown to populate, then select the state
-    setTimeout(() => {
-        const stateNameAr = selectedLocationData.state?.name_ar || '';
-        const stateNameEn = selectedLocationData.state?.name || '';
+    // Wait for AJAX to complete and populate #show_state
+    let attempts = 0;
+    const maxAttempts = 30; // 3 seconds max
 
-        if (stateNameAr || stateNameEn) {
-            $('#show_state option').each(function() {
+    const checkStatesInterval = setInterval(() => {
+        attempts++;
+
+        // Check if states are loaded
+        const stateOptions = $('#show_state option');
+
+        if (stateOptions.length > 0) {
+            clearInterval(checkStatesInterval);
+
+            // Find and select the state
+            let stateFound = false;
+            stateOptions.each(function() {
                 const optText = $(this).text().trim().toLowerCase();
-                if (optText === stateNameAr.toLowerCase() || optText === stateNameEn.toLowerCase()) {
+                const optVal = $(this).val();
+
+                if (optVal && (
+                    optText === stateNameAr.toLowerCase() ||
+                    optText === stateNameEn.toLowerCase()
+                )) {
                     $(this).prop('selected', true);
+                    stateFound = true;
+
+                    // Update NiceSelect if it exists
+                    if (typeof NiceSelect !== 'undefined') {
+                        const stateEl = document.getElementById('show_state');
+                        if (stateEl && stateEl.nextElementSibling && stateEl.nextElementSibling.classList.contains('nice-select')) {
+                            NiceSelect.bind(stateEl, {searchable: true});
+                        }
+                    }
+
+                    // Trigger change to load cities
                     $('#show_state').trigger('change');
+
+                    // Wait for cities to load
+                    waitForCitiesAndSelect();
+
+                    return false; // break loop
+                }
+            });
+
+            if (!stateFound) {
+                if (typeof toastr !== 'undefined') {
+                    toastr.success('تم حفظ الموقع! (لم يتم العثور على المنطقة في القائمة)');
+                }
+                $('#mapModal').modal('hide');
+            }
+        } else if (attempts >= maxAttempts) {
+            clearInterval(checkStatesInterval);
+            if (typeof toastr !== 'undefined') {
+                toastr.success('تم حفظ الموقع بنجاح!');
+            }
+            $('#mapModal').modal('hide');
+        }
+    }, 100); // Check every 100ms
+}
+
+// Wait for cities dropdown to be populated, then select the city
+function waitForCitiesAndSelect() {
+    const cityNameAr = selectedLocationData.city?.name_ar || '';
+    const cityNameEn = selectedLocationData.city?.name || '';
+
+    if (!cityNameAr && !cityNameEn) {
+        if (typeof toastr !== 'undefined') {
+            toastr.success('تم حفظ الموقع بنجاح!');
+        }
+        $('#mapModal').modal('hide');
+        return;
+    }
+
+    let attempts = 0;
+    const maxAttempts = 30;
+
+    const checkCitiesInterval = setInterval(() => {
+        attempts++;
+
+        const cityOptions = $('#show_city option');
+
+        if (cityOptions.length > 0) {
+            clearInterval(checkCitiesInterval);
+
+            let cityFound = false;
+            cityOptions.each(function() {
+                const optText = $(this).text().trim().toLowerCase();
+                const optVal = $(this).val();
+
+                if (optVal && (
+                    optText === cityNameAr.toLowerCase() ||
+                    optText === cityNameEn.toLowerCase()
+                )) {
+                    $(this).prop('selected', true);
+                    cityFound = true;
+
+                    // Update NiceSelect if it exists
+                    if (typeof NiceSelect !== 'undefined') {
+                        const cityEl = document.getElementById('show_city');
+                        if (cityEl && cityEl.nextElementSibling && cityEl.nextElementSibling.classList.contains('nice-select')) {
+                            NiceSelect.bind(cityEl, {searchable: true});
+                        }
+                    }
+
                     return false;
                 }
             });
-        }
 
-        // Wait for city dropdown to populate, then select the city
-        setTimeout(() => {
-            const cityNameAr = selectedLocationData.city?.name_ar || '';
-            const cityNameEn = selectedLocationData.city?.name || '';
-
-            if (cityNameAr || cityNameEn) {
-                $('#show_city option').each(function() {
-                    const optText = $(this).text().trim().toLowerCase();
-                    if (optText === cityNameAr.toLowerCase() || optText === cityNameEn.toLowerCase()) {
-                        $(this).prop('selected', true);
-                        return false;
-                    }
-                });
+            if (typeof toastr !== 'undefined') {
+                if (cityFound) {
+                    toastr.success('تم حفظ الموقع بنجاح! تم تعبئة جميع الحقول تلقائياً');
+                } else {
+                    toastr.success('تم حفظ الموقع! (لم يتم العثور على المدينة في القائمة)');
+                }
             }
-        }, 800);
-    }, 800);
-
-    if (typeof toastr !== 'undefined') {
-        toastr.success('تم حفظ الموقع بنجاح! تم تعبئة الحقول تلقائياً');
-    }
-
-    $('#mapModal').modal('hide');
+            $('#mapModal').modal('hide');
+        } else if (attempts >= maxAttempts) {
+            clearInterval(checkCitiesInterval);
+            if (typeof toastr !== 'undefined') {
+                toastr.success('تم حفظ الموقع بنجاح!');
+            }
+            $('#mapModal').modal('hide');
+        }
+    }, 100);
 }
 
 // Reset selection
