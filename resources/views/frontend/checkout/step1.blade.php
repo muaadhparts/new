@@ -870,39 +870,47 @@ function useLocation() {
     const fullAddress = selectedLocationData.address?.ar || selectedLocationData.address?.en || '';
     $('#address').val(fullAddress);
 
-    // Step 1: Find and select country by comparing with country names from API
-    const countryNameEn = selectedLocationData.country?.name || '';
-    const countryNameAr = selectedLocationData.country?.name_ar || '';
+    // Get IDs from API response
+    const countryId = selectedLocationData.country?.id;
+    const stateId = selectedLocationData.state?.id;
+    const cityId = selectedLocationData.city?.id;
 
+    if (!countryId) {
+        if (typeof toastr !== 'undefined') {
+            toastr.warning('لم يتم العثور على معرّف الدولة');
+        }
+        $('#mapModal').modal('hide');
+        return;
+    }
+
+    // Step 1: Find and select country by ID
+    selectCountryById(countryId, stateId, cityId);
+}
+
+// Select country by ID and trigger cascade
+function selectCountryById(countryId, stateId, cityId) {
     let countryFound = false;
 
     $('#select_country option').each(function() {
-        const optionText = $(this).text().trim();
-        const optionValue = $(this).val();
+        const optionCountryId = $(this).attr('data'); // data attribute contains country ID
 
-        // Try to match by text or value (case insensitive)
-        if (optionValue && (
-            optionText.toLowerCase() === countryNameEn.toLowerCase() ||
-            optionText.toLowerCase() === countryNameAr.toLowerCase() ||
-            optionValue.toLowerCase() === countryNameEn.toLowerCase() ||
-            optionValue.toLowerCase() === countryNameAr.toLowerCase()
-        )) {
+        if (optionCountryId && parseInt(optionCountryId) === parseInt(countryId)) {
             $(this).prop('selected', true);
             countryFound = true;
 
-            // Update NiceSelect for country if it exists
-            if (typeof NiceSelect !== 'undefined') {
-                const countryEl = document.getElementById('select_country');
-                if (countryEl && countryEl.nextElementSibling && countryEl.nextElementSibling.classList.contains('nice-select')) {
-                    NiceSelect.bind(countryEl, {searchable: true});
-                }
-            }
+            // Update NiceSelect display text only
+            updateNiceSelectDisplay('select_country', $(this).text());
 
-            // Manually trigger change to load states
+            // Trigger change to load states via AJAX
             $('#select_country').trigger('change');
 
-            // Now wait for states to load via AJAX
-            waitForStatesAndSelect();
+            // Wait for states to load, then select state
+            if (stateId) {
+                waitAndSelectState(stateId, cityId);
+            } else {
+                // No state, show success and close
+                showFinalSuccessMessage();
+            }
 
             return false; // break loop
         }
@@ -910,101 +918,74 @@ function useLocation() {
 
     if (!countryFound) {
         if (typeof toastr !== 'undefined') {
-            toastr.warning('تم حفظ الموقع ولكن لم يتم العثور على الدولة في القائمة');
+            toastr.warning('لم يتم العثور على الدولة في القائمة');
         }
         $('#mapModal').modal('hide');
     }
 }
 
-// Wait for states dropdown to be populated, then select the state
-function waitForStatesAndSelect() {
-    const stateNameAr = selectedLocationData.state?.name_ar || '';
-    const stateNameEn = selectedLocationData.state?.name || '';
-
-    if (!stateNameAr && !stateNameEn) {
-        // No state data, just close modal
-        if (typeof toastr !== 'undefined') {
-            toastr.success('تم حفظ الموقع بنجاح!');
-        }
-        $('#mapModal').modal('hide');
-        return;
-    }
-
-    // Wait for AJAX to complete and populate #show_state
+// Wait for states to load via AJAX, then select by ID
+function waitAndSelectState(stateId, cityId) {
     let attempts = 0;
-    const maxAttempts = 30; // 3 seconds max
+    const maxAttempts = 50; // 5 seconds max
 
     const checkStatesInterval = setInterval(() => {
         attempts++;
 
-        // Check if states are loaded
         const stateOptions = $('#show_state option');
 
         if (stateOptions.length > 0) {
             clearInterval(checkStatesInterval);
 
-            // Find and select the state
             let stateFound = false;
-            stateOptions.each(function() {
-                const optText = $(this).text().trim().toLowerCase();
-                const optVal = $(this).val();
 
-                if (optVal && (
-                    optText === stateNameAr.toLowerCase() ||
-                    optText === stateNameEn.toLowerCase()
-                )) {
+            stateOptions.each(function() {
+                const optionValue = $(this).val();
+
+                // Match by state ID (value contains state ID)
+                if (optionValue && parseInt(optionValue) === parseInt(stateId)) {
                     $(this).prop('selected', true);
                     stateFound = true;
 
-                    // Update NiceSelect if it exists
-                    if (typeof NiceSelect !== 'undefined') {
-                        const stateEl = document.getElementById('show_state');
-                        if (stateEl && stateEl.nextElementSibling && stateEl.nextElementSibling.classList.contains('nice-select')) {
-                            NiceSelect.bind(stateEl, {searchable: true});
-                        }
-                    }
+                    // Update NiceSelect display text only
+                    updateNiceSelectDisplay('show_state', $(this).text());
 
-                    // Trigger change to load cities
+                    // Trigger change to load cities via AJAX
                     $('#show_state').trigger('change');
 
-                    // Wait for cities to load
-                    waitForCitiesAndSelect();
+                    // Wait for cities to load, then select city
+                    if (cityId) {
+                        waitAndSelectCity(cityId);
+                    } else {
+                        // No city, show success and close
+                        showFinalSuccessMessage();
+                    }
 
                     return false; // break loop
                 }
             });
 
             if (!stateFound) {
-                if (typeof toastr !== 'undefined') {
-                    toastr.success('تم حفظ الموقع! (لم يتم العثور على المنطقة في القائمة)');
-                }
-                $('#mapModal').modal('hide');
+                // State not found, but still show success
+                showFinalSuccessMessage();
             }
         } else if (attempts >= maxAttempts) {
+            // Timeout waiting for states
             clearInterval(checkStatesInterval);
-            if (typeof toastr !== 'undefined') {
-                toastr.success('تم حفظ الموقع بنجاح!');
-            }
-            $('#mapModal').modal('hide');
+            showFinalSuccessMessage();
         }
     }, 100); // Check every 100ms
 }
 
-// Wait for cities dropdown to be populated, then select the city
-function waitForCitiesAndSelect() {
-    const cityNameAr = selectedLocationData.city?.name_ar || '';
-    const cityNameEn = selectedLocationData.city?.name || '';
-
-    if (!cityNameAr && !cityNameEn) {
-        if (typeof toastr !== 'undefined') {
-            toastr.success('تم حفظ الموقع بنجاح!');
-        }
-        $('#mapModal').modal('hide');
-        return;
-    }
-
+// Wait for cities to load via AJAX, then select by name
+// Note: City options use city_name as value (not ID) in the current system
+function waitAndSelectCity(cityId) {
     let attempts = 0;
-    const maxAttempts = 30;
+    const maxAttempts = 50; // 5 seconds max
+
+    // Get city names from API response for matching
+    const cityNameEn = selectedLocationData.city?.name || '';
+    const cityNameAr = selectedLocationData.city?.name_ar || '';
 
     const checkCitiesInterval = setInterval(() => {
         attempts++;
@@ -1015,45 +996,59 @@ function waitForCitiesAndSelect() {
             clearInterval(checkCitiesInterval);
 
             let cityFound = false;
-            cityOptions.each(function() {
-                const optText = $(this).text().trim().toLowerCase();
-                const optVal = $(this).val();
 
-                if (optVal && (
-                    optText === cityNameAr.toLowerCase() ||
-                    optText === cityNameEn.toLowerCase()
+            cityOptions.each(function() {
+                const optionValue = $(this).val();
+                const optionText = $(this).text().trim();
+
+                // Match by city name (value contains city_name, not ID)
+                if (optionValue && (
+                    optionValue.toLowerCase() === cityNameEn.toLowerCase() ||
+                    optionValue.toLowerCase() === cityNameAr.toLowerCase() ||
+                    optionText.toLowerCase() === cityNameEn.toLowerCase() ||
+                    optionText.toLowerCase() === cityNameAr.toLowerCase()
                 )) {
                     $(this).prop('selected', true);
                     cityFound = true;
 
-                    // Update NiceSelect if it exists
-                    if (typeof NiceSelect !== 'undefined') {
-                        const cityEl = document.getElementById('show_city');
-                        if (cityEl && cityEl.nextElementSibling && cityEl.nextElementSibling.classList.contains('nice-select')) {
-                            NiceSelect.bind(cityEl, {searchable: true});
-                        }
-                    }
+                    // Update NiceSelect display text only
+                    updateNiceSelectDisplay('show_city', $(this).text());
 
-                    return false;
+                    return false; // break loop
                 }
             });
 
-            if (typeof toastr !== 'undefined') {
-                if (cityFound) {
-                    toastr.success('تم حفظ الموقع بنجاح! تم تعبئة جميع الحقول تلقائياً');
-                } else {
-                    toastr.success('تم حفظ الموقع! (لم يتم العثور على المدينة في القائمة)');
-                }
-            }
-            $('#mapModal').modal('hide');
+            // Show final success message (whether city found or not)
+            showFinalSuccessMessage();
         } else if (attempts >= maxAttempts) {
+            // Timeout waiting for cities
             clearInterval(checkCitiesInterval);
-            if (typeof toastr !== 'undefined') {
-                toastr.success('تم حفظ الموقع بنجاح!');
-            }
-            $('#mapModal').modal('hide');
+            showFinalSuccessMessage();
         }
-    }, 100);
+    }, 100); // Check every 100ms
+}
+
+// Update NiceSelect display text without re-initializing
+function updateNiceSelectDisplay(selectId, displayText) {
+    const selectElement = document.getElementById(selectId);
+    if (!selectElement) return;
+
+    // Find the NiceSelect wrapper
+    const niceSelectWrapper = selectElement.nextElementSibling;
+    if (niceSelectWrapper && niceSelectWrapper.classList.contains('nice-select')) {
+        const currentSpan = niceSelectWrapper.querySelector('.current');
+        if (currentSpan) {
+            currentSpan.textContent = displayText;
+        }
+    }
+}
+
+// Show final success message once
+function showFinalSuccessMessage() {
+    if (typeof toastr !== 'undefined') {
+        toastr.success('تم حفظ الموقع بنجاح! تم تعبئة جميع الحقول تلقائياً');
+    }
+    $('#mapModal').modal('hide');
 }
 
 // Reset selection

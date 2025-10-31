@@ -873,7 +873,6 @@ class CheckoutController extends FrontBaseController
 
     public function getState($country_id)
     {
-
         $states = State::where('country_id', $country_id)->get();
 
         if (Auth::user()) {
@@ -882,18 +881,26 @@ class CheckoutController extends FrontBaseController
             $user_state = 0;
         }
 
+        // الحصول على اللغة النشطة
+        $currentLang = Session::has('language')
+            ? \App\Models\Language::find(Session::get('language'))->name
+            : \App\Models\Language::where('is_default', 1)->first()->name;
+
         $html_states = '<option value="" > Select State </option>';
         foreach ($states as $state) {
             if ($state->id == $user_state) {
                 $check = 'selected';
             } else {
-
                 $check = '';
             }
-            // $html_states .= '<option value="' . $state->id . '"   rel="' . $state->country->id . '" ' . $check . ' >' . $state->state . '</option>';
-            $html_states .= '<option value="' . $state->id . '" rel="' . $state->country->id . '" ' . $check . ' >' 
-              . __('states.' . $state->state) . '</option>';
 
+            // تحديد اسم الولاية بناءً على اللغة النشطة
+            $stateDisplayName = ($currentLang == 'ar')
+                ? ($state->state_ar ?? $state->state)
+                : $state->state;
+
+            $html_states .= '<option value="' . $state->id . '" rel="' . $state->country->id . '" ' . $check . ' >'
+              . $stateDisplayName . '</option>';
         }
 
         return response()->json(["data" => $html_states, "state" => $user_state]);
@@ -901,7 +908,6 @@ class CheckoutController extends FrontBaseController
 
     public function getCity(Request $request)
     {
-
         $cities = City::where('state_id', $request->state_id)->get();
 
         if (Auth::user()) {
@@ -910,6 +916,11 @@ class CheckoutController extends FrontBaseController
             $user_city = 0;
         }
 
+        // الحصول على اللغة النشطة
+        $currentLang = Session::has('language')
+            ? \App\Models\Language::find(Session::get('language'))->name
+            : \App\Models\Language::where('is_default', 1)->first()->name;
+
         $html_cities = '<option value="" > Select City </option>';
         foreach ($cities as $city) {
             if ($city->id == $user_city) {
@@ -917,10 +928,14 @@ class CheckoutController extends FrontBaseController
             } else {
                 $check = '';
             }
-            // $html_cities .= '<option value="' . $city->city_name . '"   ' . $check . ' >' . $city->city_name . '</option>';
-            $html_cities .= '<option value="' . $city->city_name . '" ' . $check . ' >' 
-              . __('cities.' . $city->city_name) . '</option>';
 
+            // تحديد اسم المدينة بناءً على اللغة النشطة
+            $cityDisplayName = ($currentLang == 'ar')
+                ? ($city->city_name_ar ?? $city->city_name)
+                : $city->city_name;
+
+            $html_cities .= '<option value="' . $city->city_name . '" ' . $check . ' >'
+              . $cityDisplayName . '</option>';
         }
 
         return response()->json(["data" => $html_cities, "state" => $user_city]);
@@ -928,7 +943,6 @@ class CheckoutController extends FrontBaseController
 
     public function getCityUser(Request $request)
     {
-
         $cities = City::where('state_id', $request->state_id)->get();
 
         if (Auth::user()) {
@@ -937,6 +951,11 @@ class CheckoutController extends FrontBaseController
             $user_city = 0;
         }
 
+        // الحصول على اللغة النشطة
+        $currentLang = Session::has('language')
+            ? \App\Models\Language::find(Session::get('language'))->name
+            : \App\Models\Language::where('is_default', 1)->first()->name;
+
         $html_cities = '<option value="" > Select City </option>';
         foreach ($cities as $city) {
             if ($city->id == $user_city) {
@@ -944,10 +963,14 @@ class CheckoutController extends FrontBaseController
             } else {
                 $check = '';
             }
-            // $html_cities .= '<option value="' . $city->id . '"   ' . $check . ' >' . $city->city_name . '</option>';
-            $html_cities .= '<option value="' . $city->id . '" ' . $check . ' >' 
-              . __('cities.' . $city->city_name) . '</option>';
 
+            // تحديد اسم المدينة بناءً على اللغة النشطة
+            $cityDisplayName = ($currentLang == 'ar')
+                ? ($city->city_name_ar ?? $city->city_name)
+                : $city->city_name;
+
+            $html_cities .= '<option value="' . $city->id . '" ' . $check . ' >'
+              . $cityDisplayName . '</option>';
         }
 
         return response()->json(["data" => $html_cities, "state" => $user_city]);
