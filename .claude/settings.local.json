@@ -4,7 +4,9 @@
       "Bash(php artisan:*)",
       "Bash(php -l:*)",
       "Bash(php:*)",
-      "Bash(mysql:*)"
+      "Bash(mysql:*)",
+      "Bash(cat:*)",
+      "Bash(xxd:*)"
     ],
     "deny": [],
     "ask": []

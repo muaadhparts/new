@@ -186,6 +186,13 @@
                                     </div>
                                 </div>
 
+                                <!-- Google Maps Button -->
+                                <div class="col-lg-12">
+                                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#mapModal">
+                                        <i class="fas fa-map-marked-alt"></i> @lang('Select Location from Map')
+                                    </button>
+                                </div>
+
                                 <!-- chekbox -->
                                 <div class="col-lg-12  {{ $digital == 1 ? 'd-none' : '' }}" id="ship_deff">
                                     <div class="gs-checkbox-wrapper" data-bs-toggle="collapse"
@@ -380,6 +387,8 @@
                 @endif
 
                 <input type="hidden" name="user_id" id="user_id" value="{{ Auth::guard('web')->check() ? Auth::guard('web')->user()->id : '' }}">
+                <input type="hidden" name="latitude" id="latitude">
+                <input type="hidden" name="longitude" id="longitude">
 
             </form>
         </div>
@@ -399,7 +408,9 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 });
 </script>
+@endpush
 
+@push('scripts')
 <script type="text/javascript">
     $('a.payment:first').addClass('active');
     $('.checkoutform').attr('action', $('a.payment:first').attr('data-form'));
@@ -592,5 +603,88 @@ document.addEventListener("DOMContentLoaded", function () {
         }
         $('#show_shipping_address input[name="order_notes"]').prop('required', false);
     });
+</script>
+@endpush
+
+{{-- Google Maps Modal --}}
+<div class="modal fade" id="mapModal" tabindex="-1">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">@lang('Select Location')</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="map" style="width: 100%; height: 500px;"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">@lang('Close')</button>
+                <button type="button" class="btn btn-primary" id="selectLocationBtn" disabled>@lang('Use This Location')</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@push('scripts')
+<script src="https://maps.googleapis.com/maps/api/js?key={{ config('services.google_maps.key') }}&libraries=places&language=ar"></script>
+<script>
+let map, marker, selectedLocation;
+
+$('#mapModal').on('shown.bs.modal', function() {
+    if (!map) {
+        // Initialize map
+        map = new google.maps.Map(document.getElementById('map'), {
+            center: { lat: 24.7136, lng: 46.6753 }, // Riyadh
+            zoom: 12
+        });
+
+        // Add click listener
+        map.addListener('click', function(e) {
+            placeMarker(e.latLng);
+        });
+    }
+
+    // Trigger resize
+    google.maps.event.trigger(map, 'resize');
+});
+
+function placeMarker(location) {
+    if (marker) {
+        marker.setPosition(location);
+    } else {
+        marker = new google.maps.Marker({
+            position: location,
+            map: map,
+            draggable: true
+        });
+
+        marker.addListener('dragend', function() {
+            updateLocation(marker.getPosition());
+        });
+    }
+
+    updateLocation(location);
+}
+
+function updateLocation(location) {
+    selectedLocation = {
+        lat: location.lat(),
+        lng: location.lng()
+    };
+
+    $('#selectLocationBtn').prop('disabled', false);
+    console.log('Selected:', selectedLocation);
+}
+
+$('#selectLocationBtn').on('click', function() {
+    if (selectedLocation) {
+        // Update form fields
+        $('#latitude').val(selectedLocation.lat);
+        $('#longitude').val(selectedLocation.lng);
+
+        toastr.success('@lang("Location selected successfully!")');
+        $('#mapModal').modal('hide');
+    }
+});
 </script>
 @endpush

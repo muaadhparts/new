@@ -505,6 +505,29 @@
         }
 
         // Get current location
+        // function getCurrentLocation() {
+        //     if (navigator.geolocation) {
+        //         showLoading(true);
+        //         navigator.geolocation.getCurrentPosition(
+        //             (position) => {
+        //                 const pos = {
+        //                     lat: position.coords.latitude,
+        //                     lng: position.coords.longitude
+        //                 };
+        //                 map.setCenter(pos);
+        //                 marker.setPosition(pos);
+        //                 marker.setVisible(true);
+        //                 handleLocationChange(pos.lat, pos.lng);
+        //             },
+        //             () => {
+        //                 showLoading(false);
+        //                 showAlert('فشل في الحصول على موقعك الحالي', 'error');
+        //             }
+        //         );
+        //     } else {
+        //         showAlert('المتصفح لا يدعم خدمة تحديد الموقع', 'error');
+        //     }
+        // }
         function getCurrentLocation() {
             if (navigator.geolocation) {
                 showLoading(true);
@@ -522,7 +545,8 @@
                     () => {
                         showLoading(false);
                         showAlert('فشل في الحصول على موقعك الحالي', 'error');
-                    }
+                    },
+                    { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 } // ← هذا السطر الجديد
                 );
             } else {
                 showAlert('المتصفح لا يدعم خدمة تحديد الموقع', 'error');
