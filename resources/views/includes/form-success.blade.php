@@ -18,7 +18,6 @@
 @if(session('message') === 'f')
       <div class="alert alert-danger alert-dismissible">
               <button type="button" class="close" data-dismiss="alert">&times;</button>
-              @lang('Credentials doesn't match')
+              {{ __("Credentials doesn't match") }}
       </div>
-
 @endif

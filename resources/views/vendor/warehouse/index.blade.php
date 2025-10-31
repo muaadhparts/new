@@ -65,9 +65,14 @@
                             <select name="warehouse_state" id="warehouse_state" class="form-control">
                                 <option value="">@lang('Select State')</option>
                                 @foreach($states as $state)
+                                    @php
+                                        $stateDisplayName = (app()->getLocale() == 'ar')
+                                            ? ($state->state_ar ?: $state->state)
+                                            : $state->state;
+                                    @endphp
                                     <option value="{{ $state->id }}"
                                         {{ $user->warehouse_state == $state->id ? 'selected' : '' }}>
-                                        {{ __('states.' . $state->state) }}
+                                        {{ $stateDisplayName }}
                                     </option>
                                 @endforeach
                             </select>
@@ -82,9 +87,14 @@
                             <select name="warehouse_city" id="warehouse_city" class="form-control">
                                 <option value="">@lang('Select City')</option>
                                 @foreach($cities as $city)
+                                    @php
+                                        $cityDisplayName = (app()->getLocale() == 'ar')
+                                            ? ($city->city_name_ar ?: $city->city_name)
+                                            : $city->city_name;
+                                    @endphp
                                     <option value="{{ $city->city_name }}"
                                         {{ $user->warehouse_city == $city->city_name ? 'selected' : '' }}>
-                                        {{ __('cities.' . $city->city_name) }}
+                                        {{ $cityDisplayName }}
                                     </option>
                                 @endforeach
                             </select>
@@ -127,6 +137,13 @@
                             @enderror
                         </div>
 
+                        <!-- Google Maps Button -->
+                        <div class="col-12 form-group">
+                            <button type="button" class="template-btn dark-btn" data-bs-toggle="modal" data-bs-target="#mapModal">
+                                <i class="fas fa-map-marker-alt"></i> @lang('Select Location from Map')
+                            </button>
+                        </div>
+
                         <div class="col-12 col-sm-12">
                             <button class="template-btn btn-forms" type="submit">
                                 @lang('Save Warehouse Settings')
@@ -138,6 +155,9 @@
         </div>
         <!-- Warehouse Settings area end  -->
     </div>
+
+    <!-- Google Maps Modal -->
+    @include('partials.google-maps-modal')
 
 @endsection
 
@@ -161,10 +181,11 @@ $(document).ready(function() {
 
                     if (response.cities && response.cities.length > 0) {
                         response.cities.forEach(function(city) {
-                            var translatedName = '@lang("cities.' + city.city_name + '")';
+                            // استخدام display_name من الاستجابة (معتمد على اللغة النشطة)
+                            var displayName = city.display_name || city.city_name;
                             citySelect.append(
                                 '<option value="' + city.city_name + '">' +
-                                translatedName +
+                                displayName +
                                 '</option>'
                             );
                         });

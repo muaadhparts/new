@@ -107,102 +107,121 @@
 @endpush
 
 @push('scripts')
-<script src="https://maps.googleapis.com/maps/api/js?key={{ config('services.google_maps.key') }}&libraries=places&language={{ app()->getLocale() }}" async defer></script>
+@if(!isset($googleMapsLoaded))
+    @php $googleMapsLoaded = true; @endphp
+    <script src="https://maps.googleapis.com/maps/api/js?key={{ config('services.google_maps.key') }}&libraries=places&language={{ app()->getLocale() }}" async defer></script>
+@endif
+
 <script>
-// Google Maps variables for modal
-let mapModal, markerModal, geocoderModal, searchBoxModal, debounceTimerModal, selectedLocationData;
-const DEBOUNCE_DELAY = 400;
-const DEFAULT_CENTER = { lat: 24.7136, lng: 46.6753 }; // Riyadh, Saudi Arabia
+// Check if already initialized to prevent duplicate definitions
+if (typeof window.GoogleMapsModalInitialized === 'undefined') {
+    window.GoogleMapsModalInitialized = true;
+
+    // Google Maps variables for modal (in window scope to avoid redeclaration)
+    window.mapModal = null;
+    window.markerModal = null;
+    window.geocoderModal = null;
+    window.searchBoxModal = null;
+    window.debounceTimerModal = null;
+    window.selectedLocationData = null;
+
+    // Constants
+    window.DEBOUNCE_DELAY = 400;
+    window.DEFAULT_CENTER = { lat: 24.7136, lng: 46.6753 }; // Riyadh, Saudi Arabia
+}
+
+// Only define functions if not already defined
+if (typeof window.waitForGoogleMaps === 'undefined') {
 
 // Wait for Google Maps to load
-function waitForGoogleMaps(callback) {
+window.waitForGoogleMaps = function(callback) {
     if (typeof google !== 'undefined' && google.maps) {
         callback();
     } else {
-        setTimeout(() => waitForGoogleMaps(callback), 100);
+        setTimeout(() => window.waitForGoogleMaps(callback), 100);
     }
 }
 
 // Initialize map when modal is shown
 $('#mapModal').on('shown.bs.modal', function() {
-    if (!mapModal) {
-        waitForGoogleMaps(initializeMap);
+    if (!window.mapModal) {
+        window.waitForGoogleMaps(window.initializeMap);
     } else {
-        google.maps.event.trigger(mapModal, 'resize');
+        google.maps.event.trigger(window.mapModal, 'resize');
     }
 });
 
-function initializeMap() {
-    geocoderModal = new google.maps.Geocoder();
+window.initializeMap = function() {
+    window.geocoderModal = new google.maps.Geocoder();
 
-    mapModal = new google.maps.Map(document.getElementById('map'), {
-        center: DEFAULT_CENTER,
+    window.mapModal = new google.maps.Map(document.getElementById('map'), {
+        center: window.DEFAULT_CENTER,
         zoom: 12,
         mapTypeControl: true,
         streetViewControl: false,
         fullscreenControl: true,
     });
 
-    markerModal = new google.maps.Marker({
-        map: mapModal,
+    window.markerModal = new google.maps.Marker({
+        map: window.mapModal,
         draggable: true,
         animation: google.maps.Animation.DROP,
     });
 
     // Setup search box
     const searchInput = document.getElementById('map-search-input');
-    searchBoxModal = new google.maps.places.SearchBox(searchInput);
+    window.searchBoxModal = new google.maps.places.SearchBox(searchInput);
 
     // Bias search results to map viewport
-    mapModal.addListener('bounds_changed', () => {
-        searchBoxModal.setBounds(mapModal.getBounds());
+    window.mapModal.addListener('bounds_changed', () => {
+        window.searchBoxModal.setBounds(window.mapModal.getBounds());
     });
 
     // Handle search selection
-    searchBoxModal.addListener('places_changed', () => {
-        const places = searchBoxModal.getPlaces();
+    window.searchBoxModal.addListener('places_changed', () => {
+        const places = window.searchBoxModal.getPlaces();
         if (places.length === 0) return;
 
         const place = places[0];
         if (!place.geometry || !place.geometry.location) return;
 
-        mapModal.setCenter(place.geometry.location);
-        markerModal.setPosition(place.geometry.location);
-        markerModal.setVisible(true);
+        window.mapModal.setCenter(place.geometry.location);
+        window.markerModal.setPosition(place.geometry.location);
+        window.markerModal.setVisible(true);
 
-        handleLocationChange(place.geometry.location.lat(), place.geometry.location.lng());
+        window.handleLocationChange(place.geometry.location.lat(), place.geometry.location.lng());
     });
 
     // Map click event
-    mapModal.addListener('click', (event) => {
-        markerModal.setPosition(event.latLng);
-        markerModal.setVisible(true);
-        handleLocationChange(event.latLng.lat(), event.latLng.lng());
+    window.mapModal.addListener('click', (event) => {
+        window.markerModal.setPosition(event.latLng);
+        window.markerModal.setVisible(true);
+        window.handleLocationChange(event.latLng.lat(), event.latLng.lng());
     });
 
     // Marker drag event
-    markerModal.addListener('dragend', () => {
-        const position = markerModal.getPosition();
-        handleLocationChange(position.lat(), position.lng());
+    window.markerModal.addListener('dragend', () => {
+        const position = window.markerModal.getPosition();
+        window.handleLocationChange(position.lat(), position.lng());
     });
 
     // Button events
-    document.getElementById('use-location-btn-modal').addEventListener('click', useLocation);
-    document.getElementById('reset-btn-modal').addEventListener('click', resetSelection);
-    document.getElementById('current-location-btn-modal').addEventListener('click', getCurrentLocationModal);
+    document.getElementById('use-location-btn-modal').addEventListener('click', window.useLocation);
+    document.getElementById('reset-btn-modal').addEventListener('click', window.resetSelection);
+    document.getElementById('current-location-btn-modal').addEventListener('click', window.getCurrentLocationModal);
 }
 
 // Handle location change with debouncing
-function handleLocationChange(lat, lng) {
-    clearTimeout(debounceTimerModal);
-    debounceTimerModal = setTimeout(() => {
-        reverseGeocode(lat, lng);
-    }, DEBOUNCE_DELAY);
+window.handleLocationChange = function(lat, lng) {
+    clearTimeout(window.debounceTimerModal);
+    window.debounceTimerModal = setTimeout(() => {
+        window.reverseGeocode(lat, lng);
+    }, window.DEBOUNCE_DELAY);
 }
 
 // Reverse geocode coordinates
-async function reverseGeocode(lat, lng) {
-    showLoadingModal(true);
+window.reverseGeocode = async function(lat, lng) {
+    window.showLoadingModal(true);
 
     try {
         const csrfToken = document.querySelector('meta[name="csrf-token"]');
@@ -226,23 +245,23 @@ async function reverseGeocode(lat, lng) {
         const result = await response.json();
 
         if (result.success) {
-            selectedLocationData = result.data;
-            displayLocationInfoModal(result.data);
+            window.selectedLocationData = result.data;
+            window.displayLocationInfoModal(result.data);
             document.getElementById('use-location-btn-modal').disabled = false;
-            showAlertModal('{{ __("Location selected successfully") }}', 'success');
+            window.showAlertModal('{{ __("Location selected successfully") }}', 'success');
         } else {
-            showAlertModal('{{ __("Failed to get location information") }}: ' + (result.error || '{{ __("Unknown error") }}'), 'error');
+            window.showAlertModal('{{ __("Failed to get location information") }}: ' + (result.error || '{{ __("Unknown error") }}'), 'error');
         }
     } catch (error) {
         console.error('Error:', error);
-        showAlertModal('{{ __("Server connection error") }}', 'error');
+        window.showAlertModal('{{ __("Server connection error") }}', 'error');
     } finally {
-        showLoadingModal(false);
+        window.showLoadingModal(false);
     }
 }
 
 // Display location information in modal
-function displayLocationInfoModal(data) {
+window.displayLocationInfoModal = function(data) {
     document.getElementById('country-ar-modal').textContent = data.country?.name_ar || '-';
     document.getElementById('country-en-modal').textContent = data.country?.name || '-';
     document.getElementById('state-ar-modal').textContent = data.state?.name_ar || '-';
@@ -257,65 +276,119 @@ function displayLocationInfoModal(data) {
 }
 
 // Use selected location - populate form fields
-function useLocation() {
-    if (!selectedLocationData) return;
+window.useLocation = function() {
+    if (!window.selectedLocationData) {
+        console.error('No location data selected');
+        return;
+    }
 
-    // Update hidden latitude/longitude fields
-    $('[name="latitude"], #latitude').val(selectedLocationData.coordinates?.latitude || '');
-    $('[name="longitude"], #longitude').val(selectedLocationData.coordinates?.longitude || '');
+    console.log('🚀 useLocation called with data:', window.selectedLocationData);
 
-    // Update address field
-    const fullAddress = selectedLocationData.address?.ar || selectedLocationData.address?.en || '';
-    $('[name="address"], [name="customer_address"], #address').val(fullAddress);
+    // Update hidden latitude/longitude fields (supports multiple field names)
+    const lat = window.selectedLocationData.coordinates?.latitude || '';
+    const lng = window.selectedLocationData.coordinates?.longitude || '';
+    $('[name="latitude"], #latitude, [name="warehouse_lat"], #warehouse_lat').val(lat);
+    $('[name="longitude"], #longitude, [name="warehouse_lng"], #warehouse_lng').val(lng);
+    console.log('📍 Coordinates filled:', {lat, lng});
 
-    // Get IDs from API response
-    const countryId = selectedLocationData.country?.id;
-    const stateId = selectedLocationData.state?.id;
-    const cityId = selectedLocationData.city?.id;
+    // Update address field (supports multiple field names)
+    const fullAddress = window.selectedLocationData.address?.ar || window.selectedLocationData.address?.en || '';
+    $('[name="address"], [name="customer_address"], #address, [name="warehouse_address"], #warehouse_address').val(fullAddress);
+    console.log('📝 Address filled:', fullAddress);
 
-    if (!countryId) {
+    // Get data from API response
+    const countryId = window.selectedLocationData.country?.id;
+    const countryName = window.selectedLocationData.country?.name; // English name
+    const stateId = window.selectedLocationData.state?.id;
+    const cityId = window.selectedLocationData.city?.id;
+
+    console.log('🌐 Location data:', {countryId, countryName, stateId, cityId});
+
+    if (!countryName) {
+        console.error('Country name not found in location data');
         if (typeof toastr !== 'undefined') {
-            toastr.warning('{{ __("Country ID not found") }}');
+            toastr.warning('{{ __("Country not found") }}');
         }
         $('#mapModal').modal('hide');
         return;
     }
 
-    // Step 1: Find and select country by ID
-    selectCountryById(countryId, stateId, cityId);
+    // Step 1: Find and select country by name (since value is country name)
+    window.selectCountryByName(countryName, countryId, stateId, cityId);
 }
 
-// Select country by ID and trigger cascade
-function selectCountryById(countryId, stateId, cityId) {
+// Select country by name (since value is country name, not ID)
+window.selectCountryByName = function(countryName, countryId, stateId, cityId) {
+    console.log('🌍 selectCountryByName called:', {countryName, countryId, stateId, cityId});
     let countryFound = false;
 
-    $('[name="country"], [name="customer_country"], #select_country, #country').find('option').each(function() {
-        const optionCountryId = $(this).attr('data'); // data attribute contains country ID
+    // Set flag to indicate this is a map selection
+    window.isMapSelection = true;
 
-        if (optionCountryId && parseInt(optionCountryId) === parseInt(countryId)) {
+    $('[name="country"], [name="customer_country"], #select_country, #country, #warehouse_country').find('option').each(function() {
+        const optionValue = $(this).val(); // value is country name
+        const optionText = $(this).text().trim();
+
+        // Match by value (country name) or display text
+        if (optionValue === countryName || optionText === countryName) {
             $(this).prop('selected', true);
             countryFound = true;
 
-            // Update NiceSelect display text only
             const selectElement = $(this).parent()[0];
-            updateNiceSelectDisplay(selectElement.id, $(this).text());
+            const selectId = selectElement.id;
+            const displayName = optionText;
+
+            console.log('✅ Country found and selected:', {selectId, countryName, displayName, value: optionValue});
+
+            // Update country NiceSelect display immediately
+            const countryNiceSelect = selectElement.nextElementSibling;
+            if (countryNiceSelect && countryNiceSelect.classList.contains('nice-select')) {
+                const currentSpan = countryNiceSelect.querySelector('.current');
+                if (currentSpan) {
+                    currentSpan.textContent = displayName;
+                    console.log('✅ Country NiceSelect updated:', displayName);
+                }
+            }
+
+            // Setup callback for when states are loaded
+            if (stateId) {
+                // Pass reinitFunction to callback
+                window.onStatesLoaded = function(reinitStateNiceSelect) {
+                    console.log('📍 States loaded callback triggered');
+
+                    // Now select the state (passing the stateId and cityId)
+                    window.selectStateById(stateId, cityId, reinitStateNiceSelect);
+
+                    // Clear callback
+                    window.onStatesLoaded = null;
+                };
+            } else {
+                window.onStatesLoaded = function(reinitStateNiceSelect) {
+                    console.log('📍 States loaded (no state to select)');
+
+                    // No state to select, just reinit with no value
+                    if (reinitStateNiceSelect) {
+                        reinitStateNiceSelect(null);
+                    }
+
+                    // Show success and close
+                    window.isMapSelection = false;
+                    window.showFinalSuccessMessage();
+                    window.onStatesLoaded = null;
+                };
+            }
 
             // Trigger change to load states via AJAX
+            console.log('🔄 Triggering country change to load states...');
             $(this).parent().trigger('change');
-
-            // Wait for states to load, then select state
-            if (stateId) {
-                waitAndSelectState(stateId, cityId);
-            } else {
-                // No state, show success and close
-                showFinalSuccessMessage();
-            }
 
             return false; // break loop
         }
     });
 
     if (!countryFound) {
+        console.error('❌ Country not found:', countryId);
+        window.isMapSelection = false;
         if (typeof toastr !== 'undefined') {
             toastr.warning('{{ __("Country not found in list") }}');
         }
@@ -323,131 +396,218 @@ function selectCountryById(countryId, stateId, cityId) {
     }
 }
 
-// Wait for states to load via AJAX, then select by ID
-function waitAndSelectState(stateId, cityId) {
-    let attempts = 0;
-    const maxAttempts = 50; // 5 seconds max
+// DEPRECATED: Select country by ID (kept for compatibility)
+// Note: Now uses selectCountryByName since value is country name
+window.selectCountryById = function(countryId, stateId, cityId) {
+    console.warn('⚠️ selectCountryById is deprecated, trying to match by ID in data attribute...');
 
-    const checkStatesInterval = setInterval(() => {
-        attempts++;
+    let countryFound = false;
+    window.isMapSelection = true;
 
-        const stateOptions = $('[name="state"], [name="customer_state"], #show_state, #state').find('option');
+    $('[name="country"], [name="customer_country"], #select_country, #country, #warehouse_country').find('option').each(function() {
+        const optionCountryId = $(this).attr('data'); // data attribute contains country ID
+        const optionValue = $(this).val(); // value is country name
 
-        if (stateOptions.length > 0) {
-            clearInterval(checkStatesInterval);
+        if (optionCountryId && parseInt(optionCountryId) === parseInt(countryId)) {
+            // Found by ID, now use the country name
+            const countryName = optionValue;
+            console.log('✓ Found country by ID, redirecting to selectCountryByName with:', countryName);
+            window.selectCountryByName(countryName, countryId, stateId, cityId);
+            countryFound = true;
+            return false; // break loop
+        }
+    });
 
-            let stateFound = false;
+    if (!countryFound) {
+        console.error('❌ Country not found by ID:', countryId);
+        window.isMapSelection = false;
+        $('#mapModal').modal('hide');
+    }
+}
 
-            stateOptions.each(function() {
-                const optionValue = $(this).val();
+// Select state by ID (called after states are loaded)
+window.selectStateById = function(stateId, cityId, reinitStateNiceSelect) {
+    console.log('🏙️ selectStateById called:', {stateId, cityId});
+    let stateFound = false;
 
-                // Match by state ID (value contains state ID)
-                if (optionValue && parseInt(optionValue) === parseInt(stateId)) {
-                    $(this).prop('selected', true);
-                    stateFound = true;
+    // Log all available state options for debugging
+    const stateSelects = $('[name="state"], [name="customer_state"], #show_state, #state, [name="warehouse_state"], #warehouse_state, [name="state_id"]');
+    console.log('📋 Found', stateSelects.length, 'state select element(s)');
 
-                    // Update NiceSelect display text only
-                    const selectElement = $(this).parent()[0];
-                    updateNiceSelectDisplay(selectElement.id, $(this).text());
+    stateSelects.each(function() {
+        console.log('   State select:', this.id, '- Options count:', $(this).find('option').length);
+    });
 
-                    // Trigger change to load cities via AJAX
-                    $(this).parent().trigger('change');
+    stateSelects.find('option').each(function(index) {
+        const optionValue = $(this).val();
+        const optionText = $(this).text();
 
-                    // Wait for cities to load, then select city
-                    if (cityId) {
-                        waitAndSelectCity(cityId);
-                    } else {
-                        // No city, show success and close
-                        showFinalSuccessMessage();
+        if (index < 5) { // Log first 5 options for debugging
+            console.log(`   Option ${index}:`, {value: optionValue, text: optionText});
+        }
+
+        // Match by state ID (value contains state ID)
+        if (optionValue && parseInt(optionValue) === parseInt(stateId)) {
+            $(this).prop('selected', true);
+            stateFound = true;
+
+            const selectElement = $(this).parent()[0];
+            const stateName = $(this).text();
+
+            console.log('✅ State found and selected:', {stateId, stateName, optionValue});
+
+            // Reinitialize state NiceSelect with the selected value
+            if (reinitStateNiceSelect) {
+                reinitStateNiceSelect(optionValue);
+            }
+
+            // Setup callback for when cities are loaded
+            if (cityId) {
+                // Pass reinitFunction to callback
+                window.onCitiesLoaded = function(reinitCityNiceSelect) {
+                    console.log('🏘️ Cities loaded callback triggered');
+
+                    // Now select the city
+                    window.selectCityById(cityId, reinitCityNiceSelect);
+
+                    // Clear callback
+                    window.onCitiesLoaded = null;
+                };
+            } else {
+                window.onCitiesLoaded = function(reinitCityNiceSelect) {
+                    console.log('🏘️ Cities loaded (no city to select)');
+
+                    // No city to select, just reinit with no value
+                    if (reinitCityNiceSelect) {
+                        reinitCityNiceSelect(null);
                     }
 
-                    return false; // break loop
-                }
-            });
-
-            if (!stateFound) {
-                // State not found, but still show success
-                showFinalSuccessMessage();
+                    // Show success and close
+                    window.isMapSelection = false;
+                    window.showFinalSuccessMessage();
+                    window.onCitiesLoaded = null;
+                };
             }
-        } else if (attempts >= maxAttempts) {
-            // Timeout waiting for states
-            clearInterval(checkStatesInterval);
-            showFinalSuccessMessage();
+
+            // Trigger change to load cities via AJAX
+            console.log('🔄 Triggering state change to load cities...');
+            $(this).parent().trigger('change');
+
+            return false; // break loop
         }
-    }, 100); // Check every 100ms
+    });
+
+    if (!stateFound) {
+        console.warn('⚠️ State not found:', stateId);
+
+        // State not found, reinit with no value
+        if (reinitStateNiceSelect) {
+            reinitStateNiceSelect(null);
+        }
+
+        // Still show success
+        window.isMapSelection = false;
+        window.showFinalSuccessMessage();
+    }
 }
 
-// Wait for cities to load via AJAX, then select by name
-// Note: City options use city_name as value (not ID) in the current system
-function waitAndSelectCity(cityId) {
-    let attempts = 0;
-    const maxAttempts = 50; // 5 seconds max
+// DEPRECATED: Old polling-based function (kept for compatibility)
+window.waitAndSelectState = function(stateId, cityId) {
+    // Use new callback-based approach instead
+    window.selectStateById(stateId, cityId);
+}
 
-    // Get city names from API response for matching
-    const cityNameEn = selectedLocationData.city?.name || '';
-    const cityNameAr = selectedLocationData.city?.name_ar || '';
+// Select city by ID (called after cities are loaded)
+window.selectCityById = function(cityId, reinitCityNiceSelect) {
+    console.log('🏢 selectCityById called:', {cityId});
+    let cityFound = false;
 
-    const checkCitiesInterval = setInterval(() => {
-        attempts++;
+    // Get city data from API response for matching
+    const cityIdFromApi = window.selectedLocationData?.city?.id || cityId;
+    const cityNameEn = window.selectedLocationData?.city?.name || '';
+    const cityNameAr = window.selectedLocationData?.city?.name_ar || '';
 
-        const cityOptions = $('[name="city"], [name="customer_city"], #show_city, #city').find('option');
+    console.log('🔍 Searching for city:', {cityIdFromApi, cityNameEn, cityNameAr});
 
-        if (cityOptions.length > 0) {
-            clearInterval(checkCitiesInterval);
+    // Log all available city options for debugging
+    const citySelects = $('[name="city"], [name="customer_city"], #show_city, #city, [name="warehouse_city"], #warehouse_city, [name="city_id"]');
+    console.log('📋 Found', citySelects.length, 'city select element(s)');
 
-            let cityFound = false;
+    citySelects.each(function() {
+        console.log('   City select:', this.id, '- Options count:', $(this).find('option').length);
+    });
 
-            cityOptions.each(function() {
-                const optionValue = $(this).val();
-                const optionText = $(this).text().trim();
+    citySelects.find('option').each(function(index) {
+        const optionValue = $(this).val();
+        const optionText = $(this).text().trim();
 
-                // Match by city name (value contains city_name, not ID)
-                if (optionValue && (
-                    optionValue.toLowerCase() === cityNameEn.toLowerCase() ||
-                    optionValue.toLowerCase() === cityNameAr.toLowerCase() ||
-                    optionText.toLowerCase() === cityNameEn.toLowerCase() ||
-                    optionText.toLowerCase() === cityNameAr.toLowerCase()
-                )) {
-                    $(this).prop('selected', true);
-                    cityFound = true;
+        if (index < 5) { // Log first 5 options for debugging
+            console.log(`   Option ${index}:`, {value: optionValue, text: optionText});
+        }
 
-                    // Update NiceSelect display text only
-                    const selectElement = $(this).parent()[0];
-                    updateNiceSelectDisplay(selectElement.id, $(this).text());
+        // Match by city ID (for user/rider profiles) OR city name (for warehouse/checkout)
+        const matchById = parseInt(optionValue) === parseInt(cityIdFromApi);
+        const matchByEnName = optionValue.toLowerCase() === cityNameEn.toLowerCase();
+        const matchByArName = optionValue.toLowerCase() === cityNameAr.toLowerCase();
+        const matchByEnText = optionText.toLowerCase() === cityNameEn.toLowerCase();
+        const matchByArText = optionText.toLowerCase() === cityNameAr.toLowerCase();
 
-                    return false; // break loop
-                }
+        if (optionValue && (matchById || matchByEnName || matchByArName || matchByEnText || matchByArText)) {
+            $(this).prop('selected', true);
+            cityFound = true;
+
+            const cityDisplayName = optionText;
+
+            console.log('✅ City found and selected:', {
+                cityId,
+                cityDisplayName,
+                value: optionValue,
+                matchedBy: matchById ? 'ID' : matchByEnName ? 'EN-Value' : matchByArName ? 'AR-Value' : matchByEnText ? 'EN-Text' : 'AR-Text'
             });
 
-            // Show final success message (whether city found or not)
-            showFinalSuccessMessage();
-        } else if (attempts >= maxAttempts) {
-            // Timeout waiting for cities
-            clearInterval(checkCitiesInterval);
-            showFinalSuccessMessage();
+            // Reinitialize city NiceSelect with the selected value
+            if (reinitCityNiceSelect) {
+                reinitCityNiceSelect(optionValue);
+            }
+
+            // Show success after NiceSelect is reinitialized
+            setTimeout(() => {
+                console.log('✅ All fields filled successfully!');
+                window.isMapSelection = false;
+                window.showFinalSuccessMessage();
+            }, 100);
+
+            return false; // break loop
         }
-    }, 100); // Check every 100ms
+    });
+
+    if (!cityFound) {
+        console.warn('⚠️ City not found in options:', {cityIdFromApi, cityNameEn, cityNameAr});
+
+        // City not found, reinit with no value
+        if (reinitCityNiceSelect) {
+            reinitCityNiceSelect(null);
+        }
+
+        // Still show success
+        window.isMapSelection = false;
+        window.showFinalSuccessMessage();
+    }
 }
 
-// Update NiceSelect display text without re-initializing
-function updateNiceSelectDisplay(selectId, displayText) {
-    if (!selectId) return;
-
-    const selectElement = document.getElementById(selectId);
-    if (!selectElement) return;
-
-    // Find the NiceSelect wrapper
-    const niceSelectWrapper = selectElement.nextElementSibling;
-    if (niceSelectWrapper && niceSelectWrapper.classList.contains('nice-select')) {
-        const currentSpan = niceSelectWrapper.querySelector('.current');
-        if (currentSpan) {
-            currentSpan.textContent = displayText;
-        }
+// DEPRECATED: Old polling-based function (kept for compatibility)
+window.waitAndSelectCity = function() {
+    // Use new callback-based approach instead
+    if (window.selectedLocationData && window.selectedLocationData.city) {
+        window.selectCityById(window.selectedLocationData.city.id, null);
+    } else {
+        window.isMapSelection = false;
+        window.showFinalSuccessMessage();
     }
 }
 
 // Show final success message once
-function showFinalSuccessMessage() {
+window.showFinalSuccessMessage = function() {
     if (typeof toastr !== 'undefined') {
         toastr.success('{{ __("Location saved successfully! All fields have been filled automatically") }}');
     }
@@ -455,45 +615,45 @@ function showFinalSuccessMessage() {
 }
 
 // Reset selection
-function resetSelection() {
-    markerModal.setVisible(false);
-    selectedLocationData = null;
+window.resetSelection = function() {
+    window.markerModal.setVisible(false);
+    window.selectedLocationData = null;
     document.getElementById('use-location-btn-modal').disabled = true;
     document.getElementById('location-info-modal').style.display = 'none';
     document.getElementById('map-search-input').value = '';
-    mapModal.setCenter(DEFAULT_CENTER);
-    mapModal.setZoom(12);
-    clearAlertModal();
+    window.mapModal.setCenter(window.DEFAULT_CENTER);
+    window.mapModal.setZoom(12);
+    window.clearAlertModal();
 }
 
 // Get current location
-function getCurrentLocationModal() {
+window.getCurrentLocationModal = function() {
     if (navigator.geolocation) {
-        showLoadingModal(true);
+        window.showLoadingModal(true);
         navigator.geolocation.getCurrentPosition(
             (position) => {
                 const pos = {
                     lat: position.coords.latitude,
                     lng: position.coords.longitude
                 };
-                mapModal.setCenter(pos);
-                markerModal.setPosition(pos);
-                markerModal.setVisible(true);
-                handleLocationChange(pos.lat, pos.lng);
+                window.mapModal.setCenter(pos);
+                window.markerModal.setPosition(pos);
+                window.markerModal.setVisible(true);
+                window.handleLocationChange(pos.lat, pos.lng);
             },
             () => {
-                showLoadingModal(false);
-                showAlertModal('{{ __("Failed to get your current location") }}', 'error');
+                window.showLoadingModal(false);
+                window.showAlertModal('{{ __("Failed to get your current location") }}', 'error');
             },
             { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
         );
     } else {
-        showAlertModal('{{ __("Browser does not support location service") }}', 'error');
+        window.showAlertModal('{{ __("Browser does not support location service") }}', 'error');
     }
 }
 
 // Show/hide loading overlay
-function showLoadingModal(show) {
+window.showLoadingModal = function(show) {
     const overlay = document.getElementById('loading-overlay-modal');
     if (overlay) {
         if (show) {
@@ -505,7 +665,7 @@ function showLoadingModal(show) {
 }
 
 // Show alert message
-function showAlertModal(message, type) {
+window.showAlertModal = function(message, type) {
     const container = document.getElementById('alert-container-modal');
     const alertClass = type === 'success' ? 'alert-success' : 'alert-danger';
     container.innerHTML = `
@@ -516,11 +676,16 @@ function showAlertModal(message, type) {
 }
 
 // Clear alert
-function clearAlertModal() {
+window.clearAlertModal = function() {
     const container = document.getElementById('alert-container-modal');
     if (container) {
         container.innerHTML = '';
     }
 }
+
+// Close the check for function definitions
+} // end of if (typeof window.waitForGoogleMaps === 'undefined')
+
+console.log('✅ Google Maps Modal script loaded (duplicate-safe)');
 </script>
 @endpush
