@@ -881,11 +881,6 @@ class CheckoutController extends FrontBaseController
             $user_state = 0;
         }
 
-        // الحصول على اللغة النشطة
-        $currentLang = Session::has('language')
-            ? \App\Models\Language::find(Session::get('language'))->name
-            : \App\Models\Language::where('is_default', 1)->first()->name;
-
         $html_states = '<option value="" > Select State </option>';
         foreach ($states as $state) {
             if ($state->id == $user_state) {
@@ -894,9 +889,9 @@ class CheckoutController extends FrontBaseController
                 $check = '';
             }
 
-            // تحديد اسم الولاية بناءً على اللغة النشطة
-            $stateDisplayName = ($currentLang == 'ar')
-                ? ($state->state_ar ?? $state->state)
+            // تحديد اسم الولاية بناءً على اللغة النشطة باستخدام app()->getLocale()
+            $stateDisplayName = (app()->getLocale() == 'ar')
+                ? ($state->state_ar ?: $state->state)
                 : $state->state;
 
             $html_states .= '<option value="' . $state->id . '" rel="' . $state->country->id . '" ' . $check . ' >'
@@ -916,11 +911,6 @@ class CheckoutController extends FrontBaseController
             $user_city = 0;
         }
 
-        // الحصول على اللغة النشطة
-        $currentLang = Session::has('language')
-            ? \App\Models\Language::find(Session::get('language'))->name
-            : \App\Models\Language::where('is_default', 1)->first()->name;
-
         $html_cities = '<option value="" > Select City </option>';
         foreach ($cities as $city) {
             if ($city->id == $user_city) {
@@ -929,9 +919,9 @@ class CheckoutController extends FrontBaseController
                 $check = '';
             }
 
-            // تحديد اسم المدينة بناءً على اللغة النشطة
-            $cityDisplayName = ($currentLang == 'ar')
-                ? ($city->city_name_ar ?? $city->city_name)
+            // تحديد اسم المدينة بناءً على اللغة النشطة باستخدام app()->getLocale()
+            $cityDisplayName = (app()->getLocale() == 'ar')
+                ? ($city->city_name_ar ?: $city->city_name)
                 : $city->city_name;
 
             $html_cities .= '<option value="' . $city->city_name . '" ' . $check . ' >'
@@ -951,11 +941,6 @@ class CheckoutController extends FrontBaseController
             $user_city = 0;
         }
 
-        // الحصول على اللغة النشطة
-        $currentLang = Session::has('language')
-            ? \App\Models\Language::find(Session::get('language'))->name
-            : \App\Models\Language::where('is_default', 1)->first()->name;
-
         $html_cities = '<option value="" > Select City </option>';
         foreach ($cities as $city) {
             if ($city->id == $user_city) {
@@ -964,9 +949,9 @@ class CheckoutController extends FrontBaseController
                 $check = '';
             }
 
-            // تحديد اسم المدينة بناءً على اللغة النشطة
-            $cityDisplayName = ($currentLang == 'ar')
-                ? ($city->city_name_ar ?? $city->city_name)
+            // تحديد اسم المدينة بناءً على اللغة النشطة باستخدام app()->getLocale()
+            $cityDisplayName = (app()->getLocale() == 'ar')
+                ? ($city->city_name_ar ?: $city->city_name)
                 : $city->city_name;
 
             $html_cities .= '<option value="' . $city->id . '" ' . $check . ' >'

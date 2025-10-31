@@ -22,9 +22,9 @@
 <option value="" disabled selected >{{ __('Select Country') }}</option>
 @foreach (App\Models\Country::where('status',1)->get() as $data)
     @php
-        // تحديد اسم الدولة بناءً على اللغة النشطة
-        $countryDisplayName = ($langg->name == 'ar')
-            ? ($data->country_name_ar ?? $data->country_name)
+        // تحديد اسم الدولة بناءً على اللغة النشطة باستخدام app()->getLocale()
+        $countryDisplayName = (app()->getLocale() == 'ar')
+            ? ($data->country_name_ar ?: $data->country_name)
             : $data->country_name;
     @endphp
     <option value="{{ $data->country_name }}"

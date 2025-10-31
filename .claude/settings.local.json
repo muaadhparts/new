@@ -6,7 +6,8 @@
       "Bash(php:*)",
       "Bash(mysql:*)",
       "Bash(cat:*)",
-      "Bash(xxd:*)"
+      "Bash(xxd:*)",
+      "Bash(find:*)"
     ],
     "deny": [],
     "ask": []
