@@ -987,7 +987,7 @@ function addCountryToDropdown(countryData, stateId, cityId) {
     const newOption = $('<option></option>')
         .attr('value', countryName)
         .attr('data', countryData.id)
-        .attr('data-href', '{{ route("state.index") }}?country_id=' + countryData.id)
+        .attr('data-href', '{{ route("country.wise.state", ":country_id") }}'.replace(':country_id', countryData.id))
         .attr('rel', '1') // has states
         .attr('rel1', '0')
         .attr('rel5', '0')
