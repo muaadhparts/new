@@ -967,10 +967,102 @@ function selectCountryById(countryId, stateId, cityId) {
     });
 
     if (!countryFound) {
+        // Country not found in dropdown - add it dynamically
+        addCountryToDropdown(selectedLocationData.country, stateId, cityId);
+    }
+}
+
+// Add country to dropdown dynamically
+function addCountryToDropdown(countryData, stateId, cityId) {
+    if (!countryData || !countryData.id) {
         if (typeof toastr !== 'undefined') {
-            toastr.warning('لم يتم العثور على الدولة في القائمة');
+            toastr.error('بيانات الدولة غير صحيحة');
         }
         $('#mapModal').modal('hide');
+        return;
+    }
+
+    // Add country option to select
+    const countryName = countryData.name_ar || countryData.name;
+    const newOption = $('<option></option>')
+        .attr('value', countryName)
+        .attr('data', countryData.id)
+        .attr('data-href', '{{ route("state.index") }}?country_id=' + countryData.id)
+        .attr('rel', '1') // has states
+        .attr('rel1', '0')
+        .attr('rel5', '0')
+        .text(countryName);
+
+    // Add to select
+    $('#select_country').append(newOption);
+
+    // Select the new option
+    newOption.prop('selected', true);
+
+    // Update NiceSelect display
+    updateNiceSelectDisplay('select_country', countryName);
+
+    // Show success message
+    if (typeof toastr !== 'undefined') {
+        toastr.success('تم إضافة الدولة: ' + countryName);
+    }
+
+    // Trigger change to load states
+    $('#select_country').trigger('change');
+
+    // Wait for states to load, then select state
+    if (stateId) {
+        waitAndSelectState(stateId, cityId);
+    } else {
+        showFinalSuccessMessage();
+    }
+}
+
+// Add state to dropdown dynamically
+function addStateToDropdown(stateData, cityId) {
+    if (!stateData || !stateData.id) {
+        showFinalSuccessMessage();
+        return;
+    }
+
+    // Show state container
+    $('.select_state').removeClass('d-none');
+
+    // Add state option to select
+    const stateName = stateData.name_ar || stateData.name;
+    const newOption = $('<option></option>')
+        .attr('value', stateData.id)
+        .text(stateName);
+
+    // Add to select
+    $('#show_state').append(newOption);
+
+    // Select the new option
+    newOption.prop('selected', true);
+
+    // Initialize or update NiceSelect for state
+    const stateEl = document.getElementById('show_state');
+    if (stateEl && !stateEl.dataset.nsBound) {
+        NiceSelect.bind(stateEl, { searchable: true });
+        stateEl.dataset.nsBound = "1";
+    }
+
+    // Update NiceSelect display
+    updateNiceSelectDisplay('show_state', stateName);
+
+    // Show success message
+    if (typeof toastr !== 'undefined') {
+        toastr.success('تم إضافة المنطقة: ' + stateName);
+    }
+
+    // Trigger change to load cities
+    $('#show_state').trigger('change');
+
+    // Wait for cities to load, then select city
+    if (cityId) {
+        waitAndSelectCity(cityId);
+    } else {
+        showFinalSuccessMessage();
     }
 }
 
@@ -1016,8 +1108,8 @@ function waitAndSelectState(stateId, cityId) {
             });
 
             if (!stateFound) {
-                // State not found, but still show success
-                showFinalSuccessMessage();
+                // State not found - add it dynamically
+                addStateToDropdown(selectedLocationData.state, cityId);
             }
         } else if (attempts >= maxAttempts) {
             // Timeout waiting for states
@@ -1025,6 +1117,46 @@ function waitAndSelectState(stateId, cityId) {
             showFinalSuccessMessage();
         }
     }, 100); // Check every 100ms
+}
+
+// Add city to dropdown dynamically
+function addCityToDropdown(cityData) {
+    if (!cityData || !cityData.id) {
+        showFinalSuccessMessage();
+        return;
+    }
+
+    // Show city container
+    $('.select_city').removeClass('d-none');
+
+    // Add city option to select
+    const cityName = cityData.name_ar || cityData.name;
+    const newOption = $('<option></option>')
+        .attr('value', cityName)
+        .text(cityName);
+
+    // Add to select
+    $('#show_city').append(newOption);
+
+    // Select the new option
+    newOption.prop('selected', true);
+
+    // Initialize or update NiceSelect for city
+    const cityEl = document.getElementById('show_city');
+    if (cityEl && !cityEl.dataset.nsBound) {
+        NiceSelect.bind(cityEl, { searchable: true });
+        cityEl.dataset.nsBound = "1";
+    }
+
+    // Update NiceSelect display
+    updateNiceSelectDisplay('show_city', cityName);
+
+    // Show success message
+    if (typeof toastr !== 'undefined') {
+        toastr.success('تم إضافة المدينة: ' + cityName);
+    }
+
+    showFinalSuccessMessage();
 }
 
 // Wait for cities to load via AJAX, then select by name
@@ -1068,8 +1200,13 @@ function waitAndSelectCity(cityId) {
                 }
             });
 
-            // Show final success message (whether city found or not)
-            showFinalSuccessMessage();
+            if (!cityFound) {
+                // City not found - add it dynamically
+                addCityToDropdown(selectedLocationData.city);
+            } else {
+                // Show final success message
+                showFinalSuccessMessage();
+            }
         } else if (attempts >= maxAttempts) {
             // Timeout waiting for cities
             clearInterval(checkCitiesInterval);
