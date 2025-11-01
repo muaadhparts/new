@@ -410,11 +410,25 @@ class CheckoutController extends FrontBaseController
 
 
 
+    /**
+     * ========================================================================
+     * CHECKOUT STEP 1 - PROCESS AND SAVE CUSTOMER DATA
+     * ========================================================================
+     * NO CONFLICTS - NO DUPLICATION - SINGLE SOURCE OF TRUTH
+     *
+     * منطق معالجة البيانات:
+     * 1. يستقبل جميع البيانات من النموذج (يدوية أو من الخريطة)
+     * 2. يتحقق من صحة البيانات
+     * 3. ينظف Session من خطوات سابقة
+     * 4. يحفظ البيانات كمصدر وحيد للحقيقة
+     * ========================================================================
+     */
     public function checkoutStep1(Request $request)
     {
+        // Get all submitted data (manual OR from Google Maps - no conflict)
         $step1 = $request->all();
 
-//        dd($step1);
+        // Validation rules
         $validator = Validator::make($step1, [
             'customer_name' => 'required|string|max:255',
             'customer_email' => 'required|email|max:255',
@@ -423,41 +437,43 @@ class CheckoutController extends FrontBaseController
             'customer_zip' => 'nullable|string|max:20',
             'customer_country' => 'required|string|max:255',
             'customer_state' => 'required|string|max:255',
-            // Latitude and Longitude validation (optional but recommended for Google Maps integration)
+            // Coordinates from Google Maps (optional)
             'latitude' => 'nullable|numeric|between:-90,90',
             'longitude' => 'nullable|numeric|between:-180,180',
-//            'customer_city' => 'required|string|max:255',
- //            'shipping_name' => 'nullable|string|max:255',
-//            'shipping_phone' => 'nullable|regex:/^[0-9]{10,15}$/',
-//            'shipping_address' => 'nullable|string|max:255',
-//            'shipping_zip' => 'nullable|string|max:20',
-//            'shipping_city' => 'nullable|string|max:255',
-//            'shipping_state' => 'nullable|string|max:255',
+        ], [
+            'customer_name.required' => 'الاسم مطلوب',
+            'customer_email.required' => 'البريد الإلكتروني مطلوب',
+            'customer_email.email' => 'البريد الإلكتروني غير صحيح',
+            'customer_phone.required' => 'رقم الهاتف مطلوب',
+            'customer_address.required' => 'العنوان مطلوب',
+            'customer_country.required' => 'الدولة مطلوبة',
+            'customer_state.required' => 'الولاية مطلوبة',
+            'latitude.between' => 'خط العرض غير صحيح',
+            'longitude.between' => 'خط الطول غير صحيح',
         ]);
 
-
-//        dd($validator ,$validator->errors()->all());
         if ($validator->fails()) {
-            return  back()->withErrors($validator->errors());
+            return back()->withErrors($validator->errors())->withInput();
         }
 
+        // Validate coordinates consistency
+        if (($request->filled('latitude') && !$request->filled('longitude')) ||
+            (!$request->filled('latitude') && $request->filled('longitude'))) {
+            return back()->withErrors([
+                'coordinates' => 'يجب إدخال كلا الإحداثيتين معاً'
+            ])->withInput();
+        }
 
-//        dd($step1 ,$validator->errors());
-//            Session::forget(['step1', 'step2','step3','cart']);
-////        dd($step1);
-//        $oldCart = Session::get('cart');
-//
-//        // Update cart details with shipping information
-//        $oldCart->totalPrice = 60;
-//
-//
-//        // Create a new cart instance
-//        $cart = new Cart($oldCart);
-//
-//        dd($step1);
+        // ====================================================================
+        // CLEAN SESSION - Prevent any data duplication
+        // ====================================================================
+        Session::forget(['step2', 'step3']);
 
-        // Save all customer data including latitude/longitude from Google Maps
-        // This data will be available in step2 and step3
+        // ====================================================================
+        // SAVE TO SESSION - Single Source of Truth
+        // ====================================================================
+        // All data (manual or from maps) saved here
+        // Step 2 and Step 3 will ONLY use this data
         Session::put('step1', $step1);
 
         return redirect()->route('front.checkout.step2');

@@ -1306,5 +1306,96 @@ function clearAlertModal() {
         container.innerHTML = '';
     }
 }
+
+// ============================================================================
+// FORM VALIDATION BEFORE SUBMIT
+// ============================================================================
+// منع التعارض بين البيانات اليدوية وبيانات الخريطة
+// التأكد من اكتمال جميع الحقول الأساسية قبل الإرسال
+// ============================================================================
+
+document.querySelector('.address-wrapper').addEventListener('submit', function(e) {
+    let isValid = true;
+    let errors = [];
+
+    // Required fields
+    const requiredFields = [
+        { id: 'customer_name', name: '@lang("Name")' },
+        { id: 'customer_email', name: '@lang("Email")' },
+        { id: 'phone', name: '@lang("Phone Number")' },
+        { id: 'address', name: '@lang("Address")' },
+        { id: 'select_country', name: '@lang("Country")' },
+        { id: 'show_state', name: '@lang("State")' }
+    ];
+
+    // Validate required fields
+    requiredFields.forEach(field => {
+        const element = document.getElementById(field.id);
+        if (element && !element.value.trim()) {
+            isValid = false;
+            errors.push(field.name);
+            element.classList.add('is-invalid');
+        } else if (element) {
+            element.classList.remove('is-invalid');
+        }
+    });
+
+    // Validate latitude/longitude if present
+    const latitude = document.getElementById('latitude').value;
+    const longitude = document.getElementById('longitude').value;
+
+    // If one coordinate is present, both must be present
+    if ((latitude && !longitude) || (!latitude && longitude)) {
+        isValid = false;
+        errors.push('@lang("Complete GPS Coordinates")');
+    }
+
+    // Validate coordinate ranges if both are present
+    if (latitude && longitude) {
+        const lat = parseFloat(latitude);
+        const lng = parseFloat(longitude);
+
+        if (isNaN(lat) || lat < -90 || lat > 90) {
+            isValid = false;
+            errors.push('@lang("Invalid Latitude")');
+        }
+
+        if (isNaN(lng) || lng < -180 || lng > 180) {
+            isValid = false;
+            errors.push('@lang("Invalid Longitude")');
+        }
+    }
+
+    // If validation fails, prevent form submission and show errors
+    if (!isValid) {
+        e.preventDefault();
+
+        let errorMessage = '@lang("Please fill in the following required fields:")' + '<br>';
+        errorMessage += errors.join('<br>');
+
+        if (typeof toastr !== 'undefined') {
+            toastr.error(errorMessage);
+        } else {
+            alert(errorMessage.replace(/<br>/g, '\n'));
+        }
+
+        return false;
+    }
+
+    return true;
+});
+
+// Add is-invalid class styling if not already present
+if (!document.querySelector('style[data-validation-styles]')) {
+    const style = document.createElement('style');
+    style.setAttribute('data-validation-styles', 'true');
+    style.textContent = `
+        .is-invalid {
+            border-color: #dc3545 !important;
+            box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25) !important;
+        }
+    `;
+    document.head.appendChild(style);
+}
 </script>
 @endpush
