@@ -423,6 +423,9 @@ class CheckoutController extends FrontBaseController
             'customer_zip' => 'nullable|string|max:20',
             'customer_country' => 'required|string|max:255',
             'customer_state' => 'required|string|max:255',
+            // Latitude and Longitude validation (optional but recommended for Google Maps integration)
+            'latitude' => 'nullable|numeric|between:-90,90',
+            'longitude' => 'nullable|numeric|between:-180,180',
 //            'customer_city' => 'required|string|max:255',
  //            'shipping_name' => 'nullable|string|max:255',
 //            'shipping_phone' => 'nullable|regex:/^[0-9]{10,15}$/',
@@ -452,7 +455,11 @@ class CheckoutController extends FrontBaseController
 //        $cart = new Cart($oldCart);
 //
 //        dd($step1);
+
+        // Save all customer data including latitude/longitude from Google Maps
+        // This data will be available in step2 and step3
         Session::put('step1', $step1);
+
         return redirect()->route('front.checkout.step2');
     }
 

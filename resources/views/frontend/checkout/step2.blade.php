@@ -123,6 +123,17 @@
                                     <li><span class="title">{{ tr_or('countries', $step1->customer_country) }}</span></li>
                                     <li><span class="title">{{ tr_or('states', $billingStateName) }}</span></li>
                                     <li><span class="title">{{ tr_or('cities', $billingCityName) }}</span></li>
+
+                                    {{-- عرض الإحداثيات إذا كانت موجودة (من Google Maps) --}}
+                                    @if(isset($step1->latitude) && isset($step1->longitude))
+                                        <li class="text-muted" style="font-size: 0.85em;">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                                                <circle cx="12" cy="10" r="3"></circle>
+                                            </svg>
+                                            <span class="title">@lang('GPS Coordinates'): {{ number_format($step1->latitude, 6) }}, {{ number_format($step1->longitude, 6) }}</span>
+                                        </li>
+                                    @endif
                                 </ul>
                             </div>
 
