@@ -8,7 +8,10 @@
       "Bash(cat:*)",
       "Bash(xxd:*)",
       "Bash(find:*)",
-      "WebFetch(domain:new.test)"
+      "WebFetch(domain:new.test)",
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$(cat <<''EOF''\nMerge branch ''google-maps-api_2'' into main\n\nResolved conflict in resources/views/frontend/checkout/step1.blade.php by keeping the google-maps-api_2 implementation which includes the complete Google Maps modal with inline JavaScript for location selection.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
+      "Bash(composer show:*)"
     ],
     "deny": [],
     "ask": []

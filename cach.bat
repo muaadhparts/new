@@ -11,7 +11,6 @@ php artisan config:clear
 php artisan cache:clear
 php artisan route:clear
 php artisan optimize:clear
-php artisan livewire:discover
 
 echo ✅ Cache cleared successfully!
 
