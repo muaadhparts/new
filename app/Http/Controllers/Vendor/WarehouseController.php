@@ -82,7 +82,16 @@ class WarehouseController extends VendorBaseController
 
         $states = State::where('country_id', $country->id)->get();
 
-        return response()->json(['states' => $states]);
+        // تطبيق منطق اللغة على الولايات
+        $locale = app()->getLocale();
+        $statesWithLocale = $states->map(function($state) use ($locale) {
+            $state->display_name = ($locale == 'ar')
+                ? ($state->state_ar ?: $state->state)
+                : $state->state;
+            return $state;
+        });
+
+        return response()->json(['states' => $statesWithLocale]);
     }
 
     /**
@@ -93,6 +102,15 @@ class WarehouseController extends VendorBaseController
         $stateId = $request->state_id;
         $cities = City::where('state_id', $stateId)->get();
 
-        return response()->json(['cities' => $cities]);
+        // تطبيق منطق اللغة على المدن
+        $locale = app()->getLocale();
+        $citiesWithLocale = $cities->map(function($city) use ($locale) {
+            $city->display_name = ($locale == 'ar')
+                ? ($city->city_name_ar ?: $city->city_name)
+                : $city->city_name;
+            return $city;
+        });
+
+        return response()->json(['cities' => $citiesWithLocale]);
     }
 }

@@ -171,6 +171,7 @@
 						<input type="hidden" name="order_number" value="{{ $order->order_number }}">
 						<input type="hidden" name="email" value="{{ $order->customer_email }}">
 						<input type="hidden" name="ref_id" id="ref_id" value="">
+					</form>
 				</div>
 				<div class="col-lg-4">
 					<div class="right-area">
@@ -195,7 +196,6 @@
 
 					</div>
 				</div>
-				</form>
 			</div>
 		</div>
 	</section>

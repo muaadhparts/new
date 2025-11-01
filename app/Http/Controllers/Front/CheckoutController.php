@@ -873,7 +873,6 @@ class CheckoutController extends FrontBaseController
 
     public function getState($country_id)
     {
-
         $states = State::where('country_id', $country_id)->get();
 
         if (Auth::user()) {
@@ -887,13 +886,16 @@ class CheckoutController extends FrontBaseController
             if ($state->id == $user_state) {
                 $check = 'selected';
             } else {
-
                 $check = '';
             }
-            // $html_states .= '<option value="' . $state->id . '"   rel="' . $state->country->id . '" ' . $check . ' >' . $state->state . '</option>';
-            $html_states .= '<option value="' . $state->id . '" rel="' . $state->country->id . '" ' . $check . ' >' 
-              . __('states.' . $state->state) . '</option>';
 
+            // تحديد اسم الولاية بناءً على اللغة النشطة باستخدام app()->getLocale()
+            $stateDisplayName = (app()->getLocale() == 'ar')
+                ? ($state->state_ar ?: $state->state)
+                : $state->state;
+
+            $html_states .= '<option value="' . $state->id . '" rel="' . $state->country->id . '" ' . $check . ' >'
+              . $stateDisplayName . '</option>';
         }
 
         return response()->json(["data" => $html_states, "state" => $user_state]);
@@ -901,7 +903,6 @@ class CheckoutController extends FrontBaseController
 
     public function getCity(Request $request)
     {
-
         $cities = City::where('state_id', $request->state_id)->get();
 
         if (Auth::user()) {
@@ -917,10 +918,14 @@ class CheckoutController extends FrontBaseController
             } else {
                 $check = '';
             }
-            // $html_cities .= '<option value="' . $city->city_name . '"   ' . $check . ' >' . $city->city_name . '</option>';
-            $html_cities .= '<option value="' . $city->city_name . '" ' . $check . ' >' 
-              . __('cities.' . $city->city_name) . '</option>';
 
+            // تحديد اسم المدينة بناءً على اللغة النشطة باستخدام app()->getLocale()
+            $cityDisplayName = (app()->getLocale() == 'ar')
+                ? ($city->city_name_ar ?: $city->city_name)
+                : $city->city_name;
+
+            $html_cities .= '<option value="' . $city->city_name . '" ' . $check . ' >'
+              . $cityDisplayName . '</option>';
         }
 
         return response()->json(["data" => $html_cities, "state" => $user_city]);
@@ -928,7 +933,6 @@ class CheckoutController extends FrontBaseController
 
     public function getCityUser(Request $request)
     {
-
         $cities = City::where('state_id', $request->state_id)->get();
 
         if (Auth::user()) {
@@ -944,10 +948,14 @@ class CheckoutController extends FrontBaseController
             } else {
                 $check = '';
             }
-            // $html_cities .= '<option value="' . $city->id . '"   ' . $check . ' >' . $city->city_name . '</option>';
-            $html_cities .= '<option value="' . $city->id . '" ' . $check . ' >' 
-              . __('cities.' . $city->city_name) . '</option>';
 
+            // تحديد اسم المدينة بناءً على اللغة النشطة باستخدام app()->getLocale()
+            $cityDisplayName = (app()->getLocale() == 'ar')
+                ? ($city->city_name_ar ?: $city->city_name)
+                : $city->city_name;
+
+            $html_cities .= '<option value="' . $city->id . '" ' . $check . ' >'
+              . $cityDisplayName . '</option>';
         }
 
         return response()->json(["data" => $html_cities, "state" => $user_city]);

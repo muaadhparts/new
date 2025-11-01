@@ -104,10 +104,15 @@
 													<div class="col-lg-7">
                                                         <select class="input-field" name="country" required>
                                                             <option value="">{{ __('Select Country') }}</option>
-                                                            @foreach (DB::table('countries')->get() as $data)
+                                                            @foreach (App\Models\Country::where('status', 1)->get() as $data)
+                                                                @php
+                                                                    $countryDisplayName = (app()->getLocale() == 'ar')
+                                                                        ? ($data->country_name_ar ?: $data->country_name)
+                                                                        : $data->country_name;
+                                                                @endphp
                                                                 <option value="{{ $data->country_name }}">
-                                                                    {{ $data->country_name }}
-                                                                </option>		
+                                                                    {{ $countryDisplayName }}
+                                                                </option>
                                                              @endforeach
                                                         </select>
 													</div>

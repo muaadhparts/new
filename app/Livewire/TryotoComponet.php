@@ -195,70 +195,139 @@ class TryotoComponet extends Component
 
     /**
      * Get origin city (vendor/warehouse city)
+     * Only uses city_id from cities table - no fallbacks
      */
     protected function getOriginCity(): string
     {
-        // Default to Riyadh if no vendor-specific city is found
-        $defaultCity = 'Riyadh';
-
-        // If vendorId is available, try to get vendor's warehouse city
-        if ($this->vendorId > 0) {
-            $vendor = \App\Models\User::find($this->vendorId);
-
-            // أولاً: نحاول الحصول على مدينة المستودع
-            if ($vendor && !empty($vendor->warehouse_city)) {
-                return $vendor->warehouse_city;
-            }
-
-            // ثانياً: إذا لم توجد مدينة المستودع، نحاول الحصول على مدينة المتجر من city_id
-            if ($vendor && !empty($vendor->city_id)) {
-                $city = \App\Models\City::find($vendor->city_id);
-                if ($city && !empty($city->city_name)) {
-                    return $city->city_name;
-                }
-            }
+        // Vendor must be specified
+        if ($this->vendorId <= 0) {
+            \Log::error('TryotoComponent: No vendor ID specified for origin city');
+            throw new \Exception('Vendor ID is required to determine origin city for shipping calculation.');
         }
 
-        // Get from cached general settings or default
-        return $this->generalSettings->shop_city ?? $defaultCity;
+        $vendor = \App\Models\User::find($this->vendorId);
+
+        if (!$vendor) {
+            \Log::error('TryotoComponent: Vendor not found', [
+                'vendor_id' => $this->vendorId,
+            ]);
+            throw new \Exception("Vendor with ID {$this->vendorId} not found.");
+        }
+
+        // city_id must exist
+        if (empty($vendor->city_id)) {
+            \Log::error('TryotoComponent: Vendor has no city_id set', [
+                'vendor_id' => $this->vendorId,
+                'vendor_name' => $vendor->name,
+            ]);
+            throw new \Exception("Vendor '{$vendor->name}' (ID: {$this->vendorId}) does not have a city assigned. Please set the vendor's city in their profile.");
+        }
+
+        // City must exist in cities table
+        $city = \App\Models\City::find($vendor->city_id);
+
+        if (!$city || empty($city->city_name)) {
+            \Log::error('TryotoComponent: City not found in database', [
+                'vendor_id' => $this->vendorId,
+                'city_id' => $vendor->city_id,
+            ]);
+            throw new \Exception("City with ID {$vendor->city_id} not found in database. Please contact administrator.");
+        }
+
+        \Log::info('TryotoComponent: Origin city resolved from vendor city_id', [
+            'vendor_id' => $this->vendorId,
+            'vendor_name' => $vendor->name,
+            'city_id' => $vendor->city_id,
+            'city_name' => $city->city_name,
+        ]);
+
+        return $this->normalizeCityName($city->city_name);
     }
 
     /**
      * Get destination city from customer data in session
+     * Only uses city_id from cities table - no fallbacks
      */
     protected function getDestinationCity(): string
     {
-        // Default to Riyadh if no customer city is found
-        $defaultCity = 'Riyadh';
+        $cityId = null;
 
-        // Try to get customer city from step1 session data
+        // Try to get customer city_id from step1 session data
         if (\Session::has('step1')) {
             $step1 = \Session::get('step1');
 
-            // Check if customer_city exists in step1 data
-            if (!empty($step1['customer_city'])) {
-                $city = $step1['customer_city'];
-
-                // If customer_city is a numeric ID, get the city name from database
-                if (is_numeric($city)) {
-                    $cityModel = \App\Models\City::find($city);
-                    if ($cityModel && !empty($cityModel->city_name)) {
-                        return $cityModel->city_name;
-                    }
-                }
-
-                return $city;
+            // Check if customer_city exists and is numeric (city_id)
+            if (!empty($step1['customer_city']) && is_numeric($step1['customer_city'])) {
+                $cityId = $step1['customer_city'];
             }
         }
 
-        // If authenticated user, try to get from user profile
-        if (\Auth::check()) {
+        // If not in session, try authenticated user's city_id
+        if (!$cityId && \Auth::check()) {
             $user = \Auth::user();
-            if (!empty($user->city)) {
-                return $user->city;
+            if (!empty($user->city_id)) {
+                $cityId = $user->city_id;
             }
         }
 
-        return $defaultCity;
+        // city_id must exist
+        if (!$cityId) {
+            \Log::error('TryotoComponent: No destination city_id found', [
+                'has_session_step1' => \Session::has('step1'),
+                'session_customer_city' => \Session::get('step1.customer_city'),
+                'is_authenticated' => \Auth::check(),
+                'user_city_id' => \Auth::check() ? \Auth::user()->city_id : null,
+            ]);
+            throw new \Exception('Customer destination city is required for shipping calculation. Please select a city in the checkout form.');
+        }
+
+        // City must exist in cities table
+        $city = \App\Models\City::find($cityId);
+
+        if (!$city || empty($city->city_name)) {
+            \Log::error('TryotoComponent: Destination city not found in database', [
+                'city_id' => $cityId,
+            ]);
+            throw new \Exception("Destination city with ID {$cityId} not found in database. Please contact administrator.");
+        }
+
+        \Log::info('TryotoComponent: Destination city resolved from city_id', [
+            'city_id' => $cityId,
+            'city_name' => $city->city_name,
+            'source' => \Session::has('step1') ? 'session' : 'authenticated_user',
+        ]);
+
+        return $this->normalizeCityName($city->city_name);
+    }
+
+    /**
+     * Normalize city name for Tryoto API
+     * Only cleans the name - removes diacritics and special characters
+     * NO automatic mapping or substitution
+     */
+    protected function normalizeCityName(string $cityName): string
+    {
+        // Characters to remove/replace
+        $charsToReplace = ['ā', 'ī', 'ū', 'ē', 'ō', 'Ā', 'Ī', 'Ū', 'Ē', 'Ō'];
+        $replacements = ['a', 'i', 'u', 'e', 'o', 'A', 'I', 'U', 'E', 'O'];
+
+        // Remove diacritics and special characters
+        $normalized = str_replace($charsToReplace, $replacements, $cityName);
+
+        // Remove apostrophes
+        $normalized = str_replace("'", '', $normalized);
+
+        // Trim whitespace
+        $normalized = trim($normalized);
+
+        // Log the normalization
+        if ($normalized !== $cityName) {
+            \Log::info('TryotoComponent: City name normalized', [
+                'original' => $cityName,
+                'normalized' => $normalized,
+            ]);
+        }
+
+        return $normalized;
     }
 }
