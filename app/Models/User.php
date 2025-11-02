@@ -146,6 +146,38 @@ class User extends Authenticatable implements JWTSubject
         return $this->hasMany('App\Models\SocialLink', 'user_id');
     }
 
+    // ============================================================================
+    // ADDRESS RELATIONSHIPS
+    // ============================================================================
+    // These relationships allow accessing city, state, and country details
+    // from the user's saved address
+    // ============================================================================
+
+    /**
+     * Get the city associated with the user's address
+     */
+    public function city()
+    {
+        return $this->belongsTo('App\Models\City', 'city_id');
+    }
+
+    /**
+     * Get the state associated with the user's address
+     */
+    public function state()
+    {
+        return $this->belongsTo('App\Models\State', 'state_id');
+    }
+
+    /**
+     * Get the country associated with the user's address
+     * Note: country field stores country_name, not ID
+     */
+    public function countryModel()
+    {
+        return $this->belongsTo('App\Models\Country', 'country', 'country_name');
+    }
+
     public function wishlistCount()
     {
         // Count wishlist items where the underlying product has at least one active merchant listing.

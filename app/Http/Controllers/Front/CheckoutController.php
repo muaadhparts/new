@@ -929,7 +929,7 @@ class CheckoutController extends FrontBaseController
         $cities = City::where('state_id', $request->state_id)->get();
 
         if (Auth::user()) {
-            $user_city = Auth::user()->city;
+            $user_city = Auth::user()->city_id; // تغيير من city إلى city_id
         } else {
             $user_city = 0;
         }
@@ -947,11 +947,12 @@ class CheckoutController extends FrontBaseController
                 ? ($city->city_name_ar ?: $city->city_name)
                 : $city->city_name;
 
-            $html_cities .= '<option value="' . $city->city_name . '" ' . $check . ' >'
+            // تغيير value من city_name إلى city->id
+            $html_cities .= '<option value="' . $city->id . '" ' . $check . ' >'
               . $cityDisplayName . '</option>';
         }
 
-        return response()->json(["data" => $html_cities, "state" => $user_city]);
+        return response()->json(["data" => $html_cities, "city" => $user_city]);
     }
 
     public function getCityUser(Request $request)
@@ -959,7 +960,7 @@ class CheckoutController extends FrontBaseController
         $cities = City::where('state_id', $request->state_id)->get();
 
         if (Auth::user()) {
-            $user_city = Auth::user()->city;
+            $user_city = Auth::user()->city_id; // تغيير من city إلى city_id
         } else {
             $user_city = 0;
         }
@@ -981,7 +982,7 @@ class CheckoutController extends FrontBaseController
               . $cityDisplayName . '</option>';
         }
 
-        return response()->json(["data" => $html_cities, "state" => $user_city]);
+        return response()->json(["data" => $html_cities, "city" => $user_city]);
     }
 
     // Redirect To Checkout Page If Payment is Cancelled

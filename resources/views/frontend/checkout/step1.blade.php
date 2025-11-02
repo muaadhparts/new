@@ -500,12 +500,23 @@ document.addEventListener("DOMContentLoaded", function () {
         if (!country_id) return;
 
         $.get("{{ route('state.wise.city') }}", { state_id: state_id }, function(data) {
+            var options = { searchable: true };
+
             $('#show_city').parent().parent().removeClass('d-none');
             $('#show_city').html(data.data);
+
+            // نفعّل NiceSelect للمدينة مرة واحدة
+            const cityEl = document.getElementById("show_city");
+            if (cityEl && !cityEl.dataset.nsBound) {
+                NiceSelect.bind(cityEl, options);
+                cityEl.dataset.nsBound = "1";
+            }
 
             // اختيار المدينة المحفوظة (للمسجّل)
             if (IS_LOGGED && SAVED_CITYID) {
                 $('#show_city').val(String(SAVED_CITYID));
+                // تحديث عرض NiceSelect ليعكس القيمة المختارة
+                updateNiceSelectDisplay('show_city', $('#show_city option:selected').text());
             }
         });
 
@@ -1132,7 +1143,7 @@ function addCityToDropdown(cityData) {
     // Add city option to select
     const cityName = cityData.name_ar || cityData.name;
     const newOption = $('<option></option>')
-        .attr('value', cityName)
+        .attr('value', cityData.id) // تغيير من cityName إلى cityData.id
         .text(cityName);
 
     // Add to select
