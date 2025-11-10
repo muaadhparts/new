@@ -1,9 +1,4 @@
-@extends('layouts.unified')
-@php
-    $isDashboard = true;
-    $isAdmin = true;
-    $hideFooter = true;
-@endphp
+@extends('layouts.admin')
 @section('styles')
     <link href="{{ asset('assets/admin/css/product.css') }}" rel="stylesheet" />
     <link href="{{ asset('assets/admin/css/jquery.Jcrop.css') }}" rel="stylesheet" />
@@ -34,7 +29,7 @@
                 </div>
             </div>
         </div>
-        <form id="muaadhform" action="{{ route('admin-prod-update', $data->id) }}" method="POST"
+        <form id="geniusform" action="{{ route('admin-prod-update', $data->id) }}" method="POST"
             enctype="multipart/form-data">
             {{ csrf_field() }}
             @include('alerts.admin.form-both')
@@ -74,46 +69,6 @@
                                                 <input type="text" class="input-field"
                                                     placeholder="{{ __('Enter Product Sku') }}" name="sku"
                                                     required="" value="{{ $data->sku }}">
-                                            </div>
-                                        </div>
-
-                                        <div class="row">
-                                            <div class="col-lg-12">
-                                                <div class="left-area">
-                                                    <h4 class="heading">{{ __('Product Dimensions') }} </h4>
-                                                    <p class="sub-heading">{{ __('(For accurate shipping calculation)') }}</p>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <div class="row">
-                                            <div class="col-lg-4">
-                                                <label>{{ __('Length (cm)') }}</label>
-                                                <input type="number" step="0.01" class="input-field"
-                                                    placeholder="{{ __('Length') }}" name="length" value="{{ $data->length ?? '' }}">
-                                            </div>
-                                            <div class="col-lg-4">
-                                                <label>{{ __('Width (cm)') }}</label>
-                                                <input type="number" step="0.01" class="input-field"
-                                                    placeholder="{{ __('Width') }}" name="width" value="{{ $data->width ?? '' }}">
-                                            </div>
-                                            <div class="col-lg-4">
-                                                <label>{{ __('Height (cm)') }}</label>
-                                                <input type="number" step="0.01" class="input-field"
-                                                    placeholder="{{ __('Height') }}" name="height" value="{{ $data->height ?? '' }}">
-                                            </div>
-                                        </div>
-
-                                        <div class="row">
-                                            <div class="col-lg-12">
-                                                <div class="left-area">
-                                                    <h4 class="heading">{{ __('Product Weight (kg)') }} </h4>
-                                                    <p class="sub-heading">{{ __('(For shipping calculation)') }}</p>
-                                                </div>
-                                            </div>
-                                            <div class="col-lg-12">
-                                                <input type="number" step="0.01" class="input-field"
-                                                    placeholder="{{ __('Enter Product Weight') }}" name="weight" value="{{ $data->weight ?? '' }}">
                                             </div>
                                         </div>
 
@@ -222,7 +177,7 @@
                                                                     $checked = 0;
                                                                 @endphp
                                                                 <div class="row">
-                                                                    <div class="col-lg-12">
+                                                                    <div class="col-lg-5">
                                                                         <div class="custom-control custom-checkbox">
                                                                             <input type="checkbox"
                                                                                 id="{{ $catAttribute->input_name }}{{ $option->id }}"
@@ -238,6 +193,29 @@
                                                                             >
                                                                             <label class="custom-control-label"
                                                                                 for="{{ $catAttribute->input_name }}{{ $option->id }}">{{ $option->name }}</label>
+                                                                        </div>
+                                                                    </div>
+
+                                                                    <div
+                                                                        class="col-lg-7 {{ $catAttribute->price_status == 0 ? 'd-none' : '' }}">
+                                                                        <div class="row">
+                                                                            <div class="col-2">
+                                                                                +
+                                                                            </div>
+                                                                            <div class="col-10">
+                                                                                <div class="price-container">
+                                                                                    <span
+                                                                                        class="price-curr">{{ $sign->sign }}</span>
+                                                                                    <input type="text"
+                                                                                        class="input-field price-input"
+                                                                                        id="{{ $catAttribute->input_name }}{{ $option->id }}_price"
+                                                                                        data-name="{{ $catAttribute->input_name }}_price[]"
+                                                                                        placeholder="0.00 (Additional Price)"
+                                                                                        value="{{ !empty($selectedAttrs["$inName"]['prices'][$i]) && $checked == 1
+                                                                                            ? round($selectedAttrs["$inName"]['prices'][$i] * $sign->value, 2)
+                                                                                            : '' }}">
+                                                                                </div>
+                                                                            </div>
                                                                         </div>
                                                                     </div>
                                                                 </div>
@@ -280,7 +258,7 @@
                                                                 @endphp
 
                                                                 <div class="row">
-                                                                    <div class="col-lg-12">
+                                                                    <div class="col-lg-5">
                                                                         <div class="custom-control custom-checkbox">
 
                                                                             <input type="checkbox"
@@ -301,6 +279,28 @@
 
                                                                             <label class="custom-control-label"
                                                                                 for="{{ $subAttribute->input_name }}{{ $option->id }}">{{ $option->name }}</label>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div
+                                                                        class="col-lg-7 {{ $subAttribute->price_status == 0 ? 'd-none' : '' }}">
+                                                                        <div class="row">
+                                                                            <div class="col-2">
+                                                                                +
+                                                                            </div>
+                                                                            <div class="col-10">
+                                                                                <div class="price-container">
+                                                                                    <span
+                                                                                        class="price-curr">{{ $sign->sign }}</span>
+                                                                                    <input type="text"
+                                                                                        class="input-field price-input"
+                                                                                        id="{{ $subAttribute->input_name }}{{ $option->id }}_price"
+                                                                                        data-name="{{ $subAttribute->input_name }}_price[]"
+                                                                                        placeholder="0.00 (Additional Price)"
+                                                                                        value="{{ !empty($selectedAttrs["$inName"]['prices'][$i]) && $checked == 1
+                                                                                            ? round($selectedAttrs["$inName"]['prices'][$i] * $sign->value, 2)
+                                                                                            : '' }}">
+                                                                                </div>
+                                                                            </div>
                                                                         </div>
                                                                     </div>
                                                                 </div>
@@ -342,7 +342,7 @@
                                                                     $checked = 0;
                                                                 @endphp
                                                                 <div class="row">
-                                                                    <div class="col-lg-12">
+                                                                    <div class="col-lg-5">
                                                                         <div class="custom-control custom-checkbox">
                                                                             <input type="checkbox"
                                                                                 id="{{ $childAttribute->input_name }}{{ $option->id }}"
@@ -365,6 +365,34 @@
                                                                         </div>
                                                                     </div>
 
+
+                                                                    <div
+                                                                        class="col-lg-7 {{ $childAttribute->price_status == 0 ? 'd-none' : '' }}">
+                                                                        <div class="row">
+                                                                            <div class="col-2">
+                                                                                +
+                                                                            </div>
+                                                                            <div class="col-10">
+                                                                                <div class="price-container">
+                                                                                    <span
+                                                                                        class="price-curr">{{ $sign->sign }}</span>
+                                                                                    <input type="text"
+                                                                                        class="input-field price-input"
+                                                                                        id="{{ $childAttribute->input_name }}{{ $option->id }}_price"
+                                                                                        data-name="{{ $childAttribute->input_name }}_price[]"
+                                                                                        placeholder="0.00 (Additional Price)"
+                                                                                        value="{{ !empty(
+                                                                                            $selectedAttrs[
+                                                                                                "
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        																		$inName"
+                                                                                            ]['prices'][$i]
+                                                                                        ) && $checked == 1
+                                                                                            ? round($selectedAttrs["$inName"]['prices'][$i] * $sign->value, 2)
+                                                                                            : '' }}">
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
                                                                 </div>
                                                                 @php
                                                                     if ($checked == 1) {
@@ -379,45 +407,6 @@
                                             @endif
                                         </div>
                                         {{-- Attributes of child category ends --}}
-
-                                        <div class="row">
-                                            <div class="col-lg-12">
-                                                <div class="left-area">
-                                                    <h4 class="heading">{{ __('Brand') }}*</h4>
-                                                </div>
-                                            </div>
-                                            <div class="col-lg-12">
-                                                <input type="text" class="input-field" placeholder="{{ __('Enter Product Brand') }}" name="brand" value="{{ $data->brand }}">
-                                            </div>
-                                        </div>
-
-                                        <div class="row">
-                                            <div class="col-lg-12">
-                                                <div class="left-area">
-                                                    <h4 class="heading">{{ __('Product Weight') }}*</h4>
-                                                    <p class="sub-heading">{{ __('(In Kg)') }}</p>
-                                                </div>
-                                            </div>
-                                            <div class="col-lg-12">
-                                                <input type="number" class="input-field" placeholder="{{ __('Product Weight') }}" name="weight" value="{{ $data->weight }}" step="0.01" min="0">
-                                            </div>
-                                        </div>
-
-                                        <div class="row">
-                                            <div class="col-lg-12">
-                                                <div class="left-area">
-                                                    <h4 class="heading">{{ __('Product Type') }}*</h4>
-                                                </div>
-                                            </div>
-                                            <div class="col-lg-12">
-                                                <select name="type">
-                                                    <option value="Physical" {{ $data->type == 'Physical' ? 'selected' : '' }}>{{ __('Physical') }}</option>
-                                                    <option value="Digital" {{ $data->type == 'Digital' ? 'selected' : '' }}>{{ __('Digital') }}</option>
-                                                    <option value="License" {{ $data->type == 'License' ? 'selected' : '' }}>{{ __('License') }}</option>
-                                                    <option value="Listing" {{ $data->type == 'Listing' ? 'selected' : '' }}>{{ __('Listing') }}</option>
-                                                </select>
-                                            </div>
-                                        </div>
 
                                         <div class="{{ !empty($data->size) ? ' showbox' : '' }}" id="stckprod">
                                             <div class="row">
@@ -435,13 +424,221 @@
 
                                         </div>
 
+                                        <div class="row">
+                                            <div class="col-lg-12">
+                                                <div class="left-area">
+
+                                                </div>
+                                            </div>
+                                            <div class="col-lg-12">
+                                                <ul class="list">
+                                                    <li>
+                                                        <input class="checkclick1" name="product_condition_check"
+                                                            type="checkbox" id="conditionCheck" value="1"
+                                                            {{ $data->product_condition != 0 ? 'checked' : '' }}>
+                                                        <label
+                                                            for="conditionCheck">{{ __('Allow Product Condition') }}</label>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </div>
+
+                                        <div class="{{ $data->product_condition == 0 ? ' showbox' : '' }}">
+                                            <div class="row">
+                                                <div class="col-lg-12">
+                                                    <div class="left-area">
+                                                        <h4 class="heading">{{ __('Product Condition') }}*</h4>
+                                                    </div>
+                                                </div>
+                                                <div class="col-lg-12">
+                                                    <select name="product_condition">
+                                                        <option value="2"
+                                                            {{ $data->product_condition == 2 ? 'selected' : '' }}>
+                                                            {{ __('New') }}</option>
+                                                        <option value="1"
+                                                            {{ $data->product_condition == 1 ? 'selected' : '' }}>
+                                                            {{ __('Used') }}</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </div>
 
 
+                                        <div class="row">
+                                            <div class="col-lg-12">
+                                                <div class="left-area">
+
+                                                </div>
+                                            </div>
+                                            <div class="col-lg-12">
+                                                <ul class="list">
+                                                    <li>
+                                                        <input class="checkclick1" name="preordered_check"
+                                                            type="checkbox" id="preorderedCheck" value="1"
+                                                            {{ $data->preordered != 0 ? 'checked' : '' }}>
+                                                        <label
+                                                            for="preorderedCheck">{{ __('Allow Product Preorder') }}</label>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </div>
+
+                                        <div class="{{ $data->preordered == 0 ? ' showbox' : '' }}">
+                                            <div class="row">
+                                                <div class="col-lg-12">
+                                                    <div class="left-area">
+                                                        <h4 class="heading">{{ __('Product Preorder') }}*</h4>
+                                                    </div>
+                                                </div>
+                                                <div class="col-lg-12">
+                                                    <select name="preordered">
+                                                        <option value="1"
+                                                            {{ $data->preordered == 1 ? 'selected' : '' }}>
+                                                            {{ __('Sale') }}</option>
+                                                        <option value="2"
+                                                            {{ $data->preordered == 2 ? 'selected' : '' }}>
+                                                            {{ __('Preordered') }}</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="row">
+                                            <div class="col-lg-12">
+                                                <div class="left-area">
+
+                                                </div>
+                                            </div>
+                                            <div class="col-lg-12">
+                                                <ul class="list">
+                                                    <li>
+                                                        <input class="checkclick1" name="minimum_qty_check"
+                                                            type="checkbox" id="check111" value="1"
+                                                            {{ $data->minimum_qty != null ? 'checked' : '' }}>
+                                                        <label for="check111">{{ __('Allow Minimum Order Qty') }}</label>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </div>
+
+                                        <div class="{{ $data->minimum_qty != null ? '' : ' showbox' }}">
+                                            <div class="row">
+                                                <div class="col-lg-12">
+                                                    <div class="left-area">
+                                                        <h4 class="heading">{{ __('Product Minimum Order Qty') }}* </h4>
+                                                    </div>
+                                                </div>
+                                                <div class="col-lg-12">
+                                                    <input type="number" class="input-field" min="1"
+                                                        placeholder="{{ __('Minimum Order Qty') }}" name="minimum_qty"
+                                                        value="{{ $data->minimum_qty == null ? '' : $data->minimum_qty }}">
+                                                </div>
+                                            </div>
+                                        </div>
 
 
+                                        <div class="row">
+                                            <div class="col-lg-12">
+                                                <div class="left-area">
+
+                                                </div>
+                                            </div>
+                                            <div class="col-lg-12">
+                                                <ul class="list">
+                                                    <li>
+                                                        <input class="checkclick1" name="shipping_time_check"
+                                                            type="checkbox" id="check1" value="1"
+                                                            {{ $data->ship != null ? 'checked' : '' }}>
+                                                        <label
+                                                            for="check1">{{ __('Allow Estimated Shipping Time') }}</label>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </div>
 
 
+                                        <div class="{{ $data->ship != null ? '' : ' showbox' }}">
+                                            <div class="row">
+                                                <div class="col-lg-12">
+                                                    <div class="left-area">
+                                                        <h4 class="heading">{{ __('Product Estimated Shipping Time') }}*
+                                                        </h4>
+                                                    </div>
+                                                </div>
+                                                <div class="col-lg-12">
+                                                    <input type="text" class="input-field"
+                                                        placeholder="{{ __('Estimated Shipping Time') }}" name="ship"
+                                                        value="{{ $data->ship == null ? '' : $data->ship }}">
+                                                </div>
+                                            </div>
+                                        </div>
 
+
+                                        <div class="row">
+                                            <div class="col-lg-12">
+                                                <div class="left-area">
+
+                                                </div>
+                                            </div>
+                                            <div class="col-lg-12">
+                                                <ul class="list">
+                                                    <li>
+                                                        <input class="checkclickc" name="color_check" type="checkbox"
+                                                            id="check3" value="1"
+                                                            {{ is_array($data->color_all) ? 'checked' : '' }}>
+                                                        <label for="check3">{{ __('Allow Product Colors') }}</label>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </div>
+
+                                        @php
+                                            
+                                            
+                                           
+                                           
+                                        @endphp
+                                        <div class="{{is_array($data->color_all) ? '' : ' showbox' }}">
+                                            <div class="row">
+
+                                                <div class="col-lg-12">
+                                                    <div class="select-input-color" id="color-section">
+                                                        @if (is_array($data->color_all))
+                                                            
+                                                        @foreach ($data->color_all as $key => $color)
+                                                        <div class="size-area">
+                                                            <span class="remove size-remove"><i
+                                                                    class="fas fa-times"></i></span>
+                                                            <div class="row">
+                                                                <div class="col-md-12 col-sm-12">
+                                                                    <label>
+                                                                        {{ __('Color') }} :
+                                                                    </label>
+                                                                    <div class="color-area">
+                                                                        <div
+                                                                            class="input-group colorpicker-component cp">
+                                                                            <input type="text" name="color_all[]"
+                                                                                value="{{ $color }}"
+                                                                                class="input-field cp tcolor" />
+                                                                            <span
+                                                                                class="input-group-addon"><i></i></span>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+
+                                                            </div>
+                                                        </div>
+                                                    @endforeach
+
+                                                        @endif
+                                                        
+                                                    </div>
+                                                    <a href="javascript:;" id="color-btn" class="add-more mt-4 mb-3"><i
+                                                            class="fas fa-plus"></i>{{ __('Add More Color') }} </a>
+                                                </div>
+
+                                            </div>
+                                        </div>
 
 
                                         <div class="{{ $data->measure == null ? 'showbox' : '' }}">
@@ -484,6 +681,38 @@
                                         </div>
 
 
+                                        <div class="row">
+                                            <div class="col-lg-12">
+                                                <div class="left-area">
+
+                                                </div>
+                                            </div>
+                                            <div class="col-lg-12">
+                                                <ul class="list">
+                                                    <li>
+                                                        <input name="stock_check" class="stock-check" type="checkbox"
+                                                            id="size-check" value="1"
+                                                            {{ !empty($data->size) ? 'checked' : '' }}>
+                                                        <label for="size-check"
+                                                            class="stock-text">{{ __('Manage Stock') }}</label>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </div>
+
+                                        <div class="row {{ !empty($data->size) ? ' d-none' : '' }}" id="default_stock">
+                                            <div class="col-lg-12">
+                                                <div class="left-area">
+                                                    <h4 class="heading">{{ __('Product Stock') }}*</h4>
+                                                    <p class="sub-heading">
+                                                        {{ __('(Leave Empty will Show Always Available)') }}</p>
+                                                </div>
+                                            </div>
+                                            <div class="col-lg-12">
+                                                <input name="stock" type="number" class="input-field"
+                                                    placeholder="e.g 20" value="{{ $data->stock }}" min="0">
+                                            </div>
+                                        </div>
 
 
                                         @php
@@ -507,7 +736,7 @@
                                                                 <span class="remove size-remove"><i
                                                                         class="fas fa-times"></i></span>
                                                                 <div class="row">
-                                                                    <div class="col-md-6 col-sm-6">
+                                                                    <div class="col-md-4 col-sm-4">
                                                                         <label>
                                                                             {{ __('Size Name') }} :
                                                                             <span>
@@ -519,7 +748,7 @@
                                                                             placeholder="{{ __('Enter Product Size') }}"
                                                                             value="{{ $size }}" required="">
                                                                     </div>
-                                                                    <div class="col-md-6 col-sm-6">
+                                                                    <div class="col-md-4 col-sm-4">
                                                                         <label>
                                                                             {{ __('Size Qty') }} :
                                                                             <span>
@@ -531,6 +760,19 @@
                                                                             placeholder="{{ __('Size Qty') }}"
                                                                             value="{{ $data->size_qty[$key] }}"
                                                                             min="1">
+                                                                    </div>
+                                                                    <div class="col-md-4 col-sm-4">
+                                                                        <label>
+                                                                            {{ __('Size Price') }} :
+                                                                            <span>
+                                                                                {{ __('(Added with base price)') }}
+                                                                            </span>
+                                                                        </label>
+                                                                        <input type="number" name="size_price[]" required
+                                                                            class="input-field"
+                                                                            placeholder="{{ __('Size Price') }}"
+                                                                            value="{{ round($data->size_price[$key] * $curr->value, 2) }}"
+                                                                            min="0">
                                                                     </div>
 
 
@@ -548,6 +790,95 @@
                                         </div>
 
 
+                                        <div class="row">
+                                            <div class="col-lg-12">
+                                                <div class="left-area">
+
+                                                </div>
+                                            </div>
+                                            <div class="col-lg-12">
+                                                <ul class="list">
+                                                    <li>
+                                                        <input class="checkclick1" name="whole_check" type="checkbox"
+                                                            id="whole_check" value="1"
+                                                            {{ !empty($data->whole_sell_qty) ? 'checked' : '' }}>
+                                                        <label
+                                                            for="whole_check">{{ __('Allow Product Whole Sell') }}</label>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </div>
+
+                                        <div class="{{ !empty($data->whole_sell_qty) ? '' : ' showbox' }}">
+                                            <div class="row">
+                                                <div class="col-lg-12">
+                                                    <div class="left-area">
+
+                                                    </div>
+                                                </div>
+                                                <div class="col-lg-12">
+                                                    <div class="featured-keyword-area">
+                                                        <div class="feature-tag-top-filds" id="whole-section">
+                                                            @if (!empty($data->whole_sell_qty))
+
+                                                                @foreach ($data->whole_sell_qty as $key => $data1)
+                                                                    <div class="feature-area">
+                                                                        <span class="remove whole-remove"><i
+                                                                                class="fas fa-times"></i></span>
+                                                                        <div class="row">
+                                                                            <div class="col-lg-6">
+                                                                                <input type="number"
+                                                                                    name="whole_sell_qty[]"
+                                                                                    class="input-field"
+                                                                                    placeholder="{{ __('Enter Quantity') }}"
+                                                                                    min="0"
+                                                                                    value="{{ $data->whole_sell_qty[$key] }}"
+                                                                                    required="">
+                                                                            </div>
+
+                                                                            <div class="col-lg-6">
+                                                                                <input type="number"
+                                                                                    name="whole_sell_discount[]"
+                                                                                    class="input-field"
+                                                                                    placeholder="{{ __('Enter Discount Percentage') }}"
+                                                                                    min="0"
+                                                                                    value="{{ $data->whole_sell_discount[$key] }}"
+                                                                                    required="">
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                @endforeach
+                                                            @else
+                                                                <div class="feature-area">
+                                                                    <span class="remove whole-remove"><i
+                                                                            class="fas fa-times"></i></span>
+                                                                    <div class="row">
+                                                                        <div class="col-lg-6">
+                                                                            <input type="number" name="whole_sell_qty[]"
+                                                                                class="input-field"
+                                                                                placeholder="{{ __('Enter Quantity') }}"
+                                                                                min="0">
+                                                                        </div>
+
+                                                                        <div class="col-lg-6">
+                                                                            <input type="number"
+                                                                                name="whole_sell_discount[]"
+                                                                                class="input-field"
+                                                                                placeholder="{{ __('Enter Discount Percentage') }}"
+                                                                                min="0" />
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+
+                                                            @endif
+                                                        </div>
+
+                                                        <a href="javascript:;" id="whole-btn" class="add-fild-btn"><i
+                                                                class="icofont-plus"></i> {{ __('Add More Field') }}</a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
 
 
                                         <div class="row">
@@ -681,6 +1012,38 @@
                                             </div>
                                         </div>
 
+                                        <div class="row">
+                                            <div class="col-lg-12">
+                                                <div class="left-area">
+                                                    <h4 class="heading">
+                                                        {{ __('Product Current Price') }}*
+                                                    </h4>
+                                                    <p class="sub-heading">
+                                                        ({{ __('In') }} {{ $sign->name }})
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            <div class="col-lg-12">
+                                                <input name="price" type="number" class="input-field"
+                                                    placeholder="e.g 20" step="0.1" min="0"
+                                                    value="{{ round($data->price * $sign->value, 2) }}" required="">
+                                            </div>
+                                        </div>
+
+                                        <div class="row">
+                                            <div class="col-lg-12">
+                                                <div class="left-area">
+                                                    <h4 class="heading">{{ __('Product Discount Price') }}*</h4>
+                                                    <p class="sub-heading">{{ __('(Optional)') }}</p>
+                                                </div>
+                                            </div>
+                                            <div class="col-lg-12">
+                                                <input name="previous_price" step="0.1" type="number"
+                                                    class="input-field" placeholder="e.g 20"
+                                                    value="{{ round($data->previous_price * $sign->value, 2) }}"
+                                                    min="0">
+                                            </div>
+                                        </div>
 
 
                                         <div class="row">
@@ -993,7 +1356,7 @@
             $(document).ready(function() {
 
                 let html =
-                    `<img src="{{ \Illuminate\Support\Facades\Storage::url($data->photo) ?? asset('assets/images/noimage.png') }}" alt="">`;
+                    `<img src="{{ empty($data->photo) ? asset('assets/images/noimage.png') : (filter_var($data->photo, FILTER_VALIDATE_URL) ? $data->photo : asset('assets/images/products/' . $data->photo)) }}" alt="">`;
                 $(".span4.cropme").html(html);
 
                 $.ajaxSetup({
@@ -1058,6 +1421,13 @@
 
 
 
+            $(document).on('click', '#size-check', function() {
+                if ($(this).is(':checked')) {
+                    $('#default_stock').addClass('d-none')
+                } else {
+                    $('#default_stock').removeClass('d-none');
+                }
+            })
 
 
 

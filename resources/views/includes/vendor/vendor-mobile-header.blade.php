@@ -1,5 +1,5 @@
 <!-- mobile menu -->
-<div id="mobileMenu" class="mobile-menu">
+<div class="mobile-menu">
     <div class="mobile-menu-top">
         <img src="{{ asset('assets/images/' . $gs->logo) }}" alt="">
         <svg class="close" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
@@ -95,7 +95,7 @@
                     <li><a class="sidebar-sub-menu-item {{ request()->is('vendor/products') || request()->is('vendor/products/edit/*') ? 'active' : '' }}"
                             href="{{ route('vendor-prod-index') }}">@lang('All Product')</a></li>
                     <li><a class="sidebar-sub-menu-item {{ request()->is('vendor/products/catalogs') || request()->is('vendor/products/catalog/*') ? 'active' : '' }}"
-                            href="{{ route('vendor-prod-catalogs') }}">@lang('Product Catalogs')</a></li>
+                            href="{{ route('admin-vendor-catalog-index') }}">@lang('Product Catalogs')</a></li>
                 </ul>
             </li>
         

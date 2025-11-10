@@ -1,8 +1,4 @@
-@extends('layouts.unified')
-@php
-    $isDashboard = true;
-    $isVendor = true;
-@endphp
+@extends('layouts.vendor')
 
 @section('content')
     <div class="gs-vendor-outlet">
@@ -73,17 +69,19 @@
                                     <div class="table-icon-btns-wrapper">
 
                                         @php
-                                            // Check if vendor already has an offer for this product
-                                            $hasOffer = $user->merchantProducts()
-                                                ->where('product_id', $data->id)
-                                                ->exists();
+                                            $ck =
+                                                $user
+                                                    ->products()
+                                                    ->where('catalog_id', '=', $data->id)
+                                                    ->count() > 0;
                                         @endphp
 
-                                        @if ($hasOffer)
-                                            <span class="badge bg-success">{{ __('Offer Created') }}</span>
+
+                                        @if ($ck)
+                                            {{ __('Added To Catalog') }}
                                         @else
-                                            <a href="{{ route('vendor-prod-create-offer', $data->id) }}"
-                                                class="btn btn-primary btn-sm">
+                                            <a href="{{ route('vendor-prod-catalog-edit', $data->id) }}"
+                                                class="view-btn edit-btn">
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12"
                                                     viewBox="0 0 12 12" fill="none">
                                                     <g clip-path="url(#clip0_1880_39494)">
@@ -97,7 +95,7 @@
                                                         </clipPath>
                                                     </defs>
                                                 </svg>
-                                                {{ __('Create Offer') }}
+
                                             </a>
                                         @endif
                                     </div>

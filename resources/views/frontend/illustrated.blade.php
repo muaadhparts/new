@@ -1,5 +1,5 @@
 @php use Illuminate\Support\Str; @endphp
-@extends('layouts.unified')
+@extends('layouts.front')
 
 @section('content')
     <style>

@@ -1,9 +1,4 @@
-@extends('layouts.unified')
-@php
-    $isDashboard = true;
-    $isAdmin = true;
-    $hideFooter = true;
-@endphp
+@extends('layouts.admin')
 @section('styles')
 
 <link href="{{asset('assets/admin/css/product.css')}}" rel="stylesheet"/>
@@ -36,7 +31,7 @@
 			</div>
 		</div>
 
-		<form id="muaadhform" action="{{route('admin-prod-update',$data->id)}}" method="POST" enctype="multipart/form-data">
+		<form id="geniusform" action="{{route('admin-prod-update',$data->id)}}" method="POST" enctype="multipart/form-data">
 			{{csrf_field()}}
 			@include('alerts.admin.form-both')
 			<div class="row">
@@ -282,6 +277,33 @@
 												</div>
 											</div>
 
+											<div class="row">
+												<div class="col-lg-12">
+													<div class="left-area">
+														<h4 class="heading">
+															{{ __('Product Current Price') }}*
+														</h4>
+														<p class="sub-heading">
+															({{ __('In') }} {{$sign->name}})
+														</p>
+													</div>
+												</div>
+												<div class="col-lg-12">
+													<input name="price" type="number" class="input-field" placeholder="e.g 20" step="0.1" min="0" value="{{round($data->price * $sign->value , 2)}}" required="">
+												</div>
+											</div>
+
+											<div class="row">
+												<div class="col-lg-12">
+													<div class="left-area">
+															<h4 class="heading">{{ __('Product Discount Price') }}*</h4>
+															<p class="sub-heading">{{ __('(Optional)') }}</p>
+													</div>
+												</div>
+												<div class="col-lg-12">
+													<input name="previous_price" step="0.1" type="number" class="input-field" placeholder="e.g 20" value="{{round($data->previous_price * $sign->value , 2)}}" min="0">
+												</div>
+											</div>
 
 											<div class="row">
 												<div class="col-lg-12">
@@ -566,7 +588,7 @@ $(document).ready(function() {
 
   $(document).ready(function() {
 
-    let html = `<img src="{{ \Illuminate\Support\Facades\Storage::url($data->photo) ?? asset('assets/images/noimage.png') }}" alt="">`;
+    let html = `<img src="{{ empty($data->photo) ? asset('assets/images/noimage.png') : asset('assets/images/products/'.$data->photo) }}" alt="">`;
     $(".span4.cropme").html(html);
 
     $.ajaxSetup({

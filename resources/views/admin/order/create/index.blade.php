@@ -1,9 +1,4 @@
-@extends('layouts.unified')
-@php
-    $isDashboard = true;
-    $isAdmin = true;
-    $hideFooter = true;
-@endphp 
+@extends('layouts.admin') 
 @section('styles')
 <link href="{{asset('assets/admin/css/jquery-ui.css')}}" rel="stylesheet" type="text/css">
 
@@ -46,7 +41,7 @@
                     <div class="mr-table allproduct">
                       @include('alerts.admin.form-success') 
                       <div class="table-responsive" style="height: 100vh">
-                          <table id="order-muaadhtable"   class="table table-hover dt-responsive" cellspacing="0" width="100%">
+                          <table id="order-geniustable"   class="table table-hover dt-responsive" cellspacing="0" width="100%">
                             <thead>
                               <tr>
                                 <th >{{ __('Product') }}</th>
@@ -116,7 +111,7 @@
   (function($) {
 		"use strict";
     $('#sidebarCollapse').click();
-		var table = $('#order-muaadhtable').DataTable({
+		var table = $('#order-geniustable').DataTable({
         ordering: false,
         processing: true,
         serverSide: true,

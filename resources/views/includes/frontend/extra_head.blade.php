@@ -18,13 +18,13 @@
     <meta property="og:description"
         content="{{ $productt->meta_description != null ? $productt->meta_description : strip_tags($productt->description) }}" />
     <meta property="og:image" content="{{ asset('assets/images/thumbnails/' . $productt->thumbnail) }}" />
-    <meta name="author" content="MUAADH">
+    <meta name="author" content="GeniusOcean">
     <title>{{ substr($productt->name, 0, 11) . '-' }}{{ $gs->title }}</title>
 @else
     <meta property="og:title" content="{{ $gs->title }}" />
     <meta property="og:image" content="{{ asset('assets/images/' . $gs->logo) }}" />
     <meta name="keywords" content="{{ $seo->meta_keys }}">
-    <meta name="author" content="MUAADH">
+    <meta name="author" content="GeniusOcean">
     <title>{{ $gs->title }}</title>
 @endif
 
@@ -37,18 +37,14 @@
         rel="stylesheet">
 @endif
 
-{{-- ✨ Enhanced Theme CSS --}}
-<link rel="stylesheet" href="{{ asset('assets/front/css/enhanced-theme.css') }}?v={{ time() }}">
-
-{{--<link rel="stylesheet"--}}
-{{--    href="{{ asset('assets/front/css/styles.php?color=' . str_replace('#', '', $gs->colors) . '&header_color=' . $gs->header_color) }}">--}}
-
-{{--@if ($default_font->font_family)--}}
-{{--    <link rel="stylesheet" id="colorr"--}}
-{{--        href="{{ asset('assets/front/css/font.php?font_familly=' . $default_font->font_family) }}">--}}
-{{--@else--}}
-{{--    <link rel="stylesheet" id="colorr" href="{{ asset('assets/front/css/font.php?font_familly=' . ' Open Sans') }}">--}}
-{{--@endif--}}
+<link rel="stylesheet"
+    href="{{ asset('assets/front/css/styles.php?color=' . str_replace('#', '', $gs->colors) . '&header_color=' . $gs->header_color) }}">
+@if ($default_font->font_family)
+    <link rel="stylesheet" id="colorr"
+        href="{{ asset('assets/front/css/font.php?font_familly=' . $default_font->font_family) }}">
+@else
+    <link rel="stylesheet" id="colorr" href="{{ asset('assets/front/css/font.php?font_familly=' . ' Open Sans') }}">
+@endif
 
 @if (!empty($seo->google_analytics))
     <script>

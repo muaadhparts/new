@@ -1,9 +1,4 @@
-@extends('layouts.unified')
-@php
-    $isDashboard = true;
-    $isAdmin = true;
-    $hideFooter = true;
-@endphp
+@extends('layouts.admin')
 @section('content')
 
             <div class="content-area">
@@ -39,7 +34,7 @@
                         <div class="gocover" style="background: url({{asset('assets/images/'.$gs->admin_loader)}}) no-repeat scroll center center rgba(45, 45, 45, 0.5);"></div>
                         
                         @include('alerts.admin.form-both') 
-                      <form id="muaadhform" action="{{route('admin-faq-create')}}" method="POST" enctype="multipart/form-data">
+                      <form id="geniusform" action="{{route('admin-faq-create')}}" method="POST" enctype="multipart/form-data">
                         {{csrf_field()}}
 
                         <div class="row">

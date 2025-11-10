@@ -1,9 +1,4 @@
-@extends('layouts.unified')
-@php
-    $isDashboard = true;
-    $isAdmin = true;
-    $hideFooter = true;
-@endphp
+@extends('layouts.admin')
 
 @section('styles')
 	<link href="{{asset('assets/admin/css/product.css')}}" rel="stylesheet"/>
@@ -36,7 +31,7 @@
 	</div>
 
 	<div class="gocover" style="background: url({{asset('assets/images/'.$gs->admin_loader)}}) no-repeat scroll center center rgba(45, 45, 45, 0.5);"></div>
-	<form id="muaadhform" action="{{route('admin-import-update',$data->id)}}" method="POST" enctype="multipart/form-data">
+	<form id="geniusform" action="{{route('admin-import-update',$data->id)}}" method="POST" enctype="multipart/form-data">
 		{{csrf_field()}}
 
 		@include('alerts.admin.form-both')
@@ -855,7 +850,7 @@ $(function($) {
 		"use strict";
 
 
-    let html = `<img src="{{ \Illuminate\Support\Facades\Storage::url($data->photo) ?? asset('assets/images/noimage.png') }}" alt="">`;
+    let html = `<img src="{{ empty($data->photo) ? asset('assets/images/noimage.png') : (filter_var($data->photo, FILTER_VALIDATE_URL) ? $data->photo : asset('assets/images/products/'.$data->photo)) }}" alt="">`;
 	
     $(".span4.cropme").html(html);
 

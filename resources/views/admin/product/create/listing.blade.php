@@ -1,9 +1,4 @@
-@extends('layouts.unified')
-@php
-    $isDashboard = true;
-    $isAdmin = true;
-    $hideFooter = true;
-@endphp
+@extends('layouts.admin')
 @section('styles')
 
 <link href="{{asset('assets/admin/css/product.css')}}" rel="stylesheet"/>
@@ -38,7 +33,7 @@
                 </div>
             </div>
         </div>
-        <form id="muaadhform" action="{{route('admin-prod-store')}}" method="POST" enctype="multipart/form-data">
+        <form id="geniusform" action="{{route('admin-prod-store')}}" method="POST" enctype="multipart/form-data">
             {{csrf_field()}}
             @include('alerts.admin.form-both')
             <div class="row">
@@ -456,7 +451,7 @@
                                                             <div class="size-area">
                                                                 <span class="remove size-remove"><i class="fas fa-times"></i></span>
                                                                 <div  class="row">
-                                                                    <div class="col-md-4 col-sm-6">
+                                                                    <div class="col-md-3 col-sm-6">
                                                                         <label>
                                                                             {{ __('Size Name') }} :
                                                                             <span>
@@ -465,7 +460,7 @@
                                                                         </label>
                                                                         <select name="size[]" class="input-field size-name"></select>
                                                                     </div>
-                                                                    <div class="col-md-4 col-sm-6">
+                                                                    <div class="col-md-3 col-sm-6">
                                                                         <label>
                                                                             {{ __('Size Qty') }} :
                                                                             <span>
@@ -474,7 +469,16 @@
                                                                         </label>
                                                                         <input type="number" name="size_qty[]" class="input-field" placeholder="{{ __('Size Qty') }}" value="1" min="1">
                                                                     </div>
-                                                                    <div class="col-md-4 col-sm-6">
+                                                                    <div class="col-md-3 col-sm-6">
+                                                                        <label>
+                                                                            {{ __('Size Price') }} :
+                                                                            <span>
+                                                                                {{ __('(Added with base price)') }}
+                                                                            </span>
+                                                                        </label>
+                                                                        <input type="number" name="size_price[]" class="input-field" placeholder="{{ __('Size Price') }}" value="0" min="0">
+                                                                    </div>
+                                                                    <div class="col-md-3 col-sm-6">
                                                                         <label>
                                                                             {{ __('Size Color') }} :
                                                                             <span>
@@ -786,7 +790,7 @@
   $(document).on('click', '#prod_gallery' ,function() {
     $('#uploadgallery').click();
      $('.selected-image .row').html('');
-    $('#muaadhform').find('.removegal').val(0);
+    $('#geniusform').find('.removegal').val(0);
   });
 
 
@@ -805,7 +809,7 @@
                                         '</div>'+
                                   '</div> '
                                       );
-      $('#muaadhform').append('<input type="hidden" name="galval[]" id="galval'+i+'" class="removegal" value="'+i+'">')
+      $('#geniusform').append('<input type="hidden" name="galval[]" id="galval'+i+'" class="removegal" value="'+i+'">')
      }
 
   });

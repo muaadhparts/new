@@ -1,7 +1,7 @@
 
 
 
-@extends('layouts.unified')
+@extends('layouts.front')
 @section('content')
     <div class="gs-user-panel-review wow-replaced" data-wow-delay=".1s">
         <div class="container">

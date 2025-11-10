@@ -5,7 +5,7 @@
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="keywords" content="{{$seo->meta_keys}}">
-        <meta name="author" content="MUAADH">
+        <meta name="author" content="GeniusOcean">
 
         <title>{{$gs->title}}</title>
   <!-- Tell the browser to be responsive to screen width -->
@@ -48,7 +48,7 @@ html {
                 <div class="row">
                     <div class="col-sm-6">
                         <div class="invoice__logo text-left">
-                           <img src="{{ asset('assets/images/'.$gs->invoice_logo) }}" alt="logo">
+                           <img src="{{ asset('assets/images/'.$gs->invoice_logo) }}" alt="woo commerce logo">
                         </div>
                     </div>
                 </div>

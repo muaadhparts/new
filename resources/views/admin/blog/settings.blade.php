@@ -1,9 +1,4 @@
-@extends('layouts.unified')
-@php
-    $isDashboard = true;
-    $isAdmin = true;
-    $hideFooter = true;
-@endphp
+@extends('layouts.admin')
 
 @section('content')
 
@@ -36,7 +31,7 @@
                         <div class="gocover"
                             style="background: url({{asset('assets/images/'.$gs->admin_loader)}}) no-repeat scroll center center rgba(45, 45, 45, 0.5);">
                         </div>
-                        <form action="{{ route('admin-gs-update') }}" id="muaadhform" method="POST"
+                        <form action="{{ route('admin-gs-update') }}" id="geniusform" method="POST"
                             enctype="multipart/form-data">
                             @csrf
 

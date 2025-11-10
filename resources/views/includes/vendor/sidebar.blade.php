@@ -95,7 +95,7 @@
                 <li><a class="sidebar-sub-menu-item {{ request()->is('vendor/products') || request()->is('vendor/products/edit/*') ? 'active' : '' }}"
                         href="{{ route('vendor-prod-index') }}">@lang('All Product')</a></li>
                 <li><a class="sidebar-sub-menu-item {{ request()->is('vendor/products/catalogs') || request()->is('vendor/products/catalog/*') ? 'active' : '' }}"
-                        href="{{ route('vendor-prod-catalogs') }}">@lang('Product Catalogs')</a></li>
+                        href="{{ route('admin-vendor-catalog-index') }}">@lang('Product Catalogs')</a></li>
             </ul>
         </li>
 
@@ -149,9 +149,9 @@
 
 
         <li
-            class="has-sub-menu {{ request()->is('vendor/shipping') || request()->is('vendor/shipping/*') || request()->is('vendor/package') || request()->is('vendor/package/*') || request()->is('vendor/pickup-point') || request()->is('vendor/pickup-point/*') || request()->is('vendor/social-link') || request()->is('vendor/social-link/*') || request()->is('vendor/warehouse') ? 'active' : '' }}">
+            class="has-sub-menu {{ request()->is('vendor/shipping') || request()->is('vendor/shipping/*') || request()->is('vendor/package') || request()->is('vendor/package/*') || request()->is('vendor/pickup-point') || request()->is('vendor/pickup-point/*') || request()->is('vendor/social-link') || request()->is('vendor/social-link/*') ? 'active' : '' }}">
             <a href="#vendor-collapsed-settings"
-                class="{{ request()->is('vendor/shipping') || request()->is('vendor/shipping/*') || request()->is('vendor/package') || request()->is('vendor/package/*') || request()->is('vendor/pickup-point') || request()->is('vendor/pickup-point/*') || request()->is('vendor/social-link') || request()->is('vendor/social-link/*') || request()->is('vendor/warehouse') ? '' : 'collapsed' }}"
+                class="{{ request()->is('vendor/shipping') || request()->is('vendor/shipping/*') || request()->is('vendor/package') || request()->is('vendor/package/*') || request()->is('vendor/pickup-point') || request()->is('vendor/pickup-point/*') || request()->is('vendor/social-link') || request()->is('vendor/social-link/*') ? '' : 'collapsed' }}"
                 data-bs-toggle="collapse" aria-expanded="false" aria-controls="vendor-collapsed-settings">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
                     fill="none">
@@ -165,15 +165,12 @@
                 <span class="label">@lang('Settings')</span>
                 <i class="ms-auto fa-solid fa-angle-down angle-down"></i>
             </a>
-            <ul class="sidebar-sub-menu collapse {{ request()->is('vendor/shipping') || request()->is('vendor/shipping/*') || request()->is('vendor/package') || request()->is('vendor/package/*') || request()->is('vendor/pickup-point') || request()->is('vendor/pickup-point/*') || request()->is('vendor/social-link') || request()->is('vendor/social-link/*') || request()->is('vendor/warehouse') ? 'show' : '' }}"
+            <ul class="sidebar-sub-menu collapse {{ request()->is('vendor/shipping') || request()->is('vendor/shipping/*') || request()->is('vendor/package') || request()->is('vendor/package/*') || request()->is('vendor/pickup-point') || request()->is('vendor/pickup-point/*') || request()->is('vendor/social-link') || request()->is('vendor/social-link/*') ? 'show' : '' }}"
                 id="vendor-collapsed-settings">
                 @if ($gs->vendor_ship_info == 1)
                     <li class=""><a
                             class="sidebar-sub-menu-item {{ request()->is('vendor/shipping') || request()->is('vendor/shipping/*') ? 'active' : '' }}"
                             href="{{ route('vendor-shipping-index') }}">@lang('Shipping Methods')</a></li>
-                    <li class=""><a
-                            class="sidebar-sub-menu-item {{ request()->is('vendor/warehouse') ? 'active' : '' }}"
-                            href="{{ route('vendor-warehouse-index') }}">@lang('Warehouse Location')</a></li>
                     <li class=""><a
                             class="sidebar-sub-menu-item {{ request()->is('vendor/package') || request()->is('vendor/package/*') ? 'active' : '' }}"
                             href="{{ route('vendor-package-index') }}">@lang('Packagings Products')</a></li>

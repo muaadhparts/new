@@ -1,9 +1,4 @@
-@extends('layouts.unified')
-@php
-    $isDashboard = true;
-    $isAdmin = true;
-    $hideFooter = true;
-@endphp 
+@extends('layouts.admin') 
 @section('styles')
 <link href="{{asset('assets/admin/css/jquery-ui.css')}}" rel="stylesheet" type="text/css">
 @endsection
@@ -53,7 +48,7 @@
 							 @include('includes.admin.form-success') 
 							 <div class="mr-table allproduct">
 								<div class="table-responsive">
-								   <table id="muaadhtable" class="table table-hover dt-responsive" cellspacing="0" width="100%">
+								   <table id="geniustable" class="table table-hover dt-responsive" cellspacing="0" width="100%">
 									  <thead>
 										 <tr>
 											<th width="5%">{{ __('#') }}</th>
@@ -100,7 +95,7 @@
 
 @section('scripts')
 <script type="text/javascript">
-	$('#muaadhtable').DataTable();	
+	$('#geniustable').DataTable();	
 	$(document).on('click','#reset',function(){
 	$('.discount_date').val('');
 	location.href = '{{route('admin-commission-income')}}';

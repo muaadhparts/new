@@ -1,8 +1,4 @@
-@extends('layouts.unified')
-@php
-    $isDashboard = true;
-    $isVendor = true;
-@endphp
+@extends('layouts.vendor')
 @section('css')
     <link href="{{ asset('assets/admin/css/jquery.Jcrop.css') }}" rel="stylesheet" />
     <link href="{{ asset('assets/admin/css/Jcrop-style.css') }}" rel="stylesheet" />
@@ -53,11 +49,66 @@
             <!-- inputes of physical product start  -->
             <div class="col-12 col-lg-8 physical-product-inputes-wrapper show">
                 <div class="form-group">
-                    <!-- Part Number -->
+                    <!-- Product Name -->
                     <div class="input-label-wrapper">
-                        <label>@lang('Product Part Number* (SKU)')</label>
-                        <input type="text" class="form-control" name="part_number" placeholder="@lang('Enter Product Part Number')" required>
-                        <small class="text-muted">@lang('Enter the part number of the product you want to sell')</small>
+                        <label>@lang('Product Name* (In Any Language)')</label>
+                        <input type="text" class="form-control" name="name" placeholder="@lang('Enter Product Name') ">
+                    </div>
+                    <!-- Product SkU -->
+                    <div class="input-label-wrapper">
+                        <label>@lang('Product SkU*')</label>
+                        <input type="text" class="form-control" name="sku" placeholder="@lang('Enter Product SKU')"
+                            value="{{ Str::random(3) . substr(time(), 6, 8) . Str::random(3) }}">
+                    </div>
+                    <!-- Category -->
+                    <div class="input-label-wrapper">
+                        <label>@lang('Category*')</label>
+                        <div class="dropdown-container">
+                            <select class="form-control nice-select form__control " name="category_id" id="cat">
+                                <option value="" disabled selected>
+                                    @lang('Select Category')
+                                </option>
+                                @foreach ($cats as $cat)
+                                    <option data-href="{{ route('vendor-subcat-load', $cat->id) }}"
+                                        value="{{ $cat->id }}">{{ $cat->name }}</option>
+                                @endforeach
+                                <!-- Add more options here if needed -->
+                            </select>
+                        </div>
+                    </div>
+                    <!-- Sub Category -->
+                    <div class="input-label-wrapper">
+                        <label>@lang('Sub Category*')</label>
+                        <div class="dropdown-container">
+                            <select class="form-control nice-select form__control subcategory" name="subcategory_id"
+                                id="subcat">
+                                <option value="" disabled selected>
+                                    @lang('Select Sub Category')
+                                </option>
+
+                                <!-- Add more options here if needed -->
+                            </select>
+                        </div>
+                    </div>
+                    <!-- Child Category -->
+                    <div class="input-label-wrapper">
+                        <label>@lang('Child Category*')</label>
+                        <div class="dropdown-container">
+                            <select class="form-control nice-select form__control childcat" name="childcategory_id"
+                                id="childcat">
+                                <option value="" disabled selected>
+                                    @lang('Select Child Category')
+                                </option>
+
+                                <!-- Add more options here if needed -->
+                            </select>
+                        </div>
+                    </div>
+
+                    <div id="showAttr" class="d-none">
+                        <div id="catAttributes"></div>
+                        <div id="subcatAttributes"></div>
+                        <div id="childcatAttributes"></div>
                     </div>
 
                     <!-- Allow Product Condition Checkbox -->
@@ -238,15 +289,64 @@
 
                     </div>
 
-                    <!-- Color Price -->
-                    <div class="input-label-wrapper" id="color-price-section" style="display: none;">
-                        <label>@lang('Color Prices* (Optional - Same order as colors)')</label>
-                        <div id="color-price-inputs">
-                            <input type="text" class="form-control mb-2" name="color_price[]" placeholder="@lang('Enter price for this color (optional)')">
-                        </div>
-                        <button class="template-btn outline-btn" id="color-price-btn" type="button">+@lang('Add More Color Price')</button>
+                    <!-- Manage Stock Checkbox -->
+                    <div class="gs-checkbox-wrapper" aria-controls="show_manage-stock" role="region"
+                        data-bs-toggle="collapse" data-bs-target="#show_manage-stock">
+                        <input type="checkbox" name="stock_check" id="allow-manage-stock" value="1">
+                        <label class="icon-label check-box-label" for="allow-manage-stock">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12"
+                                fill="none">
+                                <path d="M10 3L4.5 8.5L2 6" stroke="#EE1243" stroke-width="1.6666" stroke-linecap="round"
+                                    stroke-linejoin="round" />
+                            </svg>
+                        </label>
+                        <label class="check-box-label" for="allow-manage-stock">@lang('Manage Stock')</label>
                     </div>
 
+
+                    <!-- Manage Stock -->
+                    <div class="input-label-wrapper collapse" id="show_manage-stock">
+
+                        <div id="size-section" class="d-flex flex-column gap-4">
+                            <div
+                                class="row row-cols-1 row-cols-md-2 row-cols-lg-4 row-cols-xl-4 align-items-end gx-3 gy-4">
+                                <!-- Size Name -->
+                                <div class="col">
+                                    <div class="lebel-box">
+                                        <label class="main-label">@lang('Size Name :')</label>
+                                        <label class="sub-label">@lang('(eg. S,M,L,XL,3XL,4XL)')</label>
+                                    </div>
+                                    <input type="text" class="form-control" name="size[]" placeholder="">
+                                </div>
+                                <div class="col">
+                                    <div class="lebel-box">
+                                        <label class="main-label">@lang('Size Qty :')</label>
+                                        <label class="sub-label">@lang('(Quantity of this size)')</label>
+                                    </div>
+                                    <input type="text" class="form-control" name="size_qty[]" placeholder="">
+                                </div>
+                                <div class="col">
+                                    <div class="lebel-box">
+                                        <label class="main-label">@lang('Size Price :')</label>
+                                        <!-- <label class="sub-label">@lang('(Added with base price)')</label> -->
+                                        <label class="sub-label">@lang('(Price)')</label>
+                                    </div>
+                                    <input type="text" class="form-control" name="size_price[]" placeholder="">
+                                </div>
+                                <div class="col">
+                                    <button type="button" class="btn btn-danger remove_stock text-white form-control">
+                                        <i class="fa fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                        </div>
+
+                        <div class="col-12 col-md-12 col-lg-12 col-xl-12 d-flex justify-content-end mt-4">
+                            <button class="template-btn outline-btn" id="size-btn"
+                                type="button">+@lang('Add More')</button>
+                        </div>
+                    </div>
 
 
                     <div class="input-label-wrapper" id="default_stock">
@@ -255,17 +355,41 @@
                     </div>
 
 
-                    <!-- Product Description Override (Optional) -->
+                    <!-- Product Description -->
                     <div class="input-label-wrapper">
-                        <label>@lang('Product Description Override (Optional)')</label>
-                        <textarea style="width: 100%;" class="form-control w-100 nic-edit" id="details" name="details" rows="6" placeholder="@lang('Leave empty to use catalog description')"></textarea>
-                        <small class="text-muted">@lang('Override the catalog product description with your own')</small>
+                        <label>@lang('Product Description*')</label>
+                        <textarea style="width: 100%;" class="form-control w-100 nic-edit" id="details" name="details" rows="6"></textarea>
                     </div>
-                    <!-- Product Buy/Return Policy Override (Optional) -->
+                    <!-- Product Buy/Return Policy -->
                     <div class="input-label-wrapper">
-                        <label>@lang('Product Buy/Return Policy Override (Optional)')</label>
-                        <textarea class="form-control w-100 nic-edit" name="policy" id="policy" rows="6" placeholder="@lang('Leave empty to use catalog policy')"></textarea>
-                        <small class="text-muted">@lang('Override the catalog product policy with your own')</small>
+                        <label>@lang('Product Buy/Return Policy*')</label>
+                        <textarea class="form-control w-100 nic-edit" name="policy" id="policy" rows="6"></textarea>
+                    </div>
+                    <!-- Allow Product SEO Checkbox -->
+                    <div class="gs-checkbox-wrapper" aria-controls="show_product-seo" role="region"
+                        data-bs-toggle="collapse" data-bs-target="#show_product-seo">
+                        <input type="checkbox" id="allow-product-seo" name="seo_check" value="1">
+                        <label class="icon-label check-box-label" for="allow-product-seo">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12"
+                                fill="none">
+                                <path d="M10 3L4.5 8.5L2 6" stroke="#EE1243" stroke-width="1.6666" stroke-linecap="round"
+                                    stroke-linejoin="round" />
+                            </svg>
+                        </label>
+                        <label class="check-box-label" for="allow-product-seo">@lang('Allow Product SEO')</label>
+                    </div>
+                    <div class="input-label-wrapper collapse row gy-4" id="show_product-seo">
+                        <!-- Meta Tags  -->
+                        <div class="col-12">
+                            <label>@lang('Meta Tags *')</label>
+                            <input type="text" class="myTags" id="metatags" name="meta_tag"
+                                placeholder="@lang('Clothing, Bag, Shopping, Online') ">
+                        </div>
+                        <!-- Meta Description  -->
+                        <div class="col-12">
+                            <label>@lang('Meta Description *')</label>
+                            <textarea class="form-control w-100" placeholder="@lang('Meta Description')" name="meta_description" rows="6"></textarea>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -275,6 +399,41 @@
             <div class="col-12 col-lg-4">
                 <div class="add-product-form-sidebar">
                     <div class="form-group">
+                        <!-- Feature Image  -->
+                        <div class="input-label-wrapper">
+                            <label>@lang('Feature Image *')</label>
+                            <div class="w-100">
+                                <div class="overlayed-img-wrapper">
+                                    <div class="span4 cropme text-center d-flex justify-content-center align-items-center"
+                                        id="landscape"
+                                        style="width: 100%; height: 285px; border: 1px dashed #ddd; background: #f1f1f1;">
+                                        <a href="javascript:;" id="crop-image" class="template-btn mybtn1"
+                                            style="">
+                                            <i class="icofont-upload-alt"></i>
+                                            @lang('Upload Image Here')
+                                        </a>
+                                    </div>
+                                </div>
+
+                                <input type="hidden" id="feature_photo" name="photo" value="">
+                            </div>
+                        </div>
+                        <!-- Product Gallery Images  -->
+                        <div class="input-label-wrapper">
+                            <label for="gallery_upload">@lang('Product Gallery Images *')</label>
+
+                            <div class="w-100">
+                                <label for="gallery_upload">
+                                    <div class="template-btn black-btn" type="button">+ @lang('Set Gallery')</div>
+                                </label>
+                            </div>
+
+                            <input type="file" class="d-none" name="gallery[]" multiple id="gallery_upload">
+
+                            <div class="row " id="view_gallery">
+
+                            </div>
+                        </div>
                         <!-- Product Current Price -->
                         <div class="input-label-wrapper">
                             <label>@lang('Product Current Price') ({{ $curr->name }})</label>
@@ -285,8 +444,48 @@
                             <label>@lang('Product Discount Price* (Optional)')</label>
                             <input type="text" class="form-control" name="previous_price" placeholder="e.g 20">
                         </div>
-                        <!-- Create Merchant Product Button  -->
-                        <button class="template-btn w-100 px-20" type="submit">@lang('Create Merchant Product')</button>
+                        <!-- YouTube Video URL-->
+                        <div class="input-label-wrapper">
+                            <label>@lang('YouTube Video URL (Optional)')</label>
+                            <input type="url" class="form-control" name="youtube" placeholder="@lang('Enter YouTube Video URL')">
+                        </div>
+                        <!-- Feature Tags -->
+                        <div class="input-label-wrapper">
+                            <label>@lang('Feature Tags')</label>
+                            <div id="feature-section">
+                                <div class="row row-cols-1 row-cols-sm-2 gy-4 mb-3">
+                                    <div class="col feature-tag-color-input-wrapper">
+                                        <input type="text" class="form-control" name="features[]"
+                                            placeholder="@lang('Enter Your Keyword')">
+                                    </div>
+                                    <div class="col feature-tag-keyword-input-wrapper">
+                                        <div class="w-100  position-relative">
+                                            <input type="text" class="form-control" placeholder="#000000 ">
+                                            <input class="h-100 position-absolute top-0 end-0 color-input" type="color"
+                                                id="favcolor_2" name="colors[]" value="#000000">
+                                            <button type="button"
+                                                class="gallery-extra-remove-btn feature-extra-tags-remove-btn remove_feature"><i
+                                                    class="fa-solid fa-xmark"></i></button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+                            <div class="col-12 col-sm-12 mt-4">
+                                <div class="d-flex justify-content-end">
+                                    <button class="template-btn black-btn px-20" id="feature-btn"
+                                        type="button">+@lang('Add More Field')</button>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Tags -->
+                        <div class="input-label-wrapper">
+                            <label>@lang('Tags')</label>
+                            <input type="text" class="form-control" id="tags" name="product-tags"
+                                placeholder="@lang('Enter YouTube Video URL')">
+                        </div>
+                        <!-- Create Product Button  -->
+                        <button class="template-btn w-100 px-20" type="submit">@lang('Create Product')</button>
                     </div>
                 </div>
             </div>
@@ -323,15 +522,6 @@
             $('.cropme').simpleCropper();
 
 
-            // Show/hide color price section when color checkbox is toggled
-            $(document).on('change', '#allow-allow-product-colors', function() {
-                if ($(this).is(':checked')) {
-                    $('#color-price-section').show();
-                } else {
-                    $('#color-price-section').hide();
-                }
-            });
-
             $(document).on('click', "#color-btn", function() {
                 $("#color-section").append(`
                     <div class="col-12 mt-2 position-relative">
@@ -342,24 +532,11 @@
                                 class="fa-solid fa-xmark"></i></button>
                     </div>
                 `);
-                // Add corresponding color price field
-                $("#color-price-inputs").append(`
-                    <input type="text" class="form-control mb-2 color-price-input" name="color_price[]" placeholder="@lang('Enter price for this color (optional)')">
-                `);
-            });
-
-            $(document).on('click', "#color-price-btn", function() {
-                $("#color-price-inputs").append(`
-                    <input type="text" class="form-control mb-2 color-price-input" name="color_price[]" placeholder="@lang('Enter price for this color (optional)')">
-                `);
             });
 
             $(document).on('click', ".remove_color", function() {
                 if ($('.remove_color').length > 1) {
-                    var index = $(this).parent().index();
                     $(this).parent().remove();
-                    // Remove corresponding color price input
-                    $('.color-price-input').eq(index).remove();
                 }
             });
 
@@ -391,9 +568,97 @@
             });
 
 
+            $(document).on('click', "#size-btn", function() {
+
+                $("#size-section").append(
+                    `   <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 row-cols-xl-4 align-items-end gx-3 gy-4">
+                                <!-- Size Name -->
+                                <div class="col">
+                                    <div class="lebel-box">
+                                        <label class="main-label">Size Name :</label>
+                                        <label class="sub-label">(eg. S,M,L,XL,3XL,4XL)</label>
+                                    </div>
+                                    <input type="text" class="form-control" name="size[]" placeholder="">
+                                </div>
+                                <div class="col">
+                                    <div class="lebel-box">
+                                        <label class="main-label">Size Qty :</label>
+                                        <label class="sub-label">(Quantity of this size)</label>
+                                    </div>
+                                    <input type="text" class="form-control" name="size_qty[]" placeholder="">
+                                </div>
+                                <div class="col">
+                                    <div class="lebel-box">
+                                        <label class="main-label">Size Price :</label>
+                                        <label class="sub-label">(Price)</label>
+                                    </div>
+                                    <input type="text" class="form-control" name="size_price[]" placeholder="">
+                                </div>
+                                <div class="col">
+                                    <button type="button" class="btn btn-danger remove_stock text-white form-control">
+                                        <i class="fa fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>`
+                );
+            });
+
+            $(document).on('click', ".remove_stock", function() {
+                if ($('.remove_stock').length > 1) {
+                    $(this).parent().parent().remove();
+                }
+            });
 
 
+            $(document).on("change", "#gallery_upload", function() {
 
+                var file = $(this)[0].files;
+                var file_length = file.length;
+                for (let i = 0; i < file_length; i++) {
+                    var reader = new FileReader();
+                    reader.onload = function(e) {
+                        $('#view_gallery').append(`<div class="col-6  col-sm-3 col-lg-6 col col-xxl-4  mt-2">
+                        <div class="position-relative img-wh-80">
+                                    <img class="img-wh-80 rounded-4  object-fit-cover"  src="${e.target.result}" alt="">
+                                    <button class="gallery-extra-remove-btn position-abs-center remove_gallery"><i class="fa-solid fa-xmark"></i></button>
+                                     </div>
+                                </div>`);
+                    }
+                    reader.readAsDataURL(this.files[i]);
+                }
+
+            });
+
+            $(document).on('click', '.remove_gallery', function() {
+                $(this).parent().parent().remove();
+            });
+
+            $(document).on('click', "#feature-btn", function() {
+
+                $("#feature-section").append(
+                    `    <div class="row row-cols-1 row-cols-sm-2 gy-4 mb-3">
+                                    <div class="col feature-tag-color-input-wrapper">
+                                        <input type="text" class="form-control" name="features[]"
+                                            placeholder="@lang('Enter Your Keyword')">
+                                    </div>
+                                    <div class="col feature-tag-keyword-input-wrapper">
+                                        <div class="w-100  position-relative">
+                                            <input type="text" class="form-control" placeholder="#000000 ">
+                                            <input class="h-100 position-absolute top-0 end-0 color-input" type="color"
+                                                id="favcolor_2" name="colors[]" value="#000000">
+                                            <button type="button" class="gallery-extra-remove-btn feature-extra-tags-remove-btn remove_feature"><i
+                                                    class="fa-solid fa-xmark"></i></button>
+                                        </div>
+                                    </div>
+                                </div>`
+                );
+            });
+
+            $(document).on('click', ".remove_feature", function() {
+                if ($('.remove_feature').length > 1) {
+                    $(this).parent().parent().parent().remove();
+                }
+            });
 
 
             $('#myForm').on('submit', function(e) {

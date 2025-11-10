@@ -347,7 +347,7 @@
 
 
         <li>
-            <a href="{{ route('admin-brand-index') }}"><span>{{ __('Brands') }}</span></a>
+            <a href="{{ route('admin-partner-index') }}"><span>{{ __('Brands') }}</span></a>
         </li>
         <li>
             <a href="{{ route('admin-ps-customize') }}"><span>{{ __('Home Page Customization') }}</span></a>

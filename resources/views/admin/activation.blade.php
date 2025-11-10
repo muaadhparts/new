@@ -1,9 +1,4 @@
-@extends('layouts.unified')
-@php
-    $isDashboard = true;
-    $isAdmin = true;
-    $hideFooter = true;
-@endphp
+@extends('layouts.admin')
 @section('content')
 
 	<div class="content-area">
@@ -38,7 +33,7 @@
 									</div>
 								</div>
 							@else
-								<form id="muaadhform" action="{{ route('admin-activate-purchase') }}" method="POST">
+								<form id="geniusform" action="{{ route('admin-activate-purchase') }}" method="POST">
 									{{csrf_field()}}
 									@include('alerts.admin.form-both')
 									<div class="row">

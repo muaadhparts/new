@@ -1,9 +1,4 @@
-@extends('layouts.unified')
-@php
-    $isDashboard = true;
-    $isAdmin = true;
-    $hideFooter = true;
-@endphp 
+@extends('layouts.admin') 
 
 @section('content')  
 
@@ -36,7 +31,7 @@
                                         @include('alerts.admin.form-success') 
                                         <div class="table-responsive">
                                         <div class="gocover" style="background: url({{asset('assets/images/'.$gs->admin_loader)}}) no-repeat scroll center center rgba(45, 45, 45, 0.5);"></div>
-                                                <table id="muaadhtable" class="table table-hover dt-responsive" cellspacing="0" width="100%">
+                                                <table id="geniustable" class="table table-hover dt-responsive" cellspacing="0" width="100%">
                                                     <thead>
                                                         <tr>
                                                             <th>{{ __('Customer Email') }}</th>
@@ -172,7 +167,7 @@
 (function($) {
 		"use strict";
 
-        var table = $('#muaadhtable').DataTable({
+        var table = $('#geniustable').DataTable({
                ordering: false,
                processing: true,
                serverSide: true,

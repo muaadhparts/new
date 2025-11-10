@@ -1,8 +1,4 @@
-@extends('layouts.unified')
-@php
-    $isDashboard = true;
-    $isVendor = true;
-@endphp
+@extends('layouts.vendor')
 
 @section('content')
 					<input type="hidden" id="headerdata" value="{{ __('PRODUCT') }}">
@@ -31,7 +27,7 @@
 									<div class="mr-table allproduct">
                         				@include('alerts.admin.form-success')
 										<div class="table-responsive">
-												<table id="muaadhtable" class="table table-hover dt-responsive" cellspacing="0" width="100%">
+												<table id="geniustable" class="table table-hover dt-responsive" cellspacing="0" width="100%">
 													<thead>
 														<tr>
 									                        <th>{{ __("Name") }}</th>
@@ -176,7 +172,7 @@
 (function($) {
 		"use strict";
 
-		var table = $('#muaadhtable').DataTable({
+		var table = $('#geniustable').DataTable({
 			   ordering: false,
                processing: true,
                serverSide: true,
@@ -184,7 +180,6 @@
                columns: [
                         { data: 'name', name: 'name' },
                         { data: 'type', name: 'type' },
-						{ data: 'stock', name: 'stock' },
                         { data: 'price', name: 'price' },
                         { data: 'status', searchable: false, orderable: false},
             			{ data: 'action', searchable: false, orderable: false }

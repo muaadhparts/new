@@ -1,8 +1,4 @@
-@extends('layouts.unified')
-@php
-    $isDashboard = true;
-    $isVendor = true;
-@endphp
+@extends('layouts.vendor')
 @section('content')
     <div class="gs-vendor-outlet">
         <!-- breadcrumb start  -->

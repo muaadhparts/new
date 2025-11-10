@@ -261,10 +261,8 @@
             <a href="{{ route('admin-vendor-subs','completed') }}"><span>{{ __('Completed Subscriptions') }}</span></a>
         </li>
         <li>
-            {{-- <a href="{{ route('admin-vendor-pendings','pending') }}"><span>{{ __('Pending Subscriptions') }}</span></a> --}}
-            <a href="{{ route('admin-vendor-subs','pending') }}">
-                <span>{{ __('Pending Subscriptions') }}</span>
-            </a>
+            <a href="{{ route('admin-vendor-pendings','pending') }}"><span>{{ __('Pending Subscriptions') }}</span></a>
+            {{-- <a href="{{ route('admin-vendor-subs','pending') }}"><span>{{ __('Pending Subscriptions') }}</span></a> --}}
         </li>
     </ul>
 </li>
@@ -407,7 +405,7 @@
             <a href="{{ route('admin-service-index') }}"><span>{{ __('Services') }}</span></a>
         </li>
         <li>
-            <a href="{{ route('admin-brand-index') }}"><span>{{ __('Brands') }}</span></a>
+            <a href="{{ route('admin-partner-index') }}"><span>{{ __('Brands') }}</span></a>
         </li>
         <li>
             <a href="{{ route('admin-ps-customize') }}"><span>{{ __('Home Page Customization') }}</span></a>

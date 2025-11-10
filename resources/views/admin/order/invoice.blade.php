@@ -1,13 +1,4 @@
-@extends('layouts.unified')
-@php
-    $isDashboard = true;
-    $isAdmin = true;
-    $hideFooter = true;
-@endphp
-
-@section('styles')
-<link rel="stylesheet" href="{{ asset('assets/admin/css/order-table-enhancements.css') }}">
-@endsection
+@extends('layouts.admin')
 
 @section('content')
 <div class="content-area">
@@ -36,7 +27,7 @@
                 <div class="row">
                     <div class="col-sm-6">
                         <div class="invoice__logo text-left">
-                           <img src="{{ asset('assets/images/'.$gs->invoice_logo) }}" alt="logo">
+                           <img src="{{ asset('assets/images/'.$gs->invoice_logo) }}" alt="woo commerce logo">
                         </div>
                     </div>
                     <div class="col-lg-6 text-right">
@@ -97,22 +88,14 @@
                 <div class="col-sm-12">
                     <div class="invoice_table">
                         <div class="mr-table">
-                            <div class="table-responsive order-table-responsive">
-                                <table id="example2" class="table table-hover order-table-enhanced" cellspacing="0"
+                            <div class="table-responsive">
+                                <table id="example2" class="table table-hover dt-responsive" cellspacing="0"
                                     width="100%" >
                                     <thead>
                                         <tr>
-                                            <th class="col-title">{{ __('Product') }}</th>
-                                            <th class="col-sku">{{ __('SKU') }}</th>
-                                            <th class="col-brand">{{ __('Brand') }}</th>
-                                            <th class="col-manufacturer">{{ __('Manufacturer') }}</th>
-                                            <th class="col-shop">{{ __('Shop Name') }}</th>
-                                            <th class="col-size">{{ __('Size') }}</th>
-                                            <th class="col-color">{{ __('Color') }}</th>
-                                            <th class="col-price">{{ __('Price') }}</th>
-                                            <th class="col-qty">{{ __('Qty') }}</th>
-                                            <th class="col-discount">{{ __('Discount') }}</th>
-                                            <th class="col-total">{{ __('Total') }}</th>
+                                            <th>{{ __('Product') }}</th>
+                                            <th>{{ __('Details') }}</th>
+                                            <th>{{ __('Total') }}</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -121,120 +104,58 @@
                                         $tax = 0;
                                         @endphp
                                         @foreach($cart['items'] as $product)
-                                        @php
-                                            $orderProduct = \App\Models\Product::find($product['item']['id']);
-                                            $orderVendorId = $product['item']['user_id'] ?? 0;
-                                            $orderMerchant = $orderProduct && $orderVendorId ? $orderProduct->merchantProducts()->where('user_id', $orderVendorId)->where('status', 1)->first() : null;
-                                            $vendorUser = App\Models\User::find($product['item']['user_id']);
-                                        @endphp
                                         <tr>
-                                            {{-- Product --}}
-                                            <td class="col-title">
-                                                @php
-                                                    $productName = $product['item']['name'] ?? '';
-                                                @endphp
-                                                <div class="tooltip-wrapper">
-                                                    <span class="text-truncate-custom">
-                                                        @if($product['item']['user_id'] != 0)
-                                                            @if(isset($vendorUser))
-                                                            <x-product-name :item="$product" :vendor-id="$product['item']['user_id']" :merchant-product-id="$product['item']['id']" target="_blank" />
-                                                            @else
-                                                            <x-product-name :item="$product" target="_self" />
-                                                            @endif
-                                                        @else
-                                                            <x-product-name :item="$product" target="_self" />
-                                                        @endif
-                                                    </span>
-                                                    @if(mb_strlen($productName) > 50)
-                                                        <span class="tooltip-text">{{ $productName }}</span>
-                                                    @endif
-                                                </div>
-                                            </td>
-
-                                            {{-- SKU --}}
-                                            <td class="col-sku">
-                                                @if($product['item']['sku'])
-                                                    <span class="badge-custom badge-sku">{{ $product['item']['sku'] }}</span>
-                                                @else
-                                                    -
-                                                @endif
-                                            </td>
-
-                                            {{-- Brand --}}
-                                            <td class="col-brand">
-                                                @php
-                                                    $brandName = $orderProduct && $orderProduct->brand ? Str::ucfirst($orderProduct->brand->name) : '-';
-                                                @endphp
-                                                <div class="tooltip-wrapper">
-                                                    <span class="text-truncate-custom">{{ $brandName }}</span>
-                                                    @if(mb_strlen($brandName) > 15)
-                                                        <span class="tooltip-text">{{ $brandName }}</span>
-                                                    @endif
-                                                </div>
-                                            </td>
-
-                                            {{-- Manufacturer --}}
-                                            <td class="col-manufacturer">
-                                                @if($orderMerchant && $orderMerchant->qualityBrand)
-                                                    @php
-                                                        $manufacturerName = app()->getLocale() == 'ar' && $orderMerchant->qualityBrand->name_ar ? $orderMerchant->qualityBrand->name_ar : $orderMerchant->qualityBrand->name_en;
-                                                    @endphp
-                                                    <div class="tooltip-wrapper">
-                                                        <span class="text-truncate-custom">{{ $manufacturerName }}</span>
-                                                        @if(mb_strlen($manufacturerName) > 15)
-                                                            <span class="tooltip-text">{{ $manufacturerName }}</span>
-                                                        @endif
-                                                    </div>
-                                                @else
-                                                    -
-                                                @endif
-                                            </td>
-
-                                            {{-- Shop Name --}}
-                                            <td class="col-shop">
+                                            <td width="50%">
                                                 @if($product['item']['user_id'] != 0)
-                                                    @if(isset($vendorUser))
-                                                        <div class="tooltip-wrapper">
-                                                            <span class="text-truncate-custom">{{ $vendorUser->shop_name }}</span>
-                                                            @if(mb_strlen($vendorUser->shop_name) > 20)
-                                                                <span class="tooltip-text">{{ $vendorUser->shop_name }}</span>
-                                                            @endif
-                                                        </div>
-                                                    @else
-                                                        {{ __('Vendor Removed') }}
+                                                @php
+                                                $user = App\Models\User::find($product['item']['user_id']);
+                                                @endphp
+                                                @if(isset($user))
+                                                <a target="_blank"
+                                                    href="{{ route('front.product', $product['item']['slug']) }}">{{ $product['item']['name']}}</a>
+                                                @else
+                                                <a href="javascript:;">{{$product['item']['name']}}</a>
+                                                @endif
+
+                                                @else
+                                                <a href="javascript:;">{{ $product['item']['name']}}</a>
+
+                                                @endif
+                                            </td>
+
+
+                                            <td>
+                                                @if($product['size'])
+                                               <p>
+                                                    <strong>{{ __('Size') }} :</strong> {{str_replace('-',' ',$product['size'])}}
+                                               </p>
+                                               @endif
+                                               @if($product['color'])
+                                                <p>
+                                                        <strong>{{ __('color') }} :</strong> <span
+                                                        style="width: 20px; height: 20px; display: inline-block; vertical-align: middle; border-radius: 50%; background: #{{$product['color']}};"></span>
+                                                </p>
+                                                @endif
+                                                <p>
+                                                        <strong>{{ __('Price') }} :</strong>{{ \PriceHelper::showCurrencyPrice(($product['item_price'] ) * $order->currency_value) }}
+                                                </p>
+                                               <p>
+                                                    <strong>{{ __('Qty') }} :</strong> {{$product['qty']}} {{ $product['item']['measure'] }}
+                                               </p>
+
+                                                    @if(!empty($product['keys']))
+
+                                                    @foreach( array_combine(explode(',', $product['keys']), explode(',', $product['values']))  as $key => $value)
+                                                    <p>
+                                                        <b>{{ ucwords(str_replace('_', ' ', $key))  }} : </b> {{ $value }} 
+                                                    </p>
+                                                    @endforeach
                                                     @endif
-                                                @else
-                                                    {{ App\Models\Admin::find(1)->shop_name }}
-                                                @endif
                                             </td>
 
-                                            {{-- Size --}}
-                                            <td class="col-size">{{ $product['size'] ? str_replace('-', ' ', $product['size']) : '-' }}</td>
 
-                                            {{-- Color --}}
-                                            <td class="col-color">
-                                                @if($product['color'])
-                                                    <div class="tooltip-wrapper">
-                                                        <span class="color-circle" style="background: #{{$product['color']}};"></span>
-                                                        <span class="tooltip-text">#{{ strtoupper($product['color']) }}</span>
-                                                    </div>
-                                                @else
-                                                    -
-                                                @endif
+                                            <td>{{ \PriceHelper::showCurrencyPrice($product['price'] * $order->currency_value)  }} <small>{{ $product['discount'] == 0 ? '' : '('.$product['discount'].'% '.__('Off').')' }}</small>
                                             </td>
-
-                                            {{-- Price --}}
-                                            <td class="col-price">{{ \PriceHelper::showCurrencyPrice(($product['item_price'] ) * $order->currency_value) }}</td>
-
-                                            {{-- Qty --}}
-                                            <td class="col-qty">{{$product['qty']}} {{ $product['item']['measure'] }}</td>
-
-                                            {{-- Discount --}}
-                                            <td class="col-discount">{{ $product['discount'] == 0 ? '-' : $product['discount'].'%' }}</td>
-
-                                            {{-- Total --}}
-                                            <td class="col-total">{{ \PriceHelper::showCurrencyPrice($product['price'] * $order->currency_value) }}</td>
-
                                             @php
                                             $subtotal += round(($product['price'] / $order->currency_value) * $order->currency_value, 2);
                                             @endphp
@@ -244,45 +165,28 @@
 
                                     <tfoot>
                                         <tr>
-                                            <td colspan="10" class="text-right"><strong>{{ __('Subtotal') }}</strong></td>
+                                            <td colspan="2">{{ __('Subtotal') }}</td>
                                             <td>{{ \PriceHelper::showCurrencyPrice($subtotal  * $order->currency_value) }}</td>
                                         </tr>
                                         @if($order->shipping_cost != 0)
+                                        @php 
+                                        $price = round(($order->shipping_cost / $order->currency_value),2);
+                                        @endphp
+                                            @if(DB::table('shippings')->where('price','=',$price)->count() > 0)
                                             <tr>
-                                                <td colspan="10" class="text-right">
-                                                    <strong>
-                                                        @if($order->shipping_title)
-                                                            @php
-                                                                $shippingTitles = is_string($order->shipping_title) ? json_decode($order->shipping_title, true) : $order->shipping_title;
-                                                            @endphp
-                                                            @if(is_array($shippingTitles))
-                                                                @foreach($shippingTitles as $vendorId => $shippingId)
-                                                                    @php
-                                                                        $shipping = \App\Models\Shipping::find($shippingId);
-                                                                    @endphp
-                                                                    {{ $shipping ? $shipping->title : __('Shipping') }}
-                                                                    @if(!$loop->last), @endif
-                                                                @endforeach
-                                                            @else
-                                                                {{ $order->shipping_title }}
-                                                            @endif
-                                                        @else
-                                                            {{ __('Shipping Cost') }}
-                                                        @endif
-                                                        ({{$order->currency_sign}})
-                                                    </strong>
-                                                </td>
+                                                <td colspan="2">{{ DB::table('shippings')->where('price','=',$price)->first()->title }}({{$order->currency_sign}})</td>
                                                 <td>{{ \PriceHelper::showOrderCurrencyPrice($order->shipping_cost,$order->currency_sign) }}</td>
                                             </tr>
+                                            @endif
                                         @endif
 
                                         @if($order->packing_cost != 0)
-                                        @php
+                                        @php 
                                         $pprice = round(($order->packing_cost / $order->currency_value),2);
                                         @endphp
                                         @if(DB::table('packages')->where('price','=',$pprice)->count() > 0)
                                         <tr>
-                                            <td colspan="10" class="text-right"><strong>{{ DB::table('packages')->where('price','=',$pprice)->first()->title }}({{$order->currency_sign}})</strong></td>
+                                            <td colspan="2">{{ DB::table('packages')->where('price','=',$pprice)->first()->title }}({{$order->currency_sign}})</td>
                                             <td>{{ \PriceHelper::showOrderCurrencyPrice($order->packing_cost,$order->currency_sign) }}</td>
                                         </tr>
                                         @endif
@@ -290,34 +194,37 @@
 
                                         @if($order->tax != 0)
                                         <tr>
-                                            <td colspan="10" class="text-right"><strong>{{ __('Tax') }}</strong></td>
+                                            <td colspan="2">{{ __('Tax') }}</td>
                                             <td> {{ \PriceHelper::showOrderCurrencyPrice((($order->tax) / $order->currency_value),$order->currency_sign) }}</td>
                                         </tr>
                                         @endif
                                         @if($order->coupon_discount != null)
                                         <tr>
-                                            <td colspan="10" class="text-right"><strong>{{ __('Coupon Discount') }}({{$order->currency_sign}})</strong></td>
+                                            <td colspan="2">{{ __('Coupon Discount') }}({{$order->currency_sign}})</td>
                                             <td>{{ \PriceHelper::showOrderCurrencyPrice($order->coupon_discount,$order->currency_sign) }}</td>
                                         </tr>
                                         @endif
                                         @if($order->wallet_price != 0)
                                         <tr>
-                                            <td colspan="10" class="text-right"><strong>{{ __('Paid From Wallet') }}</strong></td>
+                                            <td colspan="1"></td>
+                                            <td>{{ __('Paid From Wallet') }}</td>
                                             <td>{{ \PriceHelper::showOrderCurrencyPrice(($order->wallet_price * $order->currency_value),$order->currency_sign) }}
                                             </td>
                                         </tr>
                                             @if($order->method != "Wallet")
                                             <tr>
-                                                <td colspan="10" class="text-right"><strong>{{$order->method}}</strong></td>
+                                                <td colspan="1"></td>
+                                                <td>{{$order->method}}</td>
                                                 <td>{{ \PriceHelper::showOrderCurrencyPrice(($order->pay_amount * $order->currency_value),$order->currency_sign) }}
                                                 </td>
                                             </tr>
                                             @endif
                                         @endif
 
-                                        <tr class="font-weight-bold">
-                                            <td colspan="10" class="text-right"><strong>{{ __('Total') }}</strong></td>
-                                            <td><strong>{{ \PriceHelper::showOrderCurrencyPrice((($order->pay_amount + $order->wallet_price) * $order->currency_value),$order->currency_sign) }}</strong>
+                                        <tr>
+                                            <td colspan="1"></td>
+                                            <td>{{ __('Total') }}</td>
+                                            <td>{{ \PriceHelper::showOrderCurrencyPrice((($order->pay_amount + $order->wallet_price) * $order->currency_value),$order->currency_sign) }}
                                             </td>
                                         </tr>
                                     </tfoot>

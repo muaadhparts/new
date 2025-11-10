@@ -10,7 +10,7 @@
                     <div class="product-description">
                       <div class="body-area" id="modalEdit">
                         @include('alerts.admin.form-error')  
-                      <form id="muaadhformdata" action="{{route('admin-shipping-create')}}" method="POST" enctype="multipart/form-data">
+                      <form id="geniusformdata" action="{{route('admin-shipping-create')}}" method="POST" enctype="multipart/form-data">
                         {{csrf_field()}}
 
 

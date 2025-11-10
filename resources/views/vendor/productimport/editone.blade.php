@@ -1,8 +1,4 @@
-@extends('layouts.unified')
-@php
-    $isDashboard = true;
-    $isVendor = true;
-@endphp
+@extends('layouts.vendor')
 @section('styles')
 
 <link href="{{asset('assets/admin/css/product.css')}}" rel="stylesheet" />
@@ -35,7 +31,7 @@
 		</div>
 	</div>
 	<div class="gocover" style="background: url({{asset('assets/images/'.$gs->admin_loader)}}) no-repeat scroll center center rgba(45, 45, 45, 0.5);"></div>
-	<form id="muaadhform" action="{{route('vendor-import-update',$data->id)}}" method="POST" enctype="multipart/form-data">
+	<form id="geniusform" action="{{route('vendor-import-update',$data->id)}}" method="POST" enctype="multipart/form-data">
 		{{csrf_field()}}
 		@include('alerts.admin.form-both') 
 	<div class="row">
@@ -152,7 +148,7 @@
 											</div>
 										</div>
 										<div class="col-lg-12">
-											<input name="stock" type="text" class="input-field" placeholder="{{ __("e.g 20") }}" value="{{ $merchantProduct->stock ?? '' }}">
+											<input name="stock" type="text" class="input-field" placeholder="{{ __("e.g 20") }}" value="{{ $data->stock }}">
 											<div class="checkbox-wrapper">
 												<input type="checkbox" name="measure_check" class="checkclick" id="allowProductMeasurement" value="1" {{ $data->measure == null ? '' : 'checked' }}>
 												<label for="allowProductMeasurement">{{ __("Allow Product Measurement") }}</label>
@@ -257,16 +253,16 @@
 									<div class="col-lg-12">
 										<ul class="list">
 											<li>
-												<input class="checkclickc" name="color_check" type="checkbox" id="check3" value="1" {{ !empty($merchantProduct->color_all ?? '') ? "checked":"" }}>
+												<input class="checkclickc" name="color_check" type="checkbox" id="check3" value="1" {{ !empty($data->color_all) ? "checked":"" }}>
 												<label for="check3">{{ __('Allow Product Colors') }}</label>
 											</li>
 										</ul>
 									</div>
 								</div>
 
-								<div class="{{ !empty($merchantProduct->color_all ?? '') ? "":"showbox" }}">
+								<div class="{{ !empty($data->color_all) ? "":"showbox" }}">
 									<div class="row">
-										@if(!empty($merchantProduct->color_all ?? '')) 
+										@if(!empty($data->color_all)) 
 										<div  class="col-lg-12">
 												<div class="left-area">
 													<h4 class="heading">
@@ -279,7 +275,7 @@
 											</div>
 											<div  class="col-lg-12">
 													<div class="select-input-color" id="color-section">
-														@foreach(array_unique(explode(',', $merchantProduct->color_all ?? '')) as $ct)
+														@foreach(array_unique(explode(',',$data->color_all)) as $ct)
 														<div class="color-area">
 															<span class="remove color-remove"><i class="fas fa-times"></i></span>
 															<div class="input-group colorpicker-component cp">
@@ -553,7 +549,7 @@
 										</div>
 									</div>
 									<div class="col-lg-12">
-										<input name="price" step="0.1" type="number" class="input-field" placeholder="{{ __("e.g 20") }}" value="{{round(($merchantProduct->price ?? 0) * $sign->value , 2)}}" required="" min="0">
+										<input name="price" step="0.1" type="number" class="input-field" placeholder="{{ __("e.g 20") }}" value="{{round($data->price * $sign->value , 2)}}" required="" min="0">
 									</div>
 								</div>
 
@@ -565,7 +561,7 @@
 										</div>
 									</div>
 									<div class="col-lg-12">
-										<input name="previous_price" step="0.1" type="number" class="input-field" placeholder="{{ __("e.g 20") }}" value="{{round(($merchantProduct->previous_price ?? 0) * $sign->value , 2)}}" min="0">
+										<input name="previous_price" step="0.1" type="number" class="input-field" placeholder="{{ __("e.g 20") }}" value="{{round($data->previous_price * $sign->value , 2)}}" min="0">
 									</div>
 								</div>
 
@@ -607,7 +603,7 @@
 
 																<div class="col-lg-6">
 																	<div class="input-group colorpicker-component cp">
-																	<input type="text" name="colors[]" value="{{ ($merchantProduct->colors ?? [])[$key] ?? '' }}" class="input-field cp"/>
+																	<input type="text" name="colors[]" value="{{ $data->colors[$key] }}" class="input-field cp"/>
 																	<span class="input-group-addon"><i></i></span>
 																	</div>
 																</div>
@@ -866,7 +862,7 @@
 	$(document).ready(function () {
 
 		let html =
-			`<img src="{{ \Illuminate\Support\Facades\Storage::url($data->photo) ?? asset('assets/images/noimage.png') }}" alt="">`;
+			`<img src="{{ empty($data->photo) ? asset('assets/images/noimage.png') : (filter_var($data->photo, FILTER_VALIDATE_URL) ? $data->photo : asset('assets/images/products/'.$data->photo)) }}" alt="">`;
 		$(".span4.cropme").html(html);
 
 		$.ajaxSetup({

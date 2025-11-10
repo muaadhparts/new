@@ -1,8 +1,4 @@
-@extends('layouts.unified')
-@php
-    $isDashboard = true;
-    $isVendor = true;
-@endphp
+@extends('layouts.vendor')
 @section('content')
     <div class="gs-vendor-outlet">
         <!-- breadcrumb start  -->
@@ -72,29 +68,6 @@
                             <input type="number" step="any" id="price" class="form-control" placeholder="@lang('Price')"
                                 value="{{ $data->price * $sign->value }}" name="price">
                             @error('price')
-                                <span class="text-danger">{{ $message }}</span>
-                            @enderror
-                        </div>
-
-                        <div class="form-group">
-                            <label for="provider">@lang('Provider')</label>
-                            <select name="provider" id="provider" class="form-control">
-                                <option value="manual" {{ $data->provider == 'manual' ? 'selected' : '' }}>@lang('Manual')</option>
-                                <option value="tryoto" {{ $data->provider == 'tryoto' ? 'selected' : '' }}>@lang('Tryoto')</option>
-                            </select>
-                            @error('provider')
-                                <span class="text-danger">{{ $message }}</span>
-                            @enderror
-                        </div>
-
-                        <div class="form-group">
-                            <label for="free_above">@lang('Free Shipping Above (Optional)')</label>
-                            <input type="number" step="any" id="free_above" class="form-control"
-                                placeholder="@lang('Free shipping if cart total above this amount')"
-                                value="{{ $data->free_above * $sign->value }}"
-                                name="free_above">
-                            <small class="text-muted">@lang('Set 0 to disable free shipping')</small>
-                            @error('free_above')
                                 <span class="text-danger">{{ $message }}</span>
                             @enderror
                         </div>

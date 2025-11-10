@@ -1,4 +1,4 @@
-@extends('layouts.unified')
+@extends('layouts.front')
 @section('content')
     <div class="gs-user-panel-review wow-replaced" data-wow-delay=".1s">
         <div class="container">
@@ -79,14 +79,9 @@
                                                                         ->get();
                                                                 @endphp
                                                                 @foreach ($states as $state)
-                                                                    @php
-                                                                        $stateDisplayName = (app()->getLocale() == 'ar')
-                                                                            ? ($state->state_ar ?: $state->state)
-                                                                            : $state->state;
-                                                                    @endphp
                                                                     <option value="{{ $state->id }}"
                                                                         {{ $user->state_id == $state->id ? 'selected' : '' }}>
-                                                                        {{ $stateDisplayName }}</option>
+                                                                        {{ $state->state }}</option>
                                                                 @endforeach
                                                             @else
                                                                 <option value="">@lang('Select State')</option>
@@ -113,14 +108,9 @@
                                                                         ->get();
                                                                 @endphp
                                                                 @foreach ($cities as $city)
-                                                                    @php
-                                                                        $cityDisplayName = (app()->getLocale() == 'ar')
-                                                                            ? ($city->city_name_ar ?: $city->city_name)
-                                                                            : $city->city_name;
-                                                                    @endphp
                                                                     <option value="{{ $city->id }}"
                                                                         {{ $user->city_id == $city->id ? 'selected' : '' }}>
-                                                                        {{ $cityDisplayName }}</option>
+                                                                        {{ $city->city_name }}</option>
                                                                 @endforeach
                                                             @else
                                                                 <option value="">@lang('Select City')</option>
@@ -141,17 +131,6 @@
                                         <div class="form-group">
                                             <label for="address">@lang('Address')</label>
                                             <textarea id="address" class="form-control" name="address" placeholder="@lang('Address')" style="height: 122px">{{ $user->address }}</textarea>
-                                        </div>
-
-                                        <!-- Hidden fields for latitude and longitude -->
-                                        <input type="hidden" name="latitude" id="latitude" value="{{ $user->latitude ?? '' }}">
-                                        <input type="hidden" name="longitude" id="longitude" value="{{ $user->longitude ?? '' }}">
-
-                                        <!-- Google Maps Button -->
-                                        <div class="form-group">
-                                            <button type="button" class="template-btn dark-btn" data-bs-toggle="modal" data-bs-target="#mapModal">
-                                                <i class="fas fa-map-marker-alt"></i> @lang('Select Location from Map')
-                                            </button>
                                         </div>
 
                                         <button class="template-btn btn-forms" type="submit">
@@ -182,9 +161,6 @@
             </div>
         </div>
     </div>
-
-    <!-- Google Maps Modal -->
-    @include('partials.google-maps-modal')
 @endsection
 @section('script')
     <script>

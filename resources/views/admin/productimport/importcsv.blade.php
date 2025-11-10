@@ -1,9 +1,4 @@
-@extends('layouts.unified')
-@php
-    $isDashboard = true;
-    $isAdmin = true;
-    $hideFooter = true;
-@endphp
+@extends('layouts.admin')
 @section('styles')
 
 <link href="{{asset('assets/admin/css/product.css')}}" rel="stylesheet"/>
@@ -40,7 +35,7 @@
 											<div class="body-area" id="modalEdit">
 
 					                      <div class="gocover" style="background: url({{asset('assets/images/'.$gs->admin_loader)}}) no-repeat scroll center center rgba(45, 45, 45, 0.5);"></div>
-					                      <form id="muaadhform" action="{{route('admin-import-csv-store')}}" method="POST" enctype="multipart/form-data">
+					                      <form id="geniusform" action="{{route('admin-import-csv-store')}}" method="POST" enctype="multipart/form-data">
 					                        {{csrf_field()}}
 
                         @include('includes.admin.form-both')  

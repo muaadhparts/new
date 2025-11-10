@@ -1,9 +1,4 @@
-@extends('layouts.unified')
-@php
-    $isDashboard = true;
-    $isAdmin = true;
-    $hideFooter = true;
-@endphp
+@extends('layouts.admin')
 
 @section('content')
     <input type="hidden" id="headerdata" value="{{ __('PRODUCT') }}">
@@ -33,13 +28,14 @@
                         @include('alerts.admin.form-success')
 
                         <div class="table-responsive">
-                            <table id="muaadhtable" class="table table-hover dt-responsive" cellspacing="0" width="100%">
+                            <table id="geniustable" class="table table-hover dt-responsive" cellspacing="0" width="100%">
                                 <thead>
                                     <tr>
                                         <th>{{ __('Image') }}</th>
                                         <th>{{ __('Name') }}</th>
-                                        <th>{{ __('SKU') }}</th>
                                         <th>{{ __('Type') }}</th>
+                                        <th>{{ __('Stock') }}</th>
+                                        <th>{{ __('Price') }}</th>
                                         <th>{{ __('Status') }}</th>
                                         <th>{{ __('Options') }}</th>
                                     </tr>
@@ -205,7 +201,7 @@
         (function($) {
             "use strict";
 
-            var table = $('#muaadhtable').DataTable({
+            var table = $('#geniustable').DataTable({
                 ordering: false,
                 processing: true,
                 serverSide: true,
@@ -213,21 +209,23 @@
                 columns: [
 					{
                         data: 'photo',
-                        name: 'photo',
-                        searchable: false,
-                        orderable: false
+                        name: 'photo'
                     },
 					{
                         data: 'name',
                         name: 'name'
                     },
                     {
-                        data: 'sku',
-                        name: 'sku'
-                    },
-                    {
                         data: 'type',
                         name: 'type'
+                    },
+                    {
+                        data: 'stock',
+                        name: 'stock'
+                    },
+                    {
+                        data: 'price',
+                        name: 'price'
                     },
                     {
                         data: 'status',

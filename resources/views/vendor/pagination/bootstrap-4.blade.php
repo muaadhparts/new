@@ -2,7 +2,6 @@
 <div class="d-flex justify-content-center pt-20">
     <ul class="gs-pagination">
         {{-- Previous Page Link --}}
-        ddd
         @if ($paginator->onFirstPage())
         <li class="disabled" aria-disabled="true" aria-label="@lang('pagination.previous')">
             <a href="#">
@@ -30,7 +29,7 @@
         @if ($page == $paginator->currentPage())
         <li class="active" aria-current="page"><a href="#">{{ $page }}</a></li>
         @else
-        <li><a href="{{ $url }}">{{ $page }}111</a></li>
+        <li><a href="{{ $url }}">{{ $page }}</a></li>
         @endif
         @endforeach
         @endif

@@ -8,7 +8,7 @@
 										<div class="product-description">
 											<div class="body-area">
                         					@include('alerts.admin.form-error') 
-											<form id="muaadhformdata" action="{{ route('admin-user-edit',$data->id) }}" method="POST" enctype="multipart/form-data">
+											<form id="geniusformdata" action="{{ route('admin-user-edit',$data->id) }}" method="POST" enctype="multipart/form-data">
 												{{csrf_field()}}
 
 						                        <div class="row">
@@ -113,15 +113,10 @@
 													<div class="col-lg-7">
                                                         <select class="input-field" name="country" required>
                                                             <option value="">{{ __('Select Country') }}</option>
-                                                            @foreach (App\Models\Country::where('status', 1)->get() as $dt)
-                                                                @php
-                                                                    $countryDisplayName = (app()->getLocale() == 'ar')
-                                                                        ? ($dt->country_name_ar ?: $dt->country_name)
-                                                                        : $dt->country_name;
-                                                                @endphp
+                                                            @foreach (DB::table('countries')->get() as $dt)
                                                                 <option value="{{ $dt->country_name }}" {{ $data->country == $dt->country_name ? 'selected' : '' }}>
-                                                                    {{ $countryDisplayName }}
-                                                                </option>
+                                                                    {{ $dt->country_name }}
+                                                                </option>		
                                                              @endforeach
                                                         </select>
 													</div>

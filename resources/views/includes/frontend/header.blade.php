@@ -1,754 +1,352 @@
-<header class="futuristic-header">
-    <!-- Animated Top Banner -->
-    <div class="top-banner">
-        <div class="container">
-            <div class="banner-content">
-                <div class="contact-info">
-                    <a href="tel:{{ $ps->phone }}" class="info-item">
-                        <i class="fas fa-headset"></i>
-                        <span>{{ $ps->phone }}</span>
-                    </a>
-                    <span class="divider">|</span>
-                    <a href="mailto:{{ $ps->email }}" class="info-item">
-                        <i class="fas fa-envelope-open-text"></i>
-                        <span>{{ $ps->email }}</span>
-                    </a>
+<header class="header-section position-relative z-2 header-stikcy">
+    <div class="info-bar d-nonee d-md-blockk">
+        <div class="container custom-containerr">
+            <div class="info-row d-flex">
+                <div class="info-left">
+                    <ul class="wows align-items-center">
+                        <li><a href="tel:+1(234)567-8901">
+                                @lang('Contact & Support'): {{ $ps->phone }}</a>
+                        </li>
+                    </ul>
                 </div>
+                <div class="info-right">
+                    <ul class="d-flex wows align-items-center">
 
-                <div class="top-actions">
-                    <!-- Language -->
-                    <div class="action-dropdown">
-                        <button class="action-trigger">
-                            <i class="fas fa-language"></i>
-                            @php
-                                $currentLang = Session::has('language')
-                                    ? $languges->where('id', Session::get('language'))->first()
-                                    : $languges->where('is_default', 1)->first();
-                            @endphp
-                            <span>{{ $currentLang ? $currentLang->language : 'EN' }}</span>
-                        </button>
-                        <div class="action-menu">
-                            @foreach ($languges as $language)
-                                <a href="{{ route('front.language', $language->id) }}"
-                                   class="menu-item {{ Session::has('language') && Session::get('language') == $language->id ? 'active' : '' }}">
-                                    {{ $language->language }}
+                        @if (Auth::guard('web')->check() && Auth::guard('web')->user()->is_vendor == 2)
+                            <li class="d-none d-lg-block"><a class="border px-3 py-1"
+                                    href="{{ route('vendor.dashboard') }}">{{ __('Vendor Panel') }}</a>
+                            </li>
+                        @else
+                            <li class="d-none d-lg-block">
+                                <a href="{{ route('vendor.login') }}" class="info-bar-btn">
+                                    {{ __('Vendor Login') }}
                                 </a>
-                            @endforeach
-                        </div>
-                    </div>
+                            </li>
+                        @endif
 
-                    <!-- Currency -->
-                    @if ($gs->is_currency == 1)
-                        <div class="action-dropdown">
-                            <button class="action-trigger">
-                                <i class="fas fa-coins"></i>
-                                <span>{{ Session::has('currency') ? $currencies->where('id', Session::get('currency'))->first()->name : DB::table('currencies')->where('is_default', 1)->first()->name }}</span>
-                            </button>
-                            <div class="action-menu">
-                                @foreach ($currencies as $currency)
-                                    <a href="{{ route('front.currency', $currency->id) }}"
-                                       class="menu-item {{ Session::has('currency') && Session::get('currency') == $currency->id ? 'active' : '' }}">
-                                        {{ $currency->name }}
-                                    </a>
-                                @endforeach
+                        @if (!Auth::guard('rider')->check())
+                            <li class="d-none d-lg-block"><a href="{{ route('rider.login') }}" class="info-bar-btn">
+                                    @lang('Rider Login')
+                                </a>
+                            </li>
+                        @endif
+
+
+
+                        <li class="d-none d-md-inline-block">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="2" height="21" viewBox="0 0 2 21"
+                                fill="none">
+                                <path d="M1 0.5V20.5" stroke="white" stroke-opacity="0.8" />
+                            </svg>
+                        </li>
+
+                        <li class="d-flex gap-2 align-items-center">
+                            <svg  xmlns="http://www.w3.org/2000/svg" width="20" height="21" viewBox="0 0 20 21"
+                                fill="none">
+                                <path
+                                    d="M9.99935 2.16669C12.4993 3.83335 13.2683 7.41005 13.3327 10.5C13.2683 13.59 12.4994 17.1667 9.99935 18.8334M9.99935 2.16669C7.49935 3.83335 6.73039 7.41005 6.66602 10.5C6.73039 13.59 7.49935 17.1667 9.99935 18.8334M9.99935 2.16669C5.39698 2.16669 1.66602 5.89765 1.66602 10.5M9.99935 2.16669C14.6017 2.16669 18.3327 5.89765 18.3327 10.5M9.99935 18.8334C14.6017 18.8334 18.3327 15.1024 18.3327 10.5M9.99935 18.8334C5.39698 18.8334 1.66602 15.1024 1.66602 10.5M18.3327 10.5C16.666 13 13.0893 13.769 9.99935 13.8334C6.90938 13.769 3.33268 13 1.66602 10.5M18.3327 10.5C16.666 8.00002 13.0893 7.23106 9.99935 7.16669C6.90938 7.23106 3.33268 8.00002 1.66602 10.5"
+                                    stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                            </svg>
+
+
+
+
+                            <div class="dropdown">
+                                <button class="dropdown-toggle" type="button" data-bs-toggle="dropdown"
+                                    aria-expanded="false">
+                                    @lang('English')
+                                </button>
+                                <ul class="dropdown-menu">
+                                    @foreach ($languges as $language)
+                                        <li>
+                                            <a class="dropdown-item dropdown__item {{ Session::has('language')
+                                                ? (Session::get('language') == $language->id
+                                                    ? 'active'
+                                                    : '')
+                                                : ($languges->where('is_default', '=', 1)->first()->id == $language->id
+                                                    ? 'active'
+                                                    : '') }}"
+                                                href="{{ route('front.language', $language->id) }}">{{ $language->language }}</a>
+                                        </li>
+                                    @endforeach
+                                </ul>
                             </div>
-                        </div>
-                    @endif
+                        </li>
 
-                    <!-- Account -->
-                    <div class="action-dropdown">
-                        <button class="action-trigger">
-                            <i class="fas fa-user-circle"></i>
+
+                        <li >
+                            <svg xmlns="http://www.w3.org/2000/svg" width="2" height="21" viewBox="0 0 2 21"
+                                fill="none">
+                                <path d="M1 0.5V20.5" stroke="white" stroke-opacity="0.8" />
+                            </svg>
+                        </li>
+
+                        @if ($gs->is_currency == 1)
+
+
+                            <li class="d-flex gap-2 align-items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="21"
+                                    viewBox="0 0 20 21" fill="none">
+                                    <path
+                                        d="M7.08268 12.7222C7.08268 13.7961 7.95324 14.6667 9.02713 14.6667H10.8327C11.9833 14.6667 12.916 13.7339 12.916 12.5834C12.916 11.4328 11.9833 10.5 10.8327 10.5H9.16602C8.01542 10.5 7.08268 9.56728 7.08268 8.41669C7.08268 7.26609 8.01542 6.33335 9.16602 6.33335H10.9716C12.0455 6.33335 12.916 7.20391 12.916 8.2778M9.99935 5.08335V6.33335M9.99935 14.6667V15.9167M18.3327 10.5C18.3327 15.1024 14.6017 18.8334 9.99935 18.8334C5.39698 18.8334 1.66602 15.1024 1.66602 10.5C1.66602 5.89765 5.39698 2.16669 9.99935 2.16669C14.6017 2.16669 18.3327 5.89765 18.3327 10.5Z"
+                                        stroke="white" stroke-width="2" stroke-linecap="round"
+                                        stroke-linejoin="round" />
+                                </svg>
+
+
+
+                                <div class="dropdown">
+                                    <button class="dropdown-toggle" type="button" data-bs-toggle="dropdown"
+                                        aria-expanded="false">
+                                        {{ Session::has('currency')
+                                            ? $currencies->where('id', '=', Session::get('currency'))->first()->name
+                                            : DB::table('currencies')->where('is_default', '=', 1)->first()->name }}
+                                    </button>
+                                    <ul class="dropdown-menu">
+                                        @foreach ($currencies as $currency)
+                                            <li>
+
+                                                <a class="dropdown-item dropdown__item {{ Session::has('currency')
+                                                    ? (Session::get('currency') == $currency->id
+                                                        ? 'active'
+                                                        : '')
+                                                    : ($currencies->where('is_default', '=', 1)->first()->id == $currency->id
+                                                        ? 'active'
+                                                        : '') }}"
+                                                    href="{{ route('front.currency', $currency->id) }}">{{ $currency->name }}</a>
+                                            </li>
+                                        @endforeach
+
+                                    </ul>
+                                </div>
+                            </li>
+                        @endif
+                        <li class="d-none d-md-inline-block">
+
+                            <svg xmlns="http://www.w3.org/2000/svg" width="2" height="21" viewBox="0 0 2 21"
+                                fill="none">
+                                <path d="M1 0.5V20.5" stroke="white" stroke-opacity="0.8" />
+                            </svg>
+                        </li>
+
+                        <li class="d-none  d-md-flex gap-2 align-items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="21" viewBox="0 0 20 21"
+                                fill="none">
+                                <path
+                                    d="M9.99955 13C7.35782 13 5.00855 14.2755 3.51288 16.255C3.19097 16.681 3.03002 16.894 3.03528 17.1819C3.03935 17.4043 3.17902 17.6849 3.35402 17.8222C3.58054 18 3.89444 18 4.52224 18H15.4769C16.1047 18 16.4186 18 16.6451 17.8222C16.8201 17.6849 16.9598 17.4043 16.9638 17.1819C16.9691 16.894 16.8081 16.681 16.4862 16.255C14.9906 14.2755 12.6413 13 9.99955 13Z"
+                                    stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                <path
+                                    d="M9.99955 10.5C12.0706 10.5 13.7496 8.82107 13.7496 6.75C13.7496 4.67893 12.0706 3 9.99955 3C7.92848 3 6.24955 4.67893 6.24955 6.75C6.24955 8.82107 7.92848 10.5 9.99955 10.5Z"
+                                    stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                            </svg>
+
                             @if (Auth::guard('web')->check())
-                                <span>{{ Str::limit(Auth::guard('web')->user()->name, 10) }}</span>
+                                <a href="{{ route('user-dashboard') }}">@lang('Dashboard')</a>
                             @elseif(Auth::guard('rider')->check())
-                                <span>{{ Str::limit(Auth::guard('rider')->user()->name, 10) }}</span>
+                                <a href="{{ route('rider-dashboard') }}">@lang('Dashboard')</a>
                             @else
-                                <span>@lang('Account')</span>
+                                <a href="{{ route('user.login') }}">@lang('My Account')</a>
                             @endif
-                        </button>
-                        <div class="action-menu">
-                            @if (Auth::guard('web')->check())
-                                <a href="{{ route('user-dashboard') }}" class="menu-item">
-                                    <i class="fas fa-tachometer-alt"></i> @lang('Dashboard')
-                                </a>
-                                <a href="{{ route('user-logout') }}" class="menu-item">
-                                    <i class="fas fa-sign-out-alt"></i> @lang('Logout')
-                                </a>
-                            @elseif(Auth::guard('rider')->check())
-                                <a href="{{ route('rider-dashboard') }}" class="menu-item">
-                                    <i class="fas fa-tachometer-alt"></i> @lang('Dashboard')
-                                </a>
-                                <a href="{{ route('rider-logout') }}" class="menu-item">
-                                    <i class="fas fa-sign-out-alt"></i> @lang('Logout')
-                                </a>
-                            @else
-                                <a href="{{ route('user.login') }}" class="menu-item">
-                                    <i class="fas fa-sign-in-alt"></i> @lang('Login')
-                                </a>
-                                <a href="{{ route('user.register') }}" class="menu-item">
-                                    <i class="fas fa-user-plus"></i> @lang('Register')
-                                </a>
-                            @endif
-                        </div>
-                    </div>
 
-                    <!-- Vendor/Rider Links -->
-                    @if (Auth::guard('web')->check() && Auth::guard('web')->user()->is_vendor == 2)
-                        <a href="{{ route('vendor.dashboard') }}" class="action-link">
-                            <i class="fas fa-store-alt"></i>
-                        </a>
-                    @else
-                        <a href="{{ route('vendor.login') }}" class="action-link" title="@lang('Vendor Login')">
-                            <i class="fas fa-store-alt"></i>
-                        </a>
-                    @endif
-
-                    @if (!Auth::guard('rider')->check())
-                        <a href="{{ route('rider.login') }}" class="action-link" title="@lang('Rider Login')">
-                            <i class="fas fa-motorcycle"></i>
-                        </a>
-                    @endif
+                        </li>
+                    </ul>
                 </div>
             </div>
         </div>
     </div>
+    <div class="header-top">
+        <div class="container custom-containerr">
+            <div class="create-navbar d-flex">
 
-    <!-- Main Header -->
-    <div class="main-header-wrapper">
-        <div class="container">
-            <div class="header-grid">
-                <!-- Logo Section -->
-                <div class="logo-section">
-                    <button class="burger-menu">
-                        <span></span>
-                        <span></span>
-                        <span></span>
+                <div class="nav-left">
+                    <button type="button" class="header-toggle mobile-menu-toggle d-flex d-xl-none">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                            fill="none">
+                            <path d="M3 12H21M3 6H21M3 18H15" stroke="#1F0300" stroke-width="2"
+                                stroke-linecap="round" stroke-linejoin="round" />
+                        </svg>
                     </button>
-                    <a href="{{ route('front.index') }}" class="brand-logo">
-                        <img src="{{ asset('assets/images/' . $gs->logo) }}" alt="{{ config('app.name') }}">
+
+
+                    <a class="header-logo-wrapper" href="{{ route('front.index') }}">
+                        <img class="logo" src="{{ asset('assets/images/' . $gs->logo) }}" alt="logo">
                     </a>
                 </div>
-
-                <!-- Navigation -->
-                <nav class="main-nav">
-                    <ul class="nav-list">
-                        <li class="nav-item {{ request()->path() == '/' ? 'active' : '' }}">
-                            <a href="{{ route('front.index') }}">@lang('Home')</a>
+                <div class="nav-center">
+                    <ul class="d-flex align-items-center nav-menus">
+                        <li class=""><a href="{{ route('front.index') }}"
+                                class="nav-link {{ request()->path() == '/' ? 'active' : '' }}">@lang('Home')</a>
                         </li>
-
-                        <li class="nav-item mega-item {{ request()->path() == 'category' ? 'active' : '' }}">
+                        <li class="has-megamenu {{ request()->path() == 'category' ? 'active' : '' }}">
                             <a href="{{ route('front.category') }}">
                                 @lang('Products')
-                                <i class="fas fa-angle-down"></i>
                             </a>
-                            <div class="mega-dropdown">
-                                <div class="mega-grid">
+                            <span class="has-submenu-icon">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
+                                    xmlns="http://www.w3.org/2000/svg">
+                                    <path
+                                        d="M18.7098 8.20986C18.6169 8.11613 18.5063 8.04174 18.3844 7.99097C18.2625 7.9402 18.1318 7.91406 17.9998 7.91406C17.8678 7.91406 17.7371 7.9402 17.6152 7.99097C17.4934 8.04174 17.3828 8.11613 17.2898 8.20986L12.7098 12.7899C12.6169 12.8836 12.5063 12.958 12.3844 13.0088C12.2625 13.0595 12.1318 13.0857 11.9998 13.0857C11.8678 13.0857 11.7371 13.0595 11.6152 13.0088C11.4934 12.958 11.3828 12.8836 11.2898 12.7899L6.70982 8.20986C6.61685 8.11613 6.50625 8.04174 6.38439 7.99097C6.26253 7.9402 6.13183 7.91406 5.99982 7.91406C5.8678 7.91406 5.7371 7.9402 5.61524 7.99097C5.49338 8.04174 5.38278 8.11613 5.28982 8.20986C5.10356 8.39722 4.99902 8.65067 4.99902 8.91486C4.99902 9.17905 5.10356 9.4325 5.28982 9.61986L9.87982 14.2099C10.4423 14.7717 11.2048 15.0872 11.9998 15.0872C12.7948 15.0872 13.5573 14.7717 14.1198 14.2099L18.7098 9.61986C18.8961 9.4325 19.0006 9.17905 19.0006 8.91486C19.0006 8.65067 18.8961 8.39722 18.7098 8.20986Z"
+                                        fill="#180207" />
+                                </svg>
+                            </span>
+
+
+
+                            <div class="megamenu cat-megamenu">
+                                <div class="row w-100">
                                     @foreach ($categories as $category)
-                                        <div class="mega-col">
-                                            <h6 class="mega-heading">
-                                                <a href="{{ route('front.category', $category->slug) }}">
-                                                    {{ $category->localized_name }}
-                                                </a>
-                                            </h6>
-                                            @if ($category->subs->count() > 0)
-                                                <ul class="mega-sublist">
-                                                    @foreach ($category->subs->take(5) as $subcategory)
-                                                        <li>
-                                                            <a href="{{ route('front.category', [$category->slug, $subcategory->slug]) }}">
-                                                                {{ $subcategory->localized_name }}
-                                                            </a>
-                                                        </li>
+                                        <div class="col-lg-3">
+                                            <div class="single-menu mt-30">
+                                                <h5><a
+                                                        href="{{ route('front.category', [$category->slug]) }}">{{ $category->name }}</a>
+                                                </h5>
+                                                @if ($category->subs->count() > 0)
+                                                    @foreach ($category->subs as $subcategory)
+                                                        <ul>
+                                                            <li><a
+                                                                    href="{{ route('front.category', [$category->slug, $subcategory->slug]) }}{{ !empty(request()->input('search')) ? '?search=' . request()->input('search') : '' }}">{{ $subcategory->name }}</a>
+                                                            </li>
+                                                        </ul>
                                                     @endforeach
-                                                    @if ($category->subs->count() > 5)
-                                                        <li class="view-all">
-                                                            <a href="{{ route('front.category', $category->slug) }}">
-                                                                @lang('View All') <i class="fas fa-arrow-right"></i>
-                                                            </a>
-                                                        </li>
-                                                    @endif
-                                                </ul>
-                                            @endif
+                                                @endif
+                                            </div>
                                         </div>
                                     @endforeach
                                 </div>
                             </div>
                         </li>
 
-                        <li class="nav-item dropdown-item">
+
+                        <li class="has-submenu">
                             <a href="javascript:void(0)">
                                 @lang('Pages')
-                                <i class="fas fa-angle-down"></i>
                             </a>
-                            <ul class="sub-dropdown">
-                                @foreach ($pages->where('header', 1) as $data)
-                                    <li><a href="{{ route('front.vendor', $data->slug) }}">{{ $data->title }}</a></li>
+                            <span class="has-submenu-icon">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
+                                    xmlns="http://www.w3.org/2000/svg">
+                                    <path
+                                        d="M18.7098 8.20986C18.6169 8.11613 18.5063 8.04174 18.3844 7.99097C18.2625 7.9402 18.1318 7.91406 17.9998 7.91406C17.8678 7.91406 17.7371 7.9402 17.6152 7.99097C17.4934 8.04174 17.3828 8.11613 17.2898 8.20986L12.7098 12.7899C12.6169 12.8836 12.5063 12.958 12.3844 13.0088C12.2625 13.0595 12.1318 13.0857 11.9998 13.0857C11.8678 13.0857 11.7371 13.0595 11.6152 13.0088C11.4934 12.958 11.3828 12.8836 11.2898 12.7899L6.70982 8.20986C6.61685 8.11613 6.50625 8.04174 6.38439 7.99097C6.26253 7.9402 6.13183 7.91406 5.99982 7.91406C5.8678 7.91406 5.7371 7.9402 5.61524 7.99097C5.49338 8.04174 5.38278 8.11613 5.28982 8.20986C5.10356 8.39722 4.99902 8.65067 4.99902 8.91486C4.99902 9.17905 5.10356 9.4325 5.28982 9.61986L9.87982 14.2099C10.4423 14.7717 11.2048 15.0872 11.9998 15.0872C12.7948 15.0872 13.5573 14.7717 14.1198 14.2099L18.7098 9.61986C18.8961 9.4325 19.0006 9.17905 19.0006 8.91486C19.0006 8.65067 18.8961 8.39722 18.7098 8.20986Z"
+                                        fill="#180207" />
+                                </svg>
+                            </span>
+                            <ul class="dropdown-menu">
+                                @foreach ($pages->where('header', '=', 1) as $data)
+                                    <li>
+                                        <a class="dropdown-item dropdown__item"
+                                            href="{{ route('front.vendor', $data->slug) }}">{{ $data->title }}</a>
+                                    </li>
                                 @endforeach
+
                             </ul>
                         </li>
-
                         @if ($ps->blog == 1)
-                            <li class="nav-item {{ request()->path() == 'blog' ? 'active' : '' }}">
-                                <a href="{{ route('front.blog') }}">@lang('Blog')</a>
-                            </li>
+                            <li class="{{ request()->path() == 'blog' ? 'active' : '' }}"><a
+                                    href="{{ route('front.blog') }}" class="nav-link">@lang('Blog')</a>
                         @endif
-
-                        <li class="nav-item {{ request()->path() == 'faq' ? 'active' : '' }}">
-                            <a href="{{ route('front.faq') }}">@lang('FAQ')</a>
                         </li>
-
-                        <li class="nav-item {{ request()->path() == 'contact' ? 'active' : '' }}">
-                            <a href="{{ route('front.contact') }}">@lang('Contact')</a>
+                        <li class="{{ request()->path() == 'faq' ? 'active' : '' }}"><a
+                                href="{{ route('front.faq') }}" class="nav-link">@lang('Faq')</a>
+                        </li>
+                        <li class="{{ request()->path() == 'contact' ? 'active' : '' }}"><a
+                                href="{{ route('front.contact') }}" class="nav-link">@lang('Contact Us')</a>
                         </li>
                     </ul>
-                </nav>
+                </div>
 
-                <!-- Action Icons -->
-                <div class="action-icons">
-                    <a href="{{ route('product.compare') }}" class="icon-btn" title="@lang('Compare')">
-                        <i class="fas fa-random"></i>
-                        <span class="icon-badge">{{ Session::has('compare') ? count(Session::get('compare')->items) : '0' }}</span>
-                    </a>
+                <div class="nav-right">
+                    <div class="icon-circle">
+                        <button id="searchIcon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                                viewBox="0 0 24 24" fill="none">
+                                <path
+                                    d="M21 21L17.5001 17.5M20 11.5C20 16.1944 16.1944 20 11.5 20C6.80558 20 3 16.1944 3 11.5C3 6.80558 6.80558 3 11.5 3C16.1944 3 20 6.80558 20 11.5Z"
+                                    stroke="#1F0300" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round" />
+                            </svg>
+                        </button>
 
-                    <a href="{{ auth()->check() ? route('user-wishlists') : route('user.login') }}" class="icon-btn" title="@lang('Wishlist')">
-                        <i class="fas fa-heart"></i>
-                        <span class="icon-badge">{{ Auth::guard('web')->check() ? Auth::guard('web')->user()->wishlistCount() : '0' }}</span>
-                    </a>
+                    </div>
 
+                    <div class="icon-circle">
+                        <a href="{{ route('product.compare') }}">
+                            <span class="cart-count" id="compare-count">
+                                {{ Session::has('compare') ? count(Session::get('compare')->items) : '0' }}
+                            </span>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                                viewBox="0 0 24 24" fill="none">
+                                <path
+                                    d="M18.1777 8C23.2737 8 23.2737 16 18.1777 16C13.0827 16 11.0447 8 5.43875 8C0.85375 8 0.85375 16 5.43875 16C11.0447 16 13.0828 8 18.1788 8H18.1777Z"
+                                    stroke="#1F0300" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round" />
+                            </svg>
+                        </a>
+                    </div>
+
+                    <div class="icon-circle">
+
+
+
+
+
+                        @if (Auth::guard('web')->check())
+                            <a href="{{ auth()->check() ? route('user-wishlists') : route('user.login') }}">
+                                <span class="cart-count" id="wishlist-count">
+                                    {{ Auth::guard('web')->user()->wishlistCount() }}
+                                </span>
+
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                                    viewBox="0 0 24 24" fill="none">
+                                    <path
+                                        d="M16.1111 3C19.6333 3 22 6.3525 22 9.48C22 15.8138 12.1778 21 12 21C11.8222 21 2 15.8138 2 9.48C2 6.3525 4.36667 3 7.88889 3C9.91111 3 11.2333 4.02375 12 4.92375C12.7667 4.02375 14.0889 3 16.1111 3Z"
+                                        stroke="#1F0300" stroke-width="2" stroke-linecap="round"
+                                        stroke-linejoin="round" />
+                                </svg>
+                            </a>
+                        @else
+                            <a href="{{ route('user.login') }}">
+                                <span class="cart-count" id="wishlist-count">
+                                    0
+                                </span>
+
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                                    viewBox="0 0 24 24" fill="none">
+                                    <path
+                                        d="M16.1111 3C19.6333 3 22 6.3525 22 9.48C22 15.8138 12.1778 21 12 21C11.8222 21 2 15.8138 2 9.48C2 6.3525 4.36667 3 7.88889 3C9.91111 3 11.2333 4.02375 12 4.92375C12.7667 4.02375 14.0889 3 16.1111 3Z"
+                                        stroke="#1F0300" stroke-width="2" stroke-linecap="round"
+                                        stroke-linejoin="round" />
+                                </svg>
+                            </a>
+                        @endif
+
+
+
+                    </div>
                     @php
                         $cart = Session::has('cart') ? Session::get('cart')->items : [];
                     @endphp
-                    <a href="{{ route('front.cart') }}" class="icon-btn cart-icon" title="@lang('Cart')">
-                        <i class="fas fa-shopping-bag"></i>
-                        <span class="icon-badge" id="cart-count" data-cart-count="{{ $cart ? count($cart) : 0 }}">
-                            {{ $cart ? count($cart) : 0 }}
-                        </span>
-                    </a>
+                    <div class="icon-circle">
+                        <a href="{{ route('front.cart') }}">
+                            <span class="cart-count" id="cart-count">
+                                {{ $cart ? count($cart) : 0 }}
+                            </span>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                                viewBox="0 0 24 24" fill="none">
+                                <path
+                                    d="M2 2H3.30616C3.55218 2 3.67519 2 3.77418 2.04524C3.86142 2.08511 3.93535 2.14922 3.98715 2.22995C4.04593 2.32154 4.06333 2.44332 4.09812 2.68686L4.57143 6M4.57143 6L5.62332 13.7314C5.75681 14.7125 5.82355 15.2031 6.0581 15.5723C6.26478 15.8977 6.56108 16.1564 6.91135 16.3174C7.30886 16.5 7.80394 16.5 8.79411 16.5H17.352C18.2945 16.5 18.7658 16.5 19.151 16.3304C19.4905 16.1809 19.7818 15.9398 19.9923 15.6342C20.2309 15.2876 20.3191 14.8247 20.4955 13.8988L21.8191 6.94969C21.8812 6.62381 21.9122 6.46087 21.8672 6.3335C21.8278 6.22177 21.7499 6.12768 21.6475 6.06802C21.5308 6 21.365 6 21.0332 6H4.57143ZM10 21C10 21.5523 9.55228 22 9 22C8.44772 22 8 21.5523 8 21C8 20.4477 8.44772 20 9 20C9.55228 20 10 20.4477 10 21ZM18 21C18 21.5523 17.5523 22 17 22C16.4477 22 16 21.5523 16 21C16 20.4477 16.4477 20 17 20C17.5523 20 18 20.4477 18 21Z"
+                                    stroke="#1F0300" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round" />
+                            </svg>
+                        </a>
+                    </div>
+
+
                 </div>
+
             </div>
+
+
         </div>
+
     </div>
+
 </header>
-
-<style>
-/* ========================================
-   FUTURISTIC HEADER DESIGN
-   ======================================== */
-:root {
-    --primary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-    --secondary-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-    --dark-bg: #0a0e27;
-    --light-text: #ffffff;
-}
-
-.futuristic-header {
-    position: sticky;
-    top: 0;
-    z-index: 1000;
-    background: #fff;
-    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
-}
-
-/* ========================================
-   TOP BANNER
-   ======================================== */
-.top-banner {
-    background: var(--dark-bg);
-    color: var(--light-text);
-    padding: 0.75rem 0;
-    font-size: 0.875rem;
-    position: relative;
-    z-index: 50;
-}
-
-.banner-content {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 1rem;
-}
-
-.contact-info {
-    display: flex;
-    align-items: center;
-    gap: 1.5rem;
-}
-
-.info-item {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    color: rgba(255, 255, 255, 0.9);
-    text-decoration: none;
-    transition: all 0.3s ease;
-    font-weight: 500;
-}
-
-.info-item:hover {
-    color: #f5576c;
-    transform: translateY(-2px);
-}
-
-.info-item i {
-    font-size: 1rem;
-}
-
-.divider {
-    color: rgba(255, 255, 255, 0.3);
-}
-
-.top-actions {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-}
-
-/* Action Dropdowns */
-.action-dropdown {
-    position: relative;
-    z-index: 100;
-}
-
-.action-trigger {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    background: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    padding: 0.5rem 1rem;
-    border-radius: 25px;
-    color: #fff;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    font-size: 0.875rem;
-}
-
-.action-trigger:hover {
-    background: rgba(255, 255, 255, 0.2);
-    transform: translateY(-2px);
-}
-
-.action-menu {
-    position: absolute;
-    top: calc(100% + 0.25rem);
-    right: 0;
-    background: #fff;
-    border-radius: 12px;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
-    min-width: 160px;
-    opacity: 0;
-    visibility: hidden;
-    transform: translateY(-10px);
-    transition: all 0.3s ease;
-    overflow: hidden;
-    z-index: 1000;
-    padding-top: 0.25rem;
-}
-
-.action-menu::before {
-    content: '';
-    position: absolute;
-    top: -0.25rem;
-    left: 0;
-    right: 0;
-    height: 0.25rem;
-    background: transparent;
-}
-
-.action-dropdown:hover .action-menu {
-    opacity: 1;
-    visibility: visible;
-    transform: translateY(0);
-}
-
-.menu-item {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    padding: 0.75rem 1.25rem;
-    color: #333;
-    text-decoration: none;
-    transition: all 0.2s ease;
-    font-weight: 500;
-}
-
-.menu-item:hover {
-    background: var(--primary-gradient);
-    color: #fff;
-}
-
-.menu-item.active {
-    background: var(--secondary-gradient);
-    color: #fff;
-}
-
-.action-link {
-    width: 40px;
-    height: 40px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 50%;
-    color: #fff;
-    text-decoration: none;
-    transition: all 0.3s ease;
-}
-
-.action-link:hover {
-    background: var(--primary-gradient);
-    transform: scale(1.1);
-}
-
-/* ========================================
-   MAIN HEADER
-   ======================================== */
-.main-header-wrapper {
-    padding: 1.25rem 0;
-    background: #fff;
-    position: relative;
-    z-index: 40;
-}
-
-.header-grid {
-    display: grid;
-    grid-template-columns: auto 1fr auto;
-    align-items: center;
-    gap: 2rem;
-}
-
-/* Logo Section */
-.logo-section {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-}
-
-.burger-menu {
-    display: none;
-    flex-direction: column;
-    gap: 0.4rem;
-    background: none;
-    border: none;
-    padding: 0.5rem;
-    cursor: pointer;
-}
-
-.burger-menu span {
-    width: 28px;
-    height: 3px;
-    background: var(--dark-bg);
-    border-radius: 3px;
-    transition: all 0.3s ease;
-}
-
-.burger-menu:hover span {
-    background: var(--primary-gradient);
-}
-
-.brand-logo img {
-    height: 55px;
-    transition: transform 0.3s ease;
-}
-
-.brand-logo:hover img {
-    transform: scale(1.05);
-}
-
-/* Navigation */
-.main-nav {
-    justify-self: center;
-}
-
-.nav-list {
-    display: flex;
-    align-items: center;
-    gap: 0.25rem;
-    list-style: none;
-    margin: 0;
-    padding: 0;
-}
-
-.nav-item {
-    position: relative;
-}
-
-.nav-item > a {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.875rem 1.5rem;
-    color: #333;
-    text-decoration: none;
-    font-weight: 700;
-    font-size: 0.95rem;
-    border-radius: 30px;
-    transition: all 0.3s ease;
-    position: relative;
-    overflow: hidden;
-}
-
-.nav-item > a::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: var(--primary-gradient);
-    transition: left 0.4s ease;
-    z-index: -1;
-}
-
-.nav-item > a:hover::before,
-.nav-item.active > a::before {
-    left: 0;
-}
-
-.nav-item > a:hover,
-.nav-item.active > a {
-    color: #fff;
-}
-
-/* Mega Dropdown */
-.mega-dropdown {
-    position: absolute;
-    top: calc(100% + 1rem);
-    left: 50%;
-    transform: translateX(-50%);
-    width: 900px;
-    max-width: calc(100vw - 2rem);
-    background: #fff;
-    border-radius: 20px;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
-    padding: 2rem;
-    opacity: 0;
-    visibility: hidden;
-    transition: all 0.4s ease;
-}
-
-.mega-item:hover .mega-dropdown {
-    opacity: 1;
-    visibility: visible;
-    top: 100%;
-}
-
-.mega-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 2rem;
-}
-
-.mega-heading {
-    font-size: 1.1rem;
-    font-weight: 700;
-    margin-bottom: 1rem;
-    color: #333;
-}
-
-.mega-heading a {
-    color: #333;
-    text-decoration: none;
-    transition: color 0.3s ease;
-}
-
-.mega-heading a:hover {
-    background: var(--primary-gradient);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-}
-
-.mega-sublist {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-}
-
-.mega-sublist li {
-    margin-bottom: 0.5rem;
-}
-
-.mega-sublist a {
-    color: #666;
-    text-decoration: none;
-    font-size: 0.95rem;
-    transition: all 0.2s ease;
-    display: block;
-    padding: 0.5rem 0;
-}
-
-.mega-sublist a:hover {
-    color: #f5576c;
-    padding-left: 0.5rem;
-}
-
-.mega-sublist .view-all a {
-    color: #f5576c;
-    font-weight: 600;
-}
-
-/* Sub Dropdown */
-.sub-dropdown {
-    position: absolute;
-    top: calc(100% + 0.5rem);
-    left: 0;
-    min-width: 200px;
-    background: #fff;
-    border-radius: 12px;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.12);
-    padding: 0.5rem;
-    list-style: none;
-    margin: 0;
-    opacity: 0;
-    visibility: hidden;
-    transition: all 0.3s ease;
-}
-
-.dropdown-item:hover .sub-dropdown {
-    opacity: 1;
-    visibility: visible;
-    top: 100%;
-}
-
-.sub-dropdown li a {
-    display: block;
-    padding: 0.75rem 1rem;
-    color: #333;
-    text-decoration: none;
-    border-radius: 8px;
-    transition: all 0.2s ease;
-    font-weight: 500;
-}
-
-.sub-dropdown li a:hover {
-    background: var(--secondary-gradient);
-    color: #fff;
-}
-
-/* Action Icons */
-.action-icons {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-}
-
-.icon-btn {
-    position: relative;
-    width: 50px;
-    height: 50px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-    border-radius: 15px;
-    color: #333;
-    font-size: 1.25rem;
-    text-decoration: none;
-    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.icon-btn:hover {
-    background: var(--primary-gradient);
-    color: #fff;
-    transform: translateY(-5px) rotate(10deg);
-    box-shadow: 0 10px 30px rgba(245, 87, 108, 0.3);
-}
-
-.icon-badge {
-    position: absolute;
-    top: -5px;
-    right: -5px;
-    background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
-    color: #fff;
-    font-size: 0.7rem;
-    font-weight: 700;
-    padding: 0.3rem 0.6rem;
-    border-radius: 50px;
-    min-width: 22px;
-    text-align: center;
-    box-shadow: 0 4px 15px rgba(255, 107, 107, 0.5);
-}
-
-/* ========================================
-   RESPONSIVE
-   ======================================== */
-@media (max-width: 1199px) {
-    .main-nav {
-        display: none;
-    }
-
-    .burger-menu {
-        display: flex;
-    }
-}
-
-@media (max-width: 991px) {
-    .top-banner {
-        display: none;
-    }
-
-    .header-grid {
-        grid-template-columns: 1fr auto;
-        gap: 1rem;
-    }
-}
-
-@media (max-width: 767px) {
-    .contact-info span:not(.divider) {
-        display: none;
-    }
-
-    .action-trigger span {
-        display: none;
-    }
-
-    .icon-btn {
-        width: 45px;
-        height: 45px;
-        font-size: 1.125rem;
-    }
-}
-
-@media (max-width: 575px) {
-    .brand-logo img {
-        height: 45px;
-    }
-
-    .action-icons {
-        gap: 0.5rem;
-    }
-
-    .icon-btn {
-        width: 42px;
-        height: 42px;
-    }
-}
-</style>
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const burgerMenu = document.querySelector('.burger-menu');
-    const mobileMenu = document.getElementById('mobileMenu');
-    const overlay = document.querySelector('.overlay');
-
-    burgerMenu?.addEventListener('click', function() {
-        mobileMenu?.classList.add('active');
-        overlay?.classList.add('active');
-        document.body.style.overflow = 'hidden';
-    });
-
-    // Debug: Check if cart count element exists
-    console.log('🔍 Checking cart elements on page load:');
-    const cartCountEl = document.getElementById('cart-count');
-    const cartCount1El = document.getElementById('cart-count1');
-    console.log('   #cart-count:', cartCountEl ? '✅ Found' : '❌ Not found');
-    console.log('   #cart-count1:', cartCount1El ? '✅ Found' : '❌ Not found');
-    if (cartCountEl) {
-        console.log('   Current value:', cartCountEl.textContent);
-    }
-    console.log('   window.applyCartState:', typeof window.applyCartState);
-});
-</script>

@@ -1,4 +1,4 @@
-@extends('layouts.unified')
+@extends('layouts.front')
 @section('content')
     <section class="gs-breadcrumb-section bg-class"
         data-background="{{ $gs->breadcrumb_banner ? asset('assets/images/' . $gs->breadcrumb_banner) : asset('assets/images/noimage.png') }}">

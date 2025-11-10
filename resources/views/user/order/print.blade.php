@@ -5,7 +5,7 @@
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="keywords" content="{{$seo->meta_keys}}">
-        <meta name="author" content="MUAADH">
+        <meta name="author" content="GeniusOcean">
 
         <title>{{$gs->title}}</title>
   <!-- Tell the browser to be responsive to screen width -->
@@ -168,7 +168,7 @@ html {
                                           @foreach($cart['items'] as $product)
                                           <tr>
                                              <td>{{ $product['item']['id'] }}</td>
-                                             <td><x-product-name :item="$product" :vendor-id="$product['item']['user_id']" /></td>
+                                             <td>{{mb_strlen($product['item']['name'],'UTF-8') > 50 ? mb_substr($product['item']['name'],0,50,'UTF-8').'...' : $product['item']['name']}}</td>
                                              <td>
                                                 <b>{{ __('Quantity') }}</b>: {{$product['qty']}} <br>
                                                 @if(!empty($product['size']))

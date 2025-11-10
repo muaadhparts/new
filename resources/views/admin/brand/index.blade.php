@@ -1,12 +1,7 @@
-@extends('layouts.unified')
-@php
-    $isDashboard = true;
-    $isAdmin = true;
-    $hideFooter = true;
-@endphp 
+@extends('layouts.admin') 
 
 @section('content')  
-          <input type="hidden" id="headerdata" value="{{ __('BRAND') }}">
+          <input type="hidden" id="headerdata" value="{{ __('PARTNER') }}">
           <div class="content-area">
             <div class="mr-breadcrumb">
               <div class="row">
@@ -20,7 +15,7 @@
                           <a href="javascript:;">{{ __('Home Page Settings') }} </a>
                         </li>                      
                       <li>
-                        <a href="{{ route('admin-brand-index') }}">{{ __('Brands') }}</a>
+                        <a href="{{ route('admin-partner-index') }}">{{ __('Brands') }}</a>
                       </li>
                     </ul>
                 </div>
@@ -34,7 +29,7 @@
                         @include('alerts.admin.form-success')  
 
                     <div class="table-responsive">
-                        <table id="muaadhtable" class="table table-hover dt-responsive" cellspacing="0" width="100%">
+                        <table id="geniustable" class="table table-hover dt-responsive" cellspacing="0" width="100%">
                           <thead>
                             <tr>
                                           <th>{{ __('Featured Photo') }}</th>
@@ -126,11 +121,11 @@
 (function($) {
 		"use strict";
 
-    var table = $('#muaadhtable').DataTable({
+    var table = $('#geniustable').DataTable({
          ordering: false,
                processing: true,
                serverSide: true,
-               ajax: '{{ route('admin-brand-datatables') }}',
+               ajax: '{{ route('admin-partner-datatables') }}',
                columns: [
                         { data: 'photo', name: 'photo' , searchable: false, orderable: false},
                         { data: 'link', name: 'link' },
@@ -144,7 +139,7 @@
 
         $(function() {
         $(".btn-area").append('<div class="col-sm-4 table-contents">'+
-          '<a class="add-btn" data-href="{{route('admin-brand-create')}}" id="add-data" data-toggle="modal" data-target="#modal1">'+
+          '<a class="add-btn" data-href="{{route('admin-partner-create')}}" id="add-data" data-toggle="modal" data-target="#modal1">'+
           '<i class="fas fa-plus"></i> {{ __('Add New Brand') }}'+
           '</a>'+
           '</div>');

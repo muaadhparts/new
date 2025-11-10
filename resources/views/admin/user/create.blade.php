@@ -8,7 +8,7 @@
 										<div class="product-description">
 											<div class="body-area">
                         					@include('alerts.admin.form-error') 
-											<form id="muaadhformdata" action="{{ route('admin-user-store') }}" method="POST" enctype="multipart/form-data">
+											<form id="geniusformdata" action="{{ route('admin-user-store') }}" method="POST" enctype="multipart/form-data">
 												{{csrf_field()}}
 
 						                        <div class="row">
@@ -104,15 +104,10 @@
 													<div class="col-lg-7">
                                                         <select class="input-field" name="country" required>
                                                             <option value="">{{ __('Select Country') }}</option>
-                                                            @foreach (App\Models\Country::where('status', 1)->get() as $data)
-                                                                @php
-                                                                    $countryDisplayName = (app()->getLocale() == 'ar')
-                                                                        ? ($data->country_name_ar ?: $data->country_name)
-                                                                        : $data->country_name;
-                                                                @endphp
+                                                            @foreach (DB::table('countries')->get() as $data)
                                                                 <option value="{{ $data->country_name }}">
-                                                                    {{ $countryDisplayName }}
-                                                                </option>
+                                                                    {{ $data->country_name }}
+                                                                </option>		
                                                              @endforeach
                                                         </select>
 													</div>

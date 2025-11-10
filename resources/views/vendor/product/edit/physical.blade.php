@@ -1,8 +1,4 @@
-@extends('layouts.unified')
-@php
-    $isDashboard = true;
-    $isVendor = true;
-@endphp
+@extends('layouts.vendor')
 @section('css')
     <link href="{{ asset('assets/admin/css/jquery.Jcrop.css') }}" rel="stylesheet" />
     <link href="{{ asset('assets/admin/css/Jcrop-style.css') }}" rel="stylesheet" />
@@ -422,7 +418,7 @@
                     <div class="gs-checkbox-wrapper" aria-controls="show_child-category" role="region"
                         data-bs-toggle="collapse" data-bs-target="#show_child-category">
                         <input type="checkbox" id="allow-product-condition"
-                            {{ ($merchantProduct->product_condition ?? 0) != 0 ? 'checked' : '' }} name="product_condition_check"
+                            {{ $data->product_condition != 0 ? 'checked' : '' }} name="product_condition_check"
                             value="1">
                         <label class="icon-label check-box-label" for="allow-product-condition">
                             <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12"
@@ -435,7 +431,7 @@
                                                                                                                                                                                                                                                                                                                             Condition')</label>
                     </div>
                     <!-- Child Category -->
-                    <div class="input-label-wrapper collapse {{ ($merchantProduct->product_condition ?? 0) != 0 ? 'show' : '' }}"
+                    <div class="input-label-wrapper collapse {{ $data->product_condition != 0 ? 'show' : '' }}"
                         id="show_child-category">
                         <label for="child-category-select">@lang('Product Condition*')</label>
                         <div class="dropdown-container">
@@ -486,7 +482,7 @@
                     <!-- Allow Minimum Order Qty Checkbox -->
                     <div class="gs-checkbox-wrapper" aria-controls="show_minimum-order" role="region"
                         data-bs-toggle="collapse" data-bs-target="#show_minimum-order">
-                        <input type="checkbox" {{ ($merchantProduct->minimum_qty ?? null) != null ? 'checked' : '' }} id="allow-minimum-order"
+                        <input type="checkbox" {{ $data->minimum_qty != null ? 'checked' : '' }} id="allow-minimum-order"
                             name="minimum_qty_check" value="1">
                         <label class="icon-label check-box-label" for="allow-minimum-order">
                             <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12"
@@ -499,11 +495,11 @@
                                                                                                                                                                                                                                                                                                                             Qty')</label>
                     </div>
                     <!-- Product Minimum Order Qty -->
-                    <div class="input-label-wrapper collapse {{ ($merchantProduct->minimum_qty ?? null) != null ? 'show' : '' }}"
+                    <div class="input-label-wrapper collapse {{ $data->minimum_qty != null ? 'show' : '' }}"
                         id="show_minimum-order">
                         <label>@lang('Product Minimum Order Qty*')</label>
                         <input type="text" class="form-control" name="minimum_qty" placeholder="@lang('Minimum Order Qty') "
-                            value="{{ $merchantProduct->minimum_qty ?? '' }}">
+                            value="{{ $data->minimum_qty }}">
                     </div>
 
                     <!-- Allow Estimated Shipping Time Checkbox -->
@@ -602,7 +598,7 @@
                     <!-- Allow Product Colors Checkbox -->
                     <div class="gs-checkbox-wrapper" aria-controls="show_allow-product-colors" role="region"
                         data-bs-toggle="collapse" data-bs-target="#show_allow-product-colors">
-                        <input type="checkbox" {{ empty($merchantProduct->color_all ?? '') ? '' : ' checked' }} name="color_check"
+                        <input type="checkbox" {{ !is_array($data->color_all) ? '' : ' checked' }} name="color_check"
                             id="allow-allow-product-colors" class="checkclickc">
                         <label class="icon-label check-box-label" for="allow-allow-product-colors">
                             <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12"
@@ -615,15 +611,15 @@
                                                                                                                                                                                                                                                                                                                             Colors')</label>
                     </div>
                     <!-- Product Colors -->
-                    <div class="input-label-wrapper collapse {{ empty($merchantProduct->color_all ?? '') ? '' : 'show' }}"
+                    <div class="input-label-wrapper collapse {{ !is_array($data->color_all) ? '' : 'show' }}"
                         id="show_allow-product-colors">
                         <label>@lang('Product Colors* (Choose Your Favorite
                                                                                                                                                                                                                                                                                                                             Colors)')</label>
                         <div class="row gy-4">
                             <div id="color-section" class="d-flex flex-column gap-4">
 
-                                @if ($merchantProduct && $merchantProduct->color_all)
-                                    @foreach ((is_array($merchantProduct->color_all) ? $merchantProduct->color_all : explode(',', $merchantProduct->color_all ?? '')) as $item)
+                                @if ($data->color_all)
+                                    @foreach ($data->color_all as $item)
                                         <div class="col-12 position-relative">
                                             <input type="text" class="form-control"
                                                 placeholder="{{ $item }}">
@@ -660,7 +656,7 @@
                     <div class="gs-checkbox-wrapper" aria-controls="show_manage-stock" role="region"
                         data-bs-toggle="collapse" data-bs-target="#show_manage-stock">
                         <input type="checkbox" id="allow-manage-stock" name="stock_check" value="1"
-                            {{ ($merchantProduct->stock_check ?? 0) == 1 ? 'checked' : '' }}>
+                            {{ $data->stock_check == 1 ? 'checked' : '' }}>
                         <label class="icon-label check-box-label" for="allow-manage-stock">
                             <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12"
                                 fill="none">
@@ -671,7 +667,7 @@
                         <label class="check-box-label" for="allow-manage-stock">@lang('Manage Stock')</label>
                     </div>
                     <!-- Manage Stock -->
-                    <div class="input-label-wrapper collapse {{ ($merchantProduct->stock_check ?? 0) == 1 ? 'show' : '' }}"
+                    <div class="input-label-wrapper collapse {{ $data->stock_check == 1 ? 'show' : '' }}"
                         id="show_manage-stock">
 
                         <div id="size-section" class="d-flex flex-column gap-4">
@@ -759,9 +755,9 @@
                     </div>
 
 
-                    <div class="input-label-wrapper {{ ($merchantProduct->stock_check ?? 0) == 1 ? 'd-none' : '' }}" id="default_stock">
+                    <div class="input-label-wrapper {{ $data->stock_check == 1 ? 'd-none' : '' }}" id="default_stock">
                         <label>@lang('Product Stock')</label>
-                        <input type="number" class="form-control" name="stock" value="{{ $merchantProduct->stock ?? '' }}"
+                        <input type="number" class="form-control" name="stock" value="{{ $data->stock }}"
                             placeholder="@lang('Enter Product Stock') ">
                     </div>
 
@@ -874,13 +870,13 @@
                         <div class="input-label-wrapper">
                             <label>@lang('Product Current Price') ({{ $curr->name }})</label>
                             <input type="text" class="form-control" name="price"
-                                placeholder="{{ round(($merchantProduct->price ?? 0) * $sign->value, 2) }}">
+                                placeholder="{{ round($data->price * $sign->value, 2) }}">
                         </div>
                         <!-- Product Discount Price -->
                         <div class="input-label-wrapper">
                             <label>@lang('Product Discount Price* (Optional)')</label>
                             <input type="text" class="form-control" name="previous_price"
-                                placeholder="{{ round(($merchantProduct->previous_price ?? 0) * $sign->value, 2) }}">
+                                placeholder="{{ round($data->previous_price * $sign->value, 2) }}">
                         </div>
                         <!-- YouTube Video URL-->
                         <div class="input-label-wrapper">
@@ -903,10 +899,10 @@
                                             <div class="col feature-tag-keyword-input-wrapper">
                                                 <div class="w-100  position-relative">
                                                     <input type="text" class="form-control"
-                                                        placeholder="{{ ($merchantProduct->colors ?? [])[$key] ?? '' }}">
+                                                        placeholder="{{ $data->colors[$key] }}">
                                                     <input class="h-100 position-absolute top-0 end-0 color-input"
                                                         type="color" id="favcolor_2" name="colors[]"
-                                                        value="{{ ($merchantProduct->colors ?? [])[$key] ?? '' }}">
+                                                        value="{{ $data->colors[$key] }}">
                                                     <button type="button"
                                                         class="gallery-extra-remove-btn feature-extra-tags-remove-btn remove_feature"><i
                                                             class="fa-solid fa-xmark"></i></button>

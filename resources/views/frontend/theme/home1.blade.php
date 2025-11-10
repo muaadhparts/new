@@ -1,12 +1,44 @@
-@extends('layouts.unified')
+@extends('layouts.front')
 
 @section('content')
+
+
+
+<!-- Brand Section -->
+<section class="gs-partner-section">
+    <div class="container">
+        <div class="row mb-60 justify-content-center">
+            <div class="col-lg-7">
+                <div class="gs-title-box text-center">
+                    <h2 class="title wow-replaced">@lang('Our Brands') </h2>
+                    <p class="des mb-0 wow-replaced" data-wow-delay=".1s">@lang('Cillum eu id enim aliquip aute ullamco
+                        anim. Culpa
+                        deserunt
+                        nostrud excepteur voluptate velit ipsum esse enim Cillum eu id enim aliquip aute ullamco.')</p>
+                </div>
+            </div>
+        </div>
+        <div class="gs-partnerss gy-4 row justify-content-center">
+
+            @foreach (DB::table('brands')->get() as $data)
+            <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6 wow-replaced" data-wow-delay=".1s">
+                <div class="single-partner">
+                    <img src="{{ asset('assets/images/partner/' . $data->photo) }}" alt="partner">
+                </div>
+            </div>
+            @endforeach
+
+
+        </div>
+    </div>
+
 <!-- hero section start -->
-<section class="hero-slider-wrapper">
+{{-- <section class="hero-slider-wrapper">
     @foreach ($sliders as $slider)
 
     <div class="gs-hero-section" data-background="{{ asset('assets/images/sliders/' . $slider->photo) }}">
         <div class="container">
+
             <div class="row align-items-center">
                 <div class="col-12 col-md-6 col-lg-6">
                     <div class="hero-content">
@@ -28,7 +60,7 @@
             </div>
         </div>
     </div>
-    @endforeach
+    @endforeach --}}
 
 </section>
 <!-- hero section end -->
@@ -305,8 +337,8 @@
 <!-- Deal of the Day Completed -->
 @endif
 
-<!-- Brand Section -->
-<section class="gs-brand-section">
+{{-- <!-- Brand Section -->
+<section class="gs-partner-section">
     <div class="container">
         <div class="row mb-60 justify-content-center">
             <div class="col-lg-7">
@@ -319,19 +351,19 @@
                 </div>
             </div>
         </div>
-        <div class="gs-brandss gy-4 row justify-content-center">
+        <div class="gs-partnerss gy-4 row justify-content-center">
 
             @foreach (DB::table('brands')->get() as $data)
             <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6 wow-replaced" data-wow-delay=".1s">
-                <div class="single-brand">
-                    <img src="{{ asset('assets/images/brand/' . $data->photo) }}" alt="brand">
+                <div class="single-partner">
+                    <img src="{{ asset('assets/images/partner/' . $data->photo) }}" alt="partner">
                 </div>
             </div>
             @endforeach
 
 
         </div>
-    </div>
+    </div> --}}
 
 </section>
 <!-- Brand Section Completed -->

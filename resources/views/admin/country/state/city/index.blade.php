@@ -1,9 +1,4 @@
-@extends('layouts.unified')
-@php
-    $isDashboard = true;
-    $isAdmin = true;
-    $hideFooter = true;
-@endphp
+@extends('layouts.admin')
 
 @section('content')
 <input type="hidden" id="headerdata" value="{{ __('CITY') }}">
@@ -32,7 +27,7 @@
 					@include('includes.admin.form-success')
 
 					<div class="table-responsive">
-						<table id="muaadhtable" class="table table-hover dt-responsive" cellspacing="0" width="100%">
+						<table id="geniustable" class="table table-hover dt-responsive" cellspacing="0" width="100%">
 							<thead>
 								<tr>
 									<th>{{ __('State') }}</th>
@@ -115,7 +110,7 @@
 {{-- DATA TABLE --}}
 
 <script type="text/javascript">
-	var table = $('#muaadhtable').DataTable({
+	var table = $('#geniustable').DataTable({
 			   ordering: false,
                processing: true,
                serverSide: true,

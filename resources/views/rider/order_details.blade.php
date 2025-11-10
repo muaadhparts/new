@@ -1,4 +1,4 @@
-@extends('layouts.unified')
+@extends('layouts.front')
 @section('content')
     <div class="gs-user-panel-review wow-replaced" data-wow-delay=".1s">
         <div class="container">
@@ -8,12 +8,6 @@
                 @php
                     $order = $data->order;
                 @endphp
-
-                @if(!$order)
-                    <div class="alert alert-danger">
-                        {{ __('Order not found') }}
-                    </div>
-                @else
                 <!-- main content -->
                 <div class="gs-dashboard-user-content-wrapper gs-dashboard-outlet">
                     <div class="ud-page-title-box gap-4">
@@ -141,7 +135,9 @@
                                                 </td>
                                                 <td data-label="{{ __('Name') }}">
                                                   <span class="title">
-                                                    <x-product-name :item="$product" :vendor-id="$product['item']['user_id']" />
+                                                    {{ mb_strlen($product['item']['name'], 'UTF-8') > 50
+                                                    ? mb_substr($product['item']['name'], 0, 50, 'UTF-8') . '...'
+                                                    : $product['item']['name'] }}
                                                   </span>
 
                                                 </td>
@@ -230,7 +226,6 @@
                     <!-- account information -->
 
                 </div>
-                @endif
             </div>
         </div>
     </div>

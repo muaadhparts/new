@@ -1,4 +1,4 @@
-@extends('layouts.unified')
+@extends('layouts.vendor')
 @php
     $isDashboard = true;
     $isVendor = true;

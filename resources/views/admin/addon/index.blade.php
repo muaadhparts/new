@@ -1,9 +1,4 @@
-@extends('layouts.unified')
-@php
-    $isDashboard = true;
-    $isAdmin = true;
-    $hideFooter = true;
-@endphp 
+@extends('layouts.admin') 
 
 @section('content')  
 
@@ -31,7 +26,7 @@
 									<div class="mr-table allproduct">
                         				@include('alerts.form-success')  
 										<div class="table-responsive">
-												<table id="muaadhtable" class="table table-hover dt-responsive" cellspacing="0" width="100%">
+												<table id="geniustable" class="table table-hover dt-responsive" cellspacing="0" width="100%">
 													<thead>
 														<tr>
                                                             <th class="pl-2">{{ __("Name") }}</th>
@@ -87,7 +82,7 @@
 (function($) {
 		"use strict";
 
-		$('#muaadhtable').DataTable({
+		$('#geniustable').DataTable({
 			ordering: false,
 			processing: true,
 			serverSide: true,

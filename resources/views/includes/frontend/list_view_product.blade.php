@@ -1,720 +1,119 @@
-@php
-    /** @var \App\Models\Product $product*/
-    /** @var \App\Models\MerchantProduct|null $mp */
-
-    // Use passed merchant product data or fallback to search
-    if (!isset($mp)) {
-        $merchant = $product->merchantProducts()
-            ->where('status', 1)
-            ->whereHas('user', function ($user) {
-                $user->where('is_vendor', 2);
-            })
-            ->orderByRaw('CASE WHEN (stock IS NULL OR stock = 0) THEN 1 ELSE 0 END ASC')
-            ->orderBy('price')
-            ->first();
-    } else {
-        $merchant = $mp;
-    }
-
-    $vendorId  = optional($merchant)->user_id;
-    $hasVendor = $vendorId > 0;
-
-    // Calculate discount percentage
-    $off = 0;
-    if ($merchant && $merchant->previous_price > 0 && $merchant->price > 0) {
-        $off = round((($merchant->previous_price - $merchant->price) * 100) / $merchant->previous_price);
-    }
-
-    // Details URL
-    $detailsUrl = isset($merchant) ? route('front.product', ['slug' => $product->slug, 'vendor_id' => $merchant->user_id, 'merchant_product_id' => $merchant->id]) : 'javascript:;';
-
-    $stockQty = optional($merchant)->stock;
-    $inStock = $stockQty > 0;
-@endphp
-
-<div class="col-12">
-  <div class="product-list-card card shadow-sm mb-3">
-    <div class="row g-0">
-
-      {{-- Product Image Section --}}
-      <div class="col-md-3 col-lg-2">
-        <div class="product-list-image position-relative">
-
-          {{-- Discount Badge --}}
-          @if ($off > 0)
-            <span class="badge bg-danger position-absolute" style="top: 0.5rem; left: 0.5rem; z-index: 3; border-radius: 2rem; font-weight: 700; font-size: 0.75rem; padding: 0.35rem 0.75rem;">
-              -{{ $off }}%
-            </span>
-          @endif
-
-          {{-- Product Image --}}
-          <a href="{{ $detailsUrl }}" class="d-block h-100">
-            <img src="{{ \Illuminate\Support\Facades\Storage::url($product->photo) ?? asset('assets/images/noimage.png') }}"
-                 alt="{{ $product->name }}"
-                 class="product-list-img"
-                 loading="lazy">
-          </a>
-        </div>
-      </div>
-
-      {{-- Product Details Section --}}
-      <div class="col-md-6 col-lg-7">
-        <div class="card-body">
-
-          {{-- Quality Brand Badge (Outside Image) --}}
-          @if ($merchant && $merchant->qualityBrand)
-            <div class="quality-brand-mini mb-2">
-              @if ($merchant->qualityBrand->logo_url)
-                <img src="{{ $merchant->qualityBrand->logo_url }}" alt="{{ $merchant->qualityBrand->display_name }}">
-              @endif
-              <span>{{ $merchant->qualityBrand->display_name }}</span>
-            </div>
-          @endif
-
-          {{-- Product Title --}}
-          <h5 class="card-title mb-2 product-list-title">
-            <a href="{{ $detailsUrl }}" class="text-decoration-none text-dark fw-bold" title="{{ strip_tags($product->name) }}">
-              {{ app()->getLocale() == 'ar' && !empty($product->label_ar) ? $product->label_ar : $product->name }}
-            </a>
-          </h5>
-
-          {{-- Product SKU --}}
-          <div class="mb-2">
-            <small class="text-muted">
-              <a href="{{ $detailsUrl }}" class="text-decoration-none text-muted">
-                @lang('SKU'): {{ $product->sku ?? '-' }}
-              </a>
-            </small>
-          </div>
-
-          {{-- Ratings --}}
-          <div class="mb-2">
-            <i class="fas fa-star text-warning"></i>
-            <span class="text-muted small">
-              {{ number_format($product->ratings_avg_rating, 1) }} ({{ $product->ratings_count }} @lang('reviews'))
-            </span>
-          </div>
-
-          {{-- Product Information Grid --}}
-          <div class="row g-2 mb-2 small">
-
-            {{-- Merchant Info --}}
-            @if($merchant && $merchant->user)
-              <div class="col-12">
-                <i class="fas fa-store text-primary me-1"></i>
-                <strong>@lang('Sold by:')</strong>
-                <span class="text-primary">{{ Str::limit($merchant->user->shop_name ?? $merchant->user->name, 30) }}</span>
-              </div>
+<div class="col-sm-6 col-md-6 col-lg-12 ">
+    <div class="single-product-list-view">
+        <div class="img-wrapper">
+            @if ($product->offPercentage() && round($product->offPercentage()) > 0)
+                <span class="product-badge">-{{ round($product->offPercentage()) }}%</span>
             @endif
 
-            {{-- Brand --}}
-            @if($product->brand)
-              <div class="col-sm-6">
-                <i class="fas fa-tag text-muted me-1"></i>
-                <strong>@lang('Brand:')</strong>
-                <span>{{ Str::ucfirst($product->brand->name) }}</span>
-              </div>
-            @endif
 
-            {{-- Stock Availability --}}
-            <div class="col-sm-6">
-              <i class="fas fa-box text-muted me-1"></i>
-              <strong>@lang('Availability:')</strong>
-              <span class="badge {{ $inStock ? 'bg-success' : 'bg-warning' }} ms-1">
-                {{ $inStock ? __('In Stock') . ' (' . $stockQty . ')' : __('Out of Stock') }}
-              </span>
-            </div>
-
-            {{-- Weight --}}
-            @if($product->weight)
-              <div class="col-sm-6">
-                <i class="fas fa-weight text-muted me-1"></i>
-                <strong>@lang('Weight, kg:')</strong>
-                <span>{{ $product->weight }}</span>
-              </div>
-            @endif
-
-            {{-- Processing Time --}}
-            <div class="col-sm-6">
-              <i class="fas fa-clock text-muted me-1"></i>
-              <strong>@lang('Processing:')</strong>
-              <span>@lang('2-3 days')</span>
-            </div>
-
-            {{-- Compatibility --}}
-            <div class="col-12">
-              {{-- <livewire:compatibility :sku="$product->sku" wire:key="$product->sku" /> --}}
-            </div>
-          </div>
-
-          {{-- Quick Actions (Mobile Only) --}}
-          <div class="d-md-none d-flex gap-2 mt-3">
-            <a href="{{ $detailsUrl }}" class="btn btn-sm btn-outline-primary flex-fill">
-              <i class="fas fa-eye me-1"></i>
-              @lang('View')
-            </a>
-
-            {{-- Wishlist Button (Mobile) --}}
             @if (Auth::check())
-              <a href="javascript:;" class="wishlist btn btn-sm {{ isset($merchant) ? (merchantWishlistCheck($merchant->id) ? 'btn-danger' : 'btn-outline-danger') : (wishlistCheck($product->id) ? 'btn-danger' : 'btn-outline-danger') }}"
-                 data-href="{{ isset($merchant) ? route('merchant.wishlist.add', $merchant->id) : 'javascript:;' }}"
-                 title="@lang('Add to Wishlist')">
-                <i class="fas fa-heart"></i>
-              </a>
-            @else
-              <a href="{{ route('user.login') }}" class="btn btn-sm btn-outline-danger" title="@lang('Login to Add Wishlist')">
-                <i class="far fa-heart"></i>
-              </a>
-            @endif
 
-            @if ($product->type != 'Listing')
-              <a href="javascript:;" class="compare_product btn btn-sm btn-outline-secondary"
-                 data-href="{{ isset($merchant) ? route('merchant.compare.add', $merchant->id) : 'javascript:;' }}"
-                 title="@lang('Compare')">
-                <i class="fas fa-balance-scale {{ isset($merchant) ? (merchantCompareCheck($merchant->id) ? 'text-primary' : '') : '' }}"></i>
-              </a>
+                <a href="javascript" class="wishlist" data-href="{{ route('user-wishlist-add', $product->id) }}">
+                    <div class="add-to-wishlist-btn {{ wishlistCheck($product->id) ? 'active' : '' }}">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                            fill="none">
+                            <path fill-rule="evenodd" clip-rule="evenodd"
+                                d="M11.9932 5.13581C9.9938 2.7984 6.65975 2.16964 4.15469 4.31001C1.64964 6.45038 1.29697 10.029 3.2642 12.5604C4.89982 14.6651 9.84977 19.1041 11.4721 20.5408C11.6536 20.7016 11.7444 20.7819 11.8502 20.8135C11.9426 20.8411 12.0437 20.8411 12.1361 20.8135C12.2419 20.7819 12.3327 20.7016 12.5142 20.5408C14.1365 19.1041 19.0865 14.6651 20.7221 12.5604C22.6893 10.029 22.3797 6.42787 19.8316 4.31001C17.2835 2.19216 13.9925 2.7984 11.9932 5.13581Z"
+                                stroke="#030712" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                        </svg>
+                    </div>
+                </a>
+
+            @else
+                <a href="{{ route('user.login') }}">
+                    <div class="add-to-wishlist-btn">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                            fill="none">
+                            <path fill-rule="evenodd" clip-rule="evenodd"
+                                d="M11.9932 5.13581C9.9938 2.7984 6.65975 2.16964 4.15469 4.31001C1.64964 6.45038 1.29697 10.029 3.2642 12.5604C4.89982 14.6651 9.84977 19.1041 11.4721 20.5408C11.6536 20.7016 11.7444 20.7819 11.8502 20.8135C11.9426 20.8411 12.0437 20.8411 12.1361 20.8135C12.2419 20.7819 12.3327 20.7016 12.5142 20.5408C14.1365 19.1041 19.0865 14.6651 20.7221 12.5604C22.6893 10.029 22.3797 6.42787 19.8316 4.31001C17.2835 2.19216 13.9925 2.7984 11.9932 5.13581Z"
+                                stroke="#030712" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                        </svg>
+                    </div>
+                </a>
             @endif
-          </div>
+            <img class="product-img"
+                src="{{ $product->thumbnail ? asset('assets/images/thumbnails/' . $product->thumbnail) : asset('assets/images/noimage.png') }}"
+                alt="product img">
+
         </div>
-      </div>
+        <div class="content-wrapper">
+            <h4 class="product-title">
+                <a href="{{ route('front.product', $product->slug) }}"> {{ $product->showName() }}</a>
+            </h4>
 
-      {{-- Price & Actions Section --}}
-      <div class="col-md-3 col-lg-3">
-        <div class="card-body d-flex flex-column h-100 justify-content-between align-items-center text-center border-start">
-
-          {{-- Quality Brand Logo --}}
-          @if($merchant && $merchant->qualityBrand && $merchant->qualityBrand->logo)
-            <div class="mb-3">
-              <img src="{{ \Illuminate\Support\Facades\Storage::url($merchant->qualityBrand->logo) }}"
-                   width="80"
-                   height="80"
-                   class="img-fluid"
-                   style="object-fit: contain;"
-                   alt="{{ $merchant->qualityBrand->display_name }}">
-              <p class="small text-muted mb-0 mt-1">
-                {{ app()->getLocale() == 'ar' && $merchant->qualityBrand->name_ar ? $merchant->qualityBrand->name_ar : $merchant->qualityBrand->name_en }}
-              </p>
-            </div>
-          @endif
-
-          {{-- Price --}}
-          @if($merchant)
-            <div class="mb-3">
-              <div class="h4 text-primary fw-bold mb-1">
-                {{ method_exists($merchant,'showPrice') ? $merchant->showPrice() : \App\Models\Product::convertPrice($merchant->price) }}
-              </div>
-              @if($merchant->previous_price > 0)
-                <div class="text-muted text-decoration-line-through small">
-                  {{ \App\Models\Product::convertPrice($merchant->previous_price) }}
-                </div>
-              @endif
-            </div>
-          @endif
-
-          {{-- Action Buttons --}}
-          <div class="w-100">
-
-            {{-- Quick Actions (Desktop) --}}
-            <div class="d-none d-md-flex gap-2 mb-2 justify-content-center">
-              <a href="{{ $detailsUrl }}" class="btn btn-sm btn-outline-primary" title="@lang('View Details')">
-                <i class="fas fa-eye"></i>
-              </a>
-
-              {{-- Wishlist Button --}}
-              @if (Auth::check())
-                <a href="javascript:;" class="wishlist btn btn-sm {{ isset($merchant) ? (merchantWishlistCheck($merchant->id) ? 'btn-danger' : 'btn-outline-danger') : (wishlistCheck($product->id) ? 'btn-danger' : 'btn-outline-danger') }}"
-                   data-href="{{ isset($merchant) ? route('merchant.wishlist.add', $merchant->id) : 'javascript:;' }}"
-                   title="@lang('Add to Wishlist')">
-                  <i class="fas fa-heart"></i>
-                </a>
-              @else
-                <a href="{{ route('user.login') }}" class="btn btn-sm btn-outline-danger" title="@lang('Login to Add Wishlist')">
-                  <i class="far fa-heart"></i>
-                </a>
-              @endif
-
-              @if ($product->type != 'Listing')
-                <a href="javascript:;" class="compare_product btn btn-sm btn-outline-secondary"
-                   data-href="{{ isset($merchant) ? route('merchant.compare.add', $merchant->id) : 'javascript:;' }}"
-                   title="@lang('Compare')">
-                  <i class="fas fa-balance-scale {{ isset($merchant) ? (merchantCompareCheck($merchant->id) ? 'text-primary' : '') : '' }}"></i>
-                </a>
-              @endif
+            <div class="price-wrapper">
+                <h4>{{ $product->showPrice() }}</h4>
+                <h4><del>{{ $product->showPreviousPrice() }}</del></h4>
             </div>
 
-            {{-- Add to Cart Button --}}
-            @if ($product->product_type == 'affiliate')
-              <a href="{{ $product->affiliate_link }}" class="btn btn-primary w-100" target="_blank">
-                <i class="fas fa-external-link-alt me-1"></i>
-                @lang('View Product')
-              </a>
-            @else
-              @if (!$hasVendor || !$inStock)
-                <button class="btn btn-outline-secondary w-100" disabled>
-                  <i class="fas fa-times-circle me-1"></i>
-                  {{ __('Out of Stock') }}
-                </button>
-              @else
+            <div class="ratings-wrapper">
+                <svg xmlns="http://www.w3.org/2000/svg" width="17" height="16" viewBox="0 0 17 16"
+                    fill="none">
+                    <path
+                        d="M8.5 0.5L10.4084 6.37336L16.584 6.37336L11.5878 10.0033L13.4962 15.8766L8.5 12.2467L3.50383 15.8766L5.41219 10.0033L0.416019 6.37336L6.59163 6.37336L8.5 0.5Z"
+                        fill="#EEAE0B" />
+                </svg>
+
+                <span class="rating-title">{{ number_format($product->ratings_avg_rating, 1) }}
+                    ({{ $product->ratings_count }})</span>
+            </div>
+
+            <div class="add-to-cart">
                 @if ($product->type != 'Listing')
-                  <a {{ $product->cross_products ? 'data-bs-target=#exampleModal' : '' }}
-                     href="javascript:;"
-                     data-href="{{ isset($merchant) ? route('merchant.cart.add', $merchant->id) : 'javascript:;' }}"
-                     data-cross-href="{{ route('front.show.cross.product', $product->id) }}"
-                     data-merchant-product="{{ $merchant->id ?? '' }}"
-                     data-product="{{ $product->id }}"
-                     class="btn btn-primary w-100 add_cart_click {{ $product->cross_products ? 'view_cross_product' : '' }}">
-                    <i class="fas fa-shopping-cart me-1"></i>
-                    @lang('Add To Cart')
-                  </a>
+                    <a href="javascript:;" class="compare_product" data-href="{{ route('product.compare.add', $product->id) }}">
+                        <div class="compare">
+                            <svg class="icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                                viewBox="0 0 24 24" fill="none">
+                                <path
+                                    d="M18.1777 8C23.2737 8 23.2737 16 18.1777 16C13.0827 16 11.0447 8 5.43875 8C0.85375 8 0.85375 16 5.43875 16C11.0447 16 13.0828 8 18.1788 8H18.1777Z"
+                                    stroke="#030712" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                            </svg>
+                        </div>
+                    </a>
                 @endif
-              @endif
-            @endif
-          </div>
+
+                @if ($product->type != 'Listing')
+                <a href="{{ route('front.product', $product->slug) }}">
+                    <div class="details">
+                        <svg class="icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                            viewBox="0 0 24 24" fill="none">
+                            <path
+                                d="M2.42012 12.7132C2.28394 12.4975 2.21584 12.3897 2.17772 12.2234C2.14909 12.0985 2.14909 11.9015 2.17772 11.7766C2.21584 11.6103 2.28394 11.5025 2.42012 11.2868C3.54553 9.50484 6.8954 5 12.0004 5C17.1054 5 20.4553 9.50484 21.5807 11.2868C21.7169 11.5025 21.785 11.6103 21.8231 11.7766C21.8517 11.9015 21.8517 12.0985 21.8231 12.2234C21.785 12.3897 21.7169 12.4975 21.5807 12.7132C20.4553 14.4952 17.1054 19 12.0004 19C6.8954 19 3.54553 14.4952 2.42012 12.7132Z"
+                                stroke="#030712" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                            <path
+                                d="M12.0004 15C13.6573 15 15.0004 13.6569 15.0004 12C15.0004 10.3431 13.6573 9 12.0004 9C10.3435 9 9.0004 10.3431 9.0004 12C9.0004 13.6569 10.3435 15 12.0004 15Z"
+                                stroke="#030712" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                        </svg>
+                    </div>
+                </a>
+                @endif
+
+                @if ($product->product_type == 'affiliate')
+                    <a href="javascript:;" data-href="{{ $product->affiliate_link }}" class="add_to_cart_button">
+                        <div class="add-cart">
+                            @lang('Add To Cart')
+                        </div>
+                    </a>
+                @else
+                    @if ($product->emptyStock())
+                        <div class="add-cart">
+                            {{ __('Out of Stock') }}
+                        </div>
+                    @else
+                        @if ($product->type != 'Listing')
+                            <a {{ $product->cross_products ? 'data-bs-target=#exampleModal' : '' }} href="javascript:;"
+                                data-href="{{ route('product.cart.add', $product->id) }}"
+                                data-cross-href="{{ route('front.show.cross.product', $product->id) }}"
+                                class="add_cart_click {{ $product->cross_products ? 'view_cross_product' : '' }}">
+                                <div class="add-cart">
+                                    @lang('Add To Cart')
+                                </div>
+                            </a>
+                        @endif
+                    @endif
+                @endif
+
+            </div>
         </div>
-      </div>
     </div>
-  </div>
 </div>
-
-<style>
-/* ========================================
-   ENHANCED LIST VIEW PRODUCT CARD
-   ======================================== */
-.product-list-card {
-    border-radius: 16px;
-    border: 2px solid transparent;
-    background: #fff;
-    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    overflow: hidden;
-    position: relative;
-}
-
-.product-list-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    border-radius: 16px;
-    padding: 2px;
-    background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 100%);
-    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-    -webkit-mask-composite: xor;
-    mask-composite: exclude;
-    opacity: 1;
-    transition: opacity 0.4s ease;
-}
-
-.product-list-card:hover::before {
-    opacity: 0;
-}
-
-.product-list-card::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    border-radius: 16px;
-    padding: 2px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-    -webkit-mask-composite: xor;
-    mask-composite: exclude;
-    opacity: 0;
-    transition: opacity 0.4s ease;
-}
-
-.product-list-card:hover::after {
-    opacity: 1;
-}
-
-.product-list-card:hover {
-    box-shadow: 0 20px 60px rgba(102, 126, 234, 0.15);
-    transform: translateY(-4px);
-}
-
-/* Product Image Section */
-.product-list-image {
-    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-    min-height: 200px;
-    overflow: hidden;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 1.5rem;
-    position: relative;
-}
-
-.product-list-image::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(135deg, rgba(102, 126, 234, 0.03) 0%, rgba(118, 75, 162, 0.03) 100%);
-    opacity: 0;
-    transition: opacity 0.4s ease;
-}
-
-.product-list-card:hover .product-list-image::before {
-    opacity: 1;
-}
-
-.product-list-img {
-    width: 100%;
-    height: 100%;
-    max-height: 280px;
-    object-fit: contain;
-    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-    filter: brightness(1);
-}
-
-.product-list-card:hover .product-list-img {
-    transform: scale(1.08) translateY(-4px);
-    filter: brightness(1.05);
-}
-
-/* Quality Brand Mini Badge */
-.quality-brand-mini {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.5rem 1rem;
-    background: linear-gradient(135deg, rgba(102, 126, 234, 0.08), rgba(118, 75, 162, 0.08));
-    border: 1.5px solid rgba(102, 126, 234, 0.25);
-    border-radius: 50px;
-    font-size: 0.75rem;
-    font-weight: 700;
-    color: #667eea;
-    transition: all 0.3s ease;
-    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.1);
-}
-
-.quality-brand-mini:hover {
-    background: linear-gradient(135deg, rgba(102, 126, 234, 0.15), rgba(118, 75, 162, 0.15));
-    border-color: rgba(102, 126, 234, 0.4);
-    transform: translateY(-1px);
-}
-
-.quality-brand-mini img {
-    width: 20px;
-    height: 20px;
-    object-fit: contain;
-    border-radius: 50%;
-    background: #fff;
-    padding: 2px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-/* Product List Title - Multi-line */
-.product-list-title {
-    display: -webkit-box;
-    -webkit-line-clamp: 3;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    min-height: 3.5rem;
-    max-height: 5rem;
-    line-height: 1.5;
-    word-break: break-word;
-    hyphens: auto;
-    margin-bottom: 0.75rem;
-}
-
-.product-list-title a {
-    display: -webkit-box;
-    -webkit-line-clamp: 3;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-    color: #1e293b;
-    font-weight: 700;
-    transition: all 0.3s ease;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    opacity: 0;
-}
-
-.product-list-title a {
-    opacity: 1;
-    -webkit-text-fill-color: #1e293b;
-}
-
-.product-list-card:hover .product-list-title a {
-    -webkit-text-fill-color: transparent;
-}
-
-/* ========================================
-   RESPONSIVE DESIGN
-   ======================================== */
-
-/* Tablets and Small Laptops */
-@media (max-width: 991px) {
-    .product-list-card {
-        border-radius: 14px;
-    }
-
-    .product-list-image {
-        min-height: 220px;
-        padding: 1.25rem;
-    }
-
-    .product-list-img {
-        max-height: 240px;
-    }
-}
-
-/* Mobile Devices */
-@media (max-width: 767px) {
-    .product-list-card {
-        border-radius: 12px;
-        margin-bottom: 1rem !important;
-    }
-
-    .product-list-card::before,
-    .product-list-card::after {
-        border-radius: 12px;
-    }
-
-    .product-list-image {
-        min-height: 200px;
-        padding: 1rem;
-    }
-
-    .product-list-img {
-        max-height: 200px;
-    }
-
-    .product-list-card .card-body {
-        padding: 1rem !important;
-    }
-
-    .product-list-card .card-title {
-        font-size: 0.95rem;
-    }
-
-    .product-list-title {
-        min-height: 2.8rem;
-        max-height: 3.8rem;
-        font-size: 0.9rem;
-        line-height: 1.4;
-        margin-bottom: 0.5rem;
-    }
-
-    .quality-brand-mini {
-        font-size: 0.7rem;
-        padding: 0.35rem 0.75rem;
-    }
-
-    .quality-brand-mini img {
-        width: 16px;
-        height: 16px;
-    }
-
-    /* Mobile Price Section */
-    .product-list-card .h4 {
-        font-size: 1.25rem !important;
-    }
-
-    /* Mobile Buttons */
-    .product-list-card .btn-sm {
-        padding: 0.5rem 0.75rem;
-        font-size: 0.875rem;
-    }
-
-    .product-list-card .btn {
-        font-size: 0.9rem;
-        padding: 0.6rem 1rem;
-    }
-}
-
-/* Small Mobile Devices */
-@media (max-width: 575px) {
-    .product-list-card {
-        border-radius: 10px;
-    }
-
-    .product-list-card::before,
-    .product-list-card::after {
-        border-radius: 10px;
-    }
-
-    .product-list-image {
-        min-height: 180px;
-        padding: 0.75rem;
-    }
-
-    .product-list-img {
-        max-height: 180px;
-    }
-
-    .product-list-title {
-        font-size: 0.875rem;
-        min-height: 2.5rem;
-        max-height: 3.5rem;
-    }
-
-    .quality-brand-mini {
-        font-size: 0.65rem;
-        padding: 0.3rem 0.6rem;
-    }
-
-    .quality-brand-mini img {
-        width: 14px;
-        height: 14px;
-    }
-
-    .product-list-card .small,
-    .product-list-card small {
-        font-size: 0.8rem !important;
-    }
-}
-
-/* Desktop */
-@media (min-width: 768px) {
-    .product-list-image {
-        height: 100%;
-        min-height: 280px;
-    }
-
-    .product-list-card .border-start {
-        border-left: 2px solid #e2e8f0 !important;
-    }
-
-    .product-list-card:hover .border-start {
-        border-left-color: rgba(102, 126, 234, 0.2) !important;
-    }
-}
-
-/* Large Desktop */
-@media (min-width: 1200px) {
-    .product-list-image {
-        min-height: 300px;
-    }
-
-    .product-list-img {
-        max-height: 300px;
-    }
-}
-
-/* ========================================
-   ENHANCED BUTTONS & BADGES
-   ======================================== */
-
-/* Discount Badge */
-.product-list-card .badge.bg-danger {
-    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%) !important;
-    border: none;
-    box-shadow: 0 4px 12px rgba(245, 87, 108, 0.3);
-    font-weight: 800;
-    letter-spacing: 0.5px;
-}
-
-/* Stock Badge */
-.product-list-card .badge.bg-success {
-    background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%) !important;
-    color: #0f172a !important;
-    font-weight: 700;
-}
-
-.product-list-card .badge.bg-warning {
-    background: linear-gradient(135deg, #fa709a 0%, #fee140 100%) !important;
-    color: #0f172a !important;
-    font-weight: 700;
-}
-
-/* Button Enhancements */
-.product-list-card .btn-primary {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    border: none;
-    font-weight: 600;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
-}
-
-.product-list-card .btn-primary:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.35);
-}
-
-.product-list-card .btn-outline-primary {
-    border: 2px solid #667eea;
-    color: #667eea;
-    font-weight: 600;
-    transition: all 0.3s ease;
-}
-
-.product-list-card .btn-outline-primary:hover {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    border-color: transparent;
-    color: #fff;
-    transform: translateY(-1px);
-}
-
-.product-list-card .btn-outline-danger {
-    border: 2px solid #f5576c;
-    color: #f5576c;
-    transition: all 0.3s ease;
-}
-
-.product-list-card .btn-outline-danger:hover,
-.product-list-card .btn-danger {
-    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-    border-color: transparent;
-    color: #fff;
-    transform: translateY(-1px);
-}
-
-.product-list-card .btn-outline-secondary {
-    border: 2px solid #94a3b8;
-    color: #64748b;
-    transition: all 0.3s ease;
-}
-
-.product-list-card .btn-outline-secondary:hover {
-    background: #64748b;
-    border-color: #64748b;
-    color: #fff;
-    transform: translateY(-1px);
-}
-
-/* Rating Stars */
-.product-list-card .fa-star {
-    filter: drop-shadow(0 2px 4px rgba(251, 191, 36, 0.3));
-}
-
-/* Info Icons */
-.product-list-card .fa-store,
-.product-list-card .fa-tag,
-.product-list-card .fa-box,
-.product-list-card .fa-weight,
-.product-list-card .fa-clock {
-    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
-}
-
-/* Price Styling */
-.product-list-card .h4.text-primary {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    font-weight: 800;
-    letter-spacing: -0.5px;
-}
-
-/* Card Body Border */
-.product-list-card .card-body {
-    position: relative;
-    z-index: 1;
-}
-
-/* Smooth Transitions */
-.product-list-card * {
-    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-}
-</style>

@@ -134,12 +134,12 @@
                                                 <div class="col">
                                                     <span
                                                         class="d-inline-block px-3 font-600 text-uppercase text-secondary pb-2">{{
-                                                        $category->localized_name }}</span>
+                                                        $category->name }}</span>
                                                     <ul>
                                                         @if($category->subs->count() > 0)
                                                         @foreach ($category->subs as $subcategory)
                                                         <li><a class="dropdown-item"
-                                                                href="{{route('front.category', [$category->slug, $subcategory->slug])}}{{!empty(request()->input('search')) ? '?search='.request()->input('search') : ''}}">{{$subcategory->localized_name}}</a>
+                                                                href="{{route('front.category', [$category->slug, $subcategory->slug])}}{{!empty(request()->input('search')) ? '?search='.request()->input('search') : ''}}">{{$subcategory->name}}</a>
                                                         </li>
                                                         @endforeach
                                                         @endif
@@ -305,7 +305,7 @@
                                             </li>
                                         </ul>
                                         <div class="tab-content" id="menu-and-categoryContent">
-                                            <div class="tab-pane fade show active MUAADH-Tabs-panel MUAADH-Tabs-panel--description"
+                                            <div class="tab-pane fade show active woocommerce-Tabs-panel woocommerce-Tabs-panel--description"
                                                 id="pills-push-menu" role="tabpanel"
                                                 aria-labelledby="pills-push-menu-tab">
                                                 <div class="push-navbar">
@@ -351,7 +351,7 @@
                                                     <ul class="menu">
                                                         @foreach ($categories as $category)
                                                         <li class="menu-item-has-children"><a
-                                                                href="{{route('front.category',$category->slug)}}">{{$category->localized_name}}</a>
+                                                                href="{{route('front.category',$category->slug)}}">{{$category->name}}</a>
                                                         </li>
                                                         @endforeach
                                                     </ul>

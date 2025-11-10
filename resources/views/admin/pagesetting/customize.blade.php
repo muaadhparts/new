@@ -1,9 +1,4 @@
-@extends('layouts.unified')
-@php
-    $isDashboard = true;
-    $isAdmin = true;
-    $hideFooter = true;
-@endphp
+@extends('layouts.admin')
 
 @section('content')
 
@@ -37,7 +32,7 @@
             <div class="gocover"
               style="background: url({{asset('assets/images/'.$gs->admin_loader)}}) no-repeat scroll center center rgba(45, 45, 45, 0.5);">
             </div>
-            <form id="muaadhform" action="{{ route('admin-ps-homeupdate') }}" method="POST"
+            <form id="geniusform" action="{{ route('admin-ps-homeupdate') }}" method="POST"
               enctype="multipart/form-data">
               @csrf
 
@@ -101,9 +96,9 @@
                 <div class="col-lg-2"></div>
 
                 <div class="col-lg-4 d-flex justify-content-between">
-                  <label class="control-label" for="brand">{{ __('Brand') }} *</label>
+                  <label class="control-label" for="partner">{{ __('Brand') }} *</label>
                   <label class="switch">
-                    <input type="checkbox" name="brand" value="1" {{ $data->brand == 1 ? "checked" : "" }}>
+                    <input type="checkbox" name="partner" value="1" {{ $data->partner == 1 ? "checked" : "" }}>
                     <span class="slider round"></span>
                   </label>
                 </div>

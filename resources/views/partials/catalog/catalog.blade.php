@@ -12,13 +12,13 @@
             method="GET">
 
             <div id="woocommerce_product_categories-4"
-                class="widget MUAADH widget_product_categories widget-toggle">
+                class="widget woocommerce widget_product_categories widget-toggle">
                 <h2 class="widget-title">{{ __('Product categories') }}</h2>
                 <ul class="product-categories">
                     @foreach ($categories as $category)
                         <li class="cat-item cat-parent">
                             <a href="{{route('front.category', $category->slug)}}{{!empty(request()->input('search')) ? '?search=' . request()->input('search') : ''}}"
-                                class="category-link" id="cat">{{ $category->localized_name }} <span class="count"></span></a>
+                                class="category-link" id="cat">{{ $category->name }} <span class="count"></span></a>
 
                             @if($category->subs_count > 0)
                                 <span class="has-child"></span>
@@ -26,7 +26,7 @@
                                     @foreach ($category->subs()->get() as $subcategory)
                                         <li class="cat-item cat-parent">
                                             <a href="{{route('front.category', [$category->slug, $subcategory->slug])}}{{!empty(request()->input('search')) ? '?search=' . request()->input('search') : ''}}"
-                                                class="category-link {{ isset($subcat) ? ($subcat->id == $subcategory->id ? 'active' : '') : '' }}">{{$subcategory->localized_name}}
+                                                class="category-link {{ isset($subcat) ? ($subcat->id == $subcategory->id ? 'active' : '') : '' }}">{{$subcategory->name}}
                                                 <span class="count"></span></a>
 
                                             @if($subcategory->childs->count() != 0)
@@ -36,7 +36,7 @@
                                                         <li class="cat-item ">
                                                             <a href="{{route('front.category', [$category->slug, $subcategory->slug, $childelement->slug])}}{{!empty(request()->input('search')) ? '?search=' . request()->input('search') : ''}}"
                                                                 class="category-link {{ isset($childcat) ? ($childcat->id == $childelement->id ? 'active' : '') : '' }}">
-                                                                {{$childelement->localized_name}} <span class="count"></span></a>
+                                                                {{$childelement->name}} <span class="count"></span></a>
                                                         </li>
                                                     @endforeach
                                                 </ul>
@@ -83,7 +83,7 @@
                     @foreach ($cat->attributes as $key => $attr)
 
                         <div id="bigbazar-attributes-filter-{{$attr->name}}"
-                            class="widget MUAADH bigbazar-attributes-filter widget_layered_nav widget-toggle">
+                            class="widget woocommerce bigbazar-attributes-filter widget_layered_nav widget-toggle">
                             <h2 class="widget-title">{{$attr->name}}</h2>
                             <ul class="swatch-filter-pa_color">
                                 @if (!empty($attr->attribute_options))
@@ -104,7 +104,7 @@
                 @if (!empty($subcat) && !empty(json_decode($subcat->attributes, true)))
                     @foreach ($subcat->attributes as $key => $attr)
                         <div id="bigbazar-attributes-filter-{{$attr->name}}"
-                            class="widget MUAADH bigbazar-attributes-filter widget_layered_nav widget-toggle">
+                            class="widget woocommerce bigbazar-attributes-filter widget_layered_nav widget-toggle">
                             <h2 class="widget-title">{{$attr->name}}</h2>
                             <ul class="swatch-filter-pa_color">
                                 @if (!empty($attr->attribute_options))
@@ -125,7 +125,7 @@
                 @if (!empty($childcat) && !empty(json_decode($childcat->attributes, true)))
                     @foreach ($childcat->attributes as $key => $attr)
                         <div id="bigbazar-attributes-filter-{{$attr->name}}"
-                            class="widget MUAADH bigbazar-attributes-filter widget_layered_nav widget-toggle px-3">
+                            class="widget woocommerce bigbazar-attributes-filter widget_layered_nav widget-toggle px-3">
                             <h2 class="widget-title">{{$attr->name}}</h2>
                             <ul class="swatch-filter-pa_color">
                                 @if (!empty($attr->attribute_options))
@@ -168,16 +168,14 @@
                                         <div class="product type-product">
                                             <div class="product-wrapper">
                                                 <div class="product-image">
-                                                    <a href="{{ route('front.product', ['slug' => $prod['slug'], 'vendor_id' => $prod['user_id'], 'merchant_product_id' => $prod['id']]) }}"
-                                                        class="MUAADH-LoopProduct-link"><img
+                                                    <a href="{{ route('front.product', $prod['slug']) }}"
+                                                        class="woocommerce-LoopProduct-link"><img
                                                             src="{{ $prod['thumbnail'] ? asset('assets/images/thumbnails/' . $prod['thumbnail']) : asset('assets/images/noimage.png') }}"
                                                             alt="Product Image"></a>
                                                     <div class="wishlist-view">
                                                         <div class="quickview-button">
-                                                            <a class="quickview-btn quick-view"
-                                                                href="{{ route('front.product', ['slug' => $prod['slug'], 'vendor_id' => $prod['user_id'], 'merchant_product_id' => $prod['id']]) }}"
-                                                                data-url="{{ route('modal.quickview', ['id' => $prod['id']]) }}"
-                                                                data-user="{{ $prod['user_id'] ?? '' }}"
+                                                            <a class="quickview-btn"
+                                                                href="{{ route('front.product', $prod['slug']) }}"
                                                                 data-bs-toggle="tooltip" data-bs-placement="top" title=""
                                                                 data-bs-original-title="Quick View"
                                                                 aria-label="Quick View">{{ __('Quick View') }}</a>
@@ -192,7 +190,7 @@
                                                 </div>
                                                 <div class="product-info">
                                                     <h3 class="product-title"><a
-                                                            href="{{ route('front.product', ['slug' => $prod['slug'], 'vendor_id' => $prod['user_id'], 'merchant_product_id' => $prod['id']]) }}" ><x-product-name :product="$prod" :vendor-id="$prod['user_id']" :merchant-product-id="$prod['id']" target="_self" /></a>
+                                                            href="{{ route('front.product', $prod['slug']) }}">{{ $prod['name']  }}</a>
                                                     </h3>
                                                     <div class="product-price">
                                                         <div class="price">

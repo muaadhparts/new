@@ -1,4 +1,4 @@
-@extends('layouts.unified')
+@extends('layouts.front')
 
 @section('content')
 <section class="gs-breadcrumb-section bg-class"
@@ -21,29 +21,18 @@
 
             <div class="col-12 col-lg-12 col-xl-12 gs-main-blog-wrapper">
                 <div class=" product-nav-wrapper">
-                    <h5>@lang('Total Products Found:') <span id="wishlist-count">{{ $wishlistItems->count() }}</span></h5>
+                    <h5>@lang('Total Products Found:') <span id="wishlist-count">{{ $wishlists->count() }}</span></h5>
                 </div>
-                @if($wishlistItems->count() > 0)
+                @if($wishlists->count() > 0) 
                 <div class="row gy-4 mt-20">
-                    @foreach ($wishlistItems as $wishlistItem)
-                        @php
-                            // Create a product object that includes vendor-specific data
-                            $product = $wishlistItem->product;
-                            if ($wishlistItem->effective_merchant_product) {
-                                $product->vendor_user_id = $wishlistItem->effective_merchant_product->user_id;
-                                $product->price = $wishlistItem->effective_merchant_product->price;
-                                $product->previous_price = $wishlistItem->effective_merchant_product->previous_price;
-                                $product->stock = $wishlistItem->effective_merchant_product->stock;
-                                $product->wishlist_item_id = $wishlistItem->id;
-                            }
-                        @endphp
-                        @include('includes.frontend.home_product', [
-                            'class' => 'col-sm-6 col-md-6 col-lg-4 col-xl-3',
-                            'wishlist' => true,
-                        ])
+                    @foreach ($wishlists as $product)
+                    @include('includes.frontend.home_product', [
+                    'class' => 'col-sm-6 col-md-6 col-lg-4 col-xl-3',
+                    'wishlist' => true,
+                    ])
                     @endforeach
                 </div>
-                {{ $wishlistItems->links('includes.frontend.pagination') }}
+                {{ $wishlists->links('includes.frontend.pagination') }}
                 
                 @else
                 <div class="product-nav-wrapper d-flex justify-content-center mt-4">

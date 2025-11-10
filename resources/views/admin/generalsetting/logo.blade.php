@@ -1,9 +1,4 @@
-@extends('layouts.unified')
-@php
-    $isDashboard = true;
-    $isAdmin = true;
-    $hideFooter = true;
-@endphp
+@extends('layouts.admin')
 @section('content')
 
           <div class="content-area">
@@ -37,7 +32,7 @@
                             </h4>
                         </div>
 
-                        <form class="uplogo-form" id="muaadhform" action="{{ route('admin-gs-update') }}" method="POST" enctype="multipart/form-data">
+                        <form class="uplogo-form" id="geniusform" action="{{ route('admin-gs-update') }}" method="POST" enctype="multipart/form-data">
                           {{csrf_field()}}   
 
                   @include('alerts.admin.form-both')  
@@ -62,7 +57,7 @@
                           </h4>
                       </div>
 
-                      <form class="uplogo-form" id="muaadhform" action="{{ route('admin-gs-update') }}" method="POST" enctype="multipart/form-data">
+                      <form class="uplogo-form" id="geniusform" action="{{ route('admin-gs-update') }}" method="POST" enctype="multipart/form-data">
                         {{csrf_field()}}   
 
               @include('alerts.admin.form-both')  
@@ -87,7 +82,7 @@
                             </h4>
                         </div>
 
-                        <form class="uplogo-form" id="muaadhform" action="{{ route('admin-gs-update') }}" method="POST" enctype="multipart/form-data">
+                        <form class="uplogo-form" id="geniusform" action="{{ route('admin-gs-update') }}" method="POST" enctype="multipart/form-data">
                           {{csrf_field()}}   
 
                            @include('alerts.admin.form-both')  

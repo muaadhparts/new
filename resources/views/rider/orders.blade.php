@@ -1,4 +1,4 @@
-@extends('layouts.unified')
+@extends('layouts.front')
 @section('css')
     <link rel="stylesheet" href="{{ asset('assets/front/css/datatables.css') }}">
 @endsection
@@ -42,7 +42,6 @@
                             </thead>
                             <tbody>
                                 @forelse ($orders as $order)
-                                    @if($order->order)
                                     <tr>
                                         <td data-label="{{ __('#Order') }}">
                                             {{ $order->order->order_number }}
@@ -117,7 +116,6 @@
 
                                         </td>
                                     </tr>
-                                    @endif
                                 @empty
                                     <tr>
                                         <td colspan="6">{{ __('No orders found') }}</td>

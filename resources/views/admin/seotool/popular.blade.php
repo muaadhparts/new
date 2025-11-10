@@ -1,9 +1,4 @@
-@extends('layouts.unified')
-@php
-    $isDashboard = true;
-    $isAdmin = true;
-    $hideFooter = true;
-@endphp 
+@extends('layouts.admin') 
 
 @section('content')  
 
@@ -33,7 +28,7 @@
 							          @include('alerts.form-error')
 							          @include('alerts.form-success')
 										<div class="table-responsive">
-												<table id="muaadhtable" class="table table-hover dt-responsive" cellspacing="0" width="100%">
+												<table id="geniustable" class="table table-hover dt-responsive" cellspacing="0" width="100%">
 													<thead>
 														<tr>
 									                        <th>{{ __('Name') }}</th>
@@ -50,7 +45,7 @@
                                                         <tr>
 
 														<td>
-															<x-product-name :product="$prod->product" :vendor-id="0" target="_blank" />
+															{{mb_strlen($prod->product->name,'UTF-8') > 60 ? mb_substr($prod->product->name,0,60,'UTF-8').'...' : $prod->product->name}}
 														</td>
                                                       <td>
                                                         {{$prod->product->category->name}}
@@ -91,7 +86,7 @@
 (function($) {
 		"use strict";
 
- 			$('#muaadhtable').DataTable({
+ 			$('#geniustable').DataTable({
 			   ordering: false
             });
 

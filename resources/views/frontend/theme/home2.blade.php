@@ -1,4 +1,4 @@
-@extends('layouts.unified')
+@extends('layouts.front')
 
 @section('content')
 <section class="hero-slider-wrapper">
@@ -376,7 +376,7 @@
 <!-- Latest Post Section   -->
 
 <!-- Brand Section -->
-<section class="gs-brand-section">
+<section class="gs-partner-section">
     <div class="container">
         <div class="row mb-60 justify-content-center">
             <div class="col-lg-7">
@@ -388,12 +388,12 @@
                 </div>
             </div>
         </div>
-        <div class="gs-brandss row justify-content-center">
+        <div class="gs-partnerss row justify-content-center">
             @foreach (DB::table('brands')->get() as $data)
             <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6 wow-replaced p-0" data-wow-delay=".1s">
                 <a href="#">
-                    <div class="single-brand">
-                        <img src="{{ asset('assets/images/brand/' . $data->photo) }}" alt="brand">
+                    <div class="single-partner">
+                        <img src="{{ asset('assets/images/partner/' . $data->photo) }}" alt="partner">
                     </div>
                 </a>
             </div>

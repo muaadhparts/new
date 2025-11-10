@@ -1,7 +1,7 @@
-<div class="modal fade gs-modal  " id="vendor_package{{ $vendor_id }}" tabindex="-1" role="dialog"
+<div class="modal fade gs-modal" id="vendor_package{{ $vendor_id }}" tabindex="-1" role="dialog"
     aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
-    <div class="modal-dialog  xsend-message-modal-dialog modal-dialog-centered" role="document">
-        <div class="modal-content xsend-message-modal-content form-group">
+    <div class="modal-dialog send-message-modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content send-message-modal-content form-group">
             <div class="modal-header w-100">
                 <h4 class="title" id="exampleModalLongTitle">@lang('Packaging')</h4>
                 <button type="button" data-bs-dismiss="modal" aria-label="Close">

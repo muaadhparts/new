@@ -1,9 +1,4 @@
-@extends('layouts.unified')
-@php
-    $isDashboard = true;
-    $isAdmin = true;
-    $hideFooter = true;
-@endphp
+@extends('layouts.admin')
 
 @section('styles')
 
@@ -48,7 +43,7 @@
 
 											@include('alerts.admin.form-both') 
 											
-											<form id="muaadhform" action="{{route('admin-sociallink-create')}}" method="POST" enctype="multipart/form-data">
+											<form id="geniusform" action="{{route('admin-sociallink-create')}}" method="POST" enctype="multipart/form-data">
 												{{csrf_field()}}
 
 												<div class="row">

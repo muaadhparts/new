@@ -1,8 +1,4 @@
-@extends('layouts.unified')
-@php
-    $isDashboard = true;
-    $isVendor = true;
-@endphp
+@extends('layouts.vendor')
 
 @section('content')
 <!-- outlet start  -->
@@ -75,47 +71,20 @@
 
                     $user_id = (int) auth()->id();
 
-                    // // shipping cost
-                    // $shipping_id = $vendor_shipping->$user_id;
-                    // $shipping = App\Models\Shipping::findOrFail($shipping_id);
-                    // if ($shipping) {
-                    // $price = $price + round($shipping->price * $order_v->currency_value, 2);
-                    // }
-
-                    // // packaging cost
-                    // $vendor_packing_id = json_decode($order_v->vendor_packing_id);
-                    // $packing_id = $vendor_packing_id->$user_id;
-                    // $packaging = App\Models\Package::findOrFail($packing_id);
-                    // if ($packaging) {
-                    // $price = $price + round($packaging->price * $order_v->currency_value, 2);
-                    // }
-                    
                     // shipping cost
-                    $shipping_id_raw = $vendor_shipping->$user_id ?? null;
-                    if ($shipping_id_raw) {
-                        // بعض القيم تجي مثل "7178#omnillama#10" → ناخذ الرقم فقط
-                        $shippingId = intval(explode('#', $shipping_id_raw)[0]);
-                        $shipping = App\Models\Shipping::find($shippingId);
-                        if ($shipping) {
-                            $price += round($shipping->price * $order_v->currency_value, 2);
-                        }
-                    } else {
-                        $shipping = null;
+                    $shipping_id = $vendor_shipping->$user_id;
+                    $shipping = App\Models\Shipping::findOrFail($shipping_id);
+                    if ($shipping) {
+                    $price = $price + round($shipping->price * $order_v->currency_value, 2);
                     }
 
                     // packaging cost
                     $vendor_packing_id = json_decode($order_v->vendor_packing_id);
-                    $packing_id_raw = $vendor_packing_id->$user_id ?? null;
-                    if ($packing_id_raw) {
-                        $packingId = intval(explode('#', $packing_id_raw)[0]);
-                        $packaging = App\Models\Package::find($packingId);
-                        if ($packaging) {
-                            $price += round($packaging->price * $order_v->currency_value, 2);
-                        }
-                    } else {
-                        $packaging = null;
+                    $packing_id = $vendor_packing_id->$user_id;
+                    $packaging = App\Models\Package::findOrFail($packing_id);
+                    if ($packaging) {
+                    $price = $price + round($packaging->price * $order_v->currency_value, 2);
                     }
-
                     }
                     @endphp
                     <tr>

@@ -129,7 +129,7 @@
                                 <div class="time-count time-box text-center my-30 flex-between w-75"
                                     data-countdown="{{ $gs->deal_time }}"></div>
                                 <a href="{{ route('front.category') . '?type=flash'  }}"
-                                    class="btn btn-dark text-uppercase rounded-0">{{ __('Browse Parts') }}</a>
+                                    class="btn btn-dark text-uppercase rounded-0">{{ __('Shop Now') }}</a>
                             </div>
                         </div>
                     </div>
@@ -152,22 +152,22 @@
 
 
 <!--==================== Service Section Start ====================-->
-@if ($ps->brand == 1)
+@if ($ps->partner == 1)
     <div class="full-row bg-light">
         <div class="container">
             <div class="row justify-content-center">
                 <div class="col-lg-5">
 
-                    <h2 class="main-title mb-4 text-center text-secondary">{{ $gs->brand_title }}</h2>
+                    <h2 class="main-title mb-4 text-center text-secondary">{{ $gs->partner_title }}</h2>
                     <span class="mb-30 sub-title text-general font-medium ordenery-font font-400 text-center">{{
-            $gs->brand_text }}</span>
+            $gs->partner_text }}</span>
                 </div>
             </div>
             <div class="row g-3">
                 @foreach (DB::table('brands')->get() as $data)
                     <div class="col-6 col-sm-4 col-lg-3 col-xl-2">
                         <div class="simple-service">
-                            <img src="{{ asset('assets/images/brand/' . $data->photo) }}" alt="">
+                            <img src="{{ asset('assets/images/partner/' . $data->photo) }}" alt="">
 
                         </div>
                     </div>
@@ -268,7 +268,7 @@
             <div class="row justify-content-center">
                 <div class="col-lg-5">
                     <h2 class="main-title mb-4 text-center text-secondary">{{ __('Latest Post') }}</h2>
-                    <span class="mb-30 sub-title text-general font-medium ordenery-font font-400 text-center">{{ __('Stay updated with the latest news, technical insights, and industry trends from MUAADH EPC.') }}</span>
+                    <span class="mb-30 sub-title text-general font-medium ordenery-font font-400 text-center">{{ __('Cillum eu id enim aliquip aute ullamco anim. Culpa deserunt nostrud excepteur voluptate velit ipsum esse enim.') }}</span>
                 </div>
             </div>
             <div class="row row-cols-lg-2 row-cols-1">

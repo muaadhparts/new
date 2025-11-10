@@ -1,9 +1,4 @@
-@extends('layouts.unified')
-@php
-    $isDashboard = true;
-    $isAdmin = true;
-    $hideFooter = true;
-@endphp
+@extends('layouts.admin')
 
 @section('content')
 
@@ -41,7 +36,7 @@
 
                         @include('alerts.admin.form-both')
 
-                      <form id="muaadhform" action="{{route('admin-page-create')}}" method="POST" enctype="multipart/form-data">
+                      <form id="geniusform" action="{{route('admin-page-create')}}" method="POST" enctype="multipart/form-data">
 
                         {{csrf_field()}}
 

@@ -9,7 +9,7 @@
                     <div class="product-description">
                       <div class="body-area">
                         @include('alerts.admin.form-error') 
-                      <form id="muaadhformdata" action="{{route('admin-sb-update',$data->id)}}" method="POST" enctype="multipart/form-data">
+                      <form id="geniusformdata" action="{{route('admin-sb-update',$data->id)}}" method="POST" enctype="multipart/form-data">
                         {{csrf_field()}}
 
 

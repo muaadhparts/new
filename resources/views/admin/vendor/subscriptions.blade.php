@@ -1,9 +1,4 @@
-@extends('layouts.unified')
-@php
-    $isDashboard = true;
-    $isAdmin = true;
-    $hideFooter = true;
-@endphp 
+@extends('layouts.admin') 
 
 @section('content')  
                     <input type="hidden" id="headerdata" value="{{ __("SUBSCRIPTIONS") }}">
@@ -32,7 +27,7 @@
                                     <div class="mr-table allproduct">
                                         @include('alerts.admin.form-success') 
                                         <div class="table-responsive">
-                                                <table id="muaadhtable" class="table table-hover dt-responsive" cellspacing="0" width="100%">
+                                                <table id="geniustable" class="table table-hover dt-responsive" cellspacing="0" width="100%">
                                                     <thead>
                                                         <tr>
                                                             <th>{{ __("Vendor Name") }}</th>
@@ -89,7 +84,7 @@
 (function($) {
 		"use strict";
 
-        var table = $('#muaadhtable').DataTable({
+        var table = $('#geniustable').DataTable({
                ordering: false,
                processing: true,
                serverSide: true,
