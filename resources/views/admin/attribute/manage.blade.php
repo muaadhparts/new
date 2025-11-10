@@ -1,4 +1,9 @@
-@extends('layouts.admin')
+@extends('layouts.unified')
+@php
+    $isDashboard = true;
+    $isAdmin = true;
+    $hideFooter = true;
+@endphp
 
 @push('styles')
 <style media="screen">

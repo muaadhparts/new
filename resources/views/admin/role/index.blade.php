@@ -1,4 +1,9 @@
-@extends('layouts.admin') 
+@extends('layouts.unified')
+@php
+    $isDashboard = true;
+    $isAdmin = true;
+    $hideFooter = true;
+@endphp 
 
 @section('content')  
           <input type="hidden" id="headerdata" value="{{ __('ROLE') }}">

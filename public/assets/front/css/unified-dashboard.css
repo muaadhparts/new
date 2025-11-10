@@ -1,0 +1,352 @@
+/**
+ * CSS موحد للوحات التحكم (Admin & Vendor)
+ * يوفر تصميماً عصرياً موحداً لكل المشروع
+ */
+
+/* ===== Container للوحات التحكم ===== */
+.gs-user-panel-review {
+    background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
+    min-height: 100vh;
+}
+
+/* ===== Sidebar Styling ===== */
+.gs-vendor-sidebar-wrapper {
+    width: 280px;
+    background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+    box-shadow: 2px 0 20px rgba(0, 0, 0, 0.08);
+    min-height: 100vh;
+    padding: 1.5rem 0;
+    position: sticky;
+    top: 0;
+    overflow-y: auto;
+    transition: all 0.3s ease;
+}
+
+.gs-vendor-sidebar-logo-wrapper {
+    padding: 0 1.5rem 2rem;
+    border-bottom: 1px solid #e5e7eb;
+    margin-bottom: 1.5rem;
+    text-align: center;
+}
+
+.gs-vendor-sidebar-logo-wrapper img {
+    max-height: 50px;
+    width: auto;
+    transition: transform 0.3s ease;
+}
+
+.gs-vendor-sidebar-logo-wrapper img:hover {
+    transform: scale(1.05);
+}
+
+/* ===== Sidebar Menu ===== */
+.gs-dashboard-user-sidebar-wrapper {
+    list-style: none;
+    padding: 0 1rem;
+    margin: 0;
+}
+
+.gs-dashboard-user-sidebar-wrapper > li {
+    margin-bottom: 0.5rem;
+}
+
+.gs-dashboard-user-sidebar-wrapper > li > a {
+    display: flex;
+    align-items: center;
+    padding: 0.875rem 1.25rem;
+    color: #64748b;
+    text-decoration: none;
+    border-radius: 12px;
+    transition: all 0.3s ease;
+    font-weight: 500;
+    font-size: 0.95rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.gs-dashboard-user-sidebar-wrapper > li > a:before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    width: 3px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    transform: translateX(-3px);
+    transition: transform 0.3s ease;
+}
+
+.gs-dashboard-user-sidebar-wrapper > li > a:hover,
+.gs-dashboard-user-sidebar-wrapper > li.active > a {
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+    color: #667eea;
+    transform: translateX(4px);
+}
+
+.gs-dashboard-user-sidebar-wrapper > li.active > a:before,
+.gs-dashboard-user-sidebar-wrapper > li > a:hover:before {
+    transform: translateX(0);
+}
+
+.gs-dashboard-user-sidebar-wrapper svg {
+    width: 22px;
+    height: 22px;
+    margin-left: 12px;
+    transition: all 0.3s ease;
+}
+
+.gs-dashboard-user-sidebar-wrapper > li > a:hover svg path,
+.gs-dashboard-user-sidebar-wrapper > li.active > a svg path {
+    stroke: #667eea;
+    fill: rgba(102, 126, 234, 0.1);
+}
+
+.gs-dashboard-user-sidebar-wrapper .label {
+    flex: 1;
+}
+
+.gs-dashboard-user-sidebar-wrapper .angle-down {
+    margin-left: auto;
+    margin-right: 0;
+    font-size: 0.75rem;
+    transition: transform 0.3s ease;
+}
+
+.gs-dashboard-user-sidebar-wrapper a[aria-expanded="true"] .angle-down {
+    transform: rotate(180deg);
+}
+
+/* ===== Sub Menu ===== */
+.sidebar-sub-menu {
+    list-style: none;
+    padding: 0.5rem 0 0.5rem 2.75rem;
+    margin: 0;
+    background: transparent;
+}
+
+.sidebar-sub-menu li {
+    margin-bottom: 0.25rem;
+}
+
+.sidebar-sub-menu-item {
+    display: block;
+    padding: 0.625rem 1rem;
+    color: #94a3b8;
+    text-decoration: none;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    font-size: 0.875rem;
+    position: relative;
+}
+
+.sidebar-sub-menu-item:before {
+    content: '•';
+    position: absolute;
+    left: 0.5rem;
+    color: #cbd5e1;
+    transition: all 0.3s ease;
+}
+
+.sidebar-sub-menu-item:hover,
+.sidebar-sub-menu-item.active {
+    background: rgba(102, 126, 234, 0.08);
+    color: #667eea;
+    padding-left: 1.25rem;
+}
+
+.sidebar-sub-menu-item:hover:before,
+.sidebar-sub-menu-item.active:before {
+    color: #667eea;
+    left: 0.75rem;
+}
+
+/* ===== Content Area ===== */
+.gs-vendor-header-outlet-wrapper {
+    flex: 1;
+    padding: 2rem;
+    background: transparent;
+    overflow-x: hidden;
+}
+
+.content-area {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    padding: 2rem;
+    min-height: calc(100vh - 4rem);
+}
+
+/* ===== Responsive Design ===== */
+@media (max-width: 1199.98px) {
+    .gs-vendor-sidebar-wrapper {
+        position: fixed;
+        left: -280px;
+        top: 0;
+        z-index: 1050;
+        transition: left 0.3s ease;
+    }
+
+    .gs-vendor-sidebar-wrapper.show {
+        left: 0;
+    }
+
+    .gs-vendor-header-outlet-wrapper {
+        padding: 1rem;
+    }
+
+    .content-area {
+        padding: 1.5rem;
+    }
+}
+
+@media (max-width: 767.98px) {
+    .gs-vendor-sidebar-wrapper {
+        width: 260px;
+    }
+
+    .gs-vendor-header-outlet-wrapper {
+        padding: 1rem 0.5rem;
+    }
+
+    .content-area {
+        padding: 1rem;
+        border-radius: 12px;
+    }
+}
+
+/* ===== Scrollbar Styling ===== */
+.gs-vendor-sidebar-wrapper::-webkit-scrollbar {
+    width: 6px;
+}
+
+.gs-vendor-sidebar-wrapper::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.gs-vendor-sidebar-wrapper::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 10px;
+}
+
+.gs-vendor-sidebar-wrapper::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(135deg, #5568d3 0%, #63388b 100%);
+}
+
+/* ===== RTL Support ===== */
+[dir="rtl"] .gs-vendor-sidebar-wrapper {
+    box-shadow: -2px 0 20px rgba(0, 0, 0, 0.08);
+}
+
+[dir="rtl"] .gs-dashboard-user-sidebar-wrapper > li > a:before {
+    left: auto;
+    right: 0;
+    transform: translateX(3px);
+}
+
+[dir="rtl"] .gs-dashboard-user-sidebar-wrapper > li.active > a:before,
+[dir="rtl"] .gs-dashboard-user-sidebar-wrapper > li > a:hover:before {
+    transform: translateX(0);
+}
+
+[dir="rtl"] .gs-dashboard-user-sidebar-wrapper > li > a:hover,
+[dir="rtl"] .gs-dashboard-user-sidebar-wrapper > li.active > a {
+    transform: translateX(-4px);
+}
+
+[dir="rtl"] .gs-dashboard-user-sidebar-wrapper svg {
+    margin-left: 0;
+    margin-right: 12px;
+}
+
+[dir="rtl"] .sidebar-sub-menu {
+    padding: 0.5rem 2.75rem 0.5rem 0;
+}
+
+[dir="rtl"] .sidebar-sub-menu-item:before {
+    left: auto;
+    right: 0.5rem;
+}
+
+[dir="rtl"] .sidebar-sub-menu-item:hover:before,
+[dir="rtl"] .sidebar-sub-menu-item.active:before {
+    right: 0.75rem;
+}
+
+/* ===== Animation Enhancements ===== */
+@keyframes slideInFromLeft {
+    from {
+        transform: translateX(-20px);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+.gs-dashboard-user-sidebar-wrapper > li {
+    animation: slideInFromLeft 0.4s ease forwards;
+    opacity: 0;
+}
+
+.gs-dashboard-user-sidebar-wrapper > li:nth-child(1) { animation-delay: 0.05s; }
+.gs-dashboard-user-sidebar-wrapper > li:nth-child(2) { animation-delay: 0.1s; }
+.gs-dashboard-user-sidebar-wrapper > li:nth-child(3) { animation-delay: 0.15s; }
+.gs-dashboard-user-sidebar-wrapper > li:nth-child(4) { animation-delay: 0.2s; }
+.gs-dashboard-user-sidebar-wrapper > li:nth-child(5) { animation-delay: 0.25s; }
+.gs-dashboard-user-sidebar-wrapper > li:nth-child(6) { animation-delay: 0.3s; }
+.gs-dashboard-user-sidebar-wrapper > li:nth-child(7) { animation-delay: 0.35s; }
+.gs-dashboard-user-sidebar-wrapper > li:nth-child(8) { animation-delay: 0.4s; }
+.gs-dashboard-user-sidebar-wrapper > li:nth-child(9) { animation-delay: 0.45s; }
+.gs-dashboard-user-sidebar-wrapper > li:nth-child(10) { animation-delay: 0.5s; }
+
+/* ===== Dark Mode Support (Optional) ===== */
+@media (prefers-color-scheme: dark) {
+    .gs-vendor-sidebar-wrapper {
+        background: linear-gradient(180deg, #1f2937 0%, #111827 100%);
+        box-shadow: 2px 0 20px rgba(0, 0, 0, 0.3);
+    }
+
+    .gs-vendor-sidebar-logo-wrapper {
+        border-bottom-color: #374151;
+    }
+
+    .gs-dashboard-user-sidebar-wrapper > li > a {
+        color: #9ca3af;
+    }
+
+    .gs-dashboard-user-sidebar-wrapper > li > a:hover,
+    .gs-dashboard-user-sidebar-wrapper > li.active > a {
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.15) 0%, rgba(118, 75, 162, 0.15) 100%);
+        color: #a5b4fc;
+    }
+
+    .sidebar-sub-menu-item {
+        color: #6b7280;
+    }
+
+    .sidebar-sub-menu-item:hover,
+    .sidebar-sub-menu-item.active {
+        background: rgba(102, 126, 234, 0.12);
+        color: #a5b4fc;
+    }
+
+    .content-area {
+        background: #1f2937;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+    }
+}
+
+/* ===== Print Styles ===== */
+@media print {
+    .gs-vendor-sidebar-wrapper,
+    .gs-vendor-header-outlet-wrapper > header {
+        display: none !important;
+    }
+
+    .content-area {
+        box-shadow: none;
+        border-radius: 0;
+        padding: 0;
+    }
+}

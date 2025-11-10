@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🧪 اختبار التصميم الموحد</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 2rem;
+            direction: rtl;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        h1 {
+            text-align: center;
+            color: #667eea;
+            margin-bottom: 1rem;
+            font-size: 2.5rem;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .section {
+            margin-bottom: 2rem;
+        }
+
+        .section-title {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 12px;
+            margin-bottom: 1rem;
+            font-size: 1.3rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .links-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 1rem;
+        }
+
+        .link-card {
+            background: #f8f9fa;
+            padding: 1.25rem;
+            border-radius: 12px;
+            text-decoration: none;
+            color: #333;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .link-card:hover {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+            border-color: #667eea;
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .link-icon {
+            font-size: 1.5rem;
+        }
+
+        .link-text {
+            flex: 1;
+        }
+
+        .link-title {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+            color: #667eea;
+        }
+
+        .link-url {
+            font-size: 0.85rem;
+            color: #6c757d;
+            word-break: break-all;
+        }
+
+        .alert {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .alert-title {
+            font-weight: bold;
+            color: #856404;
+            margin-bottom: 0.5rem;
+            font-size: 1.1rem;
+        }
+
+        .alert-content {
+            color: #856404;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 2rem 0 1rem;
+            color: #6c757d;
+            border-top: 2px solid #e9ecef;
+            margin-top: 2rem;
+        }
+
+        .badge {
+            display: inline-block;
+            background: #28a745;
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            margin-right: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 اختبار التصميم الموحد</h1>
+
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-number">270</div>
+                <div class="stat-label">صفحة محدثة</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">158</div>
+                <div class="stat-label">صفحة إدارة</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">44</div>
+                <div class="stat-label">صفحة بائعين</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">68</div>
+                <div class="stat-label">صفحة واجهة</div>
+            </div>
+        </div>
+
+        <div class="alert">
+            <div class="alert-title">⚠️ تعليمات مهمة</div>
+            <div class="alert-content">
+                <p>قبل البدء في الاختبار، تأكد من:</p>
+                <ul style="margin-right: 1.5rem; margin-top: 0.5rem;">
+                    <li>تم تسجيل الدخول بحساب الإدارة والبائع</li>
+                    <li>تنظيف الكاش (php artisan cache:clear)</li>
+                    <li>فتح Console في المتصفح (F12) للتحقق من الأخطاء</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- الواجهة الأمامية -->
+        <div class="section">
+            <div class="section-title">
+                <span>🌐</span>
+                <span>الواجهة الأمامية</span>
+                <span class="badge">68 صفحة</span>
+            </div>
+            <div class="links-grid">
+                <a href="/" class="link-card" target="_blank">
+                    <span class="link-icon">🏠</span>
+                    <div class="link-text">
+                        <div class="link-title">الصفحة الرئيسية</div>
+                        <div class="link-url">/</div>
+                    </div>
+                </a>
+                <a href="/products" class="link-card" target="_blank">
+                    <span class="link-icon">🛍️</span>
+                    <div class="link-text">
+                        <div class="link-title">المنتجات</div>
+                        <div class="link-url">/products</div>
+                    </div>
+                </a>
+                <a href="/cart" class="link-card" target="_blank">
+                    <span class="link-icon">🛒</span>
+                    <div class="link-text">
+                        <div class="link-title">السلة</div>
+                        <div class="link-url">/cart</div>
+                    </div>
+                </a>
+                <a href="/contact" class="link-card" target="_blank">
+                    <span class="link-icon">📧</span>
+                    <div class="link-text">
+                        <div class="link-title">اتصل بنا</div>
+                        <div class="link-url">/contact</div>
+                    </div>
+                </a>
+                <a href="/user/login" class="link-card" target="_blank">
+                    <span class="link-icon">🔐</span>
+                    <div class="link-text">
+                        <div class="link-title">تسجيل دخول المستخدم</div>
+                        <div class="link-url">/user/login</div>
+                    </div>
+                </a>
+                <a href="/user/register" class="link-card" target="_blank">
+                    <span class="link-icon">📝</span>
+                    <div class="link-text">
+                        <div class="link-title">تسجيل مستخدم جديد</div>
+                        <div class="link-url">/user/register</div>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <!-- لوحة الإدارة -->
+        <div class="section">
+            <div class="section-title">
+                <span>👨‍💼</span>
+                <span>لوحة الإدارة</span>
+                <span class="badge">158 صفحة</span>
+            </div>
+            <div class="links-grid">
+                <a href="/admin/login" class="link-card" target="_blank">
+                    <span class="link-icon">🔑</span>
+                    <div class="link-text">
+                        <div class="link-title">تسجيل دخول الإدارة</div>
+                        <div class="link-url">/admin/login</div>
+                    </div>
+                </a>
+                <a href="/admin/dashboard" class="link-card" target="_blank">
+                    <span class="link-icon">📊</span>
+                    <div class="link-text">
+                        <div class="link-title">لوحة التحكم</div>
+                        <div class="link-url">/admin/dashboard</div>
+                    </div>
+                </a>
+                <a href="/admin/orders/all" class="link-card" target="_blank">
+                    <span class="link-icon">📦</span>
+                    <div class="link-text">
+                        <div class="link-title">الطلبات</div>
+                        <div class="link-url">/admin/orders/all</div>
+                    </div>
+                </a>
+                <a href="/admin/products" class="link-card" target="_blank">
+                    <span class="link-icon">🏷️</span>
+                    <div class="link-text">
+                        <div class="link-title">المنتجات</div>
+                        <div class="link-url">/admin/products</div>
+                    </div>
+                </a>
+                <a href="/admin/category" class="link-card" target="_blank">
+                    <span class="link-icon">📑</span>
+                    <div class="link-text">
+                        <div class="link-title">التصنيفات</div>
+                        <div class="link-url">/admin/category</div>
+                    </div>
+                </a>
+                <a href="/admin/users/vendors" class="link-card" target="_blank">
+                    <span class="link-icon">👥</span>
+                    <div class="link-text">
+                        <div class="link-title">البائعين</div>
+                        <div class="link-url">/admin/users/vendors</div>
+                    </div>
+                </a>
+                <a href="/admin/users/customers" class="link-card" target="_blank">
+                    <span class="link-icon">👤</span>
+                    <div class="link-text">
+                        <div class="link-title">العملاء</div>
+                        <div class="link-url">/admin/users/customers</div>
+                    </div>
+                </a>
+                <a href="/admin/general-settings/logo" class="link-card" target="_blank">
+                    <span class="link-icon">⚙️</span>
+                    <div class="link-text">
+                        <div class="link-title">الإعدادات</div>
+                        <div class="link-url">/admin/general-settings/logo</div>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <!-- لوحة البائعين -->
+        <div class="section">
+            <div class="section-title">
+                <span>🏪</span>
+                <span>لوحة البائعين</span>
+                <span class="badge">44 صفحة</span>
+            </div>
+            <div class="links-grid">
+                <a href="/vendor/login" class="link-card" target="_blank">
+                    <span class="link-icon">🔑</span>
+                    <div class="link-text">
+                        <div class="link-title">تسجيل دخول البائع</div>
+                        <div class="link-url">/vendor/login</div>
+                    </div>
+                </a>
+                <a href="/vendor/dashboard" class="link-card" target="_blank">
+                    <span class="link-icon">📊</span>
+                    <div class="link-text">
+                        <div class="link-title">لوحة التحكم</div>
+                        <div class="link-url">/vendor/dashboard</div>
+                    </div>
+                </a>
+                <a href="/vendor/orders" class="link-card" target="_blank">
+                    <span class="link-icon">📦</span>
+                    <div class="link-text">
+                        <div class="link-title">الطلبات</div>
+                        <div class="link-url">/vendor/orders</div>
+                    </div>
+                </a>
+                <a href="/vendor/products" class="link-card" target="_blank">
+                    <span class="link-icon">🏷️</span>
+                    <div class="link-text">
+                        <div class="link-title">المنتجات</div>
+                        <div class="link-url">/vendor/products</div>
+                    </div>
+                </a>
+                <a href="/vendor/profile" class="link-card" target="_blank">
+                    <span class="link-icon">👤</span>
+                    <div class="link-text">
+                        <div class="link-title">الملف الشخصي</div>
+                        <div class="link-url">/vendor/profile</div>
+                    </div>
+                </a>
+                <a href="/vendor/withdraw" class="link-card" target="_blank">
+                    <span class="link-icon">💰</span>
+                    <div class="link-text">
+                        <div class="link-title">السحب</div>
+                        <div class="link-url">/vendor/withdraw</div>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p><strong>📁 ملفات التوثيق:</strong></p>
+            <p style="margin-top: 0.5rem;">
+                <a href="/QUICK_START.md" style="color: #667eea; margin: 0 0.5rem;">QUICK_START.md</a> |
+                <a href="/UNIFIED_LAYOUT_DOCUMENTATION.md" style="color: #667eea; margin: 0 0.5rem;">UNIFIED_LAYOUT_DOCUMENTATION.md</a> |
+                <a href="/TEST_CHECKLIST.md" style="color: #667eea; margin: 0 0.5rem;">TEST_CHECKLIST.md</a>
+            </p>
+            <p style="margin-top: 1rem; color: #28a745; font-weight: bold;">
+                ✅ التصميم الموحد جاهز للاختبار!
+            </p>
+            <p style="margin-top: 0.5rem; font-size: 0.9rem;">
+                تاريخ التحديث: 2025-11-09 | الإصدار: 1.0
+            </p>
+        </div>
+    </div>
+</body>
+</html>

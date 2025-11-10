@@ -1,4 +1,4 @@
-@extends('layouts.front')
+@extends('layouts.unified')
 @section('css')
     <link rel="stylesheet" href="{{ asset('assets/front/css/datatables.css') }}">
 @endsection

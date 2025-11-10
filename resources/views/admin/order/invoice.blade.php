@@ -1,4 +1,9 @@
-@extends('layouts.admin')
+@extends('layouts.unified')
+@php
+    $isDashboard = true;
+    $isAdmin = true;
+    $hideFooter = true;
+@endphp
 
 @section('styles')
 <link rel="stylesheet" href="{{ asset('assets/admin/css/order-table-enhancements.css') }}">

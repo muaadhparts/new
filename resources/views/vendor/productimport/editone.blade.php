@@ -1,4 +1,8 @@
-@extends('layouts.vendor')
+@extends('layouts.unified')
+@php
+    $isDashboard = true;
+    $isVendor = true;
+@endphp
 @section('styles')
 
 <link href="{{asset('assets/admin/css/product.css')}}" rel="stylesheet" />

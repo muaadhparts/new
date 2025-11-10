@@ -1,4 +1,8 @@
-@extends('layouts.vendor')
+@extends('layouts.unified')
+@php
+    $isDashboard = true;
+    $isVendor = true;
+@endphp
 
 @section('content')
 					<input type="hidden" id="headerdata" value="{{ __('PRODUCT') }}">

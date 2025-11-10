@@ -1,4 +1,4 @@
-@extends('layouts.front')
+@extends('layouts.unified')
 
 @section('content')
 @include('partials.global.common-header')

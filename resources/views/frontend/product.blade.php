@@ -1,5 +1,5 @@
 {{-- resources\views\frontend\product.blade.php --}}
-@extends('layouts.front')
+@extends('layouts.unified')
 
 @include('includes.seo.canonical')
 

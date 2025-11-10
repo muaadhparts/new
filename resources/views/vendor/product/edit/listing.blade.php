@@ -1,4 +1,8 @@
-@extends('layouts.vendor')
+@extends('layouts.unified')
+@php
+    $isDashboard = true;
+    $isVendor = true;
+@endphp
 @section('css')
     <link href="{{ asset('assets/admin/css/jquery.Jcrop.css') }}" rel="stylesheet" />
     <link href="{{ asset('assets/admin/css/Jcrop-style.css') }}" rel="stylesheet" />

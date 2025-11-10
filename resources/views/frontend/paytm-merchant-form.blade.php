@@ -1,4 +1,4 @@
-@extends('layouts.front')
+@extends('layouts.unified')
 
 @section('content')
 <center><h1>{{ __('Please do not refresh this page...') }}</h1></center>

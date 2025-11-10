@@ -20,7 +20,7 @@ class AppServiceProvider extends ServiceProvider
 {
     public function boot()
     {
-        Cache::flush();
+        // Cache::flush(); // معطل مؤقتاً - يمسح الكاش في كل request
         Paginator::useBootstrap();
 
 

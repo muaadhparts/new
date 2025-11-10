@@ -2,7 +2,7 @@
     dd(Session::get('cart'));
 @endphp --}}
 
-@extends('layouts.front')
+@extends('layouts.unified')
 @section('content')
     <style>
         /* Modern Teal/Cyan Cart Theme */

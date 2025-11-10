@@ -1,6 +1,6 @@
 
 
-@extends('layouts.front')
+@extends('layouts.unified')
 
 @section('styles')
 @endsection
