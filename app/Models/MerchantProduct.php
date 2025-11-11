@@ -163,6 +163,53 @@ class MerchantProduct extends Model
     }
 
     /**
+     * احسب نسبة الخصم بين السعر السابق والسعر الحالي
+     */
+    public function offPercentage(): float
+    {
+        if (!$this->previous_price || $this->previous_price <= 0) {
+            return 0;
+        }
+
+        $current = $this->vendorSizePrice();
+        if ($current === null || $current <= 0) {
+            return 0;
+        }
+
+        // Build previous final price similar to current price
+        $prev = (float) $this->previous_price;
+
+        // Add size price to previous price if exists
+        if (!empty($this->size_price)) {
+            $raw = $this->size_price;
+            if (is_string($raw)) {
+                $decoded = json_decode($raw, true);
+                if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+                    $first = array_values($decoded)[0] ?? 0;
+                    $prev += (float) $first;
+                } else {
+                    $parts = explode(',', $raw);
+                    $prev += isset($parts[0]) && $parts[0] !== '' ? (float) $parts[0] : 0.0;
+                }
+            } elseif (is_array($raw)) {
+                $first = array_values($raw)[0] ?? 0;
+                $prev += (float) $first;
+            }
+        }
+
+        // Add commission to previous price
+        $gs = cache()->remember('generalsettings', now()->addDay(), fn () => DB::table('generalsettings')->first());
+        $prev = $prev + (float) $gs->fixed_commission + ($prev * (float) $gs->percentage_commission / 100);
+
+        if ($prev <= 0) {
+            return 0;
+        }
+
+        $percentage = ((float) $prev - (float) $current) * 100 / (float) $prev;
+        return round($percentage, 2);
+    }
+
+    /**
      * Get color list as array
      */
     public function getColorAllAttribute($value)

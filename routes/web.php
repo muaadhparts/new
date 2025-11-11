@@ -1755,14 +1755,6 @@ Route::group(['middleware' => 'maintenance'], function () {
     Route::get('/item/{slug}', 'Front\ProductDetailsController@show')
     ->name('front.product.legacy');
 
-    Route::get('/item/{slug}', 'Front\ProductDetailsController@show')->name('front.product.legacy');
-    Route::get('/item/{slug}/{user}', 'Front\ProductDetailsController@showByUser')->name('front.product.user');
-
-    // New preferred route with vendor and merchant_product_id (main route name: front.product)
-    Route::get('/item/{slug}/store/{vendor_id}/merchant_products/{merchant_product_id}', 'Front\ProductDetailsController@showByMerchantProduct')
-         ->whereNumber('vendor_id')->whereNumber('merchant_product_id')
-         ->name('front.product');
-
     // Alternative shorter route (legacy compatibility)
     Route::get('/item/{slug}/{merchant_product_id}', 'Front\ProductDetailsController@showByMerchantProduct')
          ->whereNumber('merchant_product_id')

@@ -98,7 +98,9 @@ class CatalogController extends FrontBaseController
             'user',
             'qualityBrand',
             'product' => function ($q) {
-                $q->withCount('ratings')->withAvg('ratings', 'rating');
+                $q->select('id', 'name', 'slug', 'features', 'thumbnail', 'attributes', 'category_id', 'type', 'weight', 'product_type', 'affiliate_link', 'cross_products')
+                  ->withCount('ratings')
+                  ->withAvg('ratings', 'rating');
             },
         ])
             ->leftJoin('products', 'products.id', '=', 'merchant_products.product_id')

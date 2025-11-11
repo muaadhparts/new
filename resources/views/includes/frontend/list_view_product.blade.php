@@ -1,15 +1,50 @@
+@php
+    /** @var \App\Models\Product $product*/
+    /** @var \App\Models\MerchantProduct|null $mp */
+
+    // Use passed merchant product data or fallback to search
+    if (!isset($mp)) {
+        $merchant = $product->merchantProducts()
+            ->where('status', 1)
+            ->whereHas('user', function ($user) {
+                $user->where('is_vendor', 2);
+            })
+            ->orderByRaw('CASE WHEN (stock IS NULL OR stock = 0) THEN 1 ELSE 0 END ASC')
+            ->orderBy('price')
+            ->first();
+    } else {
+        $merchant = $mp;
+    }
+
+    $vendorId  = optional($merchant)->user_id;
+    $hasVendor = $vendorId > 0;
+
+    // Calculate discount percentage
+    $off = 0;
+    if ($merchant && $merchant->previous_price > 0 && $merchant->price > 0) {
+        $off = round((($merchant->previous_price - $merchant->price) * 100) / $merchant->previous_price);
+    }
+
+    // Details URL - using the main route front.product with full parameters
+    $detailsUrl = isset($merchant) && $product->slug
+        ? route('front.product', ['slug' => $product->slug, 'vendor_id' => $merchant->user_id, 'merchant_product_id' => $merchant->id])
+        : ($product->slug ? route('front.product.legacy', $product->slug) : '#');
+
+    $stockQty = optional($merchant)->stock;
+    $inStock = $stockQty > 0;
+@endphp
+
 <div class="col-sm-6 col-md-6 col-lg-12 ">
     <div class="single-product-list-view">
         <div class="img-wrapper">
-            @if ($product->offPercentage() && round($product->offPercentage()) > 0)
-                <span class="product-badge">-{{ round($product->offPercentage()) }}%</span>
+            @if ($off > 0)
+                <span class="product-badge">-{{ $off }}%</span>
             @endif
 
 
             @if (Auth::check())
-
-                <a href="javascript" class="wishlist" data-href="{{ route('user-wishlist-add', $product->id) }}">
-                    <div class="add-to-wishlist-btn {{ wishlistCheck($product->id) ? 'active' : '' }}">
+                <a href="javascript" class="wishlist" data-href="{{ isset($merchant) ? route('merchant.wishlist.add', $merchant->id) : route('user-wishlist-add', $product->id) }}">
+                    <div class="add-to-wishlist-btn {{ isset($merchant) ? (merchantWishlistCheck($merchant->id) ? 'active' : '') : (wishlistCheck($product->id) ? 'active' : '') }}">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
                             fill="none">
                             <path fill-rule="evenodd" clip-rule="evenodd"
@@ -38,12 +73,19 @@
         </div>
         <div class="content-wrapper">
             <h4 class="product-title">
-                <a href="{{ route('front.product', $product->slug) }}"> {{ $product->showName() }}</a>
+                <a href="{{ $detailsUrl }}"> {{ $product->showName() }}</a>
             </h4>
 
             <div class="price-wrapper">
-                <h4>{{ $product->showPrice() }}</h4>
-                <h4><del>{{ $product->showPreviousPrice() }}</del></h4>
+                @if($merchant)
+                    <h4>{{ method_exists($merchant,'showPrice') ? $merchant->showPrice() : \App\Models\Product::convertPrice($merchant->price) }}</h4>
+                    @if($merchant->previous_price > 0)
+                        <h4><del>{{ \App\Models\Product::convertPrice($merchant->previous_price) }}</del></h4>
+                    @endif
+                @else
+                    <h4>{{ $product->showPrice() }}</h4>
+                    <h4><del>{{ $product->showPreviousPrice() }}</del></h4>
+                @endif
             </div>
 
             <div class="ratings-wrapper">
@@ -60,7 +102,7 @@
 
             <div class="add-to-cart">
                 @if ($product->type != 'Listing')
-                    <a href="javascript:;" class="compare_product" data-href="{{ route('product.compare.add', $product->id) }}">
+                    <a href="javascript:;" class="compare_product" data-href="{{ isset($merchant) ? route('merchant.compare.add', $merchant->id) : route('product.compare.add', $product->id) }}">
                         <div class="compare">
                             <svg class="icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24"
                                 viewBox="0 0 24 24" fill="none">
@@ -73,7 +115,7 @@
                 @endif
 
                 @if ($product->type != 'Listing')
-                <a href="{{ route('front.product', $product->slug) }}">
+                <a href="{{ $detailsUrl }}">
                     <div class="details">
                         <svg class="icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24"
                             viewBox="0 0 24 24" fill="none">
@@ -95,15 +137,17 @@
                         </div>
                     </a>
                 @else
-                    @if ($product->emptyStock())
+                    @if (!$hasVendor || !$inStock)
                         <div class="add-cart">
                             {{ __('Out of Stock') }}
                         </div>
                     @else
                         @if ($product->type != 'Listing')
                             <a {{ $product->cross_products ? 'data-bs-target=#exampleModal' : '' }} href="javascript:;"
-                                data-href="{{ route('product.cart.add', $product->id) }}"
+                                data-href="{{ isset($merchant) ? route('merchant.cart.add', $merchant->id) : route('product.cart.add', $product->id) }}"
                                 data-cross-href="{{ route('front.show.cross.product', $product->id) }}"
+                                data-merchant-product="{{ $merchant->id ?? '' }}"
+                                data-product="{{ $product->id }}"
                                 class="add_cart_click {{ $product->cross_products ? 'view_cross_product' : '' }}">
                                 <div class="add-cart">
                                     @lang('Add To Cart')
