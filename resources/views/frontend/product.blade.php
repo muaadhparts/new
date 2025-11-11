@@ -490,11 +490,9 @@
                         <div class="store-seller-wrapper">
                             <span> <b>@lang('Sold By :')</b>
 
-                                @if ($productt->user_id != 0)
-                                    @if (isset($productt->user))
-                                        {{ $productt->user->shop_name }}
-                                    @endif
-                                    @if ($productt->user->checkStatus())
+                                @if (isset($merchant) && $merchant->user)
+                                    {{ $merchant->user->shop_name }}
+                                    @if ($merchant->user->checkStatus())
                                         <a class="verify-link" href="javascript:;" data-original-title="">
                                             {{ __('Verified') }} <i class="fas fa-check-circle"></i>
                                         </a>
@@ -506,18 +504,18 @@
 
                             </span>
                             <span> <b>@lang('Total Items :')</b>
-                                @if ($productt->user_id != 0)
-                                    {{ App\Models\Product::where('user_id', '=', $productt->user_id)->get()->count() }}
+                                @if (isset($merchant) && $merchant->user)
+                                    {{ App\Models\MerchantProduct::where('user_id', '=', $merchant->user_id)->where('status', 1)->count() }}
                                 @else
-                                    {{ App\Models\Product::where('user_id', '=', 0)->get()->count() }}
+                                    {{ App\Models\Product::whereDoesntHave('merchantProducts')->count() }}
                                 @endif
                             </span>
 
                             <div class="action-btns-wrapper">
 
-                                @if ($productt->user_id != 0)
+                                @if (isset($merchant) && $merchant->user)
                                     <a class="template-btn dark-outline"
-                                        href="{{ route('front.vendor', str_replace(' ', '-', $productt->user->shop_name)) }}">@lang('visit store')</a>
+                                        href="{{ route('front.vendor', str_replace(' ', '-', $merchant->user->shop_name)) }}">@lang('visit store')</a>
                                 @endif
 
 
@@ -525,7 +523,7 @@
 
 
                                     @if (Auth::check())
-                                        @if ($productt->user_id != 0)
+                                        @if (isset($merchant) && $merchant->user)
                                             <a class="template-btn dark-outline" href="javascript:;"
                                                 data-bs-toggle="modal" data-bs-target="#vendorform">
                                                 <i class="icofont-ui-chat"></i>
@@ -545,16 +543,16 @@
 
                                 @endif
 
-                                @if ($productt->user_id != 0)
+                                @if (isset($merchant) && $merchant->user)
                                     @if (Auth::check())
-                                        @if (Auth::user()->favorites()->where('vendor_id', '=', $productt->user_id)->get()->count() > 0)
+                                        @if (Auth::user()->favorites()->where('vendor_id', '=', $merchant->user_id)->get()->count() > 0)
                                             <a class="template-btn dark-outline" href="javascript:;" >
                                                 <i class="fas fa-check"></i>
                                                 {{ __('Favorite') }}
                                             </a>
                                         @else
                                             <a class="template-btn dark-outline favorite-prod" href="javascript:;"
-                                                data-href="{{ route('user-favorite', [Auth::user()->id, $productt->user_id]) }}">
+                                                data-href="{{ route('user-favorite', [Auth::user()->id, $merchant->user_id]) }}">
                                                 <i class="icofont-plus"></i>
                                                 {{ __('Add To Favorite Seller') }}
                                             </a>
@@ -810,14 +808,14 @@
     <!-- Related Products slider end -->
 
     <!-- More Products By Seller slider start -->
-    @if ($productt->user_id != 0 && $vendor_products->count() > 0)
+    @if (isset($vendorListings) && $vendorListings->count() > 0)
         <div class="gs-product-cards-slider-section more-products-by-seller  wow-replaced" data-wow-delay=".1s">
             <div class="gs-product-cards-slider-area more-products-by-seller">
                 <div class="container">
                     <h2 class="title text-center">@lang('More Products By Seller')</h2>
                     <div class="product-cards-slider">
-                        @foreach ($vendor_products as $product)
-                            @include('includes.frontend.home_product', ['class' => 'not'])
+                        @foreach ($vendorListings as $merchantProduct)
+                            @include('includes.frontend.home_product', ['class' => 'not', 'product' => $merchantProduct->product, 'mp' => $merchantProduct])
                         @endforeach
                     </div>
                 </div>
@@ -904,7 +902,7 @@
 
                     <input type="hidden" name="name" value="{{ Auth::user() ? Auth::user()->name : '' }}">
                     <input type="hidden" name="user_id" value="{{ Auth::user() ? Auth::user()->id : '' }}">
-                    <input type="hidden" name="vendor_id" value="{{ $productt->user_id }}">
+                    <input type="hidden" name="vendor_id" value="{{ isset($merchant) ? $merchant->user_id : '' }}">
 
                 </div>
                 <!-- Select Pickup Point -->

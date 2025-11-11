@@ -270,7 +270,7 @@
 
                               @if ($productt->type == "Listing")
                                   @if (auth()->check())
-                                    @if($productt->user_id != 0)
+                                    @if(isset($merchant) && $merchant->user)
                                       <li>
                                         <a class="view-stor btn--base p-2" href="javascript:;" data-bs-toggle="modal" data-bs-target="#vendorform">
                                           <i class="icofont-ui-chat"></i>
@@ -415,12 +415,9 @@
           <div class="col-lg-3 col-md-4">
              <div class="pro-details-sidebar-item mb-4">
                 <span>{{ __('Sold By') }}</span>
-                <h5>@if( $productt->user_id  != 0)
-
-                  @if(isset($productt->user))
-                    {{ $productt->user->shop_name }}
-                  @endif
-                  @if($productt->user->checkStatus())
+                <h5>@if(isset($merchant) && $merchant->user)
+                    {{ $merchant->user->shop_name }}
+                  @if($merchant->user->checkStatus())
                   <br>
                   <a class="verify-link" href="javascript:;" data-toggle="tooltip" data-placement="top" title=""
                     data-original-title="{{ __('Verified') }}">
@@ -430,16 +427,16 @@
                 @else
                 {{ App\Models\Admin::find(1)->shop_name }}
                 @endif</h5>
-                @if( $productt->user_id  != 0)
-                <h3>{{ App\Models\Product::where('user_id','=',$productt->user_id)->get()->count() }}</h3>
+                @if(isset($merchant) && $merchant->user)
+                <h3>{{ App\Models\MerchantProduct::where('user_id','=',$merchant->user_id)->where('status', 1)->count() }}</h3>
                 @else
-                <h3>{{ App\Models\Product::where('user_id','=',0)->get()->count() }}</h3>
+                <h3>{{ App\Models\Product::whereDoesntHave('merchantProducts')->count() }}</h3>
                 @endif
                 <h6>{{ __('Total Items') }}</h6>
-                
-                @if( $productt->user_id  != 0)
+
+                @if(isset($merchant) && $merchant->user)
               <li class="{{ $gs->is_contact_seller == 0 ? 'contact_seller' : '' }} cnt-sell">
-                <a href="{{ route('front.vendor',str_replace(' ', '-', $productt->user->shop_name)) }}" class="view-stor btn--base">
+                <a href="{{ route('front.vendor',str_replace(' ', '-', $merchant->user->shop_name)) }}" class="view-stor btn--base">
                   <i class="icofont-ui-travel"></i>
                   {{ __('Visit Store') }}
                 </a>
@@ -454,9 +451,9 @@
               {{-- Contact Seller --}}
 
               @if(Auth::check())
-            
 
-                @if($productt->user_id != 0)
+
+                @if(isset($merchant) && $merchant->user)
 
 
                   <a class="view-stor btn--base" href="javascript:;" data-bs-toggle="modal" data-bs-target="#vendorform">
@@ -490,16 +487,16 @@
             @endif
 
 <br>
-            @if($productt->user_id != 0)
+            @if(isset($merchant) && $merchant->user)
               @if(Auth::check())
-                  @if(Auth::user()->favorites()->where('vendor_id','=',$productt->user_id)->get()->count() > 0)
+                  @if(Auth::user()->favorites()->where('vendor_id','=',$merchant->user_id)->get()->count() > 0)
 
                   <a class="fvrt btn--base" href="javascript:;">
                       <i class="icofont-check"></i>
                       {{ __('Favorite') }}
                   </a>
                   @else
-                  <a class="view-stor favorite-prod btn--base" href="javascript:;" data-href="{{ route('user-favorite',[Auth::user()->id,$productt->user_id]) }}">
+                  <a class="view-stor favorite-prod btn--base" href="javascript:;" data-href="{{ route('user-favorite',[Auth::user()->id,$merchant->user_id]) }}">
                       <i class="icofont-plus"></i>
                       {{ __('Add To Favorite Seller') }}
                   </a>
@@ -584,7 +581,7 @@
 
                       <input type="hidden" name="name" value="{{ Auth::user() ? Auth::user()->name:'' }}">
                       <input type="hidden" name="user_id" value="{{ Auth::user() ? Auth::user()->id:'' }}">
-                      <input type="hidden" name="vendor_id" value="{{ $productt->user_id }}">
+                      <input type="hidden" name="vendor_id" value="{{ isset($merchant) ? $merchant->user_id : '' }}">
 
                     </ul>
                     <button class="submit-btn" id="emlsub" type="submit">{{ __('Send Message') }}</button>

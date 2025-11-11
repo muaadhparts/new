@@ -132,16 +132,33 @@ class OrderCreateController extends AdminBaseController
        
         $size_price = ($size_price / $curr->value);
         $color_price = ($color_price / $curr->value);
-        $prod = Product::where('id', '=', $id)->first(['id', 'user_id', 'slug', 'name', 'photo', 'size', 'size_qty', 'size_price', 'color', 'price', 'stock', 'type', 'file', 'link', 'license', 'license_qty', 'measure', 'whole_sell_qty', 'whole_sell_discount', 'attributes', 'minimum_qty', 'stock_check', 'color_all']);
+        $prod = Product::where('id', '=', $id)->first(['id', 'slug', 'name', 'photo', 'type', 'file', 'measure', 'attributes']);
         if ($prod->type != 'Physical') {
             $qty = 1;
         }
 
+        // Get the first active merchant product for this product
+        $merchantProduct = $prod->merchantProducts()
+            ->where('status', 1)
+            ->orderBy('price')
+            ->first();
 
-
-        if ($prod->user_id != 0) {
-            $prc = $prod->price + $this->gs->fixed_commission + ($prod->price / 100) * $this->gs->percentage_commission;
+        if ($merchantProduct) {
+            $prc = $merchantProduct->price + $this->gs->fixed_commission + ($merchantProduct->price / 100) * $this->gs->percentage_commission;
             $prod->price = round($prc, 2);
+            // Use merchant product data
+            $prod->stock = $merchantProduct->stock;
+            $prod->size = $merchantProduct->size;
+            $prod->size_qty = $merchantProduct->size_qty;
+            $prod->size_price = $merchantProduct->size_price;
+            $prod->color = $merchantProduct->color;
+            $prod->minimum_qty = $merchantProduct->minimum_qty;
+            $prod->stock_check = $merchantProduct->stock_check;
+            $prod->color_all = $merchantProduct->color_all;
+        } else {
+            // Fallback if no merchant product found
+            $prod->price = 0;
+            $prod->stock = 0;
         }
         if (!empty($prices)) {
             foreach (explode(',',$prices) as $data) {
