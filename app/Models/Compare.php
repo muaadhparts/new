@@ -70,9 +70,12 @@ class Compare extends Model
         foreach ($this->items as $merchantProductId => $itemData) {
             if (isset($itemData['merchant_product'])) {
                 $merchantProduct = $itemData['merchant_product'];
+                $product = $merchantProduct->product ?? null;
+
+                // Return in the format expected by the view (with 'item' key)
                 $items[$merchantProductId] = [
+                    'item' => $product, // The actual Product model
                     'merchant_product' => $merchantProduct,
-                    'product' => $merchantProduct->product ?? null,
                     'ck' => $itemData['ck'] ?? 0
                 ];
             }

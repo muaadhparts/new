@@ -476,25 +476,37 @@
                                     <td>
                                         <input type="hidden" value="{{ $product['license'] }}">
 
+                                        @php
+                                        $detailsProductUrl = '#';
+                                        if (isset($product['item']['slug']) && isset($product['user_id']) && isset($product['merchant_product_id'])) {
+                                            $detailsProductUrl = route('front.product', [
+                                                'slug' => $product['item']['slug'],
+                                                'vendor_id' => $product['user_id'],
+                                                'merchant_product_id' => $product['merchant_product_id']
+                                            ]);
+                                        } elseif (isset($product['item']['slug'])) {
+                                            $detailsProductUrl = route('front.product.legacy', $product['item']['slug']);
+                                        }
+                                        @endphp
                                         @if($product['item']['user_id'] != 0)
                                         @php
                                         $user = App\Models\User::find($product['item']['user_id']);
                                         @endphp
                                         @if(isset($user))
                                         <a target="_blank"
-                                            href="{{ route('front.product', $product['item']['slug']) }}">{{mb_strlen($product['item']['name'],'utf-8')
+                                            href="{{ $detailsProductUrl }}">{{mb_strlen($product['item']['name'],'utf-8')
                                             > 30 ? mb_substr($product['item']['name'],0,30,'utf-8').'...' :
                                             $product['item']['name']}}</a>
                                         @else
                                         <a target="_blank"
-                                            href="{{ route('front.product', $product['item']['slug']) }}">{{mb_strlen($product['item']['name'],'utf-8')
+                                            href="{{ $detailsProductUrl }}">{{mb_strlen($product['item']['name'],'utf-8')
                                             > 30 ? mb_substr($product['item']['name'],0,30,'utf-8').'...' :
                                             $product['item']['name']}}</a>
                                         @endif
                                         @else
 
                                         <a target="_blank"
-                                            href="{{ route('front.product', $product['item']['slug']) }}">{{mb_strlen($product['item']['name'],'utf-8')
+                                            href="{{ $detailsProductUrl }}">{{mb_strlen($product['item']['name'],'utf-8')
                                             > 30 ? mb_substr($product['item']['name'],0,30,'utf-8').'...' :
                                             $product['item']['name']}}</a>
 

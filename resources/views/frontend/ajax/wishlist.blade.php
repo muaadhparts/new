@@ -1,5 +1,19 @@
 <tbody class="wishlist-items-wrapper">
     @foreach($wishlists as $wishlist)
+    @php
+        $wishlistMerchant = $wishlist->merchantProducts()
+            ->where('status', 1)
+            ->whereHas('user', function ($user) {
+                $user->where('is_vendor', 2);
+            })
+            ->orderByRaw('CASE WHEN (stock IS NULL OR stock = 0) THEN 1 ELSE 0 END ASC')
+            ->orderBy('price')
+            ->first();
+
+        $wishlistProductUrl = $wishlistMerchant && $wishlist->slug
+            ? route('front.product', ['slug' => $wishlist->slug, 'vendor_id' => $wishlistMerchant->user_id, 'merchant_product_id' => $wishlistMerchant->id])
+            : ($wishlist->slug ? route('front.product.legacy', $wishlist->slug) : '#');
+    @endphp
 
     <tr id="yith-wcwl-row-103" data-row-id="103">
         <td class="product-remove">
@@ -8,9 +22,9 @@
             </div>
         </td>
         <td class="product-thumbnail">
-            <a href="{{ route('front.product', $wishlist->slug) }}"> <img src="{{ $wishlist->photo ? asset('assets/images/products/'.$wishlist->photo):asset('assets/images/noimage.png') }}" alt=""> </a>
+            <a href="{{ $wishlistProductUrl }}"> <img src="{{ $wishlist->photo ? asset('assets/images/products/'.$wishlist->photo):asset('assets/images/noimage.png') }}" alt=""> </a>
         </td>
-        <td class="product-name"> <a href="{{ route('front.product', $wishlist->slug) }}">{{  mb_strlen($wishlist->name,'UTF-8') > 35 ? mb_substr($wishlist->name,0,35,'UTF-8').'...' : $wishlist->name }}</a></td>
+        <td class="product-name"> <a href="{{ $wishlistProductUrl }}">{{  mb_strlen($wishlist->name,'UTF-8') > 35 ? mb_substr($wishlist->name,0,35,'UTF-8').'...' : $wishlist->name }}</a></td>
         <td class="product-price"> <span class="woocommerce-Price-amount amount"><bdi><span class="woocommerce-Price-currencySymbol">{{ $wishlist->showPrice() }}  <small>
             <del>
                 {{ $wishlist->showPreviousPrice() }}

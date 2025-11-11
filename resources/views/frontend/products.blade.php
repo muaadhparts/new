@@ -327,7 +327,21 @@
                             <h5 class="widget-title">@lang('Recent Product')</h5>
                             <div class="gs-recent-post-widget">
                                 @foreach ($latest_products as $product)
-                                    <a href="{{ route('front.product', $product['slug']) }}">
+                                    @php
+                                        $recentMerchant = $product->merchantProducts()
+                                            ->where('status', 1)
+                                            ->whereHas('user', function ($user) {
+                                                $user->where('is_vendor', 2);
+                                            })
+                                            ->orderByRaw('CASE WHEN (stock IS NULL OR stock = 0) THEN 1 ELSE 0 END ASC')
+                                            ->orderBy('price')
+                                            ->first();
+
+                                        $recentProductUrl = $recentMerchant && $product['slug']
+                                            ? route('front.product', ['slug' => $product['slug'], 'vendor_id' => $recentMerchant->user_id, 'merchant_product_id' => $recentMerchant->id])
+                                            : ($product['slug'] ? route('front.product.legacy', $product['slug']) : '#');
+                                    @endphp
+                                    <a href="{{ $recentProductUrl }}">
 
                                         <div class="gs-single-recent-product-widget">
                                             <div class="img-wrapper">

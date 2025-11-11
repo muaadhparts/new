@@ -25,13 +25,21 @@
                         <tbody class="t_body">
                             @foreach ($products as $product)
                                 @php
-                         
+                                    // Safe conversion of potentially array variables to strings for item identification
+                                    $sizeStr = is_array($product['size']) ? implode('-', $product['size']) : ($product['size'] ?? '');
+                                    $colorStr = is_array($product['color']) ? implode('-', $product['color']) : ($product['color'] ?? '');
+                                    $valuesStr = is_array($product['values']) ? implode('-', $product['values']) : ($product['values'] ?? '');
+                                    $valuesStr = str_replace([' ', ','], '', $valuesStr);
+
+                                    // Create unique item identifier
+                                    $itemIdentifier = $product['item']['id'] . $sizeStr . $colorStr . $valuesStr;
+
                                     if ($product['discount'] != 0) {
                                         $total_itemprice = $product['item_price'] * $product['qty'];
                                         $tdiscount = ($total_itemprice * $product['discount']) / 100;
                                         $discount += $tdiscount;
                                     }
-                              
+
                                 @endphp
 
 
@@ -41,9 +49,21 @@
                                             <img src="{{ $product['item']['photo'] ? asset('assets/images/products/' . $product['item']['photo']) : asset('assets/images/noimage.png') }}"
                                                 alt="">
                                             <div class="cart-product-info">
+                                                @php
+                                                    $cartProductUrl = '#';
+                                                    if (isset($product['item']['slug']) && isset($product['user_id']) && isset($product['merchant_product_id'])) {
+                                                        $cartProductUrl = route('front.product', [
+                                                            'slug' => $product['item']['slug'],
+                                                            'vendor_id' => $product['user_id'],
+                                                            'merchant_product_id' => $product['merchant_product_id']
+                                                        ]);
+                                                    } elseif (isset($product['item']['slug'])) {
+                                                        $cartProductUrl = route('front.product.legacy', $product['item']['slug']);
+                                                    }
+                                                @endphp
 
                                                 <a class="cart-title d-inline-block"
-                                                    href="{{ route('front.product', $product['item']['slug']) }}">{{ mb_strlen($product['item']['name'], 'UTF-8') > 35
+                                                    href="{{ $cartProductUrl }}">{{ mb_strlen($product['item']['name'], 'UTF-8') > 35
                                                         ? mb_substr($product['item']['name'], 0, 35, 'UTF-8') . '...'
                                                         : $product['item']['name'] }}</a>
 
@@ -72,12 +92,12 @@
                                             <div class="cart-quantity">
                                                 <button class="cart-quantity-btn quantity-down">-</button>
                                                 <input type="text"
-                                                    id="qty{{ $product['item']['id'] . $product['size'] . $product['color'] . str_replace(str_split(' ,'), '', $product['values']) }}"
+                                                    id="qty{{ $itemIdentifier }}"
                                                     value="{{ $product['qty'] }}" class="borderless" readonly>
                                                 <input type="hidden" class="prodid"
                                                     value="{{ $product['item']['id'] }}">
                                                 <input type="hidden" class="itemid"
-                                                    value="{{ $product['item']['id'] . $product['size'] . $product['color'] . str_replace(str_split(' ,'), '', $product['values']) }}">
+                                                    value="{{ $itemIdentifier }}">
                                                 <input type="hidden" class="size_qty"
                                                     value="{{ $product['size_qty'] }}">
                                                 <input type="hidden" class="size_price"
@@ -97,22 +117,22 @@
 
                                     @if ($product['size_qty'])
                                         <input type="hidden"
-                                            id="stock{{ $product['item']['id'] . $product['size'] . $product['color'] . str_replace(str_split(' ,'), '', $product['values']) }}"
+                                            id="stock{{ $itemIdentifier }}"
                                             value="{{ $product['size_qty'] }}">
                                     @elseif($product['item']['type'] != 'Physical')
                                         <input type="hidden"
-                                            id="stock{{ $product['item']['id'] . $product['size'] . $product['color'] . str_replace(str_split(' ,'), '', $product['values']) }}"
+                                            id="stock{{ $itemIdentifier }}"
                                             value="1">
                                     @else
                                         <input type="hidden"
-                                            id="stock{{ $product['item']['id'] . $product['size'] . $product['color'] . str_replace(str_split(' ,'), '', $product['values']) }}"
+                                            id="stock{{ $itemIdentifier }}"
                                             value="{{ $product['stock'] }}">
                                     @endif
 
 
 
                                     <td class="cart-price"
-                                        id="prc{{ $product['item']['id'] . $product['size'] . $product['color'] . str_replace(str_split(' ,'), '', $product['values']) }}">
+                                        id="prc{{ $itemIdentifier }}">
                                         {{ App\Models\Product::convertPrice($product['price']) }}
                                         @if ($product['discount'] != 0)
                                             <strong>{{ $product['discount'] }} %{{ __('off') }}</strong>
@@ -120,8 +140,8 @@
                                     </td>
                                     <td>
                                         <a class="cart-remove-btn"
-                                            ata-class="cremove{{ $product['item']['id'] . $product['size'] . $product['color'] . str_replace(str_split(' ,'), '', $product['values']) }}"
-                                            href="{{ route('product.cart.remove', $product['item']['id'] . $product['size'] . $product['color'] . str_replace(str_split(' ,'), '', $product['values'])) }}">
+                                            ata-class="cremove{{ $itemIdentifier }}"
+                                            href="{{ route('product.cart.remove', $itemIdentifier) }}">
                                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
                                                 viewBox="0 0 24 24" fill="none">
                                                 <path

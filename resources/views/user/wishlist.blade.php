@@ -23,12 +23,20 @@
                 <div class=" product-nav-wrapper">
                     <h5>@lang('Total Products Found:') <span id="wishlist-count">{{ $wishlists->count() }}</span></h5>
                 </div>
-                @if($wishlists->count() > 0) 
+                @if($wishlists->count() > 0)
                 <div class="row gy-4 mt-20">
-                    @foreach ($wishlists as $product)
+                    @foreach ($wishlists as $wishlistItem)
+                    @php
+                        // Get the actual product from the wishlist item
+                        $product = $wishlistItem->product;
+                        // Get the effective merchant product (if exists)
+                        $mp = $wishlistItem->effective_merchant_product ?? $wishlistItem->merchantProduct;
+                    @endphp
                     @include('includes.frontend.home_product', [
                     'class' => 'col-sm-6 col-md-6 col-lg-4 col-xl-3',
                     'wishlist' => true,
+                    'product' => $product,
+                    'mp' => $mp
                     ])
                     @endforeach
                 </div>

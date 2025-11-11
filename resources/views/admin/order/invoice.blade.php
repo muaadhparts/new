@@ -109,10 +109,20 @@
                                                 @if($product['item']['user_id'] != 0)
                                                 @php
                                                 $user = App\Models\User::find($product['item']['user_id']);
+                                                $invoiceProductUrl = '#';
+                                                if (isset($product['item']['slug']) && isset($product['user_id']) && isset($product['merchant_product_id'])) {
+                                                    $invoiceProductUrl = route('front.product', [
+                                                        'slug' => $product['item']['slug'],
+                                                        'vendor_id' => $product['user_id'],
+                                                        'merchant_product_id' => $product['merchant_product_id']
+                                                    ]);
+                                                } elseif (isset($product['item']['slug'])) {
+                                                    $invoiceProductUrl = route('front.product.legacy', $product['item']['slug']);
+                                                }
                                                 @endphp
                                                 @if(isset($user))
                                                 <a target="_blank"
-                                                    href="{{ route('front.product', $product['item']['slug']) }}">{{ $product['item']['name']}}</a>
+                                                    href="{{ $invoiceProductUrl }}">{{ $product['item']['name']}}</a>
                                                 @else
                                                 <a href="javascript:;">{{$product['item']['name']}}</a>
                                                 @endif

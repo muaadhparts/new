@@ -328,6 +328,18 @@
 
                                             <div class="td-title td-product-namee">
                                                 <input type="hidden" value="{{ $product['license'] }}">
+                                                @php
+                                                    $userOrderProductUrl = '#';
+                                                    if (isset($product['item']['slug']) && isset($product['user_id']) && isset($product['merchant_product_id'])) {
+                                                        $userOrderProductUrl = route('front.product', [
+                                                            'slug' => $product['item']['slug'],
+                                                            'vendor_id' => $product['user_id'],
+                                                            'merchant_product_id' => $product['merchant_product_id']
+                                                        ]);
+                                                    } elseif (isset($product['item']['slug'])) {
+                                                        $userOrderProductUrl = route('front.product.legacy', $product['item']['slug']);
+                                                    }
+                                                @endphp
                                                 @if ($product['item']['user_id'] != 0)
                                                     @php
                                                         $user = App\Models\User::find($product['item']['user_id']);
@@ -335,14 +347,14 @@
                                                     @if (isset($user))
                                                         <b><a class="a_title_link d-block title-hover-color"
                                                                 target="_blank"
-                                                                href="{{ route('front.product', $product['item']['slug']) }}">{{ mb_strlen($product['item']['name'], 'UTF-8') > 50
+                                                                href="{{ $userOrderProductUrl }}">{{ mb_strlen($product['item']['name'], 'UTF-8') > 50
                                                                     ? mb_substr($product['item']['name'], 0, 50, 'UTF-8') . '...'
                                                                     : $product['item']['name'] }}</a></b>
                                                     @else
                                                         <b>
                                                             <a class="a_title_link d-block title-hover-color"
                                                                 target="_blank"
-                                                                href="{{ route('front.product', $product['item']['slug']) }}">
+                                                                href="{{ $userOrderProductUrl }}">
                                                                 {{ mb_strlen($product['item']['name'], 'UTF-8') > 50
                                                                     ? mb_substr($product['item']['name'], 0, 50, 'UTF-8') . '...'
                                                                     : $product['item']['name'] }}
@@ -352,7 +364,7 @@
                                                 @else
                                                     <b>
                                                         <a class="a_title_link d-block title-hover-color" target="_blank"
-                                                            href="{{ route('front.product', $product['item']['slug']) }}">
+                                                            href="{{ $userOrderProductUrl }}">
                                                             {{ mb_strlen($product['item']['name'], 'UTF-8') > 50
                                                                 ? mb_substr($product['item']['name'], 0, 50, 'UTF-8') . '...'
                                                                 : $product['item']['name'] }}

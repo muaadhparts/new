@@ -1,4 +1,19 @@
-<a href="{{ route('front.product', $prod->slug) }}" class="single-product-flas">
+@php
+    $flashProdMerchant = $prod->merchantProducts()
+        ->where('status', 1)
+        ->whereHas('user', function ($user) {
+            $user->where('is_vendor', 2);
+        })
+        ->orderByRaw('CASE WHEN (stock IS NULL OR stock = 0) THEN 1 ELSE 0 END ASC')
+        ->orderBy('price')
+        ->first();
+
+    $flashProdUrl = $flashProdMerchant && $prod->slug
+        ? route('front.product', ['slug' => $prod->slug, 'vendor_id' => $flashProdMerchant->user_id, 'merchant_product_id' => $flashProdMerchant->id])
+        : ($prod->slug ? route('front.product.legacy', $prod->slug) : '#');
+@endphp
+
+<a href="{{ $flashProdUrl }}" class="single-product-flas">
     <div class="img">
        <img src="{{ $prod->thumbnail ? asset('assets/images/thumbnails/'.$prod->thumbnail):asset('assets/images/noimage.png') }}" alt="">
        @if(!empty($prod->features))

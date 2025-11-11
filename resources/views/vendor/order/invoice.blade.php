@@ -335,11 +335,21 @@
                                                 @if ($product['item']['user_id'] != 0)
                                                     @php
                                                         $user = App\Models\User::find($product['item']['user_id']);
+                                                        $vendorInvoiceProductUrl = '#';
+                                                        if (isset($product['item']['slug']) && isset($product['user_id']) && isset($product['merchant_product_id'])) {
+                                                            $vendorInvoiceProductUrl = route('front.product', [
+                                                                'slug' => $product['item']['slug'],
+                                                                'vendor_id' => $product['user_id'],
+                                                                'merchant_product_id' => $product['merchant_product_id']
+                                                            ]);
+                                                        } elseif (isset($product['item']['slug'])) {
+                                                            $vendorInvoiceProductUrl = route('front.product.legacy', $product['item']['slug']);
+                                                        }
                                                     @endphp
                                                     @if (isset($user))
                                                         <span class="content product-title d-inline-block">
                                                             <a target="_blank"
-                                                                href="{{ route('front.product', $product['item']['slug']) }}">
+                                                                href="{{ $vendorInvoiceProductUrl }}">
                                                                 {{ mb_strlen($product['item']['name'], 'UTF-8') > 30
                                                                     ? mb_substr($product['item']['name'], 0, 30, 'UTF-8') . '...'
                                                                     : $product['item']['name'] }}

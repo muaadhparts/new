@@ -1,22 +1,67 @@
+@php
+    /** @var \App\Models\Product|\App\Models\MerchantProduct $product*/
+    /** @var \App\Models\MerchantProduct|null $mp */
+
+    // Check if $product is actually a MerchantProduct instance
+    $isMerchantProduct = $product instanceof \App\Models\MerchantProduct;
+
+    // Determine merchant product
+    if ($isMerchantProduct) {
+        // $product is already a MerchantProduct, use it directly
+        $merchant = $product;
+        // Get the actual Product model for product-specific data
+        $actualProduct = $product->product;
+    } else {
+        // $product is a Product model
+        $actualProduct = $product;
+
+        // Get merchant product context if available
+        $merchant = $mp ?? null;
+
+        // If no merchant product passed, try to get the first active one
+        if (!$merchant) {
+            $merchant = $product->merchantProducts()
+                ->where('status', 1)
+                ->whereHas('user', function ($user) {
+                    $user->where('is_vendor', 2);
+                })
+                ->orderByRaw('CASE WHEN (stock IS NULL OR stock = 0) THEN 1 ELSE 0 END ASC')
+                ->orderBy('price')
+                ->first();
+        }
+    }
+
+    // Build product URL
+    $productSlug = $isMerchantProduct ? optional($actualProduct)->slug : $product->slug;
+    $productUrl = $merchant && $productSlug
+        ? route('front.product', ['slug' => $productSlug, 'vendor_id' => $merchant->user_id, 'merchant_product_id' => $merchant->id])
+        : ($productSlug ? route('front.product.legacy', $productSlug) : '#');
+
+    // Calculate discount
+    $offPercentage = $merchant && method_exists($merchant, 'offPercentage')
+        ? $merchant->offPercentage()
+        : ($actualProduct && method_exists($actualProduct, 'offPercentage') ? $actualProduct->offPercentage() : 0);
+@endphp
+
 <div class="{{ isset($class) ? $class : 'col-md-6 col-lg-4 col-xl-3' }}">
 
     <div class="single-product">
         <div class="img-wrapper">
-            @if ($product->offPercentage() && round($product->offPercentage()) > 0)
-                <span class="product-badge">-{{ round($product->offPercentage()) }}%</span>
+            @if ($offPercentage && round($offPercentage) > 0)
+                <span class="product-badge">-{{ round($offPercentage) }}%</span>
             @endif
 
             @if (Auth::check())
                 @if (isset($wishlist))
                     <a href="javascript:;" class="removewishlist"
-                        data-href="{{ route('user-wishlist-remove',App\Models\Wishlist::where('user_id', '=', $user->id)->where('product_id', '=', $product->id)->first()->id) }}">
+                        data-href="{{ route('user-wishlist-remove',App\Models\Wishlist::where('user_id', '=', $user->id)->where('product_id', '=', $actualProduct->id)->first()->id) }}">
                         <div class="add-to-wishlist-btn bg-danger">
                             <i class="fas fa-trash  text-white"></i>
                         </div>
                     </a>
                 @else
-                    <a href="javascript:;" class="wishlist" data-href="{{ route('user-wishlist-add', $product->id) }}">
-                        <div class="add-to-wishlist-btn {{ wishlistCheck($product->id) ? 'active' : '' }}">
+                    <a href="javascript:;" class="wishlist" data-href="{{ route('user-wishlist-add', $actualProduct->id) }}">
+                        <div class="add-to-wishlist-btn {{ wishlistCheck($actualProduct->id) ? 'active' : '' }}">
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
                                 fill="none">
                                 <path fill-rule="evenodd" clip-rule="evenodd"
@@ -42,13 +87,13 @@
 
 
             <img class="product-img"
-                src="{{ $product->thumbnail ? asset('assets/images/thumbnails/' . $product->thumbnail) : asset('assets/images/noimage.png') }}"
+                src="{{ $actualProduct->thumbnail ? asset('assets/images/thumbnails/' . $actualProduct->thumbnail) : asset('assets/images/noimage.png') }}"
                 alt="product img">
 
             <div class="add-to-cart">
 
-                @if ($product->type != 'Listing')
-                    <a data-href="{{ route('product.compare.add', $product->id) }}" class="compare_product"
+                @if ($actualProduct->type != 'Listing')
+                    <a data-href="{{ route('product.compare.add', $actualProduct->id) }}" class="compare_product"
                         href="javascrit:;">
                         <div class="compare">
                             <svg class="icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24"
@@ -62,23 +107,23 @@
                 @endif
 
 
-                @if ($product->product_type == 'affiliate')
-                    <a href="{{ $product->affiliate_link }}" class="add_to_cart_button">
+                @if ($actualProduct->product_type == 'affiliate')
+                    <a href="{{ $actualProduct->affiliate_link }}" class="add_to_cart_button">
                         <div class="add-cart">
                             @lang('Add To Cart')
                         </div>
                     </a>
                 @else
-                    @if ($product->emptyStock())
+                    @if ($actualProduct->emptyStock())
                         <div class="add-cart">
                             {{ __('Out of Stock') }}
                         </div>
                     @else
-                        @if ($product->type != 'Listing')
-                            <a {{ $product->cross_products ? 'data-bs-target=#exampleModal' : '' }} href="javascript:;"
-                                data-href="{{ route('product.cart.add', $product->id) }}"
-                                data-cross-href="{{ route('front.show.cross.product', $product->id) }}"
-                                class="add_cart_click {{ $product->cross_products ? 'view_cross_product' : '' }}">
+                        @if ($actualProduct->type != 'Listing')
+                            <a {{ $actualProduct->cross_products ? 'data-bs-target=#exampleModal' : '' }} href="javascript:;"
+                                data-href="{{ route('product.cart.add', $actualProduct->id) }}"
+                                data-cross-href="{{ route('front.show.cross.product', $actualProduct->id) }}"
+                                class="add_cart_click {{ $actualProduct->cross_products ? 'view_cross_product' : '' }}">
                                 <div class="add-cart">
                                     @lang('Add To Cart')
                                 </div>
@@ -88,8 +133,8 @@
                 @endif
 
 
-                @if ($product->type != 'Listing')
-                    <a href="{{ route('front.product', $product->slug) }}">
+                @if ($actualProduct->type != 'Listing')
+                    <a href="{{ $productUrl }}">
                         <div class="details">
                             <svg class="icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24"
                                 viewBox="0 0 24 24" fill="none">
@@ -108,13 +153,13 @@
             </div>
         </div>
         <div class="content-wrapper">
-            <a href="{{ route('front.product', $product->slug) }}">
-                <h6 class="product-title">{{ $product->showName() }}</h6>
+            <a href="{{ $productUrl }}">
+                <h6 class="product-title">{{ $actualProduct->showName() }}</h6>
             </a>
             <div class="price-wrapper">
-                <h6>{{ $product->showPrice() }}</h6>
+                <h6>{{ $actualProduct->showPrice() }}</h6>
 
-                <h6><del>{{ $product->showPreviousPrice() }}</del></h6>
+                <h6><del>{{ $actualProduct->showPreviousPrice() }}</del></h6>
             </div>
 
             <div class="ratings-wrapper">
@@ -125,8 +170,8 @@
                         fill="#EEAE0B" />
                 </svg>
 
-                <span class="rating-title">{{ number_format($product->ratings_avg_rating, 1) }}
-                    ({{ $product->ratings_count }})</span>
+                <span class="rating-title">{{ number_format($actualProduct->ratings_avg_rating, 1) }}
+                    ({{ $actualProduct->ratings_count }})</span>
             </div>
         </div>
     </div>

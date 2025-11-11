@@ -49,7 +49,7 @@
                     <div class="title-and-value-wrapper">
                         <p class="title">@lang('Total Products!')</p>
                         <h3 class="value">
-                            <span class="counter">{{ count($user->products) }}</span>
+                            <span class="counter">{{ $user->merchantProducts()->count() }}</span>
                         </h3>
                     </div>
                 </div>

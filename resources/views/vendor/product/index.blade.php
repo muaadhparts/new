@@ -121,7 +121,21 @@
                                                 </defs>
                                             </svg>
                                         </a>
-                                        <a href="{{ route('front.product', $data->slug) }}" target="_blank"
+                                        @php
+                                            $vendorProdMerchant = $data->merchantProducts()
+                                                ->where('status', 1)
+                                                ->whereHas('user', function ($user) {
+                                                    $user->where('is_vendor', 2);
+                                                })
+                                                ->orderByRaw('CASE WHEN (stock IS NULL OR stock = 0) THEN 1 ELSE 0 END ASC')
+                                                ->orderBy('price')
+                                                ->first();
+
+                                            $vendorProdUrl = $vendorProdMerchant && $data->slug
+                                                ? route('front.product', ['slug' => $data->slug, 'vendor_id' => $vendorProdMerchant->user_id, 'merchant_product_id' => $vendorProdMerchant->id])
+                                                : ($data->slug ? route('front.product.legacy', $data->slug) : '#');
+                                        @endphp
+                                        <a href="{{ $vendorProdUrl }}" target="_blank"
                                             class="view-btn">
                                             <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
                                                 xmlns="http://www.w3.org/2000/svg">

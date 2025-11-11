@@ -3,11 +3,25 @@
       <div
         class="row row-cols-xxl-2 row-cols-md-2 row-cols-1 g-3 product-style-1 shop-list product-list e-bg-light e-title-hover-primary e-hover-image-zoom">
         @foreach($prods as $product)
+         @php
+            $diffViewMerchant = $product->merchantProducts()
+                ->where('status', 1)
+                ->whereHas('user', function ($user) {
+                    $user->where('is_vendor', 2);
+                })
+                ->orderByRaw('CASE WHEN (stock IS NULL OR stock = 0) THEN 1 ELSE 0 END ASC')
+                ->orderBy('price')
+                ->first();
+
+            $diffViewUrl = $diffViewMerchant && $product->slug
+                ? route('front.product', ['slug' => $product->slug, 'vendor_id' => $diffViewMerchant->user_id, 'merchant_product_id' => $diffViewMerchant->id])
+                : ($product->slug ? route('front.product.legacy', $product->slug) : '#');
+         @endphp
          <div class="col">
           <div class="product type-product">
             <div class="product-wrapper">
             <div class="product-image">
-               <a href="{{ route('front.product', $product->slug) }}" class="woocommerce-LoopProduct-link"><img
+               <a href="{{ $diffViewUrl }}" class="woocommerce-LoopProduct-link"><img
                  src="{{ $product->photo ? asset('assets/images/products/' . $product->photo) : asset('assets/images/noimage.png') }}"
                  alt="Product Image"></a>
                @if (round($product->offPercentage()) > 0)
@@ -68,7 +82,7 @@
             </div>
             <div class="product-info">
                <h3 class="product-title"><a
-                 href="{{ route('front.product', $product->slug) }}">{{ $product->showName() }}</a></h3>
+                 href="{{ $diffViewUrl }}">{{ $product->showName() }}</a></h3>
                <div class="product-price">
                <div class="price">
 
@@ -98,7 +112,7 @@
           <div class="product type-product">
             <div class="product-wrapper">
             <div class="product-image">
-               <a href="{{ route('front.product', $product->slug) }}" class="woocommerce-LoopProduct-link"><img
+               <a href="{{ $diffViewUrl }}" class="woocommerce-LoopProduct-link"><img
                  src="{{ $product->photo ? asset('assets/images/products/' . $product->photo) : asset('assets/images/noimage.png') }}"
                  alt="Product Image"></a>
                @if (round($product->offPercentage()) > 0)
@@ -161,7 +175,7 @@
             </div>
             <div class="product-info">
                <h3 class="product-title"><a
-                 href="{{ route('front.product', $product->slug) }}">{{ $product->showName() }}</a></h3>
+                 href="{{ $diffViewUrl }}">{{ $product->showName() }}</a></h3>
                <div class="product-price">
                <div class="price">
                  <ins>{{ $product->setCurrency() }}</ins>
@@ -191,7 +205,7 @@
          <div class="product type-product">
            <div class="product-wrapper">
             <div class="product-image">
-               <a href="{{ route('front.product', $product->slug) }}" class="woocommerce-LoopProduct-link"><img
+               <a href="{{ $diffViewUrl }}" class="woocommerce-LoopProduct-link"><img
                   src="{{ $product->photo ? asset('assets/images/products/' . $product->photo) : asset('assets/images/noimage.png') }}"
                   alt="Product Image"></a>
                @if (round($product->offPercentage()) > 0)

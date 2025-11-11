@@ -11,7 +11,7 @@
     <meta name="description" content="{{ $blog->meta_description }}">
     <title>{{ $gs->title }}</title>
 @elseif(isset($productt))
-    <meta name="keywords" content="{{ !empty($productt->meta_tag) ? implode(',', $productt->meta_tag) : '' }}">
+    <meta name="keywords" content="{{ $productt->meta_tag ?? '' }}">
     <meta name="description"
         content="{{ $productt->meta_description != null ? $productt->meta_description : strip_tags($productt->description) }}">
     <meta property="og:title" content="{{ $productt->name }}" />

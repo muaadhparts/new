@@ -30,10 +30,24 @@
                                 <h6 class="td-title">@lang('product Image')</h6>
                             </td>
                             @foreach ($products as $product)
+                                @php
+                                    $compareProductMerchant = $product['item']->merchantProducts()
+                                        ->where('status', 1)
+                                        ->whereHas('user', function ($user) {
+                                            $user->where('is_vendor', 2);
+                                        })
+                                        ->orderByRaw('CASE WHEN (stock IS NULL OR stock = 0) THEN 1 ELSE 0 END ASC')
+                                        ->orderBy('price')
+                                        ->first();
+
+                                    $compareProductUrl = $compareProductMerchant && $product['item']->slug
+                                        ? route('front.product', ['slug' => $product['item']->slug, 'vendor_id' => $compareProductMerchant->user_id, 'merchant_product_id' => $compareProductMerchant->id])
+                                        : ($product['item']->slug ? route('front.product.legacy', $product['item']->slug) : '#');
+                                @endphp
                                 <td>
-                                    <a href="#">
+                                    <a href="{{ $compareProductUrl }}">
                                         <img class="img-fluid w-150"
-                                            src="{{ $product['item']['thumbnail'] ? asset('assets/images/thumbnails/' . $product['item']['thumbnail']) : asset('assets/images/noimage.png') }}"
+                                            src="{{ $product['item']->thumbnail ? asset('assets/images/thumbnails/' . $product['item']->thumbnail) : asset('assets/images/noimage.png') }}"
                                             alt="compare-img">
                                     </a>
                                 </td>
@@ -45,9 +59,23 @@
                             </td>
 
                             @foreach ($products as $product)
+                                @php
+                                    $compareProductMerchant = $product['item']->merchantProducts()
+                                        ->where('status', 1)
+                                        ->whereHas('user', function ($user) {
+                                            $user->where('is_vendor', 2);
+                                        })
+                                        ->orderByRaw('CASE WHEN (stock IS NULL OR stock = 0) THEN 1 ELSE 0 END ASC')
+                                        ->orderBy('price')
+                                        ->first();
+
+                                    $compareProductUrl = $compareProductMerchant && $product['item']->slug
+                                        ? route('front.product', ['slug' => $product['item']->slug, 'vendor_id' => $compareProductMerchant->user_id, 'merchant_product_id' => $compareProductMerchant->id])
+                                        : ($product['item']->slug ? route('front.product.legacy', $product['item']->slug) : '#');
+                                @endphp
                                 <td>
-                                    <a href="#">
-                                        <h6 class="product-title">{{ $product['item']['name'] }}</h6>
+                                    <a href="{{ $compareProductUrl }}">
+                                        <h6 class="product-title">{{ $product['item']->name }}</h6>
                                     </a>
                                 </td>
                             @endforeach
@@ -57,9 +85,7 @@
                                 <h6 class="td-title">@lang('product price')</h6>
                             </td>
                             @foreach ($products as $product)
-                                <td><span
-                                        class="table-pera">{{ App\Models\Product::find($product['item']['id'])->showPrice() }}</span>
-                                </td>
+                                <td><span class="table-pera">{{ $product['item']->showPrice() }}</span></td>
                             @endforeach
 
                         </tr>
@@ -69,12 +95,12 @@
                             </td>
                             @foreach ($products as $product)
                                 @php
-                                    $product = App\Models\Product::withCount('ratings')
+                                    $productWithRatings = App\Models\Product::withCount('ratings')
                                         ->withAvg('ratings', 'rating')
-                                        ->find($product['item']['id']);
+                                        ->find($product['item']->id);
                                 @endphp
-                                <td><span class="table-pera">{{ number_format($product->ratings_avg_rating, 1) }}
-                                        ({{ $product->ratings_count }} @lang('Review'))
+                                <td><span class="table-pera">{{ number_format($productWithRatings->ratings_avg_rating, 1) }}
+                                        ({{ $productWithRatings->ratings_count }} @lang('Review'))
                                     </span></td>
                             @endforeach
 
@@ -89,7 +115,7 @@
                             @foreach ($products as $product)
                                 <td>
                                     <span class="table-pera">
-                                        {{ strip_tags($product['item']['details']) }}
+                                        {{ strip_tags($product['item']->details) }}
                                     </span>
                                 </td>
                             @endforeach
@@ -100,11 +126,9 @@
                             </td>
                             @foreach ($products as $product)
                                 <td class="btn-wrapper">
-
-
                                     <div class="hover-area">
-                                        @if ($product['item']['product_type'] == 'affiliate')
-                                            <a href="javascript:;" data-href="{{ $product['item']['affiliate_link'] }}"
+                                        @if ($product['item']->product_type == 'affiliate')
+                                            <a href="javascript:;" data-href="{{ $product['item']->affiliate_link }}"
                                                 class="template-btn dark-btn w-10 add_to_cart_button affilate-btn"
                                                 aria-label="{{ __('Add To Cart') }}"></a>
                                         @else
@@ -112,17 +136,16 @@
                                                 <a class="template-btn dark-btn w-100" href="#"
                                                     title="{{ __('Out Of Stock') }}"><i></i></a>
                                             @else
-                                                @if ($product['item']['type'] != 'Listing')
+                                                @if ($product['item']->type != 'Listing')
                                                     <a href="javascript:;"
-                                                     data-href="{{ route('product.cart.add', $product['item']['id']) }}"
+                                                     data-href="{{ route('product.cart.add', $product['item']->id) }}"
                                                         class=" add_cart_click template-btn dark-btn w-100">
                                                         @lang('Add To Cart')
                                                     </a>
                                                 @endif
                                             @endif
                                         @endif
-
-
+                                    </div>
                                 </td>
                             @endforeach
 
@@ -133,7 +156,7 @@
                             </td>
                             @foreach ($products as $product)
                                 <td>
-                                    <a href="{{ route('product.compare.remove', $product['item']['id']) }}"
+                                    <a href="{{ route('product.compare.remove', $product['item']->id) }}"
                                         class="template-btn dark-outline w-100">@lang('Remove')</a>
                                 </td>
                             @endforeach

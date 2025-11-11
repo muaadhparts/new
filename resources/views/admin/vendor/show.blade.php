@@ -98,7 +98,7 @@ table#example2 {
                                                         </tr>
                                                         <tr>
                                                             <th>{{ __("Total Product(s)") }}</th>
-                                                            <td>{{ $data->products()->count() }}</td>
+                                                            <td>{{ $data->merchantProducts()->count() }}</td>
                                                         </tr>
                                                         <tr>
                                                             <th>{{ __("Joined") }}</th>
@@ -142,19 +142,27 @@ table#example2 {
                                                                         </tr>
                                                                     </thead>
                                                                     <tbody>
-                                                                        @foreach($data->products as $dt)
+                                                                        @foreach($data->merchantProducts as $merchantProduct)
+                                                                        @php
+                                                                            // Get the actual product
+                                                                            $dt = $merchantProduct->product;
+
+                                                                            $adminVendorUrl = $dt && $dt->slug
+                                                                                ? route('front.product', ['slug' => $dt->slug, 'vendor_id' => $merchantProduct->user_id, 'merchant_product_id' => $merchantProduct->id])
+                                                                                : '#';
+                                                                        @endphp
                                                                         <tr>
-                                                                        <td><a href="{{ route('front.product', $dt->slug) }}" target="_blank">{{ sprintf("%'.08d",$dt->id) }}</a></td>
-                                                                            <td>{{ $dt->type }}</td>
-                                                                            @php 
-                                                                            $stck = (string)$dt->stock;
+                                                                        <td><a href="{{ $adminVendorUrl }}" target="_blank">{{ sprintf("%'.08d", $dt->id ?? 0) }}</a></td>
+                                                                            <td>{{ $dt->type ?? 'N/A' }}</td>
+                                                                            @php
+                                                                            $stck = (string)($merchantProduct->stock ?? $dt->stock ?? '');
                                                                             if($stck == "0")
                                                                             $stck = "Out Of Stock";
-                                                                            elseif($stck == null)
+                                                                            elseif($stck == null || $stck == '')
                                                                             $stck = "Unlimited";
                                                                             @endphp
                                                                             <td>{{ $stck  }}</td>
-                                                                            <td>{{ \App\Models\Product::convertPrice($dt->price) }}</td>
+                                                                            <td>{{ \App\Models\Product::convertPrice($merchantProduct->price) }}</td>
                                                                             <td>
                                                                                 <div class="action-list">
                                                                                 <select class="process select droplinks {{ $dt->status == 1 ? 'drop-success' : 'drop-danger' }}">

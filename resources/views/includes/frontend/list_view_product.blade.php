@@ -1,19 +1,33 @@
 @php
-    /** @var \App\Models\Product $product*/
+    /** @var \App\Models\Product|\App\Models\MerchantProduct $product*/
     /** @var \App\Models\MerchantProduct|null $mp */
 
-    // Use passed merchant product data or fallback to search
-    if (!isset($mp)) {
-        $merchant = $product->merchantProducts()
-            ->where('status', 1)
-            ->whereHas('user', function ($user) {
-                $user->where('is_vendor', 2);
-            })
-            ->orderByRaw('CASE WHEN (stock IS NULL OR stock = 0) THEN 1 ELSE 0 END ASC')
-            ->orderBy('price')
-            ->first();
+    // Check if $product is actually a MerchantProduct instance
+    $isMerchantProduct = $product instanceof \App\Models\MerchantProduct;
+
+    // Determine merchant product
+    if ($isMerchantProduct) {
+        // $product is already a MerchantProduct, use it directly
+        $merchant = $product;
+        // Get the actual Product model for product-specific data
+        $actualProduct = $product->product;
     } else {
-        $merchant = $mp;
+        // $product is a Product model
+        $actualProduct = $product;
+
+        // Use passed merchant product data or fallback to search
+        if (isset($mp)) {
+            $merchant = $mp;
+        } else {
+            $merchant = $product->merchantProducts()
+                ->where('status', 1)
+                ->whereHas('user', function ($user) {
+                    $user->where('is_vendor', 2);
+                })
+                ->orderByRaw('CASE WHEN (stock IS NULL OR stock = 0) THEN 1 ELSE 0 END ASC')
+                ->orderBy('price')
+                ->first();
+        }
     }
 
     $vendorId  = optional($merchant)->user_id;
@@ -26,9 +40,10 @@
     }
 
     // Details URL - using the main route front.product with full parameters
-    $detailsUrl = isset($merchant) && $product->slug
-        ? route('front.product', ['slug' => $product->slug, 'vendor_id' => $merchant->user_id, 'merchant_product_id' => $merchant->id])
-        : ($product->slug ? route('front.product.legacy', $product->slug) : '#');
+    $productSlug = $isMerchantProduct ? optional($actualProduct)->slug : $product->slug;
+    $detailsUrl = isset($merchant) && $productSlug
+        ? route('front.product', ['slug' => $productSlug, 'vendor_id' => $merchant->user_id, 'merchant_product_id' => $merchant->id])
+        : ($productSlug ? route('front.product.legacy', $productSlug) : '#');
 
     $stockQty = optional($merchant)->stock;
     $inStock = $stockQty > 0;
@@ -67,13 +82,13 @@
                 </a>
             @endif
             <img class="product-img"
-                src="{{ $product->thumbnail ? asset('assets/images/thumbnails/' . $product->thumbnail) : asset('assets/images/noimage.png') }}"
+                src="{{ $actualProduct->thumbnail ? asset('assets/images/thumbnails/' . $actualProduct->thumbnail) : asset('assets/images/noimage.png') }}"
                 alt="product img">
 
         </div>
         <div class="content-wrapper">
             <h4 class="product-title">
-                <a href="{{ $detailsUrl }}"> {{ $product->showName() }}</a>
+                <a href="{{ $detailsUrl }}"> {{ $actualProduct->showName() }}</a>
             </h4>
 
             <div class="price-wrapper">
@@ -83,8 +98,8 @@
                         <h4><del>{{ \App\Models\Product::convertPrice($merchant->previous_price) }}</del></h4>
                     @endif
                 @else
-                    <h4>{{ $product->showPrice() }}</h4>
-                    <h4><del>{{ $product->showPreviousPrice() }}</del></h4>
+                    <h4>{{ $actualProduct->showPrice() }}</h4>
+                    <h4><del>{{ $actualProduct->showPreviousPrice() }}</del></h4>
                 @endif
             </div>
 
@@ -96,13 +111,13 @@
                         fill="#EEAE0B" />
                 </svg>
 
-                <span class="rating-title">{{ number_format($product->ratings_avg_rating, 1) }}
-                    ({{ $product->ratings_count }})</span>
+                <span class="rating-title">{{ number_format($actualProduct->ratings_avg_rating, 1) }}
+                    ({{ $actualProduct->ratings_count }})</span>
             </div>
 
             <div class="add-to-cart">
-                @if ($product->type != 'Listing')
-                    <a href="javascript:;" class="compare_product" data-href="{{ isset($merchant) ? route('merchant.compare.add', $merchant->id) : route('product.compare.add', $product->id) }}">
+                @if ($actualProduct->type != 'Listing')
+                    <a href="javascript:;" class="compare_product" data-href="{{ isset($merchant) ? route('merchant.compare.add', $merchant->id) : route('product.compare.add', $actualProduct->id) }}">
                         <div class="compare">
                             <svg class="icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24"
                                 viewBox="0 0 24 24" fill="none">
@@ -114,7 +129,7 @@
                     </a>
                 @endif
 
-                @if ($product->type != 'Listing')
+                @if ($actualProduct->type != 'Listing')
                 <a href="{{ $detailsUrl }}">
                     <div class="details">
                         <svg class="icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24"
@@ -130,8 +145,8 @@
                 </a>
                 @endif
 
-                @if ($product->product_type == 'affiliate')
-                    <a href="javascript:;" data-href="{{ $product->affiliate_link }}" class="add_to_cart_button">
+                @if ($actualProduct->product_type == 'affiliate')
+                    <a href="javascript:;" data-href="{{ $actualProduct->affiliate_link }}" class="add_to_cart_button">
                         <div class="add-cart">
                             @lang('Add To Cart')
                         </div>
@@ -142,13 +157,13 @@
                             {{ __('Out of Stock') }}
                         </div>
                     @else
-                        @if ($product->type != 'Listing')
-                            <a {{ $product->cross_products ? 'data-bs-target=#exampleModal' : '' }} href="javascript:;"
-                                data-href="{{ isset($merchant) ? route('merchant.cart.add', $merchant->id) : route('product.cart.add', $product->id) }}"
-                                data-cross-href="{{ route('front.show.cross.product', $product->id) }}"
+                        @if ($actualProduct->type != 'Listing')
+                            <a {{ $actualProduct->cross_products ? 'data-bs-target=#exampleModal' : '' }} href="javascript:;"
+                                data-href="{{ isset($merchant) ? route('merchant.cart.add', $merchant->id) : route('product.cart.add', $actualProduct->id) }}"
+                                data-cross-href="{{ route('front.show.cross.product', $actualProduct->id) }}"
                                 data-merchant-product="{{ $merchant->id ?? '' }}"
-                                data-product="{{ $product->id }}"
-                                class="add_cart_click {{ $product->cross_products ? 'view_cross_product' : '' }}">
+                                data-product="{{ $actualProduct->id }}"
+                                class="add_cart_click {{ $actualProduct->cross_products ? 'view_cross_product' : '' }}">
                                 <div class="add-cart">
                                     @lang('Add To Cart')
                                 </div>

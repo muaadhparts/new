@@ -71,11 +71,14 @@ class WishlistController extends UserBaseController
             return $wishlistItem;
         });
 
+        // Use $wishlists for consistency with the view
+        $wishlists = $wishlistItems;
+
         if ($request->ajax()) {
-            return view('frontend.ajax.wishlist', compact('user', 'wishlistItems', 'sort', 'pageby'));
+            return view('frontend.ajax.wishlist', compact('user', 'wishlists', 'sort', 'pageby'));
         }
 
-        return view('user.wishlist', compact('user', 'wishlistItems', 'sort', 'pageby'));
+        return view('user.wishlist', compact('user', 'wishlists', 'sort', 'pageby'));
     }
 
     /**

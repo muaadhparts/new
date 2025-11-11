@@ -1,8 +1,23 @@
+@php
+    $homeProdMerchant = $prod->merchantProducts()
+        ->where('status', 1)
+        ->whereHas('user', function ($user) {
+            $user->where('is_vendor', 2);
+        })
+        ->orderByRaw('CASE WHEN (stock IS NULL OR stock = 0) THEN 1 ELSE 0 END ASC')
+        ->orderBy('price')
+        ->first();
+
+    $homeProdUrl = $homeProdMerchant && $prod->slug
+        ? route('front.product', ['slug' => $prod->slug, 'vendor_id' => $homeProdMerchant->user_id, 'merchant_product_id' => $homeProdMerchant->id])
+        : ($prod->slug ? route('front.product.legacy', $prod->slug) : '#');
+@endphp
+
 <div class="product type-product">
     <div class="product-wrapper">
        <div class="product-image">
 
-          <a href="{{ route('front.product', $prod->slug) }}" class="woocommerce-LoopProduct-link"><img src="{{ $prod->thumbnail ? asset('assets/images/thumbnails/'.$prod->thumbnail):asset('assets/images/noimage.png') }}" alt="Product Image"></a>
+          <a href="{{ $homeProdUrl }}" class="woocommerce-LoopProduct-link"><img src="{{ $prod->thumbnail ? asset('assets/images/thumbnails/'.$prod->thumbnail):asset('assets/images/noimage.png') }}" alt="Product Image"></a>
           @if(!empty($prod->features))
           <div class="product-variations">
              @foreach($prod->features as $key => $data1)
@@ -56,7 +71,7 @@
          </div>
        </div>
        <div class="product-info">
-          <h3 class="product-title"><a href="{{ route('front.product', $prod->slug) }}">{{ $prod->showName() }}</a></h3>
+          <h3 class="product-title"><a href="{{ $homeProdUrl }}">{{ $prod->showName() }}</a></h3>
           <div class="product-price">
              <div class="price">
                 <ins>{{ $prod->showPrice() }} </ins>

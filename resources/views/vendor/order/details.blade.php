@@ -317,10 +317,20 @@
                                                 $user = App\Models\User::find(
                                                     $product['item']['user_id'],
                                                 );
+                                                $vendorOrderProductUrl = '#';
+                                                if (isset($product['item']['slug']) && isset($product['user_id']) && isset($product['merchant_product_id'])) {
+                                                    $vendorOrderProductUrl = route('front.product', [
+                                                        'slug' => $product['item']['slug'],
+                                                        'vendor_id' => $product['user_id'],
+                                                        'merchant_product_id' => $product['merchant_product_id']
+                                                    ]);
+                                                } elseif (isset($product['item']['slug'])) {
+                                                    $vendorOrderProductUrl = route('front.product.legacy', $product['item']['slug']);
+                                                }
                                             @endphp
                                             @if (isset($user))
                                             <a class="title-hover-color content product-title d-inline-block" target="_blank"
-                                                href="{{ route('front.product', $product['item']['slug']) }}">
+                                                href="{{ $vendorOrderProductUrl }}">
                                                 {{ mb_strlen($product['item']['name'], 'UTF-8') > 30
                                                     ? mb_substr($product['item']['name'], 0, 30, 'UTF-8') . '...'
                                                     : $product['item']['name'] }}
