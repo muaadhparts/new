@@ -27,12 +27,15 @@ class ProductController extends VendorBaseController
     {
         $user = $this->user;
 
-        // السِجلّات الخاصة بالبائع عبر merchant_products (وليس products)
-        $datas = $user->merchantProducts()
-            ->whereHas('product', function($query){
-                $query->where('product_type', 'normal');
+        // Get Products that belong to this vendor via merchant_products
+        // We return Product models with merchantProduct relationship loaded
+        $datas = Product::whereHas('merchantProducts', function($query) use ($user) {
+                $query->where('user_id', $user->id);
             })
-            ->with('product')
+            ->where('product_type', 'normal')
+            ->with(['merchantProducts' => function($query) use ($user) {
+                $query->where('user_id', $user->id);
+            }])
             ->latest('id')
             ->paginate(10);
 

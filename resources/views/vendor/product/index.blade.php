@@ -53,6 +53,10 @@
                     </thead>
                     <tbody>
                         @forelse ($datas as $data)
+                            @php
+                                // $data is Product model, get the vendor's merchant product
+                                $merchantProduct = $data->merchantProducts->first();
+                            @endphp
                             <tr>
 
 
@@ -74,24 +78,25 @@
 
 
                                 <td><span class="content">{{ $data->type }}</span></td>
-                                <td><span class="content">{{ $data->showPrice() }}</span></td>
+                                <td><span class="content">{{ $merchantProduct ? \App\Models\Product::convertPrice($merchantProduct->price) : $data->showPrice() }}</span></td>
 
                                 <td>
                                     @php
-                                        $active = $data->status == 1 ? 'selected' : '';
-                                        $deactivated = $data->status == 0 ? 'selected' : '';
-                                        $activeClass = $data->status == 1 ? 'active' : 'deactive';
+                                        $active = ($merchantProduct && $merchantProduct->status == 1) ? 'selected' : '';
+                                        $deactivated = ($merchantProduct && $merchantProduct->status == 0) ? 'selected' : '';
+                                        $activeClass = ($merchantProduct && $merchantProduct->status == 1) ? 'active' : 'deactive';
+                                        $merchantProductId = $merchantProduct ? $merchantProduct->id : $data->id;
                                     @endphp
                                     <div class="status position-relative">
                                         <div class="dropdown-container">
                                             <select class="form-control nice-select form__control {{ $activeClass }}"
                                                 id="product_status">
                                                 <option
-                                                    value="{{ route('vendor-prod-status', ['id1' => $data->id, 'id2' => 1]) }}"
+                                                    value="{{ route('vendor-prod-status', ['id1' => $merchantProductId, 'id2' => 1]) }}"
                                                     {{ $active }}> {{ __('Activated') }}
                                                 </option>
                                                 <option
-                                                    value="{{ route('vendor-prod-status', ['id1' => $data->id, 'id2' => 0]) }}"
+                                                    value="{{ route('vendor-prod-status', ['id1' => $merchantProductId, 'id2' => 0]) }}"
                                                     {{ $deactivated }}> {{ __('Deactivated') }}
                                                 </option>
                                             </select>
@@ -100,7 +105,7 @@
                                 </td>
                                 <td>
                                     <div class="table-icon-btns-wrapper">
-                                        <a href="{{ route('vendor-prod-edit', $data->id) }}" class="view-btn edit-btn">
+                                        <a href="{{ route('vendor-prod-edit', $merchantProductId) }}" class="view-btn edit-btn">
                                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
                                                 viewBox="0 0 24 24" fill="none">
                                                 <g clip-path="url(#clip0_910_50031)">
@@ -122,18 +127,10 @@
                                             </svg>
                                         </a>
                                         @php
-                                            $vendorProdMerchant = $data->merchantProducts()
-                                                ->where('status', 1)
-                                                ->whereHas('user', function ($user) {
-                                                    $user->where('is_vendor', 2);
-                                                })
-                                                ->orderByRaw('CASE WHEN (stock IS NULL OR stock = 0) THEN 1 ELSE 0 END ASC')
-                                                ->orderBy('price')
-                                                ->first();
-
-                                            $vendorProdUrl = $vendorProdMerchant && $data->slug
-                                                ? route('front.product', ['slug' => $data->slug, 'vendor_id' => $vendorProdMerchant->user_id, 'merchant_product_id' => $vendorProdMerchant->id])
-                                                : ($data->slug ? route('front.product.legacy', $data->slug) : '#');
+                                            // Build product URL using merchant product data
+                                            $vendorProdUrl = $merchantProduct && $data->slug
+                                                ? route('front.product', ['slug' => $data->slug, 'vendor_id' => $merchantProduct->user_id, 'merchant_product_id' => $merchantProduct->id])
+                                                : '#';
                                         @endphp
                                         <a href="{{ $vendorProdUrl }}" target="_blank"
                                             class="view-btn">
@@ -151,7 +148,7 @@
                                                 </defs>
                                             </svg>
                                         </a>
-                                        <a data-href="{{ route('vendor-prod-delete', $data->id) }}" href="javascript:;"
+                                        <a data-href="{{ route('vendor-prod-delete', $merchantProductId) }}" href="javascript:;"
                                             class="view-btn delete-btn delete_button" data-bs-toggle="modal"
                                             data-bs-target="#confirm-detete-modal">
                                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
