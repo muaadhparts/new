@@ -22,7 +22,7 @@
                         <div class="product-wrapper">
                             <div class="product-image">
                                 <a href="{{ $vendorDiffUrl }}" class="woocommerce-LoopProduct-link"><img
-                                        src="{{ $product->thumbnail ? asset('assets/images/thumbnails/' . $product->thumbnail) : asset('assets/images/noimage.png') }}"
+                                        src="{{ filter_var($product->photo, FILTER_VALIDATE_URL) ? $product->photo : ($product->photo ? \Illuminate\Support\Facades\Storage::url($product->photo) : asset('assets/images/noimage.png')) }}"
                                         alt="Product Image"></a>
                                 <div class="hover-area">
                                     @if($product->product_type == "affiliate")
@@ -110,7 +110,7 @@
                         <div class="product-wrapper">
                             <div class="product-image">
                                 <a href="{{ $vendorDiffUrl }}" class="woocommerce-LoopProduct-link"><img
-                                        src="{{ $product->thumbnail ? asset('assets/images/thumbnails/' . $product->thumbnail) : asset('assets/images/noimage.png') }}"
+                                        src="{{ filter_var($product->photo, FILTER_VALIDATE_URL) ? $product->photo : ($product->photo ? \Illuminate\Support\Facades\Storage::url($product->photo) : asset('assets/images/noimage.png')) }}"
                                         alt="Product Image"></a>
                                 <div class="hover-area">
                                     @if($product->product_type == "affiliate")
@@ -205,7 +205,7 @@
                     <div class="product-wrapper">
                         <div class="product-image">
                             <a href="{{ $vendorDiffUrl }}" class="woocommerce-LoopProduct-link"><img
-                                    src="{{ $product->thumbnail ? asset('assets/images/thumbnails/' . $product->thumbnail) : asset('assets/images/noimage.png') }}"
+                                    src="{{ filter_var($product->photo, FILTER_VALIDATE_URL) ? $product->photo : ($product->photo ? \Illuminate\Support\Facades\Storage::url($product->photo) : asset('assets/images/noimage.png')) }}"
                                     alt="Product Image"></a>
                             <div class="hover-area">
                                 @if($product->product_type == "affiliate")

@@ -27,7 +27,7 @@
            <tr>
               <td><input type="hidden" value="{{$key1}}">{{ $product['item']['id'] }}</td>
               <td>
-                <img src="{{ $product['item']['photo'] ? \Illuminate\Support\Facades\Storage::url($product['item']['photo']) : asset('assets/images/noimage.png') }}" alt="">
+                <img src="{{ filter_var($product['item']['photo'] ?? '', FILTER_VALIDATE_URL) ? $product['item']['photo'] : ($product['item']['photo'] ?? null ? \Illuminate\Support\Facades\Storage::url($product['item']['photo']) : asset('assets/images/noimage.png')) }}" alt="">
                 <br>
                  <input type="hidden" value="{{ $product['license'] }}">
                  @php

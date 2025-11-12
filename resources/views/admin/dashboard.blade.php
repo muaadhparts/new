@@ -70,7 +70,7 @@
             <div class="mycard bg4">
                 <div class="left">
                     <h5 class="title">{{ __('Total Products!') }}</h5>
-                    <span class="number">{{count($products)}}</span>
+                    <span class="number">{{$products}}</span>
                     <a href="{{route('admin-prod-index')}}" class="link">{{ __('View All') }}</a>
                 </div>
                 <div class="right d-flex align-self-center">
@@ -84,7 +84,7 @@
             <div class="mycard bg5">
                 <div class="left">
                     <h5 class="title">{{ __('Total Customers!') }}</h5>
-                    <span class="number">{{count($users)}}</span>
+                    <span class="number">{{$users}}</span>
                     <a href="{{route('admin-user-index')}}" class="link">{{ __('View All') }}</a>
                 </div>
                 <div class="right d-flex align-self-center">
@@ -98,7 +98,7 @@
             <div class="mycard bg6">
                 <div class="left">
                     <h5 class="title">{{ __('Total Posts!') }}</h5>
-                    <span class="number">{{count($blogs)}}</span>
+                    <span class="number">{{$blogs}}</span>
                     <a href="{{ route('admin-blog-index') }}" class="link">{{ __('View All') }}</a>
                 </div>
                 <div class="right d-flex align-self-center">
@@ -248,19 +248,19 @@
                                         <tbody>
                                             @foreach($poproducts as $data)
                                             <tr>
-                                            <td><img src="{{filter_var($data->photo, FILTER_VALIDATE_URL) ? $data->photo : ($data->photo ? \Illuminate\Support\Facades\Storage::url($data->photo) : asset('assets/images/noimage.png'))}}"></td>
-                                            <td>{{  mb_strlen(strip_tags($data->name),'UTF-8') > 50 ? mb_substr(strip_tags($data->name),0,50,'UTF-8').'...' : strip_tags($data->name) }}</td>
-                                            <td>{{ $data->category->name }}
-                                                    @if(isset($data->subcategory))
+                                            <td><img src="{{filter_var($data->product->photo ?? '', FILTER_VALIDATE_URL) ? $data->product->photo : ($data->product->photo ?? null ? \Illuminate\Support\Facades\Storage::url($data->product->photo) : asset('assets/images/noimage.png'))}}"></td>
+                                            <td>{{  mb_strlen(strip_tags($data->product->name ?? ''),'UTF-8') > 50 ? mb_substr(strip_tags($data->product->name),0,50,'UTF-8').'...' : strip_tags($data->product->name ?? '') }}</td>
+                                            <td>{{ $data->product->category->name ?? 'N/A' }}
+                                                    @if(isset($data->product->subcategory))
                                                     <br>
-                                                    {{ $data->subcategory->name }}
+                                                    {{ $data->product->subcategory->name }}
                                                     @endif
-                                                    @if(isset($data->childcategory))
+                                                    @if(isset($data->product->childcategory))
                                                     <br>
-                                                    {{ $data->childcategory->name }}
+                                                    {{ $data->product->childcategory->name }}
                                                     @endif
                                                 </td>
-                                                <td>{{ $data->type }}</td>
+                                                <td>{{ $data->product->type ?? 'N/A' }}</td>
 
                                                 <td> {{ $data->showPrice() }} </td>
 
@@ -304,22 +304,22 @@
                                                 <tbody>
                                                     @foreach($pproducts as $data)
                                                     <tr>
-                                                    <td><img src="{{filter_var($data->photo, FILTER_VALIDATE_URL) ? $data->photo : ($data->photo ? \Illuminate\Support\Facades\Storage::url($data->photo) : asset('assets/images/noimage.png'))}}"></td>
-                                                    <td>{{  mb_strlen(strip_tags($data->name),'UTF-8') > 50 ? mb_substr(strip_tags($data->name),0,50,'UTF-8').'...' : strip_tags($data->name) }}</td>
-                                                    <td>{{ $data->category->name }}
-                                                        @if(isset($data->subcategory))
+                                                    <td><img src="{{filter_var($data->product->photo ?? '', FILTER_VALIDATE_URL) ? $data->product->photo : ($data->product->photo ?? null ? \Illuminate\Support\Facades\Storage::url($data->product->photo) : asset('assets/images/noimage.png'))}}"></td>
+                                                    <td>{{  mb_strlen(strip_tags($data->product->name ?? ''),'UTF-8') > 50 ? mb_substr(strip_tags($data->product->name),0,50,'UTF-8').'...' : strip_tags($data->product->name ?? '') }}</td>
+                                                    <td>{{ $data->product->category->name ?? 'N/A' }}
+                                                        @if(isset($data->product->subcategory))
                                                         <br>
-                                                        {{ $data->subcategory->name }}
+                                                        {{ $data->product->subcategory->name }}
                                                         @endif
-                                                        @if(isset($data->childcategory))
+                                                        @if(isset($data->product->childcategory))
                                                         <br>
-                                                        {{ $data->childcategory->name }}
+                                                        {{ $data->product->childcategory->name }}
                                                         @endif
                                                     </td>
-                                                        <td>{{ $data->type }}</td>
+                                                        <td>{{ $data->product->type ?? 'N/A' }}</td>
                                                         <td> {{ $data->showPrice() }} </td>
                                                         <td>
-                                                            <div class="action-list"><a href="{{ route('admin-prod-edit',$data->id) }}"><i
+                                                            <div class="action-list"><a href="{{ route('admin-prod-edit',$data->product->id ?? $data->id) }}"><i
                                                                         class="fas fa-eye"></i> {{ __('Details') }}</a>
                                                             </div>
                                                         </td>

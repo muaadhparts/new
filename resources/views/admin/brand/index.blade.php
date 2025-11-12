@@ -15,7 +15,7 @@
                           <a href="javascript:;">{{ __('Home Page Settings') }} </a>
                         </li>                      
                       <li>
-                        <a href="{{ route('admin-partner-index') }}">{{ __('Brands') }}</a>
+                        <a href="{{ route('admin-brand-index') }}">{{ __('Brands') }}</a>
                       </li>
                     </ul>
                 </div>
@@ -125,7 +125,7 @@
          ordering: false,
                processing: true,
                serverSide: true,
-               ajax: '{{ route('admin-partner-datatables') }}',
+               ajax: '{{ route('admin-brand-datatables') }}',
                columns: [
                         { data: 'photo', name: 'photo' , searchable: false, orderable: false},
                         { data: 'link', name: 'link' },
@@ -139,7 +139,7 @@
 
         $(function() {
         $(".btn-area").append('<div class="col-sm-4 table-contents">'+
-          '<a class="add-btn" data-href="{{route('admin-partner-create')}}" id="add-data" data-toggle="modal" data-target="#modal1">'+
+          '<a class="add-btn" data-href="{{route('admin-brand-create')}}" id="add-data" data-toggle="modal" data-target="#modal1">'+
           '<i class="fas fa-plus"></i> {{ __('Add New Brand') }}'+
           '</a>'+
           '</div>');

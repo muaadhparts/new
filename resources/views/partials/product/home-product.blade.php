@@ -17,7 +17,7 @@
     <div class="product-wrapper">
        <div class="product-image">
 
-          <a href="{{ $homeProdUrl }}" class="woocommerce-LoopProduct-link"><img src="{{ $prod->thumbnail ? asset('assets/images/thumbnails/'.$prod->thumbnail):asset('assets/images/noimage.png') }}" alt="Product Image"></a>
+          <a href="{{ $homeProdUrl }}" class="woocommerce-LoopProduct-link"><img src="{{ filter_var($prod->photo, FILTER_VALIDATE_URL) ? $prod->photo : ($prod->photo ? \Illuminate\Support\Facades\Storage::url($prod->photo) : asset('assets/images/noimage.png')) }}" alt="Product Image"></a>
           @if(!empty($prod->features))
           <div class="product-variations">
              @foreach($prod->features as $key => $data1)

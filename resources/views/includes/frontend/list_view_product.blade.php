@@ -82,7 +82,7 @@
                 </a>
             @endif
             <img class="product-img"
-                src="{{ $actualProduct->thumbnail ? asset('assets/images/thumbnails/' . $actualProduct->thumbnail) : asset('assets/images/noimage.png') }}"
+                src="{{ filter_var($actualProduct->photo, FILTER_VALIDATE_URL) ? $actualProduct->photo : ($actualProduct->photo ? \Illuminate\Support\Facades\Storage::url($actualProduct->photo) : asset('assets/images/noimage.png')) }}"
                 alt="product img">
 
         </div>

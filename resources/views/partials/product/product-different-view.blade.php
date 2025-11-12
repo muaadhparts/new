@@ -22,7 +22,7 @@
             <div class="product-wrapper">
             <div class="product-image">
                <a href="{{ $diffViewUrl }}" class="woocommerce-LoopProduct-link"><img
-                 src="{{ $product->photo ? asset('assets/images/products/' . $product->photo) : asset('assets/images/noimage.png') }}"
+                 src="{{ filter_var($product->photo, FILTER_VALIDATE_URL) ? $product->photo : ($product->photo ? \Illuminate\Support\Facades\Storage::url($product->photo) : asset('assets/images/noimage.png')) }}"
                  alt="Product Image"></a>
                @if (round($product->offPercentage()) > 0)
                <div class="on-sale">- {{ round($product->offPercentage())}}%</div>
@@ -113,7 +113,7 @@
             <div class="product-wrapper">
             <div class="product-image">
                <a href="{{ $diffViewUrl }}" class="woocommerce-LoopProduct-link"><img
-                 src="{{ $product->photo ? asset('assets/images/products/' . $product->photo) : asset('assets/images/noimage.png') }}"
+                 src="{{ filter_var($product->photo, FILTER_VALIDATE_URL) ? $product->photo : ($product->photo ? \Illuminate\Support\Facades\Storage::url($product->photo) : asset('assets/images/noimage.png')) }}"
                  alt="Product Image"></a>
                @if (round($product->offPercentage()) > 0)
                <div class="on-sale">- {{ round($product->offPercentage())}}%</div>
@@ -206,7 +206,7 @@
            <div class="product-wrapper">
             <div class="product-image">
                <a href="{{ $diffViewUrl }}" class="woocommerce-LoopProduct-link"><img
-                  src="{{ $product->photo ? asset('assets/images/products/' . $product->photo) : asset('assets/images/noimage.png') }}"
+                  src="{{ filter_var($product->photo, FILTER_VALIDATE_URL) ? $product->photo : ($product->photo ? \Illuminate\Support\Facades\Storage::url($product->photo) : asset('assets/images/noimage.png')) }}"
                   alt="Product Image"></a>
                @if (round($product->offPercentage()) > 0)
                <div class="on-sale">- {{ round($product->offPercentage())}}%</div>

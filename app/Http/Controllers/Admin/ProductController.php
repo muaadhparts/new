@@ -119,7 +119,9 @@ class ProductController extends AdminBaseController
                 return $sum;
             })
             ->editColumn('photo', function (\App\Models\Product $data) {
-                $photo = $data->photo ? asset('assets/images/products/' . $data->photo) : asset('assets/images/noimage.png');
+                $photo = filter_var($data->photo, FILTER_VALIDATE_URL)
+                    ? $data->photo
+                    : ($data->photo ? \Illuminate\Support\Facades\Storage::url($data->photo) : asset('assets/images/noimage.png'));
                 return '<img src="' . $photo . '" alt="Image" class="img-thumbnail" style="width:80px">';
             })
             ->addColumn('brand', function (\App\Models\Product $data) {

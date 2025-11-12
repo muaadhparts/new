@@ -346,7 +346,7 @@
                                         <div class="gs-single-recent-product-widget">
                                             <div class="img-wrapper">
                                                 <img class="thumb"
-                                                    src="{{ $product['thumbnail'] ? asset('assets/images/thumbnails/' . $product['thumbnail']) : asset('assets/images/noimage.png') }}"
+                                                    src="{{ filter_var($product['photo'] ?? '', FILTER_VALIDATE_URL) ? $product['photo'] : (($product['photo'] ?? null) ? \Illuminate\Support\Facades\Storage::url($product['photo']) : asset('assets/images/noimage.png')) }}"
                                                     alt="product img">
                                             </div>
                                             <div class="content-wrapper">

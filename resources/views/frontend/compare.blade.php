@@ -47,7 +47,7 @@
                                 <td>
                                     <a href="{{ $compareProductUrl }}">
                                         <img class="img-fluid w-150"
-                                            src="{{ $product['item']->thumbnail ? asset('assets/images/thumbnails/' . $product['item']->thumbnail) : asset('assets/images/noimage.png') }}"
+                                            src="{{ filter_var($product['item']->photo, FILTER_VALIDATE_URL) ? $product['item']->photo : ($product['item']->photo ? \Illuminate\Support\Facades\Storage::url($product['item']->photo) : asset('assets/images/noimage.png')) }}"
                                             alt="compare-img">
                                     </a>
                                 </td>

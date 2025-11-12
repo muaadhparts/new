@@ -15,7 +15,7 @@
 
 <a href="{{ $flashProdUrl }}" class="single-product-flas">
     <div class="img">
-       <img src="{{ $prod->thumbnail ? asset('assets/images/thumbnails/'.$prod->thumbnail):asset('assets/images/noimage.png') }}" alt="">
+       <img src="{{ filter_var($prod->photo, FILTER_VALIDATE_URL) ? $prod->photo : ($prod->photo ? \Illuminate\Support\Facades\Storage::url($prod->photo) : asset('assets/images/noimage.png')) }}" alt="">
        @if(!empty($prod->features))
        <div class="sell-area">
           @foreach($prod->features as $key => $data1)

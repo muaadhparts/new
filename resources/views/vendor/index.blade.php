@@ -140,7 +140,7 @@
                                     <tr>
                                         <td>
                                             <img class="table-img"
-                                                src="{{ filter_var($data->photo, FILTER_VALIDATE_URL) ? $data->photo : asset('assets/images/products/' . $data->photo) }}"
+                                                src="{{ filter_var($data->photo, FILTER_VALIDATE_URL) ? $data->photo : ($data->photo ? \Illuminate\Support\Facades\Storage::url($data->photo) : asset('assets/images/noimage.png')) }}"
                                                 alt="">
                                         </td>
                                         <td class="text-start">

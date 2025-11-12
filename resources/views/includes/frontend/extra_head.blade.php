@@ -17,7 +17,7 @@
     <meta property="og:title" content="{{ $productt->name }}" />
     <meta property="og:description"
         content="{{ $productt->meta_description != null ? $productt->meta_description : strip_tags($productt->description) }}" />
-    <meta property="og:image" content="{{ asset('assets/images/thumbnails/' . $productt->thumbnail) }}" />
+    <meta property="og:image" content="{{ filter_var($productt->photo, FILTER_VALIDATE_URL) ? $productt->photo : ($productt->photo ? \Illuminate\Support\Facades\Storage::url($productt->photo) : asset('assets/images/noimage.png')) }}" />
     <meta name="author" content="GeniusOcean">
     <title>{{ substr($productt->name, 0, 11) . '-' }}{{ $gs->title }}</title>
 @else

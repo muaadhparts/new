@@ -32,7 +32,7 @@
                     </div>
                     <div class="card-body">
                         <div class="text-center mb-3">
-                            <img src="{{ asset('assets/images/products/' . $data->photo) }}"
+                            <img src="{{ filter_var($data->photo, FILTER_VALIDATE_URL) ? $data->photo : ($data->photo ? \Illuminate\Support\Facades\Storage::url($data->photo) : asset('assets/images/noimage.png')) }}"
                                  alt="{{ $data->name }}" class="img-fluid" style="max-height: 200px;">
                         </div>
                         <h6>{{ $data->name }}</h6>

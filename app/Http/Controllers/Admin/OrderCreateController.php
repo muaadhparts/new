@@ -45,10 +45,13 @@ class OrderCreateController extends AdminBaseController
         return Datatables::of($datas)
             ->editColumn('name', function (Product $data) {
                 $price = $data->price * $this->curr->value;
-                $img = '<img src="' . asset('assets/images/thumbnails/' . $data->thumbnail) . '" alt="' . $data->name . '" class="img-thumbnail" width="100"> <br>';
+                $photoUrl = filter_var($data->photo, FILTER_VALIDATE_URL)
+                    ? $data->photo
+                    : ($data->photo ? \Illuminate\Support\Facades\Storage::url($data->photo) : asset('assets/images/noimage.png'));
+                $img = '<img src="' . $photoUrl . '" alt="' . $data->name . '" class="img-thumbnail" width="100"> <br>';
                 $name =  mb_strlen($data->name, 'UTF-8') > 50 ? mb_substr($data->name, 0, 50, 'UTF-8') . '...' : $data->name;
-                
-              
+
+
                 return  $img . $name . $data->checkVendor() . '<br><small>' . __("Price") . ': ' . $price . ' ' . $this->curr->sign . '</small>';
             })
 

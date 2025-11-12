@@ -65,7 +65,7 @@
 
                                 <td class="text-start">
                                     <div class="product-name">
-                                        <img src="{{ asset(asset('assets/images/products/' . $data->photo)) }}"
+                                        <img src="{{ filter_var($data->photo, FILTER_VALIDATE_URL) ? $data->photo : ($data->photo ? \Illuminate\Support\Facades\Storage::url($data->photo) : asset('assets/images/noimage.png')) }}"
                                             alt="Image" class="img-thumbnail" style="width:80px">
                                     </div>
                                 </td>

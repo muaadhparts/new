@@ -181,7 +181,7 @@
                                                 <div class="product-image">
                                                     <a href="{{ $vCatalogProdUrl }}"
                                                         class="woocommerce-LoopProduct-link"><img
-                                                            src="{{ $prod['thumbnail'] ? asset('assets/images/thumbnails/' . $prod['thumbnail']) : asset('assets/images/noimage.png') }}"
+                                                            src="{{ filter_var($prod['photo'] ?? '', FILTER_VALIDATE_URL) ? $prod['photo'] : (($prod['photo'] ?? null) ? \Illuminate\Support\Facades\Storage::url($prod['photo']) : asset('assets/images/noimage.png')) }}"
                                                             alt="Product Image"></a>
                                                     <div class="wishlist-view">
                                                         <div class="quickview-button">
