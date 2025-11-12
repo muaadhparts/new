@@ -27,11 +27,11 @@ class ProductController extends AdminBaseController
         // // dd(['admin_datatables' => true]); // اختباري
 
         if ($request->type == 'all') {
-            $datas = \App\Models\Product::whereProductType('normal')->latest('id')->limit(50);
+            $datas = \App\Models\Product::with('brand')->whereProductType('normal')->latest('id')->limit(50);
         } elseif ($request->type == 'deactive') {
-            $datas = \App\Models\Product::whereProductType('normal')->whereStatus(0)->latest('id')->limit(50);
+            $datas = \App\Models\Product::with('brand')->whereProductType('normal')->whereStatus(0)->latest('id')->limit(50);
         } else {
-            $datas = \App\Models\Product::latest('id')->limit(50);
+            $datas = \App\Models\Product::with('brand')->latest('id')->limit(50);
         }
 
         return \Datatables::of($datas)
@@ -122,6 +122,30 @@ class ProductController extends AdminBaseController
                 $photo = $data->photo ? asset('assets/images/products/' . $data->photo) : asset('assets/images/noimage.png');
                 return '<img src="' . $photo . '" alt="Image" class="img-thumbnail" style="width:80px">';
             })
+            ->addColumn('brand', function (\App\Models\Product $data) {
+                return $data->brand ? $data->brand->name : __('N/A');
+            })
+            ->addColumn('quality_brand', function (\App\Models\Product $data) {
+                // Get the first active merchant product with quality brand
+                $mp = $data->merchantProducts()
+                    ->where('status', 1)
+                    ->with('qualityBrand')
+                    ->whereNotNull('brand_quality_id')
+                    ->first();
+
+                return $mp && $mp->qualityBrand ? $mp->qualityBrand->display_name : __('N/A');
+            })
+            ->addColumn('vendor', function (\App\Models\Product $data) {
+                // Get the first active merchant product with vendor
+                $mp = $data->merchantProducts()
+                    ->where('status', 1)
+                    ->with('user')
+                    ->orderByRaw('CASE WHEN (stock IS NULL OR stock = 0) THEN 1 ELSE 0 END ASC')
+                    ->orderBy('price')
+                    ->first();
+
+                return $mp && $mp->user ? $mp->user->shop_name : __('N/A');
+            })
             ->addColumn('status', function (\App\Models\Product $data) {
                 $class = $data->status == 1 ? 'drop-success' : 'drop-danger';
                 $s     = $data->status == 1 ? 'selected' : '';
@@ -149,7 +173,7 @@ class ProductController extends AdminBaseController
                             <a href="javascript:;" data-href="' . route('admin-prod-delete', $data->id) . '" data-toggle="modal" data-target="#confirm-delete" class="delete"><i class="fas fa-trash-alt"></i> ' . __("Delete") . '</a>
                         </div></div>';
             })
-            ->rawColumns(['name', 'sku', 'status', 'action', 'photo'])
+            ->rawColumns(['name', 'sku', 'status', 'action', 'photo', 'brand', 'quality_brand', 'vendor'])
             ->toJson();
     }
 
@@ -158,7 +182,7 @@ class ProductController extends AdminBaseController
     {
         // // dd(['admin_catalog_datatables' => true]); // اختباري
 
-        $datas = Product::where('is_catalog', '=', 1)->orderBy('id', 'desc');
+        $datas = Product::with('brand')->where('is_catalog', '=', 1)->orderBy('id', 'desc');
 
         //--- Integrating This Collection Into Datatables
         return Datatables::of($datas)
@@ -206,10 +230,34 @@ class ProductController extends AdminBaseController
                 $ns = $data->status == 0 ? 'selected' : '';
                 return '<div class="action-list"><select class="process select droplinks ' . $class . '"><option data-val="1" value="' . route('admin-prod-status', ['id1' => $data->id, 'id2' => 1]) . '" ' . $s . '>' . __("Activated") . '</option><option data-val="0" value="' . route('admin-prod-status', ['id1' => $data->id, 'id2' => 0]) . '" ' . $ns . '>' . __("Deactivated") . '</option>/select></div>';
             })
+            ->addColumn('brand', function (\App\Models\Product $data) {
+                return $data->brand ? $data->brand->name : __('N/A');
+            })
+            ->addColumn('quality_brand', function (\App\Models\Product $data) {
+                // Get the first active merchant product with quality brand
+                $mp = $data->merchantProducts()
+                    ->where('status', 1)
+                    ->with('qualityBrand')
+                    ->whereNotNull('brand_quality_id')
+                    ->first();
+
+                return $mp && $mp->qualityBrand ? $mp->qualityBrand->display_name : __('N/A');
+            })
+            ->addColumn('vendor', function (\App\Models\Product $data) {
+                // Get the first active merchant product with vendor
+                $mp = $data->merchantProducts()
+                    ->where('status', 1)
+                    ->with('user')
+                    ->orderByRaw('CASE WHEN (stock IS NULL OR stock = 0) THEN 1 ELSE 0 END ASC')
+                    ->orderBy('price')
+                    ->first();
+
+                return $mp && $mp->user ? $mp->user->shop_name : __('N/A');
+            })
             ->addColumn('action', function (Product $data) {
                 return '<div class="godropdown"><button class="go-dropdown-toggle">  ' . __("Actions") . '<i class="fas fa-chevron-down"></i></button><div class="action-list"><a href="' . route('admin-prod-edit', $data->id) . '"> <i class="fas fa-edit"></i> ' . __("Edit") . '</a><a href="javascript" class="set-gallery" data-toggle="modal" data-target="#setgallery"><input type="hidden" value="' . $data->id . '"><i class="fas fa-eye"></i> ' . __("View Gallery") . '</a><a data-href="' . route('admin-prod-feature', $data->id) . '" class="feature" data-toggle="modal" data-target="#modal2"> <i class="fas fa-star"></i> ' . __("Highlight") . '</a><a href="javascript:;" data-href="' . route('admin-prod-catalog', ['id1' => $data->id, 'id2' => 0]) . '" data-toggle="modal" data-target="#catalog-modal"><i class="fas fa-trash-alt"></i> ' . __("Remove Catalog") . '</a></div></div>';
             })
-            ->rawColumns(['name', 'sku', 'status', 'action'])
+            ->rawColumns(['name', 'sku', 'status', 'action', 'brand', 'quality_brand', 'vendor'])
             ->toJson(); //--- Returning Json Data To Client Side
     }
 

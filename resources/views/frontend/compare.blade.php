@@ -89,6 +89,77 @@
                             @endforeach
 
                         </tr>
+
+                        {{-- SKU Row --}}
+                        <tr class="wow-replaced" data-wow-delay=".1s">
+                            <td>
+                                <h6 class="td-title">@lang('SKU')</h6>
+                            </td>
+                            @foreach ($products as $product)
+                                <td><span class="table-pera font-monospace">{{ $product['item']->sku ?? __('N/A') }}</span></td>
+                            @endforeach
+                        </tr>
+
+                        {{-- Brand Row --}}
+                        <tr class="wow-replaced" data-wow-delay=".1s">
+                            <td>
+                                <h6 class="td-title">@lang('Brand')</h6>
+                            </td>
+                            @foreach ($products as $product)
+                                <td><span class="table-pera">{{ $product['item']->brand ? $product['item']->brand->name : __('N/A') }}</span></td>
+                            @endforeach
+                        </tr>
+
+                        {{-- Quality Brand Row --}}
+                        <tr class="wow-replaced" data-wow-delay=".1s">
+                            <td>
+                                <h6 class="td-title">@lang('Quality Brand')</h6>
+                            </td>
+                            @foreach ($products as $product)
+                                @php
+                                    $compareMp = $product['merchant_product'] ?? null;
+                                @endphp
+                                <td><span class="table-pera">{{ $compareMp && $compareMp->qualityBrand ? $compareMp->qualityBrand->display_name : __('N/A') }}</span></td>
+                            @endforeach
+                        </tr>
+
+                        {{-- Vendor Row --}}
+                        <tr class="wow-replaced" data-wow-delay=".1s">
+                            <td>
+                                <h6 class="td-title">@lang('Vendor')</h6>
+                            </td>
+                            @foreach ($products as $product)
+                                @php
+                                    $compareMp = $product['merchant_product'] ?? null;
+                                @endphp
+                                <td><span class="table-pera">{{ $compareMp && $compareMp->user ? $compareMp->user->shop_name : __('N/A') }}</span></td>
+                            @endforeach
+                        </tr>
+
+                        {{-- Stock Row --}}
+                        <tr class="wow-replaced" data-wow-delay=".1s">
+                            <td>
+                                <h6 class="td-title">@lang('Stock')</h6>
+                            </td>
+                            @foreach ($products as $product)
+                                @php
+                                    $compareMp = $product['merchant_product'] ?? null;
+                                    $compareStock = $compareMp ? $compareMp->stock : null;
+                                    if ($compareStock === null || $compareStock === '') {
+                                        $compareStockText = __('Unlimited');
+                                        $compareStockClass = 'text-success';
+                                    } elseif ($compareStock == 0) {
+                                        $compareStockText = __('Out Of Stock');
+                                        $compareStockClass = 'text-danger';
+                                    } else {
+                                        $compareStockText = $compareStock . ' ' . __('Available');
+                                        $compareStockClass = 'text-primary';
+                                    }
+                                @endphp
+                                <td><span class="table-pera {{ $compareStockClass }}">{{ $compareStockText }}</span></td>
+                            @endforeach
+                        </tr>
+
                         <tr class="wow-replaced" data-wow-delay=".1s">
                             <td>
                                 <h6 class="td-title">@lang('Rating')</h6>

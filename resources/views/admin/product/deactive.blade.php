@@ -33,6 +33,9 @@
 													<thead>
 														<tr>
 									                        <th>{{ __("Name") }}</th>
+									                        <th>{{ __("Brand") }}</th>
+									                        <th>{{ __("Quality Brand") }}</th>
+									                        <th>{{ __("Vendor") }}</th>
 									                        <th>{{ __("Type") }}</th>
 									                        <th>{{ __("Stock") }}</th>
 									                        <th>{{ __("Price") }}</th>
@@ -211,6 +214,9 @@
                ajax: '{{ route('admin-prod-datatables') }}?type=deactive',
                columns: [
                         { data: 'name', name: 'name' },
+                        { data: 'brand', name: 'brand' },
+                        { data: 'quality_brand', name: 'quality_brand' },
+                        { data: 'vendor', name: 'vendor' },
                         { data: 'type', name: 'type' },
                         { data: 'stock', name: 'stock' },
                         { data: 'price', name: 'price' },

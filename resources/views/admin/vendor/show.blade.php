@@ -134,6 +134,9 @@ table#example2 {
                                                                     <thead>
                                                                         <tr>
                                                                             <th>{{ __("Product ID") }}</th>
+                                                                            <th>{{ __("Name") }}</th>
+                                                                            <th>{{ __("Brand") }}</th>
+                                                                            <th>{{ __("Quality Brand") }}</th>
                                                                             <th>{{ __("Type") }}</th>
                                                                             <th>{{ __("Stock") }}</th>
                                                                             <th>{{ __("Price") }}</th>
@@ -153,6 +156,9 @@ table#example2 {
                                                                         @endphp
                                                                         <tr>
                                                                         <td><a href="{{ $adminVendorUrl }}" target="_blank">{{ sprintf("%'.08d", $dt->id ?? 0) }}</a></td>
+                                                                            <td>{{ $dt ? mb_substr(strip_tags($dt->name), 0, 50, 'UTF-8') : 'N/A' }}</td>
+                                                                            <td>{{ $dt && $dt->brand ? $dt->brand->name : 'N/A' }}</td>
+                                                                            <td>{{ $merchantProduct && $merchantProduct->qualityBrand ? $merchantProduct->qualityBrand->display_name : 'N/A' }}</td>
                                                                             <td>{{ $dt->type ?? 'N/A' }}</td>
                                                                             @php
                                                                             $stck = (string)($merchantProduct->stock ?? $dt->stock ?? '');

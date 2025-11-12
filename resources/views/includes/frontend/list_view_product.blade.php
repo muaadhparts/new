@@ -91,6 +91,18 @@
                 <a href="{{ $detailsUrl }}"> {{ $actualProduct->showName() }}</a>
             </h4>
 
+            {{-- Product Info: SKU, Brand, Quality Brand, Vendor, Stock --}}
+            <x-product-info
+                :product="$actualProduct"
+                :mp="$merchant"
+                display-mode="list"
+                :show-sku="true"
+                :show-brand="true"
+                :show-quality-brand="true"
+                :show-vendor="true"
+                :show-stock="true"
+            />
+
             <div class="price-wrapper">
                 @if($merchant)
                     <h4>{{ method_exists($merchant,'showPrice') ? $merchant->showPrice() : \App\Models\Product::convertPrice($merchant->price) }}</h4>

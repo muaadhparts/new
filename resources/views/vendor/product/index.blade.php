@@ -45,7 +45,10 @@
 
                             <th>{{ __('Image') }}</th>
                             <th>{{ __('Name') }}</th>
+                            <th>{{ __('Brand') }}</th>
+                            <th>{{ __('Quality Brand') }}</th>
                             <th>{{ __('Type') }}</th>
+                            <th>{{ __('Stock') }}</th>
                             <th>{{ __('Price') }}</th>
                             <th class="text-center">{{ __('Status') }}</th>
                             <th class="text-center">{{ __('Options') }}</th>
@@ -76,8 +79,23 @@
                                     </div>
                                 </td>
 
-
+                                <td><span class="content">{{ $data->brand ? $data->brand->name : __('N/A') }}</span></td>
+                                <td><span class="content">{{ $merchantProduct && $merchantProduct->qualityBrand ? $merchantProduct->qualityBrand->display_name : __('N/A') }}</span></td>
                                 <td><span class="content">{{ $data->type }}</span></td>
+                                <td>
+                                    <span class="content">
+                                        @php
+                                            $stock = $merchantProduct ? $merchantProduct->stock : null;
+                                            if ($stock === null || $stock === '') {
+                                                echo __('Unlimited');
+                                            } elseif ($stock == 0) {
+                                                echo '<span class="text-danger">' . __('Out Of Stock') . '</span>';
+                                            } else {
+                                                echo $stock;
+                                            }
+                                        @endphp
+                                    </span>
+                                </td>
                                 <td><span class="content">{{ $merchantProduct ? \App\Models\Product::convertPrice($merchantProduct->price) : $data->showPrice() }}</span></td>
 
                                 <td>
@@ -164,7 +182,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="6" class="text-center">@lang('No Products Found')</td>
+                                <td colspan="9" class="text-center">@lang('No Products Found')</td>
                             </tr>
                         @endforelse
 

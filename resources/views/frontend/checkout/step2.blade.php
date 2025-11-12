@@ -232,7 +232,7 @@
                                             <div class="img-wrapper">
                                                 <a href="#">
                                                     <img width="200" class="img-cls"
-                                                        src="{{ asset('assets/images/products/' . $product['item']['photo']) }}"
+                                                        src="{{ $product['item']['photo'] ? \Illuminate\Support\Facades\Storage::url($product['item']['photo']) : asset('assets/images/noimage.png') }}"
                                                         alt="product">
                                                 </a>
                                             </div>

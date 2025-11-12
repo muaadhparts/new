@@ -33,9 +33,13 @@ class ProductController extends VendorBaseController
                 $query->where('user_id', $user->id);
             })
             ->where('product_type', 'normal')
-            ->with(['merchantProducts' => function($query) use ($user) {
-                $query->where('user_id', $user->id);
-            }])
+            ->with([
+                'brand', // Eager load brand
+                'merchantProducts' => function($query) use ($user) {
+                    $query->where('user_id', $user->id)
+                          ->with(['qualityBrand', 'user']); // Eager load quality brand and vendor
+                }
+            ])
             ->latest('id')
             ->paginate(10);
 

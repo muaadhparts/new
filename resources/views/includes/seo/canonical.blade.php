@@ -11,7 +11,7 @@
             <meta property="og:description" content="{{ $productt->meta_description }}">
         @endif
         @if($productt->photo)
-            <meta property="og:image" content="{{ \Illuminate\Support\Facades\Storage::url($productt->photo) }}">
+            <meta property="og:image" content="{{ $productt->photo ? \Illuminate\Support\Facades\Storage::url($productt->photo) : asset('assets/images/noimage.png') }}">
         @endif
 
         {{-- Twitter Card --}}
@@ -21,7 +21,7 @@
             <meta name="twitter:description" content="{{ $productt->meta_description }}">
         @endif
         @if($productt->photo)
-            <meta name="twitter:image" content="{{ \Illuminate\Support\Facades\Storage::url($productt->photo) }}">
+            <meta name="twitter:image" content="{{ $productt->photo ? \Illuminate\Support\Facades\Storage::url($productt->photo) : asset('assets/images/noimage.png') }}">
         @endif
 
         {{-- Product Schema --}}
@@ -30,7 +30,7 @@
             "@context": "https://schema.org/",
             "@type": "Product",
             "name": "{{ $productt->name }}",
-            "image": "{{ \Illuminate\Support\Facades\Storage::url($productt->photo) }}",
+            "image": "{{ $productt->photo ? \Illuminate\Support\Facades\Storage::url($productt->photo) : asset('assets/images/noimage.png') }}",
             "description": "{{ $productt->meta_description ?? strip_tags($productt->description ?? '') }}",
             "sku": "{{ $productt->sku }}",
             "offers": {

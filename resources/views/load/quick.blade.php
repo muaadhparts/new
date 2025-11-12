@@ -5,13 +5,13 @@
           <div class="col-lg-5">
               <div class="xzoom-container">
                   <img class="xzoom5" id="xzoom-magnific"
-                    src="{{ \Illuminate\Support\Facades\Storage::url($product->photo) ?? asset('assets/images/noimage.png') }}"
-                    xoriginal="{{ \Illuminate\Support\Facades\Storage::url($product->photo) ?? asset('assets/images/noimage.png') }}" />
+                    src="{{ $product->photo ? \Illuminate\Support\Facades\Storage::url($product->photo) : asset('assets/images/noimage.png') }}"
+                    xoriginal="{{ $product->photo ? \Illuminate\Support\Facades\Storage::url($product->photo) : asset('assets/images/noimage.png') }}" />
                   <div class="xzoom-thumbs">
                     <div class="all-slider">
 
-                      <a href="{{ \Illuminate\Support\Facades\Storage::url($product->photo) ?? asset('assets/images/noimage.png') }}">
-                        <img class="xzoom-gallery5" width="80" src="{{ \Illuminate\Support\Facades\Storage::url($product->photo) ?? asset('assets/images/noimage.png') }}">
+                      <a href="{{ $product->photo ? \Illuminate\Support\Facades\Storage::url($product->photo) : asset('assets/images/noimage.png') }}">
+                        <img class="xzoom-gallery5" width="80" src="{{ $product->photo ? \Illuminate\Support\Facades\Storage::url($product->photo) : asset('assets/images/noimage.png') }}">
                       </a>
 
                       @foreach($product->galleries as $gal)

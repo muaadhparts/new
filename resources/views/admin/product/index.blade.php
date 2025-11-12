@@ -33,6 +33,9 @@
                                     <tr>
                                         <th>{{ __('Image') }}</th>
                                         <th>{{ __('Name') }}</th>
+                                        <th>{{ __('Brand') }}</th>
+                                        <th>{{ __('Quality Brand') }}</th>
+                                        <th>{{ __('Vendor') }}</th>
                                         <th>{{ __('Type') }}</th>
                                         <th>{{ __('Stock') }}</th>
                                         <th>{{ __('Price') }}</th>
@@ -214,6 +217,18 @@
 					{
                         data: 'name',
                         name: 'name'
+                    },
+                    {
+                        data: 'brand',
+                        name: 'brand'
+                    },
+                    {
+                        data: 'quality_brand',
+                        name: 'quality_brand'
+                    },
+                    {
+                        data: 'vendor',
+                        name: 'vendor'
                     },
                     {
                         data: 'type',

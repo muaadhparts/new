@@ -12,7 +12,7 @@
     // صورة أساسية
     $mainPhoto = filter_var($product->photo ?? '', FILTER_VALIDATE_URL)
         ? $product->photo
-        : (isset($product->photo) ? \Illuminate\Support\Facades\Storage::url($product->photo) : '');
+        : (($product->photo ?? null) ? \Illuminate\Support\Facades\Storage::url($product->photo) : asset('assets/images/noimage.png'));
 
     // حماية في حال عدم تمرير $gs من الـ View الأب
     $gs = $gs ?? (isset($__data['gs']) ? $__data['gs'] : null);

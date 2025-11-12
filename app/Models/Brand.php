@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Brand extends Model
 {
-    protected $fillable = ['link','photo'];
+    protected $fillable = ['name', 'link', 'photo'];
 
     public $timestamps = false;
 

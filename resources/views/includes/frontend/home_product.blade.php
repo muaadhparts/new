@@ -156,6 +156,19 @@
             <a href="{{ $productUrl }}">
                 <h6 class="product-title">{{ $actualProduct->showName() }}</h6>
             </a>
+
+            {{-- Product Info: SKU, Brand, Quality Brand, Vendor, Stock --}}
+            <x-product-info
+                :product="$actualProduct"
+                :mp="$merchant"
+                display-mode="inline"
+                :show-sku="true"
+                :show-brand="true"
+                :show-quality-brand="true"
+                :show-vendor="true"
+                :show-stock="true"
+            />
+
             <div class="price-wrapper">
                 <h6>{{ $actualProduct->showPrice() }}</h6>
 

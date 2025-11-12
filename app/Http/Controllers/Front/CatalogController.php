@@ -80,7 +80,8 @@ class CatalogController extends FrontBaseController
         }
 
         // Retrieve latest products that have at least one active merchant listing with a vendor account
-        $data['latest_products'] = Product::whereLatest(1)
+        $data['latest_products'] = Product::with('brand')
+            ->whereLatest(1)
             ->whereHas('merchantProducts', function ($q) {
                 $q->where('status', 1)
                     ->whereHas('user', function ($user) {
@@ -98,7 +99,7 @@ class CatalogController extends FrontBaseController
             'user',
             'qualityBrand',
             'product' => function ($q) {
-                $q->withCount('ratings')->withAvg('ratings', 'rating');
+                $q->with('brand')->withCount('ratings')->withAvg('ratings', 'rating');
             },
         ])
             ->leftJoin('products', 'products.id', '=', 'merchant_products.product_id')

@@ -22,7 +22,7 @@
             </div>
         </td>
         <td class="product-thumbnail">
-            <a href="{{ $wishlistProductUrl }}"> <img src="{{ $wishlist->photo ? asset('assets/images/products/'.$wishlist->photo):asset('assets/images/noimage.png') }}" alt=""> </a>
+            <a href="{{ $wishlistProductUrl }}"> <img src="{{ $wishlist->photo ? \Illuminate\Support\Facades\Storage::url($wishlist->photo) : asset('assets/images/noimage.png') }}" alt=""> </a>
         </td>
         <td class="product-name"> <a href="{{ $wishlistProductUrl }}">{{  mb_strlen($wishlist->name,'UTF-8') > 35 ? mb_substr($wishlist->name,0,35,'UTF-8').'...' : $wishlist->name }}</a></td>
         <td class="product-price"> <span class="woocommerce-Price-amount amount"><bdi><span class="woocommerce-Price-currencySymbol">{{ $wishlist->showPrice() }}  <small>

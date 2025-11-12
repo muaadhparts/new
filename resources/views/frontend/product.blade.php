@@ -50,9 +50,9 @@
                 <div class="col-lg-6 wow-replaced" data-wow-delay=".1s">
                     <div class="gs-product-details-gallery-wrapper">
                         <div class="product-main-slider">
-                            <img src="{{ filter_var($productt->photo, FILTER_VALIDATE_URL) ? $productt->photo : asset('assets/images/products/' . $productt->photo) }}"
+                            <img src="{{ filter_var($productt->photo, FILTER_VALIDATE_URL) ? $productt->photo : ($productt->photo ? \Illuminate\Support\Facades\Storage::url($productt->photo) : asset('assets/images/noimage.png')) }}"
                                 alt="Thumb Image"
-                                data-zoom-image="{{ filter_var($productt->photo, FILTER_VALIDATE_URL) ? $productt->photo : asset('assets/images/products/' . $productt->photo) }}"
+                                data-zoom-image="{{ filter_var($productt->photo, FILTER_VALIDATE_URL) ? $productt->photo : ($productt->photo ? \Illuminate\Support\Facades\Storage::url($productt->photo) : asset('assets/images/noimage.png')) }}"
                                 class="main-img" alt="gallery-img">
                             @foreach ($productt->galleries as $gal)
                                 <img src="{{ asset('assets/images/galleries/' . $gal->photo) }}"
@@ -62,9 +62,9 @@
                         </div>
 
                         <div class="product-nav-slider">
-                            <img src="{{ filter_var($productt->photo, FILTER_VALIDATE_URL) ? $productt->photo : asset('assets/images/products/' . $productt->photo) }}"
+                            <img src="{{ filter_var($productt->photo, FILTER_VALIDATE_URL) ? $productt->photo : ($productt->photo ? \Illuminate\Support\Facades\Storage::url($productt->photo) : asset('assets/images/noimage.png')) }}"
                                 alt="Thumb Image"
-                                data-zoom-image="{{ filter_var($productt->photo, FILTER_VALIDATE_URL) ? $productt->photo : asset('assets/images/products/' . $productt->photo) }}"
+                                data-zoom-image="{{ filter_var($productt->photo, FILTER_VALIDATE_URL) ? $productt->photo : ($productt->photo ? \Illuminate\Support\Facades\Storage::url($productt->photo) : asset('assets/images/noimage.png')) }}"
                                 class="nav-img" alt="gallery-img">
                             @foreach ($productt->galleries as $gal)
                                 <img src="{{ asset('assets/images/galleries/' . $gal->photo) }}"
@@ -98,6 +98,19 @@
                                 </svg>
                                 <span class="rating">{{ number_format($productt->ratings_avg_rating, 1) }}
                                     ({{ App\Models\Rating::ratingCount($productt->id) }} @lang('Reviews'))</span>
+                            </div>
+
+                            {{-- Product Info: SKU, Brand, Quality Brand, Vendor, Stock --}}
+                            <x-product-info
+                                :product="$productt"
+                                :mp="$merchantProduct ?? null"
+                                display-mode="badges"
+                                :show-sku="true"
+                                :show-brand="true"
+                                :show-quality-brand="true"
+                                :show-vendor="true"
+                                :show-stock="true"
+                            />
                             </div>
                         </div>
 

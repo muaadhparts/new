@@ -136,7 +136,11 @@ class VendorController extends AdminBaseController
     //*** GET Request
     public function show($id)
     {
-        $data = User::findOrFail($id);
+        $data = User::with([
+            'merchantProducts' => function($query) {
+                $query->with(['product.brand', 'qualityBrand', 'user']);
+            }
+        ])->findOrFail($id);
         return view('admin.vendor.show', compact('data'));
     }
 

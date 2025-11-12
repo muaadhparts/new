@@ -46,7 +46,7 @@
                                 <tr class="">
                                     <td class="cart-product-area">
                                         <div class="cart-product d-flex">
-                                            <img src="{{ $product['item']['photo'] ? asset('assets/images/products/' . $product['item']['photo']) : asset('assets/images/noimage.png') }}"
+                                            <img src="{{ $product['item']['photo'] ? \Illuminate\Support\Facades\Storage::url($product['item']['photo']) : asset('assets/images/noimage.png') }}"
                                                 alt="">
                                             <div class="cart-product-info">
                                                 @php

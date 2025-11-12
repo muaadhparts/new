@@ -55,7 +55,7 @@ class ProductDetailsController extends FrontBaseController
         // Otherwise it's the new format: /item/{slug}/store/{vendor_id}/merchant_products/{merchant_product_id}
 
         // 1) Load merchant product by ID first (with product relationship)
-        $merchantProduct = MerchantProduct::with(['user', 'qualityBrand', 'product.galleries'])
+        $merchantProduct = MerchantProduct::with(['user', 'qualityBrand', 'product.galleries', 'product.brand'])
             ->find($merchant_product_id);
 
         if (!$merchantProduct) {
