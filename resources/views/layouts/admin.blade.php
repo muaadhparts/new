@@ -54,62 +54,14 @@
 	<link rel="stylesheet" href="{{ asset('assets/front/css/style.css') }}">
 	<link rel="stylesheet" href="{{ asset('assets/front/css/custom.css') }}">
 
-	{{-- Hide bottom layer (search, menu, cart) but keep top layer (language, currency) --}}
+	{{-- Hide bottom layer and raise header above all content --}}
 	<style>
 		.frontend-header-wrapper .header-top {
 			display: none !important;
 		}
-
-		/* Fix dropdown menus visibility in admin panel */
 		.frontend-header-wrapper {
 			position: relative;
-			z-index: 9999 !important;
-			overflow: visible !important;
-		}
-
-		.frontend-header-wrapper .header-section {
-			overflow: visible !important;
-		}
-
-		.frontend-header-wrapper .info-bar {
-			overflow: visible !important;
-		}
-
-		.frontend-header-wrapper .dropdown {
-			position: relative;
-		}
-
-		.frontend-header-wrapper .dropdown-menu {
-			position: absolute !important;
-			z-index: 10000 !important;
-			display: none;
-			min-width: 150px;
-			background: white;
-			border: 1px solid #ddd;
-			border-radius: 4px;
-			box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-			margin-top: 5px;
-		}
-
-		.frontend-header-wrapper .dropdown:hover .dropdown-menu,
-		.frontend-header-wrapper .dropdown .dropdown-menu.show {
-			display: block !important;
-		}
-
-		.frontend-header-wrapper .dropdown-item {
-			display: block;
-			padding: 8px 16px;
-			color: #333;
-			text-decoration: none;
-			transition: background 0.2s;
-		}
-
-		.frontend-header-wrapper .dropdown-item:hover {
-			background: #f5f5f5;
-		}
-
-		.frontend-header-wrapper .dropdown-toggle::after {
-			display: none;
+			z-index: 99999;
 		}
 	</style>
 
@@ -289,7 +241,8 @@
 	<!-- Dashboard Core -->
 	<script src="{{asset('assets/admin/js/vendors/jquery-1.12.4.min.js')}}"></script>
 	<script src="{{asset('assets/admin/js/vendors/vue.js')}}"></script>
-	<script src="{{asset('assets/admin/js/vendors/bootstrap.min.js')}}"></script>
+	{{-- Frontend Bootstrap 5 for dropdowns --}}
+	<script src="{{asset('assets/front/js/bootstrap.bundle.min.js')}}"></script>
 	<script src="{{asset('assets/admin/js/jqueryui.min.js')}}"></script>
 	<!-- Fullside-menu Js-->
 	<script src="{{asset('assets/admin/plugins/fullside-menu/jquery.slimscroll.min.js')}}"></script>

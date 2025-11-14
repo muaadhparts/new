@@ -54,7 +54,9 @@
                             <div class="dropdown">
                                 <button class="dropdown-toggle" type="button" data-bs-toggle="dropdown"
                                     aria-expanded="false">
-                                    @lang('English')
+                                    {{ Session::has('language')
+                                        ? $languges->where('id', '=', Session::get('language'))->first()->language
+                                        : $languges->where('is_default', '=', 1)->first()->language }}
                                 </button>
                                 <ul class="dropdown-menu">
                                     @foreach ($languges as $language)
