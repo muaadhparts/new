@@ -43,14 +43,14 @@ class AdminLanguageController extends AdminBaseController
     //*** POST Request
     public function store(Request $request)
     {
-        $rules = ['language' => 'unique:languages'];
+        $rules = ['language' => 'unique:admin_languages'];
         $customs = ['language.unique' => 'This language has already been taken.'];
         $validator = Validator::make($request->all(), $rules, $customs);
         if ($validator->fails()) {
             return response()->json(['errors' => $validator->getMessageBag()->toArray()]);
         }
 
-        $new = null;
+        $new = [];
         $input = $request->all();
         $data = new AdminLanguage();
         $data->language = $input['language'];
@@ -61,14 +61,41 @@ class AdminLanguageController extends AdminBaseController
         $data->save();
 
         unset($input['_token'], $input['language']);
-        $keys = $request->keys;
-        $values = $request->values;
-        foreach (array_combine($keys, $values) as $key => $value) {
+        $keys = $request->input('keys', []);
+        $values = $request->input('values', []);
+
+        // Filter out empty keys and values
+        $filteredKeys = [];
+        $filteredValues = [];
+
+        foreach ($keys as $index => $key) {
+            // Only include if both key and value exist and are not empty
+            if (!empty($key) && isset($values[$index]) && $values[$index] !== '') {
+                $filteredKeys[] = trim($key);
+                $filteredValues[] = $values[$index];
+            }
+        }
+
+        // Check if arrays have same length
+        if (count($filteredKeys) !== count($filteredValues)) {
+            return response()->json([
+                'errors' => ['keys' => ['The number of keys and values must match.']]
+            ], 422);
+        }
+
+        // Check if we have any data
+        if (count($filteredKeys) === 0) {
+            return response()->json([
+                'errors' => ['keys' => ['At least one key-value pair is required.']]
+            ], 422);
+        }
+
+        foreach (array_combine($filteredKeys, $filteredValues) as $key => $value) {
             $n = str_replace("_", " ", $key);
             $new[$n] = $value;
         }
 
-        $mydata = json_encode($new, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
+        $mydata = json_encode($new, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
         file_put_contents(resource_path('lang/' . $data->file), $mydata);
 
         $msg = __('New Data Added Successfully.');
@@ -94,35 +121,67 @@ class AdminLanguageController extends AdminBaseController
     //*** POST Request
     public function update(Request $request, $id)
     {
-        $rules = ['language' => 'unique:languages,language,' . $id];
+        // Check if PHP encountered a multipart body parts limit error
+        $lastError = error_get_last();
+        if ($lastError && strpos($lastError['message'], 'Multipart body parts limit exceeded') !== false) {
+            return response()->json([
+                'errors' => ['general' => [
+                    'Too many language entries. Please contact your administrator to increase the PHP max_multipart_body_parts limit in php.ini, or reduce the number of language entries.'
+                ]]
+            ], 422);
+        }
+
+        $rules = ['language' => 'unique:admin_languages,language,' . $id];
         $customs = ['language.unique' => 'This language has already been taken.'];
         $validator = Validator::make($request->all(), $rules, $customs);
         if ($validator->fails()) {
             return response()->json(['errors' => $validator->getMessageBag()->toArray()]);
         }
 
-        $new = null;
+        $new = [];
         $input = $request->all();
         $data = AdminLanguage::findOrFail($id);
-
-        $filePath = resource_path('lang/' . $data->file);
-        if (file_exists($filePath)) {
-            unlink($filePath);
-        }
 
         $data->language = $input['language'];
         $data->rtl = $input['rtl'];
         $data->update();
 
         unset($input['_token'], $input['language']);
-        $keys = $request->keys;
-        $values = $request->values;
-        foreach (array_combine($keys, $values) as $key => $value) {
+        $keys = $request->input('keys', []);
+        $values = $request->input('values', []);
+
+        // Filter out empty keys and values
+        $filteredKeys = [];
+        $filteredValues = [];
+
+        foreach ($keys as $index => $key) {
+            // Only include if both key and value exist and are not empty
+            if (!empty($key) && isset($values[$index]) && $values[$index] !== '') {
+                $filteredKeys[] = trim($key);
+                $filteredValues[] = $values[$index];
+            }
+        }
+
+        // Check if arrays have same length
+        if (count($filteredKeys) !== count($filteredValues)) {
+            return response()->json([
+                'errors' => ['keys' => ['The number of keys and values must match.']]
+            ], 422);
+        }
+
+        // Check if we have any data
+        if (count($filteredKeys) === 0) {
+            return response()->json([
+                'errors' => ['keys' => ['At least one key-value pair is required.']]
+            ], 422);
+        }
+
+        foreach (array_combine($filteredKeys, $filteredValues) as $key => $value) {
             $n = str_replace("_", " ", $key);
             $new[$n] = $value;
         }
 
-        $mydata = json_encode($new, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
+        $mydata = json_encode($new, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
         file_put_contents(resource_path('lang/' . $data->file), $mydata);
 
         $msg = __('Data Updated Successfully.');

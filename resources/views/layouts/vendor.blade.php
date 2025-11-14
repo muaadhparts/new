@@ -7,31 +7,102 @@
     <title>@lang('Vendor Dashboard')</title>
     <!--Essential css files-->
     <link rel="stylesheet" href="{{ asset('assets/front') }}/css/bootstrap.min.css">
-    <link rel="stylesheet" href="{{ asset('assets/front') }}/css/all.css">
+    <link rel="stylesheet" href="{{ asset('assets/front/css/all.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/front') }}/css/slick.css">
     <link rel="stylesheet" href="{{ asset('assets/front') }}/css/nice-select.css">
     <link rel="stylesheet" href="{{ asset('assets/front') }}/css/jquery-ui.css">
     <link rel="stylesheet" href="{{ asset('assets/front') }}/css/animate.css">
-    <link rel="stylesheet" href="{{ asset('assets/front/css/all.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/front/css/toastr.min.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/front') }}/css/datatables.min.css">
-    <link rel="stylesheet" href="{{ asset('assets/front/css/toastr.min.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/front') }}/css/style.css">
     <link href="{{ asset('assets/admin/css/jquery.tagit.css') }}" rel="stylesheet" />
     <link rel="stylesheet" href="{{ asset('assets/front') }}/css/custom.css">
     <link rel="stylesheet" href="{{ asset('assets/vendor') }}/css/custom.css">
     <link rel="icon" href="{{ asset('assets/images/' . $gs->favicon) }}">
     @include('includes.frontend.extra_head')
+
+    {{-- Hide bottom layer (search, menu, cart) but keep top layer (language, currency) --}}
+    <style>
+        .frontend-header-wrapper .header-top {
+            display: none !important;
+        }
+
+        /* Fix dropdown menus visibility in vendor panel */
+        .frontend-header-wrapper {
+            position: relative;
+            z-index: 9999 !important;
+            overflow: visible !important;
+        }
+
+        .frontend-header-wrapper .header-section {
+            overflow: visible !important;
+        }
+
+        .frontend-header-wrapper .info-bar {
+            overflow: visible !important;
+        }
+
+        .frontend-header-wrapper .dropdown {
+            position: relative;
+        }
+
+        .frontend-header-wrapper .dropdown-menu {
+            position: absolute !important;
+            z-index: 10000 !important;
+            display: none;
+            min-width: 150px;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            margin-top: 5px;
+        }
+
+        .frontend-header-wrapper .dropdown:hover .dropdown-menu,
+        .frontend-header-wrapper .dropdown .dropdown-menu.show {
+            display: block !important;
+        }
+
+        .frontend-header-wrapper .dropdown-item {
+            display: block;
+            padding: 8px 16px;
+            color: #333;
+            text-decoration: none;
+            transition: background 0.2s;
+        }
+
+        .frontend-header-wrapper .dropdown-item:hover {
+            background: #f5f5f5;
+        }
+
+        .frontend-header-wrapper .dropdown-toggle::after {
+            display: none;
+        }
+    </style>
+
     @yield('css')
     <!--favicon-->
 
 </head>
 @php
     $user = auth()->user();
+    $categories = App\Models\Category::with('subs')->where('status', 1)->get();
+    $pages = App\Models\Page::get();
+    $currencies = App\Models\Currency::all();
+    $languges = App\Models\Language::all();
 @endphp
 
 <body>
 
+    <div class="frontend-header-wrapper">
+        {{-- Frontend Header --}}
+        @include('includes.frontend.header')
+
+        {{-- Frontend Mobile Menu --}}
+        @include('includes.frontend.mobile_menu')
+    </div>
+
+    {{-- Vendor Dashboard Mobile Sidebar --}}
     @include('includes.vendor.vendor-mobile-header')
 
     <!-- overlay -->

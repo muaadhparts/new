@@ -17,7 +17,11 @@
       "Bash(for file in app/Http/Controllers/Front/*.php)",
       "Bash(do echo \"=== $file ===\")",
       "Bash(done)",
-      "Bash(if not exist \"C:\\Users\\hp\\Herd\\new\\docs\\tasks\" mkdir \"C:\\Users\\hp\\Herd\\new\\docs\\tasks\")"
+      "Bash(if not exist \"C:\\Users\\hp\\Herd\\new\\docs\\tasks\" mkdir \"C:\\Users\\hp\\Herd\\new\\docs\\tasks\")",
+      "Bash(nul)",
+      "Bash(dir:*)",
+      "Bash(del check_languages.php)",
+      "Bash(ls -la \"C:\\Users\\hp\\Herd\\new\\public\\assets\\vendor\\css\"\" 2>/dev/null || echo \"Vendor CSS directory not found \")"
     ],
     "deny": [],
     "ask": []

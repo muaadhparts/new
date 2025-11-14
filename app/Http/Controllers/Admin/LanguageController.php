@@ -61,7 +61,7 @@ class LanguageController extends AdminBaseController
         //--- Validation Section Ends
 
         //--- Logic Section
-        $new = null;
+        $new = [];
         $input = $request->all();
         $data = new Language();
         $data->language = $input['language'];
@@ -72,13 +72,41 @@ class LanguageController extends AdminBaseController
         $data->save();
         unset($input['_token']);
         unset($input['language']);
-        $keys = $request->keys;
-        $values = $request->values;
-        foreach (array_combine($keys, $values) as $key => $value) {
+
+        $keys = $request->input('keys', []);
+        $values = $request->input('values', []);
+
+        // Filter out empty keys and values
+        $filteredKeys = [];
+        $filteredValues = [];
+
+        foreach ($keys as $index => $key) {
+            // Only include if both key and value exist and are not empty
+            if (!empty($key) && isset($values[$index]) && $values[$index] !== '') {
+                $filteredKeys[] = trim($key);
+                $filteredValues[] = $values[$index];
+            }
+        }
+
+        // Check if arrays have same length
+        if (count($filteredKeys) !== count($filteredValues)) {
+            return response()->json([
+                'errors' => ['keys' => ['The number of keys and values must match.']]
+            ]);
+        }
+
+        // Check if we have any data
+        if (count($filteredKeys) === 0) {
+            return response()->json([
+                'errors' => ['keys' => ['At least one key-value pair is required.']]
+            ]);
+        }
+
+        foreach (array_combine($filteredKeys, $filteredValues) as $key => $value) {
             $n = str_replace("_", " ", $key);
             $new[$n] = $value;
         }
-        $mydata = json_encode($new);
+        $mydata = json_encode($new, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
         file_put_contents(public_path() . '/project/resources/lang/' . $data->file, $mydata);
         //--- Logic Section Ends
 
@@ -201,6 +229,15 @@ class LanguageController extends AdminBaseController
     //*** POST Request
     public function update(Request $request, $id)
     {
+        // Check if PHP encountered a multipart body parts limit error
+        $lastError = error_get_last();
+        if ($lastError && strpos($lastError['message'], 'Multipart body parts limit exceeded') !== false) {
+            return response()->json([
+                'errors' => ['general' => [
+                    'Too many language entries. Please contact your administrator to increase the PHP max_multipart_body_parts limit in php.ini, or reduce the number of language entries.'
+                ]]
+            ], 422);
+        }
 
         //--- Validation Section
         $rules = ['language' => 'unique:languages,language,' . $id];
@@ -213,7 +250,7 @@ class LanguageController extends AdminBaseController
         //--- Validation Section Ends
 
         //--- Logic Section
-        $new = null;
+        $new = [];
         $input = $request->all();
 //        dd($input);
         $data = Language::findOrFail($id);
@@ -224,10 +261,38 @@ class LanguageController extends AdminBaseController
         $data->update();
         unset($input['_token']);
         unset($input['language']);
-        $keys = $request->keys;
-        $values = $request->values;
+
+        $keys = $request->input('keys', []);
+        $values = $request->input('values', []);
+
+        // Filter out empty keys and values
+        $filteredKeys = [];
+        $filteredValues = [];
+
+        foreach ($keys as $index => $key) {
+            // Only include if both key and value exist and are not empty
+            if (!empty($key) && isset($values[$index]) && $values[$index] !== '') {
+                $filteredKeys[] = trim($key);
+                $filteredValues[] = $values[$index];
+            }
+        }
+
+        // Check if arrays have same length
+        if (count($filteredKeys) !== count($filteredValues)) {
+            return response()->json([
+                'errors' => ['keys' => ['The number of keys and values must match.']]
+            ]);
+        }
+
+        // Check if we have any data
+        if (count($filteredKeys) === 0) {
+            return response()->json([
+                'errors' => ['keys' => ['At least one key-value pair is required.']]
+            ]);
+        }
+
 //        dd($values);
-        foreach (array_combine($keys, $values) as $key => $value) {
+        foreach (array_combine($filteredKeys, $filteredValues) as $key => $value) {
             $n = str_replace("_", " ", $key);
             $new[$n] = $value;
         }

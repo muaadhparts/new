@@ -1,5 +1,11 @@
 <!doctype html>
-<html lang="en" dir="ltr">
+@php
+	// Get language from Session (same as frontend)
+	$adminLang = Session::has('language')
+		? \App\Models\Language::find(Session::get('language'))
+		: \App\Models\Language::where('is_default', 1)->first();
+@endphp
+<html lang="en" dir="{{ $adminLang && $adminLang->rtl == 1 ? 'rtl' : 'ltr' }}">
 
 <head>
 	<meta charset="UTF-8">
@@ -28,7 +34,7 @@
 	<!-- Main Css -->
 
 	<!-- stylesheet -->
-	@if(DB::table('admin_languages')->where('is_default', '=', 1)->first()->rtl == 1)
+	@if($adminLang && $adminLang->rtl == 1)
 
 		<link href="{{asset('assets/admin/css/rtl/style.css')}}" rel="stylesheet" />
 		<link href="{{asset('assets/admin/css/rtl/custom.css')}}" rel="stylesheet" />
@@ -43,6 +49,70 @@
 		<link href="{{asset('assets/admin/css/common.css')}}" rel="stylesheet" />
 	@endif
 
+	{{-- Frontend CSS for Header Display --}}
+	<link rel="stylesheet" href="{{ asset('assets/front/css/bootstrap.min.css') }}">
+	<link rel="stylesheet" href="{{ asset('assets/front/css/style.css') }}">
+	<link rel="stylesheet" href="{{ asset('assets/front/css/custom.css') }}">
+
+	{{-- Hide bottom layer (search, menu, cart) but keep top layer (language, currency) --}}
+	<style>
+		.frontend-header-wrapper .header-top {
+			display: none !important;
+		}
+
+		/* Fix dropdown menus visibility in admin panel */
+		.frontend-header-wrapper {
+			position: relative;
+			z-index: 9999 !important;
+			overflow: visible !important;
+		}
+
+		.frontend-header-wrapper .header-section {
+			overflow: visible !important;
+		}
+
+		.frontend-header-wrapper .info-bar {
+			overflow: visible !important;
+		}
+
+		.frontend-header-wrapper .dropdown {
+			position: relative;
+		}
+
+		.frontend-header-wrapper .dropdown-menu {
+			position: absolute !important;
+			z-index: 10000 !important;
+			display: none;
+			min-width: 150px;
+			background: white;
+			border: 1px solid #ddd;
+			border-radius: 4px;
+			box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+			margin-top: 5px;
+		}
+
+		.frontend-header-wrapper .dropdown:hover .dropdown-menu,
+		.frontend-header-wrapper .dropdown .dropdown-menu.show {
+			display: block !important;
+		}
+
+		.frontend-header-wrapper .dropdown-item {
+			display: block;
+			padding: 8px 16px;
+			color: #333;
+			text-decoration: none;
+			transition: background 0.2s;
+		}
+
+		.frontend-header-wrapper .dropdown-item:hover {
+			background: #f5f5f5;
+		}
+
+		.frontend-header-wrapper .dropdown-toggle::after {
+			display: none;
+		}
+	</style>
+
 	@yield('styles')
 
 	<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
@@ -50,6 +120,23 @@
 </head>
 
 <body id="page-top">
+
+	@php
+		$categories = App\Models\Category::with('subs')->where('status', 1)->get();
+		$pages = App\Models\Page::get();
+		$currencies = App\Models\Currency::all();
+		$languges = App\Models\Language::all();
+	@endphp
+
+	<div class="frontend-header-wrapper">
+		{{-- Frontend Header --}}
+		@include('includes.frontend.header')
+
+		{{-- Frontend Mobile Menu --}}
+		@include('includes.frontend.mobile_menu')
+	</div>
+
+	<div style="margin-top:20px;"></div>
 
 	<div class="page">
 		<div class="page-main">
@@ -188,9 +275,6 @@
 			</div>
 		</div>
 	</div>
-	@php
-		$curr = \App\Models\Currency::where('is_default', '=', 1)->first();
-	@endphp
 	<script type="text/javascript">
 		var mainurl = "{{url('/')}}";
 		var admin_loader = {{ $gs->is_admin_loader }};
