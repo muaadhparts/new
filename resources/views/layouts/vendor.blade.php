@@ -14,21 +14,17 @@
     <link rel="stylesheet" href="{{ asset('assets/front') }}/css/animate.css">
     <link rel="stylesheet" href="{{ asset('assets/front/css/toastr.min.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/front') }}/css/datatables.min.css">
-    <link rel="stylesheet" href="{{ asset('assets/front') }}/css/style.css">
+    <link rel="stylesheet" href="{{ asset('assets/front') }}/css/style.css?v={{ time() }}">
     <link href="{{ asset('assets/admin/css/jquery.tagit.css') }}" rel="stylesheet" />
     <link rel="stylesheet" href="{{ asset('assets/front') }}/css/custom.css">
     <link rel="stylesheet" href="{{ asset('assets/vendor') }}/css/custom.css">
     <link rel="icon" href="{{ asset('assets/images/' . $gs->favicon) }}">
     @include('includes.frontend.extra_head')
 
-    {{-- Hide bottom layer and raise header above all content --}}
+    {{-- Hide bottom layer --}}
     <style>
         .frontend-header-wrapper .header-top {
             display: none !important;
-        }
-        .frontend-header-wrapper {
-            position: relative;
-            z-index: 99999;
         }
     </style>
 
@@ -49,9 +45,6 @@
     <div class="frontend-header-wrapper">
         {{-- Frontend Header --}}
         @include('includes.frontend.header')
-
-        {{-- Frontend Mobile Menu --}}
-        @include('includes.frontend.mobile_menu')
     </div>
 
     {{-- Vendor Dashboard Mobile Sidebar --}}
@@ -123,7 +116,7 @@
     <script src="{{ asset('assets/admin/js/tag-it.js') }}"></script>
     <script src="{{ asset('assets/front/js/toastr.min.js') }}"></script>
     <script src="{{ asset('assets/front') }}/js/jquery.counterup.js"></script>
-    <script src="{{ asset('assets/front') }}/js/script.js"></script>
+    <script src="{{ asset('assets/front') }}/js/script.js?v={{ time() }}"></script>
 
     <script type="text/javascript">
         var mainurl = "{{ url('/') }}";

@@ -3,10 +3,10 @@ $(document).ready(function () {
   1. DATA BACKGROUND SET
   2. MOBILE MENU
   3. STICKY HEADER
-  4. SEARCH BAR 
+  4. SEARCH BAR
   5. NICE SELECT
-  6. WOW JS 
-  7. HIDE & SHOW PASSWORD 
+  6. WOW JS
+  7. HIDE & SHOW PASSWORD
   8. COUNTDOWN STARTS
   9. HERO SECTION SLIDER
   10. HOME CATE SLIDER
@@ -20,7 +20,7 @@ $(document).ready(function () {
   18. CHANGE FILE NAME OF FILE INPUT
   19. TOGGLING ADD PRODUCT FORM  BASED ON SELECTED PRODUCT TYPE
   20. APEXCHART
-         
+
     */
 
 
@@ -40,65 +40,20 @@ $(document).ready(function () {
     );
   });
 
-  //****** 2. MOBILE MENU - ENHANCED UX ******//
+  //****** 2. MOBILE MENU ******//
   const $overlay = $(".overlay");
-  const $mobileMenu = $("#mobileMenu");
-  const $searchBar = $("#searchBar");
-  const $body = $("body");
+  const $mobileMenu = $(".mobile-menu");
 
-  // Open mobile menu
   $(".header-toggle, .mobile-menu-toggle").on("click", function (e) {
     e.preventDefault();
-    $mobileMenu.addClass("active");
+    $mobileMenu.toggleClass("active");
     $overlay.addClass("active");
-    $body.css("overflow", "hidden"); // Prevent body scroll when menu is open
   });
 
-  // Close mobile menu with close button
-  $(".close, #closeMobileMenu, .close-menu-btn").on("click", function (e) {
+  $(".close").on("click", function (e) {
     e.preventDefault();
-    closeMobileMenu();
-  });
-
-  // Close mobile menu when clicking on overlay
-  $overlay.on("click", function () {
-    closeMobileMenu();
-    $searchBar.removeClass("show");
-  });
-
-  // Close mobile menu when clicking on any menu link (not collapse toggles or parent links)
-  $(document).on("click", ".mobile-menu .accordion li a", function (e) {
-    // Don't close if it's a collapse toggle or has no href
-    const href = $(this).attr("href");
-    const hasCollapse = $(this).attr("data-bs-toggle");
-
-    if (!hasCollapse && href && href !== "#" && href !== "javascript:;" && href !== "javascript:void(0)") {
-      // Add smooth closing with slight delay for better UX
-      setTimeout(function () {
-        closeMobileMenu();
-      }, 200);
-    }
-  });
-
-  // Close mobile menu on ESC key
-  $(document).on("keydown", function (e) {
-    if (e.key === "Escape" && $mobileMenu.hasClass("active")) {
-      closeMobileMenu();
-    }
-  });
-
-  // Function to close mobile menu
-  function closeMobileMenu() {
     $mobileMenu.removeClass("active");
     $overlay.removeClass("active");
-    $body.css("overflow", ""); // Restore body scroll
-  }
-
-  // Prevent menu closing when clicking inside menu (except on links)
-  $mobileMenu.on("click", function (e) {
-    if (!$(e.target).is("a") && !$(e.target).closest("a").length) {
-      e.stopPropagation();
-    }
   });
 
   //****** 3. STICKY HEADER ******//
@@ -113,13 +68,19 @@ $(document).ready(function () {
 
   //******  4. SEARCH BAR ******//
   const $searchIcon = $("#searchIcon");
-  // $searchBar already declared above - reuse it
+  const $searchBar = $("#searchBar");
 
   $searchIcon.on("click", function () {
     $searchBar.addClass("show");
     $overlay.addClass("active");
   });
 
+  // close overlay - mobile menu and search bar
+  $overlay.on("click", function () {
+    $mobileMenu.removeClass("active");
+    $overlay.removeClass("active");
+    $searchBar.removeClass("show");
+  });
 
   //******  5. NICE SELECT ******//
   // $(".nice-select").niceSelect();
@@ -184,102 +145,49 @@ $(document).ready(function () {
 
       if (distance < 0) {
         clearInterval(countdownInterval);
-        document.getElementById("countdown").innerHTML = "<p>Deal Expired!</p>";
+        document.getElementById("countdown").innerHTML = "EXPIRED";
       }
     }, 1000);
   }
 
-  $(".collapse-item").on("show.bs.collapse", function () {
-    $(this).prev().find(".collapse-icon").removeClass("collapsed");
-  });
-
-  $(".collapse-item").on("hide.bs.collapse", function () {
-    $(this).prev().find(".collapse-icon").addClass("collapsed");
-  });
-
-  // close overlay search bar and mobile menu
-  $overlay.on("click", function () {
-    $mobileMenu.removeClass("active");
-    $overlay.removeClass("active");
-    $searchBar.removeClass("show");
-  });
-
-  //******  9. HERO SECTION SLIDER ******//
+  //****** 9. HERO SECTION SLIDER ******//
   $(".hero-slider-wrapper").slick({
-    dots: true,
-    infinite: true,
-    speed: 500,
-    autoplay: true,
-    fade: true,
-    cssEase: "linear",
-    arrows: false,
-  });
-
-  //******  10. HOME CATE SLIDER ******//
-  $(".home-cate-slider").slick({
+    arrows: true,
     dots: false,
     infinite: true,
+    speed: 300,
+    slidesToShow: 1,
+    autoplay: true,
+    prevArrow:
+      '<button class="slick-prev slick-arrow" aria-label="Previous" type="button"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M15 18L9 12L15 6" stroke="#1F0300" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>',
+    nextArrow:
+      '<button class="slick-next slick-arrow" aria-label="Next" type="button"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M9 6L15 12L9 18" stroke="#1F0300" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>',
+  });
+
+  //****** 10. HOME CATE SLIDER ******//
+  $(".home-category-slider").slick({
+    dots: false,
+    infinite: true,
+    speed: 300,
     slidesToShow: 6,
     slidesToScroll: 1,
-    speed: 500,
-    autoplay: true,
-    fade: false,
-    cssEase: "linear",
-    arrows: false,
+    autoplay: false,
+    arrows: true,
+    prevArrow:
+      '<button class="slick-prev slick-arrow" aria-label="Previous" type="button"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M15 18L9 12L15 6" stroke="#1F0300" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>',
+    nextArrow:
+      '<button class="slick-next slick-arrow" aria-label="Next" type="button"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M9 6L15 12L9 18" stroke="#1F0300" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>',
     responsive: [
       {
-        breakpoint: 1400,
+        breakpoint: 1200,
         settings: {
           slidesToShow: 5,
         },
       },
       {
-        breakpoint: 1200,
-        settings: {
-          slidesToShow: 4,
-        },
-      },
-      {
         breakpoint: 992,
         settings: {
-          slidesToShow: 3,
-        },
-      },
-      {
-        breakpoint: 768,
-        settings: {
-          slidesToShow: 2,
-        },
-      },
-      {
-        breakpoint: 425,
-        settings: {
-          slidesToShow: 1,
-        },
-      },
-    ],
-  });
-  $(".home3-cate-slider").slick({
-    dots: true,
-    infinite: true,
-    slidesToShow: 5,
-    slidesToScroll: 1,
-    speed: 500,
-    autoplay: true,
-    fade: false,
-    cssEase: "linear",
-    arrows: false,
-    responsive: [
-      {
-        breakpoint: 1400,
-        settings: {
           slidesToShow: 4,
-        },
-      },
-      {
-        breakpoint: 992,
-        settings: {
-          slidesToShow: 3,
         },
       },
       {
@@ -310,83 +218,71 @@ $(document).ready(function () {
     slidesToScroll: 1,
     asNavFor: ".product-main-slider",
     dots: false,
-    arrows: false,
-    centerMode: true,
     focusOnSelect: true,
-    centerPadding: "60px",
-    responsive: [
-      {
-        breakpoint: 1200,
-        settings: {
-          slidesToShow: 2,
-        },
-      },
-      {
-        breakpoint: 992,
-        settings: {
-          slidesToShow: 4,
-        },
-      },
-      {
-        breakpoint: 768,
-        settings: {
-          slidesToShow: 3,
-        },
-      },
-      {
-        breakpoint: 425,
-        settings: {
-          slidesToShow: 2,
-        },
-      },
- 
-    ],
+    variableWidth: true,
   });
 
-  //******  12. PRICE RANGE SLIDER ******//
-  $(function () {
-    const start_value = $("#start_value").val();
-    const end_value = $("#end_value").val();
-    const max_value = $("#max_value").val();
-
+  //****** 12. PRICE RANGE SLIDER ******//
+  if ($("#slider-range").length > 0) {
     $("#slider-range").slider({
       range: true,
+      orientation: "horizontal",
       min: 0,
-      max: max_value,
-      values: [start_value, end_value],
+      max: 10000,
+      values: [0, 10000],
+      step: 100,
+
       slide: function (event, ui) {
-        $("#amount").val("$" + ui.values[0] + " - $" + ui.values[1]);
+        if (ui.values[0] == ui.values[1]) {
+          return false;
+        }
+
+        $("#min_price").val(ui.values[0]);
+        $("#max_price").val(ui.values[1]);
       },
     });
-    $("#amount").val(
-      "$" +
-      $("#slider-range").slider("values", 0) +
-      " - $" +
-      $("#slider-range").slider("values", 1)
-    );
-  });
+
+    $("#min_price").val($("#slider-range").slider("values", 0));
+    $("#max_price").val($("#slider-range").slider("values", 1));
+  }
 
   //****** 13. ADD DYNAMIC CLASS FOR SVG ******//
-  $(".gs-dashboard-user-sidebar-wrapper svg, .user-dropdown-wrapper svg").each(
-    function () {
-      var $svg = $(this);
+  $(".gs-dashboard-user-sidebar-wrapper a").on("click", function () {
+    // Remove the .active class from all <a> tags
+    $(".gs-dashboard-user-sidebar-wrapper a").parent().removeClass("active");
 
-      // Check each path element inside the SVG
-      $svg.find("path").each(function () {
-        var $path = $(this);
+    // Add the .active class to the clicked <a> tag
+    $(this).parent().addClass("active");
+  });
 
-        // Check if the path has a fill attribute
-        if ($path.attr("fill")) {
-          $svg.addClass("has-fill");
+  $(
+    ".gs-dashboard-user-sidebar-wrapper svg, .user-dropdown-wrapper svg"
+  ).each(function () {
+    var $img = $(this);
+    var imgID = $img.attr("id");
+    var imgClass = $img.attr("class");
+    var imgURL = $img.attr("src");
+    $.get(
+      imgURL,
+      function (data) {
+        // Get the SVG tag, ignore the rest
+        var $svg = $(data).find("svg");
+        // Add replaced image's ID to the new SVG
+        if (typeof imgID !== "undefined") {
+          $svg = $svg.attr("id", imgID);
         }
-
-        // Check if the path has a stroke attribute
-        if ($path.attr("stroke")) {
-          $svg.addClass("has-stroke");
+        // Add replaced image's classes to the new SVG
+        if (typeof imgClass !== "undefined") {
+          $svg = $svg.attr("class", imgClass + " replaced-svg");
         }
-      });
-    }
-  );
+        // Remove any invalid XML tags as per http://validator.w3.org
+        $svg = $svg.removeAttr("xmlns:a");
+        // Replace image with new SVG
+        $img.replaceWith($svg);
+      },
+      "xml"
+    );
+  });
 
   //******  14. TOGGLE VENDOR DASHBOARD SIDEBAR ******//
   $(".gs-vendor-toggle-btn").on("click", function () {
@@ -405,54 +301,58 @@ $(document).ready(function () {
   //   },
   // });
 
-  //******  16. PRODUCT CARDS SLIDER ******//
+  //****** 16. PRODUCT CARDS SLIDER ******//
   $(".product-cards-slider").slick({
-    dots: true,
+    dots: false,
     infinite: true,
-    slidesToShow: 4,
-    slidesToScroll: 4,
-    speed: 500,
-    autoplay: true,
-    fade: false,
-    cssEase: "linear",
-    arrows: false,
+    speed: 300,
+    slidesToShow: 5,
+    slidesToScroll: 1,
+    autoplay: false,
+    arrows: true,
+    prevArrow:
+      '<button class="slick-prev slick-arrow" aria-label="Previous" type="button"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M15 18L9 12L15 6" stroke="#1F0300" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>',
+    nextArrow:
+      '<button class="slick-next slick-arrow" aria-label="Next" type="button"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M9 6L15 12L9 18" stroke="#1F0300" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>',
     responsive: [
       {
         breakpoint: 1200,
         settings: {
-          slidesToShow: 3,
-          slidesToScroll: 3,
+          slidesToShow: 4,
         },
       },
       {
         breakpoint: 992,
         settings: {
-          slidesToShow: 2,
-          slidesToScroll: 2,
+          slidesToShow: 3,
         },
       },
       {
         breakpoint: 768,
         settings: {
+          slidesToShow: 2,
+        },
+      },
+      {
+        breakpoint: 425,
+        settings: {
           slidesToShow: 1,
-          slidesToScroll: 1,
         },
       },
     ],
   });
 
-  //******  17. COUNTER UP ******//
-  // $(".counter").counterUp({
-  //   delay: 10,
-  //   time: 1000,
-  // });
-
-  //******  18. CHANGE FILE NAME OF FILE INPUT  ******//
-  $('.input-file').on("change", function () {
-    var filename = $(this).val().split('\\').pop(); // Get the filename only
-    $(this).siblings('.fileName').text(filename || "No file chosen"); // Update the corresponding label text
+  //****** 17. COUNTER UP ******//
+  $(".counter").counterUp({
+    delay: 10,
+    time: 1000,
   });
 
+  //****** 18. CHANGE FILE NAME OF FILE INPUT ******//
+  $('.custom-file-input').on('change', function () {
+    var filename = $(this).val().split('\\').pop();
+    $(this).siblings('.fileName').text(filename || "No file chosen"); // Update the corresponding label text
+  });
 
 
 
@@ -470,47 +370,139 @@ $(document).ready(function () {
     $physicalProductInputesWrapper.removeClass("show");
   });
 
-  const $uploadByFile = $(".upload-by-file");
-  const $uploadByUrl = $(".upload-by-url");
-
-  $(".upload-by-file-radio").on("click", function () {
-    $uploadByFile.addClass("show");
-    $uploadByUrl.removeClass("show");
-  });
-  $(".upload-by-url-radio").on("click", function () {
-    $uploadByUrl.addClass("show");
-    $uploadByFile.removeClass("show");
-  });
-
-  //******  20. APEXCHART  ******//
+  //****** 20. APEXCHART ******//
   // var options = {
-  //   colors: ['#27BE69'],
-  //   series: [
-  //     {
-  //       name: 'Net Profit',
-  //       data: [44, 55, 57, 56, 61, 58, 63, 60, 66, 44, 55, 57, 56, 61, 58,]
+  //   series: [{
+  //     name: 'Inflation',
+  //     data: [2.3, 3.1, 4.0, 10.1, 4.0, 3.6, 3.2, 2.3, 1.4, 0.8, 0.5, 0.2]
+  //   }],
+  //   chart: {
+  //     height: 350,
+  //     type: 'bar',
+  //   },
+  //   plotOptions: {
+  //     bar: {
+  //       borderRadius: 10,
+  //       dataLabels: {
+  //         position: 'top', // top, center, bottom
+  //       },
+  //     }
+  //   },
+  //   dataLabels: {
+  //     enabled: true,
+  //     formatter: function (val) {
+  //       return val + "%";
   //     },
-  //     // {
-  //     //   name: 'Revenue',
-  //     //   data: [76, 85, 101, 98, 87, 105, 91, 114, 94]
-  //     // },
-  //     // {
-  //     //   name: 'Free Cash Flow',
-  //     //   data: [35, 41, 36, 26, 45, 48, 52, 53, 41]
-  //     // }
-  //   ],
+  //     offsetY: -20,
+  //     style: {
+  //       fontSize: '12px',
+  //       colors: ["#304758"]
+  //     }
+  //   },
+
+  //   xaxis: {
+  //     categories: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
+  //     position: 'top',
+  //     axisBorder: {
+  //       show: false
+  //     },
+  //     axisTicks: {
+  //       show: false
+  //     },
+  //     crosshairs: {
+  //       fill: {
+  //         type: 'gradient',
+  //         gradient: {
+  //           colorFrom: '#D8E3F0',
+  //           colorTo: '#BED1E6',
+  //           stops: [0, 100],
+  //           opacityFrom: 0.4,
+  //           opacityTo: 0.5,
+  //         }
+  //       }
+  //     },
+  //     tooltip: {
+  //       enabled: true,
+  //     }
+  //   },
+  //   yaxis: {
+  //     axisBorder: {
+  //       show: false
+  //     },
+  //     axisTicks: {
+  //       show: false,
+  //     },
+  //     labels: {
+  //       show: false,
+  //       formatter: function (val) {
+  //         return val + "%";
+  //       }
+  //     }
+
+  //   },
+  //   title: {
+  //     text: 'Monthly Inflation in Argentina, 2002',
+  //     floating: true,
+  //     offsetY: 330,
+  //     align: 'center',
+  //     style: {
+  //       color: '#444'
+  //     }
+  //   }
+  // };
+
+  // var chart = new ApexCharts($("#chart")[0], options);
+  // chart.render();
+
+  // var options = {
+  //   series: [{
+  //     name: 'series1',
+  //     data: [31, 40, 28, 51, 42, 109, 100]
+  //   }, {
+  //     name: 'series2',
+  //     data: [11, 32, 45, 32, 34, 52, 41]
+  //   }],
+  //   chart: {
+  //     height: 350,
+  //     type: 'area'
+  //   },
+  //   dataLabels: {
+  //     enabled: false
+  //   },
+  //   stroke: {
+  //     curve: 'smooth'
+  //   },
+  //   xaxis: {
+  //     type: 'datetime',
+  //     categories: ["2018-09-19T00:00:00.000Z", "2018-09-19T01:30:00.000Z", "2018-09-19T02:30:00.000Z", "2018-09-19T03:30:00.000Z", "2018-09-19T04:30:00.000Z", "2018-09-19T05:30:00.000Z", "2018-09-19T06:30:00.000Z"]
+  //   },
+  //   tooltip: {
+  //     x: {
+  //       format: 'dd/MM/yy HH:mm'
+  //     },
+  //   },
+  // };
+
+  // var chart = new ApexCharts(document.querySelector("#chart"), options);
+  // chart.render();
+
+  // var options = {
+  //   series: [{
+  //     name: 'Net Profit',
+  //     data: [44, 55, 57, 56, 61, 58, 63, 60, 66, 55, 40, 77, 55, 77, 55]
+  //   }, {
+  //     name: 'Revenue',
+  //     data: [76, 85, 101, 98, 87, 105, 91, 114, 94, 105, 101, 98, 87, 76, 85]
+  //   }],
   //   chart: {
   //     type: 'bar',
-  //     height: 450
+  //     height: 350
   //   },
   //   plotOptions: {
   //     bar: {
   //       horizontal: false,
-  //       columnWidth: '20%',
-  //       endingShape: 'rounded',
-  //       borderRadius: 8,
-  //       borderRadiusApplication: 'end',
-  //       borderRadiusWhenStacked: 'last'
+  //       columnWidth: '55%',
+  //       endingShape: 'rounded'
   //     },
   //   },
   //   dataLabels: {
@@ -544,10 +536,10 @@ $(document).ready(function () {
     $(".collapse").not($(this).next(".collapse")).collapse("hide");
   });
 
-  // vendor notification 
+  // vendor notification
   $("#toggle-vendor-noti").on("click", function () {
     $(".gs-vendor-header-noti").toggleClass("active");
-  
+
   });
 
   $(document).on("click", function (event) {
@@ -561,7 +553,7 @@ $(document).ready(function () {
   $(window).on('resize', function() {
     $(".nicEdit-panelContain").parent().width("100%");
     $(".nicEdit-panelContain").parent().next().width("99.6%");
-}); 
+});
 
 
 });

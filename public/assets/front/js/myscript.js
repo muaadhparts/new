@@ -1,7 +1,7 @@
 (function ($) {
   "use strict";
 
-  console.log('🚀 myscript.js loaded - v2.0.0 - Cart Update Fixed');
+  // console.log('🚀 myscript.js loaded - v2.0.0 - Cart Update Fixed');
 
   // ✅ Global cart state updater function
   window.applyCartState = function(data) {

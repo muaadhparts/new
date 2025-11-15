@@ -57,7 +57,7 @@
         gtag('config', '{{ $seo->google_analytics }}');
     </script>
 @endif
-@if (!empty($seo->facebook_pixel))
+@if (isset($seo) && isset($seo->facebook_pixel) && !empty($seo->facebook_pixel) && $seo->facebook_pixel != 'null' && $seo->facebook_pixel != null && trim($seo->facebook_pixel) != '' && strlen(trim($seo->facebook_pixel)) > 5)
     <script>
         "use strict";
 

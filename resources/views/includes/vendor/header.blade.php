@@ -2,7 +2,7 @@
 
     <div class="gs-vendor-header gap-2 gap-md-3">
         <!-- this button will be visible on screen with the resulation of 1200px or more -->
-        <button class="gs-vendor-toggle-btn header-togglee mobile-menu-toggle d-none d-xl-inline-block" type="button">
+        <button class="gs-vendor-toggle-btn d-none d-xl-inline-block" type="button">
             <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48" fill="none">
                 <path d="M6 24H42M6 12H42M6 36H30" stroke="#1F0300" stroke-width="4" stroke-linecap="round"
                     stroke-linejoin="round" />
@@ -14,7 +14,7 @@
         <div class="d-flex align-items-center gap-4">
             <a href="{{route("front.index")}}"><img class="vendor-res-header-logo d-xl-none" src="{{asset("assets/images/".$gs->logo)}}" alt="logo"></a>
 
-            <button class="gs-vendor-toggle-btn header-toggle mobile-menu-toggle d-xl-none " type="button">
+            <button class="header-toggle mobile-menu-toggle d-xl-none" type="button">
                 <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48" fill="none">
                     <path d="M6 24H42M6 12H42M6 36H30" stroke="#1F0300" stroke-width="4" stroke-linecap="round"
                         stroke-linejoin="round" />

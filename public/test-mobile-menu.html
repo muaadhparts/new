@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>اختبار القائمة الجانبية</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; }
+
+        .test-header {
+            background: #ff4c3b;
+            padding: 20px;
+            color: white;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+        }
+
+        .test-btn {
+            background: white;
+            color: #ff4c3b;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            font-size: 16px;
+            border-radius: 5px;
+        }
+
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            display: block;
+            width: 100%;
+            height: 100%;
+            z-index: 50;
+            background-color: rgba(3, 7, 18, 0.5);
+            transition: all 0.3s ease-in;
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        .overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .mobile-menu {
+            width: 290px;
+            height: 100vh;
+            position: fixed;
+            top: 0;
+            left: -300px;
+            background-color: #ffffff;
+            z-index: 60;
+            transition: all 0.3s ease-in;
+            overflow-y: scroll;
+        }
+
+        .mobile-menu.active {
+            left: 0;
+        }
+
+        .mobile-menu-top {
+            width: 100%;
+            padding: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background-color: #ff4c3b;
+            color: white;
+        }
+
+        .close {
+            cursor: pointer;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 24px;
+        }
+
+        .menu-content {
+            padding: 20px;
+        }
+
+        .menu-content ul {
+            list-style: none;
+        }
+
+        .menu-content ul li {
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .status {
+            margin-top: 100px;
+            padding: 20px;
+            background: #f0f0f0;
+            border-radius: 5px;
+        }
+
+        .status-item {
+            margin: 10px 0;
+            padding: 10px;
+            background: white;
+            border-radius: 3px;
+        }
+
+        .success { color: green; }
+        .error { color: red; }
+        .warning { color: orange; }
+    </style>
+</head>
+<body>
+    <div class="test-header">
+        <button class="test-btn header-toggle mobile-menu-toggle">
+            ☰ فتح القائمة
+        </button>
+    </div>
+
+    <div class="overlay"></div>
+
+    <div class="mobile-menu">
+        <div class="mobile-menu-top">
+            <h3>القائمة الجانبية</h3>
+            <button class="close">✕</button>
+        </div>
+        <div class="menu-content">
+            <ul>
+                <li>الرئيسية</li>
+                <li>المنتجات</li>
+                <li>من نحن</li>
+                <li>اتصل بنا</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="status">
+        <h2>حالة الاختبار:</h2>
+        <div id="status-container"></div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            const $overlay = $(".overlay");
+            const $mobileMenu = $(".mobile-menu");
+            const statusContainer = $("#status-container");
+
+            function addStatus(message, type = 'success') {
+                const className = type === 'success' ? 'success' : (type === 'error' ? 'error' : 'warning');
+                statusContainer.append(`<div class="status-item ${className}">${message}</div>`);
+            }
+
+            // Test element existence
+            addStatus("✓ تم العثور على .overlay: " + $overlay.length, 'success');
+            addStatus("✓ تم العثور على .mobile-menu: " + $mobileMenu.length, 'success');
+            addStatus("✓ تم العثور على .header-toggle: " + $(".header-toggle").length, 'success');
+            addStatus("✓ تم العثور على .close: " + $(".close").length, 'success');
+
+            // Add event listeners
+            $(".header-toggle, .mobile-menu-toggle").on("click", function() {
+                console.log("زر القائمة تم الضغط عليه");
+                addStatus("⚡ تم الضغط على زر فتح القائمة", 'warning');
+                $mobileMenu.toggleClass("active");
+                $overlay.addClass("active");
+
+                setTimeout(() => {
+                    const isActive = $mobileMenu.hasClass("active");
+                    addStatus(isActive ? "✓ القائمة الآن مفتوحة" : "✗ القائمة لم تفتح!", isActive ? 'success' : 'error');
+                }, 100);
+            });
+
+            $(".close").on("click", function() {
+                console.log("زر الإغلاق تم الضغط عليه");
+                addStatus("⚡ تم الضغط على زر الإغلاق", 'warning');
+                $mobileMenu.removeClass("active");
+                $overlay.removeClass("active");
+            });
+
+            $overlay.on("click", function() {
+                console.log("Overlay تم الضغط عليه");
+                addStatus("⚡ تم الضغط على الـ Overlay", 'warning');
+                $mobileMenu.removeClass("active");
+                $overlay.removeClass("active");
+            });
+
+            addStatus("✓ تم تحميل جميع Event Listeners بنجاح", 'success');
+        });
+    </script>
+</body>
+</html>
