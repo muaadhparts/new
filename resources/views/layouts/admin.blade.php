@@ -51,7 +51,7 @@
 
 	{{-- Frontend CSS for Header Display --}}
 	<link rel="stylesheet" href="{{ asset('assets/front/css/bootstrap.min.css') }}">
-	<link rel="stylesheet" href="{{ asset('assets/front/css/style.css') }}">
+	<link rel="stylesheet" href="{{ asset('assets/front/css/style.css') }}?v={{ time() }}">
 	<link rel="stylesheet" href="{{ asset('assets/front/css/custom.css') }}">
 
 	{{-- Hide bottom layer and raise header above all content --}}
@@ -62,6 +62,70 @@
 		.frontend-header-wrapper {
 			position: relative;
 			z-index: 99999;
+		}
+
+		/* Fix Admin Notifications Dropdown - Override Frontend CSS Conflicts */
+		.page .header .right-eliment .list li .dropdown-menu {
+			border: 0px !important;
+			width: 280px !important;
+			padding: 0px !important;
+			left: auto !important;
+			top: 97% !important;
+			right: -15px !important;
+			border-radius: 0px !important;
+			box-shadow: 0px 3px 25px rgba(0, 0, 0, 0.15) !important;
+			background: #fff !important;
+			z-index: 99999 !important;
+			position: absolute !important;
+			display: none !important;
+			min-width: auto !important;
+			text-align: left !important;
+		}
+
+		.page .header .right-eliment .list li .dropdown-menu.show {
+			display: block !important;
+		}
+
+		.page .header .right-eliment .list li .dropdown-menu .dropdownmenu-wrapper {
+			padding: 7px 25px 20px !important;
+			text-align: left !important;
+		}
+
+		.page .header .right-eliment .list li .dropdown-menu .dropdownmenu-wrapper a,
+		.page .header .right-eliment .list li .dropdown-menu .dropdownmenu-wrapper p,
+		.page .header .right-eliment .list li .dropdown-menu .dropdownmenu-wrapper span {
+			color: #143250 !important;
+		}
+
+		.page .header .right-eliment .list li .dropdown-menu .dropdownmenu-wrapper ul {
+			padding-left: 0px !important;
+			list-style: none !important;
+		}
+
+		.page .header .right-eliment .list li .dropdown-menu .dropdownmenu-wrapper ul li {
+			display: block !important;
+			border-bottom: none !important;
+		}
+
+		.page .header .right-eliment .list li .dropdown-menu .dropdownmenu-wrapper ul li a {
+			margin-bottom: 0px !important;
+			padding: 0px !important;
+			font-size: 14px !important;
+			line-height: 28px !important;
+			height: auto !important;
+			border-bottom: none !important;
+			display: block !important;
+			font-family: inherit !important;
+		}
+
+		.page .header .right-eliment .list li .dropdown-menu .dropdownmenu-wrapper ul li a:hover {
+			background: transparent !important;
+		}
+
+		.page .header .right-eliment .list li .dropdown-menu .dropdownmenu-wrapper h5 {
+			color: #143250 !important;
+			font-size: 16px !important;
+			margin-bottom: 10px !important;
 		}
 	</style>
 
@@ -87,6 +151,9 @@
 		{{-- Frontend Mobile Menu --}}
 		@include('includes.frontend.mobile_menu')
 	</div>
+
+	<!-- overlay for mobile menu -->
+	<div class="overlay"></div>
 
 	<div style="margin-top:20px;"></div>
 
@@ -259,10 +326,39 @@
 	<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
 	<script src="{{asset('assets/admin/js/load.js')}}"></script>
+	<!-- Frontend Mobile Menu Js (loaded before custom.js to avoid conflicts)-->
+	<script src="{{asset('assets/front/js/script.js')}}?v={{ time() }}"></script>
 	<!-- Custom Js-->
 	<script src="{{asset('assets/admin/js/custom.js')}}"></script>
 	<!-- AJAX Js-->
 	<script src="{{asset('assets/admin/js/myscript.js')}}"></script>
+
+	<!-- Admin Dropdown Fix - Ensure Admin dropdowns work correctly -->
+	<script>
+		$(document).ready(function() {
+			// Re-bind Admin dropdown functionality to override any conflicts
+			$(".page .header .right-eliment .list .dropdown-toggle-1").off('click').on("click", function (e) {
+				e.preventDefault();
+				e.stopPropagation();
+
+				// Hide all other dropdowns
+				$(this).parent().siblings().find(".dropdown-menu").removeClass('show').hide();
+
+				// Toggle current dropdown
+				$(this).next(".dropdown-menu").toggleClass('show').toggle();
+			});
+
+			// Close dropdowns when clicking outside
+			$(document).on("click", function (e) {
+				var container = $(".page .header .right-eliment .list .dropdown-toggle-1");
+
+				if (!container.is(e.target) && container.has(e.target).length === 0) {
+					$(".page .header .right-eliment .list .dropdown-menu").removeClass('show').hide();
+				}
+			});
+		});
+	</script>
+
 	@yield('scripts')
 
 	@if($gs->is_admin_loader == 0)
