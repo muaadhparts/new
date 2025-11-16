@@ -1823,12 +1823,14 @@ Route::group(['middleware' => 'maintenance'], function () {
     // Checkout
     Route::get('/checkout', 'Front\CheckoutController@checkout')->name('front.checkout');
 
-    // Vendor-specific checkout routes
-    Route::get('/checkout/vendor/{vendorId}', 'Front\CheckoutController@checkoutVendor')->name('front.checkout.vendor');
-    Route::post('/checkout/vendor/{vendorId}/step1/submit', 'Front\CheckoutController@checkoutVendorStep1')->name('front.checkout.vendor.step1.submit');
-    Route::get('/checkout/vendor/{vendorId}/step2', 'Front\CheckoutController@checkoutVendorStep2')->name('front.checkout.vendor.step2');
-    Route::post('/checkout/vendor/{vendorId}/step2/submit', 'Front\CheckoutController@checkoutVendorStep2Submit')->name('front.checkout.vendor.step2.submit');
-    Route::get('/checkout/vendor/{vendorId}/step3', 'Front\CheckoutController@checkoutVendorStep3')->name('front.checkout.vendor.step3');
+    // Vendor-specific checkout routes (with session preservation middleware)
+    Route::middleware(['preserve.session'])->group(function () {
+        Route::get('/checkout/vendor/{vendorId}', 'Front\CheckoutController@checkoutVendor')->name('front.checkout.vendor');
+        Route::post('/checkout/vendor/{vendorId}/step1/submit', 'Front\CheckoutController@checkoutVendorStep1')->name('front.checkout.vendor.step1.submit');
+        Route::get('/checkout/vendor/{vendorId}/step2', 'Front\CheckoutController@checkoutVendorStep2')->name('front.checkout.vendor.step2');
+        Route::post('/checkout/vendor/{vendorId}/step2/submit', 'Front\CheckoutController@checkoutVendorStep2Submit')->name('front.checkout.vendor.step2.submit');
+        Route::get('/checkout/vendor/{vendorId}/step3', 'Front\CheckoutController@checkoutVendorStep3')->name('front.checkout.vendor.step3');
+    });
 
     Route::post('/checkout/step1/submit', 'Front\CheckoutController@checkoutStep1')->name('front.checkout.step1.submit');
 

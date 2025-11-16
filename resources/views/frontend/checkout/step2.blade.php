@@ -46,7 +46,7 @@
             </div>
 
             <!-- address-->
-            <form class="address-wrapper" action="{{ route('front.checkout.step2.submit') }}" method="POST">
+            <form class="address-wrapper" action="{{ isset($is_vendor_checkout) && $is_vendor_checkout ? route('front.checkout.vendor.step2.submit', $vendor_id) : route('front.checkout.step2.submit') }}" method="POST">
                 @csrf
                 <div class="row gy-4">
                     <div class="col-lg-7 col-xl-8 wow-replaced" data-wow-delay=".2s">
@@ -487,7 +487,7 @@
                                     <div class="price-details">
                                         <span>@lang('Total MRP')</span>
                                         <span
-                                            class="right-side cart-total">{{ Session::has('cart') ? App\Models\Product::convertPrice(Session::get('cart')->totalPrice) : '0.00' }}</span>
+                                            class="right-side cart-total">{{ App\Models\Product::convertPrice($totalPrice) }}</span>
                                     </div>
 
 
@@ -575,7 +575,7 @@
                                             </defs>
                                         </svg>
                                     </button>
-                                    <a href="{{ route('front.checkout') }}" class="template-btn dark-outline w-100">
+                                    <a href="{{ isset($is_vendor_checkout) && $is_vendor_checkout ? route('front.checkout.vendor', $vendor_id) : route('front.checkout') }}" class="template-btn dark-outline w-100">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="25" height="24"
                                             viewBox="0 0 25 24" fill="none">
                                             <g clip-path="url(#clip0_489_34179)">
@@ -635,7 +635,7 @@
                 <input type="hidden" id="original_tax" value="0">
                 <input type="hidden" id="wallet-price" name="wallet_price" value="0">
                 <input type="hidden" id="ttotal"
-                    value="{{ Session::has('cart') ? App\Models\Product::convertPrice(Session::get('cart')->totalPrice) : '0' }}">
+                    value="{{ App\Models\Product::convertPrice($totalPrice) }}">
                 <input type="hidden" name="coupon_code" id="coupon_code"
                     value="{{ Session::has('coupon_code') ? Session::get('coupon_code') : '' }}">
                 <input type="hidden" name="coupon_discount" id="coupon_discount"

@@ -186,9 +186,7 @@
                             <div class="details-wrapper">
                                 <div class="price-details">
                                     <span>@lang('Total MRP')</span>
-                                    <span class="right-side cart-total">{{ Session::has('cart') ?
-                                        App\Models\Product::convertPrice(Session::get('cart')->totalPrice) : '0.00'
-                                        }}</span>
+                                    <span class="right-side cart-total">{{ App\Models\Product::convertPrice($totalPrice) }}</span>
                                 </div>
 
 
@@ -312,7 +310,7 @@
                                         </defs>
                                     </svg>
                                 </button>
-                                <a href="{{ route('front.checkout.step2') }}" class="template-btn dark-outline w-100">
+                                <a href="{{ isset($is_vendor_checkout) && $is_vendor_checkout ? route('front.checkout.vendor.step2', $vendor_id) : route('front.checkout.step2') }}" class="template-btn dark-outline w-100">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="25" height="24" viewBox="0 0 25 24"
                                         fill="none">
                                         <g clip-path="url(#clip0_489_34179)">

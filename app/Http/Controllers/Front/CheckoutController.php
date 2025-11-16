@@ -1023,11 +1023,27 @@ class CheckoutController extends FrontBaseController
      * @param int $vendorId
      * @return array [vendorProducts, totalPrice, totalQty, digital]
      */
+    /**
+     * Get vendor cart data - READ-ONLY helper method
+     *
+     * CRITICAL SAFETY:
+     * 1. Creates Cart instance for READ-ONLY access
+     * 2. Filters products by vendor_id
+     * 3. Calculates vendor-specific totals
+     * 4. Does NOT modify session
+     * 5. Cart instance is discarded after use
+     * 6. Returns filtered data as array
+     *
+     * @param int $vendorId
+     * @return array ['vendorProducts', 'totalPrice', 'totalQty', 'digital']
+     */
     private function getVendorCartData($vendorId): array
     {
+        // READ-ONLY: Get cart from session without modification
         $oldCart = Session::get('cart');
         $cart = new Cart($oldCart);
 
+        // Filter products for this vendor only
         $vendorProducts = [];
         foreach ($cart->items as $rowKey => $product) {
             $productVendorId = data_get($product, 'item.user_id') ?? data_get($product, 'item.vendor_user_id') ?? 0;
@@ -1036,7 +1052,7 @@ class CheckoutController extends FrontBaseController
             }
         }
 
-        // Calculate totals
+        // Calculate totals for vendor products only
         $totalPrice = 0;
         $totalQty = 0;
         foreach ($vendorProducts as $product) {
@@ -1044,7 +1060,7 @@ class CheckoutController extends FrontBaseController
             $totalQty += (int)($product['qty'] ?? 1);
         }
 
-        // Check if all products are digital
+        // Check if all vendor products are digital
         $dp = 1;
         foreach ($vendorProducts as $prod) {
             if ($prod['item']['type'] == 'Physical') {
@@ -1053,6 +1069,7 @@ class CheckoutController extends FrontBaseController
             }
         }
 
+        // Return filtered data (Cart instance is discarded - no session modification)
         return [
             'vendorProducts' => $vendorProducts,
             'totalPrice' => $totalPrice,
@@ -1064,24 +1081,49 @@ class CheckoutController extends FrontBaseController
     /**
      * Step 1 - Display checkout page for a SPECIFIC vendor only
      *
-     * MULTI-VENDOR LOGIC:
-     * 1. Saves vendor_id in session (checkout_vendor_id)
-     * 2. Filters cart to show ONLY this vendor's products
-     * 3. Shows ONLY shipping methods where user_id = vendor_id
-     * 4. Shows ONLY packaging methods where user_id = vendor_id
-     * 5. NO global fallback - vendor must have their own methods
+     * MULTI-VENDOR SIMPLIFIED LOGIC:
+     * 1. Checks authentication (logged-in or guest checkout enabled)
+     * 2. Saves vendor_id in session for tracking (checkout_vendor_id)
+     * 3. Filters cart to show ONLY this vendor's products (getVendorCartData)
+     * 4. Gets ONLY vendor-specific shipping methods (no general cart shipping)
+     * 5. Gets ONLY vendor-specific packaging methods (no general cart packaging)
+     * 6. Calculates total for THIS vendor only (with vendor-specific coupon)
+     * 7. Does NOT call Order::getShipData or Order::getPackingData (avoids cart-wide logic)
+     * 8. Does NOT modify auth state - only reads Auth::check()
      *
      * @param int $vendorId The vendor's user_id
      * @return \Illuminate\View\View|\Illuminate\Http\RedirectResponse
      */
     public function checkoutVendor($vendorId)
     {
+        // DEBUG: Log auth state at entry
+        \Log::info('checkoutVendor START', [
+            'auth_check' => Auth::check(),
+            'session_id' => Session::getId(),
+            'user_id' => Auth::id(),
+            'vendor_id' => $vendorId
+        ]);
+
         if (!Session::has('cart')) {
             return redirect()->route('front.cart')->with('success', __("You don't have any product to checkout."));
         }
 
-        // Save vendor_id in session for tracking throughout checkout
+        // Save vendor_id in session FIRST - ensures session persistence
         Session::put('checkout_vendor_id', $vendorId);
+
+        // Check if user is authenticated OR guest checkout is enabled
+        if (!Auth::check() && $this->gs->guest_checkout != 1) {
+            // Save session before redirecting to login
+            Session::save();
+            \Log::warning('checkoutVendor: Guest without checkout enabled', ['vendor_id' => $vendorId]);
+            return redirect()->route('user.login')->with('unsuccess', __('Please login to continue.'));
+        }
+
+        // DEBUG: Log auth state before processing
+        \Log::info('checkoutVendor: Auth verified', [
+            'auth_check' => Auth::check(),
+            'user_id' => Auth::id()
+        ]);
 
         // Get vendor cart data using helper method (avoids code duplication)
         $cartData = $this->getVendorCartData($vendorId);
@@ -1094,16 +1136,27 @@ class CheckoutController extends FrontBaseController
             return redirect()->route('front.cart')->with('unsuccess', __("No products found for this vendor."));
         }
 
-        // جلب طرق الشحن الخاصة بهذا التاجر فقط
+        // جلب طرق الشحن الخاصة بهذا التاجر فقط (vendor-specific only)
         $shipping_data = DB::table('shippings')->where('user_id', $vendorId)->get();
         if ($shipping_data->isEmpty()) {
             $shipping_data = DB::table('shippings')->where('user_id', 0)->get();
         }
 
-        // جلب طرق التغليف الخاصة بهذا التاجر فقط
+        // جلب طرق التغليف الخاصة بهذا التاجر فقط (vendor-specific only)
         $package_data = DB::table('packages')->where('user_id', $vendorId)->get();
         if ($package_data->isEmpty()) {
             $package_data = DB::table('packages')->where('user_id', 0)->get();
+        }
+
+        // Calculate total with vendor-specific coupon
+        $total = $totalPrice;
+        $coupon = Session::has('coupon_vendor_' . $vendorId) ? Session::get('coupon_vendor_' . $vendorId) : 0;
+
+        if (!Session::has('coupon_total_vendor_' . $vendorId)) {
+            $total = $total - $coupon;
+        } else {
+            $total = Session::get('coupon_total_vendor_' . $vendorId);
+            $total = str_replace(',', '', str_replace($this->curr->sign, '', $total));
         }
 
         $pickups = DB::table('pickups')->get();
@@ -1111,7 +1164,7 @@ class CheckoutController extends FrontBaseController
 
         return view('frontend.checkout.step1', [
             'products' => $vendorProducts,
-            'totalPrice' => $totalPrice,
+            'totalPrice' => $total,
             'pickups' => $pickups,
             'totalQty' => $totalQty,
             'shipping_cost' => 0,
@@ -1156,19 +1209,40 @@ class CheckoutController extends FrontBaseController
         }
 
         Session::put('vendor_step1_' . $vendorId, $step1);
+        Session::save(); // Ensure session is saved before redirect
         return redirect()->route('front.checkout.vendor.step2', $vendorId);
     }
 
     /**
      * Step 2 - عرض صفحة اختيار الشحن للتاجر المحدد
+     *
+     * VENDOR-ONLY LOGIC:
+     * 1. Loads vendor_step1 data from session (vendor-specific)
+     * 2. Filters cart to vendor products only (getVendorCartData)
+     * 3. Gets vendor-specific shipping & packaging methods only
+     * 4. Does NOT use general cart shipping/packaging logic
+     * 5. Preserves auth state - no modifications
+     *
+     * @param int $vendorId
+     * @return \Illuminate\View\View|\Illuminate\Http\RedirectResponse
      */
     public function checkoutVendorStep2($vendorId)
     {
+        // DEBUG: Log auth state at step2 entry
+        \Log::info('checkoutVendorStep2 START', [
+            'auth_check' => Auth::check(),
+            'session_id' => Session::getId(),
+            'user_id' => Auth::id(),
+            'vendor_id' => $vendorId
+        ]);
+
         if (!Session::has('vendor_step1_' . $vendorId)) {
+            \Log::warning('checkoutVendorStep2: Missing step1 data', ['vendor_id' => $vendorId]);
             return redirect()->route('front.checkout.vendor', $vendorId)->with('success', __("Please fill up step 1."));
         }
 
         if (!Session::has('cart')) {
+            \Log::warning('checkoutVendorStep2: Missing cart', ['vendor_id' => $vendorId]);
             return redirect()->route('front.cart')->with('success', __("You don't have any product to checkout."));
         }
 
@@ -1227,6 +1301,17 @@ class CheckoutController extends FrontBaseController
 
     /**
      * Step 2 Submit - حفظ بيانات الشحن للتاجر المحدد
+     *
+     * VENDOR-ONLY LOGIC:
+     * 1. Reads cart (READ-ONLY) to calculate vendor total
+     * 2. Filters products by vendor_id
+     * 3. Calculates shipping cost for this vendor only
+     * 4. Saves to vendor_step2_{vendorId} session (not global step2)
+     * 5. Does NOT modify cart or auth state
+     *
+     * @param Request $request
+     * @param int $vendorId
+     * @return \Illuminate\Http\RedirectResponse
      */
     public function checkoutVendorStep2Submit(Request $request, $vendorId)
     {
@@ -1234,10 +1319,11 @@ class CheckoutController extends FrontBaseController
         $oldCart = Session::get('cart');
         $input = Session::get('vendor_step1_' . $vendorId) + $step2;
 
-        // حساب المبلغ الأساسي (قبل الضريبة والشحن) لتطبيق free_above
+        // NOTE: Creating Cart instance for READ-ONLY access
+        // This does NOT modify session - only used to read and filter vendor products
         $cart = new Cart($oldCart);
 
-        // تصفية منتجات هذا التاجر فقط
+        // تصفية منتجات هذا التاجر فقط (vendor products only)
         $vendorTotal = 0;
         foreach ($cart->items as $product) {
             $productVendorId = data_get($product, 'item.user_id') ?? data_get($product, 'item.vendor_user_id') ?? 0;
@@ -1307,6 +1393,7 @@ class CheckoutController extends FrontBaseController
         $step2['total'] = $finalTotal; // Save total in session for step3
 
         Session::put('vendor_step2_' . $vendorId, $step2);
+        Session::save(); // Ensure session is saved before redirect
 
         return redirect()->route('front.checkout.vendor.step3', $vendorId);
     }
@@ -1406,12 +1493,18 @@ class CheckoutController extends FrontBaseController
     }
 
     /**
-     * Helper: Group products by vendor ID
+     * Helper: Group products by vendor ID - READ-ONLY
      *
-     * AVOIDS CODE DUPLICATION - This method eliminates the need to repeat
-     * vendor grouping logic in Blade views. Used by all checkout steps.
+     * SAFETY:
+     * 1. Receives array of products (already filtered)
+     * 2. Groups them by vendor_id
+     * 3. Does NOT access session
+     * 4. Does NOT modify cart
+     * 5. Pure data transformation
      *
-     * @param array $products Cart items
+     * Used by checkout steps to organize display.
+     *
+     * @param array $products Cart items (already filtered if vendor-specific)
      * @return array Grouped products by vendor_id with metadata
      */
     private function groupProductsByVendor(array $products): array
@@ -1438,5 +1531,68 @@ class CheckoutController extends FrontBaseController
         }
 
         return $grouped;
+    }
+
+    /**
+     * إزالة منتجات تاجر معين من السلة بعد اكتمال الدفع
+     *
+     * ⚠️ WARNING: This method MODIFIES cart session
+     * ONLY call this AFTER successful payment completion
+     *
+     * USAGE:
+     * 1. Called by payment controllers after payment success
+     * 2. Removes vendor's products from cart
+     * 3. Keeps other vendors' products intact
+     * 4. Cleans up vendor-specific session data
+     * 5. Does NOT affect auth state
+     *
+     * @param int $vendorId معرف التاجر
+     * @return void
+     */
+    public static function removeVendorProductsFromCart($vendorId)
+    {
+        if (!Session::has('cart')) {
+            return;
+        }
+
+        $oldCart = Session::get('cart');
+        $cart = new Cart($oldCart);
+
+        // تصفية المنتجات: الاحتفاظ فقط بمنتجات التجار الآخرين
+        $remainingItems = [];
+        foreach ($cart->items as $rowKey => $product) {
+            $productVendorId = data_get($product, 'item.user_id') ?? data_get($product, 'item.vendor_user_id') ?? 0;
+
+            // إذا لم يكن من نفس التاجر، نحتفظ به
+            if ($productVendorId != $vendorId) {
+                $remainingItems[$rowKey] = $product;
+            }
+        }
+
+        // تحديث السلة
+        $cart->items = $remainingItems;
+
+        // إعادة حساب الإجماليات
+        $totalQty = 0;
+        $totalPrice = 0.0;
+        foreach ($cart->items as $item) {
+            $totalQty += (int)($item['qty'] ?? 0);
+            $totalPrice += (float)($item['price'] ?? 0);
+        }
+        $cart->totalQty = $totalQty;
+        $cart->totalPrice = $totalPrice;
+
+        // حفظ أو حذف السلة
+        if (empty($cart->items)) {
+            Session::forget('cart');
+        } else {
+            Session::put('cart', $cart);
+        }
+
+        // حذف بيانات الخطوات الخاصة بهذا التاجر
+        Session::forget('vendor_step1_' . $vendorId);
+        Session::forget('vendor_step2_' . $vendorId);
+        Session::forget('coupon_vendor_' . $vendorId);
+        Session::forget('checkout_vendor_id');
     }
 }
