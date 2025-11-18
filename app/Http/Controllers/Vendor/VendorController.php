@@ -15,24 +15,31 @@ class VendorController extends VendorBaseController
     //*** GET Request
     public function index()
     {
-        $data['days'] = "";
-        $data['sales'] = "";
-        for ($i = 0; $i < 30; $i++) {
-            $data['days'] .= "'" . date("d M", strtotime('-' . $i . ' days')) . "',";
+        try {
+            $data['days'] = "";
+            $data['sales'] = "";
+            for ($i = 0; $i < 30; $i++) {
+                $data['days'] .= "'" . date("d M", strtotime('-' . $i . ' days')) . "',";
 
-            $data['sales'] .= "'" . VendorOrder::where('user_id', '=', $this->user->id)->where('status', '=', 'completed')->whereDate('created_at', '=', date("Y-m-d", strtotime('-' . $i . ' days')))->sum("price") . "',";
+                $data['sales'] .= "'" . VendorOrder::where('user_id', '=', $this->user->id)->where('status', '=', 'completed')->whereDate('created_at', '=', date("Y-m-d", strtotime('-' . $i . ' days')))->sum("price") . "',";
+            }
+            // Retrieve recent products for this vendor using the merchantProducts relationship.
+            // Limit to 5 entries to avoid overwhelming the dashboard when there are many products.
+            $userId = $this->user->id;
+            $data['pproducts'] = Product::whereHas('merchantProducts', function ($q) use ($userId) {
+                $q->where('user_id', $userId);
+            })->latest('products.id')->take(5)->get();
+            $data['rorders'] = VendorOrder::where('user_id', '=', $this->user->id)->latest('id')->take(10)->get();
+            $data['user'] = $this->user;
+            $data['pending'] = VendorOrder::where('user_id', '=', $this->user->id)->where('status', '=', 'pending')->get();
+            $data['processing'] = VendorOrder::where('user_id', '=', $this->user->id)->where('status', '=', 'processing')->get();
+            $data['completed'] = VendorOrder::where('user_id', '=', $this->user->id)->where('status', '=', 'completed')->get();
+            return view('vendor.index', $data);
+        } catch (\Exception $e) {
+            \Log::error('VendorController@index error: ' . $e->getMessage());
+            \Log::error('Stack trace: ' . $e->getTraceAsString());
+            return response()->json(['error' => $e->getMessage()], 500);
         }
-        // Retrieve recent products for this vendor using the merchantProducts relationship.
-        // Limit to 5 entries to avoid overwhelming the dashboard when there are many products.
-        $data['pproducts'] = Product::whereHas('merchantProducts', function ($q) {
-            $q->where('user_id', $this->user->id);
-        })->latest('products.id')->take(5)->get();
-        $data['rorders'] = VendorOrder::where('user_id', '=', $this->user->id)->latest('id')->take(10)->get();
-        $data['user'] = $this->user;
-        $data['pending'] = VendorOrder::where('user_id', '=', $this->user->id)->where('status', '=', 'pending')->get();
-        $data['processing'] = VendorOrder::where('user_id', '=', $this->user->id)->where('status', '=', 'processing')->get();
-        $data['completed'] = VendorOrder::where('user_id', '=', $this->user->id)->where('status', '=', 'completed')->get();
-        return view('vendor.index', $data);
     }
 
     public function profileupdate(Request $request)

@@ -69,6 +69,28 @@
                             @enderror
                         </div>
 
+                        <div class="form-group">
+                            <label for="provider">@lang('Provider')</label>
+                            <select id="provider" class="form-control" name="provider">
+                                <option value="manual">@lang('Manual')</option>
+                                <option value="tryoto">@lang('Tryoto')</option>
+                            </select>
+                            @error('provider')
+                                <span class="text-danger">{{ $message }}</span>
+                            @enderror
+                        </div>
+
+                        <div class="form-group">
+                            <label for="free_above">@lang('Free Shipping Above')</label>
+                            <input type="number" step="any" id="free_above" class="form-control"
+                                placeholder="@lang('Free shipping if cart total above this amount')"
+                                value="" name="free_above">
+                            <small class="form-text text-muted">@lang('Leave empty or 0 to disable free shipping')</small>
+                            @error('free_above')
+                                <span class="text-danger">{{ $message }}</span>
+                            @enderror
+                        </div>
+
                         <div class="col-12 col-sm-12">
                             <button class="template-btn btn-forms" type="submit">
                                 @lang('Save')

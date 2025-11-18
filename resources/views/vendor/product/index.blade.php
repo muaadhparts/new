@@ -6,8 +6,16 @@
         <div class="gs-vendor-breadcrumb has-mb">
             <div class="d-flex gap-4  flex-wrap align-items-center custom-gap-sm-2">
                 <h4 class="text-capitalize">@lang('All Products')</h4>
-                <a href="{{ route('vendor-prod-types') }}"
-                    class="template-btn md-btn black-btn data-table-btn">+@lang('Add New Product')</a>
+                <div class="d-flex gap-2 flex-wrap">
+                    <a href="{{ route('vendor-prod-types') }}"
+                        class="template-btn md-btn black-btn data-table-btn">
+                        <i class="fas fa-plus"></i> @lang('Add New Product')
+                    </a>
+                    <a href="{{ route('vendor-stock-management') }}"
+                        class="template-btn md-btn primary-btn data-table-btn">
+                        <i class="fas fa-boxes"></i> إدارة المخزون
+                    </a>
+                </div>
             </div>
             <ul class="breadcrumb-menu">
                 <li>

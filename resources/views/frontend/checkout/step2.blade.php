@@ -206,14 +206,27 @@
                             @php
 
                                 if ($vendor_id != 0) {
-                                    $shipping = App\Models\Shipping::where('user_id', $vendor_id)->get();
+                                    $shipping = App\Models\Shipping::forVendor($vendor_id)->get();
                                     $packaging = App\Models\Package::where('user_id', $vendor_id)->get();
+                                    if ($packaging->isEmpty()) {
+                                        $packaging = App\Models\Package::where('user_id', 0)->get();
+                                    }
                                     $vendor = App\Models\User::findOrFail($vendor_id);
                                 } else {
-                                    $shipping = App\Models\Shipping::where('user_id', 0)->get();
+                                    $shipping = App\Models\Shipping::forVendor(0)->get();
                                     $packaging = App\Models\Package::where('user_id', 0)->get();
                                     $vendor = App\Models\Admin::findOrFail(1);
                                 }
+
+                                // Group shipping by provider
+                                $groupedShipping = $shipping->groupBy('provider');
+
+                                // Provider labels
+                                $providerLabels = [
+                                    'manual' => __('Manual Shipping'),
+                                    'debts' => __('Debts Shipping'),
+                                    'tryoto' => __('Smart Shipping (Tryoto)'),
+                                ];
 
                             @endphp
 
@@ -330,6 +343,28 @@
                                         </ul>
 
 
+                                        {{-- Tax Display for this Vendor --}}
+                                        @if(isset($step1->vendor_tax_data[$vendor_id]))
+                                            @php
+                                                $vendorTax = $step1->vendor_tax_data[$vendor_id];
+                                                $vendorTaxRate = $vendorTax['tax_rate'] ?? 0;
+                                                $vendorTaxAmount = $vendorTax['tax_amount'] ?? 0;
+                                            @endphp
+                                            @if($vendorTaxRate > 0)
+                                            <div class="d-flex flex-wrap gap-2 mb-3 bg-light-white p-4 align-items-center">
+                                                <span class="label mr-2">
+                                                    <b>{{ __('Tax') }} ({{ $vendorTaxRate }}%):</b>
+                                                </span>
+                                                <span class="fw-bold text-success">
+                                                    {{ App\Models\Product::convertPrice($vendorTaxAmount) }}
+                                                </span>
+                                                @if(isset($step1->tax_location))
+                                                <small class="text-muted ms-2">({{ $step1->tax_location }})</small>
+                                                @endif
+                                            </div>
+                                            @endif
+                                        @endif
+
                                         @if ($is_Digital == 0)
                                             <div class="d-flex flex-wrap gap-2 mb-3 bg-light-white p-4">
                                                 <span class="label mr-2">
@@ -347,22 +382,55 @@
                                             </div>
                                             <div class="d-flex flex-wrap gap-2 mb-3 bg-light-white p-4">
                                                 <span class="label mr-2">
-                                                    <b>{{ __('Shipping :') }}</b>
+                                                    <b>{{ __('Shipping Methods:') }}</b>
                                                 </span>
-                                                <p id="shipping_text{{ $vendor_id }}">
-                                                    {{ isset($shipping[0])
-                                                        ? $shipping[0]['title'] . '+' . $curr->sign . round($shipping[0]['price'] * $curr->value, 2)
-                                                        : 'Package not found' }}
+
+                                                {{-- Dynamic buttons for each provider --}}
+                                                @foreach($groupedShipping as $provider => $methods)
+                                                    @php
+                                                        $providerLabel = $providerLabels[$provider] ?? ucfirst($provider);
+                                                        $modalId = "vendor_{$provider}_shipping_{$vendor_id}";
+                                                    @endphp
+
+                                                    <button type="button" class="template-btn sm-btn"
+                                                            data-bs-toggle="modal"
+                                                            data-bs-target="#{{ $modalId }}">
+                                                        {{ $providerLabel }}
+                                                    </button>
+                                                @endforeach
+
+                                                {{-- Display selected shipping --}}
+                                                <p id="shipping_text{{ $vendor_id }}" class="ms-auto mb-0">
+                                                    @lang('Not Selected')
                                                 </p>
-                                                <button type="button" class="template-btn sm-btn" data-bs-toggle="modal"
-                                                    data-bs-target="#vendor_shipping{{ $vendor_id }}">
-                                                    {{ __('Select Shipping') }}
-                                                </button>
                                             </div>
-                                            @include('includes.frontend.vendor_shipping', [
-                                                'shipping' => $shipping,
-                                                'vendor_id' => $vendor_id,
-                                            ])
+
+                                            {{-- Include modals for each provider --}}
+                                            @foreach($groupedShipping as $provider => $methods)
+                                                @php
+                                                    $providerLabel = $providerLabels[$provider] ?? ucfirst($provider);
+                                                    $modalId = "vendor_{$provider}_shipping_{$vendor_id}";
+                                                @endphp
+
+                                                @if($provider === 'tryoto')
+                                                    {{-- Tryoto Modal with Livewire Component --}}
+                                                    @include('includes.frontend.tryoto_shipping_modal', [
+                                                        'modalId' => $modalId,
+                                                        'providerLabel' => $providerLabel,
+                                                        'vendor_id' => $vendor_id,
+                                                        'array_product' => $array_product,
+                                                    ])
+                                                @else
+                                                    {{-- Manual/Debts Modal --}}
+                                                    @include('includes.frontend.provider_shipping_modal', [
+                                                        'modalId' => $modalId,
+                                                        'provider' => $provider,
+                                                        'providerLabel' => $providerLabel,
+                                                        'methods' => $methods,
+                                                        'vendor_id' => $vendor_id,
+                                                    ])
+                                                @endif
+                                            @endforeach
                                             @include('includes.frontend.vendor_packaging', [
                                                 'packaging' => $packaging,
                                                 'vendor_id' => $vendor_id,
@@ -517,6 +585,19 @@
                                         </div>
                                     @endif
 
+                                    {{-- Tax Display - Total for all vendors --}}
+                                    @if(isset($step1->tax_rate) && $step1->tax_rate > 0 && isset($step1->total_tax_amount))
+                                        <div class="price-details">
+                                            <span>@lang('Total Tax') ({{ $step1->tax_rate }}%)</span>
+                                            <span class="right-side">{{ App\Models\Product::convertPrice($step1->total_tax_amount) }}</span>
+                                        </div>
+                                        @if(isset($step1->tax_location))
+                                            <div class="price-details">
+                                                <small class="text-muted">{{ $step1->tax_location }}</small>
+                                            </div>
+                                        @endif
+                                    @endif
+
                                     @if ($digital == 0)
                                         <div class="price-details">
                                             <span>@lang('Shipping Cost')</span>
@@ -617,20 +698,26 @@
                 <input type="hidden" name="currency_name" value="{{ $curr->name }}">
                 <input type="hidden" name="currency_value" value="{{ $curr->value }}">
                 @php
+                    // Calculate total with tax for initial display
+                    $taxAmount = $step1->total_tax_amount ?? 0;
+                    $totalWithTax = $totalPrice + $taxAmount;
                 @endphp
                 @if (Session::has('coupon_total'))
                     <input type="hidden" name="total" id="grandtotal"
-                        value="{{ round($totalPrice * $curr->value, 2) }}">
+                        value="{{ round($totalWithTax * $curr->value, 2) }}">
                     <input type="hidden" id="tgrandtotal" value="{{ $totalPrice }}">
+                    <input type="hidden" id="tax_amount_value" value="{{ round($taxAmount * $curr->value, 2) }}">
                 @elseif(Session::has('coupon_total1'))
                     <input type="hidden" name="total" id="grandtotal"
-                        value="{{ preg_replace(' /[^0-9,.]/', '', Session::get('coupon_total1')) }}">
+                        value="{{ preg_replace(' /[^0-9,.]/', '', Session::get('coupon_total1')) + round($taxAmount * $curr->value, 2) }}">
                     <input type="hidden" id="tgrandtotal"
                         value="{{ preg_replace(' /[^0-9,.]/', '', Session::get('coupon_total1')) }}">
+                    <input type="hidden" id="tax_amount_value" value="{{ round($taxAmount * $curr->value, 2) }}">
                 @else
                     <input type="hidden" name="total" id="grandtotal"
-                        value="{{ round($totalPrice * $curr->value, 2) }}">
+                        value="{{ round($totalWithTax * $curr->value, 2) }}">
                     <input type="hidden" id="tgrandtotal" value="{{ round($totalPrice * $curr->value, 2) }}">
+                    <input type="hidden" id="tax_amount_value" value="{{ round($taxAmount * $curr->value, 2) }}">
                 @endif
                 <input type="hidden" id="original_tax" value="0">
                 <input type="hidden" id="wallet-price" name="wallet_price" value="0">
@@ -780,8 +867,12 @@
             let view = $(this).attr('view');
             let title = $(this).attr('data-form');
             $('#shipping_text' + ref).html(title + '+' + view);
-            var ttotal = parseFloat($('#tgrandtotal').val()) + parseFloat(mship) + parseFloat(mpack);
+
+            // Calculate total: products + tax + shipping + packing
+            var taxAmount = parseFloat($('#tax_amount_value').val()) || 0;
+            var ttotal = parseFloat($('#tgrandtotal').val()) + taxAmount + parseFloat(mship) + parseFloat(mpack);
             ttotal = parseFloat(ttotal).toFixed(2);
+
             if (pos == 0) {
                 $('#final-cost').html('{{ $curr->sign }}' + ttotal);
             } else {
@@ -799,8 +890,12 @@
             let view = $(this).attr('view');
             let title = $(this).attr('data-form');
             $('#packing_text' + ref).html(title + '+' + view);
-            var ttotal = parseFloat($('#tgrandtotal').val()) + parseFloat(mship) + parseFloat(mpack);
+
+            // Calculate total: products + tax + shipping + packing
+            var taxAmount = parseFloat($('#tax_amount_value').val()) || 0;
+            var ttotal = parseFloat($('#tgrandtotal').val()) + taxAmount + parseFloat(mship) + parseFloat(mpack);
             ttotal = parseFloat(ttotal).toFixed(2);
+
             if (pos == 0) {
                 $('#final-cost').html('{{ $curr->sign }}' + ttotal);
             } else {

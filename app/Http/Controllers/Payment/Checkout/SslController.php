@@ -80,12 +80,10 @@ class SslController extends CheckoutBaseControlller
         $input['txnid'] = $data['txnid'];
 
 
-        if ($input['tax_type'] == 'state_tax') {
-            $input['tax_location'] = State::findOrFail($input['tax'])->state;
-        } else {
-            $input['tax_location'] = Country::findOrFail($input['tax'])->country_name;
-        }
-        $input['tax'] = data_get($orderCalculate, 'tax', 0);
+        // Get tax data from step2 (already calculated and saved)
+        $step2_session = Session::get('step2');
+        $input['tax'] = $step2_session['tax_amount'] ?? 0;
+        $input['tax_location'] = $step2_session['tax_location'] ?? '';
 
 
         if ($input['dp'] == 1) {

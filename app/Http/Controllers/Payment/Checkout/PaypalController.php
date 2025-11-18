@@ -161,12 +161,11 @@ class PaypalController extends CheckoutBaseControlller
             $input['order_number'] = Str::random(4) . time();
             $input['wallet_price'] = $input['wallet_price'] / $this->curr->value;
             $input['payment_status'] = "Completed";
-            if ($input['tax_type'] == 'state_tax') {
-                $input['tax_location'] = State::findOrFail($input['tax'])->state;
-            } else {
-                $input['tax_location'] = Country::findOrFail($input['tax'])->country_name;
-            }
-            $input['tax'] = Session::get('current_tax');
+
+            // Get tax data from step2 (already calculated and saved)
+            $step2_session = Session::get('step2');
+            $input['tax'] = $step2_session['tax_amount'] ?? 0;
+            $input['tax_location'] = $step2_session['tax_location'] ?? '';
 
             $input['txnid'] = $response->getData()['transactions'][0]['related_resources'][0]['sale']['id'];
             if ($input['dp'] == 1) {

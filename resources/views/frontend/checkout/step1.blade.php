@@ -330,9 +330,16 @@
                                     </div>
 
 
-                                    <div class="price-details tax_show d-none">
-                                        <span>@lang('Tax')</span>
-                                        <span class="right-side original_tax original_tax">0</span>
+                                    {{-- Tax Display - Will be shown when country/state is selected --}}
+                                    <div class="price-details tax-display-wrapper d-none" id="tax-display">
+                                        <span>
+                                            @lang('Tax')
+                                            <span class="tax-rate-text"></span>
+                                        </span>
+                                        <span class="right-side tax-amount-value">{{ App\Models\Product::convertPrice(0) }}</span>
+                                    </div>
+                                    <div class="price-details tax-location-wrapper d-none" id="tax-location-display">
+                                        <small class="text-muted tax-location-text"></small>
                                     </div>
 
 
@@ -644,19 +651,49 @@
                     shipping_cost: ship
                 },
                 success: function(data) {
+                    // data[0] = total with tax
+                    // data[1] = tax percentage
+                    // data[2] = tax amount
+                    // data[3] = tax location (country/state name)
 
                     $('#grandtotal').val(data[0]);
                     $('#tgrandtotal').val(data[0]);
                     $('#original_tax').val(data[1]);
-                    $('.tax_show').removeClass('d-none');
                     $('#input_tax').val(data[11]);
                     $('#input_tax_type').val(data[12]);
-                    $('.original_tax').html(parseFloat(data[1]) + "%");
+
+                    // Show tax display with rate and amount
+                    if (data[1] && parseFloat(data[1]) > 0) {
+                        $('.tax-display-wrapper').removeClass('d-none');
+                        $('.tax-rate-text').html('(' + parseFloat(data[1]) + '%)');
+
+                        // Display tax amount with currency
+                        var taxAmount = parseFloat(data[2] || 0);
+                        if (pos == 0) {
+                            $('.tax-amount-value').html('{{ $curr->sign }}' + taxAmount.toFixed(2));
+                        } else {
+                            $('.tax-amount-value').html(taxAmount.toFixed(2) + '{{ $curr->sign }}');
+                        }
+
+                        // Show tax location if available
+                        if (data[3]) {
+                            $('.tax-location-wrapper').removeClass('d-none');
+                            $('.tax-location-text').html(data[3]);
+                        } else {
+                            $('.tax-location-wrapper').addClass('d-none');
+                        }
+                    } else {
+                        $('.tax-display-wrapper').addClass('d-none');
+                        $('.tax-location-wrapper').addClass('d-none');
+                    }
+
+                    // Update final total
                     var ttotal = parseFloat($('#grandtotal').val());
                     var tttotal = parseFloat($('#grandtotal').val()) + (parseFloat(mship) + parseFloat(mpack));
                     ttotal = parseFloat(ttotal).toFixed(2);
                     tttotal = parseFloat(tttotal).toFixed(2);
                     $('#grandtotal').val(data[0] + parseFloat(mship) + parseFloat(mpack));
+
                     if (pos == 0) {
                         $('#final-cost').html('{{ $curr->sign }}' + tttotal);
                         $('.total-cost-dum #total-cost').html('{{ $curr->sign }}' + ttotal);

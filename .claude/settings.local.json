@@ -2,7 +2,10 @@
   "permissions": {
     "allow": [
       "Bash(php artisan cache:clear:*)",
-      "Bash(php artisan:*)"
+      "Bash(php artisan:*)",
+      "Bash(for file in FlutterwaveController.php InstamojoController.php ManualPaymentController.php MercadopagoController.php MollieController.php MyFatoorahController.php PaytmController.php SslController.php VoguepayController.php WalletPaymentController.php AuthorizeController.php)",
+      "Bash(do echo \"Processing $file...\")",
+      "Bash(done)"
     ],
     "deny": [],
     "ask": []

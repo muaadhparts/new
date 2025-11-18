@@ -1201,6 +1201,20 @@ Route::group(['middleware' => 'maintenance'], function () {
 
             //------------ VENDOR PRODUCT SECTION ENDS------------
 
+            //------------ STOCK MANAGEMENT SECTION ------------
+            Route::get('/stock/management', 'Vendor\StockManagementController@index')->name('vendor-stock-management');
+            Route::get('/stock/datatables', 'Vendor\StockManagementController@datatables')->name('vendor-stock-datatables');
+            Route::get('/stock/export', 'Vendor\StockManagementController@export')->name('vendor-stock-export');
+            Route::get('/stock/upload-form', 'Vendor\StockManagementController@uploadForm')->name('vendor-stock-upload-form');
+            Route::post('/stock/upload', 'Vendor\StockManagementController@upload')->name('vendor-stock-upload');
+            Route::get('/stock/download/{id}', 'Vendor\StockManagementController@download')->name('vendor-stock-download');
+            Route::post('/stock/auto-update', 'Vendor\StockManagementController@triggerAutoUpdate')->name('vendor-stock-auto-update');
+            Route::post('/stock/full-refresh', 'Vendor\StockManagementController@triggerFullRefresh')->name('vendor-stock-full-refresh');
+            Route::post('/stock/process-full-refresh', 'Vendor\StockManagementController@processFullRefresh')->name('vendor-stock-process-full-refresh');
+            Route::get('/stock/progress/{id}', 'Vendor\StockManagementController@getUpdateProgress')->name('vendor-stock-progress');
+            Route::get('/stock/template', 'Vendor\StockManagementController@downloadTemplate')->name('vendor-stock-template');
+            //------------ STOCK MANAGEMENT SECTION ENDS ------------
+
             //------------ VENDOR GALLERY SECTION ------------
 
             Route::get('/gallery/show', 'Vendor\GalleryController@show')->name('vendor-gallery-show');

@@ -66,11 +66,11 @@
         </li>
 
         <li
-            class="has-sub-menu {{ request()->is('vendor/products/types') || request()->is('vendor/products') || request()->is('vendor/products/catalogs') || request()->is('vendor/products/physical/create') || request()->is('vendor/products/digital/create') || request()->is('vendor/products/license/create') || request()->is('vendor/products/listing/create') || request()->is('vendor/products/edit/*') || request()->is('vendor/products/catalog/*') ? 'active' : '' }}">
+            class="has-sub-menu {{ request()->is('vendor/products/types') || request()->is('vendor/products') || request()->is('vendor/products/catalogs') || request()->is('vendor/products/physical/create') || request()->is('vendor/products/digital/create') || request()->is('vendor/products/license/create') || request()->is('vendor/products/listing/create') || request()->is('vendor/products/edit/*') || request()->is('vendor/products/catalog/*') || request()->is('vendor/stock/*') ? 'active' : '' }}">
 
 
             <a href="#vendor-collapse-product"
-                class="{{ request()->is('vendor/products/types') || request()->is('vendor/products') || request()->is('vendor/products/catalogs') || request()->is('vendor/products/physical/create') || request()->is('vendor/products/digital/create') || request()->is('vendor/products/license/create') || request()->is('vendor/products/listing/create') || request()->is('vendor/products/edit/*') || request()->is('vendor/products/catalog/*') ? '' : 'collapsed' }}"
+                class="{{ request()->is('vendor/products/types') || request()->is('vendor/products') || request()->is('vendor/products/catalogs') || request()->is('vendor/products/physical/create') || request()->is('vendor/products/digital/create') || request()->is('vendor/products/license/create') || request()->is('vendor/products/listing/create') || request()->is('vendor/products/edit/*') || request()->is('vendor/products/catalog/*') || request()->is('vendor/stock/*') ? '' : 'collapsed' }}"
                 data-bs-toggle="collapse" aria-expanded="false" aria-controls="vendor-collapse-product">
 
 
@@ -85,7 +85,7 @@
                 <span class="label">@lang('Products')</span>
                 <i class="ms-auto fa-solid fa-angle-down angle-down"></i>
             </a>
-            <ul class="sidebar-sub-menu collapse {{ request()->is('vendor/products/types') || request()->is('vendor/products') || request()->is('vendor/products/catalogs') || request()->is('vendor/products/physical/create') || request()->is('vendor/products/digital/create') || request()->is('vendor/products/license/create') || request()->is('vendor/products/listing/create') || request()->is('vendor/products/edit/*') || request()->is('vendor/products/catalog/*') ? 'show' : '' }}"
+            <ul class="sidebar-sub-menu collapse {{ request()->is('vendor/products/types') || request()->is('vendor/products') || request()->is('vendor/products/catalogs') || request()->is('vendor/products/physical/create') || request()->is('vendor/products/digital/create') || request()->is('vendor/products/license/create') || request()->is('vendor/products/listing/create') || request()->is('vendor/products/edit/*') || request()->is('vendor/products/catalog/*') || request()->is('vendor/stock/*') ? 'show' : '' }}"
                 id="vendor-collapse-product">
 
 
@@ -96,6 +96,11 @@
                         href="{{ route('vendor-prod-index') }}">@lang('All Product')</a></li>
                 <li><a class="sidebar-sub-menu-item {{ request()->is('vendor/products/catalogs') || request()->is('vendor/products/catalog/*') ? 'active' : '' }}"
                         href="{{ route('vendor-prod-catalogs') }}">@lang('Product Catalogs')</a></li>
+                <li><a class="sidebar-sub-menu-item {{ request()->is('vendor/stock/*') ? 'active' : '' }}"
+                        href="{{ route('vendor-stock-management') }}">
+                        <i class="fas fa-boxes"></i> إدارة المخزون
+                    </a>
+                </li>
             </ul>
         </li>
 

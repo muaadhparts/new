@@ -210,19 +210,15 @@ class CashOnDeliveryController extends CheckoutBaseControlller
         $input['order_number'] = Str::random(4) . time();
         $input['wallet_price'] = $request->wallet_price / $this->curr->value;
 
-        // التعامل مع tax_location بشكل آمن
-        if (isset($input['tax_type']) && $input['tax_type'] == 'state_tax') {
-            $state = State::find($input['tax']);
-            $input['tax_location'] = $state ? $state->state : '';
+        // Get tax data from step2 (already calculated and saved)
+        if ($isVendorCheckout) {
+            $step2 = Session::get('vendor_step2_' . $vendorId);
         } else {
-            if (isset($input['tax']) && $input['tax']) {
-                $country = Country::find($input['tax']);
-                $input['tax_location'] = $country ? $country->country_name : '';
-            } else {
-                $input['tax_location'] = '';
-            }
+            $step2 = Session::get('step2');
         }
-        $input['tax'] = Session::get('current_tax');
+
+        $input['tax'] = $step2['tax_amount'] ?? 0;
+        $input['tax_location'] = $step2['tax_location'] ?? '';
 
         if (Session::has('affilate')) {
             $val = $request->total / $this->curr->value;

@@ -95,12 +95,10 @@ class MercadopagoController extends CheckoutBaseControlller
             $input['txnid'] = $payment->id;
 
 
-            if ($input['tax_type'] == 'state_tax') {
-                $input['tax_location'] = State::findOrFail($input['tax'])->state;
-            } else {
-                $input['tax_location'] = Country::findOrFail($input['tax'])->country_name;
-            }
-            $input['tax'] = Session::get('current_tax');
+            // Get tax data from step2 (already calculated and saved)
+            $step2_session = Session::get('step2');
+            $input['tax'] = $step2_session['tax_amount'] ?? 0;
+            $input['tax_location'] = $step2_session['tax_location'] ?? '';
 
 
             if ($input['dp'] == 1) {

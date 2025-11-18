@@ -1035,19 +1035,31 @@ class CartController extends FrontBaseController
     /* ===================== tax ===================== */
     public function country_tax(Request $request)
     {
+        $tax_location = '';
+
         if ($request->country_id) {
             if ($request->state_id != 0) {
                 $state = State::findOrFail($request->state_id);
                 $tax   = $state->tax;
                 $data[11] = $state->id;
                 $data[12] = 'state_tax';
+
+                // Get tax location (state + country)
+                $country = Country::find($state->country_id);
+                $tax_location = $state->state;
+                if ($country) {
+                    $tax_location .= ', ' . $country->country_name;
+                }
             } else {
                 $country  = Country::findOrFail($request->country_id);
                 $tax      = $country->tax;
                 $data[11] = $country->id;
                 $data[12] = 'country_tax';
+                $tax_location = $country->country_name;
             }
-        } else { $tax = 0; }
+        } else {
+            $tax = 0;
+        }
 
         Session::put('is_tax', $tax);
 
@@ -1070,7 +1082,7 @@ class CartController extends FrontBaseController
         $data[0] = round($final_total, 2);
         $data[1] = $tax;
         $data[2] = round($converted_tax, 2); // Converted tax amount for display (matches convertPrice)
-        $data[3] = round($shipping_cost, 2); // Shipping cost used
+        $data[3] = $tax_location; // Tax location (state/country name)
         return response()->json($data);
     }
 }

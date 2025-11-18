@@ -616,7 +616,7 @@ class CheckoutController extends Controller
     {
         $explode = explode(',', $request->vendor_ids);
         foreach ($explode as $key => $value) {
-            $shipping[$value]  = Shipping::where('user_id', $value)->get();
+            $shipping[$value]  = Shipping::forVendor($value)->get();
             $packaging[$value] = Package::where('user_id', $value)->get();
         }
         return response()->json(['status' => true, 'data' => ['shipping' => $shipping, 'packaging' => $packaging], 'error' => []]);

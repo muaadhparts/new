@@ -119,12 +119,16 @@ class StripeController extends CheckoutBaseControlller
             $input['payment_status'] = 'Completed';
             $input['txnid'] = $response->payment_intent;
             $input['method'] = 'Stripe';
-            if ($input['tax_type'] == 'state_tax') {
-                $input['tax_location'] = State::findOrFail($input['tax'])->state;
+
+            // Get tax data from step2 (already calculated and saved)
+            if ($vendorData['is_vendor_checkout']) {
+                $step2 = Session::get('vendor_step2_' . $vendorData['vendor_id']);
             } else {
-                $input['tax_location'] = Country::findOrFail($input['tax'])->country_name;
+                $step2 = Session::get('step2');
             }
-            $input['tax'] = Session::get('current_tax');
+
+            $input['tax'] = $step2['tax_amount'] ?? 0;
+            $input['tax_location'] = $step2['tax_location'] ?? '';
 
             if ($input['dp'] == 1) {
                 $input['status'] = 'completed';

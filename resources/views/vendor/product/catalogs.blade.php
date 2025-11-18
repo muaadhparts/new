@@ -4,7 +4,13 @@
     <div class="gs-vendor-outlet">
         <!-- breadcrumb start  -->
         <div class="gs-vendor-breadcrumb has-mb">
-            <h4 class="text-capitalize">@lang('Product Catalogs')</h4>
+            <div class="d-flex gap-4 flex-wrap align-items-center custom-gap-sm-2">
+                <h4 class="text-capitalize">@lang('Product Catalogs')</h4>
+                <a href="{{ route('vendor-stock-management') }}"
+                    class="template-btn md-btn primary-btn">
+                    <i class="fas fa-boxes"></i> إدارة المخزون
+                </a>
+            </div>
             <ul class="breadcrumb-menu">
                 <li>
                     <a href="{{ route('vendor.dashboard') }}" class="text-capitalize">

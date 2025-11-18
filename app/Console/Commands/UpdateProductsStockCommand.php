@@ -49,19 +49,38 @@ class UpdateProductsStockCommand extends Command
         $this->line("Rows needing update:      {$needs}");
         $this->line("Missing in stock_all:     {$missing}");
 
-        // التحديث الفعلي — فقط المختلفين
+        // عرض تفصيلي للمنتجات الناقصة (التي سيتم تصفيرها)
+        if ($missing > 0) {
+            $this->warn("⚠ {$missing} products will be ZEROED (not found in stock_all)");
+        }
+
+        // التحديث الفعلي — تحديث المختلفين + تصفير الناقصين
         $affected = DB::update("
             UPDATE merchant_products mp
             JOIN products p ON mp.product_id = p.id
             LEFT JOIN stock_all s ON s.part_number = p.sku
             SET mp.stock = COALESCE(s.qty, 0)
             WHERE mp.user_id = ?
-              AND s.part_number IS NOT NULL
               AND COALESCE(s.qty,0) <> COALESCE(mp.stock,0)
         ", [$userId]);
 
         if ($affected > 0) {
             $this->info("✔ Updated stock for {$affected} merchant products.");
+
+            // عرض عدد المنتجات المصفرة
+            $zeroedCount = DB::selectOne("
+                SELECT COUNT(*) as count
+                FROM merchant_products mp
+                JOIN products p ON mp.product_id = p.id
+                LEFT JOIN stock_all s ON s.part_number = p.sku
+                WHERE mp.user_id = ?
+                  AND s.part_number IS NULL
+                  AND mp.stock = 0
+            ", [$userId]);
+
+            if ($zeroedCount && $zeroedCount->count > 0) {
+                $this->line("   └─ Including {$zeroedCount->count} products ZEROED (not found in stock_all - stock depleted)");
+            }
         } else {
             $this->warn("ℹ No merchant products updated. Maybe stock is already up-to-date.");
         }

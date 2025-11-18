@@ -465,6 +465,63 @@ class CheckoutController extends FrontBaseController
         }
 
         // ====================================================================
+        // CALCULATE TAX BASED ON COUNTRY/STATE
+        // ====================================================================
+        $taxRate = 0;
+        $taxLocation = '';
+
+        // Get country tax
+        $country = \App\Models\Country::where('country_name', $step1['customer_country'])->first();
+        if ($country && $country->tax > 0) {
+            $taxRate = $country->tax;
+            $taxLocation = $country->country_name;
+        }
+
+        // Check if state has specific tax (overrides country tax)
+        if (!empty($step1['customer_state'])) {
+            $state = \App\Models\State::where('state', $step1['customer_state'])
+                ->where('country_id', $country->id ?? 0)
+                ->first();
+            if ($state && $state->tax > 0) {
+                $taxRate = $state->tax;
+                $taxLocation = $state->state . ', ' . ($country->country_name ?? '');
+            }
+        }
+
+        // Calculate tax amount per vendor
+        $oldCart = Session::get('cart');
+        $cart = new Cart($oldCart);
+
+        $vendorTaxData = [];
+        foreach ($cart->items as $product) {
+            $vendorId = $product['item']['user_id'] ?? 0;
+
+            if (!isset($vendorTaxData[$vendorId])) {
+                $vendorTaxData[$vendorId] = [
+                    'subtotal' => 0,
+                    'tax_rate' => $taxRate,
+                    'tax_amount' => 0,
+                ];
+            }
+
+            $vendorTaxData[$vendorId]['subtotal'] += (float)($product['price'] ?? 0);
+        }
+
+        // Calculate tax amount for each vendor
+        foreach ($vendorTaxData as $vendorId => &$taxData) {
+            $taxData['tax_amount'] = ($taxData['subtotal'] * $taxData['tax_rate']) / 100;
+        }
+
+        // Save tax data to step1
+        $step1['tax_rate'] = $taxRate;
+        $step1['tax_location'] = $taxLocation;
+        $step1['vendor_tax_data'] = $vendorTaxData;
+
+        // Calculate total tax amount
+        $totalTaxAmount = array_sum(array_column($vendorTaxData, 'tax_amount'));
+        $step1['total_tax_amount'] = $totalTaxAmount;
+
+        // ====================================================================
         // CLEAN SESSION - Prevent any data duplication
         // ====================================================================
         Session::forget(['step2', 'step3']);
@@ -607,9 +664,22 @@ class CheckoutController extends FrontBaseController
             Session::put('cart', $cart);
         }
 
-        // حفظ ملخص الشحن في step2 لاستخدامه في step3
+        // Get tax data from step1
+        $step1 = Session::get('step1');
+        $taxAmount = $step1['total_tax_amount'] ?? 0;
+        $taxRate = $step1['tax_rate'] ?? 0;
+        $taxLocation = $step1['tax_location'] ?? '';
+
+        // Calculate final total: products + tax + shipping
+        $finalTotal = $baseAmount + $taxAmount + $shipping_cost_total;
+
+        // حفظ ملخص الشحن والضريبة في step2 لاستخدامه في step3
         $step2['shipping_company'] = $shipping_name;
         $step2['shipping_cost']    = $shipping_cost_total;
+        $step2['tax_rate']         = $taxRate;
+        $step2['tax_amount']       = $taxAmount;
+        $step2['tax_location']     = $taxLocation;
+        $step2['total']            = $finalTotal;
 
         Session::put('step2', $step2);
 
@@ -1137,10 +1207,7 @@ class CheckoutController extends FrontBaseController
         }
 
         // جلب طرق الشحن الخاصة بهذا التاجر فقط (vendor-specific only)
-        $shipping_data = DB::table('shippings')->where('user_id', $vendorId)->get();
-        if ($shipping_data->isEmpty()) {
-            $shipping_data = DB::table('shippings')->where('user_id', 0)->get();
-        }
+        $shipping_data = \App\Models\Shipping::forVendor($vendorId)->get();
 
         // جلب طرق التغليف الخاصة بهذا التاجر فقط (vendor-specific only)
         $package_data = DB::table('packages')->where('user_id', $vendorId)->get();
@@ -1208,6 +1275,50 @@ class CheckoutController extends FrontBaseController
             return back()->withErrors($validator->errors());
         }
 
+        // ====================================================================
+        // CALCULATE TAX BASED ON COUNTRY/STATE
+        // ====================================================================
+        $taxRate = 0;
+        $taxLocation = '';
+
+        // Get country tax
+        $country = \App\Models\Country::where('country_name', $step1['customer_country'])->first();
+        if ($country && $country->tax > 0) {
+            $taxRate = $country->tax;
+            $taxLocation = $country->country_name;
+        }
+
+        // Check if state has specific tax (overrides country tax)
+        if (!empty($step1['customer_state'])) {
+            $state = \App\Models\State::where('state', $step1['customer_state'])
+                ->where('country_id', $country->id ?? 0)
+                ->first();
+            if ($state && $state->tax > 0) {
+                $taxRate = $state->tax;
+                $taxLocation = $state->state . ', ' . ($country->country_name ?? '');
+            }
+        }
+
+        // Calculate tax amount for this vendor only
+        $oldCart = Session::get('cart');
+        $cart = new Cart($oldCart);
+
+        $vendorSubtotal = 0;
+        foreach ($cart->items as $product) {
+            $productVendorId = $product['item']['user_id'] ?? 0;
+            if ($productVendorId == $vendorId) {
+                $vendorSubtotal += (float)($product['price'] ?? 0);
+            }
+        }
+
+        $taxAmount = ($vendorSubtotal * $taxRate) / 100;
+
+        // Save tax data to step1
+        $step1['tax_rate'] = $taxRate;
+        $step1['tax_location'] = $taxLocation;
+        $step1['tax_amount'] = $taxAmount;
+        $step1['vendor_subtotal'] = $vendorSubtotal;
+
         Session::put('vendor_step1_' . $vendorId, $step1);
         Session::save(); // Ensure session is saved before redirect
         return redirect()->route('front.checkout.vendor.step2', $vendorId);
@@ -1256,10 +1367,7 @@ class CheckoutController extends FrontBaseController
         $dp = $cartData['digital'];
 
         // جلب طرق الشحن الخاصة بهذا التاجر فقط
-        $shipping_data = DB::table('shippings')->where('user_id', $vendorId)->get();
-        if ($shipping_data->isEmpty()) {
-            $shipping_data = DB::table('shippings')->where('user_id', 0)->get();
-        }
+        $shipping_data = \App\Models\Shipping::forVendor($vendorId)->get();
 
         // جلب طرق التغليف الخاصة بهذا التاجر فقط
         $package_data = DB::table('packages')->where('user_id', $vendorId)->get();
@@ -1383,13 +1491,22 @@ class CheckoutController extends FrontBaseController
 
         $shipping_name = count($shipping_names) ? implode(' + ', array_unique($shipping_names)) : null;
 
-        // Calculate total for this vendor (products + shipping)
+        // Get tax data from vendor step1
+        $step1 = Session::get('vendor_step1_' . $vendorId);
+        $taxAmount = $step1['tax_amount'] ?? 0;
+        $taxRate = $step1['tax_rate'] ?? 0;
+        $taxLocation = $step1['tax_location'] ?? '';
+
+        // Calculate total for this vendor (products + tax + shipping)
         // This will be used in step3
         $vendorProductsTotal = $vendorTotal; // Products total (may have discount already applied)
-        $finalTotal = $vendorProductsTotal + $shipping_cost_total;
+        $finalTotal = $vendorProductsTotal + $taxAmount + $shipping_cost_total;
 
         $step2['shipping_company'] = $shipping_name;
         $step2['shipping_cost'] = $shipping_cost_total;
+        $step2['tax_rate'] = $taxRate;
+        $step2['tax_amount'] = $taxAmount;
+        $step2['tax_location'] = $taxLocation;
         $step2['total'] = $finalTotal; // Save total in session for step3
 
         Session::put('vendor_step2_' . $vendorId, $step2);
@@ -1448,10 +1565,7 @@ class CheckoutController extends FrontBaseController
         }
 
         // جلب طرق الشحن
-        $shipping_data = DB::table('shippings')->where('user_id', $vendorId)->get();
-        if ($shipping_data->isEmpty()) {
-            $shipping_data = DB::table('shippings')->where('user_id', 0)->get();
-        }
+        $shipping_data = \App\Models\Shipping::forVendor($vendorId)->get();
 
         // جلب طرق التغليف
         $package_data = DB::table('packages')->where('user_id', $vendorId)->get();

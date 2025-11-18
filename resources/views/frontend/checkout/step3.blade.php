@@ -219,55 +219,46 @@
                                 @endif
 
 
+                                {{-- Tax Display --}}
                                 @php
-
-                                $shipping_cost = 0;
-                                if (isset($step2->shipping) && is_array($step2->shipping)) {
-                                foreach ($step2->shipping as $key => $value) {
-                                $shpping = App\Models\Shipping::findOrFail($value);
-                                $shipping_cost += $shpping->price;
-                                }
-                                }
-
-                                $packing_cost = 0;
-                                if (isset($step2->packeging) && is_array($step2->packeging)) {
-                                foreach ($step2->packeging as $key => $value) {
-                                $shpping = App\Models\Package::findOrFail($value);
-                                $packing_cost += $shpping->price;
-                                }
-                                }
-
-                                $extra_cost = $shipping_cost + $packing_cost;
-
+                                    $taxRate = $step2->tax_rate ?? 0;
+                                    $taxAmount = $step2->tax_amount ?? 0;
+                                    $taxLocation = $step2->tax_location ?? '';
                                 @endphp
 
+                                @if($taxRate > 0)
+                                <div class="price-details">
+                                    <span>@lang('Tax') ({{ $taxRate }}%)</span>
+                                    <span class="right-side">{{ App\Models\Product::convertPrice($taxAmount) }}</span>
+                                </div>
+                                @if($taxLocation)
+                                <div class="price-details">
+                                    <small class="text-muted">{{ $taxLocation }}</small>
+                                </div>
+                                @endif
+                                @endif
 
                                 @if ($digital == 0)
                                 @php
-
-                                if (isset($step2->shipping_id)) {
-                                $shipping_cost = App\Models\Shipping::findOrFail($step2->shipping_id)
-                                ->price;
-                                }
-
-                                if (isset($step2->packaging_id)) {
-                                $packing_cost = App\Models\Package::findOrFail($step2->packaging_id)
-                                ->price;
-                                }
-
+                                    // Use shipping_cost directly from step2 session (already calculated with free_above logic)
+                                    $shipping_cost = $step2->shipping_cost ?? 0;
+                                    $packing_cost = $step2->packing_cost ?? 0;
                                 @endphp
 
                                 <div class="price-details">
                                     <span>@lang('Shipping Cost')</span>
-                                    <span class="right-side">{{ App\Models\Product::convertPrice($shipping_cost)
-                                        }}</span>
+                                    <span class="right-side">{{ App\Models\Product::convertPrice($shipping_cost) }}</span>
                                 </div>
 
+                                @if(isset($step2->shipping_company) && $step2->shipping_company)
+                                <div class="price-details">
+                                    <small class="text-muted">{{ $step2->shipping_company }}</small>
+                                </div>
+                                @endif
 
                                 <div class="price-details">
                                     <span>@lang('Packaging Cost')</span>
-                                    <span class="right-side packing_cost_view">{{
-                                        App\Models\Product::convertPrice($packing_cost) }}</span>
+                                    <span class="right-side packing_cost_view">{{ App\Models\Product::convertPrice($packing_cost) }}</span>
                                 </div>
                                 @endif
                             </div>
