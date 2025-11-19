@@ -437,6 +437,7 @@ class CheckoutController extends FrontBaseController
             'customer_zip' => 'nullable|string|max:20',
             'customer_country' => 'required|string|max:255',
             'customer_state' => 'required|string|max:255',
+            'customer_city' => 'required|numeric',
             // Coordinates from Google Maps (optional)
             'latitude' => 'nullable|numeric|between:-90,90',
             'longitude' => 'nullable|numeric|between:-180,180',
@@ -448,6 +449,8 @@ class CheckoutController extends FrontBaseController
             'customer_address.required' => 'العنوان مطلوب',
             'customer_country.required' => 'الدولة مطلوبة',
             'customer_state.required' => 'الولاية مطلوبة',
+            'customer_city.required' => 'المدينة مطلوبة',
+            'customer_city.numeric' => 'المدينة غير صحيحة',
             'latitude.between' => 'خط العرض غير صحيح',
             'longitude.between' => 'خط الطول غير صحيح',
         ]);
@@ -1269,6 +1272,7 @@ class CheckoutController extends FrontBaseController
             'customer_zip' => 'nullable|string|max:20',
             'customer_country' => 'required|string|max:255',
             'customer_state' => 'required|string|max:255',
+            'customer_city' => 'required|numeric',
         ]);
 
         if ($validator->fails()) {

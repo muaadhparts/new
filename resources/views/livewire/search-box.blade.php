@@ -338,7 +338,7 @@
       <p class="search-hint-enhanced mb-0">
         <i class="fas fa-info-circle me-1"></i>
         <span class="text-muted">{{ __('Example :') }}</span>
-        <code class="bg-light px-2 py-1 rounded ms-1" dir="ltr">1520831U0B</code>
+        <code class="bg-light px-2 py-1 rounded ms-1" dir="ltr">1172003JXM</code>
       </p>
     </div>
   </div>
