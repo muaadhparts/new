@@ -667,18 +667,61 @@ class CheckoutController extends FrontBaseController
             Session::put('cart', $cart);
         }
 
+        // ✅ Calculate packing cost (same logic as vendor checkout)
+        $packing_cost_total = 0.0;
+        $packing_names = [];
+
+        // Check for array format (multi-vendor) or single value
+        if (isset($step2['packeging']) && is_array($step2['packeging'])) {
+            // Multi-vendor format: packeging[vendor_id] = package_id
+            foreach ($step2['packeging'] as $vendorId => $packageId) {
+                $packId = (int)$packageId;
+                if ($packId > 0) {
+                    $package = \App\Models\Package::find($packId);
+                    if ($package) {
+                        $packing_cost_total += (float)$package->price;
+                        $packing_names[] = $package->title;
+                    }
+                }
+            }
+        } elseif (isset($step2['packeging_id']) && $step2['packeging_id']) {
+            // Single vendor format
+            $packId = (int)$step2['packeging_id'];
+            if ($packId > 0) {
+                $package = \App\Models\Package::find($packId);
+                if ($package) {
+                    $packing_cost_total = (float)$package->price;
+                    $packing_names[] = $package->title;
+                }
+            }
+        } elseif (isset($step2['packaging_id']) && $step2['packaging_id']) {
+            // Alternative field name
+            $packId = (int)$step2['packaging_id'];
+            if ($packId > 0) {
+                $package = \App\Models\Package::find($packId);
+                if ($package) {
+                    $packing_cost_total = (float)$package->price;
+                    $packing_names[] = $package->title;
+                }
+            }
+        }
+
+        $packing_name = count($packing_names) ? implode(' + ', array_unique($packing_names)) : null;
+
         // Get tax data from step1
         $step1 = Session::get('step1');
         $taxAmount = $step1['total_tax_amount'] ?? 0;
         $taxRate = $step1['tax_rate'] ?? 0;
         $taxLocation = $step1['tax_location'] ?? '';
 
-        // Calculate final total: products + tax + shipping
-        $finalTotal = $baseAmount + $taxAmount + $shipping_cost_total;
+        // Calculate final total: products + tax + shipping + packing
+        $finalTotal = $baseAmount + $taxAmount + $shipping_cost_total + $packing_cost_total;
 
-        // حفظ ملخص الشحن والضريبة في step2 لاستخدامه في step3
+        // حفظ ملخص الشحن والتغليف والضريبة في step2 لاستخدامه في step3
         $step2['shipping_company'] = $shipping_name;
         $step2['shipping_cost']    = $shipping_cost_total;
+        $step2['packing_company']  = $packing_name;
+        $step2['packing_cost']     = $packing_cost_total;
         $step2['tax_rate']         = $taxRate;
         $step2['tax_amount']       = $taxAmount;
         $step2['tax_location']     = $taxLocation;
@@ -1537,14 +1580,24 @@ class CheckoutController extends FrontBaseController
         \Log::info('Step2Submit - Packing Debug', [
             'vendor_id' => $vendorId,
             'vendor_packing_id' => $step2['vendor_packing_id'] ?? 'NOT SET',
+            'packeging_array' => $step2['packeging'] ?? 'NOT SET',
             'packeging_id' => $step2['packeging_id'] ?? 'NOT SET',
             'packaging_id' => $step2['packaging_id'] ?? 'NOT SET',
             'all_step2_keys' => array_keys($step2),
         ]);
 
-        // Try multiple field names (vendor checkout uses vendor_packing_id)
+        // ✅ FIXED: Check for array format first (vendor checkout multi-vendor mode)
+        // Modal sends: packeging[vendor_id] = package_id
         $packId = null;
-        if (isset($step2['vendor_packing_id']) && $step2['vendor_packing_id']) {
+        if (isset($step2['packeging']) && is_array($step2['packeging'])) {
+            // Format: packeging[vendor_id] = package_id
+            $packId = (int)($step2['packeging'][$vendorId] ?? 0);
+            \Log::info('Step2Submit - Found packing in array format', [
+                'vendor_id' => $vendorId,
+                'pack_id' => $packId,
+                'full_array' => $step2['packeging']
+            ]);
+        } elseif (isset($step2['vendor_packing_id']) && $step2['vendor_packing_id']) {
             $packId = (int)$step2['vendor_packing_id'];
         } elseif (isset($step2['packeging_id']) && $step2['packeging_id']) {
             $packId = (int)$step2['packeging_id'];
@@ -1621,16 +1674,16 @@ class CheckoutController extends FrontBaseController
     }
 
     /**
-     * Step 3 - Display payment methods for specific vendor ONLY
+     * Step 3 - Display payment methods for specific vendor with FALLBACK
      *
-     * CRITICAL MULTI-VENDOR LOGIC:
-     * 1. Shows ONLY payment gateways where user_id = vendor_id
-     * 2. NO FALLBACK to global/admin payment methods
-     * 3. If vendor has no payment methods: ERROR and redirect
+     * MULTI-VENDOR PAYMENT LOGIC:
+     * 1. Try to show payment gateways where user_id = vendor_id (vendor-specific)
+     * 2. If vendor has no payment methods: FALLBACK to admin gateways (user_id = 0)
+     * 3. If no payment methods available at all: ERROR and redirect
      * 4. Filters cart to vendor's products only
      * 5. Calculates totals for this vendor only
      *
-     * This ensures each vendor uses ONLY their configured payment methods
+     * This allows vendors without configured payment methods to use global/admin methods
      *
      * @param int $vendorId
      * @return \Illuminate\View\View|\Illuminate\Http\RedirectResponse
@@ -1666,16 +1719,31 @@ class CheckoutController extends FrontBaseController
         $totalQty = $cartData['totalQty'];
         $dp = $cartData['digital'];
 
-        // Get payment gateways for THIS vendor ONLY (NO FALLBACK)
-        // CRITICAL: Only show payment methods owned by this vendor
-        // scopeHasGateway returns a Collection, so we filter it
+        // Get payment gateways for THIS vendor with FALLBACK to admin gateways
+        // LOGIC:
+        // 1. Try to get vendor-specific payment gateways (user_id = vendor_id)
+        // 2. If none found, fallback to admin/global gateways (user_id = 0)
+        // 3. If still none found, show error
         $allGateways = PaymentGateway::scopeHasGateway($this->curr->id);
+
+        // Try vendor-specific gateways first
         $gateways = $allGateways->where('user_id', $vendorId)
             ->where('checkout', 1); // checkout=1 means enabled for checkout
 
-        // If vendor has no payment methods, show error (NO FALLBACK to admin methods)
+        // ✅ FALLBACK: If vendor has no payment methods, use admin/global methods
         if ($gateways->isEmpty()) {
-            return redirect()->route('front.cart')->with('unsuccess', __("No payment methods available for this vendor currently."));
+            \Log::info('No vendor-specific payment gateways found, falling back to admin gateways', [
+                'vendor_id' => $vendorId
+            ]);
+
+            // Get admin/global payment gateways (user_id = 0)
+            $gateways = $allGateways->where('user_id', 0)
+                ->where('checkout', 1);
+
+            // If still no payment methods available
+            if ($gateways->isEmpty()) {
+                return redirect()->route('front.cart')->with('unsuccess', __("No payment methods available currently. Please contact support."));
+            }
         }
 
         // جلب طرق الشحن
