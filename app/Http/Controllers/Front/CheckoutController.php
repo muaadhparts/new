@@ -1212,53 +1212,64 @@ class CheckoutController extends FrontBaseController
      */
     public function checkoutVendor($vendorId)
     {
+        // ====================================================================
+        // ✅ DIAGNOSTIC LOGGING: Track session and auth state at entry
+        // ====================================================================
+        \Log::info('checkoutVendor: ENTRY POINT', [
+            'vendor_id' => $vendorId,
+            'session_id' => Session::getId(),
+            'auth_check' => Auth::check(),
+            'user_id' => Auth::id(),
+            'has_cart' => Session::has('cart'),
+            'cart_items_count' => Session::has('cart') ? count(Session::get('cart')->items ?? []) : 0,
+            'checkout_vendor_id_in_session' => Session::get('checkout_vendor_id'),
+            'all_session_keys' => array_keys(Session::all())
+        ]);
 
         if (!Session::has('cart')) {
+            \Log::warning('checkoutVendor: No cart in session - redirecting', ['vendor_id' => $vendorId]);
             return redirect()->route('front.cart')->with('success', __("You don't have any product to checkout."));
         }
 
         // ====================================================================
-        // CRITICAL: Clean ALL previous checkout session data
+        // ✅ FIXED: Save vendor_id FIRST - then check auth
         // ====================================================================
-        // This ensures every checkout starts fresh with empty form fields
-        // No pre-filled data from previous attempts or user profile
-
-        // 1. Remove old regular checkout sessions (no longer used)
-        Session::forget(['step1', 'step2', 'step3']);
-
-        // 2. Remove ALL vendor checkout sessions (for all vendors)
-        // Get all session keys and remove vendor-specific ones
-        $allSessionKeys = array_keys(Session::all());
-        foreach ($allSessionKeys as $key) {
-            if (strpos($key, 'vendor_step1_') === 0 ||
-                strpos($key, 'vendor_step2_') === 0 ||
-                strpos($key, 'vendor_step3_') === 0) {
-                Session::forget($key);
-            }
-        }
-
-        // 3. Remove vendor-specific coupon data
-        foreach ($allSessionKeys as $key) {
-            if (strpos($key, 'coupon_vendor_') === 0 ||
-                strpos($key, 'coupon_total_vendor_') === 0) {
-                Session::forget($key);
-            }
-        }
-
-        \Log::info('checkoutVendor: Cleared all previous checkout sessions', [
-            'vendor_id' => $vendorId
-        ]);
-
-        // Save vendor_id in session FIRST - ensures session persistence
+        // This prevents losing vendor_id when redirecting to login
         Session::put('checkout_vendor_id', $vendorId);
+        Session::save(); // Force save immediately
+
+        \Log::info('checkoutVendor: Saved checkout_vendor_id', [
+            'vendor_id' => $vendorId,
+            'session_id' => Session::getId(),
+            'verification' => Session::get('checkout_vendor_id')
+        ]);
 
         // Check if user is authenticated OR guest checkout is enabled
         if (!Auth::check() && $this->gs->guest_checkout != 1) {
-            // Save session before redirecting to login
-            Session::save();
-            \Log::warning('checkoutVendor: Guest without checkout enabled', ['vendor_id' => $vendorId]);
+            // ✅ Session already saved above - vendor_id will persist through login redirect
+            \Log::warning('checkoutVendor: Not authenticated - Redirecting to login', [
+                'vendor_id' => $vendorId,
+                'session_id' => Session::getId(),
+                'guest_checkout_enabled' => $this->gs->guest_checkout
+            ]);
             return redirect()->route('user.login')->with('unsuccess', __('Please login to continue.'));
         }
+
+        // ====================================================================
+        // ✅ FIXED: Clean ONLY old steps for THIS vendor (not checkout_vendor_id)
+        // ====================================================================
+        // Remove only old step data for THIS vendor to allow form refresh
+        // Do NOT remove checkout_vendor_id - it must persist
+        Session::forget(['vendor_step1_' . $vendorId, 'vendor_step2_' . $vendorId]);
+
+        \Log::info('checkoutVendor: Proceeding to checkout page', [
+            'vendor_id' => $vendorId,
+            'session_id' => Session::getId(),
+            'auth_check' => Auth::check(),
+            'user_id' => Auth::id(),
+            'user_email' => Auth::check() ? Auth::user()->email : null,
+            'checkout_vendor_id_verified' => Session::get('checkout_vendor_id') == $vendorId
+        ]);
 
 
         // Get vendor cart data using helper method (avoids code duplication)

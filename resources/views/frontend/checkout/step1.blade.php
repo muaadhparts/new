@@ -176,7 +176,7 @@
                                         </label>
                                         <input class="input-cls" id="address" type="text"
                                             placeholder="@lang('Address')" name="customer_address"
-                                            value="">
+                                            value="{{ Auth::check() ? Auth::user()->address : '' }}">
                                     </div>
                                 </div>
 
@@ -188,7 +188,7 @@
                                         </label>
                                         <input class="input-cls" id="zip" type="text"
                                             placeholder="@lang('Postal Code')" name="customer_zip"
-                                            value="">
+                                            value="{{ Auth::check() ? Auth::user()->zip : '' }}">
                                     </div>
                                 </div>
 
