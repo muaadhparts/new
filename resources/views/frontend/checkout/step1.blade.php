@@ -77,7 +77,7 @@
                                         <div class="gs-checkbox-wrapper" data-bs-toggle="collapse"
                                             data-bs-target="#show_passwords" aria-expanded="false"
                                             aria-controls="show_passwords" role="region">
-                                            <input type="checkbox" id="showca">
+                                            <input type="checkbox" id="showca" name="create_account" value="1">
                                             <label class="icon-label" for="showca">
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12"
                                                     viewBox="0 0 12 12" fill="none">
@@ -95,8 +95,8 @@
                                                     <label class="label-cls" for="crpass">
                                                         @lang('Create Password')
                                                     </label>
-                                                    <input class="input-cls" id="crpass" type="password"
-                                                        placeholder="@lang('Create Your Password')">
+                                                    <input class="input-cls" id="crpass" name="password" type="password"
+                                                        placeholder="@lang('Create Your Password')" minlength="6">
                                                 </div>
                                             </div>
                                             <div class="col-lg-6">
@@ -104,8 +104,8 @@
                                                     <label class="label-cls" for="conpass">
                                                         @lang('Confirm Password')
                                                     </label>
-                                                    <input class="input-cls" id="conpass" type="password"
-                                                        placeholder="@lang('Confirm Password')">
+                                                    <input class="input-cls" id="conpass" name="password_confirmation" type="password"
+                                                        placeholder="@lang('Confirm Password')" minlength="6">
                                                 </div>
                                             </div>
                                         </div>

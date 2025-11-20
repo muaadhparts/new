@@ -1014,19 +1014,14 @@ class CheckoutController extends FrontBaseController
     {
         $states = State::where('country_id', $country_id)->get();
 
-        if (Auth::user()) {
-            $user_state = Auth::user()->state_id;
-        } else {
-            $user_state = 0;
-        }
+        // ✅ CHECKOUT REQUIREMENT: Always start empty - no auto-selection
+        // User must manually select state even if logged in
+        $user_state = 0;
 
         $html_states = '<option value="" > Select State </option>';
         foreach ($states as $state) {
-            if ($state->id == $user_state) {
-                $check = 'selected';
-            } else {
-                $check = '';
-            }
+            // ✅ Never pre-select - always empty
+            $check = '';
 
             // تحديد اسم الولاية بناءً على اللغة النشطة باستخدام app()->getLocale()
             $stateDisplayName = (app()->getLocale() == 'ar')
@@ -1044,19 +1039,14 @@ class CheckoutController extends FrontBaseController
     {
         $cities = City::where('state_id', $request->state_id)->get();
 
-        if (Auth::user()) {
-            $user_city = Auth::user()->city_id; // تغيير من city إلى city_id
-        } else {
-            $user_city = 0;
-        }
+        // ✅ CHECKOUT REQUIREMENT: Always start empty - no auto-selection
+        // User must manually select city even if logged in
+        $user_city = 0;
 
         $html_cities = '<option value="" > Select City </option>';
         foreach ($cities as $city) {
-            if ($city->id == $user_city) {
-                $check = 'selected';
-            } else {
-                $check = '';
-            }
+            // ✅ Never pre-select - always empty
+            $check = '';
 
             // تحديد اسم المدينة بناءً على اللغة النشطة باستخدام app()->getLocale()
             $cityDisplayName = (app()->getLocale() == 'ar')
@@ -1075,19 +1065,14 @@ class CheckoutController extends FrontBaseController
     {
         $cities = City::where('state_id', $request->state_id)->get();
 
-        if (Auth::user()) {
-            $user_city = Auth::user()->city_id; // تغيير من city إلى city_id
-        } else {
-            $user_city = 0;
-        }
+        // ✅ CHECKOUT REQUIREMENT: Always start empty - no auto-selection
+        // User must manually select city even if logged in
+        $user_city = 0;
 
         $html_cities = '<option value="" > Select City </option>';
         foreach ($cities as $city) {
-            if ($city->id == $user_city) {
-                $check = 'selected';
-            } else {
-                $check = '';
-            }
+            // ✅ Never pre-select - always empty
+            $check = '';
 
             // تحديد اسم المدينة بناءً على اللغة النشطة باستخدام app()->getLocale()
             $cityDisplayName = (app()->getLocale() == 'ar')
@@ -1339,7 +1324,8 @@ class CheckoutController extends FrontBaseController
     {
         $step1 = $request->all();
 
-        $validator = Validator::make($step1, [
+        // ✅ BASE VALIDATION
+        $rules = [
             'customer_name' => 'required|string|max:255',
             'customer_email' => 'required|email|max:255',
             'customer_phone' => 'required|numeric',
@@ -1348,10 +1334,70 @@ class CheckoutController extends FrontBaseController
             'customer_country' => 'required|string|max:255',
             'customer_state' => 'required|string|max:255',
             'customer_city' => 'required|numeric',
+        ];
+
+        // ✅ IF USER WANTS TO CREATE ACCOUNT - ADD PASSWORD VALIDATION
+        if (isset($step1['create_account']) && $step1['create_account'] == 1) {
+            $rules['password'] = 'required|string|min:6|confirmed';
+            $rules['password_confirmation'] = 'required|string|min:6';
+        }
+
+        $validator = Validator::make($step1, $rules, [
+            'password.required' => __('Password is required when creating an account'),
+            'password.min' => __('Password must be at least 6 characters'),
+            'password.confirmed' => __('Password confirmation does not match'),
         ]);
 
         if ($validator->fails()) {
-            return back()->withErrors($validator->errors());
+            return back()->withErrors($validator->errors())->withInput();
+        }
+
+        // ====================================================================
+        // ✅ CREATE ACCOUNT DURING CHECKOUT (IF REQUESTED)
+        // ====================================================================
+        if (isset($step1['create_account']) && $step1['create_account'] == 1 && !Auth::check()) {
+            // Check if email already exists
+            $existingUser = \App\Models\User::where('email', $step1['customer_email'])->first();
+
+            if ($existingUser) {
+                return back()->with('unsuccess', __('An account with this email already exists. Please login.'))->withInput();
+            }
+
+            // Create new user account
+            $user = new \App\Models\User();
+            $user->name = $step1['customer_name'];
+            $user->email = $step1['customer_email'];
+            $user->phone = $step1['customer_phone'];
+            $user->address = $step1['customer_address'];
+            $user->zip = $step1['customer_zip'];
+            $user->country = $step1['customer_country'];
+
+            // Get state_id and city_id from names
+            $country = \App\Models\Country::where('country_name', $step1['customer_country'])->first();
+            if ($country) {
+                $state = \App\Models\State::where('state', $step1['customer_state'])
+                    ->where('country_id', $country->id)
+                    ->first();
+                if ($state) {
+                    $user->state_id = $state->id;
+                }
+            }
+            $user->city_id = $step1['customer_city']; // Already numeric
+
+            $user->password = bcrypt($step1['password']);
+            $user->email_verified = 'Yes'; // Auto-verify during checkout
+            $user->affilate_code = null;
+            $user->is_provider = 0;
+            $user->save();
+
+            // ✅ LOGIN THE USER IMMEDIATELY
+            Auth::login($user);
+
+            \Log::info('Checkout: Account created and logged in', [
+                'user_id' => $user->id,
+                'email' => $user->email,
+                'vendor_id' => $vendorId
+            ]);
         }
 
         // ====================================================================
