@@ -1212,13 +1212,6 @@ class CheckoutController extends FrontBaseController
      */
     public function checkoutVendor($vendorId)
     {
-        // DEBUG: Log auth state at entry
-        \Log::info('checkoutVendor START', [
-            'auth_check' => Auth::check(),
-            'session_id' => Session::getId(),
-            'user_id' => Auth::id(),
-            'vendor_id' => $vendorId
-        ]);
 
         if (!Session::has('cart')) {
             return redirect()->route('front.cart')->with('success', __("You don't have any product to checkout."));
@@ -1267,11 +1260,6 @@ class CheckoutController extends FrontBaseController
             return redirect()->route('user.login')->with('unsuccess', __('Please login to continue.'));
         }
 
-        // DEBUG: Log auth state before processing
-        \Log::info('checkoutVendor: Auth verified', [
-            'auth_check' => Auth::check(),
-            'user_id' => Auth::id()
-        ]);
 
         // Get vendor cart data using helper method (avoids code duplication)
         $cartData = $this->getVendorCartData($vendorId);
@@ -1419,13 +1407,6 @@ class CheckoutController extends FrontBaseController
      */
     public function checkoutVendorStep2($vendorId)
     {
-        // DEBUG: Log auth state at step2 entry
-        \Log::info('checkoutVendorStep2 START', [
-            'auth_check' => Auth::check(),
-            'session_id' => Session::getId(),
-            'user_id' => Auth::id(),
-            'vendor_id' => $vendorId
-        ]);
 
         if (!Session::has('vendor_step1_' . $vendorId)) {
             \Log::warning('checkoutVendorStep2: Missing step1 data', ['vendor_id' => $vendorId]);
@@ -1576,15 +1557,6 @@ class CheckoutController extends FrontBaseController
         $packing_cost_total = 0.0;
         $packing_names = [];
 
-        // DEBUG: Log received data - check ALL possible field names
-        \Log::info('Step2Submit - Packing Debug', [
-            'vendor_id' => $vendorId,
-            'vendor_packing_id' => $step2['vendor_packing_id'] ?? 'NOT SET',
-            'packeging_array' => $step2['packeging'] ?? 'NOT SET',
-            'packeging_id' => $step2['packeging_id'] ?? 'NOT SET',
-            'packaging_id' => $step2['packaging_id'] ?? 'NOT SET',
-            'all_step2_keys' => array_keys($step2),
-        ]);
 
         // ✅ FIXED: Check for array format first (vendor checkout multi-vendor mode)
         // Modal sends: packeging[vendor_id] = package_id
@@ -1592,11 +1564,6 @@ class CheckoutController extends FrontBaseController
         if (isset($step2['packeging']) && is_array($step2['packeging'])) {
             // Format: packeging[vendor_id] = package_id
             $packId = (int)($step2['packeging'][$vendorId] ?? 0);
-            \Log::info('Step2Submit - Found packing in array format', [
-                'vendor_id' => $vendorId,
-                'pack_id' => $packId,
-                'full_array' => $step2['packeging']
-            ]);
         } elseif (isset($step2['vendor_packing_id']) && $step2['vendor_packing_id']) {
             $packId = (int)$step2['vendor_packing_id'];
         } elseif (isset($step2['packeging_id']) && $step2['packeging_id']) {
@@ -1606,26 +1573,11 @@ class CheckoutController extends FrontBaseController
         }
 
         if ($packId && $packId > 0) {
-            \Log::info('Step2Submit - Packing ID Found', ['pack_id' => $packId]);
-
             $package = \App\Models\Package::find($packId);
             if ($package) {
                 $packing_cost_total = (float)$package->price;
                 $packing_names[] = $package->title;
-
-                \Log::info('Step2Submit - Package Found', [
-                    'package_id' => $package->id,
-                    'package_title' => $package->title,
-                    'package_price' => $package->price,
-                    'packing_cost_total' => $packing_cost_total,
-                ]);
-            } else {
-                \Log::warning('Step2Submit - Package NOT Found in DB', ['pack_id' => $packId]);
             }
-        } else {
-            \Log::warning('Step2Submit - No packing ID in request', [
-                'vendor_packing_id' => $step2['vendor_packing_id'] ?? 'NOT SET',
-            ]);
         }
 
         $packing_name = count($packing_names) ? implode(' + ', array_unique($packing_names)) : null;
@@ -1650,25 +1602,8 @@ class CheckoutController extends FrontBaseController
         $step2['tax_location'] = $taxLocation;
         $step2['total'] = $finalTotal; // ✅ Save COMPLETE total in session for step3
 
-        // DEBUG: Log what we're saving
-        \Log::info('Step2Submit - Saving to Session', [
-            'vendor_id' => $vendorId,
-            'shipping_cost' => $step2['shipping_cost'],
-            'packing_cost' => $step2['packing_cost'],
-            'tax_amount' => $step2['tax_amount'],
-            'total' => $step2['total'],
-            'calculation' => "$vendorProductsTotal + $taxAmount + $shipping_cost_total + $packing_cost_total = $finalTotal"
-        ]);
-
         Session::put('vendor_step2_' . $vendorId, $step2);
         Session::save(); // Ensure session is saved before redirect
-
-        // DEBUG: Verify session was saved
-        $savedStep2 = Session::get('vendor_step2_' . $vendorId);
-        \Log::info('Step2Submit - Session Verified', [
-            'packing_cost_in_session' => $savedStep2['packing_cost'] ?? 'NOT SAVED',
-            'total_in_session' => $savedStep2['total'] ?? 'NOT SAVED',
-        ]);
 
         return redirect()->route('front.checkout.vendor.step3', $vendorId);
     }
@@ -1702,15 +1637,6 @@ class CheckoutController extends FrontBaseController
 
         $step1 = (object) Session::get('vendor_step1_' . $vendorId);
         $step2 = (object) Session::get('vendor_step2_' . $vendorId);
-
-        // DEBUG: Log Step3 session data
-        \Log::info('Step3 - Session Data Retrieved', [
-            'vendor_id' => $vendorId,
-            'step2_shipping_cost' => $step2->shipping_cost ?? 'NOT SET',
-            'step2_packing_cost' => $step2->packing_cost ?? 'NOT SET',
-            'step2_tax_amount' => $step2->tax_amount ?? 'NOT SET',
-            'step2_total' => $step2->total ?? 'NOT SET',
-        ]);
 
         // Get vendor cart data using helper method (avoids code duplication)
         $cartData = $this->getVendorCartData($vendorId);

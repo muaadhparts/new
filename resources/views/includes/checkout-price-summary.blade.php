@@ -116,27 +116,7 @@
                 $shipping_cost = $step2->shipping_cost ?? 0;
                 $packing_cost = $step2->packing_cost ?? 0;
                 $shipping_company = $step2->shipping_company ?? null;
-
-                // DEBUG: Log in component
-                \Log::info('Component Step3 - Packing Display', [
-                    'step2_exists' => isset($step2),
-                    'shipping_cost' => $shipping_cost,
-                    'packing_cost' => $packing_cost,
-                    'packing_cost_raw' => $step2->packing_cost ?? 'NOT IN STEP2',
-                ]);
             @endphp
-
-            {{-- DEBUG: Visual Debug Box --}}
-            <div style="background: #fff3cd; border: 2px solid #ffc107; padding: 10px; margin: 10px 0; border-radius: 5px;">
-                <strong style="color: #856404;">🔍 DEBUG - Step2 Session Data:</strong><br>
-                <small style="color: #856404;">
-                    step2 exists: <strong>{{ isset($step2) ? 'YES' : 'NO' }}</strong><br>
-                    shipping_cost: <strong>{{ $step2->shipping_cost ?? 'NOT SET' }}</strong><br>
-                    <span style="color: #d9534f; font-weight: bold;">packing_cost: {{ $step2->packing_cost ?? 'NOT SET' }}</span><br>
-                    tax_amount: <strong>{{ $step2->tax_amount ?? 'NOT SET' }}</strong><br>
-                    total: <strong>{{ $step2->total ?? 'NOT SET' }}</strong>
-                </small>
-            </div>
 
             <div class="price-details">
                 <span>@lang('Shipping Cost')</span>
