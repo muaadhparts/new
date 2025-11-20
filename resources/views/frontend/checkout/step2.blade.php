@@ -708,6 +708,40 @@
         let original_tax = 0;
 
         $(document).ready(function() {
+            // ✅ Restore saved shipping/packing selections from step2 session
+            @if(isset($step2) && $step2)
+                @if(isset($step2->saved_shipping_selections) && is_array($step2->saved_shipping_selections))
+                    // Restore shipping selections
+                    @foreach($step2->saved_shipping_selections as $vendorId => $shippingValue)
+                        // Find and check the radio for this vendor
+                        const shippingRadio{{ $vendorId }} = $('input.shipping[name="shipping[{{ $vendorId }}]"][value="{{ $shippingValue }}"]');
+                        if (shippingRadio{{ $vendorId }}.length > 0) {
+                            shippingRadio{{ $vendorId }}.prop('checked', true).trigger('change');
+                        }
+                    @endforeach
+                @endif
+
+                @if(isset($step2->saved_packing_selections) && is_array($step2->saved_packing_selections))
+                    // Restore packing selections
+                    @foreach($step2->saved_packing_selections as $vendorId => $packingValue)
+                        const packingRadio{{ $vendorId }} = $('input.packing[name="packeging[{{ $vendorId }}]"][value="{{ $packingValue }}"]');
+                        if (packingRadio{{ $vendorId }}.length > 0) {
+                            packingRadio{{ $vendorId }}.prop('checked', true).trigger('change');
+                        }
+                    @endforeach
+                @endif
+
+                // Display saved shipping text
+                @if(isset($step2->shipping_company))
+                    $('#shipping_text{{ $vendor_id ?? 0 }}').html('{{ $step2->shipping_company }}');
+                @endif
+
+                // Display saved packing text
+                @if(isset($step2->packing_company))
+                    $('#packing_text{{ $vendor_id ?? 0 }}').html('{{ $step2->packing_company }}');
+                @endif
+            @endif
+
             getShipping();
             getPacking();
 

@@ -1420,6 +1420,11 @@ class CheckoutController extends FrontBaseController
 
         $step1 = (object) Session::get('vendor_step1_' . $vendorId);
 
+        // ✅ Retrieve step2 data if exists (for refresh or back from step3)
+        $step2 = Session::has('vendor_step2_' . $vendorId)
+            ? (object) Session::get('vendor_step2_' . $vendorId)
+            : null;
+
         // Get vendor cart data using helper method (avoids code duplication)
         $cartData = $this->getVendorCartData($vendorId);
         $vendorProducts = $cartData['vendorProducts'];
@@ -1462,6 +1467,7 @@ class CheckoutController extends FrontBaseController
             'vendor_shipping_id' => $vendorId,
             'vendor_packing_id' => $vendorId,
             'step1' => $step1,
+            'step2' => $step2, // ✅ Pass saved step2 data to view
             'country' => $country, // For tax calculation
             'isState' => $isState, // For tax calculation
             'is_vendor_checkout' => true,
@@ -1487,6 +1493,45 @@ class CheckoutController extends FrontBaseController
     {
         $step2 = $request->all();
         $oldCart = Session::get('cart');
+
+        // Check if cart contains physical products (digital products don't need shipping)
+        $cart = new Cart($oldCart);
+        $hasPhysicalProducts = false;
+        foreach ($cart->items as $product) {
+            $productVendorId = data_get($product, 'item.user_id') ?? data_get($product, 'item.vendor_user_id') ?? 0;
+            if ($productVendorId == $vendorId) {
+                // Check if this is a physical product (dp = 0)
+                if (isset($product['dp']) && $product['dp'] == 0) {
+                    $hasPhysicalProducts = true;
+                    break;
+                }
+            }
+        }
+
+        // ✅ VALIDATION: Check if shipping method is selected (for physical products only)
+        if ($hasPhysicalProducts) {
+            $hasShipping = false;
+
+            // Check for array format (multi-vendor shipping)
+            if (isset($step2['shipping']) && is_array($step2['shipping'])) {
+                // Check if this vendor has a shipping selection
+                if (isset($step2['shipping'][$vendorId]) && !empty($step2['shipping'][$vendorId])) {
+                    $hasShipping = true;
+                }
+            }
+            // Check for single shipping_id
+            elseif (isset($step2['shipping_id']) && !empty($step2['shipping_id'])) {
+                $hasShipping = true;
+            }
+
+            // If no shipping method selected, redirect back with error
+            if (!$hasShipping) {
+                return redirect()->back()
+                    ->with('unsuccess', __('Please select a shipping method before continuing.'))
+                    ->withInput();
+            }
+        }
+
         $input = Session::get('vendor_step1_' . $vendorId) + $step2;
 
         // NOTE: Creating Cart instance for READ-ONLY access
@@ -1602,6 +1647,14 @@ class CheckoutController extends FrontBaseController
         $step2['tax_location'] = $taxLocation;
         $step2['total'] = $finalTotal; // ✅ Save COMPLETE total in session for step3
 
+        // ✅ Save raw shipping/packing selections for restore on refresh/back
+        if (isset($step2['shipping']) && is_array($step2['shipping'])) {
+            $step2['saved_shipping_selections'] = $step2['shipping'];
+        }
+        if (isset($step2['packeging']) && is_array($step2['packeging'])) {
+            $step2['saved_packing_selections'] = $step2['packeging'];
+        }
+
         Session::put('vendor_step2_' . $vendorId, $step2);
         Session::save(); // Ensure session is saved before redirect
 
@@ -1609,16 +1662,16 @@ class CheckoutController extends FrontBaseController
     }
 
     /**
-     * Step 3 - Display payment methods for specific vendor with FALLBACK
+     * Step 3 - Display payment methods for specific vendor ONLY
      *
-     * MULTI-VENDOR PAYMENT LOGIC:
-     * 1. Try to show payment gateways where user_id = vendor_id (vendor-specific)
-     * 2. If vendor has no payment methods: FALLBACK to admin gateways (user_id = 0)
-     * 3. If no payment methods available at all: ERROR and redirect
+     * CRITICAL MULTI-VENDOR LOGIC:
+     * 1. Shows ONLY payment gateways where user_id = vendor_id
+     * 2. NO FALLBACK to global/admin payment methods
+     * 3. If vendor has no payment methods: ERROR and redirect
      * 4. Filters cart to vendor's products only
      * 5. Calculates totals for this vendor only
      *
-     * This allows vendors without configured payment methods to use global/admin methods
+     * This ensures each vendor uses ONLY their configured payment methods
      *
      * @param int $vendorId
      * @return \Illuminate\View\View|\Illuminate\Http\RedirectResponse
@@ -1645,31 +1698,16 @@ class CheckoutController extends FrontBaseController
         $totalQty = $cartData['totalQty'];
         $dp = $cartData['digital'];
 
-        // Get payment gateways for THIS vendor with FALLBACK to admin gateways
-        // LOGIC:
-        // 1. Try to get vendor-specific payment gateways (user_id = vendor_id)
-        // 2. If none found, fallback to admin/global gateways (user_id = 0)
-        // 3. If still none found, show error
+        // Get payment gateways for THIS vendor ONLY (NO FALLBACK)
+        // CRITICAL: Only show payment methods owned by this vendor
+        // scopeHasGateway returns a Collection, so we filter it
         $allGateways = PaymentGateway::scopeHasGateway($this->curr->id);
-
-        // Try vendor-specific gateways first
         $gateways = $allGateways->where('user_id', $vendorId)
             ->where('checkout', 1); // checkout=1 means enabled for checkout
 
-        // ✅ FALLBACK: If vendor has no payment methods, use admin/global methods
+        // If vendor has no payment methods, show error (NO FALLBACK to admin methods)
         if ($gateways->isEmpty()) {
-            \Log::info('No vendor-specific payment gateways found, falling back to admin gateways', [
-                'vendor_id' => $vendorId
-            ]);
-
-            // Get admin/global payment gateways (user_id = 0)
-            $gateways = $allGateways->where('user_id', 0)
-                ->where('checkout', 1);
-
-            // If still no payment methods available
-            if ($gateways->isEmpty()) {
-                return redirect()->route('front.cart')->with('unsuccess', __("No payment methods available currently. Please contact support."));
-            }
+            return redirect()->route('front.cart')->with('unsuccess', __("No payment methods available for this vendor currently."));
         }
 
         // جلب طرق الشحن
