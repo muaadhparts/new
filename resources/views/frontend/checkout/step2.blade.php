@@ -8,7 +8,8 @@
                     <h2 class="breadcrumb-title">@lang('Checkout')</h2>
                     <ul class="bread-menu">
                         <li><a href="{{ route('front.index') }}">@lang('Home')</a></li>
-                        <li><a href="{{ route('front.checkout') }}">@lang('Checkout')</a></li>
+                        <li><a href="{{ route('front.cart') }}">@lang('Cart')</a></li>
+                        <li>@lang('Checkout')</li>
                     </ul>
                 </div>
             </div>
@@ -55,7 +56,7 @@
                             <div class="single-addres">
                                 <div class="title-wrapper d-flex justify-content-between">
                                     <h5>@lang('Billing Address')</h5>
-                                    <a class="edit-btn" href="{{ route('front.checkout') }}">@lang('Edit')</a>
+                                    <a class="edit-btn" href="{{ isset($is_vendor_checkout) && $is_vendor_checkout ? route('front.checkout.vendor', $vendor_id) : route('front.cart') }}">@lang('Edit')</a>
                                 </div>
 
                                 <ul>
@@ -548,93 +549,16 @@
                             @endif
 
 
-                            <!-- Price Details -->
-                            <div class="summary-inner-box">
-                                <h6 class="summary-title">@lang('Price Details')</h6>
-                                <div class="details-wrapper">
-                                    <div class="price-details">
-                                        <span>@lang('Total MRP')</span>
-                                        <span
-                                            class="right-side cart-total">{{ App\Models\Product::convertPrice($totalPrice) }}</span>
-                                    </div>
-
-
-                                    <div class="price-details tax_show d-none">
-                                        <span>@lang('Tax')</span>
-                                        <span class="right-side original_tax original_tax">0</span>
-                                    </div>
-
-
-                                    @if (Session::has('coupon'))
-                                        <div class="price-details">
-                                            <span>@lang('Discount') <span
-                                                    class="dpercent">{{ Session::get('coupon_percentage') == 0 ? '' : '(' . Session::get('coupon_percentage') . ')' }}</span></span>
-                                            @if ($gs->currency_format == 0)
-                                                <span id="discount"
-                                                    class="right-side">{{ $curr->sign }}{{ Session::get('coupon') }}</span>
-                                            @else
-                                                <span id="discount"
-                                                    class="right-side">{{ Session::get('coupon') }}{{ $curr->sign }}</span>
-                                            @endif
-                                        </div>
-                                    @else
-                                        <div class="price-details d-none">
-                                            <span>@lang('Discount') <span class="dpercent"></span></span>
-                                            <span id="discount"
-                                                class="right-side">{{ $curr->sign }}{{ Session::get('coupon') }}</span>
-                                        </div>
-                                    @endif
-
-                                    {{-- Tax Display - Total for all vendors --}}
-                                    @if(isset($step1->tax_rate) && $step1->tax_rate > 0 && isset($step1->total_tax_amount))
-                                        <div class="price-details">
-                                            <span>@lang('Total Tax') ({{ $step1->tax_rate }}%)</span>
-                                            <span class="right-side">{{ App\Models\Product::convertPrice($step1->total_tax_amount) }}</span>
-                                        </div>
-                                        @if(isset($step1->tax_location))
-                                            <div class="price-details">
-                                                <small class="text-muted">{{ $step1->tax_location }}</small>
-                                            </div>
-                                        @endif
-                                    @endif
-
-                                    @if ($digital == 0)
-                                        <div class="price-details">
-                                            <span>@lang('Shipping Cost')</span>
-                                            <span
-                                                class="right-side shipping_cost_view">{{ App\Models\Product::convertPrice(0) }}</span>
-                                        </div>
-
-
-
-                                        <div class="price-details">
-                                            <span>@lang('Packaging Cost')</span>
-                                            <span
-                                                class="right-side packing_cost_view">{{ App\Models\Product::convertPrice(0) }}</span>
-                                        </div>
-                                    @endif
-                                </div>
-
-                                <hr>
-                                <div class="final-price">
-                                    <span>@lang('Final Price')</span>
-                                    @if (Session::has('coupon_total'))
-                                        @if ($gs->currency_format == 0)
-                                            <span class="total-amount"
-                                                id="final-cost">{{ $curr->sign }}{{ $totalPrice }}</span>
-                                        @else
-                                            <span class="total-amount"
-                                                id="final-cost">{{ $totalPrice }}{{ $curr->sign }}</span>
-                                        @endif
-                                    @elseif(Session::has('coupon_total1'))
-                                        <span class="total-amount" id="final-cost">
-                                            {{ Session::get('coupon_total1') }}</span>
-                                    @else
-                                        <span class="total-amount"
-                                            id="final-cost">{{ App\Models\Product::convertPrice($totalPrice) }}</span>
-                                    @endif
-                                </div>
-                            </div>
+                            {{-- ✅ Unified Price Summary Component - Step 2 --}}
+                            @include('includes.checkout-price-summary', [
+                                'step' => 2,
+                                'productsTotal' => $productsTotal ?? $totalPrice,
+                                'totalPrice' => $totalPrice, // Backward compatibility
+                                'digital' => $digital,
+                                'curr' => $curr,
+                                'gs' => $gs,
+                                'step1' => $step1 ?? null
+                            ])
 
                             <!-- btn wrapper -->
                             <div class="summary-inner-box">
@@ -656,7 +580,7 @@
                                             </defs>
                                         </svg>
                                     </button>
-                                    <a href="{{ isset($is_vendor_checkout) && $is_vendor_checkout ? route('front.checkout.vendor', $vendor_id) : route('front.checkout') }}" class="template-btn dark-outline w-100">
+                                    <a href="{{ isset($is_vendor_checkout) && $is_vendor_checkout ? route('front.checkout.vendor', $vendor_id) : route('front.cart') }}" class="template-btn dark-outline w-100">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="25" height="24"
                                             viewBox="0 0 25 24" fill="none">
                                             <g clip-path="url(#clip0_489_34179)">
@@ -903,6 +827,8 @@
             }
             $('#grandtotal').val(ttotal);
             $('#multi_packaging_id').val($(this).val());
+            // ✅ Update vendor_packing_id for vendor checkout
+            $('input[name="vendor_packing_id"]').val($(this).val());
         })
 
 

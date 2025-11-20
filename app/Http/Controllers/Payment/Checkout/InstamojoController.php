@@ -13,6 +13,7 @@ use App\Helpers\PriceHelper;
 use App\Models\Country;
 use App\Models\Reward;
 use App\Models\State;
+use App\Traits\HandlesVendorCheckout;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Session;
@@ -21,13 +22,24 @@ use Illuminate\Support\Str;
 
 class InstamojoController extends CheckoutBaseControlller
 {
+    use HandlesVendorCheckout;
 
     public function store(Request $request)
     {
-        $input = $request->all();
-        $step1 = Session::get('step1');
-        $step2 = Session::get('step2');
-        $input = array_merge($step1, $step2, $input);
+        // Get vendor checkout data
+        $vendorData = $this->getVendorCheckoutData();
+        $vendorId = $vendorData['vendor_id'];
+
+        // Get steps from vendor sessions ONLY
+        $steps = $this->getCheckoutSteps($vendorId, $vendorData['is_vendor_checkout']);
+        $step1 = $steps['step1'];
+        $step2 = $steps['step2'];
+
+        if (!$step1 || !$step2) {
+            return redirect()->route('front.cart')->with('unsuccess', __('Checkout session expired.'));
+        }
+
+        $input = array_merge($step1, $step2, $request->all());
         
         $data = PaymentGateway::whereKeyword('instamojo')->first();
         $total = $request->total;
@@ -85,9 +97,20 @@ class InstamojoController extends CheckoutBaseControlller
 
     public function notify(Request $request)
     {
+        // Get vendor checkout data at start
+        $vendorData = $this->getVendorCheckoutData();
+        $vendorId = $vendorData['vendor_id'];
+
+        $steps = $this->getCheckoutSteps($vendorId, $vendorData['is_vendor_checkout']);
+        $step1 = $steps['step1'];
+        $step2 = $steps['step2'];
+
+        if (!$step1 || !$step2) {
+            return redirect()->route('front.cart')->with('unsuccess', __('Checkout session expired.'));
+        }
+
         $input = Session::get('input_data');
         $order_data = Session::get('order_data');
-        $success_url = route('front.payment.return');
         $cancel_url = route('front.payment.cancle');
         $input_data = $request->all();
 
@@ -101,7 +124,8 @@ class InstamojoController extends CheckoutBaseControlller
         if ($input_data['payment_request_id'] == $payment_id) {
 
             $oldCart = Session::get('cart');
-            $cart = new Cart($oldCart);
+            $originalCart = new Cart($oldCart);
+            $cart = $this->filterCartForVendor($originalCart, $vendorId);
             OrderHelper::license_check($cart); // For License Checking
             $t_oldCart = Session::get('cart');
             $t_cart = new Cart($t_oldCart);
@@ -128,10 +152,9 @@ class InstamojoController extends CheckoutBaseControlller
             $input['payment_status'] = "Completed";
             $input['txnid'] = $input_data['payment_id'];
 
-            // Get tax data from step2 (already calculated and saved)
-            $step2_session = Session::get('step2');
-            $input['tax'] = $step2_session['tax_amount'] ?? 0;
-            $input['tax_location'] = $step2_session['tax_location'] ?? '';
+            // Get tax data from vendor step2
+            $input['tax'] = $step2['tax_amount'] ?? 0;
+            $input['tax_location'] = $step2['tax_location'] ?? '';
 
 
             if ($input['dp'] == 1) {
@@ -184,12 +207,9 @@ class InstamojoController extends CheckoutBaseControlller
 
             Session::put('temporder', $order);
             Session::put('tempcart', $cart);
-            Session::forget('cart');
-            Session::forget('already');
-            Session::forget('coupon');
-            Session::forget('coupon_total');
-            Session::forget('coupon_total1');
-            Session::forget('coupon_percentage');
+
+            // Remove only vendor's products from cart
+            $this->removeVendorProductsFromCart($vendorId, $originalCart);
 
             if ($order->user_id != 0 && $order->wallet_price != 0) {
                 OrderHelper::add_to_transaction($order, $order->wallet_price); // Store To Transactions
@@ -219,6 +239,8 @@ class InstamojoController extends CheckoutBaseControlller
             $mailer = new MuaadhMailer();
             $mailer->sendCustomMail($data);
 
+            // Determine success URL based on remaining cart items
+            $success_url = $this->getSuccessUrl($vendorId, $originalCart);
             return redirect($success_url);
         }
         return redirect($cancel_url);

@@ -1834,8 +1834,12 @@ Route::group(['middleware' => 'maintenance'], function () {
 
     // CHECKOUT SECTION
     Route::get('/buy-now/{id}', 'Front\CheckoutController@buynow')->name('front.buynow');
-    // Checkout
-    Route::get('/checkout', 'Front\CheckoutController@checkout')->name('front.checkout');
+
+    // ====================================================================
+    // VENDOR CHECKOUT ONLY - Regular checkout disabled
+    // ====================================================================
+    // All checkout flows now use vendor-specific routes
+    // This ensures proper vendor attribution and commission tracking
 
     // Vendor-specific checkout routes (with session preservation middleware)
     Route::middleware(['preserve.session'])->group(function () {
@@ -1846,12 +1850,17 @@ Route::group(['middleware' => 'maintenance'], function () {
         Route::get('/checkout/vendor/{vendorId}/step3', 'Front\CheckoutController@checkoutVendorStep3')->name('front.checkout.vendor.step3');
     });
 
-    Route::post('/checkout/step1/submit', 'Front\CheckoutController@checkoutStep1')->name('front.checkout.step1.submit');
+    // ====================================================================
+    // REGULAR CHECKOUT - DISABLED (Now using vendor checkout only)
+    // ====================================================================
+    // Commented out to prevent accidental use of non-vendor checkout
+    // All cart items belong to vendors, so vendor checkout is required
 
-    Route::get('/checkout/step2', 'Front\CheckoutController@checkoutstep2')->name('front.checkout.step2');
-    Route::post('/checkout/step2/submit', 'Front\CheckoutController@checkoutStep2Submit')->name('front.checkout.step2.submit');
-
-    Route::get('/checkout/step3', 'Front\CheckoutController@checkoutstep3')->name('front.checkout.step3');
+    // Route::get('/checkout', 'Front\CheckoutController@checkout')->name('front.checkout');
+    // Route::post('/checkout/step1/submit', 'Front\CheckoutController@checkoutStep1')->name('front.checkout.step1.submit');
+    // Route::get('/checkout/step2', 'Front\CheckoutController@checkoutstep2')->name('front.checkout.step2');
+    // Route::post('/checkout/step2/submit', 'Front\CheckoutController@checkoutStep2Submit')->name('front.checkout.step2.submit');
+    // Route::get('/checkout/step3', 'Front\CheckoutController@checkoutstep3')->name('front.checkout.step3');
 
 
     Route::get('/carts/coupon/check', 'Front\CouponController@couponcheck')->name('front.coupon.check');

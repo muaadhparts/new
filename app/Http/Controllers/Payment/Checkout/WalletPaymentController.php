@@ -8,6 +8,7 @@ use App\Models\Country;
 use App\Models\Order;
 use App\Models\Reward;
 use App\Models\State;
+use App\Traits\HandlesVendorCheckout;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
@@ -15,13 +16,23 @@ use Illuminate\Support\Str;
 
 class WalletPaymentController extends CheckoutBaseControlller
 {
+    use HandlesVendorCheckout;
     public function store(Request $request)
     {
+        // Get vendor checkout data
+        $vendorData = $this->getVendorCheckoutData();
+        $vendorId = $vendorData['vendor_id'];
 
-        $input = $request->all();
-        $step1 = Session::get('step1');
-        $step2 = Session::get('step2');
-        $input = array_merge($step1, $step2, $input);
+        // Get steps from vendor sessions ONLY
+        $steps = $this->getCheckoutSteps($vendorId, $vendorData['is_vendor_checkout']);
+        $step1 = $steps['step1'];
+        $step2 = $steps['step2'];
+
+        if (!$step1 || !$step2) {
+            return redirect()->route('front.cart')->with('unsuccess', __('Checkout session expired.'));
+        }
+
+        $input = array_merge($step1, $step2, $request->all());
 
         if ($request->pass_check) {
             $auth = OrderHelper::auth_check($input); // For Authentication Checking
@@ -35,7 +46,8 @@ class WalletPaymentController extends CheckoutBaseControlller
         }
 
         $oldCart = Session::get('cart');
-        $cart = new Cart($oldCart);
+        $originalCart = new Cart($oldCart);
+        $cart = $this->filterCartForVendor($originalCart, $vendorId);
         OrderHelper::license_check($cart); // For License Checking
         $t_oldCart = Session::get('cart');
         $t_cart = new Cart($t_oldCart);
@@ -62,10 +74,9 @@ class WalletPaymentController extends CheckoutBaseControlller
         $input['wallet_price'] = $request->wallet_price / $this->curr->value;
         $input['method'] = "Wallet";
         $input['payment_status'] = "Completed";
-        // Get tax data from step2 (already calculated and saved)
-        $step2_session = Session::get('step2');
-        $input['tax'] = $step2_session['tax_amount'] ?? 0;
-        $input['tax_location'] = $step2_session['tax_location'] ?? '';
+        // Get tax data from vendor step2
+        $input['tax'] = $step2['tax_amount'] ?? 0;
+        $input['tax_location'] = $step2['tax_location'] ?? '';
         if ($input['dp'] == 1) {
             $input['status'] = 'completed';
         }
@@ -117,12 +128,9 @@ class WalletPaymentController extends CheckoutBaseControlller
 
         Session::put('temporder', $order);
         Session::put('tempcart', $cart);
-        Session::forget('cart');
-        Session::forget('already');
-        Session::forget('coupon');
-        Session::forget('coupon_total');
-        Session::forget('coupon_total1');
-        Session::forget('coupon_percentage');
+
+        // Remove only vendor's products from cart
+        $this->removeVendorProductsFromCart($vendorId, $originalCart);
 
         // Wallet Payment Logic
         $user = Auth::user();
@@ -157,6 +165,8 @@ class WalletPaymentController extends CheckoutBaseControlller
         $mailer = new MuaadhMailer();
         $mailer->sendCustomMail($data);
 
+        // Determine success URL based on remaining cart items
+        $success_url = $this->getSuccessUrl($vendorId, $originalCart);
         return redirect($success_url);
     }
 }

@@ -12,6 +12,7 @@ use App\Models\Order;
 use App\Models\Reward;
 use App\Models\State;
 use App\Traits\CreatesTryotoShipments;
+use App\Traits\HandlesVendorCheckout;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Contracts\View\View;
@@ -28,7 +29,7 @@ use MyFatoorah\Library\API\Payment\MyFatoorahPaymentStatus;
 use Exception;
 
 class MyFatoorahController extends CheckoutBaseControlller {
-    use CreatesTryotoShipments;
+    use CreatesTryotoShipments, HandlesVendorCheckout;
 
     /**
      * @var array
@@ -58,15 +59,24 @@ class MyFatoorahController extends CheckoutBaseControlller {
      * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Foundation\Application|\Illuminate\Http\RedirectResponse|Response|\Illuminate\Routing\Redirector
      */
     public function index() {
-        $cancel_url = route('front.checkout.step2');
+        // Get vendor checkout data
+        $vendorData = $this->getVendorCheckoutData();
+        $vendorId = $vendorData['vendor_id'];
+
+        // Get steps from vendor sessions ONLY
+        $steps = $this->getCheckoutSteps($vendorId, $vendorData['is_vendor_checkout']);
+        $step1 = $steps['step1'];
+        $step2 = $steps['step2'];
+
+        if (!$step1 || !$step2) {
+            return redirect()->route('front.cart')->with('unsuccess', __('Checkout session expired.'));
+        }
+
+        $cancel_url = route('front.cart');
 
         try {
             // حفظ بيانات الطلب في Session
-            $input = array_merge(
-                Session::get('step1', []),
-                Session::get('step2', []),
-                request()->all()
-            );
+            $input = array_merge($step1, $step2, request()->all());
             Session::put('input_data', $input);
 
             // استخدام المبلغ القادم من step3 مباشرة (المبلغ الصحيح المحسوب مسبقاً)
@@ -126,13 +136,21 @@ class MyFatoorahController extends CheckoutBaseControlller {
 
     public function notify(Request $request)
     {
-        $success_url = route('front.payment.return');
-        $cancel_url = route('front.checkout.step2');
+        // Get vendor checkout data at start
+        $vendorData = $this->getVendorCheckoutData();
+        $vendorId = $vendorData['vendor_id'];
+
+        $steps = $this->getCheckoutSteps($vendorId, $vendorData['is_vendor_checkout']);
+        $step1 = $steps['step1'];
+        $step2 = $steps['step2'];
+
+        if (!$step1 || !$step2) {
+            return redirect()->route('front.cart')->with('unsuccess', __('Checkout session expired.'));
+        }
+
+        $cancel_url = route('front.cart');
 
         $input = Session::get('input_data');
-        $step1 = Session::get('step1', []);
-        $step2 = Session::get('step2', []);
-
         $input = array_merge($step1, $step2);
 
         try {
@@ -179,7 +197,8 @@ class MyFatoorahController extends CheckoutBaseControlller {
 
         // ✅ الدفع نجح - إنشاء الطلب
         $oldCart = Session::get('cart');
-        $cart = new Cart($oldCart);
+        $originalCart = new Cart($oldCart);
+        $cart = $this->filterCartForVendor($originalCart, $vendorId);
         // OrderHelper::license_check($cart); // For License Checking
         $t_oldCart = Session::get('cart');
         $t_cart = new Cart($t_oldCart);
@@ -335,12 +354,9 @@ class MyFatoorahController extends CheckoutBaseControlller {
 
         Session::put('temporder', $order);
         Session::put('tempcart', $cart);
-        Session::forget('cart');
-        Session::forget('already');
-        Session::forget('coupon');
-        Session::forget('coupon_total');
-        Session::forget('coupon_total1');
-        Session::forget('coupon_percentage');
+
+        // Remove only vendor's products from cart
+        $this->removeVendorProductsFromCart($vendorId, $originalCart);
 
         if ($order->user_id != 0 && $order->wallet_price != 0) {
             OrderHelper::add_to_transaction($order, $order->wallet_price); // Store To Transactions
@@ -385,6 +401,8 @@ class MyFatoorahController extends CheckoutBaseControlller {
         $mailer = new MuaadhMailer();
         $mailer->sendCustomMail($data);
 
+        // Determine success URL based on remaining cart items
+        $success_url = $this->getSuccessUrl($vendorId, $originalCart);
         return redirect($success_url);
 
 

@@ -66,5 +66,5 @@
     </div>
 
     <a href="{{ route('front.cart') }}" class="btn btn-primary rounded-0 view-cart">{{ __('View cart') }}</a>
-    <a href="{{ route('front.checkout') }}" class="btn btn-secondary rounded-0 checkout">{{ __('Check out') }}</a>
+    <a href="{{ route('front.cart') }}" class="btn btn-secondary rounded-0 checkout">{{ __('Check out') }}</a>
 </div>

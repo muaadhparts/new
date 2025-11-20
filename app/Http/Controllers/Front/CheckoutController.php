@@ -1181,6 +1181,38 @@ class CheckoutController extends FrontBaseController
             return redirect()->route('front.cart')->with('success', __("You don't have any product to checkout."));
         }
 
+        // ====================================================================
+        // CRITICAL: Clean ALL previous checkout session data
+        // ====================================================================
+        // This ensures every checkout starts fresh with empty form fields
+        // No pre-filled data from previous attempts or user profile
+
+        // 1. Remove old regular checkout sessions (no longer used)
+        Session::forget(['step1', 'step2', 'step3']);
+
+        // 2. Remove ALL vendor checkout sessions (for all vendors)
+        // Get all session keys and remove vendor-specific ones
+        $allSessionKeys = array_keys(Session::all());
+        foreach ($allSessionKeys as $key) {
+            if (strpos($key, 'vendor_step1_') === 0 ||
+                strpos($key, 'vendor_step2_') === 0 ||
+                strpos($key, 'vendor_step3_') === 0) {
+                Session::forget($key);
+            }
+        }
+
+        // 3. Remove vendor-specific coupon data
+        foreach ($allSessionKeys as $key) {
+            if (strpos($key, 'coupon_vendor_') === 0 ||
+                strpos($key, 'coupon_total_vendor_') === 0) {
+                Session::forget($key);
+            }
+        }
+
+        \Log::info('checkoutVendor: Cleared all previous checkout sessions', [
+            'vendor_id' => $vendorId
+        ]);
+
         // Save vendor_id in session FIRST - ensures session persistence
         Session::put('checkout_vendor_id', $vendorId);
 
@@ -1234,7 +1266,8 @@ class CheckoutController extends FrontBaseController
 
         return view('frontend.checkout.step1', [
             'products' => $vendorProducts,
-            'totalPrice' => $total,
+            'productsTotal' => $total, // Products only - no shipping/tax yet
+            'totalPrice' => $total, // Backward compatibility
             'pickups' => $pickups,
             'totalQty' => $totalQty,
             'shipping_cost' => 0,
@@ -1393,7 +1426,8 @@ class CheckoutController extends FrontBaseController
         return view('frontend.checkout.step2', [
             'productsByVendor' => $productsByVendor, // Grouped products (single vendor)
             'products' => $vendorProducts, // Keep for backward compatibility
-            'totalPrice' => $totalPrice,
+            'productsTotal' => $totalPrice, // Products only - shipping/packing added dynamically
+            'totalPrice' => $totalPrice, // Backward compatibility
             'pickups' => $pickups,
             'totalQty' => $totalQty,
             'shipping_cost' => 0,
@@ -1495,26 +1529,93 @@ class CheckoutController extends FrontBaseController
 
         $shipping_name = count($shipping_names) ? implode(' + ', array_unique($shipping_names)) : null;
 
+        // ✅ Calculate packing cost
+        $packing_cost_total = 0.0;
+        $packing_names = [];
+
+        // DEBUG: Log received data - check ALL possible field names
+        \Log::info('Step2Submit - Packing Debug', [
+            'vendor_id' => $vendorId,
+            'vendor_packing_id' => $step2['vendor_packing_id'] ?? 'NOT SET',
+            'packeging_id' => $step2['packeging_id'] ?? 'NOT SET',
+            'packaging_id' => $step2['packaging_id'] ?? 'NOT SET',
+            'all_step2_keys' => array_keys($step2),
+        ]);
+
+        // Try multiple field names (vendor checkout uses vendor_packing_id)
+        $packId = null;
+        if (isset($step2['vendor_packing_id']) && $step2['vendor_packing_id']) {
+            $packId = (int)$step2['vendor_packing_id'];
+        } elseif (isset($step2['packeging_id']) && $step2['packeging_id']) {
+            $packId = (int)$step2['packeging_id'];
+        } elseif (isset($step2['packaging_id']) && $step2['packaging_id']) {
+            $packId = (int)$step2['packaging_id'];
+        }
+
+        if ($packId && $packId > 0) {
+            \Log::info('Step2Submit - Packing ID Found', ['pack_id' => $packId]);
+
+            $package = \App\Models\Package::find($packId);
+            if ($package) {
+                $packing_cost_total = (float)$package->price;
+                $packing_names[] = $package->title;
+
+                \Log::info('Step2Submit - Package Found', [
+                    'package_id' => $package->id,
+                    'package_title' => $package->title,
+                    'package_price' => $package->price,
+                    'packing_cost_total' => $packing_cost_total,
+                ]);
+            } else {
+                \Log::warning('Step2Submit - Package NOT Found in DB', ['pack_id' => $packId]);
+            }
+        } else {
+            \Log::warning('Step2Submit - No packing ID in request', [
+                'vendor_packing_id' => $step2['vendor_packing_id'] ?? 'NOT SET',
+            ]);
+        }
+
+        $packing_name = count($packing_names) ? implode(' + ', array_unique($packing_names)) : null;
+
         // Get tax data from vendor step1
         $step1 = Session::get('vendor_step1_' . $vendorId);
         $taxAmount = $step1['tax_amount'] ?? 0;
         $taxRate = $step1['tax_rate'] ?? 0;
         $taxLocation = $step1['tax_location'] ?? '';
 
-        // Calculate total for this vendor (products + tax + shipping)
-        // This will be used in step3
+        // ✅ Calculate COMPLETE total for this vendor (products + tax + shipping + packing)
+        // This will be used in step3 and payment
         $vendorProductsTotal = $vendorTotal; // Products total (may have discount already applied)
-        $finalTotal = $vendorProductsTotal + $taxAmount + $shipping_cost_total;
+        $finalTotal = $vendorProductsTotal + $taxAmount + $shipping_cost_total + $packing_cost_total;
 
         $step2['shipping_company'] = $shipping_name;
         $step2['shipping_cost'] = $shipping_cost_total;
+        $step2['packing_company'] = $packing_name;
+        $step2['packing_cost'] = $packing_cost_total;
         $step2['tax_rate'] = $taxRate;
         $step2['tax_amount'] = $taxAmount;
         $step2['tax_location'] = $taxLocation;
-        $step2['total'] = $finalTotal; // Save total in session for step3
+        $step2['total'] = $finalTotal; // ✅ Save COMPLETE total in session for step3
+
+        // DEBUG: Log what we're saving
+        \Log::info('Step2Submit - Saving to Session', [
+            'vendor_id' => $vendorId,
+            'shipping_cost' => $step2['shipping_cost'],
+            'packing_cost' => $step2['packing_cost'],
+            'tax_amount' => $step2['tax_amount'],
+            'total' => $step2['total'],
+            'calculation' => "$vendorProductsTotal + $taxAmount + $shipping_cost_total + $packing_cost_total = $finalTotal"
+        ]);
 
         Session::put('vendor_step2_' . $vendorId, $step2);
         Session::save(); // Ensure session is saved before redirect
+
+        // DEBUG: Verify session was saved
+        $savedStep2 = Session::get('vendor_step2_' . $vendorId);
+        \Log::info('Step2Submit - Session Verified', [
+            'packing_cost_in_session' => $savedStep2['packing_cost'] ?? 'NOT SAVED',
+            'total_in_session' => $savedStep2['total'] ?? 'NOT SAVED',
+        ]);
 
         return redirect()->route('front.checkout.vendor.step3', $vendorId);
     }
@@ -1548,6 +1649,15 @@ class CheckoutController extends FrontBaseController
 
         $step1 = (object) Session::get('vendor_step1_' . $vendorId);
         $step2 = (object) Session::get('vendor_step2_' . $vendorId);
+
+        // DEBUG: Log Step3 session data
+        \Log::info('Step3 - Session Data Retrieved', [
+            'vendor_id' => $vendorId,
+            'step2_shipping_cost' => $step2->shipping_cost ?? 'NOT SET',
+            'step2_packing_cost' => $step2->packing_cost ?? 'NOT SET',
+            'step2_tax_amount' => $step2->tax_amount ?? 'NOT SET',
+            'step2_total' => $step2->total ?? 'NOT SET',
+        ]);
 
         // Get vendor cart data using helper method (avoids code duplication)
         $cartData = $this->getVendorCartData($vendorId);
@@ -1590,8 +1700,8 @@ class CheckoutController extends FrontBaseController
 
         return view('frontend.checkout.step3', [
             'products' => $vendorProducts,
-            'productsTotal' => $productsTotal, // Products only for "Total MRP" display
-            'totalPrice' => $finalTotal, // Total including shipping for calculations
+            'productsTotal' => $productsTotal, // Products only - ALWAYS for "Total MRP" display
+            'totalPrice' => $productsTotal, // Keep same as productsTotal for backward compatibility
             'pickups' => $pickups,
             'totalQty' => $totalQty,
             'gateways' => $gateways,
@@ -1603,7 +1713,7 @@ class CheckoutController extends FrontBaseController
             'vendor_shipping_id' => $vendorId,
             'vendor_packing_id' => $vendorId,
             'paystack' => $paystackData,
-            'step2' => $step2,
+            'step2' => $step2, // CRITICAL: Contains pre-calculated total (products + tax + shipping)
             'step1' => $step1,
             'is_vendor_checkout' => true,
             'vendor_id' => $vendorId

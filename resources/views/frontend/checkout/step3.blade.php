@@ -8,7 +8,8 @@
                 <h2 class="breadcrumb-title">@lang('Checkout')</h2>
                 <ul class="bread-menu">
                     <li><a href="{{ route('front.index') }}">@lang('Home')</a></li>
-                    <li><a href="{{ route('front.checkout') }}">@lang('Checkout')</a></li>
+                    <li><a href="{{ route('front.cart') }}">@lang('Cart')</a></li>
+                    <li>@lang('Checkout')</li>
                 </ul>
             </div>
         </div>
@@ -180,106 +181,17 @@
                             </div>
                         </div>
 
-                        <!-- Price Details -->
-                        <div class="summary-inner-box">
-                            <h6 class="summary-title">@lang('Price Details')</h6>
-                            <div class="details-wrapper">
-                                <div class="price-details">
-                                    <span>@lang('Total MRP')</span>
-                                    <span class="right-side cart-total">{{ App\Models\Product::convertPrice($totalPrice) }}</span>
-                                </div>
-
-
-                                <div class="price-details tax_show d-none">
-                                    <span>@lang('Tax')</span>
-                                    <span class="right-side original_tax original_tax">0</span>
-                                </div>
-
-
-
-
-                                @if (Session::has('coupon'))
-                                <div class="price-details discount-bar">
-                                    <span>@lang('Discount') <span class="dpercent">{{ Session::get('coupon_percentage')
-                                            == 0 ? '' : '(' . Session::get('coupon_percentage') . ')' }}</span></span>
-                                    @if ($gs->currency_format == 0)
-                                    <span id="discount" class="right-side">{{ $curr->sign }}{{ Session::get('coupon')
-                                        }}</span>
-                                    @else
-                                    <span id="discount" class="right-side">{{ Session::get('coupon') }}{{ $curr->sign
-                                        }}</span>
-                                    @endif
-                                </div>
-                                @else
-                                <div class="price-details d-none discount-bar">
-                                    <span>@lang('Discount') <span class="dpercent"></span></span>
-                                    <span id="discount" class="right-side">{{ $curr->sign }}{{ Session::get('coupon')
-                                        }}</span>
-                                </div>
-                                @endif
-
-
-                                {{-- Tax Display --}}
-                                @php
-                                    $taxRate = $step2->tax_rate ?? 0;
-                                    $taxAmount = $step2->tax_amount ?? 0;
-                                    $taxLocation = $step2->tax_location ?? '';
-                                @endphp
-
-                                @if($taxRate > 0)
-                                <div class="price-details">
-                                    <span>@lang('Tax') ({{ $taxRate }}%)</span>
-                                    <span class="right-side">{{ App\Models\Product::convertPrice($taxAmount) }}</span>
-                                </div>
-                                @if($taxLocation)
-                                <div class="price-details">
-                                    <small class="text-muted">{{ $taxLocation }}</small>
-                                </div>
-                                @endif
-                                @endif
-
-                                @if ($digital == 0)
-                                @php
-                                    // Use shipping_cost directly from step2 session (already calculated with free_above logic)
-                                    $shipping_cost = $step2->shipping_cost ?? 0;
-                                    $packing_cost = $step2->packing_cost ?? 0;
-                                @endphp
-
-                                <div class="price-details">
-                                    <span>@lang('Shipping Cost')</span>
-                                    <span class="right-side">{{ App\Models\Product::convertPrice($shipping_cost) }}</span>
-                                </div>
-
-                                @if(isset($step2->shipping_company) && $step2->shipping_company)
-                                <div class="price-details">
-                                    <small class="text-muted">{{ $step2->shipping_company }}</small>
-                                </div>
-                                @endif
-
-                                <div class="price-details">
-                                    <span>@lang('Packaging Cost')</span>
-                                    <span class="right-side packing_cost_view">{{ App\Models\Product::convertPrice($packing_cost) }}</span>
-                                </div>
-                                @endif
-                            </div>
-
-                            <hr>
-                            <div class="final-price">
-                                <span>@lang('Final Price')</span>
-                                @if (Session::has('coupon_total'))
-                                @if ($gs->currency_format == 0)
-                                <span class="total-amount">{{ $curr->sign }}{{ $step2->total }}</span>
-                                @else
-                                <span class="total-amount">{{ $step2->total }}{{ $curr->sign }}</span>
-                                @endif
-                                @elseif(Session::has('coupon_total1'))
-                                <span class="total-amount">
-                                    {{ Session::get('coupon_total1') }}</span>
-                                @else
-                                <span class="total-amount">{{ App\Models\Product::convertPrice($step2->total) }}</span>
-                                @endif
-                            </div>
-                        </div>
+                        {{-- ✅ Unified Price Summary Component - Step 3 --}}
+                        @include('includes.checkout-price-summary', [
+                            'step' => 3,
+                            'productsTotal' => $productsTotal ?? $totalPrice,
+                            'totalPrice' => $totalPrice, // Backward compatibility
+                            'digital' => $digital,
+                            'curr' => $curr,
+                            'gs' => $gs,
+                            'step1' => $step1 ?? null,
+                            'step2' => $step2 ?? null
+                        ])
 
 
                         <!-- btn wrapper -->

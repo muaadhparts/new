@@ -8,7 +8,8 @@
                     <h2 class="breadcrumb-title">@lang('Checkout')</h2>
                     <ul class="bread-menu">
                         <li><a href="{{ route('front.index') }}">@lang('Home')</a></li>
-                        <li><a href="{{ route('front.checkout') }}">@lang('Checkout')</a></li>
+                        <li><a href="{{ route('front.cart') }}">@lang('Cart')</a></li>
+                        <li>@lang('Checkout')</li>
                     </ul>
                 </div>
             </div>
@@ -175,7 +176,7 @@
                                         </label>
                                         <input class="input-cls" id="address" type="text"
                                             placeholder="@lang('Address')" name="customer_address"
-                                            value="{{ Auth::check() ? Auth::user()->address : '' }}">
+                                            value="">
                                     </div>
                                 </div>
 
@@ -187,7 +188,7 @@
                                         </label>
                                         <input class="input-cls" id="zip" type="text"
                                             placeholder="@lang('Postal Code')" name="customer_zip"
-                                            value="{{ Auth::check() ? Auth::user()->zip : '' }}">
+                                            value="">
                                     </div>
                                 </div>
 
@@ -318,89 +319,15 @@
                         <div class="summary-box">
                             <h4 class="form-title">@lang('Summery')</h4>
 
-
-                            <!-- Price Details -->
-                            <div class="summary-inner-box">
-                                <h6 class="summary-title">@lang('Price Details')</h6>
-                                <div class="details-wrapper">
-                                    <div class="price-details">
-                                        <span>@lang('Total MRP')</span>
-                                        <span
-                                            class="right-side cart-total">{{ App\Models\Product::convertPrice($totalPrice) }}</span>
-                                    </div>
-
-
-                                    {{-- Tax Display - Will be shown when country/state is selected --}}
-                                    <div class="price-details tax-display-wrapper d-none" id="tax-display">
-                                        <span>
-                                            @lang('Tax')
-                                            <span class="tax-rate-text"></span>
-                                        </span>
-                                        <span class="right-side tax-amount-value">{{ App\Models\Product::convertPrice(0) }}</span>
-                                    </div>
-                                    <div class="price-details tax-location-wrapper d-none" id="tax-location-display">
-                                        <small class="text-muted tax-location-text"></small>
-                                    </div>
-
-
-                                    @if (Session::has('coupon'))
-                                        <div class="price-details">
-                                            <span>@lang('Discount') <span
-                                                    class="dpercent">{{ Session::get('coupon_percentage') == 0 ? '' : '(' . Session::get('coupon_percentage') . ')' }}</span></span>
-                                            @if ($gs->currency_format == 0)
-                                                <span id="discount"
-                                                    class="right-side">{{ $curr->sign }}{{ Session::get('coupon') }}</span>
-                                            @else
-                                                <span id="discount"
-                                                    class="right-side">{{ Session::get('coupon') }}{{ $curr->sign }}</span>
-                                            @endif
-                                        </div>
-                                    @else
-                                        <div class="price-details d-none">
-                                            <span>@lang('Discount') <span class="dpercent"></span></span>
-                                            <span id="discount"
-                                                class="right-side">{{ $curr->sign }}{{ Session::get('coupon') }}</span>
-                                        </div>
-                                    @endif
-
-
-                                    @if ($digital == 0)
-                                        <div class="price-details">
-                                            <span>@lang('Shipping Cost')</span>
-                                            <span
-                                                class="right-side shipping_cost_view">{{ App\Models\Product::convertPrice(0) }}</span>
-                                        </div>
-
-                                        <div class="price-details">
-                                            <span>@lang('Packaging Cost')</span>
-                                            <span
-                                                class="right-side packing_cost_view">{{ App\Models\Product::convertPrice(0) }}</span>
-                                        </div>
-                                    @endif
-                                </div>
-
-                                <hr>
-                                <div class="final-price">
-
-
-                                    <span>@lang('Final Price')</span>
-                                    @if (Session::has('coupon_total'))
-                                        @if ($gs->currency_format == 0)
-                                            <span class="total-amount"
-                                                id="final-cost">{{ $curr->sign }}{{ $totalPrice }}</span>
-                                        @else
-                                            <span class="total-amount"
-                                                id="final-cost">{{ $totalPrice }}{{ $curr->sign }}</span>
-                                        @endif
-                                    @elseif(Session::has('coupon_total1'))
-                                        <span class="total-amount" id="final-cost">
-                                            {{ Session::get('coupon_total1') }}</span>
-                                    @else
-                                        <span class="total-amount"
-                                            id="final-cost">{{ App\Models\Product::convertPrice($totalPrice) }}</span>
-                                    @endif
-                                </div>
-                            </div>
+                            {{-- ✅ Unified Price Summary Component - Step 1 --}}
+                            @include('includes.checkout-price-summary', [
+                                'step' => 1,
+                                'productsTotal' => $productsTotal ?? $totalPrice,
+                                'totalPrice' => $totalPrice, // Backward compatibility
+                                'digital' => $digital,
+                                'curr' => $curr,
+                                'gs' => $gs
+                            ])
 
                             <!-- btn wrapper -->
                             <div class="summary-inner-box">
