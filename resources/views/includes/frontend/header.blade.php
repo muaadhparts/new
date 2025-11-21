@@ -142,6 +142,12 @@
                                     stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
                             </svg>
 
+                            {{--
+                                ✅ FIXED HEADER LOGIC:
+                                - My Account: ALWAYS goes to login page (for both logged-in and guests)
+                                - Dashboard: ALWAYS goes to user-dashboard (only shown when logged in)
+                                - NEVER redirect to checkout from header
+                            --}}
                             @if (Auth::guard('web')->check())
                                 <a href="{{ route('user-dashboard') }}">@lang('Dashboard')</a>
                             @elseif(Auth::guard('rider')->check())

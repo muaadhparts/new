@@ -95,7 +95,7 @@ class LoginController extends Controller
                 ]);
             }
 
-            // ✅ REDIRECT LOGIC - تحسين تجربة المستخدم
+            // ✅ REDIRECT LOGIC - المنطق النهائي المحدث
 
             // 1. إذا كان vendor login (من صفحة vendor login)
             if($request->vendor == 1) {
@@ -113,10 +113,20 @@ class LoginController extends Controller
                 return redirect()->route('front.checkout.vendor', $checkoutVendorId);
             }
 
-            // 3. خلاف ذلك: العودة للوحة التحكم (السلوك الطبيعي)
-            \Log::info('Login: Normal login - redirecting to dashboard', [
-                'user_id' => Auth::id(),
-                'has_cart' => !empty($cartBackup)
+            // 3. Normal Login: التوجيه بناءً على Cart
+            // ✅ إذا كانت السلة تحتوي منتجات → cart page
+            // ✅ إذا كانت السلة فارغة → dashboard
+            if (!empty($cartBackup)) {
+                \Log::info('Login: Normal login with cart - redirecting to cart', [
+                    'user_id' => Auth::id(),
+                    'cart_items' => count($cartBackup)
+                ]);
+                return redirect()->route('front.cart');
+            }
+
+            // 4. السلة فارغة → Dashboard
+            \Log::info('Login: Normal login without cart - redirecting to dashboard', [
+                'user_id' => Auth::id()
             ]);
             return redirect()->route('user-dashboard');
         }
