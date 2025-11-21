@@ -991,7 +991,7 @@
         }
     }
 
-    // Add country to dropdown dynamically
+    // Add country to dropdown dynamically - DISABLED for Tryoto compatibility
     function addCountryToDropdown(countryData, stateId, cityId) {
         if (!countryData || !countryData.id) {
             if (typeof toastr !== 'undefined') {
@@ -1001,81 +1001,29 @@
             return;
         }
 
-        // Add country option to select
-        const countryName = countryData.name_ar || countryData.name;
-        const newOption = $('<option></option>')
-            .attr('value', countryName)
-            .attr('data', countryData.id)
-            .attr('data-href', '{{ route("country.wise.state", ":country_id") }}'.replace(':country_id', countryData.id))
-            .attr('rel', '1') // has states
-            .attr('rel1', '0')
-            .attr('rel5', '0')
-            .text(countryName);
-
-        // Add to select
-        $('#select_country').append(newOption);
-
-        // Select the new option
-        newOption.prop('selected', true);
-
-        // Update NiceSelect
-        $('#select_country').niceSelect('update');
-
-        // Show success message
+        // DON'T add new countries - they won't work with shipping
         if (typeof toastr !== 'undefined') {
-            toastr.success('تم إضافة الدولة: ' + countryName);
+            toastr.warning('الدولة "' + (countryData.name_ar || countryData.name) + '" غير موجودة في قائمة الدول المتاحة. يرجى اختيار موقع داخل دول الشحن المتاحة.');
         }
 
-        // Trigger change to load states
-        $('#select_country').trigger('change');
-
-        // Wait for states to load, then select state
-        if (stateId) {
-            waitAndSelectState(stateId, cityId);
-        } else {
-            showFinalSuccessMessage();
-        }
+        // Close modal - user needs to select a different location
+        $('#mapModal').modal('hide');
     }
 
-    // Add state to dropdown dynamically
+    // Add state to dropdown dynamically - DISABLED for Tryoto compatibility
     function addStateToDropdown(stateData, cityId) {
         if (!stateData || !stateData.id) {
             showFinalSuccessMessage();
             return;
         }
 
-        // Show state container
-        $('.select_state').removeClass('d-none');
-
-        // Add state option to select
-        const stateName = stateData.name_ar || stateData.name;
-        const newOption = $('<option></option>')
-            .attr('value', stateData.id)
-            .text(stateName);
-
-        // Add to select
-        $('#show_state').append(newOption);
-
-        // Select the new option
-        newOption.prop('selected', true);
-
-        // Update NiceSelect
-        $('#show_state').niceSelect('update');
-
-        // Show success message
+        // DON'T add new states - they won't work with shipping
         if (typeof toastr !== 'undefined') {
-            toastr.success('تم إضافة المنطقة: ' + stateName);
+            toastr.warning('المنطقة "' + (stateData.name_ar || stateData.name) + '" غير موجودة في قائمة المناطق المتاحة للشحن. يرجى اختيار موقع في منطقة أخرى.');
         }
 
-        // Trigger change to load cities
-        $('#show_state').trigger('change');
-
-        // Wait for cities to load, then select city
-        if (cityId) {
-            waitAndSelectCity(cityId);
-        } else {
-            showFinalSuccessMessage();
-        }
+        // Keep modal open so user can select another location
+        // Don't call showFinalSuccessMessage() here
     }
 
     // Wait for states to load via AJAX, then select by ID
@@ -1131,37 +1079,22 @@
         }, 100); // Check every 100ms
     }
 
-    // Add city to dropdown dynamically
+    // Add city to dropdown dynamically - DISABLED for Tryoto compatibility
+    // Cities must exist in database for shipping to work
     function addCityToDropdown(cityData) {
         if (!cityData || !cityData.id) {
             showFinalSuccessMessage();
             return;
         }
 
-        // Show city container
-        $('#show_city').parent().parent().removeClass('d-none');
-
-        // Add city option to select
-        const cityName = cityData.name_ar || cityData.name;
-        const newOption = $('<option></option>')
-            .attr('value', cityData.id)
-            .text(cityName);
-
-        // Add to select
-        $('#show_city').append(newOption);
-
-        // Select the new option
-        newOption.prop('selected', true);
-
-        // Update NiceSelect
-        $('#show_city').niceSelect('update');
-
-        // Show success message
+        // DON'T add new cities - they won't work with Tryoto shipping
+        // Instead, show warning and close modal
         if (typeof toastr !== 'undefined') {
-            toastr.success('تم إضافة المدينة: ' + cityName);
+            toastr.warning('المدينة "' + (cityData.name_ar || cityData.name) + '" غير موجودة في قائمة المدن المتاحة للشحن. يرجى اختيار موقع في مدينة أخرى.');
         }
 
-        showFinalSuccessMessage();
+        // Keep modal open so user can select another location
+        // Don't call showFinalSuccessMessage() here
     }
 
     // Wait for cities to load via AJAX, then select by name
@@ -1183,6 +1116,7 @@
 
                 let cityFound = false;
 
+                // First try exact match
                 cityOptions.each(function() {
                     const optionValue = $(this).val();
                     const optionText = $(this).text().trim();
@@ -1204,8 +1138,42 @@
                     }
                 });
 
+                // If exact match not found, try partial match
                 if (!cityFound) {
-                    // City not found - add it dynamically
+                    cityOptions.each(function() {
+                        const optionValue = $(this).val();
+                        const optionText = $(this).text().trim();
+
+                        // Try partial match - check if city name contains the option or vice versa
+                        if (optionValue && (
+                            optionValue.toLowerCase().includes(cityNameEn.toLowerCase()) ||
+                            cityNameEn.toLowerCase().includes(optionValue.toLowerCase()) ||
+                            optionText.toLowerCase().includes(cityNameEn.toLowerCase()) ||
+                            cityNameEn.toLowerCase().includes(optionText.toLowerCase()) ||
+                            (cityNameAr && (
+                                optionValue.toLowerCase().includes(cityNameAr.toLowerCase()) ||
+                                cityNameAr.toLowerCase().includes(optionValue.toLowerCase()) ||
+                                optionText.toLowerCase().includes(cityNameAr.toLowerCase()) ||
+                                cityNameAr.toLowerCase().includes(optionText.toLowerCase())
+                            ))
+                        )) {
+                            $(this).prop('selected', true);
+                            cityFound = true;
+
+                            // Update NiceSelect
+                            $('#show_city').niceSelect('update');
+
+                            if (typeof toastr !== 'undefined') {
+                                toastr.info('تم اختيار أقرب مدينة متاحة: ' + optionText);
+                            }
+
+                            return false; // break loop
+                        }
+                    });
+                }
+
+                if (!cityFound) {
+                    // City not found - show warning (don't add it)
                     addCityToDropdown(selectedLocationData.city);
                 } else {
                     // Show final success message
@@ -1214,7 +1182,9 @@
             } else if (attempts >= maxAttempts) {
                 // Timeout waiting for cities
                 clearInterval(checkCitiesInterval);
-                showFinalSuccessMessage();
+                if (typeof toastr !== 'undefined') {
+                    toastr.warning('لم يتم العثور على مدن في هذه المنطقة. يرجى اختيار موقع آخر.');
+                }
             }
         }, 100); // Check every 100ms
     }
