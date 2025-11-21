@@ -220,6 +220,15 @@
                                     </div>
                                 </div>
 
+                                <!-- Google Maps Location Picker -->
+                                <div class="col-lg-12">
+                                    <div class="mt-3 mb-3">
+                                        <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#mapModal">
+                                            <i class="fas fa-map-marker-alt"></i> @lang('Select Location from Map')
+                                        </button>
+                                        <small class="text-muted d-block mt-2">@lang('Click to open map and select your exact location')</small>
+                                    </div>
+                                </div>
 
                                 <!-- chekbox -->
                                 <div class="col-lg-12  {{ $digital == 1 ? 'd-none' : '' }}" id="ship_deff">
@@ -414,6 +423,8 @@
                     value="{{ Session::has('coupon') ? Session::get('coupon_id') : '' }}">
                 <input type="hidden" name="user_id" id="user_id"
                     value="{{ Auth::guard('web')->check() ? Auth::guard('web')->user()->id : '' }}">
+                <input type="hidden" name="latitude" id="latitude">
+                <input type="hidden" name="longitude" id="longitude">
 
 
 
@@ -427,6 +438,96 @@
         </div>
     </div>
     <!--  checkout wrapper end-->
+
+    {{-- Google Maps Modal --}}
+    <div class="modal fade" id="mapModal" tabindex="-1">
+        <div class="modal-dialog modal-xl modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                    <h5 class="modal-title">اختيار الموقع على الخريطة</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-0">
+                    <div id="alert-container-modal" style="padding: 15px;"></div>
+
+                    <div style="padding: 20px;">
+                        <div id="map-container" style="position: relative; height: 500px; border-radius: 8px; overflow: hidden; border: 2px solid #e0e0e0;">
+                            <div class="map-search" style="position: absolute; top: 10px; right: 10px; left: 10px; z-index: 10;">
+                                <input type="text" id="map-search-input" placeholder="ابحث عن عنوان..."
+                                       style="width: 100%; padding: 12px 15px; border: 2px solid #667eea; border-radius: 8px; font-size: 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); background: white;">
+                            </div>
+                            <div id="map" style="width: 100%; height: 100%;"></div>
+                            <div class="loading-overlay" id="loading-overlay-modal" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(255,255,255,0.9); display: none; align-items: center; justify-content: center; z-index: 20;">
+                                <div class="spinner" style="border: 3px solid #f3f3f3; border-top: 3px solid #667eea; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite;"></div>
+                            </div>
+                        </div>
+
+                        <div class="buttons-container" style="display: flex; gap: 10px; margin-top: 15px;">
+                            <button class="btn btn-secondary" id="reset-btn-modal" type="button">
+                                إعادة تحديد
+                            </button>
+                            <button class="btn btn-secondary" id="current-location-btn-modal" type="button">
+                                موقعي الحالي
+                            </button>
+                        </div>
+
+                        <div class="location-info" id="location-info-modal" style="display: none; background: #f8f9fa; padding: 20px; border-radius: 8px; margin-top: 20px;">
+                            <h6 style="font-size: 16px; color: #333; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 2px solid #667eea;">معلومات الموقع المحدد</h6>
+
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px;">
+                                <div style="background: white; padding: 15px; border-radius: 6px; border-right: 3px solid #667eea;">
+                                    <label style="display: block; font-size: 12px; color: #666; margin-bottom: 5px; font-weight: 600;">الدولة (عربي)</label>
+                                    <div id="country-ar-modal" style="font-size: 14px; color: #333;">-</div>
+                                </div>
+                                <div style="background: white; padding: 15px; border-radius: 6px; border-right: 3px solid #667eea;">
+                                    <label style="display: block; font-size: 12px; color: #666; margin-bottom: 5px; font-weight: 600;">الدولة (إنجليزي)</label>
+                                    <div id="country-en-modal" style="font-size: 14px; color: #333;">-</div>
+                                </div>
+                                <div style="background: white; padding: 15px; border-radius: 6px; border-right: 3px solid #667eea;">
+                                    <label style="display: block; font-size: 12px; color: #666; margin-bottom: 5px; font-weight: 600;">المنطقة (عربي)</label>
+                                    <div id="state-ar-modal" style="font-size: 14px; color: #333;">-</div>
+                                </div>
+                                <div style="background: white; padding: 15px; border-radius: 6px; border-right: 3px solid #667eea;">
+                                    <label style="display: block; font-size: 12px; color: #666; margin-bottom: 5px; font-weight: 600;">المنطقة (إنجليزي)</label>
+                                    <div id="state-en-modal" style="font-size: 14px; color: #333;">-</div>
+                                </div>
+                                <div style="background: white; padding: 15px; border-radius: 6px; border-right: 3px solid #667eea;">
+                                    <label style="display: block; font-size: 12px; color: #666; margin-bottom: 5px; font-weight: 600;">المدينة (عربي)</label>
+                                    <div id="city-ar-modal" style="font-size: 14px; color: #333;">-</div>
+                                </div>
+                                <div style="background: white; padding: 15px; border-radius: 6px; border-right: 3px solid #667eea;">
+                                    <label style="display: block; font-size: 12px; color: #666; margin-bottom: 5px; font-weight: 600;">المدينة (إنجليزي)</label>
+                                    <div id="city-en-modal" style="font-size: 14px; color: #333;">-</div>
+                                </div>
+                            </div>
+
+                            <div style="display: flex; gap: 15px; margin-top: 15px;">
+                                <div style="flex: 1; background: white; padding: 15px; border-radius: 6px; text-align: center;">
+                                    <label style="display: block; font-size: 12px; color: #666; margin-bottom: 5px;">خط العرض</label>
+                                    <div id="latitude-value-modal" style="font-size: 16px; font-weight: 600; color: #667eea;">-</div>
+                                </div>
+                                <div style="flex: 1; background: white; padding: 15px; border-radius: 6px; text-align: center;">
+                                    <label style="display: block; font-size: 12px; color: #666; margin-bottom: 5px;">خط الطول</label>
+                                    <div id="longitude-value-modal" style="font-size: 16px; font-weight: 600; color: #667eea;">-</div>
+                                </div>
+                            </div>
+
+                            <div style="margin-top: 15px;">
+                                <div style="background: white; padding: 15px; border-radius: 6px;">
+                                    <label style="display: block; font-size: 12px; color: #666; margin-bottom: 5px; font-weight: 600;">العنوان الكامل</label>
+                                    <div id="full-address-modal" style="font-size: 14px; color: #333;">-</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">@lang('Close')</button>
+                    <button type="button" class="btn btn-primary" id="use-location-btn-modal" disabled>استخدم هذا الموقع</button>
+                </div>
+            </div>
+        </div>
+    </div>
 @endsection
 
 
@@ -659,5 +760,540 @@
             $('#show_shipping_address input[name="order_notes"]').prop('required', false);
 
         });
+    </script>
+
+    {{-- Google Maps Scripts --}}
+    <style>
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    .loading-overlay.active {
+        display: flex !important;
+    }
+    </style>
+
+    <script src="https://maps.googleapis.com/maps/api/js?key={{ config('services.google_maps.key') }}&libraries=places&language=ar" async defer></script>
+    <script>
+    // Google Maps variables for modal
+    let mapModal, markerModal, geocoderModal, searchBoxModal, debounceTimerModal, selectedLocationData;
+    const DEBOUNCE_DELAY = 400;
+    const DEFAULT_CENTER = { lat: 24.7136, lng: 46.6753 }; // Riyadh, Saudi Arabia
+
+    // Wait for Google Maps to load
+    function waitForGoogleMaps(callback) {
+        if (typeof google !== 'undefined' && google.maps) {
+            callback();
+        } else {
+            setTimeout(() => waitForGoogleMaps(callback), 100);
+        }
+    }
+
+    // Initialize map when modal is shown
+    $('#mapModal').on('shown.bs.modal', function() {
+        if (!mapModal) {
+            waitForGoogleMaps(initializeMap);
+        } else {
+            google.maps.event.trigger(mapModal, 'resize');
+        }
+    });
+
+    function initializeMap() {
+        geocoderModal = new google.maps.Geocoder();
+
+        mapModal = new google.maps.Map(document.getElementById('map'), {
+            center: DEFAULT_CENTER,
+            zoom: 12,
+            mapTypeControl: true,
+            streetViewControl: false,
+            fullscreenControl: true,
+        });
+
+        markerModal = new google.maps.Marker({
+            map: mapModal,
+            draggable: true,
+            animation: google.maps.Animation.DROP,
+        });
+
+        // Setup search box
+        const searchInput = document.getElementById('map-search-input');
+        searchBoxModal = new google.maps.places.SearchBox(searchInput);
+
+        // Bias search results to map viewport
+        mapModal.addListener('bounds_changed', () => {
+            searchBoxModal.setBounds(mapModal.getBounds());
+        });
+
+        // Handle search selection
+        searchBoxModal.addListener('places_changed', () => {
+            const places = searchBoxModal.getPlaces();
+            if (places.length === 0) return;
+
+            const place = places[0];
+            if (!place.geometry || !place.geometry.location) return;
+
+            mapModal.setCenter(place.geometry.location);
+            markerModal.setPosition(place.geometry.location);
+            markerModal.setVisible(true);
+
+            handleLocationChange(place.geometry.location.lat(), place.geometry.location.lng());
+        });
+
+        // Map click event
+        mapModal.addListener('click', (event) => {
+            markerModal.setPosition(event.latLng);
+            markerModal.setVisible(true);
+            handleLocationChange(event.latLng.lat(), event.latLng.lng());
+        });
+
+        // Marker drag event
+        markerModal.addListener('dragend', () => {
+            const position = markerModal.getPosition();
+            handleLocationChange(position.lat(), position.lng());
+        });
+
+        // Button events
+        document.getElementById('use-location-btn-modal').addEventListener('click', useLocation);
+        document.getElementById('reset-btn-modal').addEventListener('click', resetSelection);
+        document.getElementById('current-location-btn-modal').addEventListener('click', getCurrentLocationModal);
+    }
+
+    // Handle location change with debouncing
+    function handleLocationChange(lat, lng) {
+        clearTimeout(debounceTimerModal);
+        debounceTimerModal = setTimeout(() => {
+            reverseGeocode(lat, lng);
+        }, DEBOUNCE_DELAY);
+    }
+
+    // Reverse geocode coordinates
+    async function reverseGeocode(lat, lng) {
+        showLoadingModal(true);
+
+        try {
+            const csrfToken = document.querySelector('meta[name="csrf-token"]');
+            const headers = {
+                'Content-Type': 'application/json'
+            };
+
+            if (csrfToken) {
+                headers['X-CSRF-TOKEN'] = csrfToken.content;
+            }
+
+            const response = await fetch('/api/geocoding/reverse', {
+                method: 'POST',
+                headers: headers,
+                body: JSON.stringify({
+                    latitude: lat,
+                    longitude: lng
+                })
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                selectedLocationData = result.data;
+                displayLocationInfoModal(result.data);
+                document.getElementById('use-location-btn-modal').disabled = false;
+                showAlertModal('تم تحديد الموقع بنجاح', 'success');
+            } else {
+                showAlertModal('فشل في الحصول على معلومات الموقع: ' + (result.error || 'خطأ غير معروف'), 'error');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            showAlertModal('حدث خطأ في الاتصال بالخادم', 'error');
+        } finally {
+            showLoadingModal(false);
+        }
+    }
+
+    // Display location information in modal
+    function displayLocationInfoModal(data) {
+        document.getElementById('country-ar-modal').textContent = data.country?.name_ar || '-';
+        document.getElementById('country-en-modal').textContent = data.country?.name || '-';
+        document.getElementById('state-ar-modal').textContent = data.state?.name_ar || '-';
+        document.getElementById('state-en-modal').textContent = data.state?.name || '-';
+        document.getElementById('city-ar-modal').textContent = data.city?.name_ar || '-';
+        document.getElementById('city-en-modal').textContent = data.city?.name || '-';
+        document.getElementById('latitude-value-modal').textContent = data.coordinates?.latitude.toFixed(6) || '-';
+        document.getElementById('longitude-value-modal').textContent = data.coordinates?.longitude.toFixed(6) || '-';
+        document.getElementById('full-address-modal').textContent = data.address?.ar || data.address?.en || '-';
+
+        document.getElementById('location-info-modal').style.display = 'block';
+    }
+
+    // Use selected location - populate form fields
+    function useLocation() {
+        if (!selectedLocationData) return;
+
+        // Update hidden latitude/longitude fields
+        $('#latitude').val(selectedLocationData.coordinates?.latitude || '');
+        $('#longitude').val(selectedLocationData.coordinates?.longitude || '');
+
+        // Update ZIP code if available
+        if (selectedLocationData.postal_code) {
+            $('#zip').val(selectedLocationData.postal_code);
+        }
+
+        // Update address field
+        const fullAddress = selectedLocationData.address?.ar || selectedLocationData.address?.en || '';
+        $('#address').val(fullAddress);
+
+        // Get IDs from API response
+        const countryId = selectedLocationData.country?.id;
+        const stateId = selectedLocationData.state?.id;
+        const cityId = selectedLocationData.city?.id;
+
+        if (!countryId) {
+            if (typeof toastr !== 'undefined') {
+                toastr.warning('لم يتم العثور على معرّف الدولة');
+            }
+            $('#mapModal').modal('hide');
+            return;
+        }
+
+        // Step 1: Find and select country by ID
+        selectCountryById(countryId, stateId, cityId);
+    }
+
+    // Select country by ID and trigger cascade
+    function selectCountryById(countryId, stateId, cityId) {
+        let countryFound = false;
+
+        $('#select_country option').each(function() {
+            const optionCountryId = $(this).attr('data'); // data attribute contains country ID
+
+            if (optionCountryId && parseInt(optionCountryId) === parseInt(countryId)) {
+                $(this).prop('selected', true);
+                countryFound = true;
+
+                // Update NiceSelect display
+                $('#select_country').niceSelect('update');
+
+                // Trigger change to load states via AJAX
+                $('#select_country').trigger('change');
+
+                // Wait for states to load, then select state
+                if (stateId) {
+                    waitAndSelectState(stateId, cityId);
+                } else {
+                    // No state, show success and close
+                    showFinalSuccessMessage();
+                }
+
+                return false; // break loop
+            }
+        });
+
+        if (!countryFound) {
+            // Country not found in dropdown - add it dynamically
+            addCountryToDropdown(selectedLocationData.country, stateId, cityId);
+        }
+    }
+
+    // Add country to dropdown dynamically
+    function addCountryToDropdown(countryData, stateId, cityId) {
+        if (!countryData || !countryData.id) {
+            if (typeof toastr !== 'undefined') {
+                toastr.error('بيانات الدولة غير صحيحة');
+            }
+            $('#mapModal').modal('hide');
+            return;
+        }
+
+        // Add country option to select
+        const countryName = countryData.name_ar || countryData.name;
+        const newOption = $('<option></option>')
+            .attr('value', countryName)
+            .attr('data', countryData.id)
+            .attr('data-href', '{{ route("country.wise.state", ":country_id") }}'.replace(':country_id', countryData.id))
+            .attr('rel', '1') // has states
+            .attr('rel1', '0')
+            .attr('rel5', '0')
+            .text(countryName);
+
+        // Add to select
+        $('#select_country').append(newOption);
+
+        // Select the new option
+        newOption.prop('selected', true);
+
+        // Update NiceSelect
+        $('#select_country').niceSelect('update');
+
+        // Show success message
+        if (typeof toastr !== 'undefined') {
+            toastr.success('تم إضافة الدولة: ' + countryName);
+        }
+
+        // Trigger change to load states
+        $('#select_country').trigger('change');
+
+        // Wait for states to load, then select state
+        if (stateId) {
+            waitAndSelectState(stateId, cityId);
+        } else {
+            showFinalSuccessMessage();
+        }
+    }
+
+    // Add state to dropdown dynamically
+    function addStateToDropdown(stateData, cityId) {
+        if (!stateData || !stateData.id) {
+            showFinalSuccessMessage();
+            return;
+        }
+
+        // Show state container
+        $('.select_state').removeClass('d-none');
+
+        // Add state option to select
+        const stateName = stateData.name_ar || stateData.name;
+        const newOption = $('<option></option>')
+            .attr('value', stateData.id)
+            .text(stateName);
+
+        // Add to select
+        $('#show_state').append(newOption);
+
+        // Select the new option
+        newOption.prop('selected', true);
+
+        // Update NiceSelect
+        $('#show_state').niceSelect('update');
+
+        // Show success message
+        if (typeof toastr !== 'undefined') {
+            toastr.success('تم إضافة المنطقة: ' + stateName);
+        }
+
+        // Trigger change to load cities
+        $('#show_state').trigger('change');
+
+        // Wait for cities to load, then select city
+        if (cityId) {
+            waitAndSelectCity(cityId);
+        } else {
+            showFinalSuccessMessage();
+        }
+    }
+
+    // Wait for states to load via AJAX, then select by ID
+    function waitAndSelectState(stateId, cityId) {
+        let attempts = 0;
+        const maxAttempts = 50; // 5 seconds max
+
+        const checkStatesInterval = setInterval(() => {
+            attempts++;
+
+            const stateOptions = $('#show_state option');
+
+            if (stateOptions.length > 0) {
+                clearInterval(checkStatesInterval);
+
+                let stateFound = false;
+
+                stateOptions.each(function() {
+                    const optionValue = $(this).val();
+
+                    // Match by state ID (value contains state ID)
+                    if (optionValue && parseInt(optionValue) === parseInt(stateId)) {
+                        $(this).prop('selected', true);
+                        stateFound = true;
+
+                        // Update NiceSelect
+                        $('#show_state').niceSelect('update');
+
+                        // Trigger change to load cities via AJAX
+                        $('#show_state').trigger('change');
+
+                        // Wait for cities to load, then select city
+                        if (cityId) {
+                            waitAndSelectCity(cityId);
+                        } else {
+                            // No city, show success and close
+                            showFinalSuccessMessage();
+                        }
+
+                        return false; // break loop
+                    }
+                });
+
+                if (!stateFound) {
+                    // State not found - add it dynamically
+                    addStateToDropdown(selectedLocationData.state, cityId);
+                }
+            } else if (attempts >= maxAttempts) {
+                // Timeout waiting for states
+                clearInterval(checkStatesInterval);
+                showFinalSuccessMessage();
+            }
+        }, 100); // Check every 100ms
+    }
+
+    // Add city to dropdown dynamically
+    function addCityToDropdown(cityData) {
+        if (!cityData || !cityData.id) {
+            showFinalSuccessMessage();
+            return;
+        }
+
+        // Show city container
+        $('#show_city').parent().parent().removeClass('d-none');
+
+        // Add city option to select
+        const cityName = cityData.name_ar || cityData.name;
+        const newOption = $('<option></option>')
+            .attr('value', cityData.id)
+            .text(cityName);
+
+        // Add to select
+        $('#show_city').append(newOption);
+
+        // Select the new option
+        newOption.prop('selected', true);
+
+        // Update NiceSelect
+        $('#show_city').niceSelect('update');
+
+        // Show success message
+        if (typeof toastr !== 'undefined') {
+            toastr.success('تم إضافة المدينة: ' + cityName);
+        }
+
+        showFinalSuccessMessage();
+    }
+
+    // Wait for cities to load via AJAX, then select by name
+    function waitAndSelectCity(cityId) {
+        let attempts = 0;
+        const maxAttempts = 50; // 5 seconds max
+
+        // Get city names from API response for matching
+        const cityNameEn = selectedLocationData.city?.name || '';
+        const cityNameAr = selectedLocationData.city?.name_ar || '';
+
+        const checkCitiesInterval = setInterval(() => {
+            attempts++;
+
+            const cityOptions = $('#show_city option');
+
+            if (cityOptions.length > 0) {
+                clearInterval(checkCitiesInterval);
+
+                let cityFound = false;
+
+                cityOptions.each(function() {
+                    const optionValue = $(this).val();
+                    const optionText = $(this).text().trim();
+
+                    // Match by city name (value contains city_name, not ID)
+                    if (optionValue && (
+                        optionValue.toLowerCase() === cityNameEn.toLowerCase() ||
+                        optionValue.toLowerCase() === cityNameAr.toLowerCase() ||
+                        optionText.toLowerCase() === cityNameEn.toLowerCase() ||
+                        optionText.toLowerCase() === cityNameAr.toLowerCase()
+                    )) {
+                        $(this).prop('selected', true);
+                        cityFound = true;
+
+                        // Update NiceSelect
+                        $('#show_city').niceSelect('update');
+
+                        return false; // break loop
+                    }
+                });
+
+                if (!cityFound) {
+                    // City not found - add it dynamically
+                    addCityToDropdown(selectedLocationData.city);
+                } else {
+                    // Show final success message
+                    showFinalSuccessMessage();
+                }
+            } else if (attempts >= maxAttempts) {
+                // Timeout waiting for cities
+                clearInterval(checkCitiesInterval);
+                showFinalSuccessMessage();
+            }
+        }, 100); // Check every 100ms
+    }
+
+    // Show final success message once
+    function showFinalSuccessMessage() {
+        if (typeof toastr !== 'undefined') {
+            toastr.success('تم حفظ الموقع بنجاح! تم تعبئة جميع الحقول تلقائياً');
+        }
+        $('#mapModal').modal('hide');
+    }
+
+    // Reset selection
+    function resetSelection() {
+        markerModal.setVisible(false);
+        selectedLocationData = null;
+        document.getElementById('use-location-btn-modal').disabled = true;
+        document.getElementById('location-info-modal').style.display = 'none';
+        document.getElementById('map-search-input').value = '';
+        mapModal.setCenter(DEFAULT_CENTER);
+        mapModal.setZoom(12);
+        clearAlertModal();
+    }
+
+    // Get current location
+    function getCurrentLocationModal() {
+        if (navigator.geolocation) {
+            showLoadingModal(true);
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    const pos = {
+                        lat: position.coords.latitude,
+                        lng: position.coords.longitude
+                    };
+                    mapModal.setCenter(pos);
+                    markerModal.setPosition(pos);
+                    markerModal.setVisible(true);
+                    handleLocationChange(pos.lat, pos.lng);
+                },
+                () => {
+                    showLoadingModal(false);
+                    showAlertModal('فشل في الحصول على موقعك الحالي', 'error');
+                },
+                { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+            );
+        } else {
+            showAlertModal('المتصفح لا يدعم خدمة تحديد الموقع', 'error');
+        }
+    }
+
+    // Show/hide loading overlay
+    function showLoadingModal(show) {
+        const overlay = document.getElementById('loading-overlay-modal');
+        if (overlay) {
+            if (show) {
+                overlay.classList.add('active');
+            } else {
+                overlay.classList.remove('active');
+            }
+        }
+    }
+
+    // Show alert message
+    function showAlertModal(message, type) {
+        const container = document.getElementById('alert-container-modal');
+        const alertClass = type === 'success' ? 'alert-success' : 'alert-danger';
+        container.innerHTML = `
+            <div class="alert ${alertClass}" style="margin-bottom: 0;">
+                ${message}
+            </div>
+        `;
+    }
+
+    // Clear alert
+    function clearAlertModal() {
+        const container = document.getElementById('alert-container-modal');
+        if (container) {
+            container.innerHTML = '';
+        }
+    }
     </script>
 @endsection

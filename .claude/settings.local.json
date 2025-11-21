@@ -5,7 +5,9 @@
       "Bash(php artisan:*)",
       "Bash(for file in FlutterwaveController.php InstamojoController.php ManualPaymentController.php MercadopagoController.php MollieController.php MyFatoorahController.php PaytmController.php SslController.php VoguepayController.php WalletPaymentController.php AuthorizeController.php)",
       "Bash(do echo \"Processing $file...\")",
-      "Bash(done)"
+      "Bash(done)",
+      "Bash(git checkout:*)",
+      "Bash(git stash:*)"
     ],
     "deny": [],
     "ask": []
