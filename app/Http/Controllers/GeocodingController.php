@@ -6,6 +6,7 @@ use App\Models\Country;
 use App\Models\State;
 use App\Models\City;
 use App\Services\GoogleMapsService;
+use App\Services\TryotoLocationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -14,10 +15,12 @@ use Illuminate\Support\Facades\Validator;
 class GeocodingController extends Controller
 {
     protected $googleMapsService;
+    protected $tryotoService;
 
-    public function __construct(GoogleMapsService $googleMapsService)
+    public function __construct(GoogleMapsService $googleMapsService, TryotoLocationService $tryotoService)
     {
         $this->googleMapsService = $googleMapsService;
+        $this->tryotoService = $tryotoService;
     }
 
     /**
@@ -62,6 +65,12 @@ class GeocodingController extends Controller
 
             $result = $this->processLocationData($arabicData, $englishData, $latitude, $longitude);
 
+            // NEW: Integrate Tryoto verification
+            $tryotoResult = $this->verifyWithTryoto($result, $latitude, $longitude);
+
+            // Merge Tryoto data with result
+            $result = array_merge($result, $tryotoResult);
+
             DB::commit();
 
             return response()->json([
@@ -80,6 +89,134 @@ class GeocodingController extends Controller
                 'error' => 'Failed to process location data'
             ], 500);
         }
+    }
+
+    /**
+     * Verify location with Tryoto and find alternative if needed
+     *
+     * @param array $locationData
+     * @param float $latitude
+     * @param float $longitude
+     * @return array
+     */
+    protected function verifyWithTryoto($locationData, $latitude, $longitude)
+    {
+        $cityName = $locationData['city']['name'] ?? null;
+        $countryId = $locationData['country']['id'] ?? null;
+
+        if (!$cityName) {
+            return [
+                'tryoto_verified' => false,
+                'tryoto_message' => 'City name not available'
+            ];
+        }
+
+        // Use smart city resolution
+        $resolution = $this->tryotoService->resolveMapCity($cityName, $latitude, $longitude, $countryId);
+
+        if (!$resolution['verified']) {
+            return [
+                'tryoto_verified' => false,
+                'tryoto_strategy' => $resolution['strategy'],
+                'tryoto_message' => $resolution['message']
+            ];
+        }
+
+        // If alternative city was found
+        if ($resolution['strategy'] === 'nearest_city') {
+            // Find or create the alternative city in database
+            $alternativeCity = $this->findOrCreateAlternativeCity($resolution, $countryId);
+
+            return [
+                'tryoto_verified' => true,
+                'tryoto_strategy' => $resolution['strategy'],
+                'tryoto_message' => $resolution['message'],
+                'alternative_city' => [
+                    'id' => $alternativeCity->id,
+                    'name' => $alternativeCity->city_name,
+                    'name_ar' => $alternativeCity->city_name_ar,
+                    'distance_km' => $resolution['distance_km']
+                ],
+                'original_city' => [
+                    'name' => $cityName,
+                    'coordinates' => [
+                        'lat' => $latitude,
+                        'lng' => $longitude
+                    ]
+                ],
+                'suggested_coordinates' => $resolution['coordinates'] ?? null,
+                'shipping_companies' => $resolution['companies'] ?? 0
+            ];
+        }
+
+        // Exact match or name variation
+        return [
+            'tryoto_verified' => true,
+            'tryoto_strategy' => $resolution['strategy'],
+            'tryoto_message' => $resolution['message'],
+            'shipping_companies' => $resolution['companies'] ?? 0
+        ];
+    }
+
+    /**
+     * Find or create alternative city in database
+     *
+     * @param array $resolution
+     * @param int $countryId
+     * @return City
+     */
+    protected function findOrCreateAlternativeCity($resolution, $countryId)
+    {
+        $cityName = $resolution['city_name'];
+        $cityNameAr = $resolution['city_name_ar'] ?? $cityName;
+
+        // Try to find existing city
+        $city = City::where('city_name', $cityName)
+            ->where('country_id', $countryId)
+            ->first();
+
+        if ($city) {
+            return $city;
+        }
+
+        // Create new city (we need to find/create state first)
+        // For Saudi cities, we'll use a default region if not found
+        $country = Country::find($countryId);
+
+        if (!$country) {
+            throw new \Exception('Country not found');
+        }
+
+        // Try to find appropriate state or create a default one
+        $state = State::where('country_id', $countryId)->first();
+
+        if (!$state) {
+            $state = State::create([
+                'country_id' => $countryId,
+                'state' => 'Default Region',
+                'state_ar' => 'منطقة افتراضية',
+                'tax' => 0,
+                'status' => 1,
+                'owner_id' => 0
+            ]);
+        }
+
+        // Create the city
+        $city = City::create([
+            'state_id' => $state->id,
+            'country_id' => $countryId,
+            'city_name' => $cityName,
+            'city_name_ar' => $cityNameAr,
+            'status' => 1
+        ]);
+
+        Log::info('Alternative Tryoto city created', [
+            'city' => $cityName,
+            'city_ar' => $cityNameAr,
+            'country_id' => $countryId
+        ]);
+
+        return $city;
     }
 
     /**

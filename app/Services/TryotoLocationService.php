@@ -338,4 +338,252 @@ class TryotoLocationService
             ->orderBy('city_name')
             ->get(['id', 'city_name', 'city_name_ar', 'state_id', 'country_id']);
     }
+
+    /**
+     * Find nearest supported city by coordinates
+     * Uses Haversine formula to calculate distance
+     *
+     * @param float $latitude
+     * @param float $longitude
+     * @param int|null $countryId Limit search to specific country
+     * @param int $maxResults Maximum number of cities to check
+     * @return array|null
+     */
+    public function findNearestSupportedCity($latitude, $longitude, $countryId = null, $maxResults = 50)
+    {
+        // Get all cities with coordinates (we'll need to add lat/lng to cities table or use a mapping)
+        // For now, we'll use major Saudi cities with known coordinates
+        $saudiCities = $this->getSaudiMajorCitiesWithCoordinates();
+
+        $nearestCity = null;
+        $shortestDistance = PHP_FLOAT_MAX;
+
+        foreach ($saudiCities as $city) {
+            // Calculate distance using Haversine formula
+            $distance = $this->calculateDistance(
+                $latitude,
+                $longitude,
+                $city['lat'],
+                $city['lng']
+            );
+
+            if ($distance < $shortestDistance) {
+                // Verify this city is supported by Tryoto
+                $verification = $this->verifyCitySupport($city['name']);
+
+                if ($verification['supported']) {
+                    $shortestDistance = $distance;
+                    $nearestCity = [
+                        'city_name' => $city['name'],
+                        'city_name_ar' => $city['name_ar'],
+                        'distance_km' => round($distance, 2),
+                        'coordinates' => [
+                            'lat' => $city['lat'],
+                            'lng' => $city['lng']
+                        ],
+                        'companies' => $verification['company_count'] ?? 0,
+                        'verified' => true
+                    ];
+                }
+            }
+        }
+
+        return $nearestCity;
+    }
+
+    /**
+     * Calculate distance between two coordinates using Haversine formula
+     *
+     * @param float $lat1
+     * @param float $lon1
+     * @param float $lat2
+     * @param float $lon2
+     * @return float Distance in kilometers
+     */
+    protected function calculateDistance($lat1, $lon1, $lat2, $lon2)
+    {
+        $earthRadius = 6371; // Earth's radius in kilometers
+
+        $dLat = deg2rad($lat2 - $lat1);
+        $dLon = deg2rad($lon2 - $lon1);
+
+        $a = sin($dLat / 2) * sin($dLat / 2) +
+            cos(deg2rad($lat1)) * cos(deg2rad($lat2)) *
+            sin($dLon / 2) * sin($dLon / 2);
+
+        $c = 2 * atan2(sqrt($a), sqrt(1 - $a));
+
+        return $earthRadius * $c;
+    }
+
+    /**
+     * Get major Saudi cities with coordinates
+     * This is a hardcoded list of major cities that Tryoto supports
+     *
+     * @return array
+     */
+    protected function getSaudiMajorCitiesWithCoordinates()
+    {
+        return [
+            // Riyadh Region
+            ['name' => 'Riyadh', 'name_ar' => 'الرياض', 'lat' => 24.7136, 'lng' => 46.6753],
+            ['name' => 'Al Kharj', 'name_ar' => 'الخرج', 'lat' => 24.1556, 'lng' => 47.3119],
+            ['name' => 'Diriyah', 'name_ar' => 'الدرعية', 'lat' => 24.7392, 'lng' => 46.5750],
+
+            // Makkah Region
+            ['name' => 'Jeddah', 'name_ar' => 'جدة', 'lat' => 21.5433, 'lng' => 39.1728],
+            ['name' => 'Mecca', 'name_ar' => 'مكة المكرمة', 'lat' => 21.4225, 'lng' => 39.8262],
+            ['name' => 'Taif', 'name_ar' => 'الطائف', 'lat' => 21.2703, 'lng' => 40.4158],
+            ['name' => 'Rabigh', 'name_ar' => 'رابغ', 'lat' => 22.7981, 'lng' => 39.0353],
+
+            // Eastern Region
+            ['name' => 'Dammam', 'name_ar' => 'الدمام', 'lat' => 26.4207, 'lng' => 50.0888],
+            ['name' => 'Al Khobar', 'name_ar' => 'الخبر', 'lat' => 26.2787, 'lng' => 50.2085],
+            ['name' => 'Dhahran', 'name_ar' => 'الظهران', 'lat' => 26.2885, 'lng' => 50.1538],
+            ['name' => 'Jubail', 'name_ar' => 'الجبيل', 'lat' => 27.0173, 'lng' => 49.6574],
+            ['name' => 'Al Ahsa', 'name_ar' => 'الأحساء', 'lat' => 25.3769, 'lng' => 49.5883],
+
+            // Madinah Region
+            ['name' => 'Medina', 'name_ar' => 'المدينة المنورة', 'lat' => 24.5247, 'lng' => 39.5692],
+            ['name' => 'Yanbu', 'name_ar' => 'ينبع', 'lat' => 24.0895, 'lng' => 38.0619],
+
+            // Qassim Region
+            ['name' => 'Buraidah', 'name_ar' => 'بريدة', 'lat' => 26.3260, 'lng' => 43.9750],
+            ['name' => 'Unaizah', 'name_ar' => 'عنيزة', 'lat' => 26.0878, 'lng' => 43.9925],
+
+            // Asir Region
+            ['name' => 'Abha', 'name_ar' => 'أبها', 'lat' => 18.2164, 'lng' => 42.5053],
+            ['name' => 'Khamis Mushait', 'name_ar' => 'خميس مشيط', 'lat' => 18.3067, 'lng' => 42.7289],
+
+            // Tabuk Region
+            ['name' => 'Tabuk', 'name_ar' => 'تبوك', 'lat' => 28.3838, 'lng' => 36.5550],
+
+            // Hail Region
+            ['name' => 'Hail', 'name_ar' => 'حائل', 'lat' => 27.5219, 'lng' => 41.6901],
+
+            // Jazan Region
+            ['name' => 'Jazan', 'name_ar' => 'جازان', 'lat' => 16.8892, 'lng' => 42.5511],
+
+            // Najran Region
+            ['name' => 'Najran', 'name_ar' => 'نجران', 'lat' => 17.4924, 'lng' => 44.1277],
+
+            // Al Jouf Region
+            ['name' => 'Sakaka', 'name_ar' => 'سكاكا', 'lat' => 29.9697, 'lng' => 40.2064],
+
+            // Northern Borders Region
+            ['name' => 'Arar', 'name_ar' => 'عرعر', 'lat' => 30.9753, 'lng' => 41.0381],
+
+            // Al Bahah Region
+            ['name' => 'Al Bahah', 'name_ar' => 'الباحة', 'lat' => 20.0129, 'lng' => 41.4677],
+        ];
+    }
+
+    /**
+     * Smart city resolution for map-selected locations
+     * Tries to find exact match first, then falls back to nearest supported city
+     *
+     * @param string $cityName City name from Google Maps
+     * @param float $latitude
+     * @param float $longitude
+     * @param int|null $countryId
+     * @return array
+     */
+    public function resolveMapCity($cityName, $latitude, $longitude, $countryId = null)
+    {
+        // Step 1: Try exact city name with Tryoto
+        $exactMatch = $this->verifyCitySupport($cityName);
+
+        if ($exactMatch['supported']) {
+            return [
+                'strategy' => 'exact_match',
+                'city_name' => $cityName,
+                'verified' => true,
+                'companies' => $exactMatch['company_count'] ?? 0,
+                'message' => 'Selected city is supported by Tryoto'
+            ];
+        }
+
+        // Step 2: Try variations of the city name
+        $variations = $this->getCityNameVariations($cityName);
+
+        foreach ($variations as $variation) {
+            $variantMatch = $this->verifyCitySupport($variation);
+
+            if ($variantMatch['supported']) {
+                return [
+                    'strategy' => 'name_variation',
+                    'original_name' => $cityName,
+                    'city_name' => $variation,
+                    'verified' => true,
+                    'companies' => $variantMatch['company_count'] ?? 0,
+                    'message' => "Using city name variation: {$variation}"
+                ];
+            }
+        }
+
+        // Step 3: Find nearest supported city
+        $nearest = $this->findNearestSupportedCity($latitude, $longitude, $countryId);
+
+        if ($nearest) {
+            return [
+                'strategy' => 'nearest_city',
+                'original_name' => $cityName,
+                'city_name' => $nearest['city_name'],
+                'city_name_ar' => $nearest['city_name_ar'],
+                'distance_km' => $nearest['distance_km'],
+                'verified' => true,
+                'companies' => $nearest['companies'],
+                'coordinates' => $nearest['coordinates'],
+                'message' => "Selected location not supported. Nearest supported city: {$nearest['city_name']} ({$nearest['distance_km']} km away)"
+            ];
+        }
+
+        // Step 4: No supported city found
+        return [
+            'strategy' => 'none',
+            'original_name' => $cityName,
+            'verified' => false,
+            'message' => 'No supported cities found in this area. Please select a location within Saudi Arabia.'
+        ];
+    }
+
+    /**
+     * Get city name variations for better matching
+     *
+     * @param string $cityName
+     * @return array
+     */
+    protected function getCityNameVariations($cityName)
+    {
+        $variations = [];
+
+        // Remove common prefixes
+        $prefixes = ['Al ', 'Al-', 'al ', 'al-'];
+        foreach ($prefixes as $prefix) {
+            if (stripos($cityName, $prefix) === 0) {
+                $variations[] = substr($cityName, strlen($prefix));
+            }
+        }
+
+        // Add 'Al ' prefix if not present
+        if (!in_array(substr($cityName, 0, 3), ['Al ', 'al '])) {
+            $variations[] = 'Al ' . $cityName;
+            $variations[] = 'Al-' . $cityName;
+        }
+
+        // Common name mappings
+        $nameMap = [
+            'Riyadh' => ['Ar Riyadh', 'الرياض'],
+            'Jeddah' => ['Jiddah', 'Gedda', 'جدة'],
+            'Mecca' => ['Makkah', 'Makkah Al Mukarramah', 'مكة', 'مكة المكرمة'],
+            'Medina' => ['Madinah', 'Al Madinah', 'المدينة المنورة'],
+            'Dammam' => ['Ad Dammam', 'الدمام'],
+        ];
+
+        if (isset($nameMap[$cityName])) {
+            $variations = array_merge($variations, $nameMap[$cityName]);
+        }
+
+        return array_unique($variations);
+    }
 }

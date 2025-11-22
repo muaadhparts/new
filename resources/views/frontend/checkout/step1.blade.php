@@ -518,6 +518,60 @@
                                     <div id="full-address-modal" style="font-size: 14px; color: #333;">-</div>
                                 </div>
                             </div>
+
+                            {{-- Tryoto Verification Section --}}
+                            <div id="tryoto-info-modal" style="display: none; margin-top: 15px; padding: 15px; border-radius: 8px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                                <div style="display: flex; align-items: center; margin-bottom: 10px;">
+                                    <i class="fas fa-shipping-fast" style="color: white; font-size: 20px; margin-left: 10px;"></i>
+                                    <h6 style="color: white; margin: 0; font-size: 15px; font-weight: 600;">معلومات الشحن عبر Tryoto</h6>
+                                </div>
+
+                                <div id="tryoto-verified-box" style="background: rgba(255,255,255,0.95); padding: 12px; border-radius: 6px; margin-top: 10px;">
+                                    <div style="display: flex; align-items: center; margin-bottom: 8px;">
+                                        <i class="fas fa-check-circle" style="color: #28a745; margin-left: 8px;"></i>
+                                        <span id="tryoto-status-text" style="font-size: 13px; color: #333; font-weight: 600;">-</span>
+                                    </div>
+                                    <div id="tryoto-companies-box" style="display: none; margin-top: 8px; padding-top: 8px; border-top: 1px dashed #dee2e6;">
+                                        <small style="color: #666; display: flex; align-items: center;">
+                                            <i class="fas fa-truck" style="margin-left: 5px; color: #667eea;"></i>
+                                            <span id="tryoto-companies-text">-</span>
+                                        </small>
+                                    </div>
+                                </div>
+
+                                {{-- Alternative City Warning --}}
+                                <div id="tryoto-alternative-box" style="display: none; background: rgba(255, 243, 205, 0.95); padding: 12px; border-radius: 6px; margin-top: 10px; border-right: 4px solid #ffc107;">
+                                    <div style="display: flex; align-items: start;">
+                                        <i class="fas fa-exclamation-triangle" style="color: #ff9800; margin-left: 8px; margin-top: 2px;"></i>
+                                        <div style="flex: 1;">
+                                            <p style="margin: 0; font-size: 13px; color: #856404; font-weight: 600;">
+                                                الموقع المحدد غير مدعوم للشحن
+                                            </p>
+                                            <p style="margin: 5px 0 0 0; font-size: 12px; color: #856404;">
+                                                <strong>أقرب مدينة مدعومة:</strong>
+                                                <span id="tryoto-alternative-city" style="font-weight: 700;">-</span>
+                                                (<span id="tryoto-alternative-distance">-</span> كم)
+                                            </p>
+                                            <p style="margin: 5px 0 0 0; font-size: 11px; color: #856404;">
+                                                سيتم الشحن إلى <strong id="tryoto-alternative-city-ar">-</strong> والتواصل معك لتنسيق التوصيل
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {{-- Not Supported Warning --}}
+                                <div id="tryoto-not-supported-box" style="display: none; background: rgba(255, 82, 82, 0.1); padding: 12px; border-radius: 6px; margin-top: 10px; border-right: 4px solid #dc3545;">
+                                    <div style="display: flex; align-items: center;">
+                                        <i class="fas fa-times-circle" style="color: #dc3545; margin-left: 8px;"></i>
+                                        <p style="margin: 0; font-size: 13px; color: #721c24; font-weight: 600;">
+                                            عذراً، هذا الموقع خارج نطاق الشحن المتاح
+                                        </p>
+                                    </div>
+                                    <p style="margin: 5px 0 0 0; font-size: 11px; color: #721c24;">
+                                        يرجى اختيار موقع داخل المملكة العربية السعودية
+                                    </p>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -920,13 +974,108 @@
         document.getElementById('full-address-modal').textContent = data.address?.ar || data.address?.en || '-';
 
         document.getElementById('location-info-modal').style.display = 'block';
+
+        // Display Tryoto verification info
+        displayTryotoInfo(data);
+    }
+
+    // Display Tryoto verification information
+    function displayTryotoInfo(data) {
+        const tryotoBox = document.getElementById('tryoto-info-modal');
+        const verifiedBox = document.getElementById('tryoto-verified-box');
+        const alternativeBox = document.getElementById('tryoto-alternative-box');
+        const notSupportedBox = document.getElementById('tryoto-not-supported-box');
+        const companiesBox = document.getElementById('tryoto-companies-box');
+
+        // Hide all boxes first
+        verifiedBox.style.display = 'none';
+        alternativeBox.style.display = 'none';
+        notSupportedBox.style.display = 'none';
+        companiesBox.style.display = 'none';
+
+        // Check if Tryoto data exists
+        if (!data.tryoto_verified) {
+            if (data.tryoto_message) {
+                // Show not supported warning
+                tryotoBox.style.display = 'block';
+                notSupportedBox.style.display = 'block';
+            } else {
+                tryotoBox.style.display = 'none';
+            }
+            return;
+        }
+
+        // Show Tryoto box
+        tryotoBox.style.display = 'block';
+        verifiedBox.style.display = 'block';
+
+        const strategy = data.tryoto_strategy;
+
+        if (strategy === 'exact_match') {
+            // Perfect match
+            document.getElementById('tryoto-status-text').textContent = 'الموقع مدعوم للشحن عبر Tryoto ✓';
+
+            if (data.shipping_companies > 0) {
+                companiesBox.style.display = 'block';
+                document.getElementById('tryoto-companies-text').textContent =
+                    `${data.shipping_companies} شركة شحن متاحة`;
+            }
+
+        } else if (strategy === 'name_variation') {
+            // Name variation match
+            document.getElementById('tryoto-status-text').textContent = 'الموقع مدعوم للشحن (تم التحقق من الاسم) ✓';
+
+            if (data.shipping_companies > 0) {
+                companiesBox.style.display = 'block';
+                document.getElementById('tryoto-companies-text').textContent =
+                    `${data.shipping_companies} شركة شحن متاحة`;
+            }
+
+        } else if (strategy === 'nearest_city' && data.alternative_city) {
+            // Alternative city found
+            document.getElementById('tryoto-status-text').textContent = 'سيتم استخدام مدينة بديلة للشحن';
+
+            alternativeBox.style.display = 'block';
+            document.getElementById('tryoto-alternative-city').textContent = data.alternative_city.name;
+            document.getElementById('tryoto-alternative-city-ar').textContent = data.alternative_city.name_ar;
+            document.getElementById('tryoto-alternative-distance').textContent = data.alternative_city.distance_km;
+
+            if (data.shipping_companies > 0) {
+                companiesBox.style.display = 'block';
+                document.getElementById('tryoto-companies-text').textContent =
+                    `${data.shipping_companies} شركة شحن متاحة في ${data.alternative_city.name_ar}`;
+            }
+        }
     }
 
     // Use selected location - populate form fields
     function useLocation() {
         if (!selectedLocationData) return;
 
-        // Update hidden latitude/longitude fields
+        // Check if Tryoto requires using alternative city
+        let targetCityId = selectedLocationData.city?.id;
+        let targetStateId = selectedLocationData.state?.id;
+        let useAlternative = false;
+
+        if (selectedLocationData.tryoto_verified &&
+            selectedLocationData.tryoto_strategy === 'nearest_city' &&
+            selectedLocationData.alternative_city) {
+
+            // User will ship to alternative city
+            targetCityId = selectedLocationData.alternative_city.id;
+            useAlternative = true;
+
+            // Show confirmation message
+            if (typeof toastr !== 'undefined') {
+                toastr.info(
+                    `سيتم الشحن إلى ${selectedLocationData.alternative_city.name_ar} (${selectedLocationData.alternative_city.distance_km} كم من موقعك)`,
+                    'معلومات الشحن',
+                    {timeOut: 8000}
+                );
+            }
+        }
+
+        // Update hidden latitude/longitude fields (keep original location)
         $('#latitude').val(selectedLocationData.coordinates?.latitude || '');
         $('#longitude').val(selectedLocationData.coordinates?.longitude || '');
 
@@ -939,10 +1088,14 @@
         const fullAddress = selectedLocationData.address?.ar || selectedLocationData.address?.en || '';
         $('#address').val(fullAddress);
 
+        // Add note about alternative city if applicable
+        if (useAlternative) {
+            const note = `\n(الشحن عبر ${selectedLocationData.alternative_city.name_ar})`;
+            $('#address').val(fullAddress + note);
+        }
+
         // Get IDs from API response
         const countryId = selectedLocationData.country?.id;
-        const stateId = selectedLocationData.state?.id;
-        const cityId = selectedLocationData.city?.id;
 
         if (!countryId) {
             if (typeof toastr !== 'undefined') {
@@ -952,8 +1105,8 @@
             return;
         }
 
-        // Step 1: Find and select country by ID
-        selectCountryById(countryId, stateId, cityId);
+        // Step 1: Find and select country by ID (use alternative city if needed)
+        selectCountryById(countryId, targetStateId, targetCityId);
     }
 
     // Select country by ID and trigger cascade
