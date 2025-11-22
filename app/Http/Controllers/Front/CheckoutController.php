@@ -1912,4 +1912,92 @@ class CheckoutController extends FrontBaseController
         Session::forget('coupon_vendor_' . $vendorId);
         Session::forget('checkout_vendor_id');
     }
+
+    /* ===================== Tryoto Dynamic Location API ===================== */
+
+    /**
+     * Verify city with Tryoto and auto-save if supported
+     *
+     * POST /tryoto/verify-city
+     * Body: { country_id, state_id, city_name }
+     */
+    public function verifyTryotoCity(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'country_id' => 'required|integer|exists:countries,id',
+            'state_id' => 'required|integer|exists:states,id',
+            'city_name' => 'required|string|max:255'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        $service = new \App\Services\TryotoLocationService();
+
+        $result = $service->verifyAndSaveLocation(
+            $request->country_id,
+            $request->state_id,
+            $request->city_name
+        );
+
+        return response()->json([
+            'success' => $result['verified'],
+            'data' => $result,
+            'message' => $result['message']
+        ]);
+    }
+
+    /**
+     * Verify city by ID (when selected from dropdown)
+     *
+     * POST /tryoto/verify-city-id
+     * Body: { city_id }
+     */
+    public function verifyTryotoCityById(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'city_id' => 'required|integer|exists:cities,id'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        $city = City::with(['state', 'country'])->find($request->city_id);
+
+        if (!$city) {
+            return response()->json([
+                'success' => false,
+                'message' => 'City not found'
+            ], 404);
+        }
+
+        $service = new \App\Services\TryotoLocationService();
+
+        // Verify this city is still supported by Tryoto
+        $verification = $service->verifyCitySupport($city->city_name);
+
+        return response()->json([
+            'success' => $verification['supported'],
+            'data' => [
+                'city_id' => $city->id,
+                'city_name' => $city->city_name,
+                'city_name_ar' => $city->city_name_ar,
+                'state' => $city->state->state,
+                'country' => $city->country->country_name,
+                'verified' => $verification['supported'],
+                'companies' => $verification['company_count'] ?? 0
+            ],
+            'message' => $verification['supported']
+                ? 'City verified with Tryoto'
+                : 'City not supported by Tryoto shipping'
+        ]);
+    }
 }

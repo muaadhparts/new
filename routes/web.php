@@ -1390,6 +1390,10 @@ Route::group(['middleware' => 'maintenance'], function () {
         Route::get('/state/wise/city', 'Front\CheckoutController@getCity')->name('state.wise.city');
         Route::get('/user/state/wise/city', 'Front\CheckoutController@getCityUser')->name('state.wise.city.user');
 
+        // Tryoto Dynamic Location Verification
+        Route::post('/tryoto/verify-city', 'Front\CheckoutController@verifyTryotoCity')->name('tryoto.verify.city');
+        Route::post('/tryoto/verify-city-id', 'Front\CheckoutController@verifyTryotoCityById')->name('tryoto.verify.city.id');
+
         // User Wishlist
         Route::get('/wishlists', 'User\WishlistController@wishlists')->name('user-wishlists');
 

@@ -1265,5 +1265,115 @@
             container.innerHTML = '';
         }
     }
+
+    // ===================== Tryoto City Verification =====================
+
+    let cityVerificationInProgress = false;
+    let lastVerifiedCityId = null;
+
+    /**
+     * Verify city with Tryoto when selected
+     * This ensures the city is supported and auto-saves it if new
+     */
+    $(document).on('change', '#show_city', function() {
+        const cityId = $(this).val();
+        const countryId = $('#select_country option:selected').attr('data');
+        const stateId = $('#show_state').val();
+
+        if (!cityId || !countryId || !stateId) {
+            return;
+        }
+
+        // Skip if already verified this city
+        if (lastVerifiedCityId === cityId) {
+            return;
+        }
+
+        // Prevent multiple simultaneous verifications
+        if (cityVerificationInProgress) {
+            return;
+        }
+
+        cityVerificationInProgress = true;
+
+        // Show loading indicator
+        const $submitBtn = $('.checkout-form button[type="submit"]');
+        const originalBtnText = $submitBtn.html();
+        $submitBtn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> @lang("Verifying city with Tryoto...")');
+
+        // Verify with Tryoto API
+        $.ajax({
+            url: '{{ route("tryoto.verify.city.id") }}',
+            method: 'POST',
+            data: {
+                city_id: cityId,
+                _token: '{{ csrf_token() }}'
+            },
+            success: function(response) {
+                cityVerificationInProgress = false;
+                $submitBtn.prop('disabled', false).html(originalBtnText);
+
+                if (response.success) {
+                    lastVerifiedCityId = cityId;
+
+                    // Show success message if it was auto-saved
+                    if (response.data && !response.data.cached) {
+                        toastr.success('@lang("City verified and saved successfully!")');
+                        console.log('Tryoto verification:', response.data);
+                    }
+                } else {
+                    // City not supported by Tryoto
+                    toastr.error(response.message || '@lang("This city is not supported by Tryoto shipping")');
+
+                    // Reset city selection
+                    $('#show_city').val('');
+                    $('#show_city').niceSelect('update');
+                    lastVerifiedCityId = null;
+                }
+            },
+            error: function(xhr) {
+                cityVerificationInProgress = false;
+                $submitBtn.prop('disabled', false).html(originalBtnText);
+
+                let errorMsg = '@lang("Failed to verify city with Tryoto")';
+                if (xhr.responseJSON && xhr.responseJSON.message) {
+                    errorMsg = xhr.responseJSON.message;
+                }
+
+                toastr.error(errorMsg);
+                console.error('Tryoto verification error:', xhr);
+
+                // Reset city selection on error
+                $('#show_city').val('');
+                $('#show_city').niceSelect('update');
+                lastVerifiedCityId = null;
+            }
+        });
+    });
+
+    /**
+     * Prevent form submission if city not verified
+     */
+    $('.checkout-form').on('submit', function(e) {
+        const cityId = $('#show_city').val();
+        const requiresVerification = $('#select_country option:selected').attr('data') !== '';
+
+        if (requiresVerification && cityId && lastVerifiedCityId !== cityId) {
+            e.preventDefault();
+            toastr.error('@lang("Please wait for city verification to complete")');
+            return false;
+        }
+
+        if (requiresVerification && !cityId) {
+            e.preventDefault();
+            toastr.error('@lang("Please select a city")');
+            return false;
+        }
+    });
+
+    // Reset verification state when country or state changes
+    $(document).on('change', '#select_country, #show_state', function() {
+        lastVerifiedCityId = null;
+    });
     </script>
 @endsection
