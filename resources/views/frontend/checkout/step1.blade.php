@@ -975,7 +975,79 @@
         console.log(`🔍 حساب الضريبة - Country ID: ${countryId}, State ID: ${stateId}`);
 
         // استدعاء دالة tax_submit الموجودة بالفعل
-        tax_submit(countryId, stateId);
+        // IMPORTANT: التأكد من أن tax_submit موجود في الصفحة
+        if (typeof tax_submit === 'function') {
+            tax_submit(countryId, stateId);
+            console.log('✅ تم استدعاء دالة حساب الضريبة');
+        } else {
+            console.error('❌ دالة tax_submit غير موجودة');
+
+            // Fallback: استدعاء مباشر للـ API
+            const total = $("#ttotal").val();
+            const ship = 0;
+
+            $.ajax({
+                type: "GET",
+                url: mainurl + "/country/tax/check",
+                data: {
+                    state_id: stateId,
+                    country_id: countryId,
+                    total: total,
+                    shipping_cost: ship
+                },
+                success: function(data) {
+                    console.log('✅ استجابة API للضريبة:', data);
+
+                    // Update hidden fields
+                    $('#grandtotal').val(data[0]);
+                    $('#tgrandtotal').val(data[0]);
+                    $('#original_tax').val(data[1]);
+                    $('#input_tax').val(data[11]);
+                    $('#input_tax_type').val(data[12]);
+
+                    // Show tax display with rate and amount
+                    if (data[1] && parseFloat(data[1]) > 0) {
+                        $('.tax-display-wrapper').removeClass('d-none');
+                        $('.tax-rate-text').html('(' + parseFloat(data[1]) + '%)');
+
+                        // Display tax amount with currency
+                        var taxAmount = parseFloat(data[2] || 0);
+                        if (pos == 0) {
+                            $('.tax-amount-value').html('{{ $curr->sign }}' + taxAmount.toFixed(2));
+                        } else {
+                            $('.tax-amount-value').html(taxAmount.toFixed(2) + '{{ $curr->sign }}');
+                        }
+
+                        // Show tax location if available
+                        if (data[3]) {
+                            $('.tax-location-wrapper').removeClass('d-none');
+                            $('.tax-location-text').html(data[3]);
+                        } else {
+                            $('.tax-location-wrapper').addClass('d-none');
+                        }
+
+                        console.log(`✅ تم عرض الضريبة: ${data[1]}% = ${taxAmount} ${data[3] || ''}`);
+                    } else {
+                        $('.tax-display-wrapper').addClass('d-none');
+                        $('.tax-location-wrapper').addClass('d-none');
+                        console.log('ℹ️ لا توجد ضريبة على هذا الموقع');
+                    }
+
+                    // Update final total
+                    var ttotal = parseFloat($('#grandtotal').val());
+                    ttotal = parseFloat(ttotal).toFixed(2);
+
+                    if (pos == 0) {
+                        $('#final-cost').html('{{ $curr->sign }}' + ttotal);
+                    } else {
+                        $('#final-cost').html(ttotal + '{{ $curr->sign }}');
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('❌ فشل حساب الضريبة:', error);
+                }
+            });
+        }
     }
 
     // Initialize map when modal is shown
@@ -1318,10 +1390,16 @@
         }
 
         // ✅ حساب الضريبة بعد اختيار الموقع
-        calculateTaxIfNeeded();
+        // إعطاء وقت قصير للـ DOM ليحدّث القيم
+        setTimeout(function() {
+            calculateTaxIfNeeded();
+        }, 100);
 
         if (typeof toastr !== 'undefined') {
-            toastr.success('تم حفظ الموقع بنجاح! يمكنك الآن المتابعة');
+            toastr.success('تم حفظ الموقع بنجاح! سيتم حساب الضريبة إذا وجدت', 'نجاح', {
+                timeOut: 5000,
+                progressBar: true
+            });
         }
 
         $('#mapModal').modal('hide');

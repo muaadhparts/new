@@ -405,3 +405,35 @@
         </div>
     </div>
 @endsection
+
+@section('script')
+<script>
+    // ============================================
+    // مسح بيانات الموقع المحفوظة بعد نجاح الطلب
+    // ============================================
+    $(document).ready(function() {
+        // Clear checkout location data from localStorage after successful order
+        if (localStorage.getItem('selectedLocation')) {
+            localStorage.removeItem('selectedLocation');
+            console.log('✅ تم مسح بيانات الموقع المحفوظة بعد نجاح الطلب');
+        }
+
+        // Also clear any other checkout-related data if exists
+        const checkoutKeys = [
+            'checkout_shipping_selection',
+            'checkout_packing_selection',
+            'checkout_step1_data',
+            'checkout_step2_data'
+        ];
+
+        checkoutKeys.forEach(function(key) {
+            if (localStorage.getItem(key)) {
+                localStorage.removeItem(key);
+                console.log(`✅ تم مسح ${key} من localStorage`);
+            }
+        });
+
+        console.log('🎉 تم تنظيف localStorage بنجاح بعد إتمام الطلب');
+    });
+</script>
+@endsection

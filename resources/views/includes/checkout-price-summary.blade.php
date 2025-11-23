@@ -21,7 +21,11 @@
     $currentStep = $step ?? 1;
     $showShipping = !$digital && $currentStep >= 2;
     $showTax = isset($step1) && isset($step1->tax_rate) && $step1->tax_rate > 0;
-    $showFinalTotal = $currentStep >= 2;
+
+    // ✅ FIXED: Show final total in ALL steps (not just step 2 & 3)
+    // Step 1 shows products total (tax will be added dynamically via JS)
+    // Step 2/3 show complete totals
+    $showFinalTotal = true;
 
     // Use productsTotal if provided, otherwise fallback to totalPrice for backward compatibility
     $productsPriceDisplay = $productsTotal ?? $totalPrice;
@@ -136,39 +140,53 @@
         @endif
     </div>
 
-    {{-- Final Price (Step 2 & 3 Only) --}}
+    {{-- Final Price Display - ALL STEPS --}}
     @if($showFinalTotal)
         <hr>
         <div class="final-price">
-            <span>@lang('Final Price')</span>
+            <span style="font-size: 16px; font-weight: 700;">
+                @if($currentStep == 1)
+                    @lang('Total Amount')
+                @else
+                    @lang('Final Price')
+                @endif
+            </span>
+
             @if($currentStep == 3 && isset($step2))
-                {{-- Step 3: Use step2->total --}}
+                {{-- Step 3: Use step2->total (pre-calculated in step2 submit) --}}
                 @if (Session::has('coupon_total'))
                     @if ($gs->currency_format == 0)
-                        <span class="total-amount">{{ $curr->sign }}{{ $step2->total }}</span>
+                        <span class="total-amount" style="font-size: 18px; font-weight: 700; color: #EE1243;">{{ $curr->sign }}{{ $step2->total }}</span>
                     @else
-                        <span class="total-amount">{{ $step2->total }}{{ $curr->sign }}</span>
+                        <span class="total-amount" style="font-size: 18px; font-weight: 700; color: #EE1243;">{{ $step2->total }}{{ $curr->sign }}</span>
                     @endif
                 @elseif(Session::has('coupon_total1'))
-                    <span class="total-amount">{{ Session::get('coupon_total1') }}</span>
+                    <span class="total-amount" style="font-size: 18px; font-weight: 700; color: #EE1243;">{{ Session::get('coupon_total1') }}</span>
                 @else
-                    <span class="total-amount">{{ App\Models\Product::convertPrice($step2->total) }}</span>
+                    <span class="total-amount" style="font-size: 18px; font-weight: 700; color: #EE1243;">{{ App\Models\Product::convertPrice($step2->total) }}</span>
                 @endif
             @else
-                {{-- Step 2: Dynamic total calculation (updated via JavaScript) --}}
-                {{-- Uses productsTotal as base, shipping/packing/tax added dynamically --}}
+                {{-- Step 1 & 2: Dynamic total (updated via JavaScript) --}}
+                {{-- Step 1: Shows products total initially, then updates with tax --}}
+                {{-- Step 2: Shows products + tax, then updates with shipping/packing --}}
                 @if (Session::has('coupon_total'))
                     @if ($gs->currency_format == 0)
-                        <span class="total-amount" id="final-cost">{{ $curr->sign }}{{ $productsPriceDisplay }}</span>
+                        <span class="total-amount" id="final-cost" style="font-size: 18px; font-weight: 700; color: #EE1243;">{{ $curr->sign }}{{ $productsPriceDisplay }}</span>
                     @else
-                        <span class="total-amount" id="final-cost">{{ $productsPriceDisplay }}{{ $curr->sign }}</span>
+                        <span class="total-amount" id="final-cost" style="font-size: 18px; font-weight: 700; color: #EE1243;">{{ $productsPriceDisplay }}{{ $curr->sign }}</span>
                     @endif
                 @elseif(Session::has('coupon_total1'))
-                    <span class="total-amount" id="final-cost">{{ Session::get('coupon_total1') }}</span>
+                    <span class="total-amount" id="final-cost" style="font-size: 18px; font-weight: 700; color: #EE1243;">{{ Session::get('coupon_total1') }}</span>
                 @else
-                    <span class="total-amount" id="final-cost">{{ App\Models\Product::convertPrice($productsPriceDisplay) }}</span>
+                    <span class="total-amount" id="final-cost" style="font-size: 18px; font-weight: 700; color: #EE1243;">{{ App\Models\Product::convertPrice($productsPriceDisplay) }}</span>
                 @endif
             @endif
         </div>
+
+        @if($currentStep == 1)
+            <div class="text-muted" style="margin-top: 5px; font-size: 12px; text-align: center;">
+                <small>* @lang('Tax and shipping costs will be calculated after selecting your location')</small>
+            </div>
+        @endif
     @endif
 </div>
