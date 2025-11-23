@@ -825,9 +825,27 @@
     .loading-overlay.active {
         display: flex !important;
     }
+    /* Map-selected fields styling */
+    select.map-selected,
+    input.map-selected {
+        background-color: #f0f8ff !important;
+        border-color: #28a745 !important;
+        cursor: not-allowed;
+    }
+    .map-selected + .nice-select {
+        background-color: #f0f8ff !important;
+        border-color: #28a745 !important;
+        pointer-events: none;
+    }
+    .badge.bg-success {
+        font-size: 11px;
+        padding: 3px 8px;
+        margin-left: 5px;
+        vertical-align: middle;
+    }
     </style>
 
-    <script src="https://maps.googleapis.com/maps/api/js?key={{ config('services.google_maps.key') }}&libraries=places&language=ar" async defer></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key={{ config('services.google_maps.api_key') }}&libraries=places&language=ar" async defer></script>
     <script>
     // Google Maps variables for modal
     let mapModal, markerModal, geocoderModal, searchBoxModal, debounceTimerModal, selectedLocationData;
@@ -949,9 +967,15 @@
                 selectedLocationData = result.data;
                 displayLocationInfoModal(result.data);
                 document.getElementById('use-location-btn-modal').disabled = false;
-                showAlertModal('تم تحديد الموقع بنجاح', 'success');
+
+                // Show warning if using nearest city
+                if (result.warning) {
+                    showAlertModal(result.warning, 'warning');
+                } else {
+                    showAlertModal('تم تحديد الموقع بنجاح', 'success');
+                }
             } else {
-                showAlertModal('فشل في الحصول على معلومات الموقع: ' + (result.error || 'خطأ غير معروف'), 'error');
+                showAlertModal('فشل في الحصول على معلومات الموقع: ' + (result.message || 'خطأ غير معروف'), 'error');
             }
         } catch (error) {
             console.error('Error:', error);
@@ -982,68 +1006,85 @@
     // Display Tryoto verification information
     function displayTryotoInfo(data) {
         const tryotoBox = document.getElementById('tryoto-info-modal');
+        if (!tryotoBox) return; // Element doesn't exist in DOM
+
         const verifiedBox = document.getElementById('tryoto-verified-box');
         const alternativeBox = document.getElementById('tryoto-alternative-box');
         const notSupportedBox = document.getElementById('tryoto-not-supported-box');
         const companiesBox = document.getElementById('tryoto-companies-box');
 
         // Hide all boxes first
-        verifiedBox.style.display = 'none';
-        alternativeBox.style.display = 'none';
-        notSupportedBox.style.display = 'none';
-        companiesBox.style.display = 'none';
+        if (verifiedBox) verifiedBox.style.display = 'none';
+        if (alternativeBox) alternativeBox.style.display = 'none';
+        if (notSupportedBox) notSupportedBox.style.display = 'none';
+        if (companiesBox) companiesBox.style.display = 'none';
 
-        // Check if Tryoto data exists
-        if (!data.tryoto_verified) {
-            if (data.tryoto_message) {
-                // Show not supported warning
-                tryotoBox.style.display = 'block';
-                notSupportedBox.style.display = 'block';
-            } else {
-                tryotoBox.style.display = 'none';
-            }
+        // Check resolution_info from new API
+        if (!data.resolution_info) {
+            tryotoBox.style.display = 'none';
             return;
         }
 
+        const resolutionInfo = data.resolution_info;
+        const strategy = resolutionInfo.strategy;
+
         // Show Tryoto box
         tryotoBox.style.display = 'block';
-        verifiedBox.style.display = 'block';
-
-        const strategy = data.tryoto_strategy;
+        if (verifiedBox) verifiedBox.style.display = 'block';
 
         if (strategy === 'exact_match') {
             // Perfect match
-            document.getElementById('tryoto-status-text').textContent = 'الموقع مدعوم للشحن عبر Tryoto ✓';
+            if (document.getElementById('tryoto-status-text')) {
+                document.getElementById('tryoto-status-text').textContent = 'الموقع مدعوم للشحن عبر Tryoto ✓';
+            }
 
-            if (data.shipping_companies > 0) {
+            if (resolutionInfo.shipping_companies > 0 && companiesBox) {
                 companiesBox.style.display = 'block';
-                document.getElementById('tryoto-companies-text').textContent =
-                    `${data.shipping_companies} شركة شحن متاحة`;
+                if (document.getElementById('tryoto-companies-text')) {
+                    document.getElementById('tryoto-companies-text').textContent =
+                        `${resolutionInfo.shipping_companies} شركة شحن متاحة`;
+                }
             }
 
         } else if (strategy === 'name_variation') {
             // Name variation match
-            document.getElementById('tryoto-status-text').textContent = 'الموقع مدعوم للشحن (تم التحقق من الاسم) ✓';
-
-            if (data.shipping_companies > 0) {
-                companiesBox.style.display = 'block';
-                document.getElementById('tryoto-companies-text').textContent =
-                    `${data.shipping_companies} شركة شحن متاحة`;
+            if (document.getElementById('tryoto-status-text')) {
+                document.getElementById('tryoto-status-text').textContent = 'الموقع مدعوم للشحن (تم التحقق من الاسم) ✓';
             }
 
-        } else if (strategy === 'nearest_city' && data.alternative_city) {
-            // Alternative city found
-            document.getElementById('tryoto-status-text').textContent = 'سيتم استخدام مدينة بديلة للشحن';
-
-            alternativeBox.style.display = 'block';
-            document.getElementById('tryoto-alternative-city').textContent = data.alternative_city.name;
-            document.getElementById('tryoto-alternative-city-ar').textContent = data.alternative_city.name_ar;
-            document.getElementById('tryoto-alternative-distance').textContent = data.alternative_city.distance_km;
-
-            if (data.shipping_companies > 0) {
+            if (resolutionInfo.shipping_companies > 0 && companiesBox) {
                 companiesBox.style.display = 'block';
-                document.getElementById('tryoto-companies-text').textContent =
-                    `${data.shipping_companies} شركة شحن متاحة في ${data.alternative_city.name_ar}`;
+                if (document.getElementById('tryoto-companies-text')) {
+                    document.getElementById('tryoto-companies-text').textContent =
+                        `${resolutionInfo.shipping_companies} شركة شحن متاحة`;
+                }
+            }
+
+        } else if (strategy === 'nearest_city' && resolutionInfo.is_nearest_city) {
+            // Alternative city found (nearest city)
+            if (document.getElementById('tryoto-status-text')) {
+                document.getElementById('tryoto-status-text').textContent = 'سيتم استخدام أقرب مدينة مدعومة للشحن';
+            }
+
+            if (alternativeBox) {
+                alternativeBox.style.display = 'block';
+                if (document.getElementById('tryoto-alternative-city')) {
+                    document.getElementById('tryoto-alternative-city').textContent = resolutionInfo.resolved_city;
+                }
+                if (document.getElementById('tryoto-alternative-city-ar')) {
+                    document.getElementById('tryoto-alternative-city-ar').textContent = data.city?.name_ar || resolutionInfo.resolved_city;
+                }
+                if (document.getElementById('tryoto-alternative-distance')) {
+                    document.getElementById('tryoto-alternative-distance').textContent = resolutionInfo.distance_km || 0;
+                }
+            }
+
+            if (resolutionInfo.shipping_companies > 0 && companiesBox) {
+                companiesBox.style.display = 'block';
+                if (document.getElementById('tryoto-companies-text')) {
+                    document.getElementById('tryoto-companies-text').textContent =
+                        `${resolutionInfo.shipping_companies} شركة شحن متاحة في ${data.city?.name_ar || resolutionInfo.resolved_city}`;
+                }
             }
         }
     }
@@ -1052,25 +1093,24 @@
     function useLocation() {
         if (!selectedLocationData) return;
 
-        // Check if Tryoto requires using alternative city
+        // Check if using nearest city (from resolution_info)
         let targetCityId = selectedLocationData.city?.id;
         let targetStateId = selectedLocationData.state?.id;
-        let useAlternative = false;
+        let useNearestCity = false;
 
-        if (selectedLocationData.tryoto_verified &&
-            selectedLocationData.tryoto_strategy === 'nearest_city' &&
-            selectedLocationData.alternative_city) {
+        if (selectedLocationData.resolution_info &&
+            selectedLocationData.resolution_info.is_nearest_city) {
 
-            // User will ship to alternative city
-            targetCityId = selectedLocationData.alternative_city.id;
-            useAlternative = true;
+            // Using nearest city for shipping
+            targetCityId = selectedLocationData.city?.id;  // API already returns the nearest city
+            useNearestCity = true;
 
             // Show confirmation message
             if (typeof toastr !== 'undefined') {
-                toastr.info(
-                    `سيتم الشحن إلى ${selectedLocationData.alternative_city.name_ar} (${selectedLocationData.alternative_city.distance_km} كم من موقعك)`,
+                toastr.warning(
+                    `⚠️ سيتم الشحن إلى ${selectedLocationData.city.name_ar} (${selectedLocationData.resolution_info.distance_km} كم من موقعك الأصلي)`,
                     'معلومات الشحن',
-                    {timeOut: 8000}
+                    {timeOut: 10000, closeButton: true, progressBar: true}
                 );
             }
         }
@@ -1088,10 +1128,17 @@
         const fullAddress = selectedLocationData.address?.ar || selectedLocationData.address?.en || '';
         $('#address').val(fullAddress);
 
-        // Add note about alternative city if applicable
-        if (useAlternative) {
-            const note = `\n(الشحن عبر ${selectedLocationData.alternative_city.name_ar})`;
-            $('#address').val(fullAddress + note);
+        // Store original city name if using nearest city
+        if (useNearestCity && selectedLocationData.resolution_info) {
+            // Add or update hidden field for original city
+            let originalCityInput = $('input[name="original_city_name"]');
+            if (originalCityInput.length === 0) {
+                $('form.address-wrapper').append(
+                    `<input type="hidden" name="original_city_name" value="${selectedLocationData.resolution_info.original_city}">`
+                );
+            } else {
+                originalCityInput.val(selectedLocationData.resolution_info.original_city);
+            }
         }
 
         // Get IDs from API response
@@ -1344,6 +1391,26 @@
 
     // Show final success message once
     function showFinalSuccessMessage() {
+        // Make dropdowns readonly/disabled (map-selected)
+        $('#select_country').prop('disabled', true).addClass('map-selected');
+        $('#show_state').prop('disabled', true).addClass('map-selected');
+        $('#show_city').prop('disabled', true).addClass('map-selected');
+
+        // Update NiceSelect to reflect disabled state
+        $('#select_country').niceSelect('update');
+        $('#show_state').niceSelect('update');
+        $('#show_city').niceSelect('update');
+
+        // Add visual indicator
+        $('.map-selected').closest('.input-wrapper').find('.label-cls').append(
+            ' <span class="badge bg-success">✓ من الخريطة</span>'
+        );
+
+        // Update map button
+        const mapBtn = $('[data-bs-target="#mapModal"]');
+        mapBtn.removeClass('btn-outline-primary').addClass('btn-success');
+        mapBtn.html('<i class="fas fa-check-circle"></i> تم اختيار الموقع من الخريطة');
+
         if (typeof toastr !== 'undefined') {
             toastr.success('تم حفظ الموقع بنجاح! تم تعبئة جميع الحقول تلقائياً');
         }
@@ -1528,5 +1595,50 @@
     $(document).on('change', '#select_country, #show_state', function() {
         lastVerifiedCityId = null;
     });
+
+    // ============================================
+    // Form Validation for Map Location (NEW)
+    // ============================================
+    $('form.address-wrapper').on('submit', function(e) {
+        const lat = $('#latitude').val();
+        const lng = $('#longitude').val();
+
+        // Check if coordinates exist
+        if (!lat || !lng || lat === '' || lng === '') {
+            e.preventDefault();
+
+            // Scroll to map button
+            const mapBtn = $('[data-bs-target="#mapModal"]');
+            if (mapBtn.length) {
+                $('html, body').animate({
+                    scrollTop: mapBtn.offset().top - 100
+                }, 500);
+            }
+
+            // Show error
+            toastr.error(
+                'يرجى اختيار موقع التوصيل من الخريطة قبل المتابعة',
+                'خطأ',
+                {
+                    timeOut: 5000,
+                    closeButton: true,
+                    positionClass: 'toast-top-center'
+                }
+            );
+
+            // Highlight the map button
+            mapBtn.addClass('btn-danger').removeClass('btn-outline-primary btn-success');
+            setTimeout(function() {
+                mapBtn.removeClass('btn-danger').addClass('btn-outline-primary');
+            }, 3000);
+
+            return false;
+        }
+
+        // Validation passed - allow submission
+        return true;
+    });
+
+    console.log('✅ Google Maps Checkout Integration - Fully Loaded');
     </script>
 @endsection

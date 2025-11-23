@@ -2,7 +2,7 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\GeocodingController;
+use App\Http\Controllers\Api\GeocodingController;
 
 /*
 |--------------------------------------------------------------------------
@@ -18,9 +18,7 @@ use App\Http\Controllers\GeocodingController;
 // --------------------- GOOGLE MAPS GEOCODING ROUTES ---------------------
 Route::prefix('geocoding')->group(function () {
     Route::post('/reverse', [GeocodingController::class, 'reverseGeocode']);
-    Route::get('/countries', [GeocodingController::class, 'getCountries']);
-    Route::get('/states', [GeocodingController::class, 'getStatesByCountry']);
-    Route::get('/cities', [GeocodingController::class, 'getCitiesByState']);
+    Route::get('/search-cities', [GeocodingController::class, 'searchCities']);
 });
 // --------------------- GOOGLE MAPS GEOCODING ROUTES END ---------------------
 

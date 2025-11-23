@@ -9,7 +9,7 @@ class City extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['state_id', 'city_name', 'city_name_ar', 'status', 'country_id'];
+    protected $fillable = ['state_id', 'city_name', 'city_name_ar', 'status', 'country_id', 'latitude', 'longitude'];
     public $timestamps = false;
 
     public function state()

@@ -135,122 +135,40 @@ class TryotoLocationService
     }
 
     /**
-     * Verify and auto-save location if supported
+     * @deprecated This method is obsolete. Use resolveMapCity() instead.
      *
-     * @param int $countryId
-     * @param int $stateId
-     * @param string $cityName
-     * @return array ['verified' => bool, 'city_id' => int|null, 'message' => string]
+     * Old method that checked DB first (wrong logic).
+     * Kept for backward compatibility only.
      */
     public function verifyAndSaveLocation($countryId, $stateId, $cityName)
     {
-        // Check if city already exists
-        $existingCity = City::where('city_name', $cityName)
-            ->where('country_id', $countryId)
-            ->first();
+        Log::warning('⚠️ DEPRECATED: verifyAndSaveLocation() called. Use resolveMapCity() instead.', [
+            'city' => $cityName,
+            'trace' => debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 3)
+        ]);
 
-        if ($existingCity) {
-            return [
-                'verified' => true,
-                'city_id' => $existingCity->id,
-                'message' => 'City already in database',
-                'cached' => true
-            ];
-        }
-
-        // Verify with Tryoto API
+        // Fallback to simple verification
         $verification = $this->verifyCitySupport($cityName);
 
         if (!$verification['supported']) {
             return [
                 'verified' => false,
                 'city_id' => null,
-                'message' => 'City not supported by Tryoto shipping',
-                'error' => $verification['error'] ?? 'Unknown error'
+                'message' => 'City not supported by Tryoto shipping'
             ];
         }
 
-        // City is supported → save it to database
-        try {
-            DB::beginTransaction();
-
-            // Get country info
-            $country = Country::find($countryId);
-            if (!$country) {
-                DB::rollBack();
-                return [
-                    'verified' => false,
-                    'message' => 'Country not found'
-                ];
-            }
-
-            // Get or create state
-            $state = State::find($stateId);
-            if (!$state) {
-                // Try to extract region from Tryoto response
-                $regionName = $verification['region'] ?? 'Default';
-
-                $state = State::firstOrCreate(
-                    [
-                        'country_id' => $countryId,
-                        'state' => $regionName
-                    ],
-                    [
-                        'state_ar' => $this->translateRegion($regionName),
-                        'tax' => 0,
-                        'status' => 1,
-                        'owner_id' => 0
-                    ]
-                );
-
-                $stateId = $state->id;
-            }
-
-            // Create city
-            $city = City::create([
-                'state_id' => $stateId,
-                'country_id' => $countryId,
-                'city_name' => $cityName,
-                'city_name_ar' => $this->translateCity($cityName),
-                'status' => 1
-            ]);
-
-            DB::commit();
-
-            Log::info('New Tryoto city auto-saved', [
-                'country' => $country->country_name,
-                'state' => $state->state,
-                'city' => $cityName,
-                'companies' => $verification['company_count']
-            ]);
-
-            return [
-                'verified' => true,
-                'city_id' => $city->id,
-                'message' => 'City verified and saved successfully',
-                'cached' => false,
-                'companies' => $verification['company_count']
-            ];
-
-        } catch (\Exception $e) {
-            DB::rollBack();
-
-            Log::error('Failed to save verified city', [
-                'city' => $cityName,
-                'error' => $e->getMessage()
-            ]);
-
-            return [
-                'verified' => false,
-                'message' => 'Database error: ' . $e->getMessage()
-            ];
-        }
+        return [
+            'verified' => true,
+            'city_id' => null,
+            'message' => 'Please use resolveMapCity() for proper city resolution'
+        ];
     }
 
     /**
      * Simple translation helper for regions
      */
-    protected function translateRegion($regionName)
+    public function translateRegion($regionName)
     {
         $translations = [
             'Riyadh Region' => 'منطقة الرياض',
@@ -274,7 +192,7 @@ class TryotoLocationService
     /**
      * Simple translation helper for cities
      */
-    protected function translateCity($cityName)
+    public function translateCity($cityName)
     {
         $translations = [
             'Riyadh' => 'الرياض',
@@ -340,8 +258,14 @@ class TryotoLocationService
     }
 
     /**
-     * Find nearest supported city by coordinates
-     * Uses Haversine formula to calculate distance
+     * Find nearest ACTUALLY SUPPORTED city by coordinates
+     *
+     * المنطق الصحيح:
+     * 1. نحصل على قائمة المدن المحتملة (من DB كـ Cache أو hardcoded)
+     * 2. نحسب المسافة لكل مدينة
+     * 3. نرتبهم من الأقرب للأبعد
+     * 4. نسأل Tryoto API عن كل مدينة حتى نجد أول مدينة مدعومة
+     * 5. الـ DB ليس مصدر الحقيقة - Tryoto API هو المصدر
      *
      * @param float $latitude
      * @param float $longitude
@@ -351,15 +275,48 @@ class TryotoLocationService
      */
     public function findNearestSupportedCity($latitude, $longitude, $countryId = null, $maxResults = 50)
     {
-        // Get all cities with coordinates (we'll need to add lat/lng to cities table or use a mapping)
-        // For now, we'll use major Saudi cities with known coordinates
+        Log::info('🔍 Searching for nearest supported city...', [
+            'coordinates' => compact('latitude', 'longitude')
+        ]);
+
+        // ==========================================
+        // جمع المدن المحتملة (من Cache + Hardcoded)
+        // ==========================================
+        $candidateCities = [];
+
+        // Strategy 1: Get cities from database (as potential candidates only!)
+        $query = City::where('status', 1)
+            ->whereNotNull('latitude')
+            ->whereNotNull('longitude');
+
+        if ($countryId) {
+            $query->where('country_id', $countryId);
+        }
+
+        $dbCities = $query->limit($maxResults * 2)->get();
+
+        foreach ($dbCities as $city) {
+            $distance = $this->calculateDistance(
+                $latitude,
+                $longitude,
+                $city->latitude,
+                $city->longitude
+            );
+
+            $candidateCities[] = [
+                'name' => $city->city_name,
+                'name_ar' => $city->city_name_ar,
+                'lat' => $city->latitude,
+                'lng' => $city->longitude,
+                'distance' => $distance,
+                'source' => 'database'
+            ];
+        }
+
+        // Strategy 2: Add hardcoded major cities
         $saudiCities = $this->getSaudiMajorCitiesWithCoordinates();
 
-        $nearestCity = null;
-        $shortestDistance = PHP_FLOAT_MAX;
-
         foreach ($saudiCities as $city) {
-            // Calculate distance using Haversine formula
             $distance = $this->calculateDistance(
                 $latitude,
                 $longitude,
@@ -367,28 +324,85 @@ class TryotoLocationService
                 $city['lng']
             );
 
-            if ($distance < $shortestDistance) {
-                // Verify this city is supported by Tryoto
-                $verification = $this->verifyCitySupport($city['name']);
+            $candidateCities[] = [
+                'name' => $city['name'],
+                'name_ar' => $city['name_ar'],
+                'lat' => $city['lat'],
+                'lng' => $city['lng'],
+                'distance' => $distance,
+                'source' => 'hardcoded'
+            ];
+        }
 
-                if ($verification['supported']) {
-                    $shortestDistance = $distance;
-                    $nearestCity = [
-                        'city_name' => $city['name'],
-                        'city_name_ar' => $city['name_ar'],
-                        'distance_km' => round($distance, 2),
-                        'coordinates' => [
-                            'lat' => $city['lat'],
-                            'lng' => $city['lng']
-                        ],
-                        'companies' => $verification['company_count'] ?? 0,
-                        'verified' => true
-                    ];
-                }
+        // ==========================================
+        // ترتيب المدن حسب القرب
+        // ==========================================
+        usort($candidateCities, function ($a, $b) {
+            return $a['distance'] <=> $b['distance'];
+        });
+
+        // Remove duplicates (same city from DB and hardcoded)
+        $seen = [];
+        $candidateCities = array_filter($candidateCities, function ($city) use (&$seen) {
+            $key = strtolower($city['name']);
+            if (in_array($key, $seen)) {
+                return false;
+            }
+            $seen[] = $key;
+            return true;
+        });
+
+        // Limit to top candidates
+        $candidateCities = array_slice($candidateCities, 0, $maxResults);
+
+        Log::info('📋 Found candidate cities', [
+            'count' => count($candidateCities),
+            'top_5' => array_slice($candidateCities, 0, 5)
+        ]);
+
+        // ==========================================
+        // التحقق من Tryoto API فعلياً
+        // ==========================================
+        foreach ($candidateCities as $candidate) {
+            Log::info('🔎 Checking with Tryoto API...', [
+                'city' => $candidate['name'],
+                'distance' => round($candidate['distance'], 2) . ' km'
+            ]);
+
+            // 👈 الآن نسأل Tryoto API مباشرة!
+            $verification = $this->verifyCitySupport($candidate['name']);
+
+            if ($verification['supported']) {
+                Log::info('✅ Found nearest VERIFIED city', [
+                    'city' => $candidate['name'],
+                    'distance' => round($candidate['distance'], 2),
+                    'companies' => $verification['company_count']
+                ]);
+
+                return [
+                    'city_name' => $candidate['name'],
+                    'city_name_ar' => $candidate['name_ar'],
+                    'distance_km' => round($candidate['distance'], 2),
+                    'coordinates' => [
+                        'lat' => $candidate['lat'],
+                        'lng' => $candidate['lng']
+                    ],
+                    'companies' => $verification['company_count'] ?? 0,
+                    'verified' => true,
+                    'source' => $candidate['source']
+                ];
+            } else {
+                Log::info('❌ City not supported by Tryoto', [
+                    'city' => $candidate['name']
+                ]);
             }
         }
 
-        return $nearestCity;
+        Log::warning('⚠️ No supported cities found in entire area', [
+            'checked_cities' => count($candidateCities)
+        ]);
+
+        return null;
     }
 
     /**
@@ -480,7 +494,12 @@ class TryotoLocationService
 
     /**
      * Smart city resolution for map-selected locations
-     * Tries to find exact match first, then falls back to nearest supported city
+     *
+     * المنطق الصحيح:
+     * 1. سؤال Tryoto API أولاً (ليس الجداول!)
+     * 2. إذا مدعومة → حفظها في DB كـ Cache
+     * 3. إذا غير مدعومة → البحث عن أقرب مدينة مدعومة فعلياً
+     * 4. الجداول = Cache فقط، ليس validation
      *
      * @param string $cityName City name from Google Maps
      * @param float $latitude
@@ -490,18 +509,37 @@ class TryotoLocationService
      */
     public function resolveMapCity($cityName, $latitude, $longitude, $countryId = null)
     {
-        // Step 1: Try exact city name with Tryoto
+        Log::info('🗺️ Map City Resolution Started', [
+            'city' => $cityName,
+            'coordinates' => compact('latitude', 'longitude')
+        ]);
+
+        // ==========================================
+        // المرحلة الثانية: التحقق من Tryoto API
+        // ==========================================
+
+        // Step 1: Try exact city name with Tryoto API (مباشرة!)
         $exactMatch = $this->verifyCitySupport($cityName);
 
         if ($exactMatch['supported']) {
+            Log::info('✅ City is supported - Exact Match', [
+                'city' => $cityName,
+                'companies' => $exactMatch['company_count']
+            ]);
+
             return [
                 'strategy' => 'exact_match',
                 'city_name' => $cityName,
+                'city_name_ar' => $this->translateCity($cityName),
                 'verified' => true,
                 'companies' => $exactMatch['company_count'] ?? 0,
-                'message' => 'Selected city is supported by Tryoto'
+                'coordinates' => ['lat' => $latitude, 'lng' => $longitude],
+                'message' => 'Selected city is supported by Tryoto',
+                'should_save_to_db' => true // 👈 سيتم حفظها في Controller
             ];
         }
+
+        Log::info('⚠️ Exact match not supported, trying variations...', ['city' => $cityName]);
 
         // Step 2: Try variations of the city name
         $variations = $this->getCityNameVariations($cityName);
@@ -510,21 +548,40 @@ class TryotoLocationService
             $variantMatch = $this->verifyCitySupport($variation);
 
             if ($variantMatch['supported']) {
+                Log::info('✅ City variation is supported', [
+                    'original' => $cityName,
+                    'variation' => $variation,
+                    'companies' => $variantMatch['company_count']
+                ]);
+
                 return [
                     'strategy' => 'name_variation',
                     'original_name' => $cityName,
                     'city_name' => $variation,
+                    'city_name_ar' => $this->translateCity($variation),
                     'verified' => true,
                     'companies' => $variantMatch['company_count'] ?? 0,
-                    'message' => "Using city name variation: {$variation}"
+                    'coordinates' => ['lat' => $latitude, 'lng' => $longitude],
+                    'message' => "Using city name variation: {$variation}",
+                    'should_save_to_db' => true // 👈 سيتم حفظها
                 ];
             }
         }
 
-        // Step 3: Find nearest supported city
+        Log::info('❌ City not supported, searching for nearest supported city...', [
+            'city' => $cityName
+        ]);
+
+        // Step 3: Find nearest ACTUALLY supported city (من Tryoto فعلياً!)
         $nearest = $this->findNearestSupportedCity($latitude, $longitude, $countryId);
 
         if ($nearest) {
+            Log::info('✅ Found nearest supported city', [
+                'original' => $cityName,
+                'nearest' => $nearest['city_name'],
+                'distance' => $nearest['distance_km']
+            ]);
+
             return [
                 'strategy' => 'nearest_city',
                 'original_name' => $cityName,
@@ -534,11 +591,18 @@ class TryotoLocationService
                 'verified' => true,
                 'companies' => $nearest['companies'],
                 'coordinates' => $nearest['coordinates'],
-                'message' => "Selected location not supported. Nearest supported city: {$nearest['city_name']} ({$nearest['distance_km']} km away)"
+                'original_coordinates' => ['lat' => $latitude, 'lng' => $longitude],
+                'message' => "Selected location not supported. Nearest supported city: {$nearest['city_name']} ({$nearest['distance_km']} km away)",
+                'should_save_to_db' => true // 👈 حفظ المدينة البديلة
             ];
         }
 
         // Step 4: No supported city found
+        Log::error('❌ No supported cities found in area', [
+            'city' => $cityName,
+            'coordinates' => compact('latitude', 'longitude')
+        ]);
+
         return [
             'strategy' => 'none',
             'original_name' => $cityName,
