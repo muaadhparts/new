@@ -193,10 +193,11 @@
                                 </div>
 
 
-                                <div class="col-lg-6">
+                                {{-- Hidden dropdowns (kept for potential future use) --}}
+                                <div class="col-lg-6 d-none">
                                     <div class="input-wrapper">
                                         <label class="label-cls">@lang('Select Country')</label>
-                                        <select class="nice-select" id="select_country" name="customer_country" required>
+                                        <select class="nice-select" id="select_country" name="customer_country">
                                             @include('includes.countries')
                                         </select>
                                     </div>
@@ -205,7 +206,7 @@
                                 <div class="col-lg-6 d-none select_state">
                                     <div class="input-wrapper">
                                         <label class="label-cls">@lang('Select State')</label>
-                                        <select class="nice-select" id="show_state" name="customer_state" required>
+                                        <select class="nice-select" id="show_state" name="customer_state">
 
                                         </select>
                                     </div>
@@ -214,7 +215,7 @@
                                 <div class="col-lg-6 d-none">
                                     <div class="input-wrapper">
                                         <label class="label-cls">@lang('Select City')</label>
-                                        <select class="nice-select " id="show_city" name="customer_city" required>
+                                        <select class="nice-select " id="show_city" name="customer_city">
 
                                         </select>
                                     </div>
@@ -222,11 +223,16 @@
 
                                 <!-- Google Maps Location Picker -->
                                 <div class="col-lg-12">
+                                    <div class="alert alert-info d-flex align-items-center" role="alert">
+                                        <i class="fas fa-map-marker-alt me-2" style="font-size: 20px;"></i>
+                                        <div>
+                                            <strong>يرجى اختيار موقع التوصيل من الخريطة أدناه</strong>
+                                        </div>
+                                    </div>
                                     <div class="mt-3 mb-3">
-                                        <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#mapModal">
+                                        <button type="button" class="btn btn-outline-primary w-100" data-bs-toggle="modal" data-bs-target="#mapModal" style="padding: 12px;">
                                             <i class="fas fa-map-marker-alt"></i> @lang('Select Location from Map')
                                         </button>
-                                        <small class="text-muted d-block mt-2">@lang('Click to open map and select your exact location')</small>
                                     </div>
                                 </div>
 
@@ -386,6 +392,13 @@
 
 
 
+                {{-- Location Data from Map (Primary Source) --}}
+                <input type="hidden" name="latitude" id="latitude">
+                <input type="hidden" name="longitude" id="longitude">
+                <input type="hidden" name="country_id" id="country_id">
+                <input type="hidden" name="state_id" id="state_id">
+                <input type="hidden" name="city_id" id="city_id">
+
                 <input type="hidden" name="dp" value="{{ $digital }}">
                 <input type="hidden" id="input_tax" name="tax" value="">
                 <input type="hidden" id="input_tax_type" name="tax_type" value="">
@@ -423,8 +436,6 @@
                     value="{{ Session::has('coupon') ? Session::get('coupon_id') : '' }}">
                 <input type="hidden" name="user_id" id="user_id"
                     value="{{ Auth::guard('web')->check() ? Auth::guard('web')->user()->id : '' }}">
-                <input type="hidden" name="latitude" id="latitude">
-                <input type="hidden" name="longitude" id="longitude">
 
 
 
@@ -627,6 +638,9 @@
 
         let original_tax = 0;
 
+        // ⚠️ DISABLED - Dropdowns are hidden, no longer trigger state/city loading
+        // Tax calculation will be handled via hidden fields from map selection
+        /*
         $(document).on('change', '#select_country', function() {
             $('#show_state').niceSelect("destroy"); //update the plugin
             $(this).attr('data-href');
@@ -664,8 +678,11 @@
 
 
         });
+        */
 
 
+        // ⚠️ DISABLED - State dropdown change handler (no longer needed)
+        /*
         $(document).on('change', '#show_state', function() {
             $('#show_city').niceSelect("destroy");
             let state_id = $(this).val();
@@ -681,6 +698,7 @@
             });
             tax_submit(country_id, state_id);
         });
+        */
 
 
         function hide_state() {
@@ -688,8 +706,10 @@
         }
 
 
+        // ⚠️ DISABLED - Country/state initialization on page load (no longer needed)
+        /*
         $(document).ready(function() {
-    
+
             $('#show_state').niceSelect("destroy");
             let country_id = $('#select_country option:selected').attr('data');
             let state_id = $('#select_country option:selected').attr('rel2');
@@ -715,6 +735,7 @@
                 hide_state();
             }
         });
+        */
 
 
         function tax_submit(country_id, state_id) {
@@ -859,6 +880,102 @@
         } else {
             setTimeout(() => waitForGoogleMaps(callback), 100);
         }
+    }
+
+    // ============================================
+    // استرجاع الموقع المحفوظ من localStorage
+    // ============================================
+    function restoreSavedLocation() {
+        const savedLocation = localStorage.getItem('selectedLocation');
+
+        if (!savedLocation) {
+            console.log('ℹ️ لا يوجد موقع محفوظ في localStorage');
+            return;
+        }
+
+        try {
+            selectedLocationData = JSON.parse(savedLocation);
+
+            console.log('📍 استرجاع الموقع المحفوظ:', selectedLocationData);
+
+            // ملء الـ hidden fields
+            $('#latitude').val(selectedLocationData.coordinates?.latitude || '');
+            $('#longitude').val(selectedLocationData.coordinates?.longitude || '');
+            $('#country_id').val(selectedLocationData.country?.id || '');
+            $('#state_id').val(selectedLocationData.state?.id || '');
+            $('#city_id').val(selectedLocationData.city?.id || '');
+
+            // ✅ Fill the hidden dropdown fields with names (for backend compatibility)
+            if (selectedLocationData.country?.name) {
+                $('#select_country').val(selectedLocationData.country.name);
+            }
+            if (selectedLocationData.state?.name) {
+                const stateSelect = $('#show_state');
+                stateSelect.empty().append(
+                    $('<option>').val(selectedLocationData.state.name).text(selectedLocationData.state.name_ar || selectedLocationData.state.name)
+                );
+                stateSelect.val(selectedLocationData.state.name);
+            }
+            if (selectedLocationData.city?.id) {
+                const citySelect = $('#show_city');
+                citySelect.empty().append(
+                    $('<option>').val(selectedLocationData.city.id).text(selectedLocationData.city.name_ar || selectedLocationData.city.name)
+                );
+                citySelect.val(selectedLocationData.city.id);
+            }
+
+            const fullAddress = selectedLocationData.address?.ar || selectedLocationData.address?.en || '';
+            $('#address').val(fullAddress);
+
+            // Update ZIP code if available
+            if (selectedLocationData.postal_code) {
+                $('#zip').val(selectedLocationData.postal_code);
+            }
+
+            // تحديث UI
+            const mapBtn = $('[data-bs-target="#mapModal"]');
+            mapBtn.removeClass('btn-outline-primary btn-danger').addClass('btn-success');
+            mapBtn.html('<i class="fas fa-check-circle"></i> تم اختيار الموقع من الخريطة بنجاح');
+
+            const locationSummary = `${selectedLocationData.city?.name_ar || ''}, ${selectedLocationData.state?.name_ar || ''}, ${selectedLocationData.country?.name_ar || ''}`;
+
+            // إزالة رسالة قديمة إن وجدت
+            $('.map-location-info').remove();
+
+            mapBtn.parent().append(`
+                <div class="map-location-info mt-2 alert alert-success">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <strong>الموقع المحدد:</strong> ${locationSummary}
+                </div>
+            `);
+
+            console.log('✅ تم استرجاع الموقع المحفوظ بنجاح');
+
+            // ⚠️ المهم: حساب الضريبة!
+            calculateTaxIfNeeded();
+
+        } catch (error) {
+            console.error('❌ فشل استرجاع الموقع المحفوظ:', error);
+            localStorage.removeItem('selectedLocation');
+        }
+    }
+
+    // ============================================
+    // حساب الضريبة بناءً على state_id
+    // ============================================
+    function calculateTaxIfNeeded() {
+        const stateId = $('#state_id').val();
+        const countryId = $('#country_id').val();
+
+        if (!stateId && !countryId) {
+            console.log('⚠️ لا يوجد state_id أو country_id لحساب الضريبة');
+            return;
+        }
+
+        console.log(`🔍 حساب الضريبة - Country ID: ${countryId}, State ID: ${stateId}`);
+
+        // استدعاء دالة tax_submit الموجودة بالفعل
+        tax_submit(countryId, stateId);
     }
 
     // Initialize map when modal is shown
@@ -1089,20 +1206,15 @@
         }
     }
 
-    // Use selected location - populate form fields
+    // Use selected location - populate hidden fields only
     function useLocation() {
         if (!selectedLocationData) return;
 
         // Check if using nearest city (from resolution_info)
-        let targetCityId = selectedLocationData.city?.id;
-        let targetStateId = selectedLocationData.state?.id;
         let useNearestCity = false;
 
         if (selectedLocationData.resolution_info &&
             selectedLocationData.resolution_info.is_nearest_city) {
-
-            // Using nearest city for shipping
-            targetCityId = selectedLocationData.city?.id;  // API already returns the nearest city
             useNearestCity = true;
 
             // Show confirmation message
@@ -1115,22 +1227,46 @@
             }
         }
 
-        // Update hidden latitude/longitude fields (keep original location)
+        // ✅ Fill HIDDEN FIELDS ONLY (Primary data source)
         $('#latitude').val(selectedLocationData.coordinates?.latitude || '');
         $('#longitude').val(selectedLocationData.coordinates?.longitude || '');
+        $('#country_id').val(selectedLocationData.country?.id || '');
+        $('#state_id').val(selectedLocationData.state?.id || '');
+        $('#city_id').val(selectedLocationData.city?.id || '');
+
+        // ✅ Fill the hidden dropdown fields with names (for backend compatibility)
+        // The backend expects customer_country, customer_state, customer_city as strings
+        if (selectedLocationData.country?.name) {
+            $('#select_country').val(selectedLocationData.country.name);
+        }
+        if (selectedLocationData.state?.name) {
+            // Create option if not exists and select it
+            const stateSelect = $('#show_state');
+            stateSelect.empty().append(
+                $('<option>').val(selectedLocationData.state.name).text(selectedLocationData.state.name_ar || selectedLocationData.state.name)
+            );
+            stateSelect.val(selectedLocationData.state.name);
+        }
+        if (selectedLocationData.city?.id) {
+            // city_id is already numeric, so we use it directly
+            const citySelect = $('#show_city');
+            citySelect.empty().append(
+                $('<option>').val(selectedLocationData.city.id).text(selectedLocationData.city.name_ar || selectedLocationData.city.name)
+            );
+            citySelect.val(selectedLocationData.city.id);
+        }
+
+        // Update visible address field
+        const fullAddress = selectedLocationData.address?.ar || selectedLocationData.address?.en || '';
+        $('#address').val(fullAddress);
 
         // Update ZIP code if available
         if (selectedLocationData.postal_code) {
             $('#zip').val(selectedLocationData.postal_code);
         }
 
-        // Update address field
-        const fullAddress = selectedLocationData.address?.ar || selectedLocationData.address?.en || '';
-        $('#address').val(fullAddress);
-
         // Store original city name if using nearest city
         if (useNearestCity && selectedLocationData.resolution_info) {
-            // Add or update hidden field for original city
             let originalCityInput = $('input[name="original_city_name"]');
             if (originalCityInput.length === 0) {
                 $('form.address-wrapper').append(
@@ -1141,281 +1277,56 @@
             }
         }
 
-        // Get IDs from API response
-        const countryId = selectedLocationData.country?.id;
-
-        if (!countryId) {
-            if (typeof toastr !== 'undefined') {
-                toastr.warning('لم يتم العثور على معرّف الدولة');
-            }
-            $('#mapModal').modal('hide');
-            return;
+        // ✅ حفظ الموقع في localStorage لاستخدامه عند Refresh/Back/Forward
+        try {
+            localStorage.setItem('selectedLocation', JSON.stringify({
+                country: selectedLocationData.country,
+                state: selectedLocationData.state,
+                city: selectedLocationData.city,
+                coordinates: selectedLocationData.coordinates,
+                address: selectedLocationData.address,
+                resolution_info: selectedLocationData.resolution_info,
+                postal_code: selectedLocationData.postal_code
+            }));
+            console.log('✅ تم حفظ الموقع في localStorage');
+        } catch (error) {
+            console.error('❌ فشل حفظ الموقع في localStorage:', error);
         }
 
-        // Step 1: Find and select country by ID (use alternative city if needed)
-        selectCountryById(countryId, targetStateId, targetCityId);
-    }
-
-    // Select country by ID and trigger cascade
-    function selectCountryById(countryId, stateId, cityId) {
-        let countryFound = false;
-
-        $('#select_country option').each(function() {
-            const optionCountryId = $(this).attr('data'); // data attribute contains country ID
-
-            if (optionCountryId && parseInt(optionCountryId) === parseInt(countryId)) {
-                $(this).prop('selected', true);
-                countryFound = true;
-
-                // Update NiceSelect display
-                $('#select_country').niceSelect('update');
-
-                // Trigger change to load states via AJAX
-                $('#select_country').trigger('change');
-
-                // Wait for states to load, then select state
-                if (stateId) {
-                    waitAndSelectState(stateId, cityId);
-                } else {
-                    // No state, show success and close
-                    showFinalSuccessMessage();
-                }
-
-                return false; // break loop
-            }
-        });
-
-        if (!countryFound) {
-            // Country not found in dropdown - add it dynamically
-            addCountryToDropdown(selectedLocationData.country, stateId, cityId);
-        }
-    }
-
-    // Add country to dropdown dynamically - DISABLED for Tryoto compatibility
-    function addCountryToDropdown(countryData, stateId, cityId) {
-        if (!countryData || !countryData.id) {
-            if (typeof toastr !== 'undefined') {
-                toastr.error('بيانات الدولة غير صحيحة');
-            }
-            $('#mapModal').modal('hide');
-            return;
-        }
-
-        // DON'T add new countries - they won't work with shipping
-        if (typeof toastr !== 'undefined') {
-            toastr.warning('الدولة "' + (countryData.name_ar || countryData.name) + '" غير موجودة في قائمة الدول المتاحة. يرجى اختيار موقع داخل دول الشحن المتاحة.');
-        }
-
-        // Close modal - user needs to select a different location
-        $('#mapModal').modal('hide');
-    }
-
-    // Add state to dropdown dynamically - DISABLED for Tryoto compatibility
-    function addStateToDropdown(stateData, cityId) {
-        if (!stateData || !stateData.id) {
-            showFinalSuccessMessage();
-            return;
-        }
-
-        // DON'T add new states - they won't work with shipping
-        if (typeof toastr !== 'undefined') {
-            toastr.warning('المنطقة "' + (stateData.name_ar || stateData.name) + '" غير موجودة في قائمة المناطق المتاحة للشحن. يرجى اختيار موقع في منطقة أخرى.');
-        }
-
-        // Keep modal open so user can select another location
-        // Don't call showFinalSuccessMessage() here
-    }
-
-    // Wait for states to load via AJAX, then select by ID
-    function waitAndSelectState(stateId, cityId) {
-        let attempts = 0;
-        const maxAttempts = 50; // 5 seconds max
-
-        const checkStatesInterval = setInterval(() => {
-            attempts++;
-
-            const stateOptions = $('#show_state option');
-
-            if (stateOptions.length > 0) {
-                clearInterval(checkStatesInterval);
-
-                let stateFound = false;
-
-                stateOptions.each(function() {
-                    const optionValue = $(this).val();
-
-                    // Match by state ID (value contains state ID)
-                    if (optionValue && parseInt(optionValue) === parseInt(stateId)) {
-                        $(this).prop('selected', true);
-                        stateFound = true;
-
-                        // Update NiceSelect
-                        $('#show_state').niceSelect('update');
-
-                        // Trigger change to load cities via AJAX
-                        $('#show_state').trigger('change');
-
-                        // Wait for cities to load, then select city
-                        if (cityId) {
-                            waitAndSelectCity(cityId);
-                        } else {
-                            // No city, show success and close
-                            showFinalSuccessMessage();
-                        }
-
-                        return false; // break loop
-                    }
-                });
-
-                if (!stateFound) {
-                    // State not found - add it dynamically
-                    addStateToDropdown(selectedLocationData.state, cityId);
-                }
-            } else if (attempts >= maxAttempts) {
-                // Timeout waiting for states
-                clearInterval(checkStatesInterval);
-                showFinalSuccessMessage();
-            }
-        }, 100); // Check every 100ms
-    }
-
-    // Add city to dropdown dynamically - DISABLED for Tryoto compatibility
-    // Cities must exist in database for shipping to work
-    function addCityToDropdown(cityData) {
-        if (!cityData || !cityData.id) {
-            showFinalSuccessMessage();
-            return;
-        }
-
-        // DON'T add new cities - they won't work with Tryoto shipping
-        // Instead, show warning and close modal
-        if (typeof toastr !== 'undefined') {
-            toastr.warning('المدينة "' + (cityData.name_ar || cityData.name) + '" غير موجودة في قائمة المدن المتاحة للشحن. يرجى اختيار موقع في مدينة أخرى.');
-        }
-
-        // Keep modal open so user can select another location
-        // Don't call showFinalSuccessMessage() here
-    }
-
-    // Wait for cities to load via AJAX, then select by name
-    function waitAndSelectCity(cityId) {
-        let attempts = 0;
-        const maxAttempts = 50; // 5 seconds max
-
-        // Get city names from API response for matching
-        const cityNameEn = selectedLocationData.city?.name || '';
-        const cityNameAr = selectedLocationData.city?.name_ar || '';
-
-        const checkCitiesInterval = setInterval(() => {
-            attempts++;
-
-            const cityOptions = $('#show_city option');
-
-            if (cityOptions.length > 0) {
-                clearInterval(checkCitiesInterval);
-
-                let cityFound = false;
-
-                // First try exact match
-                cityOptions.each(function() {
-                    const optionValue = $(this).val();
-                    const optionText = $(this).text().trim();
-
-                    // Match by city name (value contains city_name, not ID)
-                    if (optionValue && (
-                        optionValue.toLowerCase() === cityNameEn.toLowerCase() ||
-                        optionValue.toLowerCase() === cityNameAr.toLowerCase() ||
-                        optionText.toLowerCase() === cityNameEn.toLowerCase() ||
-                        optionText.toLowerCase() === cityNameAr.toLowerCase()
-                    )) {
-                        $(this).prop('selected', true);
-                        cityFound = true;
-
-                        // Update NiceSelect
-                        $('#show_city').niceSelect('update');
-
-                        return false; // break loop
-                    }
-                });
-
-                // If exact match not found, try partial match
-                if (!cityFound) {
-                    cityOptions.each(function() {
-                        const optionValue = $(this).val();
-                        const optionText = $(this).text().trim();
-
-                        // Try partial match - check if city name contains the option or vice versa
-                        if (optionValue && (
-                            optionValue.toLowerCase().includes(cityNameEn.toLowerCase()) ||
-                            cityNameEn.toLowerCase().includes(optionValue.toLowerCase()) ||
-                            optionText.toLowerCase().includes(cityNameEn.toLowerCase()) ||
-                            cityNameEn.toLowerCase().includes(optionText.toLowerCase()) ||
-                            (cityNameAr && (
-                                optionValue.toLowerCase().includes(cityNameAr.toLowerCase()) ||
-                                cityNameAr.toLowerCase().includes(optionValue.toLowerCase()) ||
-                                optionText.toLowerCase().includes(cityNameAr.toLowerCase()) ||
-                                cityNameAr.toLowerCase().includes(optionText.toLowerCase())
-                            ))
-                        )) {
-                            $(this).prop('selected', true);
-                            cityFound = true;
-
-                            // Update NiceSelect
-                            $('#show_city').niceSelect('update');
-
-                            if (typeof toastr !== 'undefined') {
-                                toastr.info('تم اختيار أقرب مدينة متاحة: ' + optionText);
-                            }
-
-                            return false; // break loop
-                        }
-                    });
-                }
-
-                if (!cityFound) {
-                    // City not found - show warning (don't add it)
-                    addCityToDropdown(selectedLocationData.city);
-                } else {
-                    // Show final success message
-                    showFinalSuccessMessage();
-                }
-            } else if (attempts >= maxAttempts) {
-                // Timeout waiting for cities
-                clearInterval(checkCitiesInterval);
-                if (typeof toastr !== 'undefined') {
-                    toastr.warning('لم يتم العثور على مدن في هذه المنطقة. يرجى اختيار موقع آخر.');
-                }
-            }
-        }, 100); // Check every 100ms
-    }
-
-    // Show final success message once
-    function showFinalSuccessMessage() {
-        // Make dropdowns readonly/disabled (map-selected)
-        $('#select_country').prop('disabled', true).addClass('map-selected');
-        $('#show_state').prop('disabled', true).addClass('map-selected');
-        $('#show_city').prop('disabled', true).addClass('map-selected');
-
-        // Update NiceSelect to reflect disabled state
-        $('#select_country').niceSelect('update');
-        $('#show_state').niceSelect('update');
-        $('#show_city').niceSelect('update');
-
-        // Add visual indicator
-        $('.map-selected').closest('.input-wrapper').find('.label-cls').append(
-            ' <span class="badge bg-success">✓ من الخريطة</span>'
-        );
-
-        // Update map button
+        // ✅ Update UI to show success
         const mapBtn = $('[data-bs-target="#mapModal"]');
-        mapBtn.removeClass('btn-outline-primary').addClass('btn-success');
-        mapBtn.html('<i class="fas fa-check-circle"></i> تم اختيار الموقع من الخريطة');
+        mapBtn.removeClass('btn-outline-primary btn-danger').addClass('btn-success');
+        mapBtn.html('<i class="fas fa-check-circle"></i> تم اختيار الموقع من الخريطة بنجاح');
+
+        // Show location summary
+        const locationSummary = `${selectedLocationData.city?.name_ar || ''}, ${selectedLocationData.state?.name_ar || ''}, ${selectedLocationData.country?.name_ar || ''}`;
+
+        // Add location info below button if not exists
+        let locationInfo = $('.map-location-info');
+        if (locationInfo.length === 0) {
+            mapBtn.parent().append(`
+                <div class="map-location-info mt-2 alert alert-success">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <strong>الموقع المحدد:</strong> ${locationSummary}
+                </div>
+            `);
+        } else {
+            locationInfo.html(`
+                <i class="fas fa-map-marker-alt"></i>
+                <strong>الموقع المحدد:</strong> ${locationSummary}
+            `);
+        }
+
+        // ✅ حساب الضريبة بعد اختيار الموقع
+        calculateTaxIfNeeded();
 
         if (typeof toastr !== 'undefined') {
-            toastr.success('تم حفظ الموقع بنجاح! تم تعبئة جميع الحقول تلقائياً');
+            toastr.success('تم حفظ الموقع بنجاح! يمكنك الآن المتابعة');
         }
+
         $('#mapModal').modal('hide');
     }
+
 
     // Reset selection
     function resetSelection() {
@@ -1487,114 +1398,8 @@
     }
 
     // ===================== Tryoto City Verification =====================
-
-    let cityVerificationInProgress = false;
-    let lastVerifiedCityId = null;
-
-    /**
-     * Verify city with Tryoto when selected
-     * This ensures the city is supported and auto-saves it if new
-     */
-    $(document).on('change', '#show_city', function() {
-        const cityId = $(this).val();
-        const countryId = $('#select_country option:selected').attr('data');
-        const stateId = $('#show_state').val();
-
-        if (!cityId || !countryId || !stateId) {
-            return;
-        }
-
-        // Skip if already verified this city
-        if (lastVerifiedCityId === cityId) {
-            return;
-        }
-
-        // Prevent multiple simultaneous verifications
-        if (cityVerificationInProgress) {
-            return;
-        }
-
-        cityVerificationInProgress = true;
-
-        // Show loading indicator
-        const $submitBtn = $('.checkout-form button[type="submit"]');
-        const originalBtnText = $submitBtn.html();
-        $submitBtn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> @lang("Verifying city with Tryoto...")');
-
-        // Verify with Tryoto API
-        $.ajax({
-            url: '{{ route("tryoto.verify.city.id") }}',
-            method: 'POST',
-            data: {
-                city_id: cityId,
-                _token: '{{ csrf_token() }}'
-            },
-            success: function(response) {
-                cityVerificationInProgress = false;
-                $submitBtn.prop('disabled', false).html(originalBtnText);
-
-                if (response.success) {
-                    lastVerifiedCityId = cityId;
-
-                    // Show success message if it was auto-saved
-                    if (response.data && !response.data.cached) {
-                        toastr.success('@lang("City verified and saved successfully!")');
-                        console.log('Tryoto verification:', response.data);
-                    }
-                } else {
-                    // City not supported by Tryoto
-                    toastr.error(response.message || '@lang("This city is not supported by Tryoto shipping")');
-
-                    // Reset city selection
-                    $('#show_city').val('');
-                    $('#show_city').niceSelect('update');
-                    lastVerifiedCityId = null;
-                }
-            },
-            error: function(xhr) {
-                cityVerificationInProgress = false;
-                $submitBtn.prop('disabled', false).html(originalBtnText);
-
-                let errorMsg = '@lang("Failed to verify city with Tryoto")';
-                if (xhr.responseJSON && xhr.responseJSON.message) {
-                    errorMsg = xhr.responseJSON.message;
-                }
-
-                toastr.error(errorMsg);
-                console.error('Tryoto verification error:', xhr);
-
-                // Reset city selection on error
-                $('#show_city').val('');
-                $('#show_city').niceSelect('update');
-                lastVerifiedCityId = null;
-            }
-        });
-    });
-
-    /**
-     * Prevent form submission if city not verified
-     */
-    $('.checkout-form').on('submit', function(e) {
-        const cityId = $('#show_city').val();
-        const requiresVerification = $('#select_country option:selected').attr('data') !== '';
-
-        if (requiresVerification && cityId && lastVerifiedCityId !== cityId) {
-            e.preventDefault();
-            toastr.error('@lang("Please wait for city verification to complete")');
-            return false;
-        }
-
-        if (requiresVerification && !cityId) {
-            e.preventDefault();
-            toastr.error('@lang("Please select a city")');
-            return false;
-        }
-    });
-
-    // Reset verification state when country or state changes
-    $(document).on('change', '#select_country, #show_state', function() {
-        lastVerifiedCityId = null;
-    });
+    // ⚠️ DISABLED - No longer needed as we rely on map selection only
+    // Dropdowns are hidden and not used for form submission
 
     // ============================================
     // Form Validation for Map Location (NEW)
@@ -1635,8 +1440,18 @@
             return false;
         }
 
-        // Validation passed - allow submission
+        // Validation passed - keep localStorage (will be cleared in Step2 or after order completion)
+        // We keep it so user can go back if needed
+        console.log('✅ تم التحقق من صحة بيانات الموقع - الانتقال إلى Step 2');
         return true;
+    });
+
+    // ============================================
+    // استدعاء استرجاع الموقع عند تحميل الصفحة
+    // ============================================
+    $(document).ready(function() {
+        console.log('📄 تحميل صفحة Checkout Step 1');
+        restoreSavedLocation();
     });
 
     console.log('✅ Google Maps Checkout Integration - Fully Loaded');
