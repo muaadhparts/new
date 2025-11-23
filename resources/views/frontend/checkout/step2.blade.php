@@ -694,20 +694,15 @@
         let mship = 0;
         let mpack = 0;
 
-
-        var ftotal = parseFloat($('#grandtotal').val());
-        ftotal = parseFloat(ftotal).toFixed(2);
-
-        if (pos == 0) {
-            $('#final-cost').html('{{ $curr->sign }}' + ftotal)
-        } else {
-            $('#final-cost').html(ftotal + '{{ $curr->sign }}')
-        }
-        $('#grandtotal').val(ftotal);
+        // ✅ REMOVED: Initial calculation that was showing wrong total
+        // The correct total will be calculated by updateFinalTotal() inside $(document).ready()
+        // This fixes the issue where packing was not included in the displayed total
 
         let original_tax = 0;
 
         $(document).ready(function() {
+            console.log('📍 Step2: تحميل الصفحة');
+
             // ✅ Restore saved shipping/packing selections from step2 session
             @if(isset($step2) && $step2)
                 @if(isset($step2->saved_shipping_selections) && is_array($step2->saved_shipping_selections))
@@ -716,7 +711,8 @@
                         // Find and check the radio for this vendor
                         const shippingRadio{{ $vendorId }} = $('input.shipping[name="shipping[{{ $vendorId }}]"][value="{{ $shippingValue }}"]');
                         if (shippingRadio{{ $vendorId }}.length > 0) {
-                            shippingRadio{{ $vendorId }}.prop('checked', true).trigger('change');
+                            shippingRadio{{ $vendorId }}.prop('checked', true);
+                            console.log('✅ تم استرجاع shipping للـ vendor {{ $vendorId }}');
                         }
                     @endforeach
                 @endif
@@ -726,7 +722,8 @@
                     @foreach($step2->saved_packing_selections as $vendorId => $packingValue)
                         const packingRadio{{ $vendorId }} = $('input.packing[name="packeging[{{ $vendorId }}]"][value="{{ $packingValue }}"]');
                         if (packingRadio{{ $vendorId }}.length > 0) {
-                            packingRadio{{ $vendorId }}.prop('checked', true).trigger('change');
+                            packingRadio{{ $vendorId }}.prop('checked', true);
+                            console.log('✅ تم استرجاع packing للـ vendor {{ $vendorId }}');
                         }
                     @endforeach
                 @endif
@@ -742,8 +739,12 @@
                 @endif
             @endif
 
+            // ✅ CRITICAL: Calculate shipping/packing totals FIRST
             getShipping();
             getPacking();
+
+            // ✅ CRITICAL: Update final total after loading saved selections
+            updateFinalTotal();
 
             let country_id = $('#select_country').val();
             let state_id = $('#state_id').val();
@@ -826,19 +827,10 @@
             let title = $(this).attr('data-form');
             $('#shipping_text' + ref).html(title + '+' + view);
 
-            // Calculate total: products + tax + shipping + packing
-            var taxAmount = parseFloat($('#tax_amount_value').val()) || 0;
-            var ttotal = parseFloat($('#tgrandtotal').val()) + taxAmount + parseFloat(mship) + parseFloat(mpack);
-            ttotal = parseFloat(ttotal).toFixed(2);
+            // ✅ Use centralized updateFinalTotal() function
+            updateFinalTotal();
 
-            if (pos == 0) {
-                $('#final-cost').html('{{ $curr->sign }}' + ttotal);
-            } else {
-                $('#final-cost').html(ttotal + '{{ $curr->sign }}');
-            }
-            $('#grandtotal').val(ttotal);
             $('#multi_shipping_id').val($(this).val());
-
         })
 
 
@@ -849,17 +841,9 @@
             let title = $(this).attr('data-form');
             $('#packing_text' + ref).html(title + '+' + view);
 
-            // Calculate total: products + tax + shipping + packing
-            var taxAmount = parseFloat($('#tax_amount_value').val()) || 0;
-            var ttotal = parseFloat($('#tgrandtotal').val()) + taxAmount + parseFloat(mship) + parseFloat(mpack);
-            ttotal = parseFloat(ttotal).toFixed(2);
+            // ✅ Use centralized updateFinalTotal() function
+            updateFinalTotal();
 
-            if (pos == 0) {
-                $('#final-cost').html('{{ $curr->sign }}' + ttotal);
-            } else {
-                $('#final-cost').html(ttotal + '{{ $curr->sign }}');
-            }
-            $('#grandtotal').val(ttotal);
             $('#multi_packaging_id').val($(this).val());
             // ✅ Update vendor_packing_id for vendor checkout
             $('input[name="vendor_packing_id"]').val($(this).val());
@@ -872,8 +856,10 @@
                 if ($(this).is(':checked')) {
                     mship += parseFloat($(this).attr('data-price'));
                 }
-                $('.shipping_cost_view').html('{{ $curr->sign }}' + mship);
             });
+            // ✅ FIXED: Update view OUTSIDE the loop
+            $('.shipping_cost_view').html('{{ $curr->sign }}' + mship);
+            console.log('🚚 Shipping total:', mship);
         }
 
         function getPacking() {
@@ -882,8 +868,65 @@
                 if ($(this).is(':checked')) {
                     mpack += parseFloat($(this).attr('data-price'));
                 }
-                $('.packing_cost_view').html('{{ $curr->sign }}' + mpack);
             });
+            // ✅ FIXED: Update view OUTSIDE the loop
+            $('.packing_cost_view').html('{{ $curr->sign }}' + mpack);
+            console.log('📦 Packing total:', mpack);
+        }
+
+        /**
+         * ✅ NEW FUNCTION: Update Final Total
+         * Calculates: Products + Tax + Shipping + Packing
+         * Called on:
+         * - Page load (after restoring selections)
+         * - Shipping change
+         * - Packing change
+         */
+        function updateFinalTotal() {
+            console.log('🔄 تحديث الإجمالي النهائي...');
+
+            // Get base total (products only, from backend)
+            var baseTotal = parseFloat($('#tgrandtotal').val()) || 0;
+
+            // Get tax amount
+            var taxAmount = parseFloat($('#tax_amount_value').val()) || 0;
+
+            // Get shipping and packing (calculated by getShipping/getPacking)
+            var shippingTotal = parseFloat(mship) || 0;
+            var packingTotal = parseFloat(mpack) || 0;
+
+            // ✅ Debug: Check if mship and mpack are set correctly
+            console.log('📦 Current values:', {
+                'mship (global)': mship,
+                'mpack (global)': mpack,
+                'baseTotal (#tgrandtotal)': baseTotal,
+                'taxAmount (#tax_amount_value)': taxAmount
+            });
+
+            // Calculate final total
+            var finalTotal = baseTotal + taxAmount + shippingTotal + packingTotal;
+            finalTotal = parseFloat(finalTotal).toFixed(2);
+
+            console.log('📊 تفاصيل الحساب:', {
+                'Products': baseTotal.toFixed(2),
+                'Tax (15%)': taxAmount.toFixed(2),
+                'Shipping': shippingTotal.toFixed(2),
+                'Packing': packingTotal.toFixed(2),
+                '═══════════': '═══════════',
+                'TOTAL': finalTotal
+            });
+
+            // Update UI
+            if (pos == 0) {
+                $('#final-cost').html('{{ $curr->sign }}' + finalTotal);
+            } else {
+                $('#final-cost').html(finalTotal + '{{ $curr->sign }}');
+            }
+
+            // Update hidden field
+            $('#grandtotal').val(finalTotal);
+
+            console.log('✅ تم تحديث الإجمالي النهائي:', finalTotal);
         }
     </script>
 @endsection
