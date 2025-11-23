@@ -59,12 +59,21 @@ class GeocodingController extends Controller
 
             $addressComponents = $geocodeResult['data'];
 
-            // Extract location details من الخريطة
-            $cityName = $addressComponents['city'] ?? $addressComponents['administrative_area_level_1'] ?? null;
-            $stateName = $addressComponents['administrative_area_level_1'] ?? null;
+            // Extract location details من الخريطة (بلغتين!)
+            // English names (للتحقق من Tryoto)
+            $cityName = $addressComponents['city'] ?? null;
+            $stateName = $addressComponents['state'] ?? null;
             $countryName = $addressComponents['country'] ?? null;
             $countryCode = $addressComponents['country_code'] ?? null;
+
+            // Arabic names (للعرض في الواجهة)
+            $cityNameAr = $addressComponents['city_ar'] ?? $cityName;
+            $stateNameAr = $addressComponents['state_ar'] ?? $stateName;
+            $countryNameAr = $addressComponents['country_ar'] ?? $countryName;
+
+            // Addresses
             $formattedAddress = $geocodeResult['formatted_address'] ?? '';
+            $formattedAddressEn = $geocodeResult['formatted_address_en'] ?? '';
 
             if (!$cityName || !$countryName) {
                 return response()->json([
@@ -73,11 +82,17 @@ class GeocodingController extends Controller
                 ], 400);
             }
 
-            Log::info('📍 Location extracted from map', [
-                'city' => $cityName,
-                'state' => $stateName,
-                'country' => $countryName,
-                'address' => $formattedAddress
+            Log::info('📍 Location extracted from map (bilingual)', [
+                'en' => [
+                    'city' => $cityName,
+                    'state' => $stateName,
+                    'country' => $countryName
+                ],
+                'ar' => [
+                    'city' => $cityNameAr,
+                    'state' => $stateNameAr,
+                    'country' => $countryNameAr
+                ]
             ]);
 
             // Get or create country
@@ -121,26 +136,27 @@ class GeocodingController extends Controller
             // المرحلة الرابعة: تخزين البيانات (Cache ذكي)
             // ==========================================
 
-            // Get or create state
+            // Get or create state (بلغتين)
             $state = State::where('country_id', $country->id)
-                ->where(function ($query) use ($stateName) {
+                ->where(function ($query) use ($stateName, $stateNameAr) {
                     $query->where('state', $stateName)
-                        ->orWhere('state_ar', $stateName);
+                        ->orWhere('state_ar', $stateNameAr);
                 })
                 ->first();
 
             if (!$state && $stateName) {
                 $state = State::create([
                     'country_id' => $country->id,
-                    'state' => $stateName,
-                    'state_ar' => $this->tryotoService->translateRegion($stateName),
+                    'state' => $stateName, // ✅ English from Google Maps
+                    'state_ar' => $stateNameAr, // ✅ Arabic from Google Maps
                     'status' => 1,
                     'tax' => 0,
                     'owner_id' => 0
                 ]);
 
-                Log::info('💾 New state saved to cache', [
+                Log::info('💾 New state saved to cache (bilingual)', [
                     'state' => $stateName,
+                    'state_ar' => $stateNameAr,
                     'country' => $country->country_name
                 ]);
             }
@@ -149,24 +165,37 @@ class GeocodingController extends Controller
             $resolvedCityName = $cityResolution['city_name'];
             $cityCoordinates = $cityResolution['coordinates'] ?? ['lat' => $latitude, 'lng' => $longitude];
 
+            // تحديد الاسم العربي للمدينة:
+            // 1. إذا كانت نفس المدينة الأصلية → استخدم الاسم العربي من Google Maps
+            // 2. إذا كانت مدينة بديلة → استخدم الترجمة من TryotoService
+            $resolvedCityNameAr = null;
+            if ($cityResolution['strategy'] === 'exact_match' || $cityResolution['strategy'] === 'name_variation') {
+                // نفس المدينة → استخدم الاسم العربي من Google Maps
+                $resolvedCityNameAr = $cityNameAr;
+            } else {
+                // مدينة بديلة → استخدم الترجمة
+                $resolvedCityNameAr = $cityResolution['city_name_ar'] ?? $this->tryotoService->translateCity($resolvedCityName);
+            }
+
             $city = City::where('city_name', $resolvedCityName)
                 ->where('country_id', $country->id)
                 ->first();
 
             if (!$city) {
-                // Save the verified/supported city
+                // Save the verified/supported city (bilingual)
                 $city = City::create([
                     'state_id' => $state ? $state->id : null,
                     'country_id' => $country->id,
-                    'city_name' => $resolvedCityName,
-                    'city_name_ar' => $cityResolution['city_name_ar'] ?? $this->tryotoService->translateCity($resolvedCityName),
+                    'city_name' => $resolvedCityName, // ✅ English
+                    'city_name_ar' => $resolvedCityNameAr, // ✅ Arabic
                     'latitude' => $cityCoordinates['lat'],
                     'longitude' => $cityCoordinates['lng'],
                     'status' => 1
                 ]);
 
-                Log::info('💾 City saved to cache DB', [
+                Log::info('💾 City saved to cache DB (bilingual)', [
                     'city' => $resolvedCityName,
+                    'city_ar' => $resolvedCityNameAr,
                     'strategy' => $cityResolution['strategy'],
                     'coordinates' => $cityCoordinates,
                     'note' => 'This city was VERIFIED by Tryoto API and saved as cache'
@@ -258,7 +287,12 @@ class GeocodingController extends Controller
     }
 
     /**
-     * Get geocoding data from Google Maps API
+     * Get geocoding data from Google Maps API in BOTH languages
+     *
+     * استراتيجية الحصول على اللغتين:
+     * 1. Request 1: language=en → country_name, state, city
+     * 2. Request 2: language=ar → country_name_ar, state_ar, city_ar
+     * 3. Merge results
      *
      * @param float $latitude
      * @param float $longitude
@@ -276,60 +310,97 @@ class GeocodingController extends Controller
                 ];
             }
 
-            $response = Http::timeout(10)->get('https://maps.googleapis.com/maps/api/geocode/json', [
+            // ==========================================
+            // Request 1: English Names
+            // ==========================================
+            $responseEn = Http::timeout(10)->get('https://maps.googleapis.com/maps/api/geocode/json', [
+                'latlng' => "{$latitude},{$longitude}",
+                'key' => $apiKey,
+                'language' => 'en'
+            ]);
+
+            if (!$responseEn->successful()) {
+                return [
+                    'success' => false,
+                    'message' => 'Google Maps API request failed (EN)'
+                ];
+            }
+
+            $dataEn = $responseEn->json();
+
+            if ($dataEn['status'] !== 'OK' || empty($dataEn['results'])) {
+                return [
+                    'success' => false,
+                    'message' => 'No results found (EN)'
+                ];
+            }
+
+            // ==========================================
+            // Request 2: Arabic Names
+            // ==========================================
+            $responseAr = Http::timeout(10)->get('https://maps.googleapis.com/maps/api/geocode/json', [
                 'latlng' => "{$latitude},{$longitude}",
                 'key' => $apiKey,
                 'language' => 'ar'
             ]);
 
-            if (!$response->successful()) {
+            if (!$responseAr->successful()) {
                 return [
                     'success' => false,
-                    'message' => 'Google Maps API request failed'
+                    'message' => 'Google Maps API request failed (AR)'
                 ];
             }
 
-            $data = $response->json();
+            $dataAr = $responseAr->json();
 
-            if ($data['status'] !== 'OK' || empty($data['results'])) {
+            if ($dataAr['status'] !== 'OK' || empty($dataAr['results'])) {
                 return [
                     'success' => false,
-                    'message' => 'No results found'
+                    'message' => 'No results found (AR)'
                 ];
             }
 
-            $result = $data['results'][0];
-            $components = [];
+            // ==========================================
+            // Extract Components from BOTH languages
+            // ==========================================
+            $componentsEn = $this->extractAddressComponents($dataEn['results'][0]);
+            $componentsAr = $this->extractAddressComponents($dataAr['results'][0]);
 
-            foreach ($result['address_components'] as $component) {
-                $types = $component['types'];
+            // Merge: EN and AR
+            $components = [
+                // English names
+                'city' => $componentsEn['city'] ?? null,
+                'state' => $componentsEn['administrative_area_level_1'] ?? null,
+                'country' => $componentsEn['country'] ?? null,
+                'country_code' => $componentsEn['country_code'] ?? null,
 
-                if (in_array('locality', $types)) {
-                    $components['city'] = $component['long_name'];
-                }
+                // Arabic names
+                'city_ar' => $componentsAr['city'] ?? null,
+                'state_ar' => $componentsAr['administrative_area_level_1'] ?? null,
+                'country_ar' => $componentsAr['country'] ?? null,
 
-                if (in_array('administrative_area_level_2', $types) && !isset($components['city'])) {
-                    $components['city'] = $component['long_name'];
-                }
+                // Other
+                'postal_code' => $componentsEn['postal_code'] ?? null,
+            ];
 
-                if (in_array('administrative_area_level_1', $types)) {
-                    $components['administrative_area_level_1'] = $component['long_name'];
-                }
-
-                if (in_array('country', $types)) {
-                    $components['country'] = $component['long_name'];
-                    $components['country_code'] = $component['short_name'];
-                }
-
-                if (in_array('postal_code', $types)) {
-                    $components['postal_code'] = $component['long_name'];
-                }
-            }
+            Log::info('📍 Google Maps returned bilingual data', [
+                'en' => [
+                    'country' => $components['country'],
+                    'state' => $components['state'],
+                    'city' => $components['city']
+                ],
+                'ar' => [
+                    'country' => $components['country_ar'],
+                    'state' => $components['state_ar'],
+                    'city' => $components['city_ar']
+                ]
+            ]);
 
             return [
                 'success' => true,
                 'data' => $components,
-                'formatted_address' => $result['formatted_address']
+                'formatted_address' => $dataAr['results'][0]['formatted_address'], // Arabic address
+                'formatted_address_en' => $dataEn['results'][0]['formatted_address'] // English address
             ];
 
         } catch (\Exception $e) {
@@ -342,6 +413,44 @@ class GeocodingController extends Controller
                 'message' => $e->getMessage()
             ];
         }
+    }
+
+    /**
+     * Extract address components from Google Maps result
+     *
+     * @param array $result
+     * @return array
+     */
+    protected function extractAddressComponents($result)
+    {
+        $components = [];
+
+        foreach ($result['address_components'] as $component) {
+            $types = $component['types'];
+
+            if (in_array('locality', $types)) {
+                $components['city'] = $component['long_name'];
+            }
+
+            if (in_array('administrative_area_level_2', $types) && !isset($components['city'])) {
+                $components['city'] = $component['long_name'];
+            }
+
+            if (in_array('administrative_area_level_1', $types)) {
+                $components['administrative_area_level_1'] = $component['long_name'];
+            }
+
+            if (in_array('country', $types)) {
+                $components['country'] = $component['long_name'];
+                $components['country_code'] = $component['short_name'];
+            }
+
+            if (in_array('postal_code', $types)) {
+                $components['postal_code'] = $component['long_name'];
+            }
+        }
+
+        return $components;
     }
 
     /**
