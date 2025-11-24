@@ -524,6 +524,20 @@ class CheckoutController extends FrontBaseController
         $totalTaxAmount = array_sum(array_column($vendorTaxData, 'tax_amount'));
         $step1['total_tax_amount'] = $totalTaxAmount;
 
+        // ✅ ADD: Calculate products_total and total_with_tax for unified price display
+        $oldCart = Session::get('cart');
+        $cart = new Cart($oldCart);
+        $productsTotal = $cart->totalPrice;
+
+        // Apply coupon if exists
+        $coupon = Session::has('coupon') ? Session::get('coupon') : 0;
+        $productsTotal = $productsTotal - $coupon;
+
+        // Save for price summary component
+        $step1['products_total'] = $productsTotal;
+        $step1['tax_amount'] = $totalTaxAmount;
+        $step1['total_with_tax'] = $productsTotal + $totalTaxAmount;
+
         // ====================================================================
         // CLEAN SESSION - Prevent any data duplication
         // ====================================================================
@@ -717,7 +731,7 @@ class CheckoutController extends FrontBaseController
         // Calculate final total: products + tax + shipping + packing
         $finalTotal = $baseAmount + $taxAmount + $shipping_cost_total + $packing_cost_total;
 
-        // حفظ ملخص الشحن والتغليف والضريبة في step2 لاستخدامه في step3
+        // ✅ حفظ ملخص الشحن والتغليف والضريبة في step2 لاستخدامه في step3
         $step2['shipping_company'] = $shipping_name;
         $step2['shipping_cost']    = $shipping_cost_total;
         $step2['packing_company']  = $packing_name;
@@ -725,7 +739,12 @@ class CheckoutController extends FrontBaseController
         $step2['tax_rate']         = $taxRate;
         $step2['tax_amount']       = $taxAmount;
         $step2['tax_location']     = $taxLocation;
-        $step2['total']            = $finalTotal;
+        $step2['total']            = $finalTotal;  // Backward compatibility
+        $step2['final_total']      = $finalTotal;  // ✅ Unified naming
+
+        // Save shipping/packing selections for restoration on refresh/back
+        $step2['saved_shipping_selections'] = $step2['shipping'] ?? [];
+        $step2['saved_packing_selections'] = $step2['packeging'] ?? [];
 
         Session::put('step2', $step2);
 
@@ -1438,11 +1457,19 @@ class CheckoutController extends FrontBaseController
 
         $taxAmount = ($vendorSubtotal * $taxRate) / 100;
 
+        // Apply coupon if exists (vendor checkout may have coupons too)
+        $coupon = Session::has('coupon') ? Session::get('coupon') : 0;
+        $productsTotal = $vendorSubtotal - $coupon;
+
         // Save tax data to step1
         $step1['tax_rate'] = $taxRate;
         $step1['tax_location'] = $taxLocation;
         $step1['tax_amount'] = $taxAmount;
         $step1['vendor_subtotal'] = $vendorSubtotal;
+
+        // ✅ ADD: For unified price display component
+        $step1['products_total'] = $productsTotal;
+        $step1['total_with_tax'] = $productsTotal + $taxAmount;
 
         Session::put('vendor_step1_' . $vendorId, $step1);
         Session::save(); // Ensure session is saved before redirect
@@ -1702,7 +1729,8 @@ class CheckoutController extends FrontBaseController
         $step2['tax_rate'] = $taxRate;
         $step2['tax_amount'] = $taxAmount;
         $step2['tax_location'] = $taxLocation;
-        $step2['total'] = $finalTotal; // ✅ Save COMPLETE total in session for step3
+        $step2['total'] = $finalTotal;            // Backward compatibility
+        $step2['final_total'] = $finalTotal;      // ✅ Unified naming
 
         // ✅ Save raw shipping/packing selections for restore on refresh/back
         if (isset($step2['shipping']) && is_array($step2['shipping'])) {

@@ -181,16 +181,15 @@
                             </div>
                         </div>
 
-                        {{-- ✅ Unified Price Summary Component - Step 3 --}}
+                        {{-- ✅ Unified Price Summary Component - Step 3 (Read-Only) --}}
+                        {{-- All values are read from step1 and step2 session data --}}
                         @include('includes.checkout-price-summary', [
                             'step' => 3,
-                            'productsTotal' => $productsTotal ?? $totalPrice,
-                            'totalPrice' => $totalPrice, // Backward compatibility
                             'digital' => $digital,
                             'curr' => $curr,
                             'gs' => $gs,
-                            'step1' => $step1 ?? null,
-                            'step2' => $step2 ?? null
+                            'step1' => $step1,
+                            'step2' => $step2
                         ])
 
 
@@ -239,44 +238,43 @@
 
 
 
+            {{-- ✅ Basic Order Information --}}
             <input type="hidden" name="dp" value="{{ $digital }}">
-            <input type="hidden" id="input_tax" name="tax" value="">
-            <input type="hidden" id="input_tax_type" name="tax_type" value="">
             <input type="hidden" name="totalQty" value="{{ $totalQty }}">
             <input type="hidden" name="vendor_shipping_id" value="{{ $vendor_shipping_id }}">
             <input type="hidden" name="vendor_packing_id" value="{{ $vendor_packing_id }}">
+
+            {{-- ✅ Currency Information --}}
             <input type="hidden" name="currency_sign" value="{{ $curr->sign }}">
             <input type="hidden" name="currency_name" value="{{ $curr->name }}">
             <input type="hidden" name="currency_value" value="{{ $curr->value }}">
 
+            {{-- ✅ Tax Information (from Step1 Session) --}}
+            <input type="hidden" id="input_tax" name="tax" value="">
+            <input type="hidden" id="input_tax_type" name="tax_type" value="">
+            <input type="hidden" id="original_tax" value="{{ $step1->tax_rate ?? 0 }}">
 
+            {{-- ✅ UNIFIED: Final Total (Single Source of Truth from Step2 Session) --}}
+            @php
+                // Use final_total if available, fallback to total for backward compatibility
+                $finalTotal = $step2->final_total ?? $step2->total ?? 0;
+            @endphp
+            <input type="hidden" name="total" id="grandtotal" value="{{ round($finalTotal * $curr->value, 2) }}">
+            <input type="hidden" id="tgrandtotal" value="{{ round($finalTotal, 2) }}">
+            <input type="hidden" id="ttotal" value="{{ round($finalTotal, 2) }}">
 
-            @if (Session::has('coupon_total'))
-            <input type="hidden" name="total" id="grandtotal" value="{{ round($totalPrice * $curr->value, 2) }}">
-            <input type="hidden" id="tgrandtotal" value="{{ $totalPrice }}">
-            @elseif(Session::has('coupon_total1'))
-            <input type="hidden" name="total" id="grandtotal"
-                value="{{ preg_replace(' /[^0-9,.]/', '', Session::get('coupon_total1')) }}">
-            <input type="hidden" id="tgrandtotal"
-                value="{{ preg_replace(' /[^0-9,.]/', '', Session::get('coupon_total1')) }}">
-            @else
-            <input type="hidden" name="total" id="grandtotal" value="{{ round($step2->total * $curr->value, 2) }}">
-            <input type="hidden" id="tgrandtotal" value="{{ round($totalPrice * $curr->value, 2) }}">
-            @endif
-
-
-
-            <input type="hidden" id="original_tax" value="0">
-            <input type="hidden" id="wallet-price" name="wallet_price" value="0">
-            <input type="hidden" id="ttotal" value="{{ $step2->total }}">
+            {{-- ✅ Coupon Information (if applied) --}}
             <input type="hidden" name="coupon_code" id="coupon_code"
                 value="{{ Session::has('coupon_code') ? Session::get('coupon_code') : '' }}">
             <input type="hidden" name="coupon_discount" id="coupon_discount"
                 value="{{ Session::has('coupon') ? Session::get('coupon') : '' }}">
             <input type="hidden" name="coupon_id" id="coupon_id"
                 value="{{ Session::has('coupon') ? Session::get('coupon_id') : '' }}">
+
+            {{-- ✅ User Information --}}
             <input type="hidden" name="user_id" id="user_id"
                 value="{{ Auth::guard('web')->check() ? Auth::guard('web')->user()->id : '' }}">
+            <input type="hidden" id="wallet-price" name="wallet_price" value="0">
 
         </form>
     </div>
@@ -327,91 +325,33 @@ $isState = isset($step1->customer_state) ? $step1->customer_state : 0;
 <script type="text/javascript">
     var coup = 0;
     var pos = {{ $gs-> currency_format }};
-    let mship = 0;
-    let mpack = 0;
-
-
-    var ftotal = parseFloat($('#grandtotal').val());
-    ftotal = parseFloat(ftotal).toFixed(2);
-
-    if (pos == 0) {
-        $('#final-cost').html('{{ $curr->sign }}' + ftotal)
-    } else {
-        $('#final-cost').html(ftotal + '{{ $curr->sign }}')
-    }
-    $('#grandtotal').val(ftotal);
-
-    let original_tax = 0;
+    // ✅ STEP 3: READ-ONLY MODE - No calculations needed!
+    // All values are displayed from session via checkout-price-summary component
+    // No JavaScript calculations required - everything comes from step2 session
 
     $(document).ready(function () {
-        let country_id = $('#select_country').val();
-        let state_id = $('#state_id').val();
-        let is_state = $('#is_state').val();
-        let state_url = $('#state_url').val();
+        console.log('📍 Step3: عرض الإجمالي النهائي من session');
+        console.log('✅ Final Total:', $('#ttotal').val());
 
-
-        if (is_state == 1) {
-            if (is_state == 1) {
-                $('.select_state').removeClass('d-none');
-                $.get(state_url, function (response) {
-                    $('#show_state').html(response.data);
-                    tax_submit(country_id, response.state);
-                });
-
-            } else {
-                tax_submit(country_id, state_id);
-            }
-        } else {
-            tax_submit(country_id, state_id);
-        }
+        // Populate tax hidden fields from session for order submission
+        @if(isset($step1) && isset($step1->tax_rate))
+            $('#input_tax').val('{{ $step1->tax_amount }}');
+            $('#input_tax_type').val('{{ $step1->tax_rate }}');
+            console.log('✅ Tax من session:', {
+                rate: '{{ $step1->tax_rate }}%',
+                amount: '{{ $step1->tax_amount }}'
+            });
+        @endif
     });
 
 
-    function tax_submit(country_id, state_id) {
 
-        $('.gocover').show();
-        var total = $("#tgrandtotal").val();
-        var ship = 0;
-        $.ajax({
-            type: "GET",
-            url: mainurl + "/country/tax/check",
-
-            data: {
-                state_id: state_id,
-                country_id: country_id,
-                total: total,
-                shipping_cost: ship
-            },
-            success: function (data) {
-
-
-                $('.tax_show').removeClass('d-none');
-                $('#input_tax').val(data[11]);
-                $('#input_tax_type').val(data[12]);
-                $('.original_tax').html(parseFloat(data[1]) + "%");
-                var ttotal = parseFloat($('#grandtotal').val());
-                var tttotal = parseFloat($('#grandtotal').val()) + (parseFloat(mship) + parseFloat(mpack));
-                ttotal = parseFloat(ttotal).toFixed(2);
-                tttotal = parseFloat(tttotal).toFixed(2);
-                if (pos == 0) {
-                    $('#final-cost').html('{{ $curr->sign }}' + tttotal);
-                    $('.total-cost-dum #total-cost').html('{{ $curr->sign }}' + ttotal);
-                } else {
-                    $('#total-cost').html('');
-                    $('#final-cost').html(tttotal + '{{ $curr->sign }}');
-                    $('.total-cost-dum #total-cost').html(ttotal + '{{ $curr->sign }}');
-                }
-                $('.gocover').hide();
-            }
-        });
-    }
-
-
-
+    // ✅ STEP 3: Coupon handling (Simplified - No recalculations)
     $(document).on("click", "#check_coupon", function () {
         var val = $("#code").val();
-        var total = $("#ttotal").val();
+        var total = $("#ttotal").val(); // الإجمالي النهائي من session
         var ship = 0;
+
         $.ajax({
             type: "GET",
             url: mainurl + "/carts/coupon/check",
@@ -428,6 +368,7 @@ $isState = isset($step1->customer_state) ? $step1->customer_state : 0;
                     toastr.error('{{ __('Coupon already have been taken') }}');
                     $("#code").val("");
                 } else {
+                    // ✅ تحديث القيم بعد تطبيق الكوبون
                     $("#check-coupon-form").toggle();
                     $(".discount-bar").removeClass('d-none');
 
@@ -438,29 +379,32 @@ $isState = isset($step1->customer_state) ? $step1->customer_state : 0;
                         $('.total-cost-dum #total-cost').html(data[0]);
                         $('#discount').html(data[2] + '{{ $curr->sign }}');
                     }
+
+                    // ✅ حفظ بيانات الكوبون في hidden fields
                     $("#coupon_id").val(data[3]);
                     $('#grandtotal').val(data[0]);
                     $('#tgrandtotal').val(data[0]);
                     $('#coupon_code').val(data[1]);
                     $('#coupon_discount').val(data[2]);
+
                     if (data[4] != 0) {
                         $('.dpercent').html('(' + data[4] + ')');
                     } else {
                         $('.dpercent').html('');
                     }
 
-
-                    var ttotal = data[6] + parseFloat(mship) + parseFloat(mpack);
-                    ttotal = parseFloat(ttotal);
-                    if (ttotal % 1 != 0) {
-                        ttotal = ttotal.toFixed(2);
+                    // ✅ تحديث العرض النهائي
+                    var finalTotal = parseFloat(data[0]);
+                    if (finalTotal % 1 != 0) {
+                        finalTotal = finalTotal.toFixed(2);
                     }
 
                     if (pos == 0) {
-                        $('.total-amount').html('{{ $curr->sign }}' + ttotal)
+                        $('.total-amount').html('{{ $curr->sign }}' + finalTotal);
                     } else {
-                        $('.total-amount').html(ttotal + '{{ $curr->sign }}')
+                        $('.total-amount').html(finalTotal + '{{ $curr->sign }}');
                     }
+
                     toastr.success(lang.coupon_found);
                     $("#code").val("");
                 }
