@@ -792,7 +792,7 @@ class CheckoutController extends FrontBaseController
             $shipping_data = $ship_data['shipping_data'];
             $vendor_shipping_id = $ship_data['vendor_shipping_id'];
         } else {
-            $shipping_data = DB::table('shippings')->whereUserId(0)->get();
+            $shipping_data = collect(); // No global shipping
         }
 
         if ($this->gs->multiple_shipping == 1) {
@@ -800,7 +800,7 @@ class CheckoutController extends FrontBaseController
             $package_data = $pack_data['package_data'];
             $vendor_packing_id = $pack_data['vendor_packing_id'];
         } else {
-            $package_data = DB::table('packages')->whereUserId(0)->get();
+            $package_data = collect(); // No global packaging
         }
 
         // الإجمالي مع الكوبون
@@ -1803,9 +1803,7 @@ class CheckoutController extends FrontBaseController
 
         // جلب طرق التغليف
         $package_data = DB::table('packages')->where('user_id', $vendorId)->get();
-        if ($package_data->isEmpty()) {
-            $package_data = DB::table('packages')->where('user_id', 0)->get();
-        }
+        // No fallback to user 0 - if vendor has no packages, collection will be empty
 
         $pickups = DB::table('pickups')->get();
         $curr = $this->curr;

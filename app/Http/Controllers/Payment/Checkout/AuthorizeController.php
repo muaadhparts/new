@@ -12,6 +12,7 @@ use App\Helpers\PriceHelper;
 use App\Models\Country;
 use App\Models\Reward;
 use App\Models\State;
+use App\Traits\HandlesVendorCheckout;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use net\authorize\api\contract\v1 as AnetAPI;
@@ -22,11 +23,25 @@ use Illuminate\Support\Str;
 
 class AuthorizeController extends CheckoutBaseControlller
 {
+    use HandlesVendorCheckout;
     public function store(Request $request)
     {
         $input = $request->all();
-        $step1 = Session::get('step1');
-        $step2 = Session::get('step2');
+
+        // Get vendor checkout data
+        $vendorData = $this->getVendorCheckoutData();
+        $vendorId = $vendorData['vendor_id'];
+        $isVendorCheckout = $vendorData['is_vendor_checkout'];
+
+        // Get steps from vendor sessions
+        $steps = $this->getCheckoutSteps($vendorId, $isVendorCheckout);
+        $step1 = $steps['step1'];
+        $step2 = $steps['step2'];
+
+        if (!$step1 || !$step2) {
+            return redirect()->route('front.cart')->with('unsuccess', __('Checkout session expired.'));
+        }
+
         $input = array_merge($step1, $step2, $input);
         $data = PaymentGateway::whereKeyword('authorize.net')->first();
 
@@ -46,7 +61,11 @@ class AuthorizeController extends CheckoutBaseControlller
         $item_name = $this->gs->title . " Order";
         $item_number = Str::random(4) . time();
         $item_amount = $total;
-        $success_url = route('front.payment.return');
+
+        // Get cart and filter for vendor
+        $oldCart = Session::get('cart');
+        $originalCart = new Cart($oldCart);
+        $success_url = $this->getSuccessUrl($vendorId, $originalCart);
 
         // Validate Card Data
 
@@ -114,15 +133,13 @@ class AuthorizeController extends CheckoutBaseControlller
 
                     if ($tresponse != null && $tresponse->getMessages() != null) {
 
-                        $oldCart = Session::get('cart');
-                        $cart = new Cart($oldCart);
+                        // Filter cart for vendor
+                        $cart = $this->filterCartForVendor($originalCart, $vendorId);
                         OrderHelper::license_check($cart); // For License Checking
-                        $t_oldCart = Session::get('cart');
-                        $t_cart = new Cart($t_oldCart);
                         $new_cart = [];
-                        $new_cart['totalQty'] = $t_cart->totalQty;
-                        $new_cart['totalPrice'] = $t_cart->totalPrice;
-                        $new_cart['items'] = $t_cart->items;
+                        $new_cart['totalQty'] = $cart->totalQty;
+                        $new_cart['totalPrice'] = $cart->totalPrice;
+                        $new_cart['items'] = $cart->items;
                         $new_cart = json_encode($new_cart);
                         $temp_affilate_users = OrderHelper::product_affilate_check($cart); // For Product Based Affilate Checking
                         $affilate_users = $temp_affilate_users == null ? null : json_encode($temp_affilate_users);
@@ -141,9 +158,8 @@ class AuthorizeController extends CheckoutBaseControlller
                         $input['wallet_price'] = $request->wallet_price / $this->curr->value;
                         $input['payment_status'] = "Completed";
                         // Get tax data from step2 (already calculated and saved)
-                        $step2_session = Session::get('step2');
-                        $input['tax'] = $step2_session['tax_amount'] ?? 0;
-                        $input['tax_location'] = $step2_session['tax_location'] ?? '';
+                        $input['tax'] = $step2['tax_amount'] ?? 0;
+                        $input['tax_location'] = $step2['tax_location'] ?? '';
 
                         $input['txnid'] = $tresponse->getTransId();
                         if ($input['dp'] == 1) {
@@ -199,12 +215,9 @@ class AuthorizeController extends CheckoutBaseControlller
 
                         Session::put('temporder', $order);
                         Session::put('tempcart', $cart);
-                        Session::forget('cart');
-                        Session::forget('already');
-                        Session::forget('coupon');
-                        Session::forget('coupon_total');
-                        Session::forget('coupon_total1');
-                        Session::forget('coupon_percentage');
+
+                        // Remove only vendor's products from cart
+                        $this->removeVendorProductsFromCart($vendorId, $originalCart);
 
                         if ($order->user_id != 0 && $order->wallet_price != 0) {
                             OrderHelper::add_to_transaction($order, $order->wallet_price); // Store To Transactions

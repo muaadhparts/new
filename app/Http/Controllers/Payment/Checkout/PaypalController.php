@@ -171,7 +171,6 @@ class PaypalController extends CheckoutBaseControlller
 
         $responseData = $request->all();
 
-        dd($responseData);
         if (empty($responseData['PayerID']) || empty($responseData['token'])) {
             return [
                 'status' => false,
