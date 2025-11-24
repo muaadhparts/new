@@ -255,7 +255,6 @@ class StripeController extends CheckoutBaseControlller
             $success_url = $this->getSuccessUrl($vendorId, $originalCart);
             return redirect($success_url);
         } else {
-            dd($response->status);
             return redirect(route('front.payment.cancle'));
         }
     }
