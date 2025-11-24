@@ -135,7 +135,8 @@ class CheckoutController extends FrontBaseController
                 $package_data = $pack_data['package_data'];
                 $vendor_packing_id = $pack_data['vendor_packing_id'];
             } else {
-                $package_data = DB::table('packages')->whereUserId(0)->get();
+                // No global packaging - empty collection
+                $package_data = collect();
             }
             foreach ($products as $prod) {
                 if ($prod['item']['type'] == 'Physical') {
@@ -290,7 +291,8 @@ class CheckoutController extends FrontBaseController
                 $package_data = $pack_data['package_data'];
                 $vendor_packing_id = $pack_data['vendor_packing_id'];
             } else {
-                $package_data = DB::table('packages')->whereUserId(0)->get();
+                // No global packaging - empty collection
+                $package_data = collect();
             }
             foreach ($products as $prod) {
                 if ($prod['item']['type'] == 'Physical') {
@@ -884,7 +886,8 @@ class CheckoutController extends FrontBaseController
 //                 $package_data = $pack_data['package_data'];
 //                 $vendor_packing_id = $pack_data['vendor_packing_id'];
 //             } else {
-//                 $package_data = DB::table('packages')->whereUserId(0)->get();
+//                 // No global packaging - empty collection
+                // $package_data = collect();
 //             }
 //             foreach ($products as $prod) {
 //                 if ($prod['item']['type'] == 'Physical') {
@@ -1292,9 +1295,7 @@ class CheckoutController extends FrontBaseController
 
         // جلب طرق التغليف الخاصة بهذا التاجر فقط (vendor-specific only)
         $package_data = DB::table('packages')->where('user_id', $vendorId)->get();
-        if ($package_data->isEmpty()) {
-            $package_data = DB::table('packages')->where('user_id', 0)->get();
-        }
+        // No fallback to user 0 - if vendor has no packages, collection will be empty
 
         // Calculate total with vendor-specific coupon
         $total = $totalPrice;
@@ -1525,9 +1526,7 @@ class CheckoutController extends FrontBaseController
 
         // جلب طرق التغليف الخاصة بهذا التاجر فقط
         $package_data = DB::table('packages')->where('user_id', $vendorId)->get();
-        if ($package_data->isEmpty()) {
-            $package_data = DB::table('packages')->where('user_id', 0)->get();
-        }
+        // No fallback to user 0 - if vendor has no packages, collection will be empty
 
         $pickups = DB::table('pickups')->get();
         $curr = $this->curr;

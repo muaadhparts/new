@@ -209,13 +209,11 @@
                                 if ($vendor_id != 0) {
                                     $shipping = App\Models\Shipping::forVendor($vendor_id)->get();
                                     $packaging = App\Models\Package::where('user_id', $vendor_id)->get();
-                                    if ($packaging->isEmpty()) {
-                                        $packaging = App\Models\Package::where('user_id', 0)->get();
-                                    }
+                                    // No fallback to user 0 - if vendor has no packages, $packaging will be empty
                                     $vendor = App\Models\User::findOrFail($vendor_id);
                                 } else {
                                     $shipping = App\Models\Shipping::forVendor(0)->get();
-                                    $packaging = App\Models\Package::where('user_id', 0)->get();
+                                    $packaging = collect(); // Empty collection - no global packaging
                                     $vendor = App\Models\Admin::findOrFail(1);
                                 }
 
@@ -366,21 +364,21 @@
                                             @endif
                                         @endif
 
-                                        @if ($is_Digital == 0)
+                                        @if ($is_Digital == 0 && $packaging->isNotEmpty())
                                             <div class="d-flex flex-wrap gap-2 mb-3 bg-light-white p-4">
                                                 <span class="label mr-2">
                                                     <b>{{ __('Packageing :') }}</b>
                                                 </span>
                                                 <p id="packing_text{{ $vendor_id }}">
-                                                    {{ isset($packaging[0])
-                                                        ? $packaging[0]['title'] . '+' . $curr->sign . round($packaging[0]['price'] * $curr->value, 2)
-                                                        : 'Package not found' }}
+                                                    {{ $packaging[0]['title'] . '+' . $curr->sign . round($packaging[0]['price'] * $curr->value, 2) }}
                                                 </p>
                                                 <button type="button" class="template-btn sm-btn" data-bs-toggle="modal"
                                                     data-bs-target="#vendor_package{{ $vendor_id }}">
                                                     {{ __('Select Package') }}
                                                 </button>
                                             </div>
+                                        @endif
+                                        @if ($is_Digital == 0)
                                             <div class="d-flex flex-wrap gap-2 mb-3 bg-light-white p-4">
                                                 <span class="label mr-2">
                                                     <b>{{ __('Shipping Methods:') }}</b>
@@ -432,10 +430,12 @@
                                                     ])
                                                 @endif
                                             @endforeach
-                                            @include('includes.frontend.vendor_packaging', [
-                                                'packaging' => $packaging,
-                                                'vendor_id' => $vendor_id,
-                                            ])
+                                            @if($packaging->isNotEmpty())
+                                                @include('includes.frontend.vendor_packaging', [
+                                                    'packaging' => $packaging,
+                                                    'vendor_id' => $vendor_id,
+                                                ])
+                                            @endif
                                         @endif
                                     </div>
                                 @else
@@ -512,39 +512,41 @@
                                     </div>
 
                                     <!-- Packaging -->
-                                    <div class="summary-inner-box">
-                                        <h6 class="summary-title">@lang('Packaging')</h6>
-                                        <div class="inputs-wrapper">
+                                    @if($package_data->isNotEmpty())
+                                        <div class="summary-inner-box">
+                                            <h6 class="summary-title">@lang('Packaging')</h6>
+                                            <div class="inputs-wrapper">
 
-                                            @foreach ($package_data as $data)
-                                                <div class="gs-radio-wrapper">
-                                                    <input type="radio" class="packing"
-                                                        data-price="{{ round($data->price * $curr->value, 2) }}"
-                                                        data-form="{{ $data->title }}"
-                                                        id="free-package{{ $data->id }}" name="packeging_id"
-                                                        value="{{ $data->id }}" {{ $loop->first ? 'checked' : '' }}>
-                                                    <label class="icon-label" for="free-package{{ $data->id }}">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="20"
-                                                            height="20" viewBox="0 0 20 20" fill="none">
-                                                            <rect x="0.5" y="0.5" width="19" height="19"
-                                                                rx="9.5" fill="#FDFDFD" />
-                                                            <rect x="0.5" y="0.5" width="19" height="19"
-                                                                rx="9.5" stroke="#EE1243" />
-                                                            <circle cx="10" cy="10" r="4" fill="#EE1243" />
-                                                        </svg>
-                                                    </label>
-                                                    <label for="free-package{{ $data->id }}">
-                                                        {{ $data->title }}
-                                                        @if ($data->price != 0)
-                                                            +
-                                                            {{ $curr->sign }}{{ round($data->price * $curr->value, 2) }}
-                                                        @endif
-                                                        <small>{{ $data->subtitle }}</small>
-                                                    </label>
-                                                </div>
-                                            @endforeach
+                                                @foreach ($package_data as $data)
+                                                    <div class="gs-radio-wrapper">
+                                                        <input type="radio" class="packing"
+                                                            data-price="{{ round($data->price * $curr->value, 2) }}"
+                                                            data-form="{{ $data->title }}"
+                                                            id="free-package{{ $data->id }}" name="packeging_id"
+                                                            value="{{ $data->id }}" {{ $loop->first ? 'checked' : '' }}>
+                                                        <label class="icon-label" for="free-package{{ $data->id }}">
+                                                            <svg xmlns="http://www.w3.org/2000/svg" width="20"
+                                                                height="20" viewBox="0 0 20 20" fill="none">
+                                                                <rect x="0.5" y="0.5" width="19" height="19"
+                                                                    rx="9.5" fill="#FDFDFD" />
+                                                                <rect x="0.5" y="0.5" width="19" height="19"
+                                                                    rx="9.5" stroke="#EE1243" />
+                                                                <circle cx="10" cy="10" r="4" fill="#EE1243" />
+                                                            </svg>
+                                                        </label>
+                                                        <label for="free-package{{ $data->id }}">
+                                                            {{ $data->title }}
+                                                            @if ($data->price != 0)
+                                                                +
+                                                                {{ $curr->sign }}{{ round($data->price * $curr->value, 2) }}
+                                                            @endif
+                                                            <small>{{ $data->subtitle }}</small>
+                                                        </label>
+                                                    </div>
+                                                @endforeach
+                                            </div>
                                         </div>
-                                    </div>
+                                    @endif
                                 @endif
                             @endif
 
@@ -623,7 +625,8 @@
                 <input type="hidden" name="currency_value" value="{{ $curr->value }}">
                 @php
                     // Calculate total with tax for initial display
-                    $taxAmount = $step1->total_tax_amount ?? 0;
+                    // Support both regular checkout (total_tax_amount) and vendor checkout (tax_amount)
+                    $taxAmount = $step1->total_tax_amount ?? $step1->tax_amount ?? 0;
                     $totalWithTax = $totalPrice + $taxAmount;
                 @endphp
                 @if (Session::has('coupon_total'))

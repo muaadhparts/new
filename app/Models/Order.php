@@ -148,18 +148,17 @@ class Order extends Model
         {
             $package_data  = DB::table('packages')->whereUserId($users[0])->get();
 
-            if(count($package_data) == 0){
-                $package_data  = DB::table('packages')->whereUserId(0)->get();
-            }
-            else{
+            // No fallback - if vendor has no packages, return empty collection
+            if(count($package_data) > 0){
                 $vendor_packing_id = $users[0];
-            }  
+            }
         }
         else {
-            $package_data  = DB::table('packages')->whereUserId(0)->get();
+            // Multi-vendor cart - no global packaging
+            $package_data = collect();
         }
         $data['package_data'] = $package_data;
         $data['vendor_packing_id'] = $vendor_packing_id;
-        return $data; 
+        return $data;
     }
 }
