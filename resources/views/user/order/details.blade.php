@@ -295,6 +295,11 @@
                                     @else
                                         <p>{{ __('Pick Up') }}</p>
                                     @endif
+
+                                    {{-- عرض معلومات شركة الشحن (Tryoto) إذا كانت موجودة --}}
+                                    @if ($order->shipping_title && !empty($order->shipping_title) && !is_array(json_decode($order->shipping_title, true)))
+                                        <p class="mt-2"><strong>{{ __('Carrier') }}:</strong> {{ $order->shipping_title }}</p>
+                                    @endif
                                 </div>
 
                             </div>

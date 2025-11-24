@@ -119,6 +119,14 @@ class CashOnDeliveryController extends CheckoutBaseControlller
         // تحضير بيانات الشحن والتغليف - تأكد من تحويل كل القيم إلى JSON
         $input['vendor_ids'] = json_encode($vendor_ids);
 
+        // ✅ حفظ طريقة الشحن الأصلية (shipto/pickup) قبل أي معالجة
+        $originalShippingMethod = $steps['step1']['shipping'] ?? 'shipto';
+
+        // إذا كان shipping string (shipto/pickup) وليس array، نحفظه
+        if (isset($input['shipping']) && is_string($input['shipping']) && in_array($input['shipping'], ['shipto', 'pickup'])) {
+            $originalShippingMethod = $input['shipping'];
+        }
+
         if ($isVendorCheckout) {
             // Vendor checkout
             $input['is_shipping'] = 0;
@@ -194,8 +202,10 @@ class CashOnDeliveryController extends CheckoutBaseControlller
         }
 
         // تأكد من إزالة أي مصفوفات متبقية
-        unset($input['shipping']);
         unset($input['packeging']);
+
+        // ✅ إعادة تعيين قيمة shipping الأصلية (shipto/pickup) للعرض في الفاتورة
+        $input['shipping'] = $originalShippingMethod;
 
         $order = new Order;
 

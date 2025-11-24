@@ -58,6 +58,15 @@ class CheckoutBaseControlller extends Controller
         // ✅ استخدام المبلغ من step3 مباشرة (لا إعادة حساب)
         $orderTotal = (float)($input['total'] ?? 0) / $this->curr->value;
 
+        // ✅ حفظ طريقة الشحن الأصلية (shipto/pickup) قبل أي معالجة
+        $step1 = Session::get('step1', []);
+        $originalShippingMethod = $step1['shipping'] ?? 'shipto';
+
+        // إذا كان shipping string (shipto/pickup) وليس array، نحفظه
+        if (isset($input['shipping']) && is_string($input['shipping']) && in_array($input['shipping'], ['shipto', 'pickup'])) {
+            $originalShippingMethod = $input['shipping'];
+        }
+
         // تحضير vendor_ids من السلة
         $vendor_ids = [];
         foreach ($cart->items as $item) {
@@ -118,9 +127,11 @@ class CheckoutBaseControlller extends Controller
                 $input['vendor_packing_id'] = json_encode([]);
             }
 
-            unset($input['shipping']);
             unset($input['packeging']);
         }
+
+        // ✅ إعادة تعيين قيمة shipping الأصلية (shipto/pickup) للعرض في الفاتورة
+        $input['shipping'] = $originalShippingMethod;
 
         return [
             'input' => $input,
