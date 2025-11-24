@@ -1849,25 +1849,44 @@ Route::group(['middleware' => 'maintenance'], function () {
     Route::middleware(['preserve.session'])->group(function () {
         Route::get('/checkout/vendor/{vendorId}', 'Front\CheckoutController@checkoutVendor')->name('front.checkout.vendor');
         Route::post('/checkout/vendor/{vendorId}/step1/submit', 'Front\CheckoutController@checkoutVendorStep1')->name('front.checkout.vendor.step1.submit');
+        // Redirect GET requests to step1/submit back to step1 (handles refresh/back button)
+        Route::get('/checkout/vendor/{vendorId}/step1/submit', function($vendorId) {
+            return redirect()->route('front.checkout.vendor', $vendorId)->with('info', __('Please fill out the form and submit again.'));
+        });
         Route::get('/checkout/vendor/{vendorId}/step2', 'Front\CheckoutController@checkoutVendorStep2')->name('front.checkout.vendor.step2');
         Route::post('/checkout/vendor/{vendorId}/step2/submit', 'Front\CheckoutController@checkoutVendorStep2Submit')->name('front.checkout.vendor.step2.submit');
+        // Redirect GET requests to step2/submit back to step2
+        Route::get('/checkout/vendor/{vendorId}/step2/submit', function($vendorId) {
+            return redirect()->route('front.checkout.vendor.step2', $vendorId)->with('info', __('Please fill out the form and submit again.'));
+        });
         Route::get('/checkout/vendor/{vendorId}/step3', 'Front\CheckoutController@checkoutVendorStep3')->name('front.checkout.vendor.step3');
     });
 
     // ====================================================================
     // REGULAR CHECKOUT - DISABLED (Now using vendor checkout only)
     // ====================================================================
-    // Commented out to prevent accidental use of non-vendor checkout
-    // All cart items belong to vendors, so vendor checkout is required
-
-    // Route::get('/checkout', 'Front\CheckoutController@checkout')->name('front.checkout');
-    // Route::post('/checkout/step1/submit', 'Front\CheckoutController@checkoutStep1')->name('front.checkout.step1.submit');
-    // Route::get('/checkout/step2', 'Front\CheckoutController@checkoutstep2')->name('front.checkout.step2');
-    // Route::post('/checkout/step2/submit', 'Front\CheckoutController@checkoutStep2Submit')->name('front.checkout.step2.submit');
-    // Route::get('/checkout/step3', 'Front\CheckoutController@checkoutstep3')->name('front.checkout.step3');
+    // Regular checkout routes (non-vendor specific)
+    Route::get('/checkout', 'Front\CheckoutController@checkout')->name('front.checkout');
+    Route::post('/checkout/step1/submit', 'Front\CheckoutController@checkoutStep1')->name('front.checkout.step1.submit');
+    // Redirect GET requests to step1/submit back to step1
+    Route::get('/checkout/step1/submit', function() {
+        return redirect()->route('front.checkout')->with('info', __('Please fill out the form and submit again.'));
+    });
+    Route::get('/checkout/step2', 'Front\CheckoutController@checkoutstep2')->name('front.checkout.step2');
+    Route::post('/checkout/step2/submit', 'Front\CheckoutController@checkoutStep2Submit')->name('front.checkout.step2.submit');
+    // Redirect GET requests to step2/submit back to step2
+    Route::get('/checkout/step2/submit', function() {
+        return redirect()->route('front.checkout.step2')->with('info', __('Please fill out the form and submit again.'));
+    });
+    Route::get('/checkout/step3', 'Front\CheckoutController@checkoutstep3')->name('front.checkout.step3');
 
 
     Route::get('/carts/coupon/check', 'Front\CouponController@couponcheck')->name('front.coupon.check');
+
+    // CSRF Token refresh endpoint
+    Route::get('/csrf-token', function() {
+        return response()->json(['token' => csrf_token()]);
+    })->name('csrf.token');
 
 //    Route::get('/checkout/payment/{slug1}/{slug2}', 'Front\CheckoutController@loadpayment')->name('front.load.payment');
     Route::get('/checkout/payment/return', 'Front\CheckoutController@payreturn')->name('front.payment.return');

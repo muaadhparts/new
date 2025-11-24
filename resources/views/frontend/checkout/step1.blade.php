@@ -347,7 +347,7 @@
                             <!-- btn wrapper -->
                             <div class="summary-inner-box">
                                 <div class="btn-wrappers">
-                                    <button type="submit" href="#" class="template-btn w-100">
+                                    <button type="submit" class="template-btn w-100">
                                         @lang('Continue')
                                         <svg xmlns="http://www.w3.org/2000/svg" width="25" height="24"
                                             viewBox="0 0 25 24" fill="none">
@@ -1480,15 +1480,30 @@
     // Dropdowns are hidden and not used for form submission
 
     // ============================================
-    // Form Validation for Map Location (NEW)
+    // استدعاء استرجاع الموقع عند تحميل الصفحة
+    // ============================================
+    $(document).ready(function() {
+        console.log('📄 تحميل صفحة Checkout Step 1');
+        restoreSavedLocation();
+    });
+
+    // ============================================
+    // Form Validation for Map Location + CSRF Token Refresh
     // ============================================
     $('form.address-wrapper').on('submit', function(e) {
+        const $form = $(this);
+
+        // ✅ STEP 1: Validate coordinates exist FIRST (quick check)
         const lat = $('#latitude').val();
         const lng = $('#longitude').val();
 
-        // Check if coordinates exist
+        console.log('📝 Form submission attempt', { lat, lng });
+
         if (!lat || !lng || lat === '' || lng === '') {
             e.preventDefault();
+            e.stopPropagation();
+
+            console.warn('⚠️ Form submission blocked - missing coordinates');
 
             // Scroll to map button
             const mapBtn = $('[data-bs-target="#mapModal"]');
@@ -1499,15 +1514,19 @@
             }
 
             // Show error
-            toastr.error(
-                'يرجى اختيار موقع التوصيل من الخريطة قبل المتابعة',
-                'خطأ',
-                {
-                    timeOut: 5000,
-                    closeButton: true,
-                    positionClass: 'toast-top-center'
-                }
-            );
+            if (typeof toastr !== 'undefined') {
+                toastr.error(
+                    'يرجى اختيار موقع التوصيل من الخريطة قبل المتابعة',
+                    'خطأ',
+                    {
+                        timeOut: 5000,
+                        closeButton: true,
+                        positionClass: 'toast-top-center'
+                    }
+                );
+            } else {
+                alert('يرجى اختيار موقع التوصيل من الخريطة قبل المتابعة');
+            }
 
             // Highlight the map button
             mapBtn.addClass('btn-danger').removeClass('btn-outline-primary btn-success');
@@ -1518,18 +1537,38 @@
             return false;
         }
 
-        // Validation passed - keep localStorage (will be cleared in Step2 or after order completion)
-        // We keep it so user can go back if needed
-        console.log('✅ تم التحقق من صحة بيانات الموقع - الانتقال إلى Step 2');
-        return true;
-    });
+        // ✅ STEP 2: Fetch fresh CSRF token from server before submission
+        e.preventDefault(); // Prevent default submission
 
-    // ============================================
-    // استدعاء استرجاع الموقع عند تحميل الصفحة
-    // ============================================
-    $(document).ready(function() {
-        console.log('📄 تحميل صفحة Checkout Step 1');
-        restoreSavedLocation();
+        console.log('🔄 Fetching fresh CSRF token from server...');
+
+        $.get(mainurl + '/csrf-token', function(response) {
+            const freshToken = response.token;
+            const currentMetaToken = $('meta[name="csrf-token"]').attr('content');
+            const currentFormToken = $form.find('input[name="_token"]').val();
+
+            console.log('🔐 CSRF Token Refresh', {
+                fresh_token: freshToken,
+                old_meta_token: currentMetaToken,
+                old_form_token: currentFormToken,
+                tokens_changed: freshToken !== currentFormToken
+            });
+
+            // Update both meta tag and form token with fresh token
+            $('meta[name="csrf-token"]').attr('content', freshToken);
+            $form.find('input[name="_token"]').val(freshToken);
+
+            console.log('✅ تم تحديث CSRF token - إرسال النموذج الآن');
+
+            // Now submit the form with fresh token
+            $form.off('submit').submit();
+        }).fail(function() {
+            console.error('❌ فشل الحصول على CSRF token جديد - المحاولة بالـ token الحالي');
+            // If fetch fails, try submitting with current token anyway
+            $form.off('submit').submit();
+        });
+
+        return false; // Prevent default until we get fresh token
     });
 
     console.log('✅ Google Maps Checkout Integration - Fully Loaded');

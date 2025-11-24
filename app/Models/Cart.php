@@ -8,16 +8,16 @@ use Session;
 
 class Cart extends Model
 {
-    public $items = null;
+    public $items = [];
     public $totalQty = 0;
     public $totalPrice = 0;
 
     public function __construct($oldCart = null)
     {
         if ($oldCart) {
-            $this->items      = $oldCart->items;
-            $this->totalQty   = $oldCart->totalQty;
-            $this->totalPrice = $oldCart->totalPrice;
+            $this->items      = $oldCart->items ?? [];
+            $this->totalQty   = $oldCart->totalQty ?? 0;
+            $this->totalPrice = $oldCart->totalPrice ?? 0;
         }
     }
 

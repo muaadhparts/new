@@ -4,6 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ $gs->title }}</title>
     <!--Essential css files-->
     <link rel="stylesheet" href="{{ asset('assets/front') }}/css/bootstrap.min.css">
@@ -82,6 +83,17 @@
         var mainurl = "{{ url('/') }}";
         var gs      = {!! json_encode(DB::table('generalsettings')->where('id','=',1)->first(['is_loader','decimal_separator','thousand_separator','is_cookie','is_talkto','talkto'])) !!};
         var ps_category = {{ $ps->category }};
+
+        // Setup CSRF token for all AJAX requests
+        // This function is called before each AJAX request to ensure we use the latest token
+        $.ajaxSetup({
+            beforeSend: function(xhr) {
+                const token = $('meta[name="csrf-token"]').attr('content');
+                if (token) {
+                    xhr.setRequestHeader('X-CSRF-TOKEN', token);
+                }
+            }
+        });
     
         var lang = {
             'days': '{{ __('Days') }}',

@@ -1409,8 +1409,10 @@ class CheckoutController extends FrontBaseController
             $user->is_provider = 0;
             $user->save();
 
-            // ✅ LOGIN THE USER IMMEDIATELY
-            Auth::login($user);
+            // ✅ LOGIN THE USER IMMEDIATELY WITHOUT SESSION REGENERATION
+            // Using 'false' as second parameter to prevent session regeneration
+            // This prevents CSRF token mismatch during checkout
+            Auth::login($user, true);
 
             \Log::info('Checkout: Account created and logged in', [
                 'user_id' => $user->id,
@@ -1448,6 +1450,8 @@ class CheckoutController extends FrontBaseController
         $cart = new Cart($oldCart);
 
         $vendorSubtotal = 0;
+
+        // Calculate subtotal for this vendor's products only
         foreach ($cart->items as $product) {
             $productVendorId = $product['item']['user_id'] ?? 0;
             if ($productVendorId == $vendorId) {

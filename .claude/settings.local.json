@@ -8,7 +8,10 @@
       "Bash(done)",
       "Bash(git checkout:*)",
       "Bash(git stash:*)",
-      "Bash(php:*)"
+      "Bash(php:*)",
+      "Bash(dir:*)",
+      "Bash(nul)",
+      "Bash(findstr:*)"
     ],
     "deny": [],
     "ask": []

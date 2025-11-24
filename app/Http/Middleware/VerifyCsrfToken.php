@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken as Middleware;
+use Illuminate\Session\TokenMismatchException;
 
 class VerifyCsrfToken extends Middleware
 {
@@ -40,4 +41,39 @@ class VerifyCsrfToken extends Middleware
         '/webhooks/tryoto',
         'webhooks/tryoto'
     ];
+
+    /**
+     * Handle a token mismatch exception with detailed logging
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  \Illuminate\Session\TokenMismatchException  $exception
+     * @return void
+     *
+     * @throws \Illuminate\Session\TokenMismatchException
+     */
+    protected function tokensMatch($request)
+    {
+        $token = $this->getTokenFromRequest($request);
+        $sessionToken = $request->session()->token();
+
+        $matches = is_string($sessionToken) &&
+                   is_string($token) &&
+                   hash_equals($sessionToken, $token);
+
+        if (!$matches) {
+            \Log::warning('CSRF Token Mismatch Detected', [
+                'url' => $request->fullUrl(),
+                'method' => $request->method(),
+                'request_token' => $token ? substr($token, 0, 10) . '...' : 'null',
+                'session_token' => $sessionToken ? substr($sessionToken, 0, 10) . '...' : 'null',
+                'user_id' => auth()->id(),
+                'ip' => $request->ip(),
+                'user_agent' => $request->userAgent(),
+                'referer' => $request->header('referer'),
+                'session_id' => $request->session()->getId()
+            ]);
+        }
+
+        return $matches;
+    }
 }
