@@ -953,18 +953,6 @@ Route::prefix('admin')->group(function () {
         Route::get('/languages/status/{id1}/{id2}', 'Admin\LanguageController@status')->name('admin-lang-st');
         Route::delete('/languages/delete/{id}', 'Admin\LanguageController@destroy')->name('admin-lang-delete');
 
-        //------------ ADMIN PANEL LANGUAGE SETTINGS SECTION ------------
-
-        Route::get('/adminlanguages/datatables', 'Admin\AdminLanguageController@datatables')->name('admin-tlang-datatables'); //JSON REQUEST
-        Route::get('/adminlanguages', 'Admin\AdminLanguageController@index')->name('admin-tlang-index');
-        Route::get('/adminlanguages/create', 'Admin\AdminLanguageController@create')->name('admin-tlang-create');
-        Route::get('/adminlanguages/edit/{id}', 'Admin\AdminLanguageController@edit')->name('admin-tlang-edit');
-        Route::post('/adminlanguages/create', 'Admin\AdminLanguageController@store')->name('admin-tlang-store');
-        Route::post('/adminlanguages/edit/{id}', 'Admin\AdminLanguageController@update')->name('admin-tlang-update');
-        Route::get('/adminlanguages/status/{id1}/{id2}', 'Admin\AdminLanguageController@status')->name('admin-tlang-st');
-        Route::delete('/adminlanguages/delete/{id}', 'Admin\AdminLanguageController@destroy')->name('admin-tlang-delete');
-
-        //------------ ADMIN PANEL LANGUAGE SETTINGS SECTION ENDS ------------
 
         //------------ ADMIN LANGUAGE SETTINGS SECTION ENDS ------------
 

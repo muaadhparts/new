@@ -261,75 +261,124 @@ class TryotoComponet extends Component
      * - Regular checkout: session('step1')
      * - Vendor checkout: session('vendor_step1_{vendor_id}')
      */
+    // protected function getDestinationCity(): string
+    // {
+    //     $cityId = null;
+    //     $sessionKey = null;
+
+    //     // Try vendor-specific checkout first (if vendorId is set)
+    //     if ($this->vendorId > 0) {
+    //         $vendorSessionKey = 'vendor_step1_' . $this->vendorId;
+    //         if (\Session::has($vendorSessionKey)) {
+    //             $sessionKey = $vendorSessionKey;
+    //             $step1 = \Session::get($vendorSessionKey);
+
+    //             // Check if customer_city exists and is numeric (city_id)
+    //             if (!empty($step1['customer_city']) && is_numeric($step1['customer_city'])) {
+    //                 $cityId = $step1['customer_city'];
+    //             }
+    //         }
+    //     }
+
+    //     // If not vendor checkout OR vendor session not found, try regular checkout
+    //     if (!$cityId && \Session::has('step1')) {
+    //         $sessionKey = 'step1';
+    //         $step1 = \Session::get('step1');
+
+    //         // Check if customer_city exists and is numeric (city_id)
+    //         if (!empty($step1['customer_city']) && is_numeric($step1['customer_city'])) {
+    //             $cityId = $step1['customer_city'];
+    //         }
+    //     }
+
+    //     // city_id must exist from checkout form
+    //     // NO FALLBACK to user profile or any other source
+    //     if (!$cityId) {
+    //         \Log::error('TryotoComponent: No destination city_id found in checkout form', [
+    //             'vendor_id' => $this->vendorId,
+    //             'has_session_step1' => \Session::has('step1'),
+    //             'has_vendor_session' => $this->vendorId > 0 ? \Session::has('vendor_step1_' . $this->vendorId) : false,
+    //             'session_key_checked' => $sessionKey,
+    //             'session_customer_city' => $sessionKey ? \Session::get($sessionKey . '.customer_city') : null,
+    //         ]);
+    //         throw new \Exception('Customer destination city is required for shipping calculation. Please select a city in the checkout form.');
+    //     }
+
+    //     // City must exist in cities table
+    //     $city = \App\Models\City::find($cityId);
+
+    //     if (!$city || empty($city->city_name)) {
+    //         \Log::error('TryotoComponent: Destination city not found in database', [
+    //             'city_id' => $cityId,
+    //         ]);
+    //         throw new \Exception("Destination city with ID {$cityId} not found in database. Please contact administrator.");
+    //     }
+
+    //     \Log::info('TryotoComponent: Destination city resolved from checkout form', [
+    //         'vendor_id' => $this->vendorId,
+    //         'city_id' => $cityId,
+    //         'city_name' => $city->city_name,
+    //         'source' => 'checkout_form_only',
+    //         'session_key' => $sessionKey,
+    //     ]);
+
+    //     return $this->normalizeCityName($city->city_name);
+    // }
+
+    // /**
+    //  * Normalize city name for Tryoto API
+    //  * Only cleans the name - removes diacritics and special characters
+    //  * NO automatic mapping or substitution
+    //  */
+
     protected function getDestinationCity(): string
     {
-        $cityId = null;
-        $sessionKey = null;
+        // Vendor checkout only — لا يوجد checkout عادي في هذا الفرع
+        $sessionKey = 'vendor_step1_' . $this->vendorId;
 
-        // Try vendor-specific checkout first (if vendorId is set)
-        if ($this->vendorId > 0) {
-            $vendorSessionKey = 'vendor_step1_' . $this->vendorId;
-            if (\Session::has($vendorSessionKey)) {
-                $sessionKey = $vendorSessionKey;
-                $step1 = \Session::get($vendorSessionKey);
-
-                // Check if customer_city exists and is numeric (city_id)
-                if (!empty($step1['customer_city']) && is_numeric($step1['customer_city'])) {
-                    $cityId = $step1['customer_city'];
-                }
-            }
-        }
-
-        // If not vendor checkout OR vendor session not found, try regular checkout
-        if (!$cityId && \Session::has('step1')) {
-            $sessionKey = 'step1';
-            $step1 = \Session::get('step1');
-
-            // Check if customer_city exists and is numeric (city_id)
-            if (!empty($step1['customer_city']) && is_numeric($step1['customer_city'])) {
-                $cityId = $step1['customer_city'];
-            }
-        }
-
-        // city_id must exist from checkout form
-        // NO FALLBACK to user profile or any other source
-        if (!$cityId) {
-            \Log::error('TryotoComponent: No destination city_id found in checkout form', [
+        // التحقق من وجود بيانات step1 الخاصة بالمنتج لدى هذا البائع
+        if (!Session::has($sessionKey)) {
+            \Log::error('TryotoComponent: Vendor step1 session missing', [
                 'vendor_id' => $this->vendorId,
-                'has_session_step1' => \Session::has('step1'),
-                'has_vendor_session' => $this->vendorId > 0 ? \Session::has('vendor_step1_' . $this->vendorId) : false,
-                'session_key_checked' => $sessionKey,
-                'session_customer_city' => $sessionKey ? \Session::get($sessionKey . '.customer_city') : null,
+                'session_keys'=> array_keys(Session::all())
             ]);
-            throw new \Exception('Customer destination city is required for shipping calculation. Please select a city in the checkout form.');
+            throw new \Exception('Customer destination city is required for shipping calculation. Please complete Step 1 and select a city.');
         }
 
-        // City must exist in cities table
+        $step1 = Session::get($sessionKey);
+
+        // التحقق من وجود customer_city
+        if (empty($step1['customer_city']) || !is_numeric($step1['customer_city'])) {
+            \Log::error('TryotoComponent: Invalid or missing customer_city', [
+                'vendor_id' => $this->vendorId,
+                'customer_city' => $step1['customer_city'] ?? null
+            ]);
+            throw new \Exception('Customer destination city is required for shipping calculation. Please select a city.');
+        }
+
+        $cityId = $step1['customer_city'];
+
+        // التحقق من أن المدينة موجودة فعلياً في قاعدة البيانات
         $city = \App\Models\City::find($cityId);
 
         if (!$city || empty($city->city_name)) {
-            \Log::error('TryotoComponent: Destination city not found in database', [
+            \Log::error('TryotoComponent: City not found in DB', [
+                'vendor_id' => $this->vendorId,
                 'city_id' => $cityId,
             ]);
-            throw new \Exception("Destination city with ID {$cityId} not found in database. Please contact administrator.");
+            throw new \Exception("Destination city not found. (ID: {$cityId})");
         }
 
-        \Log::info('TryotoComponent: Destination city resolved from checkout form', [
+        \Log::info('TryotoComponent: Destination city resolved', [
             'vendor_id' => $this->vendorId,
             'city_id' => $cityId,
             'city_name' => $city->city_name,
-            'source' => 'checkout_form_only',
             'session_key' => $sessionKey,
         ]);
 
         return $this->normalizeCityName($city->city_name);
     }
 
-    /**
-     * Normalize city name for Tryoto API
-     * Only cleans the name - removes diacritics and special characters
-     * NO automatic mapping or substitution
-     */
     protected function normalizeCityName(string $cityName): string
     {
         // Characters to remove/replace

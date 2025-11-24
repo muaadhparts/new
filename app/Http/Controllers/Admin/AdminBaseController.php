@@ -16,7 +16,7 @@ class AdminBaseController extends Controller
     {
         $this->middleware('auth:admin');
         $this->gs = DB::table('generalsettings')->find(1);
-        $this->language = DB::table('admin_languages')->where('is_default', '=', 1)->first();
+        $this->language = DB::table('languages')->where('is_default', '=', 1)->first();
         view()->share('langg', $this->language);
         if ($this->language) {
             App::setlocale($this->language->name);
