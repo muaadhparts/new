@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" dir="{{ $langg && $langg->rtl == 1 ? 'rtl' : 'ltr' }}">
 
 <head>
     <meta charset="UTF-8">
@@ -7,7 +7,11 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ $gs->title }}</title>
     <!--Essential css files-->
-    <link rel="stylesheet" href="{{ asset('assets/front') }}/css/bootstrap.min.css">
+    @if($langg && $langg->rtl == 1)
+        <link rel="stylesheet" href="{{ asset('assets/front') }}/css/bootstrap.rtl.min.css">
+    @else
+        <link rel="stylesheet" href="{{ asset('assets/front') }}/css/bootstrap.min.css">
+    @endif
     <link rel="stylesheet" href="{{ asset('assets/front') }}/css/all.css">
     <link rel="stylesheet" href="{{ asset('assets/front') }}/css/slick.css">
     <link rel="stylesheet" href="{{ asset('assets/front') }}/css/nice-select.css">
@@ -17,6 +21,9 @@
     <link rel="stylesheet" href="{{ asset('assets/front/css/toastr.min.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/front') }}/css/datatables.min.css">
     <link rel="stylesheet" href="{{ asset('assets/front') }}/css/style.css?v={{ time() }}">
+    @if($langg && $langg->rtl == 1)
+        <link rel="stylesheet" href="{{ asset('assets/front') }}/css/rtl.css">
+    @endif
     <link rel="stylesheet" href="{{ asset('assets/front') }}/css/custom.css">
     <link rel="icon" href="{{ asset('assets/images/' . $gs->favicon) }}">
     @include('includes.frontend.extra_head')

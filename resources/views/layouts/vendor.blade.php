@@ -1,12 +1,16 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" dir="{{ $langg && $langg->rtl == 1 ? 'rtl' : 'ltr' }}">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@lang('Vendor Dashboard')</title>
     <!--Essential css files-->
-    <link rel="stylesheet" href="{{ asset('assets/front') }}/css/bootstrap.min.css">
+    @if($langg && $langg->rtl == 1)
+        <link rel="stylesheet" href="{{ asset('assets/front') }}/css/bootstrap.rtl.min.css">
+    @else
+        <link rel="stylesheet" href="{{ asset('assets/front') }}/css/bootstrap.min.css">
+    @endif
     <link rel="stylesheet" href="{{ asset('assets/front/css/all.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/front') }}/css/slick.css">
     <link rel="stylesheet" href="{{ asset('assets/front') }}/css/nice-select.css">
@@ -16,6 +20,9 @@
     <link rel="stylesheet" href="{{ asset('assets/front') }}/css/datatables.min.css">
     <link rel="stylesheet" href="{{ asset('assets/front') }}/css/style.css?v={{ time() }}">
     <link href="{{ asset('assets/admin/css/jquery.tagit.css') }}" rel="stylesheet" />
+    @if($langg && $langg->rtl == 1)
+        <link rel="stylesheet" href="{{ asset('assets/front') }}/css/rtl.css">
+    @endif
     <link rel="stylesheet" href="{{ asset('assets/front') }}/css/custom.css">
     <link rel="stylesheet" href="{{ asset('assets/vendor') }}/css/custom.css">
     <link rel="icon" href="{{ asset('assets/images/' . $gs->favicon) }}">
