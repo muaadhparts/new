@@ -245,41 +245,58 @@ class TryotoComponet extends Component
     }
 
     /**
-     * Get destination city from customer data in session
-     * Only uses city_id from cities table - no fallbacks
+     * Get destination city from customer data in session ONLY
+     * CRITICAL: Only uses step1 session data - NO fallbacks to user data
+     * This ensures shipping calculation uses the address entered in checkout, not saved profile data
      */
     protected function getDestinationCity(): string
     {
-        $cityId = null;
+        // Determine if this is vendor checkout or regular checkout
+        $step1 = null;
 
-        // Try to get customer city_id from step1 session data
-        if (\Session::has('step1')) {
-            $step1 = \Session::get('step1');
-
-            // Check if customer_city exists and is numeric (city_id)
-            if (!empty($step1['customer_city']) && is_numeric($step1['customer_city'])) {
-                $cityId = $step1['customer_city'];
+        if ($this->vendorId > 0) {
+            // Vendor checkout: use vendor_step1_{vendorId}
+            $sessionKey = 'vendor_step1_' . $this->vendorId;
+            if (\Session::has($sessionKey)) {
+                $step1 = \Session::get($sessionKey);
+            }
+        } else {
+            // Regular checkout: use step1
+            if (\Session::has('step1')) {
+                $step1 = \Session::get('step1');
             }
         }
 
-        // If not in session, try authenticated user's city_id
-        if (!$cityId && \Auth::check()) {
-            $user = \Auth::user();
-            if (!empty($user->city_id)) {
-                $cityId = $user->city_id;
-            }
-        }
+        // TEMPORARY DEBUG: Log what we found
+        \Log::info('=== TRYOTO GET DESTINATION CITY DEBUG ===', [
+            'vendor_id' => $this->vendorId,
+            'session_key_used' => $this->vendorId > 0 ? 'vendor_step1_' . $this->vendorId : 'step1',
+            'has_step1_data' => $step1 !== null,
+            'step1_data' => $step1,
+            'all_session_keys' => array_keys(\Session::all()),
+        ]);
 
-        // city_id must exist
-        if (!$cityId) {
-            \Log::error('TryotoComponent: No destination city_id found', [
-                'has_session_step1' => \Session::has('step1'),
-                'session_customer_city' => \Session::get('step1.customer_city'),
-                'is_authenticated' => \Auth::check(),
-                'user_city_id' => \Auth::check() ? \Auth::user()->city_id : null,
+        // Check if we found step1 data
+        if (!$step1) {
+            \Log::error('TryotoComponent: No step1 session data found', [
+                'vendor_id' => $this->vendorId,
+                'expected_key' => $this->vendorId > 0 ? 'vendor_step1_' . $this->vendorId : 'step1',
+                'session_keys' => array_keys(\Session::all()),
             ]);
-            throw new \Exception('Customer destination city is required for shipping calculation. Please select a city in the checkout form.');
+            throw new \Exception('Customer destination city is required for shipping calculation. Please complete Step 1 of checkout and select a city.');
         }
+
+        // Check if customer_city exists and is numeric (city_id)
+        if (empty($step1['customer_city']) || !is_numeric($step1['customer_city'])) {
+            \Log::error('TryotoComponent: customer_city missing or invalid in step1 session', [
+                'step1_keys' => array_keys($step1),
+                'customer_city_value' => $step1['customer_city'] ?? null,
+                'customer_city_type' => gettype($step1['customer_city'] ?? null),
+            ]);
+            throw new \Exception('Customer destination city is required for shipping calculation. Please go back to Step 1 and select a city from the dropdown.');
+        }
+
+        $cityId = $step1['customer_city'];
 
         // City must exist in cities table
         $city = \App\Models\City::find($cityId);
@@ -291,10 +308,9 @@ class TryotoComponet extends Component
             throw new \Exception("Destination city with ID {$cityId} not found in database. Please contact administrator.");
         }
 
-        \Log::info('TryotoComponent: Destination city resolved from city_id', [
+        \Log::info('TryotoComponent: Destination city resolved from step1 session', [
             'city_id' => $cityId,
             'city_name' => $city->city_name,
-            'source' => \Session::has('step1') ? 'session' : 'authenticated_user',
         ]);
 
         return $this->normalizeCityName($city->city_name);

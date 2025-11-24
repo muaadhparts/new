@@ -18,17 +18,23 @@ use Illuminate\Support\Facades\Session;
 
 class AppServiceProvider extends ServiceProvider
 {
+    // public function boot()
+    // {
+    //     Cache::flush();
+    //     Paginator::useBootstrap();
+
+
+
+    //     if ($this->app->environment('production')) {
+    //         URL::forceScheme('https');
+    //     }
     public function boot()
     {
-        Cache::flush();
         Paginator::useBootstrap();
-
-
 
         if ($this->app->environment('production')) {
             URL::forceScheme('https');
         }
-
 
         view()->composer('*', function ($settings) {
             $settings->with('gs', cache()->remember('generalsettings', 3600, function () {

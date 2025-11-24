@@ -428,6 +428,14 @@ class CheckoutController extends FrontBaseController
         // Get all submitted data (manual OR from Google Maps - no conflict)
         $step1 = $request->all();
 
+        // TEMPORARY DEBUG: Log what we receive from the form
+        \Log::info('=== CHECKOUT STEP1 DEBUG ===', [
+            'all_request_data' => $request->all(),
+            'customer_city_exists' => $request->has('customer_city'),
+            'customer_city_value' => $request->input('customer_city'),
+            'customer_city_type' => gettype($request->input('customer_city')),
+        ]);
+
         // Validation rules
         $validator = Validator::make($step1, [
             'customer_name' => 'required|string|max:255',
@@ -437,6 +445,7 @@ class CheckoutController extends FrontBaseController
             'customer_zip' => 'nullable|string|max:20',
             'customer_country' => 'required|string|max:255',
             'customer_state' => 'required|string|max:255',
+            'customer_city' => 'required|numeric|exists:cities,id',
             // Coordinates from Google Maps (optional)
             'latitude' => 'nullable|numeric|between:-90,90',
             'longitude' => 'nullable|numeric|between:-180,180',
@@ -448,6 +457,9 @@ class CheckoutController extends FrontBaseController
             'customer_address.required' => 'العنوان مطلوب',
             'customer_country.required' => 'الدولة مطلوبة',
             'customer_state.required' => 'الولاية مطلوبة',
+            'customer_city.required' => 'المدينة مطلوبة لحساب تكلفة الشحن',
+            'customer_city.numeric' => 'معرف المدينة غير صحيح',
+            'customer_city.exists' => 'المدينة المختارة غير موجودة في قاعدة البيانات',
             'latitude.between' => 'خط العرض غير صحيح',
             'longitude.between' => 'خط الطول غير صحيح',
         ]);
@@ -1141,6 +1153,15 @@ class CheckoutController extends FrontBaseController
     {
         $step1 = $request->all();
 
+        // TEMPORARY DEBUG: Log what we receive from the form
+        \Log::info('=== CHECKOUT VENDOR STEP1 DEBUG ===', [
+            'vendor_id' => $vendorId,
+            'all_request_data' => $request->all(),
+            'customer_city_exists' => $request->has('customer_city'),
+            'customer_city_value' => $request->input('customer_city'),
+            'customer_city_type' => gettype($request->input('customer_city')),
+        ]);
+
         $validator = Validator::make($step1, [
             'customer_name' => 'required|string|max:255',
             'customer_email' => 'required|email|max:255',
@@ -1149,10 +1170,35 @@ class CheckoutController extends FrontBaseController
             'customer_zip' => 'nullable|string|max:20',
             'customer_country' => 'required|string|max:255',
             'customer_state' => 'required|string|max:255',
+            'customer_city' => 'required|numeric|exists:cities,id',
+            // Coordinates from Google Maps (optional)
+            'latitude' => 'nullable|numeric|between:-90,90',
+            'longitude' => 'nullable|numeric|between:-180,180',
+        ], [
+            'customer_name.required' => 'الاسم مطلوب',
+            'customer_email.required' => 'البريد الإلكتروني مطلوب',
+            'customer_email.email' => 'البريد الإلكتروني غير صحيح',
+            'customer_phone.required' => 'رقم الهاتف مطلوب',
+            'customer_address.required' => 'العنوان مطلوب',
+            'customer_country.required' => 'الدولة مطلوبة',
+            'customer_state.required' => 'الولاية مطلوبة',
+            'customer_city.required' => 'المدينة مطلوبة لحساب تكلفة الشحن',
+            'customer_city.numeric' => 'معرف المدينة غير صحيح',
+            'customer_city.exists' => 'المدينة المختارة غير موجودة في قاعدة البيانات',
+            'latitude.between' => 'خط العرض غير صحيح',
+            'longitude.between' => 'خط الطول غير صحيح',
         ]);
 
         if ($validator->fails()) {
-            return back()->withErrors($validator->errors());
+            return back()->withErrors($validator->errors())->withInput();
+        }
+
+        // Validate coordinates consistency
+        if (($request->filled('latitude') && !$request->filled('longitude')) ||
+            (!$request->filled('latitude') && $request->filled('longitude'))) {
+            return back()->withErrors([
+                'coordinates' => 'يجب إدخال كلا الإحداثيتين معاً'
+            ])->withInput();
         }
 
         Session::put('vendor_step1_' . $vendorId, $step1);

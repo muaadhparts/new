@@ -1336,7 +1336,8 @@ document.querySelector('.address-wrapper').addEventListener('submit', function(e
         { id: 'phone', name: '@lang("Phone Number")' },
         { id: 'address', name: '@lang("Address")' },
         { id: 'select_country', name: '@lang("Country")' },
-        { id: 'show_state', name: '@lang("State")' }
+        { id: 'show_state', name: '@lang("State")' },
+        { id: 'show_city', name: '@lang("City")' }
     ];
 
     // Validate required fields
