@@ -226,7 +226,7 @@
                                     <div class="alert alert-info d-flex align-items-center" role="alert">
                                         <i class="fas fa-map-marker-alt me-2" style="font-size: 20px;"></i>
                                         <div>
-                                            <strong>يرجى اختيار موقع التوصيل من الخريطة أدناه</strong>
+                                            <strong>@lang('Please select your delivery location from the map below')</strong>
                                         </div>
                                     </div>
                                     <div class="mt-3 mb-3">
@@ -455,7 +455,7 @@
         <div class="modal-dialog modal-xl modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
-                    <h5 class="modal-title">اختيار الموقع على الخريطة</h5>
+                    <h5 class="modal-title">@lang('Select location on map')</h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body p-0">
@@ -464,7 +464,7 @@
                     <div style="padding: 20px;">
                         <div id="map-container" style="position: relative; height: 500px; border-radius: 8px; overflow: hidden; border: 2px solid #e0e0e0;">
                             <div class="map-search" style="position: absolute; top: 10px; right: 10px; left: 10px; z-index: 10;">
-                                <input type="text" id="map-search-input" placeholder="ابحث عن عنوان..."
+                                <input type="text" id="map-search-input" placeholder="@lang('Search for an address...')"
                                        style="width: 100%; padding: 12px 15px; border: 2px solid #667eea; border-radius: 8px; font-size: 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); background: white;">
                             </div>
                             <div id="map" style="width: 100%; height: 100%;"></div>
@@ -475,57 +475,57 @@
 
                         <div class="buttons-container" style="display: flex; gap: 10px; margin-top: 15px;">
                             <button class="btn btn-secondary" id="reset-btn-modal" type="button">
-                                إعادة تحديد
+                                @lang('Reset Location')
                             </button>
                             <button class="btn btn-secondary" id="current-location-btn-modal" type="button">
-                                موقعي الحالي
+                                @lang('My Current Location')
                             </button>
                         </div>
 
                         <div class="location-info" id="location-info-modal" style="display: none; background: #f8f9fa; padding: 20px; border-radius: 8px; margin-top: 20px;">
-                            <h6 style="font-size: 16px; color: #333; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 2px solid #667eea;">معلومات الموقع المحدد</h6>
+                            <h6 style="font-size: 16px; color: #333; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 2px solid #667eea;">@lang('Location Information')</h6>
 
                             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px;">
                                 <div style="background: white; padding: 15px; border-radius: 6px; border-right: 3px solid #667eea;">
-                                    <label style="display: block; font-size: 12px; color: #666; margin-bottom: 5px; font-weight: 600;">الدولة (عربي)</label>
+                                    <label style="display: block; font-size: 12px; color: #666; margin-bottom: 5px; font-weight: 600;">@lang('Country (Arabic)')</label>
                                     <div id="country-ar-modal" style="font-size: 14px; color: #333;">-</div>
                                 </div>
                                 <div style="background: white; padding: 15px; border-radius: 6px; border-right: 3px solid #667eea;">
-                                    <label style="display: block; font-size: 12px; color: #666; margin-bottom: 5px; font-weight: 600;">الدولة (إنجليزي)</label>
+                                    <label style="display: block; font-size: 12px; color: #666; margin-bottom: 5px; font-weight: 600;">@lang('Country (English)')</label>
                                     <div id="country-en-modal" style="font-size: 14px; color: #333;">-</div>
                                 </div>
                                 <div style="background: white; padding: 15px; border-radius: 6px; border-right: 3px solid #667eea;">
-                                    <label style="display: block; font-size: 12px; color: #666; margin-bottom: 5px; font-weight: 600;">المنطقة (عربي)</label>
+                                    <label style="display: block; font-size: 12px; color: #666; margin-bottom: 5px; font-weight: 600;">@lang('State (Arabic)')</label>
                                     <div id="state-ar-modal" style="font-size: 14px; color: #333;">-</div>
                                 </div>
                                 <div style="background: white; padding: 15px; border-radius: 6px; border-right: 3px solid #667eea;">
-                                    <label style="display: block; font-size: 12px; color: #666; margin-bottom: 5px; font-weight: 600;">المنطقة (إنجليزي)</label>
+                                    <label style="display: block; font-size: 12px; color: #666; margin-bottom: 5px; font-weight: 600;">@lang('State (English)')</label>
                                     <div id="state-en-modal" style="font-size: 14px; color: #333;">-</div>
                                 </div>
                                 <div style="background: white; padding: 15px; border-radius: 6px; border-right: 3px solid #667eea;">
-                                    <label style="display: block; font-size: 12px; color: #666; margin-bottom: 5px; font-weight: 600;">المدينة (عربي)</label>
+                                    <label style="display: block; font-size: 12px; color: #666; margin-bottom: 5px; font-weight: 600;">@lang('City (Arabic)')</label>
                                     <div id="city-ar-modal" style="font-size: 14px; color: #333;">-</div>
                                 </div>
                                 <div style="background: white; padding: 15px; border-radius: 6px; border-right: 3px solid #667eea;">
-                                    <label style="display: block; font-size: 12px; color: #666; margin-bottom: 5px; font-weight: 600;">المدينة (إنجليزي)</label>
+                                    <label style="display: block; font-size: 12px; color: #666; margin-bottom: 5px; font-weight: 600;">@lang('City (English)')</label>
                                     <div id="city-en-modal" style="font-size: 14px; color: #333;">-</div>
                                 </div>
                             </div>
 
                             <div style="display: flex; gap: 15px; margin-top: 15px;">
                                 <div style="flex: 1; background: white; padding: 15px; border-radius: 6px; text-align: center;">
-                                    <label style="display: block; font-size: 12px; color: #666; margin-bottom: 5px;">خط العرض</label>
+                                    <label style="display: block; font-size: 12px; color: #666; margin-bottom: 5px;">@lang('Latitude')</label>
                                     <div id="latitude-value-modal" style="font-size: 16px; font-weight: 600; color: #667eea;">-</div>
                                 </div>
                                 <div style="flex: 1; background: white; padding: 15px; border-radius: 6px; text-align: center;">
-                                    <label style="display: block; font-size: 12px; color: #666; margin-bottom: 5px;">خط الطول</label>
+                                    <label style="display: block; font-size: 12px; color: #666; margin-bottom: 5px;">@lang('Longitude')</label>
                                     <div id="longitude-value-modal" style="font-size: 16px; font-weight: 600; color: #667eea;">-</div>
                                 </div>
                             </div>
 
                             <div style="margin-top: 15px;">
                                 <div style="background: white; padding: 15px; border-radius: 6px;">
-                                    <label style="display: block; font-size: 12px; color: #666; margin-bottom: 5px; font-weight: 600;">العنوان الكامل</label>
+                                    <label style="display: block; font-size: 12px; color: #666; margin-bottom: 5px; font-weight: 600;">@lang('Full Address')</label>
                                     <div id="full-address-modal" style="font-size: 14px; color: #333;">-</div>
                                 </div>
                             </div>
@@ -534,7 +534,7 @@
                             <div id="tryoto-info-modal" style="display: none; margin-top: 15px; padding: 15px; border-radius: 8px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
                                 <div style="display: flex; align-items: center; margin-bottom: 10px;">
                                     <i class="fas fa-shipping-fast" style="color: white; font-size: 20px; margin-left: 10px;"></i>
-                                    <h6 style="color: white; margin: 0; font-size: 15px; font-weight: 600;">معلومات الشحن عبر Tryoto</h6>
+                                    <h6 style="color: white; margin: 0; font-size: 15px; font-weight: 600;">@lang('Tryoto Shipping Information')</h6>
                                 </div>
 
                                 <div id="tryoto-verified-box" style="background: rgba(255,255,255,0.95); padding: 12px; border-radius: 6px; margin-top: 10px;">
@@ -556,15 +556,15 @@
                                         <i class="fas fa-exclamation-triangle" style="color: #ff9800; margin-left: 8px; margin-top: 2px;"></i>
                                         <div style="flex: 1;">
                                             <p style="margin: 0; font-size: 13px; color: #856404; font-weight: 600;">
-                                                الموقع المحدد غير مدعوم للشحن
+                                                @lang('Selected location is not supported for shipping')
                                             </p>
                                             <p style="margin: 5px 0 0 0; font-size: 12px; color: #856404;">
-                                                <strong>أقرب مدينة مدعومة:</strong>
+                                                <strong>@lang('Nearest supported city'):</strong>
                                                 <span id="tryoto-alternative-city" style="font-weight: 700;">-</span>
-                                                (<span id="tryoto-alternative-distance">-</span> كم)
+                                                (<span id="tryoto-alternative-distance">-</span> @lang('km'))
                                             </p>
                                             <p style="margin: 5px 0 0 0; font-size: 11px; color: #856404;">
-                                                سيتم الشحن إلى <strong id="tryoto-alternative-city-ar">-</strong> والتواصل معك لتنسيق التوصيل
+                                                @lang('Shipping will be to') <strong id="tryoto-alternative-city-ar">-</strong> @lang('and we will contact you to coordinate delivery')
                                             </p>
                                         </div>
                                     </div>
@@ -575,11 +575,11 @@
                                     <div style="display: flex; align-items: center;">
                                         <i class="fas fa-times-circle" style="color: #dc3545; margin-left: 8px;"></i>
                                         <p style="margin: 0; font-size: 13px; color: #721c24; font-weight: 600;">
-                                            عذراً، هذا الموقع خارج نطاق الشحن المتاح
+                                            @lang('Sorry, this location is outside the available shipping area')
                                         </p>
                                     </div>
                                     <p style="margin: 5px 0 0 0; font-size: 11px; color: #721c24;">
-                                        يرجى اختيار موقع داخل المملكة العربية السعودية
+                                        @lang('Please select a location within Saudi Arabia')
                                     </p>
                                 </div>
                             </div>
@@ -588,7 +588,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">@lang('Close')</button>
-                    <button type="button" class="btn btn-primary" id="use-location-btn-modal" disabled>استخدم هذا الموقع</button>
+                    <button type="button" class="btn btn-primary" id="use-location-btn-modal" disabled>@lang('Use This Location')</button>
                 </div>
             </div>
         </div>
@@ -866,7 +866,7 @@
     }
     </style>
 
-    <script src="https://maps.googleapis.com/maps/api/js?key={{ config('services.google_maps.api_key') }}&libraries=places&language=ar" async defer></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key={{ config('services.google_maps.api_key') }}&libraries=places&language=en" async defer></script>
     <script>
     // Google Maps variables for modal
     let mapModal, markerModal, geocoderModal, searchBoxModal, debounceTimerModal, selectedLocationData;

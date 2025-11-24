@@ -2057,7 +2057,27 @@
     "ext.frtNotes": "FRt Notes",
     "ext.ppsPartNumber": "PPS Part Number",
     "ext.jwfPartMasterNextPartNumber": "JWF Part Master Next Part Number",
-    "ext.warrantyPeriods": "Warranty Periods"
+    "ext.warrantyPeriods": "Warranty Periods",
+    "Select Location from Map": "Select Location from Map",
+    "Please select your delivery location from the map below": "Please select your delivery location from the map below",
+    "Select location on map": "Select location on map",
+    "Search for an address...": "Search for an address...",
+    "Location Information": "Location Information",
+    "Country (Arabic)": "Country (Arabic)",
+    "Country (English)": "Country (English)",
+    "Region (Arabic)": "Region (Arabic)",
+    "Region (English)": "Region (English)",
+    "City (Arabic)": "City (Arabic)",
+    "City (English)": "City (English)",
+    "Latitude": "Latitude",
+    "Longitude": "Longitude",
+    "Full Address": "Full Address",
+    "Reset Selection": "Reset Selection",
+    "My Current Location": "My Current Location",
+    "Use This Location": "Use This Location",
+    "Close": "Close",
+    "Location selected successfully": "Location selected successfully",
+    "Selected Location:": "Selected Location:"
 
 }
 

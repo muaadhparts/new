@@ -2112,7 +2112,27 @@
     "ext.frtNotes": "مذكرة FRt",
     "ext.ppsPartNumber": "رقم قطعة PPS",
     "ext.jwfPartMasterNextPartNumber": "رقم القطعة التالي في JWF",
-    "ext.warrantyPeriods": "فترات الضمان"
+    "ext.warrantyPeriods": "فترات الضمان",
+    "Select Location from Map": "اختر الموقع من الخريطة",
+    "Please select your delivery location from the map below": "يرجى اختيار موقع التوصيل من الخريطة أدناه",
+    "Select location on map": "اختيار الموقع على الخريطة",
+    "Search for an address...": "ابحث عن عنوان...",
+    "Location Information": "معلومات الموقع المحدد",
+    "Country (Arabic)": "الدولة (عربي)",
+    "Country (English)": "الدولة (إنجليزي)",
+    "Region (Arabic)": "المنطقة (عربي)",
+    "Region (English)": "المنطقة (إنجليزي)",
+    "City (Arabic)": "المدينة (عربي)",
+    "City (English)": "المدينة (إنجليزي)",
+    "Latitude": "خط العرض",
+    "Longitude": "خط الطول",
+    "Full Address": "العنوان الكامل",
+    "Reset Selection": "إعادة تحديد",
+    "My Current Location": "موقعي الحالي",
+    "Use This Location": "استخدم هذا الموقع",
+    "Close": "إغلاق",
+    "Location selected successfully": "تم اختيار الموقع من الخريطة بنجاح",
+    "Selected Location:": "الموقع المحدد:"
 
 }
 

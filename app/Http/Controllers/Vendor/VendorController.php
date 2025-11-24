@@ -38,7 +38,7 @@ class VendorController extends VendorBaseController
         } catch (\Exception $e) {
             \Log::error('VendorController@index error: ' . $e->getMessage());
             \Log::error('Stack trace: ' . $e->getTraceAsString());
-            return response()->json(['error' => $e->getMessage()], 500);
+            return back()->with('unsuccess', 'An error occurred while loading the dashboard. Please try again.');
         }
     }
 
