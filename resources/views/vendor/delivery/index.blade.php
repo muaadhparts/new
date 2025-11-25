@@ -272,7 +272,7 @@
                 </div>
                 <!-- Select Pickup Point -->
                 <div class="input-label-wrapper w-100">
-                    <label>@lang('Select Rider')</label>
+                    <label>@lang('Select Pickup Point')</label>
                     <div class="dropdown-container">
                         <select class="form-control nice-select form__control" name="pickup_point_id"
                             id="pickup_point_id" required>

@@ -95,7 +95,7 @@ class RegisterController extends Controller
 		if ($gs->is_verification_email == 1) {
 			$rider = Rider::where('email_token', '=', $token)->first();
 			if (isset($rider)) {
-				$rider->email_verified = 'Yes';
+				$rider->email_verify = 'Yes';
 				$rider->update();
 
 				// Welcome Email For User
@@ -113,7 +113,7 @@ class RegisterController extends Controller
 				$mailer->sendAutoMail($data);
 
 
-				Auth::gurad('rider')->login($rider);
+				Auth::guard('rider')->login($rider);
 				return redirect()->route('rider-dashboard')->with('success', __('Email Verified Successfully'));
 			}
 		} else {

@@ -44,7 +44,7 @@
                     <div class="delivery-details">
                         <div class="row g-4 my-3">
                             <div class="col-md-6">
-                                <h5>Delivery Address</h5>
+                                <h5>@lang('Delivery Address')</h5>
                                 <div class="delivery-address-info">
                                     <div class="account-info-item">
                                         <span class="info-title">@lang('Name:') </span>
@@ -185,8 +185,8 @@
                                 $order_package = json_decode($order->vendor_packing_id, true) ?? [];
                                 
                                 // Retrieve vendor-specific shipping and packing IDs, defaulting to null if not found
-                                $vendor_shipping_id = $order_shipping[$order->vendor_id] ?? null;
-                                $vendor_package_id = $order_package[$order->vendor_id] ?? null;
+                                $vendor_shipping_id = $order_shipping[$data->vendor_id] ?? null;
+                                $vendor_package_id = $order_package[$data->vendor_id] ?? null;
                                 
                                 // Retrieve the Shipping and Package models, or null if not found
                                 $shipping = $vendor_shipping_id ? App\Models\Shipping::find($vendor_shipping_id) : null;

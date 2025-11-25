@@ -25,12 +25,12 @@ class LoginController extends Controller
             // if successful, then redirect to their intended location
 
             // Check If Email is verified or not
-            if (Auth::guard('rider')->user()->email_verified == 'No') {
+            if (Auth::guard('rider')->user()->email_verify == 'No') {
                 Auth::guard('rider')->logout();
                 return redirect()->back()->with('unsuccess', __('Your Email is not Verified!'));
             }
 
-            if (Auth::guard('rider')->user()->ban == 1) {
+            if (Auth::guard('rider')->user()->status == 0) {
                 Auth::guard('rider')->logout();
                 return redirect()->back()->with('unsuccess', __('Your Account Has Been Banned.'));
             }

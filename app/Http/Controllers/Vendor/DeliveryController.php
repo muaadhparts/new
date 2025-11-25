@@ -137,14 +137,28 @@ class DeliveryController extends VendorBaseController
 
     public function findReider(Request $request)
     {
-        $city = City::where('city_name', $request->city)->first();
-        $areas = RiderServiceArea::where('city_id', $city->id)->get();
+        // البحث عن المدينة بالاسم أو بالـ ID
+        $city = City::where('id', $request->city)
+            ->orWhere('city_name', $request->city)
+            ->orWhere('city_name_ar', $request->city)
+            ->first();
 
-        $ridersData = '
-        <option value="">' . __('Select Rider') . '</option>
-        ';
-        foreach ($areas as $rider) {
-            $ridersData .= '<option riderName="' . $rider->rider->name . '" area="' . $request->city . '" riderCost="' . PriceHelper::showAdminCurrencyPrice($rider->price) . '" value="' . $rider->id . '">' . $rider->rider->name . '-' . PriceHelper::showAdminCurrencyPrice($rider->price) . '</option>';
+        if (!$city) {
+            return response()->json(['riders' => '<option value="">' . __('No riders available for this city') . '</option>']);
+        }
+
+        $areas = RiderServiceArea::where('city_id', $city->id)
+            ->whereHas('rider', function($q) {
+                $q->where('status', 1);
+            })
+            ->get();
+
+        $ridersData = '<option value="">' . __('Select Rider') . '</option>';
+
+        foreach ($areas as $area) {
+            if ($area->rider) {
+                $ridersData .= '<option riderName="' . $area->rider->name . '" area="' . $city->city_name . '" riderCost="' . PriceHelper::showAdminCurrencyPrice($area->price) . '" value="' . $area->id . '">' . $area->rider->name . ' - ' . PriceHelper::showAdminCurrencyPrice($area->price) . '</option>';
+            }
         }
 
         return response()->json(['riders' => $ridersData]);
@@ -153,17 +167,21 @@ class DeliveryController extends VendorBaseController
 
     public function findReiderSubmit(Request $request)
     {
+        $service_area = RiderServiceArea::find($request->rider_id);
 
+        if (!$service_area) {
+            return redirect()->back()->with('error', __('Invalid rider selection'));
+        }
 
-        $delivery =  DeliveryRider::where('order_id', $request->order_id)->whereVendorId(auth()->id())->first();
-
-        $service_area = RiderServiceArea::where('id', $request->rider_id)->first();
+        $delivery = DeliveryRider::where('order_id', $request->order_id)
+            ->where('vendor_id', auth()->id())
+            ->first();
 
         if ($delivery) {
             $delivery->rider_id = $service_area->rider_id;
             $delivery->service_area_id = $service_area->id;
-            $delivery->status = 'pending';
             $delivery->pickup_point_id = $request->pickup_point_id;
+            $delivery->status = 'pending';
             $delivery->save();
         } else {
             $delivery = new DeliveryRider();
@@ -175,6 +193,7 @@ class DeliveryController extends VendorBaseController
             $delivery->status = 'pending';
             $delivery->save();
         }
+
         return redirect()->back()->with('success', __('Rider Assigned Successfully'));
     }
 }
