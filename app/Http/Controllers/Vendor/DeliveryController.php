@@ -14,7 +14,11 @@ use App\Models\Package;
 use App\Models\Rider;
 use App\Models\RiderServiceArea;
 use App\Models\Shipping;
+use App\Models\ShipmentStatusLog;
+use App\Models\Generalsetting;
+use App\Services\TryotoService;
 use Datatables;
+use Illuminate\Support\Facades\Log;
 
 class DeliveryController extends VendorBaseController
 {
@@ -195,5 +199,362 @@ class DeliveryController extends VendorBaseController
         }
 
         return redirect()->back()->with('success', __('Rider Assigned Successfully'));
+    }
+
+    /**
+     * عرض خيارات الشحن من Tryoto
+     */
+    public function getShippingOptions(Request $request)
+    {
+        $order = Order::find($request->order_id);
+
+        if (!$order) {
+            return response()->json(['success' => false, 'error' => __('Order not found')]);
+        }
+
+        $vendor = $this->user;
+
+        // الحصول على مدينة الأصل من البائع
+        $originCity = $this->resolveCityName($vendor->city_id, $vendor->warehouse_city ?? $vendor->shop_city);
+
+        if (!$originCity) {
+            return response()->json(['success' => false, 'error' => __('Vendor city not configured')]);
+        }
+
+        // الحصول على مدينة الوجهة من الطلب
+        $destinationCity = $this->resolveCityName(
+            $order->shipping_city_id ?? $order->customer_city_id,
+            $order->shipping_city ?: $order->customer_city
+        );
+
+        if (!$destinationCity) {
+            return response()->json(['success' => false, 'error' => __('Customer city not specified')]);
+        }
+
+        // حساب الوزن والأبعاد من السلة
+        $dimensions = $this->calculateOrderDimensions($order);
+        $weight = $dimensions['weight'];
+
+        // حساب مبلغ COD إذا كان الدفع عند الاستلام
+        $codAmount = in_array($order->method, ['cod', 'Cash On Delivery']) ? (float)$order->pay_amount : 0;
+
+        Log::info('Vendor Delivery: Getting shipping options', [
+            'order_id' => $order->id,
+            'origin' => $originCity,
+            'destination' => $destinationCity,
+            'weight' => $weight
+        ]);
+
+        $tryotoService = new TryotoService();
+        $result = $tryotoService->getDeliveryOptions($originCity, $destinationCity, $weight, $codAmount, $dimensions);
+
+        if (!$result['success']) {
+            return response()->json([
+                'success' => false,
+                'error' => $result['error'] ?? __('Failed to get shipping options')
+            ]);
+        }
+
+        $options = $result['options'] ?? [];
+        $html = '<option value="">' . __('Select Shipping Company') . '</option>';
+
+        foreach ($options as $option) {
+            $price = $option['price'] ?? 0;
+            $company = $option['company'] ?? 'Unknown';
+            $deliveryOptionId = $option['deliveryOptionId'] ?? '';
+            $estimatedDays = $option['estimatedDeliveryDays'] ?? '';
+            $logo = $option['logo'] ?? '';
+            $serviceType = $option['serviceType'] ?? '';
+
+            $displayPrice = PriceHelper::showAdminCurrencyPrice($price);
+            $label = $company . ' - ' . $displayPrice;
+            if ($estimatedDays) {
+                $label .= ' (' . $estimatedDays . ' ' . __('days') . ')';
+            }
+
+            $html .= '<option value="' . $deliveryOptionId . '"
+                        data-company="' . htmlspecialchars($company) . '"
+                        data-price="' . $price . '"
+                        data-display-price="' . $displayPrice . '"
+                        data-days="' . $estimatedDays . '"
+                        data-logo="' . htmlspecialchars($logo) . '"
+                        data-service-type="' . htmlspecialchars($serviceType) . '">' . $label . '</option>';
+        }
+
+        return response()->json([
+            'success' => true,
+            'options' => $html,
+            'options_count' => count($options),
+            'origin' => $originCity,
+            'destination' => $destinationCity
+        ]);
+    }
+
+    /**
+     * تحويل city ID إلى city name
+     */
+    private function resolveCityName($cityId, $fallbackName = null): ?string
+    {
+        // إذا كان لدينا ID، نبحث عن الاسم
+        if ($cityId && is_numeric($cityId)) {
+            $city = City::find($cityId);
+            if ($city && $city->city_name) {
+                return $city->city_name;
+            }
+        }
+
+        // إذا كان الاسم نصاً وليس رقماً، نستخدمه مباشرة
+        if ($fallbackName && !is_numeric($fallbackName)) {
+            return $fallbackName;
+        }
+
+        // آخر محاولة: إذا كان الـ fallback رقماً أيضاً
+        if ($fallbackName && is_numeric($fallbackName)) {
+            $city = City::find($fallbackName);
+            if ($city && $city->city_name) {
+                return $city->city_name;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * حساب الأبعاد والوزن من السلة
+     */
+    private function calculateOrderDimensions(Order $order): array
+    {
+        $cart = is_string($order->cart) ? json_decode($order->cart, true) : $order->cart;
+        $items = $cart['items'] ?? $cart ?? [];
+
+        $totalWeight = 0;
+        $totalVolume = 0;
+
+        foreach ($items as $item) {
+            $qty = (int)($item['qty'] ?? 1);
+            $itemData = $item['item'] ?? $item;
+            $weight = (float)($itemData['weight'] ?? 1);
+            $totalWeight += $weight * $qty;
+
+            // Estimate volume per item (default 30x30x30 = 27000 cm³)
+            $itemVolume = 27000 * $qty;
+            $totalVolume += $itemVolume;
+        }
+
+        // Calculate cubic dimensions from total volume
+        $cubicRoot = pow($totalVolume, 1/3);
+        $dimension = max(30, ceil($cubicRoot));
+
+        return [
+            'weight' => max(0.5, $totalWeight),
+            'length' => $dimension,
+            'height' => $dimension,
+            'width' => $dimension
+        ];
+    }
+
+    /**
+     * إرسال الطلب لـ Tryoto
+     */
+    public function sendToTryoto(Request $request)
+    {
+        $request->validate([
+            'order_id' => 'required|exists:orders,id',
+            'delivery_option_id' => 'required|string',
+            'company' => 'required|string',
+            'price' => 'required|numeric',
+        ]);
+
+        $order = Order::find($request->order_id);
+        $vendorId = $this->user->id;
+
+        // التحقق من أن هذا الطلب يخص هذا البائع
+        $vendorOrder = $order->vendororders()->where('user_id', $vendorId)->first();
+        if (!$vendorOrder) {
+            return redirect()->back()->with('error', __('This order does not belong to you'));
+        }
+
+        // التحقق من عدم وجود شحنة سابقة لهذا الطلب من هذا البائع
+        $existingShipment = ShipmentStatusLog::where('order_id', $order->id)
+            ->where('vendor_id', $vendorId)
+            ->whereNotIn('status', ['cancelled', 'returned'])
+            ->first();
+
+        if ($existingShipment) {
+            return redirect()->back()->with('error', __('A shipment already exists for this order. Tracking: ') . $existingShipment->tracking_number);
+        }
+
+        $tryotoService = new TryotoService();
+        $result = $tryotoService->createShipment(
+            $order,
+            $vendorId,
+            $request->delivery_option_id,
+            $request->company,
+            $request->price
+        );
+
+        if ($result['success']) {
+            // تحديث حالة vendor_order إلى processing
+            $vendorOrder->status = 'processing';
+            $vendorOrder->save();
+
+            return redirect()->back()->with('success', __('Shipment created successfully. Tracking Number: ') . $result['tracking_number']);
+        }
+
+        Log::error('Tryoto shipment failed', [
+            'order_id' => $order->id,
+            'vendor_id' => $vendorId,
+            'error' => $result['error'] ?? 'Unknown error'
+        ]);
+
+        return redirect()->back()->with('error', __('Failed to create shipment: ') . ($result['error'] ?? __('Unknown error')));
+    }
+
+    /**
+     * تتبع الشحنة
+     */
+    public function trackShipment(Request $request)
+    {
+        $trackingNumber = $request->tracking_number;
+
+        if (!$trackingNumber) {
+            return response()->json(['success' => false, 'error' => __('Tracking number is required')]);
+        }
+
+        $tryotoService = new TryotoService();
+        $result = $tryotoService->trackShipment($trackingNumber);
+
+        return response()->json($result);
+    }
+
+    /**
+     * عرض سجل الشحنات للبائع
+     */
+    public function shipmentHistory($orderId)
+    {
+        $vendorId = $this->user->id;
+
+        $logs = ShipmentStatusLog::where('order_id', $orderId)
+            ->where('vendor_id', $vendorId)
+            ->orderBy('status_date', 'desc')
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return response()->json([
+            'success' => true,
+            'logs' => $logs
+        ]);
+    }
+
+    /**
+     * إلغاء الشحنة
+     */
+    public function cancelShipment(Request $request)
+    {
+        $request->validate([
+            'tracking_number' => 'required|string',
+            'reason' => 'nullable|string|max:500'
+        ]);
+
+        $vendorId = $this->user->id;
+
+        // التحقق من أن الشحنة تخص هذا البائع
+        $shipment = ShipmentStatusLog::where('tracking_number', $request->tracking_number)
+            ->where('vendor_id', $vendorId)
+            ->first();
+
+        if (!$shipment) {
+            return redirect()->back()->with('error', __('Shipment not found or does not belong to you'));
+        }
+
+        // التحقق من أن الشحنة قابلة للإلغاء
+        $nonCancellableStatuses = ['delivered', 'out_for_delivery', 'cancelled'];
+        if (in_array($shipment->status, $nonCancellableStatuses)) {
+            return redirect()->back()->with('error', __('This shipment cannot be cancelled'));
+        }
+
+        $tryotoService = new TryotoService();
+        $result = $tryotoService->cancelShipment($request->tracking_number, $request->reason ?? '');
+
+        if ($result['success']) {
+            return redirect()->back()->with('success', __('Shipment cancelled successfully'));
+        }
+
+        return redirect()->back()->with('error', __('Failed to cancel shipment: ') . ($result['error'] ?? __('Unknown error')));
+    }
+
+    /**
+     * تحديث حالة الطلب من البائع (جاهز للاستلام)
+     */
+    public function markReadyForPickup(Request $request)
+    {
+        $request->validate([
+            'order_id' => 'required|exists:orders,id'
+        ]);
+
+        $order = Order::find($request->order_id);
+        $vendorId = $this->user->id;
+
+        $vendorOrder = $order->vendororders()->where('user_id', $vendorId)->first();
+        if (!$vendorOrder) {
+            return redirect()->back()->with('error', __('This order does not belong to you'));
+        }
+
+        // تحديث حالة الطلب
+        $vendorOrder->status = 'ready_for_pickup';
+        $vendorOrder->save();
+
+        // إضافة تتبع
+        $order->tracks()->create([
+            'title' => __('Ready for Pickup'),
+            'text' => __('Vendor :vendor has marked the order as ready for pickup', ['vendor' => $this->user->shop_name])
+        ]);
+
+        return redirect()->back()->with('success', __('Order marked as ready for pickup'));
+    }
+
+    /**
+     * عرض إحصائيات الشحن للبائع
+     */
+    public function shippingStats()
+    {
+        $vendorId = $this->user->id;
+
+        $tryotoService = new TryotoService();
+        $stats = $tryotoService->getVendorStatistics($vendorId);
+
+        return view('vendor.delivery.stats', compact('stats'));
+    }
+
+    /**
+     * الحصول على حالة الشحنة للطلب
+     */
+    public function getOrderShipmentStatus($orderId)
+    {
+        $vendorId = $this->user->id;
+
+        $latestStatus = ShipmentStatusLog::where('order_id', $orderId)
+            ->where('vendor_id', $vendorId)
+            ->orderBy('status_date', 'desc')
+            ->orderBy('created_at', 'desc')
+            ->first();
+
+        if (!$latestStatus) {
+            return response()->json([
+                'success' => true,
+                'has_shipment' => false
+            ]);
+        }
+
+        return response()->json([
+            'success' => true,
+            'has_shipment' => true,
+            'tracking_number' => $latestStatus->tracking_number,
+            'company' => $latestStatus->company_name,
+            'status' => $latestStatus->status,
+            'status_ar' => $latestStatus->status_ar,
+            'status_date' => $latestStatus->status_date?->format('Y-m-d H:i'),
+            'message' => $latestStatus->message_ar ?? $latestStatus->message
+        ]);
     }
 }

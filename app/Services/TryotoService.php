@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Order;
 use App\Models\ShipmentStatusLog;
 use App\Models\User;
+use App\Models\City;
 use App\Models\UserNotification;
 use App\Helpers\PriceHelper;
 use Illuminate\Support\Facades\Cache;
@@ -97,15 +98,16 @@ class TryotoService
     }
 
     /**
-     * Get delivery options for a route
+     * Get delivery options for a route using checkOTODeliveryFee endpoint
      *
      * @param string $originCity المدينة المصدر
      * @param string $destinationCity المدينة الوجهة
      * @param float $weight الوزن بالكيلو
-     * @param float $codAmount مبلغ الدفع عند الاستلام
+     * @param float $codAmount مبلغ الدفع عند الاستلام (غير مستخدم في هذا الـ endpoint)
+     * @param array $dimensions الأبعاد [length, height, width]
      * @return array
      */
-    public function getDeliveryOptions(string $originCity, string $destinationCity, float $weight = 1, float $codAmount = 0): array
+    public function getDeliveryOptions(string $originCity, string $destinationCity, float $weight = 1, float $codAmount = 0, array $dimensions = []): array
     {
         try {
             $token = $this->getToken();
@@ -113,35 +115,114 @@ class TryotoService
                 return ['success' => false, 'error' => 'Unable to get access token'];
             }
 
-            $response = Http::withToken($token)->post($this->baseUrl . '/rest/v2/getDeliveryOptions', [
+            // Use checkOTODeliveryFee endpoint (the correct one)
+            $requestData = [
                 'originCity' => $originCity,
                 'destinationCity' => $destinationCity,
                 'weight' => max(0.1, $weight),
-                'codAmount' => $codAmount,
-            ]);
+                'xlength' => max(30, $dimensions['length'] ?? 30),
+                'xheight' => max(30, $dimensions['height'] ?? 30),
+                'xwidth' => max(30, $dimensions['width'] ?? 30),
+            ];
+
+            Log::info('Tryoto: Requesting delivery options', $requestData);
+
+            $response = Http::withToken($token)->post($this->baseUrl . '/rest/v2/checkOTODeliveryFee', $requestData);
 
             if ($response->successful()) {
                 $data = $response->json();
+                $companies = $data['deliveryCompany'] ?? [];
+
+                // Transform to unified format
+                $options = [];
+                foreach ($companies as $company) {
+                    $options[] = [
+                        'deliveryOptionId' => (string)($company['deliveryOptionId'] ?? ''),
+                        'company' => $company['deliveryOptionName'] ?? $company['deliveryCompanyName'] ?? 'Unknown',
+                        'companyCode' => $company['deliveryCompanyName'] ?? '',
+                        'price' => (float)($company['price'] ?? 0),
+                        'estimatedDeliveryDays' => $this->parseDeliveryTime($company['avgDeliveryTime'] ?? ''),
+                        'avgDeliveryTime' => $company['avgDeliveryTime'] ?? '',
+                        'serviceType' => $company['serviceType'] ?? '',
+                        'deliveryType' => $company['deliveryType'] ?? '',
+                        'logo' => $company['logo'] ?? '',
+                        'codCharge' => (float)($company['codCharge'] ?? 0),
+                        'returnFee' => (float)($company['returnFee'] ?? 0),
+                        'maxCODValue' => (float)($company['maxCODValue'] ?? 0),
+                        'maxOrderValue' => (float)($company['maxOrderValue'] ?? 0),
+                    ];
+                }
+
+                Log::info('Tryoto: Got ' . count($options) . ' delivery options');
+
                 return [
                     'success' => true,
-                    'options' => $data['deliveryOptions'] ?? [],
+                    'options' => $options,
                     'raw' => $data
                 ];
             }
 
-            Log::warning('Tryoto: getDeliveryOptions failed', [
+            Log::warning('Tryoto: checkOTODeliveryFee failed', [
                 'origin' => $originCity,
                 'destination' => $destinationCity,
                 'status' => $response->status(),
                 'body' => $response->body()
             ]);
 
-            return ['success' => false, 'error' => 'Failed to get delivery options'];
+            return ['success' => false, 'error' => 'Failed to get delivery options. Status: ' . $response->status()];
 
         } catch (\Exception $e) {
             Log::error('Tryoto: getDeliveryOptions exception', ['error' => $e->getMessage()]);
             return ['success' => false, 'error' => $e->getMessage()];
         }
+    }
+
+    /**
+     * Parse delivery time string to number of days
+     */
+    private function parseDeliveryTime(string $time): string
+    {
+        // Examples: "1to3WorkingDays", "SameDay", "NextDay"
+        if (empty($time)) return '';
+
+        if (stripos($time, 'same') !== false) return '0';
+        if (stripos($time, 'next') !== false) return '1';
+
+        // Extract numbers like "1to3WorkingDays" -> "1-3"
+        if (preg_match('/(\d+)to(\d+)/i', $time, $matches)) {
+            return $matches[1] . '-' . $matches[2];
+        }
+
+        if (preg_match('/(\d+)/', $time, $matches)) {
+            return $matches[1];
+        }
+
+        return $time;
+    }
+
+    /**
+     * تحويل city ID أو اسم إلى اسم المدينة الصحيح لـ Tryoto
+     */
+    public function resolveCityName($cityValue): string
+    {
+        if (empty($cityValue)) {
+            return 'Riyadh';
+        }
+
+        // إذا كان رقمياً، ابحث عن المدينة
+        if (is_numeric($cityValue)) {
+            $city = City::find($cityValue);
+            if ($city && $city->city_name) {
+                return $city->city_name;
+            }
+        }
+
+        // إذا كان نصاً غير رقمي، استخدمه مباشرة
+        if (!is_numeric($cityValue)) {
+            return $cityValue;
+        }
+
+        return 'Riyadh';
     }
 
     /**
@@ -164,11 +245,14 @@ class TryotoService
 
             // Get vendor info
             $vendor = User::find($vendorId);
-            $originCity = $vendor->warehouse_city ?? $vendor->shop_city ?? 'Riyadh';
+
+            // ✅ تحويل city_id إلى city name
+            $originCity = $this->resolveCityName($vendor->city_id ?? $vendor->warehouse_city ?? $vendor->shop_city);
             $originAddress = $vendor->warehouse_address ?? $vendor->shop_address ?? '';
 
-            // Get destination
-            $destinationCity = $order->shipping_city ?: $order->customer_city ?: 'Riyadh';
+            // ✅ تحويل destination city ID إلى city name
+            $destinationCityValue = $order->shipping_city ?: $order->customer_city;
+            $destinationCity = $this->resolveCityName($destinationCityValue);
 
             // Calculate dimensions from cart
             $dims = $this->calculateDimensions($order);

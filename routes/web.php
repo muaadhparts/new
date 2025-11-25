@@ -1134,6 +1134,16 @@ Route::group(['middleware' => 'maintenance'], function () {
             Route::get('delivery/boy/find', 'Vendor\DeliveryController@findReider')->name('vendor.find.rider');
             Route::post('rider/search/submit', 'Vendor\DeliveryController@findReiderSubmit')->name('vendor-rider-search-submit');
 
+            // Tryoto Shipping Routes
+            Route::get('delivery/shipping-options', 'Vendor\DeliveryController@getShippingOptions')->name('vendor.shipping.options');
+            Route::post('delivery/send-to-tryoto', 'Vendor\DeliveryController@sendToTryoto')->name('vendor.send.tryoto');
+            Route::get('delivery/track-shipment', 'Vendor\DeliveryController@trackShipment')->name('vendor.track.shipment');
+            Route::get('delivery/shipment-history/{orderId}', 'Vendor\DeliveryController@shipmentHistory')->name('vendor.shipment.history');
+            Route::post('delivery/cancel-shipment', 'Vendor\DeliveryController@cancelShipment')->name('vendor.cancel.shipment');
+            Route::post('delivery/ready-for-pickup', 'Vendor\DeliveryController@markReadyForPickup')->name('vendor.ready.pickup');
+            Route::get('delivery/stats', 'Vendor\DeliveryController@shippingStats')->name('vendor.shipping.stats');
+            Route::get('delivery/order-status/{orderId}', 'Vendor\DeliveryController@getOrderShipmentStatus')->name('vendor.order.shipment.status');
+
             //------------ SUBCATEGORY SECTION ------------
 
             Route::get('/load/subcategories/{id}/', 'Vendor\VendorController@subcatload')->name('vendor-subcat-load'); //JSON REQUEST

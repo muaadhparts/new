@@ -5,6 +5,7 @@ namespace App\Traits;
 use App\Helpers\PriceHelper;
 use App\Models\Order;
 use App\Models\User;
+use App\Models\City;
 use App\Models\UserNotification;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
@@ -58,7 +59,9 @@ trait CreatesTryotoShipments
         }
 
         // Shipment destination: Preferably shipping fields, then customer, then default
-        $destinationCity = $order->shipping_city ?: $order->customer_city ?: 'Riyadh';
+        // ✅ تحويل city ID إلى city name
+        $destinationCityValue = $order->shipping_city ?: $order->customer_city;
+        $destinationCity = $this->resolveCityNameForTryoto($destinationCityValue);
 
         // Preparing cart items for dimension/weight calculations
         $cartRaw = $order->cart;
@@ -104,9 +107,9 @@ trait CreatesTryotoShipments
 
             // ⭐ الحصول على warehouse address من التاجر
             $vendor = User::find($vendorId);
-            $originCity = $vendor && $vendor->warehouse_city
-                ? $vendor->warehouse_city
-                : ($vendor && $vendor->shop_city ? $vendor->shop_city : 'Riyadh');
+            // ✅ تحويل city ID إلى city name
+            $originCityValue = $vendor->city_id ?? $vendor->warehouse_city ?? $vendor->shop_city;
+            $originCity = $this->resolveCityNameForTryoto($originCityValue);
 
             $originAddress = $vendor && $vendor->warehouse_address
                 ? $vendor->warehouse_address
@@ -214,5 +217,30 @@ trait CreatesTryotoShipments
 
             $order->save();
         }
+    }
+
+    /**
+     * تحويل city ID أو اسم إلى اسم المدينة الصحيح لـ Tryoto
+     */
+    protected function resolveCityNameForTryoto($cityValue): string
+    {
+        if (empty($cityValue)) {
+            return 'Riyadh';
+        }
+
+        // إذا كان رقمياً، ابحث عن المدينة
+        if (is_numeric($cityValue)) {
+            $city = City::find($cityValue);
+            if ($city && $city->city_name) {
+                return $city->city_name;
+            }
+        }
+
+        // إذا كان نصاً غير رقمي، استخدمه مباشرة
+        if (!is_numeric($cityValue)) {
+            return $cityValue;
+        }
+
+        return 'Riyadh';
     }
 }
