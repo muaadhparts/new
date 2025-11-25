@@ -243,6 +243,20 @@ Route::prefix('admin')->group(function () {
 
     //------------ ADMIN ORDER SECTION ENDS------------
 
+    //------------ ADMIN SHIPMENTS SECTION ------------
+
+    Route::group(['middleware' => 'permissions:orders'], function () {
+        Route::get('/shipments', 'Admin\ShipmentController@index')->name('admin.shipments.index');
+        Route::get('/shipments/show/{tracking}', 'Admin\ShipmentController@show')->name('admin.shipments.show');
+        Route::get('/shipments/refresh/{tracking}', 'Admin\ShipmentController@refresh')->name('admin.shipments.refresh');
+        Route::post('/shipments/cancel/{tracking}', 'Admin\ShipmentController@cancel')->name('admin.shipments.cancel');
+        Route::get('/shipments/export', 'Admin\ShipmentController@export')->name('admin.shipments.export');
+        Route::post('/shipments/bulk-refresh', 'Admin\ShipmentController@bulkRefresh')->name('admin.shipments.bulk-refresh');
+        Route::get('/shipments/reports', 'Admin\ShipmentController@reports')->name('admin.shipments.reports');
+    });
+
+    //------------ ADMIN SHIPMENTS SECTION ENDS------------
+
     /////////////////////////////// ////////////////////////////////////////////
 
     // --------------- ADMIN COUNRTY SECTION ---------------//
@@ -1304,6 +1318,18 @@ Route::group(['middleware' => 'maintenance'], function () {
             Route::get('/social-link/status/{id1}/{id2}', 'Vendor\SocialLinkController@status')->name('vendor-sociallink-status');
 
             //------------ VENDOR SOCIAL LINK ENDS ------------
+
+            //------------ VENDOR SHIPMENTS SECTION ------------
+
+            Route::get('/shipments', 'Vendor\ShipmentController@index')->name('vendor.shipments.index');
+            Route::get('/shipments/show/{tracking}', 'Vendor\ShipmentController@show')->name('vendor.shipments.show');
+            Route::get('/shipments/refresh/{tracking}', 'Vendor\ShipmentController@refresh')->name('vendor.shipments.refresh');
+            Route::post('/shipments/cancel/{tracking}', 'Vendor\ShipmentController@cancel')->name('vendor.shipments.cancel');
+            Route::get('/shipments/export', 'Vendor\ShipmentController@export')->name('vendor.shipments.export');
+            Route::post('/shipments/bulk-refresh', 'Vendor\ShipmentController@bulkRefresh')->name('vendor.shipments.bulk-refresh');
+
+            //------------ VENDOR SHIPMENTS SECTION ENDS------------
+
             // -------------------------- Vendor Income ------------------------------------//
             Route::get('earning/datatables', "Vendor\IncomeController@datatables")->name('vendor.income.datatables');
             Route::get('total/earning', "Vendor\IncomeController@index")->name('vendor.income');
@@ -1689,6 +1715,14 @@ Route::group(['middleware' => 'maintenance'], function () {
     Route::get('/currency/{id}', 'Front\FrontendController@currency')->name('front.currency');
     Route::get('/language/{id}', 'Front\FrontendController@language')->name('front.language');
     Route::get('/order/track/{id}', 'Front\FrontendController@trackload')->name('front.track.search');
+
+    // SHIPMENT TRACKING SECTION
+    Route::get('/tracking', 'Front\ShipmentTrackingController@index')->name('front.tracking');
+    Route::get('/tracking/status', 'Front\ShipmentTrackingController@getStatus')->name('front.tracking.status');
+    Route::get('/tracking/refresh', 'Front\ShipmentTrackingController@refresh')->name('front.tracking.refresh');
+    Route::get('/my-shipments', 'Front\ShipmentTrackingController@myShipments')->name('front.my-shipments');
+    // SHIPMENT TRACKING SECTION ENDS
+
     // BLOG SECTION
     Route::get('/blog', 'Front\FrontendController@blog')->name('front.blog');
     Route::get('/blog/{slug}', 'Front\FrontendController@blogshow')->name('front.blogshow');
@@ -1971,8 +2005,9 @@ Route::group(['middleware' => 'maintenance'], function () {
 
     Route::get('/checkout/payment/{slug1}/{slug2}', 'Front\CheckoutController@loadpayment')->name('front.load.payment');
 
-    Route::post('/api/flutter/submit', 'Payment\FlutterWaveController@store')->name('api.flutter.submit');
-    Route::post('/flutter/notify', 'Payment\FlutterWaveController@notify')->name('api.flutter.notify');
+    // Note: Flutter Wave routes moved to Api\Payment section below
+    // Route::post('/api/flutter/submit', 'Api\Payment\FlutterWaveController@store')->name('api.flutter.submit');
+    // Route::post('/flutter/notify', 'Api\Payment\FlutterWaveController@notify')->name('api.flutter.notify');
 
     Route::get('/payment/successfull/{get}', 'Front\FrontendController@success')->name('front.payment.success');
 

@@ -22,6 +22,10 @@ Route::prefix('geocoding')->group(function () {
 });
 // --------------------- GOOGLE MAPS GEOCODING ROUTES END ---------------------
 
+// --------------------- TRYOTO WEBHOOK ROUTES ---------------------
+Route::post('/tryoto/webhook', 'Admin\ShipmentController@webhook')->name('api.tryoto.webhook');
+// --------------------- TRYOTO WEBHOOK ROUTES END ---------------------
+
 
 Route::group(['prefix' => 'user'], function () {
 
