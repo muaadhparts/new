@@ -287,6 +287,7 @@
                                 <input type="hidden" name="delivery_option_id" id="delivery_option_id">
                                 <input type="hidden" name="company" id="selected_company">
                                 <input type="hidden" name="price" id="selected_price">
+                                <input type="hidden" name="service_type" id="selected_service_type">
 
                                 <div class="mb-3">
                                     <label class="form-label">@lang('Select Shipping Company')</label>
@@ -477,6 +478,7 @@
             $('#delivery_option_id').val(deliveryOptionId);
             $('#selected_company').val(selected.data('company'));
             $('#selected_price').val(selected.data('price'));
+            $('#selected_service_type').val(selected.data('service-type') || 'express');
 
             $('#detail_company').text(selected.data('company'));
             $('#detail_price').text(selected.data('display-price'));

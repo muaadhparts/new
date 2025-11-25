@@ -226,16 +226,17 @@ class TryotoService
     }
 
     /**
-     * Create a shipment
+     * Create a shipment using createOrder API with createShipment=true
      *
      * @param Order $order
      * @param int $vendorId
      * @param string $deliveryOptionId
      * @param string $company
      * @param float $price
+     * @param string $serviceType
      * @return array
      */
-    public function createShipment(Order $order, int $vendorId, string $deliveryOptionId, string $company, float $price): array
+    public function createShipment(Order $order, int $vendorId, string $deliveryOptionId, string $company, float $price, string $serviceType = ''): array
     {
         try {
             $token = $this->getToken();
@@ -248,7 +249,7 @@ class TryotoService
 
             // ✅ تحويل city_id إلى city name
             $originCity = $this->resolveCityName($vendor->city_id ?? $vendor->warehouse_city ?? $vendor->shop_city);
-            $originAddress = $vendor->warehouse_address ?? $vendor->shop_address ?? '';
+            $originAddress = $vendor->warehouse_address ?? $vendor->shop_address ?? $originCity;
 
             // ✅ تحويل destination city ID إلى city name
             $destinationCityValue = $order->shipping_city ?: $order->customer_city;
@@ -258,61 +259,151 @@ class TryotoService
             $dims = $this->calculateDimensions($order);
 
             // Determine COD amount
-            $codAmount = in_array($order->method, ['cod', 'Cash On Delivery']) ? (float)$order->pay_amount : 0.0;
+            $isCOD = in_array($order->method, ['cod', 'Cash On Delivery']);
+            $codAmount = $isCOD ? (float)$order->pay_amount : 0.0;
 
+            // Prepare receiver info with phone cleanup
+            $receiverName = $order->shipping_name ?: $order->customer_name;
+            $receiverPhone = $this->cleanPhoneNumber($order->shipping_phone ?: $order->customer_phone);
+            $receiverEmail = $order->shipping_email ?: $order->customer_email ?: 'customer@example.com';
+            $receiverAddress = $order->shipping_address ?: $order->customer_address;
+            $receiverZip = $order->shipping_zip ?: $order->customer_zip ?: '00000';
+            $receiverDistrict = $order->shipping_state ?? $order->customer_state ?? '';
+
+            // Prepare sender phone
+            $senderPhone = $this->cleanPhoneNumber($vendor->phone ?? '0500000000');
+
+            // Prepare cart items
+            $cart = is_string($order->cart) ? json_decode($order->cart, true) : $order->cart;
+            $items = $cart['items'] ?? $cart ?? [];
+            $orderItems = [];
+            $itemCount = 0;
+
+            foreach ($items as $item) {
+                $itemData = $item['item'] ?? $item;
+                $qty = (int)($item['qty'] ?? 1);
+                $itemCount += $qty;
+                $orderItems[] = [
+                    'productId' => (string)($itemData['id'] ?? '0'),
+                    'name' => $itemData['name'] ?? 'Product',
+                    'price' => (float)($itemData['price'] ?? 0),
+                    'rowTotal' => (float)($itemData['price'] ?? 0) * $qty,
+                    'taxAmount' => 0,
+                    'quantity' => $qty,
+                    'serialnumber' => '',
+                    'sku' => $itemData['sku'] ?? 'SKU-' . ($itemData['id'] ?? '0'),
+                    'image' => $itemData['photo'] ?? '',
+                ];
+            }
+
+            // Generate unique order ID for Tryoto (append timestamp to avoid duplicates)
+            $tryotoOrderId = $order->order_number . '-V' . $vendorId . '-' . time();
+
+            // Build createOrder payload
             $payload = [
-                'otoId' => $order->order_number,
+                'orderId' => $tryotoOrderId,
+                'ref1' => 'REF-' . $order->id . '-' . $vendorId,
                 'deliveryOptionId' => $deliveryOptionId,
-                'originCity' => $originCity,
-                'destinationCity' => $destinationCity,
-                'receiverName' => $order->shipping_name ?: $order->customer_name,
-                'receiverPhone' => $order->shipping_phone ?: $order->customer_phone,
-                'receiverAddress' => $order->shipping_address ?: $order->customer_address,
-                'weight' => max(0.1, $dims['weight']),
-                'xlength' => max(30, $dims['length']),
-                'xheight' => max(30, $dims['height']),
-                'xwidth' => max(30, $dims['width']),
-                'codAmount' => $codAmount,
+                'serviceType' => $serviceType,
+                'createShipment' => true,
+                'storeName' => $vendor->shop_name ?? $vendor->name ?? 'Store',
+                'payment_method' => $isCOD ? 'cod' : 'paid',
+                'amount' => (float)$order->pay_amount,
+                'amount_due' => $isCOD ? (float)$order->pay_amount : 0,
+                'shippingAmount' => $price,
+                'subtotal' => (float)$order->pay_amount,
+                'currency' => 'SAR',
+                'shippingNotes' => 'Order #' . $order->order_number,
+                'packageSize' => 'medium',
+                'packageCount' => max(1, $itemCount),
+                'packageWeight' => max(0.5, $dims['weight']),
+                'boxWidth' => max(30, $dims['width']),
+                'boxLength' => max(30, $dims['length']),
+                'boxHeight' => max(30, $dims['height']),
+                'orderDate' => date('d/m/Y H:i'),
+                'deliverySlotDate' => date('d/m/Y', strtotime('+2 days')),
+                'deliverySlotTo' => '6:00pm',
+                'deliverySlotFrom' => '9:00am',
+                'senderName' => $vendor->shop_name ?? $vendor->name,
+                'senderPhone' => $senderPhone,
+                'senderCity' => $originCity,
+                'senderAddress' => $originAddress,
+                'customer' => [
+                    'name' => $receiverName,
+                    'email' => $receiverEmail,
+                    'mobile' => $receiverPhone,
+                    'address' => $receiverAddress,
+                    'district' => $receiverDistrict,
+                    'city' => $destinationCity,
+                    'country' => 'SA',
+                    'postcode' => $receiverZip,
+                    'lat' => '',
+                    'lon' => '',
+                    'refID' => '',
+                    'W3WAddress' => ''
+                ],
+                'items' => $orderItems
             ];
 
-            Log::info('Tryoto: Creating shipment', ['order_id' => $order->id, 'payload' => $payload]);
+            Log::info('Tryoto: Creating order with shipment', [
+                'order_id' => $order->id,
+                'tryoto_order_id' => $tryotoOrderId,
+                'origin' => $originCity,
+                'destination' => $destinationCity,
+                'company' => $company,
+            ]);
 
-            $response = Http::withToken($token)->post($this->baseUrl . '/rest/v2/createShipment', $payload);
+            $response = Http::withToken($token)
+                ->withHeaders(['Accept' => 'application/json'])
+                ->post($this->baseUrl . '/rest/v2/createOrder', $payload);
 
             if ($response->successful()) {
                 $data = $response->json();
-                $shipmentId = $data['shipmentId'] ?? null;
+                $otoId = $data['otoId'] ?? null;
                 $trackingNumber = $data['trackingNumber'] ?? null;
 
+                // If no tracking number yet, use otoId as reference
+                $trackingRef = $trackingNumber ?? ('OTO-' . $otoId);
+
                 // Save to shipment_status_logs
-                $this->createInitialLog($order, $vendorId, $trackingNumber, $shipmentId, $company, $originCity, $data);
+                $this->createInitialLog($order, $vendorId, $trackingRef, (string)$otoId, $company, $originCity, $data);
 
                 // Send notification to vendor
-                $this->notifyVendor($vendorId, $order, 'shipment_created', $trackingNumber);
+                $this->notifyVendor($vendorId, $order, 'shipment_created', $trackingRef);
 
-                Log::info('Tryoto: Shipment created successfully', [
+                Log::info('Tryoto: Order created successfully', [
                     'order_id' => $order->id,
+                    'oto_id' => $otoId,
                     'tracking_number' => $trackingNumber,
-                    'shipment_id' => $shipmentId
                 ]);
 
                 return [
                     'success' => true,
-                    'shipment_id' => $shipmentId,
-                    'tracking_number' => $trackingNumber,
+                    'shipment_id' => (string)$otoId,
+                    'tracking_number' => $trackingRef,
+                    'oto_id' => $otoId,
                     'company' => $company,
                     'price' => $price,
                     'raw' => $data
                 ];
             }
 
-            Log::error('Tryoto: createShipment failed', [
+            $responseData = $response->json();
+
+            Log::error('Tryoto: createOrder failed', [
                 'order_id' => $order->id,
                 'status' => $response->status(),
+                'error_code' => $responseData['errorCode'] ?? null,
+                'error_message' => $responseData['errorMsg'] ?? $responseData['otoErrorMessage'] ?? null,
                 'body' => $response->body()
             ]);
 
-            return ['success' => false, 'error' => 'Failed to create shipment', 'details' => $response->body()];
+            return [
+                'success' => false,
+                'error' => $responseData['errorMsg'] ?? $responseData['otoErrorMessage'] ?? 'Failed to create shipment',
+                'error_code' => $responseData['errorCode'] ?? null,
+                'details' => $response->body()
+            ];
 
         } catch (\Exception $e) {
             Log::error('Tryoto: createShipment exception', [
@@ -321,6 +412,30 @@ class TryotoService
             ]);
             return ['success' => false, 'error' => $e->getMessage()];
         }
+    }
+
+    /**
+     * Clean and format phone number for Saudi Arabia
+     */
+    private function cleanPhoneNumber(string $phone): string
+    {
+        // Remove all non-digits
+        $phone = preg_replace('/[^0-9]/', '', $phone);
+
+        // Remove leading zeros
+        $phone = ltrim($phone, '0');
+
+        // Remove country code if present
+        if (strpos($phone, '966') === 0) {
+            $phone = substr($phone, 3);
+        }
+
+        // Ensure 9 digits starting with 5
+        if (strlen($phone) < 9) {
+            $phone = '5' . str_pad($phone, 8, '0', STR_PAD_LEFT);
+        }
+
+        return substr($phone, 0, 9);
     }
 
     /**

@@ -11,7 +11,10 @@
       "Bash(php:*)",
       "Bash(dir:*)",
       "Bash(nul)",
-      "Bash(findstr:*)"
+      "Bash(findstr:*)",
+      "Bash(find:*)",
+      "Bash(Get-Content \"C:\\Users\\hp\\Herd\\new\\storage\\logs\\laravel.log\" -Tail 50)",
+      "Bash(Select-String -Pattern \"Tryoto\")"
     ],
     "deny": [],
     "ask": []

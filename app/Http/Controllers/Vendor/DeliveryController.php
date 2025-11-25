@@ -363,6 +363,7 @@ class DeliveryController extends VendorBaseController
             'delivery_option_id' => 'required|string',
             'company' => 'required|string',
             'price' => 'required|numeric',
+            'service_type' => 'nullable|string',
         ]);
 
         $order = Order::find($request->order_id);
@@ -390,7 +391,8 @@ class DeliveryController extends VendorBaseController
             $vendorId,
             $request->delivery_option_id,
             $request->company,
-            $request->price
+            $request->price,
+            $request->service_type ?? 'express'
         );
 
         if ($result['success']) {
