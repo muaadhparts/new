@@ -444,7 +444,7 @@ class TryotoService
      * @param string $trackingNumber
      * @return array
      */
-    public function trackShipment(string $trackingNumber): array
+    public function trackShipment(string $trackingNumber, ?string $companyName = null): array
     {
         try {
             $token = $this->getToken();
@@ -452,9 +452,19 @@ class TryotoService
                 return ['success' => false, 'error' => 'Unable to get access token'];
             }
 
-            $response = Http::withToken($token)->post($this->baseUrl . '/rest/v2/trackShipment', [
-                'trackingNumber' => $trackingNumber
-            ]);
+            // If company name not provided, try to get it from database
+            if (!$companyName) {
+                $shipment = ShipmentStatusLog::where('tracking_number', $trackingNumber)->first();
+                $companyName = $shipment?->company_name;
+            }
+
+            // Build request payload
+            $payload = ['trackingNumber' => $trackingNumber];
+            if ($companyName) {
+                $payload['deliveryCompanyName'] = $companyName;
+            }
+
+            $response = Http::withToken($token)->post($this->baseUrl . '/rest/v2/trackShipment', $payload);
 
             if ($response->successful()) {
                 $data = $response->json();
@@ -473,7 +483,14 @@ class TryotoService
                 ];
             }
 
-            return ['success' => false, 'error' => 'Failed to track shipment'];
+            $errorData = $response->json();
+            Log::warning('Tryoto: trackShipment failed', [
+                'tracking' => $trackingNumber,
+                'status' => $response->status(),
+                'error' => $errorData['errorMsg'] ?? $response->body()
+            ]);
+
+            return ['success' => false, 'error' => $errorData['errorMsg'] ?? 'Failed to track shipment'];
 
         } catch (\Exception $e) {
             Log::error('Tryoto: trackShipment exception', ['error' => $e->getMessage()]);
@@ -531,6 +548,152 @@ class TryotoService
             Log::error('Tryoto: cancelShipment exception', ['error' => $e->getMessage()]);
             return ['success' => false, 'error' => $e->getMessage()];
         }
+    }
+
+    /**
+     * Get order details from Tryoto (includes shipment status, tracking number, etc.)
+     * Use this for manual refresh to get full order status
+     *
+     * @param string $orderId The orderId used when creating the order
+     * @return array
+     */
+    public function getOrderDetails(string $orderId): array
+    {
+        try {
+            $token = $this->getToken();
+            if (!$token) {
+                return ['success' => false, 'error' => 'Unable to get access token'];
+            }
+
+            $response = Http::withToken($token)
+                ->withHeaders(['Accept' => 'application/json'])
+                ->post($this->baseUrl . '/rest/v2/orderDetails', [
+                    'orderId' => $orderId
+                ]);
+
+            if ($response->successful()) {
+                $data = $response->json();
+
+                Log::info('Tryoto: orderDetails success', [
+                    'order_id' => $orderId,
+                    'status' => $data['status'] ?? 'unknown',
+                    'tracking' => $data['trackingNumber'] ?? null,
+                ]);
+
+                return [
+                    'success' => true,
+                    'order_id' => $orderId,
+                    'oto_id' => $data['otoId'] ?? null,
+                    'tracking_number' => $data['trackingNumber'] ?? null,
+                    'status' => $data['status'] ?? 'unknown',
+                    'status_ar' => $this->getStatusArabic($data['status'] ?? 'unknown'),
+                    'shipment_status' => $data['shipmentStatus'] ?? null,
+                    'company_name' => $data['companyName'] ?? null,
+                    'picked_up_date' => $data['pickedUpDate'] ?? null,
+                    'delivered_date' => $data['deliveredDate'] ?? null,
+                    'estimated_delivery' => $data['estimatedDelivery'] ?? null,
+                    'awb_url' => $data['awbUrl'] ?? null, // رابط بوليصة الشحن
+                    'pod_url' => $data['podUrl'] ?? null, // رابط صورة التسليم
+                    'raw' => $data
+                ];
+            }
+
+            $errorData = $response->json();
+            Log::warning('Tryoto: orderDetails failed', [
+                'order_id' => $orderId,
+                'error' => $errorData['errorMsg'] ?? $response->body()
+            ]);
+
+            return [
+                'success' => false,
+                'error' => $errorData['errorMsg'] ?? 'Failed to get order details',
+                'error_code' => $errorData['errorCode'] ?? null
+            ];
+
+        } catch (\Exception $e) {
+            Log::error('Tryoto: orderDetails exception', [
+                'order_id' => $orderId,
+                'error' => $e->getMessage()
+            ]);
+            return ['success' => false, 'error' => $e->getMessage()];
+        }
+    }
+
+    /**
+     * Refresh shipment status using orderDetails API
+     * This updates local database with latest status from Tryoto
+     *
+     * @param string $trackingNumber
+     * @return array
+     */
+    public function refreshShipmentStatus(string $trackingNumber): array
+    {
+        // First find the local shipment record
+        $shipment = ShipmentStatusLog::where('tracking_number', $trackingNumber)
+            ->latest('created_at')
+            ->first();
+
+        if (!$shipment) {
+            return ['success' => false, 'error' => 'Shipment not found in local database'];
+        }
+
+        // Try to get the orderId from raw_data
+        $rawData = $shipment->raw_data;
+        $orderId = null;
+
+        if (is_array($rawData)) {
+            $orderId = $rawData['orderId'] ?? $rawData['otoId'] ?? null;
+        } elseif (is_string($rawData)) {
+            $decoded = json_decode($rawData, true);
+            $orderId = $decoded['orderId'] ?? $decoded['otoId'] ?? null;
+        }
+
+        // If no orderId, try trackShipment instead
+        if (!$orderId) {
+            return $this->trackShipment($trackingNumber);
+        }
+
+        // Get order details from Tryoto
+        $details = $this->getOrderDetails($orderId);
+
+        if (!$details['success']) {
+            // Fallback to trackShipment
+            return $this->trackShipment($trackingNumber);
+        }
+
+        // Update tracking number if we got a new one
+        $newTrackingNumber = $details['tracking_number'];
+        if ($newTrackingNumber && $newTrackingNumber !== $trackingNumber && !str_starts_with($newTrackingNumber, 'OTO-')) {
+            // Create new log with real tracking number
+            ShipmentStatusLog::create([
+                'order_id' => $shipment->order_id,
+                'vendor_id' => $shipment->vendor_id,
+                'tracking_number' => $newTrackingNumber,
+                'shipment_id' => $details['oto_id'],
+                'company_name' => $details['company_name'] ?? $shipment->company_name,
+                'status' => $details['status'],
+                'status_ar' => $details['status_ar'],
+                'message' => 'Tracking number assigned',
+                'message_ar' => 'تم تعيين رقم التتبع: ' . $newTrackingNumber,
+                'status_date' => now(),
+                'raw_data' => $details['raw'],
+            ]);
+
+            // Notify vendor about tracking number
+            $this->notifyVendor($shipment->vendor_id, $shipment->order, 'tracking_assigned', $newTrackingNumber);
+
+            $details['tracking_updated'] = true;
+            $details['old_tracking'] = $trackingNumber;
+        }
+
+        // Sync the status
+        $this->syncTrackingStatus($newTrackingNumber ?? $trackingNumber, [
+            'status' => $details['status'],
+            'location' => null,
+            'statusDate' => $details['picked_up_date'] ?? $details['delivered_date'] ?? now(),
+        ]);
+
+        return $details;
     }
 
     /**

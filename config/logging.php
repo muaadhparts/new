@@ -126,6 +126,15 @@ return [
         'emergency' => [
             'path' => storage_path('logs/laravel.log'),
         ],
+
+        // ✅ Tryoto Shipping Log Channel
+        'tryoto' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/tryoto.log'),
+            'level' => 'debug',
+            'days' => 30,
+            'replace_placeholders' => true,
+        ],
     ],
 
 ];

@@ -125,13 +125,21 @@ class ShipmentController extends AdminBaseController
         $shipment = ShipmentStatusLog::where('tracking_number', $trackingNumber)
             ->firstOrFail();
 
-        $result = $this->tryotoService->trackShipment($trackingNumber);
+        // Use refreshShipmentStatus for better data (includes tracking number updates)
+        $result = $this->tryotoService->refreshShipmentStatus($trackingNumber);
 
         if ($result['success']) {
-            return back()->with('success', __('Shipment status updated'));
+            $message = __('Shipment status updated');
+
+            // If tracking number was updated
+            if (!empty($result['tracking_updated'])) {
+                $message .= ' - ' . __('New tracking number: ') . $result['tracking_number'];
+            }
+
+            return back()->with('success', $message);
         }
 
-        return back()->with('error', __('Failed to refresh status'));
+        return back()->with('error', __('Failed to refresh status: ') . ($result['error'] ?? ''));
     }
 
     /**

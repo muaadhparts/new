@@ -19,6 +19,18 @@ class Kernel extends ConsoleKernel
         $schedule->command('stock:manage full-refresh --user_id=59 --margin=1.3 --branch=ATWJRY')
                 ->dailyAt('02:00')
                 ->withoutOverlapping();
+
+        // ✅ Tryoto: تحديث حالة الشحنات النشطة كل 30 دقيقة
+        $schedule->command('shipments:update --limit=50')
+                ->everyThirtyMinutes()
+                ->withoutOverlapping()
+                ->appendOutputTo(storage_path('logs/shipments-cron.log'));
+
+        // ✅ Tryoto: تحديث شامل للشحنات مرتين يومياً (الساعة 8 صباحاً و 6 مساءً)
+        $schedule->command('shipments:update --limit=200 --force')
+                ->twiceDaily(8, 18)
+                ->withoutOverlapping()
+                ->appendOutputTo(storage_path('logs/shipments-cron.log'));
     }
 
 
