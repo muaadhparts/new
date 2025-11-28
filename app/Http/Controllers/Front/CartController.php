@@ -1033,40 +1033,101 @@ class CartController extends FrontBaseController
     }
 
     /* ===================== tax ===================== */
+    /**
+     * Calculate tax based on location
+     *
+     * السيناريو:
+     * - البيانات تأتي من الجداول (Cache من Google Maps + Tryoto)
+     * - country_id و state_id و city_id محفوظة في الـ Cache
+     * - الضريبة تُحسب من الـ Cache
+     *
+     * الأولوية:
+     * 1. City tax (إذا موجود)
+     * 2. State tax (إذا موجود)
+     * 3. Country tax
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function country_tax(Request $request)
     {
+        $data = [];
+        $tax = 0;
         $tax_location = '';
+        $tax_location_ar = '';
+        $tax_type = 'none';
+        $location_id = 0;
 
-        if ($request->country_id) {
-            if ($request->state_id != 0) {
-                $state = State::findOrFail($request->state_id);
-                $tax   = $state->tax;
-                $data[11] = $state->id;
-                $data[12] = 'state_tax';
+        // ==========================================
+        // الأولوية 1: City (إذا موجود)
+        // ==========================================
+        if ($request->filled('city_id') && $request->city_id != 0) {
+            $city = \App\Models\City::find($request->city_id);
 
-                // Get tax location (state + country)
-                $country = Country::find($state->country_id);
-                $tax_location = $state->state;
-                if ($country) {
-                    $tax_location .= ', ' . $country->country_name;
+            if ($city) {
+                // Check if city has tax defined
+                if (isset($city->tax) && $city->tax > 0) {
+                    $tax = $city->tax;
+                    $tax_type = 'city_tax';
+                    $location_id = $city->id;
+                    $tax_location = $city->city_name;
+                    $tax_location_ar = $city->city_name_ar ?? $city->city_name;
+                } else {
+                    // City has no tax, fallback to state
+                    $request->merge(['state_id' => $city->state_id]);
                 }
-            } else {
-                $country  = Country::findOrFail($request->country_id);
-                $tax      = $country->tax;
-                $data[11] = $country->id;
-                $data[12] = 'country_tax';
-                $tax_location = $country->country_name;
             }
-        } else {
-            $tax = 0;
         }
 
+        // ==========================================
+        // الأولوية 2: State (إذا لم يوجد city tax)
+        // ==========================================
+        if ($tax == 0 && $request->filled('state_id') && $request->state_id != 0) {
+            $state = State::find($request->state_id);
+
+            if ($state && $state->tax > 0) {
+                $tax = $state->tax;
+                $tax_type = 'state_tax';
+                $location_id = $state->id;
+                $tax_location = $state->state;
+                $tax_location_ar = $state->state_ar ?? $state->state;
+
+                // Add country name
+                $country = Country::find($state->country_id);
+                if ($country) {
+                    $tax_location .= ', ' . $country->country_name;
+                    $tax_location_ar .= ', ' . ($country->country_name_ar ?? $country->country_name);
+                }
+            } elseif ($state) {
+                // State has no tax, fallback to country
+                $request->merge(['country_id' => $state->country_id]);
+            }
+        }
+
+        // ==========================================
+        // الأولوية 3: Country (إذا لم يوجد state tax)
+        // ==========================================
+        if ($tax == 0 && $request->filled('country_id') && $request->country_id != 0) {
+            $country = Country::find($request->country_id);
+
+            if ($country && $country->tax > 0) {
+                $tax = $country->tax;
+                $tax_type = 'country_tax';
+                $location_id = $country->id;
+                $tax_location = $country->country_name;
+                $tax_location_ar = $country->country_name_ar ?? $country->country_name;
+            }
+        }
+
+        // ==========================================
+        // حساب الضريبة
+        // ==========================================
         Session::put('is_tax', $tax);
 
         $total = max(0, (float) $request->input('total', 0));
         $shipping_cost = max(0, (float) $request->input('shipping_cost', 0));
 
-        // Apply coupon discount before tax calculation (standard accounting practice)
+        // Apply coupon discount before tax calculation
         $coupon_discount = Session::has('coupon') ? (float) Session::get('coupon') : 0;
         $subtotal_after_coupon = max(0, $total - $coupon_discount);
 
@@ -1079,10 +1140,23 @@ class CartController extends FrontBaseController
         Session::put('current_tax_amount', $tax_amount);
 
         $final_total = $taxable_amount + $tax_amount;
-        $data[0] = round($final_total, 2);
-        $data[1] = $tax;
-        $data[2] = round($converted_tax, 2); // Converted tax amount for display (matches convertPrice)
-        $data[3] = $tax_location; // Tax location (state/country name)
+
+        // ==========================================
+        // إعداد الـ Response
+        // ==========================================
+        $data[0] = round($final_total, 2);           // Final total
+        $data[1] = $tax;                              // Tax percentage
+        $data[2] = round($converted_tax, 2);          // Converted tax amount
+        $data[3] = $tax_location;                     // Tax location (EN)
+        $data[11] = $location_id;                     // Location ID
+        $data[12] = $tax_type;                        // Tax type (city_tax, state_tax, country_tax)
+
+        // Additional data for better frontend handling
+        $data['tax_location_ar'] = $tax_location_ar;  // Tax location (AR)
+        $data['tax_percentage'] = $tax;
+        $data['tax_amount'] = round($tax_amount, 2);
+        $data['taxable_amount'] = round($taxable_amount, 2);
+
         return response()->json($data);
     }
 }
