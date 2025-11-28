@@ -13,4 +13,9 @@ class Country extends Model
     {
         return $this->hasMany('App\Models\State');
     }
+
+    public function cities()
+    {
+        return $this->hasMany('App\Models\City');
+    }
 }

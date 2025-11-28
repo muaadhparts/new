@@ -787,16 +787,37 @@ class TryotoService
     }
 
     /**
-     * Verify if a city is supported by Tryoto
+     * Verify if a city/state/governorate is supported by Tryoto
      *
-     * @param string $cityName
-     * @param string $testDestination
-     * @return array
+     * Enhanced version that returns all available information for location resolution
+     *
+     * @param string $locationName City, State, or Governorate name
+     * @param string $testDestination Destination to test against (default: Riyadh)
+     * @return array [
+     *   'supported' => bool,
+     *   'companies' => array,
+     *   'company_count' => int,
+     *   'region' => string|null (Tryoto's internal region name),
+     *   'origin_city' => string|null (Tryoto's resolved city name),
+     *   'destination_city' => string|null,
+     *   'cheapest_price' => float|null,
+     *   'fastest_delivery' => string|null,
+     *   'error' => string|null
+     * ]
      */
-    public function verifyCitySupport(string $cityName, string $testDestination = 'Riyadh'): array
+    public function verifyCitySupport(string $locationName, string $testDestination = 'Riyadh'): array
     {
+        // Cache key for repeated checks
+        $cacheKey = 'tryoto-verify-' . md5($locationName . '-' . $testDestination);
+
+        // Check cache first (5 minutes TTL for verification results)
+        $cached = Cache::get($cacheKey);
+        if ($cached !== null) {
+            return $cached;
+        }
+
         $requestData = [
-            'originCity' => $cityName,
+            'originCity' => $locationName,
             'destinationCity' => $testDestination,
             'weight' => 1,
             'xlength' => 30,
@@ -807,20 +828,148 @@ class TryotoService
         $result = $this->makeApiRequest('POST', '/rest/v2/checkOTODeliveryFee', $requestData);
 
         if (!$result['success']) {
-            return ['supported' => false, 'error' => $result['error']];
+            $response = [
+                'supported' => false,
+                'error' => $result['error'],
+                'error_code' => $result['error_code'] ?? null,
+                'location_name' => $locationName
+            ];
+            // Cache negative results for 5 minutes
+            Cache::put($cacheKey, $response, now()->addMinutes(5));
+            return $response;
         }
 
         $data = $result['data'];
         $companies = $data['deliveryCompany'] ?? [];
-        $region = $data['originRegion'] ?? $data['region'] ?? null;
 
-        return [
+        // Extract all useful information from Tryoto response
+        $region = $data['originRegion'] ?? $data['region'] ?? null;
+        $originCity = $data['originCity'] ?? $data['origin'] ?? null;
+        $destCity = $data['destinationCity'] ?? $data['destination'] ?? null;
+
+        // Find cheapest and fastest options
+        $cheapestPrice = null;
+        $fastestDelivery = null;
+
+        foreach ($companies as $company) {
+            $price = (float)($company['price'] ?? 0);
+            $deliveryTime = $company['avgDeliveryTime'] ?? '';
+
+            if ($cheapestPrice === null || $price < $cheapestPrice) {
+                $cheapestPrice = $price;
+            }
+
+            if ($deliveryTime && ($fastestDelivery === null || $this->compareDeliveryTime($deliveryTime, $fastestDelivery) < 0)) {
+                $fastestDelivery = $deliveryTime;
+            }
+        }
+
+        $response = [
             'supported' => !empty($companies),
             'companies' => $companies,
             'company_count' => count($companies),
             'region' => $region,
+            'origin_city' => $originCity,
+            'destination_city' => $destCity,
+            'cheapest_price' => $cheapestPrice,
+            'fastest_delivery' => $fastestDelivery,
+            'location_name' => $locationName,
             'full_response' => $data
         ];
+
+        // Cache positive results for 30 minutes
+        Cache::put($cacheKey, $response, now()->addMinutes(30));
+
+        Log::info('Tryoto: verifyCitySupport', [
+            'location' => $locationName,
+            'supported' => $response['supported'],
+            'region' => $region,
+            'companies' => $response['company_count']
+        ]);
+
+        return $response;
+    }
+
+    /**
+     * Compare two delivery time strings
+     * Returns negative if $a is faster, positive if $b is faster
+     */
+    private function compareDeliveryTime(string $a, string $b): int
+    {
+        $daysA = $this->extractDays($a);
+        $daysB = $this->extractDays($b);
+        return $daysA - $daysB;
+    }
+
+    /**
+     * Extract minimum days from delivery time string
+     */
+    private function extractDays(string $time): int
+    {
+        if (stripos($time, 'same') !== false) return 0;
+        if (stripos($time, 'next') !== false) return 1;
+
+        if (preg_match('/(\d+)/', $time, $matches)) {
+            return (int)$matches[1];
+        }
+
+        return 999; // Unknown, assume very slow
+    }
+
+    /**
+     * Verify multiple locations at once (batch verification)
+     * Useful for finding nearest supported location
+     *
+     * @param array $locationNames Array of location names to verify
+     * @param string $testDestination Destination to test against
+     * @return array Array of verification results keyed by location name
+     */
+    public function verifyMultipleLocations(array $locationNames, string $testDestination = 'Riyadh'): array
+    {
+        $results = [];
+
+        foreach ($locationNames as $location) {
+            $results[$location] = $this->verifyCitySupport($location, $testDestination);
+
+            // Small delay to avoid rate limiting
+            if (count($locationNames) > 5) {
+                usleep(100000); // 100ms delay
+            }
+        }
+
+        return $results;
+    }
+
+    /**
+     * Find supported locations from a list
+     * Returns only locations that are supported by Tryoto
+     *
+     * @param array $locationNames Array of location names
+     * @param string $testDestination Destination to test against
+     * @return array Array of supported locations with their details
+     */
+    public function findSupportedLocations(array $locationNames, string $testDestination = 'Riyadh'): array
+    {
+        $supported = [];
+
+        foreach ($locationNames as $location) {
+            $result = $this->verifyCitySupport($location, $testDestination);
+
+            if ($result['supported']) {
+                $supported[] = [
+                    'name' => $location,
+                    'region' => $result['region'],
+                    'origin_city' => $result['origin_city'],
+                    'company_count' => $result['company_count'],
+                    'cheapest_price' => $result['cheapest_price'],
+                ];
+            }
+
+            // Small delay to avoid rate limiting
+            usleep(100000); // 100ms delay
+        }
+
+        return $supported;
     }
 
     /**

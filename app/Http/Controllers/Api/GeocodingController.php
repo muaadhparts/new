@@ -351,8 +351,8 @@ class GeocodingController extends Controller
                 ];
             }
 
-            // Request 1: English Names
-            $responseEn = Http::timeout(10)->get('https://maps.googleapis.com/maps/api/geocode/json', [
+            // Request 1: English Names (with retry)
+            $responseEn = Http::timeout(30)->retry(3, 1000)->get('https://maps.googleapis.com/maps/api/geocode/json', [
                 'latlng' => "{$latitude},{$longitude}",
                 'key' => $apiKey,
                 'language' => 'en'
@@ -368,8 +368,8 @@ class GeocodingController extends Controller
                 return ['success' => false, 'message' => 'No results found (EN)'];
             }
 
-            // Request 2: Arabic Names
-            $responseAr = Http::timeout(10)->get('https://maps.googleapis.com/maps/api/geocode/json', [
+            // Request 2: Arabic Names (with retry)
+            $responseAr = Http::timeout(30)->retry(3, 1000)->get('https://maps.googleapis.com/maps/api/geocode/json', [
                 'latlng' => "{$latitude},{$longitude}",
                 'key' => $apiKey,
                 'language' => 'ar'

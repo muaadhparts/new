@@ -6,19 +6,19 @@ use App\Models\City;
 use App\Models\Country;
 use App\Models\State;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\DB;
 
 /**
- * TryotoLocationService - Location Resolution via Tryoto API ONLY
+ * TryotoLocationService - Location Resolution from Database
  *
- * السيناريو الصحيح:
+ * السيناريو الصحيح 100%:
  * 1. البيانات تأتي من Google Maps (الدولة، المنطقة، المدينة، الإحداثيات)
- * 2. Tryoto API هو المصدر الوحيد للتحقق من الدعم
- * 3. الجداول = مجرد Cache للنتائج السابقة من Tryoto
- * 4. لا توجد قوائم hardcoded نهائياً
+ * 2. البحث يكون في DB فقط (المدن المُزامنة من Tryoto API)
+ * 3. لا يوجد API calls في وقت الـ request = سريع جداً
+ * 4. الإحداثيات محفوظة مسبقاً = دقة 100%
  *
  * التسلسل:
- * City → State → Nearest State in Same Country → رفض العملية
+ * City → State → أقرب مدينة مدعومة في نفس الدولة (من DB) → رفض
  */
 class TryotoLocationService
 {
@@ -30,31 +30,13 @@ class TryotoLocationService
     }
 
     /**
-     * Verify if a location is supported by Tryoto
-     *
-     * @param string $locationName City/State/Country name to check
-     * @param string $testDestination Optional destination for testing
-     * @return array
-     */
-    public function verifyCitySupport(string $locationName, string $testDestination = 'Riyadh'): array
-    {
-        return $this->tryotoService->verifyCitySupport($locationName, $testDestination);
-    }
-
-    /**
-     * Main method: Resolve map location via Tryoto API
-     *
-     * السيناريو:
-     * 1. محاولة المدينة من Google Maps
-     * 2. إذا فشلت → محاولة State
-     * 3. إذا فشلت → البحث عن أقرب State مدعومة داخل نفس الدولة
-     * 4. إذا لم توجد → رفض العملية (الدولة غير مدعومة)
+     * Main method: Resolve map location from DB
      *
      * @param string $cityName City from Google Maps
      * @param string|null $stateName State from Google Maps
      * @param string|null $countryName Country from Google Maps
-     * @param float $latitude
-     * @param float $longitude
+     * @param float $latitude User's latitude
+     * @param float $longitude User's longitude
      * @return array
      */
     public function resolveMapCity(
@@ -64,7 +46,7 @@ class TryotoLocationService
         float $latitude,
         float $longitude
     ): array {
-        Log::info('TryotoLocation: Resolving map location via API', [
+        Log::info('TryotoLocation: Resolving location from DB', [
             'city' => $cityName,
             'state' => $stateName,
             'country' => $countryName,
@@ -72,632 +54,310 @@ class TryotoLocationService
         ]);
 
         // ==========================================
-        // المحاولة 1: المدينة من Google Maps
+        // الخطوة 0: البحث عن الدولة في DB
         // ==========================================
-        $cityResult = $this->tryotoService->verifyCitySupport($cityName);
+        $country = $this->findCountry($countryName);
 
-        if ($cityResult['supported']) {
-            Log::info('TryotoLocation: City supported directly', [
-                'city' => $cityName,
-                'companies' => $cityResult['company_count']
+        if (!$country) {
+            Log::warning('TryotoLocation: Country not found in DB', ['country' => $countryName]);
+            return [
+                'success' => false,
+                'strategy' => 'country_not_supported',
+                'original' => compact('cityName', 'stateName', 'countryName'),
+                'coordinates' => compact('latitude', 'longitude'),
+                'message' => "الدولة '{$countryName}' غير مدعومة من خدمة الشحن"
+            ];
+        }
+
+        // ==========================================
+        // الخطوة 1: البحث عن المدينة بالاسم في DB
+        // ==========================================
+        $city = $this->findCityByName($cityName, $country->id);
+
+        if ($city && $city->tryoto_supported) {
+            Log::info('TryotoLocation: City found in DB', [
+                'city' => $city->city_name,
+                'has_coordinates' => ($city->latitude && $city->longitude)
             ]);
 
             return [
                 'success' => true,
                 'strategy' => 'exact_city',
-                'resolved_name' => $cityName,
+                'resolved_name' => $city->city_name,
+                'resolved_name_ar' => $city->city_name_ar,
+                'tryoto_name' => $city->city_name,
                 'resolved_type' => 'city',
-                'original' => [
-                    'city' => $cityName,
-                    'state' => $stateName,
-                    'country' => $countryName,
+                'city_id' => $city->id,
+                'country_id' => $country->id,
+                'original' => compact('cityName', 'stateName', 'countryName'),
+                'coordinates' => [
+                    'latitude' => $city->latitude ?? $latitude,
+                    'longitude' => $city->longitude ?? $longitude
                 ],
-                'companies' => $cityResult['company_count'] ?? 0,
-                'region' => $cityResult['region'] ?? null,
-                'coordinates' => compact('latitude', 'longitude'),
-                'message' => "المدينة '{$cityName}' مدعومة للشحن"
+                'message' => "المدينة '{$city->city_name}' مدعومة للشحن"
             ];
         }
 
-        Log::info('TryotoLocation: City not supported, trying state...', [
-            'city' => $cityName,
-            'state' => $stateName
-        ]);
-
         // ==========================================
-        // المحاولة 2: المنطقة/State من Google Maps
+        // الخطوة 2: البحث عن المحافظة/State في DB
         // ==========================================
         if ($stateName) {
-            $stateResult = $this->tryotoService->verifyCitySupport($stateName);
+            $stateCity = $this->findCityByName($stateName, $country->id);
 
-            if ($stateResult['supported']) {
-                Log::info('TryotoLocation: State supported', [
+            if ($stateCity && $stateCity->tryoto_supported) {
+                Log::info('TryotoLocation: State found as city in DB', [
                     'state' => $stateName,
-                    'companies' => $stateResult['company_count']
+                    'found_as' => $stateCity->city_name
                 ]);
 
                 return [
                     'success' => true,
                     'strategy' => 'fallback_state',
-                    'resolved_name' => $stateName,
+                    'resolved_name' => $stateCity->city_name,
+                    'resolved_name_ar' => $stateCity->city_name_ar,
+                    'tryoto_name' => $stateCity->city_name,
                     'resolved_type' => 'state',
-                    'original' => [
-                        'city' => $cityName,
-                        'state' => $stateName,
-                        'country' => $countryName,
-                    ],
-                    'companies' => $stateResult['company_count'] ?? 0,
-                    'region' => $stateResult['region'] ?? null,
-                    'coordinates' => compact('latitude', 'longitude'),
-                    'message' => "المدينة '{$cityName}' غير مدعومة، سيتم الشحن إلى المنطقة '{$stateName}'"
-                ];
-            }
-        }
-
-        Log::info('TryotoLocation: State not supported, searching for nearest supported state in same country...', [
-            'state' => $stateName,
-            'country' => $countryName
-        ]);
-
-        // ==========================================
-        // المحاولة 3: البحث عن أقرب محافظة مدعومة داخل نفس الدولة
-        // ==========================================
-        if ($countryName) {
-            $nearestState = $this->findNearestSupportedStateInCountry(
-                $countryName,
-                $latitude,
-                $longitude
-            );
-
-            if ($nearestState) {
-                Log::info('TryotoLocation: Found nearest supported state in same country', [
-                    'original_state' => $stateName,
-                    'nearest_state' => $nearestState['name'],
-                    'distance_km' => $nearestState['distance_km'],
-                    'country' => $countryName
-                ]);
-
-                return [
-                    'success' => true,
-                    'strategy' => 'nearest_state_same_country',
-                    'resolved_name' => $nearestState['name'],
-                    'resolved_type' => 'state',
-                    'original' => [
-                        'city' => $cityName,
-                        'state' => $stateName,
-                        'country' => $countryName,
-                    ],
-                    'companies' => $nearestState['companies'] ?? 0,
-                    'region' => $nearestState['region'] ?? null,
+                    'city_id' => $stateCity->id,
+                    'country_id' => $country->id,
+                    'original' => compact('cityName', 'stateName', 'countryName'),
                     'coordinates' => [
-                        'latitude' => $nearestState['latitude'],
-                        'longitude' => $nearestState['longitude']
+                        'latitude' => $stateCity->latitude ?? $latitude,
+                        'longitude' => $stateCity->longitude ?? $longitude
                     ],
-                    'original_coordinates' => compact('latitude', 'longitude'),
-                    'distance_km' => $nearestState['distance_km'],
-                    'message' => "المنطقة '{$stateName}' غير مدعومة، سيتم الشحن إلى أقرب منطقة مدعومة: '{$nearestState['name']}' ({$nearestState['distance_km']} كم)"
+                    'message' => "المدينة '{$cityName}' غير مدعومة، سيتم الشحن إلى '{$stateCity->city_name}'"
                 ];
             }
         }
 
         // ==========================================
-        // فشل جميع المحاولات - الدولة غير مدعومة بالكامل
+        // الخطوة 3: البحث عن أقرب مدينة مدعومة في الدولة
         // ==========================================
-        Log::warning('TryotoLocation: No supported states found in country', [
-            'city' => $cityName,
-            'state' => $stateName,
+        $nearestCity = $this->findNearestSupportedCity($country->id, $latitude, $longitude);
+
+        if ($nearestCity) {
+            Log::info('TryotoLocation: Found nearest supported city', [
+                'original_city' => $cityName,
+                'nearest_city' => $nearestCity->city_name,
+                'distance_km' => $nearestCity->distance_km
+            ]);
+
+            return [
+                'success' => true,
+                'strategy' => 'nearest_city_same_country',
+                'resolved_name' => $nearestCity->city_name,
+                'resolved_name_ar' => $nearestCity->city_name_ar,
+                'tryoto_name' => $nearestCity->city_name,
+                'resolved_type' => 'city',
+                'city_id' => $nearestCity->id,
+                'country_id' => $country->id,
+                'original' => compact('cityName', 'stateName', 'countryName'),
+                'coordinates' => [
+                    'latitude' => $nearestCity->latitude,
+                    'longitude' => $nearestCity->longitude
+                ],
+                'original_coordinates' => compact('latitude', 'longitude'),
+                'distance_km' => $nearestCity->distance_km,
+                'message' => "المنطقة '{$stateName}' غير مدعومة، سيتم الشحن إلى أقرب منطقة: '{$nearestCity->city_name}' ({$nearestCity->distance_km} كم)"
+            ];
+        }
+
+        // ==========================================
+        // فشل - لا توجد مدن مدعومة في الدولة
+        // ==========================================
+        Log::warning('TryotoLocation: No supported cities in country', [
             'country' => $countryName
         ]);
 
         return [
             'success' => false,
-            'strategy' => 'none',
-            'original' => [
-                'city' => $cityName,
-                'state' => $stateName,
-                'country' => $countryName,
-            ],
+            'strategy' => 'no_supported_cities',
+            'original' => compact('cityName', 'stateName', 'countryName'),
             'coordinates' => compact('latitude', 'longitude'),
-            'message' => "الدولة '{$countryName}' غير مدعومة من شركة الشحن Tryoto"
+            'message' => "لا توجد مدن مدعومة للشحن في '{$countryName}'"
         ];
     }
 
     /**
-     * Find nearest supported state within the same country
-     *
-     * الخطوات:
-     * 1. جلب المحافظات/المدن الرئيسية للدولة من Google Maps API
-     * 2. التحقق من كل محافظة عبر Tryoto API
-     * 3. حساب المسافة لكل محافظة مدعومة
-     * 4. إرجاع الأقرب
-     *
-     * @param string $countryName
-     * @param float $userLat
-     * @param float $userLng
-     * @return array|null
+     * البحث عن الدولة في DB
      */
-    protected function findNearestSupportedStateInCountry(
-        string $countryName,
-        float $userLat,
-        float $userLng
-    ): ?array {
-        Log::info('TryotoLocation: Searching for supported states in country', [
-            'country' => $countryName
-        ]);
-
-        // ==========================================
-        // الخطوة 1: جلب المحافظات من الـ Cache أولاً
-        // ==========================================
-        $cachedStates = $this->getCachedSupportedStates($countryName);
-
-        if (!empty($cachedStates)) {
-            Log::info('TryotoLocation: Found cached supported states', [
-                'country' => $countryName,
-                'count' => count($cachedStates)
-            ]);
-
-            return $this->findNearestFromList($cachedStates, $userLat, $userLng);
-        }
-
-        // ==========================================
-        // الخطوة 2: جلب المحافظات من Google Maps API
-        // ==========================================
-        $states = $this->getCountryStatesFromGoogle($countryName);
-
-        if (empty($states)) {
-            Log::warning('TryotoLocation: Could not get states from Google Maps', [
-                'country' => $countryName
-            ]);
-            return null;
-        }
-
-        Log::info('TryotoLocation: Got states from Google Maps', [
-            'country' => $countryName,
-            'count' => count($states)
-        ]);
-
-        // ==========================================
-        // الخطوة 3: التحقق من كل محافظة عبر Tryoto
-        // ==========================================
-        $supportedStates = [];
-
-        foreach ($states as $state) {
-            $stateName = $state['name'];
-
-            // Skip the original state (already checked)
-            // التحقق من Tryoto
-            $result = $this->tryotoService->verifyCitySupport($stateName);
-
-            if ($result['supported']) {
-                $distance = $this->calculateDistance(
-                    $userLat,
-                    $userLng,
-                    $state['latitude'],
-                    $state['longitude']
-                );
-
-                $supportedStates[] = [
-                    'name' => $stateName,
-                    'name_ar' => $state['name_ar'] ?? $stateName,
-                    'latitude' => $state['latitude'],
-                    'longitude' => $state['longitude'],
-                    'distance_km' => round($distance, 2),
-                    'companies' => $result['company_count'] ?? 0,
-                    'region' => $result['region'] ?? null
-                ];
-
-                Log::info('TryotoLocation: State supported by Tryoto', [
-                    'state' => $stateName,
-                    'distance_km' => round($distance, 2)
-                ]);
-
-                // Cache this supported state for future use
-                $this->cacheSupportedState($countryName, $stateName, $state['latitude'], $state['longitude']);
-            }
-
-            // Add small delay to avoid rate limiting
-            usleep(100000); // 0.1 second
-        }
-
-        if (empty($supportedStates)) {
-            Log::warning('TryotoLocation: No supported states found in country', [
-                'country' => $countryName,
-                'checked_states' => count($states)
-            ]);
-            return null;
-        }
-
-        // ==========================================
-        // الخطوة 4: اختيار الأقرب
-        // ==========================================
-        usort($supportedStates, fn($a, $b) => $a['distance_km'] <=> $b['distance_km']);
-
-        return $supportedStates[0];
-    }
-
-    /**
-     * Get states of a country from Google Maps Geocoding API
-     *
-     * @param string $countryName
-     * @return array
-     */
-    protected function getCountryStatesFromGoogle(string $countryName): array
+    protected function findCountry(?string $countryName): ?Country
     {
-        $apiKey = config('services.google_maps.api_key');
+        if (!$countryName) return null;
 
-        if (!$apiKey) {
-            Log::warning('TryotoLocation: Google Maps API key not configured');
-            return [];
-        }
-
-        try {
-            // First, get country bounds
-            $countryResponse = Http::timeout(10)->get('https://maps.googleapis.com/maps/api/geocode/json', [
-                'address' => $countryName,
-                'key' => $apiKey,
-                'language' => 'en'
-            ]);
-
-            if (!$countryResponse->successful()) {
-                return [];
-            }
-
-            $countryData = $countryResponse->json();
-
-            if ($countryData['status'] !== 'OK' || empty($countryData['results'])) {
-                return [];
-            }
-
-            // Get country center for searching
-            $location = $countryData['results'][0]['geometry']['location'];
-            $countryLat = $location['lat'];
-            $countryLng = $location['lng'];
-
-            // Search for major cities/states in this country
-            // Use Places API or known major cities approach
-            $states = $this->searchMajorCitiesInCountry($countryName, $countryLat, $countryLng, $apiKey);
-
-            return $states;
-
-        } catch (\Exception $e) {
-            Log::error('TryotoLocation: Error getting states from Google', [
-                'error' => $e->getMessage()
-            ]);
-            return [];
-        }
-    }
-
-    /**
-     * Search for major cities/states in a country using Google Places API
-     *
-     * @param string $countryName
-     * @param float $countryLat
-     * @param float $countryLng
-     * @param string $apiKey
-     * @return array
-     */
-    protected function searchMajorCitiesInCountry(
-        string $countryName,
-        float $countryLat,
-        float $countryLng,
-        string $apiKey
-    ): array {
-        $states = [];
-
-        // Search queries based on country
-        $searchQueries = [
-            "major cities in {$countryName}",
-            "governorates in {$countryName}",
-            "provinces in {$countryName}",
-            "states in {$countryName}"
-        ];
-
-        // Get country-specific major cities using text search
-        try {
-            $response = Http::timeout(10)->get('https://maps.googleapis.com/maps/api/place/textsearch/json', [
-                'query' => "major cities in {$countryName}",
-                'key' => $apiKey,
-                'language' => 'en'
-            ]);
-
-            if ($response->successful()) {
-                $data = $response->json();
-
-                if ($data['status'] === 'OK' && !empty($data['results'])) {
-                    foreach ($data['results'] as $place) {
-                        // Only include places in this country
-                        $cityName = $place['name'];
-                        $location = $place['geometry']['location'];
-
-                        // Get Arabic name
-                        $arabicName = $this->getArabicName($cityName, $location['lat'], $location['lng'], $apiKey);
-
-                        $states[] = [
-                            'name' => $cityName,
-                            'name_ar' => $arabicName,
-                            'latitude' => $location['lat'],
-                            'longitude' => $location['lng']
-                        ];
-                    }
-                }
-            }
-
-            // Also search for governorates/provinces
-            $response2 = Http::timeout(10)->get('https://maps.googleapis.com/maps/api/place/textsearch/json', [
-                'query' => "governorate {$countryName}",
-                'key' => $apiKey,
-                'language' => 'en'
-            ]);
-
-            if ($response2->successful()) {
-                $data2 = $response2->json();
-
-                if ($data2['status'] === 'OK' && !empty($data2['results'])) {
-                    foreach ($data2['results'] as $place) {
-                        $stateName = $place['name'];
-                        $location = $place['geometry']['location'];
-
-                        // Avoid duplicates
-                        $exists = false;
-                        foreach ($states as $s) {
-                            if (strtolower($s['name']) === strtolower($stateName)) {
-                                $exists = true;
-                                break;
-                            }
-                        }
-
-                        if (!$exists) {
-                            $arabicName = $this->getArabicName($stateName, $location['lat'], $location['lng'], $apiKey);
-
-                            $states[] = [
-                                'name' => $stateName,
-                                'name_ar' => $arabicName,
-                                'latitude' => $location['lat'],
-                                'longitude' => $location['lng']
-                            ];
-                        }
-                    }
-                }
-            }
-
-        } catch (\Exception $e) {
-            Log::error('TryotoLocation: Error searching cities', [
-                'error' => $e->getMessage()
-            ]);
-        }
-
-        return $states;
-    }
-
-    /**
-     * Get Arabic name for a location using reverse geocoding
-     *
-     * @param string $englishName
-     * @param float $lat
-     * @param float $lng
-     * @param string $apiKey
-     * @return string
-     */
-    protected function getArabicName(string $englishName, float $lat, float $lng, string $apiKey): string
-    {
-        try {
-            $response = Http::timeout(5)->get('https://maps.googleapis.com/maps/api/geocode/json', [
-                'latlng' => "{$lat},{$lng}",
-                'key' => $apiKey,
-                'language' => 'ar'
-            ]);
-
-            if ($response->successful()) {
-                $data = $response->json();
-
-                if ($data['status'] === 'OK' && !empty($data['results'])) {
-                    foreach ($data['results'][0]['address_components'] as $component) {
-                        if (in_array('locality', $component['types']) ||
-                            in_array('administrative_area_level_1', $component['types'])) {
-                            return $component['long_name'];
-                        }
-                    }
-                }
-            }
-        } catch (\Exception $e) {
-            // Ignore errors, return English name
-        }
-
-        return $englishName;
-    }
-
-    /**
-     * Get cached supported states for a country
-     *
-     * @param string $countryName
-     * @return array
-     */
-    protected function getCachedSupportedStates(string $countryName): array
-    {
-        // Look in database for previously discovered supported states
-        $country = Country::where('country_name', $countryName)
+        return Country::where('country_name', $countryName)
             ->orWhere('country_name_ar', $countryName)
+            ->orWhere('country_code', strtoupper(substr($countryName, 0, 2)))
+            ->first();
+    }
+
+    /**
+     * البحث عن مدينة بالاسم (مع مطابقة مرنة)
+     */
+    protected function findCityByName(string $name, int $countryId): ?City
+    {
+        // مطابقة تامة أولاً
+        $city = City::where('country_id', $countryId)
+            ->where('tryoto_supported', 1)
+            ->where(function ($q) use ($name) {
+                $q->where('city_name', $name)
+                    ->orWhere('city_name_ar', $name);
+            })
             ->first();
 
-        if (!$country) {
-            return [];
-        }
+        if ($city) return $city;
 
-        $states = State::where('country_id', $country->id)
-            ->where('status', 1)
+        // مطابقة جزئية (LIKE)
+        $city = City::where('country_id', $countryId)
+            ->where('tryoto_supported', 1)
+            ->where(function ($q) use ($name) {
+                $q->where('city_name', 'LIKE', "%{$name}%")
+                    ->orWhere('city_name_ar', 'LIKE', "%{$name}%");
+            })
+            ->first();
+
+        if ($city) return $city;
+
+        // مطابقة بدون مسافات وعلامات
+        $cleanName = $this->cleanCityName($name);
+        return City::where('country_id', $countryId)
+            ->where('tryoto_supported', 1)
+            ->whereRaw("REPLACE(REPLACE(city_name, ' ', ''), '-', '') LIKE ?", ["%{$cleanName}%"])
+            ->first();
+    }
+
+    /**
+     * تنظيف اسم المدينة للمقارنة
+     */
+    protected function cleanCityName(string $name): string
+    {
+        return preg_replace('/[\s\-\'\"\.]+/', '', strtolower($name));
+    }
+
+    /**
+     * البحث عن أقرب مدينة مدعومة باستخدام الإحداثيات
+     *
+     * هذا هو الحل الصحيح: نستخدم صيغة Haversine مباشرة في SQL
+     */
+    protected function findNearestSupportedCity(int $countryId, float $lat, float $lng): ?City
+    {
+        // صيغة Haversine لحساب المسافة بالكيلومتر
+        $haversine = "(6371 * acos(
+            cos(radians(?)) *
+            cos(radians(latitude)) *
+            cos(radians(longitude) - radians(?)) +
+            sin(radians(?)) *
+            sin(radians(latitude))
+        ))";
+
+        $city = City::where('country_id', $countryId)
+            ->where('tryoto_supported', 1)
             ->whereNotNull('latitude')
             ->whereNotNull('longitude')
-            ->get();
+            ->selectRaw("*, {$haversine} as distance_km", [$lat, $lng, $lat])
+            ->orderBy('distance_km', 'asc')
+            ->first();
 
-        $cached = [];
+        return $city;
+    }
 
-        foreach ($states as $state) {
-            // Verify this state is still supported by Tryoto
-            // We trust the cache but check if coordinates exist
-            if ($state->latitude && $state->longitude) {
-                $cached[] = [
-                    'name' => $state->state,
-                    'name_ar' => $state->state_ar ?? $state->state,
-                    'latitude' => $state->latitude,
-                    'longitude' => $state->longitude
-                ];
+    /**
+     * Verify if a city is supported (from DB)
+     */
+    public function verifyCitySupport(string $cityName, ?string $countryName = null): array
+    {
+        $query = City::where('tryoto_supported', 1)
+            ->where(function ($q) use ($cityName) {
+                $q->where('city_name', $cityName)
+                    ->orWhere('city_name_ar', $cityName)
+                    ->orWhere('city_name', 'LIKE', "%{$cityName}%");
+            });
+
+        if ($countryName) {
+            $country = $this->findCountry($countryName);
+            if ($country) {
+                $query->where('country_id', $country->id);
             }
         }
 
-        return $cached;
-    }
+        $city = $query->first();
 
-    /**
-     * Find nearest state from a list
-     *
-     * @param array $states
-     * @param float $userLat
-     * @param float $userLng
-     * @return array|null
-     */
-    protected function findNearestFromList(array $states, float $userLat, float $userLng): ?array
-    {
-        $nearest = null;
-        $minDistance = PHP_FLOAT_MAX;
-
-        foreach ($states as $state) {
-            // Verify with Tryoto
-            $result = $this->tryotoService->verifyCitySupport($state['name']);
-
-            if ($result['supported']) {
-                $distance = $this->calculateDistance(
-                    $userLat,
-                    $userLng,
-                    $state['latitude'],
-                    $state['longitude']
-                );
-
-                if ($distance < $minDistance) {
-                    $minDistance = $distance;
-                    $nearest = [
-                        'name' => $state['name'],
-                        'name_ar' => $state['name_ar'] ?? $state['name'],
-                        'latitude' => $state['latitude'],
-                        'longitude' => $state['longitude'],
-                        'distance_km' => round($distance, 2),
-                        'companies' => $result['company_count'] ?? 0,
-                        'region' => $result['region'] ?? null
-                    ];
-                }
-            }
+        if ($city) {
+            return [
+                'supported' => true,
+                'city_id' => $city->id,
+                'city_name' => $city->city_name,
+                'city_name_ar' => $city->city_name_ar,
+                'country_id' => $city->country_id,
+                'latitude' => $city->latitude,
+                'longitude' => $city->longitude
+            ];
         }
 
-        return $nearest;
+        return ['supported' => false];
     }
 
     /**
-     * Cache a supported state in database
-     *
-     * @param string $countryName
-     * @param string $stateName
-     * @param float $latitude
-     * @param float $longitude
+     * Get statistics about synced cities
      */
-    protected function cacheSupportedState(
-        string $countryName,
-        string $stateName,
-        float $latitude,
-        float $longitude
-    ): void {
-        try {
-            // Get or create country
-            $country = Country::firstOrCreate(
-                ['country_name' => $countryName],
-                [
-                    'country_code' => strtoupper(substr($countryName, 0, 2)),
-                    'country_name_ar' => $countryName,
-                    'status' => 1,
-                    'tax' => 0
-                ]
-            );
-
-            // Get or create state with coordinates
-            State::updateOrCreate(
-                [
-                    'country_id' => $country->id,
-                    'state' => $stateName
-                ],
-                [
-                    'state_ar' => $stateName,
-                    'latitude' => $latitude,
-                    'longitude' => $longitude,
-                    'status' => 1,
-                    'tax' => 0,
-                    'owner_id' => 0
-                ]
-            );
-
-            Log::info('TryotoLocation: Cached supported state', [
-                'country' => $countryName,
-                'state' => $stateName
-            ]);
-
-        } catch (\Exception $e) {
-            Log::warning('TryotoLocation: Failed to cache state', [
-                'error' => $e->getMessage()
-            ]);
-        }
-    }
-
-    /**
-     * Calculate distance between two coordinates (Haversine formula)
-     *
-     * @param float $lat1
-     * @param float $lon1
-     * @param float $lat2
-     * @param float $lon2
-     * @return float Distance in kilometers
-     */
-    protected function calculateDistance(float $lat1, float $lon1, float $lat2, float $lon2): float
+    public function getSyncStats(): array
     {
-        $earthRadius = 6371; // km
-
-        $dLat = deg2rad($lat2 - $lat1);
-        $dLon = deg2rad($lon2 - $lon1);
-
-        $a = sin($dLat / 2) * sin($dLat / 2) +
-            cos(deg2rad($lat1)) * cos(deg2rad($lat2)) *
-            sin($dLon / 2) * sin($dLon / 2);
-
-        $c = 2 * atan2(sqrt($a), sqrt(1 - $a));
-
-        return $earthRadius * $c;
+        return [
+            'total_cities' => City::where('tryoto_supported', 1)->count(),
+            'with_coordinates' => City::where('tryoto_supported', 1)
+                ->whereNotNull('latitude')
+                ->whereNotNull('longitude')
+                ->count(),
+            'by_country' => City::where('tryoto_supported', 1)
+                ->join('countries', 'cities.country_id', '=', 'countries.id')
+                ->selectRaw('countries.country_name, countries.country_code, COUNT(*) as city_count')
+                ->groupBy('countries.id', 'countries.country_name', 'countries.country_code')
+                ->get()
+                ->toArray()
+        ];
     }
 
     /**
-     * Get all countries from database (Cache)
+     * Get all supported countries from DB
      */
-    public function getCountries()
+    public function getSupportedCountries(): array
     {
-        return Country::where('status', 1)
-            ->orderBy('country_name')
-            ->get(['id', 'country_code', 'country_name', 'country_name_ar']);
+        return Country::whereHas('cities', function ($q) {
+            $q->where('tryoto_supported', 1);
+        })
+            ->get(['id', 'country_code', 'country_name', 'country_name_ar'])
+            ->toArray();
     }
 
     /**
-     * Get states for a country from database (Cache)
+     * Get all supported cities for a country
      */
-    public function getStates(int $countryId)
+    public function getSupportedCities(int $countryId): array
     {
-        return State::where('country_id', $countryId)
-            ->where('status', 1)
-            ->orderBy('state')
-            ->get(['id', 'state', 'state_ar', 'country_id']);
-    }
-
-    /**
-     * Get cities for a state from database (Cache)
-     */
-    public function getCities(int $stateId)
-    {
-        return City::where('state_id', $stateId)
-            ->where('status', 1)
+        return City::where('country_id', $countryId)
+            ->where('tryoto_supported', 1)
             ->orderBy('city_name')
-            ->get(['id', 'city_name', 'city_name_ar', 'state_id', 'country_id']);
+            ->get(['id', 'city_name', 'city_name_ar', 'latitude', 'longitude'])
+            ->toArray();
+    }
+
+    /**
+     * Search cities by name (for autocomplete)
+     */
+    public function searchCities(string $query, ?int $countryId = null, int $limit = 10): array
+    {
+        $q = City::where('tryoto_supported', 1)
+            ->where(function ($qb) use ($query) {
+                $qb->where('city_name', 'LIKE', "%{$query}%")
+                    ->orWhere('city_name_ar', 'LIKE', "%{$query}%");
+            });
+
+        if ($countryId) {
+            $q->where('country_id', $countryId);
+        }
+
+        return $q->with('country:id,country_name,country_name_ar,country_code')
+            ->limit($limit)
+            ->get(['id', 'city_name', 'city_name_ar', 'country_id', 'latitude', 'longitude'])
+            ->toArray();
     }
 }

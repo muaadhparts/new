@@ -14,7 +14,13 @@
       "Bash(findstr:*)",
       "Bash(find:*)",
       "Bash(Get-Content \"C:\\Users\\hp\\Herd\\new\\storage\\logs\\laravel.log\" -Tail 50)",
-      "Bash(Select-String -Pattern \"Tryoto\")"
+      "Bash(Select-String -Pattern \"Tryoto\")",
+      "Bash(Get-Content \"C:\\Users\\hp\\Herd\\new\\storage\\logs\\laravel.log\" -Tail 200)",
+      "Bash(Select-String -Pattern \"TryotoLocation|Babylon|Iraq|Haditha|Baghdad\")",
+      "Bash(powershell -Command \"Get-Content ''C:\\Users\\hp\\Herd\\new\\storage\\logs\\laravel.log'' -Tail 200 | Select-String -Pattern ''TryotoLocation|Babylon|Iraq|Haditha|Baghdad''\")",
+      "Bash(powershell:*)",
+      "Bash(mysql -u root muaadh:*)",
+      "Bash(del clear_iraq_cache.php)"
     ],
     "deny": [],
     "ask": []
