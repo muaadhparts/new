@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Services\TryotoService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Cache;
@@ -26,7 +27,7 @@ class FetchTryotoCities extends Command
      */
     protected $description = 'جلب جميع المدن المدعومة من Tryoto API وحفظها في ملفات';
 
-    protected $token;
+    protected TryotoService $tryotoService;
     protected $baseUrl;
     protected $isSandbox;
     protected $results = [];
@@ -43,7 +44,8 @@ class FetchTryotoCities extends Command
         $this->info('');
 
         try {
-            // 1. المصادقة
+            // 1. Initialize TryotoService
+            $this->tryotoService = app(TryotoService::class);
             $this->authenticate();
 
             // 2. محاولة جلب المدن من API
@@ -86,52 +88,29 @@ class FetchTryotoCities extends Command
     }
 
     /**
-     * المصادقة مع Tryoto API
+     * المصادقة مع Tryoto API باستخدام TryotoService الموحد
      */
     protected function authenticate()
     {
-        $this->info('🔐 جاري المصادقة مع Tryoto API...');
+        $this->info('🔐 جاري المصادقة مع Tryoto API عبر TryotoService الموحد...');
 
-        $this->isSandbox = config('services.tryoto.sandbox');
-        $this->baseUrl = $this->isSandbox
-            ? config('services.tryoto.test.url')
-            : config('services.tryoto.live.url');
+        $config = $this->tryotoService->checkConfiguration();
+        $this->isSandbox = $config['sandbox'];
+        $this->baseUrl = $config['base_url'];
 
         $mode = $this->isSandbox ? 'TEST' : 'LIVE';
         $this->info("   البيئة: {$mode}");
         $this->info("   الرابط: {$this->baseUrl}");
+        $this->info("   مفتاح الـ Cache: {$config['cache_key']}");
 
-        // محاولة جلب Token من Cache
-        $cachedToken = Cache::get('tryoto-token');
-        if ($cachedToken) {
-            $this->token = $cachedToken;
-            $this->info('   ✅ استخدام Token من Cache');
-            return;
+        // استخدام TryotoService للحصول على التوكن
+        $token = $this->tryotoService->getToken();
+
+        if (!$token) {
+            throw new \Exception('فشل في الحصول على Access Token من TryotoService');
         }
 
-        // الحصول على refresh token
-        $refreshToken = $this->isSandbox
-            ? (config('services.tryoto.test.token') ?? env('TRYOTO_TEST_REFRESH_TOKEN'))
-            : (config('services.tryoto.live.token') ?? env('TRYOTO_REFRESH_TOKEN'));
-
-        if (empty($refreshToken)) {
-            throw new \Exception('Tryoto refresh token غير موجود في الإعدادات');
-        }
-
-        $response = Http::post($this->baseUrl . '/rest/v2/refreshToken', [
-            'refresh_token' => $refreshToken,
-        ]);
-
-        if (!$response->successful()) {
-            throw new \Exception('فشل في الحصول على Access Token: ' . $response->body());
-        }
-
-        $this->token = $response->json()['access_token'];
-        $expiresIn = (int)($response->json()['expires_in'] ?? 3600);
-
-        Cache::put('tryoto-token', $this->token, now()->addSeconds(max(300, $expiresIn - 60)));
-
-        $this->info('   ✅ تم الحصول على Access Token (صالح لـ ' . round($expiresIn / 60) . ' دقيقة)');
+        $this->info('   ✅ تم الحصول على Access Token عبر TryotoService');
     }
 
     /**
@@ -262,37 +241,23 @@ class FetchTryotoCities extends Command
     }
 
     /**
-     * اختبار شحن بين مدينتين
+     * اختبار شحن بين مدينتين باستخدام TryotoService
      */
     protected function testCityShipping($originCity, $destinationCity)
     {
-        $requestData = [
-            "originCity" => $originCity,
-            "destinationCity" => $destinationCity,
-            "weight" => 1,
-            "xlength" => 30,
-            "xheight" => 30,
-            "xwidth" => 30,
-        ];
+        // استخدام TryotoService الموحد بدلاً من الاتصال المباشر
+        $result = $this->tryotoService->verifyCitySupport($destinationCity, $originCity);
 
-        $response = Http::withToken($this->token)
-            ->timeout(10)
-            ->post($this->baseUrl . '/rest/v2/checkOTODeliveryFee', $requestData);
-
-        if ($response->successful()) {
-            $data = $response->json();
-            $companies = $data['deliveryCompany'] ?? [];
-
+        if ($result['supported']) {
             return [
-                'supported' => !empty($companies),
-                'companies' => $this->formatCompanies($companies),
+                'supported' => true,
+                'companies' => $this->formatCompanies($result['companies'] ?? []),
             ];
         }
 
         return [
             'supported' => false,
-            'error' => $response->body(),
-            'status' => $response->status(),
+            'error' => $result['error'] ?? 'City not supported',
         ];
     }
 

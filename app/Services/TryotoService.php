@@ -16,84 +16,258 @@ use Illuminate\Support\Facades\DB;
 /**
  * TryotoService - Enterprise-Level Shipping Integration
  *
- * خدمة مركزية للتعامل مع Tryoto API
- * تتضمن:
+ * خدمة مركزية موحدة للتعامل مع Tryoto API
+ * جميع الاتصالات مع Tryoto تمر عبر هذه الخدمة فقط
+ *
+ * الميزات:
+ * - إدارة التوكن موحدة (تجديد تلقائي + retry)
  * - إنشاء الشحنات
  * - تتبع الشحنات
  * - إلغاء الشحنات
  * - جلب أسعار الشحن
- * - إدارة التوكن
+ * - جلب المدن والمواقع
  */
 class TryotoService
 {
-    private $baseUrl;
-    private $isSandbox;
-    private $token;
+    /**
+     * مفتاح الـ Cache الموحد للتوكن
+     * يجب استخدام هذا المفتاح فقط في جميع أنحاء المشروع
+     */
+    private const CACHE_KEY_PREFIX = 'tryoto-token-';
+
+    /**
+     * عدد محاولات إعادة المحاولة عند فشل الاتصال
+     */
+    private const MAX_RETRIES = 3;
+
+    /**
+     * الانتظار بين المحاولات (بالثواني)
+     */
+    private const RETRY_DELAY = 2;
+
+    /**
+     * timeout للطلبات (بالثواني)
+     */
+    private const REQUEST_TIMEOUT = 30;
+
+    private string $baseUrl;
+    private bool $isSandbox;
+    private ?string $token = null;
 
     public function __construct()
     {
-        $this->isSandbox = config('services.tryoto.sandbox', false);
+        $this->isSandbox = (bool) config('services.tryoto.sandbox', false);
         $this->baseUrl = $this->isSandbox
             ? config('services.tryoto.test.url', 'https://staging-api.tryoto.com')
             : config('services.tryoto.live.url', 'https://api.tryoto.com');
     }
 
     /**
-     * Get or refresh access token
+     * الحصول على مفتاح الـ Cache الموحد
+     * هذا هو المفتاح الوحيد المستخدم في المشروع
      */
-    public function getToken(): ?string
+    public function getCacheKey(): string
     {
-        $cacheKey = 'tryoto-token-' . ($this->isSandbox ? 'sandbox' : 'live');
-
-        $token = Cache::get($cacheKey);
-
-        if ($token) {
-            return $token;
-        }
-
-        return $this->refreshToken();
+        return self::CACHE_KEY_PREFIX . ($this->isSandbox ? 'sandbox' : 'live');
     }
 
     /**
-     * Refresh the access token
+     * الحصول على التوكن (من الكاش أو تجديد)
+     *
+     * @param bool $forceRefresh إجبار تجديد التوكن
+     * @return string|null
      */
-    public function refreshToken(): ?string
+    public function getToken(bool $forceRefresh = false): ?string
     {
-        try {
-            $refreshToken = $this->isSandbox
-                ? config('services.tryoto.test.token')
-                : config('services.tryoto.live.token');
+        $cacheKey = $this->getCacheKey();
 
-            if (!$refreshToken) {
-                Log::error('Tryoto: Missing refresh token');
-                return null;
+        // إذا لم يكن هناك إجبار للتجديد، نحاول من الكاش أولاً
+        if (!$forceRefresh) {
+            $cachedToken = Cache::get($cacheKey);
+            if ($cachedToken) {
+                $this->token = $cachedToken;
+                return $cachedToken;
             }
+        }
 
-            $response = Http::post($this->baseUrl . '/rest/v2/refreshToken', [
+        // تجديد التوكن مع إعادة المحاولة
+        return $this->refreshTokenWithRetry();
+    }
+
+    /**
+     * تجديد التوكن مع آلية إعادة المحاولة
+     *
+     * @return string|null
+     */
+    private function refreshTokenWithRetry(): ?string
+    {
+        $lastException = null;
+
+        for ($attempt = 1; $attempt <= self::MAX_RETRIES; $attempt++) {
+            try {
+                $result = $this->doRefreshToken();
+                if ($result) {
+                    return $result;
+                }
+            } catch (\Exception $e) {
+                $lastException = $e;
+                Log::warning("Tryoto: Token refresh attempt {$attempt} failed", [
+                    'error' => $e->getMessage(),
+                    'attempt' => $attempt,
+                    'max_retries' => self::MAX_RETRIES
+                ]);
+
+                if ($attempt < self::MAX_RETRIES) {
+                    sleep(self::RETRY_DELAY * $attempt); // exponential backoff
+                }
+            }
+        }
+
+        Log::error('Tryoto: All token refresh attempts failed', [
+            'attempts' => self::MAX_RETRIES,
+            'last_error' => $lastException?->getMessage()
+        ]);
+
+        return null;
+    }
+
+    /**
+     * تنفيذ تجديد التوكن الفعلي
+     *
+     * @return string|null
+     * @throws \Exception
+     */
+    private function doRefreshToken(): ?string
+    {
+        $refreshToken = $this->isSandbox
+            ? config('services.tryoto.test.token')
+            : config('services.tryoto.live.token');
+
+        if (empty($refreshToken)) {
+            throw new \Exception('Tryoto refresh token is not configured. Check .env file.');
+        }
+
+        $response = Http::timeout(self::REQUEST_TIMEOUT)
+            ->post($this->baseUrl . '/rest/v2/refreshToken', [
                 'refresh_token' => $refreshToken
             ]);
 
-            if ($response->successful()) {
-                $data = $response->json();
-                $token = $data['access_token'] ?? null;
-                $expiresIn = (int)($data['expires_in'] ?? 3600);
+        if ($response->successful()) {
+            $data = $response->json();
+            $token = $data['access_token'] ?? null;
+            $expiresIn = (int)($data['expires_in'] ?? 3600);
 
-                if ($token) {
-                    $cacheKey = 'tryoto-token-' . ($this->isSandbox ? 'sandbox' : 'live');
-                    Cache::put($cacheKey, $token, now()->addSeconds(max(300, $expiresIn - 60)));
-                    return $token;
+            if ($token) {
+                $cacheKey = $this->getCacheKey();
+                // نحفظ التوكن لمدة أقل من انتهاء صلاحيته بـ 60 ثانية
+                $cacheTtl = max(300, $expiresIn - 60);
+                Cache::put($cacheKey, $token, now()->addSeconds($cacheTtl));
+
+                $this->token = $token;
+
+                Log::info('Tryoto: Token refreshed successfully', [
+                    'expires_in' => $expiresIn,
+                    'cache_ttl' => $cacheTtl,
+                    'sandbox' => $this->isSandbox
+                ]);
+
+                return $token;
+            }
+        }
+
+        $errorBody = $response->body();
+        Log::error('Tryoto: Token refresh failed', [
+            'status' => $response->status(),
+            'body' => $errorBody,
+            'sandbox' => $this->isSandbox
+        ]);
+
+        throw new \Exception("Token refresh failed: HTTP {$response->status()} - {$errorBody}");
+    }
+
+    /**
+     * تنفيذ طلب API مع التوكن وإعادة المحاولة التلقائية
+     *
+     * @param string $method HTTP method (GET, POST, etc.)
+     * @param string $endpoint API endpoint
+     * @param array $data Request data
+     * @param bool $retryOnAuthError إعادة المحاولة عند خطأ 401
+     * @return array
+     */
+    public function makeApiRequest(string $method, string $endpoint, array $data = [], bool $retryOnAuthError = true): array
+    {
+        $token = $this->getToken();
+
+        if (!$token) {
+            return [
+                'success' => false,
+                'error' => 'Unable to get access token',
+                'error_code' => 'TOKEN_ERROR'
+            ];
+        }
+
+        try {
+            $url = $this->baseUrl . $endpoint;
+
+            $request = Http::timeout(self::REQUEST_TIMEOUT)
+                ->withToken($token)
+                ->withHeaders(['Accept' => 'application/json']);
+
+            $response = match (strtoupper($method)) {
+                'GET' => $request->get($url, $data),
+                'POST' => $request->post($url, $data),
+                'PUT' => $request->put($url, $data),
+                'DELETE' => $request->delete($url, $data),
+                default => $request->post($url, $data),
+            };
+
+            // إذا كان الخطأ 401 (غير مصرح)، نجدد التوكن ونعيد المحاولة
+            if ($response->status() === 401 && $retryOnAuthError) {
+                Log::warning('Tryoto: Got 401, refreshing token and retrying...');
+
+                // إجبار تجديد التوكن
+                $newToken = $this->getToken(forceRefresh: true);
+
+                if ($newToken) {
+                    // إعادة المحاولة مرة واحدة فقط
+                    return $this->makeApiRequest($method, $endpoint, $data, retryOnAuthError: false);
                 }
+
+                return [
+                    'success' => false,
+                    'error' => 'Authentication failed after token refresh',
+                    'error_code' => 'AUTH_ERROR'
+                ];
             }
 
-            Log::error('Tryoto: Token refresh failed', [
+            if ($response->successful()) {
+                return [
+                    'success' => true,
+                    'data' => $response->json(),
+                    'status' => $response->status()
+                ];
+            }
+
+            $errorData = $response->json();
+            return [
+                'success' => false,
+                'error' => $errorData['errorMsg'] ?? $errorData['otoErrorMessage'] ?? $response->body(),
+                'error_code' => $errorData['errorCode'] ?? 'API_ERROR',
                 'status' => $response->status(),
-                'body' => $response->body()
-            ]);
-            return null;
+                'raw' => $errorData
+            ];
 
         } catch (\Exception $e) {
-            Log::error('Tryoto: Token refresh exception', ['error' => $e->getMessage()]);
-            return null;
+            Log::error('Tryoto: API request exception', [
+                'endpoint' => $endpoint,
+                'error' => $e->getMessage()
+            ]);
+
+            return [
+                'success' => false,
+                'error' => $e->getMessage(),
+                'error_code' => 'EXCEPTION'
+            ];
         }
     }
 
@@ -109,72 +283,58 @@ class TryotoService
      */
     public function getDeliveryOptions(string $originCity, string $destinationCity, float $weight = 1, float $codAmount = 0, array $dimensions = []): array
     {
-        try {
-            $token = $this->getToken();
-            if (!$token) {
-                return ['success' => false, 'error' => 'Unable to get access token'];
-            }
+        $requestData = [
+            'originCity' => $originCity,
+            'destinationCity' => $destinationCity,
+            'weight' => max(0.1, $weight),
+            'xlength' => max(30, $dimensions['length'] ?? 30),
+            'xheight' => max(30, $dimensions['height'] ?? 30),
+            'xwidth' => max(30, $dimensions['width'] ?? 30),
+        ];
 
-            // Use checkOTODeliveryFee endpoint (the correct one)
-            $requestData = [
-                'originCity' => $originCity,
-                'destinationCity' => $destinationCity,
-                'weight' => max(0.1, $weight),
-                'xlength' => max(30, $dimensions['length'] ?? 30),
-                'xheight' => max(30, $dimensions['height'] ?? 30),
-                'xwidth' => max(30, $dimensions['width'] ?? 30),
-            ];
+        Log::info('Tryoto: Requesting delivery options', $requestData);
 
-            Log::info('Tryoto: Requesting delivery options', $requestData);
+        $result = $this->makeApiRequest('POST', '/rest/v2/checkOTODeliveryFee', $requestData);
 
-            $response = Http::withToken($token)->post($this->baseUrl . '/rest/v2/checkOTODeliveryFee', $requestData);
-
-            if ($response->successful()) {
-                $data = $response->json();
-                $companies = $data['deliveryCompany'] ?? [];
-
-                // Transform to unified format
-                $options = [];
-                foreach ($companies as $company) {
-                    $options[] = [
-                        'deliveryOptionId' => (string)($company['deliveryOptionId'] ?? ''),
-                        'company' => $company['deliveryOptionName'] ?? $company['deliveryCompanyName'] ?? 'Unknown',
-                        'companyCode' => $company['deliveryCompanyName'] ?? '',
-                        'price' => (float)($company['price'] ?? 0),
-                        'estimatedDeliveryDays' => $this->parseDeliveryTime($company['avgDeliveryTime'] ?? ''),
-                        'avgDeliveryTime' => $company['avgDeliveryTime'] ?? '',
-                        'serviceType' => $company['serviceType'] ?? '',
-                        'deliveryType' => $company['deliveryType'] ?? '',
-                        'logo' => $company['logo'] ?? '',
-                        'codCharge' => (float)($company['codCharge'] ?? 0),
-                        'returnFee' => (float)($company['returnFee'] ?? 0),
-                        'maxCODValue' => (float)($company['maxCODValue'] ?? 0),
-                        'maxOrderValue' => (float)($company['maxOrderValue'] ?? 0),
-                    ];
-                }
-
-                Log::info('Tryoto: Got ' . count($options) . ' delivery options');
-
-                return [
-                    'success' => true,
-                    'options' => $options,
-                    'raw' => $data
-                ];
-            }
-
+        if (!$result['success']) {
             Log::warning('Tryoto: checkOTODeliveryFee failed', [
                 'origin' => $originCity,
                 'destination' => $destinationCity,
-                'status' => $response->status(),
-                'body' => $response->body()
+                'error' => $result['error']
             ]);
-
-            return ['success' => false, 'error' => 'Failed to get delivery options. Status: ' . $response->status()];
-
-        } catch (\Exception $e) {
-            Log::error('Tryoto: getDeliveryOptions exception', ['error' => $e->getMessage()]);
-            return ['success' => false, 'error' => $e->getMessage()];
+            return ['success' => false, 'error' => $result['error']];
         }
+
+        $data = $result['data'];
+        $companies = $data['deliveryCompany'] ?? [];
+
+        // Transform to unified format
+        $options = [];
+        foreach ($companies as $company) {
+            $options[] = [
+                'deliveryOptionId' => (string)($company['deliveryOptionId'] ?? ''),
+                'company' => $company['deliveryOptionName'] ?? $company['deliveryCompanyName'] ?? 'Unknown',
+                'companyCode' => $company['deliveryCompanyName'] ?? '',
+                'price' => (float)($company['price'] ?? 0),
+                'estimatedDeliveryDays' => $this->parseDeliveryTime($company['avgDeliveryTime'] ?? ''),
+                'avgDeliveryTime' => $company['avgDeliveryTime'] ?? '',
+                'serviceType' => $company['serviceType'] ?? '',
+                'deliveryType' => $company['deliveryType'] ?? '',
+                'logo' => $company['logo'] ?? '',
+                'codCharge' => (float)($company['codCharge'] ?? 0),
+                'returnFee' => (float)($company['returnFee'] ?? 0),
+                'maxCODValue' => (float)($company['maxCODValue'] ?? 0),
+                'maxOrderValue' => (float)($company['maxOrderValue'] ?? 0),
+            ];
+        }
+
+        Log::info('Tryoto: Got ' . count($options) . ' delivery options');
+
+        return [
+            'success' => true,
+            'options' => $options,
+            'raw' => $data
+        ];
     }
 
     /**
@@ -182,13 +342,11 @@ class TryotoService
      */
     private function parseDeliveryTime(string $time): string
     {
-        // Examples: "1to3WorkingDays", "SameDay", "NextDay"
         if (empty($time)) return '';
 
         if (stripos($time, 'same') !== false) return '0';
         if (stripos($time, 'next') !== false) return '1';
 
-        // Extract numbers like "1to3WorkingDays" -> "1-3"
         if (preg_match('/(\d+)to(\d+)/i', $time, $matches)) {
             return $matches[1] . '-' . $matches[2];
         }
@@ -209,7 +367,6 @@ class TryotoService
             return 'Riyadh';
         }
 
-        // إذا كان رقمياً، ابحث عن المدينة
         if (is_numeric($cityValue)) {
             $city = City::find($cityValue);
             if ($city && $city->city_name) {
@@ -217,7 +374,6 @@ class TryotoService
             }
         }
 
-        // إذا كان نصاً غير رقمي، استخدمه مباشرة
         if (!is_numeric($cityValue)) {
             return $cityValue;
         }
@@ -238,180 +394,160 @@ class TryotoService
      */
     public function createShipment(Order $order, int $vendorId, string $deliveryOptionId, string $company, float $price, string $serviceType = ''): array
     {
-        try {
-            $token = $this->getToken();
-            if (!$token) {
-                return ['success' => false, 'error' => 'Unable to get access token'];
-            }
+        // Get vendor info
+        $vendor = User::find($vendorId);
 
-            // Get vendor info
-            $vendor = User::find($vendorId);
+        // تحويل city_id إلى city name
+        $originCity = $this->resolveCityName($vendor->city_id ?? $vendor->warehouse_city ?? $vendor->shop_city);
+        $originAddress = $vendor->warehouse_address ?? $vendor->shop_address ?? $originCity;
 
-            // ✅ تحويل city_id إلى city name
-            $originCity = $this->resolveCityName($vendor->city_id ?? $vendor->warehouse_city ?? $vendor->shop_city);
-            $originAddress = $vendor->warehouse_address ?? $vendor->shop_address ?? $originCity;
+        // تحويل destination city ID إلى city name
+        $destinationCityValue = $order->shipping_city ?: $order->customer_city;
+        $destinationCity = $this->resolveCityName($destinationCityValue);
 
-            // ✅ تحويل destination city ID إلى city name
-            $destinationCityValue = $order->shipping_city ?: $order->customer_city;
-            $destinationCity = $this->resolveCityName($destinationCityValue);
+        // Calculate dimensions from cart
+        $dims = $this->calculateDimensions($order);
 
-            // Calculate dimensions from cart
-            $dims = $this->calculateDimensions($order);
+        // Determine COD amount
+        $isCOD = in_array($order->method, ['cod', 'Cash On Delivery']);
+        $codAmount = $isCOD ? (float)$order->pay_amount : 0.0;
 
-            // Determine COD amount
-            $isCOD = in_array($order->method, ['cod', 'Cash On Delivery']);
-            $codAmount = $isCOD ? (float)$order->pay_amount : 0.0;
+        // Prepare receiver info with phone cleanup
+        $receiverName = $order->shipping_name ?: $order->customer_name;
+        $receiverPhone = $this->cleanPhoneNumber($order->shipping_phone ?: $order->customer_phone);
+        $receiverEmail = $order->shipping_email ?: $order->customer_email ?: 'customer@example.com';
+        $receiverAddress = $order->shipping_address ?: $order->customer_address;
+        $receiverZip = $order->shipping_zip ?: $order->customer_zip ?: '00000';
+        $receiverDistrict = $order->shipping_state ?? $order->customer_state ?? '';
 
-            // Prepare receiver info with phone cleanup
-            $receiverName = $order->shipping_name ?: $order->customer_name;
-            $receiverPhone = $this->cleanPhoneNumber($order->shipping_phone ?: $order->customer_phone);
-            $receiverEmail = $order->shipping_email ?: $order->customer_email ?: 'customer@example.com';
-            $receiverAddress = $order->shipping_address ?: $order->customer_address;
-            $receiverZip = $order->shipping_zip ?: $order->customer_zip ?: '00000';
-            $receiverDistrict = $order->shipping_state ?? $order->customer_state ?? '';
+        // Prepare sender phone
+        $senderPhone = $this->cleanPhoneNumber($vendor->phone ?? '0500000000');
 
-            // Prepare sender phone
-            $senderPhone = $this->cleanPhoneNumber($vendor->phone ?? '0500000000');
+        // Prepare cart items
+        $cart = is_string($order->cart) ? json_decode($order->cart, true) : $order->cart;
+        $items = $cart['items'] ?? $cart ?? [];
+        $orderItems = [];
+        $itemCount = 0;
 
-            // Prepare cart items
-            $cart = is_string($order->cart) ? json_decode($order->cart, true) : $order->cart;
-            $items = $cart['items'] ?? $cart ?? [];
-            $orderItems = [];
-            $itemCount = 0;
-
-            foreach ($items as $item) {
-                $itemData = $item['item'] ?? $item;
-                $qty = (int)($item['qty'] ?? 1);
-                $itemCount += $qty;
-                $orderItems[] = [
-                    'productId' => (string)($itemData['id'] ?? '0'),
-                    'name' => $itemData['name'] ?? 'Product',
-                    'price' => (float)($itemData['price'] ?? 0),
-                    'rowTotal' => (float)($itemData['price'] ?? 0) * $qty,
-                    'taxAmount' => 0,
-                    'quantity' => $qty,
-                    'serialnumber' => '',
-                    'sku' => $itemData['sku'] ?? 'SKU-' . ($itemData['id'] ?? '0'),
-                    'image' => $itemData['photo'] ?? '',
-                ];
-            }
-
-            // Generate unique order ID for Tryoto (append timestamp to avoid duplicates)
-            $tryotoOrderId = $order->order_number . '-V' . $vendorId . '-' . time();
-
-            // Build createOrder payload
-            $payload = [
-                'orderId' => $tryotoOrderId,
-                'ref1' => 'REF-' . $order->id . '-' . $vendorId,
-                'deliveryOptionId' => $deliveryOptionId,
-                'serviceType' => $serviceType,
-                'createShipment' => true,
-                'storeName' => $vendor->shop_name ?? $vendor->name ?? 'Store',
-                'payment_method' => $isCOD ? 'cod' : 'paid',
-                'amount' => (float)$order->pay_amount,
-                'amount_due' => $isCOD ? (float)$order->pay_amount : 0,
-                'shippingAmount' => $price,
-                'subtotal' => (float)$order->pay_amount,
-                'currency' => 'SAR',
-                'shippingNotes' => 'Order #' . $order->order_number,
-                'packageSize' => 'medium',
-                'packageCount' => max(1, $itemCount),
-                'packageWeight' => max(0.5, $dims['weight']),
-                'boxWidth' => max(30, $dims['width']),
-                'boxLength' => max(30, $dims['length']),
-                'boxHeight' => max(30, $dims['height']),
-                'orderDate' => date('d/m/Y H:i'),
-                'deliverySlotDate' => date('d/m/Y', strtotime('+2 days')),
-                'deliverySlotTo' => '6:00pm',
-                'deliverySlotFrom' => '9:00am',
-                'senderName' => $vendor->shop_name ?? $vendor->name,
-                'senderPhone' => $senderPhone,
-                'senderCity' => $originCity,
-                'senderAddress' => $originAddress,
-                'customer' => [
-                    'name' => $receiverName,
-                    'email' => $receiverEmail,
-                    'mobile' => $receiverPhone,
-                    'address' => $receiverAddress,
-                    'district' => $receiverDistrict,
-                    'city' => $destinationCity,
-                    'country' => 'SA',
-                    'postcode' => $receiverZip,
-                    'lat' => '',
-                    'lon' => '',
-                    'refID' => '',
-                    'W3WAddress' => ''
-                ],
-                'items' => $orderItems
+        foreach ($items as $item) {
+            $itemData = $item['item'] ?? $item;
+            $qty = (int)($item['qty'] ?? 1);
+            $itemCount += $qty;
+            $orderItems[] = [
+                'productId' => (string)($itemData['id'] ?? '0'),
+                'name' => $itemData['name'] ?? 'Product',
+                'price' => (float)($itemData['price'] ?? 0),
+                'rowTotal' => (float)($itemData['price'] ?? 0) * $qty,
+                'taxAmount' => 0,
+                'quantity' => $qty,
+                'serialnumber' => '',
+                'sku' => $itemData['sku'] ?? 'SKU-' . ($itemData['id'] ?? '0'),
+                'image' => $itemData['photo'] ?? '',
             ];
+        }
 
-            Log::info('Tryoto: Creating order with shipment', [
+        // Generate unique order ID for Tryoto
+        $tryotoOrderId = $order->order_number . '-V' . $vendorId . '-' . time();
+
+        // Build createOrder payload
+        $payload = [
+            'orderId' => $tryotoOrderId,
+            'ref1' => 'REF-' . $order->id . '-' . $vendorId,
+            'deliveryOptionId' => $deliveryOptionId,
+            'serviceType' => $serviceType,
+            'createShipment' => true,
+            'storeName' => $vendor->shop_name ?? $vendor->name ?? 'Store',
+            'payment_method' => $isCOD ? 'cod' : 'paid',
+            'amount' => (float)$order->pay_amount,
+            'amount_due' => $isCOD ? (float)$order->pay_amount : 0,
+            'shippingAmount' => $price,
+            'subtotal' => (float)$order->pay_amount,
+            'currency' => 'SAR',
+            'shippingNotes' => 'Order #' . $order->order_number,
+            'packageSize' => 'medium',
+            'packageCount' => max(1, $itemCount),
+            'packageWeight' => max(0.5, $dims['weight']),
+            'boxWidth' => max(30, $dims['width']),
+            'boxLength' => max(30, $dims['length']),
+            'boxHeight' => max(30, $dims['height']),
+            'orderDate' => date('d/m/Y H:i'),
+            'deliverySlotDate' => date('d/m/Y', strtotime('+2 days')),
+            'deliverySlotTo' => '6:00pm',
+            'deliverySlotFrom' => '9:00am',
+            'senderName' => $vendor->shop_name ?? $vendor->name,
+            'senderPhone' => $senderPhone,
+            'senderCity' => $originCity,
+            'senderAddress' => $originAddress,
+            'customer' => [
+                'name' => $receiverName,
+                'email' => $receiverEmail,
+                'mobile' => $receiverPhone,
+                'address' => $receiverAddress,
+                'district' => $receiverDistrict,
+                'city' => $destinationCity,
+                'country' => 'SA',
+                'postcode' => $receiverZip,
+                'lat' => '',
+                'lon' => '',
+                'refID' => '',
+                'W3WAddress' => ''
+            ],
+            'items' => $orderItems
+        ];
+
+        Log::info('Tryoto: Creating order with shipment', [
+            'order_id' => $order->id,
+            'tryoto_order_id' => $tryotoOrderId,
+            'origin' => $originCity,
+            'destination' => $destinationCity,
+            'company' => $company,
+        ]);
+
+        $result = $this->makeApiRequest('POST', '/rest/v2/createOrder', $payload);
+
+        if ($result['success']) {
+            $data = $result['data'];
+            $otoId = $data['otoId'] ?? null;
+            $trackingNumber = $data['trackingNumber'] ?? null;
+
+            // If no tracking number yet, use otoId as reference
+            $trackingRef = $trackingNumber ?? ('OTO-' . $otoId);
+
+            // Save to shipment_status_logs
+            $this->createInitialLog($order, $vendorId, $trackingRef, (string)$otoId, $company, $originCity, $data);
+
+            // Send notification to vendor
+            $this->notifyVendor($vendorId, $order, 'shipment_created', $trackingRef);
+
+            Log::info('Tryoto: Order created successfully', [
                 'order_id' => $order->id,
-                'tryoto_order_id' => $tryotoOrderId,
-                'origin' => $originCity,
-                'destination' => $destinationCity,
-                'company' => $company,
-            ]);
-
-            $response = Http::withToken($token)
-                ->withHeaders(['Accept' => 'application/json'])
-                ->post($this->baseUrl . '/rest/v2/createOrder', $payload);
-
-            if ($response->successful()) {
-                $data = $response->json();
-                $otoId = $data['otoId'] ?? null;
-                $trackingNumber = $data['trackingNumber'] ?? null;
-
-                // If no tracking number yet, use otoId as reference
-                $trackingRef = $trackingNumber ?? ('OTO-' . $otoId);
-
-                // Save to shipment_status_logs
-                $this->createInitialLog($order, $vendorId, $trackingRef, (string)$otoId, $company, $originCity, $data);
-
-                // Send notification to vendor
-                $this->notifyVendor($vendorId, $order, 'shipment_created', $trackingRef);
-
-                Log::info('Tryoto: Order created successfully', [
-                    'order_id' => $order->id,
-                    'oto_id' => $otoId,
-                    'tracking_number' => $trackingNumber,
-                ]);
-
-                return [
-                    'success' => true,
-                    'shipment_id' => (string)$otoId,
-                    'tracking_number' => $trackingRef,
-                    'oto_id' => $otoId,
-                    'company' => $company,
-                    'price' => $price,
-                    'raw' => $data
-                ];
-            }
-
-            $responseData = $response->json();
-
-            Log::error('Tryoto: createOrder failed', [
-                'order_id' => $order->id,
-                'status' => $response->status(),
-                'error_code' => $responseData['errorCode'] ?? null,
-                'error_message' => $responseData['errorMsg'] ?? $responseData['otoErrorMessage'] ?? null,
-                'body' => $response->body()
+                'oto_id' => $otoId,
+                'tracking_number' => $trackingNumber,
             ]);
 
             return [
-                'success' => false,
-                'error' => $responseData['errorMsg'] ?? $responseData['otoErrorMessage'] ?? 'Failed to create shipment',
-                'error_code' => $responseData['errorCode'] ?? null,
-                'details' => $response->body()
+                'success' => true,
+                'shipment_id' => (string)$otoId,
+                'tracking_number' => $trackingRef,
+                'oto_id' => $otoId,
+                'company' => $company,
+                'price' => $price,
+                'raw' => $data
             ];
-
-        } catch (\Exception $e) {
-            Log::error('Tryoto: createShipment exception', [
-                'order_id' => $order->id,
-                'error' => $e->getMessage()
-            ]);
-            return ['success' => false, 'error' => $e->getMessage()];
         }
+
+        Log::error('Tryoto: createOrder failed', [
+            'order_id' => $order->id,
+            'error' => $result['error'],
+            'error_code' => $result['error_code'] ?? null
+        ]);
+
+        return [
+            'success' => false,
+            'error' => $result['error'],
+            'error_code' => $result['error_code'] ?? null,
+            'details' => $result['raw'] ?? null
+        ];
     }
 
     /**
@@ -419,18 +555,13 @@ class TryotoService
      */
     private function cleanPhoneNumber(string $phone): string
     {
-        // Remove all non-digits
         $phone = preg_replace('/[^0-9]/', '', $phone);
-
-        // Remove leading zeros
         $phone = ltrim($phone, '0');
 
-        // Remove country code if present
         if (strpos($phone, '966') === 0) {
             $phone = substr($phone, 3);
         }
 
-        // Ensure 9 digits starting with 5
         if (strlen($phone) < 9) {
             $phone = '5' . str_pad($phone, 8, '0', STR_PAD_LEFT);
         }
@@ -442,60 +573,45 @@ class TryotoService
      * Track a shipment
      *
      * @param string $trackingNumber
+     * @param string|null $companyName
      * @return array
      */
     public function trackShipment(string $trackingNumber, ?string $companyName = null): array
     {
-        try {
-            $token = $this->getToken();
-            if (!$token) {
-                return ['success' => false, 'error' => 'Unable to get access token'];
-            }
+        if (!$companyName) {
+            $shipment = ShipmentStatusLog::where('tracking_number', $trackingNumber)->first();
+            $companyName = $shipment?->company_name;
+        }
 
-            // If company name not provided, try to get it from database
-            if (!$companyName) {
-                $shipment = ShipmentStatusLog::where('tracking_number', $trackingNumber)->first();
-                $companyName = $shipment?->company_name;
-            }
+        $payload = ['trackingNumber' => $trackingNumber];
+        if ($companyName) {
+            $payload['deliveryCompanyName'] = $companyName;
+        }
 
-            // Build request payload
-            $payload = ['trackingNumber' => $trackingNumber];
-            if ($companyName) {
-                $payload['deliveryCompanyName'] = $companyName;
-            }
+        $result = $this->makeApiRequest('POST', '/rest/v2/trackShipment', $payload);
 
-            $response = Http::withToken($token)->post($this->baseUrl . '/rest/v2/trackShipment', $payload);
-
-            if ($response->successful()) {
-                $data = $response->json();
-
-                // Update local log if there's new status
-                $this->syncTrackingStatus($trackingNumber, $data);
-
-                return [
-                    'success' => true,
-                    'status' => $data['status'] ?? 'unknown',
-                    'status_ar' => $this->getStatusArabic($data['status'] ?? 'unknown'),
-                    'location' => $data['location'] ?? null,
-                    'events' => $data['events'] ?? [],
-                    'estimated_delivery' => $data['estimatedDelivery'] ?? null,
-                    'raw' => $data
-                ];
-            }
-
-            $errorData = $response->json();
+        if (!$result['success']) {
             Log::warning('Tryoto: trackShipment failed', [
                 'tracking' => $trackingNumber,
-                'status' => $response->status(),
-                'error' => $errorData['errorMsg'] ?? $response->body()
+                'error' => $result['error']
             ]);
-
-            return ['success' => false, 'error' => $errorData['errorMsg'] ?? 'Failed to track shipment'];
-
-        } catch (\Exception $e) {
-            Log::error('Tryoto: trackShipment exception', ['error' => $e->getMessage()]);
-            return ['success' => false, 'error' => $e->getMessage()];
+            return ['success' => false, 'error' => $result['error']];
         }
+
+        $data = $result['data'];
+
+        // Update local log if there's new status
+        $this->syncTrackingStatus($trackingNumber, $data);
+
+        return [
+            'success' => true,
+            'status' => $data['status'] ?? 'unknown',
+            'status_ar' => $this->getStatusArabic($data['status'] ?? 'unknown'),
+            'location' => $data['location'] ?? null,
+            'events' => $data['events'] ?? [],
+            'estimated_delivery' => $data['estimatedDelivery'] ?? null,
+            'raw' => $data
+        ];
     }
 
     /**
@@ -507,128 +623,90 @@ class TryotoService
      */
     public function cancelShipment(string $trackingNumber, string $reason = ''): array
     {
-        try {
-            $token = $this->getToken();
-            if (!$token) {
-                return ['success' => false, 'error' => 'Unable to get access token'];
+        $result = $this->makeApiRequest('POST', '/rest/v2/cancelShipment', [
+            'trackingNumber' => $trackingNumber,
+            'reason' => $reason ?: 'Cancelled by merchant'
+        ]);
+
+        if ($result['success']) {
+            // Update local status
+            $log = ShipmentStatusLog::where('tracking_number', $trackingNumber)->latest()->first();
+            if ($log) {
+                ShipmentStatusLog::create([
+                    'order_id' => $log->order_id,
+                    'vendor_id' => $log->vendor_id,
+                    'tracking_number' => $trackingNumber,
+                    'shipment_id' => $log->shipment_id,
+                    'company_name' => $log->company_name,
+                    'status' => 'cancelled',
+                    'status_ar' => 'ملغي',
+                    'message' => 'Shipment cancelled: ' . $reason,
+                    'message_ar' => 'تم إلغاء الشحنة: ' . $reason,
+                    'status_date' => now(),
+                ]);
+
+                // Notify vendor
+                $this->notifyVendor($log->vendor_id, $log->order, 'shipment_cancelled', $trackingNumber);
             }
 
-            $response = Http::withToken($token)->post($this->baseUrl . '/rest/v2/cancelShipment', [
-                'trackingNumber' => $trackingNumber,
-                'reason' => $reason ?: 'Cancelled by merchant'
-            ]);
-
-            if ($response->successful()) {
-                // Update local status
-                $log = ShipmentStatusLog::where('tracking_number', $trackingNumber)->latest()->first();
-                if ($log) {
-                    ShipmentStatusLog::create([
-                        'order_id' => $log->order_id,
-                        'vendor_id' => $log->vendor_id,
-                        'tracking_number' => $trackingNumber,
-                        'shipment_id' => $log->shipment_id,
-                        'company_name' => $log->company_name,
-                        'status' => 'cancelled',
-                        'status_ar' => 'ملغي',
-                        'message' => 'Shipment cancelled: ' . $reason,
-                        'message_ar' => 'تم إلغاء الشحنة: ' . $reason,
-                        'status_date' => now(),
-                    ]);
-
-                    // Notify vendor
-                    $this->notifyVendor($log->vendor_id, $log->order, 'shipment_cancelled', $trackingNumber);
-                }
-
-                return ['success' => true, 'message' => 'Shipment cancelled successfully'];
-            }
-
-            return ['success' => false, 'error' => 'Failed to cancel shipment', 'details' => $response->body()];
-
-        } catch (\Exception $e) {
-            Log::error('Tryoto: cancelShipment exception', ['error' => $e->getMessage()]);
-            return ['success' => false, 'error' => $e->getMessage()];
+            return ['success' => true, 'message' => 'Shipment cancelled successfully'];
         }
+
+        return ['success' => false, 'error' => $result['error'], 'details' => $result['raw'] ?? null];
     }
 
     /**
-     * Get order details from Tryoto (includes shipment status, tracking number, etc.)
-     * Use this for manual refresh to get full order status
+     * Get order details from Tryoto
      *
-     * @param string $orderId The orderId used when creating the order
+     * @param string $orderId
      * @return array
      */
     public function getOrderDetails(string $orderId): array
     {
-        try {
-            $token = $this->getToken();
-            if (!$token) {
-                return ['success' => false, 'error' => 'Unable to get access token'];
-            }
+        $result = $this->makeApiRequest('POST', '/rest/v2/orderDetails', ['orderId' => $orderId]);
 
-            $response = Http::withToken($token)
-                ->withHeaders(['Accept' => 'application/json'])
-                ->post($this->baseUrl . '/rest/v2/orderDetails', [
-                    'orderId' => $orderId
-                ]);
-
-            if ($response->successful()) {
-                $data = $response->json();
-
-                Log::info('Tryoto: orderDetails success', [
-                    'order_id' => $orderId,
-                    'status' => $data['status'] ?? 'unknown',
-                    'tracking' => $data['trackingNumber'] ?? null,
-                ]);
-
-                return [
-                    'success' => true,
-                    'order_id' => $orderId,
-                    'oto_id' => $data['otoId'] ?? null,
-                    'tracking_number' => $data['trackingNumber'] ?? null,
-                    'status' => $data['status'] ?? 'unknown',
-                    'status_ar' => $this->getStatusArabic($data['status'] ?? 'unknown'),
-                    'shipment_status' => $data['shipmentStatus'] ?? null,
-                    'company_name' => $data['companyName'] ?? null,
-                    'picked_up_date' => $data['pickedUpDate'] ?? null,
-                    'delivered_date' => $data['deliveredDate'] ?? null,
-                    'estimated_delivery' => $data['estimatedDelivery'] ?? null,
-                    'awb_url' => $data['awbUrl'] ?? null, // رابط بوليصة الشحن
-                    'pod_url' => $data['podUrl'] ?? null, // رابط صورة التسليم
-                    'raw' => $data
-                ];
-            }
-
-            $errorData = $response->json();
+        if (!$result['success']) {
             Log::warning('Tryoto: orderDetails failed', [
                 'order_id' => $orderId,
-                'error' => $errorData['errorMsg'] ?? $response->body()
+                'error' => $result['error']
             ]);
-
-            return [
-                'success' => false,
-                'error' => $errorData['errorMsg'] ?? 'Failed to get order details',
-                'error_code' => $errorData['errorCode'] ?? null
-            ];
-
-        } catch (\Exception $e) {
-            Log::error('Tryoto: orderDetails exception', [
-                'order_id' => $orderId,
-                'error' => $e->getMessage()
-            ]);
-            return ['success' => false, 'error' => $e->getMessage()];
+            return ['success' => false, 'error' => $result['error'], 'error_code' => $result['error_code'] ?? null];
         }
+
+        $data = $result['data'];
+
+        Log::info('Tryoto: orderDetails success', [
+            'order_id' => $orderId,
+            'status' => $data['status'] ?? 'unknown',
+            'tracking' => $data['trackingNumber'] ?? null,
+        ]);
+
+        return [
+            'success' => true,
+            'order_id' => $orderId,
+            'oto_id' => $data['otoId'] ?? null,
+            'tracking_number' => $data['trackingNumber'] ?? null,
+            'status' => $data['status'] ?? 'unknown',
+            'status_ar' => $this->getStatusArabic($data['status'] ?? 'unknown'),
+            'shipment_status' => $data['shipmentStatus'] ?? null,
+            'company_name' => $data['companyName'] ?? null,
+            'picked_up_date' => $data['pickedUpDate'] ?? null,
+            'delivered_date' => $data['deliveredDate'] ?? null,
+            'estimated_delivery' => $data['estimatedDelivery'] ?? null,
+            'awb_url' => $data['awbUrl'] ?? null,
+            'pod_url' => $data['podUrl'] ?? null,
+            'raw' => $data
+        ];
     }
 
     /**
      * Refresh shipment status using orderDetails API
-     * This updates local database with latest status from Tryoto
      *
      * @param string $trackingNumber
      * @return array
      */
     public function refreshShipmentStatus(string $trackingNumber): array
     {
-        // First find the local shipment record
         $shipment = ShipmentStatusLog::where('tracking_number', $trackingNumber)
             ->latest('created_at')
             ->first();
@@ -637,7 +715,6 @@ class TryotoService
             return ['success' => false, 'error' => 'Shipment not found in local database'];
         }
 
-        // Try to get the orderId from raw_data
         $rawData = $shipment->raw_data;
         $orderId = null;
 
@@ -648,23 +725,18 @@ class TryotoService
             $orderId = $decoded['orderId'] ?? $decoded['otoId'] ?? null;
         }
 
-        // If no orderId, try trackShipment instead
         if (!$orderId) {
             return $this->trackShipment($trackingNumber);
         }
 
-        // Get order details from Tryoto
         $details = $this->getOrderDetails($orderId);
 
         if (!$details['success']) {
-            // Fallback to trackShipment
             return $this->trackShipment($trackingNumber);
         }
 
-        // Update tracking number if we got a new one
         $newTrackingNumber = $details['tracking_number'];
         if ($newTrackingNumber && $newTrackingNumber !== $trackingNumber && !str_starts_with($newTrackingNumber, 'OTO-')) {
-            // Create new log with real tracking number
             ShipmentStatusLog::create([
                 'order_id' => $shipment->order_id,
                 'vendor_id' => $shipment->vendor_id,
@@ -679,14 +751,12 @@ class TryotoService
                 'raw_data' => $details['raw'],
             ]);
 
-            // Notify vendor about tracking number
             $this->notifyVendor($shipment->vendor_id, $shipment->order, 'tracking_assigned', $newTrackingNumber);
 
             $details['tracking_updated'] = true;
             $details['old_tracking'] = $trackingNumber;
         }
 
-        // Sync the status
         $this->syncTrackingStatus($newTrackingNumber ?? $trackingNumber, [
             'status' => $details['status'],
             'location' => null,
@@ -706,24 +776,51 @@ class TryotoService
         $cacheKey = 'tryoto-cities-' . ($this->isSandbox ? 'sandbox' : 'live');
 
         return Cache::remember($cacheKey, now()->addHours(24), function () {
-            try {
-                $token = $this->getToken();
-                if (!$token) {
-                    return [];
-                }
+            $result = $this->makeApiRequest('GET', '/rest/v2/getCities');
 
-                $response = Http::withToken($token)->get($this->baseUrl . '/rest/v2/getCities');
-
-                if ($response->successful()) {
-                    return $response->json()['cities'] ?? [];
-                }
-
-                return [];
-            } catch (\Exception $e) {
-                Log::error('Tryoto: getCities exception', ['error' => $e->getMessage()]);
-                return [];
+            if ($result['success']) {
+                return $result['data']['cities'] ?? [];
             }
+
+            return [];
         });
+    }
+
+    /**
+     * Verify if a city is supported by Tryoto
+     *
+     * @param string $cityName
+     * @param string $testDestination
+     * @return array
+     */
+    public function verifyCitySupport(string $cityName, string $testDestination = 'Riyadh'): array
+    {
+        $requestData = [
+            'originCity' => $cityName,
+            'destinationCity' => $testDestination,
+            'weight' => 1,
+            'xlength' => 30,
+            'xheight' => 30,
+            'xwidth' => 30,
+        ];
+
+        $result = $this->makeApiRequest('POST', '/rest/v2/checkOTODeliveryFee', $requestData);
+
+        if (!$result['success']) {
+            return ['supported' => false, 'error' => $result['error']];
+        }
+
+        $data = $result['data'];
+        $companies = $data['deliveryCompany'] ?? [];
+        $region = $data['originRegion'] ?? $data['region'] ?? null;
+
+        return [
+            'supported' => !empty($companies),
+            'companies' => $companies,
+            'company_count' => count($companies),
+            'region' => $region,
+            'full_response' => $data
+        ];
     }
 
     /**
@@ -811,7 +908,6 @@ class TryotoService
             ')
             ->first();
 
-        // Get by company
         $byCompany = ShipmentStatusLog::selectRaw('company_name, COUNT(DISTINCT tracking_number) as count')
             ->groupBy('company_name')
             ->get()
@@ -969,7 +1065,7 @@ class TryotoService
     /**
      * Get Arabic status translation
      */
-    private function getStatusArabic(string $status): string
+    public function getStatusArabic(string $status): string
     {
         $translations = [
             'created' => 'تم إنشاء الشحنة',
@@ -1002,5 +1098,46 @@ class TryotoService
         ];
 
         return $messages[$status] ?? 'تم تحديث حالة الشحنة';
+    }
+
+    /**
+     * Check if Tryoto service is properly configured
+     *
+     * @return array
+     */
+    public function checkConfiguration(): array
+    {
+        $issues = [];
+
+        $refreshToken = $this->isSandbox
+            ? config('services.tryoto.test.token')
+            : config('services.tryoto.live.token');
+
+        if (empty($refreshToken)) {
+            $issues[] = 'Refresh token is not configured in .env';
+        }
+
+        if (empty($this->baseUrl)) {
+            $issues[] = 'API URL is not configured';
+        }
+
+        return [
+            'configured' => empty($issues),
+            'sandbox' => $this->isSandbox,
+            'base_url' => $this->baseUrl,
+            'issues' => $issues,
+            'cache_key' => $this->getCacheKey(),
+            'has_cached_token' => Cache::has($this->getCacheKey())
+        ];
+    }
+
+    /**
+     * Clear cached token (useful for debugging)
+     */
+    public function clearCachedToken(): void
+    {
+        Cache::forget($this->getCacheKey());
+        $this->token = null;
+        Log::info('Tryoto: Cached token cleared', ['cache_key' => $this->getCacheKey()]);
     }
 }

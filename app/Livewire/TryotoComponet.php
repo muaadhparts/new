@@ -3,8 +3,7 @@
 namespace App\Livewire;
 
 use App\Models\Cart;
-use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Http;
+use App\Services\TryotoService;
 use Illuminate\Support\Facades\Session;
 use Livewire\Component;
 
@@ -19,45 +18,30 @@ class TryotoComponet extends Component
     /** رقم البائع لربط الإشارة وتحديث نص الشحن أعلى المودال */
     public int $vendorId = 0;
 
-    /** توكن OTO */
-    protected $token;
-
     /** الوزن الإجمالي */
     protected $weight = 100;
 
-    /** إعدادات API */
-    protected string $url;
-    protected string $_token;
-    protected string $_webhook;
-
     /** Cached general settings */
     protected $generalSettings;
+
+    /** TryotoService instance */
+    protected TryotoService $tryotoService;
 
     public function mount(array $products, int $vendorId = 0)
     {
         $this->products = $products;
         $this->vendorId = $vendorId;
 
+        // Initialize TryotoService
+        $this->tryotoService = app(TryotoService::class);
+
         // Cache general settings to avoid repeated DB calls
         $this->generalSettings = cache()->remember('generalsettings', now()->addMinutes(30), function () {
             return \DB::table('generalsettings')->first();
         });
 
-        if (!config('services.tryoto.sandbox')) {
-            $this->url = config('services.tryoto.live.url');
-            $this->_token = config('services.tryoto.live.token');
-            $this->_webhook = route('tryoto.callback');
-        } else {
-            $this->url = config('services.tryoto.test.url');
-            $this->_token = config('services.tryoto.test.token');
-            $this->_webhook = 'https://request-dinleyici-url-buraya-yazilmali';
-        }
-
-        $this->authenticateTryoto();
         $this->getWeight();
         $this->checkOTODeliveryFee();
-
-        // // dd($this->deliveryCompany); // فحص سريع لو احتجت
     }
 
     public function render()
@@ -83,75 +67,17 @@ class TryotoComponet extends Component
     }
 
     /**
-     * جلب توكن Tryoto
-     */
-    protected function authenticateTryoto(): void
-    {
-        // First try to get cached token
-        $cachedToken = Cache::get('tryoto-token');
-        if ($cachedToken) {
-            $this->token = $cachedToken;
-            return;
-        }
-
-        // Get refresh token based on environment with multiple fallbacks
-        $refreshToken = config('services.tryoto.sandbox')
-            ? (config('services.tryoto.test.token') ?? config('services.tryoto.test.refresh_token') ?? env('TRYOTO_TEST_REFRESH_TOKEN'))
-            : (config('services.tryoto.live.token') ?? config('services.tryoto.live.refresh_token') ?? env('TRYOTO_REFRESH_TOKEN'));
-
-        if (empty($refreshToken)) {
-            \Log::error('Tryoto API Error - No refresh token configured', [
-                'sandbox' => config('services.tryoto.sandbox'),
-                'config_keys_checked' => [
-                    'test.token',
-                    'test.refresh_token',
-                    'live.token',
-                    'live.refresh_token'
-                ]
-            ]);
-            throw new \Exception('Tryoto refresh token is not configured. Please check your config/services.php or .env file.');
-        }
-
-        $response = Http::post($this->url . '/rest/v2/refreshToken', [
-            'refresh_token' => $refreshToken,
-        ]);
-
-        if ($response->successful()) {
-            $token = $response->json()['access_token'];
-            $expiresIn = (int)($response->json()['expires_in'] ?? 3600);
-            $ttl = now()->addSeconds(max(300, $expiresIn - 60));
-            Cache::put('tryoto-token', $token, $ttl);
-            // dd(['__fn__' => __FUNCTION__, 'ttl' => $ttl->diffInSeconds(), 'sandbox' => config('services.tryoto.sandbox')]); // Quick Check
-            $this->token = $token;
-        } else {
-            \Log::error('Tryoto API Error - Failed to get access token', [
-                'status' => $response->status(),
-                'body' => $response->body(),
-                'url' => $this->url,
-                'sandbox' => config('services.tryoto.sandbox'),
-            ]);
-            throw new \Exception('Failed to get Tryoto access token. Status: ' . $response->status() . '. Error: ' . $response->body());
-        }
-    }
-
-    /**
      * يُستدعى عند تغيير الراديو في جدول Tryoto
      * value = "deliveryOptionId#CompanyName#price"
      */
     public function selectedOption(string $value): void
     {
-        // $parts   = explode('#', $value);
-        // $company = $parts[1] ?? '';
-        // $price   = (float)($parts[2] ?? 0);
-        // // dd($company, $price); // فحص سريع لو احتجت
-
         // نبث حدثًا للواجهة لتحدّث نص "الشحن:" والسعر
         $this->dispatch('shipping-updated', vendorId: $this->vendorId);
-        // // dd('dispatch:shipping-updated', $this->vendorId); // فحص
     }
 
     /**
-     * جلب خيارات الشحن من Tryoto
+     * جلب خيارات الشحن من Tryoto باستخدام TryotoService الموحد
      */
     protected function checkOTODeliveryFee(): void
     {
@@ -162,32 +88,26 @@ class TryotoComponet extends Component
         $originCity = $this->getOriginCity();
         $destinationCity = $this->getDestinationCity();
 
-        $requestData = [
-            "originCity"      => $originCity,
-            "destinationCity" => $destinationCity,
-            "weight"          => $dimensions['weight'],
-            "xlength"         => max(30, $dimensions['length']), // Minimum 30cm or calculated length
-            "xheight"         => max(30, $dimensions['height']), // Minimum 30cm or calculated height
-            "xwidth"          => max(30, $dimensions['width']),  // Minimum 30cm or calculated width
-        ];
+        // استخدام TryotoService الموحد بدلاً من الاتصال المباشر بالـ API
+        $result = $this->tryotoService->getDeliveryOptions(
+            $originCity,
+            $destinationCity,
+            $dimensions['weight'],
+            0, // COD amount not used in this endpoint
+            $dimensions
+        );
 
-        $response = Http::withToken($this->token)->post($this->url . '/rest/v2/checkOTODeliveryFee', $requestData);
-
-        if (!$response->successful()) {
-            // Log detailed error information
-            \Log::error('Tryoto API Error - checkOTODeliveryFee', [
-                'status' => $response->status(),
-                'body' => $response->body(),
-                'request' => $requestData,
-                'token_exists' => !empty($this->token),
-                'url' => $this->url,
+        if (!$result['success']) {
+            \Log::error('TryotoComponent: Failed to get delivery options', [
+                'error' => $result['error'],
+                'origin' => $originCity,
+                'destination' => $destinationCity
             ]);
-
-            // Throw exception with more details
-            throw new \Exception('Unable to get shipping fee from Tryoto. Status: ' . $response->status() . '. Error: ' . $response->body());
+            throw new \Exception('Unable to get shipping fee from Tryoto. Error: ' . ($result['error'] ?? 'Unknown error'));
         }
 
-        $this->deliveryCompany = $response->json()['deliveryCompany'] ?? [];
+        // Transform options back to deliveryCompany format for the view
+        $this->deliveryCompany = $result['raw']['deliveryCompany'] ?? [];
 
         // إعلان مبدئي لتحديث نص الشحن الافتراضي (أول خيار)
         $this->dispatch('shipping-updated', vendorId: $this->vendorId);
@@ -246,91 +166,7 @@ class TryotoComponet extends Component
 
     /**
      * Get destination city from customer data in session ONLY
-     *
-     * CRITICAL REQUIREMENT:
-     * - Uses ONLY city_id from checkout form (session step1 or vendor_step1_{vendor_id})
-     * - NO fallback to user profile city
-     * - NO fallback to saved addresses
-     * - NO fallback to address book
-     * - If city not provided in checkout form: throw exception
-     *
-     * This ensures shipping calculation uses only current checkout data,
-     * not any saved/historical data from user profile.
-     *
-     * Supports both:
-     * - Regular checkout: session('step1')
-     * - Vendor checkout: session('vendor_step1_{vendor_id}')
      */
-    // protected function getDestinationCity(): string
-    // {
-    //     $cityId = null;
-    //     $sessionKey = null;
-
-    //     // Try vendor-specific checkout first (if vendorId is set)
-    //     if ($this->vendorId > 0) {
-    //         $vendorSessionKey = 'vendor_step1_' . $this->vendorId;
-    //         if (\Session::has($vendorSessionKey)) {
-    //             $sessionKey = $vendorSessionKey;
-    //             $step1 = \Session::get($vendorSessionKey);
-
-    //             // Check if customer_city exists and is numeric (city_id)
-    //             if (!empty($step1['customer_city']) && is_numeric($step1['customer_city'])) {
-    //                 $cityId = $step1['customer_city'];
-    //             }
-    //         }
-    //     }
-
-    //     // If not vendor checkout OR vendor session not found, try regular checkout
-    //     if (!$cityId && \Session::has('step1')) {
-    //         $sessionKey = 'step1';
-    //         $step1 = \Session::get('step1');
-
-    //         // Check if customer_city exists and is numeric (city_id)
-    //         if (!empty($step1['customer_city']) && is_numeric($step1['customer_city'])) {
-    //             $cityId = $step1['customer_city'];
-    //         }
-    //     }
-
-    //     // city_id must exist from checkout form
-    //     // NO FALLBACK to user profile or any other source
-    //     if (!$cityId) {
-    //         \Log::error('TryotoComponent: No destination city_id found in checkout form', [
-    //             'vendor_id' => $this->vendorId,
-    //             'has_session_step1' => \Session::has('step1'),
-    //             'has_vendor_session' => $this->vendorId > 0 ? \Session::has('vendor_step1_' . $this->vendorId) : false,
-    //             'session_key_checked' => $sessionKey,
-    //             'session_customer_city' => $sessionKey ? \Session::get($sessionKey . '.customer_city') : null,
-    //         ]);
-    //         throw new \Exception('Customer destination city is required for shipping calculation. Please select a city in the checkout form.');
-    //     }
-
-    //     // City must exist in cities table
-    //     $city = \App\Models\City::find($cityId);
-
-    //     if (!$city || empty($city->city_name)) {
-    //         \Log::error('TryotoComponent: Destination city not found in database', [
-    //             'city_id' => $cityId,
-    //         ]);
-    //         throw new \Exception("Destination city with ID {$cityId} not found in database. Please contact administrator.");
-    //     }
-
-    //     \Log::info('TryotoComponent: Destination city resolved from checkout form', [
-    //         'vendor_id' => $this->vendorId,
-    //         'city_id' => $cityId,
-    //         'city_name' => $city->city_name,
-    //         'source' => 'checkout_form_only',
-    //         'session_key' => $sessionKey,
-    //     ]);
-
-    //     return $this->normalizeCityName($city->city_name);
-    // }
-
-    // /**
-    //  * Normalize city name for Tryoto API
-    //  * Only cleans the name - removes diacritics and special characters
-    //  * NO automatic mapping or substitution
-    //  */
-
     protected function getDestinationCity(): string
     {
         // Vendor checkout only — لا يوجد checkout عادي في هذا الفرع

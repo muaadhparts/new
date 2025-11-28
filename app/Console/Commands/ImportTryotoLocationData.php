@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Services\TryotoService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Cache;
@@ -16,7 +17,7 @@ class ImportTryotoLocationData extends Command
 
     protected $description = 'Import Countries, States, and Cities from Tryoto API ONLY - No hardcoded data';
 
-    protected $token;
+    protected TryotoService $tryotoService;
     protected $baseUrl;
     protected $stats = [
         'countries' => [],
@@ -39,7 +40,8 @@ class ImportTryotoLocationData extends Command
         }
 
         try {
-            // Step 1: Authenticate
+            // Step 1: Initialize TryotoService and Authenticate
+            $this->tryotoService = app(TryotoService::class);
             $this->authenticateTryoto();
 
             // Step 2: Discover available endpoints
@@ -73,48 +75,28 @@ class ImportTryotoLocationData extends Command
 
     protected function authenticateTryoto()
     {
-        $this->info('🔐 المصادقة مع Tryoto API...');
+        $this->info('🔐 المصادقة مع Tryoto API عبر TryotoService الموحد...');
 
-        $isSandbox = config('services.tryoto.sandbox');
-        $this->baseUrl = $isSandbox
-            ? config('services.tryoto.test.url')
-            : config('services.tryoto.live.url');
+        $config = $this->tryotoService->checkConfiguration();
+        $this->baseUrl = $config['base_url'];
 
-        if ($isSandbox) {
+        if ($config['sandbox']) {
             $this->error('⚠️  البيئة الحالية: TEST - يجب استخدام LIVE فقط');
             throw new \Exception('Must use LIVE environment only');
         }
 
         $this->info("   البيئة: LIVE ✅");
         $this->info("   الرابط: {$this->baseUrl}");
+        $this->info("   مفتاح الـ Cache: {$config['cache_key']}");
 
-        $cachedToken = Cache::get('tryoto-token');
-        if ($cachedToken) {
-            $this->token = $cachedToken;
-            $this->info('   ✅ Token موجود في Cache');
-            return;
+        // استخدام TryotoService للحصول على التوكن
+        $token = $this->tryotoService->getToken();
+
+        if (!$token) {
+            throw new \Exception('فشل في الحصول على Access Token من TryotoService');
         }
 
-        $refreshToken = config('services.tryoto.live.token') ?? env('TRYOTO_REFRESH_TOKEN');
-
-        if (empty($refreshToken)) {
-            throw new \Exception('Tryoto refresh token not configured');
-        }
-
-        $response = Http::timeout(30)->post($this->baseUrl . '/rest/v2/refreshToken', [
-            'refresh_token' => $refreshToken,
-        ]);
-
-        if (!$response->successful()) {
-            throw new \Exception('Failed to authenticate: ' . $response->body());
-        }
-
-        $this->token = $response->json()['access_token'];
-        $expiresIn = (int)($response->json()['expires_in'] ?? 3600);
-
-        Cache::put('tryoto-token', $this->token, now()->addSeconds(max(300, $expiresIn - 60)));
-
-        $this->info('   ✅ تم الحصول على Token جديد');
+        $this->info('   ✅ تم الحصول على Token عبر TryotoService');
     }
 
     protected function discoverEndpoints()
@@ -237,44 +219,20 @@ class ImportTryotoLocationData extends Command
 
     protected function testCity($originCity, $destinationCity, $retries = 3)
     {
-        for ($attempt = 1; $attempt <= $retries; $attempt++) {
-            try {
-                $response = Http::withToken($this->token)
-                    ->timeout(15)
-                    ->post($this->baseUrl . '/rest/v2/checkOTODeliveryFee', [
-                        'originCity' => $originCity,
-                        'destinationCity' => $destinationCity,
-                        'weight' => 1,
-                        'xlength' => 30,
-                        'xheight' => 30,
-                        'xwidth' => 30,
-                    ]);
+        // استخدام TryotoService الموحد بدلاً من الاتصال المباشر
+        // TryotoService يدير retry تلقائياً
+        $result = $this->tryotoService->verifyCitySupport($destinationCity, $originCity);
 
-                if ($response->successful()) {
-                    $data = $response->json();
-                    $companies = $data['deliveryCompany'] ?? [];
-
-                    if (!empty($companies)) {
-                        return [
-                            'supported' => true,
-                            'companies' => $companies,
-                            'country' => $this->extractCountry($data),
-                            'region' => $this->extractRegion($destinationCity, $data),
-                        ];
-                    }
-                }
-
-                return ['supported' => false, 'error' => $response->body()];
-
-            } catch (\Exception $e) {
-                if ($attempt === $retries) {
-                    return ['supported' => false, 'error' => $e->getMessage()];
-                }
-                sleep(2);
-            }
+        if ($result['supported']) {
+            return [
+                'supported' => true,
+                'companies' => $result['companies'] ?? [],
+                'country' => $this->extractCountry([]),
+                'region' => $this->extractRegion($destinationCity, $result['full_response'] ?? []),
+            ];
         }
 
-        return ['supported' => false, 'error' => 'Max retries exceeded'];
+        return ['supported' => false, 'error' => $result['error'] ?? 'City not supported'];
     }
 
     protected function extractCountry($apiData)
