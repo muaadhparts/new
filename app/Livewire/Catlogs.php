@@ -32,7 +32,7 @@ class Catlogs extends Component
                 return;
             }
 
-            // ✅ Select first region by default - استخدام collection المحملة بدل استعلام جديد
+            // ✅ Selct first region by default - استخدام collection المحملة بدل استعلام جديد
             $this->region = $this->brand->regions->first()?->code;
 
         } catch (\Exception $e) {

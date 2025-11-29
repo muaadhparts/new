@@ -19,6 +19,9 @@ use App\Http\Controllers\Api\GeocodingController;
 Route::prefix('geocoding')->group(function () {
     Route::post('/reverse', [GeocodingController::class, 'reverseGeocode']);
     Route::get('/search-cities', [GeocodingController::class, 'searchCities']);
+    // Country Sync Routes (for new countries)
+    Route::post('/sync-country', [GeocodingController::class, 'startCountrySync']);
+    Route::get('/sync-progress', [GeocodingController::class, 'getSyncProgress']);
 });
 // --------------------- GOOGLE MAPS GEOCODING ROUTES END ---------------------
 

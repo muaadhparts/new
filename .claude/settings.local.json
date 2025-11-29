@@ -20,7 +20,10 @@
       "Bash(powershell -Command \"Get-Content ''C:\\Users\\hp\\Herd\\new\\storage\\logs\\laravel.log'' -Tail 200 | Select-String -Pattern ''TryotoLocation|Babylon|Iraq|Haditha|Baghdad''\")",
       "Bash(powershell:*)",
       "Bash(mysql -u root muaadh:*)",
-      "Bash(del clear_iraq_cache.php)"
+      "Bash(del clear_iraq_cache.php)",
+      "Bash(del \"C:\\Users\\hp\\Herd\\new\\database\\migrations\\2025_11_29_195416_add_sync_fields_to_countries_table.php\")",
+      "Bash(mysql:*)",
+      "Bash(timeout:*)"
     ],
     "deny": [],
     "ask": []

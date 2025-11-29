@@ -7,6 +7,7 @@ use App\Models\State;
 use App\Models\City;
 use App\Services\GoogleMapsService;
 use App\Services\TryotoLocationService;
+use App\Services\CountrySyncService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -16,11 +17,16 @@ class GeocodingController extends Controller
 {
     protected $googleMapsService;
     protected $tryotoService;
+    protected $countrySyncService;
 
-    public function __construct(GoogleMapsService $googleMapsService, TryotoLocationService $tryotoService)
-    {
+    public function __construct(
+        GoogleMapsService $googleMapsService,
+        TryotoLocationService $tryotoService,
+        CountrySyncService $countrySyncService
+    ) {
         $this->googleMapsService = $googleMapsService;
         $this->tryotoService = $tryotoService;
+        $this->countrySyncService = $countrySyncService;
     }
 
     /**
@@ -412,5 +418,316 @@ class GeocodingController extends Controller
             'success' => true,
             'data' => $cities
         ]);
+    }
+
+    /**
+     * التحقق إذا كانت الدولة تحتاج مزامنة
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function checkCountrySync(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'country_name' => 'required|string',
+            'country_code' => 'nullable|string|max:2',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        $countryName = $request->country_name;
+        $countryCode = $request->country_code;
+
+        // التحقق من حالة المزامنة
+        $syncStatus = $this->countrySyncService->needsSyncByName($countryName);
+
+        if (!$syncStatus['needs_sync']) {
+            return response()->json([
+                'success' => true,
+                'needs_sync' => false,
+                'country_id' => $syncStatus['country']->id,
+                'message' => 'الدولة مزامنة بالفعل'
+            ]);
+        }
+
+        // تحديد كود الدولة إذا لم يتم تمريره
+        if (!$countryCode) {
+            $countryCode = $this->countrySyncService->getCountryCode($countryName);
+        }
+
+        return response()->json([
+            'success' => true,
+            'needs_sync' => true,
+            'country_name' => $countryName,
+            'country_code' => $countryCode,
+            'reason' => $syncStatus['reason'],
+            'message' => 'الدولة تحتاج مزامنة. سيتم استيراد المدن المدعومة من شركة الشحن.'
+        ]);
+    }
+
+    /**
+     * بدء مزامنة دولة
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function startCountrySync(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'country_name' => 'required|string',
+            'country_code' => 'required|string|max:2',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        $countryName = $request->country_name;
+        $countryCode = strtoupper($request->country_code);
+        $sessionId = uniqid('sync_');
+
+        Log::info('GeocodingController: Starting country sync', [
+            'country' => $countryName,
+            'code' => $countryCode,
+            'session' => $sessionId
+        ]);
+
+        // بدء المزامنة
+        $result = $this->countrySyncService->syncCountry($countryName, $countryCode, $sessionId);
+
+        return response()->json([
+            'success' => $result['success'],
+            'session_id' => $sessionId,
+            'message' => $result['message'],
+            'country_id' => $result['country_id'] ?? null,
+            'cities_count' => $result['cities_count'] ?? 0,
+            'states_count' => $result['states_count'] ?? 0
+        ]);
+    }
+
+    /**
+     * الحصول على حالة تقدم المزامنة
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getSyncProgress(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'session_id' => 'required|string',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        $progress = CountrySyncService::getProgress($request->session_id);
+
+        if (!$progress) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Session not found'
+            ], 404);
+        }
+
+        return response()->json([
+            'success' => true,
+            'progress' => $progress
+        ]);
+    }
+
+    /**
+     * Reverse geocode مع التحقق من المزامنة
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function reverseGeocodeWithSync(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'latitude' => 'required|numeric|between:-90,90',
+            'longitude' => 'required|numeric|between:-180,180',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        $latitude = $request->latitude;
+        $longitude = $request->longitude;
+
+        Log::info('Geocoding: Starting reverse geocode', compact('latitude', 'longitude'));
+
+        // Get bilingual location data from Google
+        $locationData = $this->googleMapsService->getBilingualNames($latitude, $longitude);
+
+        if (!$locationData['success']) {
+            return response()->json([
+                'success' => false,
+                'error' => $locationData['error']
+            ], 400);
+        }
+
+        $arabicData = $locationData['data']['ar'];
+        $englishData = $locationData['data']['en'];
+
+        Log::info('Geocoding: Data from Google Maps', [
+            'en' => [
+                'cityName' => $englishData['city'] ?? null,
+                'stateName' => $englishData['state'] ?? null,
+                'countryName' => $englishData['country'] ?? null
+            ],
+            'ar' => $arabicData
+        ]);
+
+        $countryName = $englishData['country'] ?? null;
+        $countryCode = $englishData['country_code'] ?? null;
+
+        if (!$countryName) {
+            return response()->json([
+                'success' => false,
+                'error' => 'لم يتم التعرف على الدولة'
+            ], 400);
+        }
+
+        // التحقق من حالة مزامنة الدولة
+        $syncStatus = $this->countrySyncService->needsSyncByName($countryName);
+
+        if ($syncStatus['needs_sync']) {
+            // الدولة تحتاج مزامنة
+            return response()->json([
+                'success' => true,
+                'needs_sync' => true,
+                'country_name' => $countryName,
+                'country_code' => $countryCode,
+                'country_name_ar' => $arabicData['country'] ?? $countryName,
+                'message' => 'يتم تحميل الدولة واستيراد المدن المدعومة من شركة الشحن. هذه الخطوة تتم مرة واحدة فقط.',
+                'google_data' => [
+                    'city' => $englishData['city'] ?? null,
+                    'city_ar' => $arabicData['city'] ?? null,
+                    'state' => $englishData['state'] ?? null,
+                    'state_ar' => $arabicData['state'] ?? null,
+                    'address' => $englishData['address'] ?? null,
+                    'address_ar' => $arabicData['address'] ?? null,
+                ],
+                'coordinates' => compact('latitude', 'longitude')
+            ]);
+        }
+
+        // الدولة مزامنة - استخدم DB فقط
+        return $this->resolveLocationFromDB($englishData, $arabicData, $latitude, $longitude, $syncStatus['country']);
+    }
+
+    /**
+     * تحديد الموقع من قاعدة البيانات (بعد المزامنة)
+     */
+    protected function resolveLocationFromDB($englishData, $arabicData, $latitude, $longitude, $country)
+    {
+        $cityName = $englishData['city'] ?? null;
+        $stateName = $englishData['state'] ?? null;
+        $countryName = $englishData['country'] ?? null;
+
+        Log::info('TryotoLocation: Resolving location from DB', [
+            'city' => $cityName,
+            'state' => $stateName,
+            'country' => $countryName,
+            'coordinates' => compact('latitude', 'longitude')
+        ]);
+
+        // استخدام TryotoLocationService للبحث في DB
+        $resolution = $this->tryotoService->resolveMapCity(
+            $cityName ?? '',
+            $stateName,
+            $countryName,
+            $latitude,
+            $longitude
+        );
+
+        if (!$resolution['success']) {
+            Log::warning('Geocoding: Location not supported by Tryoto', [
+                'city' => $cityName,
+                'state' => $stateName,
+                'country' => $countryName,
+                'message' => $resolution['message']
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'needs_sync' => false,
+                'error' => $resolution['message'],
+                'strategy' => $resolution['strategy'] ?? 'unknown',
+                'google_data' => [
+                    'city' => $cityName,
+                    'city_ar' => $arabicData['city'] ?? null,
+                    'state' => $stateName,
+                    'state_ar' => $arabicData['state'] ?? null,
+                    'country' => $countryName,
+                    'country_ar' => $arabicData['country'] ?? null,
+                ],
+                'coordinates' => compact('latitude', 'longitude')
+            ]);
+        }
+
+        // نجاح - تم إيجاد موقع مدعوم
+        $responseData = [
+            'success' => true,
+            'needs_sync' => false,
+            'country' => [
+                'id' => $country->id,
+                'code' => $country->country_code,
+                'name' => $country->country_name,
+                'name_ar' => $country->country_name_ar
+            ],
+            'city' => [
+                'id' => $resolution['city_id'],
+                'name' => $resolution['resolved_name'],
+                'name_ar' => $resolution['resolved_name_ar'] ?? $resolution['resolved_name'],
+                'tryoto_name' => $resolution['tryoto_name']
+            ],
+            'coordinates' => $resolution['coordinates'],
+            'strategy' => $resolution['strategy'],
+            'message' => $resolution['message'],
+            'address' => [
+                'en' => $englishData['address'] ?? null,
+                'ar' => $arabicData['address'] ?? null,
+            ]
+        ];
+
+        // إضافة معلومات المسافة إذا تم استخدام nearest_city
+        if (isset($resolution['distance_km'])) {
+            $responseData['distance_km'] = $resolution['distance_km'];
+            $responseData['original_coordinates'] = $resolution['original_coordinates'] ?? compact('latitude', 'longitude');
+        }
+
+        // جلب معلومات المحافظة
+        if ($resolution['city_id']) {
+            $city = City::find($resolution['city_id']);
+            if ($city && $city->state_id) {
+                $state = State::find($city->state_id);
+                if ($state) {
+                    $responseData['state'] = [
+                        'id' => $state->id,
+                        'name' => $state->state,
+                        'name_ar' => $state->state_ar
+                    ];
+                }
+            }
+        }
+
+        return response()->json($responseData);
     }
 }

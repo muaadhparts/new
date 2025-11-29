@@ -244,13 +244,23 @@ window.reverseGeocode = async function(lat, lng) {
 
         const result = await response.json();
 
-        if (result.success) {
+        // التحقق إذا كانت الدولة تحتاج مزامنة
+        if (result.success && result.needs_sync) {
+            console.log('🔄 Country needs sync:', result.country_name);
+            window.showLoadingModal(false);
+
+            // بدء عملية المزامنة مع شريط التحميل
+            await window.syncCountryWithProgress(result, lat, lng);
+            return;
+        }
+
+        if (result.success && !result.needs_sync) {
             window.selectedLocationData = result.data;
             window.displayLocationInfoModal(result.data);
             document.getElementById('use-location-btn-modal').disabled = false;
             window.showAlertModal('{{ __("Location selected successfully") }}', 'success');
-        } else {
-            window.showAlertModal('{{ __("Failed to get location information") }}: ' + (result.error || '{{ __("Unknown error") }}'), 'error');
+        } else if (!result.success) {
+            window.showAlertModal(result.message || '{{ __("Failed to get location information") }}', 'error');
         }
     } catch (error) {
         console.error('Error:', error);
@@ -258,6 +268,171 @@ window.reverseGeocode = async function(lat, lng) {
     } finally {
         window.showLoadingModal(false);
     }
+}
+
+// مزامنة الدولة مع شريط التحميل
+window.syncCountryWithProgress = async function(syncData, lat, lng) {
+    const countryName = syncData.country_name;
+    const countryCode = syncData.country_code;
+    const countryNameAr = syncData.country_name_ar || countryName;
+
+    console.log('📥 Starting country sync:', {countryName, countryCode});
+
+    // إظهار شريط التحميل المخصص
+    window.showSyncProgressModal(countryNameAr);
+
+    try {
+        const csrfToken = document.querySelector('meta[name="csrf-token"]');
+        const headers = {
+            'Content-Type': 'application/json'
+        };
+
+        if (csrfToken) {
+            headers['X-CSRF-TOKEN'] = csrfToken.content;
+        }
+
+        // بدء المزامنة
+        const syncResponse = await fetch('/api/geocoding/sync-country', {
+            method: 'POST',
+            headers: headers,
+            body: JSON.stringify({
+                country_name: countryName,
+                country_code: countryCode
+            })
+        });
+
+        const syncResult = await syncResponse.json();
+
+        if (syncResult.success) {
+            console.log('✅ Country sync completed:', syncResult);
+            window.updateSyncProgress(100, syncResult.message);
+
+            // انتظار قليل ثم إعادة محاولة الـ geocode
+            setTimeout(async () => {
+                window.hideSyncProgressModal();
+                // إعادة محاولة الـ geocode بعد المزامنة
+                await window.reverseGeocode(lat, lng);
+            }, 1500);
+        } else {
+            console.error('❌ Country sync failed:', syncResult);
+            window.updateSyncProgress(0, syncResult.message || 'فشل في المزامنة');
+
+            setTimeout(() => {
+                window.hideSyncProgressModal();
+                window.showAlertModal(syncResult.message || 'فشل في استيراد بيانات الدولة', 'error');
+            }, 2000);
+        }
+    } catch (error) {
+        console.error('Sync error:', error);
+        window.hideSyncProgressModal();
+        window.showAlertModal('{{ __("Server connection error") }}', 'error');
+    }
+}
+
+// إظهار نافذة شريط التحميل للمزامنة
+window.showSyncProgressModal = function(countryName) {
+    // إزالة النافذة السابقة إن وجدت
+    $('#syncProgressOverlay').remove();
+
+    const html = `
+        <div id="syncProgressOverlay" style="
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.8);
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        ">
+            <div style="
+                background: white;
+                border-radius: 16px;
+                padding: 40px;
+                max-width: 450px;
+                width: 90%;
+                text-align: center;
+                box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            ">
+                <div style="margin-bottom: 25px;">
+                    <div style="
+                        width: 70px;
+                        height: 70px;
+                        border: 4px solid #e0e0e0;
+                        border-top-color: #667eea;
+                        border-radius: 50%;
+                        animation: syncSpin 1s linear infinite;
+                        margin: 0 auto;
+                    "></div>
+                </div>
+                <h4 style="margin-bottom: 10px; color: #333; font-size: 20px;">
+                    {{ __('Importing Country Data') }}
+                </h4>
+                <p style="color: #666; margin-bottom: 20px; font-size: 15px;">
+                    ${countryName}
+                </p>
+                <div style="
+                    background: #f0f0f0;
+                    border-radius: 10px;
+                    height: 12px;
+                    overflow: hidden;
+                    margin-bottom: 15px;
+                ">
+                    <div id="syncProgressBar" style="
+                        background: linear-gradient(90deg, #667eea, #764ba2);
+                        height: 100%;
+                        width: 0%;
+                        transition: width 0.3s ease;
+                        border-radius: 10px;
+                    "></div>
+                </div>
+                <p id="syncProgressMessage" style="color: #888; font-size: 13px; margin: 0;">
+                    {{ __('Starting import...') }}
+                </p>
+                <p style="color: #aaa; font-size: 11px; margin-top: 15px;">
+                    {{ __('This step happens once per country') }}
+                </p>
+            </div>
+        </div>
+        <style>
+            @keyframes syncSpin {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(360deg); }
+            }
+        </style>
+    `;
+
+    $('body').append(html);
+
+    // تحديث شريط التحميل بشكل تدريجي
+    let progress = 0;
+    window.syncProgressInterval = setInterval(() => {
+        if (progress < 90) {
+            progress += Math.random() * 15;
+            if (progress > 90) progress = 90;
+            window.updateSyncProgress(progress);
+        }
+    }, 500);
+}
+
+// تحديث شريط التحميل
+window.updateSyncProgress = function(percent, message) {
+    $('#syncProgressBar').css('width', percent + '%');
+    if (message) {
+        $('#syncProgressMessage').text(message);
+    }
+}
+
+// إخفاء نافذة المزامنة
+window.hideSyncProgressModal = function() {
+    if (window.syncProgressInterval) {
+        clearInterval(window.syncProgressInterval);
+    }
+    $('#syncProgressOverlay').fadeOut(300, function() {
+        $(this).remove();
+    });
 }
 
 // Display location information in modal
