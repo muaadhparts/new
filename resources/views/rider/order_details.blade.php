@@ -135,9 +135,7 @@
                                                 </td>
                                                 <td data-label="{{ __('Name') }}">
                                                   <span class="title">
-                                                    {{ mb_strlen($product['item']['name'], 'UTF-8') > 50
-                                                    ? mb_substr($product['item']['name'], 0, 50, 'UTF-8') . '...'
-                                                    : $product['item']['name'] }}
+                                                    {{ getLocalizedProductName($product['item'], 50) }}
                                                   </span>
 
                                                 </td>

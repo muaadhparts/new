@@ -42,7 +42,7 @@
                         $prodAddTableUrl = route('front.product.legacy', $product['item']['slug']);
                     }
                  @endphp
-                <a target="_blank" href="{{ $prodAddTableUrl }}">{{mb_strlen($product['item']['name'],'utf-8') > 30 ? mb_substr($product['item']['name'],0,30,'utf-8').'...' : $product['item']['name']}}</a>
+                <a target="_blank" href="{{ $prodAddTableUrl }}">{{ getLocalizedProductName($product['item'], 30) }}</a>
               </td>
               <td class="product-price">
                  <span>{{ App\Models\Product::convertPrice($product['item_price']) }}

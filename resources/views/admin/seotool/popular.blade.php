@@ -45,10 +45,10 @@
                                                         <tr>
 
 														<td>
-															{{mb_strlen($prod->product->name,'UTF-8') > 60 ? mb_substr($prod->product->name,0,60,'UTF-8').'...' : $prod->product->name}}
+															{{ $prod->product ? getLocalizedProductName($prod->product, 60) : __('N/A') }}
 														</td>
                                                       <td>
-                                                        {{$prod->product->category->name}}
+                                                        {{ $prod->product && $prod->product->category ? getLocalizedCategoryName($prod->product->category) : __('N/A') }}
                                                       </td>
 												  <td>
 												{{$prod->product->type}}

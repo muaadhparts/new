@@ -345,36 +345,15 @@
                                                         $userOrderProductUrl = route('front.product.legacy', $product['item']['slug']);
                                                     }
                                                 @endphp
-                                                @if ($product['item']['user_id'] != 0)
-                                                    @php
-                                                        $user = App\Models\User::find($product['item']['user_id']);
-                                                    @endphp
-                                                    @if (isset($user))
-                                                        <b><a class="a_title_link d-block title-hover-color"
-                                                                target="_blank"
-                                                                href="{{ $userOrderProductUrl }}">{{ mb_strlen($product['item']['name'], 'UTF-8') > 50
-                                                                    ? mb_substr($product['item']['name'], 0, 50, 'UTF-8') . '...'
-                                                                    : $product['item']['name'] }}</a></b>
-                                                    @else
-                                                        <b>
-                                                            <a class="a_title_link d-block title-hover-color"
-                                                                target="_blank"
-                                                                href="{{ $userOrderProductUrl }}">
-                                                                {{ mb_strlen($product['item']['name'], 'UTF-8') > 50
-                                                                    ? mb_substr($product['item']['name'], 0, 50, 'UTF-8') . '...'
-                                                                    : $product['item']['name'] }}
-                                                            </a>
-                                                        </b>
-                                                    @endif
-                                                @else
-                                                    <b>
-                                                        <a class="a_title_link d-block title-hover-color" target="_blank"
-                                                            href="{{ $userOrderProductUrl }}">
-                                                            {{ mb_strlen($product['item']['name'], 'UTF-8') > 50
-                                                                ? mb_substr($product['item']['name'], 0, 50, 'UTF-8') . '...'
-                                                                : $product['item']['name'] }}
-                                                        </a>
-                                                    </b>
+                                                <b>
+                                                    <a class="a_title_link d-block title-hover-color" target="_blank"
+                                                        href="{{ $userOrderProductUrl }}">
+                                                        {{ getLocalizedProductName($product['item'], 50) }}
+                                                    </a>
+                                                </b>
+                                                <small class="text-muted d-block">SKU: {{ $product['item']['sku'] ?? 'N/A' }}</small>
+                                                @if(isset($product['vendor_name']))
+                                                <small class="d-block"><strong>{{ __('Vendor') }}:</strong> {{ $product['vendor_name'] }}</small>
                                                 @endif
                                                 @if ($product['item']['type'] != 'Physical')
                                                     @if ($order->payment_status == 'Completed')

@@ -346,24 +346,12 @@
                                                             $vendorInvoiceProductUrl = route('front.product.legacy', $product['item']['slug']);
                                                         }
                                                     @endphp
-                                                    @if (isset($user))
-                                                        <span class="content product-title d-inline-block">
-                                                            <a target="_blank"
-                                                                href="{{ $vendorInvoiceProductUrl }}">
-                                                                {{ mb_strlen($product['item']['name'], 'UTF-8') > 30
-                                                                    ? mb_substr($product['item']['name'], 0, 30, 'UTF-8') . '...'
-                                                                    : $product['item']['name'] }}
-                                                            </a>
-                                                        </span>
-                                                    @else
-                                                        <span class="content product-title d-inline-block"><a
-                                                                href="javascript:;">
-                                                                {{ mb_strlen($product['item']['name'], 'UTF-8') > 30
-                                                                    ? mb_substr($product['item']['name'], 0, 30, 'UTF-8') . '...'
-                                                                    : $product['item']['name'] }}
-                                                            </a>
-                                                        </span>
-                                                    @endif
+                                                    <span class="content product-title d-inline-block">
+                                                        <a target="_blank" href="{{ $vendorInvoiceProductUrl }}">
+                                                            {{ getLocalizedProductName($product['item'], 30) }}
+                                                        </a>
+                                                    </span>
+                                                    <br><small class="text-muted">SKU: {{ $product['item']['sku'] ?? 'N/A' }}</small>
                                                 @endif
 
 

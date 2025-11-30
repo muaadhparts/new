@@ -122,19 +122,8 @@ html {
                                             @if($product['item']['user_id'] == $user->id)
                                         <tr>
                                             <td width="50%">
-                                                @if($product['item']['user_id'] != 0)
-                                                @php
-                                                $user = App\Models\User::find($product['item']['user_id']);
-                                                @endphp
-                                                @if(isset($user))
-                                                {{ $product['item']['name']}}
-                                                @else
-                                                {{$product['item']['name']}}
-                                                @endif
-
-                                                @else
-                                                {{ $product['item']['name']}}
-                                                @endif
+                                                {{ getLocalizedProductName($product['item']) }}
+                                                <br><small>SKU: {{ $product['item']['sku'] ?? 'N/A' }}</small>
                                             </td>
 
                                             <td>

@@ -83,9 +83,7 @@
                                                 @endphp
 
                                                 <a class="cart-title d-inline-block"
-                                                    href="{{ $cartProductUrl }}">{{ mb_strlen($product['item']['name'], 'UTF-8') > 35
-                                                        ? mb_substr($product['item']['name'], 0, 35, 'UTF-8') . '...'
-                                                        : $product['item']['name'] }}</a>
+                                                    href="{{ $cartProductUrl }}">{{ getLocalizedProductName($product['item'], 35) }}</a>
 
                                                 <div class="d-flex align-items-center gap-2">
                                                     @if (!empty($product['color']))
@@ -247,9 +245,7 @@
                                                     @endphp
 
                                                     <a class="cart-title d-inline-block"
-                                                        href="{{ $cartProductUrl }}">{{ mb_strlen($product['item']['name'], 'UTF-8') > 35
-                                                            ? mb_substr($product['item']['name'], 0, 35, 'UTF-8') . '...'
-                                                            : $product['item']['name'] }}</a>
+                                                        href="{{ $cartProductUrl }}">{{ getLocalizedProductName($product['item'], 35) }}</a>
 
                                                     <div class="d-flex align-items-center gap-2">
                                                         @if (!empty($product['color']))

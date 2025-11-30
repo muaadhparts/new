@@ -168,7 +168,7 @@ html {
                                           @foreach($cart['items'] as $product)
                                           <tr>
                                              <td>{{ $product['item']['id'] }}</td>
-                                             <td>{{mb_strlen($product['item']['name'],'UTF-8') > 50 ? mb_substr($product['item']['name'],0,50,'UTF-8').'...' : $product['item']['name']}}</td>
+                                             <td>{{ getLocalizedProductName($product['item'], 50) }}</td>
                                              <td>
                                                 <b>{{ __('Quantity') }}</b>: {{$product['qty']}} <br>
                                                 @if(!empty($product['size']))

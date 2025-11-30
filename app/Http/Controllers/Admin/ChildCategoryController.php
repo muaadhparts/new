@@ -20,10 +20,10 @@ class ChildCategoryController extends AdminBaseController
         //--- Integrating This Collection Into Datatables
         return Datatables::of($datas)
             ->addColumn('category', function (Childcategory $data) {
-                return $data->subcategory->category->name;
+                return $data->subcategory && $data->subcategory->category ? getLocalizedCategoryName($data->subcategory->category) : __('N/A');
             })
             ->addColumn('subcategory', function (Childcategory $data) {
-                return $data->subcategory->name;
+                return $data->subcategory ? getLocalizedCategoryName($data->subcategory) : __('N/A');
             })
             ->addColumn('status', function (Childcategory $data) {
                 $class = $data->status == 1 ? 'drop-success' : 'drop-danger';

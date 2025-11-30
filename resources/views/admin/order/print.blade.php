@@ -108,6 +108,7 @@ html {
                                     <thead style="border-top:1px solid rgba(0, 0, 0, 0.1) !important;">
                                         <tr>
                                             <th>{{ __('Product') }}</th>
+                                            <th>{{ __('Vendor') }}</th>
                                             <th>{{ __('Details') }}</th>
                                             <th>{{ __('Total') }}</th>
                                         </tr>
@@ -119,19 +120,16 @@ html {
                                         @endphp
                                         @foreach($cart['items'] as $product)
                                         <tr>
-                                            <td width="50%">
-                                                @if($product['item']['user_id'] != 0)
-                                                @php
-                                                $user = App\Models\User::find($product['item']['user_id']);
-                                                @endphp
-                                                @if(isset($user))
-                                                {{ $product['item']['name']}}
-                                                @else
-                                                {{$product['item']['name']}}
-                                                @endif
-
-                                                @else
-                                                {{ $product['item']['name']}}
+                                            <td width="40%">
+                                                {{ getLocalizedProductName($product['item']) }}
+                                                <br><small>SKU: {{ $product['item']['sku'] ?? 'N/A' }}</small>
+                                            </td>
+                                            <td width="15%">
+                                                @if(isset($product['vendor_name']))
+                                                    {{ $product['vendor_name'] }}
+                                                @elseif(isset($product['item']['user_id']) && $product['item']['user_id'] != 0)
+                                                    @php $user = App\Models\User::find($product['item']['user_id']); @endphp
+                                                    {{ $user->shop_name ?? $user->name ?? '' }}
                                                 @endif
                                             </td>
 

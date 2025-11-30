@@ -25,4 +25,21 @@ class Brand extends Model
         return $this->hasMany(BrandRegion::class, 'brand_id');
     }
 
+    /**
+     * Get localized brand name based on current locale.
+     * Arabic: name_ar (fallback to name)
+     * English: name (fallback to name_ar)
+     */
+    public function getLocalizedNameAttribute(): string
+    {
+        $isAr = app()->getLocale() === 'ar';
+        $nameAr = trim((string)($this->name_ar ?? ''));
+        $name = trim((string)($this->name ?? ''));
+
+        if ($isAr) {
+            return $nameAr !== '' ? $nameAr : $name;
+        }
+        return $name !== '' ? $name : $nameAr;
+    }
+
 }

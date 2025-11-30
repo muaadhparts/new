@@ -37,10 +37,12 @@
             ->first();
     }
 
-    // Extract all display values
+    // Extract all display values (using localized names)
     $sku = $product->sku ?? null;
-    $brandName = $product->brand ? $product->brand->name : null;
-    $qualityBrandName = ($mp && $mp->qualityBrand) ? $mp->qualityBrand->display_name : null;
+    $brandName = $product->brand ? $product->brand->localized_name : null;
+    $qualityBrand = ($mp && $mp->qualityBrand) ? $mp->qualityBrand : null;
+    $qualityBrandName = $qualityBrand ? $qualityBrand->localized_name : null;
+    $qualityBrandLogo = $qualityBrand ? $qualityBrand->logo_url : null;
     $vendorName = ($mp && $mp->user) ? $mp->user->shop_name : null;
     $stock = $mp ? $mp->stock : null;
 
@@ -76,8 +78,13 @@
         @endif
 
         @if($showQualityBrand && $qualityBrandName)
-            <span class="badge bg-light text-dark">
-                <i class="fas fa-certificate me-1"></i>{{ $qualityBrandName }}
+            <span class="badge bg-light text-dark d-inline-flex align-items-center">
+                @if($qualityBrandLogo)
+                    <img src="{{ $qualityBrandLogo }}" alt="{{ $qualityBrandName }}" class="quality-brand-logo me-1" style="max-height: 20px; max-width: 50px; object-fit: contain;">
+                @else
+                    <i class="fas fa-certificate me-1"></i>
+                @endif
+                {{ $qualityBrandName }}
             </span>
         @endif
 
@@ -110,8 +117,12 @@
         @endif
 
         @if($showQualityBrand && $qualityBrandName)
-            <li class="small">
-                <strong>{{ __('Quality Brand') }}:</strong> {{ $qualityBrandName }}
+            <li class="small d-flex align-items-center">
+                <strong>{{ __('Quality Brand') }}:</strong>
+                @if($qualityBrandLogo)
+                    <img src="{{ $qualityBrandLogo }}" alt="{{ $qualityBrandName }}" class="quality-brand-logo mx-1" style="max-height: 22px; max-width: 60px; object-fit: contain;">
+                @endif
+                <span class="ms-1">{{ $qualityBrandName }}</span>
             </li>
         @endif
 
@@ -144,8 +155,13 @@
         @endif
 
         @if($showQualityBrand && $qualityBrandName)
-            <span class="me-2">
-                <i class="fas fa-certificate me-1"></i>{{ $qualityBrandName }}
+            <span class="me-2 d-inline-flex align-items-center">
+                @if($qualityBrandLogo)
+                    <img src="{{ $qualityBrandLogo }}" alt="{{ $qualityBrandName }}" class="quality-brand-logo me-1" style="max-height: 18px; max-width: 45px; object-fit: contain;">
+                @else
+                    <i class="fas fa-certificate me-1"></i>
+                @endif
+                {{ $qualityBrandName }}
             </span>
         @endif
 

@@ -265,7 +265,7 @@
                                                     <a class="product-title"
                                                         href="{{ $checkoutProductUrl }}"
                                                         target="_blank">
-                                                        {{ $product['item']['name'] }}
+                                                        {{ getLocalizedProductName($product['item']) }}
                                                     </a>
                                                 </h6>
 

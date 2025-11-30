@@ -146,23 +146,21 @@
                                         <td class="text-start">
                                             <div class="product-name">
                                                 <span class="content">
-                                                    {{ mb_strlen(strip_tags($data->name), 'UTF-8') > 50
-                                                        ? mb_substr(strip_tags($data->name), 0, 50, 'UTF-8') . '...'
-                                                        : strip_tags($data->name) }}
+                                                    {{ getLocalizedProductName($data, 50) }}
                                                 </span>
                                             </div>
                                         </td>
                                         <td class="text-start">
                                             <div class="category">
                                                 <span class="content">
-                                                    {{ $data->category->name }}
+                                                    {{ $data->category ? getLocalizedCategoryName($data->category) : __('N/A') }}
                                                     @if (isset($data->subcategory))
                                                         <br>
-                                                        {{ $data->subcategory->name }}
+                                                        {{ getLocalizedCategoryName($data->subcategory) }}
                                                     @endif
                                                     @if (isset($data->childcategory))
                                                         <br>
-                                                        {{ $data->childcategory->name }}
+                                                        {{ getLocalizedCategoryName($data->childcategory) }}
                                                     @endif
                                                 </span>
                                             </div>

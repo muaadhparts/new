@@ -10,7 +10,7 @@
                     <h2 class="breadcrumb-title">@lang('Product Details')</h2>
                     <ul class="bread-menu">
                         <li><a href="{{ route('front.index') }}">@lang('Home')</a></li>
-                        <li><a href="#">{{ $productt->name }}</a></li>
+                        <li><a href="#">{{ $productt->localized_name }}</a></li>
                     </ul>
                 </div>
             </div>
@@ -28,18 +28,18 @@
                     <ul class="product-breadcrumb">
                         <li><a href="{{ route('front.index') }}">@lang('home')</a></li>
                         <li><a
-                                href="{{ route('front.category', $productt->category->slug) }}">{{ $productt->category->name }}</a>
+                                href="{{ route('front.category', $productt->category->slug) }}">{{ $productt->category->localized_name }}</a>
                         </li>
                         @if ($productt->subcategory_id)
           
                             <li><a
-                                    href="{{ route('front.category', [$productt->category->slug, $productt->subcategory->slug]) }}">{{ $productt->subcategory->name }}</a>
+                                    href="{{ route('front.category', [$productt->category->slug, $productt->subcategory->slug]) }}">{{ $productt->subcategory->localized_name }}</a>
                             </li>
                         @endif
                         @if ($productt->childcategory_id)
              
                             <li><a
-                                    href="{{ route('front.category', [$productt->category->slug, $productt->subcategory->slug, $productt->childcategory->slug]) }}">{{ $productt->childcategory->name }}</a>
+                                    href="{{ route('front.category', [$productt->category->slug, $productt->subcategory->slug, $productt->childcategory->slug]) }}">{{ $productt->childcategory->localized_name }}</a>
                             </li>
                         @endif
                     </ul>
@@ -79,7 +79,7 @@
                     <form>
                         <!-- product-info-wrapper  -->
                         <div class="product-info-wrapper  {{ $productt->type != 'Physical' ? 'mb-3' : '' }}">
-                            <h3>{{ $productt->name }}</h3>
+                            <h3>{{ $productt->localized_name }}</h3>
                             <div class="price-wrapper">
                                 <h5 id="sizeprice">{{ $productt->showPrice() }}</h5>
                                 <h5><del>{{ $productt->showPreviousPrice() }}</del></h5>

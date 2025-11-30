@@ -125,7 +125,7 @@ class ProductController extends AdminBaseController
                 return '<img src="' . $photo . '" alt="Image" class="img-thumbnail" style="width:80px">';
             })
             ->addColumn('brand', function (\App\Models\Product $data) {
-                return $data->brand ? $data->brand->name : __('N/A');
+                return $data->brand ? getLocalizedBrandName($data->brand) : __('N/A');
             })
             ->addColumn('quality_brand', function (\App\Models\Product $data) {
                 // Get the first active merchant product with quality brand
@@ -135,7 +135,7 @@ class ProductController extends AdminBaseController
                     ->whereNotNull('brand_quality_id')
                     ->first();
 
-                return $mp && $mp->qualityBrand ? $mp->qualityBrand->display_name : __('N/A');
+                return $mp && $mp->qualityBrand ? getLocalizedQualityName($mp->qualityBrand) : __('N/A');
             })
             ->addColumn('vendor', function (\App\Models\Product $data) {
                 // Get the first active merchant product with vendor
@@ -233,7 +233,7 @@ class ProductController extends AdminBaseController
                 return '<div class="action-list"><select class="process select droplinks ' . $class . '"><option data-val="1" value="' . route('admin-prod-status', ['id1' => $data->id, 'id2' => 1]) . '" ' . $s . '>' . __("Activated") . '</option><option data-val="0" value="' . route('admin-prod-status', ['id1' => $data->id, 'id2' => 0]) . '" ' . $ns . '>' . __("Deactivated") . '</option>/select></div>';
             })
             ->addColumn('brand', function (\App\Models\Product $data) {
-                return $data->brand ? $data->brand->name : __('N/A');
+                return $data->brand ? getLocalizedBrandName($data->brand) : __('N/A');
             })
             ->addColumn('quality_brand', function (\App\Models\Product $data) {
                 // Get the first active merchant product with quality brand
@@ -243,7 +243,7 @@ class ProductController extends AdminBaseController
                     ->whereNotNull('brand_quality_id')
                     ->first();
 
-                return $mp && $mp->qualityBrand ? $mp->qualityBrand->display_name : __('N/A');
+                return $mp && $mp->qualityBrand ? getLocalizedQualityName($mp->qualityBrand) : __('N/A');
             })
             ->addColumn('vendor', function (\App\Models\Product $data) {
                 // Get the first active merchant product with vendor

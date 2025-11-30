@@ -43,11 +43,8 @@
         ? \App\Models\Rating::ratingCount($product->id)
         : null;
 
-    // اسم عربي/إنجليزي اختياري
-    $locale = app()->getLocale();
-    $secondaryLabel = $locale === 'ar'
-        ? ($product->label_ar ?: $product->label_en)
-        : ($product->label_en ?: $product->label_ar);
+    // اسم عربي/إنجليزي اختياري - using centralized helper
+    $secondaryLabel = getLocalizedProductName($product);
 @endphp
 
 <div class="row gy-4 ill-product" data-product-id="{{ $product->id }}" data-user="{{ $vendorId }}">

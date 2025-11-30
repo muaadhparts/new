@@ -94,6 +94,7 @@
                                     <thead>
                                         <tr>
                                             <th>{{ __('Product') }}</th>
+                                            <th>{{ __('Vendor/Brand') }}</th>
                                             <th>{{ __('Details') }}</th>
                                             <th>{{ __('Total') }}</th>
                                         </tr>
@@ -105,10 +106,11 @@
                                         @endphp
                                         @foreach($cart['items'] as $product)
                                         <tr>
-                                            <td width="50%">
-                                                @if($product['item']['user_id'] != 0)
+                                            <td width="40%">
                                                 @php
-                                                $user = App\Models\User::find($product['item']['user_id']);
+                                                $user = isset($product['item']['user_id']) && $product['item']['user_id'] != 0
+                                                    ? App\Models\User::find($product['item']['user_id'])
+                                                    : null;
                                                 $invoiceProductUrl = '#';
                                                 if (isset($product['item']['slug']) && isset($product['user_id']) && isset($product['merchant_product_id'])) {
                                                     $invoiceProductUrl = route('front.product', [
@@ -122,14 +124,23 @@
                                                 @endphp
                                                 @if(isset($user))
                                                 <a target="_blank"
-                                                    href="{{ $invoiceProductUrl }}">{{ $product['item']['name']}}</a>
+                                                    href="{{ $invoiceProductUrl }}">{{ getLocalizedProductName($product['item']) }}</a>
                                                 @else
-                                                <a href="javascript:;">{{$product['item']['name']}}</a>
+                                                <a href="javascript:;">{{ getLocalizedProductName($product['item']) }}</a>
                                                 @endif
-
-                                                @else
-                                                <a href="javascript:;">{{ $product['item']['name']}}</a>
-
+                                                <br><small class="text-muted">SKU: {{ $product['item']['sku'] ?? 'N/A' }}</small>
+                                            </td>
+                                            <td width="20%">
+                                                @if(isset($product['vendor_name']))
+                                                    <strong>{{ __('Vendor') }}:</strong> {{ $product['vendor_name'] }}<br>
+                                                @elseif(isset($user))
+                                                    <strong>{{ __('Vendor') }}:</strong> {{ $user->shop_name ?? $user->name }}<br>
+                                                @endif
+                                                @if(isset($product['item']['brand_name']))
+                                                    <strong>{{ __('Brand') }}:</strong> {{ $product['item']['brand_name'] }}<br>
+                                                @endif
+                                                @if(isset($product['quality_name']))
+                                                    <strong>{{ __('Quality') }}:</strong> {{ $product['quality_name'] }}
                                                 @endif
                                             </td>
 

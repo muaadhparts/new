@@ -431,7 +431,7 @@
               @if($product->brand)
               <div class="product-id">
                 {{ __('Brand:') }}
-                <span>{{ Str::ucfirst($product->brand->name) }}</span>
+                <span>{{ Str::ucfirst(getLocalizedBrandName($product->brand)) }}</span>
               </div>
               @endif
 
@@ -443,7 +443,7 @@
               @if($quickMerchant && $quickMerchant->qualityBrand)
               <div class="product-id">
                 {{ __('Brand qualities:') }}
-                <span>{{ app()->getLocale() == 'ar' && $quickMerchant->qualityBrand->name_ar ? $quickMerchant->qualityBrand->name_ar : $quickMerchant->qualityBrand->name_en }}</span>
+                <span>{{ getLocalizedQualityName($quickMerchant->qualityBrand) }}</span>
               </div>
               @endif
 

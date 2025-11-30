@@ -15,10 +15,10 @@ class RatingController extends AdminBaseController
 	         //--- Integrating This Collection Into Datatables
 	         return Datatables::of($datas)
 	                            ->addColumn('product', function(Rating $data) {
-									$name =  mb_strlen(strip_tags($data->product->name),'UTF-8') > 50 ? mb_substr(strip_tags($data->product->name),0,50,'UTF-8').'...' : strip_tags($data->product->name);
+									$name = $data->product ? getLocalizedProductName($data->product, 50) : __('N/A');
 
 									// في صفحات الأدمن، نستخدم route('search.result', sku)
-									if ($data->product->sku) {
+									if ($data->product && $data->product->sku) {
 										$prodLink = route('search.result', $data->product->sku);
 									} else {
 										$prodLink = '#';

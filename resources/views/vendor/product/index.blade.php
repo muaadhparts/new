@@ -80,14 +80,12 @@
                                 <td class="text-start">
                                     <div class="product-name">
                                         <span class="content">
-                                            {{ mb_strlen(strip_tags($data->name), 'UTF-8') > 50
-                                                ? mb_substr(strip_tags($data->name), 0, 50, 'UTF-8') . '...'
-                                                : strip_tags($data->name) }}
+                                            {{ getLocalizedProductName($data, 50) }}
                                         </span>
                                     </div>
                                 </td>
 
-                                <td><span class="content">{{ $data->brand ? $data->brand->name : __('N/A') }}</span></td>
+                                <td><span class="content">{{ $data->brand ? getLocalizedBrandName($data->brand) : __('N/A') }}</span></td>
                                 <td><span class="content">{{ $merchantProduct && $merchantProduct->qualityBrand ? $merchantProduct->qualityBrand->display_name : __('N/A') }}</span></td>
                                 <td><span class="content">{{ $data->type }}</span></td>
                                 <td>

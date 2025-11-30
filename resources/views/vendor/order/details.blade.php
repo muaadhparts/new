@@ -328,22 +328,11 @@
                                                     $vendorOrderProductUrl = route('front.product.legacy', $product['item']['slug']);
                                                 }
                                             @endphp
-                                            @if (isset($user))
                                             <a class="title-hover-color content product-title d-inline-block" target="_blank"
                                                 href="{{ $vendorOrderProductUrl }}">
-                                                {{ mb_strlen($product['item']['name'], 'UTF-8') > 30
-                                                    ? mb_substr($product['item']['name'], 0, 30, 'UTF-8') . '...'
-                                                    : $product['item']['name'] }}
+                                                {{ getLocalizedProductName($product['item'], 30) }}
                                             </a>
-
-                                            @else
-                                            <a class="title-hover-color content product-title d-inline-block" href="javascript:;">
-                                                {{ mb_strlen($product['item']['name'], 'UTF-8') > 30
-                                                    ? mb_substr($product['item']['name'], 0, 30, 'UTF-8') . '...'
-                                                    : $product['item']['name'] }}
-                                            </a>
-
-                                            @endif
+                                            <br><small class="text-muted">SKU: {{ $product['item']['sku'] ?? 'N/A' }}</small>
                                         @endif
 
 

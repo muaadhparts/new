@@ -29,21 +29,16 @@
             $product   = $mp->product;
             $vp        = method_exists($mp,'vendorSizePrice') ? (float)$mp->vendorSizePrice() : (float)$mp->price;
             $highlight = ($mp->stock > 0 && $vp > 0);
-
-            $locale = app()->getLocale();
-            $name   = $locale === 'ar'
-                      ? ($product->label_ar ?: $product->label_en)
-                      : ($product->label_en ?: $product->label_ar);
           @endphp
 
           <tr @if($highlight) style="background-color:#f0fff4" @endif>
             <td class="fw-semibold">{{ $product->sku }}</td>
 
-            <td>{{ e($name) }}</td>
+            <td>{{ getLocalizedProductName($product) }}</td>
 
-            <td>{{ $product->brand ? Str::ucfirst($product->brand->name) : '-' }}</td>
+            <td>{{ $product->brand ? Str::ucfirst(getLocalizedBrandName($product->brand)) : '-' }}</td>
 
-            <td>{{ $mp->qualityBrand ? (app()->getLocale() == 'ar' && $mp->qualityBrand->name_ar ? $mp->qualityBrand->name_ar : $mp->qualityBrand->name_en) : '-' }}</td>
+            <td>{{ $mp->qualityBrand ? getLocalizedQualityName($mp->qualityBrand) : '-' }}</td>
 
             <td>{{ $mp->user ? ($mp->user->shop_name ?: $mp->user->name) : '-' }}</td>
 

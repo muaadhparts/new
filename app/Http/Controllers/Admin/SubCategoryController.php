@@ -19,7 +19,7 @@ class SubCategoryController extends AdminBaseController
          //--- Integrating This Collection Into Datatables
          return Datatables::of($datas)
                             ->addColumn('category', function(Subcategory $data) {
-                                return $data->category->name;
+                                return $data->category ? getLocalizedCategoryName($data->category) : __('N/A');
                             })
                             ->addColumn('status', function(Subcategory $data) {
                                 $class = $data->status == 1 ? 'drop-success' : 'drop-danger';

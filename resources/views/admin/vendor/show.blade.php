@@ -156,8 +156,8 @@ table#example2 {
                                                                         @endphp
                                                                         <tr>
                                                                         <td><a href="{{ $adminVendorUrl }}" target="_blank">{{ sprintf("%'.08d", $dt->id ?? 0) }}</a></td>
-                                                                            <td>{{ $dt ? mb_substr(strip_tags($dt->name), 0, 50, 'UTF-8') : 'N/A' }}</td>
-                                                                            <td>{{ $dt && $dt->brand ? $dt->brand->name : 'N/A' }}</td>
+                                                                            <td>{{ $dt ? getLocalizedProductName($dt, 50) : 'N/A' }}</td>
+                                                                            <td>{{ $dt && $dt->brand ? getLocalizedBrandName($dt->brand) : 'N/A' }}</td>
                                                                             <td>{{ $merchantProduct && $merchantProduct->qualityBrand ? $merchantProduct->qualityBrand->display_name : 'N/A' }}</td>
                                                                             <td>{{ $dt->type ?? 'N/A' }}</td>
                                                                             @php

@@ -249,15 +249,15 @@
                                             @foreach($poproducts as $data)
                                             <tr>
                                             <td><img src="{{filter_var($data->product->photo ?? '', FILTER_VALIDATE_URL) ? $data->product->photo : ($data->product->photo ?? null ? \Illuminate\Support\Facades\Storage::url($data->product->photo) : asset('assets/images/noimage.png'))}}"></td>
-                                            <td>{{  mb_strlen(strip_tags($data->product->name ?? ''),'UTF-8') > 50 ? mb_substr(strip_tags($data->product->name),0,50,'UTF-8').'...' : strip_tags($data->product->name ?? '') }}</td>
-                                            <td>{{ $data->product->category->name ?? 'N/A' }}
+                                            <td>{{ $data->product ? getLocalizedProductName($data->product, 50) : 'N/A' }}</td>
+                                            <td>{{ $data->product && $data->product->category ? getLocalizedCategoryName($data->product->category) : 'N/A' }}
                                                     @if(isset($data->product->subcategory))
                                                     <br>
-                                                    {{ $data->product->subcategory->name }}
+                                                    {{ getLocalizedCategoryName($data->product->subcategory) }}
                                                     @endif
                                                     @if(isset($data->product->childcategory))
                                                     <br>
-                                                    {{ $data->product->childcategory->name }}
+                                                    {{ getLocalizedCategoryName($data->product->childcategory) }}
                                                     @endif
                                                 </td>
                                                 <td>{{ $data->product->type ?? 'N/A' }}</td>
@@ -305,15 +305,15 @@
                                                     @foreach($pproducts as $data)
                                                     <tr>
                                                     <td><img src="{{filter_var($data->product->photo ?? '', FILTER_VALIDATE_URL) ? $data->product->photo : ($data->product->photo ?? null ? \Illuminate\Support\Facades\Storage::url($data->product->photo) : asset('assets/images/noimage.png'))}}"></td>
-                                                    <td>{{  mb_strlen(strip_tags($data->product->name ?? ''),'UTF-8') > 50 ? mb_substr(strip_tags($data->product->name),0,50,'UTF-8').'...' : strip_tags($data->product->name ?? '') }}</td>
-                                                    <td>{{ $data->product->category->name ?? 'N/A' }}
+                                                    <td>{{ $data->product ? getLocalizedProductName($data->product, 50) : 'N/A' }}</td>
+                                                    <td>{{ $data->product && $data->product->category ? getLocalizedCategoryName($data->product->category) : 'N/A' }}
                                                         @if(isset($data->product->subcategory))
                                                         <br>
-                                                        {{ $data->product->subcategory->name }}
+                                                        {{ getLocalizedCategoryName($data->product->subcategory) }}
                                                         @endif
                                                         @if(isset($data->product->childcategory))
                                                         <br>
-                                                        {{ $data->product->childcategory->name }}
+                                                        {{ getLocalizedCategoryName($data->product->childcategory) }}
                                                         @endif
                                                     </td>
                                                         <td>{{ $data->product->type ?? 'N/A' }}</td>

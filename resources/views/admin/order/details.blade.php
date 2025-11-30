@@ -488,28 +488,23 @@
                                             $detailsProductUrl = route('front.product.legacy', $product['item']['slug']);
                                         }
                                         @endphp
-                                        @if($product['item']['user_id'] != 0)
+                                        <a target="_blank" href="{{ $detailsProductUrl }}">{{ getLocalizedProductName($product['item'], 30) }}</a>
+                                        <br><small class="text-muted">SKU: {{ $product['item']['sku'] ?? 'N/A' }}</small>
                                         @php
-                                        $user = App\Models\User::find($product['item']['user_id']);
+                                        $user = isset($product['item']['user_id']) && $product['item']['user_id'] != 0
+                                            ? App\Models\User::find($product['item']['user_id'])
+                                            : null;
                                         @endphp
-                                        @if(isset($user))
-                                        <a target="_blank"
-                                            href="{{ $detailsProductUrl }}">{{mb_strlen($product['item']['name'],'utf-8')
-                                            > 30 ? mb_substr($product['item']['name'],0,30,'utf-8').'...' :
-                                            $product['item']['name']}}</a>
-                                        @else
-                                        <a target="_blank"
-                                            href="{{ $detailsProductUrl }}">{{mb_strlen($product['item']['name'],'utf-8')
-                                            > 30 ? mb_substr($product['item']['name'],0,30,'utf-8').'...' :
-                                            $product['item']['name']}}</a>
+                                        @if(isset($user) || isset($product['vendor_name']))
+                                        <p class="mb-0 mt-1">
+                                            <strong>{{ __('Vendor') }}:</strong>
+                                            {{ $product['vendor_name'] ?? ($user->shop_name ?? $user->name ?? '') }}
+                                        </p>
                                         @endif
-                                        @else
-
-                                        <a target="_blank"
-                                            href="{{ $detailsProductUrl }}">{{mb_strlen($product['item']['name'],'utf-8')
-                                            > 30 ? mb_substr($product['item']['name'],0,30,'utf-8').'...' :
-                                            $product['item']['name']}}</a>
-
+                                        @if(isset($product['item']['brand_name']))
+                                        <p class="mb-0">
+                                            <strong>{{ __('Brand') }}:</strong> {{ $product['item']['brand_name'] }}
+                                        </p>
                                         @endif
 
 

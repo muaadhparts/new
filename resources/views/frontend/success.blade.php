@@ -353,7 +353,7 @@
                                         <td class="product-details">
                                             <img src="{{ $product['item']['photo'] ? \Illuminate\Support\Facades\Storage::url($product['item']['photo']) : asset('assets/images/noimage.png') }}"
                                                 alt="" class="d-lg-none d-table-cell pb-24 small-device-img">
-                                            <h6>{{ $product['item']['name'] }}</h6>
+                                            <h6>{{ getLocalizedProductName($product['item']) }}</h6>
                                             <p><span>@lang('Quantity:')</span> {{ $product['qty'] }}</p>
                                             <p><span>Size:</span>
                                                 @if (!empty($product['size']))

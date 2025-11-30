@@ -330,9 +330,31 @@ class Product extends Model
         return $price;
     }
 
+    /**
+     * Get localized product name based on current locale.
+     * Arabic: label_ar (fallback to label_en, then name)
+     * English: label_en (fallback to label_ar, then name)
+     */
+    public function getLocalizedNameAttribute(): string
+    {
+        $isAr = app()->getLocale() === 'ar';
+        $labelAr = trim((string)($this->label_ar ?? ''));
+        $labelEn = trim((string)($this->label_en ?? ''));
+        $name = trim((string)($this->name ?? ''));
+
+        if ($isAr) {
+            return $labelAr !== '' ? $labelAr : ($labelEn !== '' ? $labelEn : $name);
+        }
+        return $labelEn !== '' ? $labelEn : ($labelAr !== '' ? $labelAr : $name);
+    }
+
+    /**
+     * Show truncated localized name for display.
+     */
     public function showName()
     {
-        return mb_strlen($this->name, 'UTF-8') > 50 ? mb_substr($this->name, 0, 50, 'UTF-8') . '...' : $this->name;
+        $displayName = $this->localized_name;
+        return mb_strlen($displayName, 'UTF-8') > 50 ? mb_substr($displayName, 0, 50, 'UTF-8') . '...' : $displayName;
     }
 
     /**

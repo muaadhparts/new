@@ -75,7 +75,7 @@
                                 @endphp
                                 <td>
                                     <a href="{{ $compareProductUrl }}">
-                                        <h6 class="product-title">{{ $product['item']->name }}</h6>
+                                        <h6 class="product-title">{{ getLocalizedProductName($product['item']) }}</h6>
                                     </a>
                                 </td>
                             @endforeach
@@ -106,7 +106,7 @@
                                 <h6 class="td-title">@lang('Brand')</h6>
                             </td>
                             @foreach ($products as $product)
-                                <td><span class="table-pera">{{ $product['item']->brand ? $product['item']->brand->name : __('N/A') }}</span></td>
+                                <td><span class="table-pera">{{ $product['item']->brand ? getLocalizedBrandName($product['item']->brand) : __('N/A') }}</span></td>
                             @endforeach
                         </tr>
 

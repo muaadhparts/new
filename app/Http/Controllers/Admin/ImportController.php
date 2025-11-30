@@ -30,7 +30,7 @@ class ImportController extends AdminBaseController
          //--- Integrating This Collection Into Datatables
          return Datatables::of($datas)
                 ->editColumn('name', function(Product $data) {
-                    $name = mb_strlen(strip_tags($data->name),'utf-8') > 50 ? mb_substr(strip_tags($data->name),0,50,'utf-8').'...' : strip_tags($data->name);
+                    $name = getLocalizedProductName($data, 50);
 
                     // اختر عرض البائع النشط (المتوفر أولاً ثم الأرخص)
                     $mp = $data->merchantProducts()

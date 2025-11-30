@@ -58,9 +58,7 @@
                                 <td class="text-start">
                                     <div class="product-name">
                                         <span class="content">
-                                            {{ mb_strlen(strip_tags($data->name), 'UTF-8') > 50
-                                                ? mb_substr(strip_tags($data->name), 0, 50, 'UTF-8') . '...'
-                                                : strip_tags($data->name) }}
+                                            {{ getLocalizedProductName($data, 50) }}
                                         </span>
                                     </div>
                                 </td>

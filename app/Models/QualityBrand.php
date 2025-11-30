@@ -26,10 +26,27 @@ class QualityBrand extends Model
         return $this->hasMany(MerchantProduct::class, 'brand_quality_id');
     }
 
-    // Displayable name (unifies language selection)
+    /**
+     * Get localized quality brand name based on current locale.
+     * Arabic: name_ar (fallback to name_en)
+     * English: name_en (fallback to name_ar)
+     */
+    public function getLocalizedNameAttribute(): string
+    {
+        $isAr = app()->getLocale() === 'ar';
+        $nameAr = trim((string)($this->name_ar ?? ''));
+        $nameEn = trim((string)($this->name_en ?? ''));
+
+        if ($isAr) {
+            return $nameAr !== '' ? $nameAr : $nameEn;
+        }
+        return $nameEn !== '' ? $nameEn : $nameAr;
+    }
+
+    // Displayable name (unifies language selection) - legacy alias
     public function getDisplayNameAttribute()
     {
-        return $this->name_ar ?: $this->name_en;
+        return $this->localized_name;
     }
 
     // Logo URL from Storage
