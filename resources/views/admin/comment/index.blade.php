@@ -41,9 +41,13 @@
 												<table id="geniustable" class="table table-hover dt-responsive" cellspacing="0" width="100%">
 													<thead>
 														<tr>
-									                        <th width="20%">{{ __('Product') }}</th>
-									                        <th width="20%">{{ __('Commenter') }}</th>
-									                        <th width="40%">{{ __('Comment') }}</th>
+									                        <th>{{ __('Product') }}</th>
+									                        <th>{{ __('Brand') }}</th>
+									                        <th>{{ __('Quality Brand') }}</th>
+									                        <th>{{ __('Manufacturer') }}</th>
+									                        <th>{{ __('Vendor') }}</th>
+									                        <th>{{ __('Commenter') }}</th>
+									                        <th>{{ __('Comment') }}</th>
 									                        <th>{{ __('Options') }}</th>
 														</tr>
 													</thead>
@@ -138,6 +142,10 @@
                ajax: '{{ route('admin-comment-datatables') }}',
                columns: [
                         { data: 'product', name: 'product', searchable: false, orderable: false },
+                        { data: 'brand', name: 'brand' },
+                        { data: 'quality_brand', name: 'quality_brand' },
+                        { data: 'manufacturer', name: 'manufacturer' },
+                        { data: 'vendor', name: 'vendor' },
                         { data: 'commenter', name: 'commenter' },
                         { data: 'text', name: 'text' },
             			{ data: 'action', searchable: false, orderable: false }

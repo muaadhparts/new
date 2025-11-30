@@ -139,9 +139,25 @@
                                                 @if(isset($product['item']['brand_name']))
                                                     <strong>{{ __('Brand') }}:</strong> {{ $product['item']['brand_name'] }}<br>
                                                 @endif
-                                                @if(isset($product['quality_name']))
-                                                    <strong>{{ __('Quality') }}:</strong> {{ $product['quality_name'] }}
+                                                @php
+                                                    // جودة البراند والشركة المصنعة
+                                                    $invoiceQualityBrand = null;
+                                                    if (isset($product['brand_quality_id']) && $product['brand_quality_id']) {
+                                                        $invoiceQualityBrand = \App\Models\QualityBrand::find($product['brand_quality_id']);
+                                                    }
+                                                @endphp
+                                                @if($invoiceQualityBrand)
+                                                    <strong>{{ __('Quality Brand') }}:</strong> {{ getLocalizedQualityName($invoiceQualityBrand) }}<br>
+                                                    @if($invoiceQualityBrand->manufacturer)
+                                                    <strong>{{ __('Manufacturer') }}:</strong> {{ $invoiceQualityBrand->manufacturer }}<br>
+                                                    @endif
+                                                @elseif(isset($product['quality_name']))
+                                                    <strong>{{ __('Quality') }}:</strong> {{ $product['quality_name'] }}<br>
                                                 @endif
+                                                @php
+                                                    $invoiceCondition = isset($product['item']['product_condition']) && $product['item']['product_condition'] == 1 ? __('Used') : __('New');
+                                                @endphp
+                                                <strong>{{ __('Condition') }}:</strong> {{ $invoiceCondition }}
                                             </td>
 
 

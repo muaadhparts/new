@@ -5,15 +5,25 @@
 		</a>
 		<ul>
 		@foreach($datas as $data)
+			@php
+				$product = $data->product;
+				$productName = $product ? getLocalizedProductName($product, 30) : __('N/A');
+
+				// المخزون من merchant_products
+				$totalStock = 0;
+				if ($product) {
+					$totalStock = $product->merchantProducts()->where('status', 1)->sum('stock');
+				}
+			@endphp
 			<li>
-				<a href="{{ route('admin-prod-edit',$data->product->id) }}"> <i class="icofont-cart"></i> {{mb_strlen($data->product->name,'UTF-8') > 30 ? mb_substr($data->product->name,0,30,'UTF-8') : $data->product->name}}</a>
-				<a class="clear">{{ __('Stock') }} : {{$data->product->stock}}</a>
+				<a href="{{ route('admin-prod-edit', $product->id ?? 0) }}"> <i class="icofont-cart"></i> {{ $productName }}</a>
+				<a class="clear">{{ __('Stock') }} : {{ $totalStock }}</a>
 			</li>
 		@endforeach
 
 		</ul>
 
-		@else 
+		@else
 
 		<a class="clear" href="javascript:;">
 			{{ __('No New Notifications.') }}

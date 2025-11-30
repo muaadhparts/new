@@ -133,11 +133,12 @@ table#example2 {
                                                                 <table id="example2" class="table table-hover dt-responsive" cellspacing="0" width="100%">
                                                                     <thead>
                                                                         <tr>
-                                                                            <th>{{ __("Product ID") }}</th>
+                                                                            <th>{{ __("MP ID") }}</th>
                                                                             <th>{{ __("Name") }}</th>
                                                                             <th>{{ __("Brand") }}</th>
                                                                             <th>{{ __("Quality Brand") }}</th>
-                                                                            <th>{{ __("Type") }}</th>
+                                                                            <th>{{ __("Manufacturer") }}</th>
+                                                                            <th>{{ __("Condition") }}</th>
                                                                             <th>{{ __("Stock") }}</th>
                                                                             <th>{{ __("Price") }}</th>
                                                                             <th>{{ __("Status") }}</th>
@@ -153,32 +154,46 @@ table#example2 {
                                                                             $adminVendorUrl = $dt && $dt->slug
                                                                                 ? route('front.product', ['slug' => $dt->slug, 'vendor_id' => $merchantProduct->user_id, 'merchant_product_id' => $merchantProduct->id])
                                                                                 : '#';
+
+                                                                            // الشركة المصنعة من brand_qualities
+                                                                            $manufacturer = $merchantProduct->qualityBrand ? $merchantProduct->qualityBrand->manufacturer : null;
+
+                                                                            // حالة المنتج (جديد/مستعمل)
+                                                                            $condition = $merchantProduct->product_condition == 1 ? __('Used') : __('New');
+
+                                                                            // المخزون
+                                                                            $stck = $merchantProduct->stock;
+                                                                            if($stck === null || $stck === '')
+                                                                                $stckDisplay = __('Unlimited');
+                                                                            elseif((int)$stck === 0)
+                                                                                $stckDisplay = '<span class="text-danger">'.__('Out Of Stock').'</span>';
+                                                                            else
+                                                                                $stckDisplay = $stck;
+
+                                                                            // السعر مع العمولة
+                                                                            $gs = cache()->remember('generalsettings', now()->addDay(), fn () => DB::table('generalsettings')->first());
+                                                                            $price = (float) $merchantProduct->price;
+                                                                            $finalPrice = $price + (float) $gs->fixed_commission + ($price * (float) $gs->percentage_commission / 100);
                                                                         @endphp
                                                                         <tr>
-                                                                        <td><a href="{{ $adminVendorUrl }}" target="_blank">{{ sprintf("%'.08d", $dt->id ?? 0) }}</a></td>
-                                                                            <td>{{ $dt ? getLocalizedProductName($dt, 50) : 'N/A' }}</td>
-                                                                            <td>{{ $dt && $dt->brand ? getLocalizedBrandName($dt->brand) : 'N/A' }}</td>
-                                                                            <td>{{ $merchantProduct && $merchantProduct->qualityBrand ? $merchantProduct->qualityBrand->display_name : 'N/A' }}</td>
-                                                                            <td>{{ $dt->type ?? 'N/A' }}</td>
-                                                                            @php
-                                                                            $stck = (string)($merchantProduct->stock ?? $dt->stock ?? '');
-                                                                            if($stck == "0")
-                                                                            $stck = "Out Of Stock";
-                                                                            elseif($stck == null || $stck == '')
-                                                                            $stck = "Unlimited";
-                                                                            @endphp
-                                                                            <td>{{ $stck  }}</td>
-                                                                            <td>{{ \App\Models\Product::convertPrice($merchantProduct->price) }}</td>
+                                                                            <td><a href="{{ $adminVendorUrl }}" target="_blank">{{ sprintf("%'.06d", $merchantProduct->id) }}</a></td>
+                                                                            <td>{{ $dt ? getLocalizedProductName($dt, 50) : __('N/A') }}</td>
+                                                                            <td>{{ $dt && $dt->brand ? getLocalizedBrandName($dt->brand) : __('N/A') }}</td>
+                                                                            <td>{{ $merchantProduct->qualityBrand ? getLocalizedQualityName($merchantProduct->qualityBrand) : __('N/A') }}</td>
+                                                                            <td>{{ $manufacturer ?? __('N/A') }}</td>
+                                                                            <td><span class="badge {{ $merchantProduct->product_condition == 1 ? 'badge-warning' : 'badge-success' }}">{{ $condition }}</span></td>
+                                                                            <td>{!! $stckDisplay !!}</td>
+                                                                            <td>{{ \PriceHelper::showAdminCurrencyPrice($finalPrice) }}</td>
                                                                             <td>
                                                                                 <div class="action-list">
-                                                                                <select class="process select droplinks {{ $dt->status == 1 ? 'drop-success' : 'drop-danger' }}">
-                                                                                    <option data-val="1" value="{{ route('admin-prod-status',['id1' => $data->id, 'id2' => 1]) }}" {{ $dt->status == 1 ? 'selected' : '' }}>{{ __("Activated") }}</option>
-                                                                                    <<option data-val="0" value="{{ route('admin-prod-status',['id1' => $data->id, 'id2' => 0]) }}" {{ $dt->status == 0 ? 'selected' : '' }}>{{ __("Deactivated") }}</option>
+                                                                                <select class="process select droplinks {{ $merchantProduct->status == 1 ? 'drop-success' : 'drop-danger' }}">
+                                                                                    <option data-val="1" value="{{ route('admin-merchant-product-status',['id' => $merchantProduct->id, 'status' => 1]) }}" {{ $merchantProduct->status == 1 ? 'selected' : '' }}>{{ __("Activated") }}</option>
+                                                                                    <option data-val="0" value="{{ route('admin-merchant-product-status',['id' => $merchantProduct->id, 'status' => 0]) }}" {{ $merchantProduct->status == 0 ? 'selected' : '' }}>{{ __("Deactivated") }}</option>
                                                                                 </select>
                                                                                 </div>
                                                                             </td>
                                                                             <td>
-                                                                                <a href=" {{ route('admin-prod-edit',$dt->id) }}" class="view-details">
+                                                                                <a href="{{ route('admin-prod-edit', $dt->id ?? 0) }}" class="view-details">
                                                                                     <i class="fas fa-eye"></i>{{ __("Details") }}
                                                                                 </a>
                                                                             </td>

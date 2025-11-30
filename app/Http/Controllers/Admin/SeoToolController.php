@@ -46,9 +46,18 @@ class SeoToolController extends AdminBaseController
     public function popular($id)
     {
         $expDate = Carbon::now()->subDays($id);
-        $productss = ProductClick::whereDate('date', '>',$expDate)->get()->groupBy('product_id');
+
+        // Group by merchant_product_id for vendor-specific tracking
+        $productss = ProductClick::with(['product.brand', 'product.category', 'merchantProduct.user', 'merchantProduct.qualityBrand'])
+            ->whereDate('date', '>', $expDate)
+            ->get()
+            ->groupBy(function ($item) {
+                // Group by merchant_product_id if available, otherwise by product_id
+                return $item->merchant_product_id ?? 'product_' . $item->product_id;
+            });
+
         $val = $id;
-        return view('admin.seotool.popular',compact('val','productss'));
+        return view('admin.seotool.popular', compact('val', 'productss'));
     }  
 
 }

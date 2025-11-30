@@ -506,7 +506,29 @@
                                             <strong>{{ __('Brand') }}:</strong> {{ $product['item']['brand_name'] }}
                                         </p>
                                         @endif
-
+                                        @php
+                                            // جودة البراند والشركة المصنعة
+                                            $qualityBrand = null;
+                                            if (isset($product['brand_quality_id']) && $product['brand_quality_id']) {
+                                                $qualityBrand = \App\Models\QualityBrand::find($product['brand_quality_id']);
+                                            }
+                                            // حالة المنتج (جديد/مستعمل)
+                                            $productCondition = isset($product['item']['product_condition']) && $product['item']['product_condition'] == 1 ? __('Used') : __('New');
+                                        @endphp
+                                        @if($qualityBrand)
+                                        <p class="mb-0">
+                                            <strong>{{ __('Quality Brand') }}:</strong> {{ getLocalizedQualityName($qualityBrand) }}
+                                        </p>
+                                        @if($qualityBrand->manufacturer)
+                                        <p class="mb-0">
+                                            <strong>{{ __('Manufacturer') }}:</strong> {{ $qualityBrand->manufacturer }}
+                                        </p>
+                                        @endif
+                                        @endif
+                                        <p class="mb-0">
+                                            <strong>{{ __('Condition') }}:</strong>
+                                            <span class="badge {{ isset($product['item']['product_condition']) && $product['item']['product_condition'] == 1 ? 'badge-warning' : 'badge-success' }}">{{ $productCondition }}</span>
+                                        </p>
 
                                         @if($product['license'] != '')
                                         <a href="javascript:;" data-toggle="modal" data-target="#confirm-delete"

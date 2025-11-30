@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Comment extends Model
 {
-    protected $fillable = ['product_id', 'user_id','text'];
+    protected $fillable = ['product_id', 'merchant_product_id', 'user_id', 'text'];
 
     public function user()
     {
@@ -16,6 +16,14 @@ class Comment extends Model
     public function product()
     {
     	return $this->belongsTo('App\Models\Product')->withDefault();
+    }
+
+    /**
+     * السجل التجاري المرتبط بالتعليق
+     */
+    public function merchantProduct()
+    {
+        return $this->belongsTo('App\Models\MerchantProduct')->withDefault();
     }
 
 	public function replies()

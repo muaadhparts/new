@@ -123,6 +123,23 @@ html {
                                             <td width="40%">
                                                 {{ getLocalizedProductName($product['item']) }}
                                                 <br><small>SKU: {{ $product['item']['sku'] ?? 'N/A' }}</small>
+                                                @if(isset($product['item']['brand_name']))
+                                                <br><small>{{ __('Brand') }}: {{ $product['item']['brand_name'] }}</small>
+                                                @endif
+                                                @php
+                                                    $printQualityBrand = null;
+                                                    if (isset($product['brand_quality_id']) && $product['brand_quality_id']) {
+                                                        $printQualityBrand = \App\Models\QualityBrand::find($product['brand_quality_id']);
+                                                    }
+                                                    $printCondition = isset($product['item']['product_condition']) && $product['item']['product_condition'] == 1 ? __('Used') : __('New');
+                                                @endphp
+                                                @if($printQualityBrand)
+                                                <br><small>{{ __('Quality') }}: {{ getLocalizedQualityName($printQualityBrand) }}</small>
+                                                    @if($printQualityBrand->manufacturer)
+                                                    <br><small>{{ __('Manufacturer') }}: {{ $printQualityBrand->manufacturer }}</small>
+                                                    @endif
+                                                @endif
+                                                <br><small>{{ __('Condition') }}: {{ $printCondition }}</small>
                                             </td>
                                             <td width="15%">
                                                 @if(isset($product['vendor_name']))

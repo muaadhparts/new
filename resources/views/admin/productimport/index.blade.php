@@ -32,8 +32,12 @@
 												<table id="geniustable" class="table table-hover dt-responsive" cellspacing="0" width="100%">
 													<thead>
 														<tr>
+									                        <th>{{ __("Image") }}</th>
 									                        <th>{{ __("Name") }}</th>
-									                        <th>{{ __("Type") }}</th>
+									                        <th>{{ __("Brand") }}</th>
+									                        <th>{{ __("Quality Brand") }}</th>
+									                        <th>{{ __("Manufacturer") }}</th>
+									                        <th>{{ __("Vendor") }}</th>
 									                        <th>{{ __("Stock") }}</th>
 									                        <th>{{ __("Price") }}</th>
 									                        <th>{{ __("Status") }}</th>
@@ -181,8 +185,12 @@
                serverSide: true,
                ajax: '{{ route('admin-import-datatables') }}',
                columns: [
+                        { data: 'photo', name: 'photo' },
                         { data: 'name', name: 'name' },
-                        { data: 'type', name: 'type' },
+                        { data: 'brand', name: 'brand' },
+                        { data: 'quality_brand', name: 'quality_brand' },
+                        { data: 'manufacturer', name: 'manufacturer' },
+                        { data: 'vendor', name: 'vendor' },
                         { data: 'stock', name: 'stock' },
                         { data: 'price', name: 'price' },
                         { data: 'status', searchable: false, orderable: false},

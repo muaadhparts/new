@@ -77,6 +77,9 @@ class ProductController extends AdminBaseController
             ->addColumn('quality_brand', function (\App\Models\MerchantProduct $mp) {
                 return $mp->qualityBrand ? getLocalizedQualityName($mp->qualityBrand) : __('N/A');
             })
+            ->addColumn('manufacturer', function (\App\Models\MerchantProduct $mp) {
+                return $mp->qualityBrand && $mp->qualityBrand->manufacturer ? $mp->qualityBrand->manufacturer : __('N/A');
+            })
             ->addColumn('vendor', function (\App\Models\MerchantProduct $mp) {
                 if (!$mp->user) return __('N/A');
                 $shopName = $mp->user->shop_name ?: $mp->user->name;
@@ -186,6 +189,9 @@ class ProductController extends AdminBaseController
             })
             ->addColumn('quality_brand', function (\App\Models\MerchantProduct $mp) {
                 return $mp->qualityBrand ? getLocalizedQualityName($mp->qualityBrand) : __('N/A');
+            })
+            ->addColumn('manufacturer', function (\App\Models\MerchantProduct $mp) {
+                return $mp->qualityBrand && $mp->qualityBrand->manufacturer ? $mp->qualityBrand->manufacturer : __('N/A');
             })
             ->addColumn('vendor', function (\App\Models\MerchantProduct $mp) {
                 if (!$mp->user) return __('N/A');

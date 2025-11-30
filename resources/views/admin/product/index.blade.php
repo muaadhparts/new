@@ -35,8 +35,8 @@
                                         <th>{{ __('Name') }}</th>
                                         <th>{{ __('Brand') }}</th>
                                         <th>{{ __('Quality Brand') }}</th>
+                                        <th>{{ __('Manufacturer') }}</th>
                                         <th>{{ __('Vendor') }}</th>
-                                        <th>{{ __('Type') }}</th>
                                         <th>{{ __('Stock') }}</th>
                                         <th>{{ __('Price') }}</th>
                                         <th>{{ __('Status') }}</th>
@@ -227,12 +227,12 @@
                         name: 'quality_brand'
                     },
                     {
-                        data: 'vendor',
-                        name: 'vendor'
+                        data: 'manufacturer',
+                        name: 'manufacturer'
                     },
                     {
-                        data: 'type',
-                        name: 'type'
+                        data: 'vendor',
+                        name: 'vendor'
                     },
                     {
                         data: 'stock',

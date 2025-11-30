@@ -6,12 +6,20 @@ use Illuminate\Database\Eloquent\Model;
 
 class Rating extends Model
 {
-    protected $fillable = ['user_id','product_id','review','rating','review_date'];
+    protected $fillable = ['user_id', 'product_id', 'merchant_product_id', 'review', 'rating', 'review_date'];
     public $timestamps = false;
 
     public function product()
     {
         return $this->belongsTo('App\Models\Product')->withDefault();
+    }
+
+    /**
+     * السجل التجاري المرتبط بالتقييم
+     */
+    public function merchantProduct()
+    {
+        return $this->belongsTo('App\Models\MerchantProduct')->withDefault();
     }
 
     public function user()
