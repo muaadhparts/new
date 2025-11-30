@@ -1032,6 +1032,7 @@ Route::prefix('admin')->group(function () {
 
     // STATUS SECTION
     Route::get('/products/status/{id1}/{id2}', 'Admin\ProductController@status')->name('admin-prod-status');
+    Route::get('/merchant-products/status/{id}/{status}', 'Admin\ProductController@merchantProductStatus')->name('admin-merchant-product-status');
     // STATUS SECTION ENDS
 
     // FEATURE SECTION

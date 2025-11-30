@@ -32,11 +32,11 @@
 												<table id="geniustable" class="table table-hover dt-responsive" cellspacing="0" width="100%">
 													<thead>
 														<tr>
+									                        <th>{{ __("Image") }}</th>
 									                        <th>{{ __("Name") }}</th>
 									                        <th>{{ __("Brand") }}</th>
 									                        <th>{{ __("Quality Brand") }}</th>
 									                        <th>{{ __("Vendor") }}</th>
-									                        <th>{{ __("Type") }}</th>
 									                        <th>{{ __("Stock") }}</th>
 									                        <th>{{ __("Price") }}</th>
 									                        <th>{{ __("Status") }}</th>
@@ -213,11 +213,11 @@
                serverSide: true,
                ajax: '{{ route('admin-prod-datatables') }}?type=deactive',
                columns: [
+                        { data: 'photo', name: 'photo' },
                         { data: 'name', name: 'name' },
                         { data: 'brand', name: 'brand' },
                         { data: 'quality_brand', name: 'quality_brand' },
                         { data: 'vendor', name: 'vendor' },
-                        { data: 'type', name: 'type' },
                         { data: 'stock', name: 'stock' },
                         { data: 'price', name: 'price' },
                         { data: 'status', searchable: false, orderable: false},

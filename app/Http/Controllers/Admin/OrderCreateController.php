@@ -39,24 +39,45 @@ class OrderCreateController extends AdminBaseController
 
     public function datatables()
     {
+        // الاستعلام على السجلات التجارية مباشرة - كل سجل تجاري = صف مستقل
+        $datas = \App\Models\MerchantProduct::with(['product', 'user', 'qualityBrand'])
+            ->where('status', 1)
+            ->whereHas('product', function($q) {
+                $q->where('status', 1);
+            });
 
-        //--- Integrating This Collection Into Datatables
-        $datas = Product::whereStatus(1);
         return Datatables::of($datas)
-            ->editColumn('name', function (Product $data) {
-                $price = $data->price * $this->curr->value;
-                $photoUrl = filter_var($data->photo, FILTER_VALIDATE_URL)
-                    ? $data->photo
-                    : ($data->photo ? \Illuminate\Support\Facades\Storage::url($data->photo) : asset('assets/images/noimage.png'));
-                $img = '<img src="' . $photoUrl . '" alt="' . $data->name . '" class="img-thumbnail" width="100"> <br>';
-                $name =  mb_strlen($data->name, 'UTF-8') > 50 ? mb_substr($data->name, 0, 50, 'UTF-8') . '...' : $data->name;
+            ->addColumn('name', function (\App\Models\MerchantProduct $mp) {
+                $product = $mp->product;
+                if (!$product) return __('N/A');
 
+                // السعر من merchant_products مع العمولة
+                $gs = cache()->remember('generalsettings', now()->addDay(), fn () => \DB::table('generalsettings')->first());
+                $price = (float) $mp->price;
+                $base = $price + (float) $gs->fixed_commission + ($price * (float) $gs->percentage_commission / 100);
+                $finalPrice = $base * $this->curr->value;
 
-                return  $img . $name . $data->checkVendor() . '<br><small>' . __("Price") . ': ' . $price . ' ' . $this->curr->sign . '</small>';
+                $photoUrl = filter_var($product->photo, FILTER_VALIDATE_URL)
+                    ? $product->photo
+                    : ($product->photo ? \Illuminate\Support\Facades\Storage::url($product->photo) : asset('assets/images/noimage.png'));
+                $img = '<img src="' . $photoUrl . '" alt="Image" class="img-thumbnail" width="100"> <br>';
+                $name = getLocalizedProductName($product, 50);
+
+                // معلومات البائع
+                $vendorInfo = $mp->user ? '<span class="badge badge-info">' . ($mp->user->shop_name ?: $mp->user->name) . '</span>' : '';
+
+                // حالة المنتج (جديد/مستعمل)
+                $condition = $mp->product_condition == 1 ? ' <span class="badge badge-warning">' . __('Used') . '</span>' : '';
+
+                // المخزون
+                $stock = $mp->stock === null ? __('Unlimited') : (($mp->stock > 0) ? $mp->stock : '<span class="text-danger">' . __('Out Of Stock') . '</span>');
+
+                return $img . $name . $condition . '<br>' . $vendorInfo . '<br><small>' . __("Price") . ': ' . number_format($finalPrice, 2) . ' ' . $this->curr->sign . '</small><br><small>' . __("Stock") . ': ' . $stock . '</small>';
             })
 
-            ->addColumn('action', function (Product $data) {
-                return '<div class="action-list"><a href="javascript:;" class="order_product_add" data-toggle="modal" class="add-btn-small pl-2" data-target="#add-product" data-href="' . $data->id . '"> <i class="fas fa-plus"></i></a></div>';
+            ->addColumn('action', function (\App\Models\MerchantProduct $mp) {
+                // نستخدم merchant_product_id بدلاً من product_id
+                return '<div class="action-list"><a href="javascript:;" class="order_product_add" data-toggle="modal" class="add-btn-small pl-2" data-target="#add-product" data-href="' . $mp->id . '" data-product-id="' . $mp->product_id . '"> <i class="fas fa-plus"></i></a></div>';
             })
 
             ->rawColumns(['name', 'action'])
