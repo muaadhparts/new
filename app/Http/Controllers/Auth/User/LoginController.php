@@ -21,45 +21,27 @@ class LoginController extends Controller
             'password' => 'required',
         ]);
 
-        // ✅ CRITICAL FIX: Save ALL session data BEFORE Auth::attempt()
-        // Auth::attempt() regenerates session ID, which can cause data loss
-        // We backup critical data and restore it immediately after authentication
-        $cartBackup = Session::get('cart');
-        $checkoutVendorId = Session::get('checkout_vendor_id');
+        // حفظ اللغة والعملة فقط (بيانات أساسية)
         $languageBackup = Session::get('language');
         $currencyBackup = Session::get('currency');
-        $couponBackup = Session::get('coupon');
-        $couponTotalBackup = Session::get('coupon_total');
 
-        // Backup all vendor-specific session data
-        $vendorSessionBackup = [];
-        if ($checkoutVendorId) {
-            $vendorSessionBackup['vendor_step1_' . $checkoutVendorId] = Session::get('vendor_step1_' . $checkoutVendorId);
-            $vendorSessionBackup['vendor_step2_' . $checkoutVendorId] = Session::get('vendor_step2_' . $checkoutVendorId);
-            $vendorSessionBackup['coupon_vendor_' . $checkoutVendorId] = Session::get('coupon_vendor_' . $checkoutVendorId);
-            $vendorSessionBackup['coupon_total_vendor_' . $checkoutVendorId] = Session::get('coupon_total_vendor_' . $checkoutVendorId);
-        }
+        // Remember Me: إذا تم تحديد الخيار، يبقى مسجل الدخول
+        $remember = $request->has('remember') || $request->remember == 1;
 
-        if (Auth::attempt(['email' => $request->email, 'password' => $request->password])) {
-            // Email verification check
+        if (Auth::attempt(['email' => $request->email, 'password' => $request->password], $remember)) {
+            // التحقق من تأكيد البريد الإلكتروني
             if (Auth::guard('web')->user()->email_verified == 'No') {
                 Auth::guard('web')->logout();
                 return back()->with('unsuccess', __('Your Email is not Verified!'));
             }
 
-            // Ban check
+            // التحقق من الحظر
             if (Auth::guard('web')->user()->ban == 1) {
                 Auth::guard('web')->logout();
                 return back()->with('unsuccess', __('Your Account is Banned!'));
             }
 
-            // ✅ ALWAYS restore session data first
-            // Restore cart
-            if ($cartBackup) {
-                Session::put('cart', $cartBackup);
-            }
-
-            // Restore language and currency
+            // استعادة اللغة والعملة
             if ($languageBackup) {
                 Session::put('language', $languageBackup);
             }
@@ -67,77 +49,24 @@ class LoginController extends Controller
                 Session::put('currency', $currencyBackup);
             }
 
-            // Restore coupon data
-            if ($couponBackup) {
-                Session::put('coupon', $couponBackup);
-            }
-            if ($couponTotalBackup) {
-                Session::put('coupon_total', $couponTotalBackup);
-            }
-
-            // Restore checkout vendor ID if exists
-            if ($checkoutVendorId) {
-                Session::put('checkout_vendor_id', $checkoutVendorId);
-
-                // Restore all vendor-specific session data
-                foreach ($vendorSessionBackup as $key => $value) {
-                    if ($value !== null) {
-                        Session::put($key, $value);
-                    }
-                }
-
-                Session::save(); // Force save immediately
-
-                \Log::info('Login SUCCESS: Restored checkout session', [
-                    'user_id' => Auth::id(),
-                    'vendor_id' => $checkoutVendorId,
-                    'has_cart' => !empty($cartBackup)
-                ]);
-            }
-
-            // ✅ REDIRECT LOGIC - المنطق النهائي المحدث
-
-            // 1. إذا كان vendor login (من صفحة vendor login)
-            if($request->vendor == 1) {
-                \Log::info('Login: Vendor login detected', ['user_id' => Auth::id()]);
+            // إذا كان تسجيل دخول البائع
+            if ($request->vendor == 1) {
                 return redirect()->route('vendor.dashboard');
             }
 
-            // 2. إذا كان قادماً من checkout (لديه checkout_vendor_id في session)
-            // فقط في هذه الحالة نعيده لـ checkout
-            if ($checkoutVendorId) {
-                \Log::info('Login: User came from checkout - redirecting back', [
-                    'user_id' => Auth::id(),
-                    'vendor_id' => $checkoutVendorId
-                ]);
-                return redirect()->route('front.checkout.vendor', $checkoutVendorId);
-            }
-
-            // 3. Normal Login: التوجيه بناءً على Cart
-            // ✅ إذا كانت السلة تحتوي منتجات → cart page
-            // ✅ إذا كانت السلة فارغة → dashboard
-            if (!empty($cartBackup)) {
-                \Log::info('Login: Normal login with cart - redirecting to cart', [
-                    'user_id' => Auth::id(),
-                    'cart_items' => count($cartBackup)
-                ]);
-                return redirect()->route('front.cart');
-            }
-
-            // 4. السلة فارغة → Dashboard
-            \Log::info('Login: Normal login without cart - redirecting to dashboard', [
-                'user_id' => Auth::id()
-            ]);
+            // التوجيه دائماً إلى لوحة تحكم المستخدم
             return redirect()->route('user-dashboard');
         }
 
-        // Login failed
+        // فشل تسجيل الدخول
         return redirect()->back()->with('unsuccess', __('Invalid Email or Password!'));
     }
 
     public function logout()
     {
         Auth::logout();
+        Session::invalidate();
+        Session::regenerateToken();
         return redirect('/');
     }
 }

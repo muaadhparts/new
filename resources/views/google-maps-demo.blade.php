@@ -436,7 +436,7 @@
             showLoading(true);
 
             try {
-                const response = await fetch('/api/geocoding/reverse', {
+                const response = await fetch('/geocoding/reverse', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

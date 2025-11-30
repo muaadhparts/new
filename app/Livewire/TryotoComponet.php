@@ -18,6 +18,12 @@ class TryotoComponet extends Component
     /** رقم البائع لربط الإشارة وتحديث نص الشحن أعلى المودال */
     public int $vendorId = 0;
 
+    /** هل حدث خطأ في Tryoto API */
+    public bool $hasError = false;
+
+    /** رسالة الخطأ للعرض */
+    public string $errorMessage = '';
+
     /** الوزن الإجمالي */
     protected $weight = 100;
 
@@ -81,36 +87,75 @@ class TryotoComponet extends Component
      */
     protected function checkOTODeliveryFee(): void
     {
-        // Calculate dimensions using PriceHelper
-        $dimensions = \App\Helpers\PriceHelper::calculateShippingDimensions($this->products);
+        try {
+            // Calculate dimensions using PriceHelper
+            $dimensions = \App\Helpers\PriceHelper::calculateShippingDimensions($this->products);
 
-        // Get cities from session data
-        $originCity = $this->getOriginCity();
-        $destinationCity = $this->getDestinationCity();
+            // Get cities from session data
+            $originCity = $this->getOriginCity();
+            $destinationCity = $this->getDestinationCity();
 
-        // استخدام TryotoService الموحد بدلاً من الاتصال المباشر بالـ API
-        $result = $this->tryotoService->getDeliveryOptions(
-            $originCity,
-            $destinationCity,
-            $dimensions['weight'],
-            0, // COD amount not used in this endpoint
-            $dimensions
-        );
+            // استخدام TryotoService الموحد بدلاً من الاتصال المباشر بالـ API
+            $result = $this->tryotoService->getDeliveryOptions(
+                $originCity,
+                $destinationCity,
+                $dimensions['weight'],
+                0, // COD amount not used in this endpoint
+                $dimensions
+            );
 
-        if (!$result['success']) {
-            \Log::error('TryotoComponent: Failed to get delivery options', [
-                'error' => $result['error'],
-                'origin' => $originCity,
-                'destination' => $destinationCity
+            if (!$result['success']) {
+                \Log::error('TryotoComponent: Failed to get delivery options', [
+                    'error' => $result['error'],
+                    'origin' => $originCity,
+                    'destination' => $destinationCity
+                ]);
+
+                // بدلاً من throw exception، نعرض رسالة خطأ للمستخدم
+                $this->hasError = true;
+                $this->errorMessage = $this->translateTryotoError($result['error'] ?? 'Unknown error');
+                $this->deliveryCompany = [];
+                return;
+            }
+
+            // Transform options back to deliveryCompany format for the view
+            $this->deliveryCompany = $result['raw']['deliveryCompany'] ?? [];
+            $this->hasError = false;
+            $this->errorMessage = '';
+
+            // إعلان مبدئي لتحديث نص الشحن الافتراضي (أول خيار)
+            $this->dispatch('shipping-updated', vendorId: $this->vendorId);
+
+        } catch (\Exception $e) {
+            \Log::error('TryotoComponent: Exception in checkOTODeliveryFee', [
+                'error' => $e->getMessage(),
+                'vendor_id' => $this->vendorId
             ]);
-            throw new \Exception('Unable to get shipping fee from Tryoto. Error: ' . ($result['error'] ?? 'Unknown error'));
+
+            $this->hasError = true;
+            $this->errorMessage = 'عذراً، خدمة الشحن الذكي غير متاحة حالياً. يرجى اختيار طريقة شحن أخرى.';
+            $this->deliveryCompany = [];
+        }
+    }
+
+    /**
+     * ترجمة أخطاء Tryoto لرسائل عربية واضحة
+     */
+    protected function translateTryotoError(string $error): string
+    {
+        if (str_contains($error, 'could not be found on database')) {
+            // استخراج اسم المدينة من الخطأ
+            preg_match('/Given city (.+) could not be found/', $error, $matches);
+            $cityName = $matches[1] ?? '';
+
+            return "عذراً، مدينة المرسل ({$cityName}) غير مدعومة حالياً في خدمة الشحن الذكي. يرجى التواصل مع البائع أو اختيار طريقة شحن أخرى.";
         }
 
-        // Transform options back to deliveryCompany format for the view
-        $this->deliveryCompany = $result['raw']['deliveryCompany'] ?? [];
+        if (str_contains($error, 'destination')) {
+            return 'عذراً، مدينة التوصيل غير مدعومة في خدمة الشحن الذكي.';
+        }
 
-        // إعلان مبدئي لتحديث نص الشحن الافتراضي (أول خيار)
-        $this->dispatch('shipping-updated', vendorId: $this->vendorId);
+        return 'عذراً، خدمة الشحن الذكي غير متاحة حالياً. يرجى اختيار طريقة شحن أخرى.';
     }
 
     /**

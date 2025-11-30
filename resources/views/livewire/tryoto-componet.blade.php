@@ -1,5 +1,16 @@
 <div class="row" data-vendor-id="{{ $vendor_id ?? $vendorId ?? 0 }}">
-    @if($deliveryCompany)
+    @if($hasError)
+        {{-- عرض رسالة الخطأ --}}
+        <div class="col-12">
+            <div class="alert alert-warning d-flex align-items-center" role="alert">
+                <i class="fas fa-exclamation-triangle me-3" style="font-size: 24px;"></i>
+                <div>
+                    <strong>خدمة الشحن الذكي غير متاحة</strong>
+                    <p class="mb-0 mt-1">{{ $errorMessage }}</p>
+                </div>
+            </div>
+        </div>
+    @elseif($deliveryCompany)
         <table class="table table-bordered table-hover align-middle">
             <thead class="table-light">
             <tr>
@@ -61,5 +72,13 @@
             @endforeach
             </tbody>
         </table>
+    @else
+        {{-- لا توجد شركات شحن --}}
+        <div class="col-12">
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle me-2"></i>
+                جاري تحميل شركات الشحن...
+            </div>
+        </div>
     @endif
 </div>

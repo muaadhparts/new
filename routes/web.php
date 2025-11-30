@@ -1892,6 +1892,16 @@ Route::group(['middleware' => 'maintenance'], function () {
             return redirect()->route('front.checkout.vendor.step2', $vendorId)->with('info', __('Please fill out the form and submit again.'));
         });
         Route::get('/checkout/vendor/{vendorId}/step3', 'Front\CheckoutController@checkoutVendorStep3')->name('front.checkout.vendor.step3');
+
+        // ====================================================================
+        // GEOCODING ROUTES - Inside session middleware to share session with checkout
+        // ====================================================================
+        Route::prefix('geocoding')->group(function () {
+            Route::post('/reverse', [\App\Http\Controllers\Api\GeocodingController::class, 'reverseGeocode'])->name('geocoding.reverse');
+            Route::get('/search-cities', [\App\Http\Controllers\Api\GeocodingController::class, 'searchCities'])->name('geocoding.search');
+            Route::post('/sync-country', [\App\Http\Controllers\Api\GeocodingController::class, 'startCountrySync'])->name('geocoding.sync');
+            Route::get('/sync-progress', [\App\Http\Controllers\Api\GeocodingController::class, 'getSyncProgress'])->name('geocoding.progress');
+        });
     });
 
     // ====================================================================

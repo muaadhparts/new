@@ -233,7 +233,7 @@ window.reverseGeocode = async function(lat, lng) {
             headers['X-CSRF-TOKEN'] = csrfToken.content;
         }
 
-        const response = await fetch('/api/geocoding/reverse', {
+        const response = await fetch('/geocoding/reverse', {
             method: 'POST',
             headers: headers,
             body: JSON.stringify({
@@ -292,7 +292,7 @@ window.syncCountryWithProgress = async function(syncData, lat, lng) {
         }
 
         // بدء المزامنة
-        const syncResponse = await fetch('/api/geocoding/sync-country', {
+        const syncResponse = await fetch('/geocoding/sync-country', {
             method: 'POST',
             headers: headers,
             body: JSON.stringify({

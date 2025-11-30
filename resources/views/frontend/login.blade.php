@@ -77,17 +77,14 @@
                                     <div class="col d-flex ">
                                         <!-- Checkbox -->
                                         <div class="gs-checkbox-wrapper">
-                                     
-                                            <input   type="checkbox" value=""
-                                                id="form2Example31">
-                                                        <label class="icon-label pb-0 mb-3" for="form2Example31">
-                                                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12" fill="none">
-                                                                <path d="M10 3L4.5 8.5L2 6" stroke="#EE1243" stroke-width="1.6666" stroke-linecap="round"
-                                                                    stroke-linejoin="round" />
-                                                            </svg>
-                                                        </label>
-                                            <label   for="form2Example31"> @lang('Remember me')
+                                            <input type="checkbox" name="remember" value="1" id="form2Example31">
+                                            <label class="icon-label pb-0 mb-3" for="form2Example31">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12" fill="none">
+                                                    <path d="M10 3L4.5 8.5L2 6" stroke="#EE1243" stroke-width="1.6666" stroke-linecap="round"
+                                                        stroke-linejoin="round" />
+                                                </svg>
                                             </label>
+                                            <label for="form2Example31"> @lang('Remember me')</label>
                                         </div>
                                     </div>
 

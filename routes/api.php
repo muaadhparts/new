@@ -16,13 +16,8 @@ use App\Http\Controllers\Api\GeocodingController;
 */
 
 // --------------------- GOOGLE MAPS GEOCODING ROUTES ---------------------
-Route::prefix('geocoding')->group(function () {
-    Route::post('/reverse', [GeocodingController::class, 'reverseGeocode']);
-    Route::get('/search-cities', [GeocodingController::class, 'searchCities']);
-    // Country Sync Routes (for new countries)
-    Route::post('/sync-country', [GeocodingController::class, 'startCountrySync']);
-    Route::get('/sync-progress', [GeocodingController::class, 'getSyncProgress']);
-});
+// MOVED TO web.php to share session with checkout
+// Routes are now at: /geocoding/reverse, /geocoding/search-cities, etc.
 // --------------------- GOOGLE MAPS GEOCODING ROUTES END ---------------------
 
 // --------------------- TRYOTO WEBHOOK ROUTES ---------------------

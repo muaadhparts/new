@@ -1344,6 +1344,21 @@ class CheckoutController extends FrontBaseController
     {
         $step1 = $request->all();
 
+        // ✅ DEBUG: Log what's being submitted
+        \Log::info('checkoutVendorStep1: Form data received', [
+            'vendor_id' => $vendorId,
+            'customer_name' => $step1['customer_name'] ?? 'MISSING',
+            'customer_email' => $step1['customer_email'] ?? 'MISSING',
+            'customer_phone' => $step1['customer_phone'] ?? 'MISSING',
+            'customer_address' => $step1['customer_address'] ?? 'MISSING',
+            'customer_country' => $step1['customer_country'] ?? 'MISSING',
+            'customer_state' => $step1['customer_state'] ?? 'MISSING',
+            'customer_city' => $step1['customer_city'] ?? 'MISSING',
+            'city_id' => $step1['city_id'] ?? 'MISSING',
+            'country_id' => $step1['country_id'] ?? 'MISSING',
+            'state_id' => $step1['state_id'] ?? 'MISSING',
+        ]);
+
         // ✅ BASE VALIDATION
         $rules = [
             'customer_name' => 'required|string|max:255',
@@ -1369,6 +1384,10 @@ class CheckoutController extends FrontBaseController
         ]);
 
         if ($validator->fails()) {
+            \Log::warning('checkoutVendorStep1: Validation failed', [
+                'vendor_id' => $vendorId,
+                'errors' => $validator->errors()->toArray()
+            ]);
             return back()->withErrors($validator->errors())->withInput();
         }
 

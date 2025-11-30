@@ -75,6 +75,19 @@ class TryotoLocationService
         $city = $this->findCityByName($cityName, $country->id);
 
         if ($city && $city->tryoto_supported) {
+            // تحديث الإحداثيات إذا لم تكن موجودة (تحسين البيانات تدريجياً)
+            if (!$city->latitude || !$city->longitude) {
+                $city->update([
+                    'latitude' => $latitude,
+                    'longitude' => $longitude
+                ]);
+                Log::info('TryotoLocation: Updated city coordinates', [
+                    'city' => $city->city_name,
+                    'latitude' => $latitude,
+                    'longitude' => $longitude
+                ]);
+            }
+
             Log::info('TryotoLocation: City found in DB', [
                 'city' => $city->city_name,
                 'has_coordinates' => ($city->latitude && $city->longitude)
@@ -91,8 +104,8 @@ class TryotoLocationService
                 'country_id' => $country->id,
                 'original' => compact('cityName', 'stateName', 'countryName'),
                 'coordinates' => [
-                    'latitude' => $city->latitude ?? $latitude,
-                    'longitude' => $city->longitude ?? $longitude
+                    'latitude' => $latitude,
+                    'longitude' => $longitude
                 ],
                 'message' => "المدينة '{$city->city_name}' مدعومة للشحن"
             ];
@@ -105,6 +118,19 @@ class TryotoLocationService
             $stateCity = $this->findCityByName($stateName, $country->id);
 
             if ($stateCity && $stateCity->tryoto_supported) {
+                // تحديث الإحداثيات إذا لم تكن موجودة
+                if (!$stateCity->latitude || !$stateCity->longitude) {
+                    $stateCity->update([
+                        'latitude' => $latitude,
+                        'longitude' => $longitude
+                    ]);
+                    Log::info('TryotoLocation: Updated state city coordinates', [
+                        'city' => $stateCity->city_name,
+                        'latitude' => $latitude,
+                        'longitude' => $longitude
+                    ]);
+                }
+
                 Log::info('TryotoLocation: State found as city in DB', [
                     'state' => $stateName,
                     'found_as' => $stateCity->city_name
@@ -121,8 +147,8 @@ class TryotoLocationService
                     'country_id' => $country->id,
                     'original' => compact('cityName', 'stateName', 'countryName'),
                     'coordinates' => [
-                        'latitude' => $stateCity->latitude ?? $latitude,
-                        'longitude' => $stateCity->longitude ?? $longitude
+                        'latitude' => $latitude,
+                        'longitude' => $longitude
                     ],
                     'message' => "المدينة '{$cityName}' غير مدعومة، سيتم الشحن إلى '{$stateCity->city_name}'"
                 ];
@@ -219,10 +245,55 @@ class TryotoLocationService
 
         // مطابقة بدون مسافات وعلامات
         $cleanName = $this->cleanCityName($name);
-        return City::where('country_id', $countryId)
+        $city = City::where('country_id', $countryId)
             ->where('tryoto_supported', 1)
             ->whereRaw("REPLACE(REPLACE(city_name, ' ', ''), '-', '') LIKE ?", ["%{$cleanName}%"])
             ->first();
+
+        if ($city) return $city;
+
+        // محاولة استخراج الكلمة الرئيسية من الاسم (مثل Province, Region, City)
+        $mainName = $this->extractMainName($name);
+        if ($mainName && $mainName !== $name) {
+            return City::where('country_id', $countryId)
+                ->where('tryoto_supported', 1)
+                ->where(function ($q) use ($mainName) {
+                    $q->where('city_name', 'LIKE', "%{$mainName}%")
+                        ->orWhere('city_name_ar', 'LIKE', "%{$mainName}%");
+                })
+                ->first();
+        }
+
+        return null;
+    }
+
+    /**
+     * استخراج الاسم الرئيسي من اسم المنطقة
+     * مثال: "Riyadh Province" => "Riyadh"
+     */
+    protected function extractMainName(string $name): ?string
+    {
+        // إزالة الكلمات الشائعة في نهاية الأسماء
+        $suffixes = [
+            ' Province', ' Region', ' Governorate', ' District', ' City',
+            ' محافظة', ' منطقة', ' إمارة', ' مدينة'
+        ];
+
+        foreach ($suffixes as $suffix) {
+            if (str_ends_with($name, $suffix)) {
+                return trim(str_replace($suffix, '', $name));
+            }
+        }
+
+        // إزالة الكلمات الشائعة في بداية الأسماء
+        $prefixes = ['محافظة ', 'منطقة ', 'إمارة ', 'مدينة '];
+        foreach ($prefixes as $prefix) {
+            if (str_starts_with($name, $prefix)) {
+                return trim(str_replace($prefix, '', $name));
+            }
+        }
+
+        return null;
     }
 
     /**
@@ -237,10 +308,11 @@ class TryotoLocationService
      * البحث عن أقرب مدينة مدعومة باستخدام الإحداثيات
      *
      * هذا هو الحل الصحيح: نستخدم صيغة Haversine مباشرة في SQL
+     * مع fallback إذا لم تكن هناك مدن بإحداثيات
      */
     protected function findNearestSupportedCity(int $countryId, float $lat, float $lng): ?City
     {
-        // صيغة Haversine لحساب المسافة بالكيلومتر
+        // أولاً: نحاول إيجاد أقرب مدينة لها إحداثيات
         $haversine = "(6371 * acos(
             cos(radians(?)) *
             cos(radians(latitude)) *
@@ -257,7 +329,40 @@ class TryotoLocationService
             ->orderBy('distance_km', 'asc')
             ->first();
 
-        return $city;
+        if ($city) {
+            return $city;
+        }
+
+        // Fallback: إذا لم توجد مدن بإحداثيات، نختار أي مدينة مدعومة
+        // ونحدث إحداثياتها بإحداثيات المستخدم الحالية
+        Log::info('TryotoLocation: No cities with coordinates, using fallback', [
+            'country_id' => $countryId,
+            'user_lat' => $lat,
+            'user_lng' => $lng
+        ]);
+
+        $fallbackCity = City::where('country_id', $countryId)
+            ->where('tryoto_supported', 1)
+            ->first();
+
+        if ($fallbackCity) {
+            // تحديث إحداثيات المدينة بإحداثيات المستخدم
+            $fallbackCity->update([
+                'latitude' => $lat,
+                'longitude' => $lng
+            ]);
+
+            // إضافة distance_km = 0 لأنها الأقرب (الوحيدة المتاحة)
+            $fallbackCity->distance_km = 0;
+
+            Log::info('TryotoLocation: Fallback city selected and coordinates updated', [
+                'city' => $fallbackCity->city_name,
+                'latitude' => $lat,
+                'longitude' => $lng
+            ]);
+        }
+
+        return $fallbackCity;
     }
 
     /**

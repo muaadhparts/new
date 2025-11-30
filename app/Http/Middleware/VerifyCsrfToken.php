@@ -13,6 +13,12 @@ class VerifyCsrfToken extends Middleware
      * @var array<int, string>
      */
     protected $except = [
+        // GEOCODING - AJAX requests from checkout
+        'geocoding/*',
+        'geocoding/reverse',
+        'geocoding/sync-country',
+        'geocoding/search-cities',
+        'geocoding/sync-progress',
         // CHECKOUT
         'checkout/payment/paytm-notify',
         'checkout/payment/razorpay-notify',

@@ -194,10 +194,11 @@
 
 
                                 {{-- Hidden dropdowns (kept for potential future use) --}}
+                                {{-- Hidden dropdowns - name removed, using hidden fields instead --}}
                                 <div class="col-lg-6 d-none">
                                     <div class="input-wrapper">
                                         <label class="label-cls">@lang('Select Country')</label>
-                                        <select class="nice-select" id="select_country" name="customer_country">
+                                        <select class="nice-select" id="select_country">
                                             @include('includes.countries')
                                         </select>
                                     </div>
@@ -206,7 +207,7 @@
                                 <div class="col-lg-6 d-none select_state">
                                     <div class="input-wrapper">
                                         <label class="label-cls">@lang('Select State')</label>
-                                        <select class="nice-select" id="show_state" name="customer_state">
+                                        <select class="nice-select" id="show_state">
 
                                         </select>
                                     </div>
@@ -215,7 +216,8 @@
                                 <div class="col-lg-6 d-none">
                                     <div class="input-wrapper">
                                         <label class="label-cls">@lang('Select City')</label>
-                                        <select class="nice-select " id="show_city" name="customer_city">
+                                        {{-- name removed - using hidden field customer_city_hidden instead --}}
+                                        <select class="nice-select " id="show_city">
 
                                         </select>
                                     </div>
@@ -398,6 +400,10 @@
                 <input type="hidden" name="country_id" id="country_id">
                 <input type="hidden" name="state_id" id="state_id">
                 <input type="hidden" name="city_id" id="city_id">
+                {{-- Hidden fields for backend - these are the primary source --}}
+                <input type="hidden" name="customer_city" id="customer_city_hidden">
+                <input type="hidden" name="customer_country" id="customer_country_hidden">
+                <input type="hidden" name="customer_state" id="customer_state_hidden">
 
                 <input type="hidden" name="dp" value="{{ $digital }}">
                 <input type="hidden" id="input_tax" name="tax" value="">
@@ -905,24 +911,16 @@
             $('#state_id').val(selectedLocationData.state?.id || '');
             $('#city_id').val(selectedLocationData.city?.id || '');
 
-            // ✅ Fill the hidden dropdown fields with names (for backend compatibility)
-            if (selectedLocationData.country?.name) {
-                $('#select_country').val(selectedLocationData.country.name);
-            }
-            if (selectedLocationData.state?.name) {
-                const stateSelect = $('#show_state');
-                stateSelect.empty().append(
-                    $('<option>').val(selectedLocationData.state.name).text(selectedLocationData.state.name_ar || selectedLocationData.state.name)
-                );
-                stateSelect.val(selectedLocationData.state.name);
-            }
-            if (selectedLocationData.city?.id) {
-                const citySelect = $('#show_city');
-                citySelect.empty().append(
-                    $('<option>').val(selectedLocationData.city.id).text(selectedLocationData.city.name_ar || selectedLocationData.city.name)
-                );
-                citySelect.val(selectedLocationData.city.id);
-            }
+            // ✅ Fill customer_* hidden fields for backend validation
+            $('#customer_city_hidden').val(selectedLocationData.city?.id || '');
+            $('#customer_country_hidden').val(selectedLocationData.country?.name || '');
+            $('#customer_state_hidden').val(selectedLocationData.state?.name || '');
+
+            console.log('✅ Hidden fields restored from localStorage:', {
+                customer_city: $('#customer_city_hidden').val(),
+                customer_country: $('#customer_country_hidden').val(),
+                customer_state: $('#customer_state_hidden').val()
+            });
 
             const fullAddress = selectedLocationData.address?.ar || selectedLocationData.address?.en || '';
             $('#address').val(fullAddress);
@@ -1141,7 +1139,7 @@
                 headers['X-CSRF-TOKEN'] = csrfToken.content;
             }
 
-            const response = await fetch('/api/geocoding/reverse', {
+            const response = await fetch('/geocoding/reverse', {
                 method: 'POST',
                 headers: headers,
                 body: JSON.stringify({
@@ -1306,27 +1304,16 @@
         $('#state_id').val(selectedLocationData.state?.id || '');
         $('#city_id').val(selectedLocationData.city?.id || '');
 
-        // ✅ Fill the hidden dropdown fields with names (for backend compatibility)
-        // The backend expects customer_country, customer_state, customer_city as strings
-        if (selectedLocationData.country?.name) {
-            $('#select_country').val(selectedLocationData.country.name);
-        }
-        if (selectedLocationData.state?.name) {
-            // Create option if not exists and select it
-            const stateSelect = $('#show_state');
-            stateSelect.empty().append(
-                $('<option>').val(selectedLocationData.state.name).text(selectedLocationData.state.name_ar || selectedLocationData.state.name)
-            );
-            stateSelect.val(selectedLocationData.state.name);
-        }
-        if (selectedLocationData.city?.id) {
-            // city_id is already numeric, so we use it directly
-            const citySelect = $('#show_city');
-            citySelect.empty().append(
-                $('<option>').val(selectedLocationData.city.id).text(selectedLocationData.city.name_ar || selectedLocationData.city.name)
-            );
-            citySelect.val(selectedLocationData.city.id);
-        }
+        // ✅ Fill customer_* hidden fields for backend validation
+        $('#customer_city_hidden').val(selectedLocationData.city?.id || '');
+        $('#customer_country_hidden').val(selectedLocationData.country?.name || '');
+        $('#customer_state_hidden').val(selectedLocationData.state?.name || '');
+
+        console.log('✅ Hidden fields filled:', {
+            customer_city: $('#customer_city_hidden').val(),
+            customer_country: $('#customer_country_hidden').val(),
+            customer_state: $('#customer_state_hidden').val()
+        });
 
         // Update visible address field
         const fullAddress = selectedLocationData.address?.ar || selectedLocationData.address?.en || '';
