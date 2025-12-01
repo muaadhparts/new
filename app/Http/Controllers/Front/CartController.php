@@ -171,6 +171,29 @@ class CartController extends FrontBaseController
 
         $qty = max(1, (int) request('qty', 1));
 
+        // فحص الحد الأدنى للكمية (MOQ)
+        if ($mp->minimum_qty && $qty < (int)$mp->minimum_qty) {
+            return response()->json([
+                'status' => 'error',
+                'msg' => __('Minimum order quantity is') . ' ' . $mp->minimum_qty
+            ], 400);
+        }
+
+        // فحص المخزون مع دعم Preorder
+        $effectiveStock = (int)($mp->stock ?? 0);
+        if ($effectiveStock <= 0 && !$mp->preordered) {
+            return response()->json(['status' => 'error', 'msg' => __('Out Of Stock')], 422);
+        }
+
+        // إذا كان preorder مفعل، السماح بالإضافة حتى لو المخزون = 0
+        // لكن إذا المخزون موجود، يجب أن تكون الكمية المطلوبة أقل أو تساوي المخزون
+        if ($effectiveStock > 0 && $qty > $effectiveStock && !$mp->preordered) {
+            return response()->json([
+                'status' => 'error',
+                'msg' => __('Only') . ' ' . $effectiveStock . ' ' . __('items available')
+            ], 422);
+        }
+
         // CRITICAL: استخدام ProductContextHelper لإنشاء Product مع سياق merchant
         // Helper يضمن:
         // - Product instance جديد تماماً (لا يوجد Eloquent caching)
@@ -197,11 +220,13 @@ class CartController extends FrontBaseController
             }
         }
 
-        // حجز المخزون ذرياً مع المقاس
-        try {
-            $this->reserveStock($merchantProductId, $qty, $size);
-        } catch (\Exception $e) {
-            return response()->json(['status' => 'error', 'msg' => __('Out Of Stock')], 422);
+        // حجز المخزون ذرياً مع المقاس (تخطي إذا كان preorder مفعل والمخزون = 0)
+        if (!($mp->preordered && $effectiveStock <= 0)) {
+            try {
+                $this->reserveStock($merchantProductId, $qty, $size);
+            } catch (\Exception $e) {
+                return response()->json(['status' => 'error', 'msg' => __('Out Of Stock')], 422);
+            }
         }
 
         // Merchant context already injected by ProductContextHelper::createWithContext()
@@ -279,14 +304,19 @@ class CartController extends FrontBaseController
         $grouped = [];
 
         foreach ($products as $rowKey => $product) {
-            $vendorId = data_get($product, 'item.user_id') ?? data_get($product, 'item.vendor_user_id') ?? 0;
+            // قراءة vendorId من المستوى الأول (حيث يتم تخزينه في Cart model)
+            // ثم fallback للـ item إذا لم يوجد
+            $vendorId = $product['user_id']
+                ?? data_get($product, 'item.user_id')
+                ?? data_get($product, 'item.vendor_user_id')
+                ?? 0;
 
             if (!isset($grouped[$vendorId])) {
                 // جلب معلومات التاجر
                 $vendor = \App\Models\User::find($vendorId);
                 $grouped[$vendorId] = [
                     'vendor_id' => $vendorId,
-                    'vendor_name' => $vendor ? ($vendor->shop_name ?? $vendor->name) : 'Unknown Vendor',
+                    'vendor_name' => $vendor ? ($vendor->shop_name ?? $vendor->name) : __('Unknown Vendor'),
                     'products' => [],
                     'total' => 0,
                     'count' => 0,
@@ -468,7 +498,18 @@ class CartController extends FrontBaseController
         }
 
         $effStock = $this->effectiveStock($mp, $size);
-        if ($effStock <= 0) {
+
+        // فحص الحد الأدنى للكمية (MOQ)
+        $qty = max(1, (int) request('qty', 1));
+        if ($mp->minimum_qty && $qty < (int)$mp->minimum_qty) {
+            return response()->json([
+                'ok' => false,
+                'error' => __('Minimum order quantity is') . ' ' . $mp->minimum_qty
+            ], 400);
+        }
+
+        // فحص المخزون مع دعم Preorder
+        if ($effStock <= 0 && !$mp->preordered) {
             return response()->json(['ok' => false, 'error' => __('Out of stock')], 422);
         }
 
@@ -536,7 +577,16 @@ class CartController extends FrontBaseController
         }
 
         $effStock = $this->effectiveStock($mp, $size);
-        if ($effStock <= 0) return redirect()->route('front.cart')->with('unsuccess', __('Out Of Stock.'));
+
+        // فحص الحد الأدنى للكمية (MOQ)
+        if ($mp->minimum_qty && 1 < (int)$mp->minimum_qty) {
+            return redirect()->route('front.cart')->with('unsuccess', __('Minimum order quantity is') . ' ' . $mp->minimum_qty);
+        }
+
+        // فحص المخزون مع دعم Preorder
+        if ($effStock <= 0 && !$mp->preordered) {
+            return redirect()->route('front.cart')->with('unsuccess', __('Out Of Stock.'));
+        }
 
         ProductContextHelper::apply($prod, $mp);
         $keys   = (string) request('keys','');
@@ -602,7 +652,18 @@ class CartController extends FrontBaseController
 
         if ($size === '') { [$size, $_] = $this->pickAvailableSize($mp->size, $mp->size_qty); }
         $effStock = $this->effectiveStock($mp, $size);
-        if ($effStock <= 0 || $qty > $effStock) return 0;
+
+        // فحص الحد الأدنى للكمية (MOQ)
+        if ($mp->minimum_qty && $qty < (int)$mp->minimum_qty) {
+            return response()->json([
+                'ok' => false,
+                'error' => __('Minimum order quantity is') . ' ' . $mp->minimum_qty
+            ], 400);
+        }
+
+        // فحص المخزون مع دعم Preorder
+        if ($effStock <= 0 && !$mp->preordered) return 0;
+        if ($effStock > 0 && $qty > $effStock && !$mp->preordered) return 0;
 
         ProductContextHelper::apply($prod, $mp);
         if (!empty($prices)) foreach ((array)$prices as $p) $prod->price += ((float)$p / $curr->value);
@@ -679,7 +740,17 @@ class CartController extends FrontBaseController
 
         if ($size === '') { [$size, $_] = $this->pickAvailableSize($mp->size, $mp->size_qty); }
         $effStock = $this->effectiveStock($mp, $size);
-        if ($effStock <= 0 || $qty > $effStock) {
+
+        // فحص الحد الأدنى للكمية (MOQ)
+        if ($mp->minimum_qty && $qty < (int)$mp->minimum_qty) {
+            return redirect()->route('front.cart')->with('unsuccess', __('Minimum order quantity is') . ' ' . $mp->minimum_qty);
+        }
+
+        // فحص المخزون مع دعم Preorder
+        if ($effStock <= 0 && !$mp->preordered) {
+            return redirect()->route('front.cart')->with('unsuccess', __('Out Of Stock.'));
+        }
+        if ($effStock > 0 && $qty > $effStock && !$mp->preordered) {
             return redirect()->route('front.cart')->with('unsuccess', __('Out Of Stock.'));
         }
 
@@ -810,13 +881,15 @@ class CartController extends FrontBaseController
         }
 
         $curr       = $this->curr;
-        $id         = (int)($_GET['id'] ?? 0);
-        $itemid     = (string)($_GET['itemid'] ?? '');
-        $size_qty   = $_GET['size_qty'] ?? null;
-        $size_price = (float)($_GET['size_price'] ?? 0);
+        $id         = (int) request('id', 0);
+        // IMPORTANT: استخدام request() بدلاً من $_GET لأنها تفك الترميز تلقائياً
+        $itemid     = (string) request('itemid', '');
+        $size_qty   = request('size_qty');
+        $size_price = (float) request('size_price', 0);
 
         // السلة والعنصر الحالي
         $oldCart = \Session::has('cart') ? \Session::get('cart') : null;
+
         if (!$oldCart || !isset($oldCart->items[$itemid])) {
             return 0;
         }
@@ -826,8 +899,20 @@ class CartController extends FrontBaseController
         if (!$prod) { return 0; }
 
         // معلومات الصف من السلة (Vendor-aware)
-        $row      = $oldCart->items[$itemid];
-        $vendorId = (int)($row['user_id'] ?? ($row['item']['user_id'] ?? ($row['item']->user_id ?? 0)));
+        $row  = $oldCart->items[$itemid];
+        $item = $row['item'] ?? null;
+
+        // استخراج vendor_id - تعامل مع object و array
+        $vendorId = 0;
+        if (isset($row['user_id'])) {
+            $vendorId = (int) $row['user_id'];
+        } elseif ($item) {
+            if (is_object($item)) {
+                $vendorId = (int) ($item->user_id ?? $item->vendor_user_id ?? 0);
+            } elseif (is_array($item)) {
+                $vendorId = (int) ($item['user_id'] ?? $item['vendor_user_id'] ?? 0);
+            }
+        }
         if (!$vendorId) { return 0; }
 
         // جلب عرض البائع MerchantProduct
@@ -852,8 +937,19 @@ class CartController extends FrontBaseController
         $currentQty = (int)($row['qty'] ?? 0);
 
         // احترام فحص المخزون حسب عرض البائع
-        if ((int)($mp->stock_check ?? 0) === 1) {
+        // stock_check = 1 يعني تفعيل التحقق من المخزون
+        // stock_check = 0 أو null يعني تخطي التحقق (السماح بالطلب بغض النظر عن المخزون)
+        $stockCheckEnabled = (int)($mp->stock_check ?? 0) === 1;
+
+        if ($stockCheckEnabled) {
             if ($effStock <= 0 || ($currentQty + 1) > $effStock) {
+                \Log::info('addbyone: Stock check failed', [
+                    'product_id' => $id,
+                    'vendor_id' => $vendorId,
+                    'effStock' => $effStock,
+                    'currentQty' => $currentQty,
+                    'stock_check' => $mp->stock_check
+                ]);
                 return 0;
             }
         }
@@ -915,10 +1011,11 @@ class CartController extends FrontBaseController
         }
 
         $curr       = $this->curr;
-        $id         = (int)($_GET['id'] ?? 0);
-        $itemid     = (string)($_GET['itemid'] ?? '');
-        $size_qty   = $_GET['size_qty'] ?? null;
-        $size_price = (float)($_GET['size_price'] ?? 0);
+        $id         = (int) request('id', 0);
+        // IMPORTANT: استخدام request() بدلاً من $_GET لأنها تفك الترميز تلقائياً
+        $itemid     = (string) request('itemid', '');
+        $size_qty   = request('size_qty');
+        $size_price = (float) request('size_price', 0);
 
         $oldCart = \Session::has('cart') ? \Session::get('cart') : null;
         if (!$oldCart || !isset($oldCart->items[$itemid])) {
@@ -928,8 +1025,20 @@ class CartController extends FrontBaseController
         $prod = \App\Models\Product::find($id, ['id','slug','name','photo','type','attributes']);
         if (!$prod) { return 0; }
 
-        $row      = $oldCart->items[$itemid];
-        $vendorId = (int)($row['user_id'] ?? ($row['item']['user_id'] ?? ($row['item']->user_id ?? 0)));
+        $row  = $oldCart->items[$itemid];
+        $item = $row['item'] ?? null;
+
+        // استخراج vendor_id - تعامل مع object و array
+        $vendorId = 0;
+        if (isset($row['user_id'])) {
+            $vendorId = (int) $row['user_id'];
+        } elseif ($item) {
+            if (is_object($item)) {
+                $vendorId = (int) ($item->user_id ?? $item->vendor_user_id ?? 0);
+            } elseif (is_array($item)) {
+                $vendorId = (int) ($item['user_id'] ?? $item['vendor_user_id'] ?? 0);
+            }
+        }
         if (!$vendorId) { return 0; }
 
         $mp = \App\Models\MerchantProduct::where('product_id', $prod->id)
@@ -938,6 +1047,15 @@ class CartController extends FrontBaseController
             ->first();
         if (!$mp) { return 0; }
 
+        // التحقق من الحد الأدنى للكمية قبل التنقيص
+        $currentQty = (int)($row['qty'] ?? 0);
+        $minQty = (int)($mp->minimum_qty ?? 1);
+        if ($minQty < 1) $minQty = 1;
+
+        if ($currentQty <= $minQty) {
+            return 0; // لا يمكن التنقيص - وصلنا للحد الأدنى
+        }
+
         // حقن سياق البائع (أسعار/مخزون/مقاسات)
         $prod->user_id             = $vendorId;
         $prod->vendor_user_id      = $vendorId;
@@ -945,6 +1063,8 @@ class CartController extends FrontBaseController
         $prod->price               = $mp->vendorSizePrice();
         $prod->previous_price      = $mp->previous_price;
         $prod->stock               = (int)($mp->stock ?? 0);
+        $prod->minimum_qty         = $minQty;
+        $prod->preordered          = (int)($mp->preordered ?? 0);
         $prod->setAttribute('size',       $mp->size);
         $prod->setAttribute('size_qty',   $mp->size_qty);
         $prod->setAttribute('size_price', $mp->size_price);

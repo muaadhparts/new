@@ -129,28 +129,35 @@
   $(document).on("click", ".qtplus", function () {
     var $tselector = $("#order-qty");
     var stock = $("#stock").val();
-    var total = $($tselector).val();
-    if (stock != "") {
+    var total = parseInt($($tselector).val()) || 1;
+
+    // التحقق من المخزون قبل الزيادة
+    if (stock != "" && stock != null) {
       var stk = parseInt(stock);
       if (total < stk) {
         total++;
         $($tselector).val(total);
       }
     } else {
+      // إذا لم يكن هناك مخزون محدد، السماح بالزيادة (للمنتجات الرقمية أو preorder)
       total++;
+      $($tselector).val(total);
     }
-
-    $($tselector).val(total);
   });
 
   // Product Minus Qty
   $(document).on("click", ".qtminus", function () {
     var $tselector = $("#order-qty");
-    var total = $($tselector).val();
-    if (total > 1) {
+    var total = parseInt($($tselector).val()) || 1;
+
+    // الحصول على الحد الأدنى للكمية
+    var minQty = parseInt($("#product_minimum_qty").val()) || 1;
+
+    // التحقق من الحد الأدنى للكمية قبل التنقيص
+    if (total > minQty) {
       total--;
+      $($tselector).val(total);
     }
-    $($tselector).val(total);
   });
 
   $(".qttotal").keypress(function (e) {
@@ -282,23 +289,11 @@
     var domkey     = $box.find('.domkey').val();     // نسخة آمنة للـ DOM
     var size_qty   = $box.find('.size_qty').val();
     var size_price = $box.find('.size_price').val();
-    var minQty     = parseInt($box.find('.minimum_qty').val() || '0', 10);
 
     var $qtyInput  = $('#qty' + domkey);
     var $priceCell = $('#prc' + domkey);
-    var $stock     = $('#stock' + domkey);
 
-    var currentQty = parseInt($qtyInput.val() || '0', 10);
-    var maxStock   = parseInt($stock.val() || '0', 10);
-
-    // تحقّق محلي سريع قبل الطلب (الخادم سيتحقق أيضًا)
-    if (maxStock > 0 && (currentQty + 1) > maxStock) {
-      if (typeof $.notify === 'function') { $.notify('غير متوفر', 'error'); }
-      else if (typeof toastr !== 'undefined') { toastr.error('غير متوفر'); }
-      else { alert('غير متوفر'); }
-      return;
-    }
-
+    // نعتمد على الـ server للتحقق من المخزون - لا فحص محلي
     $.ajax({
       url: '/addbyone',
       type: 'GET',
@@ -311,9 +306,8 @@
       },
       success: function (resp) {
         if (resp === 0 || resp === '0') {
-          if (typeof $.notify === 'function') { $.notify('غير متوفر', 'error'); }
-          else if (typeof toastr !== 'undefined') { toastr.error('غير متوفر'); }
-          else { alert('غير متوفر'); }
+          if (typeof toastr !== 'undefined') { toastr.error('غير متوفر في المخزون'); }
+          else { alert('غير متوفر في المخزون'); }
           return;
         }
 
@@ -323,8 +317,7 @@
         $('.total-cart-price').html(resp[0]);
       },
       error: function () {
-        if (typeof $.notify === 'function') { $.notify('حدث خطأ غير متوقع', 'error'); }
-        else if (typeof toastr !== 'undefined') { toastr.error('حدث خطأ غير متوقع'); }
+        if (typeof toastr !== 'undefined') { toastr.error('حدث خطأ غير متوقع'); }
         else { alert('حدث خطأ غير متوقع'); }
       }
     });
@@ -341,25 +334,19 @@
     var domkey     = $box.find('.domkey').val();     // نسخة آمنة للـ DOM
     var size_qty   = $box.find('.size_qty').val();
     var size_price = $box.find('.size_price').val();
-    var minQty     = parseInt($box.find('.minimum_qty').val() || '0', 10);
+    var minQty     = parseInt($box.find('.minimum_qty').val() || '1', 10);
 
     var $qtyInput  = $('#qty' + domkey);
     var $priceCell = $('#prc' + domkey);
 
-    var currentQty = parseInt($qtyInput.val() || '0', 10);
+    var currentQty = parseInt($qtyInput.val() || '1', 10);
 
-    // احترم الحد الأدنى إن وُجد
-    if (minQty > 0 && (currentQty - 1) < minQty) {
-      if (typeof $.notify === 'function') { $.notify('لا يمكن النزول عن الحد الأدنى', 'warning'); }
-      else if (typeof toastr !== 'undefined') { toastr.warning('لا يمكن النزول عن الحد الأدنى'); }
-      else { alert('لا يمكن النزول عن الحد الأدنى'); }
+    // فحص محلي سريع للحد الأدنى
+    if (minQty < 1) minQty = 1;
+    if (currentQty <= minQty) {
+      if (typeof toastr !== 'undefined') { toastr.warning('الحد الأدنى للكمية هو ' + minQty); }
+      else { alert('الحد الأدنى للكمية هو ' + minQty); }
       return;
-    }
-
-    // إن كان سيصبح 0، اترك منطق الحذف الحالي يتولى (إن كان عندك زر حذف)
-    if ((currentQty - 1) < 1) {
-      // يمكنك هنا الاكتفاء بعدم الاستدعاء أو الاعتماد على زر الحذف
-      // return;
     }
 
     $.ajax({
@@ -374,9 +361,8 @@
       },
       success: function (resp) {
         if (resp === 0 || resp === '0') {
-          if (typeof $.notify === 'function') { $.notify('غير متوفر', 'error'); }
-          else if (typeof toastr !== 'undefined') { toastr.error('غير متوفر'); }
-          else { alert('غير متوفر'); }
+          if (typeof toastr !== 'undefined') { toastr.warning('وصلت للحد الأدنى للكمية'); }
+          else { alert('وصلت للحد الأدنى للكمية'); }
           return;
         }
 
@@ -385,8 +371,7 @@
         $('.total-cart-price').html(resp[0]);
       },
       error: function () {
-        if (typeof $.notify === 'function') { $.notify('حدث خطأ غير متوقع', 'error'); }
-        else if (typeof toastr !== 'undefined') { toastr.error('حدث خطأ غير متوقع'); }
+        if (typeof toastr !== 'undefined') { toastr.error('حدث خطأ غير متوقع'); }
         else { alert('حدث خطأ غير متوقع'); }
       }
     });

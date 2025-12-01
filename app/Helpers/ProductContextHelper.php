@@ -104,6 +104,7 @@ class ProductContextHelper
         // معلومات إضافية
         $product->stock_check = $mp->stock_check ?? null;
         $product->minimum_qty = $mp->minimum_qty ?? null;
+        $product->preordered = $mp->preordered ?? 0;
         $product->whole_sell_qty = $mp->whole_sell_qty ?? null;
         $product->whole_sell_discount = $mp->whole_sell_discount ?? null;
         $product->ship = $mp->ship ?? null;

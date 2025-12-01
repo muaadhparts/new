@@ -2366,7 +2366,29 @@
     "Sizes": "الأحجام",
     "Weight": "الوزن",
     "Offer updated successfully.": "تم تحديث العرض بنجاح.",
-    "You already have an offer for this product with this brand quality.": "لديك عرض بالفعل لهذا المنتج مع هذه العلامة التجارية للجودة."
+    "You already have an offer for this product with this brand quality.": "لديك عرض بالفعل لهذا المنتج مع هذه العلامة التجارية للجودة.",
+    "Minimum order quantity is": "الحد الأدنى لكمية الطلب هو",
+    "Only": "فقط",
+    "items available": "عناصر متاحة",
+    "SKU": "رقم القطعة",
+    "Brand": "البراند",
+    "Quality": "الجودة",
+    "Stock limit reached": "تم الوصول لحد المخزون",
+    "Minimum quantity is": "الحد الأدنى للكمية هو",
+    "Minimum quantity reached": "تم الوصول للحد الأدنى للكمية",
+    "Error occurred": "حدث خطأ",
+    "Multiple Vendors": "تجار متعددون",
+    "different vendors. Please checkout separately.": "تجار مختلفين. يرجى إتمام الشراء بشكل منفصل.",
+    "Remove": "حذف",
+    "Cannot increase quantity": "لا يمكن زيادة الكمية",
+    "Cannot decrease quantity": "لا يمكن إنقاص الكمية",
+    "Your cart is empty": "سلة التسوق فارغة",
+    "Add some products to your cart": "أضف بعض المنتجات إلى سلتك",
+    "Start Shopping": "ابدأ التسوق",
+    "Proceed to Checkout": "المتابعة للدفع",
+    "Continue Shopping": "متابعة التسوق",
+    "Cart Summary": "ملخص السلة",
+    "You have items from": "لديك منتجات من"
 }
 
 
