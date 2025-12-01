@@ -135,9 +135,6 @@ html {
                                                 @endphp
                                                 @if($printQualityBrand)
                                                 <br><small>{{ __('Quality') }}: {{ getLocalizedQualityName($printQualityBrand) }}</small>
-                                                    @if($printQualityBrand->manufacturer)
-                                                    <br><small>{{ __('Manufacturer') }}: {{ $printQualityBrand->manufacturer }}</small>
-                                                    @endif
                                                 @endif
                                                 <br><small>{{ __('Condition') }}: {{ $printCondition }}</small>
                                             </td>

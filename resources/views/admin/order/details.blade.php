@@ -519,11 +519,6 @@
                                         <p class="mb-0">
                                             <strong>{{ __('Quality Brand') }}:</strong> {{ getLocalizedQualityName($qualityBrand) }}
                                         </p>
-                                        @if($qualityBrand->manufacturer)
-                                        <p class="mb-0">
-                                            <strong>{{ __('Manufacturer') }}:</strong> {{ $qualityBrand->manufacturer }}
-                                        </p>
-                                        @endif
                                         @endif
                                         <p class="mb-0">
                                             <strong>{{ __('Condition') }}:</strong>

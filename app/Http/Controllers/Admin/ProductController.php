@@ -77,9 +77,6 @@ class ProductController extends AdminBaseController
             ->addColumn('quality_brand', function (\App\Models\MerchantProduct $mp) {
                 return $mp->qualityBrand ? getLocalizedQualityName($mp->qualityBrand) : __('N/A');
             })
-            ->addColumn('manufacturer', function (\App\Models\MerchantProduct $mp) {
-                return $mp->qualityBrand && $mp->qualityBrand->manufacturer ? $mp->qualityBrand->manufacturer : __('N/A');
-            })
             ->addColumn('vendor', function (\App\Models\MerchantProduct $mp) {
                 if (!$mp->user) return __('N/A');
                 $shopName = $mp->user->shop_name ?: $mp->user->name;
@@ -126,7 +123,7 @@ class ProductController extends AdminBaseController
 
                 return '<div class="godropdown"><button class="go-dropdown-toggle"> ' . __("Actions") . '<i class="fas fa-chevron-down"></i></button>
                     <div class="action-list">
-                        <a href="' . route('admin-prod-edit', $product->id) . '"><i class="fas fa-edit"></i> ' . __("Edit Product") . '</a>
+                        <a href="' . route('admin-prod-edit', $mp->id) . '"><i class="fas fa-edit"></i> ' . __("Edit Product") . '</a>
                         <a href="javascript" class="set-gallery" data-toggle="modal" data-target="#setgallery"><input type="hidden" value="' . $product->id . '"><i class="fas fa-eye"></i> ' . __("View Gallery") . '</a>'
                         . $catalog .
                         '<a data-href="' . route('admin-prod-feature', $product->id) . '" class="feature" data-toggle="modal" data-target="#modal2"> <i class="fas fa-star"></i> ' . __("Highlight") . '</a>
@@ -190,9 +187,6 @@ class ProductController extends AdminBaseController
             ->addColumn('quality_brand', function (\App\Models\MerchantProduct $mp) {
                 return $mp->qualityBrand ? getLocalizedQualityName($mp->qualityBrand) : __('N/A');
             })
-            ->addColumn('manufacturer', function (\App\Models\MerchantProduct $mp) {
-                return $mp->qualityBrand && $mp->qualityBrand->manufacturer ? $mp->qualityBrand->manufacturer : __('N/A');
-            })
             ->addColumn('vendor', function (\App\Models\MerchantProduct $mp) {
                 if (!$mp->user) return __('N/A');
                 $shopName = $mp->user->shop_name ?: $mp->user->name;
@@ -229,7 +223,7 @@ class ProductController extends AdminBaseController
 
                 return '<div class="godropdown"><button class="go-dropdown-toggle"> ' . __("Actions") . '<i class="fas fa-chevron-down"></i></button>
                     <div class="action-list">
-                        <a href="' . route('admin-prod-edit', $product->id) . '"><i class="fas fa-edit"></i> ' . __("Edit Product") . '</a>
+                        <a href="' . route('admin-prod-edit', $mp->id) . '"><i class="fas fa-edit"></i> ' . __("Edit Product") . '</a>
                         <a href="javascript" class="set-gallery" data-toggle="modal" data-target="#setgallery"><input type="hidden" value="' . $product->id . '"><i class="fas fa-eye"></i> ' . __("View Gallery") . '</a>
                         <a data-href="' . route('admin-prod-feature', $product->id) . '" class="feature" data-toggle="modal" data-target="#modal2"> <i class="fas fa-star"></i> ' . __("Highlight") . '</a>
                         <a href="javascript:;" data-href="' . route('admin-prod-catalog', ['id1' => $product->id, 'id2' => 0]) . '" data-toggle="modal" data-target="#catalog-modal"><i class="fas fa-trash-alt"></i> ' . __("Remove Catalog") . '</a>
@@ -452,8 +446,12 @@ class ProductController extends AdminBaseController
         $basePrice = isset($input['price']) ? ($input['price'] / $sign->value) : 0;
         $basePreviousPrice = isset($input['previous_price']) ? ($input['previous_price'] / $sign->value) : null;
 
-        // Remove legacy fields from product table
-        unset($input['price'], $input['previous_price'], $input['stock'], $input['user_id']);
+        // Store vendor-specific data before removing from input
+        $vendorId = (int) ($request->input('user_id') ?? 0);
+        $brandQualityId = $request->input('brand_quality_id') ?: null;
+
+        // Remove vendor-specific fields from product table input
+        unset($input['price'], $input['previous_price'], $input['stock'], $input['user_id'], $input['brand_quality_id'], $input['vendor_id']);
         if ($request->cross_products) {
             $input['cross_products'] = implode(',', $request->cross_products);
         }
@@ -521,20 +519,22 @@ class ProductController extends AdminBaseController
         $data->fill($input)->save();
 
         // Create merchant_product entry for the vendor
-        $vendorId = (int) ($request->input('user_id') ?? 0);
         if ($vendorId > 0) {
-            \App\Models\MerchantProduct::updateOrCreate(
-                ['product_id' => $data->id, 'user_id' => $vendorId],
-                [
-                    'price' => $basePrice,
-                    'previous_price' => $basePreviousPrice,
-                    'stock' => (int) $request->input('stock', 0),
-                    'minimum_qty' => $request->input('minimum_qty') ?: null,
-                    'whole_sell_qty' => $input['whole_sell_qty'] ?? null,
-                    'whole_sell_discount' => $input['whole_sell_discount'] ?? null,
-                    'status' => 1
-                ]
-            );
+            \App\Models\MerchantProduct::create([
+                'product_id' => $data->id,
+                'user_id' => $vendorId,
+                'brand_quality_id' => $brandQualityId,
+                'price' => $basePrice,
+                'previous_price' => $basePreviousPrice,
+                'stock' => (int) $request->input('stock', 0),
+                'minimum_qty' => $request->input('minimum_qty') ?: null,
+                'whole_sell_qty' => !empty($request->whole_sell_qty) ? implode(',', $request->whole_sell_qty) : null,
+                'whole_sell_discount' => !empty($request->whole_sell_discount) ? implode(',', $request->whole_sell_discount) : null,
+                'ship' => $request->input('ship') ?: null,
+                'product_condition' => $request->input('product_condition') ?? 0,
+                'color_all' => !empty($request->color_all) ? implode(',', $request->color_all) : null,
+                'status' => 1
+            ]);
         }
 
         // Set SLug
@@ -736,25 +736,32 @@ class ProductController extends AdminBaseController
     }
 
     //*** GET Request
-    public function edit($id)
+    public function edit($merchantProductId)
     {
         $cats = Category::all();
-        $data = Product::findOrFail($id);
+        $merchantProduct = \App\Models\MerchantProduct::with(['product', 'user', 'qualityBrand'])->findOrFail($merchantProductId);
+        $data = $merchantProduct->product;
         $sign = $this->curr;
 
+        // Get vendors list for dropdown (vendors + admins with ID=1)
+        $vendors = \App\Models\User::where('is_vendor', 1)->orWhere('id', 1)->get();
+
+        // Get quality brands for dropdown
+        $qualityBrands = \App\Models\QualityBrand::all();
+
         if ($data->type == 'Digital') {
-            return view('admin.product.edit.digital', compact('cats', 'data', 'sign'));
+            return view('admin.product.edit.digital', compact('cats', 'data', 'merchantProduct', 'sign', 'vendors', 'qualityBrands'));
         } elseif ($data->type == 'License') {
-            return view('admin.product.edit.license', compact('cats', 'data', 'sign'));
+            return view('admin.product.edit.license', compact('cats', 'data', 'merchantProduct', 'sign', 'vendors', 'qualityBrands'));
         } elseif ($data->type == 'Listing') {
-            return view('admin.product.edit.listing', compact('cats', 'data', 'sign'));
+            return view('admin.product.edit.listing', compact('cats', 'data', 'merchantProduct', 'sign', 'vendors', 'qualityBrands'));
         } else {
-            return view('admin.product.edit.physical', compact('cats', 'data', 'sign'));
+            return view('admin.product.edit.physical', compact('cats', 'data', 'merchantProduct', 'sign', 'vendors', 'qualityBrands'));
         }
     }
 
     //*** POST Request
-    public function update(Request $request, $id)
+    public function update(Request $request, $merchantProductId)
     {
         // return $request;
         //--- Validation Section
@@ -770,7 +777,8 @@ class ProductController extends AdminBaseController
         //--- Validation Section Ends
 
         //-- Logic Section
-        $data = Product::findOrFail($id);
+        $merchantProduct = \App\Models\MerchantProduct::findOrFail($merchantProductId);
+        $data = Product::findOrFail($merchantProduct->product_id);
         $sign = $this->curr;
         $input = $request->all();
 
@@ -972,22 +980,20 @@ class ProductController extends AdminBaseController
 
         $data->update($input);
 
-        // Update merchant_product entry for the vendor
-        $vendorId = (int) ($request->input('user_id') ?? 0);
-        if ($vendorId > 0) {
-            \App\Models\MerchantProduct::updateOrCreate(
-                ['product_id' => $data->id, 'user_id' => $vendorId],
-                [
-                    'price' => $basePrice,
-                    'previous_price' => $basePreviousPrice,
-                    'stock' => (int) $request->input('stock', 0),
-                    'minimum_qty' => $request->input('minimum_qty') ?: null,
-                    'whole_sell_qty' => $input['whole_sell_qty'] ?? null,
-                    'whole_sell_discount' => $input['whole_sell_discount'] ?? null,
-                    'status' => 1
-                ]
-            );
-        }
+        // Update merchant_product entry
+        $merchantProduct->update([
+            'user_id' => (int) ($request->input('vendor_id') ?? $merchantProduct->user_id),
+            'brand_quality_id' => $request->input('brand_quality_id') ?: null,
+            'price' => $basePrice,
+            'previous_price' => $basePreviousPrice,
+            'stock' => $request->input('stock') !== null ? (int) $request->input('stock') : null,
+            'minimum_qty' => $request->input('minimum_qty') ?: null,
+            'whole_sell_qty' => !empty($request->whole_sell_qty) ? implode(',', $request->whole_sell_qty) : null,
+            'whole_sell_discount' => !empty($request->whole_sell_discount) ? implode(',', $request->whole_sell_discount) : null,
+            'ship' => $request->input('ship') ?: null,
+            'product_condition' => $request->input('product_condition') ?? 0,
+            'color_all' => !empty($request->color_all) ? implode(',', $request->color_all) : null,
+        ]);
         //-- Logic Section Ends
 
         //--- Redirect Section

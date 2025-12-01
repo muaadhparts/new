@@ -75,9 +75,6 @@ class ImportController extends AdminBaseController
             ->addColumn('quality_brand', function (MerchantProduct $mp) {
                 return $mp->qualityBrand ? getLocalizedQualityName($mp->qualityBrand) : __('N/A');
             })
-            ->addColumn('manufacturer', function (MerchantProduct $mp) {
-                return $mp->qualityBrand && $mp->qualityBrand->manufacturer ? $mp->qualityBrand->manufacturer : __('N/A');
-            })
             ->addColumn('vendor', function (MerchantProduct $mp) {
                 if (!$mp->user) return __('N/A');
                 $shopName = $mp->user->shop_name ?: $mp->user->name;

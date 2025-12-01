@@ -148,9 +148,6 @@
                                                 @endphp
                                                 @if($invoiceQualityBrand)
                                                     <strong>{{ __('Quality Brand') }}:</strong> {{ getLocalizedQualityName($invoiceQualityBrand) }}<br>
-                                                    @if($invoiceQualityBrand->manufacturer)
-                                                    <strong>{{ __('Manufacturer') }}:</strong> {{ $invoiceQualityBrand->manufacturer }}<br>
-                                                    @endif
                                                 @elseif(isset($product['quality_name']))
                                                     <strong>{{ __('Quality') }}:</strong> {{ $product['quality_name'] }}<br>
                                                 @endif

@@ -101,15 +101,15 @@
                                 </div>
                             </div>
 
-                            <!-- Brand Quality -->
+                            <!-- Quality Brand -->
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                    <label class="form-label">@lang('Brand Quality*')</label>
+                                    <label class="form-label">@lang('Quality Brand*')</label>
                                     <select class="form-control" name="brand_quality_id" required>
-                                        <option value="">@lang('Select Brand Quality')</option>
-                                        @foreach(\App\Models\QualityBrand::active()->get() as $qualityBrand)
-                                            <option value="{{ $qualityBrand->id }}" {{ $merchantProduct->brand_quality_id == $qualityBrand->id ? 'selected' : '' }}>
-                                                {{ $qualityBrand->display_name }}
+                                        <option value="">@lang('Select Quality Brand')</option>
+                                        @foreach(\App\Models\QualityBrand::where('is_active', 1)->get() as $qb)
+                                            <option value="{{ $qb->id }}" {{ $merchantProduct->brand_quality_id == $qb->id ? 'selected' : '' }}>
+                                                {{ $qb->name_en }} {{ $qb->name_ar ? '- ' . $qb->name_ar : '' }}
                                             </option>
                                         @endforeach
                                     </select>

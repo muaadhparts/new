@@ -28,7 +28,14 @@ class VendorController extends VendorBaseController
             $userId = $this->user->id;
             $data['pproducts'] = Product::whereHas('merchantProducts', function ($q) use ($userId) {
                 $q->where('user_id', $userId);
-            })->latest('products.id')->take(5)->get();
+            })
+            ->with([
+                'brand',
+                'merchantProducts' => function ($q) use ($userId) {
+                    $q->where('user_id', $userId)->with('qualityBrand');
+                }
+            ])
+            ->latest('products.id')->take(5)->get();
             $data['rorders'] = VendorOrder::where('user_id', '=', $this->user->id)->latest('id')->take(10)->get();
             $data['user'] = $this->user;
             $data['pending'] = VendorOrder::where('user_id', '=', $this->user->id)->where('status', '=', 'pending')->get();

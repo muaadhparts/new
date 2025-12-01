@@ -137,7 +137,6 @@ table#example2 {
                                                                             <th>{{ __("Name") }}</th>
                                                                             <th>{{ __("Brand") }}</th>
                                                                             <th>{{ __("Quality Brand") }}</th>
-                                                                            <th>{{ __("Manufacturer") }}</th>
                                                                             <th>{{ __("Condition") }}</th>
                                                                             <th>{{ __("Stock") }}</th>
                                                                             <th>{{ __("Price") }}</th>
@@ -155,8 +154,6 @@ table#example2 {
                                                                                 ? route('front.product', ['slug' => $dt->slug, 'vendor_id' => $merchantProduct->user_id, 'merchant_product_id' => $merchantProduct->id])
                                                                                 : '#';
 
-                                                                            // الشركة المصنعة من brand_qualities
-                                                                            $manufacturer = $merchantProduct->qualityBrand ? $merchantProduct->qualityBrand->manufacturer : null;
 
                                                                             // حالة المنتج (جديد/مستعمل)
                                                                             $condition = $merchantProduct->product_condition == 1 ? __('Used') : __('New');
@@ -180,7 +177,6 @@ table#example2 {
                                                                             <td>{{ $dt ? getLocalizedProductName($dt, 50) : __('N/A') }}</td>
                                                                             <td>{{ $dt && $dt->brand ? getLocalizedBrandName($dt->brand) : __('N/A') }}</td>
                                                                             <td>{{ $merchantProduct->qualityBrand ? getLocalizedQualityName($merchantProduct->qualityBrand) : __('N/A') }}</td>
-                                                                            <td>{{ $manufacturer ?? __('N/A') }}</td>
                                                                             <td><span class="badge {{ $merchantProduct->product_condition == 1 ? 'badge-warning' : 'badge-success' }}">{{ $condition }}</span></td>
                                                                             <td>{!! $stckDisplay !!}</td>
                                                                             <td>{{ \PriceHelper::showAdminCurrencyPrice($finalPrice) }}</td>

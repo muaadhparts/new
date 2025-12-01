@@ -31,7 +31,7 @@
 			</div>
 		</div>
 
-		<form id="geniusform" action="{{route('admin-prod-update',$data->id)}}" method="POST" enctype="multipart/form-data">
+		<form id="geniusform" action="{{route('admin-prod-update',$merchantProduct->id)}}" method="POST" enctype="multipart/form-data">
 			{{csrf_field()}}
 			@include('alerts.admin.form-both')
 			<div class="row">
@@ -42,7 +42,66 @@
 								<div class="product-description">
 									<div class="body-area">
 										<div class="gocover" style="background: url({{asset('assets/images/'.$gs->admin_loader)}}) no-repeat scroll center center rgba(45, 45, 45, 0.5);"></div>
-										
+
+										{{-- Vendor Selection --}}
+										<div class="row">
+											<div class="col-lg-12">
+												<div class="left-area">
+													<h4 class="heading">{{ __('Vendor') }}*</h4>
+												</div>
+											</div>
+											<div class="col-lg-12">
+												<select name="vendor_id" required="">
+													<option value="">{{ __('Select Vendor') }}</option>
+													@foreach ($vendors as $vendor)
+														<option value="{{ $vendor->id }}"
+															{{ $merchantProduct->user_id == $vendor->id ? 'selected' : '' }}>
+															{{ $vendor->shop_name ?: $vendor->name }} ({{ $vendor->email }})
+														</option>
+													@endforeach
+												</select>
+											</div>
+										</div>
+
+										{{-- Brand (العلامة التجارية) --}}
+										<div class="row">
+											<div class="col-lg-12">
+												<div class="left-area">
+													<h4 class="heading">{{ __('Brand') }} ({{ __('Trademark') }})</h4>
+												</div>
+											</div>
+											<div class="col-lg-12">
+												<select name="brand_id" class="input-field">
+													<option value="">{{ __('Select Brand') }}</option>
+													@foreach (\App\Models\Brand::all() as $brand)
+														<option value="{{ $brand->id }}" style="color: #333;"
+															{{ $data->brand_id == $brand->id ? 'selected' : '' }}>
+															{{ $brand->name }} {{ $brand->name_ar ? '- ' . $brand->name_ar : '' }}
+														</option>
+													@endforeach
+												</select>
+											</div>
+										</div>
+
+										{{-- Quality Brand (جودة التصنيع) --}}
+										<div class="row">
+											<div class="col-lg-12">
+												<div class="left-area">
+													<h4 class="heading">{{ __('Quality Brand') }} ({{ __('Manufacturing Quality') }})</h4>
+												</div>
+											</div>
+											<div class="col-lg-12">
+												<select name="brand_quality_id" class="input-field">
+													<option value="">{{ __('Select Quality Brand') }}</option>
+													@foreach ($qualityBrands as $qb)
+														<option value="{{ $qb->id }}" style="color: #333;"
+															{{ $merchantProduct->brand_quality_id == $qb->id ? 'selected' : '' }}>
+															{{ $qb->name_en }} {{ $qb->name_ar ? '- ' . $qb->name_ar : '' }} {{ $qb->country ? '(' . $qb->country . ')' : '' }}
+														</option>
+													@endforeach
+												</select>
+											</div>
+										</div>
 
 										<div class="row">
 											<div class="col-lg-12">
@@ -53,6 +112,34 @@
 											</div>
 											<div class="col-lg-12">
 												<input type="text" class="input-field" placeholder="{{ __("Enter Product Name") }}" name="name" required="" value="{{ $data->name }}">
+											</div>
+										</div>
+
+										{{-- Label English --}}
+										<div class="row">
+											<div class="col-lg-12">
+												<div class="left-area">
+													<h4 class="heading">{{ __('Product Name (English)') }}</h4>
+												</div>
+											</div>
+											<div class="col-lg-12">
+												<input type="text" class="input-field"
+													placeholder="{{ __('Enter Product Name in English') }}"
+													name="label_en" value="{{ $data->label_en }}">
+											</div>
+										</div>
+
+										{{-- Label Arabic --}}
+										<div class="row">
+											<div class="col-lg-12">
+												<div class="left-area">
+													<h4 class="heading">{{ __('Product Name (Arabic)') }}</h4>
+												</div>
+											</div>
+											<div class="col-lg-12">
+												<input type="text" class="input-field" dir="rtl"
+													placeholder="{{ __('Enter Product Name in Arabic') }}"
+													name="label_ar" value="{{ $data->label_ar }}">
 											</div>
 										</div>
 

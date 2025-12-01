@@ -51,6 +51,90 @@ class ProductController extends VendorBaseController
         return view('vendor.product.types');
     }
 
+    //*** GET Request - NEW SIMPLIFIED ADD PRODUCT PAGE
+    public function add()
+    {
+        $user = $this->user;
+
+        if (Generalsetting::find(1)->verify_product == 1) {
+            if (!$user->checkStatus()) {
+                Session::flash('unsuccess', __('You must complete your verfication first.'));
+                return redirect()->route('vendor-verify');
+            }
+        }
+
+        $sign = $this->curr;
+        return view('vendor.product.create.add', compact('sign'));
+    }
+
+    //*** GET Request - SEARCH PRODUCT BY SKU (AJAX)
+    public function searchSku(Request $request)
+    {
+        $user = $this->user;
+        $sku = trim($request->input('sku'));
+
+        if (empty($sku)) {
+            return response()->json([
+                'success' => false,
+                'message' => __('Please enter a SKU or Part Number')
+            ]);
+        }
+
+        // Search for product by SKU
+        $product = Product::where('sku', $sku)
+            ->with(['brand', 'category'])
+            ->first();
+
+        if (!$product) {
+            return response()->json([
+                'success' => false,
+                'message' => __('Product with SKU "') . $sku . __('" not found in catalog.')
+            ]);
+        }
+
+        // Check if vendor already has an offer for this product
+        $existingOffer = MerchantProduct::where('product_id', $product->id)
+            ->where('user_id', $user->id)
+            ->first();
+
+        if ($existingOffer) {
+            return response()->json([
+                'success' => true,
+                'already_exists' => true,
+                'edit_url' => route('vendor-prod-edit', $existingOffer->id),
+                'product' => [
+                    'id' => $product->id,
+                    'name' => $product->name,
+                    'sku' => $product->sku,
+                ]
+            ]);
+        }
+
+        // Get photo URL
+        $photoUrl = asset('assets/images/noimage.png');
+        if ($product->photo) {
+            if (filter_var($product->photo, FILTER_VALIDATE_URL)) {
+                $photoUrl = $product->photo;
+            } else {
+                $photoUrl = asset('assets/images/products/' . $product->photo);
+            }
+        }
+
+        return response()->json([
+            'success' => true,
+            'already_exists' => false,
+            'product' => [
+                'id' => $product->id,
+                'name' => $product->name,
+                'sku' => $product->sku,
+                'type' => $product->type,
+                'brand' => $product->brand ? $product->brand->name : null,
+                'category' => $product->category ? $product->category->name : null,
+                'photo' => $photoUrl,
+            ]
+        ]);
+    }
+
     public function catalogs()
     {
         $user = $this->user;
@@ -129,8 +213,9 @@ class ProductController extends VendorBaseController
     public function status($id1, $id2)
     {
         // تحديث حالة عرض البائع (merchant_products)
+        // $id1 = merchant_product_id
         $userId = $this->user->id;
-        $merchantProduct = MerchantProduct::where('product_id', $id1)
+        $merchantProduct = MerchantProduct::where('id', $id1)
             ->where('user_id', $userId)
             ->firstOrFail();
 
@@ -387,17 +472,17 @@ class ProductController extends VendorBaseController
         $validator = Validator::make($request->all(), $rules);
 
         if ($validator->fails()) {
-            return response()->json(array('errors' => $validator->getMessageBag()->toArray()));
+            return redirect()->back()->withErrors($validator)->withInput();
         }
 
-        // Check if vendor already has an offer for this product with the same brand quality
+        // Check if vendor already has an offer for this product
         $existingOffer = MerchantProduct::where('product_id', $request->product_id)
             ->where('user_id', $user->id)
-            ->where('brand_quality_id', $request->brand_quality_id)
             ->first();
 
         if ($existingOffer) {
-            return response()->json(array('errors' => ['brand_quality_id' => ['You already have an offer for this product with this brand quality.']]));
+            Session::flash('unsuccess', __('You already have an offer for this product.'));
+            return redirect()->route('vendor-prod-edit', $existingOffer->id);
         }
 
         // Prepare merchant product data
@@ -443,9 +528,10 @@ class ProductController extends VendorBaseController
         }
 
         // Create merchant product
-        MerchantProduct::create($merchantData);
+        $merchantProduct = MerchantProduct::create($merchantData);
 
-        return response()->json(['status' => true, 'data' => [], 'error' => []]);
+        Session::flash('success', __('Product added successfully.'));
+        return redirect()->route('vendor-prod-index');
     }
 
     //*** PUT Request - Update merchant offer

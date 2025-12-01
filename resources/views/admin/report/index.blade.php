@@ -47,7 +47,6 @@
                                         <th>{{ __('Product') }}</th>
                                         <th>{{ __('Brand') }}</th>
                                         <th>{{ __('Quality Brand') }}</th>
-                                        <th>{{ __('Manufacturer') }}</th>
                                         <th>{{ __('Vendor') }}</th>
                                         <th>{{ __('Reporter') }}</th>
                                         <th>{{ __('Title') }}</th>
@@ -145,7 +144,6 @@
                     { data: 'product', name: 'product', searchable: false, orderable: false },
                     { data: 'brand', name: 'brand' },
                     { data: 'quality_brand', name: 'quality_brand' },
-                    { data: 'manufacturer', name: 'manufacturer' },
                     { data: 'vendor', name: 'vendor' },
                     { data: 'reporter', name: 'reporter' },
                     { data: 'title', name: 'title' },

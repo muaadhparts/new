@@ -34,7 +34,6 @@
 									                        <th>{{ __('Name') }}</th>
 									                        <th>{{ __('Brand') }}</th>
 									                        <th>{{ __('Quality Brand') }}</th>
-									                        <th>{{ __('Manufacturer') }}</th>
 									                        <th>{{ __('Vendor') }}</th>
 									                        <th>{{ __('Category') }}</th>
 									                        <th>{{ __('Clicks') }}</th>
@@ -53,9 +52,6 @@
                                                         </td>
                                                         <td>
                                                             {{ $prod->merchantProduct && $prod->merchantProduct->qualityBrand ? getLocalizedQualityName($prod->merchantProduct->qualityBrand) : __('N/A') }}
-                                                        </td>
-                                                        <td>
-                                                            {{ $prod->merchantProduct && $prod->merchantProduct->qualityBrand ? ($prod->merchantProduct->qualityBrand->manufacturer ?? __('N/A')) : __('N/A') }}
                                                         </td>
                                                         <td>
                                                             @if($prod->merchantProduct && $prod->merchantProduct->user)

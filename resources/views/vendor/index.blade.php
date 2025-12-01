@@ -125,9 +125,9 @@
                                     <th>
                                         <span class="header-title">@lang('Product Name')</span>
                                     </th>
-                                    <th><span class="header-title">@lang('Category')</span></th>
-                                    <th><span class="header-title">@lang('Type')</span></th>
-                                    <th><span class="header-title">@lang('price')</span></th>
+                                    <th><span class="header-title">@lang('Brand')</span></th>
+                                    <th><span class="header-title">@lang('Quality Brand')</span></th>
+                                    <th><span class="header-title">@lang('Price')</span></th>
                                     <th class="text-center">
                                         <span class="header-title">@lang('Details')</span>
                                     </th>
@@ -136,6 +136,9 @@
                             <tbody>
 
                                 @forelse ($pproducts as $data)
+                                    @php
+                                        $merchantProduct = $data->merchantProducts->first();
+                                    @endphp
                                     <!-- table data row 1 start  -->
                                     <tr>
                                         <td>
@@ -150,26 +153,24 @@
                                                 </span>
                                             </div>
                                         </td>
-                                        <td class="text-start">
-                                            <div class="category">
-                                                <span class="content">
-                                                    {{ $data->category ? getLocalizedCategoryName($data->category) : __('N/A') }}
-                                                    @if (isset($data->subcategory))
-                                                        <br>
-                                                        {{ getLocalizedCategoryName($data->subcategory) }}
-                                                    @endif
-                                                    @if (isset($data->childcategory))
-                                                        <br>
-                                                        {{ getLocalizedCategoryName($data->childcategory) }}
-                                                    @endif
-                                                </span>
-                                            </div>
+                                        <td>
+                                            <span class="content">
+                                                {{ $data->brand ? getLocalizedBrandName($data->brand) : __('N/A') }}
+                                            </span>
                                         </td>
-                                        <td><span class="content">{{ $data->type }}</span></td>
-                                        <td><span class="content">{{ $data->showPrice() }}</span></td>
+                                        <td>
+                                            <span class="content">
+                                                {{ $merchantProduct && $merchantProduct->qualityBrand ? getLocalizedQualityName($merchantProduct->qualityBrand) : __('N/A') }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <span class="content">
+                                                {{ $merchantProduct ? \App\Models\Product::convertPrice($merchantProduct->price) : $data->showPrice() }}
+                                            </span>
+                                        </td>
                                         <td>
                                             <div class="table-icon-btns-wrapper">
-                                                <a href="{{ route('vendor-prod-edit', $data->id) }}" class="view-btn">
+                                                <a href="{{ route('vendor-prod-edit', $merchantProduct ? $merchantProduct->id : $data->id) }}" class="view-btn">
                                                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
                                                         xmlns="http://www.w3.org/2000/svg">
                                                         <g clip-path="url(#clip0_548_165892)">
@@ -190,7 +191,7 @@
                                     <!-- table data row 1 end  -->
                                 @empty
                                     <tr>
-                                        <td colspan="6" class="text-center">@lang('No Data Available')</td>
+                                        <td colspan="6" class="text-center">@lang('No Products Found')</td>
                                     </tr>
                                 @endforelse
                             </tbody>

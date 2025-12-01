@@ -58,10 +58,6 @@
                                                                 <th>{{ __('Quality Brand') }}</th>
                                                                 <td>{{ $data->merchantProduct->qualityBrand ? getLocalizedQualityName($data->merchantProduct->qualityBrand) : __('N/A') }}</td>
                                                             </tr>
-                                                            <tr>
-                                                                <th>{{ __('Manufacturer') }}</th>
-                                                                <td>{{ $data->merchantProduct->qualityBrand->manufacturer ?? __('N/A') }}</td>
-                                                            </tr>
                                                             @endif
                                                         </table>
                                                     </div>

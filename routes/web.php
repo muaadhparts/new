@@ -396,8 +396,8 @@ Route::prefix('admin')->group(function () {
         // CREATE SECTION
 
         // EDIT SECTION
-        Route::get('/products/edit/{id}', 'Admin\ProductController@edit')->name('admin-prod-edit');
-        Route::post('/products/edit/{id}', 'Admin\ProductController@update')->name('admin-prod-update');
+        Route::get('/products/edit/{merchantProductId}', 'Admin\ProductController@edit')->name('admin-prod-edit');
+        Route::post('/products/edit/{merchantProductId}', 'Admin\ProductController@update')->name('admin-prod-update');
         // EDIT SECTION ENDS
 
         // DELETE SECTION
@@ -1164,7 +1164,13 @@ Route::group(['middleware' => 'maintenance'], function () {
 
             Route::post('/products/upload/update/{id}', 'Vendor\ProductController@uploadUpdate')->name('vendor-prod-upload-update');
 
-            // CREATE SECTION
+            // CREATE SECTION - NEW SIMPLIFIED SYSTEM
+            Route::get('/products/add', 'Vendor\ProductController@add')->name('vendor-prod-add');
+            Route::get('/products/search-sku', 'Vendor\ProductController@searchSku')->name('vendor-prod-search-sku');
+            Route::post('/products/store-offer', 'Vendor\ProductController@storeOffer')->name('vendor-prod-store-offer');
+            Route::put('/products/update-offer/{merchantProductId}', 'Vendor\ProductController@updateOffer')->name('vendor-prod-update-offer');
+
+            // LEGACY CREATE ROUTES (kept for compatibility)
             Route::get('/products/types', 'Vendor\ProductController@types')->name('vendor-prod-types');
             Route::get('/products/{slug}/create', 'Vendor\ProductController@create')->name('vendor-prod-create');
             Route::post('/products/store', 'Vendor\ProductController@store')->name('vendor-prod-store');
@@ -1175,10 +1181,8 @@ Route::group(['middleware' => 'maintenance'], function () {
             Route::get('/products/catalog/datatables', 'Vendor\ProductController@catalogdatatables')->name('admin-vendor-catalog-datatables');
             Route::get('/products/catalogs', 'Vendor\ProductController@catalogs')->name('vendor-prod-catalogs');
 
-            // NEW OFFER SYSTEM ROUTES
+            // CATALOG OFFER ROUTES
             Route::get('/products/create-offer/{product_id}', 'Vendor\ProductController@createOffer')->name('vendor-prod-create-offer');
-            Route::post('/products/store-offer', 'Vendor\ProductController@storeOffer')->name('vendor-prod-store-offer');
-            Route::put('/products/update-offer/{merchantProductId}', 'Vendor\ProductController@updateOffer')->name('vendor-prod-update-offer');
 
             // CREATE SECTION
 

@@ -7,13 +7,13 @@
             <div class="d-flex gap-4  flex-wrap align-items-center custom-gap-sm-2">
                 <h4 class="text-capitalize">@lang('All Products')</h4>
                 <div class="d-flex gap-2 flex-wrap">
-                    <a href="{{ route('vendor-prod-types') }}"
+                    <a href="{{ route('vendor-prod-add') }}"
                         class="template-btn md-btn black-btn data-table-btn">
                         <i class="fas fa-plus"></i> @lang('Add New Product')
                     </a>
                     <a href="{{ route('vendor-stock-management') }}"
                         class="template-btn md-btn primary-btn data-table-btn">
-                        <i class="fas fa-boxes"></i> إدارة المخزون
+                        <i class="fas fa-boxes"></i> @lang('Stock Management')
                     </a>
                 </div>
             </div>
@@ -106,10 +106,15 @@
 
                                 <td>
                                     @php
-                                        $active = ($merchantProduct && $merchantProduct->status == 1) ? 'selected' : '';
-                                        $deactivated = ($merchantProduct && $merchantProduct->status == 0) ? 'selected' : '';
-                                        $activeClass = ($merchantProduct && $merchantProduct->status == 1) ? 'active' : 'deactive';
-                                        $merchantProductId = $merchantProduct ? $merchantProduct->id : $data->id;
+                                        // $merchantProduct should always exist because we filter by whereHas('merchantProducts')
+                                        // But just in case, we skip if not found
+                                        if (!$merchantProduct) {
+                                            continue;
+                                        }
+                                        $active = ($merchantProduct->status == 1) ? 'selected' : '';
+                                        $deactivated = ($merchantProduct->status == 0) ? 'selected' : '';
+                                        $activeClass = ($merchantProduct->status == 1) ? 'active' : 'deactive';
+                                        $merchantProductId = $merchantProduct->id;
                                     @endphp
                                     <div class="status position-relative">
                                         <div class="dropdown-container">

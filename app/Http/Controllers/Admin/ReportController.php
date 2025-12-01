@@ -43,11 +43,6 @@ class ReportController extends AdminBaseController
 					? getLocalizedQualityName($data->merchantProduct->qualityBrand)
 					: __('N/A');
 			})
-			->addColumn('manufacturer', function (Report $data) {
-				return $data->merchantProduct && $data->merchantProduct->qualityBrand && $data->merchantProduct->qualityBrand->manufacturer
-					? $data->merchantProduct->qualityBrand->manufacturer
-					: __('N/A');
-			})
 			->addColumn('vendor', function (Report $data) {
 				if ($data->merchantProduct && $data->merchantProduct->user) {
 					$shopName = $data->merchantProduct->user->shop_name ?: $data->merchantProduct->user->name;
