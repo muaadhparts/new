@@ -466,7 +466,7 @@ class ProductController extends VendorBaseController
             'price' => 'required|numeric|min:0',
             'stock' => 'required|integer|min:0',
             'product_condition' => 'required|in:1,2',
-            'brand_quality_id' => 'required|exists:quality_brands,id',
+            'brand_quality_id' => 'required|exists:brand_qualities,id',
         ];
 
         $validator = Validator::make($request->all(), $rules);
@@ -556,7 +556,7 @@ class ProductController extends VendorBaseController
         $validator = Validator::make($request->all(), $rules);
 
         if ($validator->fails()) {
-            return response()->json(array('errors' => $validator->getMessageBag()->toArray()));
+            return redirect()->back()->withErrors($validator)->withInput();
         }
 
         // Check for brand quality conflicts when editing
@@ -567,7 +567,7 @@ class ProductController extends VendorBaseController
             ->exists();
 
         if ($conflict) {
-            return response()->json(['errors' => ['brand_quality_id' => ['You already have an offer for this product with this brand quality.']]]);
+            return redirect()->back()->withErrors(['brand_quality_id' => __('You already have an offer for this product with this brand quality.')])->withInput();
         }
 
         // Prepare merchant product data
@@ -612,7 +612,8 @@ class ProductController extends VendorBaseController
         // Update merchant product
         $merchantProduct->update($merchantData);
 
-        return response()->json(['status' => true, 'data' => [], 'error' => []]);
+        Session::flash('success', __('Offer updated successfully.'));
+        return redirect()->route('vendor-prod-index');
     }
 
     //*** POST Request - New workflow for merchant products with part_number
