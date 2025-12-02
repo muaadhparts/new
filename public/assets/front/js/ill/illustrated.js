@@ -918,7 +918,7 @@
 
       // بناء الـ URL بناءً على نوع الـ route
       let url;
-      if (mpId && addUrl.includes('/cart/merchant/add/')) {
+      if (mpId && (addUrl.includes('/cart/add/merchant/') || addUrl.includes('/cart/merchant/add/'))) {
         // استخدام route الجديد (merchant.cart.add) - الـ ID موجود في الـ path
         url = `${addUrl}?qty=${encodeURIComponent(qty)}` + (user ? `&user=${encodeURIComponent(user)}` : '');
       } else {
@@ -976,7 +976,7 @@
 
       // بناء الـ URL بناءً على نوع الـ route
       let url;
-      if (mpId && addUrl.includes('/cart/merchant/add/')) {
+      if (mpId && (addUrl.includes('/cart/add/merchant/') || addUrl.includes('/cart/merchant/add/'))) {
         // استخدام route الجديد (merchant.cart.add) - الـ ID موجود في الـ path
         // نضيف للسلة عبر AJAX ثم نذهب للـ carts
         url = `${addUrl}?qty=${encodeURIComponent(qty)}` + (user ? `&user=${encodeURIComponent(user)}` : '');

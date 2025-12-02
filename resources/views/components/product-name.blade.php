@@ -1,10 +1,10 @@
-{{-- Product Name Component with SKU and Language Support --}}
+{{-- Product Name Component with Language Support --}}
 @props([
     'product' => null,
     'item' => null, // for cart items format
     'vendorId' => null,
     'merchantProductId' => null,
-    'showSku' => true,
+    'showSku' => false, // SKU يعرض في product-info component
     'target' => '_self',
     'class' => '',
     'nameClass' => '',
