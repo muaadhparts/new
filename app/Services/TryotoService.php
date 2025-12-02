@@ -8,6 +8,8 @@ use App\Models\User;
 use App\Models\City;
 use App\Models\UserNotification;
 use App\Helpers\PriceHelper;
+use App\Services\ShippingCalculatorService;
+use App\Services\VendorCartService;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -274,22 +276,71 @@ class TryotoService
     /**
      * Get delivery options for a route using checkOTODeliveryFee endpoint
      *
+     * المبدأ الأساسي: لا قيم ثابتة
+     * - إذا كانت الأبعاد ناقصة، نرجع خطأ بدلاً من استخدام قيم افتراضية
+     * - يجب توفير البيانات الحقيقية من VendorCartService
+     *
      * @param string $originCity المدينة المصدر
      * @param string $destinationCity المدينة الوجهة
      * @param float $weight الوزن بالكيلو
      * @param float $codAmount مبلغ الدفع عند الاستلام (غير مستخدم في هذا الـ endpoint)
-     * @param array $dimensions الأبعاد [length, height, width]
+     * @param array $dimensions الأبعاد [length, height, width] - مطلوبة
      * @return array
      */
-    public function getDeliveryOptions(string $originCity, string $destinationCity, float $weight = 1, float $codAmount = 0, array $dimensions = []): array
+    public function getDeliveryOptions(string $originCity, string $destinationCity, float $weight = 0, float $codAmount = 0, array $dimensions = []): array
     {
+        // التحقق من اكتمال البيانات - بدون fallback
+        $errors = [];
+
+        if (empty($originCity)) {
+            $errors[] = 'origin_city_missing';
+        }
+        if (empty($destinationCity)) {
+            $errors[] = 'destination_city_missing';
+        }
+        if ($weight <= 0) {
+            $errors[] = 'weight_missing_or_invalid';
+        }
+
+        $length = $dimensions['length'] ?? null;
+        $height = $dimensions['height'] ?? null;
+        $width = $dimensions['width'] ?? null;
+
+        if ($length === null || $length <= 0) {
+            $errors[] = 'length_missing';
+        }
+        if ($height === null || $height <= 0) {
+            $errors[] = 'height_missing';
+        }
+        if ($width === null || $width <= 0) {
+            $errors[] = 'width_missing';
+        }
+
+        // إذا كانت البيانات ناقصة، رفض الطلب
+        if (!empty($errors)) {
+            Log::warning('Tryoto: getDeliveryOptions - incomplete data', [
+                'errors' => $errors,
+                'origin' => $originCity,
+                'destination' => $destinationCity,
+                'weight' => $weight,
+                'dimensions' => $dimensions
+            ]);
+
+            return [
+                'success' => false,
+                'error' => 'Incomplete shipping data',
+                'error_code' => 'INCOMPLETE_DATA',
+                'missing_fields' => $errors
+            ];
+        }
+
         $requestData = [
             'originCity' => $originCity,
             'destinationCity' => $destinationCity,
-            'weight' => max(0.1, $weight),
-            'xlength' => max(30, $dimensions['length'] ?? 30),
-            'xheight' => max(30, $dimensions['height'] ?? 30),
-            'xwidth' => max(30, $dimensions['width'] ?? 30),
+            'weight' => $weight,
+            'xlength' => $length,
+            'xheight' => $height,
+            'xwidth' => $width,
         ];
 
         Log::info('Tryoto: Requesting delivery options', $requestData);
@@ -313,7 +364,7 @@ class TryotoService
         foreach ($companies as $company) {
             $options[] = [
                 'deliveryOptionId' => (string)($company['deliveryOptionId'] ?? ''),
-                'company' => $company['deliveryOptionName'] ?? $company['deliveryCompanyName'] ?? 'Unknown',
+                'company' => $company['deliveryOptionName'] ?? $company['deliveryCompanyName'] ?? null,
                 'companyCode' => $company['deliveryCompanyName'] ?? '',
                 'price' => (float)($company['price'] ?? 0),
                 'estimatedDeliveryDays' => $this->parseDeliveryTime($company['avgDeliveryTime'] ?? ''),
@@ -360,29 +411,46 @@ class TryotoService
 
     /**
      * تحويل city ID أو اسم إلى اسم المدينة الصحيح لـ Tryoto
+     *
+     * المبدأ الأساسي: بدون fallback
+     * إذا كانت المدينة غير موجودة، نرجع null
+     *
+     * @param mixed $cityValue City ID or name
+     * @return string|null City name or null if not found
      */
-    public function resolveCityName($cityValue): string
+    public function resolveCityName($cityValue): ?string
     {
         if (empty($cityValue)) {
-            return 'Riyadh';
+            Log::warning('Tryoto: resolveCityName - empty city value provided');
+            return null;
         }
 
+        // إذا كان رقم، نبحث في قاعدة البيانات
         if (is_numeric($cityValue)) {
             $city = City::find($cityValue);
-            if ($city && $city->city_name) {
-                return $city->city_name;
+            if ($city) {
+                // جلب الاسم من الأعمدة المتاحة
+                return $city->city_name ?? $city->name ?? null;
             }
+            Log::warning('Tryoto: resolveCityName - city not found', ['city_id' => $cityValue]);
+            return null;
         }
 
-        if (!is_numeric($cityValue)) {
+        // إذا كان نص، نستخدمه مباشرة
+        if (is_string($cityValue)) {
             return $cityValue;
         }
 
-        return 'Riyadh';
+        return null;
     }
 
     /**
      * Create a shipment using createOrder API with createShipment=true
+     *
+     * المبدأ الأساسي: بدون قيم ثابتة
+     * - مدينة التاجر من user.city_id فقط
+     * - مدينة العميل من الطلب فقط
+     * - الأبعاد من ShippingCalculatorService
      *
      * @param Order $order
      * @param int $vendorId
@@ -390,38 +458,109 @@ class TryotoService
      * @param string $company
      * @param float $price
      * @param string $serviceType
+     * @param array|null $vendorShippingData بيانات الشحن المحسوبة مسبقاً (من VendorCartService)
      * @return array
      */
-    public function createShipment(Order $order, int $vendorId, string $deliveryOptionId, string $company, float $price, string $serviceType = ''): array
+    public function createShipment(Order $order, int $vendorId, string $deliveryOptionId, string $company, float $price, string $serviceType = '', ?array $vendorShippingData = null): array
     {
-        // Get vendor info
+        // Get vendor info using ShippingCalculatorService
+        $vendorCityData = ShippingCalculatorService::getVendorCity($vendorId);
         $vendor = User::find($vendorId);
 
-        // تحويل city_id إلى city name
-        $originCity = $this->resolveCityName($vendor->city_id ?? $vendor->warehouse_city ?? $vendor->shop_city);
+        if (!$vendor) {
+            return [
+                'success' => false,
+                'error' => 'Vendor not found',
+                'error_code' => 'VENDOR_NOT_FOUND'
+            ];
+        }
+
+        // استخدام مدينة التاجر من ShippingCalculatorService - بدون fallback
+        $originCity = $vendorCityData['city_name'] ?? null;
+
+        if (!$originCity) {
+            Log::error('Tryoto: createShipment - vendor city missing', ['vendor_id' => $vendorId]);
+            return [
+                'success' => false,
+                'error' => 'Vendor city is not configured',
+                'error_code' => 'VENDOR_CITY_MISSING'
+            ];
+        }
+
         $originAddress = $vendor->warehouse_address ?? $vendor->shop_address ?? $originCity;
 
-        // تحويل destination city ID إلى city name
+        // مدينة العميل من الطلب - بدون fallback
         $destinationCityValue = $order->shipping_city ?: $order->customer_city;
         $destinationCity = $this->resolveCityName($destinationCityValue);
 
-        // Calculate dimensions from cart
-        $dims = $this->calculateDimensions($order);
+        if (!$destinationCity) {
+            Log::error('Tryoto: createShipment - customer city missing', ['order_id' => $order->id]);
+            return [
+                'success' => false,
+                'error' => 'Customer city is not configured',
+                'error_code' => 'CUSTOMER_CITY_MISSING'
+            ];
+        }
+
+        // Calculate dimensions from vendor shipping data or order cart
+        $dims = $vendorShippingData ? [
+            'weight' => $vendorShippingData['chargeable_weight'] ?? $vendorShippingData['actual_weight'] ?? null,
+            'length' => $vendorShippingData['dimensions']['length'] ?? null,
+            'width' => $vendorShippingData['dimensions']['width'] ?? null,
+            'height' => $vendorShippingData['dimensions']['height'] ?? null,
+        ] : $this->calculateDimensionsFromOrder($order, $vendorId);
+
+        // التحقق من اكتمال الأبعاد - بدون fallback
+        $missingDims = [];
+        if (!$dims['weight'] || $dims['weight'] <= 0) $missingDims[] = 'weight';
+        if (!$dims['length'] || $dims['length'] <= 0) $missingDims[] = 'length';
+        if (!$dims['width'] || $dims['width'] <= 0) $missingDims[] = 'width';
+        if (!$dims['height'] || $dims['height'] <= 0) $missingDims[] = 'height';
+
+        if (!empty($missingDims)) {
+            Log::error('Tryoto: createShipment - incomplete dimensions', [
+                'order_id' => $order->id,
+                'vendor_id' => $vendorId,
+                'missing' => $missingDims,
+                'dims' => $dims
+            ]);
+            return [
+                'success' => false,
+                'error' => 'Incomplete shipping dimensions',
+                'error_code' => 'INCOMPLETE_DIMENSIONS',
+                'missing_fields' => $missingDims
+            ];
+        }
 
         // Determine COD amount
         $isCOD = in_array($order->method, ['cod', 'Cash On Delivery']);
         $codAmount = $isCOD ? (float)$order->pay_amount : 0.0;
 
-        // Prepare receiver info with phone cleanup
+        // Prepare receiver info - allow null for missing data
         $receiverName = $order->shipping_name ?: $order->customer_name;
-        $receiverPhone = $this->cleanPhoneNumber($order->shipping_phone ?: $order->customer_phone);
-        $receiverEmail = $order->shipping_email ?: $order->customer_email ?: 'customer@example.com';
+        $receiverPhone = $this->cleanPhoneNumber($order->shipping_phone ?: $order->customer_phone ?: '');
+        $receiverEmail = $order->shipping_email ?: $order->customer_email ?: null;
         $receiverAddress = $order->shipping_address ?: $order->customer_address;
-        $receiverZip = $order->shipping_zip ?: $order->customer_zip ?: '00000';
+        $receiverZip = $order->shipping_zip ?: $order->customer_zip ?: null;
         $receiverDistrict = $order->shipping_state ?? $order->customer_state ?? '';
 
-        // Prepare sender phone
-        $senderPhone = $this->cleanPhoneNumber($vendor->phone ?? '0500000000');
+        // Validate required receiver info
+        if (!$receiverName || !$receiverPhone || !$receiverAddress) {
+            Log::error('Tryoto: createShipment - incomplete receiver info', [
+                'order_id' => $order->id,
+                'has_name' => !empty($receiverName),
+                'has_phone' => !empty($receiverPhone),
+                'has_address' => !empty($receiverAddress)
+            ]);
+            return [
+                'success' => false,
+                'error' => 'Incomplete receiver information',
+                'error_code' => 'INCOMPLETE_RECEIVER_INFO'
+            ];
+        }
+
+        // Prepare sender phone - allow null
+        $senderPhone = $this->cleanPhoneNumber($vendor->phone ?? '');
 
         // Prepare cart items
         $cart = is_string($order->cart) ? json_decode($order->cart, true) : $order->cart;
@@ -435,13 +574,13 @@ class TryotoService
             $itemCount += $qty;
             $orderItems[] = [
                 'productId' => (string)($itemData['id'] ?? '0'),
-                'name' => $itemData['name'] ?? 'Product',
+                'name' => $itemData['name'] ?? null,
                 'price' => (float)($itemData['price'] ?? 0),
                 'rowTotal' => (float)($itemData['price'] ?? 0) * $qty,
                 'taxAmount' => 0,
                 'quantity' => $qty,
                 'serialnumber' => '',
-                'sku' => $itemData['sku'] ?? 'SKU-' . ($itemData['id'] ?? '0'),
+                'sku' => $itemData['sku'] ?? null,
                 'image' => $itemData['photo'] ?? '',
             ];
         }
@@ -449,14 +588,14 @@ class TryotoService
         // Generate unique order ID for Tryoto
         $tryotoOrderId = $order->order_number . '-V' . $vendorId . '-' . time();
 
-        // Build createOrder payload
+        // Build createOrder payload - using real data only
         $payload = [
             'orderId' => $tryotoOrderId,
             'ref1' => 'REF-' . $order->id . '-' . $vendorId,
             'deliveryOptionId' => $deliveryOptionId,
             'serviceType' => $serviceType,
             'createShipment' => true,
-            'storeName' => $vendor->shop_name ?? $vendor->name ?? 'Store',
+            'storeName' => $vendor->shop_name ?? $vendor->name ?? null,
             'payment_method' => $isCOD ? 'cod' : 'paid',
             'amount' => (float)$order->pay_amount,
             'amount_due' => $isCOD ? (float)$order->pay_amount : 0,
@@ -466,16 +605,16 @@ class TryotoService
             'shippingNotes' => 'Order #' . $order->order_number,
             'packageSize' => 'medium',
             'packageCount' => max(1, $itemCount),
-            'packageWeight' => max(0.5, $dims['weight']),
-            'boxWidth' => max(30, $dims['width']),
-            'boxLength' => max(30, $dims['length']),
-            'boxHeight' => max(30, $dims['height']),
+            'packageWeight' => $dims['weight'],
+            'boxWidth' => $dims['width'],
+            'boxLength' => $dims['length'],
+            'boxHeight' => $dims['height'],
             'orderDate' => date('d/m/Y H:i'),
             'deliverySlotDate' => date('d/m/Y', strtotime('+2 days')),
             'deliverySlotTo' => '6:00pm',
             'deliverySlotFrom' => '9:00am',
             'senderName' => $vendor->shop_name ?? $vendor->name,
-            'senderPhone' => $senderPhone,
+            'senderPhone' => $senderPhone ?: null,
             'senderCity' => $originCity,
             'senderAddress' => $originAddress,
             'customer' => [
@@ -501,6 +640,7 @@ class TryotoService
             'origin' => $originCity,
             'destination' => $destinationCity,
             'company' => $company,
+            'dimensions' => $dims,
         ]);
 
         $result = $this->makeApiRequest('POST', '/rest/v2/createOrder', $payload);
@@ -1082,34 +1222,95 @@ class TryotoService
     // ========================
 
     /**
-     * Calculate shipping dimensions from order cart
+     * Calculate shipping dimensions from order cart using VendorCartService
+     * بدون قيم ثابتة - يرجع null للقيم الناقصة
+     *
+     * @param Order $order
+     * @param int|null $vendorId Filter items by vendor (optional)
+     * @return array
      */
-    private function calculateDimensions(Order $order): array
+    private function calculateDimensionsFromOrder(Order $order, ?int $vendorId = null): array
     {
         $cartRaw = $order->cart;
         $cartArr = is_string($cartRaw) ? (json_decode($cartRaw, true) ?: []) : (is_array($cartRaw) ? $cartRaw : []);
 
         $items = $cartArr['items'] ?? $cartArr;
-        $productsForDims = [];
+        $itemsForCalculation = [];
 
         foreach ($items as $ci) {
-            $qty = (int)($ci['qty'] ?? $ci['quantity'] ?? 1);
             $item = $ci['item'] ?? $ci;
 
-            $productsForDims[] = [
-                'qty' => max(1, $qty),
-                'item' => [
-                    'weight' => (float)($item['weight'] ?? 1),
-                    'size' => $item['size'] ?? null,
-                ],
+            // Filter by vendor if specified
+            if ($vendorId !== null) {
+                $itemVendorId = (int)($ci['user_id'] ?? $item['user_id'] ?? $item['vendor_user_id'] ?? 0);
+                if ($itemVendorId !== $vendorId) {
+                    continue;
+                }
+            }
+
+            $qty = (int)($ci['qty'] ?? $ci['quantity'] ?? 1);
+            $mpId = (int)($ci['merchant_product_id'] ?? $item['merchant_product_id'] ?? 0);
+
+            if ($mpId > 0) {
+                // استخدام VendorCartService للحصول على الأبعاد الحقيقية
+                $dimensions = VendorCartService::getProductDimensions($mpId);
+                $itemsForCalculation[] = [
+                    'qty' => max(1, $qty),
+                    'weight' => $dimensions['weight'],
+                    'length' => $dimensions['length'],
+                    'width' => $dimensions['width'],
+                    'height' => $dimensions['height'],
+                ];
+            } else {
+                // fallback للبيانات المخزنة في السلة
+                $itemsForCalculation[] = [
+                    'qty' => max(1, $qty),
+                    'weight' => $item['weight'] ?? null,
+                    'length' => $item['length'] ?? null,
+                    'width' => $item['width'] ?? null,
+                    'height' => $item['height'] ?? null,
+                ];
+            }
+        }
+
+        if (empty($itemsForCalculation)) {
+            return [
+                'weight' => null,
+                'length' => null,
+                'width' => null,
+                'height' => null
             ];
         }
 
-        if (empty($productsForDims)) {
-            return ['weight' => 1, 'length' => 30, 'height' => 30, 'width' => 30];
+        // استخدام ShippingCalculatorService لحساب الأبعاد النهائية
+        $calculated = ShippingCalculatorService::calculatePackageDimensions($itemsForCalculation);
+
+        return [
+            'weight' => $calculated['chargeable_weight'],
+            'length' => $calculated['dimensions']['length'],
+            'width' => $calculated['dimensions']['width'],
+            'height' => $calculated['dimensions']['height'],
+        ];
+    }
+
+    /**
+     * Calculate shipping dimensions from order cart (legacy support)
+     * @deprecated Use calculateDimensionsFromOrder instead
+     */
+    private function calculateDimensions(Order $order): array
+    {
+        $result = $this->calculateDimensionsFromOrder($order);
+
+        // للتوافق مع الكود القديم، نرجع قيم افتراضية فقط إذا كانت كل القيم null
+        // هذا سيتم إزالته لاحقاً
+        if ($result['weight'] === null && $result['length'] === null) {
+            Log::warning('Tryoto: calculateDimensions - all values null, using legacy fallback', [
+                'order_id' => $order->id
+            ]);
+            return PriceHelper::calculateShippingDimensions([]);
         }
 
-        return PriceHelper::calculateShippingDimensions($productsForDims);
+        return $result;
     }
 
     /**

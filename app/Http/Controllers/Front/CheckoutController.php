@@ -47,6 +47,8 @@ use App\Models\Country;
 use App\Models\Order;
 use App\Models\PaymentGateway;
 use App\Models\State;
+use App\Services\VendorCartService;
+use App\Services\ShippingCalculatorService;
 use Auth;
 use DB;
 use Illuminate\Http\Request;
@@ -1169,8 +1171,28 @@ class CheckoutController extends FrontBaseController
         // Filter products for this vendor only
         $vendorProducts = [];
         foreach ($cart->items as $rowKey => $product) {
-            $productVendorId = data_get($product, 'item.user_id') ?? data_get($product, 'item.vendor_user_id') ?? 0;
+            $productVendorId = data_get($product, 'item.user_id')
+                ?? data_get($product, 'item.vendor_user_id')
+                ?? data_get($product, 'user_id')
+                ?? 0;
             if ($productVendorId == $vendorId) {
+                // إضافة بيانات الخصم والأبعاد باستخدام VendorCartService
+                $mpId = data_get($product, 'item.merchant_product_id')
+                    ?? data_get($product, 'merchant_product_id')
+                    ?? 0;
+                $qty = (int)($product['qty'] ?? 1);
+
+                if ($mpId) {
+                    // حساب خصم الجملة
+                    $bulkDiscount = VendorCartService::calculateBulkDiscount($mpId, $qty);
+                    $product['bulk_discount'] = $bulkDiscount;
+
+                    // جلب الأبعاد (بدون fallback)
+                    $dimensions = VendorCartService::getProductDimensions($mpId);
+                    $product['dimensions'] = $dimensions;
+                    $product['row_weight'] = $dimensions['weight'] ? $dimensions['weight'] * $qty : null;
+                }
+
                 $vendorProducts[$rowKey] = $product;
             }
         }
@@ -1186,18 +1208,24 @@ class CheckoutController extends FrontBaseController
         // Check if all vendor products are digital
         $dp = 1;
         foreach ($vendorProducts as $prod) {
-            if ($prod['item']['type'] == 'Physical') {
+            if (data_get($prod, 'item.type') == 'Physical') {
                 $dp = 0;
                 break;
             }
         }
+
+        // حساب بيانات الشحن للتاجر باستخدام VendorCartService
+        $shippingData = VendorCartService::calculateVendorShipping($vendorId, $cart->items);
 
         // Return filtered data (Cart instance is discarded - no session modification)
         return [
             'vendorProducts' => $vendorProducts,
             'totalPrice' => $totalPrice,
             'totalQty' => $totalQty,
-            'digital' => $dp
+            'digital' => $dp,
+            'shipping_data' => $shippingData,
+            'has_complete_shipping_data' => $shippingData['has_complete_data'],
+            'missing_shipping_data' => $shippingData['missing_data'],
         ];
     }
 
@@ -1285,6 +1313,7 @@ class CheckoutController extends FrontBaseController
         $totalPrice = $cartData['totalPrice'];
         $totalQty = $cartData['totalQty'];
         $dp = $cartData['digital'];
+        $vendorShippingData = $cartData['shipping_data'];
 
         if (empty($vendorProducts)) {
             return redirect()->route('front.cart')->with('unsuccess', __("No products found for this vendor."));
@@ -1325,7 +1354,11 @@ class CheckoutController extends FrontBaseController
             'vendor_shipping_id' => $vendorId,
             'vendor_packing_id' => $vendorId,
             'is_vendor_checkout' => true,
-            'vendor_id' => $vendorId
+            'vendor_id' => $vendorId,
+            // بيانات الشحن الموحدة من VendorCartService
+            'vendor_shipping_data' => $vendorShippingData,
+            'has_complete_shipping_data' => $cartData['has_complete_shipping_data'],
+            'missing_shipping_data' => $cartData['missing_shipping_data'],
         ]);
     }
 

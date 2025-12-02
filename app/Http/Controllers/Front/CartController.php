@@ -26,6 +26,8 @@ use App\Models\Generalsetting;
 use App\Models\MerchantProduct;
 use App\Models\Product;
 use App\Models\State;
+use App\Services\VendorCartService;
+use App\Services\ShippingCalculatorService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
@@ -299,34 +301,71 @@ class CartController extends FrontBaseController
 
     /**
      * تجميع منتجات السلة حسب التاجر
+     * يستخدم VendorCartService للحصول على بيانات كاملة لكل تاجر
+     * بما في ذلك الوزن والأبعاد وخصم الجملة
      */
     private function groupProductsByVendor(array $products): array
     {
         $grouped = [];
 
         foreach ($products as $rowKey => $product) {
-            // قراءة vendorId من المستوى الأول (حيث يتم تخزينه في Cart model)
-            // ثم fallback للـ item إذا لم يوجد
+            // استخراج vendor_id باستخدام نفس منطق VendorCartService
             $vendorId = $product['user_id']
                 ?? data_get($product, 'item.user_id')
                 ?? data_get($product, 'item.vendor_user_id')
                 ?? 0;
 
             if (!isset($grouped[$vendorId])) {
-                // جلب معلومات التاجر
+                // جلب مدينة التاجر باستخدام ShippingCalculatorService
+                $vendorCityData = ShippingCalculatorService::getVendorCity($vendorId);
                 $vendor = \App\Models\User::find($vendorId);
+
                 $grouped[$vendorId] = [
                     'vendor_id' => $vendorId,
-                    'vendor_name' => $vendor ? ($vendor->shop_name ?? $vendor->name) : __('Unknown Vendor'),
+                    'vendor_name' => $vendor ? ($vendor->shop_name ?? $vendor->name) : null,
+                    'vendor_city' => $vendorCityData['city_name'] ?? null,
+                    'vendor_city_id' => $vendorCityData['city_id'] ?? null,
                     'products' => [],
                     'total' => 0,
                     'count' => 0,
+                    'total_weight' => 0,
+                    'shipping_data' => null,
                 ];
             }
+
+            // حساب خصم الجملة والأبعاد لكل منتج
+            $mpId = $product['merchant_product_id']
+                ?? data_get($product, 'item.merchant_product_id')
+                ?? 0;
+            $qty = (int)($product['qty'] ?? 1);
+
+            // استخدام VendorCartService لحساب خصم الجملة
+            $bulkDiscount = $mpId ? VendorCartService::calculateBulkDiscount($mpId, $qty) : null;
+
+            // استخدام VendorCartService لجلب الأبعاد (بدون fallback)
+            $dimensions = $mpId ? VendorCartService::getProductDimensions($mpId) : null;
+
+            // إضافة البيانات المحسوبة للمنتج
+            $product['bulk_discount'] = $bulkDiscount;
+            $product['dimensions'] = $dimensions;
+            $product['row_weight'] = $dimensions && $dimensions['weight'] ? $dimensions['weight'] * $qty : null;
 
             $grouped[$vendorId]['products'][$rowKey] = $product;
             $grouped[$vendorId]['total'] += (float)($product['price'] ?? 0);
             $grouped[$vendorId]['count'] += (int)($product['qty'] ?? 1);
+
+            // تجميع الوزن الكلي
+            if ($dimensions && $dimensions['weight']) {
+                $grouped[$vendorId]['total_weight'] += $dimensions['weight'] * $qty;
+            }
+        }
+
+        // بناء بيانات الشحن لكل تاجر باستخدام VendorCartService
+        foreach ($grouped as $vendorId => &$vendorData) {
+            $shippingData = VendorCartService::calculateVendorShipping($vendorId, $products);
+            $vendorData['shipping_data'] = $shippingData;
+            $vendorData['has_complete_data'] = $shippingData['has_complete_data'];
+            $vendorData['missing_data'] = $shippingData['missing_data'];
         }
 
         return $grouped;
@@ -426,6 +465,53 @@ class CartController extends FrontBaseController
     }
 
     private function normNum($v, $default = 0.0) { return is_numeric($v) ? (float)$v : (float)$default; }
+
+    /**
+     * استخراج vendor_id من صف السلة
+     * يدعم الـ object و array
+     */
+    private function extractVendorIdFromRow(array $row): int
+    {
+        // الأولوية للـ user_id في المستوى الأول
+        if (isset($row['user_id']) && $row['user_id']) {
+            return (int) $row['user_id'];
+        }
+
+        // ثم من item object/array
+        $item = $row['item'] ?? null;
+        if ($item) {
+            if (is_object($item)) {
+                return (int) ($item->user_id ?? $item->vendor_user_id ?? 0);
+            }
+            if (is_array($item)) {
+                return (int) ($item['user_id'] ?? $item['vendor_user_id'] ?? 0);
+            }
+        }
+
+        return 0;
+    }
+
+    /**
+     * استخراج merchant_product_id من صف السلة
+     */
+    private function extractMerchantProductId(array $row): int
+    {
+        if (isset($row['merchant_product_id']) && $row['merchant_product_id']) {
+            return (int) $row['merchant_product_id'];
+        }
+
+        $item = $row['item'] ?? null;
+        if ($item) {
+            if (is_object($item)) {
+                return (int) ($item->merchant_product_id ?? 0);
+            }
+            if (is_array($item)) {
+                return (int) ($item['merchant_product_id'] ?? 0);
+            }
+        }
+
+        return 0;
+    }
 
     private function recomputeTotals(Cart $cart): void
     {
@@ -883,7 +969,6 @@ class CartController extends FrontBaseController
 
         $curr       = $this->curr;
         $id         = (int) request('id', 0);
-        // IMPORTANT: استخدام request() بدلاً من $_GET لأنها تفك الترميز تلقائياً
         $itemid     = (string) request('itemid', '');
         $size_qty   = request('size_qty');
         $size_price = (float) request('size_price', 0);
@@ -903,47 +988,31 @@ class CartController extends FrontBaseController
         $row  = $oldCart->items[$itemid];
         $item = $row['item'] ?? null;
 
-        // استخراج vendor_id - تعامل مع object و array
-        $vendorId = 0;
-        if (isset($row['user_id'])) {
-            $vendorId = (int) $row['user_id'];
-        } elseif ($item) {
-            if (is_object($item)) {
-                $vendorId = (int) ($item->user_id ?? $item->vendor_user_id ?? 0);
-            } elseif (is_array($item)) {
-                $vendorId = (int) ($item['user_id'] ?? $item['vendor_user_id'] ?? 0);
-            }
-        }
+        // استخراج vendor_id و merchant_product_id
+        $vendorId = $this->extractVendorIdFromRow($row);
         if (!$vendorId) { return 0; }
 
+        $mpId = $this->extractMerchantProductId($row);
+
         // جلب عرض البائع MerchantProduct
-        $mp = \App\Models\MerchantProduct::where('product_id', $prod->id)
+        $mp = MerchantProduct::where('product_id', $prod->id)
             ->where('user_id', $vendorId)
             ->where('status', 1)
             ->first();
         if (!$mp) { return 0; }
 
-        // احسب المخزون الفعلي للمقاس الحالي إن وُجد وإلا إجمالي مخزون البائع
+        // احسب المخزون الفعلي للمقاس الحالي
         $size = (string)($row['size'] ?? '');
-        $effStock = null;
-        if ($size !== '' && !empty($mp->size) && !empty($mp->size_qty)) {
-            $sizes = is_array($mp->size) ? $mp->size : array_map('trim', explode(',', (string)$mp->size));
-            $qtys  = is_array($mp->size_qty) ? $mp->size_qty : array_map('intval', array_map('trim', explode(',', (string)$mp->size_qty)));
-            $idx = array_search(trim($size), $sizes, true);
-            $effStock = $idx !== false ? (int)($qtys[$idx] ?? 0) : (int)($qtys[0] ?? 0);
-        } else {
-            $effStock = (int)($mp->stock ?? 0);
-        }
+        $effStock = $this->effectiveStock($mp, $size);
 
         $currentQty = (int)($row['qty'] ?? 0);
+        $newQty = $currentQty + 1;
 
-        // احترام فحص المخزون حسب عرض البائع
-        // stock_check = 1 يعني تفعيل التحقق من المخزون
-        // stock_check = 0 أو null يعني تخطي التحقق (السماح بالطلب بغض النظر عن المخزون)
+        // التحقق من المخزون
         $stockCheckEnabled = (int)($mp->stock_check ?? 0) === 1;
 
         if ($stockCheckEnabled) {
-            if ($effStock <= 0 || ($currentQty + 1) > $effStock) {
+            if ($effStock <= 0 || $newQty > $effStock) {
                 \Log::info('addbyone: Stock check failed', [
                     'product_id' => $id,
                     'vendor_id' => $vendorId,
@@ -955,20 +1024,23 @@ class CartController extends FrontBaseController
             }
         }
 
-        // حقن سياق البائع داخل كائن المنتج (ليقرأه Cart::vendorIdFromItem)
-        $prod->user_id             = $vendorId;
-        $prod->vendor_user_id      = $vendorId; // for Cart::vendorIdFromItem
-        $prod->merchant_product_id = $mp->id;
-        $prod->price               = $mp->vendorSizePrice();
-        $prod->previous_price      = $mp->previous_price;
-        $prod->stock               = $effStock; // يُستخدم كبداية عند غياب العنصر (لدينا عنصر موجود فعليًا)
+        // حساب خصم الجملة الجديد باستخدام VendorCartService
+        $bulkDiscount = VendorCartService::calculateBulkDiscount($mp->id, $newQty);
 
-        // تمرير مقاسات البائع (سلاسل كما هي)
+        // حقن سياق البائع داخل كائن المنتج
+        $prod->user_id             = $vendorId;
+        $prod->vendor_user_id      = $vendorId;
+        $prod->merchant_product_id = $mp->id;
+        $prod->price               = $bulkDiscount['discounted_price']; // استخدام السعر بعد خصم الجملة
+        $prod->previous_price      = $mp->previous_price;
+        $prod->stock               = $effStock;
+
+        // تمرير مقاسات البائع
         $prod->setAttribute('size',       $mp->size);
         $prod->setAttribute('size_qty',   $mp->size_qty);
         $prod->setAttribute('size_price', $mp->size_price);
 
-        // إضافة أسعار الخصائص المفعّلة إن وُجدت على المنتج (سابق المنطق)
+        // إضافة أسعار الخصائص المفعّلة
         if (!empty($prod->attributes)) {
             $attrArr = json_decode($prod->attributes, true);
             if (!empty($attrArr)) {
@@ -983,23 +1055,34 @@ class CartController extends FrontBaseController
             }
         }
 
-        // الزيادة (+1) بنفس آلية مشروعك
-        $cart = new \App\Models\Cart($oldCart);
+        // الزيادة (+1)
+        $cart = new Cart($oldCart);
         $cart->adding($prod, $itemid, $size_qty, $size_price);
 
-        // إعادة احتساب إجمالي السعر (الـ Cart لا يجمعه هنا)
-        $cart->totalPrice = 0;
-        foreach ($cart->items as $it) { $cart->totalPrice += $it['price']; }
+        // تطبيق خصم الجملة المحسوب
+        if ($bulkDiscount['has_discount']) {
+            $cart->items[$itemid]['discount'] = $bulkDiscount['discount_percent'];
+            $cart->items[$itemid]['price'] = $bulkDiscount['total_price'];
+        }
+
+        // إعادة احتساب الإجمالي
+        $this->recomputeTotals($cart);
 
         \Session::put('cart', $cart);
 
-        // تجهيز الاستجابة
-        $data        = [];
-        $data[0]     = \PriceHelper::showCurrencyPrice($cart->totalPrice * $curr->value);
-        $data[1]     = $cart->items[$itemid]['qty'];
-        $data[2]     = \PriceHelper::showCurrencyPrice($cart->items[$itemid]['price'] * $curr->value);
-        $data[3]     = $data[0];
-        $data[4]     = $cart->items[$itemid]['discount'] == 0 ? '' : '(' . $cart->items[$itemid]['discount'] . '% ' . __('Off') . ')';
+        // جلب بيانات الأبعاد باستخدام VendorCartService
+        $dimensions = VendorCartService::getProductDimensions($mp->id);
+
+        // تجهيز الاستجابة مع بيانات إضافية
+        $data = [];
+        $data[0] = \PriceHelper::showCurrencyPrice($cart->totalPrice * $curr->value);
+        $data[1] = $cart->items[$itemid]['qty'];
+        $data[2] = \PriceHelper::showCurrencyPrice($cart->items[$itemid]['price'] * $curr->value);
+        $data[3] = $data[0];
+        $data[4] = $bulkDiscount['has_discount'] ? '(' . $bulkDiscount['discount_percent'] . '% ' . __('Off') . ')' : '';
+        $data['bulk_discount'] = $bulkDiscount;
+        $data['dimensions'] = $dimensions;
+        $data['row_weight'] = $dimensions['weight'] ? $dimensions['weight'] * $newQty : null;
 
         return response()->json($data);
     }
@@ -1013,7 +1096,6 @@ class CartController extends FrontBaseController
 
         $curr       = $this->curr;
         $id         = (int) request('id', 0);
-        // IMPORTANT: استخدام request() بدلاً من $_GET لأنها تفك الترميز تلقائياً
         $itemid     = (string) request('itemid', '');
         $size_qty   = request('size_qty');
         $size_price = (float) request('size_price', 0);
@@ -1027,22 +1109,12 @@ class CartController extends FrontBaseController
         if (!$prod) { return 0; }
 
         $row  = $oldCart->items[$itemid];
-        $item = $row['item'] ?? null;
 
-        // استخراج vendor_id - تعامل مع object و array
-        $vendorId = 0;
-        if (isset($row['user_id'])) {
-            $vendorId = (int) $row['user_id'];
-        } elseif ($item) {
-            if (is_object($item)) {
-                $vendorId = (int) ($item->user_id ?? $item->vendor_user_id ?? 0);
-            } elseif (is_array($item)) {
-                $vendorId = (int) ($item['user_id'] ?? $item['vendor_user_id'] ?? 0);
-            }
-        }
+        // استخراج vendor_id و merchant_product_id
+        $vendorId = $this->extractVendorIdFromRow($row);
         if (!$vendorId) { return 0; }
 
-        $mp = \App\Models\MerchantProduct::where('product_id', $prod->id)
+        $mp = MerchantProduct::where('product_id', $prod->id)
             ->where('user_id', $vendorId)
             ->where('status', 1)
             ->first();
@@ -1057,11 +1129,16 @@ class CartController extends FrontBaseController
             return 0; // لا يمكن التنقيص - وصلنا للحد الأدنى
         }
 
-        // حقن سياق البائع (أسعار/مخزون/مقاسات)
+        $newQty = $currentQty - 1;
+
+        // حساب خصم الجملة الجديد باستخدام VendorCartService
+        $bulkDiscount = VendorCartService::calculateBulkDiscount($mp->id, $newQty);
+
+        // حقن سياق البائع
         $prod->user_id             = $vendorId;
         $prod->vendor_user_id      = $vendorId;
         $prod->merchant_product_id = $mp->id;
-        $prod->price               = $mp->vendorSizePrice();
+        $prod->price               = $bulkDiscount['discounted_price']; // استخدام السعر بعد خصم الجملة
         $prod->previous_price      = $mp->previous_price;
         $prod->stock               = (int)($mp->stock ?? 0);
         $prod->minimum_qty         = $minQty;
@@ -1070,7 +1147,7 @@ class CartController extends FrontBaseController
         $prod->setAttribute('size_qty',   $mp->size_qty);
         $prod->setAttribute('size_price', $mp->size_price);
 
-        // خصائص المنتج إن لزم
+        // خصائص المنتج
         if (!empty($prod->attributes)) {
             $attrArr = json_decode($prod->attributes, true);
             if (!empty($attrArr)) {
@@ -1085,21 +1162,37 @@ class CartController extends FrontBaseController
             }
         }
 
-        $cart = new \App\Models\Cart($oldCart);
+        $cart = new Cart($oldCart);
         $cart->reducing($prod, $itemid, $size_qty, $size_price);
 
+        // تطبيق خصم الجملة المحسوب
+        if ($bulkDiscount['has_discount']) {
+            $cart->items[$itemid]['discount'] = $bulkDiscount['discount_percent'];
+            $cart->items[$itemid]['price'] = $bulkDiscount['total_price'];
+        } else {
+            // إذا لم يعد هناك خصم، إعادة حساب السعر بدون خصم
+            $cart->items[$itemid]['discount'] = 0;
+            $cart->items[$itemid]['price'] = $bulkDiscount['total_price'];
+        }
+
         // إعادة احتساب الإجمالي
-        $cart->totalPrice = 0;
-        foreach ($cart->items as $it) { $cart->totalPrice += $it['price']; }
+        $this->recomputeTotals($cart);
 
         \Session::put('cart', $cart);
 
-        $data        = [];
-        $data[0]     = \PriceHelper::showCurrencyPrice($cart->totalPrice * $curr->value);
-        $data[1]     = $cart->items[$itemid]['qty'];
-        $data[2]     = \PriceHelper::showCurrencyPrice($cart->items[$itemid]['price'] * $curr->value);
-        $data[3]     = $data[0];
-        $data[4]     = $cart->items[$itemid]['discount'] == 0 ? '' : '(' . $cart->items[$itemid]['discount'] . '% ' . __('Off') . ')';
+        // جلب بيانات الأبعاد باستخدام VendorCartService
+        $dimensions = VendorCartService::getProductDimensions($mp->id);
+
+        // تجهيز الاستجابة مع بيانات إضافية
+        $data = [];
+        $data[0] = \PriceHelper::showCurrencyPrice($cart->totalPrice * $curr->value);
+        $data[1] = $cart->items[$itemid]['qty'];
+        $data[2] = \PriceHelper::showCurrencyPrice($cart->items[$itemid]['price'] * $curr->value);
+        $data[3] = $data[0];
+        $data[4] = $bulkDiscount['has_discount'] ? '(' . $bulkDiscount['discount_percent'] . '% ' . __('Off') . ')' : '';
+        $data['bulk_discount'] = $bulkDiscount;
+        $data['dimensions'] = $dimensions;
+        $data['row_weight'] = $dimensions['weight'] ? $dimensions['weight'] * $newQty : null;
 
         return response()->json($data);
     }

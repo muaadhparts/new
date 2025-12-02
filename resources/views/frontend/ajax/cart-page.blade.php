@@ -77,6 +77,7 @@
                                             <th scope="col">@lang('SKU')</th>
                                             <th scope="col">@lang('Brand')</th>
                                             <th scope="col">@lang('Quality')</th>
+                                            <th scope="col">@lang('Weight')</th>
                                             <th scope="col">@lang('Price')</th>
                                             <th scope="col">@lang('Quantity')</th>
                                             <th scope="col">@lang('Subtotal')</th>
@@ -178,6 +179,28 @@
                                                     <span>{{ $qualityBrand ? getLocalizedQualityName($qualityBrand) : '-' }}</span>
                                                 </td>
 
+                                                {{-- Weight Column - من VendorCartService بدون fallback --}}
+                                                <td class="cart-weight">
+                                                    @php
+                                                        // جلب الوزن من بيانات المنتج المحسوبة
+                                                        $rowWeight = $product['row_weight'] ?? null;
+                                                        $dimensions = $product['dimensions'] ?? null;
+                                                        $unitWeight = $dimensions['weight'] ?? null;
+                                                    @endphp
+                                                    @if ($rowWeight !== null)
+                                                        <span class="fw-bold">{{ number_format($rowWeight, 2) }} kg</span>
+                                                        @if ($unitWeight && (int)$product['qty'] > 1)
+                                                            <br><small class="text-muted">({{ number_format($unitWeight, 2) }} × {{ $product['qty'] }})</small>
+                                                        @endif
+                                                    @elseif ($dimensions && isset($dimensions['is_complete']) && !$dimensions['is_complete'])
+                                                        <span class="text-warning" title="{{ implode(', ', $dimensions['missing_fields'] ?? []) }}">
+                                                            <i class="fas fa-exclamation-triangle"></i> @lang('Incomplete')
+                                                        </span>
+                                                    @else
+                                                        <span class="text-muted">-</span>
+                                                    @endif
+                                                </td>
+
                                                 {{-- Price Column --}}
                                                 <td class="cart-price">
                                                     {{ Product::convertPrice($product['item_price']) }}
@@ -255,14 +278,26 @@
                                     @php
                                         // Calculate discount for THIS vendor only (not global)
                                         $vendorDiscount = 0;
+                                        $vendorTotalWeight = 0;
+                                        $hasMissingWeight = false;
                                         foreach ($vendorData['products'] as $product) {
                                             if (!empty($product['discount'])) {
                                                 $total_itemprice = (float)($product['item_price'] ?? 0) * (int)($product['qty'] ?? 1);
                                                 $tdiscount = ($total_itemprice * (float)$product['discount']) / 100;
                                                 $vendorDiscount += $tdiscount;
                                             }
+                                            // حساب الوزن الإجمالي
+                                            if (isset($product['row_weight']) && $product['row_weight'] !== null) {
+                                                $vendorTotalWeight += (float)$product['row_weight'];
+                                            } else {
+                                                $hasMissingWeight = true;
+                                            }
                                         }
                                         $vendorSubtotal = $vendorData['total'] + $vendorDiscount;
+
+                                        // بيانات الشحن من VendorCartService
+                                        $shippingData = $vendorData['shipping_data'] ?? null;
+                                        $hasCompleteShippingData = $vendorData['has_complete_data'] ?? false;
                                     @endphp
 
                                     <div class="cart-summary-item d-flex justify-content-between" style="padding: 1rem 0; border-bottom: 1px solid #e0f2fe;">
@@ -271,6 +306,25 @@
                                         </p>
                                         <p class="cart-summary-price" style="color: #0d9488; font-weight: 700; font-size: 1.1rem; margin: 0;">
                                             {{ Product::convertPrice($vendorSubtotal) }}
+                                        </p>
+                                    </div>
+
+                                    {{-- Total Weight Row --}}
+                                    <div class="cart-summary-item d-flex justify-content-between" style="padding: 1rem 0; border-bottom: 1px solid #e0f2fe;">
+                                        <p class="cart-summary-subtitle" style="color: #64748b; font-weight: 600; margin: 0;">
+                                            <i class="fas fa-weight-hanging me-1"></i> @lang('Total Weight')
+                                        </p>
+                                        <p class="cart-summary-price" style="color: #0f172a; font-weight: 600; margin: 0;">
+                                            @if ($vendorTotalWeight > 0)
+                                                {{ number_format($vendorTotalWeight, 2) }} kg
+                                                @if ($hasMissingWeight)
+                                                    <i class="fas fa-exclamation-triangle text-warning ms-1" title="@lang('Some products are missing weight data')"></i>
+                                                @endif
+                                            @elseif ($hasMissingWeight)
+                                                <span class="text-warning">@lang('Incomplete')</span>
+                                            @else
+                                                -
+                                            @endif
                                         </p>
                                     </div>
 

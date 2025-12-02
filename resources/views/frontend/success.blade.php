@@ -49,7 +49,20 @@
                     </svg>
                     <h3>@lang('THANK YOU FOR YOUR PURCHASE')</h3>
                     <h5>@lang("We'll email you an order confirmation with details and tracking info")</h5>
-                    <a href="{{ route('front.index') }}" class="template-btn btn-success-page">@lang('Get Back to Our Homepage')</a>
+
+                    {{-- زر العودة: للسلة إذا فيها منتجات، أو للرئيسية إذا فارغة --}}
+                    @php
+                        $hasRemainingCart = Session::has('cart') && !empty(Session::get('cart')->items);
+                    @endphp
+
+                    @if($hasRemainingCart)
+                        <a href="{{ route('front.cart') }}" class="template-btn btn-success-page">
+                            <i class="fas fa-shopping-cart me-2"></i>@lang('Continue Shopping - Complete Other Vendors')
+                        </a>
+                        <p class="mt-2 text-muted small">@lang('You still have items from other vendors in your cart')</p>
+                    @else
+                        <a href="{{ route('front.index') }}" class="template-btn btn-success-page">@lang('Get Back to Our Homepage')</a>
+                    @endif
                 </div>
                 <div class=" success-invoice-body wow-replaced" data-wow-delay=".1s">
                     <h4>@lang('Order#') {{ $order->order_number }}</h4>

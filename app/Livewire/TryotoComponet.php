@@ -4,6 +4,8 @@ namespace App\Livewire;
 
 use App\Models\Cart;
 use App\Services\TryotoService;
+use App\Services\VendorCartService;
+use App\Services\ShippingCalculatorService;
 use Illuminate\Support\Facades\Session;
 use Livewire\Component;
 
@@ -83,23 +85,74 @@ class TryotoComponet extends Component
     }
 
     /**
-     * جلب خيارات الشحن من Tryoto باستخدام TryotoService الموحد
+     * جلب خيارات الشحن من Tryoto باستخدام VendorCartService الموحد
+     *
+     * المبادئ:
+     * - الوزن والأبعاد من VendorCartService (بدون fallback)
+     * - مدينة التاجر من ShippingCalculatorService (user.city_id فقط)
+     * - مدينة العميل من الـ session فقط
      */
     protected function checkOTODeliveryFee(): void
     {
         try {
-            // Calculate dimensions using PriceHelper
-            $dimensions = \App\Helpers\PriceHelper::calculateShippingDimensions($this->products);
+            // === 1. حساب بيانات الشحن باستخدام VendorCartService ===
+            $shippingData = VendorCartService::calculateVendorShipping($this->vendorId, $this->products);
 
-            // Get cities from session data
-            $originCity = $this->getOriginCity();
+            \Log::info('TryotoComponent: Shipping data calculated', [
+                'vendor_id' => $this->vendorId,
+                'shipping_data' => $shippingData
+            ]);
+
+            // === 2. التحقق من اكتمال البيانات ===
+            if (!$shippingData['has_complete_data']) {
+                $missingFields = $shippingData['missing_data'] ?? [];
+                \Log::warning('TryotoComponent: Incomplete shipping data', [
+                    'vendor_id' => $this->vendorId,
+                    'missing' => $missingFields
+                ]);
+
+                $this->hasError = true;
+                $this->errorMessage = 'بيانات الشحن غير مكتملة: ' . implode(', ', $missingFields);
+                $this->deliveryCompany = [];
+                return;
+            }
+
+            // === 3. جلب مدينة التاجر باستخدام ShippingCalculatorService ===
+            $vendorCityData = ShippingCalculatorService::getVendorCity($this->vendorId);
+
+            if (!$vendorCityData || empty($vendorCityData['city_name'])) {
+                \Log::error('TryotoComponent: Vendor city not configured', [
+                    'vendor_id' => $this->vendorId
+                ]);
+
+                $this->hasError = true;
+                $this->errorMessage = 'مدينة التاجر غير محددة. يرجى التواصل مع البائع.';
+                $this->deliveryCompany = [];
+                return;
+            }
+
+            $originCity = $this->normalizeCityName($vendorCityData['city_name']);
+
+            // === 4. جلب مدينة العميل من الـ session ===
             $destinationCity = $this->getDestinationCity();
 
-            // استخدام TryotoService الموحد بدلاً من الاتصال المباشر بالـ API
+            // === 5. استخدام الوزن القابل للشحن (chargeable_weight) ===
+            $weight = $shippingData['chargeable_weight'] ?? $shippingData['actual_weight'] ?? 0;
+            $dimensions = $shippingData['dimensions'] ?? [];
+
+            \Log::info('TryotoComponent: Calling Tryoto API', [
+                'vendor_id' => $this->vendorId,
+                'origin' => $originCity,
+                'destination' => $destinationCity,
+                'weight' => $weight,
+                'dimensions' => $dimensions
+            ]);
+
+            // === 6. استدعاء Tryoto API ===
             $result = $this->tryotoService->getDeliveryOptions(
                 $originCity,
                 $destinationCity,
-                $dimensions['weight'],
+                $weight,
                 0, // COD amount not used in this endpoint
                 $dimensions
             );
@@ -107,11 +160,13 @@ class TryotoComponet extends Component
             if (!$result['success']) {
                 \Log::error('TryotoComponent: Failed to get delivery options', [
                     'error' => $result['error'],
+                    'error_code' => $result['error_code'] ?? null,
                     'origin' => $originCity,
-                    'destination' => $destinationCity
+                    'destination' => $destinationCity,
+                    'weight' => $weight,
+                    'dimensions' => $dimensions
                 ]);
 
-                // بدلاً من throw exception، نعرض رسالة خطأ للمستخدم
                 $this->hasError = true;
                 $this->errorMessage = $this->translateTryotoError($result['error'] ?? 'Unknown error');
                 $this->deliveryCompany = [];
@@ -123,12 +178,18 @@ class TryotoComponet extends Component
             $this->hasError = false;
             $this->errorMessage = '';
 
+            \Log::info('TryotoComponent: Got delivery options', [
+                'vendor_id' => $this->vendorId,
+                'options_count' => count($this->deliveryCompany)
+            ]);
+
             // إعلان مبدئي لتحديث نص الشحن الافتراضي (أول خيار)
             $this->dispatch('shipping-updated', vendorId: $this->vendorId);
 
         } catch (\Exception $e) {
             \Log::error('TryotoComponent: Exception in checkOTODeliveryFee', [
                 'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
                 'vendor_id' => $this->vendorId
             ]);
 
@@ -156,57 +217,6 @@ class TryotoComponet extends Component
         }
 
         return 'عذراً، خدمة الشحن الذكي غير متاحة حالياً. يرجى اختيار طريقة شحن أخرى.';
-    }
-
-    /**
-     * Get origin city (vendor/warehouse city)
-     * Only uses city_id from cities table - no fallbacks
-     */
-    protected function getOriginCity(): string
-    {
-        // Vendor must be specified
-        if ($this->vendorId <= 0) {
-            \Log::error('TryotoComponent: No vendor ID specified for origin city');
-            throw new \Exception('Vendor ID is required to determine origin city for shipping calculation.');
-        }
-
-        $vendor = \App\Models\User::find($this->vendorId);
-
-        if (!$vendor) {
-            \Log::error('TryotoComponent: Vendor not found', [
-                'vendor_id' => $this->vendorId,
-            ]);
-            throw new \Exception("Vendor with ID {$this->vendorId} not found.");
-        }
-
-        // city_id must exist
-        if (empty($vendor->city_id)) {
-            \Log::error('TryotoComponent: Vendor has no city_id set', [
-                'vendor_id' => $this->vendorId,
-                'vendor_name' => $vendor->name,
-            ]);
-            throw new \Exception("Vendor '{$vendor->name}' (ID: {$this->vendorId}) does not have a city assigned. Please set the vendor's city in their profile.");
-        }
-
-        // City must exist in cities table
-        $city = \App\Models\City::find($vendor->city_id);
-
-        if (!$city || empty($city->city_name)) {
-            \Log::error('TryotoComponent: City not found in database', [
-                'vendor_id' => $this->vendorId,
-                'city_id' => $vendor->city_id,
-            ]);
-            throw new \Exception("City with ID {$vendor->city_id} not found in database. Please contact administrator.");
-        }
-
-        \Log::info('TryotoComponent: Origin city resolved from vendor city_id', [
-            'vendor_id' => $this->vendorId,
-            'vendor_name' => $vendor->name,
-            'city_id' => $vendor->city_id,
-            'city_name' => $city->city_name,
-        ]);
-
-        return $this->normalizeCityName($city->city_name);
     }
 
     /**
