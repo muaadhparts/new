@@ -48,31 +48,38 @@
         </div>
     @else
         <div class="row">
-            {{-- جدول السلة --}}
-            <div class="col-lg-8">
+            {{-- سلة لكل تاجر على حدة --}}
+            <div class="col-lg-12">
                 <div class="cart-table-wrapper">
 
                     @foreach ($productsByVendor as $vendorId => $vendorGroup)
+                    <div class="vendor-cart-section mb-5" style="background: #ffffff; border-radius: 20px; box-shadow: 0 8px 24px rgba(13, 148, 136, 0.1); border: 2px solid #e0f2fe; overflow: hidden;">
                         {{-- رأس التاجر --}}
-                        <div class="vendor-header bg-light p-3 mb-3 rounded">
+                        <div class="vendor-header" style="background: linear-gradient(135deg, #0d9488 0%, #14b8a6 100%); padding: 1.5rem; color: white;">
                             <div class="d-flex justify-content-between align-items-center">
                                 <div>
-                                    <i class="fas fa-store me-2"></i>
-                                    <strong>{{ $vendorGroup['vendor_name'] }}</strong>
+                                    <h4 class="mb-1" style="font-weight: 800; letter-spacing: 0.5px;">
+                                        <i class="fas fa-store me-2"></i>{{ $vendorGroup['vendor_name'] }}
+                                    </h4>
+                                    <p class="mb-0" style="opacity: 0.9; font-size: 0.95rem;">
+                                        <i class="fas fa-box me-1"></i>{{ $vendorGroup['count'] }} @lang('Items')
+                                    </p>
                                 </div>
-                                <span class="badge bg-primary">
-                                    {{ $vendorGroup['count'] }} {{ __('items') }}
-                                </span>
                             </div>
                         </div>
 
-                        <div class="table-responsive mb-4">
+                        <div class="row g-0">
+                        {{-- Products Table --}}
+                        <div class="col-lg-8">
+                        <div class="table-responsive" style="padding: 2rem;">
                             <table class="table table-bordered cart-table">
                                 <thead class="table-light">
                                     <tr>
                                         <th style="width: 80px;">{{ __('Image') }}</th>
                                         <th>{{ __('Product') }}</th>
                                         <th style="width: 100px;">{{ __('SKU') }}</th>
+                                        <th style="width: 100px;">{{ __('Brand') }}</th>
+                                        <th style="width: 100px;">{{ __('Quality') }}</th>
                                         <th style="width: 100px;">{{ __('Unit Price') }}</th>
                                         <th style="width: 150px;">{{ __('Quantity') }}</th>
                                         <th style="width: 100px;">{{ __('Subtotal') }}</th>
@@ -105,14 +112,9 @@
                                                         {{ app()->getLocale() == 'ar' && !empty($item['name_ar']) ? $item['name_ar'] : $item['name'] }}
                                                     </a>
 
-                                                    {{-- تفاصيل إضافية --}}
+                                                    {{-- تفاصيل إضافية (Size/Color فقط) --}}
+                                                    @if ((!empty($item['size']) && $item['size'] !== '_') || (!empty($item['color']) && $item['color'] !== '_'))
                                                     <div class="product-details small text-muted mt-1">
-                                                        @if (!empty($item['brand_name']))
-                                                            <span class="badge bg-secondary me-1">{{ $item['brand_name'] }}</span>
-                                                        @endif
-                                                        @if (!empty($item['quality_name']))
-                                                            <span class="badge bg-info me-1">{{ $item['quality_name'] }}</span>
-                                                        @endif
                                                         @if (!empty($item['size']) && $item['size'] !== '_')
                                                             <span class="badge bg-outline-dark me-1">{{ __('Size') }}: {{ $item['size'] }}</span>
                                                         @endif
@@ -120,6 +122,7 @@
                                                             <span class="badge me-1" style="background-color: #{{ ltrim($item['color'], '#') }}; width: 20px; height: 20px; display: inline-block; border: 1px solid #ddd; border-radius: 3px;"></span>
                                                         @endif
                                                     </div>
+                                                    @endif
 
                                                     {{-- حالة المخزون --}}
                                                     @if (!empty($item['preordered']) && $item['preordered'] == 1)
@@ -137,7 +140,17 @@
 
                                             {{-- SKU --}}
                                             <td class="align-middle text-center">
-                                                <code class="small">{{ $item['sku'] ?? 'N/A' }}</code>
+                                                <code class="small fw-bold">{{ $item['sku'] ?? 'N/A' }}</code>
+                                            </td>
+
+                                            {{-- Brand --}}
+                                            <td class="align-middle text-center">
+                                                <span>{{ $item['brand_name'] ?? '-' }}</span>
+                                            </td>
+
+                                            {{-- Quality --}}
+                                            <td class="align-middle text-center">
+                                                <span>{{ $item['quality_name'] ?? '-' }}</span>
                                             </td>
 
                                             {{-- سعر الوحدة --}}
@@ -220,65 +233,79 @@
                                 </tbody>
                             </table>
                         </div>
+                        </div>
+
+                        {{-- Vendor Cart Summary - INDEPENDENT per vendor --}}
+                        <div class="col-lg-4">
+                            <div class="cart-summary" style="margin: 2rem; background: linear-gradient(135deg, #ffffff 0%, #f0fdfa 100%); border-radius: 16px; padding: 2rem; border: 2px solid #14b8a6;">
+                                <h5 class="cart-summary-title" style="color: #0f172a; font-size: 1.5rem; font-weight: 800; margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 3px solid; border-image: linear-gradient(90deg, #0d9488 0%, #14b8a6 50%, #2dd4bf 100%) 1;">
+                                    @lang('Cart Summary')
+                                </h5>
+                                <div class="cart-summary-content">
+                                    @php
+                                        // Calculate discount for THIS vendor only
+                                        $vendorDiscount = 0;
+                                        $vendorTotal = 0;
+                                        foreach ($vendorGroup['items'] as $item) {
+                                            $vendorTotal += $item['total_price'] ?? 0;
+                                            if (!empty($item['discount'])) {
+                                                $total_itemprice = (float)($item['unit_price'] ?? 0) * (int)($item['qty'] ?? 1);
+                                                $tdiscount = ($total_itemprice * (float)$item['discount']) / 100;
+                                                $vendorDiscount += $tdiscount;
+                                            }
+                                        }
+                                        $vendorSubtotal = $vendorTotal + $vendorDiscount;
+                                    @endphp
+
+                                    <div class="cart-summary-item d-flex justify-content-between" style="padding: 1rem 0; border-bottom: 1px solid #e0f2fe;">
+                                        <p class="cart-summary-subtitle" style="color: #64748b; font-weight: 600; margin: 0;">
+                                            @lang('Subtotal') ({{ $vendorGroup['count'] }} @lang('Items'))
+                                        </p>
+                                        <p class="cart-summary-price" style="color: #0d9488; font-weight: 700; font-size: 1.1rem; margin: 0;">
+                                            {{ $showPrice($vendorSubtotal) }}
+                                        </p>
+                                    </div>
+
+                                    @if($vendorDiscount > 0)
+                                    <div class="cart-summary-item d-flex justify-content-between" style="padding: 1rem 0; border-bottom: 1px solid #e0f2fe;">
+                                        <p class="cart-summary-subtitle" style="color: #64748b; font-weight: 600; margin: 0;">
+                                            @lang('Discount')
+                                        </p>
+                                        <p class="cart-summary-price" style="color: #ef4444; font-weight: 700; font-size: 1.1rem; margin: 0;">
+                                            - {{ $showPrice($vendorDiscount) }}
+                                        </p>
+                                    </div>
+                                    @endif
+
+                                    <div class="cart-summary-item d-flex justify-content-between" style="padding: 1rem 0; border-bottom: 2px solid #14b8a6;">
+                                        <p class="cart-summary-subtitle" style="color: #0f172a; font-weight: 700; margin: 0; font-size: 1.1rem;">
+                                            @lang('Total')
+                                        </p>
+                                        <p class="cart-summary-price total-cart-price" style="color: #0d9488; font-weight: 800; font-size: 1.3rem; margin: 0;">
+                                            {{ $showPrice($vendorTotal) }}
+                                        </p>
+                                    </div>
+
+                                    <div class="cart-summary-btn" style="margin-top: 1.5rem;">
+                                        {{-- زر Checkout لهذا التاجر فقط --}}
+                                        @auth
+                                            <a href="{{ route('front.checkout.vendor', $vendorId) }}" class="template-btn w-100" style="background: linear-gradient(135deg, #0d9488 0%, #14b8a6 100%); color: #ffffff; border: none; padding: 1rem 2rem; border-radius: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 8px 20px rgba(13, 148, 136, 0.3); text-align: center; display: block; text-decoration: none;">
+                                                <i class="fas fa-shopping-cart me-2"></i>@lang('Checkout This Vendor')
+                                            </a>
+                                        @else
+                                            <a href="{{ route('user.login', ['redirect' => 'cart']) }}" class="template-btn w-100" style="background: linear-gradient(135deg, #0d9488 0%, #14b8a6 100%); color: #ffffff; border: none; padding: 1rem 2rem; border-radius: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 8px 20px rgba(13, 148, 136, 0.3); text-align: center; display: block; text-decoration: none;">
+                                                <i class="fas fa-shopping-cart me-2"></i>@lang('Checkout This Vendor')
+                                            </a>
+                                        @endauth
+
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        </div>
+                    </div>
                     @endforeach
 
-                </div>
-            </div>
-
-            {{-- ملخص السلة --}}
-            <div class="col-lg-4">
-                <div class="cart-summary card">
-                    <div class="card-header bg-dark text-white">
-                        <h5 class="mb-0">
-                            <i class="fas fa-receipt me-2"></i>{{ __('Order Summary') }}
-                        </h5>
-                    </div>
-                    <div class="card-body">
-                        {{-- عدد العناصر --}}
-                        <div class="d-flex justify-content-between mb-2">
-                            <span>{{ __('Items') }}:</span>
-                            <span class="cart-items-count">{{ count($products) }}</span>
-                        </div>
-
-                        {{-- إجمالي الكميات --}}
-                        <div class="d-flex justify-content-between mb-2">
-                            <span>{{ __('Total Quantity') }}:</span>
-                            <span class="cart-qty-total">{{ $totalQty }}</span>
-                        </div>
-
-                        <hr>
-
-                        {{-- المجموع الكلي --}}
-                        <div class="d-flex justify-content-between mb-3">
-                            <span class="fw-bold fs-5">{{ __('Total') }}:</span>
-                            <span class="fw-bold fs-5 total-cart-price">{{ $showPrice($totalPrice) }}</span>
-                        </div>
-
-                        {{-- أزرار الإجراءات --}}
-                        <div class="d-grid gap-2">
-                            <a href="{{ route('front.checkout') }}" class="btn btn-primary btn-lg">
-                                <i class="fas fa-credit-card me-2"></i>{{ __('Proceed to Checkout') }}
-                            </a>
-                            <a href="{{ route('front.index') }}" class="btn btn-outline-secondary">
-                                <i class="fas fa-arrow-left me-2"></i>{{ __('Continue Shopping') }}
-                            </a>
-                        </div>
-                    </div>
-                </div>
-
-                {{-- كوبون الخصم --}}
-                <div class="coupon-section card mt-3">
-                    <div class="card-body">
-                        <h6 class="card-title">
-                            <i class="fas fa-tag me-2"></i>{{ __('Have a coupon?') }}
-                        </h6>
-                        <div class="input-group">
-                            <input type="text" id="coupon-code" class="form-control" placeholder="{{ __('Enter coupon code') }}">
-                            <button class="btn btn-outline-primary" type="button" id="apply-coupon">
-                                {{ __('Apply') }}
-                            </button>
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>
