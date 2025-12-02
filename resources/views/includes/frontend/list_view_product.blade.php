@@ -127,6 +127,29 @@
                     ({{ $actualProduct->ratings_count }})</span>
             </div>
 
+            {{-- Quantity Selector --}}
+            @if ($actualProduct->type == 'Physical' && $hasVendor && ($inStock || ($merchant && $merchant->preordered)))
+                @php
+                    $minQty = $merchant ? (int)($merchant->minimum_qty ?? 1) : 1;
+                    if ($minQty < 1) $minQty = 1;
+                    $stock = (int)($stockQty ?? 999);
+                    $preordered = $merchant ? (int)($merchant->preordered ?? 0) : 0;
+                    $uniqueId = 'lp_' . ($merchant ? $merchant->id : $actualProduct->id) . '_' . uniqid();
+                @endphp
+                <div class="list-product-qty-wrapper" style="margin: 8px 0; display: flex; align-items: center;">
+                    <span style="font-size: 12px; color: #666; margin-inline-end: 8px;">@lang('Qty'):</span>
+                    <div class="product-input-wrapper home-product-qty" style="display: inline-flex; align-items: center; border: 1px solid #ddd; border-radius: 4px; overflow: hidden;">
+                        <button type="button" class="hp-qtminus" data-target="{{ $uniqueId }}" data-min="{{ $minQty }}"
+                                style="width: 28px; height: 28px; border: none; background: #f5f5f5; cursor: pointer; font-size: 14px; font-weight: bold;">-</button>
+                        <input type="text" class="hp-qty-input" id="qty_{{ $uniqueId }}" value="{{ $minQty }}" readonly
+                               data-min="{{ $minQty }}" data-stock="{{ $stock }}" data-preordered="{{ $preordered }}"
+                               style="width: 35px; text-align: center; border: none; font-size: 13px; font-weight: bold;">
+                        <button type="button" class="hp-qtplus" data-target="{{ $uniqueId }}" data-stock="{{ $stock }}" data-preordered="{{ $preordered }}"
+                                style="width: 28px; height: 28px; border: none; background: #f5f5f5; cursor: pointer; font-size: 14px; font-weight: bold;">+</button>
+                    </div>
+                </div>
+            @endif
+
             <div class="add-to-cart">
                 @if ($actualProduct->type != 'Listing')
                     <a href="javascript:;" class="compare_product" data-href="{{ isset($merchant) ? route('merchant.compare.add', $merchant->id) : route('product.compare.add', $actualProduct->id) }}">
@@ -164,18 +187,25 @@
                         </div>
                     </a>
                 @else
-                    @if (!$hasVendor || !$inStock)
+                    @if (!$hasVendor || (!$inStock && !($merchant && $merchant->preordered)))
                         <div class="add-cart">
                             {{ __('Out of Stock') }}
                         </div>
                     @else
                         @if ($actualProduct->type != 'Listing')
+                            @php
+                                $addCartUrl = isset($merchant)
+                                    ? route('merchant.cart.add', $merchant->id) . '?user=' . $merchant->user_id
+                                    : route('product.cart.add', $actualProduct->id);
+                                $qtyInputId = 'lp_' . ($merchant ? $merchant->id : $actualProduct->id);
+                            @endphp
                             <a {{ $actualProduct->cross_products ? 'data-bs-target=#exampleModal' : '' }} href="javascript:;"
-                                data-href="{{ isset($merchant) ? route('merchant.cart.add', $merchant->id) : route('product.cart.add', $actualProduct->id) }}"
+                                data-href="{{ $addCartUrl }}"
                                 data-cross-href="{{ route('front.show.cross.product', $actualProduct->id) }}"
                                 data-merchant-product="{{ $merchant->id ?? '' }}"
+                                data-qty-prefix="{{ $qtyInputId }}"
                                 data-product="{{ $actualProduct->id }}"
-                                class="add_cart_click {{ $actualProduct->cross_products ? 'view_cross_product' : '' }}">
+                                class="add_cart_click hp-add-cart {{ $actualProduct->cross_products ? 'view_cross_product' : '' }}">
                                 <div class="add-cart">
                                     @lang('Add To Cart')
                                 </div>

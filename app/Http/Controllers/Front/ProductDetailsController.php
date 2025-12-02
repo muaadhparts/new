@@ -231,11 +231,13 @@ class ProductDetailsController extends FrontBaseController
     public function quickFragment(int $id)
     {
         $product = \App\Models\Product::findOrFail($id);
+        $mp = null;
 
         // البائع من ?user=
         $vendorId = (int) request()->query('user', 0);
         if ($vendorId > 0) {
-            $mp = \App\Models\MerchantProduct::where('product_id', $product->id)
+            $mp = \App\Models\MerchantProduct::with(['qualityBrand', 'user'])
+                ->where('product_id', $product->id)
                 ->where('user_id', $vendorId)
                 ->first();
 
@@ -245,7 +247,13 @@ class ProductDetailsController extends FrontBaseController
             }
         }
 
-        return response()->view('partials.product', compact('product'));
+        // جلب البراند من المنتج
+        $brand = null;
+        if ($product->brand_id) {
+            $brand = \App\Models\Brand::find($product->brand_id);
+        }
+
+        return response()->view('partials.product', compact('product', 'mp', 'brand'));
     }
 
 

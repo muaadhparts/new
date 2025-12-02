@@ -188,6 +188,45 @@
     $("#rating").val($(this).data("val"));
   });
 
+  // ========== Home Product Quantity Controls ==========
+  // زيادة الكمية في home_product
+  $(document).on('click', '.hp-qtplus', function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    var targetId = $(this).data('target');
+    var $input = $('[id^="qty_' + targetId + '"]');
+    if (!$input.length) return;
+
+    var stock = parseInt($(this).data('stock')) || 999;
+    var preordered = parseInt($(this).data('preordered')) || 0;
+    var current = parseInt($input.val()) || 1;
+
+    // فحص المخزون
+    if (stock > 0 && current >= stock && preordered == 0) {
+      toastr.warning(lang.stock_limit || 'Stock limit reached');
+      return;
+    }
+    $input.val(current + 1);
+  });
+
+  // إنقاص الكمية في home_product
+  $(document).on('click', '.hp-qtminus', function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    var targetId = $(this).data('target');
+    var $input = $('[id^="qty_' + targetId + '"]');
+    if (!$input.length) return;
+
+    var minQty = parseInt($(this).data('min')) || 1;
+    var current = parseInt($input.val()) || 1;
+
+    if (current <= minQty) {
+      toastr.warning((lang.minimum_qty || 'Minimum quantity is') + ' ' + minQty);
+      return;
+    }
+    $input.val(current - 1);
+  });
+
   // add to card
   $(document).on("click", ".add_cart_click", function (e) {
     e.preventDefault();
@@ -195,11 +234,26 @@
     // Get merchant product ID from data attribute
     const mpId = $(this).data('merchant-product');
     const href = $(this).attr("data-href");
+    const qtyPrefix = $(this).data('qty-prefix');
 
-    // Use merchant product ID if available, otherwise fallback to href
-    const requestUrl = mpId ? href : href;
+    // جلب الكمية من حقل الكمية إذا كان موجوداً
+    let qty = 1;
+    if (qtyPrefix) {
+      var $qtyInput = $('[id^="qty_' + qtyPrefix + '"]');
+      if ($qtyInput.length) {
+        qty = parseInt($qtyInput.val()) || 1;
+      }
+    }
 
-    console.log('🛒 Adding to cart:', requestUrl);
+    // بناء URL مع الكمية
+    let requestUrl = href;
+    if (href.indexOf('?') > -1) {
+      requestUrl += '&qty=' + qty;
+    } else {
+      requestUrl += '?qty=' + qty;
+    }
+
+    console.log('🛒 Adding to cart:', requestUrl, 'qty:', qty);
 
     $.get(requestUrl, function (data) {
       console.log('📦 Cart response:', data);

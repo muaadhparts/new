@@ -901,7 +901,8 @@
 
       const btn = this;
       const id  = $(btn).data('id');
-      if (!id) { console.warn('ill-add-to-cart: missing data-id'); return; }
+      const mpId = $(btn).data('mp-id') || $(btn).data('mpId'); // merchant_product_id
+      if (!id && !mpId) { console.warn('ill-add-to-cart: missing data-id or data-mp-id'); return; }
 
       // كمية إن وُجدت داخل بطاقة المنتج، وإلا = 1 (جدول البدائل)
       const $root = $(btn).closest('.ill-product');
@@ -915,9 +916,16 @@
       const addUrl = $(btn).data('addnumUrl') || $(btn).data('addnum-url') || '/addnumcart';
       const user   = $(btn).data('user');
 
-      // ضمّن user في الرابط إذا كان موجود
-      const url = `${addUrl}?id=${encodeURIComponent(id)}&qty=${encodeURIComponent(qty)}`
-                + (user ? `&user=${encodeURIComponent(user)}` : '');
+      // بناء الـ URL بناءً على نوع الـ route
+      let url;
+      if (mpId && addUrl.includes('/cart/merchant/add/')) {
+        // استخدام route الجديد (merchant.cart.add) - الـ ID موجود في الـ path
+        url = `${addUrl}?qty=${encodeURIComponent(qty)}` + (user ? `&user=${encodeURIComponent(user)}` : '');
+      } else {
+        // استخدام route القديم
+        url = `${addUrl}?id=${encodeURIComponent(id)}&qty=${encodeURIComponent(qty)}`
+                  + (user ? `&user=${encodeURIComponent(user)}` : '');
+      }
 
       btn.disabled = true;
       fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
@@ -950,7 +958,8 @@
 
       const btn = this;
       const id  = $(btn).data('id');
-      if (!id) { console.warn('ill-buy-now: missing data-id'); return; }
+      const mpId = $(btn).data('mp-id') || $(btn).data('mpId'); // merchant_product_id
+      if (!id && !mpId) { console.warn('ill-buy-now: missing data-id or data-mp-id'); return; }
 
       // كمية من الحقل إن وُجد، وإلا = 1
       const $root = $(btn).closest('.ill-product');
@@ -963,11 +972,32 @@
 
       const addUrl = $(btn).data('addtonumUrl') || $(btn).data('addtonum-url') || '/addtonumcart';
       const user   = $(btn).data('user');
+      const cartsUrl = $(btn).data('carts-url') || $(btn).data('cartsUrl') || '/carts';
 
-      let url = `${addUrl}?id=${encodeURIComponent(id)}&qty=${encodeURIComponent(qty)}`;
-      if (user) url += `&user=${encodeURIComponent(user)}`;
-
-      window.location.href = url;
+      // بناء الـ URL بناءً على نوع الـ route
+      let url;
+      if (mpId && addUrl.includes('/cart/merchant/add/')) {
+        // استخدام route الجديد (merchant.cart.add) - الـ ID موجود في الـ path
+        // نضيف للسلة عبر AJAX ثم نذهب للـ carts
+        url = `${addUrl}?qty=${encodeURIComponent(qty)}` + (user ? `&user=${encodeURIComponent(user)}` : '');
+        btn.disabled = true;
+        fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+          .then(r => r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`)))
+          .then(data => {
+            window.location.href = cartsUrl;
+          })
+          .catch(err => {
+            const msg = t('messages.api_error');
+            if (window.toastr) toastr.error(`${msg} ${err.message || err}`); else alert(`${msg}\n${err.message || err}`);
+            btn.disabled = false;
+          });
+        return;
+      } else {
+        // استخدام route القديم
+        url = `${addUrl}?id=${encodeURIComponent(id)}&qty=${encodeURIComponent(qty)}`;
+        if (user) url += `&user=${encodeURIComponent(user)}`;
+        window.location.href = url;
+      }
     });
 
   }

@@ -139,6 +139,54 @@
         @endif
     </ul>
 
+@elseif($displayMode === 'modal')
+    {{-- Modal Display Mode - Best for quick view modals --}}
+    <div class="product-info-modal mb-3">
+        <table class="table table-sm table-borderless mb-0">
+            <tbody>
+                @if($showSku && $sku)
+                    <tr>
+                        <td class="text-muted" style="width: 100px;"><i class="fas fa-barcode me-1"></i>{{ __('SKU') }}</td>
+                        <td><code>{{ $sku }}</code></td>
+                    </tr>
+                @endif
+
+                @if($showBrand && $brandName)
+                    <tr>
+                        <td class="text-muted"><i class="fas fa-tag me-1"></i>{{ __('Brand') }}</td>
+                        <td>{{ $brandName }}</td>
+                    </tr>
+                @endif
+
+                @if($showQualityBrand && $qualityBrandName)
+                    <tr>
+                        <td class="text-muted"><i class="fas fa-certificate me-1"></i>{{ __('Quality') }}</td>
+                        <td class="d-flex align-items-center">
+                            @if($qualityBrandLogo)
+                                <img src="{{ $qualityBrandLogo }}" alt="{{ $qualityBrandName }}" class="quality-brand-logo me-2" style="max-height: 22px; max-width: 60px; object-fit: contain;">
+                            @endif
+                            {{ $qualityBrandName }}
+                        </td>
+                    </tr>
+                @endif
+
+                @if($showVendor && $vendorName)
+                    <tr>
+                        <td class="text-muted"><i class="fas fa-store me-1"></i>{{ __('Vendor') }}</td>
+                        <td>{{ $vendorName }}</td>
+                    </tr>
+                @endif
+
+                @if($showStock)
+                    <tr>
+                        <td class="text-muted"><i class="fas fa-boxes me-1"></i>{{ __('Stock') }}</td>
+                        <td class="{{ $stockClass }}">{{ $stockText }}</td>
+                    </tr>
+                @endif
+            </tbody>
+        </table>
+    </div>
+
 @else
     {{-- Inline Display Mode (Default) - Best for compact product cards --}}
     <div class="product-info-inline small text-muted mb-1">

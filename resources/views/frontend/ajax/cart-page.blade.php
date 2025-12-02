@@ -220,14 +220,7 @@
                                 </table>
                             </div>
 
-                            {{-- زر الدفع لهذا التاجر --}}
-                            <div class="vendor-checkout p-3 text-end" style="background: #f8f9fa; border-top: 1px solid #e0e0e0;">
-                                <a href="{{ route('front.checkout.vendor', ['vendorId' => $vendorId]) }}"
-                                   class="btn btn-primary btn-lg">
-                                    <i class="fas fa-shopping-cart me-2"></i>
-                                    @lang('Checkout') - {{ $vendorData['vendor_name'] }}
-                                </a>
-                            </div>
+                            {{-- تم إزالة زر الدفع المنفصل لكل تاجر - يوجد checkout موحد في الأسفل --}}
                         </div>
                     @endforeach
                 @else
@@ -323,9 +316,9 @@
                         </div>
 
                         @if(isset($productsByVendor) && count($productsByVendor) > 1)
-                            <div class="alert alert-warning small">
+                            <div class="alert alert-info small">
                                 <i class="fas fa-info-circle me-1"></i>
-                                @lang('You have items from') {{ count($productsByVendor) }} @lang('different vendors. Please checkout separately.')
+                                @lang('Your cart contains items from') {{ count($productsByVendor) }} @lang('different vendors.')
                             </div>
                         @endif
 
@@ -385,13 +378,17 @@ $(document).ready(function() {
         var sizeQty = $wrapper.find('.cart-size-qty').val() || '';
         var sizePrice = $wrapper.find('.cart-size-price').val() || 0;
 
-        // IMPORTANT: ترميز cartKey بشكل صحيح لتجنب مشاكل الأحرف الخاصة
-        var encodedCartKey = encodeURIComponent(cartKey);
-
+        // IMPORTANT: استخدام data object بدلاً من URL string للتعامل الصحيح مع الأحرف الخاصة
         $.ajax({
-            url: '/addbyone?id=' + prodId + '&itemid=' + encodedCartKey + '&size_qty=' + encodeURIComponent(sizeQty) + '&size_price=' + sizePrice,
+            url: '/addbyone',
             type: 'GET',
             dataType: 'json',
+            data: {
+                id: prodId,
+                itemid: cartKey,
+                size_qty: sizeQty,
+                size_price: sizePrice
+            },
             success: function(resp) {
                 if (resp === 0 || resp === '0') {
                     toastr.error('{{ __("Cannot increase quantity") }}');
@@ -402,6 +399,7 @@ $(document).ready(function() {
                 var $priceCell = $wrapper.closest('tr').find('.cart-subtotal');
                 $priceCell.find('strong').first().html(resp[2]);
                 $('.total-cart-price').html(resp[0]);
+                toastr.success('{{ __("Quantity updated") }}');
             },
             error: function() {
                 toastr.error('{{ __("Error occurred") }}');
@@ -430,13 +428,17 @@ $(document).ready(function() {
         var sizeQty = $wrapper.find('.cart-size-qty').val() || '';
         var sizePrice = $wrapper.find('.cart-size-price').val() || 0;
 
-        // IMPORTANT: ترميز cartKey بشكل صحيح لتجنب مشاكل الأحرف الخاصة
-        var encodedCartKey = encodeURIComponent(cartKey);
-
+        // IMPORTANT: استخدام data object بدلاً من URL string للتعامل الصحيح مع الأحرف الخاصة
         $.ajax({
-            url: '/reducebyone?id=' + prodId + '&itemid=' + encodedCartKey + '&size_qty=' + encodeURIComponent(sizeQty) + '&size_price=' + sizePrice,
+            url: '/reducebyone',
             type: 'GET',
             dataType: 'json',
+            data: {
+                id: prodId,
+                itemid: cartKey,
+                size_qty: sizeQty,
+                size_price: sizePrice
+            },
             success: function(resp) {
                 if (resp === 0 || resp === '0') {
                     toastr.warning('{{ __("Cannot decrease quantity") }}');
@@ -447,6 +449,7 @@ $(document).ready(function() {
                 var $priceCell = $wrapper.closest('tr').find('.cart-subtotal');
                 $priceCell.find('strong').first().html(resp[2]);
                 $('.total-cart-price').html(resp[0]);
+                toastr.success('{{ __("Quantity updated") }}');
             },
             error: function() {
                 toastr.error('{{ __("Error occurred") }}');

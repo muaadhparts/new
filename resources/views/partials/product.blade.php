@@ -17,6 +17,10 @@
     // حماية في حال عدم تمرير $gs من الـ View الأب
     $gs = $gs ?? (isset($__data['gs']) ? $__data['gs'] : null);
 
+    // MerchantProduct من الكنترولر
+    $mp = $mp ?? null;
+    $brand = $brand ?? null;
+
     // --- 👇 أهم نقطة: إجبار القراءة من السعر المحقون مع البائع، وتجنّب showPrice() حين تتوفر هوية البائع ---
     $forceVendor = request()->has('user') || isset($product->vendor_user_id);
 
@@ -45,6 +49,23 @@
 
     // اسم عربي/إنجليزي اختياري - using centralized helper
     $secondaryLabel = getLocalizedProductName($product);
+
+    // --- معلومات المنتج للعرض ---
+    // Quality Brand
+    $qualityBrand = $mp?->qualityBrand;
+
+    // Vendor
+    $vendor = $mp?->user;
+
+    // الحد الأدنى للكمية
+    $minQty = $mp ? (int)($mp->minimum_qty ?? 1) : 1;
+    if ($minQty < 1) $minQty = 1;
+
+    // المخزون
+    $stock = $mp ? (int)($mp->stock ?? 999) : (int)($product->stock ?? 999);
+
+    // Preorder
+    $preordered = $mp ? (int)($mp->preordered ?? 0) : 0;
 @endphp
 
 <div class="row gy-4 ill-product" data-product-id="{{ $product->id }}" data-user="{{ $vendorId }}">
@@ -75,11 +96,6 @@
             <x-product-name :product="$product" :vendor-id="$vendorId" target="_blank" />
         </h3>
 
-        {{-- تسمية ثانوية (اختياري)
-        @if(!empty($secondaryLabel))
-            <h5 class="text-muted mb-3">{{ $secondaryLabel }}</h5>
-        @endif --}}
-
         {{-- التقييم (اختياري) --}}
         @if(!empty($avg))
             <div class="mb-2">
@@ -101,57 +117,121 @@
             @endif
         </div>
 
-        {{-- SKU --}}
-        {{-- @if(!empty($product->sku))
-            <div class="mb-2">
-                <strong>@lang('SKU'):</strong> <span>{{ $product->sku }}</span>
-            </div>
-        @endif --}}
+        {{-- معلومات المنتج: SKU, Brand, Quality, Vendor --}}
+        <x-product-info
+            :product="$product"
+            :mp="$mp"
+            display-mode="modal"
+            :show-sku="true"
+            :show-brand="true"
+            :show-quality-brand="true"
+            :show-vendor="true"
+            :show-stock="true"
+        />
 
-        {{-- المخزون (للمنتجات الفيزيائية) --}}
-        @if(($product->type ?? '') === 'Physical')
-            <div class="mb-2">
-                <strong>@lang('Stock'):</strong>
-                @if(method_exists($product, 'emptyStock') ? $product->emptyStock() : false)
-                    <span class="text-danger">@lang('Out Of Stock')</span>
-                @else
-                    @php $showStock = is_object($gs) && property_exists($gs,'show_stock') ? $gs->show_stock : null; @endphp
-                    <span class="text-success">
-                        {{ ($showStock === 0 || $showStock === '0') ? '' : ($product->vendorSizeStock() ?? '') }} @lang('In Stock')
-                    </span>
-                @endif
+        {{-- الكمية مع احترام الحد الأدنى والمخزون --}}
+        @if(($product->type ?? 'Physical') === 'Physical')
+            <div class="d-flex align-items-center mb-3">
+                <span class="me-2">@lang('Quantity'):</span>
+                <button type="button" class="btn btn-outline-secondary btn-sm modal-qtminus"
+                        data-min="{{ $minQty }}">−</button>
+                <input type="number" name="quantity" value="{{ $minQty }}" min="{{ $minQty }}"
+                       class="form-control mx-2 text-center ill-qty modal-qty-input"
+                       data-min="{{ $minQty }}" data-stock="{{ $stock }}" data-preordered="{{ $preordered }}"
+                       style="max-width:80px;" readonly>
+                <button type="button" class="btn btn-outline-secondary btn-sm modal-qtplus"
+                        data-stock="{{ $stock }}" data-preordered="{{ $preordered }}">+</button>
             </div>
+            @if($minQty > 1)
+                <small class="text-muted d-block mb-2">
+                    <i class="fas fa-info-circle"></i> @lang('Minimum order quantity'): {{ $minQty }}
+                </small>
+            @endif
         @endif
-
-        {{-- الكمية --}}
-        <div class="d-flex align-items-center mb-3">
-            <button type="button" class="btn btn-outline-secondary btn-sm"
-                    onclick="var q=this.parentNode.querySelector('input.ill-qty'); if(parseInt(q.value)>1) q.value=parseInt(q.value)-1;">−</button>
-            <input type="number" name="quantity" value="1" min="1" class="form-control mx-2 text-center ill-qty" style="max-width:80px;">
-            <button type="button" class="btn btn-outline-secondary btn-sm"
-                    onclick="var q=this.parentNode.querySelector('input.ill-qty'); q.value=parseInt(q.value||1)+1;">+</button>
-        </div>
 
         {{-- الأزرار --}}
         <div class="d-flex gap-2">
             {{-- إضافة للسلة (AJAX، يبقى داخل المودال) --}}
-            <button
-                type="button"
-                class="btn btn-primary ill-add-to-cart"
-                data-id="{{ $product->id }}"
-                data-user="{{ $vendorId }}"
-                data-addnum-url="{{ url('/addnumcart') }}"
-            >@lang('Add To Cart')</button>
+            @if($mp)
+                <button
+                    type="button"
+                    class="btn btn-primary ill-add-to-cart"
+                    data-id="{{ $product->id }}"
+                    data-mp-id="{{ $mp->id }}"
+                    data-user="{{ $vendorId }}"
+                    data-addnum-url="{{ route('merchant.cart.add', $mp->id) }}"
+                >@lang('Add To Cart')</button>
 
-            {{-- شراء الآن: يضيف ثم يوجّه للسلة --}}
-            <button
-                type="button"
-                class="btn btn-success ill-buy-now"
-                data-id="{{ $product->id }}"
-                data-user="{{ $vendorId }}"
-                data-addtonum-url="{{ url('/addtonumcart') }}"
-                data-carts-url="{{ url('/carts') }}"
-            >@lang('buttons.purchase_now')</button>
+                {{-- شراء الآن: يضيف ثم يوجّه للسلة --}}
+                <button
+                    type="button"
+                    class="btn btn-success ill-buy-now"
+                    data-id="{{ $product->id }}"
+                    data-mp-id="{{ $mp->id }}"
+                    data-user="{{ $vendorId }}"
+                    data-addtonum-url="{{ route('merchant.cart.add', $mp->id) }}"
+                    data-carts-url="{{ url('/carts') }}"
+                >@lang('buttons.purchase_now')</button>
+            @else
+                <button
+                    type="button"
+                    class="btn btn-primary ill-add-to-cart"
+                    data-id="{{ $product->id }}"
+                    data-user="{{ $vendorId }}"
+                    data-addnum-url="{{ url('/addnumcart') }}"
+                >@lang('Add To Cart')</button>
+
+                <button
+                    type="button"
+                    class="btn btn-success ill-buy-now"
+                    data-id="{{ $product->id }}"
+                    data-user="{{ $vendorId }}"
+                    data-addtonum-url="{{ url('/addtonumcart') }}"
+                    data-carts-url="{{ url('/carts') }}"
+                >@lang('buttons.purchase_now')</button>
+            @endif
         </div>
     </div>
 </div>
+
+{{-- JavaScript للتحكم بالكمية في المودال --}}
+<script>
+(function() {
+    // زيادة الكمية
+    document.querySelectorAll('.modal-qtplus').forEach(function(btn) {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            var input = this.parentNode.querySelector('.modal-qty-input');
+            var stock = parseInt(this.dataset.stock) || 999;
+            var preordered = parseInt(this.dataset.preordered) || 0;
+            var current = parseInt(input.value) || 1;
+
+            if (stock > 0 && current >= stock && preordered == 0) {
+                if (typeof toastr !== 'undefined') {
+                    toastr.warning('{{ __("Stock limit reached") }}: ' + stock);
+                }
+                return;
+            }
+            input.value = current + 1;
+        });
+    });
+
+    // إنقاص الكمية
+    document.querySelectorAll('.modal-qtminus').forEach(function(btn) {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            var input = this.parentNode.querySelector('.modal-qty-input');
+            var minQty = parseInt(this.dataset.min) || 1;
+            var current = parseInt(input.value) || 1;
+
+            if (current <= minQty) {
+                if (typeof toastr !== 'undefined') {
+                    toastr.warning('{{ __("Minimum quantity is") }} ' + minQty);
+                }
+                return;
+            }
+            input.value = current - 1;
+        });
+    });
+})();
+</script>

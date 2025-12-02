@@ -114,16 +114,26 @@
                         </div>
                     </a>
                 @else
-                    @if ($actualProduct->emptyStock())
+                    @if ($actualProduct->emptyStock() && !($merchant && $merchant->preordered))
                         <div class="add-cart">
                             {{ __('Out of Stock') }}
                         </div>
                     @else
                         @if ($actualProduct->type != 'Listing')
+                            @php
+                                // استخدام merchant_product_id إذا كان متاحاً
+                                $addCartUrl = $merchant
+                                    ? route('merchant.cart.add', $merchant->id) . '?user=' . $merchant->user_id
+                                    : route('product.cart.add', $actualProduct->id);
+                                // معرف فريد لربط الكمية
+                                $qtyInputId = 'hp_' . ($merchant ? $merchant->id : $actualProduct->id);
+                            @endphp
                             <a {{ $actualProduct->cross_products ? 'data-bs-target=#exampleModal' : '' }} href="javascript:;"
-                                data-href="{{ route('product.cart.add', $actualProduct->id) }}"
+                                data-href="{{ $addCartUrl }}"
+                                data-merchant-product="{{ $merchant ? $merchant->id : '' }}"
+                                data-qty-prefix="{{ $qtyInputId }}"
                                 data-cross-href="{{ route('front.show.cross.product', $actualProduct->id) }}"
-                                class="add_cart_click {{ $actualProduct->cross_products ? 'view_cross_product' : '' }}">
+                                class="add_cart_click hp-add-cart {{ $actualProduct->cross_products ? 'view_cross_product' : '' }}">
                                 <div class="add-cart">
                                     @lang('Add To Cart')
                                 </div>
@@ -174,6 +184,29 @@
 
                 <h6><del>{{ $actualProduct->showPreviousPrice() }}</del></h6>
             </div>
+
+            {{-- Quantity Selector - مثل صفحة المنتج --}}
+            @if ($actualProduct->type == 'Physical' && !$actualProduct->emptyStock())
+                @php
+                    $minQty = $merchant ? (int)($merchant->minimum_qty ?? 1) : 1;
+                    if ($minQty < 1) $minQty = 1;
+                    $stock = $merchant ? (int)($merchant->stock ?? 999) : (int)($actualProduct->stock ?? 999);
+                    $preordered = $merchant ? (int)($merchant->preordered ?? 0) : 0;
+                    $uniqueId = 'hp_' . ($merchant ? $merchant->id : $actualProduct->id) . '_' . uniqid();
+                @endphp
+                <div class="home-product-qty-wrapper" style="margin: 8px 0; display: flex; align-items: center; justify-content: center;">
+                    <span style="font-size: 12px; color: #666; margin-inline-end: 8px;">@lang('Qty'):</span>
+                    <div class="product-input-wrapper home-product-qty" style="display: inline-flex; align-items: center; border: 1px solid #ddd; border-radius: 4px; overflow: hidden;">
+                        <button type="button" class="hp-qtminus" data-target="{{ $uniqueId }}" data-min="{{ $minQty }}"
+                                style="width: 28px; height: 28px; border: none; background: #f5f5f5; cursor: pointer; font-size: 14px; font-weight: bold;">-</button>
+                        <input type="text" class="hp-qty-input" id="qty_{{ $uniqueId }}" value="{{ $minQty }}" readonly
+                               data-min="{{ $minQty }}" data-stock="{{ $stock }}" data-preordered="{{ $preordered }}"
+                               style="width: 35px; text-align: center; border: none; font-size: 13px; font-weight: bold;">
+                        <button type="button" class="hp-qtplus" data-target="{{ $uniqueId }}" data-stock="{{ $stock }}" data-preordered="{{ $preordered }}"
+                                style="width: 28px; height: 28px; border: none; background: #f5f5f5; cursor: pointer; font-size: 14px; font-weight: bold;">+</button>
+                    </div>
+                </div>
+            @endif
 
             <div class="ratings-wrapper">
                 <svg xmlns="http://www.w3.org/2000/svg" width="17" height="16" viewBox="0 0 17 16"
