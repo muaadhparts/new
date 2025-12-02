@@ -56,14 +56,16 @@ class AlternativeService
      */
     protected function fetchSameProductVariants(int $productId, bool $includeSelf): Collection
     {
-        // جلب جميع merchant_products لنفس product_id
+        // جلب جميع merchant_products لنفس product_id مع eager loading كامل
         return MerchantProduct::with([
                 'product' => function ($q) {
-                    $q->select('id', 'sku', 'slug', 'label_en', 'label_ar', 'photo', 'brand_id');
+                    $q->select('id', 'sku', 'slug', 'label_en', 'label_ar', 'photo', 'brand_id')
+                      ->with('brand:id,name,name_ar,photo');
                 },
                 'user:id,is_vendor,name,shop_name',
                 'qualityBrand:id,name_en,name_ar,logo',
             ])
+            ->select(['id', 'product_id', 'user_id', 'brand_quality_id', 'price', 'previous_price', 'stock', 'preordered', 'minimum_qty', 'status'])
             ->where('status', 1)
             ->where('product_id', $productId)
             ->whereHas('user', function ($u) {
@@ -79,11 +81,13 @@ class AlternativeService
     {
         $listings = MerchantProduct::with([
                 'product' => function ($q) {
-                    $q->select('id', 'sku', 'slug', 'label_en', 'label_ar', 'photo', 'brand_id');
+                    $q->select('id', 'sku', 'slug', 'label_en', 'label_ar', 'photo', 'brand_id')
+                      ->with('brand:id,name,name_ar,photo');
                 },
                 'user:id,is_vendor,name,shop_name',
                 'qualityBrand:id,name_en,name_ar,logo',
             ])
+            ->select(['id', 'product_id', 'user_id', 'brand_quality_id', 'price', 'previous_price', 'stock', 'preordered', 'minimum_qty', 'status'])
             ->where('status', 1)
             ->whereHas('user', function ($u) {
                 $u->where('is_vendor', 2);
