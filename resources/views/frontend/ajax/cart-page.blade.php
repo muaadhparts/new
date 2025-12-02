@@ -2,11 +2,19 @@
     use App\Models\Product;
     use App\Models\Brand;
     use App\Models\MerchantProduct;
+    use App\Helpers\CartHelper;
     use Illuminate\Support\Facades\Storage;
 
     $discount = 0;
+
+    // التحقق من وجود سلة في النظام الجديد (v2)
+    $hasV2Cart = CartHelper::hasCart();
 @endphp
 
+{{-- إذا كانت هناك سلة في النظام الجديد، استخدمها --}}
+@if ($hasV2Cart)
+    @include('frontend.ajax.cart-page-v2')
+@else
 <div class="container gs-cart-container">
     <div class="row gs-cart-row">
 
@@ -448,3 +456,4 @@ $(document).ready(function() {
 
 });
 </script>
+@endif {{-- نهاية @else للتحقق من النظام القديم --}}

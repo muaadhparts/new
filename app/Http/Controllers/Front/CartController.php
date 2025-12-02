@@ -19,6 +19,7 @@
 namespace App\Http\Controllers\Front;
 
 use App\Helpers\ProductContextHelper;
+use App\Helpers\CartHelper;
 use App\Models\Cart;
 use App\Models\Country;
 use App\Models\Generalsetting;
@@ -1278,5 +1279,237 @@ class CartController extends FrontBaseController
         $data['taxable_amount'] = round($taxable_amount, 2);
 
         return response()->json($data);
+    }
+
+    /* =====================================================================
+     * NEW UNIFIED CART SYSTEM (v2) - يستخدم CartHelper
+     * =====================================================================
+     * هذه الدوال تستخدم CartHelper الجديد الذي يوفر:
+     * 1. cartKey موحد في كل مكان
+     * 2. ربط كامل بـ merchant_products
+     * 3. دعم المخزون والحد الأدنى والألوان والمقاسات
+     * 4. دعم تعدد التجار
+     * ===================================================================== */
+
+    /**
+     * V2: إضافة عنصر للسلة
+     */
+    public function v2AddItem(Request $request, $mpId)
+    {
+        $qty = max(1, (int) $request->input('qty', 1));
+        $size = (string) $request->input('size', '');
+        $color = (string) $request->input('color', '');
+        $values = (string) $request->input('values', '');
+        $keys = $request->input('keys', []);
+        if (is_string($keys)) $keys = $keys ? explode(',', $keys) : [];
+
+        $result = CartHelper::addItem((int)$mpId, $qty, $size, $color, $values, $keys);
+
+        if (!$result['success']) {
+            return response()->json([
+                'ok' => false,
+                'status' => 'error',
+                'msg' => $result['message'],
+                'error' => $result['message']
+            ], 400);
+        }
+
+        $cart = $result['cart'];
+
+        return response()->json([
+            'ok' => true,
+            'status' => 'success',
+            'success' => $result['message'],
+            'cart_count' => CartHelper::getItemCount(),
+            'cart_total' => \PriceHelper::showCurrencyPrice($cart['totalPrice'] * $this->curr->value),
+            'totalQty' => $cart['totalQty'],
+            'totalPrice' => $cart['totalPrice']
+        ]);
+    }
+
+    /**
+     * V2: زيادة كمية عنصر
+     */
+    public function v2IncreaseQty(Request $request)
+    {
+        $cartKey = (string) $request->input('cart_key', '');
+
+        if (!$cartKey) {
+            return response()->json([
+                'ok' => false,
+                'status' => 'error',
+                'msg' => __('Invalid cart key')
+            ], 400);
+        }
+
+        $result = CartHelper::increaseQty($cartKey);
+
+        if (!$result['success']) {
+            return response()->json([
+                'ok' => false,
+                'status' => 'error',
+                'msg' => $result['message']
+            ], 400);
+        }
+
+        $item = $result['item'];
+        $cart = $result['cart'];
+
+        // بناء الاستجابة بنفس تنسيق النظام القديم للتوافق
+        return response()->json([
+            'ok' => true,
+            'status' => 'success',
+            // التنسيق القديم (array indices)
+            0 => \PriceHelper::showCurrencyPrice($cart['totalPrice'] * $this->curr->value), // cart total
+            1 => $item['qty'], // new qty
+            2 => \PriceHelper::showCurrencyPrice($item['total_price'] * $this->curr->value), // row total
+            3 => \PriceHelper::showCurrencyPrice($cart['totalPrice'] * $this->curr->value), // cart total again
+            4 => $item['discount'] > 0 ? '(' . $item['discount'] . '% ' . __('Off') . ')' : '', // discount text
+            // التنسيق الجديد
+            'cart_key' => $cartKey,
+            'qty' => $item['qty'],
+            'row_total' => \PriceHelper::showCurrencyPrice($item['total_price'] * $this->curr->value),
+            'cart_total' => \PriceHelper::showCurrencyPrice($cart['totalPrice'] * $this->curr->value),
+            'totalQty' => $cart['totalQty'],
+            'totalPrice' => $cart['totalPrice'],
+            'discount' => $item['discount']
+        ]);
+    }
+
+    /**
+     * V2: إنقاص كمية عنصر
+     */
+    public function v2DecreaseQty(Request $request)
+    {
+        $cartKey = (string) $request->input('cart_key', '');
+
+        if (!$cartKey) {
+            return response()->json([
+                'ok' => false,
+                'status' => 'error',
+                'msg' => __('Invalid cart key')
+            ], 400);
+        }
+
+        $result = CartHelper::decreaseQty($cartKey);
+
+        if (!$result['success']) {
+            return response()->json([
+                'ok' => false,
+                'status' => 'error',
+                'msg' => $result['message']
+            ], 400);
+        }
+
+        $item = $result['item'];
+        $cart = $result['cart'];
+
+        return response()->json([
+            'ok' => true,
+            'status' => 'success',
+            // التنسيق القديم
+            0 => \PriceHelper::showCurrencyPrice($cart['totalPrice'] * $this->curr->value),
+            1 => $item['qty'],
+            2 => \PriceHelper::showCurrencyPrice($item['total_price'] * $this->curr->value),
+            3 => \PriceHelper::showCurrencyPrice($cart['totalPrice'] * $this->curr->value),
+            4 => $item['discount'] > 0 ? '(' . $item['discount'] . '% ' . __('Off') . ')' : '',
+            // التنسيق الجديد
+            'cart_key' => $cartKey,
+            'qty' => $item['qty'],
+            'row_total' => \PriceHelper::showCurrencyPrice($item['total_price'] * $this->curr->value),
+            'cart_total' => \PriceHelper::showCurrencyPrice($cart['totalPrice'] * $this->curr->value),
+            'totalQty' => $cart['totalQty'],
+            'totalPrice' => $cart['totalPrice'],
+            'discount' => $item['discount']
+        ]);
+    }
+
+    /**
+     * V2: حذف عنصر من السلة
+     */
+    public function v2RemoveItem(Request $request, $cartKey = null)
+    {
+        $cartKey = $cartKey ?: (string) $request->input('cart_key', '');
+
+        if (!$cartKey) {
+            return response()->json([
+                'ok' => false,
+                'status' => 'error',
+                'msg' => __('Invalid cart key')
+            ], 400);
+        }
+
+        $result = CartHelper::removeItem($cartKey);
+
+        if (!$result['success']) {
+            if ($request->ajax()) {
+                return response()->json([
+                    'ok' => false,
+                    'status' => 'error',
+                    'msg' => $result['message']
+                ], 400);
+            }
+            return back()->with('unsuccess', $result['message']);
+        }
+
+        $cart = $result['cart'];
+
+        if ($request->ajax()) {
+            return response()->json([
+                'ok' => true,
+                'status' => 'success',
+                'success' => $result['message'],
+                'cart_count' => CartHelper::getItemCount(),
+                'cart_total' => \PriceHelper::showCurrencyPrice($cart['totalPrice'] * $this->curr->value),
+                'totalQty' => $cart['totalQty'],
+                'totalPrice' => $cart['totalPrice']
+            ]);
+        }
+
+        return back()->with('success', $result['message']);
+    }
+
+    /**
+     * V2: ملخص السلة
+     */
+    public function v2Summary()
+    {
+        $cart = CartHelper::getCart();
+
+        return response()->json([
+            'ok' => true,
+            'cart_count' => CartHelper::getItemCount(),
+            'cart_total' => \PriceHelper::showCurrencyPrice($cart['totalPrice'] * $this->curr->value),
+            'totalQty' => $cart['totalQty'],
+            'totalPrice' => $cart['totalPrice'],
+            'items' => $cart['items']
+        ]);
+    }
+
+    /**
+     * V2: صفحة السلة (view)
+     */
+    public function v2CartPage(Request $request)
+    {
+        if (!CartHelper::hasCart()) {
+            return view('frontend.cart');
+        }
+
+        // مسح بيانات الكوبون القديمة
+        foreach (['already', 'coupon', 'coupon_total', 'coupon_total1', 'coupon_percentage'] as $k) {
+            if (Session::has($k)) Session::forget($k);
+        }
+
+        $cart = CartHelper::getCart();
+        $products = $cart['items'];
+        $totalPrice = $cart['totalPrice'];
+        $mainTotal = $totalPrice;
+        $productsByVendor = CartHelper::groupByVendor();
+
+        if ($request->ajax()) {
+            return view('frontend.ajax.cart-page-v2', compact('products', 'totalPrice', 'mainTotal', 'productsByVendor'));
+        }
+
+        return view('frontend.cart', compact('products', 'totalPrice', 'mainTotal', 'productsByVendor'));
     }
 }

@@ -1860,6 +1860,21 @@ Route::group(['middleware' => 'maintenance'], function () {
     Route::get('/addtonumcart', 'Front\CartController@addtonumcart');
     Route::get('/addbyone', 'Front\CartController@addbyone');
     Route::get('/reducebyone', 'Front\CartController@reducebyone');
+
+    // ============ NEW UNIFIED CART SYSTEM (v2) ============
+    Route::prefix('cart/v2')->name('cart.v2.')->group(function () {
+        Route::post('/add/{mpId}', 'Front\CartController@v2AddItem')->name('add');
+        Route::get('/add/{mpId}', 'Front\CartController@v2AddItem')->name('add.get');
+        Route::post('/increase', 'Front\CartController@v2IncreaseQty')->name('increase');
+        Route::get('/increase', 'Front\CartController@v2IncreaseQty')->name('increase.get');
+        Route::post('/decrease', 'Front\CartController@v2DecreaseQty')->name('decrease');
+        Route::get('/decrease', 'Front\CartController@v2DecreaseQty')->name('decrease.get');
+        Route::post('/remove', 'Front\CartController@v2RemoveItem')->name('remove');
+        Route::get('/remove', 'Front\CartController@v2RemoveItem')->name('remove.get');
+        Route::get('/summary', 'Front\CartController@v2Summary')->name('summary');
+        Route::get('/page', 'Front\CartController@v2CartPage')->name('page');
+    });
+    // ============ END NEW CART SYSTEM ============
     Route::get('/upcolor', 'Front\CartController@upcolor');
     Route::get('/removecart/{id}', 'Front\CartController@removecart')->name('product.cart.remove');
     Route::get('/carts/coupon', 'Front\CouponController@coupon');

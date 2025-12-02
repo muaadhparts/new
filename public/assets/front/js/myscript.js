@@ -424,6 +424,7 @@
 
   $(document).on("click", "#addtodetailscart", function (e) {
     let pid = "";
+    let mpId = "";
     let qty = "";
     let size_key = "";
     let size = "";
@@ -437,6 +438,7 @@
 
     // get all the input values
     pid = $("#product_id").val();
+    mpId = $("#merchant_product_id").val();
     qty = $("#order-qty").val();
     size_key = $(".cart_size input:checked").val();
     size = $(".cart_size input:checked").attr("data-key");
@@ -460,38 +462,68 @@
       })
       .get();
 
-    //return true;
-
-    $.ajax({
-      type: "GET",
-      url: mainurl + "/addnumcart",
-      data: {
-        id: pid,
-        qty: qty,
-        size: size,
-        color: color,
-        color_price: color_price,
-        size_qty: size_qty,
-        size_price: size_price,
-        size_key: size_key,
-        keys: keys,
-        values: values,
-        prices: prices,
-      },
-      success: function (data) {
-        if (data == "digital") {
-          toastr.error("Already Added To Cart");
-        } else if (data == 0 || data.ok === false) {
-          toastr.error(data.msg || data.error || "Out Of Stock");
-        } else if (data[3]) {
-          toastr.error(lang.minimum_qty_error + " " + data[4]);
-        } else {
-          // Use global cart state updater
-          window.applyCartState(data);
-          toastr.success(data.success || "Successfully Added To Cart");
+    // إذا كان هناك merchant_product_id، استخدم النظام الجديد
+    if (mpId && mpId !== '') {
+      $.ajax({
+        type: "GET",
+        url: mainurl + "/cart/v2/add/" + mpId,
+        data: {
+          qty: qty,
+          size: size || '',
+          color: color ? color.replace('#', '') : '',
+          values: values.join(','),
+          keys: keys.join(',')
+        },
+        success: function (data) {
+          if (data.ok === false) {
+            toastr.error(data.msg || data.error || "Out Of Stock");
+          } else {
+            // Use global cart state updater
+            window.applyCartState(data);
+            toastr.success(data.success || "Successfully Added To Cart");
+          }
+        },
+        error: function(xhr) {
+          var msg = "Out Of Stock";
+          if (xhr.responseJSON && xhr.responseJSON.msg) {
+            msg = xhr.responseJSON.msg;
+          }
+          toastr.error(msg);
         }
-      },
-    });
+      });
+    } else {
+      // Fallback للنظام القديم
+      $.ajax({
+        type: "GET",
+        url: mainurl + "/addnumcart",
+        data: {
+          id: pid,
+          qty: qty,
+          size: size,
+          color: color,
+          color_price: color_price,
+          size_qty: size_qty,
+          size_price: size_price,
+          size_key: size_key,
+          keys: keys,
+          values: values,
+          prices: prices,
+        },
+        success: function (data) {
+          if (data == "digital") {
+            toastr.error("Already Added To Cart");
+          } else if (data == 0 || data.ok === false) {
+            toastr.error(data.msg || data.error || "Out Of Stock");
+          } else if (data[3]) {
+            toastr.error(lang.minimum_qty_error + " " + data[4]);
+          } else {
+            // Use global cart state updater
+            window.applyCartState(data);
+            toastr.success(data.success || "Successfully Added To Cart");
+          }
+        },
+      });
+    }
   });
 
 
@@ -501,6 +533,7 @@
 
   $(document).on("click", "#addtobycard", function () {
     let pid = "";
+    let mpId = "";
     let qty = "";
     let size_key = "";
     let size = "";
@@ -514,6 +547,7 @@
 
     // get all the input values
     pid = $("#product_id").val();
+    mpId = $("#merchant_product_id").val();
     qty = $("#order-qty").val();
     size_key = $(".cart_size input:checked").val();
     size = $(".cart_size input:checked").attr("data-key");
@@ -554,29 +588,61 @@
       })
       .get();
 
-    window.location =
-      mainurl +
-      "/addtonumcart?id=" +
-      pid +
-      "&qty=" +
-      qty +
-      "&size=" +
-      size +
-      "&color=" +
-      color +
-      "&color_price=" +
-      color_price +
-      "&size_qty=" +
-      size_qty +
-      "&size_price=" +
-      size_price +
-      "&size_key=" +
-      size_key +
-      "&keys=" +
-      keys +
-      "&values=" +
-      values +
-      "&prices=" +
-      prices;
+    // إذا كان هناك merchant_product_id، استخدم النظام الجديد
+    if (mpId && mpId !== '') {
+      // إضافة للسلة ثم الانتقال للدفع
+      $.ajax({
+        type: "GET",
+        url: mainurl + "/cart/v2/add/" + mpId,
+        data: {
+          qty: qty,
+          size: size || '',
+          color: color || '',
+          values: values.join ? values.join(',') : values,
+          keys: keys.join ? keys.join(',') : keys
+        },
+        success: function (data) {
+          if (data.ok === false) {
+            toastr.error(data.msg || data.error || "Out Of Stock");
+          } else {
+            // الانتقال للدفع
+            window.location = mainurl + "/cart";
+          }
+        },
+        error: function(xhr) {
+          var msg = "Out Of Stock";
+          if (xhr.responseJSON && xhr.responseJSON.msg) {
+            msg = xhr.responseJSON.msg;
+          }
+          toastr.error(msg);
+        }
+      });
+    } else {
+      // Fallback للنظام القديم
+      window.location =
+        mainurl +
+        "/addtonumcart?id=" +
+        pid +
+        "&qty=" +
+        qty +
+        "&size=" +
+        size +
+        "&color=" +
+        color +
+        "&color_price=" +
+        color_price +
+        "&size_qty=" +
+        size_qty +
+        "&size_price=" +
+        size_price +
+        "&size_key=" +
+        size_key +
+        "&keys=" +
+        keys +
+        "&values=" +
+        values +
+        "&prices=" +
+        prices;
+    }
   });
 })(jQuery);

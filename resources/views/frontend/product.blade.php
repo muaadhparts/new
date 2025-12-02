@@ -318,6 +318,8 @@
                         <input type="hidden" id="product_price"
                             value="{{ round($productt->vendorPrice() * $curr->value, 2) }}">
                         <input type="hidden" id="product_id" value="{{ $productt->id }}">
+                        <input type="hidden" id="merchant_product_id" value="{{ isset($merchantProduct) ? $merchantProduct->id : (isset($merchant) ? $merchant->id : '') }}">
+                        <input type="hidden" id="vendor_user_id" value="{{ isset($merchantProduct) ? $merchantProduct->user_id : (isset($merchant) ? $merchant->user_id : '') }}">
                         <input type="hidden" id="curr_pos" value="{{ $gs->currency_format }}">
                         <input type="hidden" id="curr_sign" value="{{ $curr->sign }}">
 
