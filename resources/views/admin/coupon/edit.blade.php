@@ -55,6 +55,22 @@
                         <div class="row">
                           <div class="col-lg-4">
                             <div class="left-area">
+                                <h4 class="heading">{{ __('Vendor') }}</h4>
+                            </div>
+                          </div>
+                          <div class="col-lg-7">
+                              <select name="user_id">
+                                  <option value="">{{ __('Select Vendor') }}</option>
+                                  @foreach($vendors as $vendor)
+                                    <option value="{{ $vendor->id }}" {{ $data->user_id == $vendor->id ? 'selected' : '' }}>{{ $vendor->shop_name ?? $vendor->name }}</option>
+                                  @endforeach
+                              </select>
+                          </div>
+                        </div>
+
+                        <div class="row">
+                          <div class="col-lg-4">
+                            <div class="left-area">
                                 <h4 class="heading">{{ __('Allow Product Type') }}*</h4>
                             </div>
                           </div>

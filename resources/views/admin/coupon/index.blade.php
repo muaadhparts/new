@@ -33,6 +33,7 @@
 									                        <th>{{ __('Type') }}</th>
 									                        <th>{{ __('Amount') }}</th>
 									                        <th>{{ __('Used') }}</th>
+									                        <th>{{ __('Vendor') }}</th>
 									                        <th>{{ __('Status') }}</th>
 									                        <th>{{ __('Options') }}</th>
 														</tr>
@@ -135,6 +136,7 @@
                         { data: 'type', name: 'type' },
                         { data: 'price', name: 'price' },
                         { data: 'used', name: 'used' },
+                        { data: 'vendor', name: 'vendor' },
                         { data: 'status', searchable: false, orderable: false},
             			{ data: 'action', searchable: false, orderable: false }
 
