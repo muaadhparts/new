@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Models\Blog;
 use App\Models\Counter;
+use App\Models\License;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\User;
@@ -61,13 +62,14 @@ class DashboardController extends AdminBaseController
         $data['referrals'] = Counter::where('type', 'referral')->latest('total_count')->take(5)->get();
         $data['browsers'] = Counter::where('type', 'browser')->latest('total_count')->take(5)->get();
 
+        // التحقق من حالة التفعيل
         $data['activation_notify'] = "";
-//        if (file_exists(public_path() . '/rooted.txt')) {
-//            $rooted = file_get_contents(public_path() . '/rooted.txt');
-//            if ($rooted < date('Y-m-d', strtotime("+10 days"))) {
-//                $data['activation_notify'] = "<i class='icofont-warning-alt icofont-4x'></i><br>Please activate your system.<br> If you do not activate your system now, it will be inactive on " . $rooted . "!!<br><a href='" . url('/admin/activation') . "' class='btn btn-success'>Activate Now</a>";
-//            }
-//        }
+        $license = License::getActiveLicense();
+        if (!$license) {
+            $data['activation_notify'] = "<i class='icofont-warning-alt icofont-4x'></i><br>النظام غير مفعل.<br><a href='" . route('admin-license-index') . "' class='btn btn-success'>تفعيل الآن</a>";
+        } elseif ($license->expires_at && $license->expires_at->diffInDays(now()) <= 10) {
+            $data['activation_notify'] = "<i class='icofont-warning-alt icofont-4x'></i><br>تنبيه: الترخيص سينتهي في " . $license->expires_at->format('Y-m-d') . "<br><a href='" . route('admin-license-index') . "' class='btn btn-warning'>تجديد الترخيص</a>";
+        }
 
         return view('admin.dashboard', $data);
     }
@@ -162,74 +164,7 @@ class DashboardController extends AdminBaseController
         $handle = fopen('backup.txt', 'w+');
         fwrite($handle, "");
         fclose($handle);
-        //return "No Backup File Generated.";
         return redirect()->back()->with('success', 'Backup file Deleted Successfully!');
-    }
-
-    public function activation()
-    {
-        dd('activation');
-        $activation_data = "";
-        if (file_exists(public_path() . '/project/license.txt')) {
-            $license = file_get_contents(public_path() . '/project/license.txt');
-            if ($license != "") {
-                $activation_data = "<i style='color:darkgreen;' class='icofont-check-circled icofont-4x'></i><br><h3 style='color:darkgreen;'>Your System is Activated!</h3><br> Your License Key:  <b>" . $license . "</b>";
-            }
-        }
-        return view('admin.activation', compact('activation_data'));
-    }
-
-    public function activation_submit(Request $request)
-    {
-        //return config('services.muaadh.ocean');
-        $purchase_code = $request->pcode;
-        $my_script = 'Royal eCommerce';
-        $my_domain = url('/');
-
-        $varUrl = str_replace(' ', '%20', config('services.muaadh.ocean') . 'purchase112662activate.php?code=' . $purchase_code . '&domain=' . $my_domain . '&script=' . $my_script);
-
-        if (ini_get('allow_url_fopen')) {
-            $contents = file_get_contents($varUrl);
-        } else {
-            $ch = curl_init();
-            curl_setopt($ch, CURLOPT_URL, $varUrl);
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-            $contents = curl_exec($ch);
-            curl_close($ch);
-        }
-
-        $chk = json_decode($contents, true);
-
-        if ($chk['status'] != "success") {
-
-            $msg = $chk['message'] == null ? __('Purchase Code Invalid.') : $chk['message'];
-
-            return response()->json($msg);
-            //return redirect()->back()->with('unsuccess',$chk['message']);
-
-        } else {
-            $this->setUp($chk['p2'], $chk['lData']);
-
-            if (file_exists(public_path() . '/rooted.txt')) {
-                unlink(public_path() . '/rooted.txt');
-            }
-
-            $fpbt = fopen(public_path() . '/project/license.txt', 'w');
-            fwrite($fpbt, $purchase_code);
-            fclose($fpbt);
-
-            $msg = 'Congratulation!! Your System is successfully Activated.';
-            return response()->json($msg);
-            //return redirect('admin/dashboard')->with('success','Congratulation!! Your System is successfully Activated.');
-        }
-        //return config('services.muaadh.ocean');
-    }
-
-    public function setUp($mtFile, $goFileData)
-    {
-        $fpa = fopen(public_path() . $mtFile, 'w');
-        fwrite($fpa, $goFileData);
-        fclose($fpa);
     }
 
     public function movescript()

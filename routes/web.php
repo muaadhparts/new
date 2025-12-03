@@ -1068,9 +1068,22 @@ Route::prefix('admin')->group(function () {
 
         Route::get('/check/movescript', 'Admin\DashboardController@movescript')->name('admin-move-script');
         Route::get('/generate/backup', 'Admin\DashboardController@generate_bkup')->name('admin-generate-backup');
-        Route::get('/activation', 'Admin\DashboardController@activation')->name('admin-activation-form');
-        Route::post('/activation', 'Admin\DashboardController@activation_submit')->name('admin-activate-purchase');
         Route::get('/clear/backup', 'Admin\DashboardController@clear_bkup')->name('admin-clear-backup');
+
+        // ------------ LICENSE SECTION ----------------------
+        Route::get('/license/datatables', 'Admin\LicenseController@datatables')->name('admin-license-datatables');
+        Route::get('/license', 'Admin\LicenseController@index')->name('admin-license-index');
+        Route::get('/license/create', 'Admin\LicenseController@create')->name('admin-license-create');
+        Route::post('/license/create', 'Admin\LicenseController@store')->name('admin-license-store');
+        Route::get('/license/edit/{id}', 'Admin\LicenseController@edit')->name('admin-license-edit');
+        Route::post('/license/edit/{id}', 'Admin\LicenseController@update')->name('admin-license-update');
+        Route::delete('/license/delete/{id}', 'Admin\LicenseController@destroy')->name('admin-license-delete');
+        Route::get('/license/activate/{id}', 'Admin\LicenseController@activateLicense')->name('admin-license-activate-license');
+        Route::get('/license/deactivate/{id}', 'Admin\LicenseController@deactivate')->name('admin-license-deactivate');
+        Route::get('/license/generate-key', 'Admin\LicenseController@generateKey')->name('admin-license-generate-key');
+        Route::get('/activation', 'Admin\LicenseController@activation')->name('admin-activation-form');
+        Route::post('/activation', 'Admin\LicenseController@activateWithKey')->name('admin-activate-purchase');
+        // ------------ LICENSE SECTION ENDS ----------------------
 
         // ------------ ROLE SECTION ----------------------
 
@@ -1096,11 +1109,6 @@ Route::prefix('admin')->group(function () {
 
     });
 
-    Route::get('/check/movescript', 'Admin\DashboardController@movescript')->name('admin-move-script');
-    Route::get('/generate/backup', 'Admin\DashboardController@generate_bkup')->name('admin-generate-backup');
-    Route::get('/activation', 'Admin\DashboardController@activation')->name('admin-activation-form');
-    Route::post('/activation', 'Admin\DashboardController@activation_submit')->name('admin-activate-purchase');
-    Route::get('/clear/backup', 'Admin\DashboardController@clear_bkup')->name('admin-clear-backup');
 });
 
 // ************************************ ADMIN SECTION ENDS**********************************************
