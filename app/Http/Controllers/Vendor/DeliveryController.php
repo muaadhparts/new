@@ -125,7 +125,7 @@ class DeliveryController extends VendorBaseController
                     </div>';
                 } else {
                     $auction = '<div class="action-list">
-                    <button data-toggle="modal" data-target="#riderList" customer-city="' . $data->customer_city . '" order_id="' . $data->id . '" class="mybtn1 searchDeliveryRider">
+                    <button data-bs-toggle="modal" data-bs-target="#riderList" customer-city="' . $data->customer_city . '" order_id="' . $data->id . '" class="mybtn1 searchDeliveryRider">
                     <i class="fa fa-user"></i>  ' . __("Assign Rider") . ' </button>
                     </div>';
                 }

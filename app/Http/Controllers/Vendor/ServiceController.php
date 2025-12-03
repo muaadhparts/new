@@ -32,7 +32,7 @@ class ServiceController extends VendorBaseController
                                 return  $details;
                             })
                             ->addColumn('action', function(Service $data) {
-                                return '<div class="action-list"><a data-href="' . route('vendor-service-edit',$data->id) . '" class="edit" data-toggle="modal" data-target="#modal1"> <i class="fas fa-edit"></i>'.__('Edit').'</a><a href="javascript:;" data-href="' . route('vendor-service-delete',$data->id) . '" data-toggle="modal" data-target="#confirm-delete" class="delete"><i class="fas fa-trash-alt"></i></a></div>';
+                                return '<div class="action-list"><a data-href="' . route('vendor-service-edit',$data->id) . '" class="edit" data-bs-toggle="modal" data-bs-target="#modal1"> <i class="fas fa-edit"></i>'.__('Edit').'</a><a href="javascript:;" data-href="' . route('vendor-service-delete',$data->id) . '" data-bs-toggle="modal" data-bs-target="#confirm-delete" class="delete"><i class="fas fa-trash-alt"></i></a></div>';
                             }) 
                             ->rawColumns(['photo', 'action'])
                             ->toJson(); //--- Returning Json Data To Client Side

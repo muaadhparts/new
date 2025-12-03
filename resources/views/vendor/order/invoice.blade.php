@@ -356,8 +356,8 @@
 
 
                                                 @if ($product['license'] != '')
-                                                    <a href="javascript:;" data-toggle="modal"
-                                                        data-target="#confirm-delete" class="btn btn-info product-btn"
+                                                    <a href="javascript:;" data-bs-toggle="modal"
+                                                        data-bs-target="#confirm-delete" class="btn btn-info product-btn"
                                                         id="license" style="padding: 5px 12px;"><i
                                                             class="fa fa-eye"></i>
                                                         {{ __('View License') }}</a>

@@ -566,8 +566,8 @@
                                                 </div>
                                             </div>
                                             <div class="col-lg-7">
-                                                <a href="#" class="set-gallery" data-toggle="modal"
-                                                    data-target="#setgallery">
+                                                <a href="#" class="set-gallery" data-bs-toggle="modal"
+                                                    data-bs-target="#setgallery">
                                                     <i class="icofont-plus"></i> {{ __('Set Gallery') }}
                                                 </a>
                                             </div>
@@ -692,7 +692,7 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="exampleModalCenterTitle">{{ __('Image Gallery') }}</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">×</span>
                     </button>
                 </div>
@@ -706,7 +706,7 @@
                                 </div>
                             </div>
                             <div class="col-sm-6">
-                                <a href="javascript:;" class="upload-done" data-dismiss="modal"> <i
+                                <a href="javascript:;" class="upload-done" data-bs-dismiss="modal"> <i
                                         class="fas fa-check"></i> {{ __('Done') }}</a>
                             </div>
                             <div class="col-sm-12 text-center">(

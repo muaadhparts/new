@@ -257,7 +257,7 @@
                     <!-- Modal footer -->
                     <div class="modal-footer">
                         <button type="button" x-on:click="closeCartPartItems();" class="btn btn-danger"
-                            data-dismiss="modal">
+                            data-bs-dismiss="modal">
                             <h5 class="font_14 f_w_500 theme_text3 ">{{ __('common.cancel') }}
                         </button>
                     </div>

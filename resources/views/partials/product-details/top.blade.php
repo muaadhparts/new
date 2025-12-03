@@ -419,7 +419,7 @@
                     {{ $merchant->user->shop_name }}
                   @if($merchant->user->checkStatus())
                   <br>
-                  <a class="verify-link" href="javascript:;" data-toggle="tooltip" data-placement="top" title=""
+                  <a class="verify-link" href="javascript:;" data-bs-toggle="tooltip" data-placement="top" title=""
                     data-original-title="{{ __('Verified') }}">
                     <i class="fas fa-check-circle"></i>
                   </a>
@@ -606,7 +606,7 @@
       <div class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title" id="sendMessageLabel">{{ __('Send Message') }}</h5>
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
             <span aria-hidden="true">&times;</span>
           </button>
         </div>

@@ -64,11 +64,11 @@ class ImportController extends VendorBaseController
                             <a href="' . route('vendor-import-edit', $data->product_id) . '">
                                 <i class="fas fa-edit"></i>' . __('Edit') . '
                             </a>
-                            <a href="javascript" class="set-gallery" data-toggle="modal" data-target="#setgallery">
+                            <a href="javascript" class="set-gallery" data-bs-toggle="modal" data-bs-target="#setgallery">
                                 <input type="hidden" value="' . $data->product_id . '">
                                 <i class="fas fa-eye"></i> ' . __('View Gallery') . '
                             </a>
-                            <a href="javascript:;" data-href="' . route('vendor-prod-delete', $data->product_id) . '" data-toggle="modal" data-target="#confirm-delete" class="delete">
+                            <a href="javascript:;" data-href="' . route('vendor-prod-delete', $data->product_id) . '" data-bs-toggle="modal" data-bs-target="#confirm-delete" class="delete">
                                 <i class="fas fa-trash-alt"></i>
                             </a>
                         </div>';

@@ -110,8 +110,8 @@
                     <nav class="navbar navbar-expand-lg nav-dark nav-primary-hover nav-line-active">
                         <a class="navbar-brand" href="{{ route('front.index') }}"><img class="nav-logo "
                                 src="{{ asset('assets/images/'.$gs->logo) }}" alt="Image not found !"></a>
-                        <button class="navbar-toggler" type="button" data-toggle="collapse"
-                            data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+                        <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                            data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
                             aria-expanded="false" aria-label="Toggle navigation">
                             <i class="flaticon-menu-2 flat-small text-primary"></i>
                         </button>

@@ -58,11 +58,11 @@
 
     // Tooltip Section
 
-    $('[data-toggle="tooltip"]').tooltip({});
+    $('[data-bs-toggle="tooltip"]').tooltip({});
 
     $('[rel-toggle="tooltip"]').tooltip();
 
-    $('[data-toggle="tooltip"]').on('click', function () {
+    $('[data-bs-toggle="tooltip"]').on('click', function () {
       $(this).tooltip('hide');
     })
 
