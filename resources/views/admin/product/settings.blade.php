@@ -31,7 +31,7 @@
                         <div class="gocover"
                             style="background: url({{asset('assets/images/'.$gs->admin_loader)}}) no-repeat scroll center center rgba(45, 45, 45, 0.5);">
                         </div>
-                        <form action="{{ route('admin-gs-prod-settings-update') }}" id="geniusform" method="POST"
+                        <form action="{{ route('admin-gs-prod-settings-update') }}" id="muaadhform" method="POST"
                             enctype="multipart/form-data">
                             @csrf
 

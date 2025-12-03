@@ -33,7 +33,7 @@
 									</div>
 								</div>
 							@else
-								<form id="geniusform" action="{{ route('admin-activate-purchase') }}" method="POST">
+								<form id="muaadhform" action="{{ route('admin-activate-purchase') }}" method="POST">
 									{{csrf_field()}}
 									@include('alerts.admin.form-both')
 									<div class="row">

@@ -35,7 +35,7 @@
 								</div>
 							</div>
 
-							<form id="geniusform" action="{{route('admin-prod-store')}}" method="POST" enctype="multipart/form-data">
+							<form id="muaadhform" action="{{route('admin-prod-store')}}" method="POST" enctype="multipart/form-data">
 								{{csrf_field()}}
 								@include('alerts.admin.form-both')
 								<div class="row">

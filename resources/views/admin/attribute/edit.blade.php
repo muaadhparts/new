@@ -32,7 +32,7 @@
               <div class="row">
                 <div class="col-md-6 offset-md-3">
                   <div class="gocover" style="background: url({{asset('assets/images/'.$gs->admin_loader)}}) no-repeat scroll center center rgba(45, 45, 45, 0.5);"></div>
-                  <form id="geniusform" action="{{route('admin-attr-update', $attr->id)}}" method="post" enctype="multipart/form-data">
+                  <form id="muaadhform" action="{{route('admin-attr-update', $attr->id)}}" method="post" enctype="multipart/form-data">
                       {{csrf_field()}}
 
                       @include('alerts.admin.form-both')
