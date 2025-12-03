@@ -26,7 +26,7 @@
 									<div class="mr-table allproduct">
 										@include('alerts.admin.form-success') 
 										<div class="table-responsive">
-											<table id="geniustable" class="table table-hover dt-responsive" cellspacing="0" width="100%">
+											<table id="muaadhtable" class="table table-hover dt-responsive" cellspacing="0" width="100%">
 												<thead>
 													<tr>
 														<th>{{ __("Vendor Name") }}</th>
@@ -206,7 +206,7 @@
 		(function($) {
 			"use strict";
 
-			var table = $('#geniustable').DataTable({
+			var table = $('#muaadhtable').DataTable({
 				ordering: false,
 				processing: true,
 				serverSide: true,
@@ -306,7 +306,7 @@ $('.f-btn').on('click',function(e){
             $('.alert-danger').hide();
             $('.alert-success').show();
 			$('.alert-success p').html(data[0]);
-			$('#geniustable').DataTable().ajax.reload();
+			$('#muaadhtable').DataTable().ajax.reload();
        }
       });
 });

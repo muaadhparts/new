@@ -24,7 +24,7 @@
 									<div class="mr-table allproduct">
                         @include('alerts.admin.form-both')  
 										<div class="table-responsive">
-												<table id="geniustable" class="table table-hover dt-responsive" cellspacing="0" width="100%">
+												<table id="muaadhtable" class="table table-hover dt-responsive" cellspacing="0" width="100%">
 													<thead>
 														<tr>
 									                        <th>{{ __("#Sl") }}</th>
@@ -52,7 +52,7 @@
 (function($) {
 		"use strict";
 
-		$('#geniustable').DataTable({
+		$('#muaadhtable').DataTable({
 			   ordering: false,
                processing: true,
                serverSide: true,

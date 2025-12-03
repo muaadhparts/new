@@ -18,13 +18,13 @@
     <meta property="og:description"
         content="{{ $productt->meta_description != null ? $productt->meta_description : strip_tags($productt->description) }}" />
     <meta property="og:image" content="{{ filter_var($productt->photo, FILTER_VALIDATE_URL) ? $productt->photo : ($productt->photo ? \Illuminate\Support\Facades\Storage::url($productt->photo) : asset('assets/images/noimage.png')) }}" />
-    <meta name="author" content="GeniusOcean">
+    <meta name="author" content="Muaadh">
     <title>{{ substr($productt->name, 0, 11) . '-' }}{{ $gs->title }}</title>
 @else
     <meta property="og:title" content="{{ $gs->title }}" />
     <meta property="og:image" content="{{ asset('assets/images/' . $gs->logo) }}" />
     <meta name="keywords" content="{{ $seo->meta_keys }}">
-    <meta name="author" content="GeniusOcean">
+    <meta name="author" content="Muaadh">
     <title>{{ $gs->title }}</title>
 @endif
 

@@ -627,7 +627,7 @@
   $(document).on('click', '#prod_gallery' ,function() {
     $('#uploadgallery').click();
      $('.selected-image .row').html('');
-    $('#geniusform').find('.removegal').val(0);
+    $('#muaadhform').find('.removegal').val(0);
   });
                                         
                                 
@@ -646,7 +646,7 @@
                                         '</div>'+
                                   '</div> '
                                       );
-      $('#geniusform').append('<input type="hidden" name="galval[]" id="galval'+i+'" class="removegal" value="'+i+'">')
+      $('#muaadhform').append('<input type="hidden" name="galval[]" id="galval'+i+'" class="removegal" value="'+i+'">')
      }
 
   });

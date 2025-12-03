@@ -22,24 +22,17 @@
                 </div>
             </div>
         </div>
-        
+
         <div class="add-product-content">
             <div class="row">
                 <div class="col-lg-12 p-5">
 
-                    <div class="gocover" style="background: url({{asset('assets/images/'.$gs->admin_loader)}}) no-repeat scroll center center rgba(45, 45, 45, 0.5);"></div> 
+                    <div class="gocover" style="background: url({{asset('assets/images/'.$gs->admin_loader)}}) no-repeat scroll center center rgba(45, 45, 45, 0.5);"></div>
                     <form id="muaadhform" action="{{route('admin-addon-install')}}" method="POST" enctype="multipart/form-data">
-                        
+
                         {{csrf_field()}}
 
-                        @include('alerts.admin.form-both') 
-
-                        <div class="row">
-                            
-                            <div class="col-md-12">
-                              <input type="text" class="input-field" name="purchase_key" placeholder="{{ __('Enter Purchase key') }}" required="" value="">
-                            </div>
-                          </div>
+                        @include('alerts.admin.form-both')
 
                         <div class="row justify-content-center">
 
@@ -48,10 +41,11 @@
                                     <i class="fas fa-download"></i>
                                 </div>
                             </div>
-                            
+
                             <div class="col-lg-12 d-flex justify-content-center text-center">
                                 <div class="left-area mr-4">
-                                    <h4 class="heading">{{ __("Upload File") }} *</h4>
+                                    <h4 class="heading">{{ __("Upload Addon File") }} *</h4>
+                                    <p class="sub-heading">{{ __("(ZIP file only)") }}</p>
                                 </div>
                                 <span class="file-btn">
                                     <input type="file" id="file" name="file" accept=".zip" required>
@@ -65,14 +59,12 @@
                                 <button class="mybtn1 mr-5" type="submit">{{ __("Install") }}</button>
                             </div>
                         </div>
-                            
+
                     </form>
                 </div>
             </div>
         </div>
-        
+
     </div>
-
-
 
 @endsection

@@ -5,7 +5,7 @@
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="keywords" content="{{$seo->meta_keys}}">
-        <meta name="author" content="GeniusOcean">
+        <meta name="author" content="Muaadh">
 
         <title>{{$gs->title}}</title>
   <!-- Tell the browser to be responsive to screen width -->
