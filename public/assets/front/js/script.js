@@ -86,7 +86,9 @@ $(document).ready(function () {
   // $(".nice-select").niceSelect();
 
   //****** 6. WOW JS ******//
-  new WOW().init();
+  if (typeof WOW !== 'undefined') {
+    new WOW().init();
+  }
 
   //******  7. HIDE & SHOW PASSWORD ******//
   const $passwordInput = $("#create-password");
@@ -151,76 +153,84 @@ $(document).ready(function () {
   }
 
   //****** 9. HERO SECTION SLIDER ******//
-  $(".hero-slider-wrapper").slick({
-    arrows: true,
-    dots: false,
-    infinite: true,
-    speed: 300,
-    slidesToShow: 1,
-    autoplay: true,
-    prevArrow:
-      '<button class="slick-prev slick-arrow" aria-label="Previous" type="button"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M15 18L9 12L15 6" stroke="#1F0300" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>',
-    nextArrow:
-      '<button class="slick-next slick-arrow" aria-label="Next" type="button"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M9 6L15 12L9 18" stroke="#1F0300" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>',
-  });
+  if (typeof $.fn.slick !== 'undefined' && $(".hero-slider-wrapper").length > 0) {
+    $(".hero-slider-wrapper").slick({
+      arrows: true,
+      dots: false,
+      infinite: true,
+      speed: 300,
+      slidesToShow: 1,
+      autoplay: true,
+      prevArrow:
+        '<button class="slick-prev slick-arrow" aria-label="Previous" type="button"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M15 18L9 12L15 6" stroke="#1F0300" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>',
+      nextArrow:
+        '<button class="slick-next slick-arrow" aria-label="Next" type="button"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M9 6L15 12L9 18" stroke="#1F0300" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>',
+    });
+  }
 
   //****** 10. HOME CATE SLIDER ******//
-  $(".home-category-slider").slick({
-    dots: false,
-    infinite: true,
-    speed: 300,
-    slidesToShow: 6,
-    slidesToScroll: 1,
-    autoplay: false,
-    arrows: true,
-    prevArrow:
-      '<button class="slick-prev slick-arrow" aria-label="Previous" type="button"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M15 18L9 12L15 6" stroke="#1F0300" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>',
-    nextArrow:
-      '<button class="slick-next slick-arrow" aria-label="Next" type="button"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M9 6L15 12L9 18" stroke="#1F0300" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>',
-    responsive: [
-      {
-        breakpoint: 1200,
-        settings: {
-          slidesToShow: 5,
+  if (typeof $.fn.slick !== 'undefined' && $(".home-category-slider").length > 0) {
+    $(".home-category-slider").slick({
+      dots: false,
+      infinite: true,
+      speed: 300,
+      slidesToShow: 6,
+      slidesToScroll: 1,
+      autoplay: false,
+      arrows: true,
+      prevArrow:
+        '<button class="slick-prev slick-arrow" aria-label="Previous" type="button"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M15 18L9 12L15 6" stroke="#1F0300" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>',
+      nextArrow:
+        '<button class="slick-next slick-arrow" aria-label="Next" type="button"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M9 6L15 12L9 18" stroke="#1F0300" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>',
+      responsive: [
+        {
+          breakpoint: 1200,
+          settings: {
+            slidesToShow: 5,
+          },
         },
-      },
-      {
-        breakpoint: 992,
-        settings: {
-          slidesToShow: 4,
+        {
+          breakpoint: 992,
+          settings: {
+            slidesToShow: 4,
+          },
         },
-      },
-      {
-        breakpoint: 768,
-        settings: {
-          slidesToShow: 2,
+        {
+          breakpoint: 768,
+          settings: {
+            slidesToShow: 2,
+          },
         },
-      },
-      {
-        breakpoint: 425,
-        settings: {
-          slidesToShow: 1,
+        {
+          breakpoint: 425,
+          settings: {
+            slidesToShow: 1,
+          },
         },
-      },
-    ],
-  });
+      ],
+    });
+  }
 
   //****** 11. PRODUCT DETAILS SLIDER ******//
-  $(".product-main-slider").slick({
-    slidesToShow: 1,
-    slidesToScroll: 1,
-    arrows: false,
-    // fade: true,
-    asNavFor: ".product-nav-slider",
-  });
-  $(".product-nav-slider").slick({
-    slidesToShow: 3,
-    slidesToScroll: 1,
-    asNavFor: ".product-main-slider",
-    dots: false,
-    focusOnSelect: true,
-    variableWidth: true,
-  });
+  if (typeof $.fn.slick !== 'undefined' && $(".product-main-slider").length > 0) {
+    $(".product-main-slider").slick({
+      slidesToShow: 1,
+      slidesToScroll: 1,
+      arrows: false,
+      // fade: true,
+      asNavFor: ".product-nav-slider",
+    });
+  }
+  if (typeof $.fn.slick !== 'undefined' && $(".product-nav-slider").length > 0) {
+    $(".product-nav-slider").slick({
+      slidesToShow: 3,
+      slidesToScroll: 1,
+      asNavFor: ".product-main-slider",
+      dots: false,
+      focusOnSelect: true,
+      variableWidth: true,
+    });
+  }
 
   //****** 12. PRICE RANGE SLIDER ******//
   if ($("#slider-range").length > 0) {
@@ -302,51 +312,55 @@ $(document).ready(function () {
   // });
 
   //****** 16. PRODUCT CARDS SLIDER ******//
-  $(".product-cards-slider").slick({
-    dots: false,
-    infinite: true,
-    speed: 300,
-    slidesToShow: 5,
-    slidesToScroll: 1,
-    autoplay: false,
-    arrows: true,
-    prevArrow:
-      '<button class="slick-prev slick-arrow" aria-label="Previous" type="button"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M15 18L9 12L15 6" stroke="#1F0300" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>',
-    nextArrow:
-      '<button class="slick-next slick-arrow" aria-label="Next" type="button"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M9 6L15 12L9 18" stroke="#1F0300" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>',
-    responsive: [
-      {
-        breakpoint: 1200,
-        settings: {
-          slidesToShow: 4,
+  if (typeof $.fn.slick !== 'undefined' && $(".product-cards-slider").length > 0) {
+    $(".product-cards-slider").slick({
+      dots: false,
+      infinite: true,
+      speed: 300,
+      slidesToShow: 5,
+      slidesToScroll: 1,
+      autoplay: false,
+      arrows: true,
+      prevArrow:
+        '<button class="slick-prev slick-arrow" aria-label="Previous" type="button"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M15 18L9 12L15 6" stroke="#1F0300" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>',
+      nextArrow:
+        '<button class="slick-next slick-arrow" aria-label="Next" type="button"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M9 6L15 12L9 18" stroke="#1F0300" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>',
+      responsive: [
+        {
+          breakpoint: 1200,
+          settings: {
+            slidesToShow: 4,
+          },
         },
-      },
-      {
-        breakpoint: 992,
-        settings: {
-          slidesToShow: 3,
+        {
+          breakpoint: 992,
+          settings: {
+            slidesToShow: 3,
+          },
         },
-      },
-      {
-        breakpoint: 768,
-        settings: {
-          slidesToShow: 2,
+        {
+          breakpoint: 768,
+          settings: {
+            slidesToShow: 2,
+          },
         },
-      },
-      {
-        breakpoint: 425,
-        settings: {
-          slidesToShow: 1,
+        {
+          breakpoint: 425,
+          settings: {
+            slidesToShow: 1,
+          },
         },
-      },
-    ],
-  });
+      ],
+    });
+  }
 
   //****** 17. COUNTER UP ******//
-  $(".counter").counterUp({
-    delay: 10,
-    time: 1000,
-  });
+  if (typeof $.fn.counterUp !== 'undefined' && $(".counter").length > 0) {
+    $(".counter").counterUp({
+      delay: 10,
+      time: 1000,
+    });
+  }
 
   //****** 18. CHANGE FILE NAME OF FILE INPUT ******//
   $('.custom-file-input').on('change', function () {

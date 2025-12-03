@@ -4,6 +4,7 @@
 	<link href="{{asset('assets/admin/css/product.css')}}" rel="stylesheet"/>
 	<link href="{{asset('assets/admin/css/jquery.Jcrop.css')}}" rel="stylesheet"/>
 	<link href="{{asset('assets/admin/css/Jcrop-style.css')}}" rel="stylesheet"/>
+	<link href="{{asset('assets/admin/css/select2.css')}}" rel="stylesheet"/>
 @endsection
 
 @section('content')
@@ -42,7 +43,63 @@
 					<div class="col-lg-12">
 						<div class="product-description">
 							<div class="body-area">
-						
+
+								{{-- Vendor Selection --}}
+								<div class="row">
+									<div class="col-lg-12">
+										<div class="left-area">
+											<h4 class="heading">{{ __('Vendor') }}*</h4>
+										</div>
+									</div>
+									<div class="col-lg-12">
+										<select id="vendor_id" name="user_id" required="" class="select2">
+											<option value="">{{ __('Select Vendor') }}</option>
+											@foreach (\App\Models\User::where('is_vendor', 2)->where('ban', 0)->orderBy('shop_name')->get() as $vendor)
+												<option value="{{ $vendor->id }}">
+													{{ $vendor->shop_name ?: $vendor->name }} ({{ $vendor->email }})
+												</option>
+											@endforeach
+										</select>
+									</div>
+								</div>
+
+								{{-- Brand (العلامة التجارية) --}}
+								<div class="row">
+									<div class="col-lg-12">
+										<div class="left-area">
+											<h4 class="heading">{{ __('Brand') }} ({{ __('Trademark') }})</h4>
+										</div>
+									</div>
+									<div class="col-lg-12">
+										<select name="brand_id" class="input-field">
+											<option value="">{{ __('Select Brand') }}</option>
+											@foreach (\App\Models\Brand::all() as $brand)
+												<option value="{{ $brand->id }}" style="color: #333;">
+													{{ $brand->name }} {{ $brand->name_ar ? '- ' . $brand->name_ar : '' }}
+												</option>
+											@endforeach
+										</select>
+									</div>
+								</div>
+
+								{{-- Quality Brand (جودة التصنيع) --}}
+								<div class="row">
+									<div class="col-lg-12">
+										<div class="left-area">
+											<h4 class="heading">{{ __('Quality Brand') }} ({{ __('Manufacturing Quality') }})</h4>
+										</div>
+									</div>
+									<div class="col-lg-12">
+										<select name="brand_quality_id" class="input-field">
+											<option value="">{{ __('Select Quality Brand') }}</option>
+											@foreach (\App\Models\QualityBrand::all() as $qb)
+												<option value="{{ $qb->id }}" style="color: #333;">
+													{{ $qb->name }} {{ $qb->name_ar ? '- ' . $qb->name_ar : '' }}
+												</option>
+											@endforeach
+										</select>
+									</div>
+								</div>
 
 								<div class="row">
 									<div class="col-lg-12">
@@ -466,7 +523,7 @@
 										</div>
 									</div>
 									<div class="col-lg-7">
-										<a href="#" class="set-gallery"  data-toggle="modal" data-target="#setgallery">
+										<a href="#" class="set-gallery" data-bs-toggle="modal" data-bs-target="#setgallery">
 											<i class="icofont-plus"></i> {{ __("Set Gallery") }}
 										</a>
 									</div>
@@ -574,7 +631,7 @@
 		<div class="modal-content">
 		<div class="modal-header">
 			<h5 class="modal-title" id="exampleModalCenterTitle">{{ __("Image Gallery") }}</h5>
-			<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+			<button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
 			<span aria-hidden="true">×</span>
 			</button>
 		</div>
@@ -587,7 +644,7 @@
 						</div>
 					</div>
 					<div class="col-sm-6">
-						<a href="javascript:;" class="upload-done" data-dismiss="modal"> <i class="fas fa-check"></i> {{ __("Done") }}</a>
+						<a href="javascript:;" class="upload-done" data-bs-dismiss="modal"> <i class="fas fa-check"></i> {{ __("Done") }}</a>
 					</div>
 					<div class="col-sm-12 text-center">( <small>{{ __("You can upload multiple Images.") }}</small> )</div>
 				</div>
@@ -610,6 +667,18 @@
 
 <script src="{{asset('assets/admin/js/jquery.Jcrop.js')}}"></script>
 <script src="{{asset('assets/admin/js/jquery.SimpleCropper.js')}}"></script>
+<script src="{{asset('assets/admin/js/select2.js')}}"></script>
+
+<script type="text/javascript">
+(function($) {
+	"use strict";
+	$(document).ready(function() {
+		$('.select2').select2({
+			placeholder: "{{ __('Select Vendor') }}",
+		});
+	});
+})(jQuery);
+</script>
 
 <script type="text/javascript">
 	
@@ -681,11 +750,13 @@
   </script>
 
 <script type="text/javascript">
-	
+
     (function($) {
 		"use strict";
 
-$('.cropme').simpleCropper();
+$(document).ready(function() {
+	$('.cropme').simpleCropper();
+});
 
 	})(jQuery);
 	

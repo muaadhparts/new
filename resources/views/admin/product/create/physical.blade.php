@@ -56,9 +56,9 @@
                                                 </div>
                                             </div>
                                             <div class="col-lg-12">
-                                                <select name="user_id" required="">
+                                                <select id="vendor_id" name="user_id" required="" class="select2">
                                                     <option value="">{{ __('Select Vendor') }}</option>
-                                                    @foreach (\App\Models\User::where('is_vendor', 1)->orWhere('id', 1)->get() as $vendor)
+                                                    @foreach (\App\Models\User::where('is_vendor', 2)->where('ban', 0)->orderBy('shop_name')->get() as $vendor)
                                                         <option value="{{ $vendor->id }}">
                                                             {{ $vendor->shop_name ?: $vendor->name }} ({{ $vendor->email }})
                                                         </option>
@@ -745,8 +745,8 @@
                                                 </div>
                                             </div>
                                             <div class="col-lg-12">
-                                                <a href="#" class="set-gallery" data-toggle="modal"
-                                                    data-target="#setgallery">
+                                                <a href="#" class="set-gallery" data-bs-toggle="modal"
+                                                    data-bs-target="#setgallery">
                                                     <i class="icofont-plus"></i> {{ __('Set Gallery') }}
                                                 </a>
                                             </div>
@@ -872,7 +872,7 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="exampleModalCenterTitle">{{ __('Image Gallery') }}</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">×</span>
                     </button>
                 </div>
@@ -886,7 +886,7 @@
                                 </div>
                             </div>
                             <div class="col-sm-6">
-                                <a href="javascript:;" class="upload-done" data-dismiss="modal"> <i
+                                <a href="javascript:;" class="upload-done" data-bs-dismiss="modal"> <i
                                         class="fas fa-check"></i> {{ __('Done') }}</a>
                             </div>
                             <div class="col-sm-12 text-center">(
@@ -967,12 +967,13 @@
     </script>
 
     <script type="text/javascript">
-        $('.cp').colorpicker();
-
         (function($) {
             "use strict";
 
-            $('.cropme').simpleCropper();
+            $(document).ready(function() {
+                $('.cp').colorpicker();
+                $('.cropme').simpleCropper();
+            });
 
         })(jQuery);
 

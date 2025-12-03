@@ -308,13 +308,25 @@ class ImportController extends AdminBaseController
 
         // Thumbnail
         $fimageData = public_path().'/assets/images/products/'.$prod->photo;
-        if(filter_var($prod->photo,FILTER_VALIDATE_URL)){
+        if(filter_var($prod->photo, FILTER_VALIDATE_URL)){
             $fimageData = $prod->photo;
         }
-        $img = Image::make($fimageData)->resize(285, 285);
-        $thumbnail = time().Str::random(8).'.jpg';
-        $img->save(public_path().'/assets/images/thumbnails/'.$thumbnail);
-        $prod->thumbnail  = $thumbnail;
+
+        // التحقق من وجود الصورة قبل إنشاء الـ thumbnail
+        try {
+            if (!empty($prod->photo) && (filter_var($prod->photo, FILTER_VALIDATE_URL) || file_exists($fimageData))) {
+                $img = Image::make($fimageData)->resize(285, 285);
+                $thumbnail = time().Str::random(8).'.jpg';
+                $img->save(public_path().'/assets/images/thumbnails/'.$thumbnail);
+                $prod->thumbnail = $thumbnail;
+            } else {
+                // استخدام صورة افتراضية
+                $prod->thumbnail = 'noimage.png';
+            }
+        } catch (\Exception $e) {
+            \Log::warning('Could not create thumbnail for product: ' . $prod->id . ' - ' . $e->getMessage());
+            $prod->thumbnail = 'noimage.png';
+        }
         $prod->update();
 
         // إنشاء/تحديث عرض البائع (MerchantProduct)
@@ -365,10 +377,10 @@ class ImportController extends AdminBaseController
                 'preordered'          => (int) ($request->input('preordered') ?? 0),
                 'product_condition'   => (int) ($request->input('product_condition') ?? 0),
                 'ship'                => $request->input('ship') ?: null,
+                'brand_quality_id'    => $request->input('brand_quality_id') ?: null,
                 'status'              => 1,
             ]
         );
-        // // dd(['mp_upsert' => 'done']); // اختباري
 
         // Add To Gallery If any
         $lastid = $data->id;
@@ -377,10 +389,10 @@ class ImportController extends AdminBaseController
                 if(in_array($key, (array)$request->galval))
                 {
                     $gallery = new Gallery;
-                    $name = time().\Str::random(8).str_replace(' ', '', $file->getClientOriginalExtension());
+                    $extension = $file->getClientOriginalExtension() ?: 'jpg';
+                    $name = time() . Str::random(8) . '.' . $extension;
                     $img = Image::make($file->getRealPath())->resize(800, 800);
-                    $thumbnail = time().Str::random(8).'.jpg';
-                    $img->save(public_path().'/assets/images/galleries/'.$name);
+                    $img->save(public_path() . '/assets/images/galleries/' . $name);
                     $gallery['photo'] = $name;
                     $gallery['product_id'] = $lastid;
                     $gallery->save();
@@ -541,21 +553,33 @@ class ImportController extends AdminBaseController
         //-- Logic Section Ends
 
         // تحديث الـ Thumbnail
-        if($data->photo != null)
+        if($data->photo != null && !empty($data->thumbnail))
         {
-            if (file_exists(public_path().'/assets/images/thumbnails/'.$data->thumbnail)) {
-                unlink(public_path().'/assets/images/thumbnails/'.$data->thumbnail);
+            $oldThumb = public_path().'/assets/images/thumbnails/'.$data->thumbnail;
+            if (file_exists($oldThumb) && $data->thumbnail != 'noimage.png') {
+                @unlink($oldThumb);
             }
         }
 
         $fimageData = public_path().'/assets/images/products/'.$prod->photo;
-        if(filter_var($prod->photo,FILTER_VALIDATE_URL)){
+        if(filter_var($prod->photo, FILTER_VALIDATE_URL)){
             $fimageData = $prod->photo;
         }
-        $img = Image::make($fimageData)->resize(285, 285);
-        $thumbnail = time().Str::random(8).'.jpg';
-        $img->save(public_path().'/assets/images/thumbnails/'.$thumbnail);
-        $prod->thumbnail  = $thumbnail;
+
+        // التحقق من وجود الصورة قبل إنشاء الـ thumbnail
+        try {
+            if (!empty($prod->photo) && (filter_var($prod->photo, FILTER_VALIDATE_URL) || file_exists($fimageData))) {
+                $img = Image::make($fimageData)->resize(285, 285);
+                $thumbnail = time().Str::random(8).'.jpg';
+                $img->save(public_path().'/assets/images/thumbnails/'.$thumbnail);
+                $prod->thumbnail = $thumbnail;
+            } else {
+                $prod->thumbnail = 'noimage.png';
+            }
+        } catch (\Exception $e) {
+            \Log::warning('Could not create thumbnail for product: ' . $prod->id . ' - ' . $e->getMessage());
+            $prod->thumbnail = 'noimage.png';
+        }
         $prod->update();
 
         // تحديث/إنشاء سجل MerchantProduct
@@ -602,10 +626,10 @@ class ImportController extends AdminBaseController
                 'preordered'          => (int) ($request->input('preordered') ?? 0),
                 'product_condition'   => (int) ($request->input('product_condition') ?? 0),
                 'ship'                => $request->input('ship') ?: null,
+                'brand_quality_id'    => $request->input('brand_quality_id') ?: null,
                 'status'              => 1,
             ]
         );
-        // // dd(['mp_update' => 'done']); // اختباري
 
         //--- Redirect Section
         $msg = __('Product Updated Successfully.').'<a href="'.route('admin-import-index').'">'.__("View Product Lists.").'</a>';
