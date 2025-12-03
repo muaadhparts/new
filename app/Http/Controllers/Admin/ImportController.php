@@ -112,9 +112,9 @@ class ImportController extends AdminBaseController
                 return '<div class="godropdown"><button class="go-dropdown-toggle"> ' . __("Actions") . '<i class="fas fa-chevron-down"></i></button>
                     <div class="action-list">
                         <a href="' . route('admin-import-edit', $product->id) . '"><i class="fas fa-edit"></i> ' . __("Edit") . '</a>
-                        <a href="javascript" class="set-gallery" data-toggle="modal" data-target="#setgallery"><input type="hidden" value="' . $product->id . '"><i class="fas fa-eye"></i> ' . __("View Gallery") . '</a>
-                        <a data-href="' . route('admin-prod-feature', $product->id) . '" class="feature" data-toggle="modal" data-target="#modal2"> <i class="fas fa-star"></i> ' . __("Highlight") . '</a>
-                        <a href="javascript:;" data-href="' . route('admin-affiliate-prod-delete', $product->id) . '" data-toggle="modal" data-target="#confirm-delete" class="delete"><i class="fas fa-trash-alt"></i> ' . __("Delete") . '</a>
+                        <a href="javascript" class="set-gallery" data-bs-toggle="modal" data-bs-target="#setgallery"><input type="hidden" value="' . $product->id . '"><i class="fas fa-eye"></i> ' . __("View Gallery") . '</a>
+                        <a data-href="' . route('admin-prod-feature', $product->id) . '" class="feature" data-bs-toggle="modal" data-bs-target="#modal2"> <i class="fas fa-star"></i> ' . __("Highlight") . '</a>
+                        <a href="javascript:;" data-href="' . route('admin-affiliate-prod-delete', $product->id) . '" data-bs-toggle="modal" data-bs-target="#confirm-delete" class="delete"><i class="fas fa-trash-alt"></i> ' . __("Delete") . '</a>
                     </div></div>';
             })
             ->rawColumns(['name', 'stock', 'status', 'action', 'photo', 'vendor'])

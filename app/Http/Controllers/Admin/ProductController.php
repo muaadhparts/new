@@ -117,17 +117,17 @@ class ProductController extends AdminBaseController
 
                 $catalog = $product->type == 'Physical'
                     ? ($product->is_catalog == 1
-                        ? '<a href="javascript:;" data-href="' . route('admin-prod-catalog', ['id1' => $product->id, 'id2' => 0]) . '" data-toggle="modal" data-target="#catalog-modal" class="delete"><i class="fas fa-trash-alt"></i> ' . __("Remove Catalog") . '</a>'
-                        : '<a href="javascript:;" data-href="' . route('admin-prod-catalog', ['id1' => $product->id, 'id2' => 1]) . '" data-toggle="modal" data-target="#catalog-modal"> <i class="fas fa-plus"></i> ' . __("Add To Catalog") . '</a>')
+                        ? '<a href="javascript:;" data-href="' . route('admin-prod-catalog', ['id1' => $product->id, 'id2' => 0]) . '" data-bs-toggle="modal" data-bs-target="#catalog-modal" class="delete"><i class="fas fa-trash-alt"></i> ' . __("Remove Catalog") . '</a>'
+                        : '<a href="javascript:;" data-href="' . route('admin-prod-catalog', ['id1' => $product->id, 'id2' => 1]) . '" data-bs-toggle="modal" data-bs-target="#catalog-modal"> <i class="fas fa-plus"></i> ' . __("Add To Catalog") . '</a>')
                     : '';
 
                 return '<div class="godropdown"><button class="go-dropdown-toggle"> ' . __("Actions") . '<i class="fas fa-chevron-down"></i></button>
                     <div class="action-list">
                         <a href="' . route('admin-prod-edit', $mp->id) . '"><i class="fas fa-edit"></i> ' . __("Edit Product") . '</a>
-                        <a href="javascript" class="set-gallery" data-toggle="modal" data-target="#setgallery"><input type="hidden" value="' . $product->id . '"><i class="fas fa-eye"></i> ' . __("View Gallery") . '</a>'
+                        <a href="javascript" class="set-gallery" data-bs-toggle="modal" data-bs-target="#setgallery"><input type="hidden" value="' . $product->id . '"><i class="fas fa-eye"></i> ' . __("View Gallery") . '</a>'
                         . $catalog .
-                        '<a data-href="' . route('admin-prod-feature', $product->id) . '" class="feature" data-toggle="modal" data-target="#modal2"> <i class="fas fa-star"></i> ' . __("Highlight") . '</a>
-                        <a href="javascript:;" data-href="' . route('admin-prod-delete', $product->id) . '" data-toggle="modal" data-target="#confirm-delete" class="delete"><i class="fas fa-trash-alt"></i> ' . __("Delete Product") . '</a>
+                        '<a data-href="' . route('admin-prod-feature', $product->id) . '" class="feature" data-bs-toggle="modal" data-bs-target="#modal2"> <i class="fas fa-star"></i> ' . __("Highlight") . '</a>
+                        <a href="javascript:;" data-href="' . route('admin-prod-delete', $product->id) . '" data-bs-toggle="modal" data-bs-target="#confirm-delete" class="delete"><i class="fas fa-trash-alt"></i> ' . __("Delete Product") . '</a>
                     </div></div>';
             })
             ->rawColumns(['name', 'stock', 'status', 'action', 'photo', 'vendor'])
@@ -224,9 +224,9 @@ class ProductController extends AdminBaseController
                 return '<div class="godropdown"><button class="go-dropdown-toggle"> ' . __("Actions") . '<i class="fas fa-chevron-down"></i></button>
                     <div class="action-list">
                         <a href="' . route('admin-prod-edit', $mp->id) . '"><i class="fas fa-edit"></i> ' . __("Edit Product") . '</a>
-                        <a href="javascript" class="set-gallery" data-toggle="modal" data-target="#setgallery"><input type="hidden" value="' . $product->id . '"><i class="fas fa-eye"></i> ' . __("View Gallery") . '</a>
-                        <a data-href="' . route('admin-prod-feature', $product->id) . '" class="feature" data-toggle="modal" data-target="#modal2"> <i class="fas fa-star"></i> ' . __("Highlight") . '</a>
-                        <a href="javascript:;" data-href="' . route('admin-prod-catalog', ['id1' => $product->id, 'id2' => 0]) . '" data-toggle="modal" data-target="#catalog-modal"><i class="fas fa-trash-alt"></i> ' . __("Remove Catalog") . '</a>
+                        <a href="javascript" class="set-gallery" data-bs-toggle="modal" data-bs-target="#setgallery"><input type="hidden" value="' . $product->id . '"><i class="fas fa-eye"></i> ' . __("View Gallery") . '</a>
+                        <a data-href="' . route('admin-prod-feature', $product->id) . '" class="feature" data-bs-toggle="modal" data-bs-target="#modal2"> <i class="fas fa-star"></i> ' . __("Highlight") . '</a>
+                        <a href="javascript:;" data-href="' . route('admin-prod-catalog', ['id1' => $product->id, 'id2' => 0]) . '" data-bs-toggle="modal" data-bs-target="#catalog-modal"><i class="fas fa-trash-alt"></i> ' . __("Remove Catalog") . '</a>
                     </div></div>';
             })
             ->rawColumns(['name', 'stock', 'status', 'action', 'photo', 'vendor'])

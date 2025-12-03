@@ -220,8 +220,8 @@
                                                 </a>
                                                 @if(!in_array($shipment->status, ['delivered', 'cancelled', 'returned']))
                                                     <button type="button" class="btn btn-outline-danger"
-                                                            data-toggle="modal"
-                                                            data-target="#cancelModal{{ $shipment->tracking_number }}"
+                                                            data-bs-toggle="modal"
+                                                            data-bs-target="#cancelModal{{ $shipment->tracking_number }}"
                                                             title="{{ __('Cancel') }}">
                                                         <i class="fas fa-times"></i>
                                                     </button>
@@ -236,7 +236,7 @@
                                                             @csrf
                                                             <div class="modal-header">
                                                                 <h5 class="modal-title">{{ __('Cancel Shipment') }}</h5>
-                                                                <button type="button" class="close" data-dismiss="modal">
+                                                                <button type="button" class="close" data-bs-dismiss="modal">
                                                                     <span>&times;</span>
                                                                 </button>
                                                             </div>
@@ -250,7 +250,7 @@
                                                                 </div>
                                                             </div>
                                                             <div class="modal-footer">
-                                                                <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
                                                                     {{ __('Close') }}
                                                                 </button>
                                                                 <button type="submit" class="btn btn-danger">

@@ -37,27 +37,27 @@ class UserController extends AdminBaseController
                 '<option data-val="0" value="'. route('admin-user-ban',['id1' => $data->id, 'id2' => 1]).'" '.$s.'>'.__("Block").'</option>'.
                 '<option data-val="1" value="'. route('admin-user-ban',['id1' => $data->id, 'id2' => 0]).'" '.$ns.'>'.__("UnBlock").'</option></select>';
 
-                                    $vendor = $data->is_vendor != 2 ? '<a href="javascript:;" data-toggle="modal" data-target="#modal1" class="make-vendor" data-href="' . route('admin-user-vendor',$data->id) . '" > 
+                                    $vendor = $data->is_vendor != 2 ? '<a href="javascript:;" data-bs-toggle="modal" data-bs-target="#modal1" class="make-vendor" data-href="' . route('admin-user-vendor',$data->id) . '" >
                                     <i class="fas fa-users"></i> '.__("Make Vendor").'
-                                    </a>' : '<a href="javascript:;"> 
+                                    </a>' : '<a href="javascript:;">
                                     <i class="fas fa-users"></i> '.__("Vendor").'
                                     </a>';
                                     return '<div class="action-list">
-                                            <a href="javascript:;" data-toggle="modal" data-target="#modal1" class="deposit" data-href="' . route('admin-user-deposit',$data->id) . '" > 
+                                            <a href="javascript:;" data-bs-toggle="modal" data-bs-target="#modal1" class="deposit" data-href="' . route('admin-user-deposit',$data->id) . '" >
                                             <i class="fas fa-dollar-sign"></i> '.__("Manage Deposit").'
                                             </a>'
                                             .$vendor.
                                             '<a href="' . route('admin-user-show',$data->id) . '" >
                                             <i class="fas fa-eye"></i> '.__("Details").'
                                             </a>
-                                            <a data-href="' . route('admin-user-edit',$data->id) . '" class="edit" data-toggle="modal" data-target="#modal1">
+                                            <a data-href="' . route('admin-user-edit',$data->id) . '" class="edit" data-bs-toggle="modal" data-bs-target="#modal1">
                                             <i class="fas fa-edit"></i>'.__("Edit").
                                             '</a>
-                                            <a href="javascript:;" class="send" data-email="'. $data->email .'" data-toggle="modal" data-target="#vendorform">
+                                            <a href="javascript:;" class="send" data-email="'. $data->email .'" data-bs-toggle="modal" data-bs-target="#vendorform">
                                             <i class="fas fa-envelope"></i> '.__("Send").'
                                             </a>'
                                             .$ban.
-                                            '<a href="javascript:;" data-href="' . route('admin-user-delete',$data->id) . '" data-toggle="modal" data-target="#confirm-delete" class="delete">
+                                            '<a href="javascript:;" data-href="' . route('admin-user-delete',$data->id) . '" data-bs-toggle="modal" data-bs-target="#confirm-delete" class="delete">
                                             <i class="fas fa-trash-alt"></i>
                                             </a>
                                             </div>';
@@ -486,9 +486,9 @@ class UserController extends AdminBaseController
                                     return \PriceHelper::showAdminCurrencyPrice($amount);;
                                 }) 
                                 ->addColumn('action', function(Withdraw $data) {
-                                    $action = '<div class="action-list"><a data-href="' . route('admin-withdraw-show',$data->id) . '" class="view details-width" data-toggle="modal" data-target="#modal1"> <i class="fas fa-eye"></i> '.__("Details").'</a>';
+                                    $action = '<div class="action-list"><a data-href="' . route('admin-withdraw-show',$data->id) . '" class="view details-width" data-bs-toggle="modal" data-bs-target="#modal1"> <i class="fas fa-eye"></i> '.__("Details").'</a>';
                                     if($data->status == "pending") {
-                                    $action .= '<a data-href="' . route('admin-withdraw-accept',$data->id) . '" data-toggle="modal" data-target="#status-modal1"> <i class="fas fa-check"></i> '.__("Accept").'</a><a data-href="' . route('admin-withdraw-reject',$data->id) . '" data-toggle="modal" data-target="#status-modal"> <i class="fas fa-trash-alt"></i> '.__("Reject").'</a>';
+                                    $action .= '<a data-href="' . route('admin-withdraw-accept',$data->id) . '" data-bs-toggle="modal" data-bs-target="#status-modal1"> <i class="fas fa-check"></i> '.__("Accept").'</a><a data-href="' . route('admin-withdraw-reject',$data->id) . '" data-bs-toggle="modal" data-bs-target="#status-modal"> <i class="fas fa-trash-alt"></i> '.__("Reject").'</a>';
                                     }
                                     $action .= '</div>';
                                     return $action;

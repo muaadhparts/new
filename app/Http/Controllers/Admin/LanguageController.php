@@ -20,7 +20,7 @@ class LanguageController extends AdminBaseController
         //--- Integrating This Collection Into Datatables
         return Datatables::of($datas)
             ->addColumn('action', function (Language $data) {
-                $delete = $data->id == 1 ? '' : '<a href="javascript:;" data-href="' . route('admin-lang-delete', $data->id) . '" data-toggle="modal" data-target="#confirm-delete" class="delete"><i class="fas fa-trash-alt"></i></a>';
+                $delete = $data->id == 1 ? '' : '<a href="javascript:;" data-href="' . route('admin-lang-delete', $data->id) . '" data-bs-toggle="modal" data-bs-target="#confirm-delete" class="delete"><i class="fas fa-trash-alt"></i></a>';
                 $default = $data->is_default == 1 ? '<a><i class="fa fa-check"></i> ' . __('Default') . '</a>' : '<a class="status" data-href="' . route('admin-lang-st', ['id1' => $data->id, 'id2' => 1]) . '">' . __('Set Default') . '</a>';
                 return '<div class="action-list"><a href="' . route('admin-lang-edit', $data->id) . '"> <i class="fas fa-edit"></i>' . __('Edit') . '</a><a href="' . route('admin-lang-export', $data->id) . '"> <i class="fas fa-download"></i>' . __('Export') . '</a>' . $delete . $default . '</div>';
             })

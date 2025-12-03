@@ -31,7 +31,7 @@ class CountryController extends Controller
                 $class = $data->status == 1 ? 'drop-success' : 'drop-danger';
                 $s = $data->status == 1 ? 'selected' : '';
                 $ns = $data->status == 0 ? 'selected' : '';
-                return '<div class="action-list"><select class="process select droplinks ' . $class . '"><option data-val="1" value="' . route('admin-country-status', [$data->id, 1]) . '" ' . $s . '>Activated</option><option data-val="0" value="' . route('admin-country-status', [$data->id, 0]) . '" ' . $ns . '>Deactivated</option>/select></div>';
+                return '<div class="action-list"><select class="process select droplinks ' . $class . '"><option data-val="1" value="' . route('admin-country-status', [$data->id, 1]) . '" ' . $s . '>Activated</option><option data-val="0" value="' . route('admin-country-status', [$data->id, 0]) . '" ' . $ns . '>Deactivated</option></select></div>';
             })
 
             ->rawColumns(['action', 'status'])

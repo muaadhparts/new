@@ -187,8 +187,8 @@
                     <div class="heading-area">
                         <h4 class="title">
                             {{ __('Billing Details') }}
-                            <a class="f15" href="javascript:;" data-toggle="modal"
-                                data-target="#billing-details-edit"><i class="fas fa-edit"></i>{{ __("Edit") }}</a>
+                            <a class="f15" href="javascript:;" data-bs-toggle="modal"
+                                data-bs-target="#billing-details-edit"><i class="fas fa-edit"></i>{{ __("Edit") }}</a>
                         </h4>
                     </div>
                     <div class="table-responsive-sm">
@@ -290,8 +290,8 @@
                     <div class="heading-area">
                         <h4 class="title">
                             {{ __('Shipping Details') }}
-                            <a class="f15" href="javascript:;" data-toggle="modal"
-                                data-target="#shipping-details-edit"><i class="fas fa-edit"></i>{{ __("Edit") }}</a>
+                            <a class="f15" href="javascript:;" data-bs-toggle="modal"
+                                data-bs-target="#shipping-details-edit"><i class="fas fa-edit"></i>{{ __("Edit") }}</a>
                         </h4>
                     </div>
                     <div class="table-responsive-sm">
@@ -395,9 +395,9 @@
                 @endphp
                 <div class="mr-table">
                     <h4 class="title">
-                        <a href="javascript:;" data-toggle="modal" vendor="{{$key1}}"
+                        <a href="javascript:;" data-bs-toggle="modal" vendor="{{$key1}}"
                             vendor-store="{{$vendor->shop_name}}" class="mybtn1 pl-2 show_add_product"
-                            data-target="#add-product"><i class="fas fa-plus"></i>{{ __("Add Product") }}</a> {{
+                            data-bs-target="#add-product"><i class="fas fa-plus"></i>{{ __("Add Product") }}</a> {{
                         __('Products Ordered By') }} - <strong>{{$vendor->shop_name}}</strong>
 
                     </h4>
@@ -526,7 +526,7 @@
                                         </p>
 
                                         @if($product['license'] != '')
-                                        <a href="javascript:;" data-toggle="modal" data-target="#confirm-delete"
+                                        <a href="javascript:;" data-bs-toggle="modal" data-bs-target="#confirm-delete"
                                             class="btn btn-info product-btn license" style="padding: 5px 12px;"><i
                                                 class="fa fa-eye"></i> {{ __('View License') }}</a>
                                         @endif
@@ -587,14 +587,14 @@
 
                                             @if (App\Models\Product::whereId($product['item']['id'])->exists())
                                             <a class="add-btn edit-product"data-href="{{ route('admin-order-product-edit',[$itemKey, $product['item']['id'] ,$order->id]) }}"
-                                                data-toggle="modal" data-target="#edit-product-modal">
+                                                data-bs-toggle="modal" data-bs-target="#edit-product-modal">
                                                 <i class="fas fa-edit"></i> {{ __("Edit") }}
                                             </a>
                                             @endif
                                             
                                             <a class="add-btn delete-product"
                                                 data-href="{{ route('admin-order-product-delete',[$itemKey,$order->id]) }}"
-                                                data-toggle="modal" data-target="#delete-product-modal">
+                                                data-bs-toggle="modal" data-bs-target="#delete-product-modal">
                                                 <i class="fas fa-trash"></i>
                                             </a>
 
@@ -664,7 +664,7 @@
             </div>
             <div class="col-lg-12 text-center mt-2">
                 <a class="btn sendEmail send" href="javascript:;" class="send" data-email="{{ $order->customer_email }}"
-                    data-toggle="modal" data-target="#vendorform">
+                    data-bs-toggle="modal" data-bs-target="#vendorform">
                     <i class="fa fa-send"></i> {{ __('Send Email') }}
                 </a>
             </div>
@@ -686,7 +686,7 @@
 
             <div class="modal-header d-block text-center">
                 <h4 class="modal-title d-inline-block">{{ __('License Key') }}</h4>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
@@ -707,7 +707,7 @@
                 </form>
             </div>
             <div class="modal-footer justify-content-center">
-                <button type="button" class="btn btn-danger" data-dismiss="modal">{{ __('Close') }}</button>
+                <button type="button" class="btn btn-danger" data-bs-dismiss="modal">{{ __('Close') }}</button>
             </div>
         </div>
     </div>
@@ -750,7 +750,7 @@
                 <h5 class="modal-title">
                     {{ __('Edit Item') }}
                 </h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
@@ -758,7 +758,7 @@
 
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
                     {{ __('Close') }}
                 </button>
             </div>
@@ -778,7 +778,7 @@
 
             <div class="modal-header d-block text-center">
                 <h4 class="modal-title d-inline-block">{{ __('Confirm Delete') }}</h4>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
@@ -791,7 +791,7 @@
 
             <!-- Modal footer -->
             <div class="modal-footer justify-content-center">
-                <button type="button" class="btn btn-default" data-dismiss="modal">{{ __('Cancel') }}</button>
+                <button type="button" class="btn btn-default" data-bs-dismiss="modal">{{ __('Cancel') }}</button>
                 <a class="btn btn-danger btn-ok">{{ __('Delete') }}</a>
 
             </div>
@@ -811,7 +811,7 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="vendorformLabel">{{ __('Send Email') }}</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
@@ -861,7 +861,7 @@
             </div>
             <div class="modal-header d-block text-center">
                 <h4 class="modal-title d-inline-block">{{ __('Update Status') }}</h4>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
@@ -874,7 +874,7 @@
 
             <!-- Modal footer -->
             <div class="modal-footer justify-content-center">
-                <button type="button" class="btn btn-default" data-dismiss="modal">{{ __('Cancel') }}</button>
+                <button type="button" class="btn btn-default" data-bs-dismiss="modal">{{ __('Cancel') }}</button>
                 <a class="btn btn-success btn-ok order-btn">{{ __('Proceed') }}</a>
             </div>
 

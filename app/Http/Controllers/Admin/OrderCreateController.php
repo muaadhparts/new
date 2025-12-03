@@ -77,7 +77,7 @@ class OrderCreateController extends AdminBaseController
 
             ->addColumn('action', function (\App\Models\MerchantProduct $mp) {
                 // نستخدم merchant_product_id بدلاً من product_id
-                return '<div class="action-list"><a href="javascript:;" class="order_product_add" data-toggle="modal" class="add-btn-small pl-2" data-target="#add-product" data-href="' . $mp->id . '" data-product-id="' . $mp->product_id . '"> <i class="fas fa-plus"></i></a></div>';
+                return '<div class="action-list"><a href="javascript:;" class="order_product_add" data-bs-toggle="modal" class="add-btn-small pl-2" data-bs-target="#add-product" data-href="' . $mp->id . '" data-product-id="' . $mp->product_id . '"> <i class="fas fa-plus"></i></a></div>';
             })
 
             ->rawColumns(['name', 'action'])

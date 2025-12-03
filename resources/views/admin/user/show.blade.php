@@ -48,7 +48,7 @@ table#example2 {
                                                             @else
                                                             <img src="{{ $data->photo ? asset('assets/images/users/'.$data->photo):asset('assets/images/'.$gs->user_image)}}" alt="No Image">                                            
                                                             @endif
-                                                        <a href="javascript:;" class="mybtn1 send" data-email="{{ $data->email }}" data-toggle="modal" data-target="#vendorform">{{ __("Send Message") }}</a>
+                                                        <a href="javascript:;" class="mybtn1 send" data-email="{{ $data->email }}" data-bs-toggle="modal" data-bs-target="#vendorform">{{ __("Send Message") }}</a>
                                                         </div>
                                                     </div>
                                                     <div class="col-md-4">
@@ -158,7 +158,7 @@ table#example2 {
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="vendorformLabel">{{ __("Send Message") }}</h5>
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
                             <span aria-hidden="true">&times;</span>
                         </button>
                 </div>

@@ -58,7 +58,7 @@ class CommentController extends AdminBaseController
 				return $text;
 			})
 			->addColumn('action', function (Comment $data) {
-				return '<div class="action-list"><a data-href="' . route('admin-comment-show', $data->id) . '" class="view details-width" data-toggle="modal" data-target="#modal1"> <i class="fas fa-eye"></i>' . __('Details') . '</a><a href="javascript:;" data-href="' . route('admin-comment-delete', $data->id) . '" data-toggle="modal" data-target="#confirm-delete" class="delete"><i class="fas fa-trash-alt"></i></a></div>';
+				return '<div class="action-list"><a data-href="' . route('admin-comment-show', $data->id) . '" class="view details-width" data-bs-toggle="modal" data-bs-target="#modal1"> <i class="fas fa-eye"></i>' . __('Details') . '</a><a href="javascript:;" data-href="' . route('admin-comment-delete', $data->id) . '" data-bs-toggle="modal" data-bs-target="#confirm-delete" class="delete"><i class="fas fa-trash-alt"></i></a></div>';
 			})
 			->rawColumns(['product', 'vendor', 'action'])
 			->toJson();

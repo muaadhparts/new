@@ -28,7 +28,7 @@ class MessageController extends AdminBaseController
                 return $name;
             })
             ->addColumn('action', function (AdminUserConversation $data) {
-                return '<div class="action-list"><a href="' . route('admin-message-show', $data->id) . '"> <i class="fas fa-eye"></i> ' . __('Details') . '</a><a href="javascript:;" data-href="' . route('admin-message-delete', $data->id) . '" data-toggle="modal" data-target="#confirm-delete" class="delete"><i class="fas fa-trash-alt"></i></a></div>';
+                return '<div class="action-list"><a href="' . route('admin-message-show', $data->id) . '"> <i class="fas fa-eye"></i> ' . __('Details') . '</a><a href="javascript:;" data-href="' . route('admin-message-delete', $data->id) . '" data-bs-toggle="modal" data-bs-target="#confirm-delete" class="delete"><i class="fas fa-trash-alt"></i></a></div>';
             })
             ->rawColumns(['action'])
             ->toJson(); //--- Returning Json Data To Client Side

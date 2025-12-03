@@ -26,10 +26,10 @@ class CityController extends Controller
             ->addColumn('action', function (City $data) use ($state_id) {
                 return '<div class="action-list">
                     <a href="' . route('admin-city-index', $state_id) . '"><i class="fas fa-city"></i> Manage City</a>
-                    <a data-href="' . route('admin-city-edit', $data->id) . '" class="edit" data-toggle="modal" data-target="#modal1">
+                    <a data-href="' . route('admin-city-edit', $data->id) . '" class="edit" data-bs-toggle="modal" data-bs-target="#modal1">
                         <i class="fas fa-edit"></i>Edit
                     </a>
-                    <a href="javascript:;" data-href="' . route('admin-city-delete', $data->id) . '" data-toggle="modal" data-target="#confirm-delete" class="delete">
+                    <a href="javascript:;" data-href="' . route('admin-city-delete', $data->id) . '" data-bs-toggle="modal" data-bs-target="#confirm-delete" class="delete">
                         <i class="fas fa-trash-alt"></i>
                     </a>
                 </div>';
@@ -157,7 +157,7 @@ class CityController extends Controller
 //         //--- Integrating This Collection Into Datatables
 //         return DataTables::of($datas)
 //             ->addColumn('action', function (City $data) use ($state_id) {
-//                 return '<div class="action-list"><a href="' . route('admin-city-index', $state_id) . '"><i class="fas fa-city"></i> Manage City</a><a data-href="' . route('admin-city-edit', $data->id) . '" class="edit" data-toggle="modal" data-target="#modal1"> <i class="fas fa-edit"></i>Edit</a><a href="javascript:;" data-href="' . route('admin-city-delete', $data->id) . '" data-toggle="modal" data-target="#confirm-delete" class="delete"><i class="fas fa-trash-alt"></i></a></div>';
+//                 return '<div class="action-list"><a href="' . route('admin-city-index', $state_id) . '"><i class="fas fa-city"></i> Manage City</a><a data-href="' . route('admin-city-edit', $data->id) . '" class="edit" data-bs-toggle="modal" data-bs-target="#modal1"> <i class="fas fa-edit"></i>Edit</a><a href="javascript:;" data-href="' . route('admin-city-delete', $data->id) . '" data-bs-toggle="modal" data-bs-target="#confirm-delete" class="delete"><i class="fas fa-trash-alt"></i></a></div>';
 //             })
 
 //             ->editColumn('state_id', function (City $data) {
@@ -169,7 +169,7 @@ class CityController extends Controller
 //                 $class = $data->status == 1 ? 'drop-success' : 'drop-danger';
 //                 $s = $data->status == 1 ? 'selected' : '';
 //                 $ns = $data->status == 0 ? 'selected' : '';
-//                 return '<div class="action-list"><select class="process select droplinks ' . $class . '"><option data-val="1" value="' . route('admin-city-status', [$data->id, 1]) . '" ' . $s . '>Activated</option><option data-val="0" value="' . route('admin-city-status', [$data->id, 0]) . '" ' . $ns . '>Deactivated</option>/select></div>';
+//                 return '<div class="action-list"><select class="process select droplinks ' . $class . '"><option data-val="1" value="' . route('admin-city-status', [$data->id, 1]) . '" ' . $s . '>Activated</option><option data-val="0" value="' . route('admin-city-status', [$data->id, 0]) . '" ' . $ns . '>Deactivated</option></select></div>';
 //             })
 
 //             ->rawColumns(['action', 'status', 'state_id'])

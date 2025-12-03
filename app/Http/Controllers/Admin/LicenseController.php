@@ -55,7 +55,7 @@ class LicenseController extends AdminBaseController
             })
             ->addColumn('action', function (License $data) {
                 $buttons = '<div class="action-list">';
-                $buttons .= '<a data-href="' . route('admin-license-edit', $data->id) . '" class="edit" data-toggle="modal" data-target="#modal1"><i class="fas fa-edit"></i> ' . __('Edit') . '</a>';
+                $buttons .= '<a data-href="' . route('admin-license-edit', $data->id) . '" class="edit" data-bs-toggle="modal" data-bs-target="#modal1"><i class="fas fa-edit"></i> ' . __('Edit') . '</a>';
 
                 if ($data->status === 'active') {
                     $buttons .= '<a href="' . route('admin-license-deactivate', $data->id) . '" class="btn btn-sm btn-warning"><i class="fas fa-pause"></i></a>';
@@ -63,7 +63,7 @@ class LicenseController extends AdminBaseController
                     $buttons .= '<a href="' . route('admin-license-activate-license', $data->id) . '" class="btn btn-sm btn-success"><i class="fas fa-play"></i></a>';
                 }
 
-                $buttons .= '<a href="javascript:;" data-href="' . route('admin-license-delete', $data->id) . '" data-toggle="modal" data-target="#confirm-delete" class="delete"><i class="fas fa-trash-alt"></i></a>';
+                $buttons .= '<a href="javascript:;" data-href="' . route('admin-license-delete', $data->id) . '" data-bs-toggle="modal" data-bs-target="#confirm-delete" class="delete"><i class="fas fa-trash-alt"></i></a>';
                 $buttons .= '</div>';
 
                 return $buttons;

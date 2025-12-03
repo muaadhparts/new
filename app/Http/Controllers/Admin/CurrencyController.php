@@ -17,9 +17,9 @@ class CurrencyController extends AdminBaseController
         //--- Integrating This Collection Into Datatables
         return Datatables::of($datas)
             ->addColumn('action', function (Currency $data) {
-                $delete = $data->id == 1 ? '' : '<a href="javascript:;" data-href="' . route('admin-currency-delete', $data->id) . '" data-toggle="modal" data-target="#confirm-delete" class="delete"><i class="fas fa-trash-alt"></i></a>';
+                $delete = $data->id == 1 ? '' : '<a href="javascript:;" data-href="' . route('admin-currency-delete', $data->id) . '" data-bs-toggle="modal" data-bs-target="#confirm-delete" class="delete"><i class="fas fa-trash-alt"></i></a>';
                 $default = $data->is_default == 1 ? '<a><i class="fa fa-check"></i> ' . __('Default') . '</a>' : '<a class="status" data-href="' . route('admin-currency-status', ['id1' => $data->id, 'id2' => 1]) . '">' . __('Set Default') . '</a>';
-                return '<div class="action-list"><a data-href="' . route('admin-currency-edit', $data->id) . '" class="edit" data-toggle="modal" data-target="#modal1"> <i class="fas fa-edit"></i>' . __('Edit') . '</a>' . $delete . $default . '</div>';
+                return '<div class="action-list"><a data-href="' . route('admin-currency-edit', $data->id) . '" class="edit" data-bs-toggle="modal" data-bs-target="#modal1"> <i class="fas fa-edit"></i>' . __('Edit') . '</a>' . $delete . $default . '</div>';
             })
             ->rawColumns(['action'])
             ->toJson(); //--- Returning Json Data To Client Side

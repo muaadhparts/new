@@ -15,7 +15,7 @@ class FontController extends AdminBaseController
         return Datatables::of($datas)
                             ->addColumn('action',function(Font $data){
                                 $default = $data->is_default == 1 ? '<a><i class="fa fa-check"></i> Default</a>' : '<a class="status" data-href="'.route('admin.fonts.status',$data->id).'">Set Default</a>';
-                                return '<div class="action-list"><a data-href="' . route('admin.fonts.edit',$data->id) . '" class="edit" data-toggle="modal" data-target="#modal1"> <i class="fas fa-edit"></i>'.__("Edit").'</a><a href="javascript:;" data-href="' . route('admin.fonts.delete',['id' => $data->id]) . '" data-toggle="modal" data-target="#confirm-delete" class="delete"><i class="fas fa-trash-alt"></i></a>'.$default.'</div>';
+                                return '<div class="action-list"><a data-href="' . route('admin.fonts.edit',$data->id) . '" class="edit" data-bs-toggle="modal" data-bs-target="#modal1"> <i class="fas fa-edit"></i>'.__("Edit").'</a><a href="javascript:;" data-href="' . route('admin.fonts.delete',['id' => $data->id]) . '" data-bs-toggle="modal" data-bs-target="#confirm-delete" class="delete"><i class="fas fa-trash-alt"></i></a>'.$default.'</div>';
                             })
                             ->rawColumns(['action'])
                             ->toJson();

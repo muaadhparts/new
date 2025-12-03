@@ -21,7 +21,7 @@ class EmailController extends AdminBaseController
          //--- Integrating This Collection Into Datatables
          return Datatables::of($datas)
                             ->addColumn('action', function(EmailTemplate $data) {
-                                return '<div class="action-list"><a data-href="' . route('admin-mail-edit',$data->id) . '" class="edit" data-toggle="modal" data-target="#modal1"> <i class="fas fa-edit"></i>'.__('Edit').'</a></div>';
+                                return '<div class="action-list"><a data-href="' . route('admin-mail-edit',$data->id) . '" class="edit" data-bs-toggle="modal" data-bs-target="#modal1"> <i class="fas fa-edit"></i>'.__('Edit').'</a></div>';
                             }) 
                             ->toJson();//--- Returning Json Data To Client Side
     }

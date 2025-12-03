@@ -61,7 +61,7 @@
         </div>
     <div class="modal-header d-block text-center">
         <h4 class="modal-title d-inline-block">{{ __('Update Status') }}</h4>
-            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
                 <span aria-hidden="true">&times;</span>
             </button>
     </div>
@@ -74,7 +74,7 @@
 
       <!-- Modal footer -->
       <div class="modal-footer justify-content-center">
-            <button type="button" class="btn btn-default" data-dismiss="modal">{{ __('Cancel') }}</button>
+            <button type="button" class="btn btn-default" data-bs-dismiss="modal">{{ __('Cancel') }}</button>
             <a class="btn btn-success btn-ok order-btn">{{ __('Proceed') }}</a>
       </div>
 
@@ -92,7 +92,7 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="vendorformLabel">{{ __('Send Email') }}</h5>
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
                             <span aria-hidden="true">&times;</span>
                         </button>
                 </div>
@@ -139,7 +139,7 @@
                                                 </div>
                                             <div class="modal-header">
                                             <h5 class="modal-title"></h5>
-                                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                            <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
                                                 <span aria-hidden="true">&times;</span>
                                             </button>
                                             </div>
@@ -147,7 +147,7 @@
 
                                             </div>
                                             <div class="modal-footer">
-                                            <button type="button" class="btn btn-secondary" data-dismiss="modal">{{ __('Close') }}</button>
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ __('Close') }}</button>
                                             </div>
                         </div>
                     </div>

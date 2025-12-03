@@ -49,7 +49,7 @@ table#example2 {
                                                             @else
                                                             <img src="{{ $data->photo ? asset('assets/images/users/'.$data->photo):asset('assets/images/noimage.png')}}" alt="{{ __("No Image") }}">                                            
                                                             @endif
-                                                        <a href="javascript:;" class="mybtn1 send" data-email="{{ $data->email }}" data-toggle="modal" data-target="#vendorform">{{ __("Send Message") }}</a>
+                                                        <a href="javascript:;" class="mybtn1 send" data-email="{{ $data->email }}" data-bs-toggle="modal" data-bs-target="#vendorform">{{ __("Send Message") }}</a>
                                                         </div>
                                                     </div>
                                                     <div class="col-md-4">
@@ -112,7 +112,7 @@ table#example2 {
                                                             <td>
                                                                     @if($data->checkStatus())
                                                                     <a class="badge badge-success verify-link" href="javascript:;">Verified</a>
-                                                                    <a class="set-gallery1" href="javascript:;" data-toggle="modal" data-target="#setgallery"><input type="hidden" value="{{ $data->verifies()->where('status','=','Verified')->first()->id }}">(View)</a>
+                                                                    <a class="set-gallery1" href="javascript:;" data-bs-toggle="modal" data-bs-target="#setgallery"><input type="hidden" value="{{ $data->verifies()->where('status','=','Verified')->first()->id }}">(View)</a>
                                                                     @else 
                                                                     <a class="badge badge-danger verify-link" href="javascript:;">Unverified</a>
                                                                     @endif
@@ -214,7 +214,7 @@ table#example2 {
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="vendorformLabel">{{ __("Send Message") }}</h5>
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
                             <span aria-hidden="true">&times;</span>
                         </button>
                 </div>
@@ -258,7 +258,7 @@ table#example2 {
 			<div class="modal-content">
 			<div class="modal-header">
 				<h5 class="modal-title" id="exampleModalCenterTitle">{{ __('Attachments') }}</h5>
-				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+				<button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
 				<span aria-hidden="true">×</span>
 				</button>
 			</div>

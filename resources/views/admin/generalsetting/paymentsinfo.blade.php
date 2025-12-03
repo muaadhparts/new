@@ -48,9 +48,9 @@
                           <div class="col-lg-12">
                             <nav>
                               <div class="nav nav-tabs nav-fill" id="nav-tab" role="tablist">
-                                  <a class="nav-item nav-link active" id="nav-setting-tab" data-toggle="tab" href="#nav-setting" role="tab"
+                                  <a class="nav-item nav-link active" id="nav-setting-tab" data-bs-toggle="tab" href="#nav-setting" role="tab"
                                   aria-controls="nav-setting" aria-selected="true">{{ __('Basic Informations') }}</a>
-                                  <a class="nav-item nav-link" id="nav-vendor-tab" data-toggle="tab" href="#nav-vendor" role="tab"
+                                  <a class="nav-item nav-link" id="nav-vendor-tab" data-bs-toggle="tab" href="#nav-vendor" role="tab"
                                   aria-controls="nav-vendor" aria-selected="false">{{ __('Vendor Informations') }}</a>
                               </div>
                             </nav>
