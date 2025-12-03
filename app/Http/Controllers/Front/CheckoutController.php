@@ -1267,6 +1267,26 @@ class CheckoutController extends FrontBaseController
         }
 
         // ====================================================================
+        // ✅ مسح بيانات التاجر السابق عند بدء checkout لتاجر جديد
+        // ====================================================================
+        $previousVendorId = Session::get('checkout_vendor_id');
+        if ($previousVendorId && $previousVendorId != $vendorId) {
+            // مسح tempcart و temporder من التاجر السابق
+            Session::forget(['tempcart', 'temporder']);
+            // مسح بيانات steps التاجر السابق
+            Session::forget([
+                'vendor_step1_' . $previousVendorId,
+                'vendor_step2_' . $previousVendorId,
+                'coupon_vendor_' . $previousVendorId,
+                'coupon_total_vendor_' . $previousVendorId,
+            ]);
+            \Log::info('checkoutVendor: Cleared previous vendor data', [
+                'previous_vendor' => $previousVendorId,
+                'new_vendor' => $vendorId
+            ]);
+        }
+
+        // ====================================================================
         // ✅ FIXED: Save vendor_id FIRST - then check auth
         // ====================================================================
         // This prevents losing vendor_id when redirecting to login

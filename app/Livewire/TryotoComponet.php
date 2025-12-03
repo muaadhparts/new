@@ -58,18 +58,20 @@ class TryotoComponet extends Component
     }
 
     /**
-     * حساب الوزن الإجمالي والأبعاد
+     * حساب الوزن الإجمالي والأبعاد باستخدام VendorCartService
+     * ملاحظة: هذه الدالة للعرض فقط - البيانات الفعلية للشحن من checkOTODeliveryFee
      */
     public function getWeight(): void
     {
-        // Use PriceHelper to calculate dimensions and weight
-        $dimensions = \App\Helpers\PriceHelper::calculateShippingDimensions($this->products);
+        // استخدام VendorCartService بدلاً من PriceHelper لتجنب القيم الافتراضية
+        $shippingData = VendorCartService::calculateVendorShipping($this->vendorId, $this->products);
 
-        $this->weight = $dimensions['weight'];
+        $this->weight = $shippingData['chargeable_weight'] ?? $shippingData['actual_weight'] ?? 0;
 
         // Update products array with calculated weights for display
         foreach ($this->products as $index => $product) {
-            $product['weight_total'] = $product['qty'] * $product['item']['weight'];
+            $itemWeight = $product['item']['weight'] ?? 0;
+            $product['weight_total'] = $product['qty'] * $itemWeight;
             $this->products[$index] = $product;
         }
     }
