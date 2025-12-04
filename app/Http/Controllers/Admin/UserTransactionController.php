@@ -33,7 +33,7 @@ class UserTransactionController extends AdminBaseController
                                 })
                                 ->addColumn('action', function(Transaction $data) {
                                     return '<div class="action-list">
-                                                <a href="javascript:;" data-href="' . route('admin-trans-show',$data->id) . '" class="view" data-toggle="modal" data-target="#modal1"> 
+                                                <a href="javascript:;" data-href="' . route('admin-trans-show',$data->id) . '" class="view" data-bs-toggle="modal" data-bs-target="#modal1">
                                                 <i class="fas fa-eye"></i> '.__("Details").'
                                                 </a>
                                             </div>';

@@ -20,7 +20,7 @@ class ReviewController extends AdminBaseController
                                 return '<img src="' . $photo . '" alt="Image">';
                             })
                             ->addColumn('action', function(Review $data) {
-                                return '<div class="action-list"><a data-href="' . route('admin-review-edit',$data->id) . '" class="edit" data-toggle="modal" data-target="#modal1"> <i class="fas fa-edit"></i>'.__('Edit').'</a><a href="javascript:;" data-href="' . route('admin-review-delete',$data->id) . '" data-toggle="modal" data-target="#confirm-delete" class="delete"><i class="fas fa-trash-alt"></i></a></div>';
+                                return '<div class="action-list"><a data-href="' . route('admin-review-edit',$data->id) . '" class="edit" data-bs-toggle="modal" data-bs-target="#modal1"> <i class="fas fa-edit"></i>'.__('Edit').'</a><a href="javascript:;" data-href="' . route('admin-review-delete',$data->id) . '" data-bs-toggle="modal" data-bs-target="#confirm-delete" class="delete"><i class="fas fa-trash-alt"></i></a></div>';
                             }) 
                             ->rawColumns(['photo', 'action'])
                             ->toJson(); //--- Returning Json Data To Client Side

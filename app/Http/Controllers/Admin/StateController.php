@@ -28,7 +28,7 @@ class StateController extends Controller
          //--- Integrating This Collection Into Datatables
          return DataTables::of($datas)
                             ->addColumn('action', function(State $data) {
-                                return '<div class="action-list"><a href="' . route('admin-city-index', $data->id) . '"><i class="fas fa-city"></i> Manage City</a><a data-href="' . route('admin-state-edit',$data->id) . '" class="edit" data-toggle="modal" data-target="#modal1"> <i class="fas fa-edit"></i>Edit</a><a href="javascript:;" data-href="' . route('admin-state-delete',$data->id) . '" data-toggle="modal" data-target="#confirm-delete" class="delete"><i class="fas fa-trash-alt"></i></a></div>';
+                                return '<div class="action-list"><a href="' . route('admin-city-index', $data->id) . '"><i class="fas fa-city"></i> Manage City</a><a data-href="' . route('admin-state-edit',$data->id) . '" class="edit" data-bs-toggle="modal" data-bs-target="#modal1"> <i class="fas fa-edit"></i>Edit</a><a href="javascript:;" data-href="' . route('admin-state-delete',$data->id) . '" data-bs-toggle="modal" data-bs-target="#confirm-delete" class="delete"><i class="fas fa-trash-alt"></i></a></div>';
                             }) 
 
                             ->editColumn('country_id', function(State $data) {
