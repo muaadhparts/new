@@ -12,50 +12,6 @@
     }
     $uniqueId = $uniqueId ?? 'default';
     $showAttributes = $showAttributes ?? true;
-
-    // VIN Specs from session
-    use Illuminate\Support\Str;
-    $filters = session('selected_filters', []);
-
-    // تصفية الفلاتر الفارغة
-    $filters = collect($filters)->filter(function($meta) {
-        $value = is_array($meta) ? ($meta['value_id'] ?? $meta['value'] ?? null) : $meta;
-        return !empty($value) && $value !== '';
-    })->all();
-
-    if (isset($filters['year']['value_id']) && isset($filters['month']['value_id'])) {
-        $yyyy = (string) $filters['year']['value_id'];
-        $mm   = str_pad((string) $filters['month']['value_id'], 2, '0', STR_PAD_LEFT);
-        $filters = [
-            'BUILD_DATE' => [
-                'value_id' => "{$yyyy}-{$mm}",
-                'source'   => $filters['year']['source'] ?? ($filters['month']['source'] ?? 'manual'),
-            ],
-        ] + collect($filters)->except(['year','month'])->all();
-    }
-
-    $pretty = [
-        'BODY'         => __('ui.body'),
-        'ENGINE'       => __('ui.engine'),
-        'GRADE'        => __('ui.grade'),
-        'TRANS'        => __('ui.transmission'),
-        'TRIM_COLOUR'  => __('ui.trim_colour'),
-        'BODY_COLOR'   => __('ui.body_color'),
-        'DRIVE'        => __('ui.drive'),
-        'DESTINATION'  => __('ui.destination'),
-        'BUILD_DATE'   => __('ui.build_date'),
-    ];
-
-    $chips = collect($filters)->map(function($meta, $key) use ($pretty){
-        $label = $pretty[$key] ?? Str::title(str_replace('_', ' ', Str::lower($key)));
-        $value = is_array($meta) ? ($meta['value_id'] ?? $meta['value'] ?? null) : (string) $meta;
-        // تجاهل القيم الفارغة
-        if (empty($value) || $value === '') {
-            return null;
-        }
-        $src   = is_array($meta) ? ($meta['source'] ?? 'manual') : 'manual';
-        return ['k' => $label, 'v' => $value, 'src' => $src];
-    })->filter()->values();
 ?>
 
 <div class="vehicle-search-ajax-wrapper" id="vehicleSearchWrapper<?php echo e($uniqueId); ?>">
@@ -147,39 +103,6 @@
             box-shadow: 0 3px 10px rgba(13,110,253,0.12);
         }
     </style>
-
-    
-    <?php if($chips->isNotEmpty()): ?>
-    <?php
-        $hasVinSource = $chips->contains(fn($c) => ($c['src'] ?? '') === 'vin');
-        $hasManualSource = $chips->contains(fn($c) => ($c['src'] ?? '') === 'manual');
-    ?>
-    <div class="specs-bar">
-        <div class="d-flex align-items-center mb-2" style="gap:.5rem">
-            <strong class="text-white">
-                <i class="fas <?php echo e($hasVinSource ? 'fa-car' : 'fa-sliders-h'); ?> me-1"></i>
-                <?php echo e($hasVinSource ? __('ui.vin_specs') : __('ui.selected_specs')); ?>
-
-            </strong>
-            <span class="badge bg-light text-dark"><?php echo e($chips->count()); ?></span>
-        </div>
-        <div class="d-flex flex-wrap">
-            <?php $__currentLoopData = $chips; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $chip): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-            <span class="spec-chip">
-                <span style="color:#6c757d;font-weight:500;"><?php echo e($chip['k']); ?>:</span>
-                <span style="font-weight:600;color:#212529;"><?php echo e($chip['v']); ?></span>
-                <?php if(!empty($chip['src'])): ?>
-                    <?php if($chip['src'] === 'vin'): ?>
-                        <span style="font-size:0.65rem;background:#0d6efd;color:#fff;border-radius:0.75rem;padding:0.1rem 0.4rem;">VIN</span>
-                    <?php else: ?>
-                        <span style="font-size:0.65rem;background:#198754;color:#fff;border-radius:0.75rem;padding:0.1rem 0.4rem;">MANUAL</span>
-                    <?php endif; ?>
-                <?php endif; ?>
-            </span>
-            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
-        </div>
-    </div>
-    <?php endif; ?>
 
     
 
