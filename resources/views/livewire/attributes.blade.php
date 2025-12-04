@@ -129,23 +129,23 @@
 </div> <!-- /offcanvas -->
 </form>
 
-<script>
-(function() {
-    document.addEventListener('livewire:init', function() {
-        Livewire.on('filtersSelected', function() {
-            console.log('Filters saved - reloading');
-            setTimeout(function() {
-                window.location.reload();
-            }, 300);
-        });
+    <script>
+    (function() {
+        document.addEventListener('livewire:init', function() {
+            Livewire.on('filtersSelected', function() {
+                console.log('Filters saved - reloading');
+                setTimeout(function() {
+                    window.location.reload();
+                }, 300);
+            });
 
-        Livewire.on('filtersCleared', function() {
-            console.log('Filters cleared - reloading');
-            setTimeout(function() {
-                window.location.reload();
-            }, 300);
+            Livewire.on('filtersCleared', function() {
+                console.log('Filters cleared - reloading');
+                setTimeout(function() {
+                    window.location.reload();
+                }, 300);
+            });
         });
-    });
-})();
-</script>
+    })();
+    </script>
 </div> <!-- /wrapper div -->

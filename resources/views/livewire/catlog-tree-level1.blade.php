@@ -53,7 +53,15 @@
     {{-- Search Box - Full Width on Mobile --}}
     <div class="row mb-4">
         <div class="col-12">
-            <livewire:vehicle-search-box :catalog="$catalog->code" :spec="Session::get('attributes')" />
+            {{-- Attributes Button --}}
+            <div class="mb-3">
+                <livewire:attributes :catalog="$catalog" />
+            </div>
+            @include('includes.frontend.vehicle-search-ajax', [
+                'catalog' => $catalog,
+                'uniqueId' => 'level1',
+                'showAttributes' => false
+            ])
         </div>
     </div>
 
@@ -98,25 +106,25 @@
             </div>
         @endforelse
     </div>
-</div>
 
-{{-- Responsive Utilities CSS --}}
-@push('styles')
-<style>
-    .hover-lift {
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
-    }
-    .hover-lift:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.15) !important;
-    }
-    .object-fit-cover {
-        object-fit: cover;
-    }
-    @media (max-width: 576px) {
-        .breadcrumb-item + .breadcrumb-item::before {
-            padding: 0 0.25rem;
+    {{-- Responsive Utilities CSS --}}
+    @push('styles')
+    <style>
+        .hover-lift {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
         }
-    }
-</style>
-@endpush
+        .hover-lift:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.15) !important;
+        }
+        .object-fit-cover {
+            object-fit: cover;
+        }
+        @media (max-width: 576px) {
+            .breadcrumb-item + .breadcrumb-item::before {
+                padding: 0 0.25rem;
+            }
+        }
+    </style>
+    @endpush
+</div>

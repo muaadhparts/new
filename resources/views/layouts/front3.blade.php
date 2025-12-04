@@ -32,7 +32,6 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.3.0/css/datepicker.css" rel="stylesheet" type="text/css" />
     <link rel="icon" href="{{ asset('assets/images/' . $gs->favicon) }}">
     @livewireStyles
-    @livewireScripts
     @include('includes.frontend.extra_head')
     @yield('css')
 
@@ -143,8 +142,8 @@
     @endphp
 
     @stack('scripts')
-  @yield('script')
-
+    @yield('script')
+    @livewireScripts
 </body>
 
 </html>

@@ -26,7 +26,8 @@
       "Bash(timeout:*)",
       "Bash(del:*)",
       "Bash(echo:*)",
-      "Bash(composer show:*)"
+      "Bash(composer show:*)",
+      "WebFetch(domain:new.test)"
     ],
     "deny": [],
     "ask": []

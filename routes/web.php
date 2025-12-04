@@ -13,6 +13,7 @@ use Siberfx\LaravelTryoto\app\Http\Controllers\Api\TryOtoController;
 use App\Http\Controllers\Api\CalloutController;
 use App\Http\Controllers\Front\ProductDetailsController;
 use App\Http\Controllers\Front\SearchApiController;
+use App\Http\Controllers\Front\VehicleSearchApiController;
 
 // Google Maps Demo Route
 Route::get('/google-maps-demo', function () {
@@ -29,6 +30,12 @@ Route::prefix('api/search')->group(function () {
     Route::get('/part', [SearchApiController::class, 'searchPart'])->name('api.search.part');
     Route::get('/vin', [SearchApiController::class, 'searchVin'])->name('api.search.vin');
     Route::post('/vin/select', [SearchApiController::class, 'selectVin'])->name('api.search.vin.select');
+});
+
+// Vehicle Search API Routes (AJAX-based)
+Route::prefix('api/vehicle')->group(function () {
+    Route::get('/suggestions', [VehicleSearchApiController::class, 'searchSuggestions'])->name('api.vehicle.suggestions');
+    Route::get('/search', [VehicleSearchApiController::class, 'search'])->name('api.vehicle.search');
 });
 
 
