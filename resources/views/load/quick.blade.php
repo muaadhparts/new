@@ -92,13 +92,13 @@
 
                       @if(Auth::check())
 
-                      <a class="add-to-wish" href="javascript:;" data-href="{{ route('user-wishlist-add',$product->id) }}" data-toggle="tooltip" data-placement="top" title="{{ __('Wish') }}">
+                      <a class="add-to-wish" href="javascript:;" data-href="{{ route('user-wishlist-add',$product->id) }}" data-bs-toggle="tooltip" data-bs-placement="top" title="{{ __('Wish') }}">
                         <i class="far fa-heart"></i>
                       </a>
 
                       @else
 
-                      <a rel-toggle="tooltip" href="javascript:;" title="{{ __('Wish') }}" data-placement="top" class="add-to-wish" data-toggle="modal" data-target="#user-login">
+                      <a rel-toggle="tooltip" href="javascript:;" title="{{ __('Wish') }}" data-bs-placement="top" class="add-to-wish" data-bs-toggle="modal" data-bs-target="#user-login">
                         <i class="far fa-heart"></i>
                       </a>
 
@@ -112,7 +112,7 @@
 
                     <div class="compear">
 
-                      <a class="add-to-compare" href="javascript:;" data-href="{{ route('product.compare.add',$product->id) }}" data-toggle="tooltip" data-placement="top" title="{{ __('Compare') }}">
+                      <a class="add-to-compare" href="javascript:;" data-href="{{ route('product.compare.add',$product->id) }}" data-bs-toggle="tooltip" data-bs-placement="top" title="{{ __('Compare') }}">
                         <i class="fas fa-random"></i>
                       </a>
 
@@ -125,7 +125,7 @@
                     @if($product->youtube != null)
                       <div class="play-video">
                         <a href="{{ $product->youtube }}" class="video-play-btn mfp-iframe"
-                          data-toggle="tooltip" data-placement="top" title="{{ __('Play Video') }}">
+                          data-bs-toggle="tooltip" data-bs-placement="top" title="{{ __('Play Video') }}">
                           <i class="fas fa-play"></i>
                         </a>
                       </div>

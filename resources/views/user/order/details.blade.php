@@ -373,8 +373,8 @@
                                                             </a>
                                                         @endif
                                                         @if ($product['license'] != '')
-                                                            <a href="javascript:;" data-toggle="modal"
-                                                                data-target="#licence"
+                                                            <a href="javascript:;" data-bs-toggle="modal"
+                                                                data-bs-target="#licence"
                                                                 class="btn btn-sm btn-info product-btn" id="license"><i
                                                                     class="fa fa-eye"></i>
                                                                 {{ __('View License') }}</a>
@@ -434,7 +434,7 @@
             <div class="modal-content">
                 <div class="modal-header d-block text-center">
                     <h4 class="modal-title d-inline-block">{{ __('License Key') }}</h4>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
@@ -442,7 +442,7 @@
                     <p class="text-center">{{ __('The Licenes Key is :') }} <span id="key"></span></p>
                 </div>
                 <div class="modal-footer justify-content-center">
-                    <button type="button" class="btn btn-danger" data-dismiss="modal">{{ __('Close') }}</button>
+                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal">{{ __('Close') }}</button>
                 </div>
             </div>
         </div>

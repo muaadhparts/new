@@ -307,7 +307,7 @@ a[aria-expanded="false"]::before, a[aria-expanded="true"]::before {
     font-family: 'Glyphicons Halflings';
     font-size: 0.6em;
 }
-a[data-toggle="collapse"] {
+a[data-bs-toggle="collapse"] {
     position: relative;
 }
 .components a[aria-expanded="false"]::before, a[aria-expanded="true"]::before {

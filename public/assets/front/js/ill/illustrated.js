@@ -689,7 +689,7 @@
     if (type === 'section'){ goToSection(key); return; }
 
     const container = modalBodyEl();
-    try { $('#modal').modal('show'); } catch {}
+    try { bootstrap.Modal.getOrCreateInstance(document.getElementById('modal')).show(); } catch {}
     const titleRoot = t('catalog.modal.title');
     setTitle(titleRoot);
 

@@ -62,7 +62,7 @@
 																		data-show="{{$gt->showForm()}}"
 																		data-form="{{ $gt->showApiCheckoutLink() }}"
 																		data-href="{{ route('front.load.payment', ['slug1' => $gt->showKeyword(), 'slug2' => $gt->id]) }}"
-																		id="v-pills-tab{{ $gt->id }}-tab" data-toggle="pill"
+																		id="v-pills-tab{{ $gt->id }}-tab" data-bs-toggle="pill"
 																		href="#v-pills-tab{{ $gt->id }}" role="tab"
 																		aria-controls="v-pills-tab{{ $gt->id }}"
 																		aria-selected="false">
@@ -84,7 +84,7 @@
 																	data-show="{{$gt->showForm()}}"
 																	data-form="{{ $gt->showApiCheckoutLink() }}"
 																	data-href="{{ route('front.load.payment', ['slug1' => $gt->showKeyword(), 'slug2' => $gt->id]) }}"
-																	id="v-pills-tab{{ $gt->id }}-tab" data-toggle="pill"
+																	id="v-pills-tab{{ $gt->id }}-tab" data-bs-toggle="pill"
 																	href="#v-pills-tab{{ $gt->id }}" role="tab"
 																	aria-controls="v-pills-tab{{ $gt->id }}"
 																	aria-selected="false">
@@ -107,7 +107,7 @@
 
 														{{-- wallet checkout start --}}
 														<a class="nav-link payment" href="javascript:;" data-show="no"
-															data-val="{{ $gt->keyword }}" data-toggle="pill" role="tab"
+															data-val="{{ $gt->keyword }}" data-bs-toggle="pill" role="tab"
 															data-form="{{ route('api.wallet.submit') }}"
 															aria-controls="v-pills-tab{{ $gt->id }}"
 															aria-selected="false">
