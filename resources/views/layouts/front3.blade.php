@@ -70,7 +70,9 @@
     <div class="overlay"></div>
 
 {{--    <div class="bg-secondary">--}}
-        {{$slot}}
+    @isset($slot)
+        {{ $slot }}
+    @endisset
 
     @yield('content')
 

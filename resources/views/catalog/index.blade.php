@@ -32,7 +32,7 @@
     </div>
 
     {{-- Filters Row --}}
-    <form method="GET" action="{{ route('catalog.index', $brand->name) }}" class="row mb-4 g-3" id="catalogFilters">
+    <form method="GET" action="{{ route('catlogs.index', $brand->name) }}" class="row mb-4 g-3" id="catalogFilters">
         {{-- Search Input --}}
         <div class="col-md-3">
             <input type="text"
@@ -79,7 +79,7 @@
     <div class="row g-4">
         @forelse ($catalogs as $catalog)
             <div class="col-12 col-sm-6 col-md-4 col-xl-3">
-                <a href="{{ route('catalog.level1', [
+                <a href="{{ route('tree.level1', [
                     'brand' => $brand->name,
                     'catalog' => $catalog->code,
                 ]) }}" class="text-decoration-none">

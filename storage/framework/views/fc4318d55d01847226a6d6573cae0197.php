@@ -33,7 +33,7 @@
     </div>
 
     
-    <form method="GET" action="<?php echo e(route('catalog.index', $brand->name)); ?>" class="row mb-4 g-3" id="catalogFilters">
+    <form method="GET" action="<?php echo e(route('catlogs.index', $brand->name)); ?>" class="row mb-4 g-3" id="catalogFilters">
         
         <div class="col-md-3">
             <input type="text"
@@ -83,7 +83,7 @@
     <div class="row g-4">
         <?php $__empty_1 = true; $__currentLoopData = $catalogs; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $catalog): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
             <div class="col-12 col-sm-6 col-md-4 col-xl-3">
-                <a href="<?php echo e(route('catalog.level1', [
+                <a href="<?php echo e(route('tree.level1', [
                     'brand' => $brand->name,
                     'catalog' => $catalog->code,
                 ])); ?>" class="text-decoration-none">

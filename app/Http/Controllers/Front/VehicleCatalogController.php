@@ -281,7 +281,7 @@ class VehicleCatalogController extends Controller
         // Auto-redirect if only one category
         if ($categories->count() === 1) {
             $single = $categories->first();
-            return redirect()->route('catalog.illustrations', [
+            return redirect()->route('illustrations', [
                 'brand' => $brandName,
                 'catalog' => $catalogCode,
                 'key1' => $key1,

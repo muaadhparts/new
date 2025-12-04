@@ -15,12 +15,12 @@
                     </a>
                 </li>
                 <li class="breadcrumb-item">
-                    <a class="text-black text-decoration-none" href="{{ route('catalog.index', $brand->name) }}">
+                    <a class="text-black text-decoration-none" href="{{ route('catlogs.index', $brand->name) }}">
                         {{ strtoupper($brand->name) }}
                     </a>
                 </li>
                 <li class="breadcrumb-item">
-                    <a class="text-black text-decoration-none" href="{{ route('catalog.level1', [
+                    <a class="text-black text-decoration-none" href="{{ route('tree.level1', [
                         'brand' => $brand->name,
                         'catalog' => $catalog->code,
                         'vin' => $vin
@@ -29,7 +29,7 @@
                     </a>
                 </li>
                 <li class="breadcrumb-item">
-                    <a class="text-black text-decoration-none" href="{{ route('catalog.level2', [
+                    <a class="text-black text-decoration-none" href="{{ route('tree.level2', [
                         'brand' => $brand->name,
                         'catalog' => $catalog->code,
                         'key1' => $key1,
@@ -39,7 +39,7 @@
                     </a>
                 </li>
                 <li class="breadcrumb-item">
-                    <a class="text-black text-decoration-none" href="{{ route('catalog.level3', [
+                    <a class="text-black text-decoration-none" href="{{ route('tree.level3', [
                         'brand' => $brand->name,
                         'catalog' => $catalog->code,
                         'key1' => $key1,

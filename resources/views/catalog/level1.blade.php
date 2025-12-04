@@ -15,7 +15,7 @@
                     </a>
                 </li>
                 <li class="breadcrumb-item">
-                    <a class="text-black text-decoration-none" href="{{ route('catalog.index', $brand->name) }}">
+                    <a class="text-black text-decoration-none" href="{{ route('catlogs.index', $brand->name) }}">
                         {{ strtoupper($brand->name) }}
                     </a>
                 </li>
@@ -64,7 +64,7 @@
     <div class="row g-3 g-md-4 mb-5">
         @forelse ($categories as $cat)
             <div class="col-6 col-sm-6 col-md-4 col-lg-3">
-                <a href="{{ route('catalog.level2', [
+                <a href="{{ route('tree.level2', [
                     'brand' => $brand->name,
                     'catalog' => $catalog->code,
                     'key1' => $cat->full_code,

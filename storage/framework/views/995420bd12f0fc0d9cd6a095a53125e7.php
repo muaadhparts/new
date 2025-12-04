@@ -71,8 +71,10 @@
     <div class="overlay"></div>
 
 
+    <?php if(isset($slot)): ?>
         <?php echo e($slot); ?>
 
+    <?php endif; ?>
 
     <?php echo $__env->yieldContent('content'); ?>
 
