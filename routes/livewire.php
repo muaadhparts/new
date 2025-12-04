@@ -1,7 +1,6 @@
 <?php
 
 use App\Http\Controllers\Front\VehicleCatalogController;
-use App\Livewire\CalloutModal;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -46,7 +45,7 @@ Route::prefix('catlogs')
     });
 
 // Callout Modal (still using Livewire)
-Route::get('/callout-modal', CalloutModal::class);
+// Route::get('/callout-modal', CalloutModal::class);
 
 // Search Results (Controller-based)
 Route::get('result/{sku}', [\App\Http\Controllers\Front\SearchResultsController::class, 'show'])->name('search.result');

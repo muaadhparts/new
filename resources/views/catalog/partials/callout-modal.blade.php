@@ -1,9 +1,8 @@
-{{-- resources\views\livewire\callout-viewer-modal.blade.php --}}
+{{-- resources\views\catalog\partials\callout-modal.blade.php --}}
+{{-- Callout Modal - Pure HTML/JS (No Livewire) --}}
 
-<div>
 <div
     id="modal"
-    wire:ignore.self
     class="modal fade"
     tabindex="-1"
     role="dialog"
@@ -69,8 +68,8 @@ window.i18n = {
     "columns.extensions": "@lang('columns.extensions')",
     "columns.price": "@lang('columns.price')",
     "columns.period": "@lang('columns.period')",
-    "columns.substitutions": "@lang('columns.substitutions')",   // جديد
-    "columns.fits": "@lang('columns.fits')",                     // جديد
+    "columns.substitutions": "@lang('columns.substitutions')",
+    "columns.fits": "@lang('columns.fits')",
 
     /* قيم ثابتة */
     "values.generic": "@lang('values.generic')",
@@ -147,7 +146,6 @@ window.ILL_ROUTES = {
 };
 </script>
 
-@once
 <style id="ill-modal-styles">
   /* جسم المودال - Responsive */
   #api-callout-body {
@@ -271,5 +269,3 @@ window.ILL_ROUTES = {
       }
   }
 </style>
-@endonce
-</div>

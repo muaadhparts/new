@@ -198,8 +198,8 @@
     }
 </style>
 
-{{-- Callout Modal Component --}}
-<livewire:callout-modal />
+{{-- Callout Modal Component (Pure HTML/JS - No Livewire) --}}
+@include('catalog.partials.callout-modal')
 
 <div class="container py-2">
     <div class="row">
