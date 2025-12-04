@@ -1,36 +1,38 @@
-<div>
-<div class="ill-alt">
-  <!--[if BLOCK]><![endif]--><?php if($alternatives && $alternatives->count() > 0): ?>
+{{-- resources/views/partials/api/alternatives.blade.php --}}
+{{-- API-based alternatives partial (No Livewire) --}}
 
-    
+<div class="ill-alt">
+  @if($alternatives && $alternatives->count() > 0)
+
+    {{-- Header --}}
     <div class="alt-header d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
       <h5 class="mb-0 fw-bold text-primary">
         <i class="fas fa-exchange-alt me-2"></i>
-        <?php echo app('translator')->get('Product Alternatives'); ?>
+        @lang('Product Alternatives')
       </h5>
-      <span class="badge bg-secondary"><?php echo e($alternatives->count()); ?> <?php echo app('translator')->get('items'); ?></span>
+      <span class="badge bg-secondary">{{ $alternatives->count() }} @lang('items')</span>
     </div>
 
-    
+    {{-- Desktop Table --}}
     <div class="alt-table-desktop d-none d-md-block">
       <div class="table-responsive">
         <table class="table table-hover align-middle mb-0">
           <thead class="table-light">
             <tr>
-              <th class="text-nowrap" style="min-width: 120px;"><?php echo app('translator')->get('Part Number'); ?></th>
-              <th><?php echo app('translator')->get('Name'); ?></th>
-              <th class="text-nowrap"><?php echo app('translator')->get('Brand'); ?></th>
-              <th class="text-nowrap"><?php echo app('translator')->get('Quality'); ?></th>
-              <th class="text-nowrap"><?php echo app('translator')->get('Vendor'); ?></th>
-              <th class="text-center text-nowrap"><?php echo app('translator')->get('Stock'); ?></th>
-              <th class="text-center text-nowrap"><?php echo app('translator')->get('Qty'); ?></th>
-              <th class="text-end text-nowrap"><?php echo app('translator')->get('Price'); ?></th>
-              <th class="text-center" style="width: 100px;"><?php echo app('translator')->get('Action'); ?></th>
+              <th class="text-nowrap" style="min-width: 120px;">@lang('Part Number')</th>
+              <th>@lang('Name')</th>
+              <th class="text-nowrap">@lang('Brand')</th>
+              <th class="text-nowrap">@lang('Quality')</th>
+              <th class="text-nowrap">@lang('Vendor')</th>
+              <th class="text-center text-nowrap">@lang('Stock')</th>
+              <th class="text-center text-nowrap">@lang('Qty')</th>
+              <th class="text-end text-nowrap">@lang('Price')</th>
+              <th class="text-center" style="width: 100px;">@lang('Action')</th>
             </tr>
           </thead>
           <tbody>
-          <!--[if BLOCK]><![endif]--><?php $__currentLoopData = $alternatives; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $idx => $mp): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-            <?php
+          @foreach($alternatives as $idx => $mp)
+            @php
               /** @var \App\Models\MerchantProduct $mp */
               $product = $mp->product;
               $vp = method_exists($mp,'vendorSizePrice') ? (float)$mp->vendorSizePrice() : (float)$mp->price;
@@ -44,127 +46,125 @@
               $preordered = (int)($mp->preordered ?? 0);
               $canBuy = ($inStock || $preordered) && $hasPrice;
               $uniqueId = 'alt_' . $mp->id . '_' . $idx;
-            ?>
+            @endphp
 
-            <tr class="alt-row <?php echo e($highlight ? 'alt-available' : 'alt-unavailable'); ?>">
-              
+            <tr class="alt-row {{ $highlight ? 'alt-available' : 'alt-unavailable' }}">
+              {{-- Part Number --}}
               <td>
-                <code class="fw-bold text-dark"><?php echo e($product->sku); ?></code>
+                <code class="fw-bold text-dark">{{ $product->sku }}</code>
               </td>
 
-              
+              {{-- Name --}}
               <td>
-                <span class="alt-name"><?php echo e(getLocalizedProductName($product)); ?></span>
+                <span class="alt-name">{{ getLocalizedProductName($product) }}</span>
               </td>
 
-              
+              {{-- Brand --}}
               <td>
-                <!--[if BLOCK]><![endif]--><?php if($product->brand): ?>
+                @if($product->brand)
                   <span class="badge bg-light text-dark border">
-                    <?php echo e(Str::ucfirst(getLocalizedBrandName($product->brand))); ?>
-
+                    {{ Str::ucfirst(getLocalizedBrandName($product->brand)) }}
                   </span>
-                <?php else: ?>
+                @else
                   <span class="text-muted">-</span>
-                <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
+                @endif
               </td>
 
-              
+              {{-- Quality Brand with Logo --}}
               <td>
-                <!--[if BLOCK]><![endif]--><?php if($qualityBrand): ?>
+                @if($qualityBrand)
                   <div class="d-flex align-items-center gap-1">
-                    <!--[if BLOCK]><![endif]--><?php if($qualityBrand->logo): ?>
-                      <img src="<?php echo e($qualityBrand->logo_url); ?>"
-                           alt="<?php echo e(getLocalizedQualityName($qualityBrand)); ?>"
+                    @if($qualityBrand->logo)
+                      <img src="{{ $qualityBrand->logo_url }}"
+                           alt="{{ getLocalizedQualityName($qualityBrand) }}"
                            class="quality-logo"
                            style="max-height: 22px; max-width: 50px; object-fit: contain;">
-                    <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
-                    <span class="small"><?php echo e(getLocalizedQualityName($qualityBrand)); ?></span>
+                    @endif
+                    <span class="small">{{ getLocalizedQualityName($qualityBrand) }}</span>
                   </div>
-                <?php else: ?>
+                @else
                   <span class="text-muted">-</span>
-                <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
+                @endif
               </td>
 
-              
+              {{-- Vendor --}}
               <td>
-                <span class="small"><?php echo e($mp->user ? ($mp->user->shop_name ?: $mp->user->name) : '-'); ?></span>
+                <span class="small">{{ $mp->user ? ($mp->user->shop_name ?: $mp->user->name) : '-' }}</span>
               </td>
 
-              
+              {{-- Stock --}}
               <td class="text-center">
-                <!--[if BLOCK]><![endif]--><?php if($inStock): ?>
-                  <span class="badge bg-success"><?php echo e($mp->stock); ?></span>
-                <?php elseif($preordered): ?>
-                  <span class="badge bg-warning text-dark"><?php echo app('translator')->get('Preorder'); ?></span>
-                <?php else: ?>
+                @if($inStock)
+                  <span class="badge bg-success">{{ $mp->stock }}</span>
+                @elseif($preordered)
+                  <span class="badge bg-warning text-dark">@lang('Preorder')</span>
+                @else
                   <span class="badge bg-secondary">0</span>
-                <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
+                @endif
               </td>
 
-              
+              {{-- Quantity Selector --}}
               <td class="text-center">
-                <!--[if BLOCK]><![endif]--><?php if($canBuy): ?>
+                @if($canBuy)
                   <div class="alt-qty-control d-inline-flex align-items-center">
                     <button type="button" class="alt-qty-btn alt-qtminus"
-                            data-target="<?php echo e($uniqueId); ?>" data-min="<?php echo e($minQty); ?>">-</button>
-                    <input type="text" class="alt-qty-input" id="qty_<?php echo e($uniqueId); ?>"
-                           value="<?php echo e($minQty); ?>" readonly
-                           data-min="<?php echo e($minQty); ?>" data-stock="<?php echo e($stock); ?>" data-preordered="<?php echo e($preordered); ?>">
+                            data-target="{{ $uniqueId }}" data-min="{{ $minQty }}">-</button>
+                    <input type="text" class="alt-qty-input" id="qty_{{ $uniqueId }}"
+                           value="{{ $minQty }}" readonly
+                           data-min="{{ $minQty }}" data-stock="{{ $stock }}" data-preordered="{{ $preordered }}">
                     <button type="button" class="alt-qty-btn alt-qtplus"
-                            data-target="<?php echo e($uniqueId); ?>" data-stock="<?php echo e($stock); ?>" data-preordered="<?php echo e($preordered); ?>">+</button>
+                            data-target="{{ $uniqueId }}" data-stock="{{ $stock }}" data-preordered="{{ $preordered }}">+</button>
                   </div>
-                <?php else: ?>
+                @else
                   <span class="text-muted">-</span>
-                <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
+                @endif
               </td>
 
-              
+              {{-- Price --}}
               <td class="text-end">
-                <span class="fw-bold <?php echo e($hasPrice ? 'text-success' : 'text-muted'); ?>">
-                  <?php echo e($hasPrice ? \App\Models\Product::convertPrice($vp) : '-'); ?>
-
+                <span class="fw-bold {{ $hasPrice ? 'text-success' : 'text-muted' }}">
+                  {{ $hasPrice ? \App\Models\Product::convertPrice($vp) : '-' }}
                 </span>
               </td>
 
-              
+              {{-- Actions --}}
               <td class="text-center">
                 <div class="btn-group btn-group-sm">
-                  
+                  {{-- Quick View --}}
                   <button type="button"
                           class="btn btn-outline-primary quick-view"
-                          data-id="<?php echo e($product->id); ?>"
-                          data-url="<?php echo e(route('modal.quickview', ['id' => $product->id])); ?>?user=<?php echo e($mp->user_id); ?>"
-                          title="<?php echo app('translator')->get('Quick View'); ?>">
+                          data-id="{{ $product->id }}"
+                          data-url="{{ route('modal.quickview', ['id' => $product->id]) }}?user={{ $mp->user_id }}"
+                          title="@lang('Quick View')">
                     <i class="fas fa-eye"></i>
                   </button>
 
-                  
-                  <!--[if BLOCK]><![endif]--><?php if($canBuy): ?>
+                  {{-- Add to Cart --}}
+                  @if($canBuy)
                     <button type="button"
                             class="btn btn-success alt-add-to-cart"
-                            data-id="<?php echo e($product->id); ?>"
-                            data-mp-id="<?php echo e($mp->id); ?>"
-                            data-user="<?php echo e($mp->user_id); ?>"
-                            data-qty-id="<?php echo e($uniqueId); ?>"
-                            data-addnum-url="<?php echo e(route('merchant.cart.add', $mp->id)); ?>"
-                            title="<?php echo app('translator')->get('Add To Cart'); ?>">
+                            data-id="{{ $product->id }}"
+                            data-mp-id="{{ $mp->id }}"
+                            data-user="{{ $mp->user_id }}"
+                            data-qty-id="{{ $uniqueId }}"
+                            data-addnum-url="{{ route('merchant.cart.add', $mp->id) }}"
+                            title="@lang('Add To Cart')">
                       <i class="fas fa-cart-plus"></i>
                     </button>
-                  <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
+                  @endif
                 </div>
               </td>
             </tr>
-          <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><!--[if ENDBLOCK]><![endif]-->
+          @endforeach
           </tbody>
         </table>
       </div>
     </div>
 
-    
+    {{-- Mobile Cards --}}
     <div class="alt-cards-mobile d-md-none">
-      <!--[if BLOCK]><![endif]--><?php $__currentLoopData = $alternatives; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $idx => $mp): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-        <?php
+      @foreach($alternatives as $idx => $mp)
+        @php
           $product = $mp->product;
           $vp = method_exists($mp,'vendorSizePrice') ? (float)$mp->vendorSizePrice() : (float)$mp->price;
           $inStock = ($mp->stock ?? 0) > 0;
@@ -177,117 +177,115 @@
           $preordered = (int)($mp->preordered ?? 0);
           $canBuy = ($inStock || $preordered) && $hasPrice;
           $uniqueId = 'altm_' . $mp->id . '_' . $idx;
-        ?>
+        @endphp
 
-        <div class="alt-card <?php echo e($highlight ? 'alt-available' : 'alt-unavailable'); ?>">
-          
+        <div class="alt-card {{ $highlight ? 'alt-available' : 'alt-unavailable' }}">
+          {{-- Card Header --}}
           <div class="alt-card-header">
-            <code class="fw-bold"><?php echo e($product->sku); ?></code>
-            <!--[if BLOCK]><![endif]--><?php if($inStock): ?>
-              <span class="badge bg-success"><?php echo e($mp->stock); ?> <?php echo app('translator')->get('In Stock'); ?></span>
-            <?php elseif($preordered): ?>
-              <span class="badge bg-warning text-dark"><?php echo app('translator')->get('Preorder'); ?></span>
-            <?php else: ?>
-              <span class="badge bg-secondary"><?php echo app('translator')->get('Out of Stock'); ?></span>
-            <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
+            <code class="fw-bold">{{ $product->sku }}</code>
+            @if($inStock)
+              <span class="badge bg-success">{{ $mp->stock }} @lang('In Stock')</span>
+            @elseif($preordered)
+              <span class="badge bg-warning text-dark">@lang('Preorder')</span>
+            @else
+              <span class="badge bg-secondary">@lang('Out of Stock')</span>
+            @endif
           </div>
 
-          
+          {{-- Card Body --}}
           <div class="alt-card-body">
-            <div class="alt-card-name"><?php echo e(getLocalizedProductName($product)); ?></div>
+            <div class="alt-card-name">{{ getLocalizedProductName($product) }}</div>
 
             <div class="alt-card-details">
-              
-              <!--[if BLOCK]><![endif]--><?php if($product->brand): ?>
+              {{-- Brand --}}
+              @if($product->brand)
                 <div class="alt-detail">
-                  <span class="alt-label"><?php echo app('translator')->get('Brand'); ?>:</span>
-                  <span><?php echo e(getLocalizedBrandName($product->brand)); ?></span>
+                  <span class="alt-label">@lang('Brand'):</span>
+                  <span>{{ getLocalizedBrandName($product->brand) }}</span>
                 </div>
-              <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
+              @endif
 
-              
-              <!--[if BLOCK]><![endif]--><?php if($qualityBrand): ?>
+              {{-- Quality with Logo --}}
+              @if($qualityBrand)
                 <div class="alt-detail">
-                  <span class="alt-label"><?php echo app('translator')->get('Quality'); ?>:</span>
+                  <span class="alt-label">@lang('Quality'):</span>
                   <div class="d-inline-flex align-items-center gap-1">
-                    <!--[if BLOCK]><![endif]--><?php if($qualityBrand->logo): ?>
-                      <img src="<?php echo e($qualityBrand->logo_url); ?>"
-                           alt="<?php echo e(getLocalizedQualityName($qualityBrand)); ?>"
+                    @if($qualityBrand->logo)
+                      <img src="{{ $qualityBrand->logo_url }}"
+                           alt="{{ getLocalizedQualityName($qualityBrand) }}"
                            class="quality-logo"
                            style="max-height: 18px; max-width: 40px; object-fit: contain;">
-                    <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
-                    <span><?php echo e(getLocalizedQualityName($qualityBrand)); ?></span>
+                    @endif
+                    <span>{{ getLocalizedQualityName($qualityBrand) }}</span>
                   </div>
                 </div>
-              <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
+              @endif
 
-              
-              <!--[if BLOCK]><![endif]--><?php if($mp->user): ?>
+              {{-- Vendor --}}
+              @if($mp->user)
                 <div class="alt-detail">
-                  <span class="alt-label"><?php echo app('translator')->get('Vendor'); ?>:</span>
-                  <span><?php echo e($mp->user->shop_name ?: $mp->user->name); ?></span>
+                  <span class="alt-label">@lang('Vendor'):</span>
+                  <span>{{ $mp->user->shop_name ?: $mp->user->name }}</span>
                 </div>
-              <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
+              @endif
 
-              
-              <!--[if BLOCK]><![endif]--><?php if($canBuy): ?>
+              {{-- Quantity --}}
+              @if($canBuy)
                 <div class="alt-detail">
-                  <span class="alt-label"><?php echo app('translator')->get('Qty'); ?>:</span>
+                  <span class="alt-label">@lang('Qty'):</span>
                   <div class="alt-qty-control d-inline-flex align-items-center">
                     <button type="button" class="alt-qty-btn alt-qtminus"
-                            data-target="<?php echo e($uniqueId); ?>" data-min="<?php echo e($minQty); ?>">-</button>
-                    <input type="text" class="alt-qty-input" id="qty_<?php echo e($uniqueId); ?>"
-                           value="<?php echo e($minQty); ?>" readonly
-                           data-min="<?php echo e($minQty); ?>" data-stock="<?php echo e($stock); ?>" data-preordered="<?php echo e($preordered); ?>">
+                            data-target="{{ $uniqueId }}" data-min="{{ $minQty }}">-</button>
+                    <input type="text" class="alt-qty-input" id="qty_{{ $uniqueId }}"
+                           value="{{ $minQty }}" readonly
+                           data-min="{{ $minQty }}" data-stock="{{ $stock }}" data-preordered="{{ $preordered }}">
                     <button type="button" class="alt-qty-btn alt-qtplus"
-                            data-target="<?php echo e($uniqueId); ?>" data-stock="<?php echo e($stock); ?>" data-preordered="<?php echo e($preordered); ?>">+</button>
+                            data-target="{{ $uniqueId }}" data-stock="{{ $stock }}" data-preordered="{{ $preordered }}">+</button>
                   </div>
                 </div>
-              <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
+              @endif
             </div>
           </div>
 
-          
+          {{-- Card Footer --}}
           <div class="alt-card-footer">
-            <div class="alt-price <?php echo e($hasPrice ? 'text-success' : 'text-muted'); ?>">
-              <?php echo e($hasPrice ? \App\Models\Product::convertPrice($vp) : __('Price not available')); ?>
-
+            <div class="alt-price {{ $hasPrice ? 'text-success' : 'text-muted' }}">
+              {{ $hasPrice ? \App\Models\Product::convertPrice($vp) : __('Price not available') }}
             </div>
 
             <div class="alt-actions">
               <button type="button"
                       class="btn btn-sm btn-outline-primary quick-view"
-                      data-id="<?php echo e($product->id); ?>"
-                      data-url="<?php echo e(route('modal.quickview', ['id' => $product->id])); ?>?user=<?php echo e($mp->user_id); ?>">
+                      data-id="{{ $product->id }}"
+                      data-url="{{ route('modal.quickview', ['id' => $product->id]) }}?user={{ $mp->user_id }}">
                 <i class="fas fa-eye"></i>
               </button>
 
-              <!--[if BLOCK]><![endif]--><?php if($canBuy): ?>
+              @if($canBuy)
                 <button type="button"
                         class="btn btn-sm btn-success alt-add-to-cart"
-                        data-id="<?php echo e($product->id); ?>"
-                        data-mp-id="<?php echo e($mp->id); ?>"
-                        data-user="<?php echo e($mp->user_id); ?>"
-                        data-qty-id="<?php echo e($uniqueId); ?>"
-                        data-addnum-url="<?php echo e(route('merchant.cart.add', $mp->id)); ?>">
-                  <i class="fas fa-cart-plus"></i> <?php echo app('translator')->get('Add'); ?>
+                        data-id="{{ $product->id }}"
+                        data-mp-id="{{ $mp->id }}"
+                        data-user="{{ $mp->user_id }}"
+                        data-qty-id="{{ $uniqueId }}"
+                        data-addnum-url="{{ route('merchant.cart.add', $mp->id) }}">
+                  <i class="fas fa-cart-plus"></i> @lang('Add')
                 </button>
-              <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
+              @endif
             </div>
           </div>
         </div>
-      <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><!--[if ENDBLOCK]><![endif]-->
+      @endforeach
     </div>
 
-  <?php else: ?>
+  @else
     <div class="alt-empty text-center py-4">
       <i class="fas fa-box-open fa-3x text-muted mb-3"></i>
-      <p class="text-muted mb-0"><?php echo app('translator')->get('No alternatives found'); ?></p>
+      <p class="text-muted mb-0">@lang('No alternatives found')</p>
     </div>
-  <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
+  @endif
 </div>
 
-<?php if (! $__env->hasRenderedOnce('d3b1c0c9-43e5-4d4f-8936-e5f848179d24')): $__env->markAsRenderedOnce('d3b1c0c9-43e5-4d4f-8936-e5f848179d24'); ?>
 <style>
 /* ========== Alternative Modal Styles ========== */
 .ill-alt {
@@ -494,10 +492,9 @@
 }
 </style>
 
-
 <script>
 (function() {
-  // زيادة الكمية
+  // Quantity Plus
   document.querySelectorAll('.alt-qtplus').forEach(function(btn) {
     btn.addEventListener('click', function(e) {
       e.preventDefault();
@@ -512,7 +509,7 @@
 
       if (stock > 0 && current >= stock && preordered == 0) {
         if (typeof toastr !== 'undefined') {
-          toastr.warning('<?php echo e(__("Stock limit reached")); ?>: ' + stock);
+          toastr.warning('{{ __("Stock limit reached") }}: ' + stock);
         }
         return;
       }
@@ -520,7 +517,7 @@
     });
   });
 
-  // إنقاص الكمية
+  // Quantity Minus
   document.querySelectorAll('.alt-qtminus').forEach(function(btn) {
     btn.addEventListener('click', function(e) {
       e.preventDefault();
@@ -534,7 +531,7 @@
 
       if (current <= minQty) {
         if (typeof toastr !== 'undefined') {
-          toastr.warning('<?php echo e(__("Minimum quantity is")); ?> ' + minQty);
+          toastr.warning('{{ __("Minimum quantity is") }} ' + minQty);
         }
         return;
       }
@@ -542,7 +539,7 @@
     });
   });
 
-  // إضافة للسلة مع الكمية
+  // Add to Cart
   document.querySelectorAll('.alt-add-to-cart').forEach(function(btn) {
     btn.addEventListener('click', function(e) {
       e.preventDefault();
@@ -570,12 +567,12 @@
             window.applyCartState(data);
           }
           if (typeof toastr !== 'undefined') {
-            toastr.success(data.success || '<?php echo e(__("Added to cart")); ?>');
+            toastr.success(data.success || '{{ __("Added to cart") }}');
           }
         })
         .catch(function(err) {
           if (typeof toastr !== 'undefined') {
-            toastr.error('<?php echo e(__("Error adding to cart")); ?>');
+            toastr.error('{{ __("Error adding to cart") }}');
           }
           console.error(err);
         })
@@ -586,6 +583,3 @@
   });
 })();
 </script>
-<?php endif; ?>
-</div>
-<?php /**PATH C:\Users\hp\Herd\new\resources\views/livewire/alternative.blade.php ENDPATH**/ ?>

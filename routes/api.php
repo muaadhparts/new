@@ -4,6 +4,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\GeocodingController;
 use App\Http\Controllers\Api\SpecificationApiController;
+use App\Http\Controllers\Api\ProductApiController;
+use App\Http\Controllers\Api\ShippingApiController;
 
 /*
 |--------------------------------------------------------------------------
@@ -23,6 +25,26 @@ Route::prefix('specs')->middleware(['web'])->group(function () {
     Route::get('/current', [SpecificationApiController::class, 'current'])->name('api.specs.current');
 });
 // --------------------- SPECIFICATION API ROUTES END ---------------------
+
+// --------------------- PRODUCT API ROUTES ---------------------
+Route::prefix('product')->middleware(['web'])->group(function () {
+    // Alternatives
+    Route::get('/alternatives/{sku}', [ProductApiController::class, 'getAlternatives'])->name('api.product.alternatives');
+    Route::get('/alternatives/{sku}/related', [ProductApiController::class, 'getAlternativeRelatedProducts'])->name('api.product.alternatives.related');
+    Route::get('/alternatives/{sku}/html', [ProductApiController::class, 'getAlternativesHtml'])->name('api.product.alternatives.html');
+
+    // Compatibility
+    Route::get('/compatibility/{sku}', [ProductApiController::class, 'getCompatibility'])->name('api.product.compatibility');
+    Route::get('/compatibility/{sku}/html', [ProductApiController::class, 'getCompatibilityHtml'])->name('api.product.compatibility.html');
+});
+// --------------------- PRODUCT API ROUTES END ---------------------
+
+// --------------------- SHIPPING API ROUTES ---------------------
+Route::prefix('shipping')->middleware(['web'])->group(function () {
+    Route::post('/tryoto/options', [ShippingApiController::class, 'getTryotoOptions'])->name('api.shipping.tryoto.options');
+    Route::post('/tryoto/html', [ShippingApiController::class, 'getTryotoHtml'])->name('api.shipping.tryoto.html');
+});
+// --------------------- SHIPPING API ROUTES END ---------------------
 
 // --------------------- GOOGLE MAPS GEOCODING ROUTES ---------------------
 // MOVED TO web.php to share session with checkout

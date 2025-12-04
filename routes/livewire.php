@@ -44,8 +44,5 @@ Route::prefix('catlogs')
             ->name('illustrations');
     });
 
-// Callout Modal (still using Livewire)
-// Route::get('/callout-modal', CalloutModal::class);
-
 // Search Results (Controller-based)
 Route::get('result/{sku}', [\App\Http\Controllers\Front\SearchResultsController::class, 'show'])->name('search.result');
