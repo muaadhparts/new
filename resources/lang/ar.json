@@ -1967,7 +1967,8 @@
     "errors.no_matching_callout_label": "ادخل اسم قطعه صحيح او اختر اسم من التلميحات",
 
 
-    "ui.vin_specs": " المواصفات المضافه",
+    "ui.vin_specs": "مواصفات VIN",
+    "ui.selected_specs": "المواصفات المحددة",
     "ui.added_to_cart": "مواصفات رقم الهيكل",
 
     "ui.section_only": "القسم الحالي فقط",

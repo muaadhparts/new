@@ -17,13 +17,19 @@
     use Illuminate\Support\Str;
     $filters = session('selected_filters', []);
 
+    // تصفية الفلاتر الفارغة
+    $filters = collect($filters)->filter(function($meta) {
+        $value = is_array($meta) ? ($meta['value_id'] ?? $meta['value'] ?? null) : $meta;
+        return !empty($value) && $value !== '';
+    })->all();
+
     if (isset($filters['year']['value_id']) && isset($filters['month']['value_id'])) {
         $yyyy = (string) $filters['year']['value_id'];
         $mm   = str_pad((string) $filters['month']['value_id'], 2, '0', STR_PAD_LEFT);
         $filters = [
             'BUILD_DATE' => [
                 'value_id' => "{$yyyy}-{$mm}",
-                'source'   => $filters['year']['source'] ?? ($filters['month']['source'] ?? 'vin'),
+                'source'   => $filters['year']['source'] ?? ($filters['month']['source'] ?? 'manual'),
             ],
         ] + collect($filters)->except(['year','month'])->all();
     }
@@ -42,10 +48,14 @@
 
     $chips = collect($filters)->map(function($meta, $key) use ($pretty){
         $label = $pretty[$key] ?? Str::title(str_replace('_', ' ', Str::lower($key)));
-        $value = is_array($meta) ? ($meta['value_id'] ?? $meta['value'] ?? '—') : (string) $meta;
-        $src   = is_array($meta) ? ($meta['source'] ?? null) : null;
+        $value = is_array($meta) ? ($meta['value_id'] ?? $meta['value'] ?? null) : (string) $meta;
+        // تجاهل القيم الفارغة
+        if (empty($value) || $value === '') {
+            return null;
+        }
+        $src   = is_array($meta) ? ($meta['source'] ?? 'manual') : 'manual';
         return ['k' => $label, 'v' => $value, 'src' => $src];
-    })->values();
+    })->filter()->values();
 @endphp
 
 <div class="vehicle-search-ajax-wrapper" id="vehicleSearchWrapper{{ $uniqueId }}">
@@ -138,11 +148,18 @@
         }
     </style>
 
-    {{-- VIN Specs Bar --}}
+    {{-- Specifications Bar (VIN or Manual) --}}
     @if($chips->isNotEmpty())
+    @php
+        $hasVinSource = $chips->contains(fn($c) => ($c['src'] ?? '') === 'vin');
+        $hasManualSource = $chips->contains(fn($c) => ($c['src'] ?? '') === 'manual');
+    @endphp
     <div class="specs-bar">
         <div class="d-flex align-items-center mb-2" style="gap:.5rem">
-            <strong class="text-white">{{ __('ui.vin_specs') }}</strong>
+            <strong class="text-white">
+                <i class="fas {{ $hasVinSource ? 'fa-car' : 'fa-sliders-h' }} me-1"></i>
+                {{ $hasVinSource ? __('ui.vin_specs') : __('ui.selected_specs') }}
+            </strong>
             <span class="badge bg-light text-dark">{{ $chips->count() }}</span>
         </div>
         <div class="d-flex flex-wrap">
@@ -151,7 +168,11 @@
                 <span style="color:#6c757d;font-weight:500;">{{ $chip['k'] }}:</span>
                 <span style="font-weight:600;color:#212529;">{{ $chip['v'] }}</span>
                 @if(!empty($chip['src']))
-                <span style="font-size:0.65rem;background:#667eea;color:#fff;border-radius:0.75rem;padding:0.1rem 0.4rem;">{{ strtoupper($chip['src']) }}</span>
+                    @if($chip['src'] === 'vin')
+                        <span style="font-size:0.65rem;background:#0d6efd;color:#fff;border-radius:0.75rem;padding:0.1rem 0.4rem;">VIN</span>
+                    @else
+                        <span style="font-size:0.65rem;background:#198754;color:#fff;border-radius:0.75rem;padding:0.1rem 0.4rem;">MANUAL</span>
+                    @endif
                 @endif
             </span>
             @endforeach

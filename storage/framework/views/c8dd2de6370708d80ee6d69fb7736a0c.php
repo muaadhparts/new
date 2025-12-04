@@ -147,7 +147,7 @@ window.ILL_ROUTES = {
 };
 </script>
 
-<?php if (! $__env->hasRenderedOnce('f476de8a-b69c-4b57-8f8d-df312f585932')): $__env->markAsRenderedOnce('f476de8a-b69c-4b57-8f8d-df312f585932'); ?>
+<?php if (! $__env->hasRenderedOnce('41957d50-db80-456d-bab5-ffa491d60e16')): $__env->markAsRenderedOnce('41957d50-db80-456d-bab5-ffa491d60e16'); ?>
 <style id="ill-modal-styles">
   /* جسم المودال - Responsive */
   #api-callout-body {
