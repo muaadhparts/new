@@ -3,6 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\GeocodingController;
+use App\Http\Controllers\Api\SpecificationApiController;
 
 /*
 |--------------------------------------------------------------------------
@@ -14,6 +15,14 @@ use App\Http\Controllers\Api\GeocodingController;
 | is assigned the "api" middleware group. Enjoy building your API!
 |
 */
+
+// --------------------- SPECIFICATION API ROUTES ---------------------
+Route::prefix('specs')->middleware(['web'])->group(function () {
+    Route::post('/save', [SpecificationApiController::class, 'save'])->name('api.specs.save');
+    Route::post('/clear', [SpecificationApiController::class, 'clear'])->name('api.specs.clear');
+    Route::get('/current', [SpecificationApiController::class, 'current'])->name('api.specs.current');
+});
+// --------------------- SPECIFICATION API ROUTES END ---------------------
 
 // --------------------- GOOGLE MAPS GEOCODING ROUTES ---------------------
 // MOVED TO web.php to share session with checkout

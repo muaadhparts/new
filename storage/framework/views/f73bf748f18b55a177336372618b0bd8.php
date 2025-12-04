@@ -2,10 +2,10 @@
     <div class="d-flex justify-content-center mt-60">
 
 
-        <!--[if BLOCK]><![endif]--><?php if($paginator->hasPages()): ?>
+        <?php if($paginator->hasPages()): ?>
             <ul class="gs-pagination">
                 
-                <!--[if BLOCK]><![endif]--><?php if($paginator->onFirstPage()): ?>
+                <?php if($paginator->onFirstPage()): ?>
                     <li class="disabled">
                         <a href="#">
                             <svg xmlns="http://www.w3.org/2000/svg" width="25" height="24" viewBox="0 0 25 24"
@@ -27,32 +27,32 @@
                             </svg>
                         </a>
                     </li>
-                <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
+                <?php endif; ?>
 
 
-                <!--[if BLOCK]><![endif]--><?php $__currentLoopData = $elements; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $element): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                    <!--[if BLOCK]><![endif]--><?php if(is_array($element) && count($element) < 2): ?>
+                <?php $__currentLoopData = $elements; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $element): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                    <?php if(is_array($element) && count($element) < 2): ?>
                     <?php else: ?>
                         <?php if(is_array($element)): ?>
-                            <!--[if BLOCK]><![endif]--><?php $__currentLoopData = $element; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $page => $url): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                                <!--[if BLOCK]><![endif]--><?php if($page == $paginator->currentPage()): ?>
+                            <?php $__currentLoopData = $element; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $page => $url): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                <?php if($page == $paginator->currentPage()): ?>
                                     <li class="active" aria-current="page"><a href="#"><?php echo e($page); ?></a>
                                     </li>
                                 <?php else: ?>
                                     <li><a href="<?php echo e($url); ?>"><?php echo e($page); ?></a></li>
-                                <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
-                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><!--[if ENDBLOCK]><![endif]-->
+                                <?php endif; ?>
+                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                         <?php else: ?>
                             <li><a href="<?php echo e($url); ?>"><?php echo e($page); ?></a></li>
-                        <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
-                    <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
-                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><!--[if ENDBLOCK]><![endif]-->
+                        <?php endif; ?>
+                    <?php endif; ?>
+                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
 
 
 
 
                 
-                <!--[if BLOCK]><![endif]--><?php if($paginator->hasMorePages()): ?>
+                <?php if($paginator->hasMorePages()): ?>
                     <li>
                         <a href="<?php echo e($paginator->nextPageUrl()); ?>" rel="next">
                             <svg xmlns="http://www.w3.org/2000/svg" width="25" height="24" viewBox="0 0 25 24"
@@ -80,11 +80,11 @@
                             </svg>
                         </a>
                     </li>
-                <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
+                <?php endif; ?>
 
 
             </ul>
-        <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
+        <?php endif; ?>
 
     </div>
 </div>
