@@ -21,12 +21,12 @@
 
     {{-- ✅ مكوّن رقم القطعة --}}
     <div x-show="tab === 'part'" x-cloak>
-        @livewire('search-box')
+        @include('includes.frontend.search-part-ajax', ['uniqueId' => 'tabsPart'])
     </div>
 
     {{-- ✅ مكوّن VIN --}}
     <div x-show="tab === 'vin'" x-cloak>
-        @livewire('search-boxvin')
+        @include('includes.frontend.search-vin-ajax', ['uniqueId' => 'tabsVin'])
     </div>
 </div>
 

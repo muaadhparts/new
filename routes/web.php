@@ -12,10 +12,23 @@ use Siberfx\LaravelTryoto\app\Http\Controllers\Api\TryOtoController;
 
 use App\Http\Controllers\Api\CalloutController;
 use App\Http\Controllers\Front\ProductDetailsController;
+use App\Http\Controllers\Front\SearchApiController;
 
 // Google Maps Demo Route
 Route::get('/google-maps-demo', function () {
     return view('google-maps-demo');
+});
+
+// Test Livewire
+Route::get('/test-livewire', function () {
+    return view('test-livewire');
+});
+
+// Search API Routes (AJAX-based)
+Route::prefix('api/search')->group(function () {
+    Route::get('/part', [SearchApiController::class, 'searchPart'])->name('api.search.part');
+    Route::get('/vin', [SearchApiController::class, 'searchVin'])->name('api.search.vin');
+    Route::post('/vin/select', [SearchApiController::class, 'selectVin'])->name('api.search.vin.select');
 });
 
 

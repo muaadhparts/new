@@ -355,8 +355,8 @@
           </h5>
           <button type="button" class="btn-close modern-close" data-bs-dismiss="modal" aria-label="@lang('Close')"></button>
         </div>
-        <div class="modal-body modern-modal-body p-4" wire:ignore>
-          <livewire:search-boxvin key="vin-search-component" />
+        <div class="modal-body modern-modal-body p-4">
+          @include('includes.frontend.search-vin-ajax', ['uniqueId' => 'searchBoxModal'])
         </div>
       </div>
     </div>

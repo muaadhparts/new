@@ -27,6 +27,7 @@
     <link rel="stylesheet" href="{{ asset('assets/vendor') }}/css/custom.css">
     <link rel="icon" href="{{ asset('assets/images/' . $gs->favicon) }}">
     @include('includes.frontend.extra_head')
+    @livewireStyles
 
     {{-- Hide bottom layer --}}
     <style>
@@ -154,6 +155,7 @@
         }
     @endphp
 
+@livewireScripts
 
 </body>
 

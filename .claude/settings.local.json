@@ -25,7 +25,8 @@
       "Bash(mysql:*)",
       "Bash(timeout:*)",
       "Bash(del:*)",
-      "Bash(echo:*)"
+      "Bash(echo:*)",
+      "Bash(composer show:*)"
     ],
     "deny": [],
     "ask": []

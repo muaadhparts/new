@@ -15,7 +15,7 @@
 
                 <!-- Search Box Component -->
                 <div class="hero-search-wrapper mb-3">
-                    <livewire:search-box/>
+                    @include('includes.frontend.search-part-ajax', ['uniqueId' => 'home'])
                 </div>
 
                 <p class="hero-subtitle text-center mt-3">
@@ -658,7 +658,7 @@
                 <button type="button" class="btn-close modern-close-home" data-bs-dismiss="modal" aria-label="@lang('Close')"></button>
             </div>
             <div class="modal-body modern-modal-body-home p-4">
-                @livewire('search-boxvin', key('vin-home-brand-search'))
+                @include('includes.frontend.search-vin-ajax', ['uniqueId' => 'homeModal'])
             </div>
         </div>
     </div>

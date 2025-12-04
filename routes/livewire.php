@@ -23,4 +23,5 @@ Route::get('/callout-modal', CalloutModal::class);
 
 // Route::get('/CalloutModal/{data}/{code}/{callout}', CalloutModal::class)->name('CalloutModal'); // ✅ هذا هو المطلوب
 
-Route::get('result/{sku}', \App\Livewire\SearchResultsPage::class)->name('search.result');
+// Changed from Livewire to Controller to support AJAX includes
+Route::get('result/{sku}', [\App\Http\Controllers\Front\SearchResultsController::class, 'show'])->name('search.result');

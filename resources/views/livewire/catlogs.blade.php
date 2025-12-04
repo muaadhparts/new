@@ -6,8 +6,8 @@
     @endif
 
     <div class="row gy-4 gy-lg-5 mt-4">
-        {{-- <livewire:search-box/> --}}
-        <livewire:search-boxvin/>
+        {{-- AJAX-based VIN Search --}}
+        @include('includes.frontend.search-vin-ajax', ['uniqueId' => 'catlogs'])
         <div>
             <!-- Search and Filter Row -->
             <div class="row mb-4">

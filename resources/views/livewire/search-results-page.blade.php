@@ -4,12 +4,30 @@
         <div class="container">
             {{-- Search Box --}}
             <div class="search-box-wrapper mb-4">
-                <livewire:search-box/>
+                @include('includes.frontend.search-part-ajax', ['uniqueId' => 'searchResults'])
                 <div class="text-center mt-3">
-                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#vinSearchModal">
-                        <i class="fas fa-search me-2"></i>
+                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#vinSearchModalResults">
+                        <i class="fas fa-car me-2"></i>
                         @lang('Search by VIN')
                     </button>
+                </div>
+            </div>
+
+            {{-- VIN Search Modal --}}
+            <div class="modal fade" id="vinSearchModalResults" tabindex="-1" aria-labelledby="vinSearchModalResultsLabel" aria-hidden="true">
+                <div class="modal-dialog modal-lg modal-dialog-centered">
+                    <div class="modal-content" style="border-radius: 20px; border: none; overflow: hidden; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);">
+                        <div class="modal-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #fff; padding: 1.5rem 2rem; border-bottom: none;">
+                            <h5 class="modal-title fw-bold" id="vinSearchModalResultsLabel">
+                                <i class="fas fa-car me-2"></i>
+                                @lang('Search by VIN')
+                            </h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" style="filter: brightness(0) invert(1);"></button>
+                        </div>
+                        <div class="modal-body p-4" style="background: #f8fafc;">
+                            @include('includes.frontend.search-vin-ajax', ['uniqueId' => 'searchResultsModal'])
+                        </div>
+                    </div>
                 </div>
             </div>
 

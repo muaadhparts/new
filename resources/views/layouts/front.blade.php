@@ -136,8 +136,8 @@
         }
     @endphp
 
-      
-  @yield('script')
+
+@yield('script')
 
 </body>
 

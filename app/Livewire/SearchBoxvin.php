@@ -28,42 +28,44 @@ class SearchBoxvin extends Component
 
     public function submitSearch()
     {
-        // dd(['component' => 'SearchBoxvin', 'query' => $this->query]); // debug
-        return $this->searchByVin();
+        $rawQuery = $this->query;
+        $cleanVin = $this->cleanInput($rawQuery);
+
+        // التحقق من طول الـ VIN
+        if (strlen($cleanVin) < 10) {
+            $this->userMessage = __('VIN must be at least 10 characters.');
+            $this->notFound = true;
+            return;
+        }
+
+        $this->isLoading = true;
+        $this->notFound = false;
+        $this->userMessage = '';
+        $this->is_vin = false;
+        $this->results = [];
+
+        // البحث عن الـ VIN
+        $result = $this->searchByVinQuery($cleanVin);
+
+        $this->isLoading = false;
+
+        if (!empty($result)) {
+            $this->is_vin = true;
+            $this->results = $result;
+            // لا نقوم بالتوجيه هنا - المستخدم سيضغط على النتيجة
+        } else {
+            $this->notFound = true;
+            $this->userMessage = __('VIN not found. Please check and try again.');
+        }
     }
 
     /**
      * نفّذ البحث برقم الهيكل ثم وجّه مباشرة عند النجاح.
+     * @deprecated استخدم submitSearch بدلاً منه
      */
     public function searchByVin()
     {
-        $rawQuery = $this->query;
-        $cleanVin = $this->cleanInput($rawQuery);
-
-        if (strlen($cleanVin) >= 10) {
-            $this->isLoading = true;
-            $this->notFound = false;
-            $this->userMessage = '';
-            $this->is_vin = false;
-
-            $result = $this->searchByVinQuery($cleanVin);
-
-            if (!empty($result)) {
-                // سيقوم هذا بإعادة التوجيه إلى الشجرة بعد حفظ الجلسة
-                $this->isLoading = false;
-                // dd(['redirecting_with' => $result]); // debug
-                return $this->selectedVin(json_encode($result));
-            } else {
-                $this->isLoading = false;
-                $this->notFound = true;
-                $this->userMessage = __('VIN must be at least 14 characters and valid.');
-                return null;
-            }
-        } else {
-            $this->userMessage = 'رقم الهيكل يجب أن يحتوي على 14 خانات على الأقل ويكون صحيحًا.';
-            $this->notFound = true;
-            return null;
-        }
+        return $this->submitSearch();
     }
 
     public function selectedVin(string $value)
@@ -85,17 +87,29 @@ class SearchBoxvin extends Component
 
         $brandName = DB::table('brands')->where('id', $vinData->brand_id)->value('name');
 
+        // التحقق من وجود البيانات المطلوبة للتوجيه
+        if (!$brandName || !$vinData->catalogCode) {
+            $this->notFound = true;
+            $this->userMessage = __('Vehicle brand or catalog not found. Please try again.');
+            return null;
+        }
+
         $this->sessionManager->setVin($vinData->vin);
         $this->sessionManager->setCurrentCatalog(json_decode(json_encode($vinData), true));
 
         // Livewire v3: dispatch
         $this->dispatch('vinSelected');
 
-        return redirect()->route('tree.level1', [
+        // بناء الرابط والتوجيه
+        $redirectUrl = route('tree.level1', [
             'id'   => $brandName,
             'data' => $vinData->catalogCode,
             'vin'  => $vinData->vin,
         ]);
+
+        \Log::info('SearchBoxvin redirecting to', ['url' => $redirectUrl]);
+
+        return redirect()->to($redirectUrl);
     }
 
     public function searchByVinQuery(string $query): array

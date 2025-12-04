@@ -242,7 +242,7 @@
     <div class="vin-search-enhanced">
 
       {{-- Enhanced VIN Search Form --}}
-      <form wire:submit.prevent="submitSearch" class="vin-form-wrapper">
+      <div class="vin-form-wrapper">
       <div class="input-group input-group-lg shadow-sm">
         <span class="input-group-text bg-white border-end-0 ps-4">
           <i class="fas fa-car text-primary"></i>
@@ -251,15 +251,16 @@
           type="text"
           class="form-control form-control-lg border-start-0 border-end-0 ps-0"
           placeholder="{{ __('Enter VIN') }}"
-          wire:model="query"
-          wire:keydown.enter="submitSearch"
+          wire:model.live="query"
+          wire:keydown.enter.prevent="submitSearch"
           aria-label="{{ __('Search by VIN') }}"
           dir="ltr"
           maxlength="17"
         >
         <button
-          type="submit"
+          type="button"
           class="btn btn-primary px-4"
+          wire:click="submitSearch"
           wire:loading.attr="disabled"
           wire:loading.class="disabled"
         >
@@ -272,7 +273,7 @@
           @endif
         </button>
       </div>
-    </form>
+    </div>
 
     {{-- Search Hint --}}
     <div class="text-center mt-3">
