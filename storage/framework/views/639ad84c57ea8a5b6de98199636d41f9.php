@@ -1,10 +1,8 @@
-@extends('layouts.front3')
+<?php use Illuminate\Support\Str; ?>
 
-@php use Illuminate\Support\Str; @endphp
+<?php $__env->startSection('title', ($category->localized_name ?? $category->full_code) . ' - ' . __('Illustrations')); ?>
 
-@section('title', ($category->localized_name ?? $category->full_code) . ' - ' . __('Illustrations'))
-
-@section('content')
+<?php $__env->startSection('content'); ?>
 <style>
     /* ===== Compact Breadcrumb Styles ===== */
     .compact-breadcrumb-wrapper {
@@ -198,8 +196,23 @@
     }
 </style>
 
-{{-- Callout Modal Component --}}
-<livewire:callout-modal />
+
+<?php
+$__split = function ($name, $params = []) {
+    return [$name, $params];
+};
+[$__name, $__params] = $__split('callout-modal', []);
+
+$__html = app('livewire')->mount($__name, $__params, 'lw-2711333404-0', $__slots ?? [], get_defined_vars());
+
+echo $__html;
+
+unset($__html);
+unset($__name);
+unset($__params);
+unset($__split);
+if (isset($__slots)) unset($__slots);
+?>
 
 <div class="container py-2">
     <div class="row">
@@ -207,82 +220,87 @@
             <div class="compact-breadcrumb-wrapper mb-3">
                 <nav aria-label="breadcrumb">
                     <ol class="breadcrumb compact-breadcrumb mb-0">
-                        {{-- Home --}}
+                        
                         <li class="breadcrumb-item">
-                            <a href="{{ route('front.index') }}">
+                            <a href="<?php echo e(route('front.index')); ?>">
                                 <i class="fas fa-home"></i>
-                                <span class="d-none d-sm-inline ms-1">{{ __('Home') }}</span>
+                                <span class="d-none d-sm-inline ms-1"><?php echo e(__('Home')); ?></span>
                             </a>
                         </li>
 
-                        {{-- Brand --}}
-                        @if($brand)
+                        
+                        <?php if($brand): ?>
                             <li class="breadcrumb-item">
-                                <a href="{{ route('catlogs.index', ['brand' => $brand->name]) }}">
-                                    {{ Str::limit($brand->name, 15) }}
+                                <a href="<?php echo e(route('catlogs.index', ['brand' => $brand->name])); ?>">
+                                    <?php echo e(Str::limit($brand->name, 15)); ?>
+
                                 </a>
                             </li>
-                        @endif
+                        <?php endif; ?>
 
-                        {{-- VIN --}}
-                        @if($vin)
+                        
+                        <?php if($vin): ?>
                             <li class="breadcrumb-item d-none d-sm-block">
-                                <a href="{{ route('tree.level1', [
+                                <a href="<?php echo e(route('tree.level1', [
                                     'brand'   => $brand->name,
                                     'catalog' => $catalog->code,
                                     'vin'  => $vin
-                                ]) }}">
+                                ])); ?>">
                                     <i class="fas fa-car me-1"></i>
-                                    {{ Str::limit($vin, 12) }}
+                                    <?php echo e(Str::limit($vin, 12)); ?>
+
                                 </a>
                             </li>
-                        @endif
+                        <?php endif; ?>
 
-                        {{-- Catalog --}}
-                        @if($catalog)
+                        
+                        <?php if($catalog): ?>
                             <li class="breadcrumb-item d-none d-md-block">
-                                <a href="{{ route('tree.level1', [
+                                <a href="<?php echo e(route('tree.level1', [
                                     'brand'   => $brand->name,
                                     'catalog' => $catalog->code
-                                ]) }}">
-                                    {{ Str::limit($catalog->shortName ?? $catalog->name ?? $catalog->code, 20) }}
+                                ])); ?>">
+                                    <?php echo e(Str::limit($catalog->shortName ?? $catalog->name ?? $catalog->code, 20)); ?>
+
                                 </a>
                             </li>
-                        @endif
+                        <?php endif; ?>
 
-                        {{-- Level 1 --}}
-                        @if($parentCategory1)
+                        
+                        <?php if($parentCategory1): ?>
                             <li class="breadcrumb-item d-none d-lg-block">
-                                <a href="{{ route('tree.level2', [
+                                <a href="<?php echo e(route('tree.level2', [
                                     'brand'   => $brand->name,
                                     'catalog' => $catalog->code,
                                     'key1' => $parentCategory1->full_code
-                                ]) }}">
-                                    {{ Str::limit($parentCategory1->slug ?? $parentCategory1->full_code, 25) }}
+                                ])); ?>">
+                                    <?php echo e(Str::limit($parentCategory1->slug ?? $parentCategory1->full_code, 25)); ?>
+
                                 </a>
                             </li>
-                        @endif
+                        <?php endif; ?>
 
-                        {{-- Level 2 --}}
-                        @if($parentCategory2 && $parentCategory1)
+                        
+                        <?php if($parentCategory2 && $parentCategory1): ?>
                             <li class="breadcrumb-item d-none d-xl-block">
-                                <a href="{{ route('tree.level3', [
+                                <a href="<?php echo e(route('tree.level3', [
                                     'brand'   => $brand->name,
                                     'catalog' => $catalog->code,
                                     'key1' => $parentCategory1->full_code,
                                     'key2' => $parentCategory2->full_code
-                                ]) }}">
-                                    {{ Str::limit($parentCategory2->slug ?? $parentCategory2->full_code, 25) }}
+                                ])); ?>">
+                                    <?php echo e(Str::limit($parentCategory2->slug ?? $parentCategory2->full_code, 25)); ?>
+
                                 </a>
                             </li>
-                        @endif
+                        <?php endif; ?>
 
-                        {{-- Level 3 (current) --}}
-                        @if($category)
+                        
+                        <?php if($category): ?>
                             <li class="breadcrumb-item active" aria-current="page">
-                                <span>{{ Str::limit($category->Applicability ?? $category->full_code, 30) }}</span>
+                                <span><?php echo e(Str::limit($category->Applicability ?? $category->full_code, 30)); ?></span>
                             </li>
-                        @endif
+                        <?php endif; ?>
                     </ol>
                 </nav>
             </div>
@@ -290,30 +308,30 @@
     </div>
 </div>
 
-{{-- Search box (تقييد السيكشن الحالي) - AJAX Based --}}
+
 <div class="container mb-3">
-    {{-- Specifications Button --}}
+    
     <div class="mb-3">
-        @include('catalog.partials.specs-modal', [
+        <?php echo $__env->make('catalog.partials.specs-modal', [
             'catalog' => $catalog,
             'filters' => $filters,
             'selectedFilters' => $selectedFilters,
             'isVinMode' => $isVinMode
-        ])
+        ], \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?>
     </div>
 
-    {{-- Chips Bar --}}
-    @include('catalog.partials.chips-bar', ['chips' => $chips])
+    
+    <?php echo $__env->make('catalog.partials.chips-bar', ['chips' => $chips], \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?>
 
-    {{-- Search --}}
-    @include('includes.frontend.vehicle-search-ajax', [
+    
+    <?php echo $__env->make('includes.frontend.vehicle-search-ajax', [
         'catalog' => $catalog,
         'uniqueId' => 'illustrations',
         'showAttributes' => false
-    ])
+    ], \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?>
 </div>
 
-{{-- Illustration Image Container - Responsive --}}
+
 <div class="container">
     <div class="row justify-content-center">
         <div class="col-12 col-md-10 col-lg-8">
@@ -321,7 +339,8 @@
                 <div class="card-header bg-white border-0 py-3">
                     <h5 class="mb-0 text-center text-md-start">
                         <i class="fas fa-image me-2 d-none d-md-inline"></i>
-                        {{ $category->localized_name ?? $category->full_code }}
+                        <?php echo e($category->localized_name ?? $category->full_code); ?>
+
                     </h5>
                 </div>
                 <div class="card-body p-2 p-md-3">
@@ -330,8 +349,8 @@
                             <div class="view-options__body">
                                 <div id="zoom_container">
                                     <img id="image"
-                                         src="{{ Storage::url($category->images) }}"
-                                         alt="{{ $category->localized_name ?? $category->full_code }}" />
+                                         src="<?php echo e(Storage::url($category->images)); ?>"
+                                         alt="<?php echo e($category->localized_name ?? $category->full_code); ?>" />
                                     <div class="landmarks" data-show-at-zoom="0" data-allow-drag="false"></div>
                                 </div>
                             </div>
@@ -342,22 +361,24 @@
         </div>
     </div>
 </div>
-@endsection
+<?php $__env->stopSection(); ?>
 
-@push('scripts')
-{{-- ✅ تمرير IDs والسياق --}}
+<?php $__env->startPush('scripts'); ?>
+
 <script>
     window.catalogContext = {
-        sectionId:   {{ $section->id ?? 'null' }},
-        categoryId:  {{ $category->id ?? 'null' }},
-        catalogCode: '{{ $catalog->code ?? '' }}',
-        brandName:   '{{ optional($brand)->name ?? '' }}'
+        sectionId:   <?php echo e($section->id ?? 'null'); ?>,
+        categoryId:  <?php echo e($category->id ?? 'null'); ?>,
+        catalogCode: '<?php echo e($catalog->code ?? ''); ?>',
+        brandName:   '<?php echo e(optional($brand)->name ?? ''); ?>'
     };
-    let csrf = "{{ csrf_token() }}";
+    let csrf = "<?php echo e(csrf_token()); ?>";
 </script>
 
-{{-- سكربتات التكبير ثم سكربتنا --}}
-<script src="{{ asset('assets/front/js/jq-zoom.js') }}"></script>
-<script src="{{ asset('assets/front/js/preview.js') }}"></script>
-<script src="{{ asset('assets/front/js/ill/illustrated.js') }}?v={{ time() }}"></script>
-@endpush
+
+<script src="<?php echo e(asset('assets/front/js/jq-zoom.js')); ?>"></script>
+<script src="<?php echo e(asset('assets/front/js/preview.js')); ?>"></script>
+<script src="<?php echo e(asset('assets/front/js/ill/illustrated.js')); ?>?v=<?php echo e(time()); ?>"></script>
+<?php $__env->stopPush(); ?>
+
+<?php echo $__env->make('layouts.front3', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?><?php /**PATH C:\Users\hp\Herd\new\resources\views/catalog/illustrations.blade.php ENDPATH**/ ?>

@@ -110,9 +110,9 @@ class SearchApiController extends Controller
 
         // بناء رابط التوجيه
         $redirectUrl = route('tree.level1', [
-            'id'   => $brandName,
-            'data' => $vinData->catalogCode,
-            'vin'  => $vinData->vin,
+            'brand'   => $brandName,
+            'catalog' => $vinData->catalogCode,
+            'vin'     => $vinData->vin,
         ]);
 
         return response()->json([

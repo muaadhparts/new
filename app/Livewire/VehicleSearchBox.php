@@ -321,8 +321,8 @@ class VehicleSearchBox extends Component
                 $opt = $this->calloutOptions[0];
                 if (!empty($opt['key1']) && !empty($opt['key2']) && !empty($opt['key3'])) {
                     $this->singleRedirectUrl = route('illustrations', [
-                        'id'            => $this->catalog->brand->name,
-                        'data'          => $this->catalog->code,
+                        'brand'         => $this->catalog->brand->name,
+                        'catalog'       => $this->catalog->code,
                         'key1'          => $opt['key1'],
                         'key2'          => $opt['key2'],
                         'key3'          => $opt['key3'],

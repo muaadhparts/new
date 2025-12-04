@@ -6,27 +6,38 @@
     <div class="product-nav-wrapper mb-3">
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb text-uppercase mb-0 flex-wrap">
+                
                 <li class="breadcrumb-item">
                     <a class="text-black text-decoration-none" href="<?php echo e(route('front.index')); ?>">
                         <i class="fas fa-home d-md-none"></i>
                         <span class="d-none d-md-inline"><?php echo e(__('Home')); ?></span>
                     </a>
                 </li>
+
+                
                 <li class="breadcrumb-item">
                     <a class="text-black text-decoration-none" href="<?php echo e(route('catlogs.index', $brand->name)); ?>">
                         <?php echo e(strtoupper($brand->name)); ?>
 
                     </a>
                 </li>
+
+                
                 <?php if($vin): ?>
                     <li class="breadcrumb-item">
-                        <span class="text-muted">
-                            <i class="fas fa-car me-1"></i>
+                        <a class="text-black text-decoration-none" href="<?php echo e(route('tree.level1', [
+                            'brand' => $brand->name,
+                            'catalog' => $catalog->code,
+                            'vin' => $vin
+                        ])); ?>">
+                            <i class="fas fa-car d-md-none"></i>
                             <span class="d-none d-md-inline"><?php echo e($vin); ?></span>
                             <span class="d-md-none">VIN</span>
-                        </span>
+                        </a>
                     </li>
                 <?php endif; ?>
+
+                
                 <li class="breadcrumb-item active text-primary" aria-current="page">
                     <strong><?php echo e(strtoupper($catalog->shortName ?? $catalog->name ?? $catalog->code)); ?></strong>
                 </li>
@@ -70,6 +81,7 @@
                     'vin' => $vin
                 ])); ?>" class="text-decoration-none">
                     <div class="card border-0 shadow-sm h-100 hover-lift transition">
+                        
                         <div class="position-relative overflow-hidden rounded-top" style="padding-top: 75%;">
                             <img class="position-absolute top-0 start-0 w-100 h-100 object-fit-cover"
                                  src="<?php echo e($cat->thumbnail ? Storage::url($cat->thumbnail) : asset('assets/images/no-image.png')); ?>"
@@ -77,12 +89,14 @@
                                  loading="lazy"
                                  onerror="this.onerror=null; this.src='<?php echo e(asset('assets/images/no-image.png')); ?>';">
                         </div>
+
+                        
                         <div class="card-body p-2 p-md-3 text-center">
                             <h6 class="product-title text-dark fw-bold text-uppercase mb-1 fs-6 fs-md-5">
                                 <?php echo e($cat->full_code); ?>
 
                             </h6>
-                            <?php if($cat->label): ?>
+                            <?php if($cat->label ?? null): ?>
                                 <p class="text-muted small mb-0 d-none d-md-block"><?php echo e($cat->label); ?></p>
                             <?php endif; ?>
                         </div>

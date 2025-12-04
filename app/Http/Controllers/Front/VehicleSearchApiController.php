@@ -140,8 +140,8 @@ class VehicleSearchApiController extends Controller
                 $opt = $calloutOptions[0];
                 if (!empty($opt['key1']) && !empty($opt['key2']) && !empty($opt['key3'])) {
                     $redirectUrl = route('illustrations', [
-                        'id'            => $catalog->brand->name,
-                        'data'          => $catalog->code,
+                        'brand'         => $catalog->brand->name,
+                        'catalog'       => $catalog->code,
                         'key1'          => $opt['key1'],
                         'key2'          => $opt['key2'],
                         'key3'          => $opt['key3'],
@@ -167,8 +167,8 @@ class VehicleSearchApiController extends Controller
                 $url = null;
                 if (!empty($opt['key1']) && !empty($opt['key2']) && !empty($opt['key3'])) {
                     $url = route('illustrations', [
-                        'id'            => $catalog->brand->name,
-                        'data'          => $catalog->code,
+                        'brand'         => $catalog->brand->name,
+                        'catalog'       => $catalog->code,
                         'key1'          => $opt['key1'],
                         'key2'          => $opt['key2'],
                         'key3'          => $opt['key3'],

@@ -218,10 +218,13 @@ class VehicleCatalogController extends Controller
         $chips = $this->buildChips($selectedFilters);
         $isVinMode = !empty($vin);
 
+        // Rename for view compatibility
+        $category = $parentCategory;
+
         return view('catalog.level2', compact(
             'brand',
             'catalog',
-            'parentCategory',
+            'category',
             'categories',
             'filters',
             'selectedFilters',
@@ -297,11 +300,15 @@ class VehicleCatalogController extends Controller
         $chips = $this->buildChips($selectedFilters);
         $isVinMode = !empty($vin);
 
+        // Rename for view compatibility
+        $parentCategory1 = $level1Category;
+        $parentCategory2 = $level2Category;
+
         return view('catalog.level3', compact(
             'brand',
             'catalog',
-            'level1Category',
-            'level2Category',
+            'parentCategory1',
+            'parentCategory2',
             'categories',
             'filters',
             'selectedFilters',
@@ -373,12 +380,17 @@ class VehicleCatalogController extends Controller
         $sectionId = $request->get('section_id');
         $categoryId = $request->get('category_id');
 
+        // Rename for view compatibility
+        $parentCategory1 = $level1Category;
+        $parentCategory2 = $level2Category;
+        $category = $level3Category;
+
         return view('catalog.illustrations', compact(
             'brand',
             'catalog',
-            'level1Category',
-            'level2Category',
-            'level3Category',
+            'parentCategory1',
+            'parentCategory2',
+            'category',
             'section',
             'illustration',
             'callouts',

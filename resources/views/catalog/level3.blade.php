@@ -1,25 +1,45 @@
 @extends('layouts.front3')
 
-@section('title', ($level2Category->label ?? $level2Category->full_code) . ' - ' . __('Parts'))
+@section('title', ($parentCategory2->slug ?? $parentCategory2->full_code) . ' - ' . __('Parts'))
 
 @section('content')
 <div class="container py-3">
-    {{-- Breadcrumb --}}
+    {{-- Breadcrumb - Responsive --}}
     <div class="product-nav-wrapper mb-3">
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb text-uppercase mb-0 flex-wrap">
+                {{-- Home --}}
                 <li class="breadcrumb-item">
                     <a class="text-black text-decoration-none" href="{{ route('front.index') }}">
                         <i class="fas fa-home d-md-none"></i>
                         <span class="d-none d-md-inline">{{ __('Home') }}</span>
                     </a>
                 </li>
+
+                {{-- Brand --}}
                 <li class="breadcrumb-item">
                     <a class="text-black text-decoration-none" href="{{ route('catlogs.index', $brand->name) }}">
                         {{ strtoupper($brand->name) }}
                     </a>
                 </li>
-                <li class="breadcrumb-item">
+
+                {{-- VIN --}}
+                @if($vin)
+                    <li class="breadcrumb-item">
+                        <a class="text-black text-decoration-none" href="{{ route('tree.level1', [
+                            'brand' => $brand->name,
+                            'catalog' => $catalog->code,
+                            'vin' => $vin
+                        ]) }}">
+                            <i class="fas fa-car d-md-none"></i>
+                            <span class="d-none d-md-inline">{{ $vin }}</span>
+                            <span class="d-md-none">VIN</span>
+                        </a>
+                    </li>
+                @endif
+
+                {{-- Catalog --}}
+                <li class="breadcrumb-item d-none d-md-block">
                     <a class="text-black text-decoration-none" href="{{ route('tree.level1', [
                         'brand' => $brand->name,
                         'catalog' => $catalog->code,
@@ -28,33 +48,32 @@
                         {{ strtoupper($catalog->shortName ?? $catalog->name ?? $catalog->code) }}
                     </a>
                 </li>
-                <li class="breadcrumb-item">
+
+                {{-- Level 1 --}}
+                @if($parentCategory1)
+                <li class="breadcrumb-item d-none d-lg-block">
                     <a class="text-black text-decoration-none" href="{{ route('tree.level2', [
                         'brand' => $brand->name,
                         'catalog' => $catalog->code,
-                        'key1' => $key1,
+                        'key1' => $parentCategory1->full_code,
                         'vin' => $vin
                     ]) }}">
-                        {{ strtoupper($key1) }}
+                        {{ strtoupper($parentCategory1->slug ?? $parentCategory1->full_code) }}
                     </a>
                 </li>
-                @if($vin)
-                    <li class="breadcrumb-item">
-                        <span class="text-muted">
-                            <i class="fas fa-car me-1"></i>
-                            <span class="d-none d-md-inline">{{ $vin }}</span>
-                            <span class="d-md-none">VIN</span>
-                        </span>
-                    </li>
                 @endif
+
+                {{-- Level 2 - Current --}}
+                @if($parentCategory2)
                 <li class="breadcrumb-item active text-primary" aria-current="page">
-                    <strong>{{ strtoupper($key2) }}</strong>
+                    <strong>{{ strtoupper($parentCategory2->slug ?? $parentCategory2->full_code) }}</strong>
                 </li>
+                @endif
             </ol>
         </nav>
     </div>
 
-    {{-- Search Box & Specs Button --}}
+    {{-- Search Box - Full Width on Mobile --}}
     <div class="row mb-4">
         <div class="col-12">
             {{-- Specifications Button --}}
@@ -70,7 +89,7 @@
             {{-- Chips Bar --}}
             @include('catalog.partials.chips-bar', ['chips' => $chips])
 
-            {{-- Search Box --}}
+            {{-- Search --}}
             @include('includes.frontend.vehicle-search-ajax', [
                 'catalog' => $catalog,
                 'uniqueId' => 'level3',
@@ -79,57 +98,54 @@
         </div>
     </div>
 
-    {{-- Parts Grid --}}
-    <div class="row g-3 g-md-4 mb-5">
-        @forelse ($categories as $part)
-            @php
-                $isAllowed = empty($allowedCodes) || in_array($part->full_code, $allowedCodes);
-            @endphp
-            <div class="col-6 col-sm-6 col-md-4 col-lg-3">
-                <a href="{{ route('illustrations', [
-                    'brand' => $brand->name,
-                    'catalog' => $catalog->code,
-                    'key1' => $key1,
-                    'key2' => $key2,
-                    'key3' => $part->full_code,
-                    'vin' => $vin
-                ]) }}" class="text-decoration-none {{ !$isAllowed ? 'opacity-50' : '' }}">
-                    <div class="card border-0 shadow-sm h-100 hover-lift transition {{ !$isAllowed ? 'border-secondary' : '' }}">
-                        <div class="position-relative overflow-hidden rounded-top" style="padding-top: 75%;">
-                            <img class="position-absolute top-0 start-0 w-100 h-100 object-fit-cover"
-                                 src="{{ $part->thumbnail ? Storage::url($part->thumbnail) : asset('assets/images/no-image.png') }}"
-                                 alt="{{ $part->full_code }}"
-                                 loading="lazy"
-                                 onerror="this.onerror=null; this.src='{{ asset('assets/images/no-image.png') }}';">
+    {{-- Categories Grid - Responsive --}}
+    @if($categories && $categories->count() > 0)
+        <div class="row g-3 g-md-4 mb-5">
+            @foreach ($categories as $cat)
+                <div class="col-6 col-sm-6 col-md-4 col-lg-3">
+                    <a href="{{ route('illustrations', [
+                        'brand' => $brand->name,
+                        'catalog' => $catalog->code,
+                        'key1' => $parentCategory1->full_code,
+                        'key2' => $parentCategory2->full_code,
+                        'key3' => $cat->full_code,
+                        'vin' => $vin
+                    ]) }}" class="text-decoration-none">
+                        <div class="card border-0 shadow-sm h-100 hover-lift transition">
+                            {{-- Image Container - Maintain Aspect Ratio --}}
+                            <div class="position-relative overflow-hidden rounded-top" style="padding-top: 75%;">
+                                <img class="position-absolute top-0 start-0 w-100 h-100 object-fit-cover"
+                                     src="{{ ($cat->thumbnail ?? null) ? Storage::url($cat->thumbnail) : asset('assets/images/no-image.png') }}"
+                                     alt="{{ $cat->full_code }}"
+                                     loading="lazy"
+                                     onerror="this.onerror=null; this.src='{{ asset('assets/images/no-image.png') }}';">
+                            </div>
 
-                            @if(!$isAllowed)
-                                <div class="position-absolute top-0 end-0 m-2">
-                                    <span class="badge bg-warning text-dark">
-                                        <i class="fas fa-filter"></i>
-                                    </span>
-                                </div>
-                            @endif
+                            {{-- Card Body - Responsive Text --}}
+                            <div class="card-body p-2 p-md-3 text-center">
+                                <h6 class="product-title text-dark fw-bold text-uppercase mb-1 fs-6 fs-md-5">
+                                    {{ $cat->full_code }}
+                                </h6>
+                                @if($cat->label_ar ?? $cat->label_en ?? null)
+                                    <p class="text-muted small mb-0 d-none d-md-block">{{ $cat->label_ar ?? $cat->label_en }}</p>
+                                @endif
+                            </div>
                         </div>
-                        <div class="card-body p-2 p-md-3 text-center">
-                            <h6 class="product-title text-dark fw-bold text-uppercase mb-1 fs-6 fs-md-5">
-                                {{ $part->full_code }}
-                            </h6>
-                            @if($part->label)
-                                <p class="text-muted small mb-0 d-none d-md-block">{{ $part->label }}</p>
-                            @endif
-                        </div>
-                    </div>
-                </a>
-            </div>
-        @empty
+                    </a>
+                </div>
+            @endforeach
+        </div>
+    @else
+        <div class="row">
             <div class="col-12">
                 <div class="alert alert-info text-center">
                     <i class="fas fa-info-circle me-2"></i>
-                    {{ __('No parts available') }}
+                    <h5 class="mb-2">{{ __('No categories available') }}</h5>
+                    <p class="mb-0">{{ __('There are no categories in this level.') }}</p>
                 </div>
             </div>
-        @endforelse
-    </div>
+        </div>
+    @endif
 </div>
 
 <style>
@@ -142,9 +158,6 @@
 }
 .object-fit-cover {
     object-fit: cover;
-}
-.opacity-50 {
-    opacity: 0.5;
 }
 @media (max-width: 576px) {
     .breadcrumb-item + .breadcrumb-item::before {

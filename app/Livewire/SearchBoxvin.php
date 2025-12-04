@@ -102,9 +102,9 @@ class SearchBoxvin extends Component
 
         // بناء الرابط والتوجيه
         $redirectUrl = route('tree.level1', [
-            'id'   => $brandName,
-            'data' => $vinData->catalogCode,
-            'vin'  => $vinData->vin,
+            'brand'   => $brandName,
+            'catalog' => $vinData->catalogCode,
+            'vin'     => $vinData->vin,
         ]);
 
         \Log::info('SearchBoxvin redirecting to', ['url' => $redirectUrl]);
