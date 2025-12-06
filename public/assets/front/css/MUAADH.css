@@ -1,13 +1,35 @@
 /**
- * MUAADH Theme - Unified Styles
+ * ================================================================================
+ * MUAADH THEME - UNIFIED STYLES
+ * ================================================================================
+ *
+ * THIS IS THE ONLY FILE FOR ADDING OR MODIFYING CUSTOM CSS IN THIS PROJECT
+ *
+ * ================================================================================
+ * GUIDELINES FOR AI AGENTS:
+ * ================================================================================
+ * 1. ALL new CSS must be added to this file - NO exceptions
+ * 2. DO NOT add <style> tags in Blade files - add styles here instead
+ * 3. DO NOT create new CSS files - use sections in this file
+ * 4. DO NOT modify style.css (legacy base file - frozen)
+ * 5. Use CSS variables defined below (--muaadh-*)
+ * 6. Add new styles under appropriate section or create new numbered section
+ * 7. Follow existing naming convention: .muaadh-* or descriptive class names
+ * 8. Include responsive styles with the component, not in separate section
+ *
+ * ================================================================================
+ * FILE INFO:
+ * ================================================================================
  * Main theme file for the entire project
- *
  * Controls: Colors, Fonts, Buttons, Cards, Tables, Forms, Badges
- * Used by: front, admin, vendor layouts
+ * Used by: front.blade.php, admin.blade.php, vendor.blade.php, load.blade.php
  *
- * Version: 2.0.0
+ * Version: 2.1.0
+ * Last Updated: 2024
  *
- * STRUCTURE:
+ * ================================================================================
+ * STRUCTURE (Sections):
+ * ================================================================================
  * 1.  Root Variables (Colors, Fonts, Spacing, Shadows)
  * 2.  Base Typography
  * 3.  Buttons
@@ -21,12 +43,22 @@
  * 11. Quantity Control
  * 12. Loading & Spinner
  * 13. Empty State
- * 14. Catalog Components (from catalog-unified.css)
+ * 14. Catalog Components
  * 15. Quick View
  * 16. Specifications & Chips
  * 17. Utility Classes
  * 18. RTL Support
  * 19. Responsive
+ * 20. Custom Project Styles
+ * 21. AutoComplete Search
+ * 22. Catalog Level Cards
+ * 23. Illustrations / Zoom Container
+ * 24. Callout Modal
+ * 25. Search Results Page
+ * 26. VIN Search Modal
+ * 27. Shipment Tracking
+ *
+ * TO ADD NEW SECTION: Use next number (28, 29, etc.) with comment block
  */
 
 /* ==========================================================================
@@ -1896,4 +1928,458 @@
     .single-offer-product.verticle .promo-img {
         height: 400px !important;
     }
+}
+
+/* ==========================================================================
+   22. CATALOG LEVEL CARDS (from level1, level2, level3)
+   ========================================================================== */
+
+/* Hover Lift Effect - for catalog cards */
+.hover-lift {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.hover-lift:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+}
+
+/* Object Fit Cover */
+.object-fit-cover {
+    object-fit: cover;
+}
+
+/* Aspect Ratio Container (3:4 ratio) */
+.aspect-ratio-3-4 {
+    padding-top: 75%;
+    position: relative;
+    overflow: hidden;
+}
+
+.aspect-ratio-3-4 > img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* ==========================================================================
+   23. ILLUSTRATIONS / ZOOM CONTAINER (from illustrations.blade.php)
+   ========================================================================== */
+
+/* Landmarks Styles */
+#zoom_container .landmarks {
+    position: absolute;
+    z-index: 10;
+    top: 0;
+    left: 0;
+}
+
+#zoom_container .landmarks .item {
+    position: absolute;
+    text-align: center;
+    display: none;
+}
+
+.hovered {
+    border: 2px solid rgb(219, 16, 16) !important;
+    background-color: #bce8f1 !important;
+}
+
+div[id*='zoom_container'] .landmarks .lable div {
+    z-index: 19999;
+    text-align: center;
+    vertical-align: middle;
+    border: 2px solid blue;
+    background-color: transparent;
+    display: table-cell;
+    cursor: pointer;
+    padding-left: 4px !important;
+    padding-right: 4px !important;
+    position: absolute;
+    border-radius: 999px;
+    font: bold 15px tahoma, arial, verdana, sans-serif;
+}
+
+/* Callout Labels */
+.callout-label,
+.correct-callout,
+.bbdover {
+    cursor: pointer !important;
+    -webkit-tap-highlight-color: rgba(0, 123, 255, 0.2);
+}
+
+.callout-label:hover .bbdover,
+.bbdover:hover {
+    background-color: rgba(0, 123, 255, 0.3) !important;
+    opacity: 1 !important;
+}
+
+/* Loading Skeletons */
+.inner-card {
+    height: 20px;
+    background-color: #eee;
+}
+
+.card-1 {
+    height: 200px;
+    background-color: #eee;
+}
+
+.card-2 {
+    height: 130px;
+}
+
+.h-screen {
+    height: 100vh;
+}
+
+/* Pulse Animation */
+.animate-pulse {
+    animation: muaadh-pulse 2s cubic-bezier(.4, 0, .6, 1) infinite;
+}
+
+@keyframes muaadh-pulse {
+    50% {
+        opacity: .2;
+    }
+}
+
+/* Illustrations Mobile Responsive */
+@media (max-width: 768px) {
+    .smoothZoom_controls {
+        transform: scale(0.6) !important;
+        transform-origin: top right !important;
+    }
+
+    .smoothZoom_controls a {
+        width: 24px !important;
+        height: 24px !important;
+        font-size: 16px !important;
+        line-height: 24px !important;
+    }
+
+    .vehicle-search-wrapper,
+    .container,
+    main {
+        transform: none !important;
+        zoom: 1 !important;
+    }
+
+    #zoom_container {
+        margin: 0 auto !important;
+        padding: 0 !important;
+        border: 0 !important;
+        transform: none !important;
+    }
+
+    #zoom_container img#image {
+        display: block;
+        margin: 0;
+    }
+
+    .callout-label {
+        cursor: pointer !important;
+        -webkit-tap-highlight-color: rgba(0, 123, 255, 0.3);
+    }
+
+    .bbdover {
+        cursor: pointer !important;
+        min-width: 40px !important;
+        min-height: 40px !important;
+    }
+
+    .card-body .products-view,
+    .card-body .view-options__body {
+        padding: 0 !important;
+    }
+
+    .products-view__options {
+        margin: 0 !important;
+    }
+}
+
+/* ==========================================================================
+   24. CALLOUT MODAL (from callout-modal.blade.php)
+   ========================================================================== */
+
+/* Callout Modal Body */
+.callout-modal-body {
+    max-height: 70vh;
+    overflow: auto;
+    padding: 1rem;
+    transition: opacity .2s ease-in-out;
+}
+
+@media (max-width: 768px) {
+    .callout-modal-body {
+        max-height: 80vh;
+        padding: 0.5rem;
+    }
+}
+
+/* Callout Table */
+.callout-modal-body .table {
+    border-radius: var(--muaadh-radius);
+    overflow: hidden;
+    font-size: 0.875rem;
+}
+
+@media (max-width: 768px) {
+    .callout-modal-body .table {
+        font-size: 0.75rem;
+        border-radius: 0;
+    }
+
+    .callout-modal-body .table th,
+    .callout-modal-body .table td {
+        padding: 0.25rem 0.15rem !important;
+        font-size: 0.7rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .callout-modal-body .table .d-sm-none {
+        display: none !important;
+    }
+}
+
+.callout-modal-body .table thead th {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    background: var(--muaadh-bg-light);
+    font-weight: 600;
+    color: var(--muaadh-text);
+    white-space: nowrap;
+}
+
+.callout-modal-body .table-hover tbody tr:hover {
+    background-color: var(--muaadh-bg-light);
+}
+
+.callout-modal-body .table th,
+.callout-modal-body .table td {
+    vertical-align: middle;
+    text-align: center;
+}
+
+/* Part Number Links */
+.callout-modal-body .table td:first-child a {
+    font-weight: 700;
+    text-decoration: none;
+    font-size: 0.85rem;
+}
+
+@media (max-width: 768px) {
+    .callout-modal-body .table td:first-child a {
+        font-size: 0.7rem;
+    }
+}
+
+/* Callout Badges - Responsive */
+.callout-modal-body .table .badge {
+    font-size: .75rem;
+}
+
+@media (max-width: 768px) {
+    .callout-modal-body .table .badge {
+        font-size: 0.6rem;
+        padding: 0.15em 0.4em;
+    }
+}
+
+/* Callout Action Buttons */
+.callout-modal-body .ill-actions {
+    display: flex;
+    gap: .25rem;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+@media (max-width: 768px) {
+    .callout-modal-body .ill-actions {
+        gap: 0.15rem;
+    }
+
+    .callout-modal-body .ill-actions .btn {
+        font-size: 0.65rem;
+        padding: 0.2rem 0.4rem;
+    }
+
+    .callout-modal-body .ill-actions .btn i {
+        font-size: 0.7rem;
+    }
+}
+
+#ill-back-btn.d-none {
+    display: none !important;
+}
+
+/* Callout Modal Footer */
+@media (max-width: 768px) {
+    .modal-footer small {
+        font-size: 0.7rem;
+    }
+}
+
+/* ==========================================================================
+   25. SEARCH RESULTS PAGE (from search-results.blade.php)
+   ========================================================================== */
+
+/* Search Results Section */
+.search-results-section {
+    background: var(--muaadh-bg-light);
+    min-height: 100vh;
+}
+
+.search-box-wrapper {
+    background: var(--muaadh-white);
+    border-radius: var(--muaadh-radius);
+    padding: 1.5rem;
+    box-shadow: var(--muaadh-shadow);
+}
+
+/* Results Header */
+.results-header {
+    border: 1.5px solid var(--muaadh-border);
+    border-radius: var(--muaadh-radius);
+    transition: var(--muaadh-transition);
+}
+
+.results-header:hover {
+    border-color: var(--muaadh-primary);
+    box-shadow: 0 4px 16px rgba(255, 76, 59, 0.1);
+}
+
+.results-header h4 {
+    color: var(--muaadh-text-dark);
+    font-weight: 700;
+}
+
+/* No Results */
+.no-results-wrapper .card {
+    border: 1.5px solid var(--muaadh-border);
+    border-radius: var(--muaadh-radius);
+}
+
+/* Alternatives Section */
+.alternatives-section .section-header h3 {
+    font-weight: 700;
+    position: relative;
+    display: inline-block;
+    padding-bottom: 0.5rem;
+}
+
+.alternatives-section .section-header hr {
+    border-width: 2px;
+    opacity: 0.3;
+}
+
+/* Filters */
+.filters-row {
+    padding-top: 1rem;
+    border-top: 1px solid var(--muaadh-border);
+}
+
+.filter-item {
+    min-width: 180px;
+}
+
+.filter-label {
+    font-size: var(--muaadh-font-sm);
+    color: var(--muaadh-text-muted);
+    display: block;
+}
+
+.filter-item .form-select {
+    min-width: 180px;
+    border-color: var(--muaadh-border);
+    transition: var(--muaadh-transition);
+}
+
+.filter-item .form-select:focus {
+    border-color: var(--muaadh-primary);
+    box-shadow: 0 0 0 0.2rem var(--muaadh-primary-light);
+}
+
+@media (max-width: 767px) {
+    .search-box-wrapper {
+        padding: 1rem;
+    }
+
+    .results-header h4 {
+        font-size: 1.25rem;
+    }
+
+    .alternatives-section .section-header h3 {
+        font-size: 1.5rem;
+    }
+
+    .filter-item {
+        min-width: 100%;
+        flex: 1 1 100%;
+    }
+
+    .filter-item .form-select {
+        min-width: 100%;
+    }
+
+    .filters-row {
+        flex-direction: column;
+    }
+}
+
+/* ==========================================================================
+   26. VIN SEARCH MODAL (Modern Gradient Style)
+   ========================================================================== */
+
+.vin-modal-content {
+    border-radius: 20px;
+    border: none;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.vin-modal-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: var(--muaadh-white);
+    padding: 1.5rem 2rem;
+    border-bottom: none;
+}
+
+.vin-modal-header .btn-close {
+    filter: brightness(0) invert(1);
+}
+
+.vin-modal-body {
+    background: var(--muaadh-bg-light);
+    padding: 1.5rem;
+}
+
+/* ==========================================================================
+   27. SHIPMENT TRACKING (from my-shipments.blade.php)
+   ========================================================================== */
+
+/* Shipment Card */
+.shipment-card {
+    border: none;
+    border-radius: 12px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.shipment-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1) !important;
+}
+
+.status-icon {
+    flex-shrink: 0;
+}
+
+/* Shipments Page */
+.gs-myshipments-page {
+    min-height: 60vh;
 }

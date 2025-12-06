@@ -107,7 +107,7 @@
                 ]) }}" class="text-decoration-none">
                     <div class="card border-0 shadow-sm h-100 hover-lift transition">
                         {{-- Image Container - Maintain Aspect Ratio --}}
-                        <div class="position-relative overflow-hidden rounded-top" style="padding-top: 75%;">
+                        <div class="position-relative overflow-hidden rounded-top aspect-ratio-3-4">
                             <img class="position-absolute top-0 start-0 w-100 h-100 object-fit-cover"
                                  src="{{ ($cat->thumbnail ?? null) ? Storage::url($cat->thumbnail) : asset('assets/images/no-image.png') }}"
                                  alt="{{ $cat->full_code }}"
@@ -140,16 +140,5 @@
     </div>
 </div>
 
-<style>
-.hover-lift {
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-.hover-lift:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.15) !important;
-}
-.object-fit-cover {
-    object-fit: cover;
-}
-</style>
+{{-- Styles moved to MUAADH.css: .hover-lift, .object-fit-cover, .aspect-ratio-3-4 --}}
 @endsection

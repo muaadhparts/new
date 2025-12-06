@@ -1,3 +1,22 @@
+{{--
+================================================================================
+    MUAADH THEME - ADMIN LAYOUT
+================================================================================
+    CSS GUIDELINES FOR AI AGENTS:
+    -----------------------------
+    1. The ONLY file for adding/modifying custom CSS is: public/assets/front/css/MUAADH.css
+    2. DO NOT add <style> tags in Blade files - move all styles to MUAADH.css
+    3. DO NOT create new CSS files - use MUAADH.css sections instead
+    4. DO NOT modify style.css or admin CSS files (legacy base files)
+    5. Use CSS variables from MUAADH.css (--muaadh-primary, --muaadh-radius, etc.)
+    6. Add new styles under appropriate section comments in MUAADH.css
+
+    FILE STRUCTURE:
+    - style.css = Legacy base (DO NOT MODIFY)
+    - MUAADH.css = Main theme file (ALL CUSTOMIZATIONS HERE)
+    - Admin CSS files in assets/admin/css = DO NOT MODIFY
+================================================================================
+--}}
 <!doctype html>
 @php
 	// Get language from Session (same as frontend)

@@ -1,3 +1,22 @@
+{{--
+================================================================================
+    MUAADH THEME - FRONTEND LAYOUT
+================================================================================
+    CSS GUIDELINES FOR AI AGENTS:
+    -----------------------------
+    1. The ONLY file for adding/modifying custom CSS is: public/assets/front/css/MUAADH.css
+    2. DO NOT add <style> tags in Blade files - move all styles to MUAADH.css
+    3. DO NOT create new CSS files - use MUAADH.css sections instead
+    4. DO NOT modify style.css (legacy base file)
+    5. Use CSS variables from MUAADH.css (--muaadh-primary, --muaadh-radius, etc.)
+    6. Add new styles under appropriate section comments in MUAADH.css
+
+    FILE STRUCTURE:
+    - style.css = Legacy base (DO NOT MODIFY)
+    - MUAADH.css = Main theme file (ALL CUSTOMIZATIONS HERE)
+    - External libraries (bootstrap, slick, etc.) = DO NOT MODIFY
+================================================================================
+--}}
 <!DOCTYPE html>
 <html lang="en" dir="{{ $langg && $langg->rtl == 1 ? 'rtl' : 'ltr' }}">
 

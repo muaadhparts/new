@@ -106,15 +106,15 @@
 {{-- VIN Search Modal --}}
 <div class="modal fade" id="vinSearchModalResults" tabindex="-1" aria-labelledby="vinSearchModalResultsLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">
-        <div class="modal-content" style="border-radius: 20px; border: none; overflow: hidden; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);">
-            <div class="modal-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #fff; padding: 1.5rem 2rem; border-bottom: none;">
+        <div class="modal-content vin-modal-content">
+            <div class="modal-header vin-modal-header">
                 <h5 class="modal-title fw-bold" id="vinSearchModalResultsLabel">
                     <i class="fas fa-car me-2"></i>
                     @lang('Search by VIN')
                 </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" style="filter: brightness(0) invert(1);"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body p-4" style="background: #f8fafc;">
+            <div class="modal-body vin-modal-body">
                 @include('includes.frontend.search-vin-ajax', ['uniqueId' => 'searchResultsModal'])
             </div>
         </div>
@@ -122,106 +122,4 @@
 </div>
 @endsection
 
-@section('css')
-<style>
-/* Search Results Page Styles */
-.search-results-section {
-    background: #f8f9fa;
-    min-height: 100vh;
-}
-
-.search-box-wrapper {
-    background: #fff;
-    border-radius: var(--border-radius, 0.5rem);
-    padding: 1.5rem;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-}
-
-.results-header {
-    border: 1.5px solid #dee2e6;
-    border-radius: var(--border-radius, 0.5rem);
-    transition: all 0.3s ease;
-}
-
-.results-header:hover {
-    border-color: var(--primary-color, #0d6efd);
-    box-shadow: 0 4px 16px rgba(13, 110, 253, 0.1);
-}
-
-.results-header h4 {
-    color: var(--dark-color, #212529);
-    font-weight: 700;
-}
-
-.no-results-wrapper .card {
-    border: 1.5px solid #dee2e6;
-    border-radius: var(--border-radius, 0.5rem);
-}
-
-.alternatives-section .section-header h3 {
-    font-weight: 700;
-    position: relative;
-    display: inline-block;
-    padding-bottom: 0.5rem;
-}
-
-.alternatives-section .section-header hr {
-    border-width: 2px;
-    opacity: 0.3;
-}
-
-/* Filters Styling */
-.filters-row {
-    padding-top: 1rem;
-    border-top: 1px solid #dee2e6;
-}
-
-.filter-item {
-    min-width: 180px;
-}
-
-.filter-label {
-    font-size: 0.875rem;
-    color: #495057;
-    display: block;
-}
-
-.filter-item .form-select {
-    min-width: 180px;
-    border-color: #dee2e6;
-    transition: all 0.3s ease;
-}
-
-.filter-item .form-select:focus {
-    border-color: var(--primary-color, #0d6efd);
-    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.1);
-}
-
-@media (max-width: 767px) {
-    .search-box-wrapper {
-        padding: 1rem;
-    }
-
-    .results-header h4 {
-        font-size: 1.25rem;
-    }
-
-    .alternatives-section .section-header h3 {
-        font-size: 1.5rem;
-    }
-
-    .filter-item {
-        min-width: 100%;
-        flex: 1 1 100%;
-    }
-
-    .filter-item .form-select {
-        min-width: 100%;
-    }
-
-    .filters-row {
-        flex-direction: column;
-    }
-}
-</style>
-@endsection
+{{-- Styles moved to MUAADH.css: Search Results, Filters, VIN Modal --}}

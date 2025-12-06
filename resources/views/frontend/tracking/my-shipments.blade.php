@@ -142,20 +142,5 @@
     </div>
 </div>
 
-<style>
-.shipment-card {
-    border: none;
-    border-radius: 12px;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.shipment-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 8px 25px rgba(0,0,0,0.1) !important;
-}
-
-.status-icon {
-    flex-shrink: 0;
-}
-</style>
+{{-- Styles moved to MUAADH.css: .shipment-card, .status-icon --}}
 @endsection
