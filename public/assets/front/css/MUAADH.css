@@ -1,0 +1,1657 @@
+/**
+ * MUAADH Theme - Unified Styles
+ * Main theme file for the entire project
+ *
+ * Controls: Colors, Fonts, Buttons, Cards, Tables, Forms, Badges
+ * Used by: front, admin, vendor layouts
+ *
+ * Version: 2.0.0
+ *
+ * STRUCTURE:
+ * 1.  Root Variables (Colors, Fonts, Spacing, Shadows)
+ * 2.  Base Typography
+ * 3.  Buttons
+ * 4.  Cards
+ * 5.  Tables
+ * 6.  Forms
+ * 7.  Badges & Status
+ * 8.  Alerts
+ * 9.  Modals
+ * 10. Breadcrumb
+ * 11. Quantity Control
+ * 12. Loading & Spinner
+ * 13. Empty State
+ * 14. Catalog Components (from catalog-unified.css)
+ * 15. Quick View
+ * 16. Specifications & Chips
+ * 17. Utility Classes
+ * 18. RTL Support
+ * 19. Responsive
+ */
+
+/* ==========================================================================
+   1. ROOT VARIABLES - Theme Configuration
+   ========================================================================== */
+:root {
+    /* ===== Primary Brand Colors ===== */
+    --muaadh-primary: #ff4c3b;           /* Main brand color (from style.css) */
+    --muaadh-primary-hover: #bd1000;
+    --muaadh-primary-light: #fff0ee;
+    --muaadh-primary-rgb: 255, 76, 59;
+
+    /* ===== Secondary Colors ===== */
+    --muaadh-secondary: #745d5d;
+    --muaadh-secondary-hover: #5a4848;
+
+    /* ===== Status Colors ===== */
+    --muaadh-success: #27be69;
+    --muaadh-success-hover: #1fa058;
+    --muaadh-success-light: #d4edda;
+
+    --muaadh-warning: #fac03c;
+    --muaadh-warning-hover: #e5ad2e;
+    --muaadh-warning-light: #fff3cd;
+
+    --muaadh-danger: #f2415a;
+    --muaadh-danger-hover: #d9324a;
+    --muaadh-danger-light: #f8d7da;
+
+    --muaadh-info: #0d6efd;
+    --muaadh-info-hover: #0b5ed7;
+    --muaadh-info-light: #cfe2ff;
+
+    /* ===== Neutral Colors ===== */
+    --muaadh-dark: #1f0300;
+    --muaadh-dark-alt: #030712;
+    --muaadh-light: #f8f9fa;
+    --muaadh-light-alt: #f6f6f6;
+    --muaadh-white: #ffffff;
+    --muaadh-black: #000000;
+
+    /* ===== Text Colors ===== */
+    --muaadh-text: #344054;
+    --muaadh-text-dark: #1f0300;
+    --muaadh-text-muted: #666666;
+    --muaadh-text-light: #9a8e8c;
+
+    /* ===== Border Colors ===== */
+    --muaadh-border: #e0e0e0;
+    --muaadh-border-light: #f0f0f0;
+    --muaadh-border-dark: #dee2e6;
+
+    /* ===== Background Colors ===== */
+    --muaadh-bg-light: #f8f9fa;
+    --muaadh-bg-gray: #e9ecef;
+    --muaadh-bg-page: #f6f6f6;
+
+    /* ===== Shadows ===== */
+    --muaadh-shadow-xs: 0 1px 2px rgba(0,0,0,0.04);
+    --muaadh-shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
+    --muaadh-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    --muaadh-shadow-lg: 0 4px 16px rgba(0,0,0,0.15);
+    --muaadh-shadow-xl: 0 8px 30px rgba(0,0,0,0.2);
+
+    /* ===== Border Radius ===== */
+    --muaadh-radius-xs: 3px;
+    --muaadh-radius-sm: 4px;
+    --muaadh-radius: 8px;
+    --muaadh-radius-lg: 12px;
+    --muaadh-radius-xl: 16px;
+    --muaadh-radius-pill: 50px;
+    --muaadh-radius-circle: 50%;
+
+    /* ===== Spacing ===== */
+    --muaadh-spacing-xs: 4px;
+    --muaadh-spacing-sm: 8px;
+    --muaadh-spacing: 16px;
+    --muaadh-spacing-lg: 24px;
+    --muaadh-spacing-xl: 32px;
+    --muaadh-spacing-2xl: 48px;
+
+    /* ===== Font Family ===== */
+    --muaadh-font-primary: 'Poppins', sans-serif;
+    --muaadh-font-heading: 'Saira', sans-serif;
+
+    /* ===== Font Sizes ===== */
+    --muaadh-font-xs: 12px;
+    --muaadh-font-sm: 14px;
+    --muaadh-font-base: 16px;
+    --muaadh-font-lg: 18px;
+    --muaadh-font-xl: 20px;
+    --muaadh-font-2xl: 24px;
+    --muaadh-font-3xl: 32px;
+
+    /* ===== Font Weights ===== */
+    --muaadh-font-normal: 400;
+    --muaadh-font-medium: 500;
+    --muaadh-font-semibold: 600;
+    --muaadh-font-bold: 700;
+
+    /* ===== Line Heights ===== */
+    --muaadh-line-tight: 1.2;
+    --muaadh-line-normal: 1.5;
+    --muaadh-line-relaxed: 1.7;
+
+    /* ===== Transitions ===== */
+    --muaadh-transition-fast: all 0.15s ease;
+    --muaadh-transition: all 0.3s ease;
+    --muaadh-transition-slow: all 0.5s ease;
+
+    /* ===== Z-Index Scale ===== */
+    --muaadh-z-dropdown: 1000;
+    --muaadh-z-sticky: 1020;
+    --muaadh-z-fixed: 1030;
+    --muaadh-z-modal-backdrop: 1040;
+    --muaadh-z-modal: 1050;
+    --muaadh-z-popover: 1060;
+    --muaadh-z-tooltip: 1070;
+}
+
+/* ==========================================================================
+   2. BASE TYPOGRAPHY
+   ========================================================================== */
+
+/* Base body styles inherited from style.css */
+.muaadh-text {
+    font-family: var(--muaadh-font-primary);
+    font-size: var(--muaadh-font-base);
+    line-height: var(--muaadh-line-relaxed);
+    color: var(--muaadh-text);
+}
+
+.muaadh-heading {
+    font-family: var(--muaadh-font-heading);
+    font-weight: var(--muaadh-font-bold);
+    line-height: var(--muaadh-line-tight);
+    color: var(--muaadh-text-dark);
+    margin: 0;
+    padding: 0;
+}
+
+.muaadh-h1 { font-size: 64px; }
+.muaadh-h2 { font-size: 48px; }
+.muaadh-h3 { font-size: 40px; }
+.muaadh-h4 { font-size: 32px; }
+.muaadh-h5 { font-size: 24px; }
+.muaadh-h6 { font-size: 20px; }
+
+@media (max-width: 1199.97px) {
+    .muaadh-h1 { font-size: 40px; }
+    .muaadh-h2 { font-size: 32px; }
+    .muaadh-h3 { font-size: 28px; }
+    .muaadh-h4 { font-size: 24px; }
+    .muaadh-h5 { font-size: 20px; }
+    .muaadh-h6 { font-size: 18px; }
+}
+
+@media (max-width: 767.98px) {
+    .muaadh-h1 { font-size: 36px; }
+    .muaadh-h6 { font-size: 16px; }
+}
+
+/* ==========================================================================
+   3. BUTTONS - Unified Button System
+   ========================================================================== */
+
+/* Base Button (matches template-btn from style.css) */
+.muaadh-btn {
+    display: inline-flex;
+    height: 56px;
+    padding: 16px 40px;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+    border-radius: var(--muaadh-radius);
+    background: var(--muaadh-primary);
+    color: var(--muaadh-white);
+    font-family: var(--muaadh-font-primary);
+    font-size: var(--muaadh-font-lg);
+    font-weight: var(--muaadh-font-normal);
+    line-height: var(--muaadh-line-tight);
+    text-transform: capitalize;
+    text-decoration: none;
+    border: none;
+    cursor: pointer;
+    transition: var(--muaadh-transition);
+}
+
+.muaadh-btn:hover {
+    background: var(--muaadh-primary-hover);
+    color: var(--muaadh-white);
+}
+
+.muaadh-btn:disabled,
+.muaadh-btn.disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+/* Button Sizes */
+.muaadh-btn-lg {
+    height: 48px;
+    padding: 10px 20px;
+    font-size: var(--muaadh-font-base);
+    border-radius: var(--muaadh-radius-sm);
+}
+
+.muaadh-btn-md {
+    height: 36px;
+    padding: 8px 20px;
+    font-size: var(--muaadh-font-sm);
+    border-radius: var(--muaadh-radius-sm);
+}
+
+.muaadh-btn-sm {
+    height: 30px;
+    padding: 8px 16px;
+    font-size: var(--muaadh-font-sm);
+    border-radius: var(--muaadh-radius-sm);
+}
+
+/* Button Variants */
+.muaadh-btn-primary {
+    background: var(--muaadh-primary);
+    color: var(--muaadh-white);
+}
+.muaadh-btn-primary:hover {
+    background: var(--muaadh-primary-hover);
+}
+
+.muaadh-btn-success {
+    background: var(--muaadh-success);
+    color: var(--muaadh-white);
+}
+.muaadh-btn-success:hover {
+    background: var(--muaadh-success-hover);
+}
+
+.muaadh-btn-warning {
+    background: var(--muaadh-warning);
+    color: var(--muaadh-text-dark);
+}
+.muaadh-btn-warning:hover {
+    background: var(--muaadh-warning-hover);
+}
+
+.muaadh-btn-danger {
+    background: var(--muaadh-danger);
+    color: var(--muaadh-white);
+}
+.muaadh-btn-danger:hover {
+    background: var(--muaadh-danger-hover);
+}
+
+.muaadh-btn-info {
+    background: var(--muaadh-info);
+    color: var(--muaadh-white);
+}
+.muaadh-btn-info:hover {
+    background: var(--muaadh-info-hover);
+}
+
+.muaadh-btn-secondary {
+    background: var(--muaadh-secondary);
+    color: var(--muaadh-white);
+}
+.muaadh-btn-secondary:hover {
+    background: var(--muaadh-secondary-hover);
+}
+
+.muaadh-btn-dark {
+    background: var(--muaadh-dark-alt);
+    color: var(--muaadh-white);
+}
+.muaadh-btn-dark:hover {
+    background: var(--muaadh-secondary);
+}
+
+/* Outline Buttons */
+.muaadh-btn-outline {
+    background: transparent;
+    border: 1px solid var(--muaadh-text-light) !important;
+    color: var(--muaadh-text) !important;
+    font-weight: var(--muaadh-font-semibold);
+}
+.muaadh-btn-outline:hover {
+    color: var(--muaadh-primary) !important;
+    border-color: var(--muaadh-primary) !important;
+    background: transparent !important;
+}
+
+.muaadh-btn-outline-primary {
+    background: transparent;
+    border: 1px solid var(--muaadh-primary);
+    color: var(--muaadh-primary);
+}
+.muaadh-btn-outline-primary:hover {
+    background: var(--muaadh-primary);
+    color: var(--muaadh-white);
+}
+
+.muaadh-btn-outline-dark {
+    background: var(--muaadh-white);
+    border: 1px solid var(--muaadh-dark);
+    color: var(--muaadh-dark);
+}
+.muaadh-btn-outline-dark:hover {
+    background: var(--muaadh-secondary);
+    border-color: var(--muaadh-secondary);
+    color: var(--muaadh-white);
+}
+
+/* Button responsive */
+@media (max-width: 1199.97px) {
+    .muaadh-btn {
+        height: 48px;
+        padding: 10px 20px;
+        font-size: var(--muaadh-font-base);
+    }
+}
+
+@media (max-width: 575.97px) {
+    .muaadh-btn {
+        height: 40px;
+        font-size: var(--muaadh-font-sm);
+    }
+}
+
+/* ==========================================================================
+   4. CARDS - Unified Card System
+   ========================================================================== */
+
+.muaadh-card {
+    background: var(--muaadh-white);
+    border: 1px solid var(--muaadh-border);
+    border-radius: var(--muaadh-radius);
+    overflow: hidden;
+    transition: var(--muaadh-transition);
+}
+
+.muaadh-card:hover {
+    box-shadow: var(--muaadh-shadow);
+}
+
+.muaadh-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    background: var(--muaadh-bg-light);
+    border-bottom: 1px solid var(--muaadh-border);
+}
+
+.muaadh-card-header h5,
+.muaadh-card-header h6 {
+    margin: 0;
+    font-weight: var(--muaadh-font-semibold);
+}
+
+.muaadh-card-body {
+    padding: 16px;
+}
+
+.muaadh-card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    background: var(--muaadh-bg-light);
+    border-top: 1px solid var(--muaadh-border);
+}
+
+/* Card with colored border */
+.muaadh-card-success {
+    border-left: 4px solid var(--muaadh-success);
+}
+
+.muaadh-card-warning {
+    border-left: 4px solid var(--muaadh-warning);
+}
+
+.muaadh-card-danger {
+    border-left: 4px solid var(--muaadh-danger);
+}
+
+.muaadh-card-info {
+    border-left: 4px solid var(--muaadh-info);
+}
+
+/* Card hover lift effect */
+.muaadh-card-hover:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--muaadh-shadow-lg);
+}
+
+/* ==========================================================================
+   5. TABLES - Unified Table System
+   ========================================================================== */
+
+.muaadh-table {
+    width: 100%;
+    margin-bottom: 0;
+    font-size: var(--muaadh-font-sm);
+    border-collapse: collapse;
+}
+
+.muaadh-table th {
+    font-weight: var(--muaadh-font-semibold);
+    font-size: var(--muaadh-font-xs);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--muaadh-text-muted);
+    background: var(--muaadh-bg-light);
+    border-bottom: 2px solid var(--muaadh-border-dark);
+    padding: 12px;
+    white-space: nowrap;
+}
+
+.muaadh-table td {
+    padding: 12px;
+    vertical-align: middle;
+    border-bottom: 1px solid var(--muaadh-border-light);
+}
+
+.muaadh-table tbody tr {
+    transition: var(--muaadh-transition-fast);
+}
+
+.muaadh-table tbody tr:hover {
+    background: var(--muaadh-bg-light);
+}
+
+/* Table row states */
+.muaadh-table .row-success {
+    background-color: var(--muaadh-success-light);
+}
+
+.muaadh-table .row-warning {
+    background-color: var(--muaadh-warning-light);
+}
+
+.muaadh-table .row-danger {
+    background-color: var(--muaadh-danger-light);
+}
+
+.muaadh-table .row-info {
+    background-color: var(--muaadh-info-light);
+}
+
+/* Striped table */
+.muaadh-table-striped tbody tr:nth-of-type(odd) {
+    background-color: rgba(0, 0, 0, 0.02);
+}
+
+/* Bordered table */
+.muaadh-table-bordered {
+    border: 1px solid var(--muaadh-border);
+}
+
+.muaadh-table-bordered th,
+.muaadh-table-bordered td {
+    border: 1px solid var(--muaadh-border);
+}
+
+/* ==========================================================================
+   6. FORMS - Unified Form Elements
+   ========================================================================== */
+
+.muaadh-form-group {
+    margin-bottom: 16px;
+}
+
+.muaadh-form-label {
+    display: block;
+    margin-bottom: 6px;
+    font-size: var(--muaadh-font-sm);
+    font-weight: var(--muaadh-font-medium);
+    color: var(--muaadh-text);
+}
+
+.muaadh-form-control {
+    width: 100%;
+    height: 50px;
+    padding: 10px 14px;
+    font-size: var(--muaadh-font-sm);
+    font-family: var(--muaadh-font-primary);
+    border: 1px solid var(--muaadh-border);
+    border-radius: var(--muaadh-radius-sm);
+    background: var(--muaadh-white);
+    transition: var(--muaadh-transition);
+}
+
+.muaadh-form-control:focus {
+    outline: none;
+    border-color: var(--muaadh-primary);
+    box-shadow: 0 0 0 3px var(--muaadh-primary-light);
+}
+
+.muaadh-form-control:disabled {
+    background: var(--muaadh-bg-gray);
+    cursor: not-allowed;
+}
+
+.muaadh-form-control::placeholder {
+    color: var(--muaadh-text-light);
+}
+
+/* Select */
+.muaadh-select {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 12px;
+    padding-right: 36px;
+}
+
+/* Form control sizes */
+.muaadh-form-control-sm {
+    height: 36px;
+    padding: 6px 10px;
+    font-size: var(--muaadh-font-xs);
+}
+
+.muaadh-form-control-lg {
+    height: 60px;
+    padding: 14px 18px;
+    font-size: var(--muaadh-font-base);
+}
+
+/* Checkbox & Radio */
+.muaadh-checkbox,
+.muaadh-radio {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+}
+
+.muaadh-checkbox input,
+.muaadh-radio input {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+    accent-color: var(--muaadh-primary);
+}
+
+/* ==========================================================================
+   7. BADGES & STATUS
+   ========================================================================== */
+
+.muaadh-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 10px;
+    font-size: var(--muaadh-font-xs);
+    font-weight: var(--muaadh-font-medium);
+    border-radius: var(--muaadh-radius-xs);
+    line-height: 1;
+}
+
+.muaadh-badge-primary {
+    background: var(--muaadh-primary-light);
+    color: var(--muaadh-primary);
+}
+
+.muaadh-badge-success {
+    background: var(--muaadh-success-light);
+    color: #155724;
+}
+
+.muaadh-badge-warning {
+    background: var(--muaadh-warning-light);
+    color: #856404;
+}
+
+.muaadh-badge-danger {
+    background: var(--muaadh-danger-light);
+    color: #721c24;
+}
+
+.muaadh-badge-info {
+    background: var(--muaadh-info-light);
+    color: #0c5460;
+}
+
+.muaadh-badge-secondary {
+    background: var(--muaadh-bg-gray);
+    color: var(--muaadh-text-muted);
+}
+
+.muaadh-badge-light {
+    background: var(--muaadh-bg-light);
+    color: var(--muaadh-text);
+    border: 1px solid var(--muaadh-border);
+}
+
+/* Solid badges */
+.muaadh-badge-solid-primary {
+    background: var(--muaadh-primary);
+    color: var(--muaadh-white);
+}
+
+.muaadh-badge-solid-success {
+    background: var(--muaadh-success);
+    color: var(--muaadh-white);
+}
+
+.muaadh-badge-solid-warning {
+    background: var(--muaadh-warning);
+    color: var(--muaadh-text-dark);
+}
+
+.muaadh-badge-solid-danger {
+    background: var(--muaadh-danger);
+    color: var(--muaadh-white);
+}
+
+/* Pill badges */
+.muaadh-badge-pill {
+    border-radius: var(--muaadh-radius-pill);
+}
+
+/* Status badges (from style.css) */
+.muaadh-status-pending {
+    background-color: var(--muaadh-warning);
+    color: var(--muaadh-text-dark);
+}
+
+.muaadh-status-processing {
+    background-color: #C6FF29;
+    color: var(--muaadh-white);
+}
+
+.muaadh-status-complete {
+    background-color: var(--muaadh-success);
+    color: var(--muaadh-white);
+}
+
+.muaadh-status-declined {
+    background-color: var(--muaadh-danger);
+    color: var(--muaadh-white);
+}
+
+/* ==========================================================================
+   8. ALERTS
+   ========================================================================== */
+
+.muaadh-alert {
+    padding: 14px 18px;
+    border-radius: var(--muaadh-radius);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.muaadh-alert-success {
+    background: var(--muaadh-success-light);
+    border: 1px solid #c3e6cb;
+    color: #155724;
+}
+
+.muaadh-alert-warning {
+    background: var(--muaadh-warning-light);
+    border: 1px solid #ffeeba;
+    color: #856404;
+}
+
+.muaadh-alert-danger {
+    background: var(--muaadh-danger-light);
+    border: 1px solid #f5c6cb;
+    color: #721c24;
+}
+
+.muaadh-alert-info {
+    background: var(--muaadh-info-light);
+    border: 1px solid #b8daff;
+    color: #004085;
+}
+
+/* ==========================================================================
+   9. MODALS
+   ========================================================================== */
+
+.muaadh-modal-content {
+    max-height: 70vh;
+    overflow-y: auto;
+    padding: 0;
+}
+
+.muaadh-modal-content::-webkit-scrollbar {
+    width: 6px;
+}
+
+.muaadh-modal-content::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+}
+
+.muaadh-modal-content::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 3px;
+}
+
+.muaadh-modal-content::-webkit-scrollbar-thumb:hover {
+    background: #a1a1a1;
+}
+
+.muaadh-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px;
+    background: var(--muaadh-bg-light);
+    border-bottom: 1px solid var(--muaadh-border);
+}
+
+.muaadh-modal-header h5 {
+    margin: 0;
+    font-weight: var(--muaadh-font-semibold);
+    color: var(--muaadh-primary);
+}
+
+.muaadh-modal-body {
+    padding: 20px;
+}
+
+.muaadh-modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    padding: 16px 20px;
+    background: var(--muaadh-bg-light);
+    border-top: 1px solid var(--muaadh-border);
+}
+
+/* ==========================================================================
+   10. BREADCRUMB
+   ========================================================================== */
+
+.muaadh-breadcrumb-wrapper {
+    background: var(--muaadh-white);
+    border-radius: var(--muaadh-radius);
+    padding: 10px 14px;
+    box-shadow: var(--muaadh-shadow-sm);
+    border: 1px solid var(--muaadh-border-light);
+}
+
+.muaadh-breadcrumb {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    font-size: var(--muaadh-font-sm);
+}
+
+.muaadh-breadcrumb-item {
+    display: flex;
+    align-items: center;
+}
+
+.muaadh-breadcrumb-item + .muaadh-breadcrumb-item::before {
+    content: "\203A";
+    padding: 0 8px;
+    color: var(--muaadh-text-light);
+}
+
+.muaadh-breadcrumb-item a {
+    color: var(--muaadh-text-muted);
+    text-decoration: none;
+    transition: var(--muaadh-transition-fast);
+}
+
+.muaadh-breadcrumb-item a:hover {
+    color: var(--muaadh-primary);
+}
+
+.muaadh-breadcrumb-item.active {
+    color: var(--muaadh-primary);
+    font-weight: var(--muaadh-font-medium);
+}
+
+/* ==========================================================================
+   11. QUANTITY CONTROL
+   ========================================================================== */
+
+.muaadh-qty-control {
+    display: inline-flex;
+    align-items: center;
+    border: 1px solid var(--muaadh-border);
+    border-radius: var(--muaadh-radius-sm);
+    overflow: hidden;
+}
+
+.muaadh-qty-btn {
+    width: 32px;
+    height: 32px;
+    border: none;
+    background: var(--muaadh-bg-light);
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: var(--muaadh-transition-fast);
+}
+
+.muaadh-qty-btn:hover {
+    background: var(--muaadh-bg-gray);
+}
+
+.muaadh-qty-input {
+    width: 45px;
+    height: 32px;
+    text-align: center;
+    border: none;
+    font-weight: var(--muaadh-font-bold);
+    font-size: 13px;
+    background: var(--muaadh-white);
+}
+
+.muaadh-qty-input:focus {
+    outline: none;
+}
+
+/* ==========================================================================
+   12. LOADING & SPINNER
+   ========================================================================== */
+
+.muaadh-loading {
+    text-align: center;
+    padding: 40px 20px;
+}
+
+.muaadh-spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid var(--muaadh-border);
+    border-top-color: var(--muaadh-primary);
+    border-radius: 50%;
+    animation: muaadh-spin 0.8s linear infinite;
+    margin: 0 auto;
+}
+
+@keyframes muaadh-spin {
+    to { transform: rotate(360deg); }
+}
+
+.muaadh-loading-text {
+    margin-top: 12px;
+    color: var(--muaadh-text-muted);
+    font-weight: var(--muaadh-font-medium);
+}
+
+/* ==========================================================================
+   13. EMPTY STATE
+   ========================================================================== */
+
+.muaadh-empty {
+    text-align: center;
+    padding: 50px 20px;
+    color: var(--muaadh-text-light);
+}
+
+.muaadh-empty i {
+    font-size: 4rem;
+    margin-bottom: 16px;
+    opacity: 0.4;
+}
+
+.muaadh-empty h5 {
+    margin-bottom: 8px;
+    color: var(--muaadh-text-muted);
+}
+
+.muaadh-empty p {
+    margin: 0;
+}
+
+/* ==========================================================================
+   14. CATALOG COMPONENTS (Merged from catalog-unified.css)
+   ========================================================================== */
+
+/* Section Header */
+.catalog-section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 15px;
+    background: var(--muaadh-bg-light);
+    border-bottom: 1px solid var(--muaadh-border);
+    margin-bottom: 0;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.catalog-section-header h5 {
+    margin: 0;
+    font-weight: var(--muaadh-font-semibold);
+    color: var(--muaadh-info);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Catalog Table */
+.catalog-table {
+    font-size: var(--muaadh-font-sm);
+    margin-bottom: 0;
+    width: 100%;
+}
+
+.catalog-table th {
+    font-weight: var(--muaadh-font-semibold);
+    font-size: var(--muaadh-font-xs);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--muaadh-text-muted);
+    border-bottom: 2px solid var(--muaadh-border-dark);
+    padding: 10px 12px;
+    background: var(--muaadh-bg-light);
+    white-space: nowrap;
+}
+
+.catalog-table td {
+    padding: 10px 12px;
+    vertical-align: middle;
+}
+
+.catalog-table tbody tr {
+    transition: var(--muaadh-transition-fast);
+}
+
+.catalog-table tbody tr:hover {
+    background-color: var(--muaadh-bg-light);
+}
+
+.catalog-table .row-available {
+    background-color: #f0fff4;
+}
+
+.catalog-table .row-available:hover {
+    background-color: #e6ffed !important;
+}
+
+/* Catalog Cards */
+.catalog-card {
+    background: var(--muaadh-white);
+    border: 1px solid var(--muaadh-border);
+    border-radius: var(--muaadh-radius);
+    margin-bottom: 10px;
+    overflow: hidden;
+    transition: var(--muaadh-transition-fast);
+}
+
+.catalog-card.card-available {
+    border-color: var(--muaadh-success);
+    border-width: 1px 1px 1px 4px;
+}
+
+.catalog-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 12px;
+    background: var(--muaadh-bg-light);
+    border-bottom: 1px solid var(--muaadh-border);
+}
+
+.catalog-card-body {
+    padding: 12px;
+}
+
+.catalog-card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 12px;
+    background: var(--muaadh-bg-light);
+    border-top: 1px solid var(--muaadh-border);
+}
+
+/* Catalog Quantity Control */
+.catalog-qty-control {
+    display: inline-flex;
+    align-items: center;
+    border: 1px solid var(--muaadh-border);
+    border-radius: var(--muaadh-radius-sm);
+    overflow: hidden;
+}
+
+.catalog-qty-btn {
+    width: 28px;
+    height: 28px;
+    border: none;
+    background: var(--muaadh-bg-light);
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: var(--muaadh-transition-fast);
+}
+
+.catalog-qty-btn:hover {
+    background: var(--muaadh-bg-gray);
+}
+
+.catalog-qty-input {
+    width: 40px;
+    height: 28px;
+    text-align: center;
+    border: none;
+    font-weight: var(--muaadh-font-semibold);
+    font-size: 13px;
+    background: var(--muaadh-white);
+}
+
+/* Catalog Buttons */
+.catalog-btn {
+    padding: 8px 16px;
+    border-radius: var(--muaadh-radius-sm);
+    font-weight: var(--muaadh-font-semibold);
+    font-size: var(--muaadh-font-sm);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    transition: var(--muaadh-transition);
+    border: none;
+    cursor: pointer;
+}
+
+.catalog-btn-primary {
+    background: var(--muaadh-info);
+    color: var(--muaadh-white);
+}
+
+.catalog-btn-primary:hover {
+    background: var(--muaadh-info-hover);
+    color: var(--muaadh-white);
+}
+
+.catalog-btn-success {
+    background: var(--muaadh-success);
+    color: var(--muaadh-white);
+}
+
+.catalog-btn-success:hover {
+    background: var(--muaadh-success-hover);
+    color: var(--muaadh-white);
+}
+
+/* Catalog Badges */
+.catalog-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 8px;
+    border-radius: var(--muaadh-radius-xs);
+    font-size: var(--muaadh-font-xs);
+    font-weight: var(--muaadh-font-medium);
+}
+
+.catalog-badge-success {
+    background: var(--muaadh-success-light);
+    color: #155724;
+}
+
+.catalog-badge-warning {
+    background: var(--muaadh-warning-light);
+    color: #856404;
+}
+
+.catalog-badge-danger {
+    background: var(--muaadh-danger-light);
+    color: #721c24;
+}
+
+/* Catalog Breadcrumb */
+.catalog-breadcrumb-wrapper {
+    background: var(--muaadh-white);
+    border-radius: var(--muaadh-radius);
+    padding: 0.5rem 0.75rem;
+    box-shadow: var(--muaadh-shadow-sm);
+    border: 1px solid var(--muaadh-border-light);
+}
+
+.catalog-breadcrumb {
+    margin: 0;
+    padding: 0;
+    background: transparent;
+    font-size: var(--muaadh-font-sm);
+    display: flex;
+    flex-wrap: wrap;
+    list-style: none;
+}
+
+.catalog-breadcrumb .breadcrumb-item + .breadcrumb-item::before {
+    content: "\203A";
+    color: var(--muaadh-text-light);
+    padding: 0 0.4rem;
+}
+
+.catalog-breadcrumb a {
+    color: var(--muaadh-text-muted);
+    text-decoration: none;
+    transition: var(--muaadh-transition-fast);
+}
+
+.catalog-breadcrumb a:hover {
+    color: var(--muaadh-info);
+}
+
+.catalog-breadcrumb .active span {
+    color: var(--muaadh-info);
+    font-weight: var(--muaadh-font-semibold);
+}
+
+/* Catalog Search Card */
+.catalog-search-card {
+    background: var(--muaadh-white);
+    border: 1px solid var(--muaadh-border);
+    border-radius: var(--muaadh-radius);
+    padding: 15px;
+    margin-bottom: 10px;
+    transition: var(--muaadh-transition);
+}
+
+.catalog-search-card:hover {
+    border-color: var(--muaadh-info);
+    box-shadow: var(--muaadh-shadow);
+}
+
+/* Catalog Modal */
+.catalog-modal-content {
+    max-height: 70vh;
+    overflow-y: auto;
+    padding: 0;
+}
+
+/* Catalog Empty & Loading */
+.catalog-empty {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--muaadh-text-light);
+}
+
+.catalog-empty i {
+    font-size: 3rem;
+    margin-bottom: 15px;
+    opacity: 0.5;
+}
+
+.catalog-loading {
+    text-align: center;
+    padding: 40px 20px;
+}
+
+/* ==========================================================================
+   15. QUICK VIEW
+   ========================================================================== */
+
+.catalog-quickview {
+    padding: 0;
+}
+
+.catalog-quickview-main-img {
+    width: 100%;
+    max-height: 300px;
+    object-fit: contain;
+    border-radius: var(--muaadh-radius);
+    background: var(--muaadh-bg-light);
+    padding: 10px;
+}
+
+.catalog-quickview-thumb {
+    width: 60px;
+    height: 60px;
+    object-fit: cover;
+    border-radius: var(--muaadh-radius-sm);
+    border: 2px solid var(--muaadh-border);
+    cursor: pointer;
+    transition: var(--muaadh-transition-fast);
+}
+
+.catalog-quickview-thumb:hover {
+    border-color: var(--muaadh-info);
+}
+
+.catalog-quickview-title {
+    font-size: 1.2rem;
+    font-weight: var(--muaadh-font-semibold);
+    margin-bottom: 8px;
+    line-height: 1.4;
+}
+
+.catalog-quickview-price-current {
+    font-size: 1.5rem;
+    font-weight: var(--muaadh-font-bold);
+    color: var(--muaadh-success);
+}
+
+.catalog-quickview-price-old {
+    font-size: 1rem;
+    color: var(--muaadh-text-light);
+    text-decoration: line-through;
+    margin-left: 10px;
+}
+
+.catalog-quickview-qty-control {
+    display: flex;
+    align-items: center;
+    border: 1px solid var(--muaadh-border);
+    border-radius: var(--muaadh-radius);
+    overflow: hidden;
+}
+
+.catalog-quickview-qty-btn {
+    width: 36px;
+    height: 36px;
+    border: none;
+    background: var(--muaadh-bg-light);
+    cursor: pointer;
+    transition: var(--muaadh-transition-fast);
+}
+
+.catalog-quickview-qty-btn:hover {
+    background: var(--muaadh-bg-gray);
+}
+
+.catalog-quickview-qty-input {
+    width: 50px;
+    height: 36px;
+    text-align: center;
+    border: none;
+    font-weight: var(--muaadh-font-semibold);
+}
+
+.catalog-quickview-btn {
+    flex: 1;
+    min-width: 120px;
+    padding: 10px 15px;
+    border-radius: var(--muaadh-radius);
+    font-weight: var(--muaadh-font-semibold);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    transition: var(--muaadh-transition);
+    border: none;
+    cursor: pointer;
+}
+
+.catalog-quickview-btn-cart {
+    background: var(--muaadh-info);
+    color: var(--muaadh-white);
+}
+
+.catalog-quickview-btn-cart:hover {
+    background: var(--muaadh-info-hover);
+}
+
+.catalog-quickview-btn-buy {
+    background: var(--muaadh-success);
+    color: var(--muaadh-white);
+}
+
+.catalog-quickview-btn-buy:hover {
+    background: var(--muaadh-success-hover);
+}
+
+/* ==========================================================================
+   16. SPECIFICATIONS & CHIPS
+   ========================================================================== */
+
+/* Specifications Offcanvas */
+.catalog-specs-offcanvas {
+    width: 340px;
+}
+
+.catalog-specs-offcanvas .offcanvas-header {
+    border-bottom: 1px solid var(--muaadh-border);
+    background: var(--muaadh-bg-light);
+}
+
+.catalog-specs-offcanvas .offcanvas-title {
+    font-weight: var(--muaadh-font-semibold);
+}
+
+.catalog-specs-form {
+    padding: 1rem;
+}
+
+.catalog-specs-form .form-label {
+    font-size: var(--muaadh-font-sm);
+    font-weight: var(--muaadh-font-semibold);
+    margin-bottom: 0.25rem;
+    display: flex;
+    align-items: center;
+}
+
+.catalog-specs-badge {
+    font-size: 0.6rem;
+    padding: 0.15rem 0.4rem;
+    border-radius: var(--muaadh-radius-pill);
+    margin-left: auto;
+}
+
+.catalog-specs-badge-vin {
+    background: var(--muaadh-info);
+    color: var(--muaadh-white);
+}
+
+.catalog-specs-badge-set {
+    background: var(--muaadh-success);
+    color: var(--muaadh-white);
+}
+
+.catalog-specs-footer {
+    position: sticky;
+    bottom: 0;
+    border-top: 1px solid var(--muaadh-border);
+    background: var(--muaadh-bg-light);
+    padding: 1rem;
+}
+
+/* Chips Bar */
+.catalog-chips-bar {
+    margin-bottom: 1rem;
+    padding: 1rem;
+    border-radius: var(--muaadh-radius);
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.catalog-chips-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.catalog-chips-title {
+    color: var(--muaadh-white);
+    font-weight: var(--muaadh-font-semibold);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.catalog-chips-count {
+    background: var(--muaadh-white);
+    color: var(--muaadh-text);
+    padding: 0.15rem 0.5rem;
+    border-radius: var(--muaadh-radius-pill);
+    font-size: var(--muaadh-font-xs);
+    font-weight: var(--muaadh-font-semibold);
+}
+
+.catalog-chips-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.catalog-chip {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.35rem 0.75rem;
+    background: var(--muaadh-white);
+    border-radius: var(--muaadh-radius-pill);
+    font-size: var(--muaadh-font-sm);
+    box-shadow: var(--muaadh-shadow-sm);
+}
+
+.catalog-chip-label {
+    color: var(--muaadh-text-muted);
+    font-weight: var(--muaadh-font-medium);
+}
+
+.catalog-chip-value {
+    font-weight: var(--muaadh-font-semibold);
+    color: var(--muaadh-text);
+    margin-left: 0.25rem;
+}
+
+.catalog-chip-source {
+    font-size: 0.65rem;
+    padding: 0.1rem 0.4rem;
+    border-radius: var(--muaadh-radius-pill);
+    margin-left: 0.5rem;
+    color: var(--muaadh-white);
+}
+
+.catalog-chip-source-vin {
+    background: var(--muaadh-info);
+}
+
+.catalog-chip-source-manual {
+    background: var(--muaadh-success);
+}
+
+/* ==========================================================================
+   17. UTILITY CLASSES
+   ========================================================================== */
+
+/* Text Colors */
+.muaadh-text-primary { color: var(--muaadh-primary) !important; }
+.muaadh-text-success { color: var(--muaadh-success) !important; }
+.muaadh-text-warning { color: var(--muaadh-warning) !important; }
+.muaadh-text-danger { color: var(--muaadh-danger) !important; }
+.muaadh-text-info { color: var(--muaadh-info) !important; }
+.muaadh-text-muted { color: var(--muaadh-text-muted) !important; }
+
+/* Background Colors */
+.muaadh-bg-primary { background-color: var(--muaadh-primary) !important; }
+.muaadh-bg-success { background-color: var(--muaadh-success) !important; }
+.muaadh-bg-warning { background-color: var(--muaadh-warning) !important; }
+.muaadh-bg-danger { background-color: var(--muaadh-danger) !important; }
+.muaadh-bg-info { background-color: var(--muaadh-info) !important; }
+.muaadh-bg-light { background-color: var(--muaadh-bg-light) !important; }
+
+/* Border */
+.muaadh-border { border: 1px solid var(--muaadh-border) !important; }
+.muaadh-border-top { border-top: 1px solid var(--muaadh-border) !important; }
+.muaadh-border-bottom { border-bottom: 1px solid var(--muaadh-border) !important; }
+
+/* Shadow */
+.muaadh-shadow-xs { box-shadow: var(--muaadh-shadow-xs) !important; }
+.muaadh-shadow-sm { box-shadow: var(--muaadh-shadow-sm) !important; }
+.muaadh-shadow { box-shadow: var(--muaadh-shadow) !important; }
+.muaadh-shadow-lg { box-shadow: var(--muaadh-shadow-lg) !important; }
+
+/* Radius */
+.muaadh-rounded-xs { border-radius: var(--muaadh-radius-xs) !important; }
+.muaadh-rounded-sm { border-radius: var(--muaadh-radius-sm) !important; }
+.muaadh-rounded { border-radius: var(--muaadh-radius) !important; }
+.muaadh-rounded-lg { border-radius: var(--muaadh-radius-lg) !important; }
+.muaadh-rounded-pill { border-radius: var(--muaadh-radius-pill) !important; }
+
+/* ==========================================================================
+   18. RTL SUPPORT
+   ========================================================================== */
+
+[dir="rtl"] .muaadh-breadcrumb-item + .muaadh-breadcrumb-item::before {
+    content: "\2039";
+}
+
+[dir="rtl"] .muaadh-select {
+    background-position: left 12px center;
+    padding-right: 14px;
+    padding-left: 36px;
+}
+
+[dir="rtl"] .muaadh-card-success,
+[dir="rtl"] .muaadh-card-warning,
+[dir="rtl"] .muaadh-card-danger,
+[dir="rtl"] .muaadh-card-info {
+    border-left: none;
+    border-right-width: 4px;
+    border-right-style: solid;
+}
+
+[dir="rtl"] .muaadh-card-success { border-right-color: var(--muaadh-success); }
+[dir="rtl"] .muaadh-card-warning { border-right-color: var(--muaadh-warning); }
+[dir="rtl"] .muaadh-card-danger { border-right-color: var(--muaadh-danger); }
+[dir="rtl"] .muaadh-card-info { border-right-color: var(--muaadh-info); }
+
+[dir="rtl"] .catalog-breadcrumb .breadcrumb-item + .breadcrumb-item::before {
+    content: "\2039";
+}
+
+[dir="rtl"] .catalog-card.card-available {
+    border-width: 1px 4px 1px 1px;
+}
+
+[dir="rtl"] .catalog-chip-value {
+    margin-left: 0;
+    margin-right: 0.25rem;
+}
+
+[dir="rtl"] .catalog-chip-source {
+    margin-left: 0;
+    margin-right: 0.5rem;
+}
+
+[dir="rtl"] .catalog-specs-badge {
+    margin-left: 0;
+    margin-right: auto;
+}
+
+[dir="rtl"] .catalog-quickview-price-old {
+    margin-left: 0;
+    margin-right: 10px;
+}
+
+/* ==========================================================================
+   19. RESPONSIVE
+   ========================================================================== */
+
+@media (max-width: 768px) {
+    :root {
+        --muaadh-spacing: 12px;
+        --muaadh-spacing-lg: 16px;
+    }
+
+    .muaadh-breadcrumb-wrapper {
+        padding: 8px 12px;
+    }
+
+    .muaadh-breadcrumb {
+        font-size: var(--muaadh-font-xs);
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        scrollbar-width: none;
+    }
+
+    .muaadh-breadcrumb::-webkit-scrollbar {
+        display: none;
+    }
+
+    .muaadh-table {
+        font-size: var(--muaadh-font-xs);
+    }
+
+    .muaadh-table th,
+    .muaadh-table td {
+        padding: 8px;
+    }
+
+    .muaadh-card-body {
+        padding: 12px;
+    }
+
+    .muaadh-qty-btn {
+        width: 28px;
+        height: 28px;
+    }
+
+    .muaadh-qty-input {
+        width: 40px;
+        height: 28px;
+    }
+
+    .catalog-breadcrumb-wrapper {
+        padding: 0.4rem 0.6rem;
+    }
+
+    .catalog-breadcrumb {
+        font-size: var(--muaadh-font-xs);
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        scrollbar-width: none;
+    }
+
+    .catalog-breadcrumb::-webkit-scrollbar {
+        display: none;
+    }
+
+    .catalog-table {
+        font-size: var(--muaadh-font-xs);
+    }
+
+    .catalog-table th,
+    .catalog-table td {
+        padding: 8px;
+    }
+
+    .catalog-qty-btn {
+        width: 26px;
+        height: 26px;
+    }
+
+    .catalog-qty-input {
+        width: 36px;
+        height: 26px;
+    }
+
+    .catalog-chips-bar {
+        padding: 0.75rem;
+    }
+
+    .catalog-chip {
+        padding: 0.25rem 0.5rem;
+        font-size: var(--muaadh-font-xs);
+    }
+
+    .catalog-specs-offcanvas {
+        width: 100%;
+    }
+
+    .catalog-quickview-main-img {
+        max-height: 200px;
+    }
+
+    .catalog-quickview-title {
+        font-size: 1.1rem;
+    }
+
+    .catalog-quickview-price-current {
+        font-size: 1.3rem;
+    }
+
+    .catalog-quickview-actions {
+        flex-direction: column;
+    }
+
+    .catalog-quickview-btn {
+        min-width: 100%;
+    }
+}
+
+@media (max-width: 576px) {
+    .muaadh-modal-footer {
+        flex-direction: column;
+    }
+
+    .muaadh-modal-footer .muaadh-btn {
+        width: 100%;
+    }
+}

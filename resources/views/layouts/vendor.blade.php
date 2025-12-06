@@ -25,6 +25,8 @@
     @endif
     <link rel="stylesheet" href="{{ asset('assets/front') }}/css/custom.css">
     <link rel="stylesheet" href="{{ asset('assets/vendor') }}/css/custom.css">
+    {{-- MUAADH Theme - Unified Styles --}}
+    <link rel="stylesheet" href="{{ asset('assets/front/css/MUAADH.css') }}">
     <link rel="icon" href="{{ asset('assets/images/' . $gs->favicon) }}">
     @include('includes.frontend.extra_head')
     @livewireStyles

@@ -1,3 +1,5 @@
+{{-- MUAADH Theme - Unified Styles --}}
+<link rel="stylesheet" href="{{ asset('assets/front/css/MUAADH.css') }}">
 @yield('styles')
 
 

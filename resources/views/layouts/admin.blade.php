@@ -53,6 +53,8 @@
 	<link rel="stylesheet" href="{{ asset('assets/front/css/bootstrap.min.css') }}">
 	<link rel="stylesheet" href="{{ asset('assets/front/css/style.css') }}?v={{ time() }}">
 	<link rel="stylesheet" href="{{ asset('assets/front/css/custom.css') }}">
+	{{-- MUAADH Theme - Unified Styles --}}
+	<link rel="stylesheet" href="{{ asset('assets/front/css/MUAADH.css') }}">
 
 	{{-- Hide bottom layer and raise header above all content --}}
 	<style>
