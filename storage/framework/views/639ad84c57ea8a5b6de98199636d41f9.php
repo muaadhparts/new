@@ -287,4 +287,4 @@
 <script src="<?php echo e(asset('assets/front/js/ill/illustrated.js')); ?>?v=<?php echo e(time()); ?>"></script>
 <?php $__env->stopPush(); ?>
 
-<?php echo $__env->make('layouts.front3', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?><?php /**PATH C:\Users\hp\Herd\new\resources\views/catalog/illustrations.blade.php ENDPATH**/ ?>
+<?php echo $__env->make('layouts.front', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?><?php /**PATH C:\Users\hp\Herd\new\resources\views/catalog/illustrations.blade.php ENDPATH**/ ?>

@@ -8,25 +8,31 @@
     <title>{{ $gs->title }}</title>
     <!--Essential css files-->
     @if($langg && $langg->rtl == 1)
-        <link rel="stylesheet" href="{{ asset('assets/front') }}/css/bootstrap.rtl.min.css">
+        <link rel="stylesheet" href="{{ asset('assets/front/css/bootstrap.rtl.min.css') }}">
     @else
-        <link rel="stylesheet" href="{{ asset('assets/front') }}/css/bootstrap.min.css">
+        <link rel="stylesheet" href="{{ asset('assets/front/css/bootstrap.min.css') }}">
     @endif
-    <link rel="stylesheet" href="{{ asset('assets/front') }}/css/all.css">
-    <link rel="stylesheet" href="{{ asset('assets/front') }}/css/slick.css">
-    <link rel="stylesheet" href="{{ asset('assets/front') }}/css/nice-select.css">
-    <link rel="stylesheet" href="{{ asset('assets/front') }}/css/jquery-ui.css">
-    <link rel="stylesheet" href="{{ asset('assets/front') }}/css/animate.css">
+    <link rel="stylesheet" href="{{ asset('assets/front/css/magnific-popup.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/front/css/all.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/front/css/slick.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/front/css/nice-select.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/front/css/jquery-ui.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/front/css/animate.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/front/css/toastr.min.css') }}">
-    <link rel="stylesheet" href="{{ asset('assets/front') }}/css/datatables.min.css">
-    <link rel="stylesheet" href="{{ asset('assets/front') }}/css/style.css?v={{ time() }}">
+    <link rel="stylesheet" href="{{ asset('assets/front/css/datatables.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/front/css/style.css') }}?v={{ time() }}">
     @if($langg && $langg->rtl == 1)
-        <link rel="stylesheet" href="{{ asset('assets/front') }}/css/rtl.css">
+        <link rel="stylesheet" href="{{ asset('assets/front/css/rtl.css') }}">
     @endif
-    <link rel="stylesheet" href="{{ asset('assets/front') }}/css/custom.css">
-    <link rel="stylesheet" href="{{ asset('assets/front') }}/css/catalog-unified.css">
+    <link rel="stylesheet" href="{{ asset('assets/front/css/custom.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/front/css/catalog-unified.css') }}">
+    {{-- AutoComplete.js for search --}}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tarekraafat/autocomplete.js@10.2.9/dist/css/autoComplete.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/@tarekraafat/autocomplete.js@10.2.9/dist/autoComplete.min.js"></script>
+    {{-- Bootstrap Datepicker --}}
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.3.0/css/datepicker.css" rel="stylesheet" type="text/css" />
     <link rel="icon" href="{{ asset('assets/images/' . $gs->favicon) }}">
+    @livewireStyles
     @include('includes.frontend.extra_head')
     @yield('css')
 
@@ -56,14 +62,18 @@
     @include('includes.user.mobile-header')
     @elseif(in_array("rider",$explodeUrl))
     @include('includes.rider.mobile-header')
-    @else 
+    @else
     @include('includes.frontend.mobile_menu')
         <!-- user panel mobile sidebar -->
 
     @endif
-   
 
     <div class="overlay"></div>
+
+    {{-- Livewire slot support --}}
+    @isset($slot)
+        {{ $slot }}
+    @endisset
 
     @yield('content')
 
@@ -73,18 +83,23 @@
     <!-- footer section -->
 
     <!--Esential Js Files-->
-    <script src="{{ asset('assets/front') }}/js/jquery.min.js"></script>
-        <script src="{{ asset('assets/front') }}/js/slick.js"></script>
-    <script src="{{ asset('assets/front') }}/js/jquery-ui.js"></script>
-    <script src="{{ asset('assets/front') }}/js/nice-select.js"></script>
-
-    <script src="{{ asset('assets/front') }}/js/wow.js"></script>
-    <script src="{{ asset('assets/front') }}/js/bootstrap.bundle.min.js"></script>
+    <script src="{{ asset('assets/front/js/jquery.min.js') }}"></script>
+    <script src="{{ asset('assets/front/js/slick.js') }}"></script>
+    <script src="{{ asset('assets/front/js/jquery-ui.js') }}"></script>
+    <script src="{{ asset('assets/front/js/nice-select.js') }}"></script>
+    <script src="{{ asset('assets/front/js/wow.js') }}"></script>
+    <script src="{{ asset('assets/front/js/bootstrap.bundle.min.js') }}"></script>
     <script src="{{ asset('assets/front/js/toastr.min.js') }}"></script>
+    <script src="{{ asset('assets/front/js/script.js') }}?v={{ time() }}"></script>
+    <script src="{{ asset('assets/front/js/myscript.js') }}?v={{ time() }}"></script>
+    <script src="{{ asset('assets/front/js/jquery.magnific-popup.js') }}"></script>
 
-    <script src="{{ asset('assets/front') }}/js/script.js?v={{ time() }}"></script>
-    <script src="{{ asset('assets/front/js/myscript.js?v=' . time()) }}"></script>
-
+    {{-- Magnific Popup Init --}}
+    <script>
+        $(document).ready(function() {
+            $('.test-popup-link').magnificPopup({type:'image'});
+        });
+    </script>
 
     <script>
         "use strict";
@@ -93,7 +108,6 @@
         var ps_category = {{ $ps->category }};
 
         // Setup CSRF token for all AJAX requests
-        // This function is called before each AJAX request to ensure we use the latest token
         $.ajaxSetup({
             beforeSend: function(xhr) {
                 const token = $('meta[name="csrf-token"]').attr('content');
@@ -102,7 +116,7 @@
                 }
             }
         });
-    
+
         var lang = {
             'days': '{{ __('Days') }}',
             'hrs': '{{ __('Hrs') }}',
@@ -119,7 +133,7 @@
             'minimum_qty_error': '{{ __('Minimum Quantity is:') }}',
             'affiliate_link_copy': '{{ __('Affiliate Link Copied Successfully') }}'
         };
-    
+
       </script>
 
 
@@ -137,9 +151,9 @@
         }
     @endphp
 
-
-@yield('script')
-
+    @stack('scripts')
+    @yield('script')
+    @livewireScripts
 </body>
 
 </html>

@@ -1,4 +1,4 @@
-@extends('layouts.front3')
+@extends('layouts.front')
 
 @section('title', ($parentCategory2->slug ?? $parentCategory2->full_code) . ' - ' . __('Parts'))
 

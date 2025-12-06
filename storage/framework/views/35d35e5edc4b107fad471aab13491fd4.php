@@ -8,25 +8,32 @@
     <title><?php echo e($gs->title); ?></title>
     <!--Essential css files-->
     <?php if($langg && $langg->rtl == 1): ?>
-        <link rel="stylesheet" href="<?php echo e(asset('assets/front')); ?>/css/bootstrap.rtl.min.css">
+        <link rel="stylesheet" href="<?php echo e(asset('assets/front/css/bootstrap.rtl.min.css')); ?>">
     <?php else: ?>
-        <link rel="stylesheet" href="<?php echo e(asset('assets/front')); ?>/css/bootstrap.min.css">
+        <link rel="stylesheet" href="<?php echo e(asset('assets/front/css/bootstrap.min.css')); ?>">
     <?php endif; ?>
-    <link rel="stylesheet" href="<?php echo e(asset('assets/front')); ?>/css/all.css">
-    <link rel="stylesheet" href="<?php echo e(asset('assets/front')); ?>/css/slick.css">
-    <link rel="stylesheet" href="<?php echo e(asset('assets/front')); ?>/css/nice-select.css">
-    <link rel="stylesheet" href="<?php echo e(asset('assets/front')); ?>/css/jquery-ui.css">
-    <link rel="stylesheet" href="<?php echo e(asset('assets/front')); ?>/css/animate.css">
+    <link rel="stylesheet" href="<?php echo e(asset('assets/front/css/magnific-popup.css')); ?>">
     <link rel="stylesheet" href="<?php echo e(asset('assets/front/css/all.css')); ?>">
+    <link rel="stylesheet" href="<?php echo e(asset('assets/front/css/slick.css')); ?>">
+    <link rel="stylesheet" href="<?php echo e(asset('assets/front/css/nice-select.css')); ?>">
+    <link rel="stylesheet" href="<?php echo e(asset('assets/front/css/jquery-ui.css')); ?>">
+    <link rel="stylesheet" href="<?php echo e(asset('assets/front/css/animate.css')); ?>">
     <link rel="stylesheet" href="<?php echo e(asset('assets/front/css/toastr.min.css')); ?>">
-    <link rel="stylesheet" href="<?php echo e(asset('assets/front')); ?>/css/datatables.min.css">
-    <link rel="stylesheet" href="<?php echo e(asset('assets/front')); ?>/css/style.css?v=<?php echo e(time()); ?>">
+    <link rel="stylesheet" href="<?php echo e(asset('assets/front/css/datatables.min.css')); ?>">
+    <link rel="stylesheet" href="<?php echo e(asset('assets/front/css/style.css')); ?>?v=<?php echo e(time()); ?>">
     <?php if($langg && $langg->rtl == 1): ?>
-        <link rel="stylesheet" href="<?php echo e(asset('assets/front')); ?>/css/rtl.css">
+        <link rel="stylesheet" href="<?php echo e(asset('assets/front/css/rtl.css')); ?>">
     <?php endif; ?>
-    <link rel="stylesheet" href="<?php echo e(asset('assets/front')); ?>/css/custom.css">
-    <link rel="stylesheet" href="<?php echo e(asset('assets/front')); ?>/css/catalog-unified.css">
+    <link rel="stylesheet" href="<?php echo e(asset('assets/front/css/custom.css')); ?>">
+    <link rel="stylesheet" href="<?php echo e(asset('assets/front/css/catalog-unified.css')); ?>">
+    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tarekraafat/autocomplete.js@10.2.9/dist/css/autoComplete.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/@tarekraafat/autocomplete.js@10.2.9/dist/autoComplete.min.js"></script>
+    
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.3.0/css/datepicker.css" rel="stylesheet" type="text/css" />
     <link rel="icon" href="<?php echo e(asset('assets/images/' . $gs->favicon)); ?>">
+    <?php echo \Livewire\Mechanisms\FrontendAssets\FrontendAssets::styles(); ?>
+
     <?php echo $__env->make('includes.frontend.extra_head', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?>
     <?php echo $__env->yieldContent('css'); ?>
 
@@ -56,14 +63,19 @@
     <?php echo $__env->make('includes.user.mobile-header', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?>
     <?php elseif(in_array("rider",$explodeUrl)): ?>
     <?php echo $__env->make('includes.rider.mobile-header', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?>
-    <?php else: ?> 
+    <?php else: ?>
     <?php echo $__env->make('includes.frontend.mobile_menu', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?>
         <!-- user panel mobile sidebar -->
 
     <?php endif; ?>
-   
 
     <div class="overlay"></div>
+
+    
+    <?php if(isset($slot)): ?>
+        <?php echo e($slot); ?>
+
+    <?php endif; ?>
 
     <?php echo $__env->yieldContent('content'); ?>
 
@@ -73,18 +85,23 @@
     <!-- footer section -->
 
     <!--Esential Js Files-->
-    <script src="<?php echo e(asset('assets/front')); ?>/js/jquery.min.js"></script>
-        <script src="<?php echo e(asset('assets/front')); ?>/js/slick.js"></script>
-    <script src="<?php echo e(asset('assets/front')); ?>/js/jquery-ui.js"></script>
-    <script src="<?php echo e(asset('assets/front')); ?>/js/nice-select.js"></script>
-
-    <script src="<?php echo e(asset('assets/front')); ?>/js/wow.js"></script>
-    <script src="<?php echo e(asset('assets/front')); ?>/js/bootstrap.bundle.min.js"></script>
+    <script src="<?php echo e(asset('assets/front/js/jquery.min.js')); ?>"></script>
+    <script src="<?php echo e(asset('assets/front/js/slick.js')); ?>"></script>
+    <script src="<?php echo e(asset('assets/front/js/jquery-ui.js')); ?>"></script>
+    <script src="<?php echo e(asset('assets/front/js/nice-select.js')); ?>"></script>
+    <script src="<?php echo e(asset('assets/front/js/wow.js')); ?>"></script>
+    <script src="<?php echo e(asset('assets/front/js/bootstrap.bundle.min.js')); ?>"></script>
     <script src="<?php echo e(asset('assets/front/js/toastr.min.js')); ?>"></script>
+    <script src="<?php echo e(asset('assets/front/js/script.js')); ?>?v=<?php echo e(time()); ?>"></script>
+    <script src="<?php echo e(asset('assets/front/js/myscript.js')); ?>?v=<?php echo e(time()); ?>"></script>
+    <script src="<?php echo e(asset('assets/front/js/jquery.magnific-popup.js')); ?>"></script>
 
-    <script src="<?php echo e(asset('assets/front')); ?>/js/script.js?v=<?php echo e(time()); ?>"></script>
-    <script src="<?php echo e(asset('assets/front/js/myscript.js?v=' . time())); ?>"></script>
-
+    
+    <script>
+        $(document).ready(function() {
+            $('.test-popup-link').magnificPopup({type:'image'});
+        });
+    </script>
 
     <script>
         "use strict";
@@ -93,7 +110,6 @@
         var ps_category = <?php echo e($ps->category); ?>;
 
         // Setup CSRF token for all AJAX requests
-        // This function is called before each AJAX request to ensure we use the latest token
         $.ajaxSetup({
             beforeSend: function(xhr) {
                 const token = $('meta[name="csrf-token"]').attr('content');
@@ -102,7 +118,7 @@
                 }
             }
         });
-    
+
         var lang = {
             'days': '<?php echo e(__('Days')); ?>',
             'hrs': '<?php echo e(__('Hrs')); ?>',
@@ -119,7 +135,7 @@
             'minimum_qty_error': '<?php echo e(__('Minimum Quantity is:')); ?>',
             'affiliate_link_copy': '<?php echo e(__('Affiliate Link Copied Successfully')); ?>'
         };
-    
+
       </script>
 
 
@@ -137,8 +153,9 @@
         }
     ?>
 
-
-<?php echo $__env->yieldContent('script'); ?>
+    <?php echo $__env->yieldPushContent('scripts'); ?>
+    <?php echo $__env->yieldContent('script'); ?>
+    <?php echo \Livewire\Mechanisms\FrontendAssets\FrontendAssets::scripts(); ?>
 
 </body>
 

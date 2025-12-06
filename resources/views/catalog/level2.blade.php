@@ -1,4 +1,4 @@
-@extends('layouts.front3')
+@extends('layouts.front')
 
 @section('title', ($category->slug ?? $category->full_code) . ' - ' . __('Subcategories'))
 

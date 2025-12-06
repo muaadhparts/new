@@ -1,4 +1,4 @@
-@extends('layouts.front3')
+@extends('layouts.front')
 
 @php use Illuminate\Support\Str; @endphp
 
