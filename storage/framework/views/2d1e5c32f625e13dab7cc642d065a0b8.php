@@ -101,6 +101,8 @@ window.i18n = {
     "messages.api_error": "<?php echo app('translator')->get('messages.api_error'); ?>",
     "messages.load_failed": "<?php echo app('translator')->get('messages.load_failed'); ?>",
     "messages.added_to_cart": "<?php echo app('translator')->get('messages.added_to_cart'); ?>",
+    "messages.stock_limit": "<?php echo app('translator')->get('messages.stock_limit'); ?>",
+    "messages.min_qty": "<?php echo app('translator')->get('messages.min_qty'); ?>",
 
     /* مفاتيح الامتدادات */
     "ext.partCode": "<?php echo app('translator')->get('ext.partCode'); ?>",

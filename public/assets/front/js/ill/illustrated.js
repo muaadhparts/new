@@ -855,6 +855,136 @@
       openCompatibilityInline($(this).data('sku'));
     });
 
+    /* ============== أزرار الكمية في Alternatives و Quick View ============== */
+
+    // زيادة الكمية - للـ Alternatives
+    $(document).off('click.qty_plus').on('click.qty_plus', '.qty-plus', function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+
+      const $btn = $(this);
+      const $input = $btn.closest('.qty-control').find('.qty-input');
+      if (!$input.length) return;
+
+      const stock = parseInt($btn.data('stock')) || 999;
+      const preordered = parseInt($btn.data('preordered')) || 0;
+      const current = parseInt($input.val()) || 1;
+
+      // نفس شرط Quick View
+      if (stock > 0 && current >= stock && preordered == 0) {
+        if (window.toastr) {
+          toastr.warning(t('messages.stock_limit') + ': ' + stock);
+        }
+        return;
+      }
+      $input.val(current + 1);
+    });
+
+    // إنقاص الكمية - للـ Alternatives
+    $(document).off('click.qty_minus').on('click.qty_minus', '.qty-minus', function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+
+      const $btn = $(this);
+      const $input = $btn.closest('.qty-control').find('.qty-input');
+      if (!$input.length) return;
+
+      const minQty = parseInt($btn.data('min')) || 1;
+      const current = parseInt($input.val()) || 1;
+
+      // نفس شرط Quick View
+      if (current <= minQty) {
+        if (window.toastr) {
+          toastr.warning(t('messages.min_qty') + ' ' + minQty);
+        }
+        return;
+      }
+      $input.val(current - 1);
+    });
+
+    // زيادة الكمية - للـ Quick View (modal-qtplus)
+    $(document).off('click.modal_qtplus').on('click.modal_qtplus', '.modal-qtplus', function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+
+      const $btn = $(this);
+      const $input = $btn.closest('.qv-qty-control').find('.modal-qty-input');
+      if (!$input.length) return;
+
+      const stock = parseInt($btn.data('stock')) || 999;
+      const preordered = parseInt($btn.data('preordered')) || 0;
+      const current = parseInt($input.val()) || 1;
+
+      if (stock > 0 && current >= stock && preordered == 0) {
+        if (window.toastr) {
+          toastr.warning(t('messages.stock_limit') + ': ' + stock);
+        }
+        return;
+      }
+      $input.val(current + 1);
+    });
+
+    // إنقاص الكمية - للـ Quick View (modal-qtminus)
+    $(document).off('click.modal_qtminus').on('click.modal_qtminus', '.modal-qtminus', function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+
+      const $btn = $(this);
+      const $input = $btn.closest('.qv-qty-control').find('.modal-qty-input');
+      if (!$input.length) return;
+
+      const minQty = parseInt($btn.data('min')) || 1;
+      const current = parseInt($input.val()) || 1;
+
+      if (current <= minQty) {
+        if (window.toastr) {
+          toastr.warning(t('messages.min_qty') + ' ' + minQty);
+        }
+        return;
+      }
+      $input.val(current - 1);
+    });
+
+    /* إضافة للسلة من Alternatives */
+    $(document).off('click.alt_addcart').on('click.alt_addcart', '.alt-add-to-cart', function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+
+      const btn = this;
+      const $btn = $(btn);
+      const $row = $btn.closest('tr').length ? $btn.closest('tr') : $btn.closest('.modal-card');
+      const $input = $row.find('.qty-input');
+      const qty = $input.length ? (parseInt($input.val()) || 1) : 1;
+
+      const addUrl = $btn.data('addnum-url') || $btn.data('addnumUrl');
+      const user = $btn.data('user');
+
+      if (!addUrl) {
+        console.warn('alt-add-to-cart: missing addnum-url');
+        return;
+      }
+
+      let url = addUrl + '?qty=' + qty;
+      if (user) url += '&user=' + encodeURIComponent(user);
+
+      btn.disabled = true;
+
+      fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+        .then(r => r.ok ? r.json() : Promise.reject(new Error('HTTP ' + r.status)))
+        .then(data => {
+          if (typeof window.applyCartState === 'function') {
+            window.applyCartState(data);
+          }
+          const msg = data.success || t('messages.added_to_cart');
+          if (window.toastr) toastr.success(msg);
+        })
+        .catch(err => {
+          const msg = t('messages.api_error');
+          if (window.toastr) toastr.error(msg + ': ' + (err.message || err));
+        })
+        .finally(() => { btn.disabled = false; });
+    });
+
     /* ✅ Pagination Links */
     $(document).off('click.ill_pagination').on('click.ill_pagination', '.pagination-link', function (e) {
       e.preventDefault();

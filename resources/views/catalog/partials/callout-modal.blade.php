@@ -101,6 +101,8 @@ window.i18n = {
     "messages.api_error": "@lang('messages.api_error')",
     "messages.load_failed": "@lang('messages.load_failed')",
     "messages.added_to_cart": "@lang('messages.added_to_cart')",
+    "messages.stock_limit": "@lang('messages.stock_limit')",
+    "messages.min_qty": "@lang('messages.min_qty')",
 
     /* مفاتيح الامتدادات */
     "ext.partCode": "@lang('ext.partCode')",

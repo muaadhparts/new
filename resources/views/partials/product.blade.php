@@ -576,44 +576,4 @@
 }
 </style>
 
-{{-- JavaScript --}}
-<script>
-(function() {
-    // زيادة الكمية
-    document.querySelectorAll('.modal-qtplus').forEach(function(btn) {
-        btn.addEventListener('click', function(e) {
-            e.preventDefault();
-            var input = this.closest('.qv-qty-control').querySelector('.modal-qty-input');
-            var stock = parseInt(this.dataset.stock) || 999;
-            var preordered = parseInt(this.dataset.preordered) || 0;
-            var current = parseInt(input.value) || 1;
-
-            if (stock > 0 && current >= stock && preordered == 0) {
-                if (typeof toastr !== 'undefined') {
-                    toastr.warning('{{ __("Stock limit reached") }}: ' + stock);
-                }
-                return;
-            }
-            input.value = current + 1;
-        });
-    });
-
-    // إنقاص الكمية
-    document.querySelectorAll('.modal-qtminus').forEach(function(btn) {
-        btn.addEventListener('click', function(e) {
-            e.preventDefault();
-            var input = this.closest('.qv-qty-control').querySelector('.modal-qty-input');
-            var minQty = parseInt(this.dataset.min) || 1;
-            var current = parseInt(input.value) || 1;
-
-            if (current <= minQty) {
-                if (typeof toastr !== 'undefined') {
-                    toastr.warning('{{ __("Minimum quantity is") }} ' + minQty);
-                }
-                return;
-            }
-            input.value = current - 1;
-        });
-    });
-})();
-</script>
+{{-- JavaScript moved to illustrated.js for proper event delegation --}}

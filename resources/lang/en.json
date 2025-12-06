@@ -2030,6 +2030,9 @@
     "messages.no_matches": "No parts match your filters.",
     "messages.api_error": "Error while fetching data.",
     "messages.load_failed": "Failed to load data",
+    "messages.added_to_cart": "Item added to cart",
+    "messages.stock_limit": "Stock limit reached",
+    "messages.min_qty": "Minimum quantity is",
     "added_to_cart": "Item added to cart",
 
     "ext.partCode": "Part Code",
