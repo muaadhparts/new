@@ -24,8 +24,7 @@
     @if($langg && $langg->rtl == 1)
         <link rel="stylesheet" href="{{ asset('assets/front/css/rtl.css') }}">
     @endif
-    <link rel="stylesheet" href="{{ asset('assets/front/css/custom.css') }}">
-    {{-- MUAADH Theme - Unified Styles (includes catalog-unified) --}}
+    {{-- MUAADH Theme - Unified Styles (Main Theme File) --}}
     <link rel="stylesheet" href="{{ asset('assets/front/css/MUAADH.css') }}">
     {{-- AutoComplete.js for search --}}
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tarekraafat/autocomplete.js@10.2.9/dist/css/autoComplete.min.css">

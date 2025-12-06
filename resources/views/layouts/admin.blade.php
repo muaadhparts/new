@@ -52,8 +52,7 @@
 	{{-- Frontend CSS for Header Display --}}
 	<link rel="stylesheet" href="{{ asset('assets/front/css/bootstrap.min.css') }}">
 	<link rel="stylesheet" href="{{ asset('assets/front/css/style.css') }}?v={{ time() }}">
-	<link rel="stylesheet" href="{{ asset('assets/front/css/custom.css') }}">
-	{{-- MUAADH Theme - Unified Styles --}}
+	{{-- MUAADH Theme - Unified Styles (Main Theme File) --}}
 	<link rel="stylesheet" href="{{ asset('assets/front/css/MUAADH.css') }}">
 
 	{{-- Hide bottom layer and raise header above all content --}}

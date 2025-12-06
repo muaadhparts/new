@@ -24,7 +24,6 @@
     <?php if($langg && $langg->rtl == 1): ?>
         <link rel="stylesheet" href="<?php echo e(asset('assets/front/css/rtl.css')); ?>">
     <?php endif; ?>
-    <link rel="stylesheet" href="<?php echo e(asset('assets/front/css/custom.css')); ?>">
     
     <link rel="stylesheet" href="<?php echo e(asset('assets/front/css/MUAADH.css')); ?>">
     
