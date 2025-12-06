@@ -1,14 +1,14 @@
 @extends('layouts.front')
 
 @section('content')
-<section class="search-results-section py-4">
+<section class="muaadh-section py-4">
     <div class="container">
         {{-- Search Box --}}
-        <div class="search-box-wrapper mb-4">
+        <div class="mb-4">
             @include('includes.frontend.search-part-ajax', ['uniqueId' => 'searchResults'])
             <div class="text-center mt-3">
-                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#vinSearchModalResults">
-                    <i class="fas fa-car me-2"></i>
+                <button type="button" class="muaadh-btn-vin" data-bs-toggle="modal" data-bs-target="#vinSearchModalResults">
+                    <i class="fas fa-car"></i>
                     @lang('Search by VIN')
                 </button>
             </div>
@@ -17,24 +17,17 @@
         <div class="row">
             <div class="col-12">
 
-                {{-- Results Header & Filters --}}
-                <div class="results-header card shadow-sm mb-4">
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-3">
-                            <div>
-                                <h4 class="mb-1">
-                                    <i class="fas fa-box-open text-primary me-2"></i>
-                                    @lang('Total Listings Found:')
-                                    <span class="badge bg-primary">{{ $filteredMerchants->count() }}</span>
-                                </h4>
-                                <p class="text-muted mb-0">
-                                    <i class="fas fa-search me-1"></i>
-                                    @lang('Query') : <strong>{{ $sku }}</strong>
-                                </p>
-                            </div>
-                        </div>
-
-                    </div>
+                {{-- Results Header --}}
+                <div class="muaadh-search-results-header">
+                    <h4 class="muaadh-search-results-title">
+                        <i class="fas fa-box-open"></i>
+                        @lang('Total Listings Found:')
+                        <span class="muaadh-search-results-count">{{ $filteredMerchants->count() }}</span>
+                    </h4>
+                    <p class="muaadh-search-results-query">
+                        <i class="fas fa-search me-1"></i>
+                        @lang('Query') : <strong>{{ $sku }}</strong>
+                    </p>
                 </div>
 
                 @if ($filteredMerchants->isEmpty())
@@ -104,22 +97,20 @@
 </section>
 
 {{-- VIN Search Modal --}}
-<div class="modal fade" id="vinSearchModalResults" tabindex="-1" aria-labelledby="vinSearchModalResultsLabel" aria-hidden="true">
+<div class="modal fade" id="vinSearchModalResults" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">
-        <div class="modal-content vin-modal-content">
-            <div class="modal-header vin-modal-header">
-                <h5 class="modal-title fw-bold" id="vinSearchModalResultsLabel">
+        <div class="modal-content muaadh-modal">
+            <div class="modal-header muaadh-modal-header">
+                <h5 class="modal-title">
                     <i class="fas fa-car me-2"></i>
                     @lang('Search by VIN')
                 </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body vin-modal-body">
+            <div class="modal-body p-4">
                 @include('includes.frontend.search-vin-ajax', ['uniqueId' => 'searchResultsModal'])
             </div>
         </div>
     </div>
 </div>
 @endsection
-
-{{-- Styles moved to MUAADH.css: Search Results, Filters, VIN Modal --}}

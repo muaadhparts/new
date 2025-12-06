@@ -380,8 +380,8 @@
 
                                                 @if (!empty($product['color']))
                                                     <div class="d-flex mt-2">
-                                                        <b>{{ __('Color') }}</b>: <span class="color-show-btn mt-1 ms-3" id="color-bar"
-                                                            style="background-color: #{{ $product['color'] == '' ? ' white' : $product['color'] }};"></span>
+                                                        <b>{{ __('Color') }}</b>: <span class="color-show-btn mt-1 ms-3 muaadh-success-color-swatch" id="color-bar"
+                                                            style="--swatch-color: #{{ $product['color'] == '' ? 'fff' : $product['color'] }};"></span>
                                                     </div>
                                                 @endif
                                             </p>

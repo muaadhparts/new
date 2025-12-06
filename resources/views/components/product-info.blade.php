@@ -80,7 +80,7 @@
         @if($showQualityBrand && $qualityBrandName)
             <span class="badge bg-light text-dark d-inline-flex align-items-center">
                 @if($qualityBrandLogo)
-                    <img src="{{ $qualityBrandLogo }}" alt="{{ $qualityBrandName }}" class="quality-brand-logo me-1" style="max-height: 20px; max-width: 50px; object-fit: contain;">
+                    <img src="{{ $qualityBrandLogo }}" alt="{{ $qualityBrandName }}" class="quality-brand-logo muaadh-quality-logo-sm me-1">
                 @else
                     <i class="fas fa-certificate me-1"></i>
                 @endif
@@ -120,7 +120,7 @@
             <li class="small d-flex align-items-center">
                 <strong>{{ __('Quality Brand') }}:</strong>
                 @if($qualityBrandLogo)
-                    <img src="{{ $qualityBrandLogo }}" alt="{{ $qualityBrandName }}" class="quality-brand-logo mx-1" style="max-height: 22px; max-width: 60px; object-fit: contain;">
+                    <img src="{{ $qualityBrandLogo }}" alt="{{ $qualityBrandName }}" class="quality-brand-logo muaadh-quality-logo-md mx-1">
                 @endif
                 <span class="ms-1">{{ $qualityBrandName }}</span>
             </li>
@@ -163,7 +163,7 @@
                         <td class="text-muted"><i class="fas fa-certificate me-1"></i>{{ __('Quality') }}</td>
                         <td class="d-flex align-items-center">
                             @if($qualityBrandLogo)
-                                <img src="{{ $qualityBrandLogo }}" alt="{{ $qualityBrandName }}" class="quality-brand-logo me-2" style="max-height: 22px; max-width: 60px; object-fit: contain;">
+                                <img src="{{ $qualityBrandLogo }}" alt="{{ $qualityBrandName }}" class="quality-brand-logo muaadh-quality-logo-md me-2">
                             @endif
                             {{ $qualityBrandName }}
                         </td>
@@ -205,7 +205,7 @@
         @if($showQualityBrand && $qualityBrandName)
             <span class="me-2 d-inline-flex align-items-center">
                 @if($qualityBrandLogo)
-                    <img src="{{ $qualityBrandLogo }}" alt="{{ $qualityBrandName }}" class="quality-brand-logo me-1" style="max-height: 18px; max-width: 45px; object-fit: contain;">
+                    <img src="{{ $qualityBrandLogo }}" alt="{{ $qualityBrandName }}" class="quality-brand-logo muaadh-quality-logo-xs me-1">
                 @else
                     <i class="fas fa-certificate me-1"></i>
                 @endif

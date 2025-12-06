@@ -141,7 +141,7 @@
                             @endphp
 
                             <div class="tracking-progress mb-4">
-                                <div class="progress" style="height: 8px;">
+                                <div class="progress muaadh-progress-medium">
                                     <div class="progress-bar bg-success" role="progressbar"
                                          style="width: {{ $progress }}%"></div>
                                 </div>
@@ -160,8 +160,7 @@
                                         ];
                                     @endphp
                                     <div class="tracking-step text-center {{ $isActive ? 'active' : '' }}">
-                                        <div class="step-icon {{ $isActive ? 'bg-success text-white' : 'bg-light' }} rounded-circle mx-auto mb-2"
-                                             style="width: 40px; height: 40px; line-height: 40px;">
+                                        <div class="step-icon {{ $isActive ? 'bg-success text-white' : 'bg-light' }} rounded-circle mx-auto mb-2 muaadh-step-icon">
                                             <i class="fas {{ $statusIcons[$step] ?? 'fa-box' }}"></i>
                                         </div>
                                         <small class="{{ $isActive ? 'fw-bold' : 'text-muted' }}">{{ $stepNames[$step] }}</small>

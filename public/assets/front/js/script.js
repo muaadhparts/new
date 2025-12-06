@@ -24,19 +24,15 @@ $(document).ready(function () {
 
     */
 
-  //****** 21. MUAADH MODERN HEADER ******//
+  //****** 21. MUAADH ELEGANT HEADER ******//
   (function() {
     // Elements
     const $muaadhMobileMenu = $('.muaadh-mobile-menu');
     const $muaadhOverlay = $('.muaadh-mobile-overlay');
-    const $mobileToggle = $('.muaadh-mobile-toggle');
     const $mobileClose = $('.muaadh-mobile-close');
-    const $mobileSearchToggle = $('#mobileSearchToggle');
-    const $mobileSearchBar = $('#mobileSearchBar');
-    const $mobileSearchClose = $('#mobileSearchClose');
 
-    // Mobile Menu Toggle
-    $mobileToggle.on('click', function() {
+    // Mobile Menu Toggle - Support both old and new triggers
+    $('.muaadh-mobile-toggle, .muaadh-menu-trigger').on('click', function() {
       $muaadhMobileMenu.addClass('active');
       $muaadhOverlay.addClass('active');
       $('body').css('overflow', 'hidden');
@@ -51,15 +47,6 @@ $(document).ready(function () {
 
     $mobileClose.on('click', closeMobileMenu);
     $muaadhOverlay.on('click', closeMobileMenu);
-
-    // Mobile Search Toggle
-    $mobileSearchToggle.on('click', function() {
-      $mobileSearchBar.addClass('active');
-    });
-
-    $mobileSearchClose.on('click', function() {
-      $mobileSearchBar.removeClass('active');
-    });
 
     // Mobile Menu Tabs
     $('.muaadh-mobile-tab').on('click', function() {

@@ -1,84 +1,19 @@
 {{-- Part Search Component - AJAX Based --}}
-<div class="part-search-ajax-wrapper" id="partSearchWrapper{{ $uniqueId ?? 'default' }}">
-    <style>
-        .part-search-ajax-wrapper .search-container {
-            position: relative;
-        }
-        .part-search-ajax-wrapper .input-group {
-            border-radius: 0.5rem;
-            overflow: hidden;
-            border: 2px solid var(--bs-primary, #0d6efd);
-            background: #fff;
-            transition: all 0.3s ease;
-        }
-        .part-search-ajax-wrapper .input-group:focus-within {
-            border-color: #0b5ed7;
-            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.15);
-        }
-        .part-search-ajax-wrapper .input-group-text {
-            border: none;
-            background: transparent;
-        }
-        .part-search-ajax-wrapper .form-control {
-            border: none;
-            font-size: 1.1rem;
-            font-weight: 500;
-        }
-        .part-search-ajax-wrapper .form-control:focus {
-            box-shadow: none;
-        }
-        .part-search-ajax-wrapper .suggestions-dropdown {
-            position: absolute;
-            top: calc(100% + 0.5rem);
-            left: 0;
-            right: 0;
-            z-index: 1050;
-            max-height: 400px;
-            overflow-y: auto;
-            border-radius: 0.5rem;
-            animation: slideDown 0.2s ease;
-        }
-        @keyframes slideDown {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .part-search-ajax-wrapper .suggestion-item {
-            padding: 1rem;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            border-bottom: 1px solid #f0f0f0;
-        }
-        .part-search-ajax-wrapper .suggestion-item:last-child {
-            border-bottom: none;
-        }
-        .part-search-ajax-wrapper .suggestion-item:hover {
-            background: linear-gradient(to right, rgba(13, 110, 253, 0.05), transparent);
-            padding-left: 1.25rem;
-        }
-        .part-search-ajax-wrapper .suggestion-icon {
-            width: 40px;
-            height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: rgba(13, 110, 253, 0.1);
-            border-radius: 0.375rem;
-        }
-    </style>
-
-    <div class="search-container">
-        <div class="input-group input-group-lg shadow-sm">
-            <span class="input-group-text bg-white border-end-0 ps-4">
-                <i class="fas fa-search text-primary"></i>
+{{-- Styles in MUAADH.css Section 32: Search Components --}}
+<div class="muaadh-search-wrapper" id="partSearchWrapper{{ $uniqueId ?? 'default' }}">
+    <div class="muaadh-search-container">
+        <div class="muaadh-search-input-group">
+            <span class="muaadh-search-icon">
+                <i class="fas fa-search"></i>
             </span>
             <input
                 type="text"
-                class="form-control form-control-lg border-start-0 ps-0 part-input"
+                class="muaadh-search-input part-input"
                 placeholder="{{ __('Enter part number or name') }}"
                 id="partInput{{ $uniqueId ?? 'default' }}"
                 autocomplete="off"
             >
-            <button class="btn btn-primary px-4 part-search-btn" type="button" id="partSearchBtn{{ $uniqueId ?? 'default' }}">
+            <button class="muaadh-search-btn part-search-btn" type="button" id="partSearchBtn{{ $uniqueId ?? 'default' }}">
                 <i class="fas fa-search me-2 search-icon"></i>
                 <span class="spinner-border spinner-border-sm me-2 d-none loading-spinner" role="status"></span>
                 <span class="d-none d-sm-inline">{{ __('Search') }}</span>
@@ -86,20 +21,16 @@
         </div>
 
         {{-- Suggestions Dropdown --}}
-        <div class="suggestions-dropdown card shadow-lg d-none" id="partSuggestions{{ $uniqueId ?? 'default' }}">
-            <div class="card-body p-0">
-                <div class="list-group list-group-flush suggestions-list"></div>
-            </div>
+        <div class="muaadh-suggestions-dropdown d-none" id="partSuggestions{{ $uniqueId ?? 'default' }}">
+            <div class="muaadh-suggestions-list suggestions-list"></div>
         </div>
     </div>
 
     {{-- Search Hint --}}
-    <div class="text-center mt-3">
-        <p class="mb-0">
-            <i class="fas fa-info-circle me-1"></i>
-            <span class="text-muted">{{ __('Example :') }}</span>
-            <code class="bg-light px-2 py-1 rounded ms-1" dir="ltr">1172003JXM</code>
-        </p>
+    <div class="muaadh-search-hint">
+        <i class="fas fa-info-circle me-1"></i>
+        <span>{{ __('Example :') }}</span>
+        <code dir="ltr">1172003JXM</code>
     </div>
 
     <script>
@@ -110,7 +41,7 @@
 
     const input = wrapper.querySelector('.part-input');
     const searchBtn = wrapper.querySelector('.part-search-btn');
-    const suggestionsDropdown = wrapper.querySelector('.suggestions-dropdown');
+    const suggestionsDropdown = wrapper.querySelector('.muaadh-suggestions-dropdown');
     const suggestionsList = wrapper.querySelector('.suggestions-list');
 
     let searchTimeout = null;
@@ -165,21 +96,17 @@
 
         results.forEach(function(result) {
             const item = document.createElement('div');
-            item.className = 'list-group-item list-group-item-action border-0 suggestion-item';
+            item.className = 'muaadh-suggestion-item';
             item.innerHTML = `
-                <div class="d-flex align-items-center">
-                    <div class="flex-shrink-0 me-3">
-                        <div class="suggestion-icon">
-                            <i class="fas fa-cube text-primary"></i>
-                        </div>
-                    </div>
-                    <div class="flex-grow-1">
-                        <div class="fw-bold text-primary mb-1">${escapeHtml(result.sku)}</div>
-                        <div class="text-muted small">${escapeHtml(getLocalizedLabel(result))}</div>
-                    </div>
-                    <div class="flex-shrink-0">
-                        <i class="fas fa-chevron-right text-muted"></i>
-                    </div>
+                <div class="muaadh-suggestion-icon">
+                    <i class="fas fa-cube"></i>
+                </div>
+                <div class="muaadh-suggestion-content">
+                    <div class="muaadh-suggestion-sku">${escapeHtml(result.sku)}</div>
+                    <div class="muaadh-suggestion-label">${escapeHtml(getLocalizedLabel(result))}</div>
+                </div>
+                <div class="muaadh-suggestion-arrow">
+                    <i class="fas fa-chevron-right"></i>
                 </div>
             `;
 
@@ -210,8 +137,8 @@
 
     function getLocalizedLabel(result) {
         const lang = document.documentElement.lang || 'en';
-        if (lang === 'ar' && result.label_ar) {
-            return result.label_ar;
+        if (lang === 'ar') {
+            return result.label_ar || result.label_en || '';
         }
         return result.label_en || result.label_ar || '';
     }

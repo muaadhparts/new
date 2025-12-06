@@ -226,13 +226,13 @@
                                 <!-- Google Maps Location Picker -->
                                 <div class="col-lg-12">
                                     <div class="alert alert-info d-flex align-items-center" role="alert">
-                                        <i class="fas fa-map-marker-alt me-2" style="font-size: 20px;"></i>
+                                        <i class="fas fa-map-marker-alt me-2 muaadh-map-icon-lg"></i>
                                         <div>
                                             <strong>@lang('Please select your delivery location from the map below')</strong>
                                         </div>
                                     </div>
                                     <div class="mt-3 mb-3">
-                                        <button type="button" class="btn btn-outline-primary w-100" data-bs-toggle="modal" data-bs-target="#mapModal" style="padding: 12px;">
+                                        <button type="button" class="btn btn-outline-primary w-100 muaadh-map-btn" data-bs-toggle="modal" data-bs-target="#mapModal">
                                             <i class="fas fa-map-marker-alt"></i> @lang('Select Location from Map')
                                         </button>
                                     </div>
@@ -456,30 +456,29 @@
     </div>
     <!--  checkout wrapper end-->
 
-    {{-- Google Maps Modal --}}
+    {{-- Google Maps Modal - Styles moved to MUAADH.css Section 36 --}}
     <div class="modal fade" id="mapModal" tabindex="-1">
         <div class="modal-dialog modal-xl modal-dialog-centered">
             <div class="modal-content">
-                <div class="modal-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                <div class="modal-header muaadh-map-modal-header">
                     <h5 class="modal-title">@lang('Select location on map')</h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body p-0">
-                    <div id="alert-container-modal" style="padding: 15px;"></div>
+                    <div id="alert-container-modal" class="muaadh-map-alert-container"></div>
 
-                    <div style="padding: 20px;">
-                        <div id="map-container" style="position: relative; height: 500px; border-radius: 8px; overflow: hidden; border: 2px solid #e0e0e0;">
-                            <div class="map-search" style="position: absolute; top: 10px; right: 10px; left: 10px; z-index: 10;">
-                                <input type="text" id="map-search-input" placeholder="@lang('Search for an address...')"
-                                       style="width: 100%; padding: 12px 15px; border: 2px solid #667eea; border-radius: 8px; font-size: 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); background: white;">
+                    <div class="muaadh-map-body">
+                        <div id="map-container" class="muaadh-map-container">
+                            <div class="muaadh-map-search">
+                                <input type="text" id="map-search-input" class="muaadh-map-search-input" placeholder="@lang('Search for an address...')">
                             </div>
-                            <div id="map" style="width: 100%; height: 100%;"></div>
-                            <div class="loading-overlay" id="loading-overlay-modal" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(255,255,255,0.9); display: none; align-items: center; justify-content: center; z-index: 20;">
-                                <div class="spinner" style="border: 3px solid #f3f3f3; border-top: 3px solid #667eea; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite;"></div>
+                            <div id="map" class="muaadh-map-element"></div>
+                            <div class="muaadh-map-loading" id="loading-overlay-modal">
+                                <div class="muaadh-map-spinner"></div>
                             </div>
                         </div>
 
-                        <div class="buttons-container" style="display: flex; gap: 10px; margin-top: 15px;">
+                        <div class="muaadh-map-buttons">
                             <button class="btn btn-secondary" id="reset-btn-modal" type="button">
                                 @lang('Reset Location')
                             </button>
@@ -488,88 +487,86 @@
                             </button>
                         </div>
 
-                        <div class="location-info" id="location-info-modal" style="display: none; background: #f8f9fa; padding: 20px; border-radius: 8px; margin-top: 20px;">
-                            <h6 style="font-size: 16px; color: #333; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 2px solid #667eea;">@lang('Location Information')</h6>
+                        <div class="muaadh-location-info" id="location-info-modal">
+                            <h6 class="muaadh-location-info-title">@lang('Location Information')</h6>
 
-                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px;">
-                                <div style="background: white; padding: 15px; border-radius: 6px; border-right: 3px solid #667eea;">
-                                    <label style="display: block; font-size: 12px; color: #666; margin-bottom: 5px; font-weight: 600;">@lang('Country (Arabic)')</label>
-                                    <div id="country-ar-modal" style="font-size: 14px; color: #333;">-</div>
+                            <div class="muaadh-location-grid">
+                                <div class="muaadh-location-item">
+                                    <label class="muaadh-location-item-label">@lang('Country (Arabic)')</label>
+                                    <div id="country-ar-modal" class="muaadh-location-item-value">-</div>
                                 </div>
-                                <div style="background: white; padding: 15px; border-radius: 6px; border-right: 3px solid #667eea;">
-                                    <label style="display: block; font-size: 12px; color: #666; margin-bottom: 5px; font-weight: 600;">@lang('Country (English)')</label>
-                                    <div id="country-en-modal" style="font-size: 14px; color: #333;">-</div>
+                                <div class="muaadh-location-item">
+                                    <label class="muaadh-location-item-label">@lang('Country (English)')</label>
+                                    <div id="country-en-modal" class="muaadh-location-item-value">-</div>
                                 </div>
-                                <div style="background: white; padding: 15px; border-radius: 6px; border-right: 3px solid #667eea;">
-                                    <label style="display: block; font-size: 12px; color: #666; margin-bottom: 5px; font-weight: 600;">@lang('State (Arabic)')</label>
-                                    <div id="state-ar-modal" style="font-size: 14px; color: #333;">-</div>
+                                <div class="muaadh-location-item">
+                                    <label class="muaadh-location-item-label">@lang('State (Arabic)')</label>
+                                    <div id="state-ar-modal" class="muaadh-location-item-value">-</div>
                                 </div>
-                                <div style="background: white; padding: 15px; border-radius: 6px; border-right: 3px solid #667eea;">
-                                    <label style="display: block; font-size: 12px; color: #666; margin-bottom: 5px; font-weight: 600;">@lang('State (English)')</label>
-                                    <div id="state-en-modal" style="font-size: 14px; color: #333;">-</div>
+                                <div class="muaadh-location-item">
+                                    <label class="muaadh-location-item-label">@lang('State (English)')</label>
+                                    <div id="state-en-modal" class="muaadh-location-item-value">-</div>
                                 </div>
-                                <div style="background: white; padding: 15px; border-radius: 6px; border-right: 3px solid #667eea;">
-                                    <label style="display: block; font-size: 12px; color: #666; margin-bottom: 5px; font-weight: 600;">@lang('City (Arabic)')</label>
-                                    <div id="city-ar-modal" style="font-size: 14px; color: #333;">-</div>
+                                <div class="muaadh-location-item">
+                                    <label class="muaadh-location-item-label">@lang('City (Arabic)')</label>
+                                    <div id="city-ar-modal" class="muaadh-location-item-value">-</div>
                                 </div>
-                                <div style="background: white; padding: 15px; border-radius: 6px; border-right: 3px solid #667eea;">
-                                    <label style="display: block; font-size: 12px; color: #666; margin-bottom: 5px; font-weight: 600;">@lang('City (English)')</label>
-                                    <div id="city-en-modal" style="font-size: 14px; color: #333;">-</div>
+                                <div class="muaadh-location-item">
+                                    <label class="muaadh-location-item-label">@lang('City (English)')</label>
+                                    <div id="city-en-modal" class="muaadh-location-item-value">-</div>
                                 </div>
                             </div>
 
-                            <div style="display: flex; gap: 15px; margin-top: 15px;">
-                                <div style="flex: 1; background: white; padding: 15px; border-radius: 6px; text-align: center;">
-                                    <label style="display: block; font-size: 12px; color: #666; margin-bottom: 5px;">@lang('Latitude')</label>
-                                    <div id="latitude-value-modal" style="font-size: 16px; font-weight: 600; color: #667eea;">-</div>
+                            <div class="muaadh-coords-row">
+                                <div class="muaadh-coords-item">
+                                    <label class="muaadh-location-item-label">@lang('Latitude')</label>
+                                    <div id="latitude-value-modal" class="muaadh-coords-value">-</div>
                                 </div>
-                                <div style="flex: 1; background: white; padding: 15px; border-radius: 6px; text-align: center;">
-                                    <label style="display: block; font-size: 12px; color: #666; margin-bottom: 5px;">@lang('Longitude')</label>
-                                    <div id="longitude-value-modal" style="font-size: 16px; font-weight: 600; color: #667eea;">-</div>
+                                <div class="muaadh-coords-item">
+                                    <label class="muaadh-location-item-label">@lang('Longitude')</label>
+                                    <div id="longitude-value-modal" class="muaadh-coords-value">-</div>
                                 </div>
                             </div>
 
-                            <div style="margin-top: 15px;">
-                                <div style="background: white; padding: 15px; border-radius: 6px;">
-                                    <label style="display: block; font-size: 12px; color: #666; margin-bottom: 5px; font-weight: 600;">@lang('Full Address')</label>
-                                    <div id="full-address-modal" style="font-size: 14px; color: #333;">-</div>
+                            <div class="mt-3">
+                                <div class="muaadh-location-item">
+                                    <label class="muaadh-location-item-label">@lang('Full Address')</label>
+                                    <div id="full-address-modal" class="muaadh-location-item-value">-</div>
                                 </div>
                             </div>
 
                             {{-- Tryoto Verification Section --}}
-                            <div id="tryoto-info-modal" style="display: none; margin-top: 15px; padding: 15px; border-radius: 8px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
-                                <div style="display: flex; align-items: center; margin-bottom: 10px;">
-                                    <i class="fas fa-shipping-fast" style="color: white; font-size: 20px; margin-left: 10px;"></i>
-                                    <h6 style="color: white; margin: 0; font-size: 15px; font-weight: 600;">@lang('Tryoto Shipping Information')</h6>
+                            <div id="tryoto-info-modal" class="muaadh-tryoto-info">
+                                <div class="muaadh-tryoto-header">
+                                    <i class="fas fa-shipping-fast"></i>
+                                    <h6>@lang('Tryoto Shipping Information')</h6>
                                 </div>
 
-                                <div id="tryoto-verified-box" style="background: rgba(255,255,255,0.95); padding: 12px; border-radius: 6px; margin-top: 10px;">
-                                    <div style="display: flex; align-items: center; margin-bottom: 8px;">
-                                        <i class="fas fa-check-circle" style="color: #28a745; margin-left: 8px;"></i>
-                                        <span id="tryoto-status-text" style="font-size: 13px; color: #333; font-weight: 600;">-</span>
+                                <div id="tryoto-verified-box" class="muaadh-tryoto-verified">
+                                    <div class="muaadh-tryoto-status">
+                                        <i class="fas fa-check-circle"></i>
+                                        <span id="tryoto-status-text" class="muaadh-tryoto-status-text">-</span>
                                     </div>
-                                    <div id="tryoto-companies-box" style="display: none; margin-top: 8px; padding-top: 8px; border-top: 1px dashed #dee2e6;">
-                                        <small style="color: #666; display: flex; align-items: center;">
-                                            <i class="fas fa-truck" style="margin-left: 5px; color: #667eea;"></i>
+                                    <div id="tryoto-companies-box" class="muaadh-tryoto-companies">
+                                        <small class="muaadh-tryoto-companies-text">
+                                            <i class="fas fa-truck"></i>
                                             <span id="tryoto-companies-text">-</span>
                                         </small>
                                     </div>
                                 </div>
 
                                 {{-- Alternative City Warning --}}
-                                <div id="tryoto-alternative-box" style="display: none; background: rgba(255, 243, 205, 0.95); padding: 12px; border-radius: 6px; margin-top: 10px; border-right: 4px solid #ffc107;">
-                                    <div style="display: flex; align-items: start;">
-                                        <i class="fas fa-exclamation-triangle" style="color: #ff9800; margin-left: 8px; margin-top: 2px;"></i>
-                                        <div style="flex: 1;">
-                                            <p style="margin: 0; font-size: 13px; color: #856404; font-weight: 600;">
-                                                @lang('Selected location is not supported for shipping')
-                                            </p>
-                                            <p style="margin: 5px 0 0 0; font-size: 12px; color: #856404;">
+                                <div id="tryoto-alternative-box" class="muaadh-tryoto-alternative">
+                                    <div class="muaadh-tryoto-alternative-content">
+                                        <i class="fas fa-exclamation-triangle"></i>
+                                        <div class="muaadh-tryoto-alternative-text">
+                                            <p>@lang('Selected location is not supported for shipping')</p>
+                                            <p>
                                                 <strong>@lang('Nearest supported city'):</strong>
-                                                <span id="tryoto-alternative-city" style="font-weight: 700;">-</span>
+                                                <span id="tryoto-alternative-city">-</span>
                                                 (<span id="tryoto-alternative-distance">-</span> @lang('km'))
                                             </p>
-                                            <p style="margin: 5px 0 0 0; font-size: 11px; color: #856404;">
+                                            <p>
                                                 @lang('Shipping will be to') <strong id="tryoto-alternative-city-ar">-</strong> @lang('and we will contact you to coordinate delivery')
                                             </p>
                                         </div>
@@ -577,14 +574,12 @@
                                 </div>
 
                                 {{-- Not Supported Warning --}}
-                                <div id="tryoto-not-supported-box" style="display: none; background: rgba(255, 82, 82, 0.1); padding: 12px; border-radius: 6px; margin-top: 10px; border-right: 4px solid #dc3545;">
-                                    <div style="display: flex; align-items: center;">
-                                        <i class="fas fa-times-circle" style="color: #dc3545; margin-left: 8px;"></i>
-                                        <p style="margin: 0; font-size: 13px; color: #721c24; font-weight: 600;">
-                                            @lang('Sorry, this location is outside the available shipping area')
-                                        </p>
+                                <div id="tryoto-not-supported-box" class="muaadh-tryoto-not-supported">
+                                    <div class="muaadh-tryoto-not-supported-content">
+                                        <i class="fas fa-times-circle"></i>
+                                        <p>@lang('Sorry, this location is outside the available shipping area')</p>
                                     </div>
-                                    <p style="margin: 5px 0 0 0; font-size: 11px; color: #721c24;">
+                                    <p class="muaadh-tryoto-not-supported-note">
                                         @lang('Please select a location within Saudi Arabia')
                                     </p>
                                 </div>
@@ -1184,7 +1179,7 @@
         document.getElementById('longitude-value-modal').textContent = data.coordinates?.longitude.toFixed(6) || '-';
         document.getElementById('full-address-modal').textContent = data.address?.ar || data.address?.en || '-';
 
-        document.getElementById('location-info-modal').style.display = 'block';
+        document.getElementById('location-info-modal').classList.add('active');
 
         // Display Tryoto verification info
         displayTryotoInfo(data);
@@ -1200,15 +1195,15 @@
         const notSupportedBox = document.getElementById('tryoto-not-supported-box');
         const companiesBox = document.getElementById('tryoto-companies-box');
 
-        // Hide all boxes first
-        if (verifiedBox) verifiedBox.style.display = 'none';
-        if (alternativeBox) alternativeBox.style.display = 'none';
-        if (notSupportedBox) notSupportedBox.style.display = 'none';
-        if (companiesBox) companiesBox.style.display = 'none';
+        // Hide all boxes first (using classList for CSS-driven visibility)
+        if (verifiedBox) verifiedBox.classList.remove('active');
+        if (alternativeBox) alternativeBox.classList.remove('active');
+        if (notSupportedBox) notSupportedBox.classList.remove('active');
+        if (companiesBox) companiesBox.classList.remove('active');
 
         // Check resolution_info from new API
         if (!data.resolution_info) {
-            tryotoBox.style.display = 'none';
+            tryotoBox.classList.remove('active');
             return;
         }
 
@@ -1216,8 +1211,8 @@
         const strategy = resolutionInfo.strategy;
 
         // Show Tryoto box
-        tryotoBox.style.display = 'block';
-        if (verifiedBox) verifiedBox.style.display = 'block';
+        tryotoBox.classList.add('active');
+        if (verifiedBox) verifiedBox.classList.add('active');
 
         if (strategy === 'exact_match') {
             // Perfect match
@@ -1226,7 +1221,7 @@
             }
 
             if (resolutionInfo.shipping_companies > 0 && companiesBox) {
-                companiesBox.style.display = 'block';
+                companiesBox.classList.add('active');
                 if (document.getElementById('tryoto-companies-text')) {
                     document.getElementById('tryoto-companies-text').textContent =
                         `${resolutionInfo.shipping_companies} شركة شحن متاحة`;
@@ -1240,7 +1235,7 @@
             }
 
             if (resolutionInfo.shipping_companies > 0 && companiesBox) {
-                companiesBox.style.display = 'block';
+                companiesBox.classList.add('active');
                 if (document.getElementById('tryoto-companies-text')) {
                     document.getElementById('tryoto-companies-text').textContent =
                         `${resolutionInfo.shipping_companies} شركة شحن متاحة`;
@@ -1254,7 +1249,7 @@
             }
 
             if (alternativeBox) {
-                alternativeBox.style.display = 'block';
+                alternativeBox.classList.add('active');
                 if (document.getElementById('tryoto-alternative-city')) {
                     document.getElementById('tryoto-alternative-city').textContent = resolutionInfo.resolved_city;
                 }
@@ -1267,7 +1262,7 @@
             }
 
             if (resolutionInfo.shipping_companies > 0 && companiesBox) {
-                companiesBox.style.display = 'block';
+                companiesBox.classList.add('active');
                 if (document.getElementById('tryoto-companies-text')) {
                     document.getElementById('tryoto-companies-text').textContent =
                         `${resolutionInfo.shipping_companies} شركة شحن متاحة في ${data.city?.name_ar || resolutionInfo.resolved_city}`;
@@ -1398,7 +1393,7 @@
         markerModal.setVisible(false);
         selectedLocationData = null;
         document.getElementById('use-location-btn-modal').disabled = true;
-        document.getElementById('location-info-modal').style.display = 'none';
+        document.getElementById('location-info-modal').classList.remove('active');
         document.getElementById('map-search-input').value = '';
         mapModal.setCenter(DEFAULT_CENTER);
         mapModal.setZoom(12);
@@ -1448,7 +1443,7 @@
         const container = document.getElementById('alert-container-modal');
         const alertClass = type === 'success' ? 'alert-success' : 'alert-danger';
         container.innerHTML = `
-            <div class="alert ${alertClass}" style="margin-bottom: 0;">
+            <div class="alert ${alertClass} muaadh-alert-no-margin">
                 ${message}
             </div>
         `;

@@ -714,6 +714,8 @@ Route::prefix('admin')->group(function () {
         Route::get('/general-settings/favicon', 'Admin\GeneralSettingController@favicon')->name('admin-gs-fav');
         Route::get('/general-settings/loader', 'Admin\GeneralSettingController@loader')->name('admin-gs-load');
         Route::get('/general-settings/contents', 'Admin\GeneralSettingController@websitecontent')->name('admin-gs-contents');
+        Route::get('/general-settings/theme-colors', 'Admin\GeneralSettingController@themeColors')->name('admin-theme-colors');
+        Route::post('/general-settings/theme-colors/update', 'Admin\GeneralSettingController@updateThemeColors')->name('admin-theme-colors-update');
         Route::get('/general-settings/affilate', 'Admin\GeneralSettingController@affilate')->name('admin-gs-affilate');
         Route::get('/general-settings/error-banner', 'Admin\GeneralSettingController@error_banner')->name('admin-gs-error-banner');
         Route::get('/general-settings/popup', 'Admin\GeneralSettingController@popup')->name('admin-gs-popup');

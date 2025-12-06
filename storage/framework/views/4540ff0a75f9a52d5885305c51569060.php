@@ -205,16 +205,14 @@
                     $preordered = $merchant ? (int)($merchant->preordered ?? 0) : 0;
                     $uniqueId = 'hp_' . ($merchant ? $merchant->id : $actualProduct->id) . '_' . uniqid();
                 ?>
-                <div class="home-product-qty-wrapper" style="margin: 8px 0; display: flex; align-items: center; justify-content: center;">
-                    <span style="font-size: 12px; color: #666; margin-inline-end: 8px;"><?php echo app('translator')->get('Qty'); ?>:</span>
-                    <div class="product-input-wrapper home-product-qty" style="display: inline-flex; align-items: center; border: 1px solid #ddd; border-radius: 4px; overflow: hidden;">
-                        <button type="button" class="hp-qtminus" data-target="<?php echo e($uniqueId); ?>" data-min="<?php echo e($minQty); ?>"
-                                style="width: 28px; height: 28px; border: none; background: #f5f5f5; cursor: pointer; font-size: 14px; font-weight: bold;">-</button>
-                        <input type="text" class="hp-qty-input" id="qty_<?php echo e($uniqueId); ?>" value="<?php echo e($minQty); ?>" readonly
-                               data-min="<?php echo e($minQty); ?>" data-stock="<?php echo e($stock); ?>" data-preordered="<?php echo e($preordered); ?>"
-                               style="width: 35px; text-align: center; border: none; font-size: 13px; font-weight: bold;">
-                        <button type="button" class="hp-qtplus" data-target="<?php echo e($uniqueId); ?>" data-stock="<?php echo e($stock); ?>" data-preordered="<?php echo e($preordered); ?>"
-                                style="width: 28px; height: 28px; border: none; background: #f5f5f5; cursor: pointer; font-size: 14px; font-weight: bold;">+</button>
+                
+                <div class="home-product-qty-wrapper muaadh-home-qty-wrapper">
+                    <span class="muaadh-home-qty-label"><?php echo app('translator')->get('Qty'); ?>:</span>
+                    <div class="product-input-wrapper home-product-qty muaadh-home-qty-control">
+                        <button type="button" class="hp-qtminus muaadh-home-qty-btn" data-target="<?php echo e($uniqueId); ?>" data-min="<?php echo e($minQty); ?>">-</button>
+                        <input type="text" class="hp-qty-input muaadh-home-qty-input" id="qty_<?php echo e($uniqueId); ?>" value="<?php echo e($minQty); ?>" readonly
+                               data-min="<?php echo e($minQty); ?>" data-stock="<?php echo e($stock); ?>" data-preordered="<?php echo e($preordered); ?>">
+                        <button type="button" class="hp-qtplus muaadh-home-qty-btn" data-target="<?php echo e($uniqueId); ?>" data-stock="<?php echo e($stock); ?>" data-preordered="<?php echo e($preordered); ?>">+</button>
                     </div>
                 </div>
             <?php endif; ?>

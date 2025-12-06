@@ -1,155 +1,89 @@
 
-<div class="vin-search-ajax-wrapper" id="vinSearchWrapper<?php echo e($uniqueId ?? 'default'); ?>">
-    <style>
-        .vin-search-ajax-wrapper .vin-form-wrapper .input-group {
-            border-radius: 0.5rem;
-            overflow: hidden;
-            border: 2px solid var(--bs-primary, #0d6efd);
-            background: #fff;
-            transition: all 0.3s ease;
-        }
-        .vin-search-ajax-wrapper .vin-form-wrapper .input-group:focus-within {
-            border-color: #0b5ed7;
-            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.15);
-        }
-        .vin-search-ajax-wrapper .vin-form-wrapper .input-group-text {
-            border: none;
-            background: transparent;
-        }
-        .vin-search-ajax-wrapper .vin-form-wrapper .form-control {
-            border: none;
-            font-size: 1.1rem;
-            font-weight: 600;
-            letter-spacing: 0.5px;
-            font-family: 'Courier New', monospace;
-        }
-        .vin-search-ajax-wrapper .vin-form-wrapper .form-control:focus {
-            box-shadow: none;
-        }
-        .vin-search-ajax-wrapper .vin-result-card {
-            cursor: pointer;
-            transition: all 0.3s ease;
-            border: 2px solid transparent;
-        }
-        .vin-search-ajax-wrapper .vin-result-card:hover {
-            border-color: var(--bs-primary, #0d6efd);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        }
-        .vin-search-ajax-wrapper .vin-icon-wrapper {
-            width: 60px;
-            height: 60px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border-radius: 0.5rem;
-        }
-    </style>
 
-    <div class="vin-form-wrapper">
-        <div class="input-group input-group-lg shadow-sm">
-            <span class="input-group-text bg-white border-end-0 ps-4">
-                <i class="fas fa-car text-primary"></i>
+<div class="muaadh-search-wrapper muaadh-vin-search" id="vinSearchWrapper<?php echo e($uniqueId ?? 'default'); ?>">
+    <div class="muaadh-search-container">
+        <div class="muaadh-search-input-group">
+            <span class="muaadh-search-icon">
+                <i class="fas fa-car"></i>
             </span>
             <input
                 type="text"
-                class="form-control form-control-lg border-start-0 border-end-0 ps-0 vin-input"
+                class="muaadh-search-input vin-input"
                 placeholder="<?php echo e(__('Enter VIN')); ?>"
                 id="vinInput<?php echo e($uniqueId ?? 'default'); ?>"
                 dir="ltr"
                 maxlength="17"
                 autocomplete="off"
             >
-            <button
-                type="button"
-                class="btn btn-primary px-4 vin-search-btn"
-                id="vinSearchBtn<?php echo e($uniqueId ?? 'default'); ?>"
-            >
+            <button type="button" class="muaadh-search-btn vin-search-btn" id="vinSearchBtn<?php echo e($uniqueId ?? 'default'); ?>">
                 <i class="fas fa-search me-2 search-icon"></i>
                 <span class="spinner-border spinner-border-sm me-2 d-none loading-spinner" role="status"></span>
-                <span class="btn-text d-none d-sm-inline"><?php echo e(__('Search')); ?></span>
+                <span class="d-none d-sm-inline"><?php echo e(__('Search')); ?></span>
             </button>
         </div>
     </div>
 
     
-    <div class="text-center mt-3">
-        <p class="mb-0 text-muted small">
-            <i class="fas fa-info-circle me-1"></i>
-            <span><?php echo e(__('Example :')); ?></span>
-            <code class="bg-light px-2 py-1 rounded ms-1" dir="ltr">5N1AA0NC7EN603053</code>
-        </p>
+    <div class="muaadh-search-hint">
+        <i class="fas fa-info-circle me-1"></i>
+        <span><?php echo e(__('Example :')); ?></span>
+        <code dir="ltr">5N1AA0NC7EN603053</code>
     </div>
 
     
-    <div class="mt-4 d-none loading-state" id="vinLoading<?php echo e($uniqueId ?? 'default'); ?>">
-        <div class="card border-0 shadow-sm">
-            <div class="card-body text-center py-4">
-                <div class="spinner-border text-primary mb-3" role="status">
-                    <span class="visually-hidden">Loading...</span>
-                </div>
-                <div class="progress mb-3" style="height: 8px;">
-                    <div class="progress-bar progress-bar-striped progress-bar-animated"
-                         style="width: 60%; background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);">
-                    </div>
-                </div>
-                <p class="text-primary fw-bold mb-0">
-                    <i class="fas fa-sync fa-spin me-2"></i>
-                    <?php echo e(__('Fetching vehicle info...')); ?>
-
-                </p>
+    <div class="muaadh-vin-loading d-none loading-state" id="vinLoading<?php echo e($uniqueId ?? 'default'); ?>">
+        <div class="muaadh-vin-loading-content">
+            <div class="spinner-border mb-3" role="status">
+                <span class="visually-hidden">Loading...</span>
             </div>
+            <div class="muaadh-vin-progress">
+                <div class="muaadh-vin-progress-bar"></div>
+            </div>
+            <p>
+                <i class="fas fa-sync fa-spin me-2"></i>
+                <?php echo e(__('Fetching vehicle info...')); ?>
+
+            </p>
         </div>
     </div>
 
     
-    <div class="alert alert-warning alert-dismissible fade show mt-4 shadow-sm d-none error-message" id="vinError<?php echo e($uniqueId ?? 'default'); ?>" role="alert">
-        <div class="d-flex align-items-center">
-            <i class="fas fa-exclamation-triangle me-3 fs-4"></i>
-            <div class="flex-grow-1">
-                <strong><?php echo e(__('Warning')); ?></strong>
-                <p class="mb-0 error-text"></p>
-            </div>
+    <div class="muaadh-vin-error d-none error-message" id="vinError<?php echo e($uniqueId ?? 'default'); ?>">
+        <i class="fas fa-exclamation-triangle"></i>
+        <div class="muaadh-vin-error-content">
+            <strong><?php echo e(__('Warning')); ?></strong>
+            <p class="error-text"></p>
         </div>
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        <button type="button" class="muaadh-vin-error-close" onclick="this.parentElement.classList.add('d-none')">
+            <i class="fas fa-times"></i>
+        </button>
     </div>
 
     
-    <div class="mt-4 d-none result-container" id="vinResult<?php echo e($uniqueId ?? 'default'); ?>">
-        <div class="card border-0 shadow-sm vin-result-card" role="button">
-            <div class="card-body p-4">
-                <div class="d-flex align-items-center">
-                    <div class="flex-shrink-0 me-4">
-                        <div class="vin-icon-wrapper">
-                            <i class="fas fa-car-side text-white fs-3"></i>
-                        </div>
-                    </div>
-                    <div class="flex-grow-1">
-                        <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center">
-                            <div>
-                                <h5 class="mb-2 fw-bold text-primary result-vin">
-                                    <i class="fas fa-barcode me-2"></i>
-                                    <span class="vin-number"></span>
-                                </h5>
-                                <p class="mb-0 text-muted result-label">
-                                    <i class="fas fa-tag me-2"></i>
-                                    <span class="label-text"></span>
-                                </p>
-                            </div>
-                            <div class="mt-3 mt-md-0">
-                                <span class="badge bg-success bg-gradient px-3 py-2">
-                                    <i class="fas fa-check-circle me-1"></i>
-                                    <?php echo e(__('Click to Select')); ?>
-
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="flex-shrink-0 ms-3 d-none d-md-block">
-                        <i class="fas fa-chevron-right text-muted fs-4"></i>
-                    </div>
+    <div class="muaadh-vin-result d-none result-container" id="vinResult<?php echo e($uniqueId ?? 'default'); ?>">
+        <div class="muaadh-vin-result-card vin-result-card" role="button">
+            <div class="muaadh-vin-result-icon">
+                <i class="fas fa-car-side"></i>
+            </div>
+            <div class="muaadh-vin-result-info">
+                <div class="muaadh-vin-result-vin">
+                    <i class="fas fa-barcode me-2"></i>
+                    <span class="vin-number"></span>
                 </div>
+                <div class="muaadh-vin-result-label">
+                    <i class="fas fa-tag me-2"></i>
+                    <span class="label-text"></span>
+                </div>
+            </div>
+            <div class="muaadh-vin-result-action">
+                <span class="muaadh-vin-select-badge">
+                    <i class="fas fa-check-circle me-1"></i>
+                    <?php echo e(__('Click to Select')); ?>
+
+                </span>
+            </div>
+            <div class="muaadh-vin-result-arrow">
+                <i class="fas fa-chevron-right"></i>
             </div>
         </div>
     </div>

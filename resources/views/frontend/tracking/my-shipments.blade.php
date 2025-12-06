@@ -49,8 +49,7 @@
                             <div class="card-body">
                                 <div class="d-flex align-items-start justify-content-between mb-3">
                                     <div class="d-flex align-items-center">
-                                        <div class="status-icon bg-{{ $color }} text-white rounded-circle p-2 me-3 d-flex align-items-center justify-content-center"
-                                             style="width: 50px; height: 50px;">
+                                        <div class="status-icon bg-{{ $color }} text-white rounded-circle p-2 me-3 muaadh-shipment-status-icon">
                                             <i class="fas {{ $icon }} fa-lg"></i>
                                         </div>
                                         <div>
@@ -98,7 +97,7 @@
                                     if ($currentIndex === false) $currentIndex = 0;
                                     $progress = (($currentIndex + 1) / count($steps)) * 100;
                                 @endphp
-                                <div class="progress mb-3" style="height: 5px;">
+                                <div class="progress mb-3 muaadh-progress-thin">
                                     <div class="progress-bar bg-{{ $color }}" role="progressbar"
                                          style="width: {{ $progress }}%"></div>
                                 </div>

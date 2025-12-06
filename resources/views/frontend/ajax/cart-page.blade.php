@@ -50,15 +50,15 @@
             <div class="col-lg-12">
                 {{-- Loop through each vendor section independently --}}
                 @foreach($productsByVendor as $vendorId => $vendorData)
-                <div class="vendor-cart-section mb-5" style="background: #ffffff; border-radius: 20px; box-shadow: 0 8px 24px rgba(13, 148, 136, 0.1); border: 2px solid #e0f2fe; overflow: hidden;">
-                    {{-- Vendor Header --}}
-                    <div class="vendor-header" style="background: linear-gradient(135deg, #0d9488 0%, #14b8a6 100%); padding: 1.5rem; color: white;">
+                <div class="vendor-cart-section muaadh-vendor-cart-section mb-5">
+                    {{-- Vendor Header - Styles moved to MUAADH.css Section 39 --}}
+                    <div class="vendor-header muaadh-vendor-header">
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
-                                <h4 class="mb-1" style="font-weight: 800; letter-spacing: 0.5px;">
+                                <h4 class="mb-1 muaadh-vendor-title">
                                     <i class="fas fa-store me-2"></i>{{ $vendorData['vendor_name'] }}
                                 </h4>
-                                <p class="mb-0" style="opacity: 0.9; font-size: 0.95rem;">
+                                <p class="mb-0 muaadh-vendor-subtitle">
                                     <i class="fas fa-box me-1"></i>{{ $vendorData['count'] }} @lang('Items')
                                 </p>
                             </div>
@@ -68,7 +68,7 @@
                     <div class="row g-0">
                         {{-- Products Table --}}
                         <div class="col-lg-8">
-                            <div class="cart-table table-responsive" style="padding: 2rem;">
+                            <div class="cart-table table-responsive muaadh-cart-table-container">
                                 <table class="table">
                                     <thead>
                                         <tr>
@@ -145,7 +145,7 @@
                                                 {{-- Image Column --}}
                                                 <td class="cart-image">
                                                     <img src="{{ $photo ? Storage::url($photo) : asset('assets/images/noimage.png') }}"
-                                                         alt="" style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px;">
+                                                         alt="" class="muaadh-cart-product-img">
                                                 </td>
 
                                                 {{-- Name Column --}}
@@ -155,7 +155,7 @@
                                                         <div class="d-flex align-items-center gap-2 mt-2">
                                                             @if (!empty($product['color']))
                                                                 <span class="text-muted small">@lang('Color'): </span>
-                                                                <span class="cart-color d-inline-block rounded-2" style="border:10px solid #{{ $product['color']==''?'white':$product['color'] }};"></span>
+                                                                <span class="cart-color muaadh-cart-color-swatch" style="--swatch-color: #{{ $product['color']==''?'white':$product['color'] }};"></span>
                                                             @endif
                                                             @if (!empty($product['size']))
                                                                 <span class="text-muted small">@lang('Size'): {{ $product['size'] }}</span>
@@ -270,8 +270,8 @@
 
                         {{-- Vendor Cart Summary - INDEPENDENT per vendor --}}
                         <div class="col-lg-4">
-                            <div class="cart-summary" style="margin: 2rem; background: linear-gradient(135deg, #ffffff 0%, #f0fdfa 100%); border-radius: 16px; padding: 2rem; border: 2px solid #14b8a6;">
-                                <h5 class="cart-summary-title" style="color: #0f172a; font-size: 1.5rem; font-weight: 800; margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 3px solid; border-image: linear-gradient(90deg, #0d9488 0%, #14b8a6 50%, #2dd4bf 100%) 1;">
+                            <div class="cart-summary muaadh-cart-summary">
+                                <h5 class="cart-summary-title muaadh-cart-summary-title">
                                     @lang('Cart Summary')
                                 </h5>
                                 <div class="cart-summary-content">
@@ -300,21 +300,21 @@
                                         $hasCompleteShippingData = $vendorData['has_complete_data'] ?? false;
                                     @endphp
 
-                                    <div class="cart-summary-item d-flex justify-content-between" style="padding: 1rem 0; border-bottom: 1px solid #e0f2fe;">
-                                        <p class="cart-summary-subtitle" style="color: #64748b; font-weight: 600; margin: 0;">
+                                    <div class="cart-summary-item muaadh-cart-summary-item d-flex justify-content-between">
+                                        <p class="cart-summary-subtitle text-muted fw-semibold mb-0">
                                             @lang('Subtotal') ({{ $vendorData['count'] }} @lang('Items'))
                                         </p>
-                                        <p class="cart-summary-price" style="color: #0d9488; font-weight: 700; font-size: 1.1rem; margin: 0;">
+                                        <p class="cart-summary-price text-primary fw-bold mb-0">
                                             {{ Product::convertPrice($vendorSubtotal) }}
                                         </p>
                                     </div>
 
                                     {{-- Total Weight Row --}}
-                                    <div class="cart-summary-item d-flex justify-content-between" style="padding: 1rem 0; border-bottom: 1px solid #e0f2fe;">
-                                        <p class="cart-summary-subtitle" style="color: #64748b; font-weight: 600; margin: 0;">
+                                    <div class="cart-summary-item muaadh-cart-summary-item d-flex justify-content-between">
+                                        <p class="cart-summary-subtitle text-muted fw-semibold mb-0">
                                             <i class="fas fa-weight-hanging me-1"></i> @lang('Total Weight')
                                         </p>
-                                        <p class="cart-summary-price" style="color: #0f172a; font-weight: 600; margin: 0;">
+                                        <p class="cart-summary-price fw-semibold mb-0">
                                             @if ($vendorTotalWeight > 0)
                                                 {{ number_format($vendorTotalWeight, 2) }} kg
                                                 @if ($hasMissingWeight)
@@ -329,34 +329,34 @@
                                     </div>
 
                                     @if($vendorDiscount > 0)
-                                    <div class="cart-summary-item d-flex justify-content-between" style="padding: 1rem 0; border-bottom: 1px solid #e0f2fe;">
-                                        <p class="cart-summary-subtitle" style="color: #64748b; font-weight: 600; margin: 0;">
+                                    <div class="cart-summary-item muaadh-cart-summary-item d-flex justify-content-between">
+                                        <p class="cart-summary-subtitle text-muted fw-semibold mb-0">
                                             @lang('Discount')
                                         </p>
-                                        <p class="cart-summary-price" style="color: #ef4444; font-weight: 700; font-size: 1.1rem; margin: 0;">
+                                        <p class="cart-summary-price text-danger fw-bold mb-0">
                                             - {{ Product::convertPrice($vendorDiscount) }}
                                         </p>
                                     </div>
                                     @endif
 
-                                    <div class="cart-summary-item d-flex justify-content-between" style="padding: 1rem 0; border-bottom: 2px solid #14b8a6;">
-                                        <p class="cart-summary-subtitle" style="color: #0f172a; font-weight: 700; margin: 0; font-size: 1.1rem;">
+                                    <div class="cart-summary-item muaadh-cart-summary-total d-flex justify-content-between">
+                                        <p class="cart-summary-subtitle muaadh-cart-summary-total-label mb-0">
                                             @lang('Total')
                                         </p>
-                                        <p class="cart-summary-price total-cart-price" style="color: #0d9488; font-weight: 800; font-size: 1.3rem; margin: 0;">
+                                        <p class="cart-summary-price total-cart-price muaadh-cart-summary-total-value mb-0">
                                             {{ Product::convertPrice($vendorData['total']) }}
                                         </p>
                                     </div>
 
-                                    <div class="cart-summary-btn" style="margin-top: 1.5rem;">
+                                    <div class="cart-summary-btn">
                                         {{-- زر Checkout لهذا التاجر فقط --}}
                                         @auth
-                                            <a href="{{ route('front.checkout.vendor', $vendorId) }}" class="template-btn w-100" style="background: linear-gradient(135deg, #0d9488 0%, #14b8a6 100%); color: #ffffff; border: none; padding: 1rem 2rem; border-radius: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 8px 20px rgba(13, 148, 136, 0.3); text-align: center; display: block; text-decoration: none;">
-                                                <i class="fas fa-shopping-cart me-2"></i>@lang('Checkout This Vendor')
+                                            <a href="{{ route('front.checkout.vendor', $vendorId) }}" class="template-btn muaadh-checkout-btn">
+                                                <i class="fas fa-shopping-cart"></i>@lang('Checkout This Vendor')
                                             </a>
                                         @else
-                                            <a href="{{ route('user.login', ['redirect' => 'cart']) }}" class="template-btn w-100" style="background: linear-gradient(135deg, #0d9488 0%, #14b8a6 100%); color: #ffffff; border: none; padding: 1rem 2rem; border-radius: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 8px 20px rgba(13, 148, 136, 0.3); text-align: center; display: block; text-decoration: none;">
-                                                <i class="fas fa-shopping-cart me-2"></i>@lang('Checkout This Vendor')
+                                            <a href="{{ route('user.login', ['redirect' => 'cart']) }}" class="template-btn muaadh-checkout-btn">
+                                                <i class="fas fa-shopping-cart"></i>@lang('Checkout This Vendor')
                                             </a>
                                         @endauth
 

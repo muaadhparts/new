@@ -45,6 +45,8 @@
     <link rel="stylesheet" href="{{ asset('assets/vendor') }}/css/custom.css">
     {{-- MUAADH Theme - Unified Styles (Main Theme File) --}}
     <link rel="stylesheet" href="{{ asset('assets/front/css/MUAADH.css') }}">
+    {{-- Theme Colors - Generated from Admin Panel --}}
+    <link rel="stylesheet" href="{{ asset('assets/front/css/theme-colors.css') }}?v={{ filemtime(public_path('assets/front/css/theme-colors.css')) }}">
     <link rel="icon" href="{{ asset('assets/images/' . $gs->favicon) }}">
     @include('includes.frontend.extra_head')
     @livewireStyles

@@ -291,8 +291,8 @@
                                                     @if (!empty($product['color']))
                                                         <li>
                                                             <span class="specification-name">@lang('Color :') </span>
-                                                            <span class="specification"
-                                                                style="border: 10px solid {{ $product['color'] == '' ? ' white' : '#' . $product['color'] }};"></span>
+                                                            <span class="specification muaadh-color-swatch"
+                                                                style="--swatch-color: {{ $product['color'] == '' ? 'white' : '#' . $product['color'] }};"></span>
                                                         </li>
                                                     @endif
 

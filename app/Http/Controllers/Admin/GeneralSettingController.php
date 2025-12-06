@@ -313,4 +313,76 @@ class GeneralSettingController extends AdminBaseController
     public function otpConfig() {
         return view("admin.generalsetting.otp_config");
     }
+
+    /**
+     * Show theme colors settings page
+     */
+    public function themeColors()
+    {
+        return view('admin.generalsetting.theme_colors');
+    }
+
+    /**
+     * Update theme colors
+     */
+    public function updateThemeColors(Request $request)
+    {
+        $data = Generalsetting::findOrFail(1);
+
+        $data->theme_primary = $request->theme_primary ?? '#c3002f';
+        $data->theme_primary_hover = $request->theme_primary_hover ?? '#a00025';
+        $data->theme_primary_dark = $request->theme_primary_dark ?? '#8a0020';
+        $data->theme_primary_light = $request->theme_primary_light ?? '#fef2f4';
+        $data->theme_secondary = $request->theme_secondary ?? '#1a1a1a';
+        $data->theme_secondary_hover = $request->theme_secondary_hover ?? '#333333';
+
+        $data->save();
+
+        // Clear cache
+        cache()->forget('generalsettings');
+
+        // Regenerate CSS file with new colors
+        $this->generateThemeCss($data);
+
+        return back()->with('success', __('Theme Colors Updated Successfully'));
+    }
+
+    /**
+     * Generate theme CSS file with database colors
+     */
+    private function generateThemeCss($gs)
+    {
+        $cssPath = public_path('assets/front/css/theme-colors.css');
+
+        $css = ":root {
+    /* Primary Colors - Generated from Admin Panel */
+    --muaadh-primary: {$gs->theme_primary};
+    --muaadh-primary-hover: {$gs->theme_primary_hover};
+    --muaadh-primary-dark: {$gs->theme_primary_dark};
+    --muaadh-primary-light: {$gs->theme_primary_light};
+    --muaadh-primary-rgb: " . $this->hexToRgb($gs->theme_primary) . ";
+
+    /* Secondary Colors */
+    --muaadh-secondary: {$gs->theme_secondary};
+    --muaadh-secondary-hover: {$gs->theme_secondary_hover};
+}
+";
+
+        file_put_contents($cssPath, $css);
+    }
+
+    /**
+     * Convert hex color to RGB
+     */
+    private function hexToRgb($hex)
+    {
+        $hex = ltrim($hex, '#');
+        if (strlen($hex) == 3) {
+            $hex = $hex[0] . $hex[0] . $hex[1] . $hex[1] . $hex[2] . $hex[2];
+        }
+        $r = hexdec(substr($hex, 0, 2));
+        $g = hexdec(substr($hex, 2, 2));
+        $b = hexdec(substr($hex, 4, 2));
+        return "{$r}, {$g}, {$b}";
+    }
 }

@@ -1,0 +1,12 @@
+:root {
+    /* Primary Colors - Generated from Admin Panel */
+    --muaadh-primary: #00c35b;
+    --muaadh-primary-hover: #003fa0;
+    --muaadh-primary-dark: #37ab3c;
+    --muaadh-primary-light: #0c26ab;
+    --muaadh-primary-rgb: 0, 195, 91;
+
+    /* Secondary Colors */
+    --muaadh-secondary: #6e0f0f;
+    --muaadh-secondary-hover: #192e1d;
+}

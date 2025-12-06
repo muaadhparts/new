@@ -11,6 +11,8 @@
 --}}
 {{-- MUAADH Theme - Unified Styles --}}
 <link rel="stylesheet" href="{{ asset('assets/front/css/MUAADH.css') }}">
+{{-- Theme Colors - Generated from Admin Panel --}}
+<link rel="stylesheet" href="{{ asset('assets/front/css/theme-colors.css') }}">
 @yield('styles')
 
 

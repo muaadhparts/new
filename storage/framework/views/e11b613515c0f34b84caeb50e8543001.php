@@ -104,7 +104,7 @@
         <?php if($showQualityBrand && $qualityBrandName): ?>
             <span class="badge bg-light text-dark d-inline-flex align-items-center">
                 <?php if($qualityBrandLogo): ?>
-                    <img src="<?php echo e($qualityBrandLogo); ?>" alt="<?php echo e($qualityBrandName); ?>" class="quality-brand-logo me-1" style="max-height: 20px; max-width: 50px; object-fit: contain;">
+                    <img src="<?php echo e($qualityBrandLogo); ?>" alt="<?php echo e($qualityBrandName); ?>" class="quality-brand-logo muaadh-quality-logo-sm me-1">
                 <?php else: ?>
                     <i class="fas fa-certificate me-1"></i>
                 <?php endif; ?>
@@ -148,7 +148,7 @@
             <li class="small d-flex align-items-center">
                 <strong><?php echo e(__('Quality Brand')); ?>:</strong>
                 <?php if($qualityBrandLogo): ?>
-                    <img src="<?php echo e($qualityBrandLogo); ?>" alt="<?php echo e($qualityBrandName); ?>" class="quality-brand-logo mx-1" style="max-height: 22px; max-width: 60px; object-fit: contain;">
+                    <img src="<?php echo e($qualityBrandLogo); ?>" alt="<?php echo e($qualityBrandName); ?>" class="quality-brand-logo muaadh-quality-logo-md mx-1">
                 <?php endif; ?>
                 <span class="ms-1"><?php echo e($qualityBrandName); ?></span>
             </li>
@@ -193,7 +193,7 @@
                         <td class="text-muted"><i class="fas fa-certificate me-1"></i><?php echo e(__('Quality')); ?></td>
                         <td class="d-flex align-items-center">
                             <?php if($qualityBrandLogo): ?>
-                                <img src="<?php echo e($qualityBrandLogo); ?>" alt="<?php echo e($qualityBrandName); ?>" class="quality-brand-logo me-2" style="max-height: 22px; max-width: 60px; object-fit: contain;">
+                                <img src="<?php echo e($qualityBrandLogo); ?>" alt="<?php echo e($qualityBrandName); ?>" class="quality-brand-logo muaadh-quality-logo-md me-2">
                             <?php endif; ?>
                             <?php echo e($qualityBrandName); ?>
 
@@ -237,7 +237,7 @@
         <?php if($showQualityBrand && $qualityBrandName): ?>
             <span class="me-2 d-inline-flex align-items-center">
                 <?php if($qualityBrandLogo): ?>
-                    <img src="<?php echo e($qualityBrandLogo); ?>" alt="<?php echo e($qualityBrandName); ?>" class="quality-brand-logo me-1" style="max-height: 18px; max-width: 45px; object-fit: contain;">
+                    <img src="<?php echo e($qualityBrandLogo); ?>" alt="<?php echo e($qualityBrandName); ?>" class="quality-brand-logo muaadh-quality-logo-xs me-1">
                 <?php else: ?>
                     <i class="fas fa-certificate me-1"></i>
                 <?php endif; ?>

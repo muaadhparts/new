@@ -44,18 +44,18 @@
             const viewPrice = selectedRadio.getAttribute('view') || '';
 
             if (shippingText) {
-                let html = '<div style="display: flex; align-items: center; gap: 10px;">';
+                let html = '<div class="muaadh-shipping-option">';
                 if (logo) {
-                    html += '<img src="' + logo + '" alt="' + companyName + '" style="max-width: 40px; max-height: 40px; object-fit: contain; border-radius: 4px;">';
+                    html += '<img src="' + logo + '" alt="' + companyName + '" class="muaadh-shipping-logo">';
                 }
-                html += '<div style="display: flex; flex-direction: column;">';
-                html += '<span style="font-weight: 600; color: #4C3533;">' + companyName + '</span>';
+                html += '<div class="muaadh-shipping-info">';
+                html += '<span class="muaadh-shipping-company">' + companyName + '</span>';
                 if (service) {
-                    html += '<small style="color: #6c757d;">' + service + '</small>';
+                    html += '<small class="muaadh-shipping-service">' + service + '</small>';
                 }
                 html += '</div>';
                 if (viewPrice) {
-                    html += '<span style="margin-left: auto; font-weight: 600; color: #EE1243;">+ ' + viewPrice + '</span>';
+                    html += '<span class="muaadh-shipping-price">+ ' + viewPrice + '</span>';
                 }
                 html += '</div>';
                 shippingText.innerHTML = html;

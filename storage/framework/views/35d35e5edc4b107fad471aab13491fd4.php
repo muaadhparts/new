@@ -1,6 +1,6 @@
 
 <!DOCTYPE html>
-<html lang="en" dir="<?php echo e($langg && $langg->rtl == 1 ? 'rtl' : 'ltr'); ?>">
+<html lang="<?php echo e($langg->name ?? 'en'); ?>" dir="<?php echo e($langg && $langg->rtl == 1 ? 'rtl' : 'ltr'); ?>">
 
 <head>
     <meta charset="UTF-8">
@@ -27,6 +27,8 @@
     <?php endif; ?>
     
     <link rel="stylesheet" href="<?php echo e(asset('assets/front/css/MUAADH.css')); ?>">
+    
+    <link rel="stylesheet" href="<?php echo e(asset('assets/front/css/theme-colors.css')); ?>?v=<?php echo e(filemtime(public_path('assets/front/css/theme-colors.css'))); ?>">
     
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tarekraafat/autocomplete.js@10.2.9/dist/css/autoComplete.min.css">
     <script src="https://cdn.jsdelivr.net/npm/@tarekraafat/autocomplete.js@10.2.9/dist/autoComplete.min.js"></script>

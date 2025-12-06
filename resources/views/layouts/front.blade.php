@@ -18,7 +18,7 @@
 ================================================================================
 --}}
 <!DOCTYPE html>
-<html lang="en" dir="{{ $langg && $langg->rtl == 1 ? 'rtl' : 'ltr' }}">
+<html lang="{{ $langg->name ?? 'en' }}" dir="{{ $langg && $langg->rtl == 1 ? 'rtl' : 'ltr' }}">
 
 <head>
     <meta charset="UTF-8">
@@ -45,6 +45,8 @@
     @endif
     {{-- MUAADH Theme - Unified Styles (Main Theme File) --}}
     <link rel="stylesheet" href="{{ asset('assets/front/css/MUAADH.css') }}">
+    {{-- Theme Colors - Generated from Admin Panel (overrides MUAADH.css :root variables) --}}
+    <link rel="stylesheet" href="{{ asset('assets/front/css/theme-colors.css') }}?v={{ filemtime(public_path('assets/front/css/theme-colors.css')) }}">
     {{-- AutoComplete.js for search --}}
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tarekraafat/autocomplete.js@10.2.9/dist/css/autoComplete.min.css">
     <script src="https://cdn.jsdelivr.net/npm/@tarekraafat/autocomplete.js@10.2.9/dist/autoComplete.min.js"></script>

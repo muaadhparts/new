@@ -194,16 +194,14 @@
                     $preordered = $merchant ? (int)($merchant->preordered ?? 0) : 0;
                     $uniqueId = 'hp_' . ($merchant ? $merchant->id : $actualProduct->id) . '_' . uniqid();
                 @endphp
-                <div class="home-product-qty-wrapper" style="margin: 8px 0; display: flex; align-items: center; justify-content: center;">
-                    <span style="font-size: 12px; color: #666; margin-inline-end: 8px;">@lang('Qty'):</span>
-                    <div class="product-input-wrapper home-product-qty" style="display: inline-flex; align-items: center; border: 1px solid #ddd; border-radius: 4px; overflow: hidden;">
-                        <button type="button" class="hp-qtminus" data-target="{{ $uniqueId }}" data-min="{{ $minQty }}"
-                                style="width: 28px; height: 28px; border: none; background: #f5f5f5; cursor: pointer; font-size: 14px; font-weight: bold;">-</button>
-                        <input type="text" class="hp-qty-input" id="qty_{{ $uniqueId }}" value="{{ $minQty }}" readonly
-                               data-min="{{ $minQty }}" data-stock="{{ $stock }}" data-preordered="{{ $preordered }}"
-                               style="width: 35px; text-align: center; border: none; font-size: 13px; font-weight: bold;">
-                        <button type="button" class="hp-qtplus" data-target="{{ $uniqueId }}" data-stock="{{ $stock }}" data-preordered="{{ $preordered }}"
-                                style="width: 28px; height: 28px; border: none; background: #f5f5f5; cursor: pointer; font-size: 14px; font-weight: bold;">+</button>
+                {{-- Styles moved to MUAADH.css Section 41 --}}
+                <div class="home-product-qty-wrapper muaadh-home-qty-wrapper">
+                    <span class="muaadh-home-qty-label">@lang('Qty'):</span>
+                    <div class="product-input-wrapper home-product-qty muaadh-home-qty-control">
+                        <button type="button" class="hp-qtminus muaadh-home-qty-btn" data-target="{{ $uniqueId }}" data-min="{{ $minQty }}">-</button>
+                        <input type="text" class="hp-qty-input muaadh-home-qty-input" id="qty_{{ $uniqueId }}" value="{{ $minQty }}" readonly
+                               data-min="{{ $minQty }}" data-stock="{{ $stock }}" data-preordered="{{ $preordered }}">
+                        <button type="button" class="hp-qtplus muaadh-home-qty-btn" data-target="{{ $uniqueId }}" data-stock="{{ $stock }}" data-preordered="{{ $preordered }}">+</button>
                     </div>
                 </div>
             @endif
