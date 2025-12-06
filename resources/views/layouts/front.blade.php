@@ -25,6 +25,7 @@
         <link rel="stylesheet" href="{{ asset('assets/front') }}/css/rtl.css">
     @endif
     <link rel="stylesheet" href="{{ asset('assets/front') }}/css/custom.css">
+    <link rel="stylesheet" href="{{ asset('assets/front') }}/css/catalog-unified.css">
     <link rel="icon" href="{{ asset('assets/images/' . $gs->favicon) }}">
     @include('includes.frontend.extra_head')
     @yield('css')

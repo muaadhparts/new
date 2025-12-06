@@ -856,14 +856,17 @@
     });
 
     /* ============== أزرار الكمية في Alternatives و Quick View ============== */
+    /* ✅ Selectors موحّدة تدعم الكلاسات الجديدة (catalog-*) والقديمة للتوافقية */
 
-    // زيادة الكمية - للـ Alternatives
+    // زيادة الكمية - للـ Alternatives (يدعم .catalog-qty-control و .qty-control)
     $(document).off('click.qty_plus').on('click.qty_plus', '.qty-plus', function (e) {
       e.preventDefault();
       e.stopPropagation();
 
       const $btn = $(this);
-      const $input = $btn.closest('.qty-control').find('.qty-input');
+      // ✅ يبحث في الـ container الجديد أو القديم
+      const $container = $btn.closest('.catalog-qty-control, .qty-control');
+      const $input = $container.find('.catalog-qty-input, .qty-input');
       if (!$input.length) return;
 
       const stock = parseInt($btn.data('stock')) || 999;
@@ -880,13 +883,15 @@
       $input.val(current + 1);
     });
 
-    // إنقاص الكمية - للـ Alternatives
+    // إنقاص الكمية - للـ Alternatives (يدعم .catalog-qty-control و .qty-control)
     $(document).off('click.qty_minus').on('click.qty_minus', '.qty-minus', function (e) {
       e.preventDefault();
       e.stopPropagation();
 
       const $btn = $(this);
-      const $input = $btn.closest('.qty-control').find('.qty-input');
+      // ✅ يبحث في الـ container الجديد أو القديم
+      const $container = $btn.closest('.catalog-qty-control, .qty-control');
+      const $input = $container.find('.catalog-qty-input, .qty-input');
       if (!$input.length) return;
 
       const minQty = parseInt($btn.data('min')) || 1;
@@ -902,13 +907,15 @@
       $input.val(current - 1);
     });
 
-    // زيادة الكمية - للـ Quick View (modal-qtplus)
+    // زيادة الكمية - للـ Quick View (modal-qtplus) (يدعم .catalog-quickview-qty-control و .qv-qty-control)
     $(document).off('click.modal_qtplus').on('click.modal_qtplus', '.modal-qtplus', function (e) {
       e.preventDefault();
       e.stopPropagation();
 
       const $btn = $(this);
-      const $input = $btn.closest('.qv-qty-control').find('.modal-qty-input');
+      // ✅ يبحث في الـ container الجديد أو القديم
+      const $container = $btn.closest('.catalog-quickview-qty-control, .qv-qty-control');
+      const $input = $container.find('.catalog-quickview-qty-input, .modal-qty-input');
       if (!$input.length) return;
 
       const stock = parseInt($btn.data('stock')) || 999;
@@ -924,13 +931,15 @@
       $input.val(current + 1);
     });
 
-    // إنقاص الكمية - للـ Quick View (modal-qtminus)
+    // إنقاص الكمية - للـ Quick View (modal-qtminus) (يدعم .catalog-quickview-qty-control و .qv-qty-control)
     $(document).off('click.modal_qtminus').on('click.modal_qtminus', '.modal-qtminus', function (e) {
       e.preventDefault();
       e.stopPropagation();
 
       const $btn = $(this);
-      const $input = $btn.closest('.qv-qty-control').find('.modal-qty-input');
+      // ✅ يبحث في الـ container الجديد أو القديم
+      const $container = $btn.closest('.catalog-quickview-qty-control, .qv-qty-control');
+      const $input = $container.find('.catalog-quickview-qty-input, .modal-qty-input');
       if (!$input.length) return;
 
       const minQty = parseInt($btn.data('min')) || 1;

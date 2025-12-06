@@ -25,6 +25,7 @@
         <link rel="stylesheet" href="<?php echo e(asset('assets/front')); ?>/css/rtl.css">
     <?php endif; ?>
     <link rel="stylesheet" href="<?php echo e(asset('assets/front')); ?>/css/custom.css">
+    <link rel="stylesheet" href="<?php echo e(asset('assets/front')); ?>/css/catalog-unified.css">
     <link rel="icon" href="<?php echo e(asset('assets/images/' . $gs->favicon)); ?>">
     <?php echo $__env->make('includes.frontend.extra_head', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?>
     <?php echo $__env->yieldContent('css'); ?>

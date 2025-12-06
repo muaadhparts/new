@@ -5,88 +5,9 @@
 @section('title', ($category->localized_name ?? $category->full_code) . ' - ' . __('Illustrations'))
 
 @section('content')
+{{-- Uses catalog-unified.css for breadcrumb styling --}}
 <style>
-    /* ===== Compact Breadcrumb Styles ===== */
-    .compact-breadcrumb-wrapper {
-        background: #fff;
-        border-radius: 0.5rem;
-        padding: 0.5rem 0.75rem;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.06);
-        border: 1px solid #e9ecef;
-    }
-
-    .compact-breadcrumb {
-        margin: 0;
-        padding: 0;
-        background: transparent;
-        font-size: 0.85rem;
-    }
-
-    .compact-breadcrumb .breadcrumb-item {
-        padding: 0;
-    }
-
-    .compact-breadcrumb .breadcrumb-item + .breadcrumb-item::before {
-        content: "›";
-        color: #6c757d;
-        padding: 0 0.4rem;
-        font-size: 1rem;
-    }
-
-    .compact-breadcrumb a {
-        color: #495057;
-        text-decoration: none;
-        transition: color 0.2s ease;
-        display: inline-flex;
-        align-items: center;
-    }
-
-    .compact-breadcrumb a:hover {
-        color: #0d6efd;
-    }
-
-    .compact-breadcrumb .active span {
-        color: #0d6efd;
-        font-weight: 600;
-    }
-
-    .compact-breadcrumb i {
-        font-size: 0.875rem;
-    }
-
-    @media (max-width: 576px) {
-        .compact-breadcrumb-wrapper {
-            padding: 0.4rem 0.6rem;
-            border-radius: 0.4rem;
-        }
-
-        .compact-breadcrumb {
-            font-size: 0.75rem;
-            flex-wrap: nowrap;
-            overflow-x: auto;
-            scrollbar-width: none;
-            -ms-overflow-style: none;
-        }
-
-        .compact-breadcrumb::-webkit-scrollbar {
-            display: none;
-        }
-
-        .compact-breadcrumb .breadcrumb-item {
-            white-space: nowrap;
-        }
-
-        .compact-breadcrumb .breadcrumb-item + .breadcrumb-item::before {
-            padding: 0 0.3rem;
-            font-size: 0.9rem;
-        }
-
-        .compact-breadcrumb i {
-            font-size: 0.8rem;
-        }
-    }
-
-    /* ⚙️ Landmarks Styles */
+    /* Landmarks Styles */
     #zoom_container .landmarks {
         position: absolute;
         z-index: 10;
@@ -204,9 +125,9 @@
 <div class="container py-2">
     <div class="row">
         <div class="col-12">
-            <div class="compact-breadcrumb-wrapper mb-3">
+            <div class="catalog-breadcrumb-wrapper mb-3">
                 <nav aria-label="breadcrumb">
-                    <ol class="breadcrumb compact-breadcrumb mb-0">
+                    <ol class="breadcrumb catalog-breadcrumb mb-0">
                         {{-- Home --}}
                         <li class="breadcrumb-item">
                             <a href="{{ route('front.index') }}">

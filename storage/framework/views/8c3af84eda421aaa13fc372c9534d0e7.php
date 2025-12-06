@@ -31,19 +31,16 @@
 </button>
 
 
-<div class="offcanvas offcanvas-start" tabindex="-1" id="specsOffcanvas"
-     aria-labelledby="specsOffcanvasLabel" data-bs-backdrop="static" style="width: 340px;">
+<div class="offcanvas offcanvas-start catalog-specs-offcanvas" tabindex="-1" id="specsOffcanvas"
+     aria-labelledby="specsOffcanvasLabel" data-bs-backdrop="static">
 
     
-    <div class="offcanvas-header border-bottom bg-light">
+    <div class="offcanvas-header">
         <h5 class="offcanvas-title" id="specsOffcanvasLabel">
             <i class="fas fa-cog me-2"></i>
             <?php echo e(__('Specifications')); ?>
 
-            <small class="d-block text-muted fs-6 mt-1">
-                <?php echo e($catalogName); ?> <?php echo e($catalogYears ? "($catalogYears)" : ''); ?>
-
-            </small>
+            <small><?php echo e($catalogName); ?> <?php echo e($catalogYears ? "($catalogYears)" : ''); ?></small>
         </h5>
         <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
     </div>
@@ -53,7 +50,7 @@
 
         
         <?php if($isVinMode): ?>
-            <div class="alert alert-info m-3 py-2 mb-0 rounded-2">
+            <div class="alert alert-info catalog-specs-alert">
                 <i class="fas fa-car me-1"></i>
                 <strong>VIN Mode</strong> - <?php echo e(__('Values are read-only')); ?>
 
@@ -61,18 +58,18 @@
         <?php endif; ?>
 
         
-        <form id="specsForm" class="p-3">
+        <form id="specsForm" class="catalog-specs-form">
             <input type="hidden" name="catalog_code" value="<?php echo e($catalogCode); ?>">
 
             
             <?php if(isset($filters['year']) || isset($filters['month'])): ?>
                 <div class="mb-3">
-                    <label class="form-label fw-semibold mb-2">
+                    <label class="form-label">
                         <i class="fas fa-calendar-alt me-1 text-muted"></i>
                         <?php echo e(__('Build Date')); ?>
 
                         <?php if(($filters['year']['readonly'] ?? false) || ($filters['month']['readonly'] ?? false)): ?>
-                            <span class="badge bg-primary ms-1" style="font-size: 0.65rem;">VIN</span>
+                            <span class="catalog-specs-badge catalog-specs-badge-vin">VIN</span>
                         <?php endif; ?>
                     </label>
                     <div class="row g-2">
@@ -126,12 +123,12 @@
                     ?>
 
                     <div class="mb-3">
-                        <label class="form-label fw-semibold mb-1 d-flex align-items-center">
+                        <label class="form-label">
                             <span><?php echo e($filter['label']); ?></span>
                             <?php if($isReadonly): ?>
-                                <span class="badge bg-primary ms-auto" style="font-size: 0.6rem;">VIN</span>
+                                <span class="catalog-specs-badge catalog-specs-badge-vin">VIN</span>
                             <?php elseif($hasValue): ?>
-                                <span class="badge bg-success ms-auto" style="font-size: 0.6rem;">SET</span>
+                                <span class="catalog-specs-badge catalog-specs-badge-set">SET</span>
                             <?php endif; ?>
                         </label>
 
@@ -162,7 +159,7 @@
     </div>
 
     
-    <div class="offcanvas-footer border-top bg-light p-3">
+    <div class="catalog-specs-footer">
         <?php if(!$isVinMode): ?>
             <div class="d-grid gap-2">
                 <button type="button" class="btn btn-success" id="btnApplySpecs">
@@ -289,17 +286,5 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 
-<style>
-.offcanvas-footer {
-    position: sticky;
-    bottom: 0;
-}
-#specsOffcanvas .form-select-sm {
-    font-size: 0.85rem;
-}
-#specsOffcanvas .form-label {
-    font-size: 0.85rem;
-    margin-bottom: 0.25rem;
-}
-</style>
+
 <?php /**PATH C:\Users\hp\Herd\new\resources\views/catalog/partials/specs-modal.blade.php ENDPATH**/ ?>

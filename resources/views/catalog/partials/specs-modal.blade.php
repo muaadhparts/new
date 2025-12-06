@@ -36,18 +36,16 @@
     @endif
 </button>
 
-{{-- Offcanvas Modal --}}
-<div class="offcanvas offcanvas-start" tabindex="-1" id="specsOffcanvas"
-     aria-labelledby="specsOffcanvasLabel" data-bs-backdrop="static" style="width: 340px;">
+{{-- Offcanvas Modal - Uses catalog-unified.css --}}
+<div class="offcanvas offcanvas-start catalog-specs-offcanvas" tabindex="-1" id="specsOffcanvas"
+     aria-labelledby="specsOffcanvasLabel" data-bs-backdrop="static">
 
     {{-- Header --}}
-    <div class="offcanvas-header border-bottom bg-light">
+    <div class="offcanvas-header">
         <h5 class="offcanvas-title" id="specsOffcanvasLabel">
             <i class="fas fa-cog me-2"></i>
             {{ __('Specifications') }}
-            <small class="d-block text-muted fs-6 mt-1">
-                {{ $catalogName }} {{ $catalogYears ? "($catalogYears)" : '' }}
-            </small>
+            <small>{{ $catalogName }} {{ $catalogYears ? "($catalogYears)" : '' }}</small>
         </h5>
         <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
     </div>
@@ -57,24 +55,24 @@
 
         {{-- VIN Mode Alert --}}
         @if($isVinMode)
-            <div class="alert alert-info m-3 py-2 mb-0 rounded-2">
+            <div class="alert alert-info catalog-specs-alert">
                 <i class="fas fa-car me-1"></i>
                 <strong>VIN Mode</strong> - {{ __('Values are read-only') }}
             </div>
         @endif
 
         {{-- Filters Form --}}
-        <form id="specsForm" class="p-3">
+        <form id="specsForm" class="catalog-specs-form">
             <input type="hidden" name="catalog_code" value="{{ $catalogCode }}">
 
             {{-- Date Filters (Year & Month) --}}
             @if(isset($filters['year']) || isset($filters['month']))
                 <div class="mb-3">
-                    <label class="form-label fw-semibold mb-2">
+                    <label class="form-label">
                         <i class="fas fa-calendar-alt me-1 text-muted"></i>
                         {{ __('Build Date') }}
                         @if(($filters['year']['readonly'] ?? false) || ($filters['month']['readonly'] ?? false))
-                            <span class="badge bg-primary ms-1" style="font-size: 0.65rem;">VIN</span>
+                            <span class="catalog-specs-badge catalog-specs-badge-vin">VIN</span>
                         @endif
                     </label>
                     <div class="row g-2">
@@ -126,12 +124,12 @@
                     @endphp
 
                     <div class="mb-3">
-                        <label class="form-label fw-semibold mb-1 d-flex align-items-center">
+                        <label class="form-label">
                             <span>{{ $filter['label'] }}</span>
                             @if($isReadonly)
-                                <span class="badge bg-primary ms-auto" style="font-size: 0.6rem;">VIN</span>
+                                <span class="catalog-specs-badge catalog-specs-badge-vin">VIN</span>
                             @elseif($hasValue)
-                                <span class="badge bg-success ms-auto" style="font-size: 0.6rem;">SET</span>
+                                <span class="catalog-specs-badge catalog-specs-badge-set">SET</span>
                             @endif
                         </label>
 
@@ -160,7 +158,7 @@
     </div>
 
     {{-- Footer Actions --}}
-    <div class="offcanvas-footer border-top bg-light p-3">
+    <div class="catalog-specs-footer">
         @if(!$isVinMode)
             <div class="d-grid gap-2">
                 <button type="button" class="btn btn-success" id="btnApplySpecs">
@@ -284,16 +282,4 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 
-<style>
-.offcanvas-footer {
-    position: sticky;
-    bottom: 0;
-}
-#specsOffcanvas .form-select-sm {
-    font-size: 0.85rem;
-}
-#specsOffcanvas .form-label {
-    font-size: 0.85rem;
-    margin-bottom: 0.25rem;
-}
-</style>
+{{-- Styles moved to catalog-unified.css --}}

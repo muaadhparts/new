@@ -27,6 +27,7 @@
         <link rel="stylesheet" href="<?php echo e(asset('assets/front/css/rtl.css')); ?>">
     <?php endif; ?>
     <link rel="stylesheet" href="<?php echo e(asset('assets/front/css/custom.css')); ?>">
+    <link rel="stylesheet" href="<?php echo e(asset('assets/front/css/catalog-unified.css')); ?>">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tarekraafat/autocomplete.js@10.2.9/dist/css/autoComplete.min.css">
     <script src="https://cdn.jsdelivr.net/npm/@tarekraafat/autocomplete.js@10.2.9/dist/autoComplete.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.3.0/css/datepicker.css" rel="stylesheet" type="text/css" />

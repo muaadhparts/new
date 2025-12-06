@@ -1,6 +1,7 @@
 
 
 
+
 <div
     id="modal"
     class="modal fade"
@@ -17,7 +18,7 @@
             
             <div class="modal-header bg-primary text-white border-0 py-2 py-md-3">
                 <h5 class="modal-title fs-6 fs-md-5 mb-0">
-                    <span id="ill-modal-title">🔧 <?php echo app('translator')->get('catalog.modal.title'); ?></span>
+                    <span id="ill-modal-title"><?php echo app('translator')->get('catalog.modal.title'); ?></span>
                 </h5>
 
                 <div class="d-flex align-items-center gap-1 gap-md-2">
@@ -26,7 +27,7 @@
                             class="btn btn-sm btn-light d-none px-2 py-1 px-md-3 py-md-2"
                             title="<?php echo app('translator')->get('catalog.modal.back'); ?>">
                         <i class="fas fa-arrow-left d-md-none"></i>
-                        <span class="d-none d-md-inline">← <?php echo app('translator')->get('catalog.modal.back'); ?></span>
+                        <span class="d-none d-md-inline"><?php echo app('translator')->get('catalog.modal.back'); ?></span>
                     </button>
                     <button type="button"
                             class="btn-close btn-close-white"
@@ -37,10 +38,10 @@
 
             
             <div class="modal-body p-0 bg-light">
-                <div id="api-callout-body" class="p-2 p-md-4">
-                    <div class="text-center p-3 p-md-5">
-                        <div class="spinner-border text-primary mb-3" role="status"></div>
-                        <div class="fw-bold text-muted"><?php echo app('translator')->get('catalog.modal.loading'); ?></div>
+                <div id="api-callout-body" class="callout-modal-body">
+                    <div class="catalog-loading">
+                        <div class="spinner-border text-primary" role="status"></div>
+                        <p><?php echo app('translator')->get('catalog.modal.loading'); ?></p>
                     </div>
                 </div>
             </div>
@@ -149,126 +150,124 @@ window.ILL_ROUTES = {
 </script>
 
 <style id="ill-modal-styles">
-  /* جسم المودال - Responsive */
-  #api-callout-body {
-      max-height: 70vh;
-      overflow: auto;
-      padding: 1rem;
-      transition: opacity .2s ease-in-out;
-  }
+/* Callout Modal Body */
+.callout-modal-body {
+    max-height: 70vh;
+    overflow: auto;
+    padding: 1rem;
+    transition: opacity .2s ease-in-out;
+}
 
-  @media (max-width: 768px) {
-      #api-callout-body {
-          max-height: 80vh;
-          padding: 0.5rem;
-      }
-  }
+@media (max-width: 768px) {
+    .callout-modal-body {
+        max-height: 80vh;
+        padding: 0.5rem;
+    }
+}
 
-  /* الجدول - Responsive */
-  #api-callout-body .table {
-      border-radius: .5rem;
-      overflow: hidden;
-      font-size: 0.875rem;
-  }
+/* Callout Table - Uses catalog-table as base */
+.callout-modal-body .table {
+    border-radius: var(--catalog-radius, .5rem);
+    overflow: hidden;
+    font-size: 0.875rem;
+}
 
-  @media (max-width: 768px) {
-      #api-callout-body .table {
-          font-size: 0.75rem;
-          border-radius: 0;
-      }
+@media (max-width: 768px) {
+    .callout-modal-body .table {
+        font-size: 0.75rem;
+        border-radius: 0;
+    }
 
-      /* تصغير Padding للخلايا على الموبايل */
-      #api-callout-body .table th,
-      #api-callout-body .table td {
-          padding: 0.25rem 0.15rem !important;
-          font-size: 0.7rem;
-      }
+    .callout-modal-body .table th,
+    .callout-modal-body .table td {
+        padding: 0.25rem 0.15rem !important;
+        font-size: 0.7rem;
+    }
 
-      /* إخفاء بعض الأعمدة على الشاشات الصغيرة جداً */
-      @media (max-width: 576px) {
-          #api-callout-body .table .d-sm-none {
-              display: none !important;
-          }
-      }
-  }
+    @media (max-width: 576px) {
+        .callout-modal-body .table .d-sm-none {
+            display: none !important;
+        }
+    }
+}
 
-  #api-callout-body .table thead th {
-      position: sticky;
-      top: 0;
-      z-index: 2;
-      background: #f1f3f5;
-      font-weight: 600;
-      color: #333;
-      white-space: nowrap;
-  }
+.callout-modal-body .table thead th {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    background: var(--catalog-light, #f1f3f5);
+    font-weight: 600;
+    color: var(--catalog-text, #333);
+    white-space: nowrap;
+}
 
-  #api-callout-body .table-hover tbody tr:hover {
-      background-color: #f8f9fa;
-  }
+.callout-modal-body .table-hover tbody tr:hover {
+    background-color: var(--catalog-light, #f8f9fa);
+}
 
-  #api-callout-body .table th,
-  #api-callout-body .table td {
-      vertical-align: middle;
-      text-align: center;
-  }
+.callout-modal-body .table th,
+.callout-modal-body .table td {
+    vertical-align: middle;
+    text-align: center;
+}
 
-  /* روابط رقم القطعة */
-  #api-callout-body .table td:first-child a {
-      font-weight: 700;
-      text-decoration: none;
-      font-size: 0.85rem;
-  }
+/* Part Number Links */
+.callout-modal-body .table td:first-child a {
+    font-weight: 700;
+    text-decoration: none;
+    font-size: 0.85rem;
+}
 
-  @media (max-width: 768px) {
-      #api-callout-body .table td:first-child a {
-          font-size: 0.7rem;
-      }
-  }
+@media (max-width: 768px) {
+    .callout-modal-body .table td:first-child a {
+        font-size: 0.7rem;
+    }
+}
 
-  /* شارات - Responsive */
-  #api-callout-body .table .badge {
-      font-size: .75rem;
-  }
+/* Badges - Responsive */
+.callout-modal-body .table .badge {
+    font-size: .75rem;
+}
 
-  @media (max-width: 768px) {
-      #api-callout-body .table .badge {
-          font-size: 0.6rem;
-          padding: 0.15em 0.4em;
-      }
-  }
+@media (max-width: 768px) {
+    .callout-modal-body .table .badge {
+        font-size: 0.6rem;
+        padding: 0.15em 0.4em;
+    }
+}
 
-  /* أزرار الأكشن - Responsive */
-  #api-callout-body .ill-actions {
-      display: flex;
-      gap: .25rem;
-      justify-content: center;
-      flex-wrap: wrap;
-  }
+/* Action Buttons - Responsive */
+.callout-modal-body .ill-actions {
+    display: flex;
+    gap: .25rem;
+    justify-content: center;
+    flex-wrap: wrap;
+}
 
-  @media (max-width: 768px) {
-      #api-callout-body .ill-actions {
-          gap: 0.15rem;
-      }
+@media (max-width: 768px) {
+    .callout-modal-body .ill-actions {
+        gap: 0.15rem;
+    }
 
-      #api-callout-body .ill-actions .btn {
-          font-size: 0.65rem;
-          padding: 0.2rem 0.4rem;
-      }
+    .callout-modal-body .ill-actions .btn {
+        font-size: 0.65rem;
+        padding: 0.2rem 0.4rem;
+    }
 
-      #api-callout-body .ill-actions .btn i {
-          font-size: 0.7rem;
-      }
-  }
+    .callout-modal-body .ill-actions .btn i {
+        font-size: 0.7rem;
+    }
+}
 
-  #ill-back-btn.d-none {
-      display: none !important;
-  }
+#ill-back-btn.d-none {
+    display: none !important;
+}
 
-  /* Modal Footer - Responsive */
-  @media (max-width: 768px) {
-      .modal-footer small {
-          font-size: 0.7rem;
-      }
-  }
+/* Modal Footer - Responsive */
+@media (max-width: 768px) {
+    .modal-footer small {
+        font-size: 0.7rem;
+    }
+}
 </style>
 <?php /**PATH C:\Users\hp\Herd\new\resources\views/catalog/partials/callout-modal.blade.php ENDPATH**/ ?>

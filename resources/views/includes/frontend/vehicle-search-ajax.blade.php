@@ -1,4 +1,5 @@
 {{-- Vehicle Search Component - AJAX Based --}}
+{{-- Uses catalog-unified.css for styling --}}
 @php
     // Handle catalog as object or string code
     if (is_object($catalog)) {
@@ -15,95 +16,6 @@
 @endphp
 
 <div class="vehicle-search-ajax-wrapper" id="vehicleSearchWrapper{{ $uniqueId }}">
-    <style>
-        .vehicle-search-ajax-wrapper {
-            background: #fff;
-            border-radius: 0.75rem;
-            padding: 1rem;
-            margin: 0.5rem auto;
-            max-width: 1200px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.06);
-            border: 1px solid #e9ecef;
-        }
-        .vehicle-search-ajax-wrapper .search-type-btn.active {
-            background-color: #0d6efd;
-            color: #fff;
-            border-color: #0d6efd;
-        }
-        .vehicle-search-ajax-wrapper .suggestions-dropdown {
-            position: absolute;
-            top: 100%;
-            left: 0;
-            right: 0;
-            z-index: 1050;
-            max-height: 300px;
-            overflow-y: auto;
-            background: #fff;
-            border: 1px solid #dee2e6;
-            border-radius: 0 0 0.5rem 0.5rem;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-        }
-        .vehicle-search-ajax-wrapper .suggestion-item {
-            padding: 0.75rem 1rem;
-            cursor: pointer;
-            border-bottom: 1px solid #f0f0f0;
-            transition: all 0.2s ease;
-        }
-        .vehicle-search-ajax-wrapper .suggestion-item:hover {
-            background: #e7f3ff;
-        }
-        .vehicle-search-ajax-wrapper .specs-bar {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border-radius: 0.75rem;
-            padding: 0.75rem 1rem;
-            margin-bottom: 1rem;
-        }
-        .vehicle-search-ajax-wrapper .spec-chip {
-            background: rgba(255,255,255,0.95);
-            border-radius: 1.5rem;
-            padding: 0.35rem 0.75rem;
-            font-size: 0.8rem;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.4rem;
-            margin: 0.25rem;
-        }
-        .vehicle-search-ajax-wrapper .results-modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0,0,0,0.6);
-            z-index: 1050;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            backdrop-filter: blur(3px);
-        }
-        .vehicle-search-ajax-wrapper .results-modal-content {
-            background: #fff;
-            border-radius: 1rem;
-            max-width: 800px;
-            max-height: 80vh;
-            width: 95%;
-            overflow: hidden;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-        }
-        .vehicle-search-ajax-wrapper .result-card {
-            border: 1px solid #e9ecef;
-            border-radius: 0.65rem;
-            padding: 1rem;
-            margin-bottom: 0.75rem;
-            transition: all 0.2s ease;
-            cursor: pointer;
-        }
-        .vehicle-search-ajax-wrapper .result-card:hover {
-            border-color: #0d6efd;
-            box-shadow: 0 3px 10px rgba(13,110,253,0.12);
-        }
-    </style>
-
     {{-- Specifications Bar removed - now displayed via chips-bar.blade.php in parent views --}}
 
     {{-- Search Type Toggle --}}
@@ -144,7 +56,7 @@
         </small>
 
         {{-- Suggestions Dropdown --}}
-        <div class="suggestions-dropdown d-none" id="vehicleSuggestions{{ $uniqueId }}"></div>
+        <div class="vehicle-search-suggestions d-none" id="vehicleSuggestions{{ $uniqueId }}"></div>
     </div>
 
     {{-- Error Message --}}
@@ -154,30 +66,29 @@
     </div>
 
     {{-- Loading State --}}
-    <div class="alert alert-info d-none" id="vehicleLoading{{ $uniqueId }}" role="status">
-        <div class="d-flex align-items-center gap-3">
-            <div class="spinner-border text-primary" role="status"></div>
-            <div>{{ __('ui.searching_by_number') }}</div>
-        </div>
+    <div class="catalog-loading d-none" id="vehicleLoading{{ $uniqueId }}" role="status">
+        <div class="spinner-border text-primary" role="status"></div>
+        <p>{{ __('ui.searching_by_number') }}</p>
     </div>
 
     {{-- Results Modal --}}
-    <div class="results-modal d-none" id="vehicleResultsModal{{ $uniqueId }}">
-        <div class="results-modal-content">
-            <div class="modal-header bg-primary text-white p-3">
-                <h6 class="modal-title mb-0">
-                    <i class="fas fa-list-ul me-2"></i>
+    <div class="vehicle-search-modal d-none" id="vehicleResultsModal{{ $uniqueId }}">
+        <div class="vehicle-search-modal-content">
+            <div class="catalog-section-header" style="background: var(--catalog-primary); color: #fff; border-radius: 1rem 1rem 0 0;">
+                <h5 style="color: #fff;">
+                    <i class="fas fa-list-ul"></i>
                     {{ __('ui.select_matching_callout') }}
                     <span class="badge bg-white text-primary ms-2 results-count">0</span>
-                </h6>
+                </h5>
                 <button type="button" class="btn-close btn-close-white" id="closeResultsModal{{ $uniqueId }}"></button>
             </div>
-            <div class="modal-body p-3 bg-light" style="max-height: 60vh; overflow-y: auto;">
-                <div class="results-container" id="resultsContainer{{ $uniqueId }}"></div>
+            <div class="catalog-modal-content" style="max-height: 60vh;">
+                <div class="catalog-cards" id="resultsContainer{{ $uniqueId }}"></div>
             </div>
-            <div class="modal-footer bg-white p-2">
-                <button class="btn btn-outline-secondary btn-sm" id="closeResultsBtn{{ $uniqueId }}">
-                    <i class="fas fa-times me-1"></i>
+            <div class="catalog-section-header" style="border-top: 1px solid var(--catalog-border); border-bottom: none; border-radius: 0 0 1rem 1rem;">
+                <span></span>
+                <button class="catalog-btn catalog-btn-outline" id="closeResultsBtn{{ $uniqueId }}">
+                    <i class="fas fa-times"></i>
                     {{ __('ui.close') }}
                 </button>
             </div>
@@ -185,6 +96,112 @@
     </div>
 
 </div>
+
+<style>
+/* Vehicle Search Wrapper */
+.vehicle-search-ajax-wrapper {
+    background: #fff;
+    border-radius: 0.75rem;
+    padding: 1rem;
+    margin: 0.5rem auto;
+    max-width: 1200px;
+    box-shadow: var(--catalog-shadow, 0 1px 3px rgba(0,0,0,0.06));
+    border: 1px solid #e9ecef;
+}
+
+.vehicle-search-ajax-wrapper .search-type-btn.active {
+    background-color: var(--catalog-primary, #0d6efd);
+    color: #fff;
+    border-color: var(--catalog-primary, #0d6efd);
+}
+
+/* Suggestions Dropdown */
+.vehicle-search-suggestions {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    z-index: 1050;
+    max-height: 300px;
+    overflow-y: auto;
+    background: #fff;
+    border: 1px solid var(--catalog-border, #dee2e6);
+    border-radius: 0 0 var(--catalog-radius, 0.5rem) var(--catalog-radius, 0.5rem);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.vehicle-search-suggestion-item {
+    padding: 0.75rem 1rem;
+    cursor: pointer;
+    border-bottom: 1px solid #f0f0f0;
+    transition: all 0.2s ease;
+}
+
+.vehicle-search-suggestion-item:hover {
+    background: #e7f3ff;
+}
+
+/* Results Modal */
+.vehicle-search-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.6);
+    z-index: 1050;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(3px);
+}
+
+.vehicle-search-modal-content {
+    background: #fff;
+    border-radius: 1rem;
+    max-width: 800px;
+    max-height: 80vh;
+    width: 95%;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+}
+
+/* Result Card */
+.vehicle-search-result-card {
+    background: #fff;
+    border: 1px solid var(--catalog-border, #e9ecef);
+    border-radius: var(--catalog-radius, 0.65rem);
+    padding: 1rem;
+    margin-bottom: 0.75rem;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.vehicle-search-result-card:hover {
+    border-color: var(--catalog-primary, #0d6efd);
+    box-shadow: 0 3px 10px rgba(13,110,253,0.12);
+}
+
+.vehicle-search-result-card .result-badges {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin-bottom: 0.5rem;
+}
+
+.vehicle-search-result-card .result-title {
+    font-weight: 600;
+    font-size: 0.95rem;
+    margin-bottom: 0.25rem;
+    color: var(--catalog-text, #333);
+}
+
+.vehicle-search-result-card .result-applicability {
+    font-size: 0.85rem;
+    color: var(--catalog-text-muted, #666);
+}
+</style>
 
 @push('scripts')
 <script>
@@ -307,7 +324,7 @@
         suggestionsDropdown.innerHTML = '';
         results.slice(0, 20).forEach(function(suggestion) {
             const item = document.createElement('div');
-            item.className = 'suggestion-item';
+            item.className = 'vehicle-search-suggestion-item';
             item.innerHTML = '<i class="fas fa-search text-primary me-2"></i>' + escapeHtml(suggestion);
             item.addEventListener('click', function() {
                 input.value = suggestion;
@@ -329,29 +346,29 @@
 
         results.forEach(function(result) {
             const card = document.createElement('div');
-            card.className = 'result-card';
+            card.className = 'vehicle-search-result-card';
             card.innerHTML = `
-                <div class="d-flex justify-content-between align-items-start mb-2">
-                    <div class="d-flex align-items-center gap-2 flex-wrap">
-                        <span class="badge bg-primary px-2 py-1">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div class="result-badges">
+                        <span class="catalog-badge catalog-badge-light">
                             <i class="fas fa-tag me-1"></i>
                             ${escapeHtml(result.callout)}
                         </span>
-                        <span class="badge bg-secondary">
+                        <span class="catalog-badge catalog-badge-secondary">
                             {{ __("ui.qty") }}: ${result.qty || '—'}
                         </span>
-                        ${result.category_code ? `<span class="badge bg-info text-dark">
+                        ${result.category_code ? `<span class="catalog-badge" style="background: #d1ecf1; color: #0c5460;">
                             <i class="fas fa-folder me-1"></i>
                             ${escapeHtml(result.category_code)}
                         </span>` : ''}
                     </div>
-                    ${result.url ? `<a href="${result.url}" class="btn btn-primary btn-sm">
+                    ${result.url ? `<a href="${result.url}" class="catalog-btn catalog-btn-primary btn-sm">
                         <i class="fas fa-arrow-right me-1"></i>
                         <span class="d-none d-md-inline">{{ __("ui.open") }}</span>
                     </a>` : ''}
                 </div>
-                <h6 class="fw-semibold mb-2">${escapeHtml(getLocalizedLabel(result))}</h6>
-                ${result.applicability ? `<div class="text-muted small">${escapeHtml(result.applicability)}</div>` : ''}
+                <div class="result-title">${escapeHtml(getLocalizedLabel(result))}</div>
+                ${result.applicability ? `<div class="result-applicability">${escapeHtml(result.applicability)}</div>` : ''}
             `;
 
             if (result.url) {
