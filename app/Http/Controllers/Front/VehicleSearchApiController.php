@@ -115,6 +115,7 @@ class VehicleSearchApiController extends Controller
                     'label_ar'      => $r['part_label_ar'] ?? null,
                     'label_en'      => $r['part_label_en'] ?? null,
                     'qty'           => $r['part_qty'] ?? null,
+                    'part_number'   => $r['part_number'] ?? null,
                 ])
                 ->unique(fn($o) => $o['callout'].'|'.$o['section_id'].'|'.$o['category_code'])
                 ->filter(fn($o) => in_array($o['category_code'], $allowedCodes, true))

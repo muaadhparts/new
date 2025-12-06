@@ -1,8 +1,6 @@
-@extends('layouts.front3')
+<?php $__env->startSection('title', ($catalog->name ?? $catalog->shortName ?? $catalog->code) . ' - ' . __('Categories')); ?>
 
-@section('title', ($category->slug ?? $category->full_code) . ' - ' . __('Subcategories'))
-
-@section('content')
+<?php $__env->startSection('content'); ?>
 <style>
     .compact-breadcrumb-wrapper {
         background: #fff;
@@ -72,137 +70,117 @@
 </style>
 
 <div class="container py-3">
-    {{-- Breadcrumb - Compact Style --}}
+    
     <div class="compact-breadcrumb-wrapper mb-3">
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb compact-breadcrumb mb-0">
-                {{-- Home --}}
+                
                 <li class="breadcrumb-item">
-                    <a href="{{ route('front.index') }}">
+                    <a href="<?php echo e(route('front.index')); ?>">
                         <i class="fas fa-home"></i>
-                        <span class="d-none d-sm-inline ms-1">{{ __('Home') }}</span>
+                        <span class="d-none d-sm-inline ms-1"><?php echo e(__('Home')); ?></span>
                     </a>
                 </li>
 
-                {{-- Brand --}}
+                
                 <li class="breadcrumb-item">
-                    <a href="{{ route('catlogs.index', $brand->name) }}">
-                        {{ $brand->name }}
+                    <a href="<?php echo e(route('catlogs.index', $brand->name)); ?>">
+                        <?php echo e($brand->name); ?>
+
                     </a>
                 </li>
 
-                {{-- VIN --}}
-                @if($vin)
+                
+                <?php if($vin): ?>
                     <li class="breadcrumb-item d-none d-sm-block">
-                        <a href="{{ route('tree.level1', [
+                        <a href="<?php echo e(route('tree.level1', [
                             'brand' => $brand->name,
                             'catalog' => $catalog->code,
                             'vin' => $vin
-                        ]) }}">
+                        ])); ?>">
                             <i class="fas fa-car me-1"></i>
-                            {{ Str::limit($vin, 12) }}
+                            <?php echo e(Str::limit($vin, 12)); ?>
+
                         </a>
                     </li>
-                @endif
+                <?php endif; ?>
 
-                {{-- Catalog --}}
-                <li class="breadcrumb-item d-none d-md-block">
-                    <a href="{{ route('tree.level1', [
-                        'brand' => $brand->name,
-                        'catalog' => $catalog->code,
-                        'vin' => $vin
-                    ]) }}">
-                        {{ $catalog->shortName ?? $catalog->name ?? $catalog->code }}
-                    </a>
-                </li>
-
-                {{-- Current Level --}}
-                <li class="breadcrumb-item active text-uppercase" aria-current="page">
-                    <span>{{ str_replace('-', ' ', $category->slug ?? $category->full_code) }}</span>
+                
+                <li class="breadcrumb-item active" aria-current="page">
+                    <span><?php echo e($catalog->shortName ?? $catalog->name ?? $catalog->code); ?></span>
                 </li>
             </ol>
         </nav>
     </div>
 
-    {{-- Search Box - Full Width on Mobile --}}
+    
     <div class="row mb-4">
         <div class="col-12">
-            {{-- Specifications Button --}}
+            
             <div class="mb-3">
-                @include('catalog.partials.specs-modal', [
+                <?php echo $__env->make('catalog.partials.specs-modal', [
                     'catalog' => $catalog,
                     'filters' => $filters,
                     'selectedFilters' => $selectedFilters,
                     'isVinMode' => $isVinMode
-                ])
+                ], \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?>
             </div>
 
-            {{-- Chips Bar --}}
-            @include('catalog.partials.chips-bar', ['chips' => $chips])
+            
+            <?php echo $__env->make('catalog.partials.chips-bar', ['chips' => $chips], \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?>
 
-            {{-- Search --}}
-            @include('includes.frontend.vehicle-search-ajax', [
+            
+            <?php echo $__env->make('includes.frontend.vehicle-search-ajax', [
                 'catalog' => $catalog,
-                'uniqueId' => 'level2',
+                'uniqueId' => 'level1',
                 'showAttributes' => false
-            ])
+            ], \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?>
         </div>
     </div>
 
-    @php
-        // Sort categories by numeric part of full_code
-        $sortedCategories = collect($categories)->sortBy(function($c) {
-            $code = is_array($c) ? ($c['full_code'] ?? '') : ($c->full_code ?? '');
-            if (preg_match('/\d+/', $code, $m)) {
-                return (int) $m[0];
-            }
-            return PHP_INT_MAX;
-        })->values();
-    @endphp
-
-    {{-- Categories Grid - Responsive --}}
+    
     <div class="row g-3 g-md-4 mb-5">
-        @forelse ($sortedCategories as $cat)
+        <?php $__empty_1 = true; $__currentLoopData = $categories; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $cat): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
             <div class="col-6 col-sm-6 col-md-4 col-lg-3">
-                <a href="{{ route('tree.level3', [
+                <a href="<?php echo e(route('tree.level2', [
                     'brand' => $brand->name,
                     'catalog' => $catalog->code,
-                    'key1' => $category->full_code,
-                    'key2' => $cat->full_code,
+                    'key1' => $cat->full_code,
                     'vin' => $vin
-                ]) }}" class="text-decoration-none">
+                ])); ?>" class="text-decoration-none">
                     <div class="card border-0 shadow-sm h-100 hover-lift transition">
-                        {{-- Image Container - Maintain Aspect Ratio --}}
+                        
                         <div class="position-relative overflow-hidden rounded-top" style="padding-top: 75%;">
                             <img class="position-absolute top-0 start-0 w-100 h-100 object-fit-cover"
-                                 src="{{ ($cat->thumbnail ?? null) ? Storage::url($cat->thumbnail) : asset('assets/images/no-image.png') }}"
-                                 alt="{{ $cat->full_code }}"
+                                 src="<?php echo e($cat->thumbnail ? Storage::url($cat->thumbnail) : asset('assets/images/no-image.png')); ?>"
+                                 alt="<?php echo e($cat->full_code); ?>"
                                  loading="lazy"
-                                 onerror="this.onerror=null; this.src='{{ asset('assets/images/no-image.png') }}';">
+                                 onerror="this.onerror=null; this.src='<?php echo e(asset('assets/images/no-image.png')); ?>';">
                         </div>
 
-                        {{-- Card Body - Responsive Text --}}
+                        
                         <div class="card-body p-2 p-md-3 text-center">
                             <h6 class="product-title text-dark fw-bold text-uppercase mb-1 fs-6 fs-md-5">
-                                {{ $cat->formatted_code ?? $cat->full_code }}
-                            </h6>
+                                <?php echo e($cat->formatted_code ?? $cat->full_code); ?>
 
-                            @php($catLabel = app()->getLocale() === 'ar' ? $cat->label_ar : str_replace('-', ' ', $cat->slug ?? ''))
-                            @if(!empty($catLabel))
-                                <p class="text-muted small mb-0 d-none d-md-block text-uppercase">{{ $catLabel }}</p>
-                            @endif
+                            </h6>
+                            <?php ($catLabel = app()->getLocale() === 'ar' ? $cat->label_ar : str_replace('-', ' ', $cat->slug ?? '')); ?>
+                            <?php if(!empty($catLabel)): ?>
+                                <p class="text-muted small mb-0 d-none d-md-block text-uppercase"><?php echo e($catLabel); ?></p>
+                            <?php endif; ?>
                         </div>
                     </div>
                 </a>
             </div>
-        @empty
+        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
             <div class="col-12">
                 <div class="alert alert-info text-center">
                     <i class="fas fa-info-circle me-2"></i>
-                    {{ __('No categories available') }}
+                    <?php echo e(__('No categories available')); ?>
+
                 </div>
             </div>
-        @endforelse
+        <?php endif; ?>
     </div>
 </div>
 
@@ -218,4 +196,6 @@
     object-fit: cover;
 }
 </style>
-@endsection
+<?php $__env->stopSection(); ?>
+
+<?php echo $__env->make('layouts.front3', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?><?php /**PATH C:\Users\hp\Herd\new\resources\views/catalog/level1.blade.php ENDPATH**/ ?>

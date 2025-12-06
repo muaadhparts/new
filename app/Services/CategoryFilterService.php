@@ -229,12 +229,14 @@ class CategoryFilterService
                 ->select(
                     'level3.id',
                     'level3.full_code',
+                    'level3.formatted_code',
                     'level3.label_en',
                     'level3.label_ar',
                     'level3.thumbnail',
                     'level3.images',
                     'level3.level',
                     'level3.slug',
+                    'level3.Applicability',
                     DB::raw('NULL as matched_group_index'),
                     'cp.begin_date as debug_begin',
                     'cp.end_date as debug_end'
@@ -242,12 +244,14 @@ class CategoryFilterService
                 ->groupBy(
                     'level3.id',
                     'level3.full_code',
+                    'level3.formatted_code',
                     'level3.label_en',
                     'level3.label_ar',
                     'level3.thumbnail',
                     'level3.images',
                     'level3.level',
                     'level3.slug',
+                    'level3.Applicability',
                     'cp.begin_date',
                     'cp.end_date'
                 )
@@ -289,12 +293,14 @@ class CategoryFilterService
             ->select(
                 'level3.id',
                 'level3.full_code',
+                'level3.formatted_code',
                 'level3.label_en',
                 'level3.label_ar',
                 'level3.thumbnail',
                 'level3.images',
                 'level3.level',
                 'level3.slug',
+                'level3.Applicability',
                 DB::raw("{$matchedGroupIndexSql} as matched_group_index"),
                 'cp.begin_date as debug_begin',
                 'cp.end_date as debug_end'
@@ -302,12 +308,14 @@ class CategoryFilterService
             ->groupBy(
                 'level3.id',
                 'level3.full_code',
+                'level3.formatted_code',
                 'level3.label_en',
                 'level3.label_ar',
                 'level3.thumbnail',
                 'level3.images',
                 'level3.level',
                 'level3.slug',
+                'level3.Applicability',
                 'cp.begin_date',
                 'cp.end_date'
             )

@@ -1,5 +1,5 @@
-{{-- Vehicle Search Component - AJAX Based --}}
-@php
+
+<?php
     // Handle catalog as object or string code
     if (is_object($catalog)) {
         $catalogCode = $catalog->code ?? '';
@@ -12,9 +12,9 @@
     }
     $uniqueId = $uniqueId ?? 'default';
     $showAttributes = $showAttributes ?? true;
-@endphp
+?>
 
-<div class="vehicle-search-ajax-wrapper" id="vehicleSearchWrapper{{ $uniqueId }}">
+<div class="vehicle-search-ajax-wrapper" id="vehicleSearchWrapper<?php echo e($uniqueId); ?>">
     <style>
         .vehicle-search-ajax-wrapper {
             background: #fff;
@@ -104,81 +104,84 @@
         }
     </style>
 
-    {{-- Specifications Bar removed - now displayed via chips-bar.blade.php in parent views --}}
+    
 
-    {{-- Search Type Toggle --}}
+    
     <div class="d-flex gap-2 mb-3">
-        <button type="button" class="btn btn-sm btn-outline-secondary search-type-btn active" data-type="number" id="typeNumber{{ $uniqueId }}">
+        <button type="button" class="btn btn-sm btn-outline-secondary search-type-btn active" data-type="number" id="typeNumber<?php echo e($uniqueId); ?>">
             <i class="fas fa-hashtag me-1"></i>
-            <span class="d-none d-md-inline">{{ __('ui.part_number') }}</span>
+            <span class="d-none d-md-inline"><?php echo e(__('ui.part_number')); ?></span>
         </button>
-        <button type="button" class="btn btn-sm btn-outline-secondary search-type-btn" data-type="label" id="typeLabel{{ $uniqueId }}">
+        <button type="button" class="btn btn-sm btn-outline-secondary search-type-btn" data-type="label" id="typeLabel<?php echo e($uniqueId); ?>">
             <i class="fas fa-tag me-1"></i>
-            <span class="d-none d-md-inline">{{ __('ui.part_name') }}</span>
+            <span class="d-none d-md-inline"><?php echo e(__('ui.part_name')); ?></span>
         </button>
     </div>
 
-    {{-- Search Input --}}
+    
     <div class="position-relative mb-3">
         <div class="input-group shadow-sm">
             <span class="input-group-text bg-white">
-                <i class="fas fa-hashtag text-muted search-type-icon" id="searchIcon{{ $uniqueId }}"></i>
+                <i class="fas fa-hashtag text-muted search-type-icon" id="searchIcon<?php echo e($uniqueId); ?>"></i>
             </span>
             <input
                 type="text"
                 class="form-control"
-                placeholder="{{ __('ui.enter_part_number') }}"
-                id="vehicleSearchInput{{ $uniqueId }}"
+                placeholder="<?php echo e(__('ui.enter_part_number')); ?>"
+                id="vehicleSearchInput<?php echo e($uniqueId); ?>"
                 autocomplete="off"
                 dir="ltr"
             >
-            <button class="btn btn-primary" type="button" id="vehicleSearchBtn{{ $uniqueId }}">
+            <button class="btn btn-primary" type="button" id="vehicleSearchBtn<?php echo e($uniqueId); ?>">
                 <i class="fas fa-search search-icon"></i>
                 <span class="spinner-border spinner-border-sm d-none loading-spinner" role="status"></span>
-                <span class="d-none d-lg-inline ms-2">{{ __('ui.search') }}</span>
+                <span class="d-none d-lg-inline ms-2"><?php echo e(__('ui.search')); ?></span>
             </button>
         </div>
-        <small class="form-text text-muted" id="searchHelp{{ $uniqueId }}">
+        <small class="form-text text-muted" id="searchHelp<?php echo e($uniqueId); ?>">
             <i class="fas fa-info-circle"></i>
-            {{ __('ui.part_number_help') }}
+            <?php echo e(__('ui.part_number_help')); ?>
+
         </small>
 
-        {{-- Suggestions Dropdown --}}
-        <div class="suggestions-dropdown d-none" id="vehicleSuggestions{{ $uniqueId }}"></div>
+        
+        <div class="suggestions-dropdown d-none" id="vehicleSuggestions<?php echo e($uniqueId); ?>"></div>
     </div>
 
-    {{-- Error Message --}}
-    <div class="alert alert-danger d-none" id="vehicleError{{ $uniqueId }}" role="alert">
+    
+    <div class="alert alert-danger d-none" id="vehicleError<?php echo e($uniqueId); ?>" role="alert">
         <i class="fas fa-exclamation-triangle me-2"></i>
         <span class="error-text"></span>
     </div>
 
-    {{-- Loading State --}}
-    <div class="alert alert-info d-none" id="vehicleLoading{{ $uniqueId }}" role="status">
+    
+    <div class="alert alert-info d-none" id="vehicleLoading<?php echo e($uniqueId); ?>" role="status">
         <div class="d-flex align-items-center gap-3">
             <div class="spinner-border text-primary" role="status"></div>
-            <div>{{ __('ui.searching_by_number') }}</div>
+            <div><?php echo e(__('ui.searching_by_number')); ?></div>
         </div>
     </div>
 
-    {{-- Results Modal --}}
-    <div class="results-modal d-none" id="vehicleResultsModal{{ $uniqueId }}">
+    
+    <div class="results-modal d-none" id="vehicleResultsModal<?php echo e($uniqueId); ?>">
         <div class="results-modal-content">
             <div class="modal-header bg-primary text-white p-3">
                 <h6 class="modal-title mb-0">
                     <i class="fas fa-list-ul me-2"></i>
-                    {{ __('ui.select_matching_callout') }}
+                    <?php echo e(__('ui.select_matching_callout')); ?>
+
                     <span class="badge bg-white text-primary ms-2 results-count">0</span>
                 </h6>
-                <button type="button" class="btn-close btn-close-white" id="closeResultsModal{{ $uniqueId }}"></button>
+                <button type="button" class="btn-close btn-close-white" id="closeResultsModal<?php echo e($uniqueId); ?>"></button>
             </div>
             <div class="modal-body p-3 bg-light" style="max-height: 60vh; overflow-y: auto;">
-                <div class="results-container" id="resultsContainer{{ $uniqueId }}"></div>
+                <div class="results-container" id="resultsContainer<?php echo e($uniqueId); ?>"></div>
             </div>
             <div class="modal-footer bg-white p-2">
-                <button class="btn btn-outline-secondary btn-sm" id="closeResultsBtn{{ $uniqueId }}">
+                <button class="btn btn-outline-secondary btn-sm" id="closeResultsBtn<?php echo e($uniqueId); ?>">
                     <i class="fas fa-times me-1"></i>
-                    {{ __('ui.close') }}
+                    <?php echo e(__('ui.close')); ?>
+
                 </button>
             </div>
         </div>
@@ -186,11 +189,11 @@
 
 </div>
 
-@push('scripts')
+<?php $__env->startPush('scripts'); ?>
 <script>
 (function() {
-    const uniqueId = '{{ $uniqueId }}';
-    const catalogCode = '{{ $catalogCode }}';
+    const uniqueId = '<?php echo e($uniqueId); ?>';
+    const catalogCode = '<?php echo e($catalogCode); ?>';
     const wrapper = document.getElementById('vehicleSearchWrapper' + uniqueId);
     if (!wrapper) return;
 
@@ -216,8 +219,8 @@
         typeNumberBtn.classList.toggle('active', type === 'number');
         typeLabelBtn.classList.toggle('active', type === 'label');
         searchIcon.className = 'fas ' + (type === 'number' ? 'fa-hashtag' : 'fa-tag') + ' text-muted search-type-icon';
-        input.placeholder = type === 'number' ? '{{ __("ui.enter_part_number") }}' : '{{ __("ui.enter_part_name") }}';
-        searchHelp.innerHTML = '<i class="fas fa-info-circle"></i> ' + (type === 'number' ? '{{ __("ui.part_number_help") }}' : '{{ __("ui.part_name_help") }}');
+        input.placeholder = type === 'number' ? '<?php echo e(__("ui.enter_part_number")); ?>' : '<?php echo e(__("ui.enter_part_name")); ?>';
+        searchHelp.innerHTML = '<i class="fas fa-info-circle"></i> ' + (type === 'number' ? '<?php echo e(__("ui.part_number_help")); ?>' : '<?php echo e(__("ui.part_name_help")); ?>');
         hideSuggestions();
         hideError();
     }
@@ -231,8 +234,8 @@
 
         if (query.length < minLength) {
             showError(searchType === 'number'
-                ? '{{ __("Part number must be at least 5 characters") }}'
-                : '{{ __("Part name must be at least 2 characters") }}');
+                ? '<?php echo e(__("Part number must be at least 5 characters")); ?>'
+                : '<?php echo e(__("Part name must be at least 2 characters")); ?>');
             return;
         }
 
@@ -240,7 +243,7 @@
         hideSuggestions();
         setLoading(true);
 
-        fetch('{{ route("api.vehicle.search") }}?query=' + encodeURIComponent(query) + '&catalog=' + encodeURIComponent(catalogCode) + '&type=' + searchType, {
+        fetch('<?php echo e(route("api.vehicle.search")); ?>?query=' + encodeURIComponent(query) + '&catalog=' + encodeURIComponent(catalogCode) + '&type=' + searchType, {
             method: 'GET',
             headers: {
                 'Accept': 'application/json',
@@ -252,7 +255,7 @@
             setLoading(false);
 
             if (!data.success) {
-                showError(data.message || '{{ __("No results found") }}');
+                showError(data.message || '<?php echo e(__("No results found")); ?>');
                 return;
             }
 
@@ -264,12 +267,12 @@
             if (data.results && data.results.length > 0) {
                 showResultsModal(data.results);
             } else {
-                showError('{{ __("No results found") }}');
+                showError('<?php echo e(__("No results found")); ?>');
             }
         })
         .catch(error => {
             setLoading(false);
-            showError('{{ __("An error occurred. Please try again.") }}');
+            showError('<?php echo e(__("An error occurred. Please try again.")); ?>');
             console.error('Vehicle Search Error:', error);
         });
     }
@@ -283,7 +286,7 @@
             return;
         }
 
-        fetch('{{ route("api.vehicle.suggestions") }}?query=' + encodeURIComponent(query) + '&catalog=' + encodeURIComponent(catalogCode) + '&type=' + searchType, {
+        fetch('<?php echo e(route("api.vehicle.suggestions")); ?>?query=' + encodeURIComponent(query) + '&catalog=' + encodeURIComponent(catalogCode) + '&type=' + searchType, {
             method: 'GET',
             headers: {
                 'Accept': 'application/json',
@@ -338,7 +341,7 @@
                             ${escapeHtml(result.callout)}
                         </span>
                         <span class="badge bg-secondary">
-                            {{ __("ui.qty") }}: ${result.qty || '—'}
+                            <?php echo e(__("ui.qty")); ?>: ${result.qty || '—'}
                         </span>
                         ${result.category_code ? `<span class="badge bg-info text-dark">
                             <i class="fas fa-folder me-1"></i>
@@ -347,7 +350,7 @@
                     </div>
                     ${result.url ? `<a href="${result.url}" class="btn btn-primary btn-sm">
                         <i class="fas fa-arrow-right me-1"></i>
-                        <span class="d-none d-md-inline">{{ __("ui.open") }}</span>
+                        <span class="d-none d-md-inline"><?php echo e(__("ui.open")); ?></span>
                     </a>` : ''}
                 </div>
                 <h6 class="fw-semibold mb-2">${escapeHtml(getLocalizedLabel(result))}</h6>
@@ -447,4 +450,5 @@
     });
 })();
 </script>
-@endpush
+<?php $__env->stopPush(); ?>
+<?php /**PATH C:\Users\hp\Herd\new\resources\views/includes/frontend/vehicle-search-ajax.blade.php ENDPATH**/ ?>

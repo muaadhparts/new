@@ -3,44 +3,111 @@
 @section('title', ($catalog->name ?? $catalog->shortName ?? $catalog->code) . ' - ' . __('Categories'))
 
 @section('content')
+<style>
+    .compact-breadcrumb-wrapper {
+        background: #fff;
+        border-radius: 0.5rem;
+        padding: 0.5rem 0.75rem;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+        border: 1px solid #e9ecef;
+    }
+    .compact-breadcrumb {
+        margin: 0;
+        padding: 0;
+        background: transparent;
+        font-size: 0.85rem;
+    }
+    .compact-breadcrumb .breadcrumb-item {
+        padding: 0;
+    }
+    .compact-breadcrumb .breadcrumb-item + .breadcrumb-item::before {
+        content: "›";
+        color: #6c757d;
+        padding: 0 0.4rem;
+        font-size: 1rem;
+    }
+    .compact-breadcrumb a {
+        color: #495057;
+        text-decoration: none;
+        transition: color 0.2s ease;
+        display: inline-flex;
+        align-items: center;
+    }
+    .compact-breadcrumb a:hover {
+        color: #0d6efd;
+    }
+    .compact-breadcrumb .active span {
+        color: #0d6efd;
+        font-weight: 600;
+    }
+    .compact-breadcrumb i {
+        font-size: 0.875rem;
+    }
+    @media (max-width: 576px) {
+        .compact-breadcrumb-wrapper {
+            padding: 0.4rem 0.6rem;
+            border-radius: 0.4rem;
+        }
+        .compact-breadcrumb {
+            font-size: 0.75rem;
+            flex-wrap: nowrap;
+            overflow-x: auto;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+        .compact-breadcrumb::-webkit-scrollbar {
+            display: none;
+        }
+        .compact-breadcrumb .breadcrumb-item {
+            white-space: nowrap;
+        }
+        .compact-breadcrumb .breadcrumb-item + .breadcrumb-item::before {
+            padding: 0 0.3rem;
+            font-size: 0.9rem;
+        }
+        .compact-breadcrumb i {
+            font-size: 0.8rem;
+        }
+    }
+</style>
+
 <div class="container py-3">
-    {{-- Breadcrumb - Responsive --}}
-    <div class="product-nav-wrapper mb-3">
+    {{-- Breadcrumb - Compact Style --}}
+    <div class="compact-breadcrumb-wrapper mb-3">
         <nav aria-label="breadcrumb">
-            <ol class="breadcrumb text-uppercase mb-0 flex-wrap">
+            <ol class="breadcrumb compact-breadcrumb mb-0">
                 {{-- Home --}}
                 <li class="breadcrumb-item">
-                    <a class="text-black text-decoration-none" href="{{ route('front.index') }}">
-                        <i class="fas fa-home d-md-none"></i>
-                        <span class="d-none d-md-inline">{{ __('Home') }}</span>
+                    <a href="{{ route('front.index') }}">
+                        <i class="fas fa-home"></i>
+                        <span class="d-none d-sm-inline ms-1">{{ __('Home') }}</span>
                     </a>
                 </li>
 
                 {{-- Brand --}}
                 <li class="breadcrumb-item">
-                    <a class="text-black text-decoration-none" href="{{ route('catlogs.index', $brand->name) }}">
-                        {{ strtoupper($brand->name) }}
+                    <a href="{{ route('catlogs.index', $brand->name) }}">
+                        {{ $brand->name }}
                     </a>
                 </li>
 
                 {{-- VIN --}}
                 @if($vin)
-                    <li class="breadcrumb-item">
-                        <a class="text-black text-decoration-none" href="{{ route('tree.level1', [
+                    <li class="breadcrumb-item d-none d-sm-block">
+                        <a href="{{ route('tree.level1', [
                             'brand' => $brand->name,
                             'catalog' => $catalog->code,
                             'vin' => $vin
                         ]) }}">
-                            <i class="fas fa-car d-md-none"></i>
-                            <span class="d-none d-md-inline">{{ $vin }}</span>
-                            <span class="d-md-none">VIN</span>
+                            <i class="fas fa-car me-1"></i>
+                            {{ Str::limit($vin, 12) }}
                         </a>
                     </li>
                 @endif
 
                 {{-- Catalog (Current Level) --}}
-                <li class="breadcrumb-item active text-primary" aria-current="page">
-                    <strong>{{ strtoupper($catalog->shortName ?? $catalog->name ?? $catalog->code) }}</strong>
+                <li class="breadcrumb-item active" aria-current="page">
+                    <span>{{ $catalog->shortName ?? $catalog->name ?? $catalog->code }}</span>
                 </li>
             </ol>
         </nav>
@@ -94,10 +161,11 @@
                         {{-- Card Body - Responsive Text --}}
                         <div class="card-body p-2 p-md-3 text-center">
                             <h6 class="product-title text-dark fw-bold text-uppercase mb-1 fs-6 fs-md-5">
-                                {{ $cat->full_code }}
+                                {{ $cat->formatted_code ?? $cat->full_code }}
                             </h6>
-                            @if($cat->label ?? null)
-                                <p class="text-muted small mb-0 d-none d-md-block">{{ $cat->label }}</p>
+                            @php($catLabel = app()->getLocale() === 'ar' ? $cat->label_ar : str_replace('-', ' ', $cat->slug ?? ''))
+                            @if(!empty($catLabel))
+                                <p class="text-muted small mb-0 d-none d-md-block text-uppercase">{{ $catLabel }}</p>
                             @endif
                         </div>
                     </div>
@@ -124,11 +192,6 @@
 }
 .object-fit-cover {
     object-fit: cover;
-}
-@media (max-width: 576px) {
-    .breadcrumb-item + .breadcrumb-item::before {
-        padding: 0 0.25rem;
-    }
 }
 </style>
 @endsection
