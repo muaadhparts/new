@@ -1,246 +1,351 @@
-<!-- mobile menu -->
-<div class="mobile-menu">
-    <div class="mobile-menu-top">
-        <img src="{{ asset('assets/images/' . $gs->footer_logo) }}" alt="">
-        <svg class="close" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
-            fill="none">
-            <path d="M18 6L6 18M6 6L18 18" stroke="white" stroke-width="2" stroke-linecap="round"
-                stroke-linejoin="round" />
-        </svg>
+{{--
+================================================================================
+    MUAADH THEME - MOBILE MENU
+================================================================================
+    CSS GUIDELINES FOR AI AGENTS:
+    -----------------------------
+    1. The ONLY file for adding/modifying custom CSS is: public/assets/front/css/MUAADH.css
+    2. DO NOT add <style> tags in Blade files - move all styles to MUAADH.css
+    3. DO NOT create new CSS files - use MUAADH.css sections instead
+================================================================================
+--}}
+
+{{-- Mobile Menu Sidebar --}}
+<div class="muaadh-mobile-menu">
+    {{-- Menu Header --}}
+    <div class="muaadh-mobile-menu-header">
+        <a href="{{ route('front.index') }}" class="muaadh-mobile-logo">
+            <img src="{{ asset('assets/images/' . $gs->footer_logo) }}" alt="{{ $gs->title }}">
+        </a>
+        <button type="button" class="muaadh-mobile-close">
+            <i class="fas fa-times"></i>
+        </button>
     </div>
-    <nav>
-        <div class="nav justify-content-between pt-24" id="nav-tab" role="tablist">
-            <button class="flex-grow-1 state-left-btn active active-tab-btn" id="main-menu-tab" data-bs-toggle="tab"
-                data-bs-target="#main-menu" type="button" role="tab" aria-controls="main-menu"
-                aria-selected="true">@lang('MAIN MENU')</button>
 
-            <button class="flex-grow-1 state-right-btn active-tab-btn" id="categories-tab" data-bs-toggle="tab"
-                data-bs-target="#categories" type="button" role="tab" aria-controls="categories"
-                aria-selected="false">@lang('CATEGORIES')</button>
+    {{-- User Info (if logged in) --}}
+    @if (Auth::guard('web')->check())
+        <div class="muaadh-mobile-user">
+            <div class="muaadh-mobile-user-avatar">
+                @if(Auth::guard('web')->user()->photo)
+                    <img src="{{ asset('assets/images/users/' . Auth::guard('web')->user()->photo) }}" alt="">
+                @else
+                    <i class="fas fa-user"></i>
+                @endif
+            </div>
+            <div class="muaadh-mobile-user-info">
+                <span class="muaadh-mobile-user-name">{{ Auth::guard('web')->user()->name }}</span>
+                <a href="{{ route('user-dashboard') }}" class="muaadh-mobile-user-link">@lang('View Dashboard')</a>
+            </div>
         </div>
-    </nav>
+    @elseif (Auth::guard('rider')->check())
+        <div class="muaadh-mobile-user">
+            <div class="muaadh-mobile-user-avatar">
+                <i class="fas fa-motorcycle"></i>
+            </div>
+            <div class="muaadh-mobile-user-info">
+                <span class="muaadh-mobile-user-name">{{ Auth::guard('rider')->user()->name }}</span>
+                <a href="{{ route('rider-dashboard') }}" class="muaadh-mobile-user-link">@lang('Rider Dashboard')</a>
+            </div>
+        </div>
+    @else
+        <div class="muaadh-mobile-auth-buttons">
+            <a href="{{ route('user.login') }}" class="muaadh-mobile-auth-btn muaadh-btn-primary">
+                <i class="fas fa-sign-in-alt"></i>
+                <span>@lang('Login')</span>
+            </a>
+            <a href="{{ route('user.register') }}" class="muaadh-mobile-auth-btn muaadh-btn-outline">
+                <i class="fas fa-user-plus"></i>
+                <span>@lang('Register')</span>
+            </a>
+        </div>
+    @endif
 
-    <div class="tab-content " id="nav-tabContent1">
-        <div class="tab-pane fade show active table-responsive tb-tb" id="main-menu" role="tabpanel"
-            aria-labelledby="main-menu-tab" style="color: white;">
+    {{-- Menu Tabs --}}
+    <div class="muaadh-mobile-tabs">
+        <button class="muaadh-mobile-tab active" data-target="menu-main">
+            <i class="fas fa-bars"></i>
+            <span>@lang('Menu')</span>
+        </button>
+        <button class="muaadh-mobile-tab" data-target="menu-categories">
+            <i class="fas fa-th-large"></i>
+            <span>@lang('Categories')</span>
+        </button>
+        <button class="muaadh-mobile-tab" data-target="menu-account">
+            <i class="fas fa-user"></i>
+            <span>@lang('Account')</span>
+        </button>
+    </div>
 
-            <div class="mobile-menu-widget">
-                <div class="single-product-widget">
-                    <!-- <h5 class="widget-title">Product categories</h5> -->
-                    <div class="product-cat-widget">
-                        <ul class="accordion">
-                            <!-- main list -->
-                            <li><a href="{{ route('front.index') }}">@lang('Home')</a></li>
-                            <li><a href="{{ route('front.category') }}">@lang('Product')</a></li>
-                            <li>
-                                <a href="#" data-bs-toggle="collapse" data-bs-target="#child_level_1"
-                                    aria-controls="child_level_1" aria-expanded="false" class="collapsed">
-                                    @lang('Pages')
+    {{-- Tab Contents --}}
+    <div class="muaadh-mobile-tab-content">
+        {{-- Main Menu Tab --}}
+        <div class="muaadh-mobile-tab-pane active" id="menu-main">
+            <nav class="muaadh-mobile-nav">
+                <a href="{{ route('front.index') }}" class="muaadh-mobile-nav-item {{ request()->path() == '/' ? 'active' : '' }}">
+                    <i class="fas fa-home"></i>
+                    <span>@lang('Home')</span>
+                </a>
+                <a href="{{ route('front.category') }}" class="muaadh-mobile-nav-item {{ request()->is('category*') ? 'active' : '' }}">
+                    <i class="fas fa-box-open"></i>
+                    <span>@lang('Products')</span>
+                </a>
+                @if ($pages->where('header', '=', 1)->count() > 0)
+                    <div class="muaadh-mobile-nav-accordion">
+                        <button class="muaadh-mobile-nav-item muaadh-accordion-toggle">
+                            <i class="fas fa-file-alt"></i>
+                            <span>@lang('Pages')</span>
+                            <i class="fas fa-chevron-down muaadh-accordion-icon"></i>
+                        </button>
+                        <div class="muaadh-accordion-content">
+                            @foreach ($pages->where('header', '=', 1) as $page)
+                                <a href="{{ route('front.vendor', $page->slug) }}" class="muaadh-mobile-nav-subitem">
+                                    {{ $page->title }}
                                 </a>
-
-                                <ul id="child_level_1" class="accordion-collapse collapse ms-3">
-                                    @foreach ($pages->where('header', '=', 1) as $data)
-                                        <li>
-                                            <a href="{{ route('front.vendor', $data->slug) }}">{{ $data->title }}</a>
-                                        </li>
-                                    @endforeach
-
-                                </ul>
-                            </li>
-                            <li><a href="{{ route('front.blog') }}">@lang('BLOG')</a></li>
-                            <li><a href="{{ route('front.faq') }}">@lang('FAQ')</a></li>
-                            <li><a href="{{ route('front.contact') }}">@lang('CONTACT')</a></li>
-
-                        </ul>
-
-                        <div class="auth-actions-btn gap-4 d-flex flex-column">
-
-                            {{-- Vendor Panel or Vendor Login --}}
-                            @if (Auth::guard('web')->check() && Auth::guard('web')->user()->is_vendor == 2)
-                                <a class="template-btn" href="{{ route('vendor.dashboard') }}">@lang('Vendor Panel')</a>
-                            @elseif (!Auth::guard('web')->check() && !Auth::guard('rider')->check())
-                                <a class="template-btn" href="{{ route('vendor.login') }}">@lang('Vendor Login')</a>
-                            @endif
-
-                            {{-- Rider Dashboard or Rider Login --}}
-                            @if (Auth::guard('rider')->check())
-                                <a class="template-btn" href="{{ route('rider-dashboard') }}">@lang('Rider Dashboard')</a>
-                            @elseif (!Auth::guard('web')->check() && !Auth::guard('rider')->check())
-                                <a class="template-btn" href="{{ route('rider.login') }}">@lang('Rider Login')</a>
-                            @endif
-
-                            {{-- User Dashboard or User Login --}}
-                            @if (Auth::guard('web')->check() && Auth::guard('web')->user()->is_vendor != 2)
-                                <a class="template-btn" href="{{ route('user-dashboard') }}">@lang('User Dashboard')</a>
-                            @elseif (!Auth::guard('web')->check() && !Auth::guard('rider')->check())
-                                <a class="template-btn" href="{{ route('user.login') }}">@lang('User Login')</a>
-                            @endif
-
-                        </div>
-
-
-
-                    </div>
-                </div>
-            </div>
-
-        </div>
-    </div>
-
-    <div class="tab-content " id="nav-tabContent3">
-        <div class="tab-pane fade table-responsive tb-tb" id="categories" role="tabpanel"
-            aria-labelledby="categories-tab" style="color: white;">
-
-            <div class="mobile-menu-widget">
-                <div class="single-product-widget">
-                    <!-- <h5 class="widget-title">Product categories</h5> -->
-                    <div class="product-cat-widget">
-                        <ul class="accordion">
-                            @foreach ($categories as $category)
-                                @if ($category->subs->count() > 0)
-                                    <li>
-                                        @php
-                                            $isCategoryActive = Request::segment(2) === $category->slug;
-                                        @endphp
-                                        <div class="d-flex justify-content-between align-items-lg-baseline">
-                                            <a href="{{ route('front.category', $category->slug) }}"
-                                                class="{{ $isCategoryActive ? 'sidebar-active-color' : '' }}">
-                                                {{ $category->name }}
-                                            </a>
-
-                                            <button data-bs-toggle="collapse"
-                                                data-bs-target="#{{ $category->slug }}_level_2"
-                                                aria-controls="{{ $category->slug }}_level_2"
-                                                aria-expanded="{{ $isCategoryActive ? 'true' : 'false' }}"
-                                                class="position-relative bottom-12 {{ $isCategoryActive ? '' : 'collapsed' }}">
-                                                <i class="fa-solid fa-plus"></i>
-                                                <i class="fa-solid fa-minus"></i>
-                                            </button>
-                                        </div>
-
-                                        @foreach ($category->subs as $subcategory)
-                                            @php
-                                                $isSubcategoryActive =
-                                                    $isCategoryActive && Request::segment(3) === $subcategory->slug;
-                                            @endphp
-                                            <ul id="{{ $category->slug }}_level_2"
-                                                class="accordion-collapse collapse ms-3 {{ $isCategoryActive ? 'show' : '' }}">
-                                                <li class="">
-                                                    <div class="d-flex justify-content-between align-items-lg-baseline">
-                                                        <a href="{{ route('front.category', [$category->slug, $subcategory->slug]) }}"
-                                                            class="{{ $isSubcategoryActive ? 'sidebar-active-color' : '' }} "
-                                                            @if ($subcategory->childs->count() > 0) data-bs-toggle="collapse"
-                                        data-bs-target="#inner{{ $subcategory->slug }}_level_2_1"
-                                        aria-controls="inner{{ $subcategory->slug }}_level_2_1"
-                                        aria-expanded="{{ $isSubcategoryActive ? 'true' : 'false' }}"
-                                        class="{{ $isSubcategoryActive ? '' : 'collapsed' }}" @endif>
-                                                            {{ $subcategory->name }}
-                                                        </a>
-
-                                                        @if ($subcategory->childs->count() > 0)
-                                                            <button data-bs-toggle="collapse"
-                                                                data-bs-target="#inner{{ $subcategory->slug }}_level_2_1"
-                                                                aria-controls="inner{{ $subcategory->slug }}_level_2_1"
-                                                                aria-expanded="{{ $isSubcategoryActive ? 'true' : 'false' }}"
-                                                                class="position-relative bottom-12 {{ $isSubcategoryActive ? '' : 'collapsed' }}">
-                                                                <i class="fa-solid fa-plus"></i>
-                                                                <i class="fa-solid fa-minus"></i>
-                                                            </button>
-                                                        @endif
-                                                    </div>
-
-                                                    @if ($subcategory->childs->count() > 0)
-                                                        <ul id="inner{{ $subcategory->slug }}_level_2_1"
-                                                            class="accordion-collapse collapse ms-3 {{ $isSubcategoryActive ? 'show' : '' }}">
-                                                            @foreach ($subcategory->childs as $child)
-                                                                @php
-                                                                    $isChildActive =
-                                                                        $isSubcategoryActive &&
-                                                                        Request::segment(4) === $child->slug;
-                                                                @endphp
-                                                                <li>
-                                                                    <a href="{{ route('front.category', [$category->slug, $subcategory->slug, $child->slug]) }}"
-                                                                        class="{{ $isChildActive ? 'sidebar-active-color' : '' }}">
-                                                                        {{ $child->name }}
-                                                                    </a>
-                                                                </li>
-                                                            @endforeach
-                                                        </ul>
-                                                    @endif
-                                                </li>
-                                            </ul>
-                                        @endforeach
-
-                                    </li>
-                                @else
-                                    <li>
-                                        <a href="{{ route('front.category', $category->slug) }}"
-                                            class="{{ Request::segment(2) === $category->slug ? 'active' : '' }}">
-                                            {{ $category->name }}
-                                        </a>
-                                    </li>
-                                @endif
                             @endforeach
-                        </ul>
+                        </div>
                     </div>
+                @endif
+                @if ($ps->blog == 1)
+                    <a href="{{ route('front.blog') }}" class="muaadh-mobile-nav-item {{ request()->path() == 'blog' ? 'active' : '' }}">
+                        <i class="fas fa-newspaper"></i>
+                        <span>@lang('Blog')</span>
+                    </a>
+                @endif
+                <a href="{{ route('front.faq') }}" class="muaadh-mobile-nav-item {{ request()->path() == 'faq' ? 'active' : '' }}">
+                    <i class="fas fa-question-circle"></i>
+                    <span>@lang('FAQ')</span>
+                </a>
+                <a href="{{ route('front.contact') }}" class="muaadh-mobile-nav-item {{ request()->path() == 'contact' ? 'active' : '' }}">
+                    <i class="fas fa-envelope"></i>
+                    <span>@lang('Contact Us')</span>
+                </a>
+            </nav>
+
+            {{-- Quick Links --}}
+            <div class="muaadh-mobile-quick-links">
+                <h6 class="muaadh-mobile-section-title">@lang('Quick Access')</h6>
+                <div class="muaadh-mobile-quick-grid">
+                    <a href="{{ route('front.cart') }}" class="muaadh-mobile-quick-item">
+                        <i class="fas fa-shopping-cart"></i>
+                        <span>@lang('Cart')</span>
+                        @php $cart = Session::has('cart') ? Session::get('cart')->items : []; @endphp
+                        @if(count($cart) > 0)
+                            <span class="muaadh-mobile-quick-badge">{{ count($cart) }}</span>
+                        @endif
+                    </a>
+                    <a href="{{ auth()->check() ? route('user-wishlists') : route('user.login') }}" class="muaadh-mobile-quick-item">
+                        <i class="fas fa-heart"></i>
+                        <span>@lang('Wishlist')</span>
+                    </a>
+                    <a href="{{ route('product.compare') }}" class="muaadh-mobile-quick-item">
+                        <i class="fas fa-exchange-alt"></i>
+                        <span>@lang('Compare')</span>
+                    </a>
+                    <a href="{{ route('front.tracking') }}" class="muaadh-mobile-quick-item">
+                        <i class="fas fa-truck"></i>
+                        <span>@lang('Track')</span>
+                    </a>
                 </div>
             </div>
         </div>
-    </div>
-</div>
 
-<!-- search bar -->
-<div class="search-bar" id="searchBar">
-    <div class="container">
-        <div class="row">
-            <div class="col">
-                <form class="search-form"
-                    action="{{ route('front.category', [Request::route('category'), Request::route('subcategory'), Request::route('childcategory')]) }}">
-
-                    @if (!empty(request()->input('sort')))
-                        <input type="hidden" name="sort" value="{{ request()->input('sort') }}">
-                    @endif
-                    @if (!empty(request()->input('minprice')))
-                        <input type="hidden" name="minprice" value="{{ request()->input('minprice') }}">
-                    @endif
-                    @if (!empty(request()->input('maxprice')))
-                        <input type="hidden" name="maxprice" value="{{ request()->input('maxprice') }}">
-                    @endif
-
-                    <div class="input-group input__group">
-                        <input type="text" class="form-control form__control" name="search"
-                            placeholder="@lang('Search Any Product Here')">
-                        <div class="input-group-append">
-                            <span class="search-separator"></span>
-                            <button class="dropdown-toggle btn btn-secondary search-category-dropdown" type="button"
-                                data-bs-toggle="dropdown" aria-expanded="false">
-                                @lang('All Categories')
-                            </button>
-                            <ul class="dropdown-menu">
-                                @foreach ($categories as $category)
-                                    <li>
-                                        <a class="dropdown-item dropdown__item"
-                                            href="javascript:;">{{ $category->name }}</a>
-                                    </li>
+        {{-- Categories Tab --}}
+        <div class="muaadh-mobile-tab-pane" id="menu-categories">
+            <nav class="muaadh-mobile-categories">
+                @foreach ($categories as $category)
+                    @if ($category->subs->count() > 0)
+                        <div class="muaadh-mobile-nav-accordion">
+                            <div class="muaadh-mobile-category-header">
+                                <a href="{{ route('front.category', $category->slug) }}" class="muaadh-mobile-category-link {{ Request::segment(2) === $category->slug ? 'active' : '' }}">
+                                    @if($category->photo)
+                                        <img src="{{ asset('assets/images/categories/' . $category->photo) }}" alt="" class="muaadh-mobile-category-img">
+                                    @else
+                                        <i class="fas fa-folder"></i>
+                                    @endif
+                                    <span>{{ $category->name }}</span>
+                                </a>
+                                <button class="muaadh-accordion-toggle-btn">
+                                    <i class="fas fa-plus"></i>
+                                    <i class="fas fa-minus"></i>
+                                </button>
+                            </div>
+                            <div class="muaadh-accordion-content">
+                                @foreach ($category->subs as $subcategory)
+                                    @if ($subcategory->childs && $subcategory->childs->count() > 0)
+                                        <div class="muaadh-mobile-nav-accordion muaadh-nested">
+                                            <div class="muaadh-mobile-category-header">
+                                                <a href="{{ route('front.category', [$category->slug, $subcategory->slug]) }}" class="muaadh-mobile-nav-subitem">
+                                                    {{ $subcategory->name }}
+                                                </a>
+                                                <button class="muaadh-accordion-toggle-btn">
+                                                    <i class="fas fa-plus"></i>
+                                                    <i class="fas fa-minus"></i>
+                                                </button>
+                                            </div>
+                                            <div class="muaadh-accordion-content">
+                                                @foreach ($subcategory->childs as $child)
+                                                    <a href="{{ route('front.category', [$category->slug, $subcategory->slug, $child->slug]) }}" class="muaadh-mobile-nav-subitem muaadh-child-item">
+                                                        {{ $child->name }}
+                                                    </a>
+                                                @endforeach
+                                            </div>
+                                        </div>
+                                    @else
+                                        <a href="{{ route('front.category', [$category->slug, $subcategory->slug]) }}" class="muaadh-mobile-nav-subitem">
+                                            {{ $subcategory->name }}
+                                        </a>
+                                    @endif
                                 @endforeach
-                            </ul>
+                            </div>
                         </div>
+                    @else
+                        <a href="{{ route('front.category', $category->slug) }}" class="muaadh-mobile-category-link {{ Request::segment(2) === $category->slug ? 'active' : '' }}">
+                            @if($category->photo)
+                                <img src="{{ asset('assets/images/categories/' . $category->photo) }}" alt="" class="muaadh-mobile-category-img">
+                            @else
+                                <i class="fas fa-folder"></i>
+                            @endif
+                            <span>{{ $category->name }}</span>
+                        </a>
+                    @endif
+                @endforeach
+            </nav>
+        </div>
 
-
-                        <div class="input-group-append">
-                            <button class="btn btn-primary search-icn" type="submit">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-                                    viewBox="0 0 24 24" fill="none">
-                                    <path
-                                        d="M21 21L17.5001 17.5M20 11.5C20 16.1944 16.1944 20 11.5 20C6.80558 20 3 16.1944 3 11.5C3 6.80558 6.80558 3 11.5 3C16.1944 3 20 6.80558 20 11.5Z"
-                                        stroke="white" stroke-width="2" stroke-linecap="round"
-                                        stroke-linejoin="round" />
-                                </svg>
-                            </button>
-                        </div>
+        {{-- Account Tab --}}
+        <div class="muaadh-mobile-tab-pane" id="menu-account">
+            @if (Auth::guard('web')->check())
+                <nav class="muaadh-mobile-nav">
+                    <a href="{{ route('user-dashboard') }}" class="muaadh-mobile-nav-item">
+                        <i class="fas fa-tachometer-alt"></i>
+                        <span>@lang('Dashboard')</span>
+                    </a>
+                    <a href="{{ route('user-orders') }}" class="muaadh-mobile-nav-item">
+                        <i class="fas fa-shopping-bag"></i>
+                        <span>@lang('My Orders')</span>
+                    </a>
+                    <a href="{{ route('user-wishlists') }}" class="muaadh-mobile-nav-item">
+                        <i class="fas fa-heart"></i>
+                        <span>@lang('Wishlist')</span>
+                    </a>
+                    <a href="{{ route('user-profile') }}" class="muaadh-mobile-nav-item">
+                        <i class="fas fa-user-edit"></i>
+                        <span>@lang('Edit Profile')</span>
+                    </a>
+                    <a href="{{ route('user-profile') }}" class="muaadh-mobile-nav-item">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <span>@lang('Addresses')</span>
+                    </a>
+                    <a href="{{ route('user-logout') }}" class="muaadh-mobile-nav-item text-danger">
+                        <i class="fas fa-sign-out-alt"></i>
+                        <span>@lang('Logout')</span>
+                    </a>
+                </nav>
+            @elseif (Auth::guard('rider')->check())
+                <nav class="muaadh-mobile-nav">
+                    <a href="{{ route('rider-dashboard') }}" class="muaadh-mobile-nav-item">
+                        <i class="fas fa-tachometer-alt"></i>
+                        <span>@lang('Rider Dashboard')</span>
+                    </a>
+                    <a href="{{ route('rider.logout') }}" class="muaadh-mobile-nav-item text-danger">
+                        <i class="fas fa-sign-out-alt"></i>
+                        <span>@lang('Logout')</span>
+                    </a>
+                </nav>
+            @else
+                <div class="muaadh-mobile-guest-account">
+                    <div class="muaadh-mobile-guest-icon">
+                        <i class="fas fa-user-circle"></i>
                     </div>
-                </form>
-            </div>
+                    <h5>@lang('Welcome Guest')</h5>
+                    <p>@lang('Login or create an account to access your orders, wishlist and more.')</p>
+                    <div class="muaadh-mobile-guest-buttons">
+                        <a href="{{ route('user.login') }}" class="muaadh-btn-primary">
+                            <i class="fas fa-sign-in-alt"></i>
+                            @lang('Login')
+                        </a>
+                        <a href="{{ route('user.register') }}" class="muaadh-btn-outline">
+                            <i class="fas fa-user-plus"></i>
+                            @lang('Register')
+                        </a>
+                    </div>
+                </div>
+
+                {{-- Other Login Options --}}
+                <div class="muaadh-mobile-other-logins">
+                    <h6 class="muaadh-mobile-section-title">@lang('Other Accounts')</h6>
+                    <a href="{{ route('vendor.login') }}" class="muaadh-mobile-nav-item">
+                        <i class="fas fa-store"></i>
+                        <span>@lang('Vendor Login')</span>
+                    </a>
+                    <a href="{{ route('rider.login') }}" class="muaadh-mobile-nav-item">
+                        <i class="fas fa-motorcycle"></i>
+                        <span>@lang('Rider Login')</span>
+                    </a>
+                </div>
+            @endif
         </div>
     </div>
+
+    {{-- Menu Footer --}}
+    <div class="muaadh-mobile-menu-footer">
+        {{-- Language & Currency --}}
+        <div class="muaadh-mobile-footer-selects">
+            <div class="muaadh-mobile-select">
+                <i class="fas fa-globe"></i>
+                <select onchange="window.location.href=this.value">
+                    @foreach ($languges as $language)
+                        <option value="{{ route('front.language', $language->id) }}"
+                            {{ Session::has('language') && Session::get('language') == $language->id ? 'selected' : '' }}
+                            {{ !Session::has('language') && $language->is_default == 1 ? 'selected' : '' }}>
+                            {{ $language->language }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+            @if ($gs->is_currency == 1)
+                <div class="muaadh-mobile-select">
+                    <i class="fas fa-dollar-sign"></i>
+                    <select onchange="window.location.href=this.value">
+                        @foreach ($currencies as $currency)
+                            <option value="{{ route('front.currency', $currency->id) }}"
+                                {{ Session::has('currency') && Session::get('currency') == $currency->id ? 'selected' : '' }}
+                                {{ !Session::has('currency') && $currency->is_default == 1 ? 'selected' : '' }}>
+                                {{ $currency->name }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+            @endif
+        </div>
+
+        {{-- Contact Info --}}
+        <div class="muaadh-mobile-contact">
+            <a href="tel:{{ $ps->phone }}">
+                <i class="fas fa-phone-alt"></i>
+                <span>{{ $ps->phone }}</span>
+            </a>
+        </div>
+
+        {{-- Social Links --}}
+        @php
+            $socialLinks = \App\Models\Socialsetting::first();
+        @endphp
+        @if($socialLinks && ($socialLinks->facebook || $socialLinks->twitter || $socialLinks->linkedin))
+            <div class="muaadh-mobile-social">
+                @if($socialLinks->facebook)
+                    <a href="{{ $socialLinks->facebook }}" target="_blank"><i class="fab fa-facebook-f"></i></a>
+                @endif
+                @if($socialLinks->twitter)
+                    <a href="{{ $socialLinks->twitter }}" target="_blank"><i class="fab fa-twitter"></i></a>
+                @endif
+                @if($socialLinks->linkedin)
+                    <a href="{{ $socialLinks->linkedin }}" target="_blank"><i class="fab fa-linkedin-in"></i></a>
+                @endif
+            </div>
+        @endif
+    </div>
 </div>
+
+{{-- Mobile Menu Overlay --}}
+<div class="muaadh-mobile-overlay"></div>

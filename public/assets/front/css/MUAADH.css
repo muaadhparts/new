@@ -2383,3 +2383,1337 @@ div[id*='zoom_container'] .landmarks .lable div {
 .gs-myshipments-page {
     min-height: 60vh;
 }
+
+/* ==========================================================================
+   28. MUAADH MODERN HEADER
+   ========================================================================== */
+
+/* --- Header Container --- */
+.muaadh-header {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    background: var(--muaadh-white);
+    box-shadow: 0 2px 20px rgba(0, 0, 0, 0.08);
+}
+
+/* --- Top Bar --- */
+.muaadh-topbar {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    padding: 8px 0;
+    font-size: 13px;
+}
+
+.muaadh-topbar-inner {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.muaadh-topbar-left,
+.muaadh-topbar-right {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.muaadh-topbar-link {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: rgba(255, 255, 255, 0.9);
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+.muaadh-topbar-link:hover {
+    color: var(--muaadh-primary);
+}
+
+.muaadh-topbar-link i {
+    font-size: 12px;
+}
+
+.muaadh-topbar-divider {
+    width: 1px;
+    height: 16px;
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.muaadh-topbar-auth {
+    display: flex;
+    gap: 15px;
+}
+
+/* --- Top Bar Dropdowns --- */
+.muaadh-dropdown {
+    position: relative;
+}
+
+.muaadh-dropdown-toggle {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: transparent;
+    border: none;
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 13px;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 4px;
+    transition: background 0.2s;
+}
+
+.muaadh-dropdown-toggle:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.muaadh-dropdown-toggle i:last-child {
+    font-size: 10px;
+    transition: transform 0.2s;
+}
+
+.muaadh-dropdown.show .muaadh-dropdown-toggle i:last-child {
+    transform: rotate(180deg);
+}
+
+.muaadh-dropdown-menu {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    min-width: 150px;
+    background: var(--muaadh-white);
+    border-radius: 8px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+    padding: 8px 0;
+    margin-top: 8px;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(10px);
+    transition: all 0.2s;
+    list-style: none;
+    z-index: 1001;
+}
+
+.muaadh-dropdown.show .muaadh-dropdown-menu,
+.muaadh-dropdown:hover .muaadh-dropdown-menu {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.muaadh-dropdown-item {
+    display: block;
+    padding: 8px 16px;
+    color: var(--muaadh-text);
+    text-decoration: none;
+    transition: background 0.2s;
+}
+
+.muaadh-dropdown-item:hover,
+.muaadh-dropdown-item.active {
+    background: var(--muaadh-bg-light);
+    color: var(--muaadh-primary);
+}
+
+/* --- Main Header --- */
+.muaadh-main-header {
+    padding: 15px 0;
+    background: var(--muaadh-white);
+}
+
+.muaadh-header-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+}
+
+/* Mobile Toggle */
+.muaadh-mobile-toggle {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    padding: 8px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+}
+
+.muaadh-mobile-toggle span {
+    width: 24px;
+    height: 2px;
+    background: var(--muaadh-text);
+    border-radius: 2px;
+    transition: all 0.3s;
+}
+
+.muaadh-mobile-toggle.active span:nth-child(1) {
+    transform: rotate(45deg) translate(5px, 5px);
+}
+
+.muaadh-mobile-toggle.active span:nth-child(2) {
+    opacity: 0;
+}
+
+.muaadh-mobile-toggle.active span:nth-child(3) {
+    transform: rotate(-45deg) translate(5px, -5px);
+}
+
+/* Logo */
+.muaadh-logo {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+}
+
+.muaadh-logo img {
+    max-height: 55px;
+    width: auto;
+}
+
+/* Header Left Group (Toggle + Logo) */
+.muaadh-header-left {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+/* --- Search Bar --- */
+.muaadh-search-wrapper {
+    flex: 1;
+    max-width: 600px;
+}
+
+.muaadh-search-form {
+    width: 100%;
+}
+
+.muaadh-search-input-group {
+    display: flex;
+    align-items: stretch;
+    background: var(--muaadh-bg-light);
+    border: 2px solid transparent;
+    border-radius: 50px;
+    overflow: hidden;
+    transition: all 0.3s;
+}
+
+.muaadh-search-input-group:focus-within {
+    border-color: var(--muaadh-primary);
+    background: var(--muaadh-white);
+    box-shadow: 0 0 0 4px var(--muaadh-primary-light);
+}
+
+.muaadh-search-input {
+    flex: 1;
+    padding: 12px 20px;
+    border: none;
+    background: transparent;
+    font-size: 14px;
+    outline: none;
+}
+
+.muaadh-search-input::placeholder {
+    color: #999;
+}
+
+.muaadh-search-category {
+    display: flex;
+    align-items: center;
+    padding: 0 15px;
+    border-left: 1px solid #e0e0e0;
+}
+
+.muaadh-category-select {
+    border: none;
+    background: transparent;
+    font-size: 13px;
+    color: var(--muaadh-text);
+    cursor: pointer;
+    outline: none;
+    padding-right: 20px;
+}
+
+.muaadh-search-btn {
+    padding: 12px 25px;
+    background: var(--muaadh-primary);
+    border: none;
+    color: var(--muaadh-white);
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.muaadh-search-btn:hover {
+    background: var(--muaadh-primary-dark);
+}
+
+.muaadh-search-close {
+    padding: 12px 15px;
+    background: transparent;
+    border: none;
+    color: var(--muaadh-text);
+    cursor: pointer;
+}
+
+/* --- Header Actions --- */
+.muaadh-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.muaadh-action-btn {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 12px;
+    background: var(--muaadh-bg-light);
+    border: none;
+    border-radius: 10px;
+    color: var(--muaadh-text);
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.muaadh-action-btn:hover {
+    background: var(--muaadh-primary-light);
+    color: var(--muaadh-primary);
+}
+
+.muaadh-action-btn i {
+    font-size: 18px;
+}
+
+.muaadh-action-label {
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.muaadh-badge {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 5px;
+    background: var(--muaadh-danger);
+    color: var(--muaadh-white);
+    font-size: 10px;
+    font-weight: 600;
+    border-radius: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.muaadh-cart-btn {
+    background: var(--muaadh-primary);
+    color: var(--muaadh-white);
+}
+
+.muaadh-cart-btn:hover {
+    background: var(--muaadh-primary-dark);
+    color: var(--muaadh-white);
+}
+
+.muaadh-cart-btn .muaadh-badge {
+    background: var(--muaadh-white);
+    color: var(--muaadh-primary);
+}
+
+/* --- Action Dropdown --- */
+.muaadh-action-dropdown {
+    position: relative;
+}
+
+.muaadh-action-menu {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    min-width: 200px;
+    background: var(--muaadh-white);
+    border-radius: 12px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+    padding: 8px 0;
+    margin-top: 10px;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(10px);
+    transition: all 0.2s;
+    z-index: 1001;
+}
+
+.muaadh-action-dropdown:hover .muaadh-action-menu,
+.muaadh-action-dropdown.show .muaadh-action-menu {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.muaadh-action-menu-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 16px;
+    color: var(--muaadh-text);
+    text-decoration: none;
+    transition: background 0.2s;
+}
+
+.muaadh-action-menu-item:hover {
+    background: var(--muaadh-bg-light);
+}
+
+.muaadh-action-menu-item i {
+    width: 20px;
+    text-align: center;
+    color: #888;
+}
+
+.muaadh-action-menu-divider {
+    height: 1px;
+    background: #eee;
+    margin: 8px 0;
+}
+
+/* --- Navigation Bar --- */
+.muaadh-navbar {
+    background: var(--muaadh-bg-light);
+    border-top: 1px solid #eee;
+}
+
+.muaadh-navbar-inner {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+/* Categories Dropdown */
+.muaadh-categories-dropdown {
+    position: relative;
+}
+
+.muaadh-categories-toggle {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 15px 20px;
+    background: var(--muaadh-primary);
+    border: none;
+    color: var(--muaadh-white);
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.muaadh-categories-toggle:hover {
+    background: var(--muaadh-primary-dark);
+}
+
+.muaadh-categories-toggle i:last-child {
+    margin-left: auto;
+    font-size: 10px;
+    transition: transform 0.2s;
+}
+
+.muaadh-categories-dropdown:hover .muaadh-categories-toggle i:last-child {
+    transform: rotate(180deg);
+}
+
+.muaadh-categories-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 280px;
+    max-height: 400px;
+    overflow-y: auto;
+    background: var(--muaadh-white);
+    border-radius: 0 0 12px 12px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(10px);
+    transition: all 0.2s;
+    z-index: 1001;
+}
+
+.muaadh-categories-dropdown:hover .muaadh-categories-menu {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.muaadh-category-item {
+    position: relative;
+}
+
+.muaadh-category-item > a {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    color: var(--muaadh-text);
+    text-decoration: none;
+    transition: all 0.2s;
+    border-bottom: 1px solid #f5f5f5;
+}
+
+.muaadh-category-item > a:hover {
+    background: var(--muaadh-bg-light);
+    color: var(--muaadh-primary);
+}
+
+.muaadh-category-item > a img {
+    width: 30px;
+    height: 30px;
+    object-fit: contain;
+}
+
+.muaadh-category-item > a i {
+    width: 30px;
+    text-align: center;
+    color: #888;
+}
+
+.muaadh-category-arrow {
+    margin-left: auto;
+    font-size: 10px;
+    color: #ccc;
+}
+
+/* Subcategory Panel */
+.muaadh-subcategory-panel {
+    position: absolute;
+    top: 0;
+    left: 100%;
+    width: 500px;
+    max-height: 400px;
+    overflow-y: auto;
+    background: var(--muaadh-white);
+    border-radius: 0 12px 12px 0;
+    box-shadow: 20px 20px 40px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.2s;
+}
+
+.muaadh-category-item.has-children:hover .muaadh-subcategory-panel {
+    opacity: 1;
+    visibility: visible;
+}
+
+.muaadh-subcategory-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+}
+
+.muaadh-subcategory-title {
+    display: block;
+    font-weight: 600;
+    color: var(--muaadh-text);
+    margin-bottom: 10px;
+    text-decoration: none;
+}
+
+.muaadh-subcategory-title:hover {
+    color: var(--muaadh-primary);
+}
+
+.muaadh-child-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.muaadh-child-list li {
+    margin-bottom: 6px;
+}
+
+.muaadh-child-list a {
+    color: #666;
+    text-decoration: none;
+    font-size: 13px;
+    transition: color 0.2s;
+}
+
+.muaadh-child-list a:hover {
+    color: var(--muaadh-primary);
+}
+
+.muaadh-view-all {
+    color: var(--muaadh-primary) !important;
+    font-weight: 500;
+}
+
+/* Nav Menu */
+.muaadh-nav-menu {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.muaadh-nav-menu > li > a {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 15px 16px;
+    color: var(--muaadh-text);
+    text-decoration: none;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+
+.muaadh-nav-menu > li > a:hover,
+.muaadh-nav-menu > li.active > a {
+    color: var(--muaadh-primary);
+}
+
+.muaadh-nav-menu > li > a i {
+    font-size: 14px;
+}
+
+.muaadh-nav-menu > li > a i.fa-chevron-down {
+    font-size: 10px;
+}
+
+/* Nav Dropdown */
+.muaadh-nav-dropdown {
+    position: relative;
+}
+
+.muaadh-nav-submenu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    min-width: 200px;
+    background: var(--muaadh-white);
+    border-radius: 8px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+    padding: 8px 0;
+    list-style: none;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(10px);
+    transition: all 0.2s;
+    z-index: 1001;
+}
+
+.muaadh-nav-dropdown:hover .muaadh-nav-submenu {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.muaadh-nav-submenu li a {
+    display: block;
+    padding: 10px 16px;
+    color: var(--muaadh-text);
+    text-decoration: none;
+    transition: all 0.2s;
+}
+
+.muaadh-nav-submenu li a:hover {
+    background: var(--muaadh-bg-light);
+    color: var(--muaadh-primary);
+}
+
+/* Nav Promo */
+.muaadh-nav-promo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-left: auto;
+    padding: 8px 16px;
+    background: var(--muaadh-success-light);
+    color: var(--muaadh-success);
+    border-radius: 50px;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+/* --- Mobile Search Bar --- */
+.muaadh-mobile-search {
+    display: none;
+    padding: 15px 0;
+    background: var(--muaadh-white);
+    border-top: 1px solid #eee;
+}
+
+.muaadh-mobile-search.active {
+    display: block;
+}
+
+.muaadh-mobile-search .muaadh-search-input-group {
+    border-radius: 10px;
+}
+
+.muaadh-mobile-search .muaadh-search-close {
+    display: flex;
+}
+
+/* ==========================================================================
+   29. MUAADH MOBILE MENU
+   ========================================================================== */
+
+/* --- Mobile Menu Container --- */
+.muaadh-mobile-menu {
+    position: fixed;
+    top: 0;
+    left: -320px;
+    width: 320px;
+    max-width: 90vw;
+    height: 100vh;
+    background: var(--muaadh-white);
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    transition: left 0.3s ease;
+    overflow: hidden;
+}
+
+.muaadh-mobile-menu.active {
+    left: 0;
+}
+
+/* RTL Support */
+[dir="rtl"] .muaadh-mobile-menu {
+    left: auto;
+    right: -320px;
+}
+
+[dir="rtl"] .muaadh-mobile-menu.active {
+    right: 0;
+}
+
+/* --- Mobile Overlay --- */
+.muaadh-mobile-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s;
+    z-index: 9998;
+}
+
+.muaadh-mobile-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* --- Mobile Menu Header --- */
+.muaadh-mobile-menu-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+}
+
+.muaadh-mobile-logo img {
+    max-height: 40px;
+}
+
+.muaadh-mobile-close {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    border-radius: 50%;
+    color: var(--muaadh-white);
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.muaadh-mobile-close:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+/* --- Mobile User Section --- */
+.muaadh-mobile-user {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 15px 20px;
+    background: var(--muaadh-bg-light);
+    border-bottom: 1px solid #eee;
+}
+
+.muaadh-mobile-user-avatar {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    background: var(--muaadh-primary-light);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.muaadh-mobile-user-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.muaadh-mobile-user-avatar i {
+    font-size: 20px;
+    color: var(--muaadh-primary);
+}
+
+.muaadh-mobile-user-name {
+    display: block;
+    font-weight: 600;
+    color: var(--muaadh-text);
+}
+
+.muaadh-mobile-user-link {
+    font-size: 13px;
+    color: var(--muaadh-primary);
+    text-decoration: none;
+}
+
+/* --- Mobile Auth Buttons --- */
+.muaadh-mobile-auth-buttons {
+    display: flex;
+    gap: 10px;
+    padding: 15px 20px;
+    background: var(--muaadh-bg-light);
+    border-bottom: 1px solid #eee;
+}
+
+.muaadh-mobile-auth-btn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px 15px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all 0.2s;
+}
+
+.muaadh-btn-primary {
+    background: var(--muaadh-primary);
+    color: var(--muaadh-white);
+}
+
+.muaadh-btn-primary:hover {
+    background: var(--muaadh-primary-dark);
+    color: var(--muaadh-white);
+}
+
+.muaadh-btn-outline {
+    background: var(--muaadh-white);
+    color: var(--muaadh-text);
+    border: 1px solid #ddd;
+}
+
+.muaadh-btn-outline:hover {
+    border-color: var(--muaadh-primary);
+    color: var(--muaadh-primary);
+}
+
+/* --- Mobile Search Box --- */
+.muaadh-mobile-search-box {
+    padding: 10px 20px;
+    border-bottom: 1px solid #eee;
+}
+
+.muaadh-mobile-search-input {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 15px;
+    background: var(--muaadh-bg-light);
+    border-radius: 8px;
+}
+
+.muaadh-mobile-search-input i {
+    color: #999;
+}
+
+.muaadh-mobile-search-input input {
+    flex: 1;
+    border: none;
+    background: transparent;
+    font-size: 14px;
+    outline: none;
+}
+
+/* --- Mobile Tabs --- */
+.muaadh-mobile-tabs {
+    display: flex;
+    border-bottom: 1px solid #eee;
+}
+
+.muaadh-mobile-tab {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 12px 10px;
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid transparent;
+    color: #888;
+    font-size: 11px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.muaadh-mobile-tab i {
+    font-size: 16px;
+}
+
+.muaadh-mobile-tab.active {
+    color: var(--muaadh-primary);
+    border-bottom-color: var(--muaadh-primary);
+}
+
+/* --- Mobile Tab Content --- */
+.muaadh-mobile-tab-content {
+    flex: 1;
+    overflow-y: auto;
+}
+
+.muaadh-mobile-tab-pane {
+    display: none;
+    padding: 15px 0;
+}
+
+.muaadh-mobile-tab-pane.active {
+    display: block;
+}
+
+/* --- Mobile Navigation --- */
+.muaadh-mobile-nav {
+    padding: 0 10px;
+}
+
+.muaadh-mobile-nav-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 15px;
+    color: var(--muaadh-text);
+    text-decoration: none;
+    border-radius: 8px;
+    transition: all 0.2s;
+}
+
+.muaadh-mobile-nav-item:hover,
+.muaadh-mobile-nav-item.active {
+    background: var(--muaadh-bg-light);
+    color: var(--muaadh-primary);
+}
+
+.muaadh-mobile-nav-item i {
+    width: 24px;
+    text-align: center;
+    color: #888;
+}
+
+.muaadh-mobile-nav-item.active i,
+.muaadh-mobile-nav-item:hover i {
+    color: var(--muaadh-primary);
+}
+
+/* --- Mobile Accordion --- */
+.muaadh-mobile-nav-accordion {
+    margin: 0 10px;
+}
+
+.muaadh-accordion-toggle {
+    width: 100%;
+    justify-content: flex-start;
+    cursor: pointer;
+}
+
+.muaadh-accordion-icon {
+    margin-left: auto;
+    font-size: 12px;
+    transition: transform 0.2s;
+}
+
+.muaadh-accordion-toggle.active .muaadh-accordion-icon {
+    transform: rotate(180deg);
+}
+
+.muaadh-accordion-content {
+    display: none;
+    padding-left: 36px;
+}
+
+.muaadh-accordion-content.active {
+    display: block;
+}
+
+.muaadh-mobile-nav-subitem {
+    display: block;
+    padding: 10px 15px;
+    color: #666;
+    text-decoration: none;
+    font-size: 14px;
+    border-radius: 6px;
+    transition: all 0.2s;
+}
+
+.muaadh-mobile-nav-subitem:hover {
+    background: var(--muaadh-bg-light);
+    color: var(--muaadh-primary);
+}
+
+.muaadh-child-item {
+    padding-left: 25px;
+    font-size: 13px;
+}
+
+/* --- Mobile Category Header --- */
+.muaadh-mobile-category-header {
+    display: flex;
+    align-items: center;
+}
+
+.muaadh-mobile-category-link {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 15px;
+    color: var(--muaadh-text);
+    text-decoration: none;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+
+.muaadh-mobile-category-link:hover,
+.muaadh-mobile-category-link.active {
+    color: var(--muaadh-primary);
+}
+
+.muaadh-mobile-category-img {
+    width: 30px;
+    height: 30px;
+    object-fit: contain;
+}
+
+.muaadh-accordion-toggle-btn {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--muaadh-bg-light);
+    border: none;
+    border-radius: 8px;
+    color: var(--muaadh-text);
+    cursor: pointer;
+    margin-right: 10px;
+}
+
+.muaadh-accordion-toggle-btn .fa-minus {
+    display: none;
+}
+
+.muaadh-accordion-toggle-btn.active .fa-plus {
+    display: none;
+}
+
+.muaadh-accordion-toggle-btn.active .fa-minus {
+    display: block;
+}
+
+/* --- Mobile Quick Links --- */
+.muaadh-mobile-quick-links {
+    padding: 15px 20px;
+    border-top: 1px solid #eee;
+    margin-top: 10px;
+}
+
+.muaadh-mobile-section-title {
+    font-size: 12px;
+    font-weight: 600;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 12px;
+}
+
+.muaadh-mobile-quick-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+}
+
+.muaadh-mobile-quick-item {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding: 12px 8px;
+    background: var(--muaadh-bg-light);
+    border-radius: 10px;
+    color: var(--muaadh-text);
+    text-decoration: none;
+    font-size: 11px;
+    text-align: center;
+    transition: all 0.2s;
+}
+
+.muaadh-mobile-quick-item:hover {
+    background: var(--muaadh-primary-light);
+    color: var(--muaadh-primary);
+}
+
+.muaadh-mobile-quick-item i {
+    font-size: 18px;
+}
+
+.muaadh-mobile-quick-badge {
+    position: absolute;
+    top: 5px;
+    right: 15px;
+    min-width: 16px;
+    height: 16px;
+    padding: 0 4px;
+    background: var(--muaadh-danger);
+    color: var(--muaadh-white);
+    font-size: 10px;
+    font-weight: 600;
+    border-radius: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* --- Mobile Guest Account --- */
+.muaadh-mobile-guest-account {
+    text-align: center;
+    padding: 30px 20px;
+}
+
+.muaadh-mobile-guest-icon {
+    font-size: 60px;
+    color: #ddd;
+    margin-bottom: 15px;
+}
+
+.muaadh-mobile-guest-account h5 {
+    margin-bottom: 8px;
+    color: var(--muaadh-text);
+}
+
+.muaadh-mobile-guest-account p {
+    font-size: 13px;
+    color: #888;
+    margin-bottom: 20px;
+}
+
+.muaadh-mobile-guest-buttons {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+}
+
+.muaadh-mobile-guest-buttons a {
+    padding: 10px 25px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+/* --- Mobile Other Logins --- */
+.muaadh-mobile-other-logins {
+    padding: 20px;
+    border-top: 1px solid #eee;
+}
+
+/* --- Mobile Menu Footer --- */
+.muaadh-mobile-menu-footer {
+    margin-top: auto;
+    padding: 15px 20px;
+    background: var(--muaadh-bg-light);
+    border-top: 1px solid #eee;
+}
+
+.muaadh-mobile-footer-selects {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+.muaadh-mobile-select {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    background: var(--muaadh-white);
+    border-radius: 6px;
+    border: 1px solid #eee;
+}
+
+.muaadh-mobile-select i {
+    color: #888;
+    font-size: 12px;
+}
+
+.muaadh-mobile-select select {
+    flex: 1;
+    border: none;
+    background: transparent;
+    font-size: 12px;
+    outline: none;
+}
+
+.muaadh-mobile-contact {
+    margin-bottom: 12px;
+}
+
+.muaadh-mobile-contact a {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--muaadh-text);
+    text-decoration: none;
+    font-size: 13px;
+}
+
+.muaadh-mobile-contact i {
+    color: var(--muaadh-primary);
+}
+
+.muaadh-mobile-social {
+    display: flex;
+    gap: 10px;
+}
+
+.muaadh-mobile-social a {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--muaadh-white);
+    border-radius: 50%;
+    color: var(--muaadh-text);
+    text-decoration: none;
+    transition: all 0.2s;
+}
+
+.muaadh-mobile-social a:hover {
+    background: var(--muaadh-primary);
+    color: var(--muaadh-white);
+}
+
+/* ==========================================================================
+   30. HEADER RESPONSIVE STYLES
+   ========================================================================== */
+
+@media (max-width: 1199px) {
+    .muaadh-navbar {
+        display: none;
+    }
+
+    .muaadh-search-wrapper {
+        display: none !important;
+    }
+}
+
+@media (max-width: 991px) {
+    .muaadh-topbar-left {
+        font-size: 12px;
+    }
+
+    .muaadh-header-inner {
+        gap: 15px;
+    }
+
+    .muaadh-logo img {
+        max-height: 40px;
+    }
+
+    .muaadh-action-btn {
+        padding: 8px 10px;
+    }
+
+    .muaadh-action-label {
+        display: none !important;
+    }
+}
+
+@media (max-width: 767px) {
+    .muaadh-topbar {
+        padding: 6px 0;
+    }
+
+    .muaadh-topbar-inner {
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .muaadh-topbar-divider {
+        display: none;
+    }
+
+    .muaadh-main-header {
+        padding: 10px 0;
+    }
+
+    .muaadh-header-actions {
+        gap: 5px;
+    }
+
+    .muaadh-action-btn {
+        padding: 8px;
+    }
+
+    .muaadh-action-btn i {
+        font-size: 16px;
+    }
+
+    .muaadh-badge {
+        min-width: 16px;
+        height: 16px;
+        font-size: 9px;
+    }
+}
+
+@media (max-width: 575px) {
+    .muaadh-topbar-left {
+        display: none;
+    }
+
+    .muaadh-topbar-right {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .muaadh-mobile-menu {
+        width: 280px;
+    }
+
+    .muaadh-mobile-quick-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}

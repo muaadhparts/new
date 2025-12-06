@@ -20,9 +20,87 @@ $(document).ready(function () {
   18. CHANGE FILE NAME OF FILE INPUT
   19. TOGGLING ADD PRODUCT FORM  BASED ON SELECTED PRODUCT TYPE
   20. APEXCHART
+  21. MUAADH MODERN HEADER
 
     */
 
+  //****** 21. MUAADH MODERN HEADER ******//
+  (function() {
+    // Elements
+    const $muaadhMobileMenu = $('.muaadh-mobile-menu');
+    const $muaadhOverlay = $('.muaadh-mobile-overlay');
+    const $mobileToggle = $('.muaadh-mobile-toggle');
+    const $mobileClose = $('.muaadh-mobile-close');
+    const $mobileSearchToggle = $('#mobileSearchToggle');
+    const $mobileSearchBar = $('#mobileSearchBar');
+    const $mobileSearchClose = $('#mobileSearchClose');
+
+    // Mobile Menu Toggle
+    $mobileToggle.on('click', function() {
+      $muaadhMobileMenu.addClass('active');
+      $muaadhOverlay.addClass('active');
+      $('body').css('overflow', 'hidden');
+    });
+
+    // Close Mobile Menu
+    function closeMobileMenu() {
+      $muaadhMobileMenu.removeClass('active');
+      $muaadhOverlay.removeClass('active');
+      $('body').css('overflow', '');
+    }
+
+    $mobileClose.on('click', closeMobileMenu);
+    $muaadhOverlay.on('click', closeMobileMenu);
+
+    // Mobile Search Toggle
+    $mobileSearchToggle.on('click', function() {
+      $mobileSearchBar.addClass('active');
+    });
+
+    $mobileSearchClose.on('click', function() {
+      $mobileSearchBar.removeClass('active');
+    });
+
+    // Mobile Menu Tabs
+    $('.muaadh-mobile-tab').on('click', function() {
+      const target = $(this).data('target');
+
+      // Update tab states
+      $('.muaadh-mobile-tab').removeClass('active');
+      $(this).addClass('active');
+
+      // Update content states
+      $('.muaadh-mobile-tab-pane').removeClass('active');
+      $('#' + target).addClass('active');
+    });
+
+    // Mobile Menu Accordions
+    $('.muaadh-accordion-toggle').on('click', function(e) {
+      e.preventDefault();
+      const $accordion = $(this).closest('.muaadh-mobile-nav-accordion');
+      const $content = $accordion.find('.muaadh-accordion-content').first();
+
+      $(this).toggleClass('active');
+      $content.toggleClass('active');
+    });
+
+    $('.muaadh-accordion-toggle-btn').on('click', function() {
+      const $accordion = $(this).closest('.muaadh-mobile-nav-accordion');
+      const $content = $accordion.find('> .muaadh-accordion-content');
+
+      $(this).toggleClass('active');
+      $content.toggleClass('active');
+    });
+
+    // Header sticky on scroll
+    $(window).on('scroll', function() {
+      if ($(this).scrollTop() > 100) {
+        $('.muaadh-header').addClass('scrolled');
+      } else {
+        $('.muaadh-header').removeClass('scrolled');
+      }
+    });
+  })();
 
 
   //****** 1. DATA BACKGROUND SET ******//
@@ -40,14 +118,21 @@ $(document).ready(function () {
     );
   });
 
-  //****** 2. MOBILE MENU ******//
+  //****** 2. MOBILE MENU (Legacy support) ******//
   const $overlay = $(".overlay");
   const $mobileMenu = $(".mobile-menu");
 
   $(".header-toggle, .mobile-menu-toggle").on("click", function (e) {
     e.preventDefault();
-    $mobileMenu.toggleClass("active");
-    $overlay.addClass("active");
+    // Support both old and new mobile menus
+    if ($('.muaadh-mobile-menu').length) {
+      $('.muaadh-mobile-menu').addClass('active');
+      $('.muaadh-mobile-overlay').addClass('active');
+      $('body').css('overflow', 'hidden');
+    } else {
+      $mobileMenu.toggleClass("active");
+      $overlay.addClass("active");
+    }
   });
 
   $(".close").on("click", function (e) {
