@@ -15,12 +15,15 @@
             </thead>
             <tbody>
                 @foreach($results as $item)
+                    @php
+                        $row = is_array($item) ? (object) $item : $item;
+                    @endphp
                     <tr>
-                        <td>{{ $item->part_number ?? $item['part_number'] ?? '' }}</td>
-                        <td>{{ $item->label ?? $item['label'] ?? '' }}</td>
-                        <td>{{ $item->catalog_code ?? $item['catalog_code'] ?? '' }}</td>
-                        <td>{{ $item->begin_year ?? $item['begin_year'] ?? '' }}</td>
-                        <td>{{ ($item->end_year ?? $item['end_year'] ?? 0) != 0 ? ($item->end_year ?? $item['end_year']) : __('compatibility.until_now') }}</td>
+                        <td>{{ $row->part_number ?? '' }}</td>
+                        <td>{{ $row->label ?? '' }}</td>
+                        <td>{{ $row->catalog_code ?? '' }}</td>
+                        <td>{{ $row->begin_year ?? '' }}</td>
+                        <td>{{ ($row->end_year ?? 0) != 0 ? $row->end_year : __('compatibility.until_now') }}</td>
                     </tr>
                 @endforeach
             </tbody>
@@ -30,13 +33,16 @@
     <!-- Mobile Cards -->
     <div class="d-block d-md-none">
         @foreach($results as $item)
+            @php
+                $row = is_array($item) ? (object) $item : $item;
+            @endphp
             <div class="card shadow-sm mb-3">
                 <div class="card-body">
-                    <p class="mb-1"><strong>@lang('compatibility.part_number'): </strong> {{ $item->part_number ?? $item['part_number'] ?? '' }}</p>
-                    <p class="mb-1"><strong>@lang('compatibility.vehicle'): </strong> {{ $item->label ?? $item['label'] ?? '' }}</p>
-                    <p class="mb-1"><strong>@lang('compatibility.catalog'): </strong> {{ $item->catalog_code ?? $item['catalog_code'] ?? '' }}</p>
-                    <p class="mb-1"><strong>@lang('compatibility.from'): </strong> {{ $item->begin_year ?? $item['begin_year'] ?? '' }}</p>
-                    <p class="mb-1"><strong>@lang('compatibility.to'): </strong> {{ ($item->end_year ?? $item['end_year'] ?? 0) != 0 ? ($item->end_year ?? $item['end_year']) : __('compatibility.until_now') }}</p>
+                    <p class="mb-1"><strong>@lang('compatibility.part_number'): </strong> {{ $row->part_number ?? '' }}</p>
+                    <p class="mb-1"><strong>@lang('compatibility.vehicle'): </strong> {{ $row->label ?? '' }}</p>
+                    <p class="mb-1"><strong>@lang('compatibility.catalog'): </strong> {{ $row->catalog_code ?? '' }}</p>
+                    <p class="mb-1"><strong>@lang('compatibility.from'): </strong> {{ $row->begin_year ?? '' }}</p>
+                    <p class="mb-1"><strong>@lang('compatibility.to'): </strong> {{ ($row->end_year ?? 0) != 0 ? $row->end_year : __('compatibility.until_now') }}</p>
                 </div>
             </div>
         @endforeach

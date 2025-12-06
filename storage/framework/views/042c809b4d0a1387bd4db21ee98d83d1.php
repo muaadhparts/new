@@ -1,8 +1,8 @@
-{{-- resources/views/partials/compatibility.blade.php --}}
+
 
 <div class="p-3">
-    <h5 class="mb-3">@lang('labels.fits')</h5>
-    <div id="compatibility-container-{{ $sku }}" class="compatibility-container">
+    <h5 class="mb-3"><?php echo app('translator')->get('labels.fits'); ?></h5>
+    <div id="compatibility-container-<?php echo e($sku); ?>" class="compatibility-container">
         <div class="text-center py-4">
             <div class="spinner-border text-primary" role="status">
                 <span class="visually-hidden">Loading...</span>
@@ -13,7 +13,7 @@
 
 <script>
 (function() {
-    const sku = '{{ $sku }}';
+    const sku = '<?php echo e($sku); ?>';
     const container = document.getElementById('compatibility-container-' + sku);
 
     fetch('/api/product/compatibility/' + encodeURIComponent(sku) + '/html')
@@ -22,12 +22,13 @@
             if (data.success && data.html) {
                 container.innerHTML = data.html;
             } else {
-                container.innerHTML = '<p class="text-muted">@lang("labels.no_compatibility")</p>';
+                container.innerHTML = '<p class="text-muted"><?php echo app('translator')->get("labels.no_compatibility"); ?></p>';
             }
         })
         .catch(error => {
             console.error('Error loading compatibility:', error);
-            container.innerHTML = '<p class="text-danger">@lang("labels.error_loading")</p>';
+            container.innerHTML = '<p class="text-danger"><?php echo app('translator')->get("labels.error_loading"); ?></p>';
         });
 })();
 </script>
+<?php /**PATH C:\Users\hp\Herd\new\resources\views/partials/compatibility.blade.php ENDPATH**/ ?>
