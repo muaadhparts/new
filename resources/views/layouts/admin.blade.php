@@ -71,6 +71,8 @@
 	<link rel="stylesheet" href="{{ asset('assets/front/css/bootstrap.min.css') }}">
 	{{-- Main Theme File - Contains all styles --}}
 	<link rel="stylesheet" href="{{ asset('assets/front/css/style.css') }}?v={{ time() }}">
+	{{-- Theme Colors - Generated from Admin Panel --}}
+	<link rel="stylesheet" href="{{ asset('assets/front/css/theme-colors.css') }}?v={{ @filemtime(public_path('assets/front/css/theme-colors.css')) }}">
 
 	{{-- Hide bottom layer and raise header above all content --}}
 	<style>
