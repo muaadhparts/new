@@ -290,7 +290,9 @@
         <li>
             <a href="{{ route('admin-gs-fav') }}"><span>{{ __('Favicon') }}</span></a>
         </li>
-
+        <li>
+            <a href="{{ route('admin-theme-colors') }}"><span>{{ __('Theme Colors') }}</span></a>
+        </li>
         <li>
             <a href="{{ route('admin-shipping-index') }}"><span>{{ __('Shipping Methods') }}</span></a>
         </li>

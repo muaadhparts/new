@@ -1,6 +1,4 @@
-@extends('layouts.admin')
-
-@section('styles')
+<?php $__env->startSection('styles'); ?>
 <style>
 /* Theme Builder Styles */
 .theme-builder-wrapper {
@@ -410,27 +408,28 @@
     }
 }
 </style>
-@endsection
+<?php $__env->stopSection(); ?>
 
-@section('content')
+<?php $__env->startSection('content'); ?>
 <div class="content-area">
     <div class="container-fluid theme-builder-wrapper">
         <!-- Header -->
         <div class="theme-builder-header">
             <div>
-                <h2><i class="fas fa-palette"></i> {{ __('Theme Builder') }}</h2>
-                <p class="subtitle">{{ __('Customize every aspect of your theme') }}</p>
+                <h2><i class="fas fa-palette"></i> <?php echo e(__('Theme Builder')); ?></h2>
+                <p class="subtitle"><?php echo e(__('Customize every aspect of your theme')); ?></p>
             </div>
             <div>
                 <button type="button" class="btn btn-light" onclick="resetToDefaults()">
-                    <i class="fas fa-undo"></i> {{ __('Reset') }}
+                    <i class="fas fa-undo"></i> <?php echo e(__('Reset')); ?>
+
                 </button>
             </div>
         </div>
 
-        <form action="{{ route('admin-theme-colors-update') }}" method="POST" id="themeBuilderForm">
-            @csrf
-            @include('alerts.admin.form-both')
+        <form action="<?php echo e(route('admin-theme-colors-update')); ?>" method="POST" id="themeBuilderForm">
+            <?php echo csrf_field(); ?>
+            <?php echo $__env->make('alerts.admin.form-both', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?>
 
             <div class="row">
                 <!-- Main Content -->
@@ -438,28 +437,36 @@
                     <!-- Tabs Navigation -->
                     <div class="theme-tabs">
                         <button type="button" class="theme-tab active" data-tab="colors">
-                            <i class="fas fa-palette"></i> {{ __('Colors') }}
+                            <i class="fas fa-palette"></i> <?php echo e(__('Colors')); ?>
+
                         </button>
                         <button type="button" class="theme-tab" data-tab="typography">
-                            <i class="fas fa-font"></i> {{ __('Typography') }}
+                            <i class="fas fa-font"></i> <?php echo e(__('Typography')); ?>
+
                         </button>
                         <button type="button" class="theme-tab" data-tab="buttons">
-                            <i class="fas fa-hand-pointer"></i> {{ __('Buttons') }}
+                            <i class="fas fa-hand-pointer"></i> <?php echo e(__('Buttons')); ?>
+
                         </button>
                         <button type="button" class="theme-tab" data-tab="cards">
-                            <i class="fas fa-square"></i> {{ __('Cards') }}
+                            <i class="fas fa-square"></i> <?php echo e(__('Cards')); ?>
+
                         </button>
                         <button type="button" class="theme-tab" data-tab="forms">
-                            <i class="fas fa-edit"></i> {{ __('Forms') }}
+                            <i class="fas fa-edit"></i> <?php echo e(__('Forms')); ?>
+
                         </button>
                         <button type="button" class="theme-tab" data-tab="header">
-                            <i class="fas fa-window-maximize"></i> {{ __('Header') }}
+                            <i class="fas fa-window-maximize"></i> <?php echo e(__('Header')); ?>
+
                         </button>
                         <button type="button" class="theme-tab" data-tab="footer">
-                            <i class="fas fa-window-minimize"></i> {{ __('Footer') }}
+                            <i class="fas fa-window-minimize"></i> <?php echo e(__('Footer')); ?>
+
                         </button>
                         <button type="button" class="theme-tab" data-tab="components">
-                            <i class="fas fa-puzzle-piece"></i> {{ __('Components') }}
+                            <i class="fas fa-puzzle-piece"></i> <?php echo e(__('Components')); ?>
+
                         </button>
                     </div>
 
@@ -469,57 +476,57 @@
                     <div class="theme-tab-content active" id="tab-colors">
                         <!-- Quick Presets -->
                         <div class="theme-section">
-                            <h4 class="theme-section-title"><i class="fas fa-magic"></i> {{ __('Quick Presets') }}</h4>
-                            <p class="theme-section-desc">{{ __('Select a preset to quickly apply a complete color scheme') }}</p>
+                            <h4 class="theme-section-title"><i class="fas fa-magic"></i> <?php echo e(__('Quick Presets')); ?></h4>
+                            <p class="theme-section-desc"><?php echo e(__('Select a preset to quickly apply a complete color scheme')); ?></p>
                             <div class="preset-grid">
-                                <button type="button" class="preset-btn" data-preset="nissan" style="background: linear-gradient(135deg, #c3002f 0%, #1a1a2e 100%); color: #fff;">{{ __('Nissan Red') }}</button>
-                                <button type="button" class="preset-btn" data-preset="blue" style="background: linear-gradient(135deg, #2563eb 0%, #0f172a 100%); color: #fff;">{{ __('Royal Blue') }}</button>
-                                <button type="button" class="preset-btn" data-preset="green" style="background: linear-gradient(135deg, #059669 0%, #14532d 100%); color: #fff;">{{ __('Emerald') }}</button>
-                                <button type="button" class="preset-btn" data-preset="purple" style="background: linear-gradient(135deg, #7c3aed 0%, #1e1b4b 100%); color: #fff;">{{ __('Purple') }}</button>
-                                <button type="button" class="preset-btn" data-preset="orange" style="background: linear-gradient(135deg, #ea580c 0%, #1c1917 100%); color: #fff;">{{ __('Sunset') }}</button>
-                                <button type="button" class="preset-btn" data-preset="teal" style="background: linear-gradient(135deg, #0d9488 0%, #134e4a 100%); color: #fff;">{{ __('Teal') }}</button>
-                                <button type="button" class="preset-btn" data-preset="gold" style="background: linear-gradient(135deg, #b8860b 0%, #1a1a2e 100%); color: #fff;">{{ __('Gold Luxury') }}</button>
-                                <button type="button" class="preset-btn" data-preset="rose" style="background: linear-gradient(135deg, #e11d48 0%, #18181b 100%); color: #fff;">{{ __('Rose') }}</button>
+                                <button type="button" class="preset-btn" data-preset="nissan" style="background: linear-gradient(135deg, #c3002f 0%, #1a1a2e 100%); color: #fff;"><?php echo e(__('Nissan Red')); ?></button>
+                                <button type="button" class="preset-btn" data-preset="blue" style="background: linear-gradient(135deg, #2563eb 0%, #0f172a 100%); color: #fff;"><?php echo e(__('Royal Blue')); ?></button>
+                                <button type="button" class="preset-btn" data-preset="green" style="background: linear-gradient(135deg, #059669 0%, #14532d 100%); color: #fff;"><?php echo e(__('Emerald')); ?></button>
+                                <button type="button" class="preset-btn" data-preset="purple" style="background: linear-gradient(135deg, #7c3aed 0%, #1e1b4b 100%); color: #fff;"><?php echo e(__('Purple')); ?></button>
+                                <button type="button" class="preset-btn" data-preset="orange" style="background: linear-gradient(135deg, #ea580c 0%, #1c1917 100%); color: #fff;"><?php echo e(__('Sunset')); ?></button>
+                                <button type="button" class="preset-btn" data-preset="teal" style="background: linear-gradient(135deg, #0d9488 0%, #134e4a 100%); color: #fff;"><?php echo e(__('Teal')); ?></button>
+                                <button type="button" class="preset-btn" data-preset="gold" style="background: linear-gradient(135deg, #b8860b 0%, #1a1a2e 100%); color: #fff;"><?php echo e(__('Gold Luxury')); ?></button>
+                                <button type="button" class="preset-btn" data-preset="rose" style="background: linear-gradient(135deg, #e11d48 0%, #18181b 100%); color: #fff;"><?php echo e(__('Rose')); ?></button>
                             </div>
                         </div>
 
                         <!-- Primary Colors -->
                         <div class="theme-section">
-                            <h4 class="theme-section-title"><i class="fas fa-star"></i> {{ __('Primary Colors') }}</h4>
-                            <p class="theme-section-desc">{{ __('Main brand color used for buttons, links, and accents') }}</p>
+                            <h4 class="theme-section-title"><i class="fas fa-star"></i> <?php echo e(__('Primary Colors')); ?></h4>
+                            <p class="theme-section-desc"><?php echo e(__('Main brand color used for buttons, links, and accents')); ?></p>
                             <div class="row">
                                 <div class="col-md-3">
                                     <div class="color-input-wrapper">
-                                        <label>{{ __('Primary') }}</label>
+                                        <label><?php echo e(__('Primary')); ?></label>
                                         <div class="color-input-group">
-                                            <input type="text" name="theme_primary" id="theme_primary" class="color-field" value="{{ $gs->theme_primary ?? '#c3002f' }}">
+                                            <input type="text" name="theme_primary" id="theme_primary" class="color-field" value="<?php echo e($gs->theme_primary ?? '#c3002f'); ?>">
                                             <span class="color-preview cp"><i></i></span>
                                         </div>
                                     </div>
                                 </div>
                                 <div class="col-md-3">
                                     <div class="color-input-wrapper">
-                                        <label>{{ __('Hover') }}</label>
+                                        <label><?php echo e(__('Hover')); ?></label>
                                         <div class="color-input-group">
-                                            <input type="text" name="theme_primary_hover" id="theme_primary_hover" class="color-field" value="{{ $gs->theme_primary_hover ?? '#a00025' }}">
+                                            <input type="text" name="theme_primary_hover" id="theme_primary_hover" class="color-field" value="<?php echo e($gs->theme_primary_hover ?? '#a00025'); ?>">
                                             <span class="color-preview cp"><i></i></span>
                                         </div>
                                     </div>
                                 </div>
                                 <div class="col-md-3">
                                     <div class="color-input-wrapper">
-                                        <label>{{ __('Dark') }}</label>
+                                        <label><?php echo e(__('Dark')); ?></label>
                                         <div class="color-input-group">
-                                            <input type="text" name="theme_primary_dark" id="theme_primary_dark" class="color-field" value="{{ $gs->theme_primary_dark ?? '#8a0020' }}">
+                                            <input type="text" name="theme_primary_dark" id="theme_primary_dark" class="color-field" value="<?php echo e($gs->theme_primary_dark ?? '#8a0020'); ?>">
                                             <span class="color-preview cp"><i></i></span>
                                         </div>
                                     </div>
                                 </div>
                                 <div class="col-md-3">
                                     <div class="color-input-wrapper">
-                                        <label>{{ __('Light') }}</label>
+                                        <label><?php echo e(__('Light')); ?></label>
                                         <div class="color-input-group">
-                                            <input type="text" name="theme_primary_light" id="theme_primary_light" class="color-field" value="{{ $gs->theme_primary_light ?? '#fef2f4' }}">
+                                            <input type="text" name="theme_primary_light" id="theme_primary_light" class="color-field" value="<?php echo e($gs->theme_primary_light ?? '#fef2f4'); ?>">
                                             <span class="color-preview cp"><i></i></span>
                                         </div>
                                     </div>
@@ -529,32 +536,32 @@
 
                         <!-- Secondary Colors -->
                         <div class="theme-section">
-                            <h4 class="theme-section-title"><i class="fas fa-adjust"></i> {{ __('Secondary Colors') }}</h4>
-                            <p class="theme-section-desc">{{ __('Used for dark sections, secondary buttons, and text') }}</p>
+                            <h4 class="theme-section-title"><i class="fas fa-adjust"></i> <?php echo e(__('Secondary Colors')); ?></h4>
+                            <p class="theme-section-desc"><?php echo e(__('Used for dark sections, secondary buttons, and text')); ?></p>
                             <div class="row">
                                 <div class="col-md-4">
                                     <div class="color-input-wrapper">
-                                        <label>{{ __('Secondary') }}</label>
+                                        <label><?php echo e(__('Secondary')); ?></label>
                                         <div class="color-input-group">
-                                            <input type="text" name="theme_secondary" id="theme_secondary" class="color-field" value="{{ $gs->theme_secondary ?? '#1f0300' }}">
+                                            <input type="text" name="theme_secondary" id="theme_secondary" class="color-field" value="<?php echo e($gs->theme_secondary ?? '#1f0300'); ?>">
                                             <span class="color-preview cp"><i></i></span>
                                         </div>
                                     </div>
                                 </div>
                                 <div class="col-md-4">
                                     <div class="color-input-wrapper">
-                                        <label>{{ __('Hover') }}</label>
+                                        <label><?php echo e(__('Hover')); ?></label>
                                         <div class="color-input-group">
-                                            <input type="text" name="theme_secondary_hover" id="theme_secondary_hover" class="color-field" value="{{ $gs->theme_secondary_hover ?? '#351c1a' }}">
+                                            <input type="text" name="theme_secondary_hover" id="theme_secondary_hover" class="color-field" value="<?php echo e($gs->theme_secondary_hover ?? '#351c1a'); ?>">
                                             <span class="color-preview cp"><i></i></span>
                                         </div>
                                     </div>
                                 </div>
                                 <div class="col-md-4">
                                     <div class="color-input-wrapper">
-                                        <label>{{ __('Light') }}</label>
+                                        <label><?php echo e(__('Light')); ?></label>
                                         <div class="color-input-group">
-                                            <input type="text" name="theme_secondary_light" id="theme_secondary_light" class="color-field" value="{{ $gs->theme_secondary_light ?? '#4c3533' }}">
+                                            <input type="text" name="theme_secondary_light" id="theme_secondary_light" class="color-field" value="<?php echo e($gs->theme_secondary_light ?? '#4c3533'); ?>">
                                             <span class="color-preview cp"><i></i></span>
                                         </div>
                                     </div>
@@ -564,41 +571,41 @@
 
                         <!-- Text Colors -->
                         <div class="theme-section">
-                            <h4 class="theme-section-title"><i class="fas fa-font"></i> {{ __('Text Colors') }}</h4>
-                            <p class="theme-section-desc">{{ __('Colors for headings, paragraphs, and labels') }}</p>
+                            <h4 class="theme-section-title"><i class="fas fa-font"></i> <?php echo e(__('Text Colors')); ?></h4>
+                            <p class="theme-section-desc"><?php echo e(__('Colors for headings, paragraphs, and labels')); ?></p>
                             <div class="row">
                                 <div class="col-md-3">
                                     <div class="color-input-wrapper">
-                                        <label>{{ __('Primary Text') }}</label>
+                                        <label><?php echo e(__('Primary Text')); ?></label>
                                         <div class="color-input-group">
-                                            <input type="text" name="theme_text_primary" id="theme_text_primary" class="color-field" value="{{ $gs->theme_text_primary ?? '#1f0300' }}">
+                                            <input type="text" name="theme_text_primary" id="theme_text_primary" class="color-field" value="<?php echo e($gs->theme_text_primary ?? '#1f0300'); ?>">
                                             <span class="color-preview cp"><i></i></span>
                                         </div>
                                     </div>
                                 </div>
                                 <div class="col-md-3">
                                     <div class="color-input-wrapper">
-                                        <label>{{ __('Secondary Text') }}</label>
+                                        <label><?php echo e(__('Secondary Text')); ?></label>
                                         <div class="color-input-group">
-                                            <input type="text" name="theme_text_secondary" id="theme_text_secondary" class="color-field" value="{{ $gs->theme_text_secondary ?? '#4c3533' }}">
+                                            <input type="text" name="theme_text_secondary" id="theme_text_secondary" class="color-field" value="<?php echo e($gs->theme_text_secondary ?? '#4c3533'); ?>">
                                             <span class="color-preview cp"><i></i></span>
                                         </div>
                                     </div>
                                 </div>
                                 <div class="col-md-3">
                                     <div class="color-input-wrapper">
-                                        <label>{{ __('Muted') }}</label>
+                                        <label><?php echo e(__('Muted')); ?></label>
                                         <div class="color-input-group">
-                                            <input type="text" name="theme_text_muted" id="theme_text_muted" class="color-field" value="{{ $gs->theme_text_muted ?? '#796866' }}">
+                                            <input type="text" name="theme_text_muted" id="theme_text_muted" class="color-field" value="<?php echo e($gs->theme_text_muted ?? '#796866'); ?>">
                                             <span class="color-preview cp"><i></i></span>
                                         </div>
                                     </div>
                                 </div>
                                 <div class="col-md-3">
                                     <div class="color-input-wrapper">
-                                        <label>{{ __('Light') }}</label>
+                                        <label><?php echo e(__('Light')); ?></label>
                                         <div class="color-input-group">
-                                            <input type="text" name="theme_text_light" id="theme_text_light" class="color-field" value="{{ $gs->theme_text_light ?? '#9a8e8c' }}">
+                                            <input type="text" name="theme_text_light" id="theme_text_light" class="color-field" value="<?php echo e($gs->theme_text_light ?? '#9a8e8c'); ?>">
                                             <span class="color-preview cp"><i></i></span>
                                         </div>
                                     </div>
@@ -608,41 +615,41 @@
 
                         <!-- Background Colors -->
                         <div class="theme-section">
-                            <h4 class="theme-section-title"><i class="fas fa-fill-drip"></i> {{ __('Background Colors') }}</h4>
-                            <p class="theme-section-desc">{{ __('Colors for page backgrounds, cards, and sections') }}</p>
+                            <h4 class="theme-section-title"><i class="fas fa-fill-drip"></i> <?php echo e(__('Background Colors')); ?></h4>
+                            <p class="theme-section-desc"><?php echo e(__('Colors for page backgrounds, cards, and sections')); ?></p>
                             <div class="row">
                                 <div class="col-md-3">
                                     <div class="color-input-wrapper">
-                                        <label>{{ __('Body') }}</label>
+                                        <label><?php echo e(__('Body')); ?></label>
                                         <div class="color-input-group">
-                                            <input type="text" name="theme_bg_body" id="theme_bg_body" class="color-field" value="{{ $gs->theme_bg_body ?? '#ffffff' }}">
+                                            <input type="text" name="theme_bg_body" id="theme_bg_body" class="color-field" value="<?php echo e($gs->theme_bg_body ?? '#ffffff'); ?>">
                                             <span class="color-preview cp"><i></i></span>
                                         </div>
                                     </div>
                                 </div>
                                 <div class="col-md-3">
                                     <div class="color-input-wrapper">
-                                        <label>{{ __('Light') }}</label>
+                                        <label><?php echo e(__('Light')); ?></label>
                                         <div class="color-input-group">
-                                            <input type="text" name="theme_bg_light" id="theme_bg_light" class="color-field" value="{{ $gs->theme_bg_light ?? '#f8f7f7' }}">
+                                            <input type="text" name="theme_bg_light" id="theme_bg_light" class="color-field" value="<?php echo e($gs->theme_bg_light ?? '#f8f7f7'); ?>">
                                             <span class="color-preview cp"><i></i></span>
                                         </div>
                                     </div>
                                 </div>
                                 <div class="col-md-3">
                                     <div class="color-input-wrapper">
-                                        <label>{{ __('Gray') }}</label>
+                                        <label><?php echo e(__('Gray')); ?></label>
                                         <div class="color-input-group">
-                                            <input type="text" name="theme_bg_gray" id="theme_bg_gray" class="color-field" value="{{ $gs->theme_bg_gray ?? '#e9e6e6' }}">
+                                            <input type="text" name="theme_bg_gray" id="theme_bg_gray" class="color-field" value="<?php echo e($gs->theme_bg_gray ?? '#e9e6e6'); ?>">
                                             <span class="color-preview cp"><i></i></span>
                                         </div>
                                     </div>
                                 </div>
                                 <div class="col-md-3">
                                     <div class="color-input-wrapper">
-                                        <label>{{ __('Dark') }}</label>
+                                        <label><?php echo e(__('Dark')); ?></label>
                                         <div class="color-input-group">
-                                            <input type="text" name="theme_bg_dark" id="theme_bg_dark" class="color-field" value="{{ $gs->theme_bg_dark ?? '#030712' }}">
+                                            <input type="text" name="theme_bg_dark" id="theme_bg_dark" class="color-field" value="<?php echo e($gs->theme_bg_dark ?? '#030712'); ?>">
                                             <span class="color-preview cp"><i></i></span>
                                         </div>
                                     </div>
@@ -652,41 +659,41 @@
 
                         <!-- Status Colors -->
                         <div class="theme-section">
-                            <h4 class="theme-section-title"><i class="fas fa-check-circle"></i> {{ __('Status Colors') }}</h4>
-                            <p class="theme-section-desc">{{ __('Colors for success, warning, danger, and info states') }}</p>
+                            <h4 class="theme-section-title"><i class="fas fa-check-circle"></i> <?php echo e(__('Status Colors')); ?></h4>
+                            <p class="theme-section-desc"><?php echo e(__('Colors for success, warning, danger, and info states')); ?></p>
                             <div class="row">
                                 <div class="col-md-3">
                                     <div class="color-input-wrapper">
-                                        <label><i class="fas fa-check text-success"></i> {{ __('Success') }}</label>
+                                        <label><i class="fas fa-check text-success"></i> <?php echo e(__('Success')); ?></label>
                                         <div class="color-input-group">
-                                            <input type="text" name="theme_success" id="theme_success" class="color-field" value="{{ $gs->theme_success ?? '#27be69' }}">
+                                            <input type="text" name="theme_success" id="theme_success" class="color-field" value="<?php echo e($gs->theme_success ?? '#27be69'); ?>">
                                             <span class="color-preview cp"><i></i></span>
                                         </div>
                                     </div>
                                 </div>
                                 <div class="col-md-3">
                                     <div class="color-input-wrapper">
-                                        <label><i class="fas fa-exclamation-triangle text-warning"></i> {{ __('Warning') }}</label>
+                                        <label><i class="fas fa-exclamation-triangle text-warning"></i> <?php echo e(__('Warning')); ?></label>
                                         <div class="color-input-group">
-                                            <input type="text" name="theme_warning" id="theme_warning" class="color-field" value="{{ $gs->theme_warning ?? '#fac03c' }}">
+                                            <input type="text" name="theme_warning" id="theme_warning" class="color-field" value="<?php echo e($gs->theme_warning ?? '#fac03c'); ?>">
                                             <span class="color-preview cp"><i></i></span>
                                         </div>
                                     </div>
                                 </div>
                                 <div class="col-md-3">
                                     <div class="color-input-wrapper">
-                                        <label><i class="fas fa-times-circle text-danger"></i> {{ __('Danger') }}</label>
+                                        <label><i class="fas fa-times-circle text-danger"></i> <?php echo e(__('Danger')); ?></label>
                                         <div class="color-input-group">
-                                            <input type="text" name="theme_danger" id="theme_danger" class="color-field" value="{{ $gs->theme_danger ?? '#f2415a' }}">
+                                            <input type="text" name="theme_danger" id="theme_danger" class="color-field" value="<?php echo e($gs->theme_danger ?? '#f2415a'); ?>">
                                             <span class="color-preview cp"><i></i></span>
                                         </div>
                                     </div>
                                 </div>
                                 <div class="col-md-3">
                                     <div class="color-input-wrapper">
-                                        <label><i class="fas fa-info-circle text-info"></i> {{ __('Info') }}</label>
+                                        <label><i class="fas fa-info-circle text-info"></i> <?php echo e(__('Info')); ?></label>
                                         <div class="color-input-group">
-                                            <input type="text" name="theme_info" id="theme_info" class="color-field" value="{{ $gs->theme_info ?? '#0ea5e9' }}">
+                                            <input type="text" name="theme_info" id="theme_info" class="color-field" value="<?php echo e($gs->theme_info ?? '#0ea5e9'); ?>">
                                             <span class="color-preview cp"><i></i></span>
                                         </div>
                                     </div>
@@ -696,32 +703,32 @@
 
                         <!-- Border Colors -->
                         <div class="theme-section">
-                            <h4 class="theme-section-title"><i class="fas fa-border-style"></i> {{ __('Border Colors') }}</h4>
-                            <p class="theme-section-desc">{{ __('Colors for borders and dividers') }}</p>
+                            <h4 class="theme-section-title"><i class="fas fa-border-style"></i> <?php echo e(__('Border Colors')); ?></h4>
+                            <p class="theme-section-desc"><?php echo e(__('Colors for borders and dividers')); ?></p>
                             <div class="row">
                                 <div class="col-md-4">
                                     <div class="color-input-wrapper">
-                                        <label>{{ __('Default') }}</label>
+                                        <label><?php echo e(__('Default')); ?></label>
                                         <div class="color-input-group">
-                                            <input type="text" name="theme_border" id="theme_border" class="color-field" value="{{ $gs->theme_border ?? '#d9d4d4' }}">
+                                            <input type="text" name="theme_border" id="theme_border" class="color-field" value="<?php echo e($gs->theme_border ?? '#d9d4d4'); ?>">
                                             <span class="color-preview cp"><i></i></span>
                                         </div>
                                     </div>
                                 </div>
                                 <div class="col-md-4">
                                     <div class="color-input-wrapper">
-                                        <label>{{ __('Light') }}</label>
+                                        <label><?php echo e(__('Light')); ?></label>
                                         <div class="color-input-group">
-                                            <input type="text" name="theme_border_light" id="theme_border_light" class="color-field" value="{{ $gs->theme_border_light ?? '#e9e6e6' }}">
+                                            <input type="text" name="theme_border_light" id="theme_border_light" class="color-field" value="<?php echo e($gs->theme_border_light ?? '#e9e6e6'); ?>">
                                             <span class="color-preview cp"><i></i></span>
                                         </div>
                                     </div>
                                 </div>
                                 <div class="col-md-4">
                                     <div class="color-input-wrapper">
-                                        <label>{{ __('Dark') }}</label>
+                                        <label><?php echo e(__('Dark')); ?></label>
                                         <div class="color-input-group">
-                                            <input type="text" name="theme_border_dark" id="theme_border_dark" class="color-field" value="{{ $gs->theme_border_dark ?? '#c7c0bf' }}">
+                                            <input type="text" name="theme_border_dark" id="theme_border_dark" class="color-field" value="<?php echo e($gs->theme_border_dark ?? '#c7c0bf'); ?>">
                                             <span class="color-preview cp"><i></i></span>
                                         </div>
                                     </div>
@@ -735,33 +742,33 @@
                     <!-- ================================ -->
                     <div class="theme-tab-content" id="tab-typography">
                         <div class="theme-section">
-                            <h4 class="theme-section-title"><i class="fas fa-font"></i> {{ __('Font Families') }}</h4>
-                            <p class="theme-section-desc">{{ __('Choose fonts for your theme') }}</p>
+                            <h4 class="theme-section-title"><i class="fas fa-font"></i> <?php echo e(__('Font Families')); ?></h4>
+                            <p class="theme-section-desc"><?php echo e(__('Choose fonts for your theme')); ?></p>
                             <div class="row">
                                 <div class="col-md-6">
                                     <div class="text-input-wrapper">
-                                        <label>{{ __('Primary Font') }}</label>
+                                        <label><?php echo e(__('Primary Font')); ?></label>
                                         <select name="theme_font_primary" id="theme_font_primary">
-                                            <option value="Poppins" {{ ($gs->theme_font_primary ?? 'Poppins') == 'Poppins' ? 'selected' : '' }}>Poppins</option>
-                                            <option value="Inter" {{ ($gs->theme_font_primary ?? '') == 'Inter' ? 'selected' : '' }}>Inter</option>
-                                            <option value="Roboto" {{ ($gs->theme_font_primary ?? '') == 'Roboto' ? 'selected' : '' }}>Roboto</option>
-                                            <option value="Open Sans" {{ ($gs->theme_font_primary ?? '') == 'Open Sans' ? 'selected' : '' }}>Open Sans</option>
-                                            <option value="Lato" {{ ($gs->theme_font_primary ?? '') == 'Lato' ? 'selected' : '' }}>Lato</option>
-                                            <option value="Montserrat" {{ ($gs->theme_font_primary ?? '') == 'Montserrat' ? 'selected' : '' }}>Montserrat</option>
-                                            <option value="Cairo" {{ ($gs->theme_font_primary ?? '') == 'Cairo' ? 'selected' : '' }}>Cairo (Arabic)</option>
-                                            <option value="Tajawal" {{ ($gs->theme_font_primary ?? '') == 'Tajawal' ? 'selected' : '' }}>Tajawal (Arabic)</option>
+                                            <option value="Poppins" <?php echo e(($gs->theme_font_primary ?? 'Poppins') == 'Poppins' ? 'selected' : ''); ?>>Poppins</option>
+                                            <option value="Inter" <?php echo e(($gs->theme_font_primary ?? '') == 'Inter' ? 'selected' : ''); ?>>Inter</option>
+                                            <option value="Roboto" <?php echo e(($gs->theme_font_primary ?? '') == 'Roboto' ? 'selected' : ''); ?>>Roboto</option>
+                                            <option value="Open Sans" <?php echo e(($gs->theme_font_primary ?? '') == 'Open Sans' ? 'selected' : ''); ?>>Open Sans</option>
+                                            <option value="Lato" <?php echo e(($gs->theme_font_primary ?? '') == 'Lato' ? 'selected' : ''); ?>>Lato</option>
+                                            <option value="Montserrat" <?php echo e(($gs->theme_font_primary ?? '') == 'Montserrat' ? 'selected' : ''); ?>>Montserrat</option>
+                                            <option value="Cairo" <?php echo e(($gs->theme_font_primary ?? '') == 'Cairo' ? 'selected' : ''); ?>>Cairo (Arabic)</option>
+                                            <option value="Tajawal" <?php echo e(($gs->theme_font_primary ?? '') == 'Tajawal' ? 'selected' : ''); ?>>Tajawal (Arabic)</option>
                                         </select>
                                     </div>
                                 </div>
                                 <div class="col-md-6">
                                     <div class="text-input-wrapper">
-                                        <label>{{ __('Heading Font') }}</label>
+                                        <label><?php echo e(__('Heading Font')); ?></label>
                                         <select name="theme_font_heading" id="theme_font_heading">
-                                            <option value="Saira" {{ ($gs->theme_font_heading ?? 'Saira') == 'Saira' ? 'selected' : '' }}>Saira</option>
-                                            <option value="Poppins" {{ ($gs->theme_font_heading ?? '') == 'Poppins' ? 'selected' : '' }}>Poppins</option>
-                                            <option value="Montserrat" {{ ($gs->theme_font_heading ?? '') == 'Montserrat' ? 'selected' : '' }}>Montserrat</option>
-                                            <option value="Playfair Display" {{ ($gs->theme_font_heading ?? '') == 'Playfair Display' ? 'selected' : '' }}>Playfair Display</option>
-                                            <option value="Cairo" {{ ($gs->theme_font_heading ?? '') == 'Cairo' ? 'selected' : '' }}>Cairo (Arabic)</option>
+                                            <option value="Saira" <?php echo e(($gs->theme_font_heading ?? 'Saira') == 'Saira' ? 'selected' : ''); ?>>Saira</option>
+                                            <option value="Poppins" <?php echo e(($gs->theme_font_heading ?? '') == 'Poppins' ? 'selected' : ''); ?>>Poppins</option>
+                                            <option value="Montserrat" <?php echo e(($gs->theme_font_heading ?? '') == 'Montserrat' ? 'selected' : ''); ?>>Montserrat</option>
+                                            <option value="Playfair Display" <?php echo e(($gs->theme_font_heading ?? '') == 'Playfair Display' ? 'selected' : ''); ?>>Playfair Display</option>
+                                            <option value="Cairo" <?php echo e(($gs->theme_font_heading ?? '') == 'Cairo' ? 'selected' : ''); ?>>Cairo (Arabic)</option>
                                         </select>
                                     </div>
                                 </div>
@@ -769,93 +776,93 @@
                         </div>
 
                         <div class="theme-section">
-                            <h4 class="theme-section-title"><i class="fas fa-text-height"></i> {{ __('Font Sizes') }}</h4>
-                            <p class="theme-section-desc">{{ __('Set base font sizes') }}</p>
+                            <h4 class="theme-section-title"><i class="fas fa-text-height"></i> <?php echo e(__('Font Sizes')); ?></h4>
+                            <p class="theme-section-desc"><?php echo e(__('Set base font sizes')); ?></p>
                             <div class="row">
                                 <div class="col-md-4">
                                     <div class="text-input-wrapper">
-                                        <label>{{ __('Base Size') }}</label>
-                                        <input type="text" name="theme_font_size_base" value="{{ $gs->theme_font_size_base ?? '16px' }}">
+                                        <label><?php echo e(__('Base Size')); ?></label>
+                                        <input type="text" name="theme_font_size_base" value="<?php echo e($gs->theme_font_size_base ?? '16px'); ?>">
                                     </div>
                                 </div>
                                 <div class="col-md-4">
                                     <div class="text-input-wrapper">
-                                        <label>{{ __('Small Size') }}</label>
-                                        <input type="text" name="theme_font_size_sm" value="{{ $gs->theme_font_size_sm ?? '14px' }}">
+                                        <label><?php echo e(__('Small Size')); ?></label>
+                                        <input type="text" name="theme_font_size_sm" value="<?php echo e($gs->theme_font_size_sm ?? '14px'); ?>">
                                     </div>
                                 </div>
                                 <div class="col-md-4">
                                     <div class="text-input-wrapper">
-                                        <label>{{ __('Large Size') }}</label>
-                                        <input type="text" name="theme_font_size_lg" value="{{ $gs->theme_font_size_lg ?? '18px' }}">
+                                        <label><?php echo e(__('Large Size')); ?></label>
+                                        <input type="text" name="theme_font_size_lg" value="<?php echo e($gs->theme_font_size_lg ?? '18px'); ?>">
                                     </div>
                                 </div>
                             </div>
                         </div>
 
                         <div class="theme-section">
-                            <h4 class="theme-section-title"><i class="fas fa-ruler-vertical"></i> {{ __('Border Radius') }}</h4>
-                            <p class="theme-section-desc">{{ __('Control the roundness of corners') }}</p>
+                            <h4 class="theme-section-title"><i class="fas fa-ruler-vertical"></i> <?php echo e(__('Border Radius')); ?></h4>
+                            <p class="theme-section-desc"><?php echo e(__('Control the roundness of corners')); ?></p>
                             <div class="row">
                                 <div class="col-md-2">
                                     <div class="text-input-wrapper">
-                                        <label>{{ __('XS') }}</label>
-                                        <input type="text" name="theme_radius_xs" value="{{ $gs->theme_radius_xs ?? '3px' }}">
+                                        <label><?php echo e(__('XS')); ?></label>
+                                        <input type="text" name="theme_radius_xs" value="<?php echo e($gs->theme_radius_xs ?? '3px'); ?>">
                                     </div>
                                 </div>
                                 <div class="col-md-2">
                                     <div class="text-input-wrapper">
-                                        <label>{{ __('SM') }}</label>
-                                        <input type="text" name="theme_radius_sm" value="{{ $gs->theme_radius_sm ?? '4px' }}">
+                                        <label><?php echo e(__('SM')); ?></label>
+                                        <input type="text" name="theme_radius_sm" value="<?php echo e($gs->theme_radius_sm ?? '4px'); ?>">
                                     </div>
                                 </div>
                                 <div class="col-md-2">
                                     <div class="text-input-wrapper">
-                                        <label>{{ __('Default') }}</label>
-                                        <input type="text" name="theme_radius" value="{{ $gs->theme_radius ?? '8px' }}">
+                                        <label><?php echo e(__('Default')); ?></label>
+                                        <input type="text" name="theme_radius" value="<?php echo e($gs->theme_radius ?? '8px'); ?>">
                                     </div>
                                 </div>
                                 <div class="col-md-2">
                                     <div class="text-input-wrapper">
-                                        <label>{{ __('LG') }}</label>
-                                        <input type="text" name="theme_radius_lg" value="{{ $gs->theme_radius_lg ?? '12px' }}">
+                                        <label><?php echo e(__('LG')); ?></label>
+                                        <input type="text" name="theme_radius_lg" value="<?php echo e($gs->theme_radius_lg ?? '12px'); ?>">
                                     </div>
                                 </div>
                                 <div class="col-md-2">
                                     <div class="text-input-wrapper">
-                                        <label>{{ __('XL') }}</label>
-                                        <input type="text" name="theme_radius_xl" value="{{ $gs->theme_radius_xl ?? '16px' }}">
+                                        <label><?php echo e(__('XL')); ?></label>
+                                        <input type="text" name="theme_radius_xl" value="<?php echo e($gs->theme_radius_xl ?? '16px'); ?>">
                                     </div>
                                 </div>
                                 <div class="col-md-2">
                                     <div class="text-input-wrapper">
-                                        <label>{{ __('Pill') }}</label>
-                                        <input type="text" name="theme_radius_pill" value="{{ $gs->theme_radius_pill ?? '50px' }}">
+                                        <label><?php echo e(__('Pill')); ?></label>
+                                        <input type="text" name="theme_radius_pill" value="<?php echo e($gs->theme_radius_pill ?? '50px'); ?>">
                                     </div>
                                 </div>
                             </div>
                         </div>
 
                         <div class="theme-section">
-                            <h4 class="theme-section-title"><i class="fas fa-layer-group"></i> {{ __('Shadows') }}</h4>
-                            <p class="theme-section-desc">{{ __('Box shadow presets for depth effects') }}</p>
+                            <h4 class="theme-section-title"><i class="fas fa-layer-group"></i> <?php echo e(__('Shadows')); ?></h4>
+                            <p class="theme-section-desc"><?php echo e(__('Box shadow presets for depth effects')); ?></p>
                             <div class="row">
                                 <div class="col-md-4">
                                     <div class="text-input-wrapper">
-                                        <label>{{ __('Small Shadow') }}</label>
-                                        <input type="text" name="theme_shadow_sm" value="{{ $gs->theme_shadow_sm ?? '0 1px 3px rgba(0,0,0,0.06)' }}">
+                                        <label><?php echo e(__('Small Shadow')); ?></label>
+                                        <input type="text" name="theme_shadow_sm" value="<?php echo e($gs->theme_shadow_sm ?? '0 1px 3px rgba(0,0,0,0.06)'); ?>">
                                     </div>
                                 </div>
                                 <div class="col-md-4">
                                     <div class="text-input-wrapper">
-                                        <label>{{ __('Default Shadow') }}</label>
-                                        <input type="text" name="theme_shadow" value="{{ $gs->theme_shadow ?? '0 2px 8px rgba(0,0,0,0.1)' }}">
+                                        <label><?php echo e(__('Default Shadow')); ?></label>
+                                        <input type="text" name="theme_shadow" value="<?php echo e($gs->theme_shadow ?? '0 2px 8px rgba(0,0,0,0.1)'); ?>">
                                     </div>
                                 </div>
                                 <div class="col-md-4">
                                     <div class="text-input-wrapper">
-                                        <label>{{ __('Large Shadow') }}</label>
-                                        <input type="text" name="theme_shadow_lg" value="{{ $gs->theme_shadow_lg ?? '0 4px 16px rgba(0,0,0,0.15)' }}">
+                                        <label><?php echo e(__('Large Shadow')); ?></label>
+                                        <input type="text" name="theme_shadow_lg" value="<?php echo e($gs->theme_shadow_lg ?? '0 4px 16px rgba(0,0,0,0.15)'); ?>">
                                     </div>
                                 </div>
                             </div>
@@ -867,35 +874,35 @@
                     <!-- ================================ -->
                     <div class="theme-tab-content" id="tab-buttons">
                         <div class="theme-section">
-                            <h4 class="theme-section-title"><i class="fas fa-hand-pointer"></i> {{ __('Button Styles') }}</h4>
-                            <p class="theme-section-desc">{{ __('Customize button appearance') }}</p>
+                            <h4 class="theme-section-title"><i class="fas fa-hand-pointer"></i> <?php echo e(__('Button Styles')); ?></h4>
+                            <p class="theme-section-desc"><?php echo e(__('Customize button appearance')); ?></p>
                             <div class="row">
                                 <div class="col-md-3">
                                     <div class="text-input-wrapper">
-                                        <label>{{ __('Padding X') }}</label>
-                                        <input type="text" name="theme_btn_padding_x" value="{{ $gs->theme_btn_padding_x ?? '24px' }}">
+                                        <label><?php echo e(__('Padding X')); ?></label>
+                                        <input type="text" name="theme_btn_padding_x" value="<?php echo e($gs->theme_btn_padding_x ?? '24px'); ?>">
                                     </div>
                                 </div>
                                 <div class="col-md-3">
                                     <div class="text-input-wrapper">
-                                        <label>{{ __('Padding Y') }}</label>
-                                        <input type="text" name="theme_btn_padding_y" value="{{ $gs->theme_btn_padding_y ?? '12px' }}">
+                                        <label><?php echo e(__('Padding Y')); ?></label>
+                                        <input type="text" name="theme_btn_padding_y" value="<?php echo e($gs->theme_btn_padding_y ?? '12px'); ?>">
                                     </div>
                                 </div>
                                 <div class="col-md-3">
                                     <div class="text-input-wrapper">
-                                        <label>{{ __('Font Size') }}</label>
-                                        <input type="text" name="theme_btn_font_size" value="{{ $gs->theme_btn_font_size ?? '14px' }}">
+                                        <label><?php echo e(__('Font Size')); ?></label>
+                                        <input type="text" name="theme_btn_font_size" value="<?php echo e($gs->theme_btn_font_size ?? '14px'); ?>">
                                     </div>
                                 </div>
                                 <div class="col-md-3">
                                     <div class="text-input-wrapper">
-                                        <label>{{ __('Font Weight') }}</label>
+                                        <label><?php echo e(__('Font Weight')); ?></label>
                                         <select name="theme_btn_font_weight">
-                                            <option value="400" {{ ($gs->theme_btn_font_weight ?? '600') == '400' ? 'selected' : '' }}>Normal (400)</option>
-                                            <option value="500" {{ ($gs->theme_btn_font_weight ?? '600') == '500' ? 'selected' : '' }}>Medium (500)</option>
-                                            <option value="600" {{ ($gs->theme_btn_font_weight ?? '600') == '600' ? 'selected' : '' }}>Semibold (600)</option>
-                                            <option value="700" {{ ($gs->theme_btn_font_weight ?? '600') == '700' ? 'selected' : '' }}>Bold (700)</option>
+                                            <option value="400" <?php echo e(($gs->theme_btn_font_weight ?? '600') == '400' ? 'selected' : ''); ?>>Normal (400)</option>
+                                            <option value="500" <?php echo e(($gs->theme_btn_font_weight ?? '600') == '500' ? 'selected' : ''); ?>>Medium (500)</option>
+                                            <option value="600" <?php echo e(($gs->theme_btn_font_weight ?? '600') == '600' ? 'selected' : ''); ?>>Semibold (600)</option>
+                                            <option value="700" <?php echo e(($gs->theme_btn_font_weight ?? '600') == '700' ? 'selected' : ''); ?>>Bold (700)</option>
                                         </select>
                                     </div>
                                 </div>
@@ -903,14 +910,14 @@
                             <div class="row mt-3">
                                 <div class="col-md-6">
                                     <div class="text-input-wrapper">
-                                        <label>{{ __('Border Radius') }}</label>
-                                        <input type="text" name="theme_btn_radius" value="{{ $gs->theme_btn_radius ?? '8px' }}">
+                                        <label><?php echo e(__('Border Radius')); ?></label>
+                                        <input type="text" name="theme_btn_radius" value="<?php echo e($gs->theme_btn_radius ?? '8px'); ?>">
                                     </div>
                                 </div>
                                 <div class="col-md-6">
                                     <div class="text-input-wrapper">
-                                        <label>{{ __('Box Shadow') }}</label>
-                                        <input type="text" name="theme_btn_shadow" value="{{ $gs->theme_btn_shadow ?? 'none' }}">
+                                        <label><?php echo e(__('Box Shadow')); ?></label>
+                                        <input type="text" name="theme_btn_shadow" value="<?php echo e($gs->theme_btn_shadow ?? 'none'); ?>">
                                     </div>
                                 </div>
                             </div>
@@ -922,51 +929,51 @@
                     <!-- ================================ -->
                     <div class="theme-tab-content" id="tab-cards">
                         <div class="theme-section">
-                            <h4 class="theme-section-title"><i class="fas fa-square"></i> {{ __('Card Styles') }}</h4>
-                            <p class="theme-section-desc">{{ __('Customize card appearance') }}</p>
+                            <h4 class="theme-section-title"><i class="fas fa-square"></i> <?php echo e(__('Card Styles')); ?></h4>
+                            <p class="theme-section-desc"><?php echo e(__('Customize card appearance')); ?></p>
                             <div class="row">
                                 <div class="col-md-4">
                                     <div class="color-input-wrapper">
-                                        <label>{{ __('Background') }}</label>
+                                        <label><?php echo e(__('Background')); ?></label>
                                         <div class="color-input-group">
-                                            <input type="text" name="theme_card_bg" class="color-field" value="{{ $gs->theme_card_bg ?? '#ffffff' }}">
+                                            <input type="text" name="theme_card_bg" class="color-field" value="<?php echo e($gs->theme_card_bg ?? '#ffffff'); ?>">
                                             <span class="color-preview cp"><i></i></span>
                                         </div>
                                     </div>
                                 </div>
                                 <div class="col-md-4">
                                     <div class="color-input-wrapper">
-                                        <label>{{ __('Border Color') }}</label>
+                                        <label><?php echo e(__('Border Color')); ?></label>
                                         <div class="color-input-group">
-                                            <input type="text" name="theme_card_border" class="color-field" value="{{ $gs->theme_card_border ?? '#e9e6e6' }}">
+                                            <input type="text" name="theme_card_border" class="color-field" value="<?php echo e($gs->theme_card_border ?? '#e9e6e6'); ?>">
                                             <span class="color-preview cp"><i></i></span>
                                         </div>
                                     </div>
                                 </div>
                                 <div class="col-md-4">
                                     <div class="text-input-wrapper">
-                                        <label>{{ __('Border Radius') }}</label>
-                                        <input type="text" name="theme_card_radius" value="{{ $gs->theme_card_radius ?? '12px' }}">
+                                        <label><?php echo e(__('Border Radius')); ?></label>
+                                        <input type="text" name="theme_card_radius" value="<?php echo e($gs->theme_card_radius ?? '12px'); ?>">
                                     </div>
                                 </div>
                             </div>
                             <div class="row mt-3">
                                 <div class="col-md-4">
                                     <div class="text-input-wrapper">
-                                        <label>{{ __('Shadow') }}</label>
-                                        <input type="text" name="theme_card_shadow" value="{{ $gs->theme_card_shadow ?? '0 2px 8px rgba(0,0,0,0.08)' }}">
+                                        <label><?php echo e(__('Shadow')); ?></label>
+                                        <input type="text" name="theme_card_shadow" value="<?php echo e($gs->theme_card_shadow ?? '0 2px 8px rgba(0,0,0,0.08)'); ?>">
                                     </div>
                                 </div>
                                 <div class="col-md-4">
                                     <div class="text-input-wrapper">
-                                        <label>{{ __('Hover Shadow') }}</label>
-                                        <input type="text" name="theme_card_hover_shadow" value="{{ $gs->theme_card_hover_shadow ?? '0 4px 16px rgba(0,0,0,0.12)' }}">
+                                        <label><?php echo e(__('Hover Shadow')); ?></label>
+                                        <input type="text" name="theme_card_hover_shadow" value="<?php echo e($gs->theme_card_hover_shadow ?? '0 4px 16px rgba(0,0,0,0.12)'); ?>">
                                     </div>
                                 </div>
                                 <div class="col-md-4">
                                     <div class="text-input-wrapper">
-                                        <label>{{ __('Padding') }}</label>
-                                        <input type="text" name="theme_card_padding" value="{{ $gs->theme_card_padding ?? '20px' }}">
+                                        <label><?php echo e(__('Padding')); ?></label>
+                                        <input type="text" name="theme_card_padding" value="<?php echo e($gs->theme_card_padding ?? '20px'); ?>">
                                     </div>
                                 </div>
                             </div>
@@ -974,35 +981,35 @@
 
                         <!-- Product Cards -->
                         <div class="theme-section">
-                            <h4 class="theme-section-title"><i class="fas fa-box-open"></i> {{ __('Product Cards') }}</h4>
-                            <p class="theme-section-desc">{{ __('Specific styles for product cards') }}</p>
+                            <h4 class="theme-section-title"><i class="fas fa-box-open"></i> <?php echo e(__('Product Cards')); ?></h4>
+                            <p class="theme-section-desc"><?php echo e(__('Specific styles for product cards')); ?></p>
                             <div class="row">
                                 <div class="col-md-3">
                                     <div class="text-input-wrapper">
-                                        <label>{{ __('Title Size') }}</label>
-                                        <input type="text" name="theme_product_title_size" value="{{ $gs->theme_product_title_size ?? '14px' }}">
+                                        <label><?php echo e(__('Title Size')); ?></label>
+                                        <input type="text" name="theme_product_title_size" value="<?php echo e($gs->theme_product_title_size ?? '14px'); ?>">
                                     </div>
                                 </div>
                                 <div class="col-md-3">
                                     <div class="text-input-wrapper">
-                                        <label>{{ __('Title Weight') }}</label>
+                                        <label><?php echo e(__('Title Weight')); ?></label>
                                         <select name="theme_product_title_weight">
-                                            <option value="400" {{ ($gs->theme_product_title_weight ?? '500') == '400' ? 'selected' : '' }}>Normal (400)</option>
-                                            <option value="500" {{ ($gs->theme_product_title_weight ?? '500') == '500' ? 'selected' : '' }}>Medium (500)</option>
-                                            <option value="600" {{ ($gs->theme_product_title_weight ?? '500') == '600' ? 'selected' : '' }}>Semibold (600)</option>
+                                            <option value="400" <?php echo e(($gs->theme_product_title_weight ?? '500') == '400' ? 'selected' : ''); ?>>Normal (400)</option>
+                                            <option value="500" <?php echo e(($gs->theme_product_title_weight ?? '500') == '500' ? 'selected' : ''); ?>>Medium (500)</option>
+                                            <option value="600" <?php echo e(($gs->theme_product_title_weight ?? '500') == '600' ? 'selected' : ''); ?>>Semibold (600)</option>
                                         </select>
                                     </div>
                                 </div>
                                 <div class="col-md-3">
                                     <div class="text-input-wrapper">
-                                        <label>{{ __('Price Size') }}</label>
-                                        <input type="text" name="theme_product_price_size" value="{{ $gs->theme_product_price_size ?? '16px' }}">
+                                        <label><?php echo e(__('Price Size')); ?></label>
+                                        <input type="text" name="theme_product_price_size" value="<?php echo e($gs->theme_product_price_size ?? '16px'); ?>">
                                     </div>
                                 </div>
                                 <div class="col-md-3">
                                     <div class="text-input-wrapper">
-                                        <label>{{ __('Hover Scale') }}</label>
-                                        <input type="text" name="theme_product_hover_scale" value="{{ $gs->theme_product_hover_scale ?? '1.02' }}">
+                                        <label><?php echo e(__('Hover Scale')); ?></label>
+                                        <input type="text" name="theme_product_hover_scale" value="<?php echo e($gs->theme_product_hover_scale ?? '1.02'); ?>">
                                     </div>
                                 </div>
                             </div>
@@ -1014,61 +1021,61 @@
                     <!-- ================================ -->
                     <div class="theme-tab-content" id="tab-forms">
                         <div class="theme-section">
-                            <h4 class="theme-section-title"><i class="fas fa-edit"></i> {{ __('Input Fields') }}</h4>
-                            <p class="theme-section-desc">{{ __('Customize form input appearance') }}</p>
+                            <h4 class="theme-section-title"><i class="fas fa-edit"></i> <?php echo e(__('Input Fields')); ?></h4>
+                            <p class="theme-section-desc"><?php echo e(__('Customize form input appearance')); ?></p>
                             <div class="row">
                                 <div class="col-md-3">
                                     <div class="text-input-wrapper">
-                                        <label>{{ __('Height') }}</label>
-                                        <input type="text" name="theme_input_height" value="{{ $gs->theme_input_height ?? '48px' }}">
+                                        <label><?php echo e(__('Height')); ?></label>
+                                        <input type="text" name="theme_input_height" value="<?php echo e($gs->theme_input_height ?? '48px'); ?>">
                                     </div>
                                 </div>
                                 <div class="col-md-3">
                                     <div class="color-input-wrapper">
-                                        <label>{{ __('Background') }}</label>
+                                        <label><?php echo e(__('Background')); ?></label>
                                         <div class="color-input-group">
-                                            <input type="text" name="theme_input_bg" class="color-field" value="{{ $gs->theme_input_bg ?? '#ffffff' }}">
+                                            <input type="text" name="theme_input_bg" class="color-field" value="<?php echo e($gs->theme_input_bg ?? '#ffffff'); ?>">
                                             <span class="color-preview cp"><i></i></span>
                                         </div>
                                     </div>
                                 </div>
                                 <div class="col-md-3">
                                     <div class="color-input-wrapper">
-                                        <label>{{ __('Border Color') }}</label>
+                                        <label><?php echo e(__('Border Color')); ?></label>
                                         <div class="color-input-group">
-                                            <input type="text" name="theme_input_border" class="color-field" value="{{ $gs->theme_input_border ?? '#d9d4d4' }}">
+                                            <input type="text" name="theme_input_border" class="color-field" value="<?php echo e($gs->theme_input_border ?? '#d9d4d4'); ?>">
                                             <span class="color-preview cp"><i></i></span>
                                         </div>
                                     </div>
                                 </div>
                                 <div class="col-md-3">
                                     <div class="text-input-wrapper">
-                                        <label>{{ __('Border Radius') }}</label>
-                                        <input type="text" name="theme_input_radius" value="{{ $gs->theme_input_radius ?? '8px' }}">
+                                        <label><?php echo e(__('Border Radius')); ?></label>
+                                        <input type="text" name="theme_input_radius" value="<?php echo e($gs->theme_input_radius ?? '8px'); ?>">
                                     </div>
                                 </div>
                             </div>
                             <div class="row mt-3">
                                 <div class="col-md-4">
                                     <div class="color-input-wrapper">
-                                        <label>{{ __('Focus Border') }}</label>
+                                        <label><?php echo e(__('Focus Border')); ?></label>
                                         <div class="color-input-group">
-                                            <input type="text" name="theme_input_focus_border" class="color-field" value="{{ $gs->theme_input_focus_border ?? '#c3002f' }}">
+                                            <input type="text" name="theme_input_focus_border" class="color-field" value="<?php echo e($gs->theme_input_focus_border ?? '#c3002f'); ?>">
                                             <span class="color-preview cp"><i></i></span>
                                         </div>
                                     </div>
                                 </div>
                                 <div class="col-md-4">
                                     <div class="text-input-wrapper">
-                                        <label>{{ __('Focus Shadow') }}</label>
-                                        <input type="text" name="theme_input_focus_shadow" value="{{ $gs->theme_input_focus_shadow ?? '0 0 0 3px rgba(195,0,47,0.1)' }}">
+                                        <label><?php echo e(__('Focus Shadow')); ?></label>
+                                        <input type="text" name="theme_input_focus_shadow" value="<?php echo e($gs->theme_input_focus_shadow ?? '0 0 0 3px rgba(195,0,47,0.1)'); ?>">
                                     </div>
                                 </div>
                                 <div class="col-md-4">
                                     <div class="color-input-wrapper">
-                                        <label>{{ __('Placeholder Color') }}</label>
+                                        <label><?php echo e(__('Placeholder Color')); ?></label>
                                         <div class="color-input-group">
-                                            <input type="text" name="theme_input_placeholder" class="color-field" value="{{ $gs->theme_input_placeholder ?? '#9a8e8c' }}">
+                                            <input type="text" name="theme_input_placeholder" class="color-field" value="<?php echo e($gs->theme_input_placeholder ?? '#9a8e8c'); ?>">
                                             <span class="color-preview cp"><i></i></span>
                                         </div>
                                     </div>
@@ -1082,68 +1089,68 @@
                     <!-- ================================ -->
                     <div class="theme-tab-content" id="tab-header">
                         <div class="theme-section">
-                            <h4 class="theme-section-title"><i class="fas fa-window-maximize"></i> {{ __('Header Styles') }}</h4>
-                            <p class="theme-section-desc">{{ __('Customize header appearance') }}</p>
+                            <h4 class="theme-section-title"><i class="fas fa-window-maximize"></i> <?php echo e(__('Header Styles')); ?></h4>
+                            <p class="theme-section-desc"><?php echo e(__('Customize header appearance')); ?></p>
                             <div class="row">
                                 <div class="col-md-4">
                                     <div class="color-input-wrapper">
-                                        <label>{{ __('Background') }}</label>
+                                        <label><?php echo e(__('Background')); ?></label>
                                         <div class="color-input-group">
-                                            <input type="text" name="theme_header_bg" class="color-field" value="{{ $gs->theme_header_bg ?? '#ffffff' }}">
+                                            <input type="text" name="theme_header_bg" class="color-field" value="<?php echo e($gs->theme_header_bg ?? '#ffffff'); ?>">
                                             <span class="color-preview cp"><i></i></span>
                                         </div>
                                     </div>
                                 </div>
                                 <div class="col-md-4">
                                     <div class="text-input-wrapper">
-                                        <label>{{ __('Height') }}</label>
-                                        <input type="text" name="theme_header_height" value="{{ $gs->theme_header_height ?? '80px' }}">
+                                        <label><?php echo e(__('Height')); ?></label>
+                                        <input type="text" name="theme_header_height" value="<?php echo e($gs->theme_header_height ?? '80px'); ?>">
                                     </div>
                                 </div>
                                 <div class="col-md-4">
                                     <div class="text-input-wrapper">
-                                        <label>{{ __('Shadow') }}</label>
-                                        <input type="text" name="theme_header_shadow" value="{{ $gs->theme_header_shadow ?? '0 2px 10px rgba(0,0,0,0.1)' }}">
+                                        <label><?php echo e(__('Shadow')); ?></label>
+                                        <input type="text" name="theme_header_shadow" value="<?php echo e($gs->theme_header_shadow ?? '0 2px 10px rgba(0,0,0,0.1)'); ?>">
                                     </div>
                                 </div>
                             </div>
                         </div>
 
                         <div class="theme-section">
-                            <h4 class="theme-section-title"><i class="fas fa-bars"></i> {{ __('Navigation Links') }}</h4>
-                            <p class="theme-section-desc">{{ __('Customize navigation link styles') }}</p>
+                            <h4 class="theme-section-title"><i class="fas fa-bars"></i> <?php echo e(__('Navigation Links')); ?></h4>
+                            <p class="theme-section-desc"><?php echo e(__('Customize navigation link styles')); ?></p>
                             <div class="row">
                                 <div class="col-md-3">
                                     <div class="color-input-wrapper">
-                                        <label>{{ __('Link Color') }}</label>
+                                        <label><?php echo e(__('Link Color')); ?></label>
                                         <div class="color-input-group">
-                                            <input type="text" name="theme_nav_link_color" class="color-field" value="{{ $gs->theme_nav_link_color ?? '#1f0300' }}">
+                                            <input type="text" name="theme_nav_link_color" class="color-field" value="<?php echo e($gs->theme_nav_link_color ?? '#1f0300'); ?>">
                                             <span class="color-preview cp"><i></i></span>
                                         </div>
                                     </div>
                                 </div>
                                 <div class="col-md-3">
                                     <div class="color-input-wrapper">
-                                        <label>{{ __('Hover Color') }}</label>
+                                        <label><?php echo e(__('Hover Color')); ?></label>
                                         <div class="color-input-group">
-                                            <input type="text" name="theme_nav_link_hover" class="color-field" value="{{ $gs->theme_nav_link_hover ?? '#c3002f' }}">
+                                            <input type="text" name="theme_nav_link_hover" class="color-field" value="<?php echo e($gs->theme_nav_link_hover ?? '#c3002f'); ?>">
                                             <span class="color-preview cp"><i></i></span>
                                         </div>
                                     </div>
                                 </div>
                                 <div class="col-md-3">
                                     <div class="text-input-wrapper">
-                                        <label>{{ __('Font Size') }}</label>
-                                        <input type="text" name="theme_nav_font_size" value="{{ $gs->theme_nav_font_size ?? '15px' }}">
+                                        <label><?php echo e(__('Font Size')); ?></label>
+                                        <input type="text" name="theme_nav_font_size" value="<?php echo e($gs->theme_nav_font_size ?? '15px'); ?>">
                                     </div>
                                 </div>
                                 <div class="col-md-3">
                                     <div class="text-input-wrapper">
-                                        <label>{{ __('Font Weight') }}</label>
+                                        <label><?php echo e(__('Font Weight')); ?></label>
                                         <select name="theme_nav_font_weight">
-                                            <option value="400" {{ ($gs->theme_nav_font_weight ?? '500') == '400' ? 'selected' : '' }}>Normal (400)</option>
-                                            <option value="500" {{ ($gs->theme_nav_font_weight ?? '500') == '500' ? 'selected' : '' }}>Medium (500)</option>
-                                            <option value="600" {{ ($gs->theme_nav_font_weight ?? '500') == '600' ? 'selected' : '' }}>Semibold (600)</option>
+                                            <option value="400" <?php echo e(($gs->theme_nav_font_weight ?? '500') == '400' ? 'selected' : ''); ?>>Normal (400)</option>
+                                            <option value="500" <?php echo e(($gs->theme_nav_font_weight ?? '500') == '500' ? 'selected' : ''); ?>>Medium (500)</option>
+                                            <option value="600" <?php echo e(($gs->theme_nav_font_weight ?? '500') == '600' ? 'selected' : ''); ?>>Semibold (600)</option>
                                         </select>
                                     </div>
                                 </div>
@@ -1156,41 +1163,41 @@
                     <!-- ================================ -->
                     <div class="theme-tab-content" id="tab-footer">
                         <div class="theme-section">
-                            <h4 class="theme-section-title"><i class="fas fa-window-minimize"></i> {{ __('Footer Styles') }}</h4>
-                            <p class="theme-section-desc">{{ __('Customize footer appearance') }}</p>
+                            <h4 class="theme-section-title"><i class="fas fa-window-minimize"></i> <?php echo e(__('Footer Styles')); ?></h4>
+                            <p class="theme-section-desc"><?php echo e(__('Customize footer appearance')); ?></p>
                             <div class="row">
                                 <div class="col-md-3">
                                     <div class="color-input-wrapper">
-                                        <label>{{ __('Background') }}</label>
+                                        <label><?php echo e(__('Background')); ?></label>
                                         <div class="color-input-group">
-                                            <input type="text" name="theme_footer_bg" class="color-field" value="{{ $gs->theme_footer_bg ?? '#030712' }}">
+                                            <input type="text" name="theme_footer_bg" class="color-field" value="<?php echo e($gs->theme_footer_bg ?? '#030712'); ?>">
                                             <span class="color-preview cp"><i></i></span>
                                         </div>
                                     </div>
                                 </div>
                                 <div class="col-md-3">
                                     <div class="color-input-wrapper">
-                                        <label>{{ __('Text Color') }}</label>
+                                        <label><?php echo e(__('Text Color')); ?></label>
                                         <div class="color-input-group">
-                                            <input type="text" name="theme_footer_text" class="color-field" value="{{ $gs->theme_footer_text ?? '#ffffff' }}">
+                                            <input type="text" name="theme_footer_text" class="color-field" value="<?php echo e($gs->theme_footer_text ?? '#ffffff'); ?>">
                                             <span class="color-preview cp"><i></i></span>
                                         </div>
                                     </div>
                                 </div>
                                 <div class="col-md-3">
                                     <div class="color-input-wrapper">
-                                        <label>{{ __('Muted Text') }}</label>
+                                        <label><?php echo e(__('Muted Text')); ?></label>
                                         <div class="color-input-group">
-                                            <input type="text" name="theme_footer_text_muted" class="color-field" value="{{ $gs->theme_footer_text_muted ?? '#d9d4d4' }}">
+                                            <input type="text" name="theme_footer_text_muted" class="color-field" value="<?php echo e($gs->theme_footer_text_muted ?? '#d9d4d4'); ?>">
                                             <span class="color-preview cp"><i></i></span>
                                         </div>
                                     </div>
                                 </div>
                                 <div class="col-md-3">
                                     <div class="color-input-wrapper">
-                                        <label>{{ __('Link Hover') }}</label>
+                                        <label><?php echo e(__('Link Hover')); ?></label>
                                         <div class="color-input-group">
-                                            <input type="text" name="theme_footer_link_hover" class="color-field" value="{{ $gs->theme_footer_link_hover ?? '#c3002f' }}">
+                                            <input type="text" name="theme_footer_link_hover" class="color-field" value="<?php echo e($gs->theme_footer_link_hover ?? '#c3002f'); ?>">
                                             <span class="color-preview cp"><i></i></span>
                                         </div>
                                     </div>
@@ -1199,24 +1206,24 @@
                             <div class="row mt-3">
                                 <div class="col-md-4">
                                     <div class="text-input-wrapper">
-                                        <label>{{ __('Padding') }}</label>
-                                        <input type="text" name="theme_footer_padding" value="{{ $gs->theme_footer_padding ?? '60px' }}">
+                                        <label><?php echo e(__('Padding')); ?></label>
+                                        <input type="text" name="theme_footer_padding" value="<?php echo e($gs->theme_footer_padding ?? '60px'); ?>">
                                     </div>
                                 </div>
                                 <div class="col-md-4">
                                     <div class="color-input-wrapper">
-                                        <label>{{ __('Link Color') }}</label>
+                                        <label><?php echo e(__('Link Color')); ?></label>
                                         <div class="color-input-group">
-                                            <input type="text" name="theme_footer_link" class="color-field" value="{{ $gs->theme_footer_link ?? '#ffffff' }}">
+                                            <input type="text" name="theme_footer_link" class="color-field" value="<?php echo e($gs->theme_footer_link ?? '#ffffff'); ?>">
                                             <span class="color-preview cp"><i></i></span>
                                         </div>
                                     </div>
                                 </div>
                                 <div class="col-md-4">
                                     <div class="color-input-wrapper">
-                                        <label>{{ __('Border Color') }}</label>
+                                        <label><?php echo e(__('Border Color')); ?></label>
                                         <div class="color-input-group">
-                                            <input type="text" name="theme_footer_border" class="color-field" value="{{ $gs->theme_footer_border ?? '#374151' }}">
+                                            <input type="text" name="theme_footer_border" class="color-field" value="<?php echo e($gs->theme_footer_border ?? '#374151'); ?>">
                                             <span class="color-preview cp"><i></i></span>
                                         </div>
                                     </div>
@@ -1231,34 +1238,34 @@
                     <div class="theme-tab-content" id="tab-components">
                         <!-- Badges -->
                         <div class="theme-section">
-                            <h4 class="theme-section-title"><i class="fas fa-tag"></i> {{ __('Badges') }}</h4>
-                            <p class="theme-section-desc">{{ __('Customize badge appearance') }}</p>
+                            <h4 class="theme-section-title"><i class="fas fa-tag"></i> <?php echo e(__('Badges')); ?></h4>
+                            <p class="theme-section-desc"><?php echo e(__('Customize badge appearance')); ?></p>
                             <div class="row">
                                 <div class="col-md-3">
                                     <div class="text-input-wrapper">
-                                        <label>{{ __('Border Radius') }}</label>
-                                        <input type="text" name="theme_badge_radius" value="{{ $gs->theme_badge_radius ?? '20px' }}">
+                                        <label><?php echo e(__('Border Radius')); ?></label>
+                                        <input type="text" name="theme_badge_radius" value="<?php echo e($gs->theme_badge_radius ?? '20px'); ?>">
                                     </div>
                                 </div>
                                 <div class="col-md-3">
                                     <div class="text-input-wrapper">
-                                        <label>{{ __('Padding') }}</label>
-                                        <input type="text" name="theme_badge_padding" value="{{ $gs->theme_badge_padding ?? '4px 12px' }}">
+                                        <label><?php echo e(__('Padding')); ?></label>
+                                        <input type="text" name="theme_badge_padding" value="<?php echo e($gs->theme_badge_padding ?? '4px 12px'); ?>">
                                     </div>
                                 </div>
                                 <div class="col-md-3">
                                     <div class="text-input-wrapper">
-                                        <label>{{ __('Font Size') }}</label>
-                                        <input type="text" name="theme_badge_font_size" value="{{ $gs->theme_badge_font_size ?? '12px' }}">
+                                        <label><?php echo e(__('Font Size')); ?></label>
+                                        <input type="text" name="theme_badge_font_size" value="<?php echo e($gs->theme_badge_font_size ?? '12px'); ?>">
                                     </div>
                                 </div>
                                 <div class="col-md-3">
                                     <div class="text-input-wrapper">
-                                        <label>{{ __('Font Weight') }}</label>
+                                        <label><?php echo e(__('Font Weight')); ?></label>
                                         <select name="theme_badge_font_weight">
-                                            <option value="500" {{ ($gs->theme_badge_font_weight ?? '600') == '500' ? 'selected' : '' }}>Medium (500)</option>
-                                            <option value="600" {{ ($gs->theme_badge_font_weight ?? '600') == '600' ? 'selected' : '' }}>Semibold (600)</option>
-                                            <option value="700" {{ ($gs->theme_badge_font_weight ?? '600') == '700' ? 'selected' : '' }}>Bold (700)</option>
+                                            <option value="500" <?php echo e(($gs->theme_badge_font_weight ?? '600') == '500' ? 'selected' : ''); ?>>Medium (500)</option>
+                                            <option value="600" <?php echo e(($gs->theme_badge_font_weight ?? '600') == '600' ? 'selected' : ''); ?>>Semibold (600)</option>
+                                            <option value="700" <?php echo e(($gs->theme_badge_font_weight ?? '600') == '700' ? 'selected' : ''); ?>>Bold (700)</option>
                                         </select>
                                     </div>
                                 </div>
@@ -1267,38 +1274,38 @@
 
                         <!-- Scrollbar -->
                         <div class="theme-section">
-                            <h4 class="theme-section-title"><i class="fas fa-arrows-alt-v"></i> {{ __('Scrollbar') }}</h4>
-                            <p class="theme-section-desc">{{ __('Customize scrollbar colors') }}</p>
+                            <h4 class="theme-section-title"><i class="fas fa-arrows-alt-v"></i> <?php echo e(__('Scrollbar')); ?></h4>
+                            <p class="theme-section-desc"><?php echo e(__('Customize scrollbar colors')); ?></p>
                             <div class="row">
                                 <div class="col-md-3">
                                     <div class="text-input-wrapper">
-                                        <label>{{ __('Width') }}</label>
-                                        <input type="text" name="theme_scrollbar_width" value="{{ $gs->theme_scrollbar_width ?? '10px' }}">
+                                        <label><?php echo e(__('Width')); ?></label>
+                                        <input type="text" name="theme_scrollbar_width" value="<?php echo e($gs->theme_scrollbar_width ?? '10px'); ?>">
                                     </div>
                                 </div>
                                 <div class="col-md-3">
                                     <div class="color-input-wrapper">
-                                        <label>{{ __('Track Color') }}</label>
+                                        <label><?php echo e(__('Track Color')); ?></label>
                                         <div class="color-input-group">
-                                            <input type="text" name="theme_scrollbar_track" class="color-field" value="{{ $gs->theme_scrollbar_track ?? '#f1f1f1' }}">
+                                            <input type="text" name="theme_scrollbar_track" class="color-field" value="<?php echo e($gs->theme_scrollbar_track ?? '#f1f1f1'); ?>">
                                             <span class="color-preview cp"><i></i></span>
                                         </div>
                                     </div>
                                 </div>
                                 <div class="col-md-3">
                                     <div class="color-input-wrapper">
-                                        <label>{{ __('Thumb Color') }}</label>
+                                        <label><?php echo e(__('Thumb Color')); ?></label>
                                         <div class="color-input-group">
-                                            <input type="text" name="theme_scrollbar_thumb" class="color-field" value="{{ $gs->theme_scrollbar_thumb ?? '#c1c1c1' }}">
+                                            <input type="text" name="theme_scrollbar_thumb" class="color-field" value="<?php echo e($gs->theme_scrollbar_thumb ?? '#c1c1c1'); ?>">
                                             <span class="color-preview cp"><i></i></span>
                                         </div>
                                     </div>
                                 </div>
                                 <div class="col-md-3">
                                     <div class="color-input-wrapper">
-                                        <label>{{ __('Thumb Hover') }}</label>
+                                        <label><?php echo e(__('Thumb Hover')); ?></label>
                                         <div class="color-input-group">
-                                            <input type="text" name="theme_scrollbar_thumb_hover" class="color-field" value="{{ $gs->theme_scrollbar_thumb_hover ?? '#a1a1a1' }}">
+                                            <input type="text" name="theme_scrollbar_thumb_hover" class="color-field" value="<?php echo e($gs->theme_scrollbar_thumb_hover ?? '#a1a1a1'); ?>">
                                             <span class="color-preview cp"><i></i></span>
                                         </div>
                                     </div>
@@ -1308,28 +1315,28 @@
 
                         <!-- Modals -->
                         <div class="theme-section">
-                            <h4 class="theme-section-title"><i class="fas fa-window-restore"></i> {{ __('Modals') }}</h4>
-                            <p class="theme-section-desc">{{ __('Customize modal dialogs') }}</p>
+                            <h4 class="theme-section-title"><i class="fas fa-window-restore"></i> <?php echo e(__('Modals')); ?></h4>
+                            <p class="theme-section-desc"><?php echo e(__('Customize modal dialogs')); ?></p>
                             <div class="row">
                                 <div class="col-md-4">
                                     <div class="color-input-wrapper">
-                                        <label>{{ __('Background') }}</label>
+                                        <label><?php echo e(__('Background')); ?></label>
                                         <div class="color-input-group">
-                                            <input type="text" name="theme_modal_bg" class="color-field" value="{{ $gs->theme_modal_bg ?? '#ffffff' }}">
+                                            <input type="text" name="theme_modal_bg" class="color-field" value="<?php echo e($gs->theme_modal_bg ?? '#ffffff'); ?>">
                                             <span class="color-preview cp"><i></i></span>
                                         </div>
                                     </div>
                                 </div>
                                 <div class="col-md-4">
                                     <div class="text-input-wrapper">
-                                        <label>{{ __('Border Radius') }}</label>
-                                        <input type="text" name="theme_modal_radius" value="{{ $gs->theme_modal_radius ?? '16px' }}">
+                                        <label><?php echo e(__('Border Radius')); ?></label>
+                                        <input type="text" name="theme_modal_radius" value="<?php echo e($gs->theme_modal_radius ?? '16px'); ?>">
                                     </div>
                                 </div>
                                 <div class="col-md-4">
                                     <div class="text-input-wrapper">
-                                        <label>{{ __('Backdrop') }}</label>
-                                        <input type="text" name="theme_modal_backdrop" value="{{ $gs->theme_modal_backdrop ?? 'rgba(0,0,0,0.5)' }}">
+                                        <label><?php echo e(__('Backdrop')); ?></label>
+                                        <input type="text" name="theme_modal_backdrop" value="<?php echo e($gs->theme_modal_backdrop ?? 'rgba(0,0,0,0.5)'); ?>">
                                     </div>
                                 </div>
                             </div>
@@ -1337,32 +1344,32 @@
 
                         <!-- Tables -->
                         <div class="theme-section">
-                            <h4 class="theme-section-title"><i class="fas fa-table"></i> {{ __('Tables') }}</h4>
-                            <p class="theme-section-desc">{{ __('Customize table styles') }}</p>
+                            <h4 class="theme-section-title"><i class="fas fa-table"></i> <?php echo e(__('Tables')); ?></h4>
+                            <p class="theme-section-desc"><?php echo e(__('Customize table styles')); ?></p>
                             <div class="row">
                                 <div class="col-md-4">
                                     <div class="color-input-wrapper">
-                                        <label>{{ __('Header Background') }}</label>
+                                        <label><?php echo e(__('Header Background')); ?></label>
                                         <div class="color-input-group">
-                                            <input type="text" name="theme_table_header_bg" class="color-field" value="{{ $gs->theme_table_header_bg ?? '#f8f7f7' }}">
+                                            <input type="text" name="theme_table_header_bg" class="color-field" value="<?php echo e($gs->theme_table_header_bg ?? '#f8f7f7'); ?>">
                                             <span class="color-preview cp"><i></i></span>
                                         </div>
                                     </div>
                                 </div>
                                 <div class="col-md-4">
                                     <div class="color-input-wrapper">
-                                        <label>{{ __('Border Color') }}</label>
+                                        <label><?php echo e(__('Border Color')); ?></label>
                                         <div class="color-input-group">
-                                            <input type="text" name="theme_table_border" class="color-field" value="{{ $gs->theme_table_border ?? '#e9e6e6' }}">
+                                            <input type="text" name="theme_table_border" class="color-field" value="<?php echo e($gs->theme_table_border ?? '#e9e6e6'); ?>">
                                             <span class="color-preview cp"><i></i></span>
                                         </div>
                                     </div>
                                 </div>
                                 <div class="col-md-4">
                                     <div class="color-input-wrapper">
-                                        <label>{{ __('Hover Background') }}</label>
+                                        <label><?php echo e(__('Hover Background')); ?></label>
                                         <div class="color-input-group">
-                                            <input type="text" name="theme_table_hover_bg" class="color-field" value="{{ $gs->theme_table_hover_bg ?? '#f8f7f7' }}">
+                                            <input type="text" name="theme_table_hover_bg" class="color-field" value="<?php echo e($gs->theme_table_hover_bg ?? '#f8f7f7'); ?>">
                                             <span class="color-preview cp"><i></i></span>
                                         </div>
                                     </div>
@@ -1376,34 +1383,36 @@
                 <div class="col-lg-4">
                     <div class="preview-panel">
                         <div class="preview-header">
-                            <i class="fas fa-eye"></i> {{ __('Live Preview') }}
+                            <i class="fas fa-eye"></i> <?php echo e(__('Live Preview')); ?>
+
                         </div>
                         <div class="preview-body">
-                            <h6 class="preview-text-primary mb-3">{{ __('Buttons') }}</h6>
+                            <h6 class="preview-text-primary mb-3"><?php echo e(__('Buttons')); ?></h6>
                             <div class="mb-3">
-                                <button type="button" class="preview-btn preview-btn-primary">{{ __('Primary') }}</button>
-                                <button type="button" class="preview-btn preview-btn-secondary">{{ __('Secondary') }}</button>
+                                <button type="button" class="preview-btn preview-btn-primary"><?php echo e(__('Primary')); ?></button>
+                                <button type="button" class="preview-btn preview-btn-secondary"><?php echo e(__('Secondary')); ?></button>
                             </div>
 
-                            <h6 class="preview-text-primary mb-3">{{ __('Card') }}</h6>
+                            <h6 class="preview-text-primary mb-3"><?php echo e(__('Card')); ?></h6>
                             <div class="preview-card">
-                                <p class="preview-text-primary mb-1"><strong>{{ __('Card Title') }}</strong></p>
-                                <p class="preview-text-muted mb-0" style="font-size: 13px;">{{ __('Card description text goes here') }}</p>
+                                <p class="preview-text-primary mb-1"><strong><?php echo e(__('Card Title')); ?></strong></p>
+                                <p class="preview-text-muted mb-0" style="font-size: 13px;"><?php echo e(__('Card description text goes here')); ?></p>
                             </div>
 
-                            <h6 class="preview-text-primary mb-3">{{ __('Input') }}</h6>
-                            <input type="text" class="preview-input mb-3" placeholder="{{ __('Type something...') }}">
+                            <h6 class="preview-text-primary mb-3"><?php echo e(__('Input')); ?></h6>
+                            <input type="text" class="preview-input mb-3" placeholder="<?php echo e(__('Type something...')); ?>">
 
-                            <h6 class="preview-text-primary mb-3">{{ __('Badges') }}</h6>
+                            <h6 class="preview-text-primary mb-3"><?php echo e(__('Badges')); ?></h6>
                             <div>
-                                <span class="preview-badge preview-badge-primary">{{ __('Primary') }}</span>
-                                <span class="preview-badge preview-badge-success">{{ __('Success') }}</span>
-                                <span class="preview-badge preview-badge-warning">{{ __('Warning') }}</span>
-                                <span class="preview-badge preview-badge-danger">{{ __('Danger') }}</span>
+                                <span class="preview-badge preview-badge-primary"><?php echo e(__('Primary')); ?></span>
+                                <span class="preview-badge preview-badge-success"><?php echo e(__('Success')); ?></span>
+                                <span class="preview-badge preview-badge-warning"><?php echo e(__('Warning')); ?></span>
+                                <span class="preview-badge preview-badge-danger"><?php echo e(__('Danger')); ?></span>
                             </div>
                         </div>
                         <div class="preview-footer">
-                            <i class="fas fa-check-circle"></i> {{ __('Footer Preview') }}
+                            <i class="fas fa-check-circle"></i> <?php echo e(__('Footer Preview')); ?>
+
                         </div>
                     </div>
                 </div>
@@ -1412,15 +1421,16 @@
             <!-- Save Button -->
             <div class="save-btn-wrapper">
                 <button type="submit" class="save-btn">
-                    <i class="fas fa-save"></i> {{ __('Save Theme') }}
+                    <i class="fas fa-save"></i> <?php echo e(__('Save Theme')); ?>
+
                 </button>
             </div>
         </form>
     </div>
 </div>
-@endsection
+<?php $__env->stopSection(); ?>
 
-@section('scripts')
+<?php $__env->startSection('scripts'); ?>
 <script>
 $(document).ready(function() {
     // Tab Navigation
@@ -1622,9 +1632,11 @@ $(document).ready(function() {
 
 // Reset to defaults
 function resetToDefaults() {
-    if (confirm('{{ __("Are you sure you want to reset all theme settings to defaults?") }}')) {
+    if (confirm('<?php echo e(__("Are you sure you want to reset all theme settings to defaults?")); ?>')) {
         $('.preset-btn[data-preset="nissan"]').click();
     }
 }
 </script>
-@endsection
+<?php $__env->stopSection(); ?>
+
+<?php echo $__env->make('layouts.admin', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?><?php /**PATH C:\Users\hp\Herd\new\resources\views/admin/generalsetting/theme_colors.blade.php ENDPATH**/ ?>
