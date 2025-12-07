@@ -1220,15 +1220,18 @@ p.text-lg {
   z-index: 5;
 }
 .single-product .img-wrapper .product-badge, .single-product-list-view .img-wrapper .product-badge {
-  width: 62px;
+  width: auto;
+  min-width: 62px;
   height: 29px;
   padding: 4px 16px;
   gap: 10px;
-  background-color: var(--theme-text-primary);
-  color: var(--theme-text-white);
+  background-color: var(--theme-danger, var(--theme-text-primary));
+  color: var(--theme-btn-danger-text, var(--theme-text-white));
   left: 16px;
   font-family: var(--theme-font-primary);
   font-size: 14px;
+  font-weight: 700;
+  border-radius: var(--theme-radius-sm, 4px);
 }
 .single-product .img-wrapper .add-to-wishlist-btn, .single-product-list-view .img-wrapper .add-to-wishlist-btn {
   width: 48px;
@@ -1319,25 +1322,29 @@ p.text-lg {
   text-align: center;
   justify-content: center;
   align-items: center;
-  color: var(--theme-bg-dark);
+  color: var(--theme-text-primary, var(--theme-bg-dark));
+  font-weight: 600;
 }
 .single-product .add-cart, .single-product-list-view .add-cart,
 .single-product .compare,
 .single-product-list-view .compare,
 .single-product .details,
 .single-product-list-view .details {
-  background-color: var(--theme-text-white);
+  background-color: var(--theme-card-bg, var(--theme-text-white));
   padding: 12px;
-  border-radius: 8px;
-  transition: all 0.3s ease-in;
+  border-radius: var(--theme-radius, 8px);
+  transition: var(--theme-transition, all 0.3s ease-in);
+  box-shadow: var(--theme-btn-shadow, 0 2px 4px rgba(0,0,0,0.1));
 }
 .single-product .add-cart:hover, .single-product-list-view .add-cart:hover,
 .single-product .compare:hover,
 .single-product-list-view .compare:hover,
 .single-product .details:hover,
 .single-product-list-view .details:hover {
-  background-color: var(--theme-primary);
-  color: var(--theme-text-white);
+  background-color: var(--theme-btn-primary-hover-bg, var(--theme-primary));
+  color: var(--theme-btn-primary-text, var(--theme-text-white));
+  box-shadow: var(--theme-btn-shadow-hover, 0 4px 8px rgba(0,0,0,0.15));
+  transform: translateY(-2px);
 }
 .single-product .compare, .single-product-list-view .compare,
 .single-product .details,
@@ -12912,17 +12919,17 @@ div[id*='zoom_container'] .landmarks .lable div {
 .muaadh-search-input-group {
     display: flex;
     align-items: stretch;
-    background: var(--muaadh-bg-light);
+    background: var(--theme-bg-lighter, var(--muaadh-bg-light));
     border: 2px solid transparent;
     border-radius: 50px;
     overflow: hidden;
-    transition: all 0.3s;
+    transition: var(--theme-transition, all 0.3s);
 }
 
 .muaadh-search-input-group:focus-within {
-    border-color: var(--muaadh-primary);
-    background: var(--muaadh-white);
-    box-shadow: 0 0 0 4px var(--muaadh-primary-light);
+    border-color: var(--theme-primary, var(--muaadh-primary));
+    background: var(--theme-bg-body, var(--muaadh-white));
+    box-shadow: var(--theme-input-focus-shadow, 0 0 0 4px var(--muaadh-primary-light));
 }
 
 .muaadh-search-input {
@@ -12957,15 +12964,17 @@ div[id*='zoom_container'] .landmarks .lable div {
 
 .muaadh-search-btn {
     padding: 12px 25px;
-    background: var(--muaadh-primary);
+    background: var(--theme-btn-primary-bg, var(--theme-primary, var(--muaadh-primary)));
     border: none;
-    color: var(--muaadh-white);
+    color: var(--theme-btn-primary-text, var(--muaadh-white));
     cursor: pointer;
-    transition: background 0.2s;
+    transition: var(--theme-transition-fast, background 0.2s);
+    font-weight: 600;
 }
 
 .muaadh-search-btn:hover {
-    background: var(--muaadh-primary-dark);
+    background: var(--theme-btn-primary-hover-bg, var(--theme-primary-hover, var(--muaadh-primary-dark)));
+    box-shadow: var(--theme-btn-shadow-hover, 0 4px 8px rgba(0,0,0,0.15));
 }
 
 .muaadh-search-close {
@@ -14046,7 +14055,7 @@ div[id*='zoom_container'] .landmarks .lable div {
 
 /* --- Hero Section --- */
 .muaadh-hero {
-    background: var(--muaadh-light);
+    background: var(--theme-bg-light, var(--muaadh-light));
     padding: 60px 0 50px;
     position: relative;
 }
@@ -14062,7 +14071,7 @@ div[id*='zoom_container'] .landmarks .lable div {
 .muaadh-hero-title {
     font-size: 1.75rem;
     font-weight: 700;
-    color: var(--muaadh-text);
+    color: var(--theme-text-primary, var(--muaadh-text));
     margin-bottom: 25px;
 }
 
@@ -14072,7 +14081,7 @@ div[id*='zoom_container'] .landmarks .lable div {
 
 .muaadh-hero-subtitle {
     font-size: 0.95rem;
-    color: var(--muaadh-text-muted);
+    color: var(--theme-text-muted, var(--muaadh-text-muted));
     margin-bottom: 25px;
     line-height: 1.6;
 }
@@ -14086,25 +14095,26 @@ div[id*='zoom_container'] .landmarks .lable div {
     align-items: center;
     gap: 10px;
     padding: 12px 30px;
-    background: var(--muaadh-dark);
-    color: var(--muaadh-white);
+    background: var(--theme-btn-secondary-bg, var(--theme-secondary, var(--muaadh-dark)));
+    color: var(--theme-btn-secondary-text, var(--muaadh-white));
     border: none;
-    border-radius: var(--muaadh-radius);
+    border-radius: var(--theme-radius, var(--muaadh-radius));
     font-weight: 600;
     font-size: 0.95rem;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: var(--theme-transition, all 0.3s ease);
 }
 
 .muaadh-btn-vin:hover {
-    background: var(--muaadh-text);
-    color: var(--muaadh-white);
+    background: var(--theme-btn-secondary-hover-bg, var(--theme-secondary-hover, var(--muaadh-text)));
+    color: var(--theme-btn-secondary-text, var(--muaadh-white));
     transform: translateY(-2px);
+    box-shadow: var(--theme-btn-shadow-hover, 0 4px 8px rgba(0,0,0,0.15));
 }
 
 .muaadh-hero-hint {
     font-size: 0.85rem;
-    color: var(--muaadh-text-muted);
+    color: var(--theme-text-muted, var(--muaadh-text-muted));
     margin-top: 15px;
     margin-bottom: 0;
 }
@@ -14115,7 +14125,7 @@ div[id*='zoom_container'] .landmarks .lable div {
 }
 
 .muaadh-section-gray {
-    background: var(--muaadh-bg-light);
+    background: var(--theme-bg-light, var(--muaadh-bg-light));
 }
 
 .muaadh-section-header {
@@ -14125,8 +14135,8 @@ div[id*='zoom_container'] .landmarks .lable div {
 
 .muaadh-badge-primary {
     display: inline-block;
-    background: rgba(100, 100, 100, 0.2);
-    color: var(--muaadh-text);
+    background: var(--theme-primary-light, rgba(195, 0, 47, 0.1));
+    color: var(--theme-primary, var(--muaadh-text));
     padding: 6px 16px;
     border-radius: 50px;
     font-size: 0.75rem;
@@ -14139,13 +14149,13 @@ div[id*='zoom_container'] .landmarks .lable div {
 .muaadh-section-title {
     font-size: 1.5rem;
     font-weight: 700;
-    color: var(--muaadh-text);
+    color: var(--theme-text-primary, var(--muaadh-text));
     margin-bottom: 10px;
 }
 
 .muaadh-section-desc {
     font-size: 0.95rem;
-    color: var(--muaadh-text-muted);
+    color: var(--theme-text-muted, var(--muaadh-text-muted));
     margin-bottom: 0;
 }
 
@@ -14163,18 +14173,18 @@ div[id*='zoom_container'] .landmarks .lable div {
     flex-direction: column;
     align-items: center;
     padding: 0;
-    background: var(--muaadh-white);
-    border-radius: var(--muaadh-radius-lg);
+    background: var(--theme-card-bg, var(--muaadh-white));
+    border-radius: var(--theme-radius-lg, var(--muaadh-radius-lg));
     border: 2px solid transparent;
     text-decoration: none;
-    transition: all 0.3s ease;
+    transition: var(--theme-transition, all 0.3s ease);
     overflow: hidden;
 }
 
 .muaadh-brand-card:hover {
-    border-color: rgba(100, 100, 100, 0.3);
+    border-color: var(--theme-primary, rgba(195, 0, 47, 0.3));
     transform: translateY(-5px);
-    box-shadow: var(--muaadh-shadow-lg);
+    box-shadow: var(--theme-card-hover-shadow, var(--muaadh-shadow-lg));
 }
 
 .muaadh-brand-img {
@@ -14183,7 +14193,7 @@ div[id*='zoom_container'] .landmarks .lable div {
     display: flex;
     align-items: center;
     justify-content: center;
-    background: var(--muaadh-white);
+    background: var(--theme-bg-body, var(--muaadh-white));
     padding: 10px;
 }
 
@@ -14201,7 +14211,7 @@ div[id*='zoom_container'] .landmarks .lable div {
 .muaadh-brand-name {
     font-size: 0.9rem;
     font-weight: 600;
-    color: var(--muaadh-text);
+    color: var(--theme-text-primary, var(--muaadh-text));
     text-align: center;
     width: 100%;
     padding: 12px 10px;
@@ -14218,24 +14228,24 @@ div[id*='zoom_container'] .landmarks .lable div {
 .muaadh-category-card {
     width: 200px;
     display: block;
-    background: var(--muaadh-white);
-    border-radius: var(--muaadh-radius-lg);
+    background: var(--theme-card-bg, var(--muaadh-white));
+    border-radius: var(--theme-radius-lg, var(--muaadh-radius-lg));
     overflow: hidden;
     text-decoration: none;
-    border: 2px solid var(--muaadh-border);
-    transition: all 0.3s ease;
+    border: 2px solid var(--theme-card-border, var(--muaadh-border));
+    transition: var(--theme-transition, all 0.3s ease);
 }
 
 .muaadh-category-card:hover {
-    border-color: rgba(100, 100, 100, 0.3);
+    border-color: var(--theme-primary, rgba(195, 0, 47, 0.3));
     transform: translateY(-5px);
-    box-shadow: var(--muaadh-shadow-lg);
+    box-shadow: var(--theme-card-hover-shadow, var(--muaadh-shadow-lg));
 }
 
 .muaadh-category-img {
     position: relative;
     height: 150px;
-    background: var(--muaadh-bg-light);
+    background: var(--theme-bg-light, var(--muaadh-bg-light));
     overflow: hidden;
 }
 
@@ -14290,15 +14300,15 @@ div[id*='zoom_container'] .landmarks .lable div {
     align-items: flex-start;
     gap: 15px;
     padding: 25px;
-    background: var(--muaadh-white);
-    border-radius: var(--muaadh-radius-lg);
+    background: var(--theme-card-bg, var(--muaadh-white));
+    border-radius: var(--theme-radius-lg, var(--muaadh-radius-lg));
     border: 2px solid transparent;
-    transition: all 0.3s ease;
+    transition: var(--theme-transition, all 0.3s ease);
 }
 
 .muaadh-service-card:hover {
-    border-color: rgba(100, 100, 100, 0.3);
-    box-shadow: var(--muaadh-shadow);
+    border-color: var(--theme-primary, rgba(195, 0, 47, 0.3));
+    box-shadow: var(--theme-card-shadow, var(--muaadh-shadow));
 }
 
 .muaadh-service-icon {
@@ -14308,8 +14318,8 @@ div[id*='zoom_container'] .landmarks .lable div {
     display: flex;
     align-items: center;
     justify-content: center;
-    background: rgba(100, 100, 100, 0.15);
-    border-radius: var(--muaadh-radius);
+    background: var(--theme-primary-light, rgba(195, 0, 47, 0.1));
+    border-radius: var(--theme-radius, var(--muaadh-radius));
 }
 
 .muaadh-service-icon img {
@@ -14326,13 +14336,13 @@ div[id*='zoom_container'] .landmarks .lable div {
 .muaadh-service-title {
     font-size: 1rem;
     font-weight: 600;
-    color: var(--muaadh-text);
+    color: var(--theme-text-primary, var(--muaadh-text));
     margin-bottom: 8px;
 }
 
 .muaadh-service-desc {
     font-size: 0.85rem;
-    color: var(--muaadh-text-muted);
+    color: var(--theme-text-muted, var(--muaadh-text-muted));
     line-height: 1.5;
     margin-bottom: 0;
 }
@@ -14809,9 +14819,10 @@ div[id*='zoom_container'] .landmarks .lable div {
     z-index: 1050;
     max-height: 400px;
     overflow-y: auto;
-    background: var(--muaadh-white);
-    border-radius: var(--muaadh-radius);
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+    background: var(--theme-card-bg, var(--muaadh-white));
+    border: 1px solid var(--theme-border, transparent);
+    border-radius: var(--theme-radius, var(--muaadh-radius));
+    box-shadow: var(--theme-shadow-lg, 0 10px 40px rgba(0, 0, 0, 0.15));
     animation: muaadh-slideDown 0.2s ease;
 }
 
@@ -14826,8 +14837,8 @@ div[id*='zoom_container'] .landmarks .lable div {
     gap: 15px;
     padding: 15px 20px;
     cursor: pointer;
-    transition: all 0.2s ease;
-    border-bottom: 1px solid #f0f0f0;
+    transition: var(--theme-transition-fast, all 0.2s ease);
+    border-bottom: 1px solid var(--theme-border-light, #f0f0f0);
 }
 
 .muaadh-suggestion-item:last-child {
@@ -14835,7 +14846,7 @@ div[id*='zoom_container'] .landmarks .lable div {
 }
 
 .muaadh-suggestion-item:hover {
-    background: var(--muaadh-light);
+    background: var(--theme-bg-light, var(--muaadh-light));
     padding-inline-start: 25px;
 }
 
@@ -14845,9 +14856,9 @@ div[id*='zoom_container'] .landmarks .lable div {
     display: flex;
     align-items: center;
     justify-content: center;
-    background: var(--muaadh-light);
-    border-radius: 8px;
-    color: var(--muaadh-dark);
+    background: var(--theme-primary-light, var(--muaadh-light));
+    border-radius: var(--theme-radius-sm, 8px);
+    color: var(--theme-primary, var(--muaadh-dark));
     font-size: 1rem;
 }
 
@@ -14858,13 +14869,13 @@ div[id*='zoom_container'] .landmarks .lable div {
 
 .muaadh-suggestion-sku {
     font-weight: 700;
-    color: var(--muaadh-dark);
+    color: var(--theme-text-primary, var(--muaadh-dark));
     margin-bottom: 3px;
 }
 
 .muaadh-suggestion-label {
     font-size: 0.85rem;
-    color: var(--muaadh-text-muted);
+    color: var(--theme-text-muted, var(--muaadh-text-muted));
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
