@@ -472,14 +472,18 @@
                             <h4 class="theme-section-title"><i class="fas fa-magic"></i> {{ __('Quick Presets') }}</h4>
                             <p class="theme-section-desc">{{ __('Select a preset to quickly apply a complete color scheme') }}</p>
                             <div class="preset-grid">
-                                <button type="button" class="preset-btn" data-preset="nissan" style="background: linear-gradient(135deg, #c3002f 0%, #1a1a2e 100%); color: #fff;">{{ __('Nissan Red') }}</button>
-                                <button type="button" class="preset-btn" data-preset="blue" style="background: linear-gradient(135deg, #2563eb 0%, #0f172a 100%); color: #fff;">{{ __('Royal Blue') }}</button>
-                                <button type="button" class="preset-btn" data-preset="green" style="background: linear-gradient(135deg, #059669 0%, #14532d 100%); color: #fff;">{{ __('Emerald') }}</button>
-                                <button type="button" class="preset-btn" data-preset="purple" style="background: linear-gradient(135deg, #7c3aed 0%, #1e1b4b 100%); color: #fff;">{{ __('Purple') }}</button>
-                                <button type="button" class="preset-btn" data-preset="orange" style="background: linear-gradient(135deg, #ea580c 0%, #1c1917 100%); color: #fff;">{{ __('Sunset') }}</button>
-                                <button type="button" class="preset-btn" data-preset="teal" style="background: linear-gradient(135deg, #0d9488 0%, #134e4a 100%); color: #fff;">{{ __('Teal') }}</button>
-                                <button type="button" class="preset-btn" data-preset="gold" style="background: linear-gradient(135deg, #b8860b 0%, #1a1a2e 100%); color: #fff;">{{ __('Gold Luxury') }}</button>
-                                <button type="button" class="preset-btn" data-preset="rose" style="background: linear-gradient(135deg, #e11d48 0%, #18181b 100%); color: #fff;">{{ __('Rose') }}</button>
+                                <button type="button" class="preset-btn" data-preset="nissan" style="background: linear-gradient(135deg, #c3002f 0%, #1a1a2e 100%); color: #fff; box-shadow: 0 4px 12px rgba(195,0,47,0.3);">{{ __('Nissan Red') }}</button>
+                                <button type="button" class="preset-btn" data-preset="blue" style="background: linear-gradient(135deg, #2563eb 0%, #0f172a 100%); color: #fff; box-shadow: 0 4px 12px rgba(37,99,235,0.3);">{{ __('Royal Blue') }}</button>
+                                <button type="button" class="preset-btn" data-preset="green" style="background: linear-gradient(135deg, #059669 0%, #14532d 100%); color: #fff; box-shadow: 0 4px 12px rgba(5,150,105,0.3);">{{ __('Emerald') }}</button>
+                                <button type="button" class="preset-btn" data-preset="purple" style="background: linear-gradient(135deg, #7c3aed 0%, #1e1b4b 100%); color: #fff; box-shadow: 0 4px 12px rgba(124,58,237,0.3);">{{ __('Purple') }}</button>
+                                <button type="button" class="preset-btn" data-preset="orange" style="background: linear-gradient(135deg, #ea580c 0%, #1c1917 100%); color: #fff; box-shadow: 0 4px 12px rgba(234,88,12,0.3);">{{ __('Sunset') }}</button>
+                                <button type="button" class="preset-btn" data-preset="teal" style="background: linear-gradient(135deg, #0d9488 0%, #134e4a 100%); color: #fff; box-shadow: 0 4px 12px rgba(13,148,136,0.3);">{{ __('Teal') }}</button>
+                                <button type="button" class="preset-btn" data-preset="gold" style="background: linear-gradient(135deg, #b8860b 0%, #1a1a2e 100%); color: #fff; box-shadow: 0 4px 12px rgba(184,134,11,0.3);">{{ __('Gold Luxury') }}</button>
+                                <button type="button" class="preset-btn" data-preset="rose" style="background: linear-gradient(135deg, #e11d48 0%, #18181b 100%); color: #fff; box-shadow: 0 4px 12px rgba(225,29,72,0.3);">{{ __('Rose') }}</button>
+                                <button type="button" class="preset-btn" data-preset="ocean" style="background: linear-gradient(135deg, #0891b2 0%, #164e63 100%); color: #fff; box-shadow: 0 4px 12px rgba(8,145,178,0.3);">{{ __('Ocean Blue') }}</button>
+                                <button type="button" class="preset-btn" data-preset="forest" style="background: linear-gradient(135deg, #16a34a 0%, #14532d 100%); color: #fff; box-shadow: 0 4px 12px rgba(22,163,74,0.3);">{{ __('Forest Green') }}</button>
+                                <button type="button" class="preset-btn" data-preset="midnight" style="background: linear-gradient(135deg, #4f46e5 0%, #1e1b4b 100%); color: #fff; box-shadow: 0 4px 12px rgba(79,70,229,0.3);">{{ __('Midnight') }}</button>
+                                <button type="button" class="preset-btn" data-preset="crimson" style="background: linear-gradient(135deg, #dc2626 0%, #7f1d1d 100%); color: #fff; box-shadow: 0 4px 12px rgba(220,38,38,0.3);">{{ __('Crimson') }}</button>
                             </div>
                         </div>
 
@@ -1542,6 +1546,46 @@ $(document).ready(function() {
             theme_success: '#22c55e', theme_warning: '#f59e0b', theme_danger: '#e11d48', theme_info: '#06b6d4',
             theme_border: '#f5d0d7', theme_border_light: '#fdf2f4', theme_border_dark: '#e8b4be',
             theme_header_bg: '#ffffff', theme_footer_bg: '#18181b', theme_footer_text: '#fafafa', theme_footer_link_hover: '#fb7185'
+        },
+        ocean: {
+            // أزرق محيطي مع فيروزي
+            theme_primary: '#0891b2', theme_primary_hover: '#0e7490', theme_primary_dark: '#155e75', theme_primary_light: '#ecfeff',
+            theme_secondary: '#164e63', theme_secondary_hover: '#0e7490', theme_secondary_light: '#0891b2',
+            theme_text_primary: '#164e63', theme_text_secondary: '#0e7490', theme_text_muted: '#06b6d4', theme_text_light: '#67e8f9',
+            theme_bg_body: '#ffffff', theme_bg_light: '#f0fdff', theme_bg_gray: '#e0f7fa', theme_bg_dark: '#164e63',
+            theme_success: '#10b981', theme_warning: '#f59e0b', theme_danger: '#ef4444', theme_info: '#06b6d4',
+            theme_border: '#b3e5f0', theme_border_light: '#e0f7fa', theme_border_dark: '#80d4e6',
+            theme_header_bg: '#ffffff', theme_footer_bg: '#164e63', theme_footer_text: '#ecfeff', theme_footer_link_hover: '#22d3ee'
+        },
+        forest: {
+            // أخضر غابات مع بني دافئ
+            theme_primary: '#16a34a', theme_primary_hover: '#15803d', theme_primary_dark: '#166534', theme_primary_light: '#f0fdf4',
+            theme_secondary: '#14532d', theme_secondary_hover: '#166534', theme_secondary_light: '#15803d',
+            theme_text_primary: '#14532d', theme_text_secondary: '#166534', theme_text_muted: '#15803d', theme_text_light: '#4ade80',
+            theme_bg_body: '#ffffff', theme_bg_light: '#f7fef9', theme_bg_gray: '#e8f5e9', theme_bg_dark: '#14532d',
+            theme_success: '#22c55e', theme_warning: '#d97706', theme_danger: '#dc2626', theme_info: '#0891b2',
+            theme_border: '#c8e6c9', theme_border_light: '#e8f5e9', theme_border_dark: '#a5d6a7',
+            theme_header_bg: '#ffffff', theme_footer_bg: '#14532d', theme_footer_text: '#f0fdf4', theme_footer_link_hover: '#4ade80'
+        },
+        midnight: {
+            // أزرق منتصف الليل مع ذهبي
+            theme_primary: '#4f46e5', theme_primary_hover: '#4338ca', theme_primary_dark: '#3730a3', theme_primary_light: '#eef2ff',
+            theme_secondary: '#1e1b4b', theme_secondary_hover: '#312e81', theme_secondary_light: '#4338ca',
+            theme_text_primary: '#1e1b4b', theme_text_secondary: '#312e81', theme_text_muted: '#6366f1', theme_text_light: '#a5b4fc',
+            theme_bg_body: '#ffffff', theme_bg_light: '#f5f7ff', theme_bg_gray: '#e0e7ff', theme_bg_dark: '#1e1b4b',
+            theme_success: '#10b981', theme_warning: '#f59e0b', theme_danger: '#ef4444', theme_info: '#06b6d4',
+            theme_border: '#c7d2fe', theme_border_light: '#e0e7ff', theme_border_dark: '#a5b4fc',
+            theme_header_bg: '#ffffff', theme_footer_bg: '#1e1b4b', theme_footer_text: '#eef2ff', theme_footer_link_hover: '#818cf8'
+        },
+        crimson: {
+            // أحمر قرمزي مع رمادي فحمي
+            theme_primary: '#dc2626', theme_primary_hover: '#b91c1c', theme_primary_dark: '#991b1b', theme_primary_light: '#fef2f2',
+            theme_secondary: '#7f1d1d', theme_secondary_hover: '#991b1b', theme_secondary_light: '#b91c1c',
+            theme_text_primary: '#7f1d1d', theme_text_secondary: '#991b1b', theme_text_muted: '#dc2626', theme_text_light: '#f87171',
+            theme_bg_body: '#ffffff', theme_bg_light: '#fef8f8', theme_bg_gray: '#fee2e2', theme_bg_dark: '#7f1d1d',
+            theme_success: '#10b981', theme_warning: '#f59e0b', theme_danger: '#dc2626', theme_info: '#3b82f6',
+            theme_border: '#fecaca', theme_border_light: '#fee2e2', theme_border_dark: '#fca5a5',
+            theme_header_bg: '#ffffff', theme_footer_bg: '#7f1d1d', theme_footer_text: '#fef2f2', theme_footer_link_hover: '#f87171'
         }
     };
 

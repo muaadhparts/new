@@ -38,13 +38,21 @@
     <link rel="stylesheet" href="{{ asset('assets/front/css/animate.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/front/css/toastr.min.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/front/css/datatables.min.css') }}">
+    {{-- Theme Colors - Generated from Admin Panel (MUST load first) --}}
+    <link rel="stylesheet" href="{{ asset('assets/front/css/theme-colors.css') }}?v={{ filemtime(public_path('assets/front/css/theme-colors.css')) }}">
+    
+    {{-- Unified Buttons System - MUST load after theme-colors --}}
+    <link rel="stylesheet" href="{{ asset('assets/front/css/unified-buttons.css') }}?v={{ time() }}">
+    
+    {{-- Muaadh Unified System - Bridges muaadh-* classes with theme system --}}
+    <link rel="stylesheet" href="{{ asset('assets/front/css/muaadh-unified.css') }}?v={{ time() }}">
+    
     {{-- Main Theme File - Contains all styles --}}
     <link rel="stylesheet" href="{{ asset('assets/front/css/style.css') }}?v={{ time() }}">
+    
     @if($langg && $langg->rtl == 1)
         <link rel="stylesheet" href="{{ asset('assets/front/css/rtl.css') }}">
     @endif
-    {{-- Theme Colors - Generated from Admin Panel (overrides :root variables) --}}
-    <link rel="stylesheet" href="{{ asset('assets/front/css/theme-colors.css') }}?v={{ filemtime(public_path('assets/front/css/theme-colors.css')) }}">
     {{-- AutoComplete.js for search --}}
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tarekraafat/autocomplete.js@10.2.9/dist/css/autoComplete.min.css">
     <script src="https://cdn.jsdelivr.net/npm/@tarekraafat/autocomplete.js@10.2.9/dist/autoComplete.min.js"></script>
