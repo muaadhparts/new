@@ -1,0 +1,396 @@
+/**
+ * ========================================
+ * UNIFIED BUTTON SYSTEM
+ * ========================================
+ * Single source of truth for all button styles
+ * All buttons use theme-colors.css variables
+ * Last Updated: 2025-12-07
+ * 
+ * This file consolidates all button styles from style.css
+ * and ensures they all use theme variables as the single source
+ */
+
+/* ========================================
+   BASE BUTTON STYLES
+   ======================================== */
+.btn,
+.template-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--theme-btn-padding-y) var(--theme-btn-padding-x);
+  font-size: var(--theme-btn-font-size);
+  font-weight: var(--theme-btn-font-weight);
+  font-family: var(--theme-font-primary);
+  line-height: 1.5;
+  border-radius: var(--theme-btn-radius);
+  border: 1px solid transparent;
+  cursor: pointer;
+  text-decoration: none;
+  text-align: center;
+  white-space: nowrap;
+  transition: var(--theme-transition-fast);
+  box-shadow: var(--theme-btn-shadow);
+  height: 56px;
+  gap: 8px;
+}
+
+.btn:focus,
+.template-btn:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(var(--theme-primary-rgb), 0.2);
+}
+
+.btn:disabled,
+.template-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* ========================================
+   BUTTON ROLES - PRIMARY
+   ======================================== */
+.btn-primary,
+.template-btn:not([class*="-btn"]):not(.outline-btn):not(.dark-outline) {
+  background-color: var(--theme-btn-primary-bg) !important;
+  color: var(--theme-btn-primary-text) !important;
+  border-color: var(--theme-btn-primary-border);
+}
+
+.btn-primary:hover:not(:disabled),
+.template-btn:not([class*="-btn"]):not(.outline-btn):not(.dark-outline):hover:not(:disabled) {
+  background-color: var(--theme-btn-primary-hover-bg) !important;
+  border-color: var(--theme-btn-primary-hover-bg);
+  box-shadow: var(--theme-btn-shadow-hover);
+  transform: translateY(-1px);
+}
+
+.btn-primary:active:not(:disabled),
+.template-btn:not([class*="-btn"]):not(.outline-btn):not(.dark-outline):active:not(:disabled) {
+  transform: translateY(0);
+}
+
+/* ========================================
+   BUTTON ROLES - SECONDARY
+   ======================================== */
+.btn-secondary,
+.template-btn.dark-btn,
+.template-btn.black-btn {
+  background-color: var(--theme-btn-secondary-bg) !important;
+  color: var(--theme-btn-secondary-text) !important;
+  border-color: var(--theme-btn-secondary-border);
+}
+
+.btn-secondary:hover:not(:disabled),
+.template-btn.dark-btn:hover:not(:disabled),
+.template-btn.black-btn:hover:not(:disabled) {
+  background-color: var(--theme-btn-secondary-hover-bg) !important;
+  border-color: var(--theme-btn-secondary-hover-bg);
+  box-shadow: var(--theme-btn-shadow-hover);
+  transform: translateY(-1px);
+}
+
+/* ========================================
+   BUTTON ROLES - SUCCESS
+   ======================================== */
+.btn-success,
+.template-btn.green-btn {
+  background-color: var(--theme-btn-success-bg) !important;
+  color: var(--theme-btn-success-text) !important;
+  border-color: var(--theme-btn-success-border);
+}
+
+.btn-success:hover:not(:disabled),
+.template-btn.green-btn:hover:not(:disabled) {
+  background-color: var(--theme-btn-success-hover-bg) !important;
+  border-color: var(--theme-btn-success-hover-bg);
+  box-shadow: var(--theme-btn-shadow-hover);
+  transform: translateY(-1px);
+}
+
+/* ========================================
+   BUTTON ROLES - DANGER
+   ======================================== */
+.btn-danger,
+.template-btn.danger-btn {
+  background-color: var(--theme-btn-danger-bg) !important;
+  color: var(--theme-btn-danger-text) !important;
+  border-color: var(--theme-btn-danger-border);
+}
+
+.btn-danger:hover:not(:disabled),
+.template-btn.danger-btn:hover:not(:disabled) {
+  background-color: var(--theme-btn-danger-hover-bg) !important;
+  border-color: var(--theme-btn-danger-hover-bg);
+  box-shadow: var(--theme-btn-shadow-hover);
+  transform: translateY(-1px);
+}
+
+/* ========================================
+   BUTTON ROLES - WARNING
+   ======================================== */
+.btn-warning,
+.template-btn.yellow-btn {
+  background-color: var(--theme-btn-warning-bg) !important;
+  color: var(--theme-btn-warning-text) !important;
+  border-color: var(--theme-btn-warning-border);
+}
+
+.btn-warning:hover:not(:disabled),
+.template-btn.yellow-btn:hover:not(:disabled) {
+  background-color: var(--theme-btn-warning-hover-bg) !important;
+  border-color: var(--theme-btn-warning-hover-bg);
+  box-shadow: var(--theme-btn-shadow-hover);
+  transform: translateY(-1px);
+}
+
+/* ========================================
+   BUTTON ROLES - INFO
+   ======================================== */
+.btn-info {
+  background-color: var(--theme-btn-info-bg) !important;
+  color: var(--theme-btn-info-text) !important;
+  border-color: var(--theme-btn-info-border);
+}
+
+.btn-info:hover:not(:disabled) {
+  background-color: var(--theme-btn-info-hover-bg) !important;
+  border-color: var(--theme-btn-info-hover-bg);
+  box-shadow: var(--theme-btn-shadow-hover);
+  transform: translateY(-1px);
+}
+
+/* ========================================
+   BUTTON ROLES - OUTLINE
+   ======================================== */
+.btn-outline-primary,
+.template-btn.outline-btn,
+.template-btn.outlinee-btn {
+  background-color: var(--theme-btn-outline-bg) !important;
+  color: var(--theme-primary) !important;
+  border: 1px solid var(--theme-primary) !important;
+  font-weight: 600;
+}
+
+.btn-outline-primary:hover:not(:disabled),
+.template-btn.outline-btn:hover:not(:disabled),
+.template-btn.outlinee-btn:hover:not(:disabled) {
+  background-color: var(--theme-btn-outline-hover-bg) !important;
+  color: var(--theme-primary-hover) !important;
+  border-color: var(--theme-btn-outline-hover-border) !important;
+}
+
+.btn-outline-secondary,
+.template-btn.dark-outline {
+  background-color: var(--theme-btn-outline-bg) !important;
+  color: var(--theme-secondary) !important;
+  border: 1px solid var(--theme-secondary) !important;
+}
+
+.btn-outline-secondary:hover:not(:disabled),
+.template-btn.dark-outline:hover:not(:disabled) {
+  background-color: var(--theme-secondary) !important;
+  color: var(--theme-text-white) !important;
+  border-color: var(--theme-secondary) !important;
+}
+
+.template-btn.dark-outline svg path {
+  transition: var(--theme-transition-fast);
+}
+
+.template-btn.dark-outline:hover svg path {
+  fill: var(--theme-text-white);
+}
+
+.btn-outline-danger {
+  background-color: var(--theme-btn-outline-bg) !important;
+  color: var(--theme-danger) !important;
+  border: 1px solid var(--theme-danger) !important;
+}
+
+.btn-outline-danger:hover:not(:disabled) {
+  background-color: var(--theme-danger) !important;
+  color: var(--theme-text-white) !important;
+  border-color: var(--theme-danger) !important;
+}
+
+.btn-outline-success {
+  background-color: var(--theme-btn-outline-bg) !important;
+  color: var(--theme-success) !important;
+  border: 1px solid var(--theme-success) !important;
+}
+
+.btn-outline-success:hover:not(:disabled) {
+  background-color: var(--theme-success) !important;
+  color: var(--theme-text-white) !important;
+  border-color: var(--theme-success) !important;
+}
+
+.btn-outline-info {
+  background-color: var(--theme-btn-outline-bg) !important;
+  color: var(--theme-info) !important;
+  border: 1px solid var(--theme-info) !important;
+}
+
+.btn-outline-info:hover:not(:disabled) {
+  background-color: var(--theme-info) !important;
+  color: var(--theme-text-white) !important;
+  border-color: var(--theme-info) !important;
+}
+
+.btn-outline-light {
+  background-color: var(--theme-btn-outline-bg) !important;
+  color: var(--theme-text-white) !important;
+  border: 1px solid rgba(255, 255, 255, 0.5) !important;
+}
+
+.btn-outline-light:hover:not(:disabled) {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+  color: var(--theme-text-white) !important;
+  border-color: var(--theme-text-white) !important;
+}
+
+/* ========================================
+   BUTTON ROLES - GHOST
+   ======================================== */
+.btn-ghost {
+  background-color: var(--theme-btn-ghost-bg) !important;
+  color: var(--theme-btn-ghost-text) !important;
+  border-color: var(--theme-btn-ghost-border);
+}
+
+.btn-ghost:hover:not(:disabled) {
+  background-color: var(--theme-btn-ghost-hover-bg) !important;
+}
+
+/* ========================================
+   BUTTON SIZES
+   ======================================== */
+.btn-sm,
+.template-btn.sm-btn {
+  padding: 8px 16px;
+  font-size: 14px;
+  height: 30px;
+  line-height: 150%;
+}
+
+.btn-md,
+.template-btn.md-btn {
+  padding: 8px 20px;
+  font-size: 14px;
+  height: 36px;
+  line-height: 150%;
+}
+
+.btn-lg,
+.template-btn.lg-btn {
+  padding: 10px 20px;
+  font-size: 16px;
+  height: 48px;
+  border-radius: 4px;
+}
+
+/* ========================================
+   BUTTON WIDTHS
+   ======================================== */
+.btn-block,
+.w-100 {
+  width: 100%;
+  display: block;
+}
+
+/* ========================================
+   SPECIAL CONTEXT OVERRIDES
+   ======================================== */
+
+/* Extra Basic Plan */
+.gs-extra-basic-plan .template-btn.outline-btn:hover {
+  background-color: var(--theme-primary) !important;
+  color: var(--theme-text-white) !important;
+  border: 1px solid var(--theme-primary) !important;
+}
+
+.gs-extra-basic-plan:hover .template-btn.outline-btn {
+  background-color: var(--theme-primary) !important;
+  color: var(--theme-text-white) !important;
+  border: 1px solid var(--theme-primary) !important;
+}
+
+/* User Table Actions */
+.user-table td.actions .actions-btns-wrapper .template-btn.md-btn,
+.user-table td .actions .actions-btns-wrapper .template-btn.md-btn {
+  padding: 8px 16px;
+}
+
+.user-table td.actions .actions-btns-wrapper .template-btn:hover {
+  background-color: var(--theme-btn-primary-hover-bg) !important;
+}
+
+/* Search Box Form */
+.gs-extra-search-box-form .template-btn {
+  border-top-left-radius: 0px;
+  border-bottom-left-radius: 0px;
+  height: 56px;
+}
+
+/* Overlayed Image Wrapper */
+.overlayed-img-wrapper .template-btn {
+  font-size: 14px;
+  padding: 0 16px;
+}
+
+/* Single Product Details */
+.single-product-details-content-wrapper .store-seller-wrapper .action-btns-wrapper .template-btn {
+  padding: 8px 20px;
+}
+
+/* Attachment Box */
+.attachment-box .template-btn {
+  margin-top: 8px;
+}
+
+.attachment-box .template-btn.outline-btn {
+  font-weight: 400;
+}
+
+/* ========================================
+   RESPONSIVE ADJUSTMENTS
+   ======================================== */
+@media (max-width: 1199.97px) {
+  .btn,
+  .template-btn {
+    height: 48px;
+    padding: 10px 20px;
+    font-size: 16px;
+  }
+}
+
+@media (max-width: 767.98px) {
+  .gs-extra-search-box-form .template-btn {
+    height: 46px;
+  }
+}
+
+@media (max-width: 575.97px) {
+  .btn,
+  .template-btn {
+    font-size: 14px;
+    height: 40px;
+  }
+}
+
+/* ========================================
+   RTL SUPPORT
+   ======================================== */
+[dir="rtl"] .btn,
+[dir="rtl"] .template-btn {
+  /* RTL-specific adjustments if needed */
+}
+
+[dir="rtl"] .gs-extra-search-box-form .template-btn {
+  border-top-left-radius: var(--theme-btn-radius);
+  border-bottom-left-radius: var(--theme-btn-radius);
+  border-top-right-radius: 0px;
+  border-bottom-right-radius: 0px;
+}

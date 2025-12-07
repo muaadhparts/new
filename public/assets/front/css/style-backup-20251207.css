@@ -16127,14 +16127,228 @@ div[id*='zoom_container'] .landmarks .lable div {
 
 /* ============================================================================
    B50 — STYLE.CSS COLOR OVERRIDES
-    color: var(--muaadh-primary) !important;
-/* ============================================================================
-   THEME COLORS INTEGRATION - MOVED TO unified-buttons.css
    ============================================================================
-   All button styles have been consolidated in unified-buttons.css
-   This section has been removed to prevent duplication.
-   Load unified-buttons.css after theme-colors.css in your layout.
+   These overrides replace hardcoded colors from style.css with CSS variables
+   so they respond to theme-colors.css changes from admin panel.
    ============================================================================ */
+
+/* Template Buttons */
+.template-btn {
+    background: var(--muaadh-primary) !important;
+}
+.template-btn:hover {
+    background: var(--muaadh-primary-hover) !important;
+}
+.template-btn.outline-btn:hover {
+    color: var(--muaadh-primary) !important;
+    border: 1px solid var(--muaadh-primary) !important;
+}
+.template-btn.outlinee-btn {
+    border: 1px solid var(--muaadh-primary) !important;
+    color: var(--muaadh-primary) !important;
+}
+
+/* Active Tab */
+.active-tab-btn.active {
+    color: var(--muaadh-primary) !important;
+}
+
+/* Checkbox & Radio */
+.gs-checkbox-wrapper input[type=checkbox]:checked + .icon-label {
+    border-color: var(--muaadh-primary) !important;
+}
+.gs-radio-wrapper input[type=radio]:checked + .icon-label {
+    border-color: var(--muaadh-primary) !important;
+}
+
+/* Pagination */
+.gs-pagination li.active a {
+    background-color: var(--muaadh-primary) !important;
+    border-color: var(--muaadh-primary) !important;
+}
+.gs-pagination li a:hover {
+    background-color: var(--muaadh-primary) !important;
+    border-color: var(--muaadh-primary) !important;
+}
+
+/* Category Hover */
+.gs-single-cat:hover h6 {
+    color: var(--muaadh-primary) !important;
+}
+
+/* Wishlist Button */
+.single-product .img-wrapper .add-to-wishlist-btn.active svg path,
+.single-product-list-view .img-wrapper .add-to-wishlist-btn.active svg path {
+    stroke: var(--muaadh-primary) !important;
+    fill: var(--muaadh-primary) !important;
+}
+.single-product .img-wrapper .add-to-wishlist-btn:hover svg path,
+.single-product-list-view .img-wrapper .add-to-wishlist-btn:hover svg path {
+    stroke: var(--muaadh-primary) !important;
+}
+
+/* Product Details Hover */
+.single-product .details:hover,
+.single-product-list-view .details:hover {
+    background-color: var(--muaadh-primary) !important;
+}
+
+/* Product Title Hover */
+.single-product:hover .product-title,
+.single-product-list-view:hover .product-title {
+    color: var(--muaadh-primary) !important;
+}
+.single-product:hover .product-title a,
+.single-product-list-view:hover .product-title a {
+    color: var(--muaadh-primary) !important;
+}
+
+/* Compare & Details Hover */
+.single-product-list-view .compare:hover,
+.single-product-list-view .details:hover {
+    background-color: var(--muaadh-primary) !important;
+}
+
+/* Category Badge Border */
+.gs-sm-category-badge {
+    border: 1px solid var(--muaadh-primary) !important;
+}
+
+/* Blog & Post Hovers */
+.gs-sm-recent-post-wrapper .recent-post:hover .post-title {
+    color: var(--muaadh-primary) !important;
+}
+.gs-main-single-blog:hover .right-side-content .title {
+    color: var(--muaadh-primary) !important;
+}
+.single-blog-widget .cat-wrapper li a:hover {
+    color: var(--muaadh-primary) !important;
+}
+.single-blog-widget .tags-wrapper li a:hover {
+    background-color: var(--muaadh-primary) !important;
+}
+
+/* Recent Product Widget */
+.gs-single-recent-product-widget:hover .content-wrapper .title {
+    color: var(--muaadh-primary) !important;
+}
+
+/* Latest Post Section */
+.gs-latest-post-section .single-post .post-content .post-title:hover {
+    color: var(--muaadh-primary) !important;
+}
+.gs-latest-post-section .single-post .post-content .read-more:hover {
+    color: var(--muaadh-primary) !important;
+}
+
+/* Extra Basic Plan */
+.gs-extra-basic-plan .template-btn.outline-btn:hover {
+    background-color: var(--muaadh-primary) !important;
+    border: 1px solid var(--muaadh-primary) !important;
+}
+.gs-extra-basic-plan:hover .template-btn.outline-btn {
+    background-color: var(--muaadh-primary) !important;
+    border: 1px solid var(--muaadh-primary) !important;
+}
+
+/* Links & Text Hovers */
+a:hover {
+    color: var(--muaadh-primary);
+}
+
+/* Nav Links */
+.gs-nav-link:hover,
+.gs-nav-link.active {
+    color: var(--muaadh-primary) !important;
+}
+
+/* Breadcrumb Active */
+.breadcrumb-item.active {
+    color: var(--muaadh-primary) !important;
+}
+
+/* Form Focus States */
+.form-control:focus {
+    border-color: var(--muaadh-primary) !important;
+}
+
+/* Tabs */
+.nav-tabs .nav-link.active {
+    color: var(--muaadh-primary) !important;
+    border-bottom-color: var(--muaadh-primary) !important;
+}
+
+/* Price Text */
+.price-text,
+.product-price {
+    color: var(--muaadh-primary) !important;
+}
+
+/* Add to Cart & Quick View */
+.add-to-cart-btn,
+.quick-view-btn {
+    background-color: var(--muaadh-primary) !important;
+}
+.add-to-cart-btn:hover,
+.quick-view-btn:hover {
+    background-color: var(--muaadh-primary-hover) !important;
+}
+
+/* Section Titles & Headings */
+.section-title span,
+.section-heading span {
+    color: var(--muaadh-primary) !important;
+}
+
+/* Footer Links */
+.footer-links a:hover {
+    color: var(--muaadh-primary) !important;
+}
+
+/* Social Icons */
+.social-icons a:hover {
+    background-color: var(--muaadh-primary) !important;
+    border-color: var(--muaadh-primary) !important;
+}
+
+/* Scroll to Top */
+.scroll-to-top {
+    background-color: var(--muaadh-primary) !important;
+}
+.scroll-to-top:hover {
+    background-color: var(--muaadh-primary-hover) !important;
+}
+
+/* Search Results */
+.search-results-item:hover .title {
+    color: var(--muaadh-primary) !important;
+}
+
+/* User Table Actions */
+.user-table td.actions .actions-btns-wrapper .template-btn:hover {
+    background-color: var(--muaadh-primary-hover) !important;
+}
+
+/* Vendor Sidebar */
+.gs-user-sidebar-menu-wrapper .sidebar-menu li a:hover,
+.gs-user-sidebar-menu-wrapper .sidebar-menu li a.active {
+    color: var(--muaadh-primary) !important;
+}
+
+/* Card Hovers */
+.card:hover .card-title a {
+    color: var(--muaadh-primary) !important;
+}
+
+/* Add to Cart Buttons */
+.single-product .add-cart:hover,
+.single-product-list-view .add-cart:hover {
+    background-color: var(--muaadh-primary) !important;
+}
+
+/* Cart Page Title Hover */
+.gs-cart-section .gs-cart-container .gs-cart-row .cart-table .table tbody .cart-product .cart-product-info a.cart-title:hover {
+    color: var(--muaadh-primary) !important;
 }
 
 /* Deal of Day Countdown */
