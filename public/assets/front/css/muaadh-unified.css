@@ -1,0 +1,376 @@
+/**
+ * ========================================
+ * MUAADH UNIFIED SYSTEM
+ * ========================================
+ * Bridges muaadh-* classes with unified theme system
+ * All muaadh classes now use theme-colors.css variables
+ * Last Updated: 2025-12-07
+ */
+
+/* ========================================
+   MUAADH BUTTONS - NOW USING THEME VARS
+   ======================================== */
+.muaadh-btn {
+  display: inline-flex;
+  height: 56px;
+  padding: var(--theme-btn-padding-y) var(--theme-btn-padding-x);
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+  border-radius: var(--theme-btn-radius);
+  background: var(--theme-btn-primary-bg) !important;
+  color: var(--theme-btn-primary-text) !important;
+  font-family: var(--theme-font-primary);
+  font-size: var(--theme-btn-font-size);
+  font-weight: var(--theme-btn-font-weight);
+  line-height: var(--theme-line-height);
+  text-transform: capitalize;
+  text-decoration: none;
+  border: none;
+  cursor: pointer;
+  transition: var(--theme-transition-fast);
+}
+
+.muaadh-btn:hover {
+  background: var(--theme-btn-primary-hover-bg) !important;
+  color: var(--theme-btn-primary-text) !important;
+  box-shadow: var(--theme-btn-shadow-hover);
+  transform: translateY(-1px);
+}
+
+.muaadh-btn:disabled,
+.muaadh-btn.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* Button Sizes */
+.muaadh-btn-lg {
+  height: 48px;
+  padding: 10px 20px;
+  font-size: 16px;
+  border-radius: 4px;
+}
+
+.muaadh-btn-md {
+  height: 36px;
+  padding: 8px 20px;
+  font-size: 14px;
+  border-radius: 4px;
+}
+
+.muaadh-btn-sm {
+  height: 30px;
+  padding: 8px 16px;
+  font-size: 14px;
+  border-radius: 4px;
+}
+
+/* Button Variants */
+.muaadh-btn-primary {
+  background: var(--theme-btn-primary-bg) !important;
+  color: var(--theme-btn-primary-text) !important;
+}
+.muaadh-btn-primary:hover {
+  background: var(--theme-btn-primary-hover-bg) !important;
+}
+
+.muaadh-btn-success {
+  background: var(--theme-btn-success-bg) !important;
+  color: var(--theme-btn-success-text) !important;
+}
+.muaadh-btn-success:hover {
+  background: var(--theme-btn-success-hover-bg) !important;
+}
+
+.muaadh-btn-warning {
+  background: var(--theme-btn-warning-bg) !important;
+  color: var(--theme-btn-warning-text) !important;
+}
+.muaadh-btn-warning:hover {
+  background: var(--theme-btn-warning-hover-bg) !important;
+}
+
+.muaadh-btn-danger {
+  background: var(--theme-btn-danger-bg) !important;
+  color: var(--theme-btn-danger-text) !important;
+}
+.muaadh-btn-danger:hover {
+  background: var(--theme-btn-danger-hover-bg) !important;
+}
+
+.muaadh-btn-info {
+  background: var(--theme-btn-info-bg) !important;
+  color: var(--theme-btn-info-text) !important;
+}
+.muaadh-btn-info:hover {
+  background: var(--theme-btn-info-hover-bg) !important;
+}
+
+.muaadh-btn-secondary {
+  background: var(--theme-btn-secondary-bg) !important;
+  color: var(--theme-btn-secondary-text) !important;
+}
+.muaadh-btn-secondary:hover {
+  background: var(--theme-btn-secondary-hover-bg) !important;
+}
+
+.muaadh-btn-dark {
+  background: var(--theme-secondary) !important;
+  color: var(--theme-text-white) !important;
+}
+.muaadh-btn-dark:hover {
+  background: var(--theme-secondary-hover) !important;
+}
+
+/* Outline Buttons */
+.muaadh-btn-outline {
+  background: transparent !important;
+  border: 1px solid var(--theme-border-dark) !important;
+  color: var(--theme-text-primary) !important;
+  font-weight: 600;
+}
+.muaadh-btn-outline:hover {
+  color: var(--theme-primary) !important;
+  border-color: var(--theme-primary) !important;
+  background: var(--theme-bg-light) !important;
+}
+
+.muaadh-btn-outline-primary {
+  background: transparent !important;
+  border: 1px solid var(--theme-primary) !important;
+  color: var(--theme-primary) !important;
+}
+.muaadh-btn-outline-primary:hover {
+  background: var(--theme-primary) !important;
+  color: var(--theme-text-white) !important;
+}
+
+.muaadh-btn-outline-dark {
+  background: var(--theme-card-bg) !important;
+  border: 1px solid var(--theme-secondary) !important;
+  color: var(--theme-secondary) !important;
+}
+.muaadh-btn-outline-dark:hover {
+  background: var(--theme-secondary) !important;
+  border-color: var(--theme-secondary) !important;
+  color: var(--theme-text-white) !important;
+}
+
+/* ========================================
+   MUAADH HEADER STYLES
+   ======================================== */
+.muaadh-header {
+  background: var(--theme-header-bg);
+  box-shadow: var(--theme-header-shadow);
+}
+
+.muaadh-topbar {
+  background: var(--theme-bg-lighter);
+  border-bottom: 1px solid var(--theme-border);
+  padding: 8px 0;
+}
+
+.muaadh-topbar-link {
+  color: var(--theme-text-secondary);
+  text-decoration: none;
+  transition: var(--theme-transition-fast);
+}
+
+.muaadh-topbar-link:hover {
+  color: var(--theme-primary);
+}
+
+.muaadh-dropdown-toggle {
+  background: transparent;
+  border: none;
+  color: var(--theme-text-secondary);
+  cursor: pointer;
+  transition: var(--theme-transition-fast);
+}
+
+.muaadh-dropdown-toggle:hover {
+  color: var(--theme-primary);
+}
+
+.muaadh-dropdown-menu {
+  background: var(--theme-card-bg);
+  border: 1px solid var(--theme-border);
+  border-radius: var(--theme-radius-sm);
+  box-shadow: var(--theme-shadow-lg);
+}
+
+.muaadh-dropdown-item {
+  color: var(--theme-text-primary);
+  padding: 8px 16px;
+  text-decoration: none;
+  transition: var(--theme-transition-fast);
+}
+
+.muaadh-dropdown-item:hover {
+  background: var(--theme-bg-light);
+  color: var(--theme-primary);
+}
+
+.muaadh-dropdown-item.active {
+  background: var(--theme-primary-light);
+  color: var(--theme-primary);
+  font-weight: 600;
+}
+
+.muaadh-main-header {
+  background: var(--theme-header-bg);
+  padding: 16px 0;
+}
+
+.muaadh-logo img {
+  max-height: var(--theme-header-height);
+  width: auto;
+}
+
+.muaadh-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background: var(--theme-card-bg);
+  color: var(--theme-text-primary);
+  border: 1px solid var(--theme-border);
+  border-radius: var(--theme-radius-sm);
+  text-decoration: none;
+  transition: var(--theme-transition-fast);
+  cursor: pointer;
+}
+
+.muaadh-action-btn:hover {
+  background: var(--theme-bg-light);
+  border-color: var(--theme-primary);
+  color: var(--theme-primary);
+  transform: translateY(-2px);
+  box-shadow: var(--theme-shadow-sm);
+}
+
+.muaadh-cart-btn {
+  position: relative;
+}
+
+.muaadh-cart-btn .badge {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  background: var(--theme-danger);
+  color: var(--theme-text-white);
+  border-radius: 50%;
+  padding: 2px 6px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+/* ========================================
+   MUAADH MOBILE TOGGLE
+   ======================================== */
+.muaadh-mobile-toggle {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  background: transparent;
+  border: none;
+  padding: 8px;
+  cursor: pointer;
+}
+
+.muaadh-mobile-toggle span {
+  display: block;
+  width: 24px;
+  height: 2px;
+  background: var(--theme-text-primary);
+  transition: var(--theme-transition-fast);
+}
+
+.muaadh-mobile-toggle:hover span {
+  background: var(--theme-primary);
+}
+
+/* ========================================
+   MUAADH CARDS
+   ======================================== */
+.muaadh-card {
+  background: var(--theme-card-bg);
+  border: 1px solid var(--theme-card-border);
+  border-radius: var(--theme-card-radius);
+  box-shadow: var(--theme-card-shadow);
+  padding: var(--theme-card-padding);
+  transition: var(--theme-transition);
+}
+
+.muaadh-card:hover {
+  box-shadow: var(--theme-card-hover-shadow);
+  transform: translateY(-2px);
+}
+
+.muaadh-card-header {
+  border-bottom: 1px solid var(--theme-border);
+  padding-bottom: var(--theme-spacing);
+  margin-bottom: var(--theme-spacing);
+}
+
+.muaadh-card-header h5,
+.muaadh-card-header h6 {
+  color: var(--theme-text-primary);
+  font-family: var(--theme-font-heading);
+  margin: 0;
+}
+
+/* ========================================
+   MUAADH NAVIGATION
+   ======================================== */
+.muaadh-nav-link {
+  color: var(--theme-nav-link-color);
+  font-size: var(--theme-nav-font-size);
+  font-weight: var(--theme-nav-font-weight);
+  text-decoration: none;
+  padding: 10px 16px;
+  transition: var(--theme-transition-fast);
+}
+
+.muaadh-nav-link:hover,
+.muaadh-nav-link.active {
+  color: var(--theme-nav-link-hover);
+}
+
+/* ========================================
+   RESPONSIVE ADJUSTMENTS
+   ======================================== */
+@media (max-width: 1199.97px) {
+  .muaadh-btn {
+    height: 48px;
+    padding: 10px 20px;
+    font-size: 16px;
+  }
+}
+
+@media (max-width: 575.97px) {
+  .muaadh-btn {
+    height: 40px;
+    font-size: 14px;
+  }
+  
+  .muaadh-action-btn {
+    padding: 8px 12px;
+    font-size: 14px;
+  }
+}
+
+/* ========================================
+   RTL SUPPORT
+   ======================================== */
+[dir="rtl"] .muaadh-dropdown-toggle i:last-child {
+  margin-right: 4px;
+  margin-left: 0;
+}
+
+[dir="rtl"] .muaadh-action-btn {
+  flex-direction: row-reverse;
+}

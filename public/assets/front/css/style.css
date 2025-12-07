@@ -12712,13 +12712,13 @@ div[id*='zoom_container'] .landmarks .lable div {
     position: sticky;
     top: 0;
     z-index: 1000;
-    background: var(--muaadh-white);
-    box-shadow: 0 2px 20px rgba(0, 0, 0, 0.08);
+    background: var(--theme-header-bg, var(--muaadh-white));
+    box-shadow: var(--theme-header-shadow, 0 2px 20px rgba(0, 0, 0, 0.08));
 }
 
 /* --- Top Bar --- */
 .muaadh-topbar {
-    background: var(--muaadh-dark);
+    background: var(--theme-topbar-bg, var(--theme-secondary, var(--muaadh-dark)));
     padding: 8px 0;
     font-size: 13px;
 }
@@ -12740,13 +12740,13 @@ div[id*='zoom_container'] .landmarks .lable div {
     display: flex;
     align-items: center;
     gap: 6px;
-    color: rgba(255, 255, 255, 0.9);
+    color: var(--theme-topbar-text, rgba(255, 255, 255, 0.9));
     text-decoration: none;
-    transition: color 0.2s;
+    transition: var(--theme-transition-fast, color 0.2s);
 }
 
 .muaadh-topbar-link:hover {
-    color: var(--muaadh-white);
+    color: var(--theme-topbar-text-hover, var(--theme-primary, var(--muaadh-white)));
 }
 
 .muaadh-topbar-link i {
@@ -12775,12 +12775,12 @@ div[id*='zoom_container'] .landmarks .lable div {
     gap: 6px;
     background: transparent;
     border: none;
-    color: rgba(255, 255, 255, 0.9);
+    color: var(--theme-topbar-text, rgba(255, 255, 255, 0.9));
     font-size: 13px;
     cursor: pointer;
     padding: 4px 8px;
-    border-radius: 4px;
-    transition: background 0.2s;
+    border-radius: var(--theme-radius-sm, 4px);
+    transition: var(--theme-transition-fast, background 0.2s);
 }
 
 .muaadh-dropdown-toggle:hover {
@@ -12801,15 +12801,16 @@ div[id*='zoom_container'] .landmarks .lable div {
     top: 100%;
     right: 0;
     min-width: 150px;
-    background: var(--muaadh-white);
-    border-radius: 8px;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+    background: var(--theme-card-bg, var(--muaadh-white));
+    border: 1px solid var(--theme-border, transparent);
+    border-radius: var(--theme-radius, 8px);
+    box-shadow: var(--theme-shadow-lg, 0 10px 40px rgba(0, 0, 0, 0.15));
     padding: 8px 0;
     margin-top: 8px;
     opacity: 0;
     visibility: hidden;
     transform: translateY(10px);
-    transition: all 0.2s;
+    transition: var(--theme-transition, all 0.2s);
     list-style: none;
     z-index: 1001;
 }
@@ -12824,15 +12825,15 @@ div[id*='zoom_container'] .landmarks .lable div {
 .muaadh-dropdown-item {
     display: block;
     padding: 8px 16px;
-    color: var(--muaadh-text);
+    color: var(--theme-text-primary, var(--muaadh-text));
     text-decoration: none;
-    transition: background 0.2s;
+    transition: var(--theme-transition-fast, background 0.2s);
 }
 
 .muaadh-dropdown-item:hover,
 .muaadh-dropdown-item.active {
-    background: var(--muaadh-bg-light);
-    color: var(--muaadh-primary);
+    background: var(--theme-bg-light, var(--muaadh-bg-light));
+    color: var(--theme-primary, var(--muaadh-primary));
 }
 
 /* --- Main Header --- */
@@ -14474,8 +14475,8 @@ div[id*='zoom_container'] .landmarks .lable div {
 
 /* --- Main Footer --- */
 .muaadh-footer {
-    background: var(--muaadh-dark);
-    color: var(--muaadh-white);
+    background: var(--theme-footer-bg, var(--theme-secondary, var(--muaadh-dark)));
+    color: var(--theme-footer-text, var(--muaadh-white));
 }
 
 .muaadh-footer-main {
@@ -14506,7 +14507,7 @@ div[id*='zoom_container'] .landmarks .lable div {
 
 .muaadh-footer-desc {
     font-size: 0.9rem;
-    color: rgba(255, 255, 255, 0.7);
+    color: var(--theme-footer-text-muted, rgba(255, 255, 255, 0.7));
     line-height: 1.6;
     margin-bottom: 20px;
 }
@@ -14522,14 +14523,14 @@ div[id*='zoom_container'] .landmarks .lable div {
     display: flex;
     align-items: center;
     gap: 10px;
-    color: rgba(255, 255, 255, 0.7);
+    color: var(--theme-footer-text-muted, rgba(255, 255, 255, 0.7));
     font-size: 0.9rem;
     text-decoration: none;
-    transition: color 0.2s;
+    transition: var(--theme-transition-fast, color 0.2s);
 }
 
 .muaadh-footer-contact-item:hover {
-    color: var(--muaadh-white);
+    color: var(--theme-footer-link-hover, var(--theme-primary, var(--muaadh-white)));
 }
 
 .muaadh-footer-contact-item i {
@@ -14542,10 +14543,10 @@ div[id*='zoom_container'] .landmarks .lable div {
 .muaadh-footer-title {
     font-size: 1rem;
     font-weight: 600;
-    color: var(--muaadh-white);
+    color: var(--theme-footer-text, var(--muaadh-white));
     margin-bottom: 20px;
     padding-bottom: 10px;
-    border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+    border-bottom: 2px solid var(--theme-footer-border, rgba(255, 255, 255, 0.1));
 }
 
 /* Footer Links */
@@ -14559,15 +14560,15 @@ div[id*='zoom_container'] .landmarks .lable div {
 }
 
 .muaadh-footer-links li a {
-    color: rgba(255, 255, 255, 0.7);
+    color: var(--theme-footer-text-muted, rgba(255, 255, 255, 0.7));
     font-size: 0.9rem;
     text-decoration: none;
-    transition: all 0.2s;
+    transition: var(--theme-transition, all 0.2s);
     display: inline-block;
 }
 
 .muaadh-footer-links li a:hover {
-    color: var(--muaadh-white);
+    color: var(--theme-footer-link-hover, var(--theme-primary, var(--muaadh-white)));
     padding-inline-start: 5px;
 }
 
@@ -14601,15 +14602,15 @@ div[id*='zoom_container'] .landmarks .lable div {
 
 .muaadh-newsletter-input-group button {
     padding: 12px 18px;
-    background: var(--muaadh-primary);
+    background: var(--theme-btn-primary-bg, var(--theme-primary, var(--muaadh-primary)));
     border: none;
-    color: var(--muaadh-white);
+    color: var(--theme-btn-primary-text, var(--muaadh-white));
     cursor: pointer;
-    transition: background 0.2s;
+    transition: var(--theme-transition-fast, background 0.2s);
 }
 
 .muaadh-newsletter-input-group button:hover {
-    background: var(--muaadh-primary-dark);
+    background: var(--theme-btn-primary-hover-bg, var(--theme-primary-hover, var(--muaadh-primary-dark)));
 }
 
 /* Social Links */
@@ -14634,8 +14635,8 @@ div[id*='zoom_container'] .landmarks .lable div {
 }
 
 .muaadh-social-link:hover {
-    background: var(--muaadh-primary);
-    color: var(--muaadh-white);
+    background: var(--theme-primary, var(--muaadh-primary));
+    color: var(--theme-text-white, var(--muaadh-white));
     transform: translateY(-3px);
 }
 
