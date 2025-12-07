@@ -956,12 +956,64 @@ class GeneralSettingController extends AdminBaseController
     --theme-btn-font-weight: {$btnFontWeight};
     --theme-btn-radius: {$btnRadius};
     --theme-btn-shadow: {$btnShadow};
+    --theme-btn-shadow-hover: 0 4px 12px rgba(0,0,0,0.15);
+    --theme-btn-transition: all 0.3s ease;
+    
+    /* Primary Button */
     --theme-btn-primary-bg: {$primary};
+    --theme-btn-primary-text: #ffffff;
     --theme-btn-primary-hover-bg: {$primaryHover};
+    --theme-btn-primary-hover-text: #ffffff;
+    --theme-btn-primary-border: {$primary};
+    
+    /* Secondary Button */
     --theme-btn-secondary-bg: {$secondary};
+    --theme-btn-secondary-text: #ffffff;
     --theme-btn-secondary-hover-bg: {$secondaryHover};
-    --theme-btn-outline-text: #344054;
-    --theme-btn-outline-border: {$textLight};
+    --theme-btn-secondary-hover-text: #ffffff;
+    --theme-btn-secondary-border: {$secondary};
+    
+    /* Success Button */
+    --theme-btn-success-bg: {$success};
+    --theme-btn-success-text: #ffffff;
+    --theme-btn-success-hover-bg: #1fa058;
+    --theme-btn-success-hover-text: #ffffff;
+    --theme-btn-success-border: {$success};
+    
+    /* Danger Button */
+    --theme-btn-danger-bg: {$danger};
+    --theme-btn-danger-text: #ffffff;
+    --theme-btn-danger-hover-bg: #d93a50;
+    --theme-btn-danger-hover-text: #ffffff;
+    --theme-btn-danger-border: {$danger};
+    
+    /* Warning Button */
+    --theme-btn-warning-bg: {$warning};
+    --theme-btn-warning-text: #1f0300;
+    --theme-btn-warning-hover-bg: #e5ad30;
+    --theme-btn-warning-hover-text: #1f0300;
+    --theme-btn-warning-border: {$warning};
+    
+    /* Info Button */
+    --theme-btn-info-bg: {$info};
+    --theme-btn-info-text: #ffffff;
+    --theme-btn-info-hover-bg: #0284c7;
+    --theme-btn-info-hover-text: #ffffff;
+    --theme-btn-info-border: {$info};
+    
+    /* Outline Button */
+    --theme-btn-outline-bg: transparent;
+    --theme-btn-outline-text: {$textPrimary};
+    --theme-btn-outline-border: {$border};
+    --theme-btn-outline-hover-bg: {$bgLight};
+    --theme-btn-outline-hover-text: {$textPrimary};
+    --theme-btn-outline-hover-border: {$borderDark};
+    
+    /* Ghost Button */
+    --theme-btn-ghost-bg: transparent;
+    --theme-btn-ghost-text: {$textPrimary};
+    --theme-btn-ghost-hover-bg: {$bgLight};
+    --theme-btn-ghost-hover-text: {$primary};
 
     /* ===== CARDS ===== */
     --theme-card-bg: {$cardBg};
