@@ -41,16 +41,7 @@
     {{-- Theme Colors - Generated from Admin Panel (MUST load first) --}}
     <link rel="stylesheet" href="{{ asset('assets/front/css/theme-colors.css') }}?v={{ filemtime(public_path('assets/front/css/theme-colors.css')) }}">
     
-    {{-- Unified Buttons System - MUST load after theme-colors --}}
-    <link rel="stylesheet" href="{{ asset('assets/front/css/unified-buttons.css') }}?v={{ time() }}">
-    
-    {{-- Muaadh Unified System - Bridges muaadh-* classes with theme system --}}
-    <link rel="stylesheet" href="{{ asset('assets/front/css/muaadh-unified.css') }}?v={{ time() }}">
-    
-    {{-- Product Info Component Styles --}}
-    <link rel="stylesheet" href="{{ asset('assets/front/css/product-info-component.css') }}?v={{ time() }}">
-    
-    {{-- Main Theme File - Contains all styles --}}
+    {{-- Main Theme File - Contains all styles (buttons, components, etc.) --}}
     <link rel="stylesheet" href="{{ asset('assets/front/css/style.css') }}?v={{ time() }}">
     
     @if($langg && $langg->rtl == 1)

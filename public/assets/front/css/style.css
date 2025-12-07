@@ -658,27 +658,29 @@ p.text-lg {
   align-items: center;
   gap: 8px;
   flex-shrink: 0;
-  border-radius: 8px;
-  background: var(--theme-primary);
+  border-radius: var(--theme-btn-radius);
+  background: var(--theme-btn-primary-bg);
   text-transform: capitalize;
-  color: var(--theme-text-white);
+  color: var(--theme-btn-primary-text);
   font-family: var(--theme-font-primary);
   font-size: 18px;
   font-style: normal;
   font-weight: 400;
   line-height: 120%;
-  transition: all 0.3s ease-in;
+  transition: var(--theme-transition-fast);
+  border: 1px solid transparent;
+  cursor: pointer;
 }
 .template-btn.outline-btn {
-  background: transparent;
-  border: 1px solid var(--theme-text-light) !important;
-  color: var(--theme-btn-outline-text) !important;
+  background: var(--theme-btn-outline-bg);
+  border: 1px solid var(--theme-primary) !important;
+  color: var(--theme-primary) !important;
   font-weight: 600;
 }
 .template-btn.outline-btn:hover {
-  color: var(--theme-primary) !important;
-  border: 1px solid var(--theme-primary) !important;
-  background-color: transparent !important;
+  color: var(--theme-primary-hover) !important;
+  border: 1px solid var(--theme-primary-hover) !important;
+  background-color: var(--theme-btn-outline-hover-bg) !important;
 }
 .template-btn.lg-btn {
   border-radius: 4px;
@@ -700,67 +702,78 @@ p.text-lg {
   line-height: 150%; /* 21px */
 }
 .template-btn.dark-outline {
-  background-color: var(--theme-text-white);
-  border: 1px solid var(--theme-text-primary);
-  color: var(--theme-text-primary);
+  background-color: var(--theme-btn-outline-bg);
+  border: 1px solid var(--theme-secondary);
+  color: var(--theme-secondary);
 }
 .template-btn.dark-outline svg path {
-  transition: all 0.3s ease-in;
+  transition: var(--theme-transition-fast);
 }
 .template-btn.dark-outline:hover {
-  color: var(--theme-text-white);
-  border: 1px solid var(--theme-secondary-light);
-  background-color: var(--theme-secondary-light);
+  color: var(--theme-btn-secondary-text);
+  border: 1px solid var(--theme-btn-secondary-hover-bg);
+  background-color: var(--theme-btn-secondary-hover-bg);
 }
 .template-btn.dark-outline:hover svg path {
-  fill: var(--theme-text-white);
+  fill: var(--theme-btn-secondary-text);
 }
 .template-btn.dark-btn {
-  background-color: var(--theme-secondary);
+  background-color: var(--theme-btn-secondary-bg);
+  color: var(--theme-btn-secondary-text);
 }
 .template-btn.dark-btn:hover {
-  background-color: var(--theme-secondary-light);
+  background-color: var(--theme-btn-secondary-hover-bg);
+  color: var(--theme-btn-secondary-hover-text);
 }
 .template-btn.black-btn {
-  background-color: var(--theme-bg-dark);
+  background-color: var(--theme-btn-secondary-bg);
+  color: var(--theme-btn-secondary-text);
 }
 .template-btn.black-btn:hover {
-  background-color: var(--theme-secondary-light);
+  background-color: var(--theme-btn-secondary-hover-bg);
+  color: var(--theme-btn-secondary-hover-text);
 }
 .template-btn.outlinee-btn {
-  background: transparent;
+  background: var(--theme-btn-outline-bg);
   border: 1px solid var(--theme-primary);
   color: var(--theme-primary);
 }
 .template-btn.outlinee-btn:hover {
-  color: var(--theme-text-white);
+  background: var(--theme-primary);
+  color: var(--theme-btn-primary-text);
+  border-color: var(--theme-primary);
 }
 .template-btn.yellow-btn {
-  background-color: var(--theme-warning);
-  color: var(--theme-text-primary);
+  background-color: var(--theme-btn-warning-bg);
+  color: var(--theme-btn-warning-text);
 }
 .template-btn.yellow-btn:hover {
-  background-color: var(--theme-warning);
-  color: var(--theme-text-primary);
+  background-color: var(--theme-btn-warning-hover-bg);
+  color: var(--theme-btn-warning-hover-text);
+  transform: translateY(-1px);
 }
 .template-btn.green-btn {
-  background-color: var(--theme-success);
-  color: var(--theme-text-white);
+  background-color: var(--theme-btn-success-bg);
+  color: var(--theme-btn-success-text);
 }
 .template-btn.green-btn:hover {
-  background-color: var(--theme-success);
-  color: var(--theme-text-white);
+  background-color: var(--theme-btn-success-hover-bg);
+  color: var(--theme-btn-success-hover-text);
+  transform: translateY(-1px);
 }
 .template-btn.danger-btn {
-  background-color: var(--theme-danger);
-  color: var(--theme-text-white);
+  background-color: var(--theme-btn-danger-bg);
+  color: var(--theme-btn-danger-text);
 }
 .template-btn.danger-btn:hover {
-  background-color: var(--theme-danger);
-  color: var(--theme-text-white);
+  background-color: var(--theme-btn-danger-hover-bg);
+  color: var(--theme-btn-danger-hover-text);
+  transform: translateY(-1px);
 }
 .template-btn:hover {
-  background-color: var(--theme-danger-dark-alt);
+  background-color: var(--theme-btn-primary-hover-bg);
+  transform: translateY(-1px);
+  box-shadow: var(--theme-btn-shadow-hover);
 }
 @media (max-width: 1199.97px) {
   .template-btn {
