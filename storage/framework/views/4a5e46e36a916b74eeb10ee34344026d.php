@@ -1,15 +1,13 @@
-@extends('layouts.admin')
-
-@section('content')
+<?php $__env->startSection('content'); ?>
 <div class="content-area">
     <div class="mr-breadcrumb">
         <div class="row">
             <div class="col-lg-12">
-                <h4 class="heading">{{ __('Theme Colors') }}</h4>
+                <h4 class="heading"><?php echo e(__('Theme Colors')); ?></h4>
                 <ul class="links">
-                    <li><a href="{{ route('admin.dashboard') }}">{{ __('Dashboard') }}</a></li>
-                    <li><a href="javascript:;">{{ __('General Settings') }}</a></li>
-                    <li><a href="{{ route('admin-theme-colors') }}">{{ __('Theme Colors') }}</a></li>
+                    <li><a href="<?php echo e(route('admin.dashboard')); ?>"><?php echo e(__('Dashboard')); ?></a></li>
+                    <li><a href="javascript:;"><?php echo e(__('General Settings')); ?></a></li>
+                    <li><a href="<?php echo e(route('admin-theme-colors')); ?>"><?php echo e(__('Theme Colors')); ?></a></li>
                 </ul>
             </div>
         </div>
@@ -20,58 +18,59 @@
             <div class="col-lg-12">
                 <div class="product-description">
                     <div class="body-area">
-                        <div class="gocover" style="background: url({{ asset('assets/images/' . $gs->admin_loader) }}) no-repeat scroll center center rgba(45, 45, 45, 0.5);"></div>
+                        <div class="gocover" style="background: url(<?php echo e(asset('assets/images/' . $gs->admin_loader)); ?>) no-repeat scroll center center rgba(45, 45, 45, 0.5);"></div>
 
-                        <form action="{{ route('admin-theme-colors-update') }}" id="themeColorForm" method="POST">
-                            @csrf
-                            @include('alerts.admin.form-both')
+                        <form action="<?php echo e(route('admin-theme-colors-update')); ?>" id="themeColorForm" method="POST">
+                            <?php echo csrf_field(); ?>
+                            <?php echo $__env->make('alerts.admin.form-both', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?>
 
-                            {{-- Live Preview --}}
+                            
                             <div class="row justify-content-center mb-4">
                                 <div class="col-lg-10">
                                     <div class="card" id="previewCard">
                                         <div class="card-header preview-header">
-                                            <i class="fas fa-eye"></i> {{ __('Live Preview') }}
+                                            <i class="fas fa-eye"></i> <?php echo e(__('Live Preview')); ?>
+
                                         </div>
                                         <div class="card-body preview-body">
                                             <div class="row">
                                                 <div class="col-md-6">
-                                                    <h6 class="preview-title">{{ __('Buttons') }}</h6>
+                                                    <h6 class="preview-title"><?php echo e(__('Buttons')); ?></h6>
                                                     <div class="d-flex flex-wrap gap-2 mb-3">
-                                                        <button type="button" class="btn preview-btn-primary">{{ __('Primary') }}</button>
-                                                        <button type="button" class="btn preview-btn-secondary">{{ __('Secondary') }}</button>
-                                                        <button type="button" class="btn preview-btn-success">{{ __('Success') }}</button>
-                                                        <button type="button" class="btn preview-btn-danger">{{ __('Danger') }}</button>
+                                                        <button type="button" class="btn preview-btn-primary"><?php echo e(__('Primary')); ?></button>
+                                                        <button type="button" class="btn preview-btn-secondary"><?php echo e(__('Secondary')); ?></button>
+                                                        <button type="button" class="btn preview-btn-success"><?php echo e(__('Success')); ?></button>
+                                                        <button type="button" class="btn preview-btn-danger"><?php echo e(__('Danger')); ?></button>
                                                     </div>
-                                                    <h6 class="preview-title">{{ __('Text & Links') }}</h6>
-                                                    <p class="preview-text-primary">{{ __('Primary Text Color') }}</p>
-                                                    <p class="preview-text-muted">{{ __('Muted Text Color') }}</p>
-                                                    <a href="javascript:;" class="preview-link">{{ __('Link Color') }}</a>
+                                                    <h6 class="preview-title"><?php echo e(__('Text & Links')); ?></h6>
+                                                    <p class="preview-text-primary"><?php echo e(__('Primary Text Color')); ?></p>
+                                                    <p class="preview-text-muted"><?php echo e(__('Muted Text Color')); ?></p>
+                                                    <a href="javascript:;" class="preview-link"><?php echo e(__('Link Color')); ?></a>
                                                 </div>
                                                 <div class="col-md-6">
-                                                    <h6 class="preview-title">{{ __('Badges') }}</h6>
+                                                    <h6 class="preview-title"><?php echo e(__('Badges')); ?></h6>
                                                     <div class="d-flex flex-wrap gap-2 mb-3">
-                                                        <span class="badge preview-badge-primary">{{ __('Primary') }}</span>
-                                                        <span class="badge preview-badge-success">{{ __('Success') }}</span>
-                                                        <span class="badge preview-badge-warning">{{ __('Warning') }}</span>
-                                                        <span class="badge preview-badge-danger">{{ __('Danger') }}</span>
+                                                        <span class="badge preview-badge-primary"><?php echo e(__('Primary')); ?></span>
+                                                        <span class="badge preview-badge-success"><?php echo e(__('Success')); ?></span>
+                                                        <span class="badge preview-badge-warning"><?php echo e(__('Warning')); ?></span>
+                                                        <span class="badge preview-badge-danger"><?php echo e(__('Danger')); ?></span>
                                                     </div>
-                                                    <h6 class="preview-title">{{ __('Input') }}</h6>
-                                                    <input type="text" class="form-control preview-input" placeholder="{{ __('Focus to see border color') }}">
+                                                    <h6 class="preview-title"><?php echo e(__('Input')); ?></h6>
+                                                    <input type="text" class="form-control preview-input" placeholder="<?php echo e(__('Focus to see border color')); ?>">
                                                 </div>
                                             </div>
                                         </div>
                                         <div class="card-footer preview-footer">
-                                            <small class="preview-footer-text">{{ __('Footer Preview') }}</small>
+                                            <small class="preview-footer-text"><?php echo e(__('Footer Preview')); ?></small>
                                         </div>
                                     </div>
                                 </div>
                             </div>
 
-                            {{-- Quick Presets --}}
+                            
                             <div class="row justify-content-center mb-4">
                                 <div class="col-lg-10">
-                                    <h5 class="section-title"><i class="fas fa-magic"></i> {{ __('Quick Presets') }}</h5>
+                                    <h5 class="section-title"><i class="fas fa-magic"></i> <?php echo e(__('Quick Presets')); ?></h5>
                                     <div class="d-flex flex-wrap gap-2">
                                         <button type="button" class="btn btn-sm preset-btn" data-preset="nissan" style="background: #c3002f; color: white;">Nissan Red</button>
                                         <button type="button" class="btn btn-sm preset-btn" data-preset="blue" style="background: #2563eb; color: white;">Blue</button>
@@ -85,11 +84,11 @@
 
                             <hr class="my-4">
 
-                            {{-- ========== PRIMARY COLORS ========== --}}
+                            
                             <div class="row justify-content-center">
                                 <div class="col-lg-10">
-                                    <h5 class="section-title"><i class="fas fa-palette"></i> {{ __('Primary Colors') }}</h5>
-                                    <p class="section-desc">{{ __('Main brand color used for buttons, links, and accents') }}</p>
+                                    <h5 class="section-title"><i class="fas fa-palette"></i> <?php echo e(__('Primary Colors')); ?></h5>
+                                    <p class="section-desc"><?php echo e(__('Main brand color used for buttons, links, and accents')); ?></p>
                                 </div>
                             </div>
 
@@ -98,36 +97,36 @@
                                     <div class="row">
                                         <div class="col-md-3">
                                             <div class="color-input-group">
-                                                <label>{{ __('Primary') }}</label>
+                                                <label><?php echo e(__('Primary')); ?></label>
                                                 <div class="input-group colorpicker-component cp">
-                                                    <input type="text" class="form-control color-field" name="theme_primary" id="theme_primary" value="{{ $gs->theme_primary ?? '#c3002f' }}">
+                                                    <input type="text" class="form-control color-field" name="theme_primary" id="theme_primary" value="<?php echo e($gs->theme_primary ?? '#c3002f'); ?>">
                                                     <span class="input-group-addon"><i></i></span>
                                                 </div>
                                             </div>
                                         </div>
                                         <div class="col-md-3">
                                             <div class="color-input-group">
-                                                <label>{{ __('Hover') }}</label>
+                                                <label><?php echo e(__('Hover')); ?></label>
                                                 <div class="input-group colorpicker-component cp">
-                                                    <input type="text" class="form-control color-field" name="theme_primary_hover" id="theme_primary_hover" value="{{ $gs->theme_primary_hover ?? '#a00025' }}">
+                                                    <input type="text" class="form-control color-field" name="theme_primary_hover" id="theme_primary_hover" value="<?php echo e($gs->theme_primary_hover ?? '#a00025'); ?>">
                                                     <span class="input-group-addon"><i></i></span>
                                                 </div>
                                             </div>
                                         </div>
                                         <div class="col-md-3">
                                             <div class="color-input-group">
-                                                <label>{{ __('Dark') }}</label>
+                                                <label><?php echo e(__('Dark')); ?></label>
                                                 <div class="input-group colorpicker-component cp">
-                                                    <input type="text" class="form-control color-field" name="theme_primary_dark" id="theme_primary_dark" value="{{ $gs->theme_primary_dark ?? '#8a0020' }}">
+                                                    <input type="text" class="form-control color-field" name="theme_primary_dark" id="theme_primary_dark" value="<?php echo e($gs->theme_primary_dark ?? '#8a0020'); ?>">
                                                     <span class="input-group-addon"><i></i></span>
                                                 </div>
                                             </div>
                                         </div>
                                         <div class="col-md-3">
                                             <div class="color-input-group">
-                                                <label>{{ __('Light') }}</label>
+                                                <label><?php echo e(__('Light')); ?></label>
                                                 <div class="input-group colorpicker-component cp">
-                                                    <input type="text" class="form-control color-field" name="theme_primary_light" id="theme_primary_light" value="{{ $gs->theme_primary_light ?? '#fef2f4' }}">
+                                                    <input type="text" class="form-control color-field" name="theme_primary_light" id="theme_primary_light" value="<?php echo e($gs->theme_primary_light ?? '#fef2f4'); ?>">
                                                     <span class="input-group-addon"><i></i></span>
                                                 </div>
                                             </div>
@@ -138,214 +137,11 @@
 
                             <hr class="my-4">
 
-                            {{-- ========== SECONDARY COLORS ========== --}}
+                            
                             <div class="row justify-content-center">
                                 <div class="col-lg-10">
-                                    <h5 class="section-title"><i class="fas fa-palette"></i> {{ __('Secondary Colors') }}</h5>
-                                    <p class="section-desc">{{ __('Used for dark sections, secondary buttons, and text') }}</p>
-                                </div>
-                            </div>
-
-                            <div class="row justify-content-center">
-                                <div class="col-lg-10">
-                                    <div class="row">
-                                        <div class="col-md-4">
-                                            <div class="color-input-group">
-                                                <label>{{ __('Secondary') }}</label>
-                                                <div class="input-group colorpicker-component cp">
-                                                    <input type="text" class="form-control color-field" name="theme_secondary" id="theme_secondary" value="{{ $gs->theme_secondary ?? '#1f0300' }}">
-                                                    <span class="input-group-addon"><i></i></span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-4">
-                                            <div class="color-input-group">
-                                                <label>{{ __('Hover') }}</label>
-                                                <div class="input-group colorpicker-component cp">
-                                                    <input type="text" class="form-control color-field" name="theme_secondary_hover" id="theme_secondary_hover" value="{{ $gs->theme_secondary_hover ?? '#351c1a' }}">
-                                                    <span class="input-group-addon"><i></i></span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-4">
-                                            <div class="color-input-group">
-                                                <label>{{ __('Light') }}</label>
-                                                <div class="input-group colorpicker-component cp">
-                                                    <input type="text" class="form-control color-field" name="theme_secondary_light" id="theme_secondary_light" value="{{ $gs->theme_secondary_light ?? '#4c3533' }}">
-                                                    <span class="input-group-addon"><i></i></span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <hr class="my-4">
-
-                            {{-- ========== TEXT COLORS ========== --}}
-                            <div class="row justify-content-center">
-                                <div class="col-lg-10">
-                                    <h5 class="section-title"><i class="fas fa-font"></i> {{ __('Text Colors') }}</h5>
-                                    <p class="section-desc">{{ __('Colors for headings, paragraphs, and labels') }}</p>
-                                </div>
-                            </div>
-
-                            <div class="row justify-content-center">
-                                <div class="col-lg-10">
-                                    <div class="row">
-                                        <div class="col-md-3">
-                                            <div class="color-input-group">
-                                                <label>{{ __('Primary Text') }}</label>
-                                                <div class="input-group colorpicker-component cp">
-                                                    <input type="text" class="form-control color-field" name="theme_text_primary" id="theme_text_primary" value="{{ $gs->theme_text_primary ?? '#1f0300' }}">
-                                                    <span class="input-group-addon"><i></i></span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-3">
-                                            <div class="color-input-group">
-                                                <label>{{ __('Secondary Text') }}</label>
-                                                <div class="input-group colorpicker-component cp">
-                                                    <input type="text" class="form-control color-field" name="theme_text_secondary" id="theme_text_secondary" value="{{ $gs->theme_text_secondary ?? '#4c3533' }}">
-                                                    <span class="input-group-addon"><i></i></span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-3">
-                                            <div class="color-input-group">
-                                                <label>{{ __('Muted Text') }}</label>
-                                                <div class="input-group colorpicker-component cp">
-                                                    <input type="text" class="form-control color-field" name="theme_text_muted" id="theme_text_muted" value="{{ $gs->theme_text_muted ?? '#796866' }}">
-                                                    <span class="input-group-addon"><i></i></span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-3">
-                                            <div class="color-input-group">
-                                                <label>{{ __('Light Text') }}</label>
-                                                <div class="input-group colorpicker-component cp">
-                                                    <input type="text" class="form-control color-field" name="theme_text_light" id="theme_text_light" value="{{ $gs->theme_text_light ?? '#9a8e8c' }}">
-                                                    <span class="input-group-addon"><i></i></span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <hr class="my-4">
-
-                            {{-- ========== BACKGROUND COLORS ========== --}}
-                            <div class="row justify-content-center">
-                                <div class="col-lg-10">
-                                    <h5 class="section-title"><i class="fas fa-fill-drip"></i> {{ __('Background Colors') }}</h5>
-                                    <p class="section-desc">{{ __('Colors for page backgrounds, cards, and sections') }}</p>
-                                </div>
-                            </div>
-
-                            <div class="row justify-content-center">
-                                <div class="col-lg-10">
-                                    <div class="row">
-                                        <div class="col-md-3">
-                                            <div class="color-input-group">
-                                                <label>{{ __('Body') }}</label>
-                                                <div class="input-group colorpicker-component cp">
-                                                    <input type="text" class="form-control color-field" name="theme_bg_body" id="theme_bg_body" value="{{ $gs->theme_bg_body ?? '#ffffff' }}">
-                                                    <span class="input-group-addon"><i></i></span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-3">
-                                            <div class="color-input-group">
-                                                <label>{{ __('Light') }}</label>
-                                                <div class="input-group colorpicker-component cp">
-                                                    <input type="text" class="form-control color-field" name="theme_bg_light" id="theme_bg_light" value="{{ $gs->theme_bg_light ?? '#f8f7f7' }}">
-                                                    <span class="input-group-addon"><i></i></span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-3">
-                                            <div class="color-input-group">
-                                                <label>{{ __('Gray') }}</label>
-                                                <div class="input-group colorpicker-component cp">
-                                                    <input type="text" class="form-control color-field" name="theme_bg_gray" id="theme_bg_gray" value="{{ $gs->theme_bg_gray ?? '#e9e6e6' }}">
-                                                    <span class="input-group-addon"><i></i></span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-3">
-                                            <div class="color-input-group">
-                                                <label>{{ __('Dark') }}</label>
-                                                <div class="input-group colorpicker-component cp">
-                                                    <input type="text" class="form-control color-field" name="theme_bg_dark" id="theme_bg_dark" value="{{ $gs->theme_bg_dark ?? '#030712' }}">
-                                                    <span class="input-group-addon"><i></i></span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <hr class="my-4">
-
-                            {{-- ========== STATUS COLORS ========== --}}
-                            <div class="row justify-content-center">
-                                <div class="col-lg-10">
-                                    <h5 class="section-title"><i class="fas fa-check-circle"></i> {{ __('Status Colors') }}</h5>
-                                    <p class="section-desc">{{ __('Colors for success, warning, danger, and info states') }}</p>
-                                </div>
-                            </div>
-
-                            <div class="row justify-content-center">
-                                <div class="col-lg-10">
-                                    <div class="row">
-                                        <div class="col-md-3">
-                                            <div class="color-input-group">
-                                                <label><i class="fas fa-check text-success"></i> {{ __('Success') }}</label>
-                                                <div class="input-group colorpicker-component cp">
-                                                    <input type="text" class="form-control color-field" name="theme_success" id="theme_success" value="{{ $gs->theme_success ?? '#27be69' }}">
-                                                    <span class="input-group-addon"><i></i></span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-3">
-                                            <div class="color-input-group">
-                                                <label><i class="fas fa-exclamation-triangle text-warning"></i> {{ __('Warning') }}</label>
-                                                <div class="input-group colorpicker-component cp">
-                                                    <input type="text" class="form-control color-field" name="theme_warning" id="theme_warning" value="{{ $gs->theme_warning ?? '#fac03c' }}">
-                                                    <span class="input-group-addon"><i></i></span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-3">
-                                            <div class="color-input-group">
-                                                <label><i class="fas fa-times-circle text-danger"></i> {{ __('Danger') }}</label>
-                                                <div class="input-group colorpicker-component cp">
-                                                    <input type="text" class="form-control color-field" name="theme_danger" id="theme_danger" value="{{ $gs->theme_danger ?? '#f2415a' }}">
-                                                    <span class="input-group-addon"><i></i></span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-3">
-                                            <div class="color-input-group">
-                                                <label><i class="fas fa-info-circle text-info"></i> {{ __('Info') }}</label>
-                                                <div class="input-group colorpicker-component cp">
-                                                    <input type="text" class="form-control color-field" name="theme_info" id="theme_info" value="{{ $gs->theme_info ?? '#0ea5e9' }}">
-                                                    <span class="input-group-addon"><i></i></span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <hr class="my-4">
-
-                            {{-- ========== BORDER COLORS ========== --}}
-                            <div class="row justify-content-center">
-                                <div class="col-lg-10">
-                                    <h5 class="section-title"><i class="fas fa-border-style"></i> {{ __('Border Colors') }}</h5>
-                                    <p class="section-desc">{{ __('Colors for borders and dividers') }}</p>
+                                    <h5 class="section-title"><i class="fas fa-palette"></i> <?php echo e(__('Secondary Colors')); ?></h5>
+                                    <p class="section-desc"><?php echo e(__('Used for dark sections, secondary buttons, and text')); ?></p>
                                 </div>
                             </div>
 
@@ -354,27 +150,27 @@
                                     <div class="row">
                                         <div class="col-md-4">
                                             <div class="color-input-group">
-                                                <label>{{ __('Default Border') }}</label>
+                                                <label><?php echo e(__('Secondary')); ?></label>
                                                 <div class="input-group colorpicker-component cp">
-                                                    <input type="text" class="form-control color-field" name="theme_border" id="theme_border" value="{{ $gs->theme_border ?? '#d9d4d4' }}">
+                                                    <input type="text" class="form-control color-field" name="theme_secondary" id="theme_secondary" value="<?php echo e($gs->theme_secondary ?? '#1f0300'); ?>">
                                                     <span class="input-group-addon"><i></i></span>
                                                 </div>
                                             </div>
                                         </div>
                                         <div class="col-md-4">
                                             <div class="color-input-group">
-                                                <label>{{ __('Light Border') }}</label>
+                                                <label><?php echo e(__('Hover')); ?></label>
                                                 <div class="input-group colorpicker-component cp">
-                                                    <input type="text" class="form-control color-field" name="theme_border_light" id="theme_border_light" value="{{ $gs->theme_border_light ?? '#e9e6e6' }}">
+                                                    <input type="text" class="form-control color-field" name="theme_secondary_hover" id="theme_secondary_hover" value="<?php echo e($gs->theme_secondary_hover ?? '#351c1a'); ?>">
                                                     <span class="input-group-addon"><i></i></span>
                                                 </div>
                                             </div>
                                         </div>
                                         <div class="col-md-4">
                                             <div class="color-input-group">
-                                                <label>{{ __('Dark Border') }}</label>
+                                                <label><?php echo e(__('Light')); ?></label>
                                                 <div class="input-group colorpicker-component cp">
-                                                    <input type="text" class="form-control color-field" name="theme_border_dark" id="theme_border_dark" value="{{ $gs->theme_border_dark ?? '#c7c0bf' }}">
+                                                    <input type="text" class="form-control color-field" name="theme_secondary_light" id="theme_secondary_light" value="<?php echo e($gs->theme_secondary_light ?? '#4c3533'); ?>">
                                                     <span class="input-group-addon"><i></i></span>
                                                 </div>
                                             </div>
@@ -385,11 +181,11 @@
 
                             <hr class="my-4">
 
-                            {{-- ========== HEADER & FOOTER ========== --}}
+                            
                             <div class="row justify-content-center">
                                 <div class="col-lg-10">
-                                    <h5 class="section-title"><i class="fas fa-columns"></i> {{ __('Header & Footer') }}</h5>
-                                    <p class="section-desc">{{ __('Colors for header and footer sections') }}</p>
+                                    <h5 class="section-title"><i class="fas fa-font"></i> <?php echo e(__('Text Colors')); ?></h5>
+                                    <p class="section-desc"><?php echo e(__('Colors for headings, paragraphs, and labels')); ?></p>
                                 </div>
                             </div>
 
@@ -398,36 +194,36 @@
                                     <div class="row">
                                         <div class="col-md-3">
                                             <div class="color-input-group">
-                                                <label>{{ __('Header BG') }}</label>
+                                                <label><?php echo e(__('Primary Text')); ?></label>
                                                 <div class="input-group colorpicker-component cp">
-                                                    <input type="text" class="form-control color-field" name="theme_header_bg" id="theme_header_bg" value="{{ $gs->theme_header_bg ?? '#ffffff' }}">
+                                                    <input type="text" class="form-control color-field" name="theme_text_primary" id="theme_text_primary" value="<?php echo e($gs->theme_text_primary ?? '#1f0300'); ?>">
                                                     <span class="input-group-addon"><i></i></span>
                                                 </div>
                                             </div>
                                         </div>
                                         <div class="col-md-3">
                                             <div class="color-input-group">
-                                                <label>{{ __('Footer BG') }}</label>
+                                                <label><?php echo e(__('Secondary Text')); ?></label>
                                                 <div class="input-group colorpicker-component cp">
-                                                    <input type="text" class="form-control color-field" name="theme_footer_bg" id="theme_footer_bg" value="{{ $gs->theme_footer_bg ?? '#030712' }}">
+                                                    <input type="text" class="form-control color-field" name="theme_text_secondary" id="theme_text_secondary" value="<?php echo e($gs->theme_text_secondary ?? '#4c3533'); ?>">
                                                     <span class="input-group-addon"><i></i></span>
                                                 </div>
                                             </div>
                                         </div>
                                         <div class="col-md-3">
                                             <div class="color-input-group">
-                                                <label>{{ __('Footer Text') }}</label>
+                                                <label><?php echo e(__('Muted Text')); ?></label>
                                                 <div class="input-group colorpicker-component cp">
-                                                    <input type="text" class="form-control color-field" name="theme_footer_text" id="theme_footer_text" value="{{ $gs->theme_footer_text ?? '#ffffff' }}">
+                                                    <input type="text" class="form-control color-field" name="theme_text_muted" id="theme_text_muted" value="<?php echo e($gs->theme_text_muted ?? '#796866'); ?>">
                                                     <span class="input-group-addon"><i></i></span>
                                                 </div>
                                             </div>
                                         </div>
                                         <div class="col-md-3">
                                             <div class="color-input-group">
-                                                <label>{{ __('Footer Link Hover') }}</label>
+                                                <label><?php echo e(__('Light Text')); ?></label>
                                                 <div class="input-group colorpicker-component cp">
-                                                    <input type="text" class="form-control color-field" name="theme_footer_link_hover" id="theme_footer_link_hover" value="{{ $gs->theme_footer_link_hover ?? '#c3002f' }}">
+                                                    <input type="text" class="form-control color-field" name="theme_text_light" id="theme_text_light" value="<?php echo e($gs->theme_text_light ?? '#9a8e8c'); ?>">
                                                     <span class="input-group-addon"><i></i></span>
                                                 </div>
                                             </div>
@@ -438,11 +234,215 @@
 
                             <hr class="my-4">
 
-                            {{-- Submit Button --}}
+                            
+                            <div class="row justify-content-center">
+                                <div class="col-lg-10">
+                                    <h5 class="section-title"><i class="fas fa-fill-drip"></i> <?php echo e(__('Background Colors')); ?></h5>
+                                    <p class="section-desc"><?php echo e(__('Colors for page backgrounds, cards, and sections')); ?></p>
+                                </div>
+                            </div>
+
+                            <div class="row justify-content-center">
+                                <div class="col-lg-10">
+                                    <div class="row">
+                                        <div class="col-md-3">
+                                            <div class="color-input-group">
+                                                <label><?php echo e(__('Body')); ?></label>
+                                                <div class="input-group colorpicker-component cp">
+                                                    <input type="text" class="form-control color-field" name="theme_bg_body" id="theme_bg_body" value="<?php echo e($gs->theme_bg_body ?? '#ffffff'); ?>">
+                                                    <span class="input-group-addon"><i></i></span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="color-input-group">
+                                                <label><?php echo e(__('Light')); ?></label>
+                                                <div class="input-group colorpicker-component cp">
+                                                    <input type="text" class="form-control color-field" name="theme_bg_light" id="theme_bg_light" value="<?php echo e($gs->theme_bg_light ?? '#f8f7f7'); ?>">
+                                                    <span class="input-group-addon"><i></i></span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="color-input-group">
+                                                <label><?php echo e(__('Gray')); ?></label>
+                                                <div class="input-group colorpicker-component cp">
+                                                    <input type="text" class="form-control color-field" name="theme_bg_gray" id="theme_bg_gray" value="<?php echo e($gs->theme_bg_gray ?? '#e9e6e6'); ?>">
+                                                    <span class="input-group-addon"><i></i></span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="color-input-group">
+                                                <label><?php echo e(__('Dark')); ?></label>
+                                                <div class="input-group colorpicker-component cp">
+                                                    <input type="text" class="form-control color-field" name="theme_bg_dark" id="theme_bg_dark" value="<?php echo e($gs->theme_bg_dark ?? '#030712'); ?>">
+                                                    <span class="input-group-addon"><i></i></span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <hr class="my-4">
+
+                            
+                            <div class="row justify-content-center">
+                                <div class="col-lg-10">
+                                    <h5 class="section-title"><i class="fas fa-check-circle"></i> <?php echo e(__('Status Colors')); ?></h5>
+                                    <p class="section-desc"><?php echo e(__('Colors for success, warning, danger, and info states')); ?></p>
+                                </div>
+                            </div>
+
+                            <div class="row justify-content-center">
+                                <div class="col-lg-10">
+                                    <div class="row">
+                                        <div class="col-md-3">
+                                            <div class="color-input-group">
+                                                <label><i class="fas fa-check text-success"></i> <?php echo e(__('Success')); ?></label>
+                                                <div class="input-group colorpicker-component cp">
+                                                    <input type="text" class="form-control color-field" name="theme_success" id="theme_success" value="<?php echo e($gs->theme_success ?? '#27be69'); ?>">
+                                                    <span class="input-group-addon"><i></i></span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="color-input-group">
+                                                <label><i class="fas fa-exclamation-triangle text-warning"></i> <?php echo e(__('Warning')); ?></label>
+                                                <div class="input-group colorpicker-component cp">
+                                                    <input type="text" class="form-control color-field" name="theme_warning" id="theme_warning" value="<?php echo e($gs->theme_warning ?? '#fac03c'); ?>">
+                                                    <span class="input-group-addon"><i></i></span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="color-input-group">
+                                                <label><i class="fas fa-times-circle text-danger"></i> <?php echo e(__('Danger')); ?></label>
+                                                <div class="input-group colorpicker-component cp">
+                                                    <input type="text" class="form-control color-field" name="theme_danger" id="theme_danger" value="<?php echo e($gs->theme_danger ?? '#f2415a'); ?>">
+                                                    <span class="input-group-addon"><i></i></span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="color-input-group">
+                                                <label><i class="fas fa-info-circle text-info"></i> <?php echo e(__('Info')); ?></label>
+                                                <div class="input-group colorpicker-component cp">
+                                                    <input type="text" class="form-control color-field" name="theme_info" id="theme_info" value="<?php echo e($gs->theme_info ?? '#0ea5e9'); ?>">
+                                                    <span class="input-group-addon"><i></i></span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <hr class="my-4">
+
+                            
+                            <div class="row justify-content-center">
+                                <div class="col-lg-10">
+                                    <h5 class="section-title"><i class="fas fa-border-style"></i> <?php echo e(__('Border Colors')); ?></h5>
+                                    <p class="section-desc"><?php echo e(__('Colors for borders and dividers')); ?></p>
+                                </div>
+                            </div>
+
+                            <div class="row justify-content-center">
+                                <div class="col-lg-10">
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <div class="color-input-group">
+                                                <label><?php echo e(__('Default Border')); ?></label>
+                                                <div class="input-group colorpicker-component cp">
+                                                    <input type="text" class="form-control color-field" name="theme_border" id="theme_border" value="<?php echo e($gs->theme_border ?? '#d9d4d4'); ?>">
+                                                    <span class="input-group-addon"><i></i></span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="color-input-group">
+                                                <label><?php echo e(__('Light Border')); ?></label>
+                                                <div class="input-group colorpicker-component cp">
+                                                    <input type="text" class="form-control color-field" name="theme_border_light" id="theme_border_light" value="<?php echo e($gs->theme_border_light ?? '#e9e6e6'); ?>">
+                                                    <span class="input-group-addon"><i></i></span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="color-input-group">
+                                                <label><?php echo e(__('Dark Border')); ?></label>
+                                                <div class="input-group colorpicker-component cp">
+                                                    <input type="text" class="form-control color-field" name="theme_border_dark" id="theme_border_dark" value="<?php echo e($gs->theme_border_dark ?? '#c7c0bf'); ?>">
+                                                    <span class="input-group-addon"><i></i></span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <hr class="my-4">
+
+                            
+                            <div class="row justify-content-center">
+                                <div class="col-lg-10">
+                                    <h5 class="section-title"><i class="fas fa-columns"></i> <?php echo e(__('Header & Footer')); ?></h5>
+                                    <p class="section-desc"><?php echo e(__('Colors for header and footer sections')); ?></p>
+                                </div>
+                            </div>
+
+                            <div class="row justify-content-center">
+                                <div class="col-lg-10">
+                                    <div class="row">
+                                        <div class="col-md-3">
+                                            <div class="color-input-group">
+                                                <label><?php echo e(__('Header BG')); ?></label>
+                                                <div class="input-group colorpicker-component cp">
+                                                    <input type="text" class="form-control color-field" name="theme_header_bg" id="theme_header_bg" value="<?php echo e($gs->theme_header_bg ?? '#ffffff'); ?>">
+                                                    <span class="input-group-addon"><i></i></span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="color-input-group">
+                                                <label><?php echo e(__('Footer BG')); ?></label>
+                                                <div class="input-group colorpicker-component cp">
+                                                    <input type="text" class="form-control color-field" name="theme_footer_bg" id="theme_footer_bg" value="<?php echo e($gs->theme_footer_bg ?? '#030712'); ?>">
+                                                    <span class="input-group-addon"><i></i></span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="color-input-group">
+                                                <label><?php echo e(__('Footer Text')); ?></label>
+                                                <div class="input-group colorpicker-component cp">
+                                                    <input type="text" class="form-control color-field" name="theme_footer_text" id="theme_footer_text" value="<?php echo e($gs->theme_footer_text ?? '#ffffff'); ?>">
+                                                    <span class="input-group-addon"><i></i></span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="color-input-group">
+                                                <label><?php echo e(__('Footer Link Hover')); ?></label>
+                                                <div class="input-group colorpicker-component cp">
+                                                    <input type="text" class="form-control color-field" name="theme_footer_link_hover" id="theme_footer_link_hover" value="<?php echo e($gs->theme_footer_link_hover ?? '#c3002f'); ?>">
+                                                    <span class="input-group-addon"><i></i></span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <hr class="my-4">
+
+                            
                             <div class="row justify-content-center">
                                 <div class="col-lg-10 text-center">
                                     <button class="addProductSubmit-btn" type="submit">
-                                        <i class="fas fa-save"></i> {{ __('Save All Colors') }}
+                                        <i class="fas fa-save"></i> <?php echo e(__('Save All Colors')); ?>
+
                                     </button>
                                 </div>
                             </div>
@@ -647,9 +647,9 @@
 .gap-2 { gap: 0.5rem; }
 .gap-3 { gap: 1rem; }
 </style>
-@endsection
+<?php $__env->stopSection(); ?>
 
-@section('scripts')
+<?php $__env->startSection('scripts'); ?>
 <script>
 $(document).ready(function() {
     // Initialize colorpickers with format hex
@@ -816,4 +816,6 @@ $(document).ready(function() {
     });
 });
 </script>
-@endsection
+<?php $__env->stopSection(); ?>
+
+<?php echo $__env->make('layouts.admin', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?><?php /**PATH C:\Users\hp\Herd\new\resources\views/admin/generalsetting/theme_colors.blade.php ENDPATH**/ ?>

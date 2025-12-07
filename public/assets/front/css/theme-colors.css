@@ -1,12 +1,87 @@
+/**
+ * THEME COLORS - Generated from Admin Panel
+ * This file overrides MUAADH.css :root variables
+ * Do not edit manually - changes will be overwritten
+ */
 :root {
-    /* Primary Colors - Generated from Admin Panel */
-    --muaadh-primary: #00c35b;
-    --muaadh-primary-hover: #003fa0;
-    --muaadh-primary-dark: #37ab3c;
-    --muaadh-primary-light: #0c26ab;
-    --muaadh-primary-rgb: 0, 195, 91;
+    /* ===== Primary Brand Colors ===== */
+    --theme-primary: #c3002f;
+    --theme-primary-hover: #a00025;
+    --theme-primary-dark: #8a0020;
+    --theme-primary-light: #fef2f4;
+    --theme-primary-rgb: 195, 0, 47;
 
-    /* Secondary Colors */
-    --muaadh-secondary: #6e0f0f;
-    --muaadh-secondary-hover: #192e1d;
+    /* ===== Secondary Colors ===== */
+    --theme-secondary: #1f0300;
+    --theme-secondary-hover: #351c1a;
+    --theme-secondary-light: #4c3533;
+
+    /* ===== Text Colors ===== */
+    --theme-text-primary: #1f0300;
+    --theme-text-secondary: #4c3533;
+    --theme-text-muted: #796866;
+    --theme-text-light: #9a8e8c;
+    --theme-text-lighter: #b7aead;
+    --theme-text-white: #ffffff;
+
+    /* ===== Background Colors ===== */
+    --theme-bg-body: #ffffff;
+    --theme-bg-light: #f8f7f7;
+    --theme-bg-lighter: #f6f6f6;
+    --theme-bg-gray: #e9e6e6;
+    --theme-bg-dark: #030712;
+    --theme-bg-header: #ffffff;
+    --theme-bg-footer: #030712;
+
+    /* ===== Border Colors ===== */
+    --theme-border: #d9d4d4;
+    --theme-border-light: #e9e6e6;
+    --theme-border-dark: #c7c0bf;
+
+    /* ===== Status Colors ===== */
+    --theme-success: #27be69;
+    --theme-warning: #fac03c;
+    --theme-danger: #f2415a;
+    --theme-info: #0ea5e9;
+
+    /* ===== Button Colors ===== */
+    --theme-btn-primary-bg: #c3002f;
+    --theme-btn-primary-hover-bg: #a00025;
+    --theme-btn-secondary-bg: #1f0300;
+    --theme-btn-secondary-hover-bg: #351c1a;
+    --theme-btn-outline-text: #344054;
+    --theme-btn-outline-border: #9a8e8c;
+
+    /* ===== Link Colors ===== */
+    --theme-link: #c3002f;
+    --theme-link-hover: #a00025;
+
+    /* ===== Header & Navigation ===== */
+    --theme-header-bg: #ffffff;
+    --theme-nav-link-hover: #c3002f;
+    --theme-nav-link-active: #c3002f;
+
+    /* ===== Footer ===== */
+    --theme-footer-bg: #030712;
+    --theme-footer-text: #ffffff;
+    --theme-footer-link-hover: #c3002f;
+
+    /* ===== Legacy Variables (Backwards Compatibility) ===== */
+    --muaadh-primary: #c3002f;
+    --muaadh-primary-hover: #a00025;
+    --muaadh-primary-dark: #8a0020;
+    --muaadh-primary-light: #fef2f4;
+    --muaadh-primary-rgb: 195, 0, 47;
+    --muaadh-secondary: #1f0300;
+    --muaadh-secondary-hover: #351c1a;
+    --muaadh-success: #27be69;
+    --muaadh-warning: #fac03c;
+    --muaadh-danger: #f2415a;
+    --muaadh-info: #0ea5e9;
+    --muaadh-text: #1f0300;
+    --muaadh-text-muted: #796866;
+    --muaadh-border: #d9d4d4;
+    --muaadh-border-light: #e9e6e6;
+    --muaadh-bg-light: #f8f7f7;
+    --muaadh-bg-gray: #e9e6e6;
 }

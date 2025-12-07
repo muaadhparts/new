@@ -4,16 +4,15 @@
 ================================================================================
     CSS GUIDELINES FOR AI AGENTS:
     -----------------------------
-    1. The ONLY file for adding/modifying custom CSS is: public/assets/front/css/MUAADH.css
-    2. DO NOT add <style> tags in Blade files - move all styles to MUAADH.css
-    3. DO NOT create new CSS files - use MUAADH.css sections instead
-    4. DO NOT modify style.css (legacy base file)
-    5. Use CSS variables from MUAADH.css (--muaadh-primary, --muaadh-radius, etc.)
-    6. Add new styles under appropriate section comments in MUAADH.css
+    1. The ONLY file for adding/modifying custom CSS is: public/assets/front/css/style.css
+    2. DO NOT add <style> tags in Blade files - move all styles to style.css
+    3. DO NOT create new CSS files - use style.css sections instead
+    4. Use CSS variables from style.css (--theme-* or --muaadh-*)
+    5. Add new styles under appropriate section comments in style.css
 
     FILE STRUCTURE:
-    - style.css = Legacy base (DO NOT MODIFY)
-    - MUAADH.css = Main theme file (ALL CUSTOMIZATIONS HERE)
+    - style.css = MAIN THEME FILE (ALL CUSTOMIZATIONS HERE)
+    - theme-colors.css = Generated from Admin Panel (overrides :root variables)
     - Vendor CSS in assets/vendor/css = Vendor-specific only
 ================================================================================
 --}}
@@ -43,8 +42,6 @@
         <link rel="stylesheet" href="{{ asset('assets/front') }}/css/rtl.css">
     @endif
     <link rel="stylesheet" href="{{ asset('assets/vendor') }}/css/custom.css">
-    {{-- MUAADH Theme - Unified Styles (Main Theme File) --}}
-    <link rel="stylesheet" href="{{ asset('assets/front/css/MUAADH.css') }}">
     {{-- Theme Colors - Generated from Admin Panel --}}
     <link rel="stylesheet" href="{{ asset('assets/front/css/theme-colors.css') }}?v={{ filemtime(public_path('assets/front/css/theme-colors.css')) }}">
     <link rel="icon" href="{{ asset('assets/images/' . $gs->favicon) }}">

@@ -1,78 +1,61 @@
-{{--
-================================================================================
-    MUAADH THEME - ADMIN LAYOUT
-================================================================================
-    CSS GUIDELINES FOR AI AGENTS:
-    -----------------------------
-    1. The ONLY file for adding/modifying custom CSS is: public/assets/front/css/style.css
-    2. DO NOT add <style> tags in Blade files - move all styles to style.css
-    3. DO NOT create new CSS files - use style.css sections instead
-    4. Use CSS variables from style.css (--theme-* or --muaadh-*)
-    5. Add new styles under appropriate section comments in style.css
 
-    FILE STRUCTURE:
-    - style.css = MAIN THEME FILE (ALL CUSTOMIZATIONS HERE)
-    - theme-colors.css = Generated from Admin Panel (overrides :root variables)
-    - Admin CSS files in assets/admin/css = DO NOT MODIFY
-================================================================================
---}}
 <!doctype html>
-@php
+<?php
 	// Get language from Session (same as frontend)
 	$adminLang = Session::has('language')
 		? \App\Models\Language::find(Session::get('language'))
 		: \App\Models\Language::where('is_default', 1)->first();
-@endphp
-<html lang="en" dir="{{ $adminLang && $adminLang->rtl == 1 ? 'rtl' : 'ltr' }}">
+?>
+<html lang="en" dir="<?php echo e($adminLang && $adminLang->rtl == 1 ? 'rtl' : 'ltr'); ?>">
 
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
 	<meta name="author" content="Muaadh">
-	<meta name="csrf-token" content="{{ csrf_token() }}">
+	<meta name="csrf-token" content="<?php echo e(csrf_token()); ?>">
 	<!-- Title -->
-	<title>{{$gs->title}}</title>
+	<title><?php echo e($gs->title); ?></title>
 	<!-- favicon -->
-	<link rel="icon" type="image/x-icon" href="{{asset('assets/images/' . $gs->favicon)}}" />
+	<link rel="icon" type="image/x-icon" href="<?php echo e(asset('assets/images/' . $gs->favicon)); ?>" />
 	<!-- Bootstrap -->
-	<link href="{{asset('assets/admin/css/bootstrap.min.css')}}" rel="stylesheet" />
+	<link href="<?php echo e(asset('assets/admin/css/bootstrap.min.css')); ?>" rel="stylesheet" />
 	<!-- Fontawesome -->
-	<link rel="stylesheet" href="{{asset('assets/admin/css/fontawesome.css')}}">
+	<link rel="stylesheet" href="<?php echo e(asset('assets/admin/css/fontawesome.css')); ?>">
 	<!-- icofont -->
-	<link rel="stylesheet" href="{{asset('assets/admin/css/icofont.min.css')}}">
+	<link rel="stylesheet" href="<?php echo e(asset('assets/admin/css/icofont.min.css')); ?>">
 	<!-- Sidemenu Css -->
-	<link href="{{asset('assets/admin/plugins/fullside-menu/css/dark-side-style.css')}}" rel="stylesheet" />
-	<link href="{{asset('assets/admin/plugins/fullside-menu/waves.min.css')}}" rel="stylesheet" />
+	<link href="<?php echo e(asset('assets/admin/plugins/fullside-menu/css/dark-side-style.css')); ?>" rel="stylesheet" />
+	<link href="<?php echo e(asset('assets/admin/plugins/fullside-menu/waves.min.css')); ?>" rel="stylesheet" />
 
-	<link href="{{asset('assets/admin/css/plugin.css')}}" rel="stylesheet" />
+	<link href="<?php echo e(asset('assets/admin/css/plugin.css')); ?>" rel="stylesheet" />
 
-	<link href="{{asset('assets/admin/css/jquery.tagit.css')}}" rel="stylesheet" />
-	<link rel="stylesheet" href="{{ asset('assets/admin/css/bootstrap-colorpicker.css') }}">
+	<link href="<?php echo e(asset('assets/admin/css/jquery.tagit.css')); ?>" rel="stylesheet" />
+	<link rel="stylesheet" href="<?php echo e(asset('assets/admin/css/bootstrap-colorpicker.css')); ?>">
 	<!-- Main Css -->
 
 	<!-- stylesheet -->
-	@if($adminLang && $adminLang->rtl == 1)
+	<?php if($adminLang && $adminLang->rtl == 1): ?>
 
-		<link href="{{asset('assets/admin/css/rtl/style.css')}}" rel="stylesheet" />
-		<link href="{{asset('assets/admin/css/rtl/custom.css')}}" rel="stylesheet" />
-		<link href="{{asset('assets/admin/css/rtl/responsive.css')}}" rel="stylesheet" />
-		<link href="{{asset('assets/admin/css/common.css')}}" rel="stylesheet" />
+		<link href="<?php echo e(asset('assets/admin/css/rtl/style.css')); ?>" rel="stylesheet" />
+		<link href="<?php echo e(asset('assets/admin/css/rtl/custom.css')); ?>" rel="stylesheet" />
+		<link href="<?php echo e(asset('assets/admin/css/rtl/responsive.css')); ?>" rel="stylesheet" />
+		<link href="<?php echo e(asset('assets/admin/css/common.css')); ?>" rel="stylesheet" />
 
-	@else
+	<?php else: ?>
 
-		<link href="{{asset('assets/admin/css/style.css')}}" rel="stylesheet" />
-		<link href="{{asset('assets/admin/css/custom.css')}}" rel="stylesheet" />
-		<link href="{{asset('assets/admin/css/responsive.css')}}" rel="stylesheet" />
-		<link href="{{asset('assets/admin/css/common.css')}}" rel="stylesheet" />
-	@endif
+		<link href="<?php echo e(asset('assets/admin/css/style.css')); ?>" rel="stylesheet" />
+		<link href="<?php echo e(asset('assets/admin/css/custom.css')); ?>" rel="stylesheet" />
+		<link href="<?php echo e(asset('assets/admin/css/responsive.css')); ?>" rel="stylesheet" />
+		<link href="<?php echo e(asset('assets/admin/css/common.css')); ?>" rel="stylesheet" />
+	<?php endif; ?>
 
-	{{-- Frontend CSS for Header Display --}}
-	<link rel="stylesheet" href="{{ asset('assets/front/css/bootstrap.min.css') }}">
-	{{-- Main Theme File - Contains all styles --}}
-	<link rel="stylesheet" href="{{ asset('assets/front/css/style.css') }}?v={{ time() }}">
+	
+	<link rel="stylesheet" href="<?php echo e(asset('assets/front/css/bootstrap.min.css')); ?>">
+	
+	<link rel="stylesheet" href="<?php echo e(asset('assets/front/css/style.css')); ?>?v=<?php echo e(time()); ?>">
 
-	{{-- Hide bottom layer and raise header above all content --}}
+	
 	<style>
 		.frontend-header-wrapper .header-top {
 			display: none !important;
@@ -147,28 +130,29 @@
 		}
 	</style>
 
-	@yield('styles')
+	<?php echo $__env->yieldContent('styles'); ?>
 
 	<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-	@livewireStyles
+	<?php echo \Livewire\Mechanisms\FrontendAssets\FrontendAssets::styles(); ?>
+
 
 </head>
 
 <body id="page-top">
 
-	@php
+	<?php
 		$categories = App\Models\Category::with('subs')->where('status', 1)->get();
 		$pages = App\Models\Page::get();
 		$currencies = App\Models\Currency::all();
 		$languges = App\Models\Language::all();
-	@endphp
+	?>
 
 	<div class="frontend-header-wrapper">
-		{{-- Frontend Header --}}
-		@include('includes.frontend.header')
+		
+		<?php echo $__env->make('includes.frontend.header', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?>
 
-		{{-- Frontend Mobile Menu --}}
-		@include('includes.frontend.mobile_menu')
+		
+		<?php echo $__env->make('includes.frontend.mobile_menu', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?>
 	</div>
 
 	<!-- overlay for mobile menu -->
@@ -182,8 +166,8 @@
 			<div class="header">
 				<div class="container-fluid">
 					<div class="d-flex mobile-menu-check justify-content-between">
-						<a class="admin-logo" href="{{ route('front.index') }}" target="_blank">
-							<img src="{{asset('assets/images/' . $gs->logo)}}" alt="">
+						<a class="admin-logo" href="<?php echo e(route('front.index')); ?>" target="_blank">
+							<img src="<?php echo e(asset('assets/images/' . $gs->logo)); ?>" alt="">
 						</a>
 						<div class="menu-toggle-button">
 							<a class="nav-link" href="javascript:;" id="sidebarCollapse">
@@ -197,9 +181,9 @@
 
 						<div class="right-eliment">
 							<ul class="list">
-								<input type="hidden" id="all_notf_count" value="{{ route('all-notf-count') }}">
+								<input type="hidden" id="all_notf_count" value="<?php echo e(route('all-notf-count')); ?>">
 								<li class="bell-area">
-									<a class="dropdown-toggle-1" target="_blank" href="{{ route('front.index') }}">
+									<a class="dropdown-toggle-1" target="_blank" href="<?php echo e(route('front.index')); ?>">
 										<i class="fas fa-globe-americas"></i>
 									</a>
 								</li>
@@ -207,11 +191,10 @@
 								<li class="bell-area">
 									<a id="notf_conv" class="dropdown-toggle-1" href="javascript:;">
 										<i class="far fa-envelope"></i>
-										<span id="conv-notf-count">{{ App\Models\Notification::countConversation()
-											}}</span>
+										<span id="conv-notf-count"><?php echo e(App\Models\Notification::countConversation()); ?></span>
 									</a>
 									<div class="dropdown-menu">
-										<div class="dropdownmenu-wrapper" data-href="{{ route('conv-notf-show') }}"
+										<div class="dropdownmenu-wrapper" data-href="<?php echo e(route('conv-notf-show')); ?>"
 											id="conv-notf-show">
 										</div>
 									</div>
@@ -220,11 +203,10 @@
 								<li class="bell-area">
 									<a id="notf_product" class="dropdown-toggle-1" href="javascript:;">
 										<i class="icofont-cart"></i>
-										<span id="product-notf-count">{{ App\Models\Notification::countProduct()
-											}}</span>
+										<span id="product-notf-count"><?php echo e(App\Models\Notification::countProduct()); ?></span>
 									</a>
 									<div class="dropdown-menu">
-										<div class="dropdownmenu-wrapper" data-href="{{ route('product-notf-show') }}"
+										<div class="dropdownmenu-wrapper" data-href="<?php echo e(route('product-notf-show')); ?>"
 											id="product-notf-show">
 										</div>
 									</div>
@@ -233,11 +215,10 @@
 								<li class="bell-area">
 									<a id="notf_user" class="dropdown-toggle-1" href="javascript:;">
 										<i class="far fa-user"></i>
-										<span id="user-notf-count">{{ App\Models\Notification::countRegistration()
-											}}</span>
+										<span id="user-notf-count"><?php echo e(App\Models\Notification::countRegistration()); ?></span>
 									</a>
 									<div class="dropdown-menu">
-										<div class="dropdownmenu-wrapper" data-href="{{ route('user-notf-show') }}"
+										<div class="dropdownmenu-wrapper" data-href="<?php echo e(route('user-notf-show')); ?>"
 											id="user-notf-show">
 										</div>
 									</div>
@@ -246,10 +227,10 @@
 								<li class="bell-area">
 									<a id="notf_order" class="dropdown-toggle-1" href="javascript:;">
 										<i class="far fa-newspaper"></i>
-										<span id="order-notf-count">{{ App\Models\Notification::countOrder() }}</span>
+										<span id="order-notf-count"><?php echo e(App\Models\Notification::countOrder()); ?></span>
 									</a>
 									<div class="dropdown-menu">
-										<div class="dropdownmenu-wrapper" data-href="{{ route('order-notf-show') }}"
+										<div class="dropdownmenu-wrapper" data-href="<?php echo e(route('order-notf-show')); ?>"
 											id="order-notf-show">
 										</div>
 									</div>
@@ -258,25 +239,25 @@
 								<li class="login-profile-area">
 									<a class="dropdown-toggle-1" href="javascript:;">
 										<div class="user-img">
-											<img src="{{ Auth::guard('admin')->user()->photo ? asset('assets/images/admins/' . Auth::guard('admin')->user()->photo) : asset('assets/images/noimage.png') }}"
+											<img src="<?php echo e(Auth::guard('admin')->user()->photo ? asset('assets/images/admins/' . Auth::guard('admin')->user()->photo) : asset('assets/images/noimage.png')); ?>"
 												alt="">
 										</div>
 									</a>
 									<div class="dropdown-menu">
 										<div class="dropdownmenu-wrapper">
 											<ul>
-												<h5>{{ __('Welcome!') }}</h5>
+												<h5><?php echo e(__('Welcome!')); ?></h5>
 												<li>
-													<a href="{{ route('admin.profile') }}"><i class="fas fa-user"></i>
-														{{ __('Edit Profile') }}</a>
+													<a href="<?php echo e(route('admin.profile')); ?>"><i class="fas fa-user"></i>
+														<?php echo e(__('Edit Profile')); ?></a>
 												</li>
 												<li>
-													<a href="{{ route('admin.password') }}"><i class="fas fa-cog"></i>
-														{{ __('Change Password') }}</a>
+													<a href="<?php echo e(route('admin.password')); ?>"><i class="fas fa-cog"></i>
+														<?php echo e(__('Change Password')); ?></a>
 												</li>
 												<li>
-													<a href="{{ route('admin.logout') }}"><i
-															class="fas fa-power-off"></i> {{ __('Logout') }}</a>
+													<a href="<?php echo e(route('admin.logout')); ?>"><i
+															class="fas fa-power-off"></i> <?php echo e(__('Logout')); ?></a>
 												</li>
 											</ul>
 										</div>
@@ -293,64 +274,64 @@
 				<nav id="sidebar" class="nav-sidebar">
 					<ul class="list-unstyled components" id="accordion">
 						<li>
-							<a href="{{ route('admin.dashboard') }}" class="wave-effect"><i
-									class="fa fa-home mr-2"></i>{{ __('Dashboard') }}</a>
+							<a href="<?php echo e(route('admin.dashboard')); ?>" class="wave-effect"><i
+									class="fa fa-home mr-2"></i><?php echo e(__('Dashboard')); ?></a>
 						</li>
-						@if(Auth::guard('admin')->user()->IsSuper())
-							@include('partials.admin-role.super')
+						<?php if(Auth::guard('admin')->user()->IsSuper()): ?>
+							<?php echo $__env->make('partials.admin-role.super', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?>
 
 							<li class="mt-3 text-dark text-center">
-							@lang('Version 4.0')
+							<?php echo app('translator')->get('Version 4.0'); ?>
 							</li>
-						@else
-							@include('partials.admin-role.normal')
-						@endif
+						<?php else: ?>
+							<?php echo $__env->make('partials.admin-role.normal', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?>
+						<?php endif; ?>
 					</ul>
 				</nav>
 				<!-- Main Content Area Start -->
-				@yield('content')
+				<?php echo $__env->yieldContent('content'); ?>
 				<!-- Main Content Area End -->
 			</div>
 		</div>
 	</div>
 	<script type="text/javascript">
-		var mainurl = "{{url('/')}}";
-		var admin_loader = {{ $gs->is_admin_loader }};
-		var whole_sell = {{ $gs->wholesell }};
-		var getattrUrl = '{{ route('admin-prod-getattributes') }}';
-		var curr = {!! json_encode($curr) !!};
+		var mainurl = "<?php echo e(url('/')); ?>";
+		var admin_loader = <?php echo e($gs->is_admin_loader); ?>;
+		var whole_sell = <?php echo e($gs->wholesell); ?>;
+		var getattrUrl = '<?php echo e(route('admin-prod-getattributes')); ?>';
+		var curr = <?php echo json_encode($curr); ?>;
 		var lang = {
-			'additional_price': '{{ __('0.00 (Additional Price)') }}'
+			'additional_price': '<?php echo e(__('0.00 (Additional Price)')); ?>'
 		};
 	</script>
 
 	<!-- Dashboard Core -->
-	<script src="{{asset('assets/admin/js/vendors/jquery-1.12.4.min.js')}}"></script>
-	<script src="{{asset('assets/admin/js/vendors/vue.js')}}"></script>
-	{{-- Frontend Bootstrap 5 for dropdowns --}}
-	<script src="{{asset('assets/front/js/bootstrap.bundle.min.js')}}"></script>
-	<script src="{{asset('assets/admin/js/jqueryui.min.js')}}"></script>
+	<script src="<?php echo e(asset('assets/admin/js/vendors/jquery-1.12.4.min.js')); ?>"></script>
+	<script src="<?php echo e(asset('assets/admin/js/vendors/vue.js')); ?>"></script>
+	
+	<script src="<?php echo e(asset('assets/front/js/bootstrap.bundle.min.js')); ?>"></script>
+	<script src="<?php echo e(asset('assets/admin/js/jqueryui.min.js')); ?>"></script>
 	<!-- Fullside-menu Js-->
-	<script src="{{asset('assets/admin/plugins/fullside-menu/jquery.slimscroll.min.js')}}"></script>
-	<script src="{{asset('assets/admin/plugins/fullside-menu/waves.min.js')}}"></script>
+	<script src="<?php echo e(asset('assets/admin/plugins/fullside-menu/jquery.slimscroll.min.js')); ?>"></script>
+	<script src="<?php echo e(asset('assets/admin/plugins/fullside-menu/waves.min.js')); ?>"></script>
 
-	<script src="{{asset('assets/admin/js/plugin.js')}}"></script>
-	<script src="{{asset('assets/admin/js/Chart.min.js')}}"></script>
-	<script src="{{asset('assets/admin/js/tag-it.js')}}"></script>
-	<script src="{{asset('assets/admin/js/nicEdit.js')}}"></script>
-	<script src="{{asset('assets/admin/js/bootstrap-colorpicker.min.js') }}"></script>
-	<script src="{{asset('assets/admin/js/notify.js') }}"></script>
+	<script src="<?php echo e(asset('assets/admin/js/plugin.js')); ?>"></script>
+	<script src="<?php echo e(asset('assets/admin/js/Chart.min.js')); ?>"></script>
+	<script src="<?php echo e(asset('assets/admin/js/tag-it.js')); ?>"></script>
+	<script src="<?php echo e(asset('assets/admin/js/nicEdit.js')); ?>"></script>
+	<script src="<?php echo e(asset('assets/admin/js/bootstrap-colorpicker.min.js')); ?>"></script>
+	<script src="<?php echo e(asset('assets/admin/js/notify.js')); ?>"></script>
 
-	<script src="{{asset('assets/admin/js/jquery.canvasjs.min.js')}}"></script>
+	<script src="<?php echo e(asset('assets/admin/js/jquery.canvasjs.min.js')); ?>"></script>
 	<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
-	<script src="{{asset('assets/admin/js/load.js')}}"></script>
+	<script src="<?php echo e(asset('assets/admin/js/load.js')); ?>"></script>
 	<!-- Frontend Mobile Menu Js (loaded before custom.js to avoid conflicts)-->
-	<script src="{{asset('assets/front/js/script.js')}}?v={{ time() }}"></script>
+	<script src="<?php echo e(asset('assets/front/js/script.js')); ?>?v=<?php echo e(time()); ?>"></script>
 	<!-- Custom Js-->
-	<script src="{{asset('assets/admin/js/custom.js')}}"></script>
+	<script src="<?php echo e(asset('assets/admin/js/custom.js')); ?>"></script>
 	<!-- AJAX Js-->
-	<script src="{{asset('assets/admin/js/myscript.js')}}"></script>
+	<script src="<?php echo e(asset('assets/admin/js/myscript.js')); ?>"></script>
 
 	<!-- Admin Dropdown Fix - Ensure Admin dropdowns work correctly -->
 	<script>
@@ -378,17 +359,18 @@
 		});
 	</script>
 
-	@yield('scripts')
-	@livewireScripts
+	<?php echo $__env->yieldContent('scripts'); ?>
+	<?php echo \Livewire\Mechanisms\FrontendAssets\FrontendAssets::scripts(); ?>
 
-	@if($gs->is_admin_loader == 0)
+
+	<?php if($gs->is_admin_loader == 0): ?>
 		<style>
 			div#muaadhtable_processing {
 				display: none !important;
 			}
 		</style>
-	@endif
+	<?php endif; ?>
 
 </body>
 
-</html>
+</html><?php /**PATH C:\Users\hp\Herd\new\resources\views/layouts/admin.blade.php ENDPATH**/ ?>

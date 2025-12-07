@@ -323,18 +323,51 @@ class GeneralSettingController extends AdminBaseController
     }
 
     /**
-     * Update theme colors
+     * Update theme colors - Complete unified theme system
      */
     public function updateThemeColors(Request $request)
     {
         $data = Generalsetting::findOrFail(1);
 
+        // Primary Colors
         $data->theme_primary = $request->theme_primary ?? '#c3002f';
         $data->theme_primary_hover = $request->theme_primary_hover ?? '#a00025';
         $data->theme_primary_dark = $request->theme_primary_dark ?? '#8a0020';
         $data->theme_primary_light = $request->theme_primary_light ?? '#fef2f4';
-        $data->theme_secondary = $request->theme_secondary ?? '#1a1a1a';
-        $data->theme_secondary_hover = $request->theme_secondary_hover ?? '#333333';
+
+        // Secondary Colors
+        $data->theme_secondary = $request->theme_secondary ?? '#1f0300';
+        $data->theme_secondary_hover = $request->theme_secondary_hover ?? '#351c1a';
+        $data->theme_secondary_light = $request->theme_secondary_light ?? '#4c3533';
+
+        // Text Colors
+        $data->theme_text_primary = $request->theme_text_primary ?? '#1f0300';
+        $data->theme_text_secondary = $request->theme_text_secondary ?? '#4c3533';
+        $data->theme_text_muted = $request->theme_text_muted ?? '#796866';
+        $data->theme_text_light = $request->theme_text_light ?? '#9a8e8c';
+
+        // Background Colors
+        $data->theme_bg_body = $request->theme_bg_body ?? '#ffffff';
+        $data->theme_bg_light = $request->theme_bg_light ?? '#f8f7f7';
+        $data->theme_bg_gray = $request->theme_bg_gray ?? '#e9e6e6';
+        $data->theme_bg_dark = $request->theme_bg_dark ?? '#030712';
+
+        // Status Colors
+        $data->theme_success = $request->theme_success ?? '#27be69';
+        $data->theme_warning = $request->theme_warning ?? '#fac03c';
+        $data->theme_danger = $request->theme_danger ?? '#f2415a';
+        $data->theme_info = $request->theme_info ?? '#0ea5e9';
+
+        // Border Colors
+        $data->theme_border = $request->theme_border ?? '#d9d4d4';
+        $data->theme_border_light = $request->theme_border_light ?? '#e9e6e6';
+        $data->theme_border_dark = $request->theme_border_dark ?? '#c7c0bf';
+
+        // Header & Footer
+        $data->theme_header_bg = $request->theme_header_bg ?? '#ffffff';
+        $data->theme_footer_bg = $request->theme_footer_bg ?? '#030712';
+        $data->theme_footer_text = $request->theme_footer_text ?? '#ffffff';
+        $data->theme_footer_link_hover = $request->theme_footer_link_hover ?? '#c3002f';
 
         $data->save();
 
@@ -348,25 +381,156 @@ class GeneralSettingController extends AdminBaseController
     }
 
     /**
-     * Generate theme CSS file with database colors
+     * Generate theme CSS file with all database colors
      */
     private function generateThemeCss($gs)
     {
         $cssPath = public_path('assets/front/css/theme-colors.css');
 
-        $css = ":root {
-    /* Primary Colors - Generated from Admin Panel */
-    --muaadh-primary: {$gs->theme_primary};
-    --muaadh-primary-hover: {$gs->theme_primary_hover};
-    --muaadh-primary-dark: {$gs->theme_primary_dark};
-    --muaadh-primary-light: {$gs->theme_primary_light};
-    --muaadh-primary-rgb: " . $this->hexToRgb($gs->theme_primary) . ";
+        // Get values with defaults
+        $primary = $gs->theme_primary ?? '#c3002f';
+        $primaryHover = $gs->theme_primary_hover ?? '#a00025';
+        $primaryDark = $gs->theme_primary_dark ?? '#8a0020';
+        $primaryLight = $gs->theme_primary_light ?? '#fef2f4';
 
-    /* Secondary Colors */
-    --muaadh-secondary: {$gs->theme_secondary};
-    --muaadh-secondary-hover: {$gs->theme_secondary_hover};
+        $secondary = $gs->theme_secondary ?? '#1f0300';
+        $secondaryHover = $gs->theme_secondary_hover ?? '#351c1a';
+        $secondaryLight = $gs->theme_secondary_light ?? '#4c3533';
+
+        $textPrimary = $gs->theme_text_primary ?? '#1f0300';
+        $textSecondary = $gs->theme_text_secondary ?? '#4c3533';
+        $textMuted = $gs->theme_text_muted ?? '#796866';
+        $textLight = $gs->theme_text_light ?? '#9a8e8c';
+        $textLighter = '#b7aead';
+
+        $bgBody = $gs->theme_bg_body ?? '#ffffff';
+        $bgLight = $gs->theme_bg_light ?? '#f8f7f7';
+        $bgLighter = '#f6f6f6';
+        $bgGray = $gs->theme_bg_gray ?? '#e9e6e6';
+        $bgDark = $gs->theme_bg_dark ?? '#030712';
+
+        $success = $gs->theme_success ?? '#27be69';
+        $warning = $gs->theme_warning ?? '#fac03c';
+        $danger = $gs->theme_danger ?? '#f2415a';
+        $info = $gs->theme_info ?? '#0ea5e9';
+
+        $border = $gs->theme_border ?? '#d9d4d4';
+        $borderLight = $gs->theme_border_light ?? '#e9e6e6';
+        $borderDark = $gs->theme_border_dark ?? '#c7c0bf';
+
+        $headerBg = $gs->theme_header_bg ?? '#ffffff';
+        $footerBg = $gs->theme_footer_bg ?? '#030712';
+        $footerText = $gs->theme_footer_text ?? '#ffffff';
+        $footerLinkHover = $gs->theme_footer_link_hover ?? $primary;
+
+        $primaryRgb = $this->hexToRgb($primary);
+
+        $css = <<<CSS
+/**
+ * THEME COLORS - Generated from Admin Panel
+ * This file overrides MUAADH.css :root variables
+ * Do not edit manually - changes will be overwritten
+ */
+:root {
+    /* ===== Primary Brand Colors ===== */
+    --theme-primary: {$primary};
+    --theme-primary-hover: {$primaryHover};
+    --theme-primary-dark: {$primaryDark};
+    --theme-primary-light: {$primaryLight};
+    --theme-primary-rgb: {$primaryRgb};
+
+    /* ===== Secondary Colors ===== */
+    --theme-secondary: {$secondary};
+    --theme-secondary-hover: {$secondaryHover};
+    --theme-secondary-light: {$secondaryLight};
+
+    /* ===== Text Colors ===== */
+    --theme-text-primary: {$textPrimary};
+    --theme-text-secondary: {$textSecondary};
+    --theme-text-muted: {$textMuted};
+    --theme-text-light: {$textLight};
+    --theme-text-lighter: {$textLighter};
+    --theme-text-white: #ffffff;
+
+    /* ===== Background Colors ===== */
+    --theme-bg-body: {$bgBody};
+    --theme-bg-light: {$bgLight};
+    --theme-bg-lighter: {$bgLighter};
+    --theme-bg-gray: {$bgGray};
+    --theme-bg-dark: {$bgDark};
+    --theme-bg-header: {$headerBg};
+    --theme-bg-footer: {$footerBg};
+
+    /* ===== Border Colors ===== */
+    --theme-border: {$border};
+    --theme-border-light: {$borderLight};
+    --theme-border-dark: {$borderDark};
+
+    /* ===== Status Colors ===== */
+    --theme-success: {$success};
+    --theme-warning: {$warning};
+    --theme-danger: {$danger};
+    --theme-info: {$info};
+
+    /* ===== Button Colors ===== */
+    --theme-btn-primary-bg: {$primary};
+    --theme-btn-primary-hover-bg: {$primaryHover};
+    --theme-btn-secondary-bg: {$secondary};
+    --theme-btn-secondary-hover-bg: {$secondaryHover};
+    --theme-btn-outline-text: #344054;
+    --theme-btn-outline-border: {$textLight};
+
+    /* ===== Link Colors ===== */
+    --theme-link: {$primary};
+    --theme-link-hover: {$primaryHover};
+
+    /* ===== Header & Navigation ===== */
+    --theme-header-bg: {$headerBg};
+    --theme-nav-link-hover: {$primary};
+    --theme-nav-link-active: {$primary};
+
+    /* ===== Footer ===== */
+    --theme-footer-bg: {$footerBg};
+    --theme-footer-text: {$footerText};
+    --theme-footer-link-hover: {$footerLinkHover};
+
+    /* ===== Scrollbar Colors ===== */
+    --theme-scrollbar-track: {$bgLight};
+    --theme-scrollbar-thumb: {$borderDark};
+    --theme-scrollbar-thumb-hover: {$textLight};
+
+    /* ===== Status Light Colors ===== */
+    --theme-success-light: #e8f8ef;
+    --theme-warning-light: #fff8e6;
+    --theme-danger-light: #fde8eb;
+    --theme-info-light: #e0f2fe;
+
+    /* ===== Status Hover Colors ===== */
+    --theme-success-hover: #1fa058;
+    --theme-warning-hover: #e5ad30;
+    --theme-danger-hover: #d93a50;
+    --theme-info-hover: #0284c7;
+
+    /* ===== Legacy Variables (Backwards Compatibility) ===== */
+    --muaadh-primary: {$primary};
+    --muaadh-primary-hover: {$primaryHover};
+    --muaadh-primary-dark: {$primaryDark};
+    --muaadh-primary-light: {$primaryLight};
+    --muaadh-primary-rgb: {$primaryRgb};
+    --muaadh-secondary: {$secondary};
+    --muaadh-secondary-hover: {$secondaryHover};
+    --muaadh-success: {$success};
+    --muaadh-warning: {$warning};
+    --muaadh-danger: {$danger};
+    --muaadh-info: {$info};
+    --muaadh-text: {$textPrimary};
+    --muaadh-text-muted: {$textMuted};
+    --muaadh-border: {$border};
+    --muaadh-border-light: {$borderLight};
+    --muaadh-bg-light: {$bgLight};
+    --muaadh-bg-gray: {$bgGray};
 }
-";
+CSS;
 
         file_put_contents($cssPath, $css);
     }
