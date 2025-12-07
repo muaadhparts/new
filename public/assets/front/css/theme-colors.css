@@ -98,12 +98,64 @@
     --theme-btn-font-weight: 500;
     --theme-btn-radius: 8px;
     --theme-btn-shadow: none;
+    --theme-btn-shadow-hover: 0 4px 12px rgba(0,0,0,0.15);
+    --theme-btn-transition: all 0.3s ease;
+    
+    /* Primary Button */
     --theme-btn-primary-bg: #16a34a;
+    --theme-btn-primary-text: #ffffff;
     --theme-btn-primary-hover-bg: #15803d;
+    --theme-btn-primary-hover-text: #ffffff;
+    --theme-btn-primary-border: #16a34a;
+    
+    /* Secondary Button */
     --theme-btn-secondary-bg: #14532d;
+    --theme-btn-secondary-text: #ffffff;
     --theme-btn-secondary-hover-bg: #166534;
-    --theme-btn-outline-text: #344054;
-    --theme-btn-outline-border: #4ade80;
+    --theme-btn-secondary-hover-text: #ffffff;
+    --theme-btn-secondary-border: #14532d;
+    
+    /* Success Button */
+    --theme-btn-success-bg: #22c55e;
+    --theme-btn-success-text: #ffffff;
+    --theme-btn-success-hover-bg: #1fa058;
+    --theme-btn-success-hover-text: #ffffff;
+    --theme-btn-success-border: #22c55e;
+    
+    /* Danger Button */
+    --theme-btn-danger-bg: #dc2626;
+    --theme-btn-danger-text: #ffffff;
+    --theme-btn-danger-hover-bg: #b91c1c;
+    --theme-btn-danger-hover-text: #ffffff;
+    --theme-btn-danger-border: #dc2626;
+    
+    /* Warning Button */
+    --theme-btn-warning-bg: #d97706;
+    --theme-btn-warning-text: #ffffff;
+    --theme-btn-warning-hover-bg: #b45309;
+    --theme-btn-warning-hover-text: #ffffff;
+    --theme-btn-warning-border: #d97706;
+    
+    /* Info Button */
+    --theme-btn-info-bg: #0891b2;
+    --theme-btn-info-text: #ffffff;
+    --theme-btn-info-hover-bg: #0e7490;
+    --theme-btn-info-hover-text: #ffffff;
+    --theme-btn-info-border: #0891b2;
+    
+    /* Outline Button */
+    --theme-btn-outline-bg: transparent;
+    --theme-btn-outline-text: #14532d;
+    --theme-btn-outline-border: #c8e6c9;
+    --theme-btn-outline-hover-bg: #f7fef9;
+    --theme-btn-outline-hover-text: #14532d;
+    --theme-btn-outline-hover-border: #a5d6a7;
+    
+    /* Ghost Button */
+    --theme-btn-ghost-bg: transparent;
+    --theme-btn-ghost-text: #14532d;
+    --theme-btn-ghost-hover-bg: #f7fef9;
+    --theme-btn-ghost-hover-text: #16a34a;
 
     /* ===== CARDS ===== */
     --theme-card-bg: #ffffff;
