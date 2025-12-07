@@ -4,7 +4,7 @@
  * ========================================
  * Generated from Admin Panel Theme Builder
  * Do not edit manually - changes will be overwritten
- * Generated at: 2025-12-07 01:04:24
+ * Generated at: 2025-12-07 17:49:35
  */
 :root {
     /* ===== PRIMARY BRAND COLORS ===== */
@@ -62,20 +62,20 @@
     --theme-info-hover: #0284c7;
 
     /* ===== TYPOGRAPHY ===== */
-    --theme-font-primary: 'Roboto', sans-serif;
-    --theme-font-heading: 'Poppins', sans-serif;
-    --theme-font-size-base: 16px;
-    --theme-font-size-sm: 14px;
-    --theme-font-size-lg: 18px;
+    --theme-font-primary: 'Poppins', sans-serif;
+    --theme-font-heading: 'Saira', sans-serif;
+    --theme-font-size-base: 15px;
+    --theme-font-size-sm: 15px;
+    --theme-font-size-lg: 20px;
     --theme-line-height: 1.5;
 
     /* ===== BORDER RADIUS ===== */
     --theme-radius-xs: 3px;
     --theme-radius-sm: 4px;
-    --theme-radius: 8px;
-    --theme-radius-lg: 12px;
+    --theme-radius: 11px;
+    --theme-radius-lg: 16px;
     --theme-radius-xl: 16px;
-    --theme-radius-pill: 50px;
+    --theme-radius-pill: 53px;
 
     /* ===== SHADOWS ===== */
     --theme-shadow-xs: 0 1px 2px rgba(0,0,0,0.04);
@@ -95,7 +95,7 @@
     --theme-btn-padding-x: 24px;
     --theme-btn-padding-y: 12px;
     --theme-btn-font-size: 14px;
-    --theme-btn-font-weight: 600;
+    --theme-btn-font-weight: 500;
     --theme-btn-radius: 8px;
     --theme-btn-shadow: none;
     --theme-btn-primary-bg: #0d9488;
@@ -115,13 +115,13 @@
 
     /* ===== HEADER ===== */
     --theme-header-bg: #ffffff;
-    --theme-header-height: 80px;
+    --theme-header-height: 60px;
     --theme-header-shadow: 0 2px 10px rgba(0,0,0,0.1);
     --theme-header-text: #1f0300;
     --theme-nav-link-color: #1f0300;
     --theme-nav-link-hover: #c3002f;
     --theme-nav-link-active: #c3002f;
-    --theme-nav-font-size: 15px;
+    --theme-nav-font-size: 18px;
     --theme-nav-font-weight: 500;
 
     /* ===== FOOTER ===== */
@@ -135,7 +135,7 @@
 
     /* ===== PRODUCT CARDS ===== */
     --theme-product-title-size: 14px;
-    --theme-product-title-weight: 500;
+    --theme-product-title-weight: 400;
     --theme-product-price-size: 16px;
     --theme-product-price-weight: 700;
     --theme-product-card-radius: 12px;

@@ -1,9 +1,9 @@
-<div class="modal fade gs-modal" id="{{ $modalId }}" tabindex="-1" role="dialog"
+<div class="modal fade gs-modal" id="<?php echo e($modalId); ?>" tabindex="-1" role="dialog"
     aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
     <div class="modal-dialog xsend-message-modal-dialog modal-dialog-centered" role="document">
         <div class="modal-content send-message-modal-content form-group">
             <div class="modal-header w-100">
-                <h4 class="title" id="exampleModalLongTitle">{{ $providerLabel }}</h4>
+                <h4 class="title" id="exampleModalLongTitle"><?php echo e($providerLabel); ?></h4>
                 <button type="button" data-bs-dismiss="modal" aria-label="Close">
                     <i class="fa-regular fa-circle-xmark gs-modal-close-btn"></i>
                 </button>
@@ -12,8 +12,8 @@
                 <div class="summary-inner-box">
                     <div class="inputs-wrapper">
                         <div class="shipping-provider-section tryoto-shipping-section">
-                            <div class="provider-methods-wrapper" id="tryoto-options-container-{{ $vendor_id }}">
-                                {{-- سيتم تحميل خيارات الشحن عبر API --}}
+                            <div class="provider-methods-wrapper" id="tryoto-options-container-<?php echo e($vendor_id); ?>">
+                                
                                 <div class="text-center py-4">
                                     <div class="spinner-border text-primary" role="status">
                                         <span class="visually-hidden">جاري التحميل...</span>
@@ -31,8 +31,8 @@
 
 <script>
 (function() {
-    const modalId = '{{ $modalId }}';
-    const vendorId = {{ $vendor_id }};
+    const modalId = '<?php echo e($modalId); ?>';
+    const vendorId = <?php echo e($vendor_id); ?>;
     const containerId = 'tryoto-options-container-' + vendorId;
     let optionsLoaded = false;
 
@@ -80,11 +80,11 @@
         const container = document.getElementById(containerId);
         if (!container) return;
 
-        fetch('{{ route("api.shipping.tryoto.html") }}', {
+        fetch('<?php echo e(route("api.shipping.tryoto.html")); ?>', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || '{{ csrf_token() }}',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || '<?php echo e(csrf_token()); ?>',
                 'Accept': 'application/json'
             },
             body: JSON.stringify({
@@ -162,3 +162,4 @@
     window['loadTryotoOptions_' + vendorId] = loadTryotoOptions;
 })();
 </script>
+<?php /**PATH C:\Users\hp\Herd\new\resources\views/includes/frontend/tryoto_shipping_modal.blade.php ENDPATH**/ ?>
