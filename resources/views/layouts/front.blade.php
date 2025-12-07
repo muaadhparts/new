@@ -47,6 +47,9 @@
     {{-- Muaadh Unified System - Bridges muaadh-* classes with theme system --}}
     <link rel="stylesheet" href="{{ asset('assets/front/css/muaadh-unified.css') }}?v={{ time() }}">
     
+    {{-- Product Info Component Styles --}}
+    <link rel="stylesheet" href="{{ asset('assets/front/css/product-info-component.css') }}?v={{ time() }}">
+    
     {{-- Main Theme File - Contains all styles --}}
     <link rel="stylesheet" href="{{ asset('assets/front/css/style.css') }}?v={{ time() }}">
     

@@ -1,0 +1,246 @@
+/**
+ * Product Info Component Styles
+ * Unified styling for product-info.blade.php component
+ * Uses theme variables for consistency
+ */
+
+/* ============================================================================
+   PRODUCT INFO - BADGES MODE
+   ============================================================================ */
+.product-info-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.product-info-badges .badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 12px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    border-radius: var(--theme-radius-sm, 4px);
+    transition: var(--theme-transition-fast, all 0.2s ease);
+}
+
+.product-info-badges .badge i {
+    font-size: 0.75rem;
+}
+
+.product-info-badges .bg-secondary {
+    background-color: var(--theme-btn-secondary-bg, var(--theme-secondary)) !important;
+    color: var(--theme-btn-secondary-text, #fff) !important;
+}
+
+.product-info-badges .bg-light {
+    background-color: var(--theme-bg-light, #f8f9fa) !important;
+    color: var(--theme-text-primary, #333) !important;
+    border: 1px solid var(--theme-border, #e0e0e0);
+}
+
+.product-info-badges .bg-success {
+    background-color: var(--theme-success, #28a745) !important;
+    color: var(--theme-btn-success-text, #fff) !important;
+}
+
+.product-info-badges .bg-danger {
+    background-color: var(--theme-danger, #dc3545) !important;
+    color: var(--theme-btn-danger-text, #fff) !important;
+}
+
+.product-info-badges .bg-primary {
+    background-color: var(--theme-primary, #007bff) !important;
+    color: var(--theme-btn-primary-text, #fff) !important;
+}
+
+/* Quality Brand Logo in Badges */
+.muaadh-quality-logo-sm {
+    height: 16px;
+    width: auto;
+    max-width: 40px;
+    object-fit: contain;
+}
+
+/* ============================================================================
+   PRODUCT INFO - LIST MODE
+   ============================================================================ */
+.product-info-list {
+    list-style: none;
+    padding: 0;
+    margin-bottom: 12px;
+}
+
+.product-info-list li {
+    padding: 4px 0;
+    font-size: 0.9rem;
+    color: var(--theme-text-secondary, #666);
+    line-height: 1.6;
+}
+
+.product-info-list li strong {
+    color: var(--theme-text-primary, #333);
+    margin-inline-end: 6px;
+}
+
+.product-info-list .font-monospace {
+    font-family: 'Courier New', monospace;
+    background: var(--theme-bg-light, #f8f9fa);
+    padding: 2px 6px;
+    border-radius: var(--theme-radius-sm, 4px);
+    font-size: 0.85rem;
+}
+
+.product-info-list .text-success {
+    color: var(--theme-success, #28a745) !important;
+}
+
+.product-info-list .text-danger {
+    color: var(--theme-danger, #dc3545) !important;
+}
+
+.product-info-list .text-primary {
+    color: var(--theme-primary, #007bff) !important;
+}
+
+/* Quality Brand Logo in List */
+.muaadh-quality-logo-md {
+    height: 20px;
+    width: auto;
+    max-width: 60px;
+    object-fit: contain;
+}
+
+/* ============================================================================
+   PRODUCT INFO - MODAL MODE
+   ============================================================================ */
+.product-info-modal {
+    margin-bottom: 16px;
+}
+
+.product-info-modal .table {
+    margin-bottom: 0;
+}
+
+.product-info-modal .table td {
+    padding: 8px 12px;
+    border: none;
+    vertical-align: middle;
+}
+
+.product-info-modal .table td:first-child {
+    color: var(--theme-text-muted, #999);
+    font-size: 0.9rem;
+}
+
+.product-info-modal .table td:last-child {
+    color: var(--theme-text-primary, #333);
+    font-weight: 500;
+}
+
+.product-info-modal code {
+    background: var(--theme-bg-light, #f8f9fa);
+    color: var(--theme-primary, #007bff);
+    padding: 4px 8px;
+    border-radius: var(--theme-radius-sm, 4px);
+    font-size: 0.9rem;
+}
+
+.product-info-modal .text-success {
+    color: var(--theme-success, #28a745) !important;
+}
+
+.product-info-modal .text-danger {
+    color: var(--theme-danger, #dc3545) !important;
+}
+
+.product-info-modal .text-primary {
+    color: var(--theme-primary, #007bff) !important;
+}
+
+/* ============================================================================
+   PRODUCT INFO - INLINE MODE (DEFAULT)
+   ============================================================================ */
+.product-info-inline {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+    font-size: 0.85rem;
+    color: var(--theme-text-muted, #999);
+    margin-bottom: 8px;
+}
+
+.product-info-inline span {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.product-info-inline i {
+    font-size: 0.75rem;
+    opacity: 0.8;
+}
+
+.product-info-inline .font-monospace {
+    font-family: 'Courier New', monospace;
+    background: var(--theme-bg-light, #f8f9fa);
+    padding: 2px 6px;
+    border-radius: var(--theme-radius-sm, 4px);
+    color: var(--theme-text-primary, #333);
+}
+
+.product-info-inline .text-success {
+    color: var(--theme-success, #28a745) !important;
+}
+
+.product-info-inline .text-danger {
+    color: var(--theme-danger, #dc3545) !important;
+}
+
+.product-info-inline .text-primary {
+    color: var(--theme-primary, #007bff) !important;
+}
+
+/* Quality Brand Logo in Inline */
+.muaadh-quality-logo-xs {
+    height: 14px;
+    width: auto;
+    max-width: 30px;
+    object-fit: contain;
+}
+
+/* ============================================================================
+   RESPONSIVE ADJUSTMENTS
+   ============================================================================ */
+@media (max-width: 767.98px) {
+    .product-info-badges {
+        gap: 6px;
+    }
+    
+    .product-info-badges .badge {
+        padding: 4px 10px;
+        font-size: 0.8rem;
+    }
+    
+    .product-info-inline {
+        font-size: 0.8rem;
+        gap: 8px;
+    }
+    
+    .product-info-list li {
+        font-size: 0.85rem;
+    }
+}
+
+/* ============================================================================
+   RTL SUPPORT
+   ============================================================================ */
+[dir="rtl"] .product-info-badges,
+[dir="rtl"] .product-info-inline {
+    direction: rtl;
+}
+
+[dir="rtl"] .product-info-list {
+    text-align: right;
+}

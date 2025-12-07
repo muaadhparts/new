@@ -1220,15 +1220,18 @@ p.text-lg {
   z-index: 5;
 }
 .single-product .img-wrapper .product-badge, .single-product-list-view .img-wrapper .product-badge {
-  width: 62px;
+  width: auto;
+  min-width: 62px;
   height: 29px;
   padding: 4px 16px;
   gap: 10px;
-  background-color: var(--theme-text-primary);
-  color: var(--theme-text-white);
+  background-color: var(--theme-danger, var(--theme-text-primary));
+  color: var(--theme-btn-danger-text, var(--theme-text-white));
   left: 16px;
   font-family: var(--theme-font-primary);
   font-size: 14px;
+  font-weight: 700;
+  border-radius: var(--theme-radius-sm, 4px);
 }
 .single-product .img-wrapper .add-to-wishlist-btn, .single-product-list-view .img-wrapper .add-to-wishlist-btn {
   width: 48px;
@@ -1319,25 +1322,29 @@ p.text-lg {
   text-align: center;
   justify-content: center;
   align-items: center;
-  color: var(--theme-bg-dark);
+  color: var(--theme-text-primary, var(--theme-bg-dark));
+  font-weight: 600;
 }
 .single-product .add-cart, .single-product-list-view .add-cart,
 .single-product .compare,
 .single-product-list-view .compare,
 .single-product .details,
 .single-product-list-view .details {
-  background-color: var(--theme-text-white);
+  background-color: var(--theme-card-bg, var(--theme-text-white));
   padding: 12px;
-  border-radius: 8px;
-  transition: all 0.3s ease-in;
+  border-radius: var(--theme-radius, 8px);
+  transition: var(--theme-transition, all 0.3s ease-in);
+  box-shadow: var(--theme-btn-shadow, 0 2px 4px rgba(0,0,0,0.1));
 }
 .single-product .add-cart:hover, .single-product-list-view .add-cart:hover,
 .single-product .compare:hover,
 .single-product-list-view .compare:hover,
 .single-product .details:hover,
 .single-product-list-view .details:hover {
-  background-color: var(--theme-primary);
-  color: var(--theme-text-white);
+  background-color: var(--theme-btn-primary-hover-bg, var(--theme-primary));
+  color: var(--theme-btn-primary-text, var(--theme-text-white));
+  box-shadow: var(--theme-btn-shadow-hover, 0 4px 8px rgba(0,0,0,0.15));
+  transform: translateY(-2px);
 }
 .single-product .compare, .single-product-list-view .compare,
 .single-product .details,
