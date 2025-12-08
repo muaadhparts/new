@@ -63,6 +63,17 @@
         const vendorId = {{ $vendor_id }};
         const modal = document.getElementById(modalId);
 
+        // ✅ Get vendor's products total from page
+        @php
+            $vendorProductsTotal = 0;
+            if (isset($array_product)) {
+                foreach ($array_product as $product) {
+                    $vendorProductsTotal += $product['price'] ?? 0;
+                }
+            }
+        @endphp
+        const vendorCartTotal = {{ round($vendorProductsTotal * $curr->value, 2) }};
+
         if (modal) {
             const shippingRadios = modal.querySelectorAll('input.shipping[ref="{{ $vendor_id }}"]');
 
@@ -70,31 +81,42 @@
                 radio.addEventListener('change', function() {
                     if (this.checked) {
                         const shippingText = document.getElementById('shipping_text' + vendorId);
-                        const price = parseFloat(this.getAttribute('data-price')) || 0;
+                        const originalPrice = parseFloat(this.getAttribute('data-price')) || 0;
                         const freeAbove = parseFloat(this.getAttribute('data-free-above')) || 0;
-                        const viewPrice = this.getAttribute('view');
                         const title = this.getAttribute('data-form');
+                        const currSign = '{{ $curr->sign }}';
 
-                        // Get current cart subtotal for this vendor (you may need to adjust this)
-                        const cartTotal = parseFloat(document.querySelector('[data-vendor-total="{{ $vendor_id }}"]')?.getAttribute('data-amount')) || 0;
+                        // ✅ Check if free shipping applies
+                        let finalPrice = originalPrice;
+                        let isFreeShipping = false;
 
-                        // Check if free shipping applies
-                        if (freeAbove > 0 && cartTotal >= freeAbove) {
-                            shippingText.innerHTML = '<span class="text-success">' + title + ' (@lang("Free"))</span>';
-                        } else {
-                            shippingText.textContent = title + ': ' + viewPrice;
+                        if (freeAbove > 0 && vendorCartTotal >= freeAbove) {
+                            finalPrice = 0;
+                            isFreeShipping = true;
                         }
 
-                        // Trigger recalculation of totals
-                        if (typeof calculateTotals === 'function') {
-                            calculateTotals();
+                        // ✅ Update the data-price attribute dynamically for total calculation
+                        this.setAttribute('data-effective-price', finalPrice);
+
+                        // ✅ Update display text
+                        if (isFreeShipping) {
+                            shippingText.innerHTML = '<span class="text-success"><i class="fas fa-gift"></i> ' + title + ' (@lang("Free!"))</span>';
+                        } else {
+                            shippingText.textContent = title + ': ' + currSign + originalPrice.toFixed(2);
+                        }
+
+                        // ✅ Trigger global recalculation
+                        if (typeof getShipping === 'function') {
+                            getShipping();
+                        }
+                        if (typeof updateFinalTotal === 'function') {
+                            updateFinalTotal();
                         }
                     }
                 });
             });
 
-            // تم إزالة auto-select - المستخدم يجب أن يختار يدوياً
-            // فقط نحدّث العرض إذا كان هناك اختيار موجود
+            // Update on modal open if already selected
             modal.addEventListener('shown.bs.modal', function() {
                 const checkedRadio = modal.querySelector('input.shipping[ref="{{ $vendor_id }}"]:checked');
                 if (checkedRadio) {

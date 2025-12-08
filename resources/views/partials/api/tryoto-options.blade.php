@@ -1,9 +1,33 @@
 {{-- resources/views/partials/api/tryoto-options.blade.php --}}
 {{-- API-based Tryoto shipping options partial (No Livewire) --}}
 
-{{-- $curr is passed from ShippingApiController --}}
+{{-- Variables from ShippingApiController:
+     $curr, $vendorId, $deliveryCompany, $weight, $freeAbove, $vendorProductsTotal
+--}}
+
+@php
+    $freeAboveValue = $freeAbove ?? 0;
+    $vendorTotal = $vendorProductsTotal ?? 0;
+    $isFreeShipping = ($freeAboveValue > 0 && $vendorTotal >= $freeAboveValue);
+@endphp
 
 <div class="tryoto-options" data-vendor-id="{{ $vendorId ?? 0 }}">
+    {{-- ✅ Show Free Shipping Alert if applicable --}}
+    @if($isFreeShipping)
+        <div class="alert alert-success mb-3">
+            <i class="fas fa-gift me-2"></i>
+            <strong>@lang('Free Shipping!')</strong>
+            @lang('Your order qualifies for free shipping (above') {{ $curr->sign }}{{ $freeAboveValue }})
+        </div>
+    @elseif($freeAboveValue > 0)
+        <div class="alert alert-info mb-3">
+            <i class="fas fa-info-circle me-2"></i>
+            @lang('Free shipping on orders above') {{ $curr->sign }}{{ $freeAboveValue }}
+            <br>
+            <small>@lang('Your current order'): {{ $curr->sign }}{{ $vendorTotal }}</small>
+        </div>
+    @endif
+
     @if(isset($deliveryCompany) && count($deliveryCompany) > 0)
         <table class="table table-bordered table-hover align-middle">
             <thead class="table-light">
@@ -21,6 +45,8 @@
                         $value = ($company['deliveryOptionId'] ?? '') . '#' . ($company['deliveryCompanyName'] ?? '') . '#' . ($company['price'] ?? 0);
                         $price = (float)($company['price'] ?? 0);
                         $convertedPrice = round($price * $curr->value, 2);
+                        // Display price (0 if free shipping applies)
+                        $displayPrice = $isFreeShipping ? 0 : $convertedPrice;
                     @endphp
 
                     <tr>
@@ -28,9 +54,11 @@
                         <td class="text-center">
                             <input type="radio"
                                    class="form-check-input shipping-option"
+                                   ref="{{ $vendorId ?? 0 }}"
                                    data-vendor="{{ $vendorId ?? 0 }}"
                                    data-price="{{ $convertedPrice }}"
-                                   data-view="{{ $convertedPrice }} {{ $company['currency'] ?? 'IQD' }}"
+                                   data-free-above="{{ $freeAboveValue }}"
+                                   data-view="{{ $convertedPrice }} {{ $curr->sign }}"
                                    data-company="{{ $company['deliveryCompanyName'] ?? '' }}"
                                    data-logo="{{ $company['logo'] ?? '' }}"
                                    data-service="{{ $company['avgDeliveryTime'] ?? '' }}"
@@ -54,9 +82,16 @@
 
                         <!-- Price -->
                         <td>
-                            @if($price > 0)
+                            @if($isFreeShipping)
+                                <span class="text-decoration-line-through text-muted me-1">
+                                    {{ $curr->sign }}{{ $convertedPrice }}
+                                </span>
+                                <span class="badge bg-success">
+                                    <i class="fas fa-gift"></i> @lang('Free!')
+                                </span>
+                            @elseif($price > 0)
                                 <span class="fw-bold text-success">
-                                    + {{ $convertedPrice }} {{ $company['currency'] ?? 'IQD' }}
+                                    + {{ $curr->sign }}{{ $convertedPrice }}
                                 </span>
                             @else
                                 <span class="badge bg-success">@lang('Free')</span>

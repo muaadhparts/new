@@ -227,7 +227,16 @@
                                     'tryoto' => __('Smart Shipping (Tryoto)'),
                                 ];
 
+                                // ✅ Calculate vendor's products total for free shipping check
+                                $vendorProductsTotal = 0;
+                                foreach ($array_product as $product) {
+                                    $vendorProductsTotal += $product['price'] ?? 0;
+                                }
+                                $vendorProductsTotalConverted = round($vendorProductsTotal * $curr->value, 2);
+
                             @endphp
+                            {{-- ✅ Hidden element for vendor's products total (for JavaScript) --}}
+                            <input type="hidden" data-vendor-products-total="{{ $vendor_id }}" data-amount="{{ $vendorProductsTotalConverted }}" />
 
                             <div class="product-infos-wrapper wow-replaced" data-wow-delay=".2s">
                                 <!-- shop-info-wrapper -->
@@ -429,6 +438,8 @@
                                                         'providerLabel' => $providerLabel,
                                                         'methods' => $methods,
                                                         'vendor_id' => $vendor_id,
+                                                        'array_product' => $array_product,
+                                                        'curr' => $curr,
                                                     ])
                                                 @endif
                                             @endforeach
@@ -647,6 +658,8 @@
                         value="{{ round($totalWithTax * $curr->value, 2) }}">
                     <input type="hidden" id="tgrandtotal" value="{{ round($totalPrice * $curr->value, 2) }}">
                     <input type="hidden" id="tax_amount_value" value="{{ round($taxAmount * $curr->value, 2) }}">
+                    {{-- DEBUG: Remove after fixing --}}
+                    <!-- DEBUG: totalPrice={{ $totalPrice }}, taxAmount={{ $taxAmount }}, totalWithTax={{ $totalWithTax }}, curr->value={{ $curr->value }} -->
                 @endif
                 <input type="hidden" id="original_tax" value="0">
                 <input type="hidden" id="wallet-price" name="wallet_price" value="0">
@@ -807,27 +820,22 @@
                     shipping_cost: ship
                 },
                 success: function(data) {
+                    // ✅ FIX: data[0] = total WITH tax, so DON'T update tgrandtotal
+                    // tgrandtotal should remain as products only (without tax)
+                    // data[0] = total with tax
+                    // data[1] = tax rate (e.g., 15)
 
-                    $('#grandtotal').val(data[0]);
-                    $('#tgrandtotal').val(data[0]);
+                    // Update tax rate display
                     $('#original_tax').val(data[1]);
                     $('.tax_show').removeClass('d-none');
                     $('#input_tax').val(data[11]);
                     $('#input_tax_type').val(data[12]);
                     $('.original_tax').html(parseFloat(data[1]) + "%");
-                    var ttotal = parseFloat($('#grandtotal').val());
-                    var tttotal = parseFloat($('#grandtotal').val()) + (parseFloat(mship) + parseFloat(mpack));
-                    ttotal = parseFloat(ttotal).toFixed(2);
-                    tttotal = parseFloat(tttotal).toFixed(2);
-                    $('#grandtotal').val(data[0] + parseFloat(mship) + parseFloat(mpack));
-                    if (pos == 0) {
-                        $('#final-cost').html('{{ $curr->sign }}' + tttotal);
-                        $('.total-cost-dum #total-cost').html('{{ $curr->sign }}' + ttotal);
-                    } else {
-                        $('#total-cost').html('');
-                        $('#final-cost').html(tttotal + '{{ $curr->sign }}');
-                        $('.total-cost-dum #total-cost').html(ttotal + '{{ $curr->sign }}');
-                    }
+
+                    // ✅ Use updateFinalTotal() for consistent calculation
+                    // Don't manually calculate here - let the centralized function handle it
+                    updateFinalTotal();
+
                     $('.gocover').hide();
                 }
             });
@@ -865,16 +873,61 @@
         })
 
 
-        function getShipping() {
+        // ✅ جعل الدالة عالمية لتستخدمها Tryoto modal
+        window.getShipping = function getShipping() {
             mship = 0;
-            $('.shipping').each(function() {
-                if ($(this).is(':checked')) {
-                    mship += parseFloat($(this).attr('data-price'));
+            let originalShipping = 0;
+            let freeShippingDiscount = 0;
+
+            // ✅ جمع كل الشحن المحدد (من .shipping و من shipping-option لـ Tryoto)
+            $('input.shipping:checked, input.shipping-option:checked').each(function() {
+                const originalPrice = parseFloat($(this).attr('data-price')) || 0;
+                const freeAbove = parseFloat($(this).attr('data-free-above')) || 0;
+                const vendorId = $(this).attr('ref') || $(this).attr('name')?.match(/\[(\d+)\]/)?.[1];
+                const vendorTotal = getVendorTotal(vendorId);
+
+                originalShipping += originalPrice;
+
+                // ✅ تطبيق منطق free_above
+                if (freeAbove > 0 && vendorTotal >= freeAbove) {
+                    // الشحن مجاني - لا نضيف للـ mship
+                    console.log('🎁 Free shipping for vendor', vendorId, '- Total:', vendorTotal, '>= FreeAbove:', freeAbove);
+                } else {
+                    mship += originalPrice;
                 }
             });
-            // ✅ FIXED: Update view OUTSIDE the loop
-            $('.shipping_cost_view').html('{{ $curr->sign }}' + mship);
-            console.log('🚚 Shipping total:', mship);
+
+            freeShippingDiscount = originalShipping - mship;
+
+            // ✅ تحديث العرض
+            if (freeShippingDiscount > 0) {
+                // عرض السعر الأصلي مشطوب + مجاني
+                $('.shipping_cost_view').html(
+                    '<span class="text-decoration-line-through text-muted">{{ $curr->sign }}' + originalShipping.toFixed(2) + '</span> ' +
+                    '<span class="text-success fw-bold"><i class="fas fa-gift"></i> @lang("Free!")</span>'
+                );
+                // إظهار صف الخصم
+                $('.free-shipping-discount-row').removeClass('d-none');
+                $('.free_shipping_discount_view').html('-{{ $curr->sign }}' + freeShippingDiscount.toFixed(2));
+            } else if (originalShipping > 0) {
+                $('.shipping_cost_view').html('{{ $curr->sign }}' + mship.toFixed(2));
+                $('.free-shipping-discount-row').addClass('d-none');
+            } else {
+                $('.shipping_cost_view').html('{{ $curr->sign }}0.00');
+                $('.free-shipping-discount-row').addClass('d-none');
+            }
+
+            console.log('🚚 Shipping - Original:', originalShipping.toFixed(2), 'Final:', mship.toFixed(2), 'Discount:', freeShippingDiscount.toFixed(2));
+        }
+
+        // Helper function to get vendor's products total (converted to current currency)
+        window.getVendorTotal = function getVendorTotal(vendorId) {
+            const vendorTotalEl = $('[data-vendor-products-total="' + vendorId + '"]');
+            if (vendorTotalEl.length > 0) {
+                return parseFloat(vendorTotalEl.attr('data-amount')) || 0;
+            }
+            // Fallback: use total cart
+            return parseFloat($('#ttotal').val()) || 0;
         }
 
         function getPacking() {
@@ -897,7 +950,7 @@
          * - Shipping change
          * - Packing change
          */
-        function updateFinalTotal() {
+        window.updateFinalTotal = function updateFinalTotal() {
             console.log('🔄 تحديث الإجمالي النهائي...');
 
             // Get base total (products only, from backend)

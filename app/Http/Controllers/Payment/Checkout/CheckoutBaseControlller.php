@@ -160,6 +160,11 @@ class CheckoutBaseControlller extends Controller
         // Get shipping selections from step2 data
         $shippingSelections = $step2Data['shipping'] ?? [];
 
+        // ✅ Get free shipping info from step2
+        $isFreeShipping = $step2Data['is_free_shipping'] ?? false;
+        $originalShippingCost = $step2Data['original_shipping_cost'] ?? 0;
+        $freeShippingDiscount = $step2Data['free_shipping_discount'] ?? 0;
+
         // For vendor checkout, the shipping might be stored directly
         if ($isVendorCheckout && $vendorId) {
             // Check if shipping is stored as vendor_id => value
@@ -189,11 +194,19 @@ class CheckoutBaseControlller extends Controller
                 $parts = explode('#', $shippingValue);
 
                 if (count($parts) >= 3) {
+                    $originalPrice = (float) $parts[2];
+
+                    // ✅ Check if this vendor qualifies for free shipping
+                    $vendorFreeShipping = $this->checkVendorFreeShipping($vid, $originalPrice);
+
                     $choices[$vid] = [
                         'provider' => 'tryoto',
                         'delivery_option_id' => $parts[0],
                         'company_name' => $parts[1],
-                        'price' => (float) $parts[2],
+                        'price' => $vendorFreeShipping['is_free'] ? 0 : $originalPrice,
+                        'original_price' => $originalPrice,
+                        'is_free_shipping' => $vendorFreeShipping['is_free'],
+                        'free_shipping_reason' => $vendorFreeShipping['reason'] ?? null,
                         'selected_at' => now()->toIso8601String(),
                     ];
                 }
@@ -202,11 +215,19 @@ class CheckoutBaseControlller extends Controller
                 $shipping = \DB::table('shippings')->find($shippingValue);
 
                 if ($shipping) {
+                    $originalPrice = (float) ($shipping->price ?? 0);
+
+                    // ✅ Check if this vendor qualifies for free shipping
+                    $vendorFreeShipping = $this->checkVendorFreeShipping($vid, $originalPrice, $shippingValue);
+
                     $choices[$vid] = [
                         'provider' => $shipping->provider ?? 'manual',
                         'shipping_id' => (int) $shippingValue,
                         'title' => $shipping->title ?? '',
-                        'price' => (float) ($shipping->price ?? 0),
+                        'price' => $vendorFreeShipping['is_free'] ? 0 : $originalPrice,
+                        'original_price' => $originalPrice,
+                        'is_free_shipping' => $vendorFreeShipping['is_free'],
+                        'free_shipping_reason' => $vendorFreeShipping['reason'] ?? null,
                         'selected_at' => now()->toIso8601String(),
                     ];
                 }
@@ -215,5 +236,55 @@ class CheckoutBaseControlller extends Controller
 
         // Return array (Model will handle JSON encoding via cast)
         return !empty($choices) ? $choices : null;
+    }
+
+    /**
+     * Check if vendor qualifies for free shipping based on free_above threshold
+     *
+     * @param int $vendorId Vendor ID
+     * @param float $shippingPrice Original shipping price
+     * @param int|null $shippingId Shipping method ID (for manual/debts)
+     * @return array ['is_free' => bool, 'reason' => string|null]
+     */
+    protected function checkVendorFreeShipping($vendorId, $shippingPrice, $shippingId = null)
+    {
+        // Get cart from session
+        $cart = Session::get('cart');
+        if (!$cart || empty($cart->items)) {
+            return ['is_free' => false, 'reason' => null];
+        }
+
+        // Calculate vendor's products total
+        $vendorProductsTotal = 0;
+        foreach ($cart->items as $item) {
+            $itemVendorId = $item['item']['user_id'] ?? $item['item']['vendor_user_id'] ?? 0;
+            if ($itemVendorId == $vendorId) {
+                $vendorProductsTotal += (float)($item['price'] ?? 0);
+            }
+        }
+
+        // Get free_above from shipping method
+        $freeAbove = 0;
+        if ($shippingId) {
+            $shipping = \DB::table('shippings')->find($shippingId);
+            $freeAbove = (float)($shipping->free_above ?? 0);
+        } else {
+            // For Tryoto, check vendor's Tryoto shipping entry
+            $vendorTryotoShipping = \DB::table('shippings')
+                ->where('user_id', $vendorId)
+                ->where('provider', 'tryoto')
+                ->first();
+            $freeAbove = (float)($vendorTryotoShipping->free_above ?? 0);
+        }
+
+        // Check if qualifies for free shipping
+        if ($freeAbove > 0 && $vendorProductsTotal >= $freeAbove) {
+            return [
+                'is_free' => true,
+                'reason' => "Order total ({$vendorProductsTotal}) exceeds free shipping threshold ({$freeAbove})"
+            ];
+        }
+
+        return ['is_free' => false, 'reason' => null];
     }
 }

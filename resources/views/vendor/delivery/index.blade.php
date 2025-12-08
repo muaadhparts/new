@@ -128,6 +128,11 @@
                                 <td>
                                     {{-- ✅ Show Customer's Shipping Choice --}}
                                     @if ($customerChoice && !$shipment && !$delivery)
+                                        @php
+                                            $isFreeShipping = $customerChoice['is_free_shipping'] ?? false;
+                                            $originalPrice = $customerChoice['original_price'] ?? $customerChoice['price'] ?? 0;
+                                            $actualPrice = $customerChoice['price'] ?? 0;
+                                        @endphp
                                         <div class="mb-1">
                                             <small class="text-primary fw-bold">
                                                 <i class="fas fa-user-check"></i> @lang('Customer Selected:')
@@ -135,7 +140,22 @@
                                             <br>
                                             <span class="badge bg-primary">{{ $customerChoice['company_name'] ?? 'N/A' }}</span>
                                             <br>
-                                            <small>{{ $data->currency_sign }}{{ number_format($customerChoice['price'] ?? 0, 2) }}</small>
+                                            @if($isFreeShipping)
+                                                {{-- ✅ Free Shipping Alert --}}
+                                                <span class="text-decoration-line-through text-muted">
+                                                    {{ $data->currency_sign }}{{ number_format($originalPrice, 2) }}
+                                                </span>
+                                                <span class="badge bg-success">
+                                                    <i class="fas fa-gift"></i> @lang('Free!')
+                                                </span>
+                                                <br>
+                                                <small class="text-danger fw-bold">
+                                                    <i class="fas fa-exclamation-circle"></i>
+                                                    @lang('Vendor pays shipping')
+                                                </small>
+                                            @else
+                                                <small>{{ $data->currency_sign }}{{ number_format($actualPrice, 2) }}</small>
+                                            @endif
                                         </div>
                                         <span class="badge bg-warning text-dark">@lang('Not Assigned')</span>
                                     @elseif ($shipment)
@@ -239,6 +259,18 @@
                         <span id="customerChoiceText"></span>
                         <br>
                         <small class="text-muted">@lang('You can use the customer\'s choice or select a different option.')</small>
+                    </div>
+
+                    {{-- ✅ Free Shipping Warning for Vendor --}}
+                    <div id="freeShippingWarning" class="alert alert-warning d-none mb-3">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <strong>@lang('Free Shipping Order!')</strong>
+                        <br>
+                        <span>@lang('The customer received free shipping on this order. You are responsible for paying the shipping cost.')</span>
+                        <br>
+                        <small class="text-muted">
+                            @lang('Original shipping price:'): <strong id="originalShippingPrice"></strong>
+                        </small>
                     </div>
 
                     {{-- Shipping Method Tabs --}}
@@ -434,6 +466,14 @@
             );
         } else {
             $('#customerChoiceAlert').addClass('d-none');
+        }
+
+        // ✅ Show free shipping warning if applicable
+        if (currentCustomerChoice && currentCustomerChoice.is_free_shipping) {
+            $('#freeShippingWarning').removeClass('d-none');
+            $('#originalShippingPrice').text((currentCustomerChoice.original_price || 0) + ' @lang("SAR")');
+        } else {
+            $('#freeShippingWarning').addClass('d-none');
         }
 
         // Reset forms

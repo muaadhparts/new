@@ -101,6 +101,14 @@
                 <span class="right-side shipping_cost_view">{{ App\Models\Product::convertPrice(0) }}</span>
             </div>
 
+            {{-- Free Shipping Discount (will be shown by JavaScript if applicable) --}}
+            <div class="price-details free-shipping-discount-row d-none">
+                <span class="text-success">
+                    <i class="fas fa-gift"></i> @lang('Free Shipping Discount')
+                </span>
+                <span class="right-side text-success free_shipping_discount_view">-{{ $curr->sign }}0.00</span>
+            </div>
+
             <div class="price-details">
                 <span>@lang('Packaging Cost')</span>
                 <span class="right-side packing_cost_view">{{ App\Models\Product::convertPrice(0) }}</span>
@@ -109,10 +117,41 @@
 
         {{-- Step 3: Shipping & Packing (From Session) --}}
         @if($currentStep == 3 && !$isDigital && isset($step2))
+            @php
+                $isFreeShipping = $step2->is_free_shipping ?? false;
+                $originalShippingCost = $step2->original_shipping_cost ?? 0;
+                $freeShippingDiscount = $step2->free_shipping_discount ?? 0;
+                $actualShippingCost = $step2->shipping_cost ?? 0;
+            @endphp
+
             <div class="price-details">
                 <span>@lang('Shipping Cost')</span>
-                <span class="right-side">{{ App\Models\Product::convertPrice($step2->shipping_cost ?? 0) }}</span>
+                <span class="right-side">
+                    @if($isFreeShipping && $originalShippingCost > 0)
+                        {{-- Show original price with strikethrough --}}
+                        <span class="text-decoration-line-through text-muted me-2">
+                            {{ App\Models\Product::convertPrice($originalShippingCost) }}
+                        </span>
+                        <span class="badge bg-success">
+                            <i class="fas fa-gift"></i> @lang('Free!')
+                        </span>
+                    @else
+                        {{ App\Models\Product::convertPrice($actualShippingCost) }}
+                    @endif
+                </span>
             </div>
+
+            {{-- ✅ Free Shipping Discount Row --}}
+            @if($isFreeShipping && $freeShippingDiscount > 0)
+                <div class="price-details">
+                    <span class="text-success">
+                        <i class="fas fa-gift"></i> @lang('Free Shipping Discount')
+                    </span>
+                    <span class="right-side text-success">
+                        -{{ App\Models\Product::convertPrice($freeShippingDiscount) }}
+                    </span>
+                </div>
+            @endif
 
             @if(isset($step2->shipping_company) && $step2->shipping_company)
                 <div class="price-details">

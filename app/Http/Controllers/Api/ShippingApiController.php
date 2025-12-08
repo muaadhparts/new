@@ -159,6 +159,26 @@ class ShippingApiController extends Controller
             $curr = \App\Models\Currency::where('is_default', '=', 1)->first();
         }
 
+        // ✅ Get free_above from vendor's Tryoto shipping entry
+        $vendorTryotoShipping = \App\Models\Shipping::where('user_id', $vendorId)
+            ->where('provider', 'tryoto')
+            ->first();
+        $freeAbove = $vendorTryotoShipping ? (float)$vendorTryotoShipping->free_above : 0;
+        $freeAboveConverted = round($freeAbove * $curr->value, 2);
+
+        // ✅ Calculate vendor's products total from cart
+        $cart = Session::get('cart');
+        $vendorProductsTotal = 0;
+        if ($cart && !empty($cart->items)) {
+            foreach ($cart->items as $item) {
+                $itemVendorId = data_get($item, 'item.user_id') ?? data_get($item, 'item.vendor_user_id') ?? 0;
+                if ($itemVendorId == $vendorId) {
+                    $vendorProductsTotal += (float)($item['price'] ?? 0);
+                }
+            }
+        }
+        $vendorProductsTotalConverted = round($vendorProductsTotal * $curr->value, 2);
+
         // Get the API response (uses session cart internally)
         $apiResponse = $this->getTryotoOptions($request);
         $data = json_decode($apiResponse->getContent(), true);
@@ -181,6 +201,8 @@ class ShippingApiController extends Controller
             'vendorId' => $vendorId,
             'weight' => $data['weight'],
             'curr' => $curr,
+            'freeAbove' => $freeAboveConverted,
+            'vendorProductsTotal' => $vendorProductsTotalConverted,
         ])->render();
 
         return response()->json([

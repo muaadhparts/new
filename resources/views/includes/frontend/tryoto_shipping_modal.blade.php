@@ -133,67 +133,17 @@
 
     // ✅ تحديث سعر الشحن في الملخص والإجمالي
     function updateShippingSummary() {
-        // جمع أسعار الشحن من جميع التجار
-        let totalShipping = 0;
-
-        // 1. جمع الشحن من Tryoto radios
-        document.querySelectorAll('.shipping-option:checked, input[name^="shipping["]:checked').forEach(function(radio) {
-            const price = parseFloat(radio.getAttribute('data-price')) || 0;
-            totalShipping += price;
-        });
-
-        // 2. جمع الشحن من الخيارات العادية (.shipping)
-        document.querySelectorAll('.shipping:checked').forEach(function(radio) {
-            const price = parseFloat(radio.getAttribute('data-price')) || 0;
-            totalShipping += price;
-        });
-
-        console.log('🚚 Tryoto: Total shipping updated:', totalShipping);
-
-        // تحديث المتغير العام mship
-        if (typeof window.mship !== 'undefined') {
-            window.mship = totalShipping;
+        // ✅ استدعاء الدالة الموحدة getShipping() التي تطبق منطق free_above
+        if (typeof window.getShipping === 'function') {
+            window.getShipping();
         }
 
-        // تحديث عرض سعر الشحن في الملخص
-        const shippingView = document.querySelector('.shipping_cost_view');
-        if (shippingView) {
-            const currSign = '{{ $curr->sign ?? "SAR" }}';
-            const pos = {{ $gs->currency_format ?? 0 }};
-            if (pos == 0) {
-                shippingView.textContent = currSign + totalShipping.toFixed(2);
-            } else {
-                shippingView.textContent = totalShipping.toFixed(2) + currSign;
-            }
-        }
-
-        // تحديث الإجمالي النهائي
+        // ✅ تحديث الإجمالي النهائي
         if (typeof window.updateFinalTotal === 'function') {
             window.updateFinalTotal();
-        } else {
-            // Fallback: حساب يدوي
-            const baseTotal = parseFloat(document.getElementById('tgrandtotal')?.value) || 0;
-            const taxAmount = parseFloat(document.getElementById('tax_amount_value')?.value) || 0;
-            const packingTotal = parseFloat(window.mpack) || 0;
-
-            const finalTotal = baseTotal + taxAmount + totalShipping + packingTotal;
-
-            const finalCostEl = document.getElementById('final-cost');
-            if (finalCostEl) {
-                const currSign = '{{ $curr->sign ?? "SAR" }}';
-                const pos = {{ $gs->currency_format ?? 0 }};
-                if (pos == 0) {
-                    finalCostEl.textContent = currSign + finalTotal.toFixed(2);
-                } else {
-                    finalCostEl.textContent = finalTotal.toFixed(2) + currSign;
-                }
-            }
-
-            const grandtotalInput = document.getElementById('grandtotal');
-            if (grandtotalInput) {
-                grandtotalInput.value = finalTotal.toFixed(2);
-            }
         }
+
+        console.log('🚚 Tryoto: Called getShipping() for unified free_above logic');
     }
 
     // Initialize modal
