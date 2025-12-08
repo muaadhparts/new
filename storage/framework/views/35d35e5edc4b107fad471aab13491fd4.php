@@ -22,20 +22,14 @@
     <link rel="stylesheet" href="<?php echo e(asset('assets/front/css/toastr.min.css')); ?>">
     <link rel="stylesheet" href="<?php echo e(asset('assets/front/css/datatables.min.css')); ?>">
     
-    <link rel="stylesheet" href="<?php echo e(asset('assets/front/css/theme-colors.css')); ?>?v=<?php echo e(filemtime(public_path('assets/front/css/theme-colors.css'))); ?>">
-    
-    
-    <link rel="stylesheet" href="<?php echo e(asset('assets/front/css/unified-buttons.css')); ?>?v=<?php echo e(time()); ?>">
-    
-    
-    <link rel="stylesheet" href="<?php echo e(asset('assets/front/css/muaadh-unified.css')); ?>?v=<?php echo e(time()); ?>">
-    
-    
     <link rel="stylesheet" href="<?php echo e(asset('assets/front/css/style.css')); ?>?v=<?php echo e(time()); ?>">
-    
+
     <?php if($langg && $langg->rtl == 1): ?>
         <link rel="stylesheet" href="<?php echo e(asset('assets/front/css/rtl.css')); ?>">
     <?php endif; ?>
+
+    
+    <link rel="stylesheet" href="<?php echo e(asset('assets/front/css/theme-colors.css')); ?>?v=<?php echo e(filemtime(public_path('assets/front/css/theme-colors.css'))); ?>">
     
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tarekraafat/autocomplete.js@10.2.9/dist/css/autoComplete.min.css">
     <script src="https://cdn.jsdelivr.net/npm/@tarekraafat/autocomplete.js@10.2.9/dist/autoComplete.min.js"></script>
