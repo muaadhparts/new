@@ -276,20 +276,20 @@ class TryotoService
     /**
      * Get delivery options for a route using checkOTODeliveryFee endpoint
      *
-     * المبدأ الأساسي: لا قيم ثابتة
-     * - إذا كانت الأبعاد ناقصة، نرجع خطأ بدلاً من استخدام قيم افتراضية
-     * - يجب توفير البيانات الحقيقية من VendorCartService
+     * المبدأ الأساسي:
+     * - الوزن مطلوب (من products.weight × الكمية)
+     * - المقاسات اختيارية - إذا غير متوفرة، نستخدم قيم محسوبة من الوزن
      *
      * @param string $originCity المدينة المصدر
      * @param string $destinationCity المدينة الوجهة
-     * @param float $weight الوزن بالكيلو
+     * @param float $weight الوزن بالكيلو (مطلوب)
      * @param float $codAmount مبلغ الدفع عند الاستلام (غير مستخدم في هذا الـ endpoint)
-     * @param array $dimensions الأبعاد [length, height, width] - مطلوبة
+     * @param array $dimensions الأبعاد [length, height, width] - اختيارية
      * @return array
      */
     public function getDeliveryOptions(string $originCity, string $destinationCity, float $weight = 0, float $codAmount = 0, array $dimensions = []): array
     {
-        // التحقق من اكتمال البيانات - بدون fallback
+        // التحقق من البيانات الأساسية
         $errors = [];
 
         if (empty($originCity)) {
@@ -302,28 +302,13 @@ class TryotoService
             $errors[] = 'weight_missing_or_invalid';
         }
 
-        $length = $dimensions['length'] ?? null;
-        $height = $dimensions['height'] ?? null;
-        $width = $dimensions['width'] ?? null;
-
-        if ($length === null || $length <= 0) {
-            $errors[] = 'length_missing';
-        }
-        if ($height === null || $height <= 0) {
-            $errors[] = 'height_missing';
-        }
-        if ($width === null || $width <= 0) {
-            $errors[] = 'width_missing';
-        }
-
-        // إذا كانت البيانات ناقصة، رفض الطلب
+        // إذا كانت البيانات الأساسية ناقصة، رفض الطلب
         if (!empty($errors)) {
-            Log::warning('Tryoto: getDeliveryOptions - incomplete data', [
+            Log::warning('Tryoto: getDeliveryOptions - missing required data', [
                 'errors' => $errors,
                 'origin' => $originCity,
                 'destination' => $destinationCity,
                 'weight' => $weight,
-                'dimensions' => $dimensions
             ]);
 
             return [
@@ -332,6 +317,32 @@ class TryotoService
                 'error_code' => 'INCOMPLETE_DATA',
                 'missing_fields' => $errors
             ];
+        }
+
+        // ✅ المقاسات - استخدام القيم المتوفرة أو حساب من الوزن
+        $length = $dimensions['length'] ?? null;
+        $height = $dimensions['height'] ?? null;
+        $width = $dimensions['width'] ?? null;
+
+        // إذا المقاسات غير متوفرة، نحسب أبعاد تقريبية من الوزن
+        // المعادلة: حجم الصندوق = الوزن × 5000 (عكس معادلة الوزن الحجمي)
+        // ثم نوزع الحجم بالتساوي على الأبعاد الثلاثة
+        if ($length === null || $height === null || $width === null || $length <= 0 || $height <= 0 || $width <= 0) {
+            // حساب حجم تقريبي من الوزن
+            // افتراض: كثافة المنتج = 200 كجم/متر مكعب (متوسط للمنتجات العادية)
+            $volumeCm3 = ($weight / 0.0002); // الوزن / الكثافة = الحجم
+            $sideCm = pow($volumeCm3, 1/3); // الجذر التكعيبي للحصول على طول الضلع
+            $sideCm = max(10, min(100, round($sideCm))); // حد أدنى 10سم، أقصى 100سم
+
+            $length = $length ?? $sideCm;
+            $height = $height ?? $sideCm;
+            $width = $width ?? $sideCm;
+
+            Log::info('Tryoto: Using calculated dimensions from weight', [
+                'weight' => $weight,
+                'calculated_side' => $sideCm,
+                'dimensions' => ['length' => $length, 'height' => $height, 'width' => $width]
+            ]);
         }
 
         $requestData = [
@@ -510,26 +521,47 @@ class TryotoService
             'height' => $vendorShippingData['dimensions']['height'] ?? null,
         ] : $this->calculateDimensionsFromOrder($order, $vendorId);
 
-        // التحقق من اكتمال الأبعاد - بدون fallback
-        $missingDims = [];
-        if (!$dims['weight'] || $dims['weight'] <= 0) $missingDims[] = 'weight';
-        if (!$dims['length'] || $dims['length'] <= 0) $missingDims[] = 'length';
-        if (!$dims['width'] || $dims['width'] <= 0) $missingDims[] = 'width';
-        if (!$dims['height'] || $dims['height'] <= 0) $missingDims[] = 'height';
-
-        if (!empty($missingDims)) {
-            Log::error('Tryoto: createShipment - incomplete dimensions', [
+        // ✅ التحقق من الوزن فقط - المقاسات اختيارية
+        if (!$dims['weight'] || $dims['weight'] <= 0) {
+            Log::error('Tryoto: createShipment - weight is required', [
                 'order_id' => $order->id,
                 'vendor_id' => $vendorId,
-                'missing' => $missingDims,
                 'dims' => $dims
             ]);
             return [
                 'success' => false,
-                'error' => 'Incomplete shipping dimensions',
-                'error_code' => 'INCOMPLETE_DIMENSIONS',
-                'missing_fields' => $missingDims
+                'error' => 'Product weight is required for shipping',
+                'error_code' => 'WEIGHT_MISSING',
+                'missing_fields' => ['weight']
             ];
+        }
+
+        // ✅ إذا المقاسات غير متوفرة، نحسبها من الوزن
+        $weight = $dims['weight'];
+        $length = $dims['length'];
+        $width = $dims['width'];
+        $height = $dims['height'];
+
+        if (!$length || $length <= 0 || !$width || $width <= 0 || !$height || $height <= 0) {
+            // حساب حجم تقريبي من الوزن
+            $volumeCm3 = ($weight / 0.0002);
+            $sideCm = pow($volumeCm3, 1/3);
+            $sideCm = max(10, min(100, round($sideCm)));
+
+            $length = $length && $length > 0 ? $length : $sideCm;
+            $width = $width && $width > 0 ? $width : $sideCm;
+            $height = $height && $height > 0 ? $height : $sideCm;
+
+            Log::info('Tryoto: createShipment - calculated dimensions from weight', [
+                'order_id' => $order->id,
+                'weight' => $weight,
+                'calculated_side' => $sideCm
+            ]);
+
+            // تحديث dims للاستخدام لاحقاً
+            $dims['length'] = $length;
+            $dims['width'] = $width;
+            $dims['height'] = $height;
         }
 
         // Determine COD amount

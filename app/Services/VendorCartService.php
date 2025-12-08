@@ -84,6 +84,9 @@ class VendorCartService
      * حساب الوزن والأبعاد للمنتج
      * المصدر الوحيد - بدون قيم ثابتة
      * ======================================
+     *
+     * الوزن مطلوب (من products.weight أو merchant_products.weight)
+     * المقاسات اختيارية - تستخدم لحساب الوزن الحجمي إذا توفرت
      */
     public static function getProductDimensions(int $mpId): array
     {
@@ -95,13 +98,14 @@ class VendorCartService
                 'length' => null,
                 'width' => null,
                 'height' => null,
+                'has_weight' => false,
+                'has_dimensions' => false,
                 'is_complete' => false,
-                'missing_fields' => ['weight', 'length', 'width', 'height'],
+                'missing_fields' => ['weight'],
             ];
         }
 
         $product = $mp->product;
-        $missingFields = [];
 
         // الأولوية: merchant_products ثم products
         // بدون أي fallback لقيم ثابتة
@@ -110,17 +114,23 @@ class VendorCartService
         $width = $mp->width ?? $product->width ?? null;
         $height = $mp->height ?? $product->height ?? null;
 
-        if ($weight === null || $weight <= 0) $missingFields[] = 'weight';
-        if ($length === null || $length <= 0) $missingFields[] = 'length';
-        if ($width === null || $width <= 0) $missingFields[] = 'width';
-        if ($height === null || $height <= 0) $missingFields[] = 'height';
+        // الوزن مطلوب فقط - المقاسات اختيارية
+        $hasWeight = $weight !== null && $weight > 0;
+        $hasDimensions = ($length !== null && $length > 0)
+                      && ($width !== null && $width > 0)
+                      && ($height !== null && $height > 0);
+
+        $missingFields = [];
+        if (!$hasWeight) $missingFields[] = 'weight';
 
         return [
-            'weight' => $weight ? (float) $weight : null,
-            'length' => $length ? (float) $length : null,
-            'width' => $width ? (float) $width : null,
-            'height' => $height ? (float) $height : null,
-            'is_complete' => empty($missingFields),
+            'weight' => $hasWeight ? (float) $weight : null,
+            'length' => ($length !== null && $length > 0) ? (float) $length : null,
+            'width' => ($width !== null && $width > 0) ? (float) $width : null,
+            'height' => ($height !== null && $height > 0) ? (float) $height : null,
+            'has_weight' => $hasWeight,
+            'has_dimensions' => $hasDimensions,
+            'is_complete' => $hasWeight, // الوزن كافي للشحن
             'missing_fields' => $missingFields,
         ];
     }
@@ -130,6 +140,9 @@ class VendorCartService
      * حساب ملخص الشحن لتاجر واحد
      * المصدر الوحيد - بدون قيم ثابتة
      * ======================================
+     *
+     * الوزن مطلوب - المقاسات اختيارية
+     * الوزن = وزن القطعة × الكمية
      */
     public static function calculateVendorShipping(int $vendorId, array $cartItems): array
     {
@@ -142,6 +155,7 @@ class VendorCartService
         $subtotal = 0;
         $missingData = [];
         $hasCompleteData = true;
+        $hasDimensionsData = true;
 
         foreach ($cartItems as $cartKey => $item) {
             $itemVendorId = self::extractVendorId($item);
@@ -161,54 +175,47 @@ class VendorCartService
             $totalQty += $qty;
             $subtotal += (float) ($item['price'] ?? $item['total_price'] ?? 0);
 
-            // الوزن - بدون fallback
-            if ($dimensions['weight'] !== null) {
+            // ✅ الوزن = وزن القطعة × الكمية
+            if ($dimensions['has_weight']) {
                 $totalActualWeight += $dimensions['weight'] * $qty;
             } else {
                 $hasCompleteData = false;
                 $missingData[] = "Item {$cartKey}: missing weight";
             }
 
-            // الأبعاد - بدون fallback
-            if ($dimensions['length'] !== null) {
+            // الأبعاد اختيارية - تستخدم لحساب الوزن الحجمي
+            if ($dimensions['has_dimensions']) {
                 $maxLength = $maxLength === null ? $dimensions['length'] : max($maxLength, $dimensions['length']);
-            }
-            if ($dimensions['width'] !== null) {
                 $maxWidth = $maxWidth === null ? $dimensions['width'] : max($maxWidth, $dimensions['width']);
-            }
-            if ($dimensions['height'] !== null) {
                 $totalHeight += $dimensions['height'] * $qty;
-            }
-
-            if (!$dimensions['is_complete']) {
-                $hasCompleteData = false;
-                $missingData[] = "Item {$cartKey}: missing " . implode(', ', $dimensions['missing_fields']);
+            } else {
+                $hasDimensionsData = false;
             }
         }
 
-        // حساب الوزن الحجمي والقابل للشحن
-        // فقط إذا كانت البيانات مكتملة
+        // ✅ حساب الوزن الحجمي فقط إذا توفرت المقاسات
         $volumetricWeight = null;
-        $chargeableWeight = null;
-
-        if ($maxLength !== null && $maxWidth !== null && $totalHeight > 0) {
+        if ($hasDimensionsData && $maxLength !== null && $maxWidth !== null && $totalHeight > 0) {
             $volumetricWeight = ($maxLength * $maxWidth * $totalHeight) / 5000;
         }
 
-        if ($totalActualWeight > 0 || $volumetricWeight !== null) {
-            $actualW = $totalActualWeight > 0 ? $totalActualWeight : 0;
-            $volumeW = $volumetricWeight ?? 0;
-            $chargeableWeight = max($actualW, $volumeW);
+        // ✅ الوزن القابل للشحن = الأعلى بين الوزن الفعلي والحجمي
+        // إذا لم تتوفر المقاسات، نستخدم الوزن الفعلي فقط
+        $chargeableWeight = null;
+        if ($totalActualWeight > 0) {
+            $chargeableWeight = $totalActualWeight;
+            if ($volumetricWeight !== null && $volumetricWeight > $totalActualWeight) {
+                $chargeableWeight = $volumetricWeight;
+            }
         }
 
-        // جلب مدينة التاجر من قاعدة البيانات - بدون fallback
+        // جلب مدينة التاجر من قاعدة البيانات
         $vendor = User::find($vendorId);
         $vendorCityId = $vendor->city_id ?? null;
         $vendorCity = null;
 
         if ($vendorCityId) {
             $city = \App\Models\City::find($vendorCityId);
-            // استخدام city_name أولاً (الاسم الصحيح في جدول cities)
             $vendorCity = $city->city_name ?? $city->name ?? null;
         }
 
@@ -231,14 +238,15 @@ class VendorCartService
             'volumetric_weight' => $volumetricWeight !== null ? round($volumetricWeight, 3) : null,
             'chargeable_weight' => $chargeableWeight !== null ? round($chargeableWeight, 3) : null,
 
-            // الأبعاد
+            // الأبعاد (اختيارية)
             'dimensions' => [
                 'length' => $maxLength !== null ? round($maxLength, 2) : null,
                 'width' => $maxWidth !== null ? round($maxWidth, 2) : null,
                 'height' => $totalHeight > 0 ? round($totalHeight, 2) : null,
             ],
+            'has_dimensions' => $hasDimensionsData,
 
-            // حالة البيانات
+            // ✅ حالة البيانات - الوزن كافي
             'has_complete_data' => $hasCompleteData,
             'missing_data' => $missingData,
         ];
