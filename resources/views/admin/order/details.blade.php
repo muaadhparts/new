@@ -368,6 +368,101 @@
             @endif
         </div>
 
+        {{-- ✅ Shipment Status Section --}}
+        @php
+            $shipments = App\Models\ShipmentStatusLog::where('order_id', $order->id)
+                ->select('vendor_id', 'company_name', 'tracking_number', 'status', 'status_ar', 'message', 'message_ar', 'location', 'status_date')
+                ->orderBy('vendor_id')
+                ->orderBy('status_date', 'desc')
+                ->get()
+                ->groupBy('vendor_id');
+
+            $deliveries = App\Models\DeliveryRider::where('order_id', $order->id)->get();
+        @endphp
+
+        @if($shipments->count() > 0 || $deliveries->count() > 0)
+        <div class="row mt-4">
+            <div class="col-lg-12">
+                <div class="special-box">
+                    <div class="heading-area">
+                        <h4 class="title">
+                            <i class="fas fa-truck"></i> {{ __('Shipment Status') }}
+                        </h4>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>{{ __('Vendor') }}</th>
+                                    <th>{{ __('Shipping Company') }}</th>
+                                    <th>{{ __('Tracking Number') }}</th>
+                                    <th>{{ __('Status') }}</th>
+                                    <th>{{ __('Location') }}</th>
+                                    <th>{{ __('Last Update') }}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach($shipments as $vendorId => $vendorShipments)
+                                    @php
+                                        $latestShipment = $vendorShipments->first();
+                                        $vendor = App\Models\User::find($vendorId);
+                                    @endphp
+                                    <tr>
+                                        <td>{{ $vendor->shop_name ?? $vendor->name ?? 'Vendor #' . $vendorId }}</td>
+                                        <td>
+                                            <span class="badge badge-info">{{ $latestShipment->company_name }}</span>
+                                        </td>
+                                        <td>
+                                            <strong class="text-primary">{{ $latestShipment->tracking_number }}</strong>
+                                        </td>
+                                        <td>
+                                            <span class="badge
+                                                @if($latestShipment->status == 'delivered') badge-success
+                                                @elseif($latestShipment->status == 'in_transit') badge-primary
+                                                @elseif($latestShipment->status == 'out_for_delivery') badge-info
+                                                @elseif(in_array($latestShipment->status, ['failed', 'returned', 'cancelled'])) badge-danger
+                                                @else badge-secondary
+                                                @endif">
+                                                {{ $latestShipment->status_ar ?? $latestShipment->status }}
+                                            </span>
+                                        </td>
+                                        <td>{{ $latestShipment->location ?? '-' }}</td>
+                                        <td>{{ $latestShipment->status_date ? $latestShipment->status_date->format('Y-m-d H:i') : '-' }}</td>
+                                    </tr>
+                                @endforeach
+
+                                @foreach($deliveries as $delivery)
+                                    @php
+                                        $vendor = App\Models\User::find($delivery->vendor_id);
+                                    @endphp
+                                    <tr>
+                                        <td>{{ $vendor->shop_name ?? $vendor->name ?? 'Vendor #' . $delivery->vendor_id }}</td>
+                                        <td>
+                                            <span class="badge badge-secondary">{{ __('Local Rider') }}</span>
+                                        </td>
+                                        <td>{{ $delivery->rider->name ?? 'N/A' }}</td>
+                                        <td>
+                                            <span class="badge
+                                                @if($delivery->status == 'delivered') badge-success
+                                                @elseif($delivery->status == 'accepted') badge-primary
+                                                @elseif($delivery->status == 'rejected') badge-danger
+                                                @else badge-warning
+                                                @endif">
+                                                {{ ucfirst($delivery->status) }}
+                                            </span>
+                                        </td>
+                                        <td>{{ $delivery->servicearea->name ?? '-' }}</td>
+                                        <td>{{ $delivery->updated_at->format('Y-m-d H:i') }}</td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        @endif
+
         @php
         foreach ($cart['items'] as $key => $item) {
         $userId = $item["user_id"];

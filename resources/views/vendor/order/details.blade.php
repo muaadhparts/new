@@ -235,6 +235,128 @@
                     </div>
                 </div>
             @endif
+
+            {{-- ✅ Shipment Status Card --}}
+            @php
+                $vendorId = auth()->id();
+                $shipment = App\Models\ShipmentStatusLog::where('order_id', $order->id)
+                    ->where('vendor_id', $vendorId)
+                    ->orderBy('status_date', 'desc')
+                    ->orderBy('created_at', 'desc')
+                    ->first();
+
+                $delivery = App\Models\DeliveryRider::where('order_id', $order->id)
+                    ->where('vendor_id', $vendorId)
+                    ->first();
+
+                $customerChoice = $order->getCustomerShippingChoice($vendorId);
+            @endphp
+
+            @if ($shipment || $delivery || $customerChoice)
+                <div class="col">
+                    <div class="order-info-card">
+                        <h5 class="title">
+                            <i class="fas fa-truck"></i> @lang('Shipping Status')
+                        </h5>
+                        <ul class="info-list">
+                            @if ($shipment)
+                                {{-- Tryoto Shipment Info --}}
+                                <li class="info-list-item">
+                                    <span class="info-type">@lang('Shipping Company')</span>
+                                    <span class="info">
+                                        <span class="badge bg-info">{{ $shipment->company_name }}</span>
+                                    </span>
+                                </li>
+                                <li class="info-list-item">
+                                    <span class="info-type">@lang('Tracking Number')</span>
+                                    <span class="info text-primary fw-bold">{{ $shipment->tracking_number }}</span>
+                                </li>
+                                <li class="info-list-item">
+                                    <span class="info-type">@lang('Status')</span>
+                                    <span class="info">
+                                        <span class="badge
+                                            @if($shipment->status == 'delivered') bg-success
+                                            @elseif($shipment->status == 'in_transit') bg-primary
+                                            @elseif($shipment->status == 'out_for_delivery') bg-info
+                                            @elseif(in_array($shipment->status, ['failed', 'returned', 'cancelled'])) bg-danger
+                                            @else bg-secondary
+                                            @endif">
+                                            {{ $shipment->status_ar ?? $shipment->status }}
+                                        </span>
+                                    </span>
+                                </li>
+                                @if($shipment->message_ar || $shipment->message)
+                                <li class="info-list-item">
+                                    <span class="info-type">@lang('Message')</span>
+                                    <span class="info">{{ $shipment->message_ar ?? $shipment->message }}</span>
+                                </li>
+                                @endif
+                                @if($shipment->location)
+                                <li class="info-list-item">
+                                    <span class="info-type">@lang('Current Location')</span>
+                                    <span class="info">{{ $shipment->location }}</span>
+                                </li>
+                                @endif
+                                @if($shipment->status_date)
+                                <li class="info-list-item">
+                                    <span class="info-type">@lang('Last Update')</span>
+                                    <span class="info">{{ $shipment->status_date->format('Y-m-d H:i') }}</span>
+                                </li>
+                                @endif
+                            @elseif ($delivery)
+                                {{-- Local Rider Info --}}
+                                <li class="info-list-item">
+                                    <span class="info-type">@lang('Delivery Type')</span>
+                                    <span class="info"><span class="badge bg-secondary">@lang('Local Rider')</span></span>
+                                </li>
+                                <li class="info-list-item">
+                                    <span class="info-type">@lang('Rider Name')</span>
+                                    <span class="info">{{ $delivery->rider->name ?? 'N/A' }}</span>
+                                </li>
+                                <li class="info-list-item">
+                                    <span class="info-type">@lang('Delivery Cost')</span>
+                                    <span class="info">{{ PriceHelper::showAdminCurrencyPrice($delivery->servicearea->price ?? 0) }}</span>
+                                </li>
+                                <li class="info-list-item">
+                                    <span class="info-type">@lang('Status')</span>
+                                    <span class="info">
+                                        <span class="badge
+                                            @if($delivery->status == 'delivered') bg-success
+                                            @elseif($delivery->status == 'accepted') bg-primary
+                                            @elseif($delivery->status == 'rejected') bg-danger
+                                            @else bg-warning
+                                            @endif">
+                                            {{ ucfirst($delivery->status) }}
+                                        </span>
+                                    </span>
+                                </li>
+                            @elseif ($customerChoice)
+                                {{-- Customer Choice (Not Yet Assigned) --}}
+                                <li class="info-list-item">
+                                    <span class="info-type">@lang('Status')</span>
+                                    <span class="info"><span class="badge bg-warning">@lang('Not Assigned')</span></span>
+                                </li>
+                                <li class="info-list-item">
+                                    <span class="info-type">@lang('Customer Selected')</span>
+                                    <span class="info">
+                                        @if ($customerChoice['provider'] === 'tryoto')
+                                            <span class="badge bg-primary">{{ $customerChoice['company_name'] ?? 'Tryoto' }}</span>
+                                            - {{ $order->currency_sign }}{{ number_format($customerChoice['price'] ?? 0, 2) }}
+                                        @else
+                                            {{ $customerChoice['title'] ?? $customerChoice['provider'] ?? 'Manual' }}
+                                        @endif
+                                    </span>
+                                </li>
+                                <li class="info-list-item">
+                                    <a href="{{ route('vendor.delivery.index') }}" class="template-btn sm-btn primary-btn">
+                                        <i class="fas fa-shipping-fast"></i> @lang('Assign Shipping')
+                                    </a>
+                                </li>
+                            @endif
+                        </ul>
+                    </div>
+                </div>
+            @endif
         </div>
         <!-- Order info cards end  -->
 

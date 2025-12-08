@@ -133,9 +133,66 @@ class CheckoutBaseControlller extends Controller
         // ✅ إعادة تعيين قيمة shipping الأصلية (shipto/pickup) للعرض في الفاتورة
         $input['shipping'] = $originalShippingMethod;
 
+        // ✅ حفظ بيانات شركة الشحن المختارة من العميل (Tryoto وغيرها)
+        $input['customer_shipping_choice'] = $this->extractCustomerShippingChoice($input);
+
         return [
             'input' => $input,
             'order_total' => $orderTotal,
         ];
+    }
+
+    /**
+     * Extract customer's shipping choice data from input
+     * Parses Tryoto format: "deliveryOptionId#companyName#price"
+     *
+     * @param array $input
+     * @return string JSON encoded shipping choices per vendor
+     */
+    protected function extractCustomerShippingChoice($input)
+    {
+        $choices = [];
+        $step2 = Session::get('step2', []);
+
+        // Get shipping selections from step2 session or input
+        $shippingSelections = $step2['shipping'] ?? $input['shipping'] ?? [];
+
+        if (!is_array($shippingSelections)) {
+            return json_encode($choices);
+        }
+
+        foreach ($shippingSelections as $vendorId => $shippingValue) {
+            if (empty($shippingValue)) continue;
+
+            // Check if it's Tryoto format: "deliveryOptionId#companyName#price"
+            if (is_string($shippingValue) && strpos($shippingValue, '#') !== false) {
+                $parts = explode('#', $shippingValue);
+
+                if (count($parts) >= 3) {
+                    $choices[$vendorId] = [
+                        'provider' => 'tryoto',
+                        'delivery_option_id' => $parts[0],
+                        'company_name' => $parts[1],
+                        'price' => (float) $parts[2],
+                        'selected_at' => now()->toIso8601String(),
+                    ];
+                }
+            } elseif (is_numeric($shippingValue)) {
+                // Regular shipping ID (manual/debts)
+                $shipping = \DB::table('shippings')->find($shippingValue);
+
+                if ($shipping) {
+                    $choices[$vendorId] = [
+                        'provider' => $shipping->provider ?? 'manual',
+                        'shipping_id' => (int) $shippingValue,
+                        'title' => $shipping->title ?? '',
+                        'price' => (float) ($shipping->price ?? 0),
+                        'selected_at' => now()->toIso8601String(),
+                    ];
+                }
+            }
+        }
+
+        return json_encode($choices);
     }
 }

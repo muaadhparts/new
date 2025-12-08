@@ -63,6 +63,9 @@
                                     ->orderBy('created_at', 'desc')
                                     ->first();
 
+                                // ✅ Get customer's shipping choice
+                                $customerChoice = $data->getCustomerShippingChoice($vendorId);
+
                                 // Calculate price
                                 $order = $data;
                                 $price = $order->vendororders()->where('user_id', $vendorId)->sum('price');
@@ -135,6 +138,30 @@
                                 <!-- Shipping Status -->
                                 <td class="text-start">
                                     <div class="shipping-status">
+                                        {{-- ✅ Show Customer's Shipping Choice --}}
+                                        @if ($customerChoice && !$shipment && !$delivery)
+                                            <div class="customer-choice mb-2 p-2 border border-primary rounded bg-light">
+                                                <small class="text-primary fw-bold">
+                                                    <i class="fas fa-user-check"></i> @lang('Customer Selected:')
+                                                </small>
+                                                <div class="mt-1">
+                                                    @if ($customerChoice['provider'] === 'tryoto')
+                                                        <span class="badge bg-primary">
+                                                            <i class="fas fa-truck"></i> {{ $customerChoice['company_name'] ?? 'Tryoto' }}
+                                                        </span>
+                                                        <br>
+                                                        <small class="text-muted">
+                                                            @lang('Price:'): {{ $data->currency_sign }}{{ number_format($customerChoice['price'] ?? 0, 2) }}
+                                                        </small>
+                                                    @else
+                                                        <span class="badge bg-secondary">
+                                                            {{ $customerChoice['title'] ?? $customerChoice['provider'] ?? 'Manual' }}
+                                                        </span>
+                                                    @endif
+                                                </div>
+                                            </div>
+                                        @endif
+
                                         @if ($shipment)
                                             {{-- Tryoto Shipment --}}
                                             <div class="tryoto-shipment">
@@ -233,6 +260,7 @@
                                             <button type="button" class="template-btn sm-btn primary-btn assignShippingBtn"
                                                 data-order-id="{{ $data->id }}"
                                                 data-customer-city="{{ $data->customer_city }}"
+                                                data-customer-choice='@json($customerChoice)'
                                                 data-bs-toggle="modal" data-bs-target="#shippingModal">
                                                 <i class="fas fa-shipping-fast"></i> @lang('Assign Shipping')
                                             </button>
@@ -263,6 +291,15 @@
                 </div>
                 <div class="modal-body">
                     <input type="hidden" id="modal_order_id" value="">
+
+                    {{-- ✅ Customer Choice Alert --}}
+                    <div id="customerChoiceAlert" class="alert alert-info d-none mb-3">
+                        <i class="fas fa-user-check me-2"></i>
+                        <strong>@lang('Customer Preference:')</strong>
+                        <span id="customerChoiceText"></span>
+                        <br>
+                        <small class="text-muted">@lang('You can use the customer\'s choice or select a different option.')</small>
+                    </div>
 
                     {{-- Shipping Method Tabs --}}
                     <ul class="nav nav-tabs mb-3" id="shippingTabs" role="tablist">
@@ -435,14 +472,29 @@
 (function($) {
     "use strict";
 
+    // Store customer choice globally
+    let currentCustomerChoice = null;
+
     // Open shipping modal
     $(document).on('click', '.assignShippingBtn', function() {
         const orderId = $(this).data('order-id');
         const customerCity = $(this).data('customer-city');
+        currentCustomerChoice = $(this).data('customer-choice');
 
         $('#modal_order_id').val(orderId);
         $('#tryoto_order_id').val(orderId);
         $('#rider_order_id').val(orderId);
+
+        // ✅ Show customer choice alert if exists
+        if (currentCustomerChoice && currentCustomerChoice.provider === 'tryoto') {
+            $('#customerChoiceAlert').removeClass('d-none');
+            $('#customerChoiceText').html(
+                '<span class="badge bg-primary">' + (currentCustomerChoice.company_name || 'Tryoto') + '</span> - ' +
+                '@lang("Price"): ' + (currentCustomerChoice.price || 0) + ' @lang("SAR")'
+            );
+        } else {
+            $('#customerChoiceAlert').addClass('d-none');
+        }
 
         // Reset forms
         $('#shippingCompanySelect').html('<option value="">@lang("Loading shipping options...")</option>');
@@ -453,6 +505,16 @@
         $.get("{{ route('vendor.shipping.options') }}", { order_id: orderId }, function(response) {
             if (response.success) {
                 $('#shippingCompanySelect').html(response.options);
+
+                // ✅ Auto-select customer's choice if available
+                if (currentCustomerChoice && currentCustomerChoice.provider === 'tryoto' && currentCustomerChoice.delivery_option_id) {
+                    const optionToSelect = $('#shippingCompanySelect option[value="' + currentCustomerChoice.delivery_option_id + '"]');
+                    if (optionToSelect.length) {
+                        optionToSelect.prop('selected', true);
+                        $('#shippingCompanySelect').trigger('change');
+                        toastr.info('@lang("Customer\'s preferred shipping company selected automatically")');
+                    }
+                }
             } else {
                 $('#shippingCompanySelect').html('<option value="">@lang("No shipping options available")</option>');
                 if (response.error) {
