@@ -10083,59 +10083,15 @@ ul.tagit li.tagit-choice .tagit-close {
    ╚══════════════════════════════════════════════════════════════════════════════╝ */
 
 /* ============================================================================
-   B01 — ROOT VARIABLES (Theme Configuration)
+   B01 — ROOT VARIABLES (Derived & Utility Variables)
    ============================================================================
-   All colors are defined here and controlled from Admin Panel.
-   theme-colors.css (generated from admin) overrides these values.
+   PRIMARY COLORS are defined in theme-colors.css (generated from Admin Panel)
+   This section contains only derived variables and utilities.
+   DO NOT add hardcoded colors here - use theme-colors.css instead.
    ============================================================================ */
 :root {
     /* =========================================================================
-       BRAND COLORS - Primary & Secondary (Changeable from Admin Panel)
-       ========================================================================= */
-
-    /* Primary Color - Main brand color used for buttons, links, accents */
-    --theme-primary: #c3002f;
-    --theme-primary-hover: #a00025;
-    --theme-primary-dark: #8a0020;
-    --theme-primary-light: #fef2f4;
-    --theme-primary-rgb: 195, 0, 47;
-
-    /* Secondary Color - Used for secondary buttons, dark sections */
-    --theme-secondary: #1f0300;
-    --theme-secondary-hover: #351c1a;
-    --theme-secondary-light: #4c3533;
-
-    /* =========================================================================
-       TEXT COLORS (Changeable from Admin Panel)
-       ========================================================================= */
-    --theme-text-primary: #1f0300;          /* Main text color */
-    --theme-text-secondary: #4c3533;        /* Secondary text */
-    --theme-text-muted: #796866;            /* Muted/gray text */
-    --theme-text-light: #9a8e8c;            /* Light text */
-    --theme-text-lighter: #b7aead;          /* Lighter text */
-    --theme-text-white: #ffffff;            /* White text */
-
-    /* =========================================================================
-       BACKGROUND COLORS (Changeable from Admin Panel)
-       ========================================================================= */
-    --theme-bg-body: #ffffff;               /* Main body background */
-    --theme-bg-light: #f8f7f7;              /* Light sections */
-    --theme-bg-lighter: #f6f6f6;            /* Page background */
-    --theme-bg-gray: #e9e6e6;               /* Gray backgrounds */
-    --theme-bg-dark: #030712;               /* Dark sections (footer, etc) */
-    --theme-bg-header: #ffffff;             /* Header background */
-    --theme-bg-footer: #030712;             /* Footer background */
-
-    /* =========================================================================
-       BORDER COLORS (Changeable from Admin Panel)
-       ========================================================================= */
-    --theme-border: #d9d4d4;                /* Default border */
-    --theme-border-light: #e9e6e6;          /* Light border */
-    --theme-border-dark: #c7c0bf;           /* Dark border */
-    --theme-border-input: #796866;          /* Form input border */
-
-    /* =========================================================================
-       BUTTON COLORS (Changeable from Admin Panel)
+       DERIVED BUTTON COLORS (Based on theme-colors.css primary colors)
        ========================================================================= */
     --theme-btn-primary-bg: var(--theme-primary);
     --theme-btn-primary-text: #ffffff;
@@ -10145,49 +10101,20 @@ ul.tagit li.tagit-choice .tagit-close {
     --theme-btn-secondary-text: #ffffff;
     --theme-btn-secondary-hover-bg: var(--theme-secondary-hover);
 
-    --theme-btn-outline-border: #9a8e8c;
-    --theme-btn-outline-text: #344054;
+    --theme-btn-outline-border: var(--theme-border);
+    --theme-btn-outline-text: var(--theme-text-primary);
     --theme-btn-outline-hover-border: var(--theme-primary);
     --theme-btn-outline-hover-text: var(--theme-primary);
 
     /* =========================================================================
-       LINK COLORS (Changeable from Admin Panel)
+       DERIVED LINK COLORS
        ========================================================================= */
     --theme-link: var(--theme-primary);
     --theme-link-hover: var(--theme-primary-hover);
 
     /* =========================================================================
-       STATUS COLORS (Changeable from Admin Panel)
+       DERIVED HEADER & NAVIGATION
        ========================================================================= */
-    /* Success - Green */
-    --theme-success: #27be69;
-    --theme-success-hover: #1fa058;
-    --theme-success-light: #e8f8ef;
-    --theme-success-dark: #155724;
-
-    /* Warning - Yellow/Orange */
-    --theme-warning: #fac03c;
-    --theme-warning-hover: #e5ad30;
-    --theme-warning-light: #fff8e6;
-    --theme-warning-dark: #856404;
-
-    /* Danger - Red */
-    --theme-danger: #f2415a;
-    --theme-danger-hover: #d93a50;
-    --theme-danger-light: #fde8eb;
-    --theme-danger-dark: #721c24;
-    --theme-danger-dark-alt: #bd1000;
-
-    /* Info - Blue */
-    --theme-info: #0ea5e9;
-    --theme-info-hover: #0284c7;
-    --theme-info-light: #e0f2fe;
-    --theme-info-dark: #0c5460;
-
-    /* =========================================================================
-       HEADER & NAVIGATION (Changeable from Admin Panel)
-       ========================================================================= */
-    --theme-header-bg: #ffffff;
     --theme-header-text: var(--theme-text-primary);
     --theme-nav-link: var(--theme-text-primary);
     --theme-nav-link-hover: var(--theme-primary);
@@ -10196,16 +10123,12 @@ ul.tagit li.tagit-choice .tagit-close {
     --theme-nav-dropdown-border: var(--theme-border);
 
     /* =========================================================================
-       FOOTER (Changeable from Admin Panel)
+       DERIVED FOOTER
        ========================================================================= */
-    --theme-footer-bg: #030712;
-    --theme-footer-text: #ffffff;
-    --theme-footer-text-muted: #d9d4d4;
-    --theme-footer-link: #ffffff;
     --theme-footer-link-hover: var(--theme-primary);
 
     /* =========================================================================
-       MENU & SIDEBAR (Changeable from Admin Panel)
+       DERIVED MENU & SIDEBAR
        ========================================================================= */
     --theme-menu-bg: #ffffff;
     --theme-menu-text: var(--theme-text-primary);
@@ -10215,19 +10138,16 @@ ul.tagit li.tagit-choice .tagit-close {
     --theme-menu-hover-text: var(--theme-primary);
 
     /* =========================================================================
-       CARDS & PRODUCTS (Changeable from Admin Panel)
+       DERIVED CARDS & PRODUCTS
        ========================================================================= */
-    --theme-card-bg: #ffffff;
     --theme-card-border: var(--theme-border-light);
-    --theme-card-shadow: 0 2px 8px rgba(0,0,0,0.08);
-    --theme-card-hover-shadow: 0 4px 16px rgba(0,0,0,0.12);
     --theme-product-title: var(--theme-text-primary);
     --theme-product-title-hover: var(--theme-primary);
     --theme-product-price: var(--theme-primary);
     --theme-product-old-price: var(--theme-text-muted);
 
     /* =========================================================================
-       FORMS & INPUTS (Changeable from Admin Panel)
+       DERIVED FORMS & INPUTS
        ========================================================================= */
     --theme-input-bg: #ffffff;
     --theme-input-border: var(--theme-border);
@@ -10237,7 +10157,7 @@ ul.tagit li.tagit-choice .tagit-close {
     --theme-input-focus-shadow: 0 0 0 3px var(--theme-primary-light);
 
     /* =========================================================================
-       PAGINATION (Changeable from Admin Panel)
+       DERIVED PAGINATION
        ========================================================================= */
     --theme-pagination-bg: #ffffff;
     --theme-pagination-text: var(--theme-text-primary);
@@ -10248,7 +10168,7 @@ ul.tagit li.tagit-choice .tagit-close {
     --theme-pagination-hover-text: #ffffff;
 
     /* =========================================================================
-       TABS & ACCORDION (Changeable from Admin Panel)
+       DERIVED TABS & ACCORDION
        ========================================================================= */
     --theme-tab-bg: transparent;
     --theme-tab-text: var(--theme-text-secondary);
@@ -10258,7 +10178,7 @@ ul.tagit li.tagit-choice .tagit-close {
     --theme-tab-border: var(--theme-border-dark);
 
     /* =========================================================================
-       BADGES & LABELS (Changeable from Admin Panel)
+       DERIVED BADGES & LABELS
        ========================================================================= */
     --theme-badge-primary-bg: var(--theme-primary);
     --theme-badge-primary-text: #ffffff;
@@ -10274,14 +10194,7 @@ ul.tagit li.tagit-choice .tagit-close {
     --theme-badge-info-text: #ffffff;
 
     /* =========================================================================
-       SCROLLBAR (Changeable from Admin Panel)
-       ========================================================================= */
-    --theme-scrollbar-track: #f1f1f1;
-    --theme-scrollbar-thumb: #c1c1c1;
-    --theme-scrollbar-thumb-hover: #a1a1a1;
-
-    /* =========================================================================
-       SOCIAL COLORS (Fixed - Brand Colors)
+       SOCIAL COLORS (Fixed Brand Colors)
        ========================================================================= */
     --theme-facebook: #1877f2;
     --theme-twitter: #1da1f2;
@@ -10306,9 +10219,12 @@ ul.tagit li.tagit-choice .tagit-close {
     --theme-highlight: #C6FF29;
     --theme-sale-badge: #ffa11a;
     --theme-new-badge: #1243ee;
+    --theme-text-white: #ffffff;
+    --muaadh-white: #ffffff;
+    --muaadh-black: #000000;
 
     /* =========================================================================
-       LEGACY VARIABLES (For backwards compatibility with MUAADH.css)
+       LEGACY VARIABLES (Derived from theme variables)
        ========================================================================= */
     --muaadh-primary: var(--theme-primary);
     --muaadh-primary-hover: var(--theme-primary-hover);
@@ -10320,38 +10236,30 @@ ul.tagit li.tagit-choice .tagit-close {
     --muaadh-success: var(--theme-success);
     --muaadh-success-hover: var(--theme-success-hover);
     --muaadh-success-light: var(--theme-success-light);
-    --muaadh-success-dark: var(--theme-success-dark);
     --muaadh-warning: var(--theme-warning);
     --muaadh-warning-hover: var(--theme-warning-hover);
     --muaadh-warning-light: var(--theme-warning-light);
-    --muaadh-warning-dark: var(--theme-warning-dark);
     --muaadh-danger: var(--theme-danger);
     --muaadh-danger-hover: var(--theme-danger-hover);
     --muaadh-danger-light: var(--theme-danger-light);
-    --muaadh-danger-dark: var(--theme-danger-dark);
     --muaadh-info: var(--theme-info);
     --muaadh-info-hover: var(--theme-info-hover);
     --muaadh-info-light: var(--theme-info-light);
-    --muaadh-info-dark: var(--theme-info-dark);
     --muaadh-text: var(--theme-text-primary);
     --muaadh-text-muted: var(--theme-text-muted);
     --muaadh-text-light: var(--theme-text-light);
+    --muaadh-text-dark: var(--theme-text-primary);
     --muaadh-border: var(--theme-border);
     --muaadh-border-light: var(--theme-border-light);
     --muaadh-bg-light: var(--theme-bg-light);
     --muaadh-bg-gray: var(--theme-bg-gray);
-    --muaadh-white: #ffffff;
-    --muaadh-black: #000000;
+    --muaadh-light: var(--theme-bg-light);
     --muaadh-dark: var(--theme-secondary);
+    --muaadh-dark-alt: var(--theme-bg-dark);
 
     /* =========================================================================
-       SHADOWS
+       SHADOWS (Utility - Not Color Dependent)
        ========================================================================= */
-    --theme-shadow-xs: 0 1px 2px rgba(0,0,0,0.04);
-    --theme-shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
-    --theme-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    --theme-shadow-lg: 0 4px 16px rgba(0,0,0,0.15);
-    --theme-shadow-xl: 0 8px 30px rgba(0,0,0,0.2);
     --muaadh-shadow-xs: var(--theme-shadow-xs);
     --muaadh-shadow-sm: var(--theme-shadow-sm);
     --muaadh-shadow: var(--theme-shadow);
@@ -10359,14 +10267,8 @@ ul.tagit li.tagit-choice .tagit-close {
     --muaadh-shadow-xl: var(--theme-shadow-xl);
 
     /* =========================================================================
-       BORDER RADIUS
+       BORDER RADIUS (Utility - Not Color Dependent)
        ========================================================================= */
-    --theme-radius-xs: 3px;
-    --theme-radius-sm: 4px;
-    --theme-radius: 8px;
-    --theme-radius-lg: 12px;
-    --theme-radius-xl: 16px;
-    --theme-radius-pill: 50px;
     --theme-radius-circle: 50%;
     --muaadh-radius-xs: var(--theme-radius-xs);
     --muaadh-radius-sm: var(--theme-radius-sm);
@@ -10377,13 +10279,8 @@ ul.tagit li.tagit-choice .tagit-close {
     --muaadh-radius-circle: var(--theme-radius-circle);
 
     /* =========================================================================
-       SPACING
+       SPACING (Utility - Not Color Dependent)
        ========================================================================= */
-    --theme-spacing-xs: 4px;
-    --theme-spacing-sm: 8px;
-    --theme-spacing: 16px;
-    --theme-spacing-lg: 24px;
-    --theme-spacing-xl: 32px;
     --theme-spacing-2xl: 48px;
     --muaadh-spacing-xs: var(--theme-spacing-xs);
     --muaadh-spacing-sm: var(--theme-spacing-sm);
@@ -10393,10 +10290,8 @@ ul.tagit li.tagit-choice .tagit-close {
     --muaadh-spacing-2xl: var(--theme-spacing-2xl);
 
     /* =========================================================================
-       FONTS
+       FONTS (Utility - Not Color Dependent)
        ========================================================================= */
-    --theme-font-primary: 'Poppins', sans-serif;
-    --theme-font-heading: 'Saira', sans-serif;
     --muaadh-font-primary: var(--theme-font-primary);
     --muaadh-font-heading: var(--theme-font-heading);
 
@@ -10435,17 +10330,14 @@ ul.tagit li.tagit-choice .tagit-close {
     --muaadh-line-relaxed: var(--theme-line-relaxed);
 
     /* =========================================================================
-       TRANSITIONS
+       TRANSITIONS (Utility - Not Color Dependent)
        ========================================================================= */
-    --theme-transition-fast: all 0.15s ease;
-    --theme-transition: all 0.3s ease;
-    --theme-transition-slow: all 0.5s ease;
     --muaadh-transition-fast: var(--theme-transition-fast);
     --muaadh-transition: var(--theme-transition);
     --muaadh-transition-slow: var(--theme-transition-slow);
 
     /* =========================================================================
-       Z-INDEX SCALE
+       Z-INDEX SCALE (Utility - Not Color Dependent)
        ========================================================================= */
     --theme-z-dropdown: 1000;
     --theme-z-sticky: 1020;

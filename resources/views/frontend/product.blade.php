@@ -327,12 +327,12 @@
                         <!-- add to cart buy btn wrapper -->
                         <div class="row row-cols-2">
                             <div class="col">
-                                <button type="button" class="template-btn dark-btn w-100" id="addtodetailscart">
+                                <button type="button" class="template-btn w-100" id="addtodetailscart">
                                     @lang('add to cart')
                                 </button>
                             </div>
                             <div class="col">
-                                <button type="button" class="template-btn w-100"
+                                <button type="button" class="template-btn green-btn w-100"
                                     id="addtobycard">@lang('buy now')</button>
                             </div>
                         </div>

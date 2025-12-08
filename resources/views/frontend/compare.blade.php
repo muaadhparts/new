@@ -228,7 +228,7 @@
                             @foreach ($products as $product)
                                 <td>
                                     <a href="{{ route('product.compare.remove', $product['item']->id) }}"
-                                        class="template-btn dark-outline w-100">@lang('Remove')</a>
+                                        class="template-btn danger-btn w-100">@lang('Remove')</a>
                                 </td>
                             @endforeach
                         </tr>
