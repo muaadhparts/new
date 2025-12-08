@@ -16307,3 +16307,580 @@ a.text-primary:hover {
 .order-status-badge.processing {
     background-color: var(--muaadh-primary) !important;
 }
+
+/* ============================================================================
+   B51 — PROFESSIONAL BUTTON SYSTEM (Unified & Semantic)
+   ============================================================================
+
+   BUTTON CATEGORIES:
+   ------------------
+   1. PRIMARY    → Main actions (Buy, Add to Cart, Continue, Submit)
+   2. SECONDARY  → Secondary actions (Back, Cancel, Close)
+   3. SUCCESS    → Positive actions (Save, Confirm, Complete, Approve)
+   4. DANGER     → Destructive actions (Delete, Remove, Reject)
+   5. WARNING    → Caution actions (Warning, Pending, Wait)
+   6. INFO       → Informational actions (Details, View, Info)
+   7. OUTLINE    → Light alternative buttons
+   8. GHOST      → Minimal buttons (text-only style)
+   9. LINK       → Link-style buttons
+
+   ============================================================================ */
+
+/* ========== BASE BUTTON STYLES ========== */
+.btn,
+[class*="btn-"] {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    font-family: var(--theme-font-primary);
+    font-weight: 500;
+    text-align: center;
+    text-decoration: none;
+    white-space: nowrap;
+    cursor: pointer;
+    border: 2px solid transparent;
+    border-radius: var(--theme-btn-radius, 8px);
+    transition: all 0.25s ease;
+    -webkit-user-select: none;
+    user-select: none;
+}
+
+.btn:focus,
+[class*="btn-"]:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(var(--theme-primary-rgb), 0.25);
+}
+
+.btn:disabled,
+[class*="btn-"]:disabled,
+.btn.disabled,
+[class*="btn-"].disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+/* ========== BUTTON SIZES ========== */
+.btn-xs {
+    height: 28px;
+    padding: 4px 12px;
+    font-size: 12px;
+    border-radius: 4px;
+}
+
+.btn-sm {
+    height: 32px;
+    padding: 6px 16px;
+    font-size: 13px;
+    border-radius: 6px;
+}
+
+.btn-md {
+    height: 40px;
+    padding: 8px 20px;
+    font-size: 14px;
+    border-radius: 8px;
+}
+
+.btn-lg {
+    height: 48px;
+    padding: 12px 28px;
+    font-size: 16px;
+    border-radius: 8px;
+}
+
+.btn-xl {
+    height: 56px;
+    padding: 16px 36px;
+    font-size: 18px;
+    border-radius: 10px;
+}
+
+/* ========== 1. PRIMARY BUTTON ========== */
+/* Use for: Buy Now, Add to Cart, Continue, Submit, Confirm Order */
+.btn-primary,
+.template-btn,
+.muaadh-btn-primary {
+    background-color: var(--theme-btn-primary-bg, var(--theme-primary));
+    border-color: var(--theme-btn-primary-border, var(--theme-primary));
+    color: var(--theme-btn-primary-text, #ffffff);
+}
+
+.btn-primary:hover,
+.template-btn:hover,
+.muaadh-btn-primary:hover {
+    background-color: var(--theme-btn-primary-hover-bg, var(--theme-primary-hover));
+    border-color: var(--theme-btn-primary-hover-bg, var(--theme-primary-hover));
+    color: var(--theme-btn-primary-hover-text, #ffffff);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(var(--theme-primary-rgb), 0.35);
+}
+
+.btn-primary:active,
+.template-btn:active {
+    transform: translateY(0);
+    box-shadow: none;
+}
+
+/* ========== 2. SECONDARY BUTTON ========== */
+/* Use for: Back, Cancel, Close, Reset */
+.btn-secondary,
+.template-btn.dark-btn,
+.template-btn.black-btn,
+.back-btn,
+.cancel-btn,
+.muaadh-btn-secondary {
+    background-color: var(--theme-btn-secondary-bg, #4b5563);
+    border-color: var(--theme-btn-secondary-border, #4b5563);
+    color: var(--theme-btn-secondary-text, #ffffff);
+}
+
+.btn-secondary:hover,
+.template-btn.dark-btn:hover,
+.template-btn.black-btn:hover,
+.muaadh-btn-secondary:hover {
+    background-color: var(--theme-btn-secondary-hover-bg, #374151);
+    border-color: var(--theme-btn-secondary-hover-bg, #374151);
+    color: var(--theme-btn-secondary-hover-text, #ffffff);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+/* ========== 3. SUCCESS BUTTON ========== */
+/* Use for: Save, Confirm, Complete, Approve, Accept, Done */
+.btn-success,
+.template-btn.green-btn,
+.save-btn,
+.confirm-btn,
+.approve-btn,
+.muaadh-btn-success {
+    background-color: var(--theme-btn-success-bg, #10b981);
+    border-color: var(--theme-btn-success-border, #10b981);
+    color: var(--theme-btn-success-text, #ffffff);
+}
+
+.btn-success:hover,
+.template-btn.green-btn:hover,
+.save-btn:hover,
+.confirm-btn:hover,
+.muaadh-btn-success:hover {
+    background-color: var(--theme-btn-success-hover-bg, #059669);
+    border-color: var(--theme-btn-success-hover-bg, #059669);
+    color: var(--theme-btn-success-hover-text, #ffffff);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.35);
+}
+
+/* ========== 4. DANGER BUTTON ========== */
+/* Use for: Delete, Remove, Reject, Cancel Order */
+.btn-danger,
+.template-btn.danger-btn,
+.delete-btn,
+.remove-btn,
+.reject-btn,
+.muaadh-btn-danger {
+    background-color: var(--theme-btn-danger-bg, #ef4444);
+    border-color: var(--theme-btn-danger-border, #ef4444);
+    color: var(--theme-btn-danger-text, #ffffff);
+}
+
+.btn-danger:hover,
+.template-btn.danger-btn:hover,
+.delete-btn:hover,
+.remove-btn:hover,
+.muaadh-btn-danger:hover {
+    background-color: var(--theme-btn-danger-hover-bg, #dc2626);
+    border-color: var(--theme-btn-danger-hover-bg, #dc2626);
+    color: var(--theme-btn-danger-hover-text, #ffffff);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.35);
+}
+
+/* ========== 5. WARNING BUTTON ========== */
+/* Use for: Warning, Pending, Wait, Review Required */
+.btn-warning,
+.template-btn.yellow-btn,
+.pending-btn,
+.review-btn,
+.muaadh-btn-warning {
+    background-color: var(--theme-btn-warning-bg, #f59e0b);
+    border-color: var(--theme-btn-warning-border, #f59e0b);
+    color: var(--theme-btn-warning-text, #1f2937);
+}
+
+.btn-warning:hover,
+.template-btn.yellow-btn:hover,
+.muaadh-btn-warning:hover {
+    background-color: var(--theme-btn-warning-hover-bg, #d97706);
+    border-color: var(--theme-btn-warning-hover-bg, #d97706);
+    color: var(--theme-btn-warning-hover-text, #1f2937);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.35);
+}
+
+/* ========== 6. INFO BUTTON ========== */
+/* Use for: Details, View, Info, Learn More */
+.btn-info,
+.details-btn,
+.view-btn,
+.info-btn,
+.muaadh-btn-info {
+    background-color: var(--theme-btn-info-bg, #3b82f6);
+    border-color: var(--theme-btn-info-border, #3b82f6);
+    color: var(--theme-btn-info-text, #ffffff);
+}
+
+.btn-info:hover,
+.details-btn:hover,
+.view-btn:hover,
+.muaadh-btn-info:hover {
+    background-color: var(--theme-btn-info-hover-bg, #2563eb);
+    border-color: var(--theme-btn-info-hover-bg, #2563eb);
+    color: var(--theme-btn-info-hover-text, #ffffff);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.35);
+}
+
+/* ========== 7. OUTLINE BUTTONS ========== */
+/* Outline Primary */
+.btn-outline-primary,
+.template-btn.outline-btn,
+.template-btn.outlinee-btn,
+.muaadh-btn-outline-primary {
+    background-color: transparent;
+    border-color: var(--theme-primary);
+    color: var(--theme-primary);
+}
+
+.btn-outline-primary:hover,
+.template-btn.outline-btn:hover,
+.template-btn.outlinee-btn:hover,
+.muaadh-btn-outline-primary:hover {
+    background-color: var(--theme-primary);
+    border-color: var(--theme-primary);
+    color: #ffffff;
+    transform: translateY(-2px);
+}
+
+/* Outline Secondary */
+.btn-outline-secondary,
+.template-btn.dark-outline,
+.muaadh-btn-outline-secondary {
+    background-color: transparent;
+    border-color: var(--theme-secondary, #4b5563);
+    color: var(--theme-secondary, #4b5563);
+}
+
+.btn-outline-secondary:hover,
+.template-btn.dark-outline:hover,
+.muaadh-btn-outline-secondary:hover {
+    background-color: var(--theme-secondary, #4b5563);
+    border-color: var(--theme-secondary, #4b5563);
+    color: #ffffff;
+}
+
+/* Outline Success */
+.btn-outline-success {
+    background-color: transparent;
+    border-color: var(--theme-success, #10b981);
+    color: var(--theme-success, #10b981);
+}
+
+.btn-outline-success:hover {
+    background-color: var(--theme-success, #10b981);
+    border-color: var(--theme-success, #10b981);
+    color: #ffffff;
+}
+
+/* Outline Danger */
+.btn-outline-danger {
+    background-color: transparent;
+    border-color: var(--theme-danger, #ef4444);
+    color: var(--theme-danger, #ef4444);
+}
+
+.btn-outline-danger:hover {
+    background-color: var(--theme-danger, #ef4444);
+    border-color: var(--theme-danger, #ef4444);
+    color: #ffffff;
+}
+
+/* Outline Warning */
+.btn-outline-warning {
+    background-color: transparent;
+    border-color: var(--theme-warning, #f59e0b);
+    color: var(--theme-warning, #f59e0b);
+}
+
+.btn-outline-warning:hover {
+    background-color: var(--theme-warning, #f59e0b);
+    border-color: var(--theme-warning, #f59e0b);
+    color: #1f2937;
+}
+
+/* Outline Info */
+.btn-outline-info {
+    background-color: transparent;
+    border-color: var(--theme-info, #3b82f6);
+    color: var(--theme-info, #3b82f6);
+}
+
+.btn-outline-info:hover {
+    background-color: var(--theme-info, #3b82f6);
+    border-color: var(--theme-info, #3b82f6);
+    color: #ffffff;
+}
+
+/* ========== 8. GHOST BUTTONS ========== */
+/* Minimal styling, just text with subtle hover */
+.btn-ghost,
+.muaadh-btn-ghost {
+    background-color: transparent;
+    border-color: transparent;
+    color: var(--theme-text-primary);
+}
+
+.btn-ghost:hover,
+.muaadh-btn-ghost:hover {
+    background-color: var(--theme-bg-light, #f3f4f6);
+    color: var(--theme-primary);
+}
+
+.btn-ghost-primary {
+    background-color: transparent;
+    border-color: transparent;
+    color: var(--theme-primary);
+}
+
+.btn-ghost-primary:hover {
+    background-color: var(--theme-primary-light, rgba(var(--theme-primary-rgb), 0.1));
+    color: var(--theme-primary-hover);
+}
+
+.btn-ghost-danger {
+    background-color: transparent;
+    border-color: transparent;
+    color: var(--theme-danger);
+}
+
+.btn-ghost-danger:hover {
+    background-color: var(--theme-danger-light, #fef2f2);
+    color: var(--theme-danger-hover);
+}
+
+/* ========== 9. LINK BUTTONS ========== */
+.btn-link {
+    background-color: transparent;
+    border-color: transparent;
+    color: var(--theme-primary);
+    text-decoration: underline;
+    padding: 0;
+    height: auto;
+}
+
+.btn-link:hover {
+    color: var(--theme-primary-hover);
+    text-decoration: none;
+}
+
+/* ========== 10. SPECIAL ACTION BUTTONS ========== */
+
+/* Add to Cart Button */
+.add-to-cart-btn,
+.cart-btn {
+    background-color: var(--theme-primary);
+    border-color: var(--theme-primary);
+    color: #ffffff;
+    font-weight: 600;
+}
+
+.add-to-cart-btn:hover,
+.cart-btn:hover {
+    background-color: var(--theme-primary-hover);
+    border-color: var(--theme-primary-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(var(--theme-primary-rgb), 0.4);
+}
+
+/* Buy Now Button */
+.buy-now-btn {
+    background-color: var(--theme-success, #10b981);
+    border-color: var(--theme-success, #10b981);
+    color: #ffffff;
+    font-weight: 600;
+}
+
+.buy-now-btn:hover {
+    background-color: var(--theme-success-hover, #059669);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
+}
+
+/* Checkout Button */
+.checkout-btn,
+.proceed-btn {
+    background-color: var(--theme-primary);
+    border-color: var(--theme-primary);
+    color: #ffffff;
+    font-weight: 600;
+    min-width: 200px;
+}
+
+.checkout-btn:hover,
+.proceed-btn:hover {
+    background-color: var(--theme-primary-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(var(--theme-primary-rgb), 0.4);
+}
+
+/* Wishlist Button */
+.wishlist-btn {
+    background-color: transparent;
+    border-color: var(--theme-border);
+    color: var(--theme-text-muted);
+}
+
+.wishlist-btn:hover,
+.wishlist-btn.active {
+    background-color: var(--theme-danger-light, #fef2f2);
+    border-color: var(--theme-danger);
+    color: var(--theme-danger);
+}
+
+.wishlist-btn.active i {
+    color: var(--theme-danger);
+}
+
+/* Compare Button */
+.compare-btn {
+    background-color: transparent;
+    border-color: var(--theme-border);
+    color: var(--theme-text-muted);
+}
+
+.compare-btn:hover,
+.compare-btn.active {
+    background-color: var(--theme-info-light, #eff6ff);
+    border-color: var(--theme-info);
+    color: var(--theme-info);
+}
+
+/* Quick View Button */
+.quick-view-btn {
+    background-color: rgba(0, 0, 0, 0.7);
+    border-color: transparent;
+    color: #ffffff;
+}
+
+.quick-view-btn:hover {
+    background-color: var(--theme-primary);
+}
+
+/* ========== 11. ICON BUTTONS ========== */
+.btn-icon {
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    border-radius: 8px;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.btn-icon.btn-sm {
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+}
+
+.btn-icon.btn-lg {
+    width: 48px;
+    height: 48px;
+    border-radius: 10px;
+}
+
+.btn-icon-circle {
+    border-radius: 50%;
+}
+
+/* ========== 12. BUTTON GROUPS ========== */
+.btn-group {
+    display: inline-flex;
+    gap: 0;
+}
+
+.btn-group .btn,
+.btn-group [class*="btn-"] {
+    border-radius: 0;
+}
+
+.btn-group .btn:first-child,
+.btn-group [class*="btn-"]:first-child {
+    border-radius: 8px 0 0 8px;
+}
+
+.btn-group .btn:last-child,
+.btn-group [class*="btn-"]:last-child {
+    border-radius: 0 8px 8px 0;
+}
+
+.btn-group-gap {
+    gap: 8px;
+}
+
+.btn-group-gap .btn,
+.btn-group-gap [class*="btn-"] {
+    border-radius: 8px;
+}
+
+/* ========== 13. LOADING STATE ========== */
+.btn-loading {
+    position: relative;
+    pointer-events: none;
+    color: transparent !important;
+}
+
+.btn-loading::after {
+    content: '';
+    position: absolute;
+    width: 18px;
+    height: 18px;
+    border: 2px solid #ffffff;
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: btn-spin 0.7s linear infinite;
+}
+
+@keyframes btn-spin {
+    to { transform: rotate(360deg); }
+}
+
+/* ========== 14. FULL WIDTH BUTTON ========== */
+.btn-block,
+.btn-full {
+    width: 100%;
+    display: flex;
+}
+
+/* ========== RESPONSIVE ========== */
+@media (max-width: 767.98px) {
+    .btn-lg {
+        height: 44px;
+        padding: 10px 24px;
+        font-size: 15px;
+    }
+
+    .btn-xl {
+        height: 48px;
+        padding: 12px 28px;
+        font-size: 16px;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .btn-responsive {
+        width: 100%;
+        justify-content: center;
+    }
+}
