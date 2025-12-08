@@ -8,26 +8,25 @@
 <div class="modal fade" id="mapModal" tabindex="-1">
     <div class="modal-dialog modal-xl modal-dialog-centered">
         <div class="modal-content">
-            <div class="modal-header" style="background: linear-gradient(135deg, var(--theme-primary) 0%, var(--theme-primary-dark) 100%); color: white;">
+            <div class="modal-header map-modal-header">
                 <h5 class="modal-title">{{ __('Select Location from Map') }}</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body p-0">
-                <div id="alert-container-modal" style="padding: 15px;"></div>
+                <div id="alert-container-modal" class="p-3"></div>
 
-                <div style="padding: 20px;">
-                    <div id="map-container" style="position: relative; height: 500px; border-radius: 8px; overflow: hidden; border: 2px solid var(--theme-border-light, #e0e0e0);">
-                        <div class="map-search" style="position: absolute; top: 10px; right: 10px; left: 10px; z-index: 10;">
-                            <input type="text" id="map-search-input" placeholder="{{ __('Search for an address...') }}"
-                                   style="width: 100%; padding: 12px 15px; border: 2px solid var(--theme-primary); border-radius: 8px; font-size: 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); background: white;">
+                <div class="p-4">
+                    <div id="map-container" class="map-container">
+                        <div class="map-search-wrapper">
+                            <input type="text" id="map-search-input" class="map-search-input" placeholder="{{ __('Search for an address...') }}">
                         </div>
                         <div id="map" style="width: 100%; height: 100%;"></div>
-                        <div class="loading-overlay" id="loading-overlay-modal" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(255,255,255,0.9); display: none; align-items: center; justify-content: center; z-index: 20;">
-                            <div class="spinner" style="border: 3px solid var(--theme-bg-light, #f3f3f3); border-top: 3px solid var(--theme-primary); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite;"></div>
+                        <div class="map-loading-overlay" id="loading-overlay-modal">
+                            <div class="map-spinner"></div>
                         </div>
                     </div>
 
-                    <div class="buttons-container" style="display: flex; gap: 10px; margin-top: 15px;">
+                    <div class="map-buttons-container">
                         <button class="btn btn-secondary" id="reset-btn-modal" type="button">
                             {{ __('Reset') }}
                         </button>
@@ -36,51 +35,51 @@
                         </button>
                     </div>
 
-                    <div class="location-info" id="location-info-modal" style="display: none; background: var(--theme-bg-light, #f8f9fa); padding: 20px; border-radius: 8px; margin-top: 20px;">
-                        <h6 style="font-size: 16px; color: var(--theme-text-primary, #333); margin-bottom: 15px; padding-bottom: 10px; border-bottom: 2px solid var(--theme-primary);">{{ __('Selected Location Information') }}</h6>
+                    <div class="map-location-info" id="location-info-modal">
+                        <h6 class="map-location-title">{{ __('Selected Location Information') }}</h6>
 
-                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px;">
-                            <div style="background: white; padding: 15px; border-radius: 6px; border-right: 3px solid var(--theme-primary);">
-                                <label style="display: block; font-size: 12px; color: var(--theme-text-secondary, #666); margin-bottom: 5px; font-weight: 600;">{{ __('Country') }} ({{ __('Arabic') }})</label>
-                                <div id="country-ar-modal" style="font-size: 14px; color: var(--theme-text-primary, #333);">-</div>
+                        <div class="map-location-grid">
+                            <div class="map-location-item">
+                                <label class="map-location-label">{{ __('Country') }} ({{ __('Arabic') }})</label>
+                                <div id="country-ar-modal" class="map-location-value">-</div>
                             </div>
-                            <div style="background: white; padding: 15px; border-radius: 6px; border-right: 3px solid var(--theme-primary);">
-                                <label style="display: block; font-size: 12px; color: var(--theme-text-secondary, #666); margin-bottom: 5px; font-weight: 600;">{{ __('Country') }} ({{ __('English') }})</label>
-                                <div id="country-en-modal" style="font-size: 14px; color: var(--theme-text-primary, #333);">-</div>
+                            <div class="map-location-item">
+                                <label class="map-location-label">{{ __('Country') }} ({{ __('English') }})</label>
+                                <div id="country-en-modal" class="map-location-value">-</div>
                             </div>
-                            <div style="background: white; padding: 15px; border-radius: 6px; border-right: 3px solid var(--theme-primary);">
-                                <label style="display: block; font-size: 12px; color: var(--theme-text-secondary, #666); margin-bottom: 5px; font-weight: 600;">{{ __('State') }} ({{ __('Arabic') }})</label>
-                                <div id="state-ar-modal" style="font-size: 14px; color: var(--theme-text-primary, #333);">-</div>
+                            <div class="map-location-item">
+                                <label class="map-location-label">{{ __('State') }} ({{ __('Arabic') }})</label>
+                                <div id="state-ar-modal" class="map-location-value">-</div>
                             </div>
-                            <div style="background: white; padding: 15px; border-radius: 6px; border-right: 3px solid var(--theme-primary);">
-                                <label style="display: block; font-size: 12px; color: var(--theme-text-secondary, #666); margin-bottom: 5px; font-weight: 600;">{{ __('State') }} ({{ __('English') }})</label>
-                                <div id="state-en-modal" style="font-size: 14px; color: var(--theme-text-primary, #333);">-</div>
+                            <div class="map-location-item">
+                                <label class="map-location-label">{{ __('State') }} ({{ __('English') }})</label>
+                                <div id="state-en-modal" class="map-location-value">-</div>
                             </div>
-                            <div style="background: white; padding: 15px; border-radius: 6px; border-right: 3px solid var(--theme-primary);">
-                                <label style="display: block; font-size: 12px; color: var(--theme-text-secondary, #666); margin-bottom: 5px; font-weight: 600;">{{ __('City') }} ({{ __('Arabic') }})</label>
-                                <div id="city-ar-modal" style="font-size: 14px; color: var(--theme-text-primary, #333);">-</div>
+                            <div class="map-location-item">
+                                <label class="map-location-label">{{ __('City') }} ({{ __('Arabic') }})</label>
+                                <div id="city-ar-modal" class="map-location-value">-</div>
                             </div>
-                            <div style="background: white; padding: 15px; border-radius: 6px; border-right: 3px solid var(--theme-primary);">
-                                <label style="display: block; font-size: 12px; color: var(--theme-text-secondary, #666); margin-bottom: 5px; font-weight: 600;">{{ __('City') }} ({{ __('English') }})</label>
-                                <div id="city-en-modal" style="font-size: 14px; color: var(--theme-text-primary, #333);">-</div>
+                            <div class="map-location-item">
+                                <label class="map-location-label">{{ __('City') }} ({{ __('English') }})</label>
+                                <div id="city-en-modal" class="map-location-value">-</div>
                             </div>
                         </div>
 
-                        <div style="display: flex; gap: 15px; margin-top: 15px;">
-                            <div style="flex: 1; background: white; padding: 15px; border-radius: 6px; text-align: center;">
-                                <label style="display: block; font-size: 12px; color: var(--theme-text-secondary, #666); margin-bottom: 5px;">{{ __('Latitude') }}</label>
-                                <div id="latitude-value-modal" style="font-size: 16px; font-weight: 600; color: var(--theme-primary);">-</div>
+                        <div class="map-coordinates-row">
+                            <div class="map-coordinate-item">
+                                <label class="map-coordinate-label">{{ __('Latitude') }}</label>
+                                <div id="latitude-value-modal" class="map-coordinate-value">-</div>
                             </div>
-                            <div style="flex: 1; background: white; padding: 15px; border-radius: 6px; text-align: center;">
-                                <label style="display: block; font-size: 12px; color: var(--theme-text-secondary, #666); margin-bottom: 5px;">{{ __('Longitude') }}</label>
-                                <div id="longitude-value-modal" style="font-size: 16px; font-weight: 600; color: var(--theme-primary);">-</div>
+                            <div class="map-coordinate-item">
+                                <label class="map-coordinate-label">{{ __('Longitude') }}</label>
+                                <div id="longitude-value-modal" class="map-coordinate-value">-</div>
                             </div>
                         </div>
 
-                        <div style="margin-top: 15px;">
-                            <div style="background: white; padding: 15px; border-radius: 6px;">
-                                <label style="display: block; font-size: 12px; color: var(--theme-text-secondary, #666); margin-bottom: 5px; font-weight: 600;">{{ __('Full Address') }}</label>
-                                <div id="full-address-modal" style="font-size: 14px; color: var(--theme-text-primary, #333);">-</div>
+                        <div class="map-address-box">
+                            <div class="map-address-item">
+                                <label class="map-location-label">{{ __('Full Address') }}</label>
+                                <div id="full-address-modal" class="map-location-value">-</div>
                             </div>
                         </div>
                     </div>
@@ -93,18 +92,6 @@
         </div>
     </div>
 </div>
-
-@push('styles')
-<style>
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
-.loading-overlay.active {
-    display: flex !important;
-}
-</style>
-@endpush
 
 @push('scripts')
 @if(!isset($googleMapsLoaded))
@@ -335,73 +322,18 @@ window.showSyncProgressModal = function(countryName) {
     $('#syncProgressOverlay').remove();
 
     const html = `
-        <div id="syncProgressOverlay" style="
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0,0,0,0.8);
-            z-index: 10000;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        ">
-            <div style="
-                background: white;
-                border-radius: 16px;
-                padding: 40px;
-                max-width: 450px;
-                width: 90%;
-                text-align: center;
-                box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-            ">
-                <div style="margin-bottom: 25px;">
-                    <div style="
-                        width: 70px;
-                        height: 70px;
-                        border: 4px solid var(--theme-border-light, #e0e0e0);
-                        border-top-color: var(--theme-primary);
-                        border-radius: 50%;
-                        animation: syncSpin 1s linear infinite;
-                        margin: 0 auto;
-                    "></div>
+        <div id="syncProgressOverlay" class="sync-progress-overlay">
+            <div class="sync-progress-card">
+                <div class="sync-progress-spinner"></div>
+                <h4 class="sync-progress-title">{{ __('Importing Country Data') }}</h4>
+                <p class="sync-progress-country">${countryName}</p>
+                <div class="sync-progress-bar-bg">
+                    <div id="syncProgressBar" class="sync-progress-bar"></div>
                 </div>
-                <h4 style="margin-bottom: 10px; color: var(--theme-text-primary, #333); font-size: 20px;">
-                    {{ __('Importing Country Data') }}
-                </h4>
-                <p style="color: var(--theme-text-secondary, #666); margin-bottom: 20px; font-size: 15px;">
-                    ${countryName}
-                </p>
-                <div style="
-                    background: var(--theme-bg-light, #f0f0f0);
-                    border-radius: 10px;
-                    height: 12px;
-                    overflow: hidden;
-                    margin-bottom: 15px;
-                ">
-                    <div id="syncProgressBar" style="
-                        background: linear-gradient(90deg, var(--theme-primary), var(--theme-primary-dark));
-                        height: 100%;
-                        width: 0%;
-                        transition: width 0.3s ease;
-                        border-radius: 10px;
-                    "></div>
-                </div>
-                <p id="syncProgressMessage" style="color: var(--theme-text-muted, #888); font-size: 13px; margin: 0;">
-                    {{ __('Starting import...') }}
-                </p>
-                <p style="color: var(--theme-text-light, #aaa); font-size: 11px; margin-top: 15px;">
-                    {{ __('This step happens once per country') }}
-                </p>
+                <p id="syncProgressMessage" class="sync-progress-message">{{ __('Starting import...') }}</p>
+                <p class="sync-progress-note">{{ __('This step happens once per country') }}</p>
             </div>
         </div>
-        <style>
-            @keyframes syncSpin {
-                0% { transform: rotate(0deg); }
-                100% { transform: rotate(360deg); }
-            }
-        </style>
     `;
 
     $('body').append(html);
@@ -447,7 +379,7 @@ window.displayLocationInfoModal = function(data) {
     document.getElementById('longitude-value-modal').textContent = data.coordinates?.longitude.toFixed(6) || '-';
     document.getElementById('full-address-modal').textContent = data.address?.ar || data.address?.en || '-';
 
-    document.getElementById('location-info-modal').style.display = 'block';
+    document.getElementById('location-info-modal').classList.add('active');
 }
 
 // Use selected location - populate form fields
@@ -794,7 +726,7 @@ window.resetSelection = function() {
     window.markerModal.setVisible(false);
     window.selectedLocationData = null;
     document.getElementById('use-location-btn-modal').disabled = true;
-    document.getElementById('location-info-modal').style.display = 'none';
+    document.getElementById('location-info-modal').classList.remove('active');
     document.getElementById('map-search-input').value = '';
     window.mapModal.setCenter(window.DEFAULT_CENTER);
     window.mapModal.setZoom(12);
@@ -843,11 +775,7 @@ window.showLoadingModal = function(show) {
 window.showAlertModal = function(message, type) {
     const container = document.getElementById('alert-container-modal');
     const alertClass = type === 'success' ? 'alert-success' : 'alert-danger';
-    container.innerHTML = `
-        <div class="alert ${alertClass}" style="margin-bottom: 0;">
-            ${message}
-        </div>
-    `;
+    container.innerHTML = `<div class="alert ${alertClass} mb-0">${message}</div>`;
 }
 
 // Clear alert

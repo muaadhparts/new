@@ -16940,3 +16940,369 @@ a.text-primary:hover {
         justify-content: center;
     }
 }
+
+/* ============================================================================
+   B52 — ORDER TRACKING STYLES
+   تتبع الطلبات - track-load.blade.php
+   ============================================================================ */
+
+/* Order Info Box */
+.track-order-info {
+    background: var(--theme-bg-light, #f8f9fa);
+    padding: 20px;
+    border-radius: 8px;
+}
+
+.track-order-info h4,
+.track-section-title {
+    color: var(--theme-primary);
+    margin-bottom: 15px;
+}
+
+/* Tracking Group */
+.track-tracking-group {
+    border: 2px solid var(--theme-primary);
+    border-radius: 10px;
+    padding: 20px;
+}
+
+.track-tracking-header {
+    border-bottom: 1px solid var(--theme-border-light, #ddd);
+    padding-bottom: 10px;
+}
+
+.track-tracking-header h5 {
+    color: var(--theme-primary);
+    margin-bottom: 5px;
+}
+
+.track-tracking-number {
+    font-size: 1.1em;
+    color: var(--theme-text-primary, #333);
+    font-weight: 600;
+}
+
+/* Status Badges */
+.track-status-badge {
+    padding: 5px 10px;
+    color: white;
+}
+
+.track-status-badge.delivered {
+    background-color: var(--theme-success);
+}
+
+.track-status-badge.failed {
+    background-color: var(--theme-danger);
+}
+
+.track-status-badge.in-progress {
+    background-color: var(--theme-info);
+}
+
+/* Timeline */
+.track-timeline-item {
+    position: relative;
+    padding-left: 30px;
+}
+
+.track-timeline-dot {
+    position: absolute;
+    left: 0;
+    top: 5px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: 3px solid white;
+}
+
+.track-timeline-dot.primary {
+    background: var(--theme-primary);
+    box-shadow: 0 0 0 2px var(--theme-primary);
+}
+
+.track-timeline-dot.success {
+    background: var(--theme-success);
+    box-shadow: 0 0 0 2px var(--theme-success);
+}
+
+.track-timeline-title {
+    color: var(--theme-text-primary, #333);
+}
+
+.track-timeline-date {
+    color: var(--theme-text-secondary, #666);
+    font-size: 0.9em;
+    margin: 5px 0;
+}
+
+.track-timeline-message {
+    color: var(--theme-text-secondary, #555);
+    margin-top: 5px;
+}
+
+.track-timeline-location {
+    color: var(--theme-text-muted, #777);
+    font-size: 0.9em;
+    margin-top: 5px;
+}
+
+/* Empty State */
+.track-empty-icon {
+    font-size: 4em;
+    color: var(--theme-border-light, #ddd);
+    margin-bottom: 20px;
+}
+
+.track-empty-title {
+    color: var(--theme-text-secondary, #666);
+}
+
+.track-empty-text {
+    color: var(--theme-text-muted, #999);
+}
+
+
+/* ============================================================================
+   B53 — GOOGLE MAPS MODAL STYLES
+   مودال خرائط جوجل - google-maps-modal.blade.php
+   ============================================================================ */
+
+/* Modal Header */
+.map-modal-header {
+    background: linear-gradient(135deg, var(--theme-primary) 0%, var(--theme-primary-dark) 100%);
+    color: white;
+}
+
+/* Map Container */
+.map-container {
+    position: relative;
+    height: 500px;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 2px solid var(--theme-border-light, #e0e0e0);
+}
+
+/* Map Search Input */
+.map-search-wrapper {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    left: 10px;
+    z-index: 10;
+}
+
+.map-search-input {
+    width: 100%;
+    padding: 12px 15px;
+    border: 2px solid var(--theme-primary);
+    border-radius: 8px;
+    font-size: 14px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    background: white;
+}
+
+/* Map Loading Overlay */
+.map-loading-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255,255,255,0.9);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 20;
+}
+
+.map-loading-overlay.active {
+    display: flex !important;
+}
+
+.map-spinner {
+    border: 3px solid var(--theme-bg-light, #f3f3f3);
+    border-top: 3px solid var(--theme-primary);
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+}
+
+/* Buttons Container */
+.map-buttons-container {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+/* Location Info Box */
+.map-location-info {
+    display: none;
+    background: var(--theme-bg-light, #f8f9fa);
+    padding: 20px;
+    border-radius: 8px;
+    margin-top: 20px;
+}
+
+.map-location-info.active {
+    display: block;
+}
+
+.map-location-title {
+    font-size: 16px;
+    color: var(--theme-text-primary, #333);
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid var(--theme-primary);
+}
+
+/* Location Grid */
+.map-location-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 15px;
+}
+
+.map-location-item {
+    background: white;
+    padding: 15px;
+    border-radius: 6px;
+    border-right: 3px solid var(--theme-primary);
+}
+
+[dir="ltr"] .map-location-item {
+    border-right: none;
+    border-left: 3px solid var(--theme-primary);
+}
+
+.map-location-label {
+    display: block;
+    font-size: 12px;
+    color: var(--theme-text-secondary, #666);
+    margin-bottom: 5px;
+    font-weight: 600;
+}
+
+.map-location-value {
+    font-size: 14px;
+    color: var(--theme-text-primary, #333);
+}
+
+/* Coordinates */
+.map-coordinates-row {
+    display: flex;
+    gap: 15px;
+    margin-top: 15px;
+}
+
+.map-coordinate-item {
+    flex: 1;
+    background: white;
+    padding: 15px;
+    border-radius: 6px;
+    text-align: center;
+}
+
+.map-coordinate-label {
+    display: block;
+    font-size: 12px;
+    color: var(--theme-text-secondary, #666);
+    margin-bottom: 5px;
+}
+
+.map-coordinate-value {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--theme-primary);
+}
+
+/* Address Box */
+.map-address-box {
+    margin-top: 15px;
+}
+
+.map-address-item {
+    background: white;
+    padding: 15px;
+    border-radius: 6px;
+}
+
+/* Sync Progress Overlay */
+.sync-progress-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.8);
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.sync-progress-card {
+    background: white;
+    border-radius: 16px;
+    padding: 40px;
+    max-width: 450px;
+    width: 90%;
+    text-align: center;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+}
+
+.sync-progress-spinner {
+    width: 70px;
+    height: 70px;
+    border: 4px solid var(--theme-border-light, #e0e0e0);
+    border-top-color: var(--theme-primary);
+    border-radius: 50%;
+    animation: syncSpin 1s linear infinite;
+    margin: 0 auto 25px;
+}
+
+.sync-progress-title {
+    margin-bottom: 10px;
+    color: var(--theme-text-primary, #333);
+    font-size: 20px;
+}
+
+.sync-progress-country {
+    color: var(--theme-text-secondary, #666);
+    margin-bottom: 20px;
+    font-size: 15px;
+}
+
+.sync-progress-bar-bg {
+    background: var(--theme-bg-light, #f0f0f0);
+    border-radius: 10px;
+    height: 12px;
+    overflow: hidden;
+    margin-bottom: 15px;
+}
+
+.sync-progress-bar {
+    background: linear-gradient(90deg, var(--theme-primary), var(--theme-primary-dark));
+    height: 100%;
+    width: 0%;
+    transition: width 0.3s ease;
+    border-radius: 10px;
+}
+
+.sync-progress-message {
+    color: var(--theme-text-muted, #888);
+    font-size: 13px;
+    margin: 0;
+}
+
+.sync-progress-note {
+    color: var(--theme-text-light, #aaa);
+    font-size: 11px;
+    margin-top: 15px;
+}
+
+@keyframes syncSpin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
