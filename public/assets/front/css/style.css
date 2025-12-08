@@ -10988,17 +10988,17 @@ ul.tagit li.tagit-choice .tagit-close {
 }
 
 .muaadh-modal-content::-webkit-scrollbar-track {
-    background: #f1f1f1;
+    background: var(--theme-scrollbar-track);
     border-radius: 3px;
 }
 
 .muaadh-modal-content::-webkit-scrollbar-thumb {
-    background: #c1c1c1;
+    background: var(--theme-scrollbar-thumb);
     border-radius: 3px;
 }
 
 .muaadh-modal-content::-webkit-scrollbar-thumb:hover {
-    background: #a1a1a1;
+    background: var(--theme-scrollbar-thumb-hover);
 }
 
 .muaadh-modal-header {
@@ -11235,11 +11235,12 @@ ul.tagit li.tagit-choice .tagit-close {
 }
 
 .catalog-table .row-available {
-    background-color: #f0fff4;
+    background-color: var(--theme-success-light);
 }
 
 .catalog-table .row-available:hover {
-    background-color: #e6ffed !important;
+    background-color: var(--theme-success-light) !important;
+    filter: brightness(0.97);
 }
 
 /* Catalog Cards */
@@ -11351,7 +11352,7 @@ ul.tagit li.tagit-choice .tagit-close {
     color: var(--muaadh-white);
 }
 
-/* Catalog Badges */
+/* Catalog Badges - Unified System */
 .catalog-badge {
     display: inline-flex;
     align-items: center;
@@ -11359,21 +11360,78 @@ ul.tagit li.tagit-choice .tagit-close {
     border-radius: var(--muaadh-radius-xs);
     font-size: var(--muaadh-font-xs);
     font-weight: var(--muaadh-font-medium);
+    gap: 4px;
 }
 
-.catalog-badge-success {
-    background: var(--muaadh-success-light);
-    color: var(--muaadh-success-dark);
+/* Status Badges */
+.catalog-badge-success,
+.catalog-badge-available,
+.catalog-badge-in-stock {
+    background: var(--theme-success-light);
+    color: var(--theme-success);
 }
 
-.catalog-badge-warning {
-    background: var(--muaadh-warning-light);
-    color: var(--muaadh-warning-dark);
+.catalog-badge-warning,
+.catalog-badge-limited,
+.catalog-badge-low-stock {
+    background: var(--theme-warning-light);
+    color: var(--theme-warning);
 }
 
-.catalog-badge-danger {
-    background: var(--muaadh-danger-light);
-    color: var(--muaadh-danger-dark);
+.catalog-badge-danger,
+.catalog-badge-unavailable,
+.catalog-badge-out-of-stock {
+    background: var(--theme-danger-light);
+    color: var(--theme-danger);
+}
+
+.catalog-badge-info,
+.catalog-badge-alternative {
+    background: var(--theme-info-light);
+    color: var(--theme-info);
+}
+
+.catalog-badge-primary,
+.catalog-badge-genuine,
+.catalog-badge-original {
+    background: var(--theme-primary-light);
+    color: var(--theme-primary);
+}
+
+.catalog-badge-secondary,
+.catalog-badge-aftermarket {
+    background: var(--theme-bg-light);
+    color: var(--theme-text-muted);
+}
+
+/* Match Badges */
+.catalog-badge-matched,
+.catalog-badge-compatible {
+    background: var(--theme-success-light);
+    color: var(--theme-success);
+}
+
+.catalog-badge-unmatched,
+.catalog-badge-incompatible {
+    background: var(--theme-warning-light);
+    color: var(--theme-warning);
+}
+
+/* Small Badge Variant */
+.catalog-badge-sm {
+    padding: 2px 6px;
+    font-size: 10px;
+}
+
+/* Large Badge Variant */
+.catalog-badge-lg {
+    padding: 4px 12px;
+    font-size: var(--muaadh-font-sm);
+}
+
+/* Badge with Icon */
+.catalog-badge i {
+    font-size: 0.8em;
 }
 
 /* Catalog Breadcrumb */
@@ -11629,7 +11687,7 @@ ul.tagit li.tagit-choice .tagit-close {
     margin-bottom: 1rem;
     padding: 1rem;
     border-radius: var(--muaadh-radius);
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, var(--theme-primary) 0%, var(--theme-primary-dark) 100%);
 }
 
 .catalog-chips-header {
@@ -12215,8 +12273,8 @@ ul.tagit li.tagit-choice .tagit-close {
 }
 
 .hovered {
-    border: 2px solid rgb(219, 16, 16) !important;
-    background-color: #bce8f1 !important;
+    border: 2px solid var(--theme-primary) !important;
+    background-color: var(--theme-primary-light) !important;
 }
 
 div[id*='zoom_container'] .landmarks .lable div {
@@ -12239,24 +12297,24 @@ div[id*='zoom_container'] .landmarks .lable div {
 .correct-callout,
 .bbdover {
     cursor: pointer !important;
-    -webkit-tap-highlight-color: rgba(0, 123, 255, 0.2);
+    -webkit-tap-highlight-color: rgba(var(--theme-primary-rgb), 0.2);
 }
 
 .callout-label:hover .bbdover,
 .bbdover:hover {
-    background-color: rgba(0, 123, 255, 0.3) !important;
+    background-color: rgba(var(--theme-primary-rgb), 0.3) !important;
     opacity: 1 !important;
 }
 
 /* Loading Skeletons */
 .inner-card {
     height: 20px;
-    background-color: #eee;
+    background-color: var(--theme-bg-light);
 }
 
 .card-1 {
     height: 200px;
-    background-color: #eee;
+    background-color: var(--theme-bg-light);
 }
 
 .card-2 {
@@ -12313,7 +12371,7 @@ div[id*='zoom_container'] .landmarks .lable div {
 
     .callout-label {
         cursor: pointer !important;
-        -webkit-tap-highlight-color: rgba(0, 123, 255, 0.3);
+        -webkit-tap-highlight-color: rgba(var(--theme-primary-rgb), 0.3);
     }
 
     .bbdover {
@@ -12457,6 +12515,112 @@ div[id*='zoom_container'] .landmarks .lable div {
 }
 
 /* ============================================================================
+   B25.1 — CALLOUT STATE SYSTEM (Unified States for Circle & Table Row)
+   ============================================================================
+   States:
+   - .callout-normal     : Default state
+   - .callout-hover      : Mouse hover
+   - .callout-selected   : Currently selected/active
+   - .callout-available  : Part is in stock
+   - .callout-unavailable: Part is out of stock
+   - .callout-matched    : Part matches vehicle (VIN)
+   - .callout-unmatched  : Part doesn't match vehicle
+   ============================================================================ */
+
+/* --- Callout Circle States (On Illustration Image) --- */
+.callout-circle {
+    border-radius: 50%;
+    border: 2px solid var(--theme-border);
+    background-color: transparent;
+    transition: var(--theme-transition-fast);
+    cursor: pointer;
+}
+
+.callout-circle.callout-hover,
+.callout-circle:hover {
+    border-color: var(--theme-primary);
+    background-color: rgba(var(--theme-primary-rgb), 0.2);
+    transform: scale(1.1);
+}
+
+.callout-circle.callout-selected {
+    border-color: var(--theme-primary);
+    background-color: rgba(var(--theme-primary-rgb), 0.3);
+    box-shadow: 0 0 0 3px rgba(var(--theme-primary-rgb), 0.2);
+}
+
+.callout-circle.callout-available {
+    border-color: var(--theme-success);
+    background-color: rgba(var(--theme-success-rgb), 0.15);
+}
+
+.callout-circle.callout-unavailable {
+    border-color: var(--theme-text-muted);
+    background-color: rgba(0, 0, 0, 0.05);
+    opacity: 0.6;
+}
+
+.callout-circle.callout-matched {
+    border-color: var(--theme-success);
+    background-color: rgba(var(--theme-success-rgb), 0.2);
+}
+
+.callout-circle.callout-unmatched {
+    border-color: var(--theme-warning);
+    background-color: rgba(var(--theme-warning-rgb), 0.15);
+}
+
+/* --- Callout Table Row States --- */
+.callout-row {
+    transition: var(--theme-transition-fast);
+}
+
+.callout-row.callout-hover,
+.callout-row:hover {
+    background-color: var(--theme-bg-light) !important;
+}
+
+.callout-row.callout-selected {
+    background-color: rgba(var(--theme-primary-rgb), 0.1) !important;
+    border-left: 3px solid var(--theme-primary);
+}
+
+.callout-row.callout-available {
+    background-color: var(--theme-success-light) !important;
+}
+
+.callout-row.callout-available:hover {
+    background-color: var(--theme-success-light) !important;
+    filter: brightness(0.97);
+}
+
+.callout-row.callout-unavailable {
+    background-color: var(--theme-bg-light) !important;
+    opacity: 0.7;
+}
+
+.callout-row.callout-unavailable td {
+    color: var(--theme-text-muted);
+}
+
+.callout-row.callout-matched {
+    background-color: var(--theme-success-light) !important;
+    border-left: 3px solid var(--theme-success);
+}
+
+.callout-row.callout-unmatched {
+    background-color: var(--theme-warning-light) !important;
+    border-left: 3px solid var(--theme-warning);
+}
+
+/* --- Combined Circle + Row Sync (via data attributes) --- */
+[data-callout-id].callout-hover .callout-circle,
+[data-callout-id]:hover .callout-circle {
+    border-color: var(--theme-primary);
+    background-color: rgba(var(--theme-primary-rgb), 0.2);
+}
+
+/* ============================================================================
    B26 — SEARCH RESULTS PAGE
    ============================================================================ */
 
@@ -12575,7 +12739,7 @@ div[id*='zoom_container'] .landmarks .lable div {
 }
 
 .vin-modal-header {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, var(--theme-primary) 0%, var(--theme-primary-dark) 100%);
     color: var(--muaadh-white);
     padding: 1.5rem 2rem;
     border-bottom: none;
@@ -14848,8 +15012,8 @@ div[id*='zoom_container'] .landmarks .lable div {
     gap: 15px;
     margin-top: 20px;
     padding: 15px 20px;
-    background: #fff3cd;
-    border: 1px solid #ffc107;
+    background: var(--theme-warning-light);
+    border: 1px solid var(--theme-warning);
     border-radius: var(--muaadh-radius);
 }
 

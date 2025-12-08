@@ -107,12 +107,12 @@
 }
 
 .tryoto-options .form-check-input:checked {
-    background-color: #0d6efd;
-    border-color: #0d6efd;
+    background-color: var(--theme-primary);
+    border-color: var(--theme-primary);
 }
 
 .tryoto-options tr:hover {
-    background-color: #f8f9fa;
+    background-color: var(--theme-bg-light);
 }
 </style>
 

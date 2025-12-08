@@ -155,11 +155,11 @@
             @endphp
 
             @if ($gs->currency_format == 0)
-                <span class="total-amount" id="final-cost" style="font-size: 18px; font-weight: 700; color: #EE1243;">
+                <span class="total-amount" id="final-cost" style="font-size: 18px; font-weight: 700; color: var(--theme-primary);">
                     {{ $curr->sign }}{{ number_format($initialTotal, 2) }}
                 </span>
             @else
-                <span class="total-amount" id="final-cost" style="font-size: 18px; font-weight: 700; color: #EE1243;">
+                <span class="total-amount" id="final-cost" style="font-size: 18px; font-weight: 700; color: var(--theme-primary);">
                     {{ number_format($initialTotal, 2) }}{{ $curr->sign }}
                 </span>
             @endif
@@ -173,11 +173,11 @@
             @endphp
 
             @if ($gs->currency_format == 0)
-                <span class="total-amount" style="font-size: 18px; font-weight: 700; color: #EE1243;">
+                <span class="total-amount" style="font-size: 18px; font-weight: 700; color: var(--theme-primary);">
                     {{ $curr->sign }}{{ number_format($finalTotal, 2) }}
                 </span>
             @else
-                <span class="total-amount" style="font-size: 18px; font-weight: 700; color: #EE1243;">
+                <span class="total-amount" style="font-size: 18px; font-weight: 700; color: var(--theme-primary);">
                     {{ number_format($finalTotal, 2) }}{{ $curr->sign }}
                 </span>
             @endif
