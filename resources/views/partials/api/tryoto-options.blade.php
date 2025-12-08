@@ -1,9 +1,7 @@
 {{-- resources/views/partials/api/tryoto-options.blade.php --}}
 {{-- API-based Tryoto shipping options partial (No Livewire) --}}
 
-@php
-    $curr = session('currency') ?? (object)['value' => 1, 'sign' => 'IQD'];
-@endphp
+{{-- $curr is passed from ShippingApiController --}}
 
 <div class="tryoto-options" data-vendor-id="{{ $vendorId ?? 0 }}">
     @if(isset($deliveryCompany) && count($deliveryCompany) > 0)

@@ -152,6 +152,13 @@ class ShippingApiController extends Controller
     {
         $vendorId = $request->input('vendor_id');
 
+        // Get currency - same logic as AppServiceProvider
+        if (Session::has('currency')) {
+            $curr = \App\Models\Currency::find(Session::get('currency'));
+        } else {
+            $curr = \App\Models\Currency::where('is_default', '=', 1)->first();
+        }
+
         // Get the API response (uses session cart internally)
         $apiResponse = $this->getTryotoOptions($request);
         $data = json_decode($apiResponse->getContent(), true);
@@ -159,6 +166,7 @@ class ShippingApiController extends Controller
         if (!$data['success']) {
             $html = view('partials.api.tryoto-error', [
                 'error' => $data['error'] ?? 'Unknown error',
+                'curr' => $curr,
             ])->render();
 
             return response()->json([
@@ -172,6 +180,7 @@ class ShippingApiController extends Controller
             'deliveryCompany' => $data['delivery_options'],
             'vendorId' => $vendorId,
             'weight' => $data['weight'],
+            'curr' => $curr,
         ])->render();
 
         return response()->json([

@@ -412,12 +412,14 @@
                                                 @endphp
 
                                                 @if($provider === 'tryoto')
-                                                    {{-- Tryoto Modal with Livewire Component --}}
+                                                    {{-- Tryoto Modal with API Component --}}
                                                     @include('includes.frontend.tryoto_shipping_modal', [
                                                         'modalId' => $modalId,
                                                         'providerLabel' => $providerLabel,
                                                         'vendor_id' => $vendor_id,
                                                         'array_product' => $array_product,
+                                                        'curr' => $curr,
+                                                        'gs' => $gs,
                                                     ])
                                                 @else
                                                     {{-- Manual/Debts Modal --}}
@@ -648,8 +650,9 @@
                 @endif
                 <input type="hidden" id="original_tax" value="0">
                 <input type="hidden" id="wallet-price" name="wallet_price" value="0">
+                {{-- ttotal must be numeric (no currency sign) for calculations --}}
                 <input type="hidden" id="ttotal"
-                    value="{{ App\Models\Product::convertPrice($totalPrice) }}">
+                    value="{{ round($totalPrice * $curr->value, 2) }}">
                 <input type="hidden" name="coupon_code" id="coupon_code"
                     value="{{ Session::has('coupon_code') ? Session::get('coupon_code') : '' }}">
                 <input type="hidden" name="coupon_discount" id="coupon_discount"

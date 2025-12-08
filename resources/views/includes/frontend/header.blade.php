@@ -56,12 +56,15 @@
                     @if ($gs->is_currency == 1)
                         <span class="muaadh-topbar-divider"></span>
                         {{-- Currency Selector --}}
+                        @php
+                            $selectedCurrency = Session::has('currency')
+                                ? $currencies->where('id', '=', Session::get('currency'))->first()
+                                : $currencies->where('is_default', '=', 1)->first();
+                        @endphp
                         <div class="muaadh-dropdown">
                             <button class="muaadh-dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                                <i class="fas fa-dollar-sign"></i>
-                                <span>{{ Session::has('currency')
-                                    ? $currencies->where('id', '=', Session::get('currency'))->first()->name
-                                    : DB::table('currencies')->where('is_default', '=', 1)->first()->name }}</span>
+                                <span class="currency-sign">{{ $selectedCurrency->sign ?? '$' }}</span>
+                                <span>{{ $selectedCurrency->name ?? 'USD' }}</span>
                                 <i class="fas fa-chevron-down"></i>
                             </button>
                             <ul class="muaadh-dropdown-menu">

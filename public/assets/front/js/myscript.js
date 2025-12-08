@@ -1,7 +1,18 @@
 (function ($) {
   "use strict";
 
-  // console.log('🚀 myscript.js loaded - v2.0.0 - Cart Update Fixed');
+  // console.log('🚀 myscript.js loaded - v2.0.1 - Currency/Language Selector Fixed');
+
+  // ============================================
+  // Currency & Language Selector Handler
+  // When user selects currency or language, redirect to the URL in option value
+  // ============================================
+  $(document).on('change', '.selectors', function() {
+    var selectedValue = $(this).val();
+    if (selectedValue && selectedValue.startsWith('http')) {
+      window.location.href = selectedValue;
+    }
+  });
 
   // ✅ Global cart state updater function
   window.applyCartState = function(data) {
