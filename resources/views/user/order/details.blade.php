@@ -305,6 +305,53 @@
                             </div>
                         @endif
 
+                        {{-- ✅ Shipment Tracking Section --}}
+                        @php
+                            $shipments = App\Models\ShipmentStatusLog::where('order_id', $order->id)
+                                ->orderBy('status_date', 'desc')
+                                ->get()
+                                ->groupBy('vendor_id');
+                        @endphp
+
+                        @if($shipments->count() > 0)
+                            <div class="address-item w-100">
+                                <h5><i class="fas fa-shipping-fast"></i> @lang('Shipment Tracking')</h5>
+                                @foreach($shipments as $vendorId => $vendorShipments)
+                                    @php
+                                        $latestShipment = $vendorShipments->first();
+                                        $vendor = App\Models\User::find($vendorId);
+                                    @endphp
+                                    <div class="shipment-item mb-3 p-3 border rounded">
+                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                            <strong>{{ $vendor->shop_name ?? $vendor->name ?? 'Vendor' }}</strong>
+                                            <span class="badge
+                                                @if($latestShipment->status == 'delivered') bg-success
+                                                @elseif($latestShipment->status == 'in_transit') bg-primary
+                                                @elseif($latestShipment->status == 'out_for_delivery') bg-info
+                                                @elseif(in_array($latestShipment->status, ['failed', 'returned', 'cancelled'])) bg-danger
+                                                @else bg-secondary
+                                                @endif">
+                                                {{ $latestShipment->status_ar ?? ucfirst(str_replace('_', ' ', $latestShipment->status)) }}
+                                            </span>
+                                        </div>
+                                        <ul class="list-unstyled mb-0">
+                                            <li><i class="fas fa-truck me-2"></i> <strong>@lang('Company'):</strong> {{ $latestShipment->company_name }}</li>
+                                            <li><i class="fas fa-barcode me-2"></i> <strong>@lang('Tracking'):</strong> <span class="text-primary">{{ $latestShipment->tracking_number }}</span></li>
+                                            @if($latestShipment->location)
+                                                <li><i class="fas fa-map-marker-alt me-2"></i> <strong>@lang('Location'):</strong> {{ $latestShipment->location }}</li>
+                                            @endif
+                                            @if($latestShipment->message_ar || $latestShipment->message)
+                                                <li><i class="fas fa-info-circle me-2"></i> {{ $latestShipment->message_ar ?? $latestShipment->message }}</li>
+                                            @endif
+                                            @if($latestShipment->status_date)
+                                                <li><i class="fas fa-clock me-2"></i> <strong>@lang('Last Update'):</strong> {{ $latestShipment->status_date->format('Y-m-d H:i') }}</li>
+                                            @endif
+                                        </ul>
+                                    </div>
+                                @endforeach
+                            </div>
+                        @endif
+
                     </div>
 
                     <h4 class="order-products-header d-flex align-items-center justify-content-center mb-24 wow-replaced"

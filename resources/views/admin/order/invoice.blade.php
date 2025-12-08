@@ -55,6 +55,27 @@
                         </span><br>
                         @endif
                         <span> <strong>{{ __('Payment Method') }} :</strong> {{$order->method}}</span>
+                        @php
+                            $adminInvoiceShipments = App\Models\ShipmentStatusLog::where('order_id', $order->id)
+                                ->orderBy('status_date', 'desc')
+                                ->get()
+                                ->groupBy('vendor_id');
+                        @endphp
+                        @if($adminInvoiceShipments->count() > 0)
+                        <br><br>
+                        <p><strong>{{ __('Shipment Info') }}</strong></p>
+                        @foreach($adminInvoiceShipments as $vendorId => $logs)
+                            @php
+                                $latestLog = $logs->first();
+                                $vendor = App\Models\User::find($vendorId);
+                            @endphp
+                            <span><strong>{{ __('Vendor') }}:</strong> {{ $vendor->shop_name ?? $vendor->name ?? 'N/A' }}</span><br>
+                            <span><strong>{{ __('Tracking') }}:</strong> {{ $latestLog->tracking_number }}</span><br>
+                            <span><strong>{{ __('Company') }}:</strong> {{ $latestLog->company_name ?? 'N/A' }}</span><br>
+                            <span><strong>{{ __('Status') }}:</strong> {{ ucfirst($latestLog->status) }}</span><br>
+                            @if(!$loop->last)<hr style="margin:5px 0;">@endif
+                        @endforeach
+                        @endif
                     </div>
                 </div>
             </div>

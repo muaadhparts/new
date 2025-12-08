@@ -100,25 +100,14 @@
                                 </td>
 
                                 <!-- Customer Info -->
-                                <td class="text-start">
-                                    <div class="customer">
-                                        <div class="d-flex align-items-center gap-2">
-                                            <span class="key">@lang('Name:')</span>
-                                            <span class="value">{{ $data->customer_name }}</span>
-                                        </div>
-                                        <div class="d-flex align-items-center gap-2">
-                                            <span class="key">@lang('Phone:')</span>
-                                            <span class="value">{{ $data->customer_phone }}</span>
-                                        </div>
-                                        <div class="d-flex align-items-center gap-2">
-                                            <span class="key">@lang('City:')</span>
-                                            <span class="value">{{ $data->customer_city }}</span>
-                                        </div>
-                                        <div class="d-flex align-items-center gap-2">
-                                            <span class="key">@lang('Address:')</span>
-                                            <span class="value">{{ Str::limit($data->customer_address, 30) }}</span>
-                                        </div>
-                                    </div>
+                                <td>
+                                    <strong>{{ $data->customer_name }}</strong>
+                                    <br>
+                                    <small><i class="fas fa-phone"></i> {{ $data->customer_phone }}</small>
+                                    <br>
+                                    <small><i class="fas fa-city"></i> {{ $data->customer_city }}</small>
+                                    <br>
+                                    <small title="{{ $data->customer_address }}"><i class="fas fa-map-marker-alt"></i> {{ Str::limit($data->customer_address, 25) }}</small>
                                 </td>
 
                                 <!-- Total Cost -->
@@ -128,148 +117,99 @@
 
                                 <!-- Payment Method -->
                                 <td>
-                                    <span class="content">{{ $data->method }}</span>
+                                    {{ $data->method }}
                                     <br>
-                                    <span class="badge {{ $data->payment_status == 'Completed' ? 'bg-success' : 'bg-warning' }}">
+                                    <span class="badge {{ $data->payment_status == 'Completed' ? 'bg-success' : 'bg-warning text-dark' }}">
                                         {{ $data->payment_status }}
                                     </span>
                                 </td>
 
                                 <!-- Shipping Status -->
-                                <td class="text-start">
-                                    <div class="shipping-status">
-                                        {{-- ✅ Show Customer's Shipping Choice --}}
-                                        @if ($customerChoice && !$shipment && !$delivery)
-                                            <div class="customer-choice mb-2 p-2 border border-primary rounded bg-light">
-                                                <small class="text-primary fw-bold">
-                                                    <i class="fas fa-user-check"></i> @lang('Customer Selected:')
-                                                </small>
-                                                <div class="mt-1">
-                                                    @if ($customerChoice['provider'] === 'tryoto')
-                                                        <span class="badge bg-primary">
-                                                            <i class="fas fa-truck"></i> {{ $customerChoice['company_name'] ?? 'Tryoto' }}
-                                                        </span>
-                                                        <br>
-                                                        <small class="text-muted">
-                                                            @lang('Price:'): {{ $data->currency_sign }}{{ number_format($customerChoice['price'] ?? 0, 2) }}
-                                                        </small>
-                                                    @else
-                                                        <span class="badge bg-secondary">
-                                                            {{ $customerChoice['title'] ?? $customerChoice['provider'] ?? 'Manual' }}
-                                                        </span>
-                                                    @endif
-                                                </div>
-                                            </div>
-                                        @endif
-
-                                        @if ($shipment)
-                                            {{-- Tryoto Shipment --}}
-                                            <div class="tryoto-shipment">
-                                                <span class="badge bg-info mb-1">
-                                                    <i class="fas fa-truck"></i> {{ $shipment->company_name }}
-                                                </span>
-                                                <div class="d-flex align-items-center gap-2">
-                                                    <span class="key">@lang('Tracking:')</span>
-                                                    <span class="value text-primary">{{ $shipment->tracking_number }}</span>
-                                                </div>
-                                                <div class="d-flex align-items-center gap-2">
-                                                    <span class="key">@lang('Status:')</span>
-                                                    <span class="badge
-                                                        @if($shipment->status == 'delivered') bg-success
-                                                        @elseif($shipment->status == 'in_transit') bg-primary
-                                                        @elseif($shipment->status == 'out_for_delivery') bg-info
-                                                        @elseif(in_array($shipment->status, ['failed', 'returned', 'cancelled'])) bg-danger
-                                                        @else bg-secondary
-                                                        @endif">
-                                                        {{ $shipment->status_ar ?? $shipment->status }}
-                                                    </span>
-                                                </div>
-                                                @if($shipment->status_date)
-                                                <div class="d-flex align-items-center gap-2">
-                                                    <span class="key">@lang('Updated:')</span>
-                                                    <span class="value">{{ $shipment->status_date->diffForHumans() }}</span>
-                                                </div>
-                                                @endif
-                                            </div>
-                                        @elseif ($delivery)
-                                            {{-- Local Rider Delivery --}}
-                                            <div class="rider-delivery">
-                                                <span class="badge bg-secondary mb-1">
-                                                    <i class="fas fa-motorcycle"></i> @lang('Local Rider')
-                                                </span>
-                                                <div class="d-flex align-items-center gap-2">
-                                                    <span class="key">@lang('Rider:')</span>
-                                                    <span class="value">{{ $delivery->rider->name ?? 'N/A' }}</span>
-                                                </div>
-                                                <div class="d-flex align-items-center gap-2">
-                                                    <span class="key">@lang('Cost:')</span>
-                                                    <span class="value">{{ PriceHelper::showAdminCurrencyPrice($delivery->servicearea->price ?? 0) }}</span>
-                                                </div>
-                                                <div class="d-flex align-items-center gap-2">
-                                                    <span class="key">@lang('Status:')</span>
-                                                    <span class="badge
-                                                        @if($delivery->status == 'delivered') bg-success
-                                                        @elseif($delivery->status == 'accepted') bg-primary
-                                                        @elseif($delivery->status == 'rejected') bg-danger
-                                                        @else bg-warning
-                                                        @endif">
-                                                        {{ ucfirst($delivery->status) }}
-                                                    </span>
-                                                </div>
-                                            </div>
-                                        @else
-                                            {{-- Not Assigned --}}
-                                            <span class="badge bg-danger">
-                                                <i class="fas fa-exclamation-circle"></i> @lang('Not Assigned')
-                                            </span>
-                                        @endif
-                                    </div>
+                                <td>
+                                    {{-- ✅ Show Customer's Shipping Choice --}}
+                                    @if ($customerChoice && !$shipment && !$delivery)
+                                        <div class="mb-1">
+                                            <small class="text-primary fw-bold">
+                                                <i class="fas fa-user-check"></i> @lang('Customer Selected:')
+                                            </small>
+                                            <br>
+                                            <span class="badge bg-primary">{{ $customerChoice['company_name'] ?? 'N/A' }}</span>
+                                            <br>
+                                            <small>{{ $data->currency_sign }}{{ number_format($customerChoice['price'] ?? 0, 2) }}</small>
+                                        </div>
+                                        <span class="badge bg-warning text-dark">@lang('Not Assigned')</span>
+                                    @elseif ($shipment)
+                                        {{-- Tryoto Shipment --}}
+                                        <span class="badge bg-info mb-1">{{ $shipment->company_name }}</span>
+                                        <br>
+                                        <small>{{ $shipment->tracking_number }}</small>
+                                        <br>
+                                        <span class="badge
+                                            @if($shipment->status == 'delivered') bg-success
+                                            @elseif($shipment->status == 'in_transit') bg-primary
+                                            @elseif($shipment->status == 'out_for_delivery') bg-info
+                                            @elseif(in_array($shipment->status, ['failed', 'returned', 'cancelled'])) bg-danger
+                                            @else bg-secondary
+                                            @endif">
+                                            {{ $shipment->status_ar ?? $shipment->status }}
+                                        </span>
+                                    @elseif ($delivery)
+                                        {{-- Local Rider Delivery --}}
+                                        <span class="badge bg-secondary mb-1">@lang('Local Rider')</span>
+                                        <br>
+                                        <small>{{ $delivery->rider->name ?? 'N/A' }}</small>
+                                        <br>
+                                        <span class="badge
+                                            @if($delivery->status == 'delivered') bg-success
+                                            @elseif($delivery->status == 'accepted') bg-primary
+                                            @elseif($delivery->status == 'rejected') bg-danger
+                                            @else bg-warning
+                                            @endif">
+                                            {{ ucfirst($delivery->status) }}
+                                        </span>
+                                    @else
+                                        {{-- Not Assigned --}}
+                                        <span class="badge bg-danger">@lang('Not Assigned')</span>
+                                    @endif
                                 </td>
 
                                 <!-- Actions -->
                                 <td>
-                                    <div class="action-buttons d-flex flex-column gap-2">
-                                        @if ($shipment && !in_array($shipment->status, ['cancelled', 'returned', 'delivered']))
-                                            {{-- Track & Cancel buttons for active shipment --}}
-                                            <button type="button" class="template-btn sm-btn info-btn trackShipmentBtn"
-                                                data-tracking="{{ $shipment->tracking_number }}"
-                                                data-bs-toggle="modal" data-bs-target="#trackingModal">
-                                                <i class="fas fa-map-marker-alt"></i> @lang('Track')
-                                            </button>
-                                            @if(!in_array($shipment->status, ['out_for_delivery', 'delivered']))
-                                            <button type="button" class="template-btn sm-btn danger-btn cancelShipmentBtn"
-                                                data-tracking="{{ $shipment->tracking_number }}"
-                                                data-bs-toggle="modal" data-bs-target="#cancelModal">
-                                                <i class="fas fa-times"></i> @lang('Cancel')
-                                            </button>
-                                            @endif
-                                        @elseif ($shipment && $shipment->status == 'delivered')
-                                            {{-- Delivered --}}
-                                            <a href="{{ route('vendor-order-show', $data->order_number) }}"
-                                                class="template-btn sm-btn success-btn">
-                                                <i class="fas fa-check"></i> @lang('View Order')
-                                            </a>
-                                        @elseif ($delivery && $delivery->status == 'delivered')
-                                            {{-- Rider delivered --}}
-                                            <a href="{{ route('vendor-order-show', $data->order_number) }}"
-                                                class="template-btn sm-btn success-btn">
-                                                <i class="fas fa-check"></i> @lang('View Order')
-                                            </a>
-                                        @else
-                                            {{-- Assign shipping --}}
-                                            <button type="button" class="template-btn sm-btn primary-btn assignShippingBtn"
-                                                data-order-id="{{ $data->id }}"
-                                                data-customer-city="{{ $data->customer_city }}"
-                                                data-customer-choice='@json($customerChoice)'
-                                                data-bs-toggle="modal" data-bs-target="#shippingModal">
-                                                <i class="fas fa-shipping-fast"></i> @lang('Assign Shipping')
-                                            </button>
-                                            <a href="{{ route('vendor-order-show', $data->order_number) }}"
-                                                class="template-btn sm-btn secondary-btn">
-                                                <i class="fas fa-eye"></i> @lang('View')
-                                            </a>
+                                    @if ($shipment && !in_array($shipment->status, ['cancelled', 'returned', 'delivered']))
+                                        <button type="button" class="btn btn-sm btn-info mb-1 trackShipmentBtn"
+                                            data-tracking="{{ $shipment->tracking_number }}"
+                                            data-bs-toggle="modal" data-bs-target="#trackingModal">
+                                            <i class="fas fa-map-marker-alt"></i> @lang('Track')
+                                        </button>
+                                        @if(!in_array($shipment->status, ['out_for_delivery', 'delivered']))
+                                        <br>
+                                        <button type="button" class="btn btn-sm btn-danger cancelShipmentBtn"
+                                            data-tracking="{{ $shipment->tracking_number }}"
+                                            data-bs-toggle="modal" data-bs-target="#cancelModal">
+                                            <i class="fas fa-times"></i> @lang('Cancel')
+                                        </button>
                                         @endif
-                                    </div>
+                                    @elseif ($shipment && $shipment->status == 'delivered')
+                                        <a href="{{ route('vendor-order-show', $data->order_number) }}" class="btn btn-sm btn-success">
+                                            <i class="fas fa-eye"></i> @lang('View')
+                                        </a>
+                                    @elseif ($delivery && $delivery->status == 'delivered')
+                                        <a href="{{ route('vendor-order-show', $data->order_number) }}" class="btn btn-sm btn-success">
+                                            <i class="fas fa-eye"></i> @lang('View')
+                                        </a>
+                                    @else
+                                        <button type="button" class="btn btn-sm btn-primary mb-1 assignShippingBtn"
+                                            data-order-id="{{ $data->id }}"
+                                            data-customer-city="{{ $data->customer_city }}"
+                                            data-customer-choice='@json($customerChoice)'
+                                            data-bs-toggle="modal" data-bs-target="#shippingModal">
+                                            <i class="fas fa-shipping-fast"></i> @lang('Assign')
+                                        </button>
+                                        <br>
+                                        <a href="{{ route('vendor-order-show', $data->order_number) }}" class="btn btn-sm btn-secondary">
+                                            <i class="fas fa-eye"></i> @lang('View')
+                                        </a>
+                                    @endif
                                 </td>
                             </tr>
                         @endforeach

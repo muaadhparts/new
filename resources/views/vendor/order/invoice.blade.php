@@ -130,6 +130,42 @@
                             </li>
                         @endif
 
+                        @php
+                            $invoiceVendorId = $user->id;
+                            $invoiceCustomerChoice = $order->getCustomerShippingChoice($invoiceVendorId);
+                        @endphp
+                        @if ($invoiceCustomerChoice)
+                            <li>
+                                <span class="fw-semibold">@lang('Customer Selected Shipping :')</span>
+                                <span class="fw-normal">
+                                    {{ $invoiceCustomerChoice['company_name'] ?? 'N/A' }}
+                                    @if(isset($invoiceCustomerChoice['price']))
+                                    | {{ \PriceHelper::showOrderCurrencyPrice($invoiceCustomerChoice['price'] * $order->currency_value, $order->currency_sign) }}
+                                    @endif
+                                </span>
+                            </li>
+                        @endif
+
+                        @php
+                            $invoiceShipmentLog = App\Models\ShipmentStatusLog::where('order_id', $order->id)
+                                ->where('vendor_id', $invoiceVendorId)
+                                ->orderBy('status_date', 'desc')
+                                ->first();
+                        @endphp
+                        @if ($invoiceShipmentLog)
+                            <li>
+                                <span class="fw-semibold">@lang('Tracking Number :')</span>
+                                <span class="fw-normal">{{ $invoiceShipmentLog->tracking_number }}</span>
+                            </li>
+                            <li>
+                                <span class="fw-semibold">@lang('Shipping Company :')</span>
+                                <span class="fw-normal">{{ $invoiceShipmentLog->company_name ?? 'N/A' }}</span>
+                            </li>
+                            <li>
+                                <span class="fw-semibold">@lang('Shipment Status :')</span>
+                                <span class="fw-normal">{{ ucfirst($invoiceShipmentLog->status) }}</span>
+                            </li>
+                        @endif
 
                         <li>
                             <span class="fw-semibold">@lang('Payment Method :')</span>

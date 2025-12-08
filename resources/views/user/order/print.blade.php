@@ -146,6 +146,23 @@ html {
                                        @else
                                        <p>{{ __('Pick Up') }}</p>
                                        @endif
+                                       @php
+                                          $printShipments = App\Models\ShipmentStatusLog::where('order_id', $order->id)
+                                              ->orderBy('status_date', 'desc')
+                                              ->get()
+                                              ->groupBy('tracking_number');
+                                       @endphp
+                                       @if($printShipments->count() > 0)
+                                       <h5>{{ __('Shipment Info') }}</h5>
+                                       @foreach($printShipments as $trackingNum => $logs)
+                                          @php $latestLog = $logs->first(); @endphp
+                                          <p>
+                                             <strong>{{ __('Tracking:') }}</strong> {{ $trackingNum }}<br>
+                                             <strong>{{ __('Company:') }}</strong> {{ $latestLog->company_name ?? 'N/A' }}<br>
+                                             <strong>{{ __('Status:') }}</strong> {{ ucfirst($latestLog->status) }}
+                                          </p>
+                                       @endforeach
+                                       @endif
                                     </div>
                                  </div>
                                  @endif

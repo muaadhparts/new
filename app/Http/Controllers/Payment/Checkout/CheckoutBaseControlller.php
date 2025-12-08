@@ -213,6 +213,7 @@ class CheckoutBaseControlller extends Controller
             }
         }
 
-        return !empty($choices) ? json_encode($choices) : null;
+        // Return array (Model will handle JSON encoding via cast)
+        return !empty($choices) ? $choices : null;
     }
 }

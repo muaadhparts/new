@@ -174,11 +174,17 @@ class Order extends Model
     {
         $choices = $this->customer_shipping_choice;
 
+        // Handle double-encoded JSON string
+        if (is_string($choices)) {
+            $choices = json_decode($choices, true);
+        }
+
         if (!$choices || !is_array($choices)) {
             return null;
         }
 
-        return $choices[$vendorId] ?? null;
+        // vendorId might be string or int
+        return $choices[$vendorId] ?? $choices[(string)$vendorId] ?? null;
     }
 
     /**

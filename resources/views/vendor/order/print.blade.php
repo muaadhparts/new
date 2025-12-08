@@ -71,6 +71,22 @@ html {
                         </span><br>
                         @endif
                         <span> <strong>{{ __('Payment Method') }} :</strong> {{$order->method}}</span>
+                        @php
+                            $printVendorId = $user->id;
+                            $printCustomerChoice = $order->getCustomerShippingChoice($printVendorId);
+                            $printShipmentLog = App\Models\ShipmentStatusLog::where('order_id', $order->id)
+                                ->where('vendor_id', $printVendorId)
+                                ->orderBy('status_date', 'desc')
+                                ->first();
+                        @endphp
+                        @if ($printCustomerChoice)
+                        <br><span><strong>{{ __('Customer Selected') }}:</strong> {{ $printCustomerChoice['company_name'] ?? 'N/A' }}</span>
+                        @endif
+                        @if ($printShipmentLog)
+                        <br><span><strong>{{ __('Tracking') }}:</strong> {{ $printShipmentLog->tracking_number }}</span>
+                        <br><span><strong>{{ __('Shipping Company') }}:</strong> {{ $printShipmentLog->company_name ?? 'N/A' }}</span>
+                        <br><span><strong>{{ __('Status') }}:</strong> {{ ucfirst($printShipmentLog->status) }}</span>
+                        @endif
                     </div>
                 </div>
             </div>
