@@ -27,7 +27,6 @@ class ShippingApiController extends Controller
     {
         try {
             $vendorId = $request->input('vendor_id');
-            $products = $request->input('products', []);
 
             if (!$vendorId) {
                 return response()->json([
@@ -36,8 +35,17 @@ class ShippingApiController extends Controller
                 ], 400);
             }
 
-            // 1. Calculate shipping data
-            $shippingData = VendorCartService::calculateVendorShipping($vendorId, $products);
+            // 1. Get cart items from session (NOT from request)
+            $cart = Session::get('cart');
+            if (!$cart || empty($cart->items)) {
+                return response()->json([
+                    'success' => false,
+                    'error' => 'Cart is empty',
+                ], 400);
+            }
+
+            // 2. Calculate shipping data using cart items
+            $shippingData = VendorCartService::calculateVendorShipping($vendorId, $cart->items);
 
             Log::info('ShippingApiController: Shipping data calculated', [
                 'vendor_id' => $vendorId,
@@ -143,9 +151,8 @@ class ShippingApiController extends Controller
     public function getTryotoHtml(Request $request)
     {
         $vendorId = $request->input('vendor_id');
-        $products = $request->input('products', []);
 
-        // Get the API response
+        // Get the API response (uses session cart internally)
         $apiResponse = $this->getTryotoOptions($request);
         $data = json_decode($apiResponse->getContent(), true);
 

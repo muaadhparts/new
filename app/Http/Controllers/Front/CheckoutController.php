@@ -432,17 +432,21 @@ class CheckoutController extends FrontBaseController
         // Get all submitted data (manual OR from Google Maps - no conflict)
         $step1 = $request->all();
 
-        // Validation rules
+        // Validation rules - Support both map selection (IDs) and legacy (names)
         $validator = Validator::make($step1, [
             'customer_name' => 'required|string|max:255',
             'customer_email' => 'required|email|max:255',
             'customer_phone' => 'required|numeric',
             'customer_address' => 'required|string|max:255',
             'customer_zip' => 'nullable|string|max:20',
-            'customer_country' => 'required|string|max:255',
-            'customer_state' => 'required|string|max:255',
-            'customer_city' => 'required|numeric',
-            // Coordinates from Google Maps (optional)
+            // Location - either from map (IDs) or legacy (names)
+            'country_id' => 'nullable|numeric|exists:countries,id',
+            'state_id' => 'nullable|numeric|exists:states,id',
+            'city_id' => 'nullable|numeric|exists:cities,id',
+            'customer_country' => 'required_without:country_id|nullable|string|max:255',
+            'customer_state' => 'required_without:state_id|nullable|string|max:255',
+            'customer_city' => 'required_without:city_id|nullable|numeric',
+            // Coordinates from Google Maps
             'latitude' => 'nullable|numeric|between:-90,90',
             'longitude' => 'nullable|numeric|between:-180,180',
         ], [
@@ -451,10 +455,12 @@ class CheckoutController extends FrontBaseController
             'customer_email.email' => 'البريد الإلكتروني غير صحيح',
             'customer_phone.required' => 'رقم الهاتف مطلوب',
             'customer_address.required' => 'العنوان مطلوب',
-            'customer_country.required' => 'الدولة مطلوبة',
-            'customer_state.required' => 'الولاية مطلوبة',
-            'customer_city.required' => 'المدينة مطلوبة',
-            'customer_city.numeric' => 'المدينة غير صحيحة',
+            'customer_country.required_without' => 'الدولة مطلوبة',
+            'customer_state.required_without' => 'الولاية مطلوبة',
+            'customer_city.required_without' => 'المدينة مطلوبة',
+            'country_id.exists' => 'الدولة غير صحيحة',
+            'state_id.exists' => 'الولاية غير صحيحة',
+            'city_id.exists' => 'المدينة غير صحيحة',
             'latitude.between' => 'خط العرض غير صحيح',
             'longitude.between' => 'خط الطول غير صحيح',
         ]);
@@ -477,22 +483,35 @@ class CheckoutController extends FrontBaseController
         $taxRate = 0;
         $taxLocation = '';
 
-        // Get country tax
-        $country = \App\Models\Country::where('country_name', $step1['customer_country'])->first();
+        // Get country - try by ID first (from map), then by name (legacy)
+        $country = null;
+        if (!empty($step1['country_id'])) {
+            $country = \App\Models\Country::find($step1['country_id']);
+        }
+        if (!$country && !empty($step1['customer_country'])) {
+            $country = \App\Models\Country::where('country_name', $step1['customer_country'])->first();
+        }
+
         if ($country && $country->tax > 0) {
             $taxRate = $country->tax;
             $taxLocation = $country->country_name;
         }
 
         // Check if state has specific tax (overrides country tax)
-        if (!empty($step1['customer_state'])) {
+        // Try by ID first (from map), then by name (legacy)
+        $state = null;
+        if (!empty($step1['state_id'])) {
+            $state = \App\Models\State::find($step1['state_id']);
+        }
+        if (!$state && !empty($step1['customer_state']) && $country) {
             $state = \App\Models\State::where('state', $step1['customer_state'])
-                ->where('country_id', $country->id ?? 0)
+                ->where('country_id', $country->id)
                 ->first();
-            if ($state && $state->tax > 0) {
-                $taxRate = $state->tax;
-                $taxLocation = $state->state . ', ' . ($country->country_name ?? '');
-            }
+        }
+
+        if ($state && $state->tax > 0) {
+            $taxRate = $state->tax;
+            $taxLocation = $state->state . ', ' . ($country->country_name ?? '');
         }
 
         // Calculate tax amount per vendor
@@ -1412,16 +1431,23 @@ class CheckoutController extends FrontBaseController
             'state_id' => $step1['state_id'] ?? 'MISSING',
         ]);
 
-        // ✅ BASE VALIDATION
+        // ✅ BASE VALIDATION - Support both map selection (IDs) and legacy (names)
         $rules = [
             'customer_name' => 'required|string|max:255',
             'customer_email' => 'required|email|max:255',
             'customer_phone' => 'required|numeric',
             'customer_address' => 'required|string|max:255',
             'customer_zip' => 'nullable|string|max:20',
-            'customer_country' => 'required|string|max:255',
-            'customer_state' => 'required|string|max:255',
-            'customer_city' => 'required|numeric',
+            // Location - either from map (IDs) or legacy (names)
+            'country_id' => 'nullable|numeric|exists:countries,id',
+            'state_id' => 'nullable|numeric|exists:states,id',
+            'city_id' => 'nullable|numeric|exists:cities,id',
+            'customer_country' => 'required_without:country_id|nullable|string|max:255',
+            'customer_state' => 'required_without:state_id|nullable|string|max:255',
+            'customer_city' => 'required_without:city_id|nullable|numeric',
+            // Coordinates from Google Maps
+            'latitude' => 'nullable|numeric|between:-90,90',
+            'longitude' => 'nullable|numeric|between:-180,180',
         ];
 
         // ✅ IF USER WANTS TO CREATE ACCOUNT - ADD PASSWORD VALIDATION
@@ -1500,22 +1526,35 @@ class CheckoutController extends FrontBaseController
         $taxRate = 0;
         $taxLocation = '';
 
-        // Get country tax
-        $country = \App\Models\Country::where('country_name', $step1['customer_country'])->first();
+        // Get country - try by ID first (from map), then by name (legacy)
+        $country = null;
+        if (!empty($step1['country_id'])) {
+            $country = \App\Models\Country::find($step1['country_id']);
+        }
+        if (!$country && !empty($step1['customer_country'])) {
+            $country = \App\Models\Country::where('country_name', $step1['customer_country'])->first();
+        }
+
         if ($country && $country->tax > 0) {
             $taxRate = $country->tax;
             $taxLocation = $country->country_name;
         }
 
         // Check if state has specific tax (overrides country tax)
-        if (!empty($step1['customer_state'])) {
+        // Try by ID first (from map), then by name (legacy)
+        $state = null;
+        if (!empty($step1['state_id'])) {
+            $state = \App\Models\State::find($step1['state_id']);
+        }
+        if (!$state && !empty($step1['customer_state']) && $country) {
             $state = \App\Models\State::where('state', $step1['customer_state'])
-                ->where('country_id', $country->id ?? 0)
+                ->where('country_id', $country->id)
                 ->first();
-            if ($state && $state->tax > 0) {
-                $taxRate = $state->tax;
-                $taxLocation = $state->state . ', ' . ($country->country_name ?? '');
-            }
+        }
+
+        if ($state && $state->tax > 0) {
+            $taxRate = $state->tax;
+            $taxLocation = $state->state . ', ' . ($country->country_name ?? '');
         }
 
         // Calculate tax amount for this vendor only

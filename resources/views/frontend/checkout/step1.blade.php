@@ -456,140 +456,111 @@
     </div>
     <!--  checkout wrapper end-->
 
-    {{-- Google Maps Modal - Styles moved to MUAADH.css Section 36 --}}
+    {{-- Google Maps Modal - Improved Design with Theme Colors --}}
     <div class="modal fade" id="mapModal" tabindex="-1">
-        <div class="modal-dialog modal-xl modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header muaadh-map-modal-header">
-                    <h5 class="modal-title">@lang('Select location on map')</h5>
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content location-picker-modal">
+                <div class="modal-header location-picker-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-map-marker-alt me-2"></i>
+                        @lang('Select location on map')
+                    </h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body p-0">
-                    <div id="alert-container-modal" class="muaadh-map-alert-container"></div>
+                    <div id="alert-container-modal"></div>
 
-                    <div class="muaadh-map-body">
-                        <div id="map-container" class="muaadh-map-container">
-                            <div class="muaadh-map-search">
-                                <input type="text" id="map-search-input" class="muaadh-map-search-input" placeholder="@lang('Search for an address...')">
+                    <div class="location-picker-map-wrapper">
+                        <div class="location-picker-search">
+                            <i class="fas fa-search"></i>
+                            <input type="text" id="map-search-input" class="location-picker-search-input" placeholder="@lang('Search for an address...')">
+                        </div>
+                        <div id="map" class="location-picker-map"></div>
+                        <div class="location-picker-loading" id="loading-overlay-modal">
+                            <div class="location-picker-spinner"></div>
+                        </div>
+                    </div>
+
+                    <div class="location-picker-actions">
+                        <button class="location-picker-btn location-picker-btn-secondary" id="current-location-btn-modal" type="button">
+                            <i class="fas fa-crosshairs"></i>
+                            @lang('My Current Location')
+                        </button>
+                        <button class="location-picker-btn location-picker-btn-outline" id="reset-btn-modal" type="button">
+                            <i class="fas fa-undo"></i>
+                            @lang('Reset')
+                        </button>
+                    </div>
+
+                    <div class="location-picker-info-card" id="location-info-modal">
+                        <div class="location-picker-info-header">
+                            <i class="fas fa-info-circle"></i>
+                            <span>@lang('Location Information')</span>
+                        </div>
+
+                        <div class="location-picker-info-grid">
+                            <div class="location-picker-info-item">
+                                <span class="location-picker-info-label">@lang('Country')</span>
+                                <span id="country-modal" class="location-picker-info-value">-</span>
                             </div>
-                            <div id="map" class="muaadh-map-element"></div>
-                            <div class="muaadh-map-loading" id="loading-overlay-modal">
-                                <div class="muaadh-map-spinner"></div>
+                            <div class="location-picker-info-item">
+                                <span class="location-picker-info-label">@lang('State/Province')</span>
+                                <span id="state-modal" class="location-picker-info-value">-</span>
+                            </div>
+                            <div class="location-picker-info-item">
+                                <span class="location-picker-info-label">@lang('City')</span>
+                                <span id="city-modal" class="location-picker-info-value">-</span>
+                            </div>
+                            <div class="location-picker-info-item">
+                                <span class="location-picker-info-label">@lang('Coordinates')</span>
+                                <span id="coords-modal" class="location-picker-info-value location-picker-coords">-</span>
                             </div>
                         </div>
 
-                        <div class="muaadh-map-buttons">
-                            <button class="btn btn-secondary" id="reset-btn-modal" type="button">
-                                @lang('Reset Location')
-                            </button>
-                            <button class="btn btn-secondary" id="current-location-btn-modal" type="button">
-                                @lang('My Current Location')
-                            </button>
+                        <div class="location-picker-address">
+                            <span class="location-picker-info-label">@lang('Full Address')</span>
+                            <p id="full-address-modal" class="location-picker-address-text">-</p>
                         </div>
 
-                        <div class="muaadh-location-info" id="location-info-modal">
-                            <h6 class="muaadh-location-info-title">@lang('Location Information')</h6>
+                        {{-- Tryoto Verification Section --}}
+                        <div id="tryoto-info-modal" class="location-picker-tryoto-info" style="display: none;">
+                            <div class="location-picker-tryoto-header">
+                                <i class="fas fa-shipping-fast"></i>
+                                <span>@lang('Shipping Information')</span>
+                            </div>
 
-                            <div class="muaadh-location-grid">
-                                <div class="muaadh-location-item">
-                                    <label class="muaadh-location-item-label">@lang('Country (Arabic)')</label>
-                                    <div id="country-ar-modal" class="muaadh-location-item-value">-</div>
+                            <div id="tryoto-verified-box" class="location-picker-tryoto-verified" style="display: none;">
+                                <div class="location-picker-tryoto-status">
+                                    <i class="fas fa-check-circle"></i>
+                                    <span id="tryoto-status-text">-</span>
                                 </div>
-                                <div class="muaadh-location-item">
-                                    <label class="muaadh-location-item-label">@lang('Country (English)')</label>
-                                    <div id="country-en-modal" class="muaadh-location-item-value">-</div>
-                                </div>
-                                <div class="muaadh-location-item">
-                                    <label class="muaadh-location-item-label">@lang('State (Arabic)')</label>
-                                    <div id="state-ar-modal" class="muaadh-location-item-value">-</div>
-                                </div>
-                                <div class="muaadh-location-item">
-                                    <label class="muaadh-location-item-label">@lang('State (English)')</label>
-                                    <div id="state-en-modal" class="muaadh-location-item-value">-</div>
-                                </div>
-                                <div class="muaadh-location-item">
-                                    <label class="muaadh-location-item-label">@lang('City (Arabic)')</label>
-                                    <div id="city-ar-modal" class="muaadh-location-item-value">-</div>
-                                </div>
-                                <div class="muaadh-location-item">
-                                    <label class="muaadh-location-item-label">@lang('City (English)')</label>
-                                    <div id="city-en-modal" class="muaadh-location-item-value">-</div>
+                                <div id="tryoto-companies-box" class="location-picker-tryoto-companies" style="display: none;">
+                                    <i class="fas fa-truck"></i>
+                                    <span id="tryoto-companies-text">-</span>
                                 </div>
                             </div>
 
-                            <div class="muaadh-coords-row">
-                                <div class="muaadh-coords-item">
-                                    <label class="muaadh-location-item-label">@lang('Latitude')</label>
-                                    <div id="latitude-value-modal" class="muaadh-coords-value">-</div>
-                                </div>
-                                <div class="muaadh-coords-item">
-                                    <label class="muaadh-location-item-label">@lang('Longitude')</label>
-                                    <div id="longitude-value-modal" class="muaadh-coords-value">-</div>
+                            <div id="tryoto-alternative-box" class="location-picker-tryoto-alternative" style="display: none;">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                <div>
+                                    <p>@lang('Selected location is not supported for shipping')</p>
+                                    <p><strong>@lang('Nearest supported city'):</strong> <span id="tryoto-alternative-city">-</span> (<span id="tryoto-alternative-distance">-</span> @lang('km'))</p>
                                 </div>
                             </div>
 
-                            <div class="mt-3">
-                                <div class="muaadh-location-item">
-                                    <label class="muaadh-location-item-label">@lang('Full Address')</label>
-                                    <div id="full-address-modal" class="muaadh-location-item-value">-</div>
-                                </div>
-                            </div>
-
-                            {{-- Tryoto Verification Section --}}
-                            <div id="tryoto-info-modal" class="muaadh-tryoto-info">
-                                <div class="muaadh-tryoto-header">
-                                    <i class="fas fa-shipping-fast"></i>
-                                    <h6>@lang('Tryoto Shipping Information')</h6>
-                                </div>
-
-                                <div id="tryoto-verified-box" class="muaadh-tryoto-verified">
-                                    <div class="muaadh-tryoto-status">
-                                        <i class="fas fa-check-circle"></i>
-                                        <span id="tryoto-status-text" class="muaadh-tryoto-status-text">-</span>
-                                    </div>
-                                    <div id="tryoto-companies-box" class="muaadh-tryoto-companies">
-                                        <small class="muaadh-tryoto-companies-text">
-                                            <i class="fas fa-truck"></i>
-                                            <span id="tryoto-companies-text">-</span>
-                                        </small>
-                                    </div>
-                                </div>
-
-                                {{-- Alternative City Warning --}}
-                                <div id="tryoto-alternative-box" class="muaadh-tryoto-alternative">
-                                    <div class="muaadh-tryoto-alternative-content">
-                                        <i class="fas fa-exclamation-triangle"></i>
-                                        <div class="muaadh-tryoto-alternative-text">
-                                            <p>@lang('Selected location is not supported for shipping')</p>
-                                            <p>
-                                                <strong>@lang('Nearest supported city'):</strong>
-                                                <span id="tryoto-alternative-city">-</span>
-                                                (<span id="tryoto-alternative-distance">-</span> @lang('km'))
-                                            </p>
-                                            <p>
-                                                @lang('Shipping will be to') <strong id="tryoto-alternative-city-ar">-</strong> @lang('and we will contact you to coordinate delivery')
-                                            </p>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {{-- Not Supported Warning --}}
-                                <div id="tryoto-not-supported-box" class="muaadh-tryoto-not-supported">
-                                    <div class="muaadh-tryoto-not-supported-content">
-                                        <i class="fas fa-times-circle"></i>
-                                        <p>@lang('Sorry, this location is outside the available shipping area')</p>
-                                    </div>
-                                    <p class="muaadh-tryoto-not-supported-note">
-                                        @lang('Please select a location within Saudi Arabia')
-                                    </p>
-                                </div>
+                            <div id="tryoto-not-supported-box" class="location-picker-tryoto-not-supported" style="display: none;">
+                                <i class="fas fa-times-circle"></i>
+                                <p>@lang('Sorry, this location is outside the available shipping area')</p>
                             </div>
                         </div>
                     </div>
                 </div>
-                <div class="modal-footer">
+                <div class="modal-footer location-picker-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">@lang('Close')</button>
-                    <button type="button" class="btn btn-primary" id="use-location-btn-modal" disabled>@lang('Use This Location')</button>
+                    <button type="button" class="btn btn-primary" id="use-location-btn-modal" disabled>
+                        <i class="fas fa-check me-1"></i>
+                        @lang('Use This Location')
+                    </button>
                 </div>
             </div>
         </div>
@@ -838,36 +809,8 @@
         });
     </script>
 
-    {{-- Google Maps Scripts --}}
-    <style>
-    @keyframes spin {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
-    }
-    .loading-overlay.active {
-        display: flex !important;
-    }
-    /* Map-selected fields styling */
-    select.map-selected,
-    input.map-selected {
-        background-color: #f0f8ff !important;
-        border-color: #28a745 !important;
-        cursor: not-allowed;
-    }
-    .map-selected + .nice-select {
-        background-color: #f0f8ff !important;
-        border-color: #28a745 !important;
-        pointer-events: none;
-    }
-    .badge.bg-success {
-        font-size: 11px;
-        padding: 3px 8px;
-        margin-left: 5px;
-        vertical-align: middle;
-    }
-    </style>
-
-    <script src="https://maps.googleapis.com/maps/api/js?key={{ config('services.google_maps.api_key') }}&libraries=places&language=en" async defer></script>
+    {{-- Google Maps Scripts - Full Original Logic with Improved Design --}}
+    <script src="https://maps.googleapis.com/maps/api/js?key={{ config('services.google_maps.api_key') }}&libraries=places&language=ar" async defer></script>
     <script>
     // Google Maps variables for modal
     let mapModal, markerModal, geocoderModal, searchBoxModal, debounceTimerModal, selectedLocationData;
@@ -910,12 +853,6 @@
             $('#customer_city_hidden').val(selectedLocationData.city?.id || '');
             $('#customer_country_hidden').val(selectedLocationData.country?.name || '');
             $('#customer_state_hidden').val(selectedLocationData.state?.name || '');
-
-            console.log('✅ Hidden fields restored from localStorage:', {
-                customer_city: $('#customer_city_hidden').val(),
-                customer_country: $('#customer_country_hidden').val(),
-                customer_state: $('#customer_state_hidden').val()
-            });
 
             const fullAddress = selectedLocationData.address?.ar || selectedLocationData.address?.en || '';
             $('#address').val(fullAddress);
@@ -968,78 +905,9 @@
         console.log(`🔍 حساب الضريبة - Country ID: ${countryId}, State ID: ${stateId}`);
 
         // استدعاء دالة tax_submit الموجودة بالفعل
-        // IMPORTANT: التأكد من أن tax_submit موجود في الصفحة
         if (typeof tax_submit === 'function') {
             tax_submit(countryId, stateId);
             console.log('✅ تم استدعاء دالة حساب الضريبة');
-        } else {
-            console.error('❌ دالة tax_submit غير موجودة');
-
-            // Fallback: استدعاء مباشر للـ API
-            const total = $("#ttotal").val();
-            const ship = 0;
-
-            $.ajax({
-                type: "GET",
-                url: mainurl + "/country/tax/check",
-                data: {
-                    state_id: stateId,
-                    country_id: countryId,
-                    total: total,
-                    shipping_cost: ship
-                },
-                success: function(data) {
-                    console.log('✅ استجابة API للضريبة:', data);
-
-                    // Update hidden fields
-                    $('#grandtotal').val(data[0]);
-                    $('#tgrandtotal').val(data[0]);
-                    $('#original_tax').val(data[1]);
-                    $('#input_tax').val(data[11]);
-                    $('#input_tax_type').val(data[12]);
-
-                    // Show tax display with rate and amount
-                    if (data[1] && parseFloat(data[1]) > 0) {
-                        $('.tax-display-wrapper').removeClass('d-none');
-                        $('.tax-rate-text').html('(' + parseFloat(data[1]) + '%)');
-
-                        // Display tax amount with currency
-                        var taxAmount = parseFloat(data[2] || 0);
-                        if (pos == 0) {
-                            $('.tax-amount-value').html('{{ $curr->sign }}' + taxAmount.toFixed(2));
-                        } else {
-                            $('.tax-amount-value').html(taxAmount.toFixed(2) + '{{ $curr->sign }}');
-                        }
-
-                        // Show tax location if available
-                        if (data[3]) {
-                            $('.tax-location-wrapper').removeClass('d-none');
-                            $('.tax-location-text').html(data[3]);
-                        } else {
-                            $('.tax-location-wrapper').addClass('d-none');
-                        }
-
-                        console.log(`✅ تم عرض الضريبة: ${data[1]}% = ${taxAmount} ${data[3] || ''}`);
-                    } else {
-                        $('.tax-display-wrapper').addClass('d-none');
-                        $('.tax-location-wrapper').addClass('d-none');
-                        console.log('ℹ️ لا توجد ضريبة على هذا الموقع');
-                    }
-
-                    // Update final total
-                    var ttotal = parseFloat($('#grandtotal').val());
-                    ttotal = parseFloat(ttotal).toFixed(2);
-
-                    if (pos == 0) {
-                        $('#final-cost').html('{{ $curr->sign }}' + ttotal);
-                    } else {
-                        $('#final-cost').html(ttotal + '{{ $curr->sign }}');
-                    }
-                },
-                error: function(xhr, status, error) {
-                    console.error('❌ فشل حساب الضريبة:', error);
-                }
-            });
         }
     }
 
@@ -1058,9 +926,11 @@
         mapModal = new google.maps.Map(document.getElementById('map'), {
             center: DEFAULT_CENTER,
             zoom: 12,
-            mapTypeControl: true,
+            mapTypeControl: false,
             streetViewControl: false,
             fullscreenControl: true,
+            zoomControl: true,
+            gestureHandling: 'greedy', // ✅ Allow zoom without Ctrl key
         });
 
         markerModal = new google.maps.Marker({
@@ -1087,6 +957,7 @@
             if (!place.geometry || !place.geometry.location) return;
 
             mapModal.setCenter(place.geometry.location);
+            mapModal.setZoom(15);
             markerModal.setPosition(place.geometry.location);
             markerModal.setVisible(true);
 
@@ -1169,17 +1040,17 @@
 
     // Display location information in modal
     function displayLocationInfoModal(data) {
-        document.getElementById('country-ar-modal').textContent = data.country?.name_ar || '-';
-        document.getElementById('country-en-modal').textContent = data.country?.name || '-';
-        document.getElementById('state-ar-modal').textContent = data.state?.name_ar || '-';
-        document.getElementById('state-en-modal').textContent = data.state?.name || '-';
-        document.getElementById('city-ar-modal').textContent = data.city?.name_ar || '-';
-        document.getElementById('city-en-modal').textContent = data.city?.name || '-';
-        document.getElementById('latitude-value-modal').textContent = data.coordinates?.latitude.toFixed(6) || '-';
-        document.getElementById('longitude-value-modal').textContent = data.coordinates?.longitude.toFixed(6) || '-';
+        document.getElementById('country-modal').textContent = data.country?.name_ar || data.country?.name || '-';
+        document.getElementById('state-modal').textContent = data.state?.name_ar || data.state?.name || '-';
+        document.getElementById('city-modal').textContent = data.city?.name_ar || data.city?.name || '-';
+
+        const lat = data.coordinates?.latitude?.toFixed(6) || '-';
+        const lng = data.coordinates?.longitude?.toFixed(6) || '-';
+        document.getElementById('coords-modal').textContent = `${lat}, ${lng}`;
+
         document.getElementById('full-address-modal').textContent = data.address?.ar || data.address?.en || '-';
 
-        document.getElementById('location-info-modal').classList.add('active');
+        document.getElementById('location-info-modal').style.display = 'block';
 
         // Display Tryoto verification info
         displayTryotoInfo(data);
@@ -1188,22 +1059,22 @@
     // Display Tryoto verification information
     function displayTryotoInfo(data) {
         const tryotoBox = document.getElementById('tryoto-info-modal');
-        if (!tryotoBox) return; // Element doesn't exist in DOM
+        if (!tryotoBox) return;
 
         const verifiedBox = document.getElementById('tryoto-verified-box');
         const alternativeBox = document.getElementById('tryoto-alternative-box');
         const notSupportedBox = document.getElementById('tryoto-not-supported-box');
         const companiesBox = document.getElementById('tryoto-companies-box');
 
-        // Hide all boxes first (using classList for CSS-driven visibility)
-        if (verifiedBox) verifiedBox.classList.remove('active');
-        if (alternativeBox) alternativeBox.classList.remove('active');
-        if (notSupportedBox) notSupportedBox.classList.remove('active');
-        if (companiesBox) companiesBox.classList.remove('active');
+        // Hide all boxes first
+        if (verifiedBox) verifiedBox.style.display = 'none';
+        if (alternativeBox) alternativeBox.style.display = 'none';
+        if (notSupportedBox) notSupportedBox.style.display = 'none';
+        if (companiesBox) companiesBox.style.display = 'none';
 
-        // Check resolution_info from new API
+        // Check resolution_info from API
         if (!data.resolution_info) {
-            tryotoBox.classList.remove('active');
+            tryotoBox.style.display = 'none';
             return;
         }
 
@@ -1211,78 +1082,51 @@
         const strategy = resolutionInfo.strategy;
 
         // Show Tryoto box
-        tryotoBox.classList.add('active');
-        if (verifiedBox) verifiedBox.classList.add('active');
+        tryotoBox.style.display = 'block';
 
-        if (strategy === 'exact_match') {
-            // Perfect match
-            if (document.getElementById('tryoto-status-text')) {
-                document.getElementById('tryoto-status-text').textContent = 'الموقع مدعوم للشحن عبر Tryoto ✓';
+        if (strategy === 'exact_match' || strategy === 'name_variation') {
+            if (verifiedBox) {
+                verifiedBox.style.display = 'block';
+                document.getElementById('tryoto-status-text').textContent = 'الموقع مدعوم للشحن ✓';
             }
 
             if (resolutionInfo.shipping_companies > 0 && companiesBox) {
-                companiesBox.classList.add('active');
-                if (document.getElementById('tryoto-companies-text')) {
-                    document.getElementById('tryoto-companies-text').textContent =
-                        `${resolutionInfo.shipping_companies} شركة شحن متاحة`;
-                }
-            }
-
-        } else if (strategy === 'name_variation') {
-            // Name variation match
-            if (document.getElementById('tryoto-status-text')) {
-                document.getElementById('tryoto-status-text').textContent = 'الموقع مدعوم للشحن (تم التحقق من الاسم) ✓';
-            }
-
-            if (resolutionInfo.shipping_companies > 0 && companiesBox) {
-                companiesBox.classList.add('active');
-                if (document.getElementById('tryoto-companies-text')) {
-                    document.getElementById('tryoto-companies-text').textContent =
-                        `${resolutionInfo.shipping_companies} شركة شحن متاحة`;
-                }
+                companiesBox.style.display = 'block';
+                document.getElementById('tryoto-companies-text').textContent =
+                    `${resolutionInfo.shipping_companies} شركة شحن متاحة`;
             }
 
         } else if (strategy === 'nearest_city' && resolutionInfo.is_nearest_city) {
-            // Alternative city found (nearest city)
-            if (document.getElementById('tryoto-status-text')) {
+            if (verifiedBox) {
+                verifiedBox.style.display = 'block';
                 document.getElementById('tryoto-status-text').textContent = 'سيتم استخدام أقرب مدينة مدعومة للشحن';
             }
 
             if (alternativeBox) {
-                alternativeBox.classList.add('active');
-                if (document.getElementById('tryoto-alternative-city')) {
-                    document.getElementById('tryoto-alternative-city').textContent = resolutionInfo.resolved_city;
-                }
-                if (document.getElementById('tryoto-alternative-city-ar')) {
-                    document.getElementById('tryoto-alternative-city-ar').textContent = data.city?.name_ar || resolutionInfo.resolved_city;
-                }
-                if (document.getElementById('tryoto-alternative-distance')) {
-                    document.getElementById('tryoto-alternative-distance').textContent = resolutionInfo.distance_km || 0;
-                }
+                alternativeBox.style.display = 'block';
+                document.getElementById('tryoto-alternative-city').textContent = data.city?.name_ar || resolutionInfo.resolved_city;
+                document.getElementById('tryoto-alternative-distance').textContent = resolutionInfo.distance_km || 0;
             }
 
             if (resolutionInfo.shipping_companies > 0 && companiesBox) {
-                companiesBox.classList.add('active');
-                if (document.getElementById('tryoto-companies-text')) {
-                    document.getElementById('tryoto-companies-text').textContent =
-                        `${resolutionInfo.shipping_companies} شركة شحن متاحة في ${data.city?.name_ar || resolutionInfo.resolved_city}`;
-                }
+                companiesBox.style.display = 'block';
+                document.getElementById('tryoto-companies-text').textContent =
+                    `${resolutionInfo.shipping_companies} شركة شحن متاحة في ${data.city?.name_ar || resolutionInfo.resolved_city}`;
             }
         }
     }
 
-    // Use selected location - populate hidden fields only
+    // Use selected location - populate hidden fields
     function useLocation() {
         if (!selectedLocationData) return;
 
-        // Check if using nearest city (from resolution_info)
+        // Check if using nearest city
         let useNearestCity = false;
 
         if (selectedLocationData.resolution_info &&
             selectedLocationData.resolution_info.is_nearest_city) {
             useNearestCity = true;
 
-            // Show confirmation message
             if (typeof toastr !== 'undefined') {
                 toastr.warning(
                     `⚠️ سيتم الشحن إلى ${selectedLocationData.city.name_ar} (${selectedLocationData.resolution_info.distance_km} كم من موقعك الأصلي)`,
@@ -1292,7 +1136,7 @@
             }
         }
 
-        // ✅ Fill HIDDEN FIELDS ONLY (Primary data source)
+        // ✅ Fill HIDDEN FIELDS
         $('#latitude').val(selectedLocationData.coordinates?.latitude || '');
         $('#longitude').val(selectedLocationData.coordinates?.longitude || '');
         $('#country_id').val(selectedLocationData.country?.id || '');
@@ -1303,12 +1147,6 @@
         $('#customer_city_hidden').val(selectedLocationData.city?.id || '');
         $('#customer_country_hidden').val(selectedLocationData.country?.name || '');
         $('#customer_state_hidden').val(selectedLocationData.state?.name || '');
-
-        console.log('✅ Hidden fields filled:', {
-            customer_city: $('#customer_city_hidden').val(),
-            customer_country: $('#customer_country_hidden').val(),
-            customer_state: $('#customer_state_hidden').val()
-        });
 
         // Update visible address field
         const fullAddress = selectedLocationData.address?.ar || selectedLocationData.address?.en || '';
@@ -1331,7 +1169,7 @@
             }
         }
 
-        // ✅ حفظ الموقع في localStorage لاستخدامه عند Refresh/Back/Forward
+        // ✅ حفظ الموقع في localStorage
         try {
             localStorage.setItem('selectedLocation', JSON.stringify({
                 country: selectedLocationData.country,
@@ -1355,7 +1193,7 @@
         // Show location summary
         const locationSummary = `${selectedLocationData.city?.name_ar || ''}, ${selectedLocationData.state?.name_ar || ''}, ${selectedLocationData.country?.name_ar || ''}`;
 
-        // Add location info below button if not exists
+        // Add location info below button
         let locationInfo = $('.map-location-info');
         if (locationInfo.length === 0) {
             mapBtn.parent().append(`
@@ -1372,13 +1210,12 @@
         }
 
         // ✅ حساب الضريبة بعد اختيار الموقع
-        // إعطاء وقت قصير للـ DOM ليحدّث القيم
         setTimeout(function() {
             calculateTaxIfNeeded();
         }, 100);
 
         if (typeof toastr !== 'undefined') {
-            toastr.success('تم حفظ الموقع بنجاح! سيتم حساب الضريبة إذا وجدت', 'نجاح', {
+            toastr.success('تم حفظ الموقع بنجاح!', 'نجاح', {
                 timeOut: 5000,
                 progressBar: true
             });
@@ -1387,13 +1224,12 @@
         $('#mapModal').modal('hide');
     }
 
-
     // Reset selection
     function resetSelection() {
         markerModal.setVisible(false);
         selectedLocationData = null;
         document.getElementById('use-location-btn-modal').disabled = true;
-        document.getElementById('location-info-modal').classList.remove('active');
+        document.getElementById('location-info-modal').style.display = 'none';
         document.getElementById('map-search-input').value = '';
         mapModal.setCenter(DEFAULT_CENTER);
         mapModal.setZoom(12);
@@ -1411,6 +1247,7 @@
                         lng: position.coords.longitude
                     };
                     mapModal.setCenter(pos);
+                    mapModal.setZoom(15);
                     markerModal.setPosition(pos);
                     markerModal.setVisible(true);
                     handleLocationChange(pos.lat, pos.lng);
@@ -1430,20 +1267,16 @@
     function showLoadingModal(show) {
         const overlay = document.getElementById('loading-overlay-modal');
         if (overlay) {
-            if (show) {
-                overlay.classList.add('active');
-            } else {
-                overlay.classList.remove('active');
-            }
+            overlay.style.display = show ? 'flex' : 'none';
         }
     }
 
     // Show alert message
     function showAlertModal(message, type) {
         const container = document.getElementById('alert-container-modal');
-        const alertClass = type === 'success' ? 'alert-success' : 'alert-danger';
+        const alertClass = type === 'success' ? 'alert-success' : (type === 'warning' ? 'alert-warning' : 'alert-danger');
         container.innerHTML = `
-            <div class="alert ${alertClass} muaadh-alert-no-margin">
+            <div class="alert ${alertClass} m-2 py-2">
                 ${message}
             </div>
         `;
@@ -1456,10 +1289,6 @@
             container.innerHTML = '';
         }
     }
-
-    // ===================== Tryoto City Verification =====================
-    // ⚠️ DISABLED - No longer needed as we rely on map selection only
-    // Dropdowns are hidden and not used for form submission
 
     // ============================================
     // استدعاء استرجاع الموقع عند تحميل الصفحة
@@ -1475,7 +1304,7 @@
     $('form.address-wrapper').on('submit', function(e) {
         const $form = $(this);
 
-        // ✅ STEP 1: Validate coordinates exist FIRST (quick check)
+        // ✅ STEP 1: Validate coordinates exist FIRST
         const lat = $('#latitude').val();
         const lng = $('#longitude').val();
 
@@ -1498,8 +1327,8 @@
             // Show error
             if (typeof toastr !== 'undefined') {
                 toastr.error(
-                    'يرجى اختيار موقع التوصيل من الخريطة قبل المتابعة',
-                    'خطأ',
+                    '@lang("Please select your delivery location from the map before continuing")',
+                    '@lang("Error")',
                     {
                         timeOut: 5000,
                         closeButton: true,
@@ -1507,7 +1336,7 @@
                     }
                 );
             } else {
-                alert('يرجى اختيار موقع التوصيل من الخريطة قبل المتابعة');
+                alert('@lang("Please select your delivery location from the map before continuing")');
             }
 
             // Highlight the map button
@@ -1519,22 +1348,13 @@
             return false;
         }
 
-        // ✅ STEP 2: Fetch fresh CSRF token from server before submission
-        e.preventDefault(); // Prevent default submission
+        // Fetch fresh CSRF token from server before submission
+        e.preventDefault();
 
         console.log('🔄 Fetching fresh CSRF token from server...');
 
         $.get(mainurl + '/csrf-token', function(response) {
             const freshToken = response.token;
-            const currentMetaToken = $('meta[name="csrf-token"]').attr('content');
-            const currentFormToken = $form.find('input[name="_token"]').val();
-
-            console.log('🔐 CSRF Token Refresh', {
-                fresh_token: freshToken,
-                old_meta_token: currentMetaToken,
-                old_form_token: currentFormToken,
-                tokens_changed: freshToken !== currentFormToken
-            });
 
             // Update both meta tag and form token with fresh token
             $('meta[name="csrf-token"]').attr('content', freshToken);
@@ -1546,13 +1366,12 @@
             $form.off('submit').submit();
         }).fail(function() {
             console.error('❌ فشل الحصول على CSRF token جديد - المحاولة بالـ token الحالي');
-            // If fetch fails, try submitting with current token anyway
             $form.off('submit').submit();
         });
 
-        return false; // Prevent default until we get fresh token
+        return false;
     });
 
-    console.log('✅ Google Maps Checkout Integration - Fully Loaded');
+    console.log('✅ Location Picker Checkout Integration - Loaded');
     </script>
 @endsection

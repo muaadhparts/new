@@ -25,6 +25,11 @@ Route::get('/test-livewire', function () {
     return view('test-livewire');
 });
 
+// Test Location Picker Modal
+Route::get('/test-location-picker', function () {
+    return view('test.location-picker-demo');
+});
+
 // Search API Routes (AJAX-based)
 Route::prefix('api/search')->group(function () {
     Route::get('/part', [SearchApiController::class, 'searchPart'])->name('api.search.part');
