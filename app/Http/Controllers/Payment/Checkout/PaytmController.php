@@ -14,6 +14,7 @@ use App\Models\Country;
 use App\Models\Reward;
 use App\Models\State;
 use App\Traits\HandlesVendorCheckout;
+use App\Traits\SavesCustomerShippingChoice;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
@@ -22,7 +23,7 @@ use OrderHelper;
 
 class PaytmController extends CheckoutBaseControlller
 {
-    use Paytm, HandlesVendorCheckout;
+    use Paytm, HandlesVendorCheckout, SavesCustomerShippingChoice;
 
     public function store(Request $request)
     {

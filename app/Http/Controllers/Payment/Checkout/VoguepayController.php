@@ -11,6 +11,7 @@ use App\Models\Country;
 use App\Models\Reward;
 use App\Models\State;
 use App\Traits\HandlesVendorCheckout;
+use App\Traits\SavesCustomerShippingChoice;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Session;
@@ -19,7 +20,7 @@ use Illuminate\Support\Str;
 
 class VoguepayController extends CheckoutBaseControlller
 {
-    use HandlesVendorCheckout;
+    use HandlesVendorCheckout, SavesCustomerShippingChoice;
 
     public function store(Request $request)
     {

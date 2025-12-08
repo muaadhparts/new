@@ -31,6 +31,7 @@ use App\Models\Country;
 use App\Models\Reward;
 use App\Models\State;
 use App\Traits\HandlesVendorCheckout;
+use App\Traits\SavesCustomerShippingChoice;
 
 use Illuminate\Http\Request;
 use Illuminate\Routing\Route;
@@ -42,7 +43,7 @@ use Omnipay\Omnipay;
 
 class PaypalController extends CheckoutBaseControlller
 {
-    use HandlesVendorCheckout;
+    use HandlesVendorCheckout, SavesCustomerShippingChoice;
     public $_api_context;
     public $gateway;
     public function __construct()

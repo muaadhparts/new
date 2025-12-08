@@ -23,6 +23,7 @@ use App\Models\PaymentGateway;
 use App\Models\Reward;
 use App\Models\State;
 use App\Traits\HandlesVendorCheckout;
+use App\Traits\SavesCustomerShippingChoice;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Contracts\View\View;
@@ -37,7 +38,7 @@ use MyFatoorah\Library\API\Payment\MyFatoorahPaymentStatus;
 use Exception;
 
 class MyFatoorahController extends CheckoutBaseControlller {
-    use HandlesVendorCheckout;
+    use HandlesVendorCheckout, SavesCustomerShippingChoice;
 
     /**
      * @var array

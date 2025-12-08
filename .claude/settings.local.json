@@ -28,7 +28,9 @@
       "Bash(echo:*)",
       "Bash(composer show:*)",
       "WebFetch(domain:new.test)",
-      "Bash(composer dump-autoload:*)"
+      "Bash(composer dump-autoload:*)",
+      "Bash(if exist check_shipping.php del check_shipping.php)",
+      "Bash(if exist update_payment_controllers.php del update_payment_controllers.php)"
     ],
     "deny": [],
     "ask": []

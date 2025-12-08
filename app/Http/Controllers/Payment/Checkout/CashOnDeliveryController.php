@@ -37,6 +37,7 @@ use App\Models\Reward;
 use App\Models\State;
 use App\Traits\CreatesTryotoShipments;
 use App\Traits\HandlesVendorCheckout;
+use App\Traits\SavesCustomerShippingChoice;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
@@ -44,7 +45,7 @@ use Illuminate\Support\Str;
 
 class CashOnDeliveryController extends CheckoutBaseControlller
 {
-    use CreatesTryotoShipments, HandlesVendorCheckout;
+    use CreatesTryotoShipments, HandlesVendorCheckout, SavesCustomerShippingChoice;
 
     /**
      * Process COD payment for single vendor or complete cart
@@ -206,6 +207,9 @@ class CashOnDeliveryController extends CheckoutBaseControlller
 
         // ✅ إعادة تعيين قيمة shipping الأصلية (shipto/pickup) للعرض في الفاتورة
         $input['shipping'] = $originalShippingMethod;
+
+        // ✅ حفظ بيانات شركة الشحن المختارة من العميل
+        $input['customer_shipping_choice'] = $this->extractCustomerShippingChoice($steps['step2'], $vendorId, $isVendorCheckout);
 
         $order = new Order;
 

@@ -13,6 +13,7 @@ use App\Models\Country;
 use App\Models\Reward;
 use App\Models\State;
 use App\Traits\HandlesVendorCheckout;
+use App\Traits\SavesCustomerShippingChoice;
 use Illuminate\Http\Request;
 use Session;
 use OrderHelper;
@@ -22,7 +23,7 @@ use Illuminate\Support\Str;
 
 class MercadopagoController extends CheckoutBaseControlller
 {
-    use HandlesVendorCheckout;
+    use HandlesVendorCheckout, SavesCustomerShippingChoice;
     public function store(Request $request)
     {
         // Get vendor checkout data

@@ -21,7 +21,7 @@ use Illuminate\Support\Str;
 
 class MollieController extends CheckoutBaseControlller
 {
-    use HandlesVendorCheckout;
+    use HandlesVendorCheckout, SavesCustomerShippingChoice;
     public function store(Request $request)
     {
         // Get vendor checkout data

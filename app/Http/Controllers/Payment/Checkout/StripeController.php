@@ -32,7 +32,7 @@ use Str;
 
 class StripeController extends CheckoutBaseControlller
 {
-    use HandlesVendorCheckout;
+    use HandlesVendorCheckout, SavesCustomerShippingChoice;
     public function __construct()
     {
         parent::__construct();

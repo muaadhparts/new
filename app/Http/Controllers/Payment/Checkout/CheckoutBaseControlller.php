@@ -134,7 +134,9 @@ class CheckoutBaseControlller extends Controller
         $input['shipping'] = $originalShippingMethod;
 
         // ✅ حفظ بيانات شركة الشحن المختارة من العميل (Tryoto وغيرها)
-        $input['customer_shipping_choice'] = $this->extractCustomerShippingChoice($input);
+        // نمرر step2 من الجلسة
+        $step2 = Session::get('step2', []);
+        $input['customer_shipping_choice'] = $this->extractCustomerShippingChoice($step2);
 
         return [
             'input' => $input,
@@ -143,25 +145,43 @@ class CheckoutBaseControlller extends Controller
     }
 
     /**
-     * Extract customer's shipping choice data from input
+     * Extract customer's shipping choice data from step2
      * Parses Tryoto format: "deliveryOptionId#companyName#price"
      *
-     * @param array $input
+     * @param array $step2Data Step2 session data
+     * @param int|null $vendorId Vendor ID for vendor-specific checkout
+     * @param bool $isVendorCheckout Whether this is vendor-specific checkout
      * @return string JSON encoded shipping choices per vendor
      */
-    protected function extractCustomerShippingChoice($input)
+    protected function extractCustomerShippingChoice($step2Data, $vendorId = null, $isVendorCheckout = false)
     {
         $choices = [];
-        $step2 = Session::get('step2', []);
 
-        // Get shipping selections from step2 session or input
-        $shippingSelections = $step2['shipping'] ?? $input['shipping'] ?? [];
+        // Get shipping selections from step2 data
+        $shippingSelections = $step2Data['shipping'] ?? [];
 
-        if (!is_array($shippingSelections)) {
-            return json_encode($choices);
+        // For vendor checkout, the shipping might be stored directly
+        if ($isVendorCheckout && $vendorId) {
+            // Check if shipping is stored as vendor_id => value
+            if (isset($shippingSelections[$vendorId])) {
+                $shippingValue = $shippingSelections[$vendorId];
+            } elseif (!is_array($shippingSelections)) {
+                // Shipping value stored directly
+                $shippingValue = $shippingSelections;
+                $shippingSelections = [$vendorId => $shippingValue];
+            }
         }
 
-        foreach ($shippingSelections as $vendorId => $shippingValue) {
+        if (!is_array($shippingSelections)) {
+            // If single value, try to use it with vendorId
+            if ($vendorId && !empty($shippingSelections)) {
+                $shippingSelections = [$vendorId => $shippingSelections];
+            } else {
+                return json_encode($choices);
+            }
+        }
+
+        foreach ($shippingSelections as $vid => $shippingValue) {
             if (empty($shippingValue)) continue;
 
             // Check if it's Tryoto format: "deliveryOptionId#companyName#price"
@@ -169,7 +189,7 @@ class CheckoutBaseControlller extends Controller
                 $parts = explode('#', $shippingValue);
 
                 if (count($parts) >= 3) {
-                    $choices[$vendorId] = [
+                    $choices[$vid] = [
                         'provider' => 'tryoto',
                         'delivery_option_id' => $parts[0],
                         'company_name' => $parts[1],
@@ -182,7 +202,7 @@ class CheckoutBaseControlller extends Controller
                 $shipping = \DB::table('shippings')->find($shippingValue);
 
                 if ($shipping) {
-                    $choices[$vendorId] = [
+                    $choices[$vid] = [
                         'provider' => $shipping->provider ?? 'manual',
                         'shipping_id' => (int) $shippingValue,
                         'title' => $shipping->title ?? '',
@@ -193,6 +213,6 @@ class CheckoutBaseControlller extends Controller
             }
         }
 
-        return json_encode($choices);
+        return !empty($choices) ? json_encode($choices) : null;
     }
 }
