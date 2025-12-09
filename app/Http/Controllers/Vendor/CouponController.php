@@ -50,7 +50,6 @@ class CouponController extends VendorBaseController
 
     public function index()
     {
-        // جلب كوبونات التاجر الحالي
         $datas = Coupon::where('user_id', Auth::user()->id)->latest('id')->get();
         return view('vendor.coupon.index', compact('datas'));
     }
@@ -189,12 +188,12 @@ class CouponController extends VendorBaseController
         $userId = Auth::user()->id;
 
         // جلب معرفات المنتجات الخاصة بالتاجر
-        $merchantProducts = \App\Models\MerchantProduct::where('user_id', $userId)
+        $merchantProductIds = \App\Models\MerchantProduct::where('user_id', $userId)
             ->where('status', 1)
             ->pluck('product_id');
 
-        // جلب الفئات بناءً على منتجات التاجر
-        $products = \App\Models\Product::whereIn('id', $merchantProducts);
+        // جلب المنتجات كـ Collection
+        $products = \App\Models\Product::whereIn('id', $merchantProductIds)->get();
 
         if ($type == 'category') {
             $categoryIds = $products->pluck('category_id')->unique()->filter();

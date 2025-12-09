@@ -15,12 +15,22 @@ class Vendor
      */
     public function handle($request, Closure $next)
     {
-       
-        if (Auth::check()) {
-            if (Auth::user()->IsVendor()){
-                return $next($request);
+        // التحقق من تسجيل الدخول أولاً
+        if (!Auth::check()) {
+            if ($request->expectsJson()) {
+                return response()->json(['message' => 'Unauthenticated.'], 401);
             }
+            return redirect()->route('user.login');
         }
-        return redirect()->back();
+
+        // التحقق من أن المستخدم تاجر
+        if (!Auth::user()->IsVendor()) {
+            if ($request->expectsJson()) {
+                return response()->json(['message' => 'Unauthorized. Vendor access required.'], 403);
+            }
+            return redirect()->route('user.login')->with('error', __('You must be a vendor to access this page.'));
+        }
+
+        return $next($request);
     }
 }
