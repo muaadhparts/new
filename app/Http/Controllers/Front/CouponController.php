@@ -19,7 +19,28 @@ class CouponController extends FrontBaseController
         $fnd = Coupon::where('code', '=', $code)->get()->count();
         $coupon = Coupon::where('code', '=', $code)->first();
 
+        if (!$coupon) {
+            return response()->json(0);
+        }
+
         $cart = Session::get('cart');
+
+        // التحقق من أن الكوبون الخاص بتاجر معين يُطبق فقط على منتجات ذلك التاجر
+        if ($coupon->user_id) {
+            $hasVendorProducts = false;
+            foreach ($cart->items as $item) {
+                $itemVendorId = $item['user_id'] ?? ($item['item']['user_id'] ?? null);
+                if ($itemVendorId == $coupon->user_id) {
+                    $hasVendorProducts = true;
+                    break;
+                }
+            }
+            if (!$hasVendorProducts) {
+                // الكوبون خاص بتاجر معين لكن السلة لا تحتوي على منتجات من هذا التاجر
+                return response()->json(0);
+            }
+        }
+
         foreach ($cart->items as $item) {
             $product = Product::findOrFail($item['item']['id']);
 
@@ -136,9 +157,34 @@ class CouponController extends FrontBaseController
         }
 
         $cart = Session::get('cart');
+
+        // التحقق من أن الكوبون الخاص بتاجر معين يُطبق فقط على منتجات ذلك التاجر
+        if ($coupon->user_id) {
+            $hasVendorProducts = false;
+            foreach ($cart->items as $item) {
+                $itemVendorId = $item['user_id'] ?? ($item['item']['user_id'] ?? null);
+                if ($itemVendorId == $coupon->user_id) {
+                    $hasVendorProducts = true;
+                    break;
+                }
+            }
+            if (!$hasVendorProducts) {
+                // الكوبون خاص بتاجر معين لكن السلة لا تحتوي على منتجات من هذا التاجر
+                return response()->json(0);
+            }
+        }
+
         $discount_items = [];
         foreach ($cart->items as $key => $item) {
             $product = Product::findOrFail($item['item']['id']);
+
+            // إذا كان الكوبون خاص بتاجر معين، تحقق من أن المنتج يخص هذا التاجر
+            if ($coupon->user_id) {
+                $itemVendorId = $item['user_id'] ?? ($item['item']['user_id'] ?? null);
+                if ($itemVendorId != $coupon->user_id) {
+                    continue; // تخطي المنتجات التي لا تخص التاجر
+                }
+            }
 
             if ($coupon->coupon_type == 'category') {
                 if ($product->category_id == $coupon->category) {

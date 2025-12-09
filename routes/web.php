@@ -1380,6 +1380,20 @@ Route::group(['middleware' => 'maintenance'], function () {
 
             //------------ VENDOR SHIPMENTS SECTION ENDS------------
 
+            //------------ VENDOR COUPON SECTION ------------
+
+            Route::get('/coupon/datatables', 'Vendor\CouponController@datatables')->name('vendor-coupon-datatables');
+            Route::get('/coupon', 'Vendor\CouponController@index')->name('vendor-coupon-index');
+            Route::get('/coupon/create', 'Vendor\CouponController@create')->name('vendor-coupon-create');
+            Route::post('/coupon/create', 'Vendor\CouponController@store')->name('vendor-coupon-store');
+            Route::get('/coupon/edit/{id}', 'Vendor\CouponController@edit')->name('vendor-coupon-edit');
+            Route::post('/coupon/edit/{id}', 'Vendor\CouponController@update')->name('vendor-coupon-update');
+            Route::delete('/coupon/delete/{id}', 'Vendor\CouponController@destroy')->name('vendor-coupon-delete');
+            Route::get('/coupon/status/{id1}/{id2}', 'Vendor\CouponController@status')->name('vendor-coupon-status');
+            Route::get('/coupon/get-categories', 'Vendor\CouponController@getCategories')->name('vendor-coupon-get-categories');
+
+            //------------ VENDOR COUPON SECTION ENDS------------
+
             // -------------------------- Vendor Income ------------------------------------//
             Route::get('earning/datatables', "Vendor\IncomeController@datatables")->name('vendor.income.datatables');
             Route::get('total/earning', "Vendor\IncomeController@index")->name('vendor.income');
