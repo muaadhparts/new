@@ -1993,6 +1993,7 @@ Route::group(['middleware' => 'maintenance'], function () {
 
 
     Route::get('/carts/coupon/check', 'Front\CouponController@couponcheck')->name('front.coupon.check');
+    Route::post('/carts/coupon/remove', 'Front\CouponController@removeCoupon')->name('front.coupon.remove');
 
     // CSRF Token refresh endpoint
     Route::get('/csrf-token', function() {
