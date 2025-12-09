@@ -254,37 +254,27 @@
             <input type="hidden" id="input_tax_type" name="tax_type" value="">
             <input type="hidden" id="original_tax" value="{{ $step1->tax_rate ?? 0 }}">
 
-            {{-- ✅ UNIFIED: Final Total (Single Source of Truth from Step2 Session) --}}
+            {{-- ✅ UNIFIED: Final Total (from Step2 Session - includes coupon) --}}
             @php
-                // Use final_total if available, fallback to total for backward compatibility
+                // final_total already has coupon deducted (calculated in CheckoutController)
                 $finalTotal = $step2->final_total ?? $step2->total ?? 0;
-                // السعر الأصلي بدون أي كوبون - يبقى ثابتاً دائماً
-                $originalTotalBeforeCoupon = $finalTotal;
+                // subtotal_before_coupon = total without coupon deduction
+                $subtotalBeforeCoupon = $step2->subtotal_before_coupon ?? $finalTotal;
+                // Coupon data from step2
+                $couponAmount = $step2->coupon_amount ?? 0;
+                $couponCode = $step2->coupon_code ?? '';
+                $couponId = $step2->coupon_id ?? '';
             @endphp
             <input type="hidden" name="total" id="grandtotal" value="{{ round($finalTotal * $curr->value, 2) }}">
             <input type="hidden" id="tgrandtotal" value="{{ round($finalTotal, 2) }}">
             <input type="hidden" id="ttotal" value="{{ round($finalTotal, 2) }}">
-            {{-- ✅ السعر الأصلي الثابت - لا يتغير أبداً --}}
-            <input type="hidden" id="original_total_before_coupon" value="{{ round($originalTotalBeforeCoupon, 2) }}">
+            {{-- ✅ السعر قبل الكوبون - يستخدم لإعادة الحساب عند تغيير الكوبون --}}
+            <input type="hidden" id="subtotal-before-coupon-form" value="{{ round($subtotalBeforeCoupon, 2) }}">
 
-            {{-- ✅ Coupon Information (if applied) - Supports both regular and vendor checkout --}}
-            @php
-                $isVendorCheckout = $is_vendor_checkout ?? false;
-                $vendorId = $vendor_id ?? Session::get('checkout_vendor_id');
-
-                if ($isVendorCheckout && $vendorId) {
-                    $sessionCouponCode = Session::get('coupon_code_vendor_' . $vendorId, '');
-                    $sessionCouponDiscount = Session::get('coupon_vendor_' . $vendorId, '');
-                    $sessionCouponId = Session::get('coupon_id_vendor_' . $vendorId, '');
-                } else {
-                    $sessionCouponCode = Session::get('coupon_code', '');
-                    $sessionCouponDiscount = Session::get('coupon', '');
-                    $sessionCouponId = Session::get('coupon_id', '');
-                }
-            @endphp
-            <input type="hidden" name="coupon_code" id="coupon_code" value="{{ $sessionCouponCode }}">
-            <input type="hidden" name="coupon_discount" id="coupon_discount" value="{{ $sessionCouponDiscount }}">
-            <input type="hidden" name="coupon_id" id="coupon_id" value="{{ $sessionCouponId }}">
+            {{-- ✅ Coupon Information (from Step2 Session) --}}
+            <input type="hidden" name="coupon_code" id="coupon_code" value="{{ $couponCode }}">
+            <input type="hidden" name="coupon_discount" id="coupon_discount" value="{{ $couponAmount }}">
+            <input type="hidden" name="coupon_id" id="coupon_id" value="{{ $couponId }}">
 
             {{-- ✅ User Information --}}
             <input type="hidden" name="user_id" id="user_id"
@@ -338,134 +328,147 @@ $isState = isset($step1->customer_state) ? $step1->customer_state : 0;
 
 
 <script type="text/javascript">
-    var coup = 0;
-    var pos = {{ $gs-> currency_format }};
-    // ✅ STEP 3: READ-ONLY MODE - No calculations needed!
-    // All values are displayed from session via checkout-price-summary component
-    // No JavaScript calculations required - everything comes from step2 session
+    /**
+     * ============================================================================
+     * STEP 3: COUPON MANAGEMENT
+     * ============================================================================
+     *
+     * Data Flow:
+     * - subtotal_before_coupon: Total BEFORE any coupon (products + tax + shipping + packing)
+     * - final_total: Total AFTER coupon deduction
+     *
+     * When applying coupon: newTotal = subtotalBeforeCoupon - discountAmount
+     * When removing coupon: newTotal = subtotalBeforeCoupon
+     *
+     * ============================================================================
+     */
+
+    var pos = {{ $gs->currency_format }};
+    var currencySign = '{{ $curr->sign }}';
+
+    // ✅ FIXED: subtotal_before_coupon is the base for ALL coupon calculations
+    var SUBTOTAL_BEFORE_COUPON = parseFloat($('#subtotal-before-coupon').val()) ||
+                                  parseFloat($('#subtotal-before-coupon-form').val()) ||
+                                  parseFloat($('#ttotal').val()) || 0;
+
+    console.log('📍 Step3 Initialized:', {
+        subtotalBeforeCoupon: SUBTOTAL_BEFORE_COUPON,
+        currentTotal: $('#ttotal').val(),
+        hasCoupon: $('#has-coupon').val() === '1'
+    });
+
+    // Helper: Format price with currency
+    function formatPrice(amount) {
+        var formatted = parseFloat(amount).toFixed(2);
+        return pos == 0 ? currencySign + formatted : formatted + currencySign;
+    }
+
+    // Helper: Update all total displays
+    function updateTotalDisplay(total) {
+        var formatted = parseFloat(total).toFixed(2);
+        $('#grandtotal').val(formatted);
+        $('#tgrandtotal').val(formatted);
+        $('#ttotal').val(formatted);
+        $('.total-amount, #final-total-display').html(formatPrice(formatted));
+    }
 
     $(document).ready(function () {
-        console.log('📍 Step3: عرض الإجمالي النهائي من session');
-        console.log('✅ Final Total:', $('#ttotal').val());
-
         // Populate tax hidden fields from session for order submission
         @if(isset($step1) && isset($step1->tax_rate))
-            $('#input_tax').val('{{ $step1->tax_amount }}');
-            $('#input_tax_type').val('{{ $step1->tax_rate }}');
-            console.log('✅ Tax من session:', {
-                rate: '{{ $step1->tax_rate }}%',
-                amount: '{{ $step1->tax_amount }}'
-            });
+            $('#input_tax').val('{{ $step1->tax_amount ?? 0 }}');
+            $('#input_tax_type').val('{{ $step1->tax_rate ?? 0 }}');
         @endif
     });
 
-
-
-    // ✅ السعر الأصلي الثابت - يُحفظ مرة واحدة عند تحميل الصفحة
-    var ORIGINAL_TOTAL = parseFloat($('#original_total_before_coupon').val()) || parseFloat($('#ttotal').val()) || 0;
-    console.log('📍 Original Total (fixed):', ORIGINAL_TOTAL);
-
-    // ✅ STEP 3: Coupon handling - استخدام السعر الأصلي الثابت دائماً
+    // ============================================================================
+    // APPLY COUPON
+    // ============================================================================
     $(document).on("click", "#check_coupon", function (e) {
         e.preventDefault();
 
-        var val = $("#code").val();
-        var ship = 0;
+        var code = $("#code").val();
 
-        // التحقق من أن الكود غير فارغ
-        if (!val || val.trim() === '') {
+        // Validate: code not empty
+        if (!code || code.trim() === '') {
             toastr.error('{{ __('Please enter a coupon code') }}');
             return false;
         }
 
-        // ✅ التحقق من وجود كوبون مطبق مسبقاً
+        // Validate: no existing coupon
         var existingCoupon = $('#coupon_code').val();
         if (existingCoupon && existingCoupon.trim() !== '') {
             toastr.warning('{{ __('Please remove the current coupon first') }}');
             return false;
         }
 
-        console.log('Applying coupon:', { code: val, originalTotal: ORIGINAL_TOTAL });
+        console.log('Applying coupon:', { code: code, subtotalBeforeCoupon: SUBTOTAL_BEFORE_COUPON });
 
         $.ajax({
             type: "GET",
             url: mainurl + "/carts/coupon/check",
             data: {
-                code: val.trim(),
-                total: ORIGINAL_TOTAL, // ✅ دائماً نرسل السعر الأصلي الثابت
-                shipping_cost: ship
+                code: code.trim(),
+                total: SUBTOTAL_BEFORE_COUPON // Always use subtotal before coupon
             },
-            success: function (data) {
-                console.log('Coupon response:', data);
-                if (data == 0) {
+            success: function (response) {
+                console.log('Coupon response:', response);
+
+                if (response == 0) {
                     toastr.error('{{ __('Coupon not found') }}');
-                    $("#code").val("");
-                } else if (data == 2) {
+                } else if (response == 2) {
                     toastr.error('{{ __('Coupon already have been taken') }}');
-                    $("#code").val("");
-                } else if (data == 3) {
+                } else if (response == 3) {
                     toastr.error('{{ __('Discount amount exceeds eligible total') }}');
-                    $("#code").val("");
                 } else {
-                    // ✅ إظهار صف الكوبون المطبق
-                    $('#coupon-applied-section').removeClass('d-none');
-                    $(".discount-bar").removeClass('d-none');
+                    // Success - response is array [formattedTotal, code, discountAmount, couponId, percentage, 1, rawTotal]
+                    var discountAmount = parseFloat(response[2]);
+                    var newTotal = SUBTOTAL_BEFORE_COUPON - discountAmount;
+                    var couponCode = response[1];
+                    var couponId = response[3];
+                    var percentage = response[4];
 
-                    // ✅ تحديث عرض الخصم
-                    var discountAmount = parseFloat(data[2]).toFixed(2);
-                    if (pos == 0) {
-                        $('#discount-amount-display').html('-{{ $curr->sign }}' + discountAmount);
-                        $('#discount').html('-{{ $curr->sign }}' + discountAmount);
-                    } else {
-                        $('#discount-amount-display').html('-' + discountAmount + '{{ $curr->sign }}');
-                        $('#discount').html('-' + discountAmount + '{{ $curr->sign }}');
-                    }
+                    // Update coupon display
+                    $('#coupon-row').removeClass('d-none');
+                    $('#coupon-code-display').text(couponCode);
+                    $('#coupon-amount-display').html('-' + formatPrice(discountAmount));
+                    $('#coupon-percentage-display').html(percentage ? '(' + percentage + ')' : '');
 
-                    // ✅ تحديث كود الكوبون
-                    $('#applied-coupon-code').text(data[1]);
+                    // Update hidden fields
+                    $('#coupon_code').val(couponCode);
+                    $('#coupon_discount').val(discountAmount);
+                    $('#coupon_id').val(couponId);
+                    $('#current-coupon-amount').val(discountAmount);
+                    $('#current-coupon-code').val(couponCode);
+                    $('#has-coupon').val('1');
 
-                    // ✅ حساب السعر النهائي بشكل صحيح من السعر الأصلي الثابت
-                    var newTotal = (ORIGINAL_TOTAL - parseFloat(data[2])).toFixed(2);
-
-                    // ✅ حفظ بيانات الكوبون في hidden fields
-                    $("#coupon_id").val(data[3]);
-                    $('#grandtotal').val(newTotal);
-                    $('#tgrandtotal').val(newTotal);
-                    $('#ttotal').val(newTotal);
-                    $('#coupon_code').val(data[1]);
-                    $('#coupon_discount').val(data[2]);
-                    $('#current-coupon-amount').val(data[2]);
-                    $('#current-coupon-code').val(data[1]);
-
-                    if (data[4] != 0) {
-                        $('.dpercent').html('(' + data[4] + ')');
-                    } else {
-                        $('.dpercent').html('');
-                    }
-
-                    // ✅ تحديث العرض النهائي
-                    if (pos == 0) {
-                        $('.total-amount').html('{{ $curr->sign }}' + newTotal);
-                        $('#final-cost, #total-cost').html('{{ $curr->sign }}' + newTotal);
-                    } else {
-                        $('.total-amount').html(newTotal + '{{ $curr->sign }}');
-                        $('#final-cost, #total-cost').html(newTotal + '{{ $curr->sign }}');
-                    }
+                    // Update total display
+                    updateTotalDisplay(newTotal);
 
                     toastr.success(lang.coupon_found);
-                    $("#code").val("");
                 }
+
+                $("#code").val("");
+            },
+            error: function (xhr) {
+                console.error('Coupon error:', xhr);
+                toastr.error('{{ __('Error applying coupon') }}');
+                $("#code").val("");
             }
         });
+
         return false;
     });
 
-    // ✅ Remove Coupon Handler - استعادة السعر الأصلي الثابت
-    $(document).on("click", "#remove-coupon-btn, .remove-coupon-btn", function (e) {
+    // ============================================================================
+    // REMOVE COUPON
+    // ============================================================================
+    $(document).on("click", ".remove-coupon-btn", function (e) {
         e.preventDefault();
 
-        var vendorId = $('#coupon-vendor-id').val();
+        var vendorId = $('#checkout-vendor-id').val();
         var isVendorCheckout = $('#is-vendor-checkout').val() === '1';
+
+        console.log('Removing coupon:', { vendorId: vendorId, isVendorCheckout: isVendorCheckout });
 
         $.ajax({
             type: "POST",
@@ -479,33 +482,19 @@ $isState = isset($step1->customer_state) ? $step1->customer_state : 0;
                 console.log('Remove coupon response:', response);
 
                 if (response.success) {
-                    // ✅ إخفاء صف الكوبون
-                    $('#coupon-applied-section').addClass('d-none');
-                    $('.discount-bar').addClass('d-none');
-                    $('#discount-bar-dynamic').addClass('d-none');
-                    $('.dpercent').html('');
+                    // Hide coupon row
+                    $('#coupon-row').addClass('d-none');
 
-                    // ✅ مسح بيانات الكوبون من hidden fields
+                    // Clear hidden fields
                     $('#coupon_code').val('');
                     $('#coupon_discount').val('');
                     $('#coupon_id').val('');
                     $('#current-coupon-amount').val('0');
                     $('#current-coupon-code').val('');
+                    $('#has-coupon').val('0');
 
-                    // ✅ استعادة السعر الأصلي الثابت من المتغير ORIGINAL_TOTAL
-                    var restoredTotal = ORIGINAL_TOTAL.toFixed(2);
-
-                    $('#grandtotal').val(restoredTotal);
-                    $('#tgrandtotal').val(restoredTotal);
-                    $('#ttotal').val(restoredTotal);
-
-                    if (pos == 0) {
-                        $('.total-amount').html('{{ $curr->sign }}' + restoredTotal);
-                        $('#final-cost, #total-cost').html('{{ $curr->sign }}' + restoredTotal);
-                    } else {
-                        $('.total-amount').html(restoredTotal + '{{ $curr->sign }}');
-                        $('#final-cost, #total-cost').html(restoredTotal + '{{ $curr->sign }}');
-                    }
+                    // Restore original total (subtotal before coupon)
+                    updateTotalDisplay(SUBTOTAL_BEFORE_COUPON);
 
                     toastr.success(response.message);
                 } else {

@@ -728,6 +728,12 @@
 
         let original_tax = 0;
 
+        // ✅ Helper function for price formatting in Step 2 (defined early for use in tax_submit)
+        function formatPriceStep2(amount) {
+            var formatted = parseFloat(amount).toFixed(2);
+            return pos == 0 ? '{{ $curr->sign }}' + formatted : formatted + '{{ $curr->sign }}';
+        }
+
         $(document).ready(function() {
             console.log('📍 Step2: تحميل الصفحة');
 
@@ -824,16 +830,30 @@
                     // tgrandtotal should remain as products only (without tax)
                     // data[0] = total with tax
                     // data[1] = tax rate (e.g., 15)
+                    // data[11] = tax amount
+                    // data[12] = tax type
 
                     // Update tax rate display
-                    $('#original_tax').val(data[1]);
-                    $('.tax_show').removeClass('d-none');
-                    $('#input_tax').val(data[11]);
+                    var taxRate = parseFloat(data[1]) || 0;
+                    var taxAmount = parseFloat(data[11]) || 0;
+
+                    $('#original_tax').val(taxRate);
+                    $('#tax_amount_value').val(taxAmount); // ✅ Update tax amount hidden field
+                    $('#input_tax').val(taxAmount);
                     $('#input_tax_type').val(data[12]);
-                    $('.original_tax').html(parseFloat(data[1]) + "%");
+
+                    // ✅ Update Tax in Summary
+                    if (taxRate > 0) {
+                        $('.tax_show, #tax-row').removeClass('d-none');
+                        $('.original_tax').html('(' + taxRate + '%)');
+                        $('.tax_amount_view').html(formatPriceStep2(taxAmount));
+                    } else {
+                        $('.tax_show, #tax-row').addClass('d-none');
+                    }
+
+                    console.log('💰 Tax updated:', { rate: taxRate + '%', amount: taxAmount });
 
                     // ✅ Use updateFinalTotal() for consistent calculation
-                    // Don't manually calculate here - let the centralized function handle it
                     updateFinalTotal();
 
                     $('.gocover').hide();
@@ -899,22 +919,24 @@
 
             freeShippingDiscount = originalShipping - mship;
 
-            // ✅ تحديث العرض
+            // ✅ تحديث العرض في Summary
+            var currSign = '{{ $curr->sign }}';
+            var currFormat = {{ $gs->currency_format }};
+
             if (freeShippingDiscount > 0) {
                 // عرض السعر الأصلي مشطوب + مجاني
-                $('.shipping_cost_view').html(
-                    '<span class="text-decoration-line-through text-muted">{{ $curr->sign }}' + originalShipping.toFixed(2) + '</span> ' +
-                    '<span class="text-success fw-bold"><i class="fas fa-gift"></i> @lang("Free!")</span>'
-                );
+                var freeHtml = '<span class="text-decoration-line-through text-muted">' + formatPriceStep2(originalShipping) + '</span> ' +
+                    '<span class="text-success fw-bold"><i class="fas fa-gift"></i> @lang("Free!")</span>';
+                $('.shipping_cost_view, #shipping-cost-display').html(freeHtml);
                 // إظهار صف الخصم
-                $('.free-shipping-discount-row').removeClass('d-none');
-                $('.free_shipping_discount_view').html('-{{ $curr->sign }}' + freeShippingDiscount.toFixed(2));
+                $('.free-shipping-discount-row, #free-shipping-row').removeClass('d-none');
+                $('.free_shipping_discount_view, #free-shipping-discount-display').html('-' + formatPriceStep2(freeShippingDiscount));
             } else if (originalShipping > 0) {
-                $('.shipping_cost_view').html('{{ $curr->sign }}' + mship.toFixed(2));
-                $('.free-shipping-discount-row').addClass('d-none');
+                $('.shipping_cost_view, #shipping-cost-display').html(formatPriceStep2(mship));
+                $('.free-shipping-discount-row, #free-shipping-row').addClass('d-none');
             } else {
-                $('.shipping_cost_view').html('{{ $curr->sign }}0.00');
-                $('.free-shipping-discount-row').addClass('d-none');
+                $('.shipping_cost_view, #shipping-cost-display').html(formatPriceStep2(0));
+                $('.free-shipping-discount-row, #free-shipping-row').addClass('d-none');
             }
 
             console.log('🚚 Shipping - Original:', originalShipping.toFixed(2), 'Final:', mship.toFixed(2), 'Discount:', freeShippingDiscount.toFixed(2));
@@ -934,11 +956,11 @@
             mpack = 0;
             $('.packing').each(function() {
                 if ($(this).is(':checked')) {
-                    mpack += parseFloat($(this).attr('data-price'));
+                    mpack += parseFloat($(this).attr('data-price')) || 0;
                 }
             });
-            // ✅ FIXED: Update view OUTSIDE the loop
-            $('.packing_cost_view').html('{{ $curr->sign }}' + mpack);
+            // ✅ FIXED: Update view in Summary
+            $('.packing_cost_view, #packing-cost-display').html(formatPriceStep2(mpack));
             console.log('📦 Packing total:', mpack);
         }
 
@@ -977,18 +999,22 @@
 
             console.log('📊 تفاصيل الحساب:', {
                 'Products': baseTotal.toFixed(2),
-                'Tax (15%)': taxAmount.toFixed(2),
+                'Tax': taxAmount.toFixed(2),
                 'Shipping': shippingTotal.toFixed(2),
                 'Packing': packingTotal.toFixed(2),
                 '═══════════': '═══════════',
                 'TOTAL': finalTotal
             });
 
-            // Update UI
-            if (pos == 0) {
-                $('#final-cost').html('{{ $curr->sign }}' + finalTotal);
-            } else {
-                $('#final-cost').html(finalTotal + '{{ $curr->sign }}');
+            // ✅ Update Summary UI - Final Total
+            $('#final-cost, .total-amount').html(formatPriceStep2(finalTotal));
+
+            // ✅ Update Tax display in Summary
+            if (taxAmount > 0) {
+                var taxRate = parseFloat($('#original_tax').val()) || 0;
+                $('.tax_show, #tax-row').removeClass('d-none');
+                $('.original_tax').html('(' + taxRate + '%)');
+                $('.tax_amount_view').html(formatPriceStep2(taxAmount));
             }
 
             // Update hidden field

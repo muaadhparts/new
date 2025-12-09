@@ -23,6 +23,7 @@ use App\Models\PaymentGateway;
 use App\Models\Reward;
 use App\Models\State;
 use App\Traits\HandlesVendorCheckout;
+use App\Traits\SavesCustomerShippingChoice;
 use Config;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;

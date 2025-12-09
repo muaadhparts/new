@@ -547,19 +547,17 @@ class CheckoutController extends FrontBaseController
         $totalTaxAmount = array_sum(array_column($vendorTaxData, 'tax_amount'));
         $step1['total_tax_amount'] = $totalTaxAmount;
 
-        // ✅ ADD: Calculate products_total and total_with_tax for unified price display
+        // ✅ Calculate products_total and total_with_tax for unified price display
+        // IMPORTANT: products_total = السعر الأصلي بدون خصم الكوبون
+        // الكوبون يُطرح في الحساب النهائي فقط
         $oldCart = Session::get('cart');
         $cart = new Cart($oldCart);
-        $productsTotal = $cart->totalPrice;
-
-        // Apply coupon if exists
-        $coupon = Session::has('coupon') ? Session::get('coupon') : 0;
-        $productsTotal = $productsTotal - $coupon;
+        $productsTotal = $cart->totalPrice; // السعر الأصلي - لا نطرح الكوبون هنا!
 
         // Save for price summary component
-        $step1['products_total'] = $productsTotal;
+        $step1['products_total'] = $productsTotal;          // السعر الأصلي
         $step1['tax_amount'] = $totalTaxAmount;
-        $step1['total_with_tax'] = $productsTotal + $totalTaxAmount;
+        $step1['total_with_tax'] = $productsTotal + $totalTaxAmount;  // قبل الكوبون
 
         // ====================================================================
         // CLEAN SESSION - Prevent any data duplication
@@ -772,22 +770,50 @@ class CheckoutController extends FrontBaseController
         $taxRate = $step1['tax_rate'] ?? 0;
         $taxLocation = $step1['tax_location'] ?? '';
 
-        // Calculate final total: products + tax + shipping + packing
-        $finalTotal = $baseAmount + $taxAmount + $shipping_cost_total + $packing_cost_total;
+        // ✅ Get coupon data (supports both regular and vendor checkout)
+        $checkoutVendorId = Session::get('checkout_vendor_id');
+        if ($checkoutVendorId) {
+            $couponAmount = Session::get('coupon_vendor_' . $checkoutVendorId, 0);
+            $couponCode = Session::get('coupon_code_vendor_' . $checkoutVendorId, '');
+            $couponId = Session::get('coupon_id_vendor_' . $checkoutVendorId, null);
+            $couponPercentage = Session::get('coupon_percentage_vendor_' . $checkoutVendorId, '');
+        } else {
+            $couponAmount = Session::get('coupon', 0);
+            $couponCode = Session::get('coupon_code', '');
+            $couponId = Session::get('coupon_id', null);
+            $couponPercentage = Session::get('coupon_percentage', '');
+        }
+
+        // ✅ Calculate totals
+        // subtotal_before_coupon = products + tax + shipping + packing
+        $subtotalBeforeCoupon = $baseAmount + $taxAmount + $shipping_cost_total + $packing_cost_total;
+
+        // final_total = subtotal - coupon
+        $finalTotal = $subtotalBeforeCoupon - $couponAmount;
 
         // ✅ حفظ ملخص الشحن والتغليف والضريبة في step2 لاستخدامه في step3
         $step2['shipping_company'] = $shipping_name;
         $step2['shipping_cost']    = $shipping_cost_total;
-        $step2['original_shipping_cost'] = $original_shipping_cost;  // ✅ السعر قبل الخصم
-        $step2['is_free_shipping'] = $is_free_shipping;              // ✅ هل الشحن مجاني
-        $step2['free_shipping_discount'] = $free_shipping_discount;  // ✅ قيمة الخصم
+        $step2['original_shipping_cost'] = $original_shipping_cost;  // السعر قبل الخصم
+        $step2['is_free_shipping'] = $is_free_shipping;              // هل الشحن مجاني
+        $step2['free_shipping_discount'] = $free_shipping_discount;  // قيمة خصم الشحن المجاني
         $step2['packing_company']  = $packing_name;
         $step2['packing_cost']     = $packing_cost_total;
         $step2['tax_rate']         = $taxRate;
         $step2['tax_amount']       = $taxAmount;
         $step2['tax_location']     = $taxLocation;
+
+        // ✅ Coupon data saved in step2 for step3 display
+        $step2['coupon_amount']    = $couponAmount;
+        $step2['coupon_code']      = $couponCode;
+        $step2['coupon_id']        = $couponId;
+        $step2['coupon_percentage'] = $couponPercentage;
+        $step2['coupon_applied']   = $couponAmount > 0;  // Flag to prevent double subtraction
+
+        // ✅ Totals
+        $step2['subtotal_before_coupon'] = $subtotalBeforeCoupon;  // قبل طرح الكوبون
         $step2['total']            = $finalTotal;  // Backward compatibility
-        $step2['final_total']      = $finalTotal;  // ✅ Unified naming
+        $step2['final_total']      = $finalTotal;  // الإجمالي النهائي بعد كل شيء
 
         // Save shipping/packing selections for restoration on refresh/back
         $step2['saved_shipping_selections'] = $step2['shipping'] ?? [];
