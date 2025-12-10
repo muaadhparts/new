@@ -149,67 +149,126 @@
             </div>
         </div>
 
-        {{-- Categories Tab --}}
+        {{-- Categories Tab - Multi-Step Selector --}}
         <div class="muaadh-mobile-tab-pane" id="menu-categories">
-            <nav class="muaadh-mobile-categories">
-                @foreach ($categories as $category)
-                    @if ($category->subs->count() > 0)
-                        <div class="muaadh-mobile-nav-accordion">
-                            <div class="muaadh-mobile-category-header">
-                                <a href="{{ route('front.category', $category->slug) }}" class="muaadh-mobile-category-link {{ Request::segment(2) === $category->slug ? 'active' : '' }}">
-                                    @if($category->photo)
-                                        <img src="{{ asset('assets/images/categories/' . $category->photo) }}" alt="" class="muaadh-mobile-category-img">
-                                    @else
-                                        <i class="fas fa-folder"></i>
-                                    @endif
-                                    <span>{{ $category->name }}</span>
-                                </a>
-                                <button class="muaadh-accordion-toggle-btn">
-                                    <i class="fas fa-plus"></i>
-                                    <i class="fas fa-minus"></i>
-                                </button>
-                            </div>
-                            <div class="muaadh-accordion-content">
-                                @foreach ($category->subs as $subcategory)
-                                    @if ($subcategory->childs && $subcategory->childs->count() > 0)
-                                        <div class="muaadh-mobile-nav-accordion muaadh-nested">
-                                            <div class="muaadh-mobile-category-header">
-                                                <a href="{{ route('front.category', [$category->slug, $subcategory->slug]) }}" class="muaadh-mobile-nav-subitem">
-                                                    {{ $subcategory->name }}
-                                                </a>
-                                                <button class="muaadh-accordion-toggle-btn">
-                                                    <i class="fas fa-plus"></i>
-                                                    <i class="fas fa-minus"></i>
-                                                </button>
-                                            </div>
-                                            <div class="muaadh-accordion-content">
-                                                @foreach ($subcategory->childs as $child)
-                                                    <a href="{{ route('front.category', [$category->slug, $subcategory->slug, $child->slug]) }}" class="muaadh-mobile-nav-subitem muaadh-child-item">
-                                                        {{ $child->name }}
-                                                    </a>
-                                                @endforeach
-                                            </div>
-                                        </div>
-                                    @else
-                                        <a href="{{ route('front.category', [$category->slug, $subcategory->slug]) }}" class="muaadh-mobile-nav-subitem">
-                                            {{ $subcategory->name }}
-                                        </a>
-                                    @endif
-                                @endforeach
-                            </div>
-                        </div>
-                    @else
-                        <a href="{{ route('front.category', $category->slug) }}" class="muaadh-mobile-category-link {{ Request::segment(2) === $category->slug ? 'active' : '' }}">
-                            @if($category->photo)
-                                <img src="{{ asset('assets/images/categories/' . $category->photo) }}" alt="" class="muaadh-mobile-category-img">
-                            @else
-                                <i class="fas fa-folder"></i>
-                            @endif
-                            <span>{{ $category->name }}</span>
-                        </a>
-                    @endif
-                @endforeach
-            </nav>
+            @php
+                $currentCatSlug = Request::segment(2);
+                $currentSubcatSlug = Request::segment(3);
+                $currentChildcatSlug = Request::segment(4);
+
+                $selectedCat = $categories->firstWhere('slug', $currentCatSlug);
+                $selectedSubcat = $selectedCat && $selectedCat->subs ? $selectedCat->subs->firstWhere('slug', $currentSubcatSlug) : null;
+                $selectedChildcat = $selectedSubcat && $selectedSubcat->childs ? $selectedSubcat->childs->firstWhere('slug', $currentChildcatSlug) : null;
+            @endphp
+
+            <div class="muaadh-mobile-category-selector">
+                {{-- Current Selection Breadcrumb --}}
+                @if($selectedCat)
+                <div class="muaadh-mobile-selection-breadcrumb">
+                    <span class="muaadh-selection-label">@lang('Selected'):</span>
+                    <div class="muaadh-selection-tags">
+                        <span class="muaadh-selection-tag primary">{{ $selectedCat->name }}</span>
+                        @if($selectedSubcat)
+                            <i class="fas fa-chevron-{{ app()->getLocale() == 'ar' ? 'left' : 'right' }}"></i>
+                            <span class="muaadh-selection-tag secondary">{{ $selectedSubcat->name }}</span>
+                        @endif
+                        @if($selectedChildcat)
+                            <i class="fas fa-chevron-{{ app()->getLocale() == 'ar' ? 'left' : 'right' }}"></i>
+                            <span class="muaadh-selection-tag info">{{ $selectedChildcat->name }}</span>
+                        @endif
+                    </div>
+                    <a href="{{ route('front.category') }}" class="muaadh-clear-selection">
+                        <i class="fas fa-times"></i>
+                    </a>
+                </div>
+                @endif
+
+                {{-- Step 1: Main Category --}}
+                <div class="muaadh-mobile-step">
+                    <label class="muaadh-mobile-step-label">
+                        <i class="fas fa-car"></i>
+                        @lang('Category')
+                    </label>
+                    <select class="muaadh-mobile-select-input" id="mobile-main-category">
+                        <option value="">-- @lang('Select Category') --</option>
+                        @foreach ($categories as $category)
+                            <option value="{{ $category->slug }}"
+                                data-has-subs="{{ $category->subs && $category->subs->count() > 0 ? '1' : '0' }}"
+                                {{ $currentCatSlug === $category->slug ? 'selected' : '' }}>
+                                {{ $category->name }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+
+                {{-- Step 2: Subcategory --}}
+                <div class="muaadh-mobile-step {{ $selectedCat && $selectedCat->subs && $selectedCat->subs->count() > 0 ? '' : 'd-none' }}" id="mobile-subcategory-step">
+                    <label class="muaadh-mobile-step-label">
+                        <i class="fas fa-cogs"></i>
+                        @lang('Model')
+                    </label>
+                    <select class="muaadh-mobile-select-input" id="mobile-subcategory">
+                        <option value="">-- @lang('Select Model') --</option>
+                        @if($selectedCat && $selectedCat->subs)
+                            @foreach ($selectedCat->subs as $subcategory)
+                                <option value="{{ $subcategory->slug }}"
+                                    data-has-childs="{{ $subcategory->childs && $subcategory->childs->count() > 0 ? '1' : '0' }}"
+                                    {{ $currentSubcatSlug === $subcategory->slug ? 'selected' : '' }}>
+                                    {{ $subcategory->name }}
+                                </option>
+                            @endforeach
+                        @endif
+                    </select>
+                </div>
+
+                {{-- Step 3: Child Category --}}
+                <div class="muaadh-mobile-step {{ $selectedSubcat && $selectedSubcat->childs && $selectedSubcat->childs->count() > 0 ? '' : 'd-none' }}" id="mobile-childcategory-step">
+                    <label class="muaadh-mobile-step-label">
+                        <i class="fas fa-puzzle-piece"></i>
+                        @lang('Part Type')
+                    </label>
+                    <select class="muaadh-mobile-select-input" id="mobile-childcategory">
+                        <option value="">-- @lang('Select Part Type') --</option>
+                        @if($selectedSubcat && $selectedSubcat->childs)
+                            @foreach ($selectedSubcat->childs as $child)
+                                <option value="{{ $child->slug }}"
+                                    {{ $currentChildcatSlug === $child->slug ? 'selected' : '' }}>
+                                    {{ $child->name }}
+                                </option>
+                            @endforeach
+                        @endif
+                    </select>
+                </div>
+
+                {{-- Go Button --}}
+                <button type="button" class="muaadh-mobile-go-btn" id="mobile-category-go-btn">
+                    <i class="fas fa-search"></i>
+                    @lang('Show Products')
+                </button>
+            </div>
+
+            {{-- Hidden JSON Data for JS --}}
+            @php
+                $mobileCategoriesJson = $categories->map(function($cat) {
+                    return [
+                        'slug' => $cat->slug,
+                        'name' => $cat->name,
+                        'subs' => $cat->subs ? $cat->subs->map(function($sub) use ($cat) {
+                            return [
+                                'slug' => $sub->slug,
+                                'name' => $sub->name,
+                                'childs' => $sub->childs ? $sub->childs->map(function($child) {
+                                    return [
+                                        'slug' => $child->slug,
+                                        'name' => $child->name,
+                                    ];
+                                })->values() : []
+                            ];
+                        })->values() : []
+                    ];
+                })->values();
+            @endphp
+            <script type="application/json" id="mobile-categories-data">{!! json_encode($mobileCategoriesJson) !!}</script>
         </div>
 
         {{-- Account Tab --}}
@@ -349,3 +408,239 @@
 
 {{-- Mobile Menu Overlay --}}
 <div class="muaadh-mobile-overlay"></div>
+
+{{-- Mobile Category Selector Styles --}}
+<style>
+    .muaadh-mobile-category-selector {
+        padding: 15px;
+    }
+    .muaadh-mobile-selection-breadcrumb {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 12px;
+        background: linear-gradient(135deg, #f0f4ff 0%, #e8f0fe 100%);
+        border-radius: 8px;
+        margin-bottom: 15px;
+        flex-wrap: wrap;
+    }
+    .muaadh-selection-label {
+        font-size: 11px;
+        color: #666;
+        font-weight: 500;
+    }
+    .muaadh-selection-tags {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        flex-wrap: wrap;
+        flex: 1;
+    }
+    .muaadh-selection-tags i {
+        font-size: 10px;
+        color: #999;
+    }
+    .muaadh-selection-tag {
+        font-size: 11px;
+        padding: 3px 8px;
+        border-radius: 4px;
+        font-weight: 500;
+    }
+    .muaadh-selection-tag.primary {
+        background: var(--primary-color, #EE1243);
+        color: #fff;
+    }
+    .muaadh-selection-tag.secondary {
+        background: #6c757d;
+        color: #fff;
+    }
+    .muaadh-selection-tag.info {
+        background: #17a2b8;
+        color: #fff;
+    }
+    .muaadh-clear-selection {
+        width: 24px;
+        height: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #fff;
+        border-radius: 50%;
+        color: #dc3545;
+        font-size: 12px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    .muaadh-mobile-step {
+        margin-bottom: 12px;
+    }
+    .muaadh-mobile-step-label {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 13px;
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 6px;
+    }
+    .muaadh-mobile-step-label i {
+        color: var(--primary-color, #EE1243);
+        font-size: 14px;
+    }
+    .muaadh-mobile-select-input {
+        width: 100%;
+        padding: 12px 15px;
+        font-size: 15px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        background-color: #fff;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23666' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 12px center;
+    }
+    [dir="rtl"] .muaadh-mobile-select-input {
+        background-position: left 12px center;
+    }
+    .muaadh-mobile-select-input:focus {
+        border-color: var(--primary-color, #EE1243);
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(238, 18, 67, 0.1);
+    }
+    .muaadh-mobile-go-btn {
+        width: 100%;
+        padding: 14px 20px;
+        font-size: 15px;
+        font-weight: 600;
+        color: #fff;
+        background: var(--primary-color, #EE1243);
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        margin-top: 15px;
+        transition: all 0.2s ease;
+    }
+    .muaadh-mobile-go-btn:hover {
+        background: var(--primary-color-dark, #d10f3a);
+        transform: translateY(-1px);
+    }
+    .muaadh-mobile-go-btn:disabled {
+        background: #ccc;
+        cursor: not-allowed;
+        transform: none;
+    }
+</style>
+
+{{-- Mobile Category Selector JavaScript --}}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const mobileBaseUrl = '{{ route("front.category") }}';
+    let mobileCategoriesData = [];
+
+    // Try to parse JSON data
+    try {
+        const jsonEl = document.getElementById('mobile-categories-data');
+        if (jsonEl) {
+            mobileCategoriesData = JSON.parse(jsonEl.textContent || '[]');
+        }
+    } catch(e) {
+        console.error('Error parsing mobile categories data:', e);
+    }
+
+    const mobileMainCat = document.getElementById('mobile-main-category');
+    const mobileSubcat = document.getElementById('mobile-subcategory');
+    const mobileChildcat = document.getElementById('mobile-childcategory');
+    const mobileSubcatStep = document.getElementById('mobile-subcategory-step');
+    const mobileChildcatStep = document.getElementById('mobile-childcategory-step');
+    const mobileGoBtn = document.getElementById('mobile-category-go-btn');
+
+    if (!mobileMainCat) return;
+
+    // Main Category Change
+    mobileMainCat.addEventListener('change', function() {
+        const selectedSlug = this.value;
+
+        // Reset subsequent selects
+        if (mobileSubcat) {
+            mobileSubcat.innerHTML = '<option value="">-- {{ __("Select Model") }} --</option>';
+        }
+        if (mobileChildcat) {
+            mobileChildcat.innerHTML = '<option value="">-- {{ __("Select Part Type") }} --</option>';
+        }
+        if (mobileSubcatStep) mobileSubcatStep.classList.add('d-none');
+        if (mobileChildcatStep) mobileChildcatStep.classList.add('d-none');
+
+        if (!selectedSlug) return;
+
+        // Find selected category
+        const selectedCat = mobileCategoriesData.find(cat => cat.slug === selectedSlug);
+
+        if (selectedCat && selectedCat.subs && selectedCat.subs.length > 0) {
+            selectedCat.subs.forEach(sub => {
+                const option = document.createElement('option');
+                option.value = sub.slug;
+                option.textContent = sub.name;
+                option.dataset.hasChilds = (sub.childs && sub.childs.length > 0) ? '1' : '0';
+                mobileSubcat.appendChild(option);
+            });
+            if (mobileSubcatStep) mobileSubcatStep.classList.remove('d-none');
+        }
+    });
+
+    // Subcategory Change
+    if (mobileSubcat) {
+        mobileSubcat.addEventListener('change', function() {
+            const catSlug = mobileMainCat.value;
+            const selectedSlug = this.value;
+
+            // Reset child select
+            if (mobileChildcat) {
+                mobileChildcat.innerHTML = '<option value="">-- {{ __("Select Part Type") }} --</option>';
+            }
+            if (mobileChildcatStep) mobileChildcatStep.classList.add('d-none');
+
+            if (!selectedSlug) return;
+
+            // Find selected category and subcategory
+            const selectedCat = mobileCategoriesData.find(cat => cat.slug === catSlug);
+            const selectedSub = selectedCat ? selectedCat.subs.find(sub => sub.slug === selectedSlug) : null;
+
+            if (selectedSub && selectedSub.childs && selectedSub.childs.length > 0) {
+                selectedSub.childs.forEach(child => {
+                    const option = document.createElement('option');
+                    option.value = child.slug;
+                    option.textContent = child.name;
+                    mobileChildcat.appendChild(option);
+                });
+                if (mobileChildcatStep) mobileChildcatStep.classList.remove('d-none');
+            }
+        });
+    }
+
+    // Go Button Click
+    if (mobileGoBtn) {
+        mobileGoBtn.addEventListener('click', function() {
+            const catSlug = mobileMainCat ? mobileMainCat.value : '';
+            const subcatSlug = mobileSubcat ? mobileSubcat.value : '';
+            const childcatSlug = mobileChildcat ? mobileChildcat.value : '';
+
+            let url = mobileBaseUrl;
+            if (catSlug) {
+                url += '/' + catSlug;
+                if (subcatSlug) {
+                    url += '/' + subcatSlug;
+                    if (childcatSlug) {
+                        url += '/' + childcatSlug;
+                    }
+                }
+            }
+            window.location.href = url;
+        });
+    }
+});
+</script>
