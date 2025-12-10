@@ -322,6 +322,66 @@
 
                         {{-- <a href="{{ route('front.category') }}" class="template-btn dark-btn">Clear Filter</a> --}}
 
+                        <!-- Vendor Filter -->
+                        @if(isset($vendors) && $vendors->count() > 0)
+                        <div class="single-product-widget">
+                            <h5 class="widget-title">@lang('Vendor')</h5>
+                            <div class="warranty-type">
+                                <ul>
+                                    @foreach ($vendors as $vendor)
+                                        <li class="gs-checkbox-wrapper">
+                                            <input type="checkbox" class="attribute-input vendor-filter"
+                                                name="vendor[]"
+                                                {{ isset($_GET['vendor']) && in_array($vendor->user_id, (array)$_GET['vendor']) ? 'checked' : '' }}
+                                                id="vendor_{{ $vendor->user_id }}"
+                                                value="{{ $vendor->user_id }}">
+                                            <label class="icon-label"
+                                                for="vendor_{{ $vendor->user_id }}">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="12"
+                                                    height="12" viewBox="0 0 12 12" fill="none">
+                                                    <path d="M10 3L4.5 8.5L2 6" stroke="#EE1243"
+                                                        stroke-width="1.6666" stroke-linecap="round"
+                                                        stroke-linejoin="round" />
+                                                </svg>
+                                            </label>
+                                            <label for="vendor_{{ $vendor->user_id }}">{{ $vendor->shop_name ?? __('Unknown Vendor') }}</label>
+                                        </li>
+                                    @endforeach
+                                </ul>
+                            </div>
+                        </div>
+                        @endif
+
+                        <!-- Brand Quality Filter -->
+                        @if(isset($brand_qualities) && $brand_qualities->count() > 0)
+                        <div class="single-product-widget">
+                            <h5 class="widget-title">@lang('Brand Quality')</h5>
+                            <div class="warranty-type">
+                                <ul>
+                                    @foreach ($brand_qualities as $quality)
+                                        <li class="gs-checkbox-wrapper">
+                                            <input type="checkbox" class="attribute-input brand-quality-filter"
+                                                name="brand_quality[]"
+                                                {{ isset($_GET['brand_quality']) && in_array($quality->id, (array)$_GET['brand_quality']) ? 'checked' : '' }}
+                                                id="brand_quality_{{ $quality->id }}"
+                                                value="{{ $quality->id }}">
+                                            <label class="icon-label"
+                                                for="brand_quality_{{ $quality->id }}">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="12"
+                                                    height="12" viewBox="0 0 12 12" fill="none">
+                                                    <path d="M10 3L4.5 8.5L2 6" stroke="#EE1243"
+                                                        stroke-width="1.6666" stroke-linecap="round"
+                                                        stroke-linejoin="round" />
+                                                </svg>
+                                            </label>
+                                            <label for="brand_quality_{{ $quality->id }}">{{ $quality->localized_name }}</label>
+                                        </li>
+                                    @endforeach
+                                </ul>
+                            </div>
+                        </div>
+                        @endif
+
                         <!-- Recent Product-->
                         <div class="single-product-widget">
                             <h5 class="widget-title">@lang('Recent Product')</h5>

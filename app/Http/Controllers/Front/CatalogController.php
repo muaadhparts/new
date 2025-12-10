@@ -6,6 +6,7 @@ use App\Models\Category;
 use App\Models\Childcategory;
 use App\Models\MerchantProduct;
 use App\Models\Product;
+use App\Models\QualityBrand;
 use App\Models\Report;
 use App\Models\Subcategory;
 use Illuminate\Http\Request;
@@ -20,6 +21,19 @@ class CatalogController extends FrontBaseController
     public function categories()
     {
         $categories = Category::where('status', 1)->get();
+
+        // Get distinct vendors with shop names for the filter
+        $vendors = MerchantProduct::select('merchant_products.user_id')
+            ->join('users', 'users.id', '=', 'merchant_products.user_id')
+            ->where('merchant_products.status', 1)
+            ->where('users.is_vendor', 2)
+            ->groupBy('merchant_products.user_id')
+            ->selectRaw('merchant_products.user_id, users.shop_name')
+            ->orderBy('users.shop_name', 'asc')
+            ->get();
+
+        // Get active brand qualities for the filter
+        $brand_qualities = QualityBrand::active()->orderBy('name_en', 'asc')->get();
 
         // Retrieve latest products that have at least one active merchant listing with a vendor account
         $latest_products = Product::with('brand')
@@ -51,7 +65,7 @@ class CatalogController extends FrontBaseController
             ->latest('merchant_products.id')
             ->paginate($this->gs->page_count);
 
-        return view('frontend.products', compact('categories', 'latest_products', 'prods'));
+        return view('frontend.products', compact('categories', 'latest_products', 'prods', 'vendors', 'brand_qualities'));
     }
 
     // -------------------------------- CATEGORY SECTION ----------------------------------------
@@ -70,6 +84,9 @@ class CatalogController extends FrontBaseController
             ->selectRaw('merchant_products.user_id, users.shop_name')
             ->orderBy('users.shop_name', 'asc')
             ->get();
+
+        // Get active brand qualities for the filter
+        $data['brand_qualities'] = QualityBrand::active()->orderBy('name_en', 'asc')->get();
 
         if ($request->view_check) {
             session::put('view', $request->view_check);
@@ -212,9 +229,10 @@ class CatalogController extends FrontBaseController
             $q->where('user_id', (int) $request->user);
         });
 
-        // Vendor filter via 'vendor' query param
-        $prods = $prods->when($request->filled('vendor'), function ($q) use ($request) {
-            $q->where('merchant_products.user_id', (int) $request->vendor);
+        // Vendor filter via 'vendor' query param (supports multiple vendors)
+        $vendorFilter = (array) $request->vendor;
+        $prods = $prods->when(!empty($vendorFilter), function ($q) use ($vendorFilter) {
+            $q->whereIn('merchant_products.user_id', $vendorFilter);
         });
 
         // Store by vendor ID filter (accepts integer vendor ID)
