@@ -20,7 +20,7 @@ class CatalogController extends FrontBaseController
 
     public function categories()
     {
-        $categories = Category::where('status', 1)->get();
+        $categories = Category::with('subs.childs')->where('status', 1)->get();
 
         // Get distinct vendors with shop names for the filter
         $vendors = MerchantProduct::select('merchant_products.user_id')
@@ -73,7 +73,7 @@ class CatalogController extends FrontBaseController
     public function category(Request $request, $slug = null, $slug1 = null, $slug2 = null, $slug3 = null)
     {
        
-        $data['categories'] = Category::with('subs')->where('status', 1)->get();
+        $data['categories'] = Category::with('subs.childs')->where('status', 1)->get();
 
         // Get distinct vendors with shop names for the dropdown
         $data['vendors'] = MerchantProduct::select('merchant_products.user_id')

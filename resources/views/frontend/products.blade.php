@@ -1,6 +1,74 @@
 @extends('layouts.front')
 
 @section('content')
+    {{-- Multi-Step Category Selector Styles --}}
+    <style>
+        .category-step-selector .step-selector-item {
+            position: relative;
+        }
+        .category-step-selector .step-label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 6px;
+        }
+        .category-step-selector .form-select {
+            width: 100%;
+            padding: 10px 35px 10px 12px;
+            font-size: 14px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            background-color: #fff;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .category-step-selector .form-select:focus {
+            border-color: var(--primary-color, #EE1243);
+            box-shadow: 0 0 0 2px rgba(238, 18, 67, 0.1);
+            outline: none;
+        }
+        .category-step-selector .form-select:hover {
+            border-color: #bbb;
+        }
+        .category-step-selector .current-selection {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border: 1px solid #dee2e6;
+        }
+        .category-step-selector .selection-breadcrumb {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 4px;
+        }
+        .category-step-selector .selection-breadcrumb .badge {
+            font-size: 11px;
+            font-weight: 500;
+            padding: 4px 8px;
+        }
+        .category-step-selector .btn-outline-secondary {
+            font-size: 13px;
+            border-color: #dee2e6;
+        }
+        .category-step-selector .btn-outline-secondary:hover {
+            background-color: #f8f9fa;
+            border-color: #adb5bd;
+        }
+        /* RTL Support */
+        [dir="rtl"] .category-step-selector .form-select {
+            padding: 10px 12px 10px 35px;
+        }
+        /* Mobile Responsive */
+        @media (max-width: 991px) {
+            .category-step-selector .form-select {
+                padding: 12px 35px 12px 12px;
+                font-size: 16px;
+            }
+            [dir="rtl"] .category-step-selector .form-select {
+                padding: 12px 12px 12px 35px;
+            }
+        }
+    </style>
     <section class="gs-breadcrumb-section bg-class"
         data-background="{{ $gs->breadcrumb_banner ? asset('assets/images/' . $gs->breadcrumb_banner) : asset('assets/images/noimage.png') }}">
         <div class="container">
@@ -23,167 +91,122 @@
             <div class="row flex-column-reverse flex-lg-row">
                 <div class="col-12 col-lg-4 col-xl-3 mt-40 mt-lg-0">
                     <div class="gs-product-sidebar-wrapper">
-                        <!-- product categories wrapper -->
+                        <!-- product categories wrapper - Multi-Step Selector -->
                         <div class="single-product-widget">
                             <h5 class="widget-title">@lang('Product categories')</h5>
                             <div class="product-cat-widget">
 
-                                {{-- <ul class="accordion">
-                                    @foreach ($categories as $category)
-                                        @if ($category->subs->count() > 0)
-                                            <li>
+                                {{-- Multi-Step Category Selector --}}
+                                <div class="category-step-selector">
+                                    @php
+                                        $currentCatSlug = Request::segment(2);
+                                        $currentSubcatSlug = Request::segment(3);
+                                        $currentChildcatSlug = Request::segment(4);
 
-                                                <div class="d-flex justify-content-between align-items-lg-baseline">
-                                                    <a href="{{ route('front.category', $category->slug) }}">
-                                                        {{ $category->name }}
-                                                    </a>
+                                        $selectedCat = $categories->firstWhere('slug', $currentCatSlug);
+                                        $selectedSubcat = $selectedCat ? $selectedCat->subs->firstWhere('slug', $currentSubcatSlug) : null;
+                                        $selectedChildcat = $selectedSubcat ? $selectedSubcat->childs->firstWhere('slug', $currentChildcatSlug) : null;
+                                    @endphp
 
-                                                    <button data-bs-toggle="collapse"
-                                                        data-bs-target="#{{ $category->slug }}_level_2"
-                                                        aria-controls="{{ $category->slug }}_level_2" aria-expanded="false"
-                                                        class="collapsed">
-                                                        <i class="fa-solid fa-plus"></i>
-                                                        <i class="fa-solid fa-minus"></i>
-                                                    </button>
-                                                </div>
-
-                                                @foreach ($category->subs as $subcategory)
-                                                    <ul id="{{ $category->slug }}_level_2"
-                                                        class="accordion-collapse collapse ms-3">
-                                                        <li>
-
-                                                            <div
-                                                                class="d-flex justify-content-between align-items-lg-baseline">
-                                                                <a href="{{ route('front.category', [$category->slug, $subcategory->slug]) }}"
-                                                                    @if ($subcategory->childs->count() > 0) data-bs-toggle="collapse"
-                                                                    data-bs-target="#inner{{ $subcategory->slug }}_level_2_1"
-                                                                    aria-controls="inner{{ $subcategory->slug }}_level_2_1"
-                                                                    aria-expanded="false" class="collapsed" @endif>
-                                                                    {{ $subcategory->name }}
-                                                                </a>
-
-                                                                <button
-                                                                    @if ($subcategory->childs->count() > 0) data-bs-toggle="collapse"
-                                                                data-bs-target="#inner{{ $subcategory->slug }}_level_2_1"
-                                                                aria-controls="inner{{ $subcategory->slug }}_level_2_1"
-                                                                aria-expanded="false" class="collapsed" @endif>
-                                                                    <i class="fa-solid fa-plus"></i>
-                                                                    <i class="fa-solid fa-minus"></i>
-                                                                </button>
-                                                            </div>
-
-
-                                                            @if ($subcategory->childs->count() > 0)
-                                                                <ul id="inner{{ $subcategory->slug }}_level_2_1"
-                                                                    class="accordion-collapse collapse ms-3">
-                                                                    @foreach ($subcategory->childs as $child)
-                                                                        <li><a
-                                                                                href="{{ route('front.category', [$category->slug, $subcategory->slug, $child->slug]) }}">{{ $child->name }}</a>
-                                                                        </li>
-                                                                    @endforeach
-                                                                </ul>
-                                                            @endif
-                                                        </li>
-                                                    </ul>
-                                                @endforeach
-
-                                            </li>
-                                        @else
-                                            <li><a
-                                                    href="{{ route('front.category', $category->slug) }}">{{ $category->name }}</a>
-                                            </li>
-                                        @endif
-                                    @endforeach
-                                </ul> --}}
-                                <ul class="accordion">
-                                    @foreach ($categories as $category)
-                                        @if ($category->subs->count() > 0)
-                                            <li>
-                                                @php
-                                                    $isCategoryActive = Request::segment(2) === $category->slug;
-                                                @endphp
-                                                <div class="d-flex justify-content-between align-items-lg-baseline">
-                                                    <a href="{{ route('front.category', $category->slug) }}"
-                                                        class="{{ $isCategoryActive ? 'sidebar-active-color' : '' }}">
-                                                        {{ $category->localized_name }}
-                                                    </a>
-
-                                                    <button data-bs-toggle="collapse"
-                                                        data-bs-target="#{{ $category->slug }}_level_2"
-                                                        aria-controls="{{ $category->slug }}_level_2"
-                                                        aria-expanded="{{ $isCategoryActive ? 'true' : 'false' }}"
-                                                        class="{{ $isCategoryActive ? '' : 'collapsed' }}">
-                                                        <i class="fa-solid fa-plus"></i>
-                                                        <i class="fa-solid fa-minus"></i>
-                                                    </button>
-                                                </div>
-
-                                                @foreach ($category->subs as $subcategory)
-                                                    @php
-                                                        $isSubcategoryActive =
-                                                            $isCategoryActive &&
-                                                            Request::segment(3) === $subcategory->slug;
-                                                    @endphp
-                                                    <ul id="{{ $category->slug }}_level_2"
-                                                        class="accordion-collapse collapse ms-3 {{ $isCategoryActive ? 'show' : '' }}">
-                                                        <li class="">
-                                                            <div
-                                                                class="d-flex justify-content-between align-items-lg-baseline">
-                                                                <a href="{{ route('front.category', [$category->slug, $subcategory->slug]) }}"
-                                                                    class="{{ $isSubcategoryActive ? 'sidebar-active-color' : '' }} "
-                                                                    @if ($subcategory->childs->count() > 0) data-bs-toggle="collapse"
-                                                                   data-bs-target="#inner{{ $subcategory->slug }}_level_2_1"
-                                                                   aria-controls="inner{{ $subcategory->slug }}_level_2_1"
-                                                                   aria-expanded="{{ $isSubcategoryActive ? 'true' : 'false' }}"
-                                                                   class="{{ $isSubcategoryActive ? '' : 'collapsed' }}" @endif>
-                                                                    {{ $subcategory->localized_name }}
-                                                                </a>
-
-                                                                @if ($subcategory->childs->count() > 0)
-                                                                    <button data-bs-toggle="collapse"
-                                                                        data-bs-target="#inner{{ $subcategory->slug }}_level_2_1"
-                                                                        aria-controls="inner{{ $subcategory->slug }}_level_2_1"
-                                                                        aria-expanded="{{ $isSubcategoryActive ? 'true' : 'false' }}"
-                                                                        class="{{ $isSubcategoryActive ? '' : 'collapsed' }}">
-                                                                        <i class="fa-solid fa-plus"></i>
-                                                                        <i class="fa-solid fa-minus"></i>
-                                                                    </button>
-                                                                @endif
-                                                            </div>
-
-                                                            @if ($subcategory->childs->count() > 0)
-                                                                <ul id="inner{{ $subcategory->slug }}_level_2_1"
-                                                                    class="accordion-collapse collapse ms-3 {{ $isSubcategoryActive ? 'show' : '' }}">
-                                                                    @foreach ($subcategory->childs as $child)
-                                                                        @php
-                                                                            $isChildActive =
-                                                                                $isSubcategoryActive &&
-                                                                                Request::segment(4) === $child->slug;
-                                                                        @endphp
-                                                                        <li>
-                                                                            <a href="{{ route('front.category', [$category->slug, $subcategory->slug, $child->slug]) }}"
-                                                                                class="{{ $isChildActive ? 'sidebar-active-color' : '' }}">
-                                                                                {{ $child->localized_name }}
-                                                                            </a>
-                                                                        </li>
-                                                                    @endforeach
-                                                                </ul>
-                                                            @endif
-                                                        </li>
-                                                    </ul>
-                                                @endforeach
-
-                                            </li>
-                                        @else
-                                            <li>
-                                                <a href="{{ route('front.category', $category->slug) }}"
-                                                    class="{{ Request::segment(2) === $category->slug ? 'active' : '' }}">
+                                    {{-- Step 1: Main Category --}}
+                                    <div class="step-selector-item mb-3">
+                                        <label class="step-label">@lang('Category')</label>
+                                        <select class="form-select category-select" id="main-category-select">
+                                            <option value="">-- @lang('Select Category') --</option>
+                                            @foreach ($categories as $category)
+                                                <option value="{{ $category->slug }}"
+                                                    data-has-subs="{{ $category->subs->count() > 0 ? '1' : '0' }}"
+                                                    {{ $currentCatSlug === $category->slug ? 'selected' : '' }}>
                                                     {{ $category->localized_name }}
-                                                </a>
-                                            </li>
-                                        @endif
-                                    @endforeach
-                                </ul>
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+
+                                    {{-- Step 2: Subcategory (shown when category selected and has subs) --}}
+                                    <div class="step-selector-item mb-3 {{ $selectedCat && $selectedCat->subs->count() > 0 ? '' : 'd-none' }}" id="subcategory-step">
+                                        <label class="step-label">@lang('Model')</label>
+                                        <select class="form-select category-select" id="subcategory-select">
+                                            <option value="">-- @lang('Select Model') --</option>
+                                            @if($selectedCat)
+                                                @foreach ($selectedCat->subs as $subcategory)
+                                                    <option value="{{ $subcategory->slug }}"
+                                                        data-has-childs="{{ $subcategory->childs->count() > 0 ? '1' : '0' }}"
+                                                        {{ $currentSubcatSlug === $subcategory->slug ? 'selected' : '' }}>
+                                                        {{ $subcategory->localized_name }}
+                                                    </option>
+                                                @endforeach
+                                            @endif
+                                        </select>
+                                    </div>
+
+                                    {{-- Step 3: Child Category (shown when subcategory selected and has childs) --}}
+                                    <div class="step-selector-item mb-3 {{ $selectedSubcat && $selectedSubcat->childs->count() > 0 ? '' : 'd-none' }}" id="childcategory-step">
+                                        <label class="step-label">@lang('Part Type')</label>
+                                        <select class="form-select category-select" id="childcategory-select">
+                                            <option value="">-- @lang('Select Part Type') --</option>
+                                            @if($selectedSubcat)
+                                                @foreach ($selectedSubcat->childs as $child)
+                                                    <option value="{{ $child->slug }}"
+                                                        {{ $currentChildcatSlug === $child->slug ? 'selected' : '' }}>
+                                                        {{ $child->localized_name }}
+                                                    </option>
+                                                @endforeach
+                                            @endif
+                                        </select>
+                                    </div>
+
+                                    {{-- Current Selection Display --}}
+                                    @if($selectedCat)
+                                    <div class="current-selection mt-3 p-2 bg-light rounded">
+                                        <small class="text-muted d-block mb-1">@lang('Current Selection'):</small>
+                                        <div class="selection-breadcrumb">
+                                            <span class="badge bg-primary">{{ $selectedCat->localized_name }}</span>
+                                            @if($selectedSubcat)
+                                                <i class="fa-solid fa-chevron-{{ app()->getLocale() == 'ar' ? 'left' : 'right' }} mx-1 small"></i>
+                                                <span class="badge bg-secondary">{{ $selectedSubcat->localized_name }}</span>
+                                            @endif
+                                            @if($selectedChildcat)
+                                                <i class="fa-solid fa-chevron-{{ app()->getLocale() == 'ar' ? 'left' : 'right' }} mx-1 small"></i>
+                                                <span class="badge bg-info">{{ $selectedChildcat->localized_name }}</span>
+                                            @endif
+                                        </div>
+                                    </div>
+                                    @endif
+
+                                    {{-- Clear Filter Button --}}
+                                    @if($currentCatSlug)
+                                    <a href="{{ route('front.category') }}" class="btn btn-outline-secondary btn-sm w-100 mt-2">
+                                        <i class="fa-solid fa-times me-1"></i> @lang('Clear Selection')
+                                    </a>
+                                    @endif
+                                </div>
+
+                                {{-- Hidden data for JavaScript --}}
+                                @php
+                                    $categoriesJson = $categories->map(function($cat) {
+                                        return [
+                                            'slug' => $cat->slug,
+                                            'name' => $cat->localized_name,
+                                            'subs' => $cat->subs->map(function($sub) use ($cat) {
+                                                return [
+                                                    'slug' => $sub->slug,
+                                                    'name' => $sub->localized_name,
+                                                    'cat_slug' => $cat->slug,
+                                                    'childs' => $sub->childs->map(function($child) use ($cat, $sub) {
+                                                        return [
+                                                            'slug' => $child->slug,
+                                                            'name' => $child->localized_name,
+                                                            'cat_slug' => $cat->slug,
+                                                            'sub_slug' => $sub->slug,
+                                                        ];
+                                                    })->values()
+                                                ];
+                                            })->values()
+                                        ];
+                                    })->values();
+                                @endphp
+                                <script type="application/json" id="categories-data">{!! json_encode($categoriesJson) !!}</script>
 
                             </div>
                         </div>
@@ -660,6 +683,106 @@
                     " - $" +
                     $("#slider-range").slider("values", 5000)
                 );
+            });
+
+        })(jQuery);
+    </script>
+
+    {{-- Multi-Step Category Selector JavaScript --}}
+    <script>
+        (function($) {
+            "use strict";
+
+            // Load categories data from JSON
+            const categoriesData = JSON.parse($('#categories-data').text() || '[]');
+            const baseUrl = '{{ route("front.category") }}';
+
+            // Main Category Change
+            $('#main-category-select').on('change', function() {
+                const selectedSlug = $(this).val();
+                const $subcatStep = $('#subcategory-step');
+                const $childcatStep = $('#childcategory-step');
+                const $subcatSelect = $('#subcategory-select');
+                const $childcatSelect = $('#childcategory-select');
+
+                // Reset and hide subsequent steps
+                $subcatSelect.html('<option value="">-- @lang("Select Model") --</option>');
+                $childcatSelect.html('<option value="">-- @lang("Select Part Type") --</option>');
+                $subcatStep.addClass('d-none');
+                $childcatStep.addClass('d-none');
+
+                if (!selectedSlug) {
+                    // Go to base category page
+                    window.location.href = baseUrl;
+                    return;
+                }
+
+                // Find selected category
+                const selectedCat = categoriesData.find(cat => cat.slug === selectedSlug);
+
+                if (selectedCat && selectedCat.subs && selectedCat.subs.length > 0) {
+                    // Populate subcategories
+                    selectedCat.subs.forEach(sub => {
+                        $subcatSelect.append(
+                            `<option value="${sub.slug}" data-has-childs="${sub.childs && sub.childs.length > 0 ? '1' : '0'}">${sub.name}</option>`
+                        );
+                    });
+                    $subcatStep.removeClass('d-none');
+                }
+
+                // Navigate to category page
+                window.location.href = baseUrl + '/' + selectedSlug;
+            });
+
+            // Subcategory Change
+            $('#subcategory-select').on('change', function() {
+                const catSlug = $('#main-category-select').val();
+                const selectedSlug = $(this).val();
+                const $childcatStep = $('#childcategory-step');
+                const $childcatSelect = $('#childcategory-select');
+
+                // Reset and hide child step
+                $childcatSelect.html('<option value="">-- @lang("Select Part Type") --</option>');
+                $childcatStep.addClass('d-none');
+
+                if (!selectedSlug) {
+                    // Go back to category page
+                    window.location.href = baseUrl + '/' + catSlug;
+                    return;
+                }
+
+                // Find selected category and subcategory
+                const selectedCat = categoriesData.find(cat => cat.slug === catSlug);
+                const selectedSub = selectedCat ? selectedCat.subs.find(sub => sub.slug === selectedSlug) : null;
+
+                if (selectedSub && selectedSub.childs && selectedSub.childs.length > 0) {
+                    // Populate child categories
+                    selectedSub.childs.forEach(child => {
+                        $childcatSelect.append(
+                            `<option value="${child.slug}">${child.name}</option>`
+                        );
+                    });
+                    $childcatStep.removeClass('d-none');
+                }
+
+                // Navigate to subcategory page
+                window.location.href = baseUrl + '/' + catSlug + '/' + selectedSlug;
+            });
+
+            // Child Category Change
+            $('#childcategory-select').on('change', function() {
+                const catSlug = $('#main-category-select').val();
+                const subcatSlug = $('#subcategory-select').val();
+                const selectedSlug = $(this).val();
+
+                if (!selectedSlug) {
+                    // Go back to subcategory page
+                    window.location.href = baseUrl + '/' + catSlug + '/' + subcatSlug;
+                    return;
+                }
+
+                // Navigate to child category page
+                window.location.href = baseUrl + '/' + catSlug + '/' + subcatSlug + '/' + selectedSlug;
             });
 
         })(jQuery);
