@@ -67,6 +67,19 @@
             [dir="rtl"] .category-step-selector .form-select {
                 padding: 12px 12px 12px 35px;
             }
+            /* Make sidebar appear ABOVE products on mobile */
+            .gs-blog-wrapper .row.products-layout {
+                display: flex;
+                flex-direction: column;
+            }
+            .gs-blog-wrapper .row.products-layout .sidebar-column {
+                order: 1;
+                margin-top: 0;
+                margin-bottom: 20px;
+            }
+            .gs-blog-wrapper .row.products-layout .products-column {
+                order: 2;
+            }
         }
     </style>
     <section class="gs-breadcrumb-section bg-class"
@@ -88,8 +101,8 @@
     <!-- product wrapper start -->
     <div class="gs-blog-wrapper">
         <div class="container">
-            <div class="row flex-column-reverse flex-lg-row">
-                <div class="col-12 col-lg-4 col-xl-3 mt-40 mt-lg-0">
+            <div class="row products-layout">
+                <div class="col-12 col-lg-4 col-xl-3 sidebar-column">
                     <div class="gs-product-sidebar-wrapper">
                         <!-- product categories wrapper - Multi-Step Selector -->
                         <div class="single-product-widget">
@@ -446,7 +459,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-12 col-lg-8 col-xl-9 gs-main-blog-wrapper">
+                <div class="col-12 col-lg-8 col-xl-9 gs-main-blog-wrapper products-column">
 
                     @php
                         if (request()->input('view_check') == null || request()->input('view_check') == 'grid-view') {
