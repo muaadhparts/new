@@ -20,8 +20,7 @@
                                 ref="{{ $vendor_id }}"
                                 data-price="{{ round($data->price * $curr->value, 2) }}"
                                 name="packeging[{{ $vendor_id }}]"
-                                value="{{ $data->id }}"
-                                {{ $loop->first ? 'checked' : '' }}>
+                                value="{{ $data->id }}">
                             <label class="icon-label" for="free-package{{ $data->id }}">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="none">
                                     <rect x="0.5" y="0.5" width="19" height="19" rx="9.5" fill="#FDFDFD" />
@@ -87,16 +86,6 @@
                 }
             });
         });
-
-        // ✅ Trigger initial update for pre-selected packing on page load
-        const checkedRadio = modal.querySelector('input.packing[ref="' + vendorId + '"]:checked');
-        if (checkedRadio) {
-            const price = parseFloat(checkedRadio.getAttribute('data-price')) || 0;
-            if (typeof window.PriceSummary !== 'undefined') {
-                window.PriceSummary.updatePacking(price);
-                console.log('✅ Initial packing set via PriceSummary:', { price: price });
-            }
-        }
 
         // Trigger update when modal opens if already selected
         modal.addEventListener('shown.bs.modal', function() {

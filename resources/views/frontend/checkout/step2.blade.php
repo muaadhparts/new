@@ -379,7 +379,7 @@
                                                     <b>{{ __('Packageing :') }}</b>
                                                 </span>
                                                 <p id="packing_text{{ $vendor_id }}">
-                                                    {{ $packaging[0]['title'] . '+' . $curr->sign . round($packaging[0]['price'] * $curr->value, 2) }}
+                                                    @lang('Not Selected')
                                                 </p>
                                                 <button type="button" class="template-btn sm-btn" data-bs-toggle="modal"
                                                     data-bs-target="#vendor_package{{ $vendor_id }}">
@@ -767,10 +767,6 @@
                 @endif
             @endif
 
-            // ✅ CRITICAL: Calculate shipping/packing totals FIRST
-            getShipping();
-            getPacking();
-
             // ✅ CRITICAL: Update final total after loading saved selections
             updateFinalTotal();
 
@@ -942,5 +938,6 @@
                 console.log('✅ تم تحديث الإجمالي عبر PriceSummary');
             }
         }
+
     </script>
 @endsection

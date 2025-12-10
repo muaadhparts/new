@@ -126,6 +126,15 @@
     // STEP 3: ALL DATA FROM STEP2 SESSION (Read-Only)
     // ========================================================================
     elseif ($currentStep == 3 && isset($step2)) {
+        // DEBUG
+        \Log::info('checkout-price-summary Step3: Reading from step2', [
+            'step2_products_total' => $step2->products_total ?? 'NOT SET',
+            'step2_shipping_cost' => $step2->shipping_cost ?? 'NOT SET',
+            'step2_packing_cost' => $step2->packing_cost ?? 'NOT SET',
+            'step2_tax_amount' => $step2->tax_amount ?? 'NOT SET',
+            'step2_grand_total' => $step2->grand_total ?? 'NOT SET'
+        ]);
+
         // Products
         $productsTotal = $step2->products_total ?? ($step1->products_total ?? $passedProductsTotal);
 
