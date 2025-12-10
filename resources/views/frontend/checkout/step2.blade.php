@@ -774,28 +774,18 @@
             // ✅ CRITICAL: Update final total after loading saved selections
             updateFinalTotal();
 
-            let country_id = $('#select_country').val();
-            let state_id = $('#state_id').val();
+            // ✅ Tax is already calculated in Step 1 and stored in session
+            // NO need to call tax_submit API again - it overwrites correct values!
+            // The tax values are already loaded from $step1 in checkout-price-summary.blade.php
+
             let is_state = $('#is_state').val();
-            let state_url = $('#state_url').val();
-
-
             if (is_state == 1) {
-                if (is_state == 1) {
-                    $('.select_state').removeClass('d-none');
-                    $.get(state_url, function(response) {
-                        $('#show_state').html(response.data);
-                        tax_submit(country_id, response.state);
-                    });
-
-                } else {
-                    tax_submit(country_id, state_id);
-                    hide_state();
-                }
+                $('.select_state').removeClass('d-none');
             } else {
-                tax_submit(country_id, state_id);
                 hide_state();
             }
+
+            console.log('📍 Step2: Tax loaded from Step1 session, no API call needed');
         });
 
 

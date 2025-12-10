@@ -90,8 +90,18 @@
             $taxRate = $step1->tax_rate ?? 0;
             $taxAmount = $step1->tax_amount ?? 0;
             $taxLocation = $step1->tax_location ?? '';
+
+            // DEBUG
+            \Log::info('checkout-price-summary Step2: Tax from step1', [
+                'step1_tax_rate' => $step1->tax_rate ?? 'NOT SET',
+                'step1_tax_amount' => $step1->tax_amount ?? 'NOT SET',
+                'step1_products_total' => $step1->products_total ?? 'NOT SET',
+                'taxRate_used' => $taxRate,
+                'taxAmount_used' => $taxAmount
+            ]);
         } else {
             $productsTotal = $passedProductsTotal;
+            \Log::warning('checkout-price-summary Step2: step1 NOT SET!');
         }
 
         // Check for coupon

@@ -1704,6 +1704,13 @@ class CheckoutController extends FrontBaseController
 
         $taxAmount = ($vendorSubtotal * $taxRate) / 100;
 
+        \Log::info('checkoutVendorStep1: Tax calculation', [
+            'vendorSubtotal' => $vendorSubtotal,
+            'taxRate' => $taxRate,
+            'taxAmount' => $taxAmount,
+            'taxLocation' => $taxLocation
+        ]);
+
         // ========================================================================
         // ✅ UNIFIED PRICE CALCULATION - DO NOT SUBTRACT COUPON HERE!
         // ========================================================================
