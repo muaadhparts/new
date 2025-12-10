@@ -20,7 +20,38 @@ class CatalogController extends FrontBaseController
     public function categories()
     {
         $categories = Category::where('status', 1)->get();
-        return view('frontend.products', compact('categories'));
+
+        // Retrieve latest products that have at least one active merchant listing with a vendor account
+        $latest_products = Product::with('brand')
+            ->whereLatest(1)
+            ->whereHas('merchantProducts', function ($q) {
+                $q->where('status', 1)
+                    ->whereHas('user', function ($user) {
+                        $user->where('is_vendor', 2);
+                    });
+            })
+            ->withCount('ratings')
+            ->withAvg('ratings', 'rating')
+            ->take(5)
+            ->get();
+
+        // Get merchant products (offers) for display
+        $prods = MerchantProduct::with([
+            'user',
+            'qualityBrand',
+            'product' => function ($q) {
+                $q->with('brand')->withCount('ratings')->withAvg('ratings', 'rating');
+            },
+        ])
+            ->where('merchant_products.status', 1)
+            ->where('merchant_products.stock', '>=', 1)
+            ->whereHas('user', function ($user) {
+                $user->where('is_vendor', 2);
+            })
+            ->latest('merchant_products.id')
+            ->paginate($this->gs->page_count);
+
+        return view('frontend.products', compact('categories', 'latest_products', 'prods'));
     }
 
     // -------------------------------- CATEGORY SECTION ----------------------------------------
