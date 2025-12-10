@@ -728,12 +728,6 @@
 
         let original_tax = 0;
 
-        // ✅ Helper function for price formatting in Step 2 (defined early for use in tax_submit)
-        function formatPriceStep2(amount) {
-            var formatted = parseFloat(amount).toFixed(2);
-            return pos == 0 ? '{{ $curr->sign }}' + formatted : formatted + '{{ $curr->sign }}';
-        }
-
         $(document).ready(function() {
             console.log('📍 Step2: تحميل الصفحة');
 
@@ -826,35 +820,25 @@
                     shipping_cost: ship
                 },
                 success: function(data) {
-                    // ✅ FIX: data[0] = total WITH tax, so DON'T update tgrandtotal
-                    // tgrandtotal should remain as products only (without tax)
-                    // data[0] = total with tax
                     // data[1] = tax rate (e.g., 15)
                     // data[11] = tax amount
                     // data[12] = tax type
 
-                    // Update tax rate display
                     var taxRate = parseFloat(data[1]) || 0;
                     var taxAmount = parseFloat(data[11]) || 0;
 
+                    // Update hidden fields for form submission
                     $('#original_tax').val(taxRate);
-                    $('#tax_amount_value').val(taxAmount); // ✅ Update tax amount hidden field
+                    $('#tax_amount_value').val(taxAmount);
                     $('#input_tax').val(taxAmount);
                     $('#input_tax_type').val(data[12]);
 
-                    // ✅ Update Tax in Summary
-                    if (taxRate > 0) {
-                        $('.tax_show, #tax-row').removeClass('d-none');
-                        $('.original_tax').html('(' + taxRate + '%)');
-                        $('.tax_amount_view').html(formatPriceStep2(taxAmount));
-                    } else {
-                        $('.tax_show, #tax-row').addClass('d-none');
+                    // ✅ استخدام PriceSummary الموحد لتحديث العرض
+                    if (typeof PriceSummary !== 'undefined') {
+                        PriceSummary.updateTax(taxRate, taxAmount);
                     }
 
                     console.log('💰 Tax updated:', { rate: taxRate + '%', amount: taxAmount });
-
-                    // ✅ Use updateFinalTotal() for consistent calculation
-                    updateFinalTotal();
 
                     $('.gocover').hide();
                 }
@@ -897,10 +881,16 @@
         window.getShipping = function getShipping() {
             mship = 0;
             let originalShipping = 0;
-            let freeShippingDiscount = 0;
+            let isFreeShipping = false;
 
-            // ✅ جمع كل الشحن المحدد (من .shipping و من shipping-option لـ Tryoto)
-            $('input.shipping:checked, input.shipping-option:checked').each(function() {
+            // ✅ جمع كل الشحن المحدد
+            // - .shipping = الشحن العادي
+            // - .shipping-option = Tryoto من API
+            // - .tryoto-radio = Tryoto modal
+            const checkedShipping = $('input.shipping:checked, input.shipping-option:checked, input.tryoto-radio:checked');
+            console.log('🔍 getShipping: Found', checkedShipping.length, 'checked shipping inputs');
+
+            checkedShipping.each(function() {
                 const originalPrice = parseFloat($(this).attr('data-price')) || 0;
                 const freeAbove = parseFloat($(this).attr('data-free-above')) || 0;
                 const vendorId = $(this).attr('ref') || $(this).attr('name')?.match(/\[(\d+)\]/)?.[1];
@@ -911,35 +901,19 @@
                 // ✅ تطبيق منطق free_above
                 if (freeAbove > 0 && vendorTotal >= freeAbove) {
                     // الشحن مجاني - لا نضيف للـ mship
+                    isFreeShipping = true;
                     console.log('🎁 Free shipping for vendor', vendorId, '- Total:', vendorTotal, '>= FreeAbove:', freeAbove);
                 } else {
                     mship += originalPrice;
                 }
             });
 
-            freeShippingDiscount = originalShipping - mship;
-
-            // ✅ تحديث العرض في Summary
-            var currSign = '{{ $curr->sign }}';
-            var currFormat = {{ $gs->currency_format }};
-
-            if (freeShippingDiscount > 0) {
-                // عرض السعر الأصلي مشطوب + مجاني
-                var freeHtml = '<span class="text-decoration-line-through text-muted">' + formatPriceStep2(originalShipping) + '</span> ' +
-                    '<span class="text-success fw-bold"><i class="fas fa-gift"></i> @lang("Free!")</span>';
-                $('.shipping_cost_view, #shipping-cost-display').html(freeHtml);
-                // إظهار صف الخصم
-                $('.free-shipping-discount-row, #free-shipping-row').removeClass('d-none');
-                $('.free_shipping_discount_view, #free-shipping-discount-display').html('-' + formatPriceStep2(freeShippingDiscount));
-            } else if (originalShipping > 0) {
-                $('.shipping_cost_view, #shipping-cost-display').html(formatPriceStep2(mship));
-                $('.free-shipping-discount-row, #free-shipping-row').addClass('d-none');
-            } else {
-                $('.shipping_cost_view, #shipping-cost-display').html(formatPriceStep2(0));
-                $('.free-shipping-discount-row, #free-shipping-row').addClass('d-none');
+            // ✅ استخدام PriceSummary الموحد لتحديث العرض
+            if (typeof PriceSummary !== 'undefined') {
+                PriceSummary.updateShipping(mship, originalShipping, isFreeShipping);
             }
 
-            console.log('🚚 Shipping - Original:', originalShipping.toFixed(2), 'Final:', mship.toFixed(2), 'Discount:', freeShippingDiscount.toFixed(2));
+            console.log('🚚 Shipping - Original:', originalShipping.toFixed(2), 'Final:', mship.toFixed(2), 'Free:', isFreeShipping);
         }
 
         // Helper function to get vendor's products total (converted to current currency)
@@ -954,73 +928,29 @@
 
         function getPacking() {
             mpack = 0;
-            $('.packing').each(function() {
-                if ($(this).is(':checked')) {
-                    mpack += parseFloat($(this).attr('data-price')) || 0;
-                }
+            const checkedPacking = $('.packing:checked');
+            console.log('🔍 getPacking: Found', checkedPacking.length, 'checked packing inputs');
+
+            checkedPacking.each(function() {
+                mpack += parseFloat($(this).attr('data-price')) || 0;
             });
-            // ✅ FIXED: Update view in Summary
-            $('.packing_cost_view, #packing-cost-display').html(formatPriceStep2(mpack));
+            // ✅ استخدام PriceSummary الموحد لتحديث العرض
+            if (typeof PriceSummary !== 'undefined') {
+                PriceSummary.updatePacking(mpack);
+            }
             console.log('📦 Packing total:', mpack);
         }
 
         /**
-         * ✅ NEW FUNCTION: Update Final Total
-         * Calculates: Products + Tax + Shipping + Packing
-         * Called on:
-         * - Page load (after restoring selections)
-         * - Shipping change
-         * - Packing change
+         * ✅ WRAPPER: Update Final Total
+         * Now uses PriceSummary for unified calculations
          */
         window.updateFinalTotal = function updateFinalTotal() {
-            console.log('🔄 تحديث الإجمالي النهائي...');
-
-            // Get base total (products only, from backend)
-            var baseTotal = parseFloat($('#tgrandtotal').val()) || 0;
-
-            // Get tax amount
-            var taxAmount = parseFloat($('#tax_amount_value').val()) || 0;
-
-            // Get shipping and packing (calculated by getShipping/getPacking)
-            var shippingTotal = parseFloat(mship) || 0;
-            var packingTotal = parseFloat(mpack) || 0;
-
-            // ✅ Debug: Check if mship and mpack are set correctly
-            console.log('📦 Current values:', {
-                'mship (global)': mship,
-                'mpack (global)': mpack,
-                'baseTotal (#tgrandtotal)': baseTotal,
-                'taxAmount (#tax_amount_value)': taxAmount
-            });
-
-            // Calculate final total
-            var finalTotal = baseTotal + taxAmount + shippingTotal + packingTotal;
-            finalTotal = parseFloat(finalTotal).toFixed(2);
-
-            console.log('📊 تفاصيل الحساب:', {
-                'Products': baseTotal.toFixed(2),
-                'Tax': taxAmount.toFixed(2),
-                'Shipping': shippingTotal.toFixed(2),
-                'Packing': packingTotal.toFixed(2),
-                '═══════════': '═══════════',
-                'TOTAL': finalTotal
-            });
-
-            // ✅ Update Summary UI - Final Total
-            $('#final-cost, .total-amount').html(formatPriceStep2(finalTotal));
-
-            // ✅ Update Tax display in Summary
-            if (taxAmount > 0) {
-                var taxRate = parseFloat($('#original_tax').val()) || 0;
-                $('.tax_show, #tax-row').removeClass('d-none');
-                $('.original_tax').html('(' + taxRate + '%)');
-                $('.tax_amount_view').html(formatPriceStep2(taxAmount));
+            // Use PriceSummary for unified calculation
+            if (typeof PriceSummary !== 'undefined') {
+                PriceSummary.recalculateTotal();
+                console.log('✅ تم تحديث الإجمالي عبر PriceSummary');
             }
-
-            // Update hidden field
-            $('#grandtotal').val(finalTotal);
-
-            console.log('✅ تم تحديث الإجمالي النهائي:', finalTotal);
         }
     </script>
 @endsection

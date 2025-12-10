@@ -133,17 +133,38 @@
 
     // ✅ تحديث سعر الشحن في الملخص والإجمالي
     function updateShippingSummary() {
-        // ✅ استدعاء الدالة الموحدة getShipping() التي تطبق منطق free_above
+        const container = document.getElementById(containerId);
+        if (!container) return;
+
+        const selectedRadio = container.querySelector('input[type="radio"]:checked');
+        if (selectedRadio) {
+            const originalPrice = parseFloat(selectedRadio.getAttribute('data-price')) || 0;
+            const freeAbove = parseFloat(selectedRadio.getAttribute('data-free-above')) || 0;
+
+            // Get vendor products total
+            let vendorTotal = 0;
+            if (typeof window.getVendorTotal === 'function') {
+                vendorTotal = window.getVendorTotal(vendorId);
+            } else {
+                vendorTotal = parseFloat(document.getElementById('ttotal')?.value) || 0;
+            }
+
+            // Check if free shipping applies
+            let finalPrice = originalPrice;
+            let isFreeShipping = (freeAbove > 0 && vendorTotal >= freeAbove);
+            if (isFreeShipping) finalPrice = 0;
+
+            // ✅ Update PriceSummary directly
+            if (typeof window.PriceSummary !== 'undefined') {
+                window.PriceSummary.updateShipping(finalPrice, originalPrice, isFreeShipping);
+                console.log('✅ Tryoto Shipping updated via PriceSummary:', { final: finalPrice, original: originalPrice, free: isFreeShipping });
+            }
+        }
+
+        // Also call global functions for backward compatibility
         if (typeof window.getShipping === 'function') {
             window.getShipping();
         }
-
-        // ✅ تحديث الإجمالي النهائي
-        if (typeof window.updateFinalTotal === 'function') {
-            window.updateFinalTotal();
-        }
-
-        console.log('🚚 Tryoto: Called getShipping() for unified free_above logic');
     }
 
     // Initialize modal

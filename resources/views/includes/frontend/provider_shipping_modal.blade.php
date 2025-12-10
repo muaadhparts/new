@@ -57,72 +57,79 @@
 </div>
 
 <script>
-    // Handle shipping selection for {{ $provider }} provider
-    document.addEventListener('DOMContentLoaded', function() {
-        const modalId = '{{ $modalId }}';
-        const vendorId = {{ $vendor_id }};
-        const modal = document.getElementById(modalId);
+(function() {
+    const modalId = '{{ $modalId }}';
+    const vendorId = {{ $vendor_id }};
+    const currSign = '{{ $curr->sign }}';
 
-        // ✅ Get vendor's products total from page
-        @php
-            $vendorProductsTotal = 0;
-            if (isset($array_product)) {
-                foreach ($array_product as $product) {
-                    $vendorProductsTotal += $product['price'] ?? 0;
-                }
+    @php
+        $vendorProductsTotal = 0;
+        if (isset($array_product)) {
+            foreach ($array_product as $product) {
+                $vendorProductsTotal += $product['price'] ?? 0;
             }
-        @endphp
-        const vendorCartTotal = {{ round($vendorProductsTotal * $curr->value, 2) }};
+        }
+    @endphp
+    const vendorCartTotal = {{ round($vendorProductsTotal * $curr->value, 2) }};
 
-        if (modal) {
-            const shippingRadios = modal.querySelectorAll('input.shipping[ref="{{ $vendor_id }}"]');
+    function initShippingModal() {
+        const modal = document.getElementById(modalId);
+        if (!modal) {
+            setTimeout(initShippingModal, 100);
+            return;
+        }
 
-            shippingRadios.forEach(radio => {
-                radio.addEventListener('change', function() {
-                    if (this.checked) {
-                        const shippingText = document.getElementById('shipping_text' + vendorId);
-                        const originalPrice = parseFloat(this.getAttribute('data-price')) || 0;
-                        const freeAbove = parseFloat(this.getAttribute('data-free-above')) || 0;
-                        const title = this.getAttribute('data-form');
-                        const currSign = '{{ $curr->sign }}';
+        const shippingRadios = modal.querySelectorAll('input.shipping[ref="' + vendorId + '"]');
 
-                        // ✅ Check if free shipping applies
-                        let finalPrice = originalPrice;
-                        let isFreeShipping = false;
+        shippingRadios.forEach(function(radio) {
+            radio.addEventListener('change', function() {
+                if (!this.checked) return;
 
-                        if (freeAbove > 0 && vendorCartTotal >= freeAbove) {
-                            finalPrice = 0;
-                            isFreeShipping = true;
-                        }
+                const originalPrice = parseFloat(this.getAttribute('data-price')) || 0;
+                const freeAbove = parseFloat(this.getAttribute('data-free-above')) || 0;
+                const title = this.getAttribute('data-form');
 
-                        // ✅ Update the data-price attribute dynamically for total calculation
-                        this.setAttribute('data-effective-price', finalPrice);
+                // Check if free shipping applies
+                let finalPrice = originalPrice;
+                let isFreeShipping = (freeAbove > 0 && vendorCartTotal >= freeAbove);
+                if (isFreeShipping) finalPrice = 0;
 
-                        // ✅ Update display text
-                        if (isFreeShipping) {
-                            shippingText.innerHTML = '<span class="text-success"><i class="fas fa-gift"></i> ' + title + ' (@lang("Free!"))</span>';
-                        } else {
-                            shippingText.textContent = title + ': ' + currSign + originalPrice.toFixed(2);
-                        }
-
-                        // ✅ Trigger global recalculation
-                        if (typeof getShipping === 'function') {
-                            getShipping();
-                        }
-                        if (typeof updateFinalTotal === 'function') {
-                            updateFinalTotal();
-                        }
+                // Update shipping text display
+                const shippingText = document.getElementById('shipping_text' + vendorId);
+                if (shippingText) {
+                    if (isFreeShipping) {
+                        shippingText.innerHTML = '<span class="text-success"><i class="fas fa-gift"></i> ' + title + ' (@lang("Free!"))</span>';
+                    } else {
+                        shippingText.textContent = title + ': ' + currSign + originalPrice.toFixed(2);
                     }
-                });
-            });
+                }
 
-            // Update on modal open if already selected
-            modal.addEventListener('shown.bs.modal', function() {
-                const checkedRadio = modal.querySelector('input.shipping[ref="{{ $vendor_id }}"]:checked');
-                if (checkedRadio) {
-                    checkedRadio.dispatchEvent(new Event('change'));
+                // ✅ Update PriceSummary directly
+                if (typeof window.PriceSummary !== 'undefined') {
+                    window.PriceSummary.updateShipping(finalPrice, originalPrice, isFreeShipping);
+                    console.log('✅ Shipping updated via PriceSummary:', { final: finalPrice, original: originalPrice, free: isFreeShipping });
+                }
+
+                // Also call global functions for backward compatibility
+                if (typeof window.getShipping === 'function') {
+                    window.getShipping();
                 }
             });
-        }
-    });
+        });
+
+        // Trigger update when modal opens if already selected
+        modal.addEventListener('shown.bs.modal', function() {
+            const checkedRadio = modal.querySelector('input.shipping[ref="' + vendorId + '"]:checked');
+            if (checkedRadio) {
+                checkedRadio.dispatchEvent(new Event('change'));
+            }
+        });
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initShippingModal);
+    } else {
+        initShippingModal();
+    }
+})();
 </script>

@@ -1,28 +1,28 @@
 {{--
     ============================================================================
-    CHECKOUT PRICE SUMMARY COMPONENT
+    CHECKOUT PRICE SUMMARY COMPONENT - UNIFIED FOR ALL STEPS
     ============================================================================
 
-    A unified, professional price summary component for all checkout steps.
-
-    Data Flow:
-    - Step 1: products_total (from cart), tax (dynamic via JS)
-    - Step 2: products_total + tax (from step1), shipping + packing (dynamic via JS)
-    - Step 3: ALL data from step2 session (read-only)
+    A centralized, professional price summary component for all checkout steps.
 
     Required Variables:
     - $step: Current step (1, 2, or 3)
     - $curr: Currency object
     - $gs: General settings
 
-    Step-specific:
-    - Step 1: $productsTotal (cart total)
-    - Step 2 & 3: $step1, $step2 (session objects)
+    Data Sources:
+    - Step 1: $productsTotal from controller
+    - Step 2: $step1 session + dynamic shipping/packing via JS
+    - Step 3: $step2 session (read-only)
 
-    Optional:
-    - $digital: Is cart digital only (default: false)
-    - $is_vendor_checkout: Boolean
-    - $vendor_id: Vendor ID
+    Price Structure:
+    ================
+    products_total      = Sum of all product prices (NEVER changes)
+    coupon_discount     = Discount from coupon
+    tax_amount          = Tax on (products - coupon)
+    shipping_cost       = Selected shipping
+    packing_cost        = Selected packaging
+    grand_total         = products - coupon + tax + shipping + packing
 
     ============================================================================
 --}}
@@ -31,17 +31,104 @@
     $currentStep = $step ?? 1;
     $isDigital = $digital ?? false;
     $currencySign = $curr->sign ?? 'SAR';
-    $currencyFormat = $gs->currency_format ?? 0; // 0 = prefix, 1 = suffix
+    $currencyFormat = $gs->currency_format ?? 0;
+    $vendorId = $vendor_id ?? Session::get('checkout_vendor_id');
 
-    // ============================================================================
-    // STEP 3: Read ALL data from step2 session (Single Source of Truth)
-    // ============================================================================
-    if ($currentStep == 3 && isset($step2)) {
-        // Products & Tax (from step1 originally, but we use step2 for consistency)
-        $productsTotal = $step1->products_total ?? 0;
-        $taxRate = $step2->tax_rate ?? ($step1->tax_rate ?? 0);
-        $taxAmount = $step2->tax_amount ?? ($step1->tax_amount ?? 0);
-        $taxLocation = $step2->tax_location ?? ($step1->tax_location ?? '');
+    // ========================================================================
+    // INITIALIZE ALL PRICE VARIABLES
+    // Use existing passed values if available, otherwise default to 0
+    // ========================================================================
+    $passedProductsTotal = $productsTotal ?? $totalPrice ?? 0;
+    $productsTotal = 0;
+    $couponDiscount = 0;
+    $couponCode = '';
+    $couponPercentage = '';
+    $hasCoupon = false;
+    $taxRate = 0;
+    $taxAmount = 0;
+    $taxLocation = '';
+    $shippingCost = 0;
+    $originalShippingCost = 0;
+    $isFreeShipping = false;
+    $freeShippingDiscount = 0;
+    $shippingCompany = '';
+    $packingCost = 0;
+    $packingCompany = '';
+    $grandTotal = 0;
+    $subtotalBeforeCoupon = 0;
+
+    // ========================================================================
+    // STEP 1: Products Total from Controller (Tax calculated via JS)
+    // ========================================================================
+    if ($currentStep == 1) {
+        $productsTotal = $passedProductsTotal;
+
+        // Check for existing coupon in session
+        if ($vendorId) {
+            $couponDiscount = Session::get('coupon_vendor_' . $vendorId, 0);
+            $couponCode = Session::get('coupon_code_vendor_' . $vendorId, '');
+            $couponPercentage = Session::get('coupon_percentage_vendor_' . $vendorId, '');
+        } else {
+            $couponDiscount = Session::get('coupon', 0);
+            $couponCode = Session::get('coupon_code', '');
+            $couponPercentage = Session::get('coupon_percentage', '');
+        }
+        $hasCoupon = $couponDiscount > 0;
+
+        // Grand total for step 1 (tax added via JS)
+        $grandTotal = $productsTotal - $couponDiscount;
+        $subtotalBeforeCoupon = $productsTotal;
+    }
+
+    // ========================================================================
+    // STEP 2: Products + Tax from Step1, Shipping/Packing via JS
+    // ========================================================================
+    elseif ($currentStep == 2) {
+        // Get products total from step1
+        if (isset($step1)) {
+            $productsTotal = $step1->products_total ?? $passedProductsTotal;
+            $taxRate = $step1->tax_rate ?? 0;
+            $taxAmount = $step1->tax_amount ?? 0;
+            $taxLocation = $step1->tax_location ?? '';
+        } else {
+            $productsTotal = $passedProductsTotal;
+        }
+
+        // Check for coupon
+        if ($vendorId) {
+            $couponDiscount = Session::get('coupon_vendor_' . $vendorId, 0);
+            $couponCode = Session::get('coupon_code_vendor_' . $vendorId, '');
+            $couponPercentage = Session::get('coupon_percentage_vendor_' . $vendorId, '');
+        } else {
+            $couponDiscount = Session::get('coupon', 0);
+            $couponCode = Session::get('coupon_code', '');
+            $couponPercentage = Session::get('coupon_percentage', '');
+        }
+        $hasCoupon = $couponDiscount > 0;
+
+        // Grand total for step 2 (shipping/packing added via JS)
+        $subtotal = $productsTotal - $couponDiscount;
+        $grandTotal = $subtotal + $taxAmount;
+        $subtotalBeforeCoupon = $productsTotal + $taxAmount; // + shipping/packing via JS
+    }
+
+    // ========================================================================
+    // STEP 3: ALL DATA FROM STEP2 SESSION (Read-Only)
+    // ========================================================================
+    elseif ($currentStep == 3 && isset($step2)) {
+        // Products
+        $productsTotal = $step2->products_total ?? ($step1->products_total ?? $passedProductsTotal);
+
+        // Coupon
+        $couponDiscount = $step2->coupon_discount ?? 0;
+        $couponCode = $step2->coupon_code ?? '';
+        $couponPercentage = $step2->coupon_percentage ?? '';
+        $hasCoupon = $couponDiscount > 0;
+
+        // Tax
+        $taxRate = $step2->tax_rate ?? 0;
+        $taxAmount = $step2->tax_amount ?? 0;
+        $taxLocation = $step2->tax_location ?? '';
 
         // Shipping
         $shippingCost = $step2->shipping_cost ?? 0;
@@ -54,44 +141,9 @@
         $packingCost = $step2->packing_cost ?? 0;
         $packingCompany = $step2->packing_company ?? '';
 
-        // Coupon - Read from step2 (already calculated in controller)
-        $couponAmount = $step2->coupon_amount ?? 0;
-        $couponCode = $step2->coupon_code ?? '';
-        $couponPercentage = $step2->coupon_percentage ?? '';
-        $couponId = $step2->coupon_id ?? null;
-        $hasCoupon = $couponAmount > 0;
-
         // Totals
-        $subtotalBeforeCoupon = $step2->subtotal_before_coupon ?? 0;
-        $finalTotal = $step2->final_total ?? $step2->total ?? 0;
-    } else {
-        // Step 1 & 2: Initialize with defaults
-        $productsTotal = $productsTotal ?? 0;
-        $taxRate = 0;
-        $taxAmount = 0;
-        $taxLocation = '';
-        $shippingCost = 0;
-        $originalShippingCost = 0;
-        $isFreeShipping = false;
-        $freeShippingDiscount = 0;
-        $shippingCompany = '';
-        $packingCost = 0;
-        $packingCompany = '';
-        $couponAmount = 0;
-        $couponCode = '';
-        $couponPercentage = '';
-        $couponId = null;
-        $hasCoupon = false;
-        $subtotalBeforeCoupon = $productsTotal;
-        $finalTotal = $productsTotal;
-
-        // For Step 2, get step1 data
-        if ($currentStep == 2 && isset($step1)) {
-            $productsTotal = $step1->products_total ?? 0;
-            $taxRate = $step1->tax_rate ?? 0;
-            $taxAmount = $step1->tax_amount ?? 0;
-            $taxLocation = $step1->tax_location ?? '';
-        }
+        $grandTotal = $step2->grand_total ?? $step2->total ?? $step2->final_total ?? 0;
+        $subtotalBeforeCoupon = $step2->subtotal_before_coupon ?? ($productsTotal + $taxAmount + $shippingCost + $packingCost);
     }
 
     // Helper function for price formatting
@@ -109,11 +161,11 @@
     <div class="details-wrapper">
 
         {{-- ================================================================
-            ROW 1: Products Total (Original Price - Never changes)
+            ROW 1: Products Total (Original - NEVER changes)
         ================================================================= --}}
         <div class="price-details">
             <span>@lang('Total MRP')</span>
-            <span class="right-side" id="products-total-display">
+            <span class="right-side products-total-display" id="products-total-display">
                 {{ $formatPrice($productsTotal) }}
             </span>
         </div>
@@ -124,17 +176,17 @@
         <div class="price-details coupon-row {{ $hasCoupon ? '' : 'd-none' }}" id="coupon-row">
             <span class="d-flex align-items-center gap-2">
                 <i class="fas fa-tag text-success"></i>
-                @lang('Discount')
-                <span class="coupon-percentage text-success" id="coupon-percentage-display">
+                @lang('Coupon Discount')
+                <span class="coupon-percentage-display text-success" id="coupon-percentage-display">
                     {{ $couponPercentage ? '(' . $couponPercentage . ')' : '' }}
                 </span>
-                <span class="badge bg-success coupon-code-badge" id="coupon-code-display">
+                <span class="badge bg-success coupon-code-badge coupon-code-display" id="coupon-code-display">
                     {{ $couponCode }}
                 </span>
             </span>
             <span class="right-side d-flex align-items-center gap-2">
-                <span class="text-success" id="coupon-amount-display">
-                    -{{ $formatPrice($couponAmount) }}
+                <span class="text-success coupon-amount-display" id="coupon-amount-display">
+                    -{{ $formatPrice($couponDiscount) }}
                 </span>
                 @if($currentStep == 3)
                 <button type="button" class="btn btn-link btn-sm text-danger p-0 remove-coupon-btn"
@@ -149,28 +201,25 @@
             ROW 3: Tax
         ================================================================= --}}
         @if($currentStep == 1)
-            {{-- Step 1: Dynamic Tax (shown via JavaScript after location selection) --}}
+            {{-- Step 1: Tax calculated via JavaScript --}}
             <div class="price-details tax-row d-none" id="tax-row">
                 <span>
                     @lang('Tax')
-                    <span class="tax-rate-text" id="tax-rate-display"></span>
+                    <span class="tax-rate-display" id="tax-rate-display"></span>
                 </span>
-                <span class="right-side" id="tax-amount-display">{{ $formatPrice(0) }}</span>
-            </div>
-            <div class="price-details d-none" id="tax-location-row">
-                <small class="text-muted" id="tax-location-display"></small>
+                <span class="right-side tax-amount-display" id="tax-amount-display">{{ $formatPrice(0) }}</span>
             </div>
         @elseif($currentStep == 2)
-            {{-- Step 2: Tax from step1 session (dynamic display) --}}
-            <div class="price-details tax_show {{ $taxRate > 0 ? '' : 'd-none' }}" id="tax-row">
+            {{-- Step 2: Tax from step1 session --}}
+            <div class="price-details tax-row {{ $taxRate > 0 ? '' : 'd-none' }}" id="tax-row">
                 <span>
                     @lang('Tax')
-                    <span class="original_tax">({{ $taxRate }}%)</span>
+                    <span class="tax-rate-display" id="tax-rate-display">({{ $taxRate }}%)</span>
                 </span>
-                <span class="right-side tax_amount_view">{{ $formatPrice($taxAmount) }}</span>
+                <span class="right-side tax-amount-display" id="tax-amount-display">{{ $formatPrice($taxAmount) }}</span>
             </div>
         @else
-            {{-- Step 3: Tax from session (read-only) --}}
+            {{-- Step 3: Tax from step2 session --}}
             @if($taxRate > 0)
             <div class="price-details">
                 <span>@lang('Tax') ({{ $taxRate }}%)</span>
@@ -185,24 +234,21 @@
         @endif
 
         {{-- ================================================================
-            ROW 4 & 5: Shipping & Packing (Step 2 & 3 only, physical products)
+            ROW 4: Shipping (Step 2 & 3 only, physical products)
         ================================================================= --}}
-        @if(!$isDigital && $currentStep >= 2)
+        {{-- DEBUG: isDigital={{ $isDigital ? 'true' : 'false' }}, currentStep={{ $currentStep }} --}}
+        @if($currentStep >= 2)
             @if($currentStep == 2)
-                {{-- Step 2: Dynamic Shipping (updated via JavaScript) --}}
-                <div class="price-details">
+                {{-- Step 2: Dynamic Shipping via JavaScript --}}
+                <div class="price-details" id="shipping-row">
                     <span>@lang('Shipping Cost')</span>
-                    <span class="right-side shipping_cost_view" id="shipping-cost-display">{{ $formatPrice(0) }}</span>
+                    <span class="right-side shipping-cost-display" id="shipping-cost-display">{{ $formatPrice(0) }}</span>
                 </div>
-                <div class="price-details free-shipping-row free-shipping-discount-row d-none" id="free-shipping-row">
+                <div class="price-details free-shipping-row d-none" id="free-shipping-row">
                     <span class="text-success">
-                        <i class="fas fa-gift"></i> @lang('Free Shipping Discount')
+                        <i class="fas fa-gift"></i> @lang('Free Shipping')
                     </span>
-                    <span class="right-side text-success free_shipping_discount_view" id="free-shipping-discount-display">-{{ $formatPrice(0) }}</span>
-                </div>
-                <div class="price-details">
-                    <span>@lang('Packaging Cost')</span>
-                    <span class="right-side packing_cost_view" id="packing-cost-display">{{ $formatPrice(0) }}</span>
+                    <span class="right-side text-success free-shipping-discount-display" id="free-shipping-discount-display">-{{ $formatPrice(0) }}</span>
                 </div>
             @else
                 {{-- Step 3: Shipping from session --}}
@@ -221,30 +267,38 @@
                         @endif
                     </span>
                 </div>
-
                 @if($isFreeShipping && $freeShippingDiscount > 0)
                 <div class="price-details">
                     <span class="text-success">
                         <i class="fas fa-gift"></i> @lang('Free Shipping Discount')
                     </span>
-                    <span class="right-side text-success">
-                        -{{ $formatPrice($freeShippingDiscount) }}
-                    </span>
+                    <span class="right-side text-success">-{{ $formatPrice($freeShippingDiscount) }}</span>
                 </div>
                 @endif
-
                 @if($shippingCompany)
                 <div class="price-details">
                     <small class="text-muted">{{ $shippingCompany }}</small>
                 </div>
                 @endif
+            @endif
+        @endif
 
-                {{-- Packing --}}
+        {{-- ================================================================
+            ROW 5: Packing (Step 2 & 3 only, physical products)
+        ================================================================= --}}
+        @if($currentStep >= 2)
+            @if($currentStep == 2)
+                {{-- Step 2: Dynamic Packing via JavaScript --}}
+                <div class="price-details" id="packing-row">
+                    <span>@lang('Packaging Cost')</span>
+                    <span class="right-side packing-cost-display" id="packing-cost-display">{{ $formatPrice(0) }}</span>
+                </div>
+            @else
+                {{-- Step 3: Packing from session --}}
                 <div class="price-details">
                     <span>@lang('Packaging Cost')</span>
                     <span class="right-side">{{ $formatPrice($packingCost) }}</span>
                 </div>
-
                 @if($packingCompany)
                 <div class="price-details">
                     <small class="text-muted">{{ $packingCompany }}</small>
@@ -267,13 +321,13 @@
                 @lang('Final Price')
             @endif
         </span>
-        <span class="total-amount" id="final-cost"
+        <span class="grand-total-display" id="grand-total-display"
               style="font-size: 18px; font-weight: 700; color: var(--theme-primary);">
-            {{ $formatPrice($finalTotal) }}
+            {{ $formatPrice($grandTotal) }}
         </span>
     </div>
 
-    {{-- Helper text for Step 1 --}}
+    {{-- Note for Step 1 --}}
     @if($currentStep == 1)
     <div class="text-muted text-center mt-2" style="font-size: 12px;">
         <small>* @lang('Tax and shipping costs will be calculated in next steps')</small>
@@ -282,24 +336,21 @@
 </div>
 
 {{-- ================================================================
-    HIDDEN FIELDS (for JavaScript and form submission)
+    HIDDEN FIELDS FOR JAVASCRIPT
 ================================================================= --}}
-<input type="hidden" id="original-products-total" value="{{ $productsTotal }}">
-<input type="hidden" id="subtotal-before-coupon" value="{{ $subtotalBeforeCoupon }}">
-<input type="hidden" id="current-coupon-amount" value="{{ $couponAmount }}">
-<input type="hidden" id="current-coupon-code" value="{{ $couponCode }}">
-<input type="hidden" id="current-coupon-id" value="{{ $couponId }}">
-<input type="hidden" id="has-coupon" value="{{ $hasCoupon ? '1' : '0' }}">
-<input type="hidden" id="currency-sign" value="{{ $currencySign }}">
-<input type="hidden" id="currency-format" value="{{ $currencyFormat }}">
-
-{{-- Vendor checkout data --}}
-@php
-    $vendorId = $vendor_id ?? Session::get('checkout_vendor_id');
-    $isVendorCheckout = $is_vendor_checkout ?? !empty($vendorId);
-@endphp
-<input type="hidden" id="checkout-vendor-id" value="{{ $vendorId ?? '' }}">
-<input type="hidden" id="is-vendor-checkout" value="{{ $isVendorCheckout ? '1' : '0' }}">
+<input type="hidden" id="price-products-total" value="{{ $productsTotal }}">
+<input type="hidden" id="price-coupon-discount" value="{{ $couponDiscount }}">
+<input type="hidden" id="price-coupon-code" value="{{ $couponCode }}">
+<input type="hidden" id="price-tax-rate" value="{{ $taxRate }}">
+<input type="hidden" id="price-tax-amount" value="{{ $taxAmount }}">
+<input type="hidden" id="price-shipping-cost" value="{{ $shippingCost }}">
+<input type="hidden" id="price-packing-cost" value="{{ $packingCost }}">
+<input type="hidden" id="price-grand-total" value="{{ $grandTotal }}">
+<input type="hidden" id="price-subtotal-before-coupon" value="{{ $subtotalBeforeCoupon }}">
+<input type="hidden" id="price-currency-sign" value="{{ $currencySign }}">
+<input type="hidden" id="price-currency-format" value="{{ $currencyFormat }}">
+<input type="hidden" id="price-vendor-id" value="{{ $vendorId ?? '' }}">
+<input type="hidden" id="price-current-step" value="{{ $currentStep }}">
 
 <style>
 .coupon-row {
@@ -328,3 +379,197 @@
     padding: 5px 0;
 }
 </style>
+
+{{-- ================================================================
+    UNIFIED JAVASCRIPT FOR PRICE UPDATES
+================================================================= --}}
+<script>
+/**
+ * ============================================================================
+ * UNIFIED PRICE SUMMARY MANAGER
+ * ============================================================================
+ *
+ * Single source of truth for all price display updates.
+ * Used by all checkout steps for consistent behavior.
+ *
+ * Usage:
+ * - PriceSummary.updateTax(rate, amount)
+ * - PriceSummary.updateShipping(cost, originalCost, isFree)
+ * - PriceSummary.updatePacking(cost)
+ * - PriceSummary.updateCoupon(discount, code, percentage)
+ * - PriceSummary.removeCoupon()
+ * - PriceSummary.recalculateTotal()
+ *
+ * ============================================================================
+ */
+// Initialize when DOM is ready
+(function initPriceSummary() {
+    // Wait for jQuery
+    if (typeof jQuery === 'undefined') {
+        setTimeout(initPriceSummary, 50);
+        return;
+    }
+
+    // Wait for DOM ready
+    $(function() {
+        // Get currency settings from hidden fields
+        var currencySign = $('#price-currency-sign').val() || 'SAR';
+        var currencyFormat = parseInt($('#price-currency-format').val()) || 0;
+        var currentStep = parseInt($('#price-current-step').val()) || 1;
+
+        console.log('🎯 PriceSummary initialized:', {
+            currencySign: currencySign,
+            currencyFormat: currencyFormat,
+            currentStep: currentStep,
+            productsTotal: $('#price-products-total').val()
+        });
+
+        // Format price with currency
+        function formatPrice(amount) {
+            var formatted = parseFloat(amount || 0).toFixed(2);
+            return currencyFormat == 0 ? currencySign + formatted : formatted + currencySign;
+        }
+
+    // Get current values from hidden fields
+    function getValues() {
+        return {
+            productsTotal: parseFloat($('#price-products-total').val()) || 0,
+            couponDiscount: parseFloat($('#price-coupon-discount').val()) || 0,
+            taxRate: parseFloat($('#price-tax-rate').val()) || 0,
+            taxAmount: parseFloat($('#price-tax-amount').val()) || 0,
+            shippingCost: parseFloat($('#price-shipping-cost').val()) || 0,
+            packingCost: parseFloat($('#price-packing-cost').val()) || 0,
+            subtotalBeforeCoupon: parseFloat($('#price-subtotal-before-coupon').val()) || 0
+        };
+    }
+
+    // Calculate and update grand total
+    function recalculateTotal() {
+        var v = getValues();
+        var subtotal = v.productsTotal - v.couponDiscount;
+        var grandTotal = subtotal + v.taxAmount + v.shippingCost + v.packingCost;
+
+        // Update hidden field
+        $('#price-grand-total').val(grandTotal.toFixed(2));
+
+        // Update display
+        $('#grand-total-display, .grand-total-display').html(formatPrice(grandTotal));
+
+        // Also update legacy selectors for backward compatibility
+        $('#final-cost, #final-total-display, .total-amount').html(formatPrice(grandTotal));
+        $('#grandtotal').val(grandTotal.toFixed(2));
+
+        console.log('PriceSummary: Total updated', {
+            products: v.productsTotal,
+            coupon: v.couponDiscount,
+            tax: v.taxAmount,
+            shipping: v.shippingCost,
+            packing: v.packingCost,
+            total: grandTotal
+        });
+
+        return grandTotal;
+    }
+
+    var PriceSummary = {
+        // Format price helper
+        formatPrice: formatPrice,
+
+        // Get current values
+        getValues: getValues,
+
+        // Update tax display
+        updateTax: function(rate, amount) {
+            console.log('💰 PriceSummary.updateTax called:', { rate: rate, amount: amount });
+
+            $('#price-tax-rate').val(rate);
+            $('#price-tax-amount').val(amount);
+
+            if (rate > 0) {
+                $('#tax-row, .tax-row').removeClass('d-none');
+                $('#tax-rate-display, .tax-rate-display').html('(' + rate + '%)');
+                $('#tax-amount-display, .tax-amount-display').html(formatPrice(amount));
+            } else {
+                $('#tax-row, .tax-row').addClass('d-none');
+            }
+
+            recalculateTotal();
+        },
+
+        // Update shipping display
+        updateShipping: function(cost, originalCost, isFree) {
+            console.log('📦 PriceSummary.updateShipping called:', { cost: cost, originalCost: originalCost, isFree: isFree });
+
+            originalCost = originalCost || cost;
+            isFree = isFree || false;
+
+            $('#price-shipping-cost').val(cost);
+
+            if (isFree && originalCost > 0) {
+                // Show original price crossed out + Free badge
+                var html = '<span class="text-decoration-line-through text-muted">' + formatPrice(originalCost) + '</span> ' +
+                           '<span class="badge bg-success"><i class="fas fa-gift"></i> @lang("Free!")</span>';
+                $('#shipping-cost-display, .shipping-cost-display').html(html);
+
+                // Show free shipping discount row
+                $('#free-shipping-row, .free-shipping-row').removeClass('d-none');
+                $('#free-shipping-discount-display, .free-shipping-discount-display').html('-' + formatPrice(originalCost));
+            } else {
+                $('#shipping-cost-display, .shipping-cost-display').html(formatPrice(cost));
+                $('#free-shipping-row, .free-shipping-row').addClass('d-none');
+            }
+
+            recalculateTotal();
+        },
+
+        // Update packing display
+        updatePacking: function(cost) {
+            console.log('🎁 PriceSummary.updatePacking called:', { cost: cost });
+
+            $('#price-packing-cost').val(cost);
+            $('#packing-cost-display, .packing-cost-display').html(formatPrice(cost));
+            recalculateTotal();
+        },
+
+        // Update coupon display
+        updateCoupon: function(discount, code, percentage) {
+            $('#price-coupon-discount').val(discount);
+            $('#price-coupon-code').val(code);
+
+            if (discount > 0) {
+                $('#coupon-row').removeClass('d-none');
+                $('#coupon-code-display, .coupon-code-display').text(code);
+                $('#coupon-amount-display, .coupon-amount-display').html('-' + formatPrice(discount));
+                $('#coupon-percentage-display, .coupon-percentage-display').html(percentage ? '(' + percentage + ')' : '');
+            } else {
+                $('#coupon-row').addClass('d-none');
+            }
+
+            recalculateTotal();
+        },
+
+        // Remove coupon
+        removeCoupon: function() {
+            $('#price-coupon-discount').val(0);
+            $('#price-coupon-code').val('');
+            $('#coupon-row').addClass('d-none');
+            recalculateTotal();
+        },
+
+        // Manual recalculation
+        recalculateTotal: recalculateTotal,
+
+        // Get subtotal before coupon (for coupon calculations)
+        getSubtotalBeforeCoupon: function() {
+            var v = getValues();
+            return v.productsTotal + v.taxAmount + v.shippingCost + v.packingCost;
+        }
+    };
+
+    // Make it globally available
+    window.PriceSummary = PriceSummary;
+
+    console.log('✅ PriceSummary attached to window');
+    });
+})();
+</script>

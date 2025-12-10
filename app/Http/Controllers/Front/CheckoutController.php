@@ -1237,14 +1237,67 @@ class CheckoutController extends FrontBaseController
         $oldCart = Session::get('cart');
         $cart = new Cart($oldCart);
 
+        // ✅ Ensure vendorId is integer for comparison
+        $vendorId = (int)$vendorId;
+
+        // ✅ DEBUG: Log cart structure
+        \Log::info('getVendorCartData: Starting', [
+            'vendor_id' => $vendorId,
+            'cart_exists' => !empty($oldCart),
+            'items_count' => $cart->items ? count($cart->items) : 0,
+            'first_item_keys' => $cart->items ? array_keys(array_slice($cart->items, 0, 1, true)) : []
+        ]);
+
+        if ($cart->items && count($cart->items) > 0) {
+            $firstItem = reset($cart->items);
+            $itemObj = data_get($firstItem, 'item');
+            \Log::info('getVendorCartData: First item structure', [
+                'item_user_id' => data_get($firstItem, 'item.user_id'),
+                'item_vendor_user_id' => data_get($firstItem, 'item.vendor_user_id'),
+                'user_id' => data_get($firstItem, 'user_id'),
+                'price' => data_get($firstItem, 'price'),
+                'item_is_object' => is_object($itemObj),
+                'item_is_array' => is_array($itemObj),
+                'item_type' => gettype($itemObj),
+                'item_keys' => is_array($itemObj) ? array_keys($itemObj) : (is_object($itemObj) ? get_object_vars($itemObj) : 'N/A')
+            ]);
+        }
+
         // Filter products for this vendor only
         $vendorProducts = [];
         foreach ($cart->items as $rowKey => $product) {
-            $productVendorId = data_get($product, 'item.user_id')
-                ?? data_get($product, 'item.vendor_user_id')
-                ?? data_get($product, 'user_id')
-                ?? 0;
-            if ($productVendorId == $vendorId) {
+            // ✅ Get vendor ID - Cart stores 'user_id' at root level (see Cart::add/addnum)
+            // Priority: direct user_id > item.user_id > item.vendor_user_id
+            $productVendorId = 0;
+
+            // Path 1: direct user_id (Cart model stores this at root level)
+            if (isset($product['user_id'])) {
+                $productVendorId = (int)$product['user_id'];
+            }
+            // Path 2: item.user_id (Product object property)
+            elseif (isset($product['item']) && is_object($product['item']) && isset($product['item']->user_id)) {
+                $productVendorId = (int)$product['item']->user_id;
+            }
+            // Path 3: item as array
+            elseif (isset($product['item']) && is_array($product['item']) && isset($product['item']['user_id'])) {
+                $productVendorId = (int)$product['item']['user_id'];
+            }
+            // Path 4: vendor_user_id (fallback)
+            elseif (isset($product['item']) && is_object($product['item']) && isset($product['item']->vendor_user_id)) {
+                $productVendorId = (int)$product['item']->vendor_user_id;
+            }
+
+            \Log::info('getVendorCartData: Checking item', [
+                'rowKey' => $rowKey,
+                'productVendorId' => $productVendorId,
+                'targetVendorId' => $vendorId,
+                'match' => $productVendorId === $vendorId,
+                'price' => $product['price'] ?? 0,
+                'has_direct_user_id' => isset($product['user_id']),
+                'direct_user_id_value' => $product['user_id'] ?? 'NOT_SET'
+            ]);
+
+            if ($productVendorId === $vendorId) {
                 // إضافة بيانات الخصم والأبعاد باستخدام VendorCartService
                 $mpId = data_get($product, 'item.merchant_product_id')
                     ?? data_get($product, 'merchant_product_id')
@@ -1273,6 +1326,14 @@ class CheckoutController extends FrontBaseController
             $totalPrice += (float)($product['price'] ?? 0);
             $totalQty += (int)($product['qty'] ?? 1);
         }
+
+        // ✅ DEBUG: Log final results
+        \Log::info('getVendorCartData: FINAL RESULTS', [
+            'vendor_id' => $vendorId,
+            'vendorProducts_count' => count($vendorProducts),
+            'totalPrice' => $totalPrice,
+            'totalQty' => $totalQty
+        ]);
 
         // Check if all vendor products are digital
         $dp = 1;
@@ -1404,6 +1465,15 @@ class CheckoutController extends FrontBaseController
         $dp = $cartData['digital'];
         $vendorShippingData = $cartData['shipping_data'];
 
+        // ✅ DEBUG: Log cart data
+        \Log::info('checkoutVendor: Cart data loaded', [
+            'vendor_id' => $vendorId,
+            'products_count' => count($vendorProducts),
+            'total_price' => $totalPrice,
+            'total_qty' => $totalQty,
+            'digital' => $dp
+        ]);
+
         if (empty($vendorProducts)) {
             return redirect()->route('front.cart')->with('unsuccess', __("No products found for this vendor."));
         }
@@ -1415,24 +1485,25 @@ class CheckoutController extends FrontBaseController
         $package_data = DB::table('packages')->where('user_id', $vendorId)->get();
         // No fallback to user 0 - if vendor has no packages, collection will be empty
 
-        // Calculate total with vendor-specific coupon
-        $total = $totalPrice;
-        $coupon = Session::has('coupon_vendor_' . $vendorId) ? Session::get('coupon_vendor_' . $vendorId) : 0;
+        // ========================================================================
+        // ✅ UNIFIED: productsTotal = RAW price (no coupon deduction)
+        // ========================================================================
+        $productsTotal = $totalPrice; // This is the RAW total from cart
 
-        if (!Session::has('coupon_total_vendor_' . $vendorId)) {
-            $total = $total - $coupon;
-        } else {
-            $total = Session::get('coupon_total_vendor_' . $vendorId);
-            $total = str_replace(',', '', str_replace($this->curr->sign, '', $total));
-        }
+        // ✅ DEBUG: Log what we're sending to view
+        \Log::info('checkoutVendor: Sending to view', [
+            'vendor_id' => $vendorId,
+            'productsTotal' => $productsTotal,
+            'totalPrice' => $totalPrice
+        ]);
 
         $pickups = DB::table('pickups')->get();
         $curr = $this->curr;
 
         return view('frontend.checkout.step1', [
             'products' => $vendorProducts,
-            'productsTotal' => $total, // Products only - no shipping/tax yet
-            'totalPrice' => $total, // Backward compatibility
+            'productsTotal' => $productsTotal, // ✅ RAW products total (no coupon)
+            'totalPrice' => $productsTotal, // Backward compatibility
             'pickups' => $pickups,
             'totalQty' => $totalQty,
             'shipping_cost' => 0,
@@ -1614,18 +1685,30 @@ class CheckoutController extends FrontBaseController
         $vendorSubtotal = 0;
 
         // Calculate subtotal for this vendor's products only
+        // Cart stores 'user_id' at root level AND item can be object or array
         foreach ($cart->items as $product) {
-            $productVendorId = $product['item']['user_id'] ?? 0;
-            if ($productVendorId == $vendorId) {
+            // First check direct user_id (Cart model stores this at root level)
+            $productVendorId = 0;
+            if (isset($product['user_id'])) {
+                $productVendorId = (int)$product['user_id'];
+            } elseif (isset($product['item']) && is_object($product['item']) && isset($product['item']->user_id)) {
+                $productVendorId = (int)$product['item']->user_id;
+            } elseif (isset($product['item']) && is_array($product['item']) && isset($product['item']['user_id'])) {
+                $productVendorId = (int)$product['item']['user_id'];
+            }
+
+            if ($productVendorId == (int)$vendorId) {
                 $vendorSubtotal += (float)($product['price'] ?? 0);
             }
         }
 
         $taxAmount = ($vendorSubtotal * $taxRate) / 100;
 
-        // Apply coupon if exists (vendor checkout may have coupons too)
-        $coupon = Session::has('coupon') ? Session::get('coupon') : 0;
-        $productsTotal = $vendorSubtotal - $coupon;
+        // ========================================================================
+        // ✅ UNIFIED PRICE CALCULATION - DO NOT SUBTRACT COUPON HERE!
+        // ========================================================================
+        // products_total = RAW sum of products (NEVER changes)
+        // Coupon is handled separately and displayed as discount line
 
         // Save tax data to step1
         $step1['tax_rate'] = $taxRate;
@@ -1633,9 +1716,9 @@ class CheckoutController extends FrontBaseController
         $step1['tax_amount'] = $taxAmount;
         $step1['vendor_subtotal'] = $vendorSubtotal;
 
-        // ✅ ADD: For unified price display component
-        $step1['products_total'] = $productsTotal;
-        $step1['total_with_tax'] = $productsTotal + $taxAmount;
+        // ✅ products_total = Original price WITHOUT coupon deduction
+        $step1['products_total'] = $vendorSubtotal;
+        $step1['total_with_tax'] = $vendorSubtotal + $taxAmount;
 
         Session::put('vendor_step1_' . $vendorId, $step1);
         Session::save(); // Ensure session is saved before redirect
@@ -1795,9 +1878,31 @@ class CheckoutController extends FrontBaseController
             }
         }
 
-        $baseAmount = $vendorTotal;
-        $coupon = Session::has('coupon_vendor_' . $vendorId) ? Session::get('coupon_vendor_' . $vendorId) : 0;
-        $baseAmount = $baseAmount - $coupon;
+        // ========================================================================
+        // ✅ UNIFIED: products_total is the RAW total (no coupon subtracted)
+        // ========================================================================
+        $productsTotal = $vendorTotal;
+
+        // Get coupon data (but DON'T subtract from productsTotal!)
+        $couponDiscount = 0;
+        $couponCode = '';
+        $couponPercentage = '';
+        $couponId = null;
+
+        if (Session::has('coupon_vendor_' . $vendorId)) {
+            $couponDiscount = (float)Session::get('coupon_vendor_' . $vendorId, 0);
+            $couponCode = Session::get('coupon_code_vendor_' . $vendorId, '');
+            $couponPercentage = Session::get('coupon_percentage_vendor_' . $vendorId, '');
+            $couponId = Session::get('coupon_id_vendor_' . $vendorId);
+        } elseif (Session::has('coupon')) {
+            $couponDiscount = (float)Session::get('coupon', 0);
+            $couponCode = Session::get('coupon_code', '');
+            $couponPercentage = Session::get('coupon_percentage', '');
+            $couponId = Session::get('coupon_id');
+        }
+
+        // For free_above calculation, use products total (before coupon)
+        $baseAmount = $productsTotal;
 
         $shipping_cost_total = 0.0;
         $shipping_names = [];
@@ -1900,16 +2005,29 @@ class CheckoutController extends FrontBaseController
         $packing_name = count($packing_names) ? implode(' + ', array_unique($packing_names)) : null;
 
         // Get tax data from vendor step1
-        $step1 = Session::get('vendor_step1_' . $vendorId);
-        $taxAmount = $step1['tax_amount'] ?? 0;
-        $taxRate = $step1['tax_rate'] ?? 0;
-        $taxLocation = $step1['tax_location'] ?? '';
+        $step1Data = Session::get('vendor_step1_' . $vendorId);
+        $taxAmount = $step1Data['tax_amount'] ?? 0;
+        $taxRate = $step1Data['tax_rate'] ?? 0;
+        $taxLocation = $step1Data['tax_location'] ?? '';
 
-        // ✅ Calculate COMPLETE total for this vendor (products + tax + shipping + packing)
-        // This will be used in step3 and payment
-        $vendorProductsTotal = $vendorTotal; // Products total (may have discount already applied)
-        $finalTotal = $vendorProductsTotal + $taxAmount + $shipping_cost_total + $packing_cost_total;
+        // ========================================================================
+        // ✅ UNIFIED PRICE CALCULATION
+        // ========================================================================
+        // products_total = RAW products (no coupon)
+        // subtotal = products_total - coupon_discount
+        // grand_total = subtotal + tax + shipping + packing
+        // subtotal_before_coupon = products_total + tax + shipping + packing (for coupon recalculation)
 
+        $subtotal = $productsTotal - $couponDiscount;
+        $grandTotal = $subtotal + $taxAmount + $shipping_cost_total + $packing_cost_total;
+        $subtotalBeforeCoupon = $productsTotal + $taxAmount + $shipping_cost_total + $packing_cost_total;
+
+        // Save all data to step2
+        $step2['products_total'] = $productsTotal;                   // ✅ RAW products total
+        $step2['coupon_discount'] = $couponDiscount;                 // ✅ Coupon amount
+        $step2['coupon_code'] = $couponCode;                         // ✅ Coupon code
+        $step2['coupon_percentage'] = $couponPercentage;             // ✅ Coupon percentage
+        $step2['coupon_id'] = $couponId;                             // ✅ Coupon ID
         $step2['shipping_company'] = $shipping_name;
         $step2['shipping_cost'] = $shipping_cost_total;
         $step2['original_shipping_cost'] = $original_shipping_cost;  // ✅ السعر قبل الخصم
@@ -1920,8 +2038,10 @@ class CheckoutController extends FrontBaseController
         $step2['tax_rate'] = $taxRate;
         $step2['tax_amount'] = $taxAmount;
         $step2['tax_location'] = $taxLocation;
-        $step2['total'] = $finalTotal;            // Backward compatibility
-        $step2['final_total'] = $finalTotal;      // ✅ Unified naming
+        $step2['subtotal_before_coupon'] = $subtotalBeforeCoupon;    // ✅ For coupon recalculation
+        $step2['grand_total'] = $grandTotal;                         // ✅ Final amount
+        $step2['total'] = $grandTotal;                               // Backward compatibility
+        $step2['final_total'] = $grandTotal;                         // ✅ Alias
 
         // ✅ Save raw shipping/packing selections for restore on refresh/back
         if (isset($step2['shipping']) && is_array($step2['shipping'])) {

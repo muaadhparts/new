@@ -778,6 +778,15 @@
                         $('#final-cost').html(tttotal + '{{ $curr->sign }}');
                         $('.total-cost-dum #total-cost').html(ttotal + '{{ $curr->sign }}');
                     }
+
+                    // ✅ تحديث PriceSummary الموحد
+                    if (typeof PriceSummary !== 'undefined') {
+                        var taxRate = parseFloat(data[1]) || 0;
+                        var taxAmount = parseFloat(data[2]) || 0;
+                        PriceSummary.updateTax(taxRate, taxAmount);
+                        console.log('💰 Step1 Tax updated via PriceSummary:', { rate: taxRate + '%', amount: taxAmount });
+                    }
+
                     $('.gocover').hide();
                 }
             });

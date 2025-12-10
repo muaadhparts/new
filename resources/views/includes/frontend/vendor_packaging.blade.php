@@ -9,20 +9,21 @@
                 </button>
             </div>
             <div class="packeging-area">
-                <!-- start -->
                 <div class="summary-inner-box">
                     <div class="inputs-wrapper">
                         @forelse($packaging as $data)
                         <div class="gs-radio-wrapper">
                             <input type="radio" class="packing"
                                 view="{{ $curr->sign }}{{ round($data->price * $curr->value, 2) }}"
-                                data-form="{{ $data->title }}" id="free-package{{ $data->id }}" ref="{{ $vendor_id }}"
+                                data-form="{{ $data->title }}"
+                                id="free-package{{ $data->id }}"
+                                ref="{{ $vendor_id }}"
                                 data-price="{{ round($data->price * $curr->value, 2) }}"
-                                name="packeging[{{ $vendor_id }}]" value="{{ $data->id }}" {{ $loop->first ? 'checked' :
-                            '' }}>
+                                name="packeging[{{ $vendor_id }}]"
+                                value="{{ $data->id }}"
+                                {{ $loop->first ? 'checked' : '' }}>
                             <label class="icon-label" for="free-package{{ $data->id }}">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20"
-                                    fill="none">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="none">
                                     <rect x="0.5" y="0.5" width="19" height="19" rx="9.5" fill="#FDFDFD" />
                                     <rect x="0.5" y="0.5" width="19" height="19" rx="9.5" stroke="#EE1243" />
                                     <circle cx="10" cy="10" r="4" fill="#EE1243" />
@@ -36,19 +37,80 @@
                                 <small>{{ $data->subtitle }}</small>
                             </label>
                         </div>
-
                         @empty
-                        <p>
-                            @lang('No Packaging Method Available')
-                        </p>
+                        <p>@lang('No Packaging Method Available')</p>
                         @endforelse
                     </div>
                 </div>
-
-                <!-- end -->
-
             </div>
-
         </div>
     </div>
 </div>
+
+<script>
+(function() {
+    const vendorId = {{ $vendor_id }};
+    const modalId = 'vendor_package' + vendorId;
+    const currSign = '{{ $curr->sign }}';
+
+    function initPackagingModal() {
+        const modal = document.getElementById(modalId);
+        if (!modal) {
+            setTimeout(initPackagingModal, 100);
+            return;
+        }
+
+        const packingRadios = modal.querySelectorAll('input.packing[ref="' + vendorId + '"]');
+
+        packingRadios.forEach(function(radio) {
+            radio.addEventListener('change', function() {
+                if (!this.checked) return;
+
+                const price = parseFloat(this.getAttribute('data-price')) || 0;
+                const title = this.getAttribute('data-form');
+
+                // Update packing text display
+                const packingText = document.getElementById('packing_text' + vendorId);
+                if (packingText) {
+                    packingText.textContent = title + ': ' + currSign + price.toFixed(2);
+                }
+
+                // ✅ Update PriceSummary directly
+                if (typeof window.PriceSummary !== 'undefined') {
+                    window.PriceSummary.updatePacking(price);
+                    console.log('✅ Packing updated via PriceSummary:', { price: price });
+                }
+
+                // Also call global function for backward compatibility
+                if (typeof window.getPacking === 'function') {
+                    window.getPacking();
+                }
+            });
+        });
+
+        // ✅ Trigger initial update for pre-selected packing on page load
+        const checkedRadio = modal.querySelector('input.packing[ref="' + vendorId + '"]:checked');
+        if (checkedRadio) {
+            const price = parseFloat(checkedRadio.getAttribute('data-price')) || 0;
+            if (typeof window.PriceSummary !== 'undefined') {
+                window.PriceSummary.updatePacking(price);
+                console.log('✅ Initial packing set via PriceSummary:', { price: price });
+            }
+        }
+
+        // Trigger update when modal opens if already selected
+        modal.addEventListener('shown.bs.modal', function() {
+            const checked = modal.querySelector('input.packing[ref="' + vendorId + '"]:checked');
+            if (checked) {
+                checked.dispatchEvent(new Event('change'));
+            }
+        });
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initPackagingModal);
+    } else {
+        initPackagingModal();
+    }
+})();
+</script>
