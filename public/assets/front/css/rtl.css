@@ -272,3 +272,17 @@ body[dir="rtl"] {
 [dir="rtl"] .ps-3 { padding-left: 0 !important; padding-right: 1rem !important; }
 [dir="rtl"] .ps-4 { padding-left: 0 !important; padding-right: 1.5rem !important; }
 [dir="rtl"] .ps-5 { padding-left: 0 !important; padding-right: 3rem !important; }
+
+/* RTL: Fix full-width fixed elements to prevent horizontal gap on zoom */
+[dir="rtl"] .header-top.sticky,
+[dir="rtl"] .search-bar,
+[dir="rtl"] .overlay,
+[dir="rtl"] .muaadh-mobile-overlay {
+    left: 0;
+    right: 0;
+}
+
+/* RTL: Ensure hidden mobile menus don't extend beyond viewport */
+[dir="rtl"] .mobile-menu {
+    right: -290px;
+}

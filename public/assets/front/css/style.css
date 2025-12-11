@@ -13486,6 +13486,7 @@ div[id*='zoom_container'] .landmarks .lable div {
 [dir="rtl"] .muaadh-mobile-menu {
     left: auto;
     right: -320px;
+    transition: right 0.3s ease;
 }
 
 [dir="rtl"] .muaadh-mobile-menu.active {
@@ -14034,7 +14035,8 @@ div[id*='zoom_container'] .landmarks .lable div {
         display: none;
     }
 
-    .muaadh-search-wrapper {
+    /* Hide search only in header, not in hero section */
+    .muaadh-header .muaadh-search-wrapper {
         display: none !important;
     }
 }
