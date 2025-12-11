@@ -11,14 +11,31 @@
     <div class="container">
         <div class="row justify-content-center content-wrapper">
             <div class="col-12">
-                <h2 class="breadcrumb-title">{{ $category->localized_name ?? $category->full_code }}</h2>
+                <h2 class="breadcrumb-title">{{ $category->Applicability ?? $category->full_code }}</h2>
                 <ul class="bread-menu">
+                    {{-- Home --}}
                     <li><a href="{{ route('front.index') }}">@lang('Home')</a></li>
+
+                    {{-- Brand --}}
                     @if($brand)
                     <li><a href="{{ route('catlogs.index', $brand->name) }}">{{ $brand->name }}</a></li>
                     @endif
+
+                    {{-- Catalog --}}
                     <li><a href="{{ route('tree.level1', ['brand' => $brand->name, 'catalog' => $catalog->code, 'vin' => $vin]) }}">{{ $catalog->shortName ?? $catalog->name ?? $catalog->code }}</a></li>
-                    <li><a href="javascript:;">{{ $category->localized_name ?? $category->full_code }}</a></li>
+
+                    {{-- Level 1 (parentCategory1) --}}
+                    @if($parentCategory1)
+                    <li><a href="{{ route('tree.level2', ['brand' => $brand->name, 'catalog' => $catalog->code, 'key1' => $parentCategory1->full_code, 'vin' => $vin]) }}" class="text-uppercase">{{ str_replace('-', ' ', $parentCategory1->slug ?? $parentCategory1->full_code) }}</a></li>
+                    @endif
+
+                    {{-- Level 2 (parentCategory2) --}}
+                    @if($parentCategory2 && $parentCategory1)
+                    <li><a href="{{ route('tree.level3', ['brand' => $brand->name, 'catalog' => $catalog->code, 'key1' => $parentCategory1->full_code, 'key2' => $parentCategory2->full_code, 'vin' => $vin]) }}" class="text-uppercase">{{ str_replace('-', ' ', $parentCategory2->slug ?? $parentCategory2->full_code) }}</a></li>
+                    @endif
+
+                    {{-- Current (category - Level 3) --}}
+                    <li><a href="javascript:;">{{ $category->Applicability ?? $category->full_code }}</a></li>
                 </ul>
             </div>
         </div>
@@ -32,92 +49,6 @@
 @include('catalog.partials.callout-modal')
 
 <div class="container py-2">
-    <div class="row">
-        <div class="col-12">
-            <div class="catalog-breadcrumb-wrapper mb-3">
-                <nav aria-label="breadcrumb">
-                    <ol class="breadcrumb catalog-breadcrumb mb-0">
-                        {{-- Home --}}
-                        <li class="breadcrumb-item">
-                            <a href="{{ route('front.index') }}">
-                                <i class="fas fa-home"></i>
-                                <span class="d-none d-sm-inline ms-1">{{ __('Home') }}</span>
-                            </a>
-                        </li>
-
-                        {{-- Brand --}}
-                        @if($brand)
-                            <li class="breadcrumb-item">
-                                <a href="{{ route('catlogs.index', ['brand' => $brand->name]) }}">
-                                    {{ Str::limit($brand->name, 15) }}
-                                </a>
-                            </li>
-                        @endif
-
-                        {{-- VIN --}}
-                        @if($vin)
-                            <li class="breadcrumb-item d-none d-sm-block">
-                                <a href="{{ route('tree.level1', [
-                                    'brand'   => $brand->name,
-                                    'catalog' => $catalog->code,
-                                    'vin'  => $vin
-                                ]) }}">
-                                    <i class="fas fa-car me-1"></i>
-                                    {{ Str::limit($vin, 12) }}
-                                </a>
-                            </li>
-                        @endif
-
-                        {{-- Catalog --}}
-                        @if($catalog)
-                            <li class="breadcrumb-item d-none d-md-block">
-                                <a href="{{ route('tree.level1', [
-                                    'brand'   => $brand->name,
-                                    'catalog' => $catalog->code
-                                ]) }}">
-                                    {{ Str::limit($catalog->shortName ?? $catalog->name ?? $catalog->code, 20) }}
-                                </a>
-                            </li>
-                        @endif
-
-                        {{-- Level 1 --}}
-                        @if($parentCategory1)
-                            <li class="breadcrumb-item d-none d-lg-block text-uppercase">
-                                <a href="{{ route('tree.level2', [
-                                    'brand'   => $brand->name,
-                                    'catalog' => $catalog->code,
-                                    'key1' => $parentCategory1->full_code
-                                ]) }}">
-                                    {{ Str::limit(str_replace('-', ' ', $parentCategory1->slug ?? $parentCategory1->full_code), 25) }}
-                                </a>
-                            </li>
-                        @endif
-
-                        {{-- Level 2 --}}
-                        @if($parentCategory2 && $parentCategory1)
-                            <li class="breadcrumb-item d-none d-xl-block text-uppercase">
-                                <a href="{{ route('tree.level3', [
-                                    'brand'   => $brand->name,
-                                    'catalog' => $catalog->code,
-                                    'key1' => $parentCategory1->full_code,
-                                    'key2' => $parentCategory2->full_code
-                                ]) }}">
-                                    {{ Str::limit(str_replace('-', ' ', $parentCategory2->slug ?? $parentCategory2->full_code), 25) }}
-                                </a>
-                            </li>
-                        @endif
-
-                        {{-- Level 3 (current) --}}
-                        @if($category)
-                            <li class="breadcrumb-item active text-uppercase" aria-current="page">
-                                <span>{{ Str::limit($category->Applicability ?? $category->full_code, 30) }}</span>
-                            </li>
-                        @endif
-                    </ol>
-                </nav>
-            </div>
-        </div>
-    </div>
 </div>
 
 {{-- Search box (تقييد السيكشن الحالي) - AJAX Based --}}

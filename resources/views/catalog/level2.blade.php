@@ -22,61 +22,7 @@
 </section>
 {{-- Breadcrumb End --}}
 
-{{-- Uses catalog-unified.css for breadcrumb styling --}}
-
 <div class="container py-3">
-    {{-- Breadcrumb - Uses catalog-unified.css --}}
-    <div class="catalog-breadcrumb-wrapper mb-3">
-        <nav aria-label="breadcrumb">
-            <ol class="breadcrumb catalog-breadcrumb mb-0">
-                {{-- Home --}}
-                <li class="breadcrumb-item">
-                    <a href="{{ route('front.index') }}">
-                        <i class="fas fa-home"></i>
-                        <span class="d-none d-sm-inline ms-1">{{ __('Home') }}</span>
-                    </a>
-                </li>
-
-                {{-- Brand --}}
-                <li class="breadcrumb-item">
-                    <a href="{{ route('catlogs.index', $brand->name) }}">
-                        {{ $brand->name }}
-                    </a>
-                </li>
-
-                {{-- VIN --}}
-                @if($vin)
-                    <li class="breadcrumb-item d-none d-sm-block">
-                        <a href="{{ route('tree.level1', [
-                            'brand' => $brand->name,
-                            'catalog' => $catalog->code,
-                            'vin' => $vin
-                        ]) }}">
-                            <i class="fas fa-car me-1"></i>
-                            {{ Str::limit($vin, 12) }}
-                        </a>
-                    </li>
-                @endif
-
-                {{-- Catalog --}}
-                <li class="breadcrumb-item d-none d-md-block">
-                    <a href="{{ route('tree.level1', [
-                        'brand' => $brand->name,
-                        'catalog' => $catalog->code,
-                        'vin' => $vin
-                    ]) }}">
-                        {{ $catalog->shortName ?? $catalog->name ?? $catalog->code }}
-                    </a>
-                </li>
-
-                {{-- Current Level --}}
-                <li class="breadcrumb-item active text-uppercase" aria-current="page">
-                    <span>{{ str_replace('-', ' ', $category->slug ?? $category->full_code) }}</span>
-                </li>
-            </ol>
-        </nav>
-    </div>
-
     {{-- Search Box - Full Width on Mobile --}}
     <div class="row mb-4">
         <div class="col-12">
