@@ -90,6 +90,13 @@
 /* ============================================================================
    A02 — RESET & BASE ELEMENTS
    ============================================================================ */
+
+/* FIX: Prevent horizontal scroll on mobile (RTL white space issue) */
+html, body {
+  overflow-x: hidden;
+  max-width: 100%;
+}
+
 body {
   margin: 0;
   font-family: var(--theme-font-primary);

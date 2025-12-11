@@ -286,3 +286,83 @@ body[dir="rtl"] {
 [dir="rtl"] .mobile-menu {
     right: -290px;
 }
+
+/* ============================================================================
+   FIX: RTL Mobile White Space / Horizontal Scroll Issue
+   ============================================================================ */
+
+/* Prevent page overflow caused by negative margins in RTL mode */
+[dir="rtl"] html,
+[dir="rtl"] body {
+    overflow-x: hidden;
+    max-width: 100%;
+}
+
+/* Fix Bootstrap row negative margins in RTL on mobile */
+@media (max-width: 991.98px) {
+    [dir="rtl"] .row {
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+    }
+
+    [dir="rtl"] .container,
+    [dir="rtl"] .container-fluid {
+        padding-left: 15px;
+        padding-right: 15px;
+        max-width: 100%;
+        overflow-x: hidden;
+    }
+
+    /* Fix any elements that might overflow */
+    [dir="rtl"] .section,
+    [dir="rtl"] section,
+    [dir="rtl"] .wrapper {
+        max-width: 100%;
+        overflow-x: hidden;
+    }
+}
+
+/* Fix slick slider overflow in RTL */
+[dir="rtl"] .slick-slider {
+    max-width: 100%;
+    overflow: hidden;
+}
+
+[dir="rtl"] .slick-list {
+    overflow: hidden;
+}
+
+/* Fix any absolute/fixed positioned elements that extend beyond viewport */
+[dir="rtl"] .header-top,
+[dir="rtl"] .sticky-header,
+[dir="rtl"] footer,
+[dir="rtl"] .overlay {
+    left: 0;
+    right: 0;
+    max-width: 100%;
+}
+
+/* Ensure main content doesn't overflow */
+[dir="rtl"] main,
+[dir="rtl"] #main,
+[dir="rtl"] .main-content {
+    max-width: 100%;
+    overflow-x: hidden;
+}
+
+/* Fix header logo negative margin in RTL on mobile */
+@media (max-width: 767.98px) {
+    [dir="rtl"] .header-top .create-navbar .nav-left img {
+        margin-left: 0;
+        margin-right: 0;
+    }
+}
+
+/* Fix any other elements with negative margins on mobile */
+@media (max-width: 991.98px) {
+    [dir="rtl"] [style*="margin-left: -"],
+    [dir="rtl"] [style*="margin-right: -"] {
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+    }
+}
