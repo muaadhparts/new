@@ -1,6 +1,24 @@
 @extends('layouts.front')
 
 @section('content')
+{{-- Breadcrumb Banner --}}
+<section class="gs-breadcrumb-section bg-class"
+    data-background="{{ $gs->breadcrumb_banner ? asset('assets/images/' . $gs->breadcrumb_banner) : asset('assets/images/noimage.png') }}">
+    <div class="container">
+        <div class="row justify-content-center content-wrapper">
+            <div class="col-12">
+                <h2 class="breadcrumb-title">@lang('Search Results')</h2>
+                <ul class="bread-menu">
+                    <li><a href="{{ route('front.index') }}">@lang('Home')</a></li>
+                    <li><a href="javascript:;">@lang('Search')</a></li>
+                    <li><a href="javascript:;">{{ $sku }}</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</section>
+{{-- Breadcrumb End --}}
+
 <section class="muaadh-section py-4">
     <div class="container">
         {{-- Search Box --}}

@@ -5,6 +5,27 @@
 @section('title', ($category->localized_name ?? $category->full_code) . ' - ' . __('Illustrations'))
 
 @section('content')
+{{-- Breadcrumb Banner --}}
+<section class="gs-breadcrumb-section bg-class"
+    data-background="{{ $gs->breadcrumb_banner ? asset('assets/images/' . $gs->breadcrumb_banner) : asset('assets/images/noimage.png') }}">
+    <div class="container">
+        <div class="row justify-content-center content-wrapper">
+            <div class="col-12">
+                <h2 class="breadcrumb-title">{{ $category->localized_name ?? $category->full_code }}</h2>
+                <ul class="bread-menu">
+                    <li><a href="{{ route('front.index') }}">@lang('Home')</a></li>
+                    @if($brand)
+                    <li><a href="{{ route('catlogs.index', $brand->name) }}">{{ $brand->name }}</a></li>
+                    @endif
+                    <li><a href="{{ route('tree.level1', ['brand' => $brand->name, 'catalog' => $catalog->code, 'vin' => $vin]) }}">{{ $catalog->shortName ?? $catalog->name ?? $catalog->code }}</a></li>
+                    <li><a href="javascript:;">{{ $category->localized_name ?? $category->full_code }}</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</section>
+{{-- Breadcrumb End --}}
+
 {{-- Styles moved to MUAADH.css: Landmarks, Zoom Container, Callout Labels, Skeletons --}}
 
 {{-- Callout Modal Component (Pure HTML/JS - No Livewire) --}}

@@ -1,15 +1,3 @@
-{{--
-================================================================================
-    MUAADH THEME - HOME PAGE
-================================================================================
-    CSS GUIDELINES FOR AI AGENTS:
-    -----------------------------
-    1. The ONLY file for adding/modifying custom CSS is: public/assets/front/css/MUAADH.css
-    2. DO NOT add <style> tags in Blade files - move all styles to MUAADH.css
-    3. DO NOT create new CSS files - use MUAADH.css sections instead
-================================================================================
---}}
-
 @extends('layouts.front')
 
 @section('content')
@@ -49,7 +37,6 @@
         <div class="muaadh-section-header">
             <span class="muaadh-badge-primary">@lang('Genuine Parts Catalogues')</span>
             <h2 class="muaadh-section-title">@lang('Explore genuine OEM parts catalogues')</h2>
-            <p class="muaadh-section-desc">@lang('Select your vehicle brand to find the perfect parts')</p>
         </div>
 
         <div class="muaadh-brands-grid">
@@ -71,7 +58,6 @@
         <div class="muaadh-section-header">
             <span class="muaadh-badge-primary">@lang('Browse Categories')</span>
             <h2 class="muaadh-section-title">@lang('Shop by Category')</h2>
-            <p class="muaadh-section-desc">@lang('Find exactly what you need from our extensive catalog')</p>
         </div>
 
         <div class="muaadh-categories-grid">

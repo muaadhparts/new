@@ -3,6 +3,25 @@
 @section('title', ($category->slug ?? $category->full_code) . ' - ' . __('Subcategories'))
 
 @section('content')
+{{-- Breadcrumb Banner --}}
+<section class="gs-breadcrumb-section bg-class"
+    data-background="{{ $gs->breadcrumb_banner ? asset('assets/images/' . $gs->breadcrumb_banner) : asset('assets/images/noimage.png') }}">
+    <div class="container">
+        <div class="row justify-content-center content-wrapper">
+            <div class="col-12">
+                <h2 class="breadcrumb-title text-uppercase">{{ str_replace('-', ' ', $category->slug ?? $category->full_code) }}</h2>
+                <ul class="bread-menu">
+                    <li><a href="{{ route('front.index') }}">@lang('Home')</a></li>
+                    <li><a href="{{ route('catlogs.index', $brand->name) }}">{{ $brand->name }}</a></li>
+                    <li><a href="{{ route('tree.level1', ['brand' => $brand->name, 'catalog' => $catalog->code, 'vin' => $vin]) }}">{{ $catalog->shortName ?? $catalog->name ?? $catalog->code }}</a></li>
+                    <li><a href="javascript:;" class="text-uppercase">{{ str_replace('-', ' ', $category->slug ?? $category->full_code) }}</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</section>
+{{-- Breadcrumb End --}}
+
 {{-- Uses catalog-unified.css for breadcrumb styling --}}
 
 <div class="container py-3">

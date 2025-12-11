@@ -3,6 +3,28 @@
 @section('title', ($parentCategory2->slug ?? $parentCategory2->full_code) . ' - ' . __('Parts'))
 
 @section('content')
+{{-- Breadcrumb Banner --}}
+<section class="gs-breadcrumb-section bg-class"
+    data-background="{{ $gs->breadcrumb_banner ? asset('assets/images/' . $gs->breadcrumb_banner) : asset('assets/images/noimage.png') }}">
+    <div class="container">
+        <div class="row justify-content-center content-wrapper">
+            <div class="col-12">
+                <h2 class="breadcrumb-title text-uppercase">{{ str_replace('-', ' ', $parentCategory2->slug ?? $parentCategory2->full_code) }}</h2>
+                <ul class="bread-menu">
+                    <li><a href="{{ route('front.index') }}">@lang('Home')</a></li>
+                    <li><a href="{{ route('catlogs.index', $brand->name) }}">{{ $brand->name }}</a></li>
+                    <li><a href="{{ route('tree.level1', ['brand' => $brand->name, 'catalog' => $catalog->code, 'vin' => $vin]) }}">{{ $catalog->shortName ?? $catalog->name ?? $catalog->code }}</a></li>
+                    @if($parentCategory1)
+                    <li><a href="{{ route('tree.level2', ['brand' => $brand->name, 'catalog' => $catalog->code, 'key1' => $parentCategory1->full_code, 'vin' => $vin]) }}" class="text-uppercase">{{ str_replace('-', ' ', $parentCategory1->slug ?? $parentCategory1->full_code) }}</a></li>
+                    @endif
+                    <li><a href="javascript:;" class="text-uppercase">{{ str_replace('-', ' ', $parentCategory2->slug ?? $parentCategory2->full_code) }}</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</section>
+{{-- Breadcrumb End --}}
+
 {{-- Uses catalog-unified.css for breadcrumb styling --}}
 
 <div class="container py-3">
