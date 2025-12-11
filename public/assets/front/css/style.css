@@ -3440,6 +3440,68 @@ p.text-lg {
   color: var(--theme-primary);
 }
 
+/* ===== Breadcrumb Mobile Responsive ===== */
+@media (max-width: 767.98px) {
+  .gs-breadcrumb-section {
+    padding: 25px 0;
+  }
+  .gs-breadcrumb-section .breadcrumb-title {
+    font-size: 1.1rem;
+    margin-bottom: 10px;
+    line-height: 1.3;
+    word-break: break-word;
+  }
+  .gs-breadcrumb-section .bread-menu {
+    flex-wrap: wrap;
+    gap: 4px 6px;
+    font-size: 0.75rem;
+    justify-content: center;
+    padding: 0 10px;
+  }
+  .gs-breadcrumb-section .bread-menu li {
+    white-space: nowrap;
+    max-width: 120px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .gs-breadcrumb-section .bread-menu li::after {
+    content: "/";
+    margin-left: 6px;
+    margin-right: 0;
+  }
+  .gs-breadcrumb-section .bread-menu li a {
+    font-size: 0.75rem;
+  }
+  /* إخفاء العناصر الوسطى على الشاشات الصغيرة جداً */
+  .gs-breadcrumb-section .bread-menu li:nth-child(n+3):nth-last-child(n+2) {
+    display: none;
+  }
+  /* إظهار أول عنصرين وآخر عنصر فقط */
+  .gs-breadcrumb-section .bread-menu li:first-child,
+  .gs-breadcrumb-section .bread-menu li:nth-child(2),
+  .gs-breadcrumb-section .bread-menu li:last-child {
+    display: inline-flex;
+  }
+}
+
+@media (max-width: 575.98px) {
+  .gs-breadcrumb-section {
+    padding: 20px 0;
+  }
+  .gs-breadcrumb-section .breadcrumb-title {
+    font-size: 1rem;
+  }
+  .gs-breadcrumb-section .bread-menu {
+    font-size: 0.7rem;
+  }
+  .gs-breadcrumb-section .bread-menu li {
+    max-width: 90px;
+  }
+  .gs-breadcrumb-section .bread-menu li a {
+    font-size: 0.7rem;
+  }
+}
+
 .gs-vendor-breadcrumb {
   display: flex;
   justify-content: space-between;
