@@ -217,6 +217,16 @@ Route::prefix('admin')->group(function () {
     Route::post('/password/update', 'Admin\DashboardController@changepass')->name('admin.password.update');
     //------------ ADMIN DASHBOARD & PROFILE SECTION ENDS ------------
 
+    //------------ ADMIN PERFORMANCE MONITORING SECTION ------------
+    Route::get('/performance', 'Admin\PerformanceController@index')->name('admin-performance');
+    Route::get('/performance/slow-queries', 'Admin\PerformanceController@slowQueries')->name('admin-performance-slow-queries');
+    Route::get('/performance/slow-requests', 'Admin\PerformanceController@slowRequests')->name('admin-performance-slow-requests');
+    Route::get('/performance/repeated-queries', 'Admin\PerformanceController@repeatedQueries')->name('admin-performance-repeated-queries');
+    Route::get('/performance/report', 'Admin\PerformanceController@downloadReport')->name('admin-performance-report');
+    Route::get('/performance/api/summary', 'Admin\PerformanceController@apiSummary')->name('admin-performance-api-summary');
+    Route::post('/performance/prune', 'Admin\PerformanceController@pruneOldEntries')->name('admin-performance-prune');
+    //------------ ADMIN PERFORMANCE MONITORING SECTION ENDS ------------
+
     //------------ ADMIN ORDER SECTION ------------
 
     Route::group(['middleware' => 'permissions:orders'], function () {

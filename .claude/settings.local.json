@@ -31,7 +31,8 @@
       "Bash(composer dump-autoload:*)",
       "Bash(if exist check_shipping.php del check_shipping.php)",
       "Bash(if exist update_payment_controllers.php del update_payment_controllers.php)",
-      "Bash(curl:*)"
+      "Bash(curl:*)",
+      "Bash(composer require:*)"
     ],
     "deny": [],
     "ask": []
