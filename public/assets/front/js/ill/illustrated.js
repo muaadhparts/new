@@ -1260,6 +1260,7 @@
       initial_POSITION: '200, 300',
       zoom_MAX: 200,
       button_SIZE: 20,
+      button_SIZE_TOUCH_DEVICE: 14,
       button_AUTO_HIDE: 'YES',
       button_AUTO_HIDE_DELAY: 2,
       button_ALIGN: 'top right',
