@@ -228,7 +228,7 @@ class CalloutController extends Controller
     }
 
     /**
-     * ✅ جلب القطع مع القروبات في استعلام مجمّع واحد
+     * ✅ جلب القطع مع القروبات - استعلام SQL واحد مع JOINs
      */
     protected function fetchPartsWithGroupsOptimized(int $sectionId, string $calloutKey, string $catalogCode, int $catalogId): array
     {
@@ -238,79 +238,85 @@ class CalloutController extends Controller
         $itemTable         = $this->dyn('part_spec_group_items', $catalogCode);
         $periodTable       = $this->dyn('part_periods', $catalogCode);
 
-        // ✅ استعلام واحد: القطع + التفاصيل
-        $parts = DB::table("{$partsTable} as p")
-            ->join("{$sectionPartsTable} as sp", 'sp.part_id', '=', 'p.id')
-            ->where('sp.section_id', $sectionId)
-            ->where('p.callout', $calloutKey)
-            ->select(
-                'p.id as part_id',
-                'p.part_number',
-                'p.label_en as part_label_en',
-                'p.label_ar as part_label_ar',
-                'p.qty as part_qty',
-                'p.callout as part_callout'
-            )
-            ->get();
+        // ✅ استعلام واحد مع كل الـ JOINs
+        // LIMIT 5000 لمنع timeout
+        // ✅ FORCE INDEX لإجبار MySQL على استخدام الفهرس على part_spec_group_items
+        $indexName = "idx_psgi_group_id_{$catalogCode}";
+        $sql = "
+            SELECT
+                p.id as part_id,
+                p.part_number,
+                p.label_en as part_label_en,
+                p.label_ar as part_label_ar,
+                p.qty as part_qty,
+                p.callout as part_callout,
+                g.id as group_id,
+                g.group_index,
+                pp.begin_date,
+                pp.end_date,
+                si.value_id
+            FROM {$partsTable} p
+            INNER JOIN {$sectionPartsTable} sp ON sp.part_id = p.id AND sp.section_id = ?
+            LEFT JOIN {$groupTable} g ON g.part_id = p.id AND g.section_id = ? AND g.catalog_id = ?
+            LEFT JOIN {$periodTable} pp ON pp.id = g.part_period_id
+            LEFT JOIN {$itemTable} gi FORCE INDEX ({$indexName}) ON gi.group_id = g.id
+            LEFT JOIN specification_items si ON si.id = gi.specification_item_id
+            WHERE p.callout = ?
+            LIMIT 5000
+        ";
 
-        if ($parts->isEmpty()) return [];
+        $rows = DB::select($sql, [$sectionId, $sectionId, $catalogId, $calloutKey]);
 
-        $partIds = $parts->pluck('part_id')->all();
+        if (empty($rows)) return [];
 
-        // ✅ استعلام واحد: القروبات مع الفترات
-        $groups = DB::table("{$groupTable} as g")
-            ->leftJoin("{$periodTable} as pp", 'pp.id', '=', 'g.part_period_id')
-            ->where('g.section_id', $sectionId)
-            ->where('g.catalog_id', $catalogId)
-            ->whereIn('g.part_id', $partIds)
-            ->select('g.id as group_id', 'g.part_id', 'g.group_index', 'pp.begin_date', 'pp.end_date')
-            ->get();
+        // تجميع النتائج
+        $partsMap = [];
+        $groupsMap = [];
 
-        $groupIds = $groups->pluck('group_id')->all();
+        foreach ($rows as $row) {
+            $partId = $row->part_id;
 
-        // ✅ استعلام واحد: عناصر المواصفات
-        $items = empty($groupIds) ? collect() : DB::table("{$itemTable}")
-            ->whereIn('group_id', $groupIds)
-            ->select('group_id', 'specification_item_id')
-            ->get();
+            // إضافة القطعة
+            if (!isset($partsMap[$partId])) {
+                $partsMap[$partId] = [
+                    'part_id'       => (int) $partId,
+                    'part_number'   => $row->part_number,
+                    'part_label_en' => $row->part_label_en,
+                    'part_label_ar' => $row->part_label_ar,
+                    'part_qty'      => $row->part_qty,
+                    'part_callout'  => $row->part_callout,
+                    'groups'        => [],
+                ];
+                $groupsMap[$partId] = [];
+            }
 
-        // جلب value_ids من specification_items
-        $specItemIds = $items->pluck('specification_item_id')->unique()->all();
-        $specValues = empty($specItemIds) ? collect() : DB::table('specification_items')
-            ->whereIn('id', $specItemIds)
-            ->pluck('value_id', 'id');
+            // إضافة القروب (إن وجد)
+            if ($row->group_id) {
+                $groupId = $row->group_id;
 
-        // ربط value_id بالـ group
-        $itemsGrouped = $items->groupBy('group_id')->map(function ($groupItems) use ($specValues) {
-            return $groupItems->map(fn($i) => ['value_id' => $specValues[$i->specification_item_id] ?? null])
-                ->filter(fn($i) => $i['value_id'] !== null)
-                ->values();
-        });
-
-        $groupsByPart = $groups->groupBy('part_id');
-
-        // بناء النتيجة
-        return $parts->map(function ($part) use ($groupsByPart, $itemsGrouped) {
-            $partGroups = $groupsByPart[$part->part_id] ?? collect();
-
-            return [
-                'part_id'       => (int) $part->part_id,
-                'part_number'   => $part->part_number,
-                'part_label_en' => $part->part_label_en,
-                'part_label_ar' => $part->part_label_ar,
-                'part_qty'      => $part->part_qty,
-                'part_callout'  => $part->part_callout,
-                'groups'        => $partGroups->map(function ($g) use ($itemsGrouped) {
-                    return [
-                        'group_id'    => (int) $g->group_id,
-                        'group_index' => (int) $g->group_index,
-                        'begin_date'  => $g->begin_date,
-                        'end_date'    => $g->end_date,
-                        'spec_items'  => isset($itemsGrouped[$g->group_id]) ? $itemsGrouped[$g->group_id]->all() : [],
+                if (!isset($groupsMap[$partId][$groupId])) {
+                    $groupsMap[$partId][$groupId] = [
+                        'group_id'    => (int) $groupId,
+                        'group_index' => (int) $row->group_index,
+                        'begin_date'  => $row->begin_date,
+                        'end_date'    => $row->end_date,
+                        'spec_items'  => [],
                     ];
-                })->values()->all(),
-            ];
-        })->toArray();
+                }
+
+                // إضافة value_id
+                if ($row->value_id) {
+                    $groupsMap[$partId][$groupId]['spec_items'][] = ['value_id' => $row->value_id];
+                }
+            }
+        }
+
+        // دمج القروبات مع القطع
+        foreach ($partsMap as $partId => &$part) {
+            $part['groups'] = array_values($groupsMap[$partId] ?? []);
+        }
+
+        return array_values($partsMap);
     }
 
     /**
