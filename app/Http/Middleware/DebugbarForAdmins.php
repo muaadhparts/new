@@ -5,6 +5,7 @@ namespace App\Http\Middleware;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Session;
 use Symfony\Component\HttpFoundation\Response;
 
 class DebugbarForAdmins
@@ -27,15 +28,32 @@ class DebugbarForAdmins
             return $next($request);
         }
 
-        // تحقق إذا كان المستخدم admin
-        $admin = Auth::guard('admin')->user();
+        // تحقق إذا كان المستخدم admin بعدة طرق:
+        $isAdmin = $this->checkIfAdmin();
 
-        if (!$admin) {
+        if (!$isAdmin) {
             // ليس admin - عطّل Debugbar
             \Barryvdh\Debugbar\Facades\Debugbar::disable();
         }
-        // إذا كان admin - Debugbar يبقى مفعّل (الافتراضي)
 
         return $next($request);
+    }
+
+    /**
+     * تحقق من أن المستخدم admin بعدة طرق
+     */
+    protected function checkIfAdmin(): bool
+    {
+        // 1. تحقق من session flag (يعمل في كل مكان)
+        if (Session::get('is_admin_logged_in') === true) {
+            return true;
+        }
+
+        // 2. تحقق من admin guard
+        if (Auth::guard('admin')->check()) {
+            return true;
+        }
+
+        return false;
     }
 }

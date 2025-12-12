@@ -43,6 +43,9 @@ class LoginController extends Controller
 
       // Attempt to log the user in
       if (Auth::guard('admin')->attempt(['email' => $request->email, 'password' => $request->password], $request->remember)) {
+        // وضع علامة في session للـ Debugbar
+        session(['is_admin_logged_in' => true]);
+
         // if successful, then redirect to their intended location
         return response()->json(route('admin.dashboard'));
       }
@@ -129,6 +132,9 @@ class LoginController extends Controller
 
     public function logout()
     {
+        // إزالة علامة الـ Debugbar
+        session()->forget('is_admin_logged_in');
+
         Auth::guard('admin')->logout();
         return redirect('/');
     }
