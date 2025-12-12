@@ -14,7 +14,8 @@ return [
      |
      */
 
-    'enabled' => env('DEBUGBAR_ENABLED', null),
+    // DEBUGBAR_ENABLED=true في .env لتفعيله، الـ middleware يتحكم في من يراه
+    'enabled' => env('DEBUGBAR_ENABLED', false),
     'hide_empty_tabs' => true, // Hide tabs until they have content
     'except' => [
         'telescope*',
