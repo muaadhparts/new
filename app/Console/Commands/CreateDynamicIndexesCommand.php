@@ -15,27 +15,48 @@ class CreateDynamicIndexesCommand extends Command
 
     protected $description = 'Create performance indexes on dynamic catalog tables (parts_*, section_parts_*, part_spec_groups_*, part_spec_group_items_*)';
 
+    /**
+     * تعريف الفهارس لكل جدول
+     *
+     * الصيغة: 'column' أو 'column:length' للأعمدة النصية الطويلة
+     */
     protected array $indexDefinitions = [
+        // 1. جدول القطع - للبحث بالرقم والاسم والكول آوت
         'parts' => [
             'idx_p_callout' => ['callout'],
             'idx_p_part_number' => ['part_number'],
+            'idx_p_label_en' => ['label_en:100'],  // prefix للنصوص الطويلة
+            'idx_p_label_ar' => ['label_ar:100'],  // prefix للنصوص الطويلة
         ],
+
+        // 2. جدول ربط القطع بالأقسام - للـ JOIN الأساسي
         'section_parts' => [
-            'idx_sp_section_part' => ['section_id', 'part_id'],
+            'idx_sp_section_part' => ['section_id', 'part_id'],  // الفهرس المركب الأهم
             'idx_sp_part_id' => ['part_id'],
         ],
+
+        // 3. جدول مجموعات المواصفات - للـ JOIN المركب
         'part_spec_groups' => [
-            // Critical index for the slow query
-            'idx_psg_part_section_catalog' => ['part_id', 'section_id', 'catalog_id'],
-            'idx_psg_part_id' => ['part_id'],
-            'idx_psg_section_id' => ['section_id'],
+            'idx_psg_part_section_catalog' => ['part_id', 'section_id', 'catalog_id'],  // الفهرس المركب الرئيسي
+            'idx_psg_section_catalog' => ['section_id', 'catalog_id'],  // للاستعلامات بدون part_id
+            'idx_psg_period' => ['part_period_id'],  // للـ JOIN مع part_periods
         ],
+
+        // 4. جدول عناصر المواصفات - ⚠️ الأهم (83 مليون صف!)
         'part_spec_group_items' => [
-            'idx_psgi_group_id' => ['group_id'],
+            'idx_psgi_group_id' => ['group_id'],  // ⚠️ حرج - يستخدم مع FORCE INDEX
             'idx_psgi_spec_item' => ['specification_item_id'],
         ],
+
+        // 5. جدول الفترات الزمنية
         'part_periods' => [
             'idx_pp_dates' => ['begin_date', 'end_date'],
+        ],
+
+        // 6. جدول الإضافات - للبحث المركب
+        'part_extensions' => [
+            'idx_pe_composite' => ['part_id', 'section_id', 'group_id'],
+            'idx_pe_part_section' => ['part_id', 'section_id'],
         ],
     ];
 
@@ -98,7 +119,14 @@ class CreateDynamicIndexesCommand extends Command
                         continue;
                     }
 
-                    $columnsStr = implode(', ', array_map(fn($c) => "`{$c}`", $columns));
+                    $columnsStr = implode(', ', array_map(function($c) {
+                        // دعم prefix length للأعمدة النصية: 'column:100'
+                        if (str_contains($c, ':')) {
+                            [$col, $len] = explode(':', $c);
+                            return "`{$col}`({$len})";
+                        }
+                        return "`{$c}`";
+                    }, $columns));
                     $sql = "CREATE INDEX `{$fullIndexName}` ON `{$tableName}` ({$columnsStr})";
 
                     if ($dryRun) {
