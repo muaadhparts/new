@@ -12,35 +12,80 @@ class TelescopeServiceProvider extends TelescopeApplicationServiceProvider
     /**
      * Register any application services.
      */
+    // public function register(): void
+    // {
+    //     // Telescope::night();
+
+    //     $this->hideSensitiveRequestDetails();
+
+    //     $isLocal = $this->app->environment('local');
+
+    //     Telescope::filter(function (IncomingEntry $entry) use ($isLocal) {
+    //         // في البيئة المحلية، سجل كل شيء
+    //         if ($isLocal) {
+    //             return true;
+    //         }
+
+    //         // في الإنتاج، سجل فقط المهم
+    //         return $entry->isReportableException() ||
+    //                $entry->isFailedRequest() ||
+    //                $entry->isFailedJob() ||
+    //                $entry->isScheduledTask() ||
+    //                $entry->hasMonitoredTag() ||
+    //                $this->isSlowQuery($entry) ||
+    //                $this->isSlowRequest($entry);
+    //     });
+
+    //     // تسجيل الاستعلامات البطيئة تلقائياً
+    //     Telescope::tag(function (IncomingEntry $entry) {
+    //         $tags = [];
+
+    //         // وسم الاستعلامات البطيئة
+    //         if ($entry->type === 'query' && isset($entry->content['time']) && $entry->content['time'] >= 100) {
+    //             $tags[] = 'slow-query';
+    //             if ($entry->content['time'] >= 500) {
+    //                 $tags[] = 'very-slow-query';
+    //             }
+    //         }
+
+    //         // وسم الطلبات البطيئة
+    //         if ($entry->type === 'request' && isset($entry->content['duration']) && $entry->content['duration'] >= 1000) {
+    //             $tags[] = 'slow-request';
+    //         }
+
+    //         return $tags;
+    //     });
+    // }
+
     public function register(): void
     {
-        // Telescope::night();
+        if (!config('telescope.enabled')) {
+            return;
+        }
+
+        parent::register(); // ⬅️ هذا السطر هو المفتاح
 
         $this->hideSensitiveRequestDetails();
 
         $isLocal = $this->app->environment('local');
 
         Telescope::filter(function (IncomingEntry $entry) use ($isLocal) {
-            // في البيئة المحلية، سجل كل شيء
             if ($isLocal) {
                 return true;
             }
 
-            // في الإنتاج، سجل فقط المهم
             return $entry->isReportableException() ||
-                   $entry->isFailedRequest() ||
-                   $entry->isFailedJob() ||
-                   $entry->isScheduledTask() ||
-                   $entry->hasMonitoredTag() ||
-                   $this->isSlowQuery($entry) ||
-                   $this->isSlowRequest($entry);
+                $entry->isFailedRequest() ||
+                $entry->isFailedJob() ||
+                $entry->isScheduledTask() ||
+                $entry->hasMonitoredTag() ||
+                $this->isSlowQuery($entry) ||
+                $this->isSlowRequest($entry);
         });
 
-        // تسجيل الاستعلامات البطيئة تلقائياً
         Telescope::tag(function (IncomingEntry $entry) {
             $tags = [];
 
-            // وسم الاستعلامات البطيئة
             if ($entry->type === 'query' && isset($entry->content['time']) && $entry->content['time'] >= 100) {
                 $tags[] = 'slow-query';
                 if ($entry->content['time'] >= 500) {
@@ -48,7 +93,6 @@ class TelescopeServiceProvider extends TelescopeApplicationServiceProvider
                 }
             }
 
-            // وسم الطلبات البطيئة
             if ($entry->type === 'request' && isset($entry->content['duration']) && $entry->content['duration'] >= 1000) {
                 $tags[] = 'slow-request';
             }
