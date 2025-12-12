@@ -157,17 +157,25 @@ class CleanupDynamicIndexesCommand extends Command
 
         // حذف الفهارس القديمة
         $deleted = 0;
+        $skipped = 0;
         $errors = [];
         $processedIndexes = [];
 
         foreach ($allOldIndexes as $index) {
             $key = $index['table'] . '.' . $index['index_name'];
 
-            // تجنب محاولة حذف نفس الفهرس مرتين
+            // تجنب محاولة حذف نفس الفهرس مرتين في نفس التشغيل
             if (isset($processedIndexes[$key])) {
                 continue;
             }
             $processedIndexes[$key] = true;
+
+            // ✅ تحقق إذا كان الفهرس لا يزال موجوداً قبل الحذف
+            if (!$this->hasIndex($index['table'], $index['index_name'])) {
+                $this->line("<comment>Skipped:</comment> {$index['index_name']} (already deleted)");
+                $skipped++;
+                continue;
+            }
 
             try {
                 $sql = "DROP INDEX `{$index['index_name']}` ON `{$index['table']}`";
@@ -175,23 +183,34 @@ class CleanupDynamicIndexesCommand extends Command
                 $this->line("<info>Deleted:</info> {$index['index_name']} from {$index['table']}");
                 $deleted++;
             } catch (\Exception $e) {
-                $errors[] = [
-                    'index' => $index['index_name'],
-                    'table' => $index['table'],
-                    'error' => $e->getMessage(),
-                ];
+                // تحقق إذا كان الخطأ بسبب عدم وجود الفهرس
+                if (str_contains($e->getMessage(), "check that it exists")) {
+                    $this->line("<comment>Skipped:</comment> {$index['index_name']} (not found)");
+                    $skipped++;
+                } else {
+                    $errors[] = [
+                        'index' => $index['index_name'],
+                        'table' => $index['table'],
+                        'error' => $e->getMessage(),
+                    ];
+                }
             }
         }
 
         $this->newLine();
         $this->info("=== Summary ===");
         $this->line("Deleted: {$deleted} index(es)");
+        $this->line("Skipped: {$skipped} index(es) (already deleted)");
 
         if (!empty($errors)) {
             $this->error("Errors: " . count($errors));
             foreach ($errors as $err) {
                 $this->line("  <error>{$err['table']}.{$err['index']}:</error> {$err['error']}");
             }
+        }
+
+        if ($deleted === 0 && $skipped > 0 && empty($errors)) {
+            $this->info('All old indexes have already been cleaned up!');
         }
 
         return empty($errors) ? 0 : 1;
@@ -253,6 +272,19 @@ class CleanupDynamicIndexesCommand extends Command
 
                 $this->line("    - {$index['index_name']} ({$columns})");
             }
+        }
+    }
+
+    /**
+     * التحقق إذا كان الفهرس موجوداً
+     */
+    protected function hasIndex(string $table, string $indexName): bool
+    {
+        try {
+            $indexes = DB::select("SHOW INDEX FROM `{$table}` WHERE Key_name = ?", [$indexName]);
+            return count($indexes) > 0;
+        } catch (\Exception $e) {
+            return false;
         }
     }
 }
