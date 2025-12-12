@@ -140,10 +140,9 @@ class CalloutController extends Controller
     }
 
     /**
-     * إرجاع جميع القطع الموافقة لـ callout داخل section/category معينين:
-     *  - مطابقة القروب العام (group_index=0 بدون قيم) ← دائمًا مطابق
-     *  - أو أي قروب قيمه ⊆ expectedSet (مع مراعاة الفترة الزمنية لو وُجدت)
-     * ثم إلحاق تفاصيل القطعة + الامتدادات فقط (بدون أي حقول متجر).
+     * ✅ إرجاع القطع للـ callout مع احترام الفلترة والقروبات
+     *
+     * محسّن: استعلام مجمّع + فلترة ذكية
      */
     public function show(Request $request)
     {
@@ -154,55 +153,176 @@ class CalloutController extends Controller
         $catalogCode = (string) $request->query('catalog_code');
         $calloutKey  = (string) $request->query('callout');
 
-        // ✅ Pagination parameters
         $page     = max(1, (int) $request->query('page', 1));
-        $perPage  = min(100, max(10, (int) $request->query('per_page', 50))); // بين 10 و 100
+        $perPage  = min(100, max(10, (int) $request->query('per_page', 50)));
 
         if (!$sectionId || !$categoryId || !$catalogCode || !$calloutKey) {
             return response()->json([
                 'ok'    => false,
-                'error' => 'Missing required parameters: section_id, category_id, catalog_code, callout',
+                'error' => 'Missing required parameters',
             ], 422);
         }
 
-        $category = NewCategory::with('catalog')->find($categoryId);
-        if (!$category || !$category->catalog) {
-            return response()->json([
-                'ok'    => false,
-                'error' => 'Invalid category or catalog',
-            ], 404);
+        $category = NewCategory::select('id', 'catalog_id')->find($categoryId);
+        if (!$category) {
+            return response()->json(['ok' => false, 'error' => 'Invalid category'], 404);
         }
 
-        // مواصفات المستخدم من السيشن (إن وُجدت)
-        $specs     = Session::get('selected_filters', []);
-        $yearMonth = $this->extractYearMonth($specs); // مثل "202307"
+        $catalogId = $category->catalog_id;
 
-        // جلب القطع المرتبطة بالكول آوت داخل السيكشن
-        $parts = $this->fetchPartsWithSpecs($sectionId, $calloutKey, $catalogCode, $category->catalog_id);
-        if (empty($parts)) {
+        // مواصفات المستخدم من السيشن
+        $specs     = Session::get('selected_filters', []);
+        $yearMonth = $this->extractYearMonth($specs);
+
+        // ✅ جلب القطع مع القروبات في استعلام مجمّع واحد
+        $partsWithGroups = $this->fetchPartsWithGroupsOptimized($sectionId, $calloutKey, $catalogCode, $catalogId);
+
+        if (empty($partsWithGroups)) {
             return response()->json([
                 'ok'         => true,
                 'elapsed_ms' => (int) round((microtime(true) - $t0) * 1000),
                 'products'   => [],
+                'pagination' => ['total' => 0, 'per_page' => $perPage, 'current_page' => $page, 'last_page' => 0],
                 'rawResults' => [],
             ]);
         }
 
-        // expectedSet من مواصفات المستخدم أو مواصفات الفئة عند عدم اختيار المستخدم
+        // ✅ بناء expectedSet
         if (!empty($specs)) {
-            $expectedSet   = collect($specs)->pluck('value_id')->filter()->map(fn($v) => (string) $v)->unique()->values()->all();
-            $categorySpecs = null;
+            $expectedSet = collect($specs)->pluck('value_id')->filter()->map(fn($v) => (string) $v)->unique()->values()->all();
         } else {
-            $categorySpecs = $this->fetchCategorySpecs($categoryId, $category->catalog_id);
-            $expectedSet   = collect($categorySpecs)->pluck('spec_items')->flatten(1)
-                ->pluck('value_id')->filter()->map(fn($v) => (string) $v)->unique()->values()->all();
+            $categorySpecs = $this->fetchCategorySpecsOptimized($categoryId, $catalogId);
+            $expectedSet   = $categorySpecs;
         }
 
-        // مطابقة القروبات (يشمل القروب العام)
-        $matchedBasic = [];
+        // ✅ تطبيق الفلترة على القروبات
+        $matchedParts = $this->filterPartsBySpecs($partsWithGroups, $expectedSet, $yearMonth);
+
+        // ترتيب
+        usort($matchedParts, function ($a, $b) {
+            $byCount = count($b['match_value_ids']) <=> count($a['match_value_ids']);
+            return $byCount !== 0 ? $byCount : strcmp($a['part_number'], $b['part_number']);
+        });
+
+        // Pagination
+        $total = count($matchedParts);
+        $offset = ($page - 1) * $perPage;
+        $paginatedParts = array_slice($matchedParts, $offset, $perPage);
+
+        $elapsed = (int) round((microtime(true) - $t0) * 1000);
+
+        return response()->json([
+            'ok'         => true,
+            'elapsed_ms' => $elapsed,
+            'products'   => $paginatedParts,
+            'pagination' => [
+                'total'        => $total,
+                'per_page'     => $perPage,
+                'current_page' => $page,
+                'last_page'    => (int) ceil($total / $perPage),
+                'from'         => $total > 0 ? $offset + 1 : 0,
+                'to'           => min($offset + $perPage, $total),
+            ],
+            'rawResults' => $paginatedParts,
+        ]);
+    }
+
+    /**
+     * ✅ جلب القطع مع القروبات في استعلام مجمّع واحد
+     */
+    protected function fetchPartsWithGroupsOptimized(int $sectionId, string $calloutKey, string $catalogCode, int $catalogId): array
+    {
+        $partsTable        = $this->dyn('parts', $catalogCode);
+        $sectionPartsTable = $this->dyn('section_parts', $catalogCode);
+        $groupTable        = $this->dyn('part_spec_groups', $catalogCode);
+        $itemTable         = $this->dyn('part_spec_group_items', $catalogCode);
+        $periodTable       = $this->dyn('part_periods', $catalogCode);
+
+        // ✅ استعلام واحد: القطع + التفاصيل
+        $parts = DB::table("{$partsTable} as p")
+            ->join("{$sectionPartsTable} as sp", 'sp.part_id', '=', 'p.id')
+            ->where('sp.section_id', $sectionId)
+            ->where('p.callout', $calloutKey)
+            ->select(
+                'p.id as part_id',
+                'p.part_number',
+                'p.label_en as part_label_en',
+                'p.label_ar as part_label_ar',
+                'p.qty as part_qty',
+                'p.callout as part_callout'
+            )
+            ->get();
+
+        if ($parts->isEmpty()) return [];
+
+        $partIds = $parts->pluck('part_id')->all();
+
+        // ✅ استعلام واحد: القروبات مع الفترات
+        $groups = DB::table("{$groupTable} as g")
+            ->leftJoin("{$periodTable} as pp", 'pp.id', '=', 'g.part_period_id')
+            ->where('g.section_id', $sectionId)
+            ->where('g.catalog_id', $catalogId)
+            ->whereIn('g.part_id', $partIds)
+            ->select('g.id as group_id', 'g.part_id', 'g.group_index', 'pp.begin_date', 'pp.end_date')
+            ->get();
+
+        $groupIds = $groups->pluck('group_id')->all();
+
+        // ✅ استعلام واحد: عناصر المواصفات
+        $items = empty($groupIds) ? collect() : DB::table("{$itemTable}")
+            ->whereIn('group_id', $groupIds)
+            ->select('group_id', 'specification_item_id')
+            ->get();
+
+        // جلب value_ids من specification_items
+        $specItemIds = $items->pluck('specification_item_id')->unique()->all();
+        $specValues = empty($specItemIds) ? collect() : DB::table('specification_items')
+            ->whereIn('id', $specItemIds)
+            ->pluck('value_id', 'id');
+
+        // ربط value_id بالـ group
+        $itemsGrouped = $items->groupBy('group_id')->map(function ($groupItems) use ($specValues) {
+            return $groupItems->map(fn($i) => ['value_id' => $specValues[$i->specification_item_id] ?? null])
+                ->filter(fn($i) => $i['value_id'] !== null)
+                ->values();
+        });
+
+        $groupsByPart = $groups->groupBy('part_id');
+
+        // بناء النتيجة
+        return $parts->map(function ($part) use ($groupsByPart, $itemsGrouped) {
+            $partGroups = $groupsByPart[$part->part_id] ?? collect();
+
+            return [
+                'part_id'       => (int) $part->part_id,
+                'part_number'   => $part->part_number,
+                'part_label_en' => $part->part_label_en,
+                'part_label_ar' => $part->part_label_ar,
+                'part_qty'      => $part->part_qty,
+                'part_callout'  => $part->part_callout,
+                'groups'        => $partGroups->map(function ($g) use ($itemsGrouped) {
+                    return [
+                        'group_id'    => (int) $g->group_id,
+                        'group_index' => (int) $g->group_index,
+                        'begin_date'  => $g->begin_date,
+                        'end_date'    => $g->end_date,
+                        'spec_items'  => isset($itemsGrouped[$g->group_id]) ? $itemsGrouped[$g->group_id]->all() : [],
+                    ];
+                })->values()->all(),
+            ];
+        })->toArray();
+    }
+
+    /**
+     * ✅ فلترة القطع حسب المواصفات
+     */
+    protected function filterPartsBySpecs(array $parts, array $expectedSet, ?string $yearMonth): array
+    {
+        $matched = [];
+
         foreach ($parts as $part) {
             $matchedGroupIds = [];
-            $unionValues     = []; // اتحاد value_ids للقروبات المطابقة (غير العامة)
+            $unionValues     = [];
             $partBegin       = null;
             $partEnd         = null;
             $hasAnyMatch     = false;
@@ -211,95 +331,93 @@ class CalloutController extends Controller
                 $gIndex = (int) ($group['group_index'] ?? 0);
                 $values = collect($group['spec_items'])->pluck('value_id')->map(fn($v) => (string) $v)->all();
 
-                // (A) القروب العام: group_index=0 بدون قيم → مطابق دائمًا (بدون شرط تاريخ)
-                if ($gIndex === 0 && count($values) === 0) {
+                // (A) القروب العام: group_index=0 بدون قيم
+                if ($gIndex === 0 && empty($values)) {
                     $hasAnyMatch = true;
-                    $matchedGroupIds[] = (int) ($group['group_id'] ?? 0);
-
-                    $gBegin = $group['begin_date'] ?? null;
-                    $gEnd   = $group['end_date']   ?? null;
-                    if (is_null($partBegin) || ($gBegin && $gBegin < $partBegin)) $partBegin = $gBegin;
-                    if (is_null($partEnd)) {
-                        $partEnd = $gEnd;
-                    } else {
-                        if (is_null($gEnd)) $partEnd = null;
-                        elseif (!is_null($partEnd) && $gEnd > $partEnd) $partEnd = $gEnd;
-                    }
+                    $matchedGroupIds[] = $group['group_id'];
+                    $this->updateDateRange($group, $partBegin, $partEnd);
                     continue;
                 }
 
-                // (B) قروبات ذات قيم: ⊆ expectedSet + ضمن الفترة (إن وُجد yearMonth)
+                // (B) قروبات ذات قيم: ⊆ expectedSet
                 if (!empty($values) && !empty($expectedSet)) {
-                    $difference = array_diff($values, $expectedSet);
-                    if (count($difference) !== 0) continue;
+                    if (count(array_diff($values, $expectedSet)) !== 0) continue;
 
+                    // فحص التاريخ
                     if ($yearMonth) {
-                        $begin = $group['begin_date'] ?? null; // "YYYYMM"
-                        $end   = $group['end_date']   ?? null;
+                        $begin = $group['begin_date'] ?? null;
+                        $end   = $group['end_date'] ?? null;
                         if (($begin && $yearMonth < $begin) || ($end && $yearMonth > $end)) continue;
                     }
 
                     $hasAnyMatch = true;
-                    $matchedGroupIds[] = (int) ($group['group_id'] ?? 0);
-                    $unionValues = array_values(array_unique(array_merge($unionValues, $values)));
-
-                    $gBegin = $group['begin_date'] ?? null;
-                    $gEnd   = $group['end_date']   ?? null;
-                    if (is_null($partBegin) || ($gBegin && $gBegin < $partBegin)) $partBegin = $gBegin;
-                    if (is_null($partEnd)) {
-                        $partEnd = $gEnd;
-                    } else {
-                        if (is_null($gEnd)) $partEnd = null;
-                        elseif (!is_null($partEnd) && $gEnd > $partEnd) $partEnd = $gEnd;
-                    }
+                    $matchedGroupIds[] = $group['group_id'];
+                    $unionValues = array_merge($unionValues, $values);
+                    $this->updateDateRange($group, $partBegin, $partEnd);
                 }
             }
 
             if ($hasAnyMatch && !empty($matchedGroupIds)) {
-                $matchedBasic[] = [
-                    'part_id'           => (int) $part['part_id'],
-                    'part_number'       => (string) $part['part_number'],
-                    'matched_group_ids' => array_values(array_unique($matchedGroupIds)),
-                    'match_value_ids'   => array_values(array_unique($unionValues)), // فارغة = "عام"
+                $matched[] = [
+                    'part_id'           => $part['part_id'],
+                    'part_number'       => $part['part_number'],
+                    'part_label_ar'     => $part['part_label_ar'],
+                    'part_label_en'     => $part['part_label_en'],
+                    'part_qty'          => $part['part_qty'],
+                    'part_callout'      => $part['part_callout'],
                     'part_begin'        => $partBegin,
                     'part_end'          => $partEnd,
+                    'match_values'      => array_values(array_unique($unionValues)),
+                    'details'           => array_values(array_unique($unionValues)),
+                    'extensions'        => [],
+                    'match_count'       => count(array_unique($unionValues)),
+                    'difference_count'  => 0,
+                    'match_value_ids'   => array_values(array_unique($unionValues)),
                 ];
             }
         }
 
-        // ترتيب: الأكثر match_values أولًا ثم رقم القطعة تصاعديًا
-        usort($matchedBasic, function ($a, $b) {
-            $byCount = count($b['match_value_ids']) <=> count($a['match_value_ids']);
-            if ($byCount !== 0) return $byCount;
-            return strcmp($a['part_number'], $b['part_number']);
-        });
+        return $matched;
+    }
 
-        // ✅ حساب pagination
-        $total = count($matchedBasic);
-        $offset = ($page - 1) * $perPage;
-        $paginatedBasic = array_slice($matchedBasic, $offset, $perPage);
+    /**
+     * تحديث نطاق التاريخ
+     */
+    protected function updateDateRange(array $group, &$partBegin, &$partEnd): void
+    {
+        $gBegin = $group['begin_date'] ?? null;
+        $gEnd   = $group['end_date'] ?? null;
 
-        // ✅ محسّن: استخدام batch للتفاصيل بدلاً من N queries
-        $products = $this->appendDetailsBatch($paginatedBasic, $sectionId, $catalogCode, $category->catalog_id);
+        if ($gBegin && (is_null($partBegin) || $gBegin < $partBegin)) {
+            $partBegin = $gBegin;
+        }
+        if (is_null($partEnd)) {
+            $partEnd = $gEnd;
+        } elseif (is_null($gEnd)) {
+            $partEnd = null;
+        } elseif ($gEnd > $partEnd) {
+            $partEnd = $gEnd;
+        }
+    }
 
-        $elapsed = (int) round((microtime(true) - $t0) * 1000);
+    /**
+     * ✅ جلب مواصفات الفئة محسّن
+     */
+    protected function fetchCategorySpecsOptimized(int $categoryId, int $catalogId): array
+    {
+        $valueIds = DB::table('category_spec_groups as csg')
+            ->join('category_spec_group_items as csgi', 'csgi.group_id', '=', 'csg.id')
+            ->join('specification_items as si', 'si.id', '=', 'csgi.specification_item_id')
+            ->where('csg.category_id', $categoryId)
+            ->where('csg.catalog_id', $catalogId)
+            ->pluck('si.value_id')
+            ->filter()
+            ->map(fn($v) => (string) $v)
+            ->unique()
+            ->values()
+            ->all();
 
-        return response()->json([
-            'ok'         => true,
-            'elapsed_ms' => $elapsed,
-            'products'   => $products,
-            // ✅ Pagination metadata
-            'pagination' => [
-                'total'        => $total,
-                'per_page'     => $perPage,
-                'current_page' => $page,
-                'last_page'    => (int) ceil($total / $perPage),
-                'from'         => $offset + 1,
-                'to'           => min($offset + $perPage, $total),
-            ],
-            // للحفاظ على التوافق مع واجهات قديمة
-            'rawResults' => $products,
-        ]);
+        return $valueIds;
     }
 
     /**
