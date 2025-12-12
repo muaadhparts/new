@@ -18,8 +18,8 @@ class DebugbarForAdmins
         if (class_exists(\Barryvdh\Debugbar\Facades\Debugbar::class)) {
             $admin = Auth::guard('admin')->user();
 
-            // تحقق أن المستخدم admin وله صلاحية
-            if ($admin && $admin->is_admin == 1) {
+            // تحقق أن المستخدم مسجل دخول كـ admin
+            if ($admin) {
                 \Barryvdh\Debugbar\Facades\Debugbar::enable();
             } else {
                 \Barryvdh\Debugbar\Facades\Debugbar::disable();
