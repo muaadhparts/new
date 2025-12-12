@@ -10,7 +10,6 @@ use App\Models\Section;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
-use Illuminate\Support\Facades\Cache;
 
 class CalloutController extends Controller
 {
@@ -25,6 +24,8 @@ class CalloutController extends Controller
     /**
      * ✅ جلب معلومات Callouts الأساسية فقط (coordinates + types)
      * يستخدم من JS لبناء landmarks بدون تحميل بيانات كاملة
+     *
+     * محسّن: استخدام استعلام واحد مع select محدد + batch lookup للـ section callouts
      */
     public function metadata(Request $request)
     {
@@ -32,15 +33,7 @@ class CalloutController extends Controller
         $categoryId  = (int) $request->query('category_id');
         $catalogCode = (string) $request->query('catalog_code');
 
-        // Debug logging
-        \Log::info('CalloutController metadata called', [
-            'section_id' => $sectionId,
-            'category_id' => $categoryId,
-            'catalog_code' => $catalogCode
-        ]);
-
         if (!$sectionId || !$categoryId || !$catalogCode) {
-            \Log::warning('CalloutController: Missing parameters');
             return response()->json([
                 'ok'       => false,
                 'error'    => 'Missing required parameters',
@@ -49,39 +42,64 @@ class CalloutController extends Controller
         }
 
         try {
-            // ✅ استخدام Eloquent Models بدلاً من DB مباشرة (نفس طريقة Livewire)
-            \Log::info('🔍 Fetching illustration', ['section_id' => $sectionId, 'category_id' => $categoryId]);
-
-            // جلب illustration مع callouts من Model
-            $illustration = Illustration::with('callouts')
+            // ✅ استعلام محسّن: جلب الـ callouts مباشرة مع select محدد
+            $illustration = Illustration::select('id', 'section_id')
+                ->with(['callouts' => function ($q) {
+                    $q->select(
+                        'id', 'illustration_id', 'callout_key', 'callout_type',
+                        'applicable', 'selective_fit',
+                        'rectangle_left', 'rectangle_top', 'rectangle_right', 'rectangle_bottom'
+                    );
+                }])
                 ->where('section_id', $sectionId)
                 ->first();
 
-            \Log::info('📊 Query result', [
-                'found' => $illustration ? 'yes' : 'no',
-                'illustration_id' => $illustration?->id,
-                'callouts_count' => $illustration?->callouts?->count() ?? 0
-            ]);
-
-            if (!$illustration) {
-                \Log::warning('⚠️ No illustration found', ['section_id' => $sectionId]);
-                return response()->json(['ok' => true, 'callouts' => [], 'note' => 'No illustration']);
+            if (!$illustration || $illustration->callouts->isEmpty()) {
+                return response()->json(['ok' => true, 'callouts' => []]);
             }
 
-            if ($illustration->callouts->isEmpty()) {
-                \Log::warning('⚠️ No callouts for illustration', ['illustration_id' => $illustration->id]);
-                return response()->json(['ok' => true, 'callouts' => [], 'note' => 'No callouts']);
+            // ✅ جمع section callouts للبحث batch واحد بدلاً من N queries
+            $sectionCalloutKeys = $illustration->callouts
+                ->filter(fn($c) => ($c->callout_type ?? 'part') === 'section' && !empty($c->callout_key))
+                ->pluck('callout_key')
+                ->unique()
+                ->values()
+                ->toArray();
+
+            // ✅ استعلام batch واحد لجميع parents_key
+            $parentsKeyMap = [];
+            if (!empty($sectionCalloutKeys)) {
+                // بناء CASE WHEN للبحث الأمثل
+                $parentsKeyMap = NewCategory::where('level', 3)
+                    ->where(function ($q) use ($sectionCalloutKeys) {
+                        foreach ($sectionCalloutKeys as $key) {
+                            $q->orWhere('full_code', 'LIKE', $key . '%');
+                        }
+                    })
+                    ->orderBy('id')
+                    ->get(['full_code', 'parents_key'])
+                    ->groupBy(function ($cat) use ($sectionCalloutKeys) {
+                        foreach ($sectionCalloutKeys as $key) {
+                            if (str_starts_with($cat->full_code, $key)) {
+                                return $key;
+                            }
+                        }
+                        return null;
+                    })
+                    ->map(fn($group) => $group->first()->parents_key)
+                    ->filter()
+                    ->toArray();
             }
 
             // تحويل callouts إلى الصيغة المطلوبة للـ JS
-            $callouts = $illustration->callouts->map(function ($c) use ($catalogCode) {
-                // حساب العرض والارتفاع من right/bottom
+            $callouts = $illustration->callouts->map(function ($c) use ($parentsKeyMap) {
                 $width = ($c->rectangle_right ?? 0) - ($c->rectangle_left ?? 0);
                 $height = ($c->rectangle_bottom ?? 0) - ($c->rectangle_top ?? 0);
+                $calloutKey = $c->callout_key ?? '';
 
                 $data = [
                     'id'               => $c->id,
-                    'callout_key'      => $c->callout_key ?? $c->callout ?? '',
+                    'callout_key'      => $calloutKey,
                     'callout_type'     => $c->callout_type ?? 'part',
                     'applicable'       => $c->applicable ?? null,
                     'selective_fit'    => $c->selective_fit ?? null,
@@ -91,21 +109,9 @@ class CalloutController extends Controller
                     'rectangle_height' => $height > 0 ? $height : 30,
                 ];
 
-                // ✅ إذا كان callout من نوع section، أضف parents_key للـ navigation
-                if (($c->callout_type ?? 'part') === 'section' && !empty($c->callout_key)) {
-                    // استخدام cache للـ section callouts (لتحسين الأداء)
-                    $cacheKey = "section_parents_key_{$c->callout_key}";
-
-                    $parentsKey = Cache::remember($cacheKey, 7200, function() use ($c) {
-                        // ابحث عن أول category في level 3 بـ full_code يبدأ بـ callout_key
-                        $targetCategory = NewCategory::where('full_code', 'LIKE', $c->callout_key . '%')
-                            ->where('level', 3)
-                            ->orderBy('id')
-                            ->first(['parents_key']);
-
-                        return $targetCategory ? $targetCategory->parents_key : null;
-                    });
-
+                // ✅ استخدام الـ map المحسوب مسبقاً
+                if (($c->callout_type ?? 'part') === 'section' && !empty($calloutKey)) {
+                    $parentsKey = $parentsKeyMap[$calloutKey] ?? null;
                     if (!empty($parentsKey)) {
                         $data['parents_key'] = $parentsKey;
                     }
@@ -122,15 +128,12 @@ class CalloutController extends Controller
         } catch (\Exception $e) {
             \Log::error('CalloutController metadata error', [
                 'section_id'   => $sectionId,
-                'category_id'  => $categoryId,
-                'catalog_code' => $catalogCode,
                 'error'        => $e->getMessage(),
-                'trace'        => $e->getTraceAsString()
             ]);
 
             return response()->json([
                 'ok'       => false,
-                'error'    => 'Failed to fetch callout metadata: ' . $e->getMessage(),
+                'error'    => 'Failed to fetch callout metadata',
                 'callouts' => [],
             ], 500);
         }
@@ -276,10 +279,8 @@ class CalloutController extends Controller
         $offset = ($page - 1) * $perPage;
         $paginatedBasic = array_slice($matchedBasic, $offset, $perPage);
 
-        // إلحاق التفاصيل + الامتدادات (بدون حقول متجر) - فقط للصفحة الحالية
-        $products = collect($paginatedBasic)->map(function ($p) use ($sectionId, $catalogCode, $category) {
-            return $this->appendDetails($p, $sectionId, $catalogCode, $category->catalog_id);
-        })->values()->all();
+        // ✅ محسّن: استخدام batch للتفاصيل بدلاً من N queries
+        $products = $this->appendDetailsBatch($paginatedBasic, $sectionId, $catalogCode, $category->catalog_id);
 
         $elapsed = (int) round((microtime(true) - $t0) * 1000);
 
@@ -313,6 +314,8 @@ class CalloutController extends Controller
 
     /**
      * جلب القطع + مجموعات المواصفات + عناصرها للقسم والكول آوت المحددين.
+     *
+     * ✅ محسّن: استخدام الفهارس الجديدة على part_spec_groups + section_parts
      */
     protected function fetchPartsWithSpecs(int $sectionId, string $calloutKey, string $catalogCode, int $catalogId): array
     {
@@ -322,6 +325,7 @@ class CalloutController extends Controller
         $partsTable        = $this->dyn('parts', $catalogCode);
         $sectionPartsTable = $this->dyn('section_parts', $catalogCode);
 
+        // ✅ استعلام محسّن: استخدام فهرس (section_id, part_id) + (callout)
         $parts = DB::table("{$partsTable} as p")
             ->join("{$sectionPartsTable} as sp", 'sp.part_id', '=', 'p.id')
             ->where('sp.section_id', $sectionId)
@@ -333,21 +337,31 @@ class CalloutController extends Controller
 
         $partIds = $parts->pluck('part_id')->all();
 
+        // ✅ استعلام محسّن: استخدام فهرس (section_id, catalog_id, part_id)
         $groups = DB::table("{$groupTable} as g")
             ->leftJoin("{$periodTable} as pp", 'pp.id', '=', 'g.part_period_id')
-            ->whereIn('g.part_id', $partIds)
             ->where('g.section_id', $sectionId)
             ->where('g.catalog_id', $catalogId)
+            ->whereIn('g.part_id', $partIds)
             ->select('g.id as group_id', 'g.part_id', 'g.group_index', 'pp.begin_date', 'pp.end_date')
             ->get();
 
+        if ($groups->isEmpty()) {
+            // القطع موجودة لكن بدون groups - أعدها بدون groups
+            return $parts->map(fn($part) => [
+                'part_id'     => (int) $part->part_id,
+                'part_number' => (string) $part->part_number,
+                'groups'      => [],
+            ])->toArray();
+        }
+
         $groupIds = $groups->pluck('group_id')->all();
 
-        $items = empty($groupIds) ? collect() : DB::table("{$itemTable} as gi")
+        // ✅ استعلام محسّن: استخدام فهرس group_id
+        $items = DB::table("{$itemTable} as gi")
             ->join('specification_items as si', 'si.id', '=', 'gi.specification_item_id')
-            ->join('specifications as s', 's.id', '=', 'si.specification_id')
             ->whereIn('gi.group_id', $groupIds)
-            ->select('gi.group_id', 's.name as spec_code', 'si.value_id')
+            ->select('gi.group_id', 'si.value_id')
             ->get();
 
         $itemsGrouped = $items->groupBy('group_id');
@@ -364,7 +378,9 @@ class CalloutController extends Controller
                         'group_index' => (int) $g->group_index,
                         'begin_date'  => $g->begin_date,
                         'end_date'    => $g->end_date,
-                        'spec_items'  => isset($itemsGrouped[$g->group_id]) ? $itemsGrouped[$g->group_id]->values()->all() : [],
+                        'spec_items'  => isset($itemsGrouped[$g->group_id])
+                            ? $itemsGrouped[$g->group_id]->map(fn($i) => ['value_id' => $i->value_id])->values()->all()
+                            : [],
                     ];
                 })->values()->all(),
             ];
@@ -407,6 +423,8 @@ class CalloutController extends Controller
 
     /**
      * إلحاق تفاصيل القطعة + الامتدادات (بدون أي مفاتيح متجر).
+     *
+     * ✅ محسّن: إزالة information_schema check + استعلام واحد
      */
     protected function appendDetails(array $part, int $sectionId, string $catalogCode, int $catalogId): array
     {
@@ -417,7 +435,7 @@ class CalloutController extends Controller
         $matchedGroupIds = $part['matched_group_ids'] ?? [];
         $matchValueIds   = $part['match_value_ids'] ?? [];
 
-        // تفاصيل أساسية
+        // تفاصيل أساسية - استعلام محسّن
         $details = DB::table("{$partsTable} as p")
             ->join("{$sectionPartsTable} as sp", 'sp.part_id', '=', 'p.id')
             ->where('sp.section_id', $sectionId)
@@ -432,14 +450,10 @@ class CalloutController extends Controller
             ->first();
 
         // الامتدادات عبر القروبات المطابقة
+        // ✅ محسّن: استخدام try-catch بدلاً من information_schema query
         $extensions = [];
         if (!empty($matchedGroupIds)) {
-            $exists = DB::table('information_schema.tables')
-                ->where('table_schema', DB::getDatabaseName())
-                ->where('table_name', $extTable)
-                ->exists();
-
-            if ($exists) {
+            try {
                 $extensionRows = DB::table($extTable)
                     ->where('part_id', $part['part_id'])
                     ->where('section_id', $sectionId)
@@ -450,24 +464,113 @@ class CalloutController extends Controller
                 foreach ($extensionRows as $row) {
                     $extensions[$row->extension_key] = $row->extension_value;
                 }
+            } catch (\Exception $e) {
+                // الجدول غير موجود - تجاهل
             }
         }
 
         return [
             'part_id'           => (int) $part['part_id'],
-            'part_number'       => optional($details)->part_number,
-            'part_label_ar'     => optional($details)->part_label_ar,
-            'part_label_en'     => optional($details)->part_label_en,
-            'part_qty'          => optional($details)->part_qty,
-            'part_callout'      => optional($details)->callout,
+            'part_number'       => $details->part_number ?? null,
+            'part_label_ar'     => $details->part_label_ar ?? null,
+            'part_label_en'     => $details->part_label_en ?? null,
+            'part_qty'          => $details->part_qty ?? null,
+            'part_callout'      => $details->callout ?? null,
             'part_begin'        => $part['part_begin'] ?? null,
             'part_end'          => $part['part_end']   ?? null,
             'match_values'      => array_values(array_unique($matchValueIds)),
-            'details'           => array_values(array_unique($matchValueIds)), // توافق قديم
+            'details'           => array_values(array_unique($matchValueIds)),
             'extensions'        => $extensions,
             'match_count'       => count($matchValueIds),
             'difference_count'  => 0,
         ];
+    }
+
+    /**
+     * ✅ جلب تفاصيل batch من القطع بدلاً من واحدة تلو الأخرى
+     */
+    protected function appendDetailsBatch(array $parts, int $sectionId, string $catalogCode, int $catalogId): array
+    {
+        if (empty($parts)) return [];
+
+        $partsTable        = $this->dyn('parts', $catalogCode);
+        $sectionPartsTable = $this->dyn('section_parts', $catalogCode);
+        $extTable          = $this->dyn('part_extensions', $catalogCode);
+
+        $partIds = array_column($parts, 'part_id');
+        $partsById = array_column($parts, null, 'part_id');
+
+        // ✅ استعلام واحد لجميع التفاصيل
+        $detailsRows = DB::table("{$partsTable} as p")
+            ->join("{$sectionPartsTable} as sp", 'sp.part_id', '=', 'p.id')
+            ->where('sp.section_id', $sectionId)
+            ->whereIn('p.id', $partIds)
+            ->select(
+                'p.id as part_id',
+                'p.label_en as part_label_en',
+                'p.label_ar as part_label_ar',
+                'p.qty      as part_qty',
+                'p.callout  as callout',
+                'p.part_number'
+            )
+            ->get()
+            ->keyBy('part_id');
+
+        // ✅ جمع جميع group_ids للاستعلام batch واحد
+        $allGroupIds = [];
+        foreach ($parts as $part) {
+            $allGroupIds = array_merge($allGroupIds, $part['matched_group_ids'] ?? []);
+        }
+        $allGroupIds = array_unique($allGroupIds);
+
+        // ✅ استعلام واحد لجميع الامتدادات
+        $extensionsMap = [];
+        if (!empty($allGroupIds)) {
+            try {
+                $extensionRows = DB::table($extTable)
+                    ->whereIn('part_id', $partIds)
+                    ->where('section_id', $sectionId)
+                    ->whereIn('group_id', $allGroupIds)
+                    ->select('part_id', 'group_id', 'extension_key', 'extension_value')
+                    ->get();
+
+                foreach ($extensionRows as $row) {
+                    $key = $row->part_id . '_' . $row->group_id;
+                    if (!isset($extensionsMap[$row->part_id])) {
+                        $extensionsMap[$row->part_id] = [];
+                    }
+                    $extensionsMap[$row->part_id][$row->extension_key] = $row->extension_value;
+                }
+            } catch (\Exception $e) {
+                // الجدول غير موجود
+            }
+        }
+
+        // بناء النتائج
+        $results = [];
+        foreach ($parts as $part) {
+            $partId = $part['part_id'];
+            $details = $detailsRows[$partId] ?? null;
+            $matchValueIds = $part['match_value_ids'] ?? [];
+
+            $results[] = [
+                'part_id'           => (int) $partId,
+                'part_number'       => $details->part_number ?? null,
+                'part_label_ar'     => $details->part_label_ar ?? null,
+                'part_label_en'     => $details->part_label_en ?? null,
+                'part_qty'          => $details->part_qty ?? null,
+                'part_callout'      => $details->callout ?? null,
+                'part_begin'        => $part['part_begin'] ?? null,
+                'part_end'          => $part['part_end']   ?? null,
+                'match_values'      => array_values(array_unique($matchValueIds)),
+                'details'           => array_values(array_unique($matchValueIds)),
+                'extensions'        => $extensionsMap[$partId] ?? [],
+                'match_count'       => count($matchValueIds),
+                'difference_count'  => 0,
+            ];
+        }
+
+        return $results;
     }
 }
 

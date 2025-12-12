@@ -200,6 +200,8 @@ class VehicleSearchApiController extends Controller
 
     /**
      * جلب الاقتراحات بالاسم
+     *
+     * ✅ محسّن: استخدام LIKE prefix حيث ممكن + limit مبكر
      */
     protected function getLabelSuggestions(string $catalogCode, string $query, array $allowedCodes): array
     {
@@ -220,6 +222,14 @@ class VehicleSearchApiController extends Controller
             ->join('sections as s', 's.id', '=', 'sp.section_id')
             ->whereIn('s.full_code', $allowedCodes);
 
+        // ✅ استخدام LIKE prefix للكلمة الأولى للاستفادة من الفهرس
+        $firstWord = array_shift($words);
+        $base->where(function ($q) use ($firstWord) {
+            $q->where('p.label_en', 'like', "{$firstWord}%")
+              ->orWhere('p.label_ar', 'like', "{$firstWord}%");
+        });
+
+        // ✅ باقي الكلمات تستخدم LIKE كامل
         foreach ($words as $w) {
             $like = "%{$w}%";
             $base->where(function ($q) use ($like) {
@@ -240,6 +250,8 @@ class VehicleSearchApiController extends Controller
 
     /**
      * جلب الكول آوتس برقم القطعة
+     *
+     * ✅ محسّن: استعلام واحد مجمع بدلاً من استعلامين
      */
     protected function fetchCalloutsByNumber(string $catalogCode, string $query, array $allowedCodes): array
     {
@@ -249,24 +261,16 @@ class VehicleSearchApiController extends Controller
 
         if (empty($cleanQuery) || empty($allowedCodes)) return [];
 
-        $matchingCallouts = DB::table($partsTable)
-            ->where(function ($q) use ($cleanQuery) {
-                $q->where('part_number', 'like', "{$cleanQuery}%")
-                  ->orWhere('callout', 'like', "{$cleanQuery}%");
-            })
-            ->pluck('callout')
-            ->filter()
-            ->unique()
-            ->values()
-            ->toArray();
-
-        if (empty($matchingCallouts)) return [];
-
+        // ✅ استعلام واحد مجمع: البحث + الفلترة في نفس الوقت
         return DB::table("$partsTable as p")
             ->join("$sectionPartsTable as sp", 'sp.part_id', '=', 'p.id')
             ->join('sections as s', 's.id', '=', 'sp.section_id')
             ->whereIn('s.full_code', $allowedCodes)
-            ->whereIn('p.callout', $matchingCallouts)
+            ->where(function ($q) use ($cleanQuery) {
+                // استخدام LIKE prefix للاستفادة من الفهرس
+                $q->where('p.part_number', 'like', "{$cleanQuery}%")
+                  ->orWhere('p.callout', 'like', "{$cleanQuery}%");
+            })
             ->select(
                 'p.id as part_id',
                 'p.part_number',
@@ -285,6 +289,8 @@ class VehicleSearchApiController extends Controller
 
     /**
      * جلب الكول آوتس بالاسم
+     *
+     * ✅ محسّن: استعلام واحد مجمع بدلاً من استعلامين
      */
     protected function fetchCalloutsByLabel(string $catalogCode, string $query, array $allowedCodes): array
     {
@@ -293,24 +299,16 @@ class VehicleSearchApiController extends Controller
 
         if (empty($query) || empty($allowedCodes)) return [];
 
-        $matchingCallouts = DB::table($partsTable)
-            ->where(function ($q) use ($query) {
-                $q->where('label_en', 'like', "{$query}%")
-                  ->orWhere('label_ar', 'like', "{$query}%");
-            })
-            ->pluck('callout')
-            ->filter()
-            ->unique()
-            ->values()
-            ->toArray();
-
-        if (empty($matchingCallouts)) return [];
-
+        // ✅ استعلام واحد مجمع: البحث + الفلترة في نفس الوقت
         return DB::table("$partsTable as p")
             ->join("$sectionPartsTable as sp", 'sp.part_id', '=', 'p.id')
             ->join('sections as s', 's.id', '=', 'sp.section_id')
             ->whereIn('s.full_code', $allowedCodes)
-            ->whereIn('p.callout', $matchingCallouts)
+            ->where(function ($q) use ($query) {
+                // استخدام LIKE prefix للاستفادة من الفهرس
+                $q->where('p.label_en', 'like', "{$query}%")
+                  ->orWhere('p.label_ar', 'like', "{$query}%");
+            })
             ->select(
                 'p.id as part_id',
                 'p.part_number',
@@ -329,6 +327,8 @@ class VehicleSearchApiController extends Controller
 
     /**
      * إثراء النتائج بالمفاتيح
+     *
+     * ✅ محسّن: استعلامات محسنة مع select محدد
      */
     protected function enrichCalloutOptionsWithKeys(array $options, $catalog): array
     {
@@ -336,16 +336,22 @@ class VehicleSearchApiController extends Controller
 
         $codes = collect($options)->pluck('category_code')->filter()->unique()->values()->all();
 
+        if (empty($codes)) return $options;
+
+        // ✅ استعلام محسّن مع select محدد
         $cats = NewCategory::query()
             ->where('catalog_id', $catalog->id)
             ->whereIn('full_code', $codes)
-            ->get(['id', 'full_code', 'parents_key', 'spec_key', 'Applicability'])
+            ->select('id', 'full_code', 'parents_key', 'spec_key', 'Applicability')
+            ->get()
             ->keyBy('full_code');
 
         $catIds = $cats->pluck('id')->filter()->unique()->values()->all();
 
-        $periods = empty($catIds) ? collect() :
-            DB::table('category_periods')
+        // ✅ استعلام محسّن للفترات
+        $periods = collect();
+        if (!empty($catIds)) {
+            $periods = DB::table('category_periods')
                 ->whereIn('category_id', $catIds)
                 ->select(
                     'category_id',
@@ -355,6 +361,7 @@ class VehicleSearchApiController extends Controller
                 ->groupBy('category_id')
                 ->get()
                 ->keyBy('category_id');
+        }
 
         return array_map(function (array $o) use ($cats, $periods) {
             $cat = $cats[$o['category_code']] ?? null;

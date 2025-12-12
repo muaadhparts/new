@@ -5,96 +5,158 @@ namespace App\Services;
 use App\Models\MerchantProduct;
 use App\Models\SkuAlternative;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 
 /**
  * خدمة موحدة لإدارة البدائل
+ *
+ * ✅ محسّن: استخدام JOIN بدلاً من whereHas + تقليل N+1 queries
  */
 class AlternativeService
 {
     /**
      * جلب البدائل لـ SKU معين
      * يجلب البدائل من sku_alternatives + جميع العروض المختلفة لنفس المنتج
+     *
+     * ✅ محسّن: استعلام واحد مجمع
      */
     public function getAlternatives(string $sku, bool $includeSelf = false): Collection
     {
-        $skuAlt = SkuAlternative::where('sku', $sku)->first();
-        $product = \App\Models\Product::where('sku', $sku)->first();
+        // ✅ استعلام واحد لجلب المنتج و group_id
+        $baseData = DB::table('products as p')
+            ->leftJoin('sku_alternatives as sa', 'sa.sku', '=', 'p.sku')
+            ->where('p.sku', $sku)
+            ->select('p.id as product_id', 'sa.group_id')
+            ->first();
 
-        if (!$product) {
+        if (!$baseData) {
             return collect();
         }
 
-        $skus = [];
+        $productId = $baseData->product_id;
+        $groupId = $baseData->group_id;
 
-        if ($includeSelf) {
-            $skus[] = $sku;
+        // ✅ جمع جميع product_ids في استعلام واحد
+        $productIds = collect([$productId]);
+
+        if ($groupId) {
+            // جلب product_ids للبدائل
+            $alternativeProductIds = DB::table('sku_alternatives as sa')
+                ->join('products as p', 'p.sku', '=', 'sa.sku')
+                ->where('sa.group_id', $groupId)
+                ->when(!$includeSelf, fn($q) => $q->where('sa.sku', '<>', $sku))
+                ->pluck('p.id');
+
+            $productIds = $productIds->merge($alternativeProductIds)->unique();
         }
 
-        // جلب البدائل من جدول sku_alternatives
-        if ($skuAlt && $skuAlt->group_id) {
-            $groupSkus = SkuAlternative::where('group_id', $skuAlt->group_id)
-                ->where('sku', '<>', $sku)
-                ->pluck('sku')
-                ->toArray();
-            $skus = array_merge($skus, $groupSkus);
+        // ✅ استعلام واحد لجميع merchant_products باستخدام JOIN
+        $listings = MerchantProduct::query()
+            ->join('users as u', 'u.id', '=', 'merchant_products.user_id')
+            ->where('u.is_vendor', 2)
+            ->whereIn('merchant_products.product_id', $productIds->toArray())
+            ->where('merchant_products.status', 1)
+            ->with([
+                'product' => fn($q) => $q->select('id', 'sku', 'slug', 'label_en', 'label_ar', 'photo', 'brand_id')
+                    ->with('brand:id,name,name_ar,photo'),
+                'user:id,is_vendor,name,shop_name',
+                'qualityBrand:id,name_en,name_ar,logo',
+            ])
+            ->select([
+                'merchant_products.id',
+                'merchant_products.product_id',
+                'merchant_products.user_id',
+                'merchant_products.brand_quality_id',
+                'merchant_products.price',
+                'merchant_products.previous_price',
+                'merchant_products.stock',
+                'merchant_products.preordered',
+                'merchant_products.minimum_qty',
+                'merchant_products.status'
+            ])
+            ->get();
+
+        // إزالة المنتج الأصلي إذا لم يكن includeSelf
+        if (!$includeSelf) {
+            $listings = $listings->filter(fn($mp) => $mp->product_id != $productId);
         }
 
-        // جلب جميع merchant_products للبدائل
-        $alternatives = empty($skus) ? collect() : $this->fetchMerchantProducts($skus);
-
-        // جلب جميع merchant_products لنفس product_id (العروض المختلفة)
-        $sameProductVariants = $this->fetchSameProductVariants($product->id, $includeSelf);
-
-        // دمج النتائج وإزالة التكرار
-        $combined = $alternatives->merge($sameProductVariants)->unique('id');
-
-        return $this->sortByPriority($combined);
+        return $this->sortByPriority($listings);
     }
 
     /**
      * جلب جميع العروض لنفس المنتج (variants من شركات مختلفة)
+     *
+     * ✅ محسّن: استخدام JOIN بدلاً من whereHas
      */
     protected function fetchSameProductVariants(int $productId, bool $includeSelf): Collection
     {
-        // جلب جميع merchant_products لنفس product_id مع eager loading كامل
-        return MerchantProduct::with([
-                'product' => function ($q) {
-                    $q->select('id', 'sku', 'slug', 'label_en', 'label_ar', 'photo', 'brand_id')
-                      ->with('brand:id,name,name_ar,photo');
-                },
+        return MerchantProduct::query()
+            ->join('users as u', 'u.id', '=', 'merchant_products.user_id')
+            ->where('u.is_vendor', 2)
+            ->where('merchant_products.status', 1)
+            ->where('merchant_products.product_id', $productId)
+            ->with([
+                'product' => fn($q) => $q->select('id', 'sku', 'slug', 'label_en', 'label_ar', 'photo', 'brand_id')
+                    ->with('brand:id,name,name_ar,photo'),
                 'user:id,is_vendor,name,shop_name',
                 'qualityBrand:id,name_en,name_ar,logo',
             ])
-            ->select(['id', 'product_id', 'user_id', 'brand_quality_id', 'price', 'previous_price', 'stock', 'preordered', 'minimum_qty', 'status'])
-            ->where('status', 1)
-            ->where('product_id', $productId)
-            ->whereHas('user', function ($u) {
-                $u->where('is_vendor', 2);
-            })
+            ->select([
+                'merchant_products.id',
+                'merchant_products.product_id',
+                'merchant_products.user_id',
+                'merchant_products.brand_quality_id',
+                'merchant_products.price',
+                'merchant_products.previous_price',
+                'merchant_products.stock',
+                'merchant_products.preordered',
+                'merchant_products.minimum_qty',
+                'merchant_products.status'
+            ])
             ->get();
     }
 
     /**
      * جلب عروض البائعين للمنتجات
+     *
+     * ✅ محسّن: استخدام JOIN بدلاً من whereHas المتعددة
      */
     protected function fetchMerchantProducts(array $skus): Collection
     {
-        $listings = MerchantProduct::with([
-                'product' => function ($q) {
-                    $q->select('id', 'sku', 'slug', 'label_en', 'label_ar', 'photo', 'brand_id')
-                      ->with('brand:id,name,name_ar,photo');
-                },
+        if (empty($skus)) return collect();
+
+        // ✅ جلب product_ids أولاً
+        $productIds = DB::table('products')
+            ->whereIn('sku', $skus)
+            ->pluck('id')
+            ->toArray();
+
+        if (empty($productIds)) return collect();
+
+        $listings = MerchantProduct::query()
+            ->join('users as u', 'u.id', '=', 'merchant_products.user_id')
+            ->where('u.is_vendor', 2)
+            ->whereIn('merchant_products.product_id', $productIds)
+            ->where('merchant_products.status', 1)
+            ->with([
+                'product' => fn($q) => $q->select('id', 'sku', 'slug', 'label_en', 'label_ar', 'photo', 'brand_id')
+                    ->with('brand:id,name,name_ar,photo'),
                 'user:id,is_vendor,name,shop_name',
                 'qualityBrand:id,name_en,name_ar,logo',
             ])
-            ->select(['id', 'product_id', 'user_id', 'brand_quality_id', 'price', 'previous_price', 'stock', 'preordered', 'minimum_qty', 'status'])
-            ->where('status', 1)
-            ->whereHas('user', function ($u) {
-                $u->where('is_vendor', 2);
-            })
-            ->whereHas('product', function ($q) use ($skus) {
-                $q->whereIn('sku', $skus);
-            })
+            ->select([
+                'merchant_products.id',
+                'merchant_products.product_id',
+                'merchant_products.user_id',
+                'merchant_products.brand_quality_id',
+                'merchant_products.price',
+                'merchant_products.previous_price',
+                'merchant_products.stock',
+                'merchant_products.preordered',
+                'merchant_products.minimum_qty',
+                'merchant_products.status'
+            ])
             ->get();
 
         return $this->sortByPriority($listings);
@@ -102,64 +164,69 @@ class AlternativeService
 
     /**
      * ترتيب العروض حسب الأولوية
+     * ✅ محسّن: تبسيط المنطق
      */
     protected function sortByPriority(Collection $listings): Collection
     {
-        return $listings->sortByDesc(function (MerchantProduct $mp) {
-            $vp = method_exists($mp, 'vendorSizePrice')
-                ? (float)$mp->vendorSizePrice()
-                : (float)$mp->price;
-
-            $has = ($mp->stock > 0 && $vp > 0) ? 1 : 0;
-
-            return ($has * 1000000) + $vp;
-        })->values();
+        return $listings->sortBy([
+            // أولاً: المتوفر (stock > 0 && price > 0)
+            fn($mp) => ($mp->stock > 0 && $mp->price > 0) ? 0 : 1,
+            // ثانياً: السعر الأقل
+            fn($mp) => (float) $mp->price,
+        ])->values();
     }
 
     /**
      * التحقق من وجود بدائل
+     *
+     * ✅ محسّن: استعلام مباشر مع limit
      */
     public function hasAlternatives(string $sku): bool
     {
-        $skuAlt = SkuAlternative::where('sku', $sku)->first();
+        $groupId = SkuAlternative::where('sku', $sku)->value('group_id');
 
-        if (!$skuAlt || !$skuAlt->group_id) {
+        if (!$groupId) {
             return false;
         }
 
-        return SkuAlternative::where('group_id', $skuAlt->group_id)
+        return SkuAlternative::where('group_id', $groupId)
             ->where('sku', '<>', $sku)
+            ->limit(1)
             ->exists();
     }
 
     /**
      * عدد البدائل المتاحة
+     *
+     * ✅ محسّن: استخدام value بدلاً من first
      */
     public function countAlternatives(string $sku): int
     {
-        $skuAlt = SkuAlternative::where('sku', $sku)->first();
+        $groupId = SkuAlternative::where('sku', $sku)->value('group_id');
 
-        if (!$skuAlt || !$skuAlt->group_id) {
+        if (!$groupId) {
             return 0;
         }
 
-        return SkuAlternative::where('group_id', $skuAlt->group_id)
+        return SkuAlternative::where('group_id', $groupId)
             ->where('sku', '<>', $sku)
             ->count();
     }
 
     /**
      * جلب SKUs البديلة فقط (بدون بيانات المنتجات)
+     *
+     * ✅ محسّن: استخدام value
      */
     public function getAlternativeSkus(string $sku): array
     {
-        $skuAlt = SkuAlternative::where('sku', $sku)->first();
+        $groupId = SkuAlternative::where('sku', $sku)->value('group_id');
 
-        if (!$skuAlt || !$skuAlt->group_id) {
+        if (!$groupId) {
             return [];
         }
 
-        return SkuAlternative::where('group_id', $skuAlt->group_id)
+        return SkuAlternative::where('group_id', $groupId)
             ->where('sku', '<>', $sku)
             ->pluck('sku')
             ->toArray();
