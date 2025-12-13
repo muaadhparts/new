@@ -1,15 +1,3 @@
-{{--
-================================================================================
-    MUAADH THEME - MODERN HEADER
-================================================================================
-    CSS GUIDELINES FOR AI AGENTS:
-    -----------------------------
-    1. The ONLY file for adding/modifying custom CSS is: public/assets/front/css/MUAADH.css
-    2. DO NOT add <style> tags in Blade files - move all styles to MUAADH.css
-    3. DO NOT create new CSS files - use MUAADH.css sections instead
-================================================================================
---}}
-
 <header class="muaadh-header">
     {{-- Top Bar - Compact info strip --}}
     <div class="muaadh-topbar">
@@ -332,7 +320,7 @@
                 {{-- Promo Text --}}
                 <div class="muaadh-nav-promo">
                     <i class="fas fa-truck"></i>
-                    <span>@lang('Free Shipping on Orders Over $50')</span>
+                    <span>@lang('Free Shipping on Orders Over')</span>
                 </div>
             </div>
         </div>
