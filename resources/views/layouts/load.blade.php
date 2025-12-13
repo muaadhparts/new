@@ -13,6 +13,11 @@
 <link rel="stylesheet" href="{{ asset('assets/front/css/style.css') }}">
 {{-- Theme Colors - Generated from Admin Panel --}}
 <link rel="stylesheet" href="{{ asset('assets/front/css/theme-colors.css') }}">
+{{-- NEW CSS Layer - Flat Modern Blue/White Theme Override --}}
+<link rel="stylesheet" href="{{ asset('assets/front/css/new/tokens.css') }}">
+<link rel="stylesheet" href="{{ asset('assets/front/css/new/base.css') }}">
+<link rel="stylesheet" href="{{ asset('assets/front/css/new/components.css') }}">
+<link rel="stylesheet" href="{{ asset('assets/front/css/new/layouts.css') }}">
 @yield('styles')
 
 

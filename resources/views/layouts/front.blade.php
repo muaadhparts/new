@@ -47,6 +47,13 @@
 
     {{-- Theme Colors - Generated from Admin Panel (MUST load LAST to override :root variables) --}}
     <link rel="stylesheet" href="{{ asset('assets/front/css/theme-colors.css') }}?v={{ filemtime(public_path('assets/front/css/theme-colors.css')) }}">
+
+    {{-- NEW CSS Layer - Flat Modern Blue/White Theme Override --}}
+    <link rel="stylesheet" href="{{ asset('assets/front/css/new/tokens.css') }}?v={{ time() }}">
+    <link rel="stylesheet" href="{{ asset('assets/front/css/new/base.css') }}?v={{ time() }}">
+    <link rel="stylesheet" href="{{ asset('assets/front/css/new/components.css') }}?v={{ time() }}">
+    <link rel="stylesheet" href="{{ asset('assets/front/css/new/layouts.css') }}?v={{ time() }}">
+
     {{-- AutoComplete.js for search --}}
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tarekraafat/autocomplete.js@10.2.9/dist/css/autoComplete.min.css">
     <script src="https://cdn.jsdelivr.net/npm/@tarekraafat/autocomplete.js@10.2.9/dist/autoComplete.min.js"></script>
