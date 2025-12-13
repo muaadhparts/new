@@ -26,6 +26,15 @@ class Brand extends Model
     }
 
     /**
+     * Get products for this brand.
+     */
+    public function products(): HasMany
+    {
+        return $this->hasMany(Product::class, 'brand_id');
+    }
+
+
+    /**
      * Get localized brand name based on current locale.
      * Arabic: name_ar (fallback to name)
      * English: name (fallback to name_ar)

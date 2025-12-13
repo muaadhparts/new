@@ -2,84 +2,58 @@
 
 @section('content')
 
-            <div class="content-area">
-
-              <div class="add-product-content1">
-                <div class="row">
-                  <div class="col-lg-12">
-                    <div class="product-description">
-                      <div class="body-area">
+<div class="content-area">
+    <div class="add-product-content1">
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="product-description">
+                    <div class="body-area">
                         @include('alerts.admin.form-error')
-                      <form id="muaadhformdata" action="{{route('admin-cat-update',$data->id)}}" method="POST" enctype="multipart/form-data">
-                        {{csrf_field()}}
+                        <form id="muaadhformdata" action="{{ route('admin-cat-update', $data->id) }}" method="POST" enctype="multipart/form-data">
+                            @csrf
 
-                        <div class="row">
-                          <div class="col-lg-4">
-                            <div class="left-area">
-                                <h4 class="heading">{{ __('Name') }} *</h4>
-                                <p class="sub-heading">{{ __('(In Any Language)') }}</p>
+                            <div class="row">
+                                <div class="col-lg-2">
+                                    <div class="left-area">
+                                        <h4 class="heading">{{ __('Name') }} *</h4>
+                                    </div>
+                                </div>
+                                <div class="col-lg-5">
+                                    <input type="text" class="input-field" name="name" placeholder="{{ __('English') }}" required value="{{ old('name', $data->name) }}">
+                                </div>
+                                <div class="col-lg-5">
+                                    <input type="text" class="input-field" name="name_ar" placeholder="{{ __('Arabic') }}" required value="{{ old('name_ar', $data->name_ar) }}">
+                                </div>
                             </div>
-                          </div>
-                          <div class="col-lg-7">
-                            <input type="text" class="input-field" name="name" placeholder="{{ __('Enter Name') }}" required="" value="{{$data->name}}">
-                          </div>
-                        </div>
 
-                        <div class="row">
-                          <div class="col-lg-4">
-                            <div class="left-area">
-                                <h4 class="heading">{{ __('Slug') }} *</h4>
-                                <p class="sub-heading">{{ __('(In English)') }}</p>
-                            </div>
-                          </div>
-                          <div class="col-lg-7">
-                            <input type="text" class="input-field" name="slug" placeholder="{{ __('Enter Slug') }}" required="" value="{{$data->slug}}">
-                          </div>
-                        </div>
+                            @include('components.admin.form-row', [
+                                'label' => __('Slug'),
+                                'name' => 'slug',
+                                'value' => old('slug', $data->slug),
+                                'placeholder' => __('Enter Slug'),
+                                'required' => true,
+                                'subheading' => __('(In English)')
+                            ])
 
-                        
+                            @include('components.admin.image-upload', [
+                                'label' => __('Current Image'),
+                                'name' => 'image',
+                                'current' => $data->image ? 'categories/' . $data->image : null,
+                                'size' => '1230x267',
+                                'required' => false
+                            ])
 
+                            <br>
+                            @include('components.admin.submit-button', [
+                                'label' => __('Save')
+                            ])
 
-												<div class="row">
-													<div class="col-lg-4">
-														<div class="left-area">
-																<h4 class="heading">{{ __('Current Image') }}*</h4>
-														</div>
-													</div>
-                          <div class="col-lg-7">
-                            <div class="img-upload">
-                              <div id="image-preview" class="img-preview" style="background: url({{ $data->image ? asset('assets/images/categories/'.$data->image):asset('assets/images/noimage.png') }});">
-                                <label for="image-upload" class="img-label"><i class="icofont-upload-alt"></i>{{ __('Upload Image') }}</label>
-                                <input type="file" name="image" class="img-upload">
-                              </div>
-                              <p class="text">{{__('Prefered Size: (1230x267) or Square Sized Image')}}</p>
-                            </div>
-                          </div>
-
-												</div>
-
-
-
-
-
-
-                        <br>
-                        <div class="row">
-                          <div class="col-lg-4">
-                            <div class="left-area">
-
-                            </div>
-                          </div>
-                          <div class="col-lg-7">
-                            <button class="addProductSubmit-btn" type="submit">{{ __('Save') }}</button>
-                          </div>
-                        </div>
-                      </form>
-                      </div>
+                        </form>
                     </div>
-                  </div>
                 </div>
-              </div>
             </div>
+        </div>
+    </div>
+</div>
 
 @endsection

@@ -20,11 +20,14 @@ class BrandController extends AdminBaseController
          return Datatables::of($datas)
                             ->editColumn('photo', function(Brand $data) {
                                 $photo = $data->photo ? url('assets/images/brand/'.$data->photo):url('assets/images/noimage.png');
-                                return '<img src="' . $photo . '" alt="Image">';
+                                return '<img src="' . $photo . '" alt="Image" style="max-width:80px;">';
+                            })
+                            ->addColumn('catalogs_count', function(Brand $data) {
+                                return $data->catalogs()->count();
                             })
                             ->addColumn('action', function(Brand $data) {
                                 return '<div class="action-list"><a data-href="' . route('admin-brand-edit',$data->id) . '" class="edit" data-bs-toggle="modal" data-bs-target="#modal1"> <i class="fas fa-edit"></i>'.__('Edit').'</a><a href="javascript:;" data-href="' . route('admin-brand-delete',$data->id) . '" data-bs-toggle="modal" data-bs-target="#confirm-delete" class="delete"><i class="fas fa-trash-alt"></i></a></div>';
-                            }) 
+                            })
                             ->rawColumns(['photo', 'action'])
                             ->toJson(); //--- Returning Json Data To Client Side
     }
@@ -42,11 +45,12 @@ class BrandController extends AdminBaseController
     {
         //--- Validation Section
         $rules = [
+               'name'       => 'required|string|max:255',
                'photo'      => 'required|mimes:jpeg,jpg,png,svg',
                 ];
 
         $validator = Validator::make($request->all(), $rules);
-        
+
         if ($validator->fails()) {
           return response()->json(array('errors' => $validator->getMessageBag()->toArray()));
         }
@@ -55,32 +59,19 @@ class BrandController extends AdminBaseController
         //--- Logic Section
         $data = new Brand();
         $input = $request->all();
-        if ($file = $request->file('photo')) 
-         {      
+        if ($file = $request->file('photo'))
+         {
             $name = \PriceHelper::ImageCreateName($file);
-            $file->move('assets/images/brand',$name);           
+            $file->move('assets/images/brand',$name);
             $input['photo'] = $name;
-        } 
-        if (!empty($request->meta_tag)) 
-         {
-            $input['meta_tag'] = implode(',', $request->meta_tag);       
-         }  
-        if (!empty($request->tags)) 
-         {
-            $input['tags'] = implode(',', $request->tags);       
-         }
-        if ($request->secheck == "") 
-         {
-            $input['meta_tag'] = null;
-            $input['meta_description'] = null;         
-         } 
+        }
         $data->fill($input)->save();
         //--- Logic Section Ends
 
-        //--- Redirect Section        
+        //--- Redirect Section
         $msg = __('New Data Added Successfully.');
-        return response()->json($msg);      
-        //--- Redirect Section Ends    
+        return response()->json($msg);
+        //--- Redirect Section Ends
     }
 
     //*** GET Request
@@ -95,11 +86,12 @@ class BrandController extends AdminBaseController
     {
         //--- Validation Section
         $rules = [
+               'name'       => 'required|string|max:255',
                'photo'      => 'mimes:jpeg,jpg,png,svg',
                 ];
 
         $validator = Validator::make($request->all(), $rules);
-        
+
         if ($validator->fails()) {
           return response()->json(array('errors' => $validator->getMessageBag()->toArray()));
         }
@@ -108,44 +100,25 @@ class BrandController extends AdminBaseController
         //--- Logic Section
         $data = Brand::findOrFail($id);
         $input = $request->all();
-            if ($file = $request->file('photo')) 
-            {              
-                $name = \PriceHelper::ImageCreateName($file);
-                $file->move('assets/images/brand',$name);
-                if($data->photo != null)
-                {
-                    if (file_exists(public_path().'/assets/images/brand/'.$data->photo)) {
-                        unlink(public_path().'/assets/images/brand/'.$data->photo);
-                    }
-                }            
+        if ($file = $request->file('photo'))
+        {
+            $name = \PriceHelper::ImageCreateName($file);
+            $file->move('assets/images/brand',$name);
+            if($data->photo != null)
+            {
+                if (file_exists(public_path().'/assets/images/brand/'.$data->photo)) {
+                    unlink(public_path().'/assets/images/brand/'.$data->photo);
+                }
+            }
             $input['photo'] = $name;
-            } 
-        if (!empty($request->meta_tag)) 
-         {
-            $input['meta_tag'] = implode(',', $request->meta_tag);       
-         } 
-        else {
-            $input['meta_tag'] = null;
-         }
-        if (!empty($request->tags)) 
-         {
-            $input['tags'] = implode(',', $request->tags);       
-         }
-        else {
-            $input['tags'] = null;
-         } 
-        if ($request->secheck == "") 
-         {
-            $input['meta_tag'] = null;
-            $input['meta_description'] = null;         
-         } 
+        }
         $data->update($input);
         //--- Logic Section Ends
 
-        //--- Redirect Section     
+        //--- Redirect Section
         $msg = __('Data Updated Successfully.');
-        return response()->json($msg);      
-        //--- Redirect Section Ends            
+        return response()->json($msg);
+        //--- Redirect Section Ends
     }
 
     //*** GET Request Delete

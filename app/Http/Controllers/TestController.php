@@ -7,7 +7,7 @@ use App\Models\Product;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Str;
-use Modules\Product\Entities\Illustrations;
+use App\Models\Illustration;
 
 class TestController extends Controller
 {
@@ -16,15 +16,10 @@ class TestController extends Controller
     {
         //        JNKAY1AP7BM200155
 
-
-
-
-
-
 //        Session::put('catalog', $catalog);
 
-
-        $Illustrations  =   \App\Models\Illustrations::where('data','Y62GL')
+        // Note: Illustrations model was removed, using Illustration instead
+        $Illustrations  =   Illustration::where('data','Y62GL')
             ->where('code','101A-001')
             ->first();
         $partCallouts = collect(  $Illustrations->illustrationWithCallouts)['partCallouts'];

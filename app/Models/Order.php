@@ -16,6 +16,14 @@ class Order extends Model
         'shipping_status' => 'array',
     ];
 
+    /**
+     * Get the user that owns this order.
+     */
+    public function user()
+    {
+        return $this->belongsTo('App\Models\User', 'user_id');
+    }
+
     public function vendororders()
     {
         return $this->hasMany('App\Models\VendorOrder','order_id');
