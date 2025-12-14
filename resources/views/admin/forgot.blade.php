@@ -28,10 +28,10 @@
     <link href="{{asset('assets/admin/css/custom.css')}}" rel="stylesheet"/>
     <link href="{{asset('assets/admin/css/responsive.css')}}" rel="stylesheet" />
 
-    {{-- NEW CSS Layer --}}
-    <link rel="stylesheet" href="{{ asset('assets/front/css/new/tokens.css') }}">
-    <link rel="stylesheet" href="{{ asset('assets/front/css/new/base.css') }}">
-    <link rel="stylesheet" href="{{ asset('assets/front/css/new/components.css') }}">
+    {{-- Frontend Theme Files --}}
+    <link rel="stylesheet" href="{{ asset('assets/front/css/style.css') }}">
+    {{-- Theme Colors - Generated from Admin Panel (MUST load LAST) --}}
+    <link rel="stylesheet" href="{{ asset('assets/front/css/theme-colors.css') }}">
 
   </head>
   <body>

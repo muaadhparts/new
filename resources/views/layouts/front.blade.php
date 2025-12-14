@@ -39,7 +39,10 @@
     <link rel="stylesheet" href="{{ asset('assets/front/css/toastr.min.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/front/css/datatables.min.css') }}">
     {{-- Main Theme File - Contains all base styles (buttons, components, etc.) --}}
-    <link rel="stylesheet" href="{{ asset('assets/front/css/style.css') }}?v={{ time() }}">
+    <link rel="stylesheet" href="{{ asset('assets/front/css/style.css') }}?v={{ filemtime(public_path('assets/front/css/style.css')) }}">
+
+    {{-- Design System - New components with m- prefix --}}
+    <link rel="stylesheet" href="{{ asset('assets/front/css/muaadh-system.css') }}?v={{ filemtime(public_path('assets/front/css/muaadh-system.css')) }}">
 
     @if($langg && $langg->rtl == 1)
         <link rel="stylesheet" href="{{ asset('assets/front/css/rtl.css') }}">
@@ -47,12 +50,6 @@
 
     {{-- Theme Colors - Generated from Admin Panel (MUST load LAST to override :root variables) --}}
     <link rel="stylesheet" href="{{ asset('assets/front/css/theme-colors.css') }}?v={{ filemtime(public_path('assets/front/css/theme-colors.css')) }}">
-
-    {{-- NEW CSS Layer - Flat Modern Blue/White Theme Override --}}
-    <link rel="stylesheet" href="{{ asset('assets/front/css/new/tokens.css') }}?v={{ time() }}">
-    <link rel="stylesheet" href="{{ asset('assets/front/css/new/base.css') }}?v={{ time() }}">
-    <link rel="stylesheet" href="{{ asset('assets/front/css/new/components.css') }}?v={{ time() }}">
-    <link rel="stylesheet" href="{{ asset('assets/front/css/new/layouts.css') }}?v={{ time() }}">
 
     {{-- AutoComplete.js for search --}}
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tarekraafat/autocomplete.js@10.2.9/dist/css/autoComplete.min.css">

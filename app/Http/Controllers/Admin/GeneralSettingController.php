@@ -1137,6 +1137,11 @@ class GeneralSettingController extends AdminBaseController
     --theme-link: {$primary};
     --theme-link-hover: {$primaryHover};
 
+    /* ===== TOPBAR ===== */
+    --theme-topbar-bg: {$secondary};
+    --theme-topbar-text: rgba(255, 255, 255, 0.9);
+    --theme-topbar-text-hover: #ffffff;
+
     /* ===== LEGACY VARIABLES (Backwards Compatibility) ===== */
     --muaadh-primary: {$primary};
     --muaadh-primary-hover: {$primaryHover};
@@ -1155,6 +1160,12 @@ class GeneralSettingController extends AdminBaseController
     --muaadh-border-light: {$borderLight};
     --muaadh-bg-light: {$bgLight};
     --muaadh-bg-gray: {$bgGray};
+    --muaadh-white: #ffffff;
+    --muaadh-dark: {$secondary};
+    --muaadh-light: {$bgLight};
+    --muaadh-radius: {$radius};
+    --muaadh-radius-lg: {$radiusLg};
+    --muaadh-shadow-lg: {$shadowLg};
 }
 
 /* ===== SCROLLBAR STYLING ===== */

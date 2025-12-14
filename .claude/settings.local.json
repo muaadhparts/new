@@ -33,7 +33,10 @@
       "Bash(if exist update_payment_controllers.php del update_payment_controllers.php)",
       "Bash(curl:*)",
       "Bash(composer require:*)",
-      "Bash(ls -la \"C:\\Users\\hp\\Herd\\new\\public\\assets\\admin\\css\"\" 2>/dev/null || dir \"C:UsershpHerdnewpublicassetsadmincss \")"
+      "Bash(ls -la \"C:\\Users\\hp\\Herd\\new\\public\\assets\\admin\\css\"\" 2>/dev/null || dir \"C:UsershpHerdnewpublicassetsadmincss \")",
+      "Bash(dir /b \"C:\\Users\\hp\\Herd\\new\\app\\Livewire\")",
+      "Bash(dir /b \"C:\\Users\\hp\\Herd\\new\\.claude\")",
+      "Bash(php artisan view:clear:*)"
     ],
     "deny": [],
     "ask": []

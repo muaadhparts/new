@@ -42,14 +42,8 @@
         <link rel="stylesheet" href="{{ asset('assets/front') }}/css/rtl.css">
     @endif
     <link rel="stylesheet" href="{{ asset('assets/vendor') }}/css/custom.css">
-    {{-- Theme Colors - Generated from Admin Panel --}}
+    {{-- Theme Colors - Generated from Admin Panel (MUST load LAST to override :root variables) --}}
     <link rel="stylesheet" href="{{ asset('assets/front/css/theme-colors.css') }}?v={{ filemtime(public_path('assets/front/css/theme-colors.css')) }}">
-
-    {{-- NEW CSS Layer - Flat Modern Blue/White Theme Override --}}
-    <link rel="stylesheet" href="{{ asset('assets/front/css/new/tokens.css') }}?v={{ time() }}">
-    <link rel="stylesheet" href="{{ asset('assets/front/css/new/base.css') }}?v={{ time() }}">
-    <link rel="stylesheet" href="{{ asset('assets/front/css/new/components.css') }}?v={{ time() }}">
-    <link rel="stylesheet" href="{{ asset('assets/front/css/new/layouts.css') }}?v={{ time() }}">
 
     <link rel="icon" href="{{ asset('assets/images/' . $gs->favicon) }}">
     @include('includes.frontend.extra_head')

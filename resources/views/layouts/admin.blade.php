@@ -71,14 +71,8 @@
 	<link rel="stylesheet" href="{{ asset('assets/front/css/bootstrap.min.css') }}">
 	{{-- Main Theme File - Contains all styles --}}
 	<link rel="stylesheet" href="{{ asset('assets/front/css/style.css') }}?v={{ time() }}">
-	{{-- Theme Colors - Generated from Admin Panel --}}
+	{{-- Theme Colors - Generated from Admin Panel (MUST load LAST to override :root variables) --}}
 	<link rel="stylesheet" href="{{ asset('assets/front/css/theme-colors.css') }}?v={{ @filemtime(public_path('assets/front/css/theme-colors.css')) }}">
-
-	{{-- NEW CSS Layer - Flat Modern Blue/White Theme Override --}}
-	<link rel="stylesheet" href="{{ asset('assets/front/css/new/tokens.css') }}?v={{ time() }}">
-	<link rel="stylesheet" href="{{ asset('assets/front/css/new/base.css') }}?v={{ time() }}">
-	<link rel="stylesheet" href="{{ asset('assets/front/css/new/components.css') }}?v={{ time() }}">
-	<link rel="stylesheet" href="{{ asset('assets/front/css/new/layouts.css') }}?v={{ time() }}">
 
 	{{-- Hide bottom layer and raise header above all content --}}
 	<style>
