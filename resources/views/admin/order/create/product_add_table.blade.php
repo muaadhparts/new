@@ -81,7 +81,7 @@
                  @endif
               </td>
               <td>
-                 <a href="javascript:;"  data-href="{{ route('admin.order.remove.cart',$product['item']['id'].$product['size'].$product['color'].str_replace(str_split(' ,'),'',$product['values'])) }}" class="mybtn1 removeOrder"><i class="fa fa-trash"></i> {{ __('Remove') }}</a>
+                 <a href="javascript:;"  data-href="{{ route('admin.order.remove.cart',$product['item']['id'].$product['size'].$product['color'].str_replace(str_split(' ,'),'',$product['values'])) }}" class="btn btn-primary removeOrder"><i class="fa fa-trash"></i> {{ __('Remove') }}</a>
               </td>
            </tr>
            @endforeach
@@ -92,7 +92,7 @@
    
     
     <div class="col-lg-12 text-right">
-      <button type="submit" class="mybtn1">View & Continue</button>
+      <button type="submit" class="btn btn-primary">View & Continue</button>
     </div>
 
   </div>

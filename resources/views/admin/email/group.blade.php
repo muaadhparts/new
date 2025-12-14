@@ -57,7 +57,7 @@
                             </div>
                           </div>
                           <div class="col-lg-7">
-                            <input type="text" class="input-field" name="subject" placeholder="{{ __('Email Subject') }}" value="" required="">
+                            <input type="text" class="form-control" name="subject" placeholder="{{ __('Email Subject') }}" value="" required="">
                           </div>
                         </div>
 
@@ -85,7 +85,7 @@
                             </div>
                           </div>
                           <div class="col-lg-7">
-                            <button class="addProductSubmit-btn" type="submit">{{ __('Send Email') }}</button>
+                            <button class="btn btn-primary" type="submit">{{ __('Send Email') }}</button>
                           </div>
                         </div>
                       </form>

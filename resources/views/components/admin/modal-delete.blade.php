@@ -1,5 +1,5 @@
 {{--
-    Delete Confirmation Modal Component - لتوحيد Modal الحذف المكرر
+    Delete Confirmation Modal Component - نظام موحد
 
     Usage:
     @include('components.admin.modal-delete')
@@ -16,20 +16,18 @@
 @endphp
 
 <div class="modal fade" id="{{ $id }}" tabindex="-1" role="dialog" aria-labelledby="{{ $id }}-label" aria-hidden="true">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
-            <div class="modal-header d-block text-center">
-                <h4 class="modal-title d-inline-block">{{ __('Confirm Delete') }}</h4>
-                <button type="button" class="close" data-bs-dismiss="modal" aria-label="{{ __('Close') }}">
-                    <span aria-hidden="true">&times;</span>
-                </button>
+            <div class="modal-header">
+                <h5 class="modal-title">{{ __('Confirm Delete') }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{{ __('Close') }}"></button>
             </div>
-            <div class="modal-body">
-                <p class="text-center">{{ $message }}</p>
-                <p class="text-center">{{ __('Do you want to proceed?') }}</p>
+            <div class="modal-body text-center">
+                <p>{{ $message }}</p>
+                <p>{{ __('Do you want to proceed?') }}</p>
             </div>
             <div class="modal-footer justify-content-center">
-                <button type="button" class="btn btn-default" data-bs-dismiss="modal">{{ __('Cancel') }}</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ __('Cancel') }}</button>
                 <form action="" class="d-inline delete-form" method="POST">
                     @csrf
                     @method('DELETE')

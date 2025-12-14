@@ -43,7 +43,7 @@
                       <input class="img-upload1" type="file" name="favicon">
                     </div>
                     <div class="submit-area">
-                      <button type="submit" class="submit-btn">{{ __('Save') }}</button>
+                      <button type="submit" class="btn btn-primary">{{ __('Save') }}</button>
                     </div>
                   </form>
                 </div>

@@ -18,7 +18,7 @@
 														</div>
 													</div>
 													<div class="col-lg-7">
-														<input type="email" class="input-field" name="email" placeholder="{{ __("Email Address") }}" value="{{ $data->email }}" disabled="">
+														<input type="email" class="form-control" name="email" placeholder="{{ __("Email Address") }}" value="{{ $data->email }}" disabled="">
 													</div>
 												</div>
 
@@ -30,7 +30,7 @@
 														</div>
 													</div>
 													<div class="col-lg-7">
-														<input type="text" class="input-field" name="shop_name" placeholder="{{ __("Shop Name") }}" required="" value="{{ $data->shop_name }}">
+														<input type="text" class="form-control" name="shop_name" placeholder="{{ __("Shop Name") }}" required="" value="{{ $data->shop_name }}">
 													</div>
 												</div>
 
@@ -55,7 +55,7 @@
 														</div>
 													</div>
 													<div class="col-lg-7">
-														<input type="text" class="input-field" name="owner_name" placeholder="{{ __("Owner Name") }}" required="" value="{{ $data->owner_name }}">
+														<input type="text" class="form-control" name="owner_name" placeholder="{{ __("Owner Name") }}" required="" value="{{ $data->owner_name }}">
 													</div>
 												</div>
 
@@ -67,7 +67,7 @@
 														</div>
 													</div>
 													<div class="col-lg-7">
-														<input type="text" class="input-field" name="shop_number" placeholder="{{ __("Shop Number") }}" required="" value="{{ $data->shop_number }}">
+														<input type="text" class="form-control" name="shop_number" placeholder="{{ __("Shop Number") }}" required="" value="{{ $data->shop_number }}">
 													</div>
 												</div>
 
@@ -78,7 +78,7 @@
 														</div>
 													</div>
 													<div class="col-lg-7">
-														<input type="text" class="input-field" name="shop_address" placeholder="{{ __("Shop Address") }}" required="" value="{{ $data->shop_address }}">
+														<input type="text" class="form-control" name="shop_address" placeholder="{{ __("Shop Address") }}" required="" value="{{ $data->shop_address }}">
 													</div>
 												</div>
 
@@ -91,7 +91,7 @@
 														</div>
 													</div>
 													<div class="col-lg-7">
-														<input type="text" class="input-field" name="reg_number" placeholder="Registration Number" value="{{ $data->reg_number }}">
+														<input type="text" class="form-control" name="reg_number" placeholder="Registration Number" value="{{ $data->reg_number }}">
 													</div>
 												</div>
 
@@ -103,7 +103,7 @@
 														</div>
 													</div>
 													<div class="col-lg-7">
-														<input type="text" class="input-field" name="shop_message" placeholder="{{ __("Message") }}" value="{{ $data->shop_message }}">
+														<input type="text" class="form-control" name="shop_message" placeholder="{{ __("Message") }}" value="{{ $data->shop_message }}">
 													</div>
 												</div>
 
@@ -114,7 +114,7 @@
 						                            </div>
 						                          </div>
 						                          <div class="col-lg-7">
-						                            <button class="addProductSubmit-btn" type="submit">{{ __("Submit") }}</button>
+						                            <button class="btn btn-primary" type="submit">{{ __("Submit") }}</button>
 						                          </div>
 						                        </div>
 

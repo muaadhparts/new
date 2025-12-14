@@ -9,7 +9,7 @@
 
 @php
     $label = $label ?? __('Submit');
-    $class = $class ?? 'addProductSubmit-btn';
+    $class = $class ?? 'btn btn-primary';
     $colLeft = $colLeft ?? 'col-lg-4';
     $colRight = $colRight ?? 'col-lg-7';
 @endphp

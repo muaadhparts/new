@@ -35,7 +35,7 @@
 														</div>
 													</div>
 													<div class="col-lg-7">
-														<input type="text" class="input-field" name="name" placeholder="{{ __("User Name") }}" required="" value="">
+														<input type="text" class="form-control" name="name" placeholder="{{ __("User Name") }}" required="" value="">
 													</div>
 												</div>
 
@@ -47,7 +47,7 @@
 														</div>
 													</div>
 													<div class="col-lg-7">
-														<input type="email" class="input-field" name="email" placeholder="{{ __("Email Address") }}" required="" value="">
+														<input type="email" class="form-control" name="email" placeholder="{{ __("Email Address") }}" required="" value="">
 													</div>
 												</div>
 
@@ -58,7 +58,7 @@
 														</div>
 													</div>
 													<div class="col-lg-7">
-														<input type="text" class="input-field" name="phone" placeholder="{{ __("Phone Number") }}" required="" value="">
+														<input type="text" class="form-control" name="phone" placeholder="{{ __("Phone Number") }}" required="" value="">
 													</div>
 												</div>
 
@@ -86,7 +86,7 @@
 														</div>
 													</div>
 													<div class="col-lg-7">
-														<input type="password" class="input-field" name="password" placeholder="{{ __("Password") }}" required="" value="">
+														<input type="password" class="form-control" name="password" placeholder="{{ __("Password") }}" required="" value="">
 													</div>
 												</div>
 
@@ -97,7 +97,7 @@
 						                            </div>
 						                          </div>
 						                          <div class="col-lg-7">
-						                            <button class="addProductSubmit-btn" type="submit">{{ __("Create Staff") }}</button>
+						                            <button class="btn btn-primary" type="submit">{{ __("Create Staff") }}</button>
 						                          </div>
 						                        </div>
 

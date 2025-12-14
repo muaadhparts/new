@@ -24,7 +24,7 @@
                           </div>
                         </div>
                         <div class="col-lg-7">
-                          <input type="text" class="input-field" name="name" placeholder="{{ __('Name') }}" value="{{$data->name}}" required="">
+                          <input type="text" class="form-control" name="name" placeholder="{{ __('Name') }}" value="{{$data->name}}" required="">
                         </div>
                       </div>
                       @if($data->information != null)
@@ -58,7 +58,7 @@
                             </div>
                           </div>
                           <div class="col-lg-7">
-                            <input type="text" class="input-field" name="pkey[{{ __($pkey) }}]" placeholder="{{ __( $data->name.' '.ucwords(str_replace('_',' ',$pkey)) ) }}" value="{{ $pdata }}" required="">
+                            <input type="text" class="form-control" name="pkey[{{ __($pkey) }}]" placeholder="{{ __( $data->name.' '.ucwords(str_replace('_',' ',$pkey)) ) }}" value="{{ $pdata }}" required="">
                           </div>
                         </div>
 
@@ -101,7 +101,7 @@
                             </div>
                           </div>
                           <div class="col-lg-7">
-                            <input type="text" class="input-field" name="title" placeholder="{{ __('Name') }}" value="{{$data->title}}" required="">
+                            <input type="text" class="form-control" name="title" placeholder="{{ __('Name') }}" value="{{$data->title}}" required="">
                           </div>
                         </div>
 
@@ -117,7 +117,7 @@
                             </div>
                           </div>
                           <div class="col-lg-7">
-                              <input type="text" class="input-field" name="subtitle" placeholder="{{ __('Subtitle') }}" value="{{$data->subtitle}}">
+                              <input type="text" class="form-control" name="subtitle" placeholder="{{ __('Subtitle') }}" value="{{$data->subtitle}}">
                           </div>
                         </div>
 
@@ -144,7 +144,7 @@
                             </div>
                           </div>
                           <div class="col-lg-7">
-                            <button class="addProductSubmit-btn" type="submit">{{ __('Save') }}</button>
+                            <button class="btn btn-primary" type="submit">{{ __('Save') }}</button>
                           </div>
                         </div>
                       </form>

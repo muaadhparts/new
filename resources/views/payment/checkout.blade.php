@@ -159,7 +159,7 @@
 														value="{{ $order->pay_amount * $order->currency_value }}"
 														id="grandTotal">
 													<button type="submit" id="final-btn"
-														class="mybtn1">{{__('Checkout')}}</button>
+														class="btn btn-primary">{{__('Checkout')}}</button>
 												</div>
 											</div>
 										</div>

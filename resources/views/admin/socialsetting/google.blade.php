@@ -58,7 +58,7 @@
                             </div>
                           </div>
                           <div class="col-lg-6">
-                            <input type="text" class="input-field" placeholder="{{ __('Enter Client ID') }}" name="gclient_id" value="{{ $data->gclient_id }}" required="">
+                            <input type="text" class="form-control" placeholder="{{ __('Enter Client ID') }}" name="gclient_id" value="{{ $data->gclient_id }}" required="">
                           </div>
                         </div>
 
@@ -70,7 +70,7 @@
                             </div>
                           </div>
                           <div class="col-lg-6">
-                            <input type="text" class="input-field" placeholder="{{ __('Enter Client Secret') }}" name="gclient_secret" value="{{ $data->gclient_secret }}" required="">
+                            <input type="text" class="form-control" placeholder="{{ __('Enter Client Secret') }}" name="gclient_secret" value="{{ $data->gclient_secret }}" required="">
                           </div>
                         </div>
 
@@ -82,7 +82,7 @@
                             </div>
                           </div>
                           <div class="col-lg-6">
-                            <input type="text" class="input-field" placeholder="{{ __('Website URL') }}"  value="{{ url('/') }}" readonly>
+                            <input type="text" class="form-control" placeholder="{{ __('Website URL') }}"  value="{{ url('/') }}" readonly>
                           </div>
                         </div>
 
@@ -94,7 +94,7 @@
                             </div>
                           </div>
                           <div class="col-lg-6">
-                            <input type="text" class="input-field" placeholder="{{ __('Enter Site URL') }}" name="gredirect" value="{{url('/auth/google/callback')}}" readonly>
+                            <input type="text" class="form-control" placeholder="{{ __('Enter Site URL') }}" name="gredirect" value="{{url('/auth/google/callback')}}" readonly>
                           </div>
                         </div>
 
@@ -106,7 +106,7 @@
                             </div>
                           </div>
                           <div class="col-lg-6">
-                            <button class="addProductSubmit-btn" type="submit">{{ __('Save') }}</button>
+                            <button class="btn btn-primary" type="submit">{{ __('Save') }}</button>
                           </div>
                         </div>
                      </form>

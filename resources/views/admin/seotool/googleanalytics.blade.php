@@ -41,7 +41,7 @@
                           </div>
                           <div class="col-lg-6">
                               <div class="tawk-area">
-                                <input class="input-field" name="google_analytics" type="text" placeholder="{{ __('Google Analytics ID') }} " value="{{ $tool->google_analytics }}">
+                                <input class="form-control" name="google_analytics" type="text" placeholder="{{ __('Google Analytics ID') }} " value="{{ $tool->google_analytics }}">
                               </div>
                           </div>
                         </div>
@@ -56,7 +56,7 @@
                             </div>
                             <div class="col-lg-6">
                                 <div class="tawk-area">
-                                  <input class="input-field" name="facebook_pixel" type="text" placeholder="{{ __('Facebook Pixel ID') }} " value="{{ $tool->facebook_pixel }}">
+                                  <input class="form-control" name="facebook_pixel" type="text" placeholder="{{ __('Facebook Pixel ID') }} " value="{{ $tool->facebook_pixel }}">
                                 </div>
                             </div>
                           </div>
@@ -69,7 +69,7 @@
                             </div>
                           </div>
                           <div class="col-lg-6">
-                            <button class="addProductSubmit-btn" type="submit">{{ __('Save') }}</button>
+                            <button class="btn btn-primary" type="submit">{{ __('Save') }}</button>
                           </div>
                         </div>
                       </div>

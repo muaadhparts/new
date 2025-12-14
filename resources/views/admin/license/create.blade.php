@@ -18,7 +18,7 @@
                                     </div>
                                 </div>
                                 <div class="col-lg-7">
-                                    <input type="text" class="input-field" name="owner_name" placeholder="{{ __('Enter Owner Name') }}" value="">
+                                    <input type="text" class="form-control" name="owner_name" placeholder="{{ __('Enter Owner Name') }}" value="">
                                 </div>
                             </div>
 
@@ -29,7 +29,7 @@
                                     </div>
                                 </div>
                                 <div class="col-lg-7">
-                                    <input type="email" class="input-field" name="owner_email" placeholder="{{ __('Enter Owner Email') }}" value="">
+                                    <input type="email" class="form-control" name="owner_email" placeholder="{{ __('Enter Owner Email') }}" value="">
                                 </div>
                             </div>
 
@@ -57,7 +57,7 @@
                                     </div>
                                 </div>
                                 <div class="col-lg-7">
-                                    <input type="number" class="input-field" name="max_domains" placeholder="1" value="1" min="0" required>
+                                    <input type="number" class="form-control" name="max_domains" placeholder="1" value="1" min="0" required>
                                 </div>
                             </div>
 
@@ -69,7 +69,7 @@
                                     </div>
                                 </div>
                                 <div class="col-lg-7">
-                                    <input type="date" class="input-field" name="expires_at" value="">
+                                    <input type="date" class="form-control" name="expires_at" value="">
                                 </div>
                             </div>
 
@@ -80,7 +80,7 @@
                                     </div>
                                 </div>
                                 <div class="col-lg-7">
-                                    <textarea class="input-field" name="notes" rows="3" placeholder="{{ __('Any notes about this license...') }}"></textarea>
+                                    <textarea class="form-control" name="notes" rows="3" placeholder="{{ __('Any notes about this license...') }}"></textarea>
                                 </div>
                             </div>
 
@@ -90,7 +90,7 @@
                                     <div class="left-area"></div>
                                 </div>
                                 <div class="col-lg-7">
-                                    <button class="addProductSubmit-btn" type="submit">{{ __('Generate License') }}</button>
+                                    <button class="btn btn-primary" type="submit">{{ __('Generate License') }}</button>
                                 </div>
                             </div>
                         </form>

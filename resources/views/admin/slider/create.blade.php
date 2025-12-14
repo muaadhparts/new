@@ -193,7 +193,7 @@
                                         </div>
                                     </div>
                                     <div class="col-lg-7">
-                                        <input type="text" class="input-field" name="link"
+                                        <input type="text" class="form-control" name="link"
                                             placeholder="{{ __('Link') }}" required="" value="">
                                     </div>
                                 </div>
@@ -205,7 +205,7 @@
                                         </div>
                                     </div>
                                     <div class="col-lg-7">
-                                        <button class="addProductSubmit-btn"
+                                        <button class="btn btn-primary"
                                             type="submit">{{ __('Create Slider') }}</button>
                                     </div>
                                 </div>

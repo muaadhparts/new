@@ -63,7 +63,7 @@
                                   </div>
                                 </div>
                                 <div class="col-lg-6">
-                                   <textarea class="input-field" name="meta_description" id="" cols="30" rows="10">{{ $tool->meta_description }}</textarea>
+                                   <textarea class="form-control" name="meta_description" id="" cols="30" rows="10">{{ $tool->meta_description }}</textarea>
                                 </div>
                               </div>
                           <div class="row justify-content-center">
@@ -73,7 +73,7 @@
                               </div>
                             </div>
                             <div class="col-lg-6">
-                              <button class="addProductSubmit-btn" type="submit">{{ __('Save') }}</button>
+                              <button class="btn btn-primary" type="submit">{{ __('Save') }}</button>
                             </div>
                           </div>
                         </div>

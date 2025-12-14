@@ -70,7 +70,7 @@
                                                 </div>
                                             </div>
                                             <div class="col-lg-12">
-                                                <select name="brand_id" class="input-field">
+                                                <select name="brand_id" class="form-control">
                                                     <option value="">{{ __('Select Brand') }}</option>
                                                     @foreach (\App\Models\Brand::all() as $brand)
                                                         <option value="{{ $brand->id }}" style="color: #333;"
@@ -90,7 +90,7 @@
                                                 </div>
                                             </div>
                                             <div class="col-lg-12">
-                                                <select name="brand_quality_id" class="input-field">
+                                                <select name="brand_quality_id" class="form-control">
                                                     <option value="">{{ __('Select Quality Brand') }}</option>
                                                     @foreach ($qualityBrands as $qb)
                                                         <option value="{{ $qb->id }}" style="color: #333;"
@@ -110,7 +110,7 @@
                                                 </div>
                                             </div>
                                             <div class="col-lg-12">
-                                                <input type="text" class="input-field" placeholder="{{ __("Enter Product Name") }}" name="name" required="" value="{{ $data->name }}">
+                                                <input type="text" class="form-control" placeholder="{{ __("Enter Product Name") }}" name="name" required="" value="{{ $data->name }}">
                                             </div>
                                         </div>
 
@@ -122,7 +122,7 @@
                                                 </div>
                                             </div>
                                             <div class="col-lg-12">
-                                                <input type="text" class="input-field"
+                                                <input type="text" class="form-control"
                                                     placeholder="{{ __('Enter Product Name in English') }}"
                                                     name="label_en" value="{{ $data->label_en }}">
                                             </div>
@@ -136,7 +136,7 @@
                                                 </div>
                                             </div>
                                             <div class="col-lg-12">
-                                                <input type="text" class="input-field" dir="rtl"
+                                                <input type="text" class="form-control" dir="rtl"
                                                     placeholder="{{ __('Enter Product Name in Arabic') }}"
                                                     name="label_ar" value="{{ $data->label_ar }}">
                                             </div>
@@ -149,7 +149,7 @@
                                                 </div>
                                             </div>
                                             <div class="col-lg-12">
-                                                <input type="text" class="input-field" placeholder="{{ __('Enter Product Sku') }}" name="sku" required="" value="{{ $data->sku }}">
+                                                <input type="text" class="form-control" placeholder="{{ __('Enter Product Sku') }}" name="sku" required="" value="{{ $data->sku }}">
                                             </div>
                                         </div>
 
@@ -267,7 +267,7 @@
                                                                                 <div class="col-10">
                                                                                 <div class="price-container">
                                                                                         <span class="price-curr">{{ $sign->sign }}</span>
-                                                                                        <input type="text" class="input-field price-input" id="{{ $catAttribute->input_name }}{{$option->id}}_price" data-name="{{ $catAttribute->input_name }}_price[]" placeholder="0.00 (Additional Price)" value="{{ !empty($selectedAttrs["$inName"]['prices'][$i]) && $checked == 1 ? round($selectedAttrs["$inName"]['prices'][$i]* $sign->value , 2) : '' }}">
+                                                                                        <input type="text" class="form-control price-input" id="{{ $catAttribute->input_name }}{{$option->id}}_price" data-name="{{ $catAttribute->input_name }}_price[]" placeholder="0.00 (Additional Price)" value="{{ !empty($selectedAttrs["$inName"]['prices'][$i]) && $checked == 1 ? round($selectedAttrs["$inName"]['prices'][$i]* $sign->value , 2) : '' }}">
                                                                                 </div>
                                                                                 </div>
                                                                         </div>
@@ -337,7 +337,7 @@
                                                                         <div class="col-10">
                                                                             <div class="price-container">
                                                                                 <span class="price-curr">{{ $sign->sign }}</span>
-                                                                                <input type="text" class="input-field price-input" id="{{ $subAttribute->input_name }}{{$option->id}}_price" data-name="{{ $subAttribute->input_name }}_price[]" placeholder="0.00 (Additional Price)" value="{{ !empty($selectedAttrs["$inName"]['prices'][$i]) && $checked == 1 ? round($selectedAttrs["$inName"]['prices'][$i]* $sign->value , 2) : '' }}">
+                                                                                <input type="text" class="form-control price-input" id="{{ $subAttribute->input_name }}{{$option->id}}_price" data-name="{{ $subAttribute->input_name }}_price[]" placeholder="0.00 (Additional Price)" value="{{ !empty($selectedAttrs["$inName"]['prices'][$i]) && $checked == 1 ? round($selectedAttrs["$inName"]['prices'][$i]* $sign->value , 2) : '' }}">
                                                                             </div>
                                                                         </div>
                                                                     </div>
@@ -409,7 +409,7 @@
                                                                                         <div class="col-10">
                                                                                             <div class="price-container">
                                                                                                     <span class="price-curr">{{ $sign->sign }}</span>
-                                                                                                    <input type="text" class="input-field price-input" id="{{ $childAttribute->input_name }}{{$option->id}}_price" data-name="{{ $childAttribute->input_name }}_price[]" placeholder="0.00 (Additional Price)" value="{{ !empty($selectedAttrs["$inName"]['prices'][$i]) && $checked == 1 ? round($selectedAttrs["$inName"]['prices'][$i]* $sign->value , 2) : '' }}">
+                                                                                                    <input type="text" class="form-control price-input" id="{{ $childAttribute->input_name }}{{$option->id}}_price" data-name="{{ $childAttribute->input_name }}_price[]" placeholder="0.00 (Additional Price)" value="{{ !empty($selectedAttrs["$inName"]['prices'][$i]) && $checked == 1 ? round($selectedAttrs["$inName"]['prices'][$i]* $sign->value , 2) : '' }}">
                                                                                             </div>
                                                                                         </div>
                                                                                 </div>
@@ -535,7 +535,7 @@
                                                     </div>
                                                 </div>
                                                 <div class="col-lg-12">
-                                                    <input type="number" class="input-field" min="1"
+                                                    <input type="number" class="form-control" min="1"
                                                         placeholder="{{ __('Minimum Order Qty') }}" name="minimum_qty" value="{{  $data->minimum_qty == null ? '' : $data->minimum_qty  }}">
                                                 </div>
                                             </div>
@@ -567,7 +567,7 @@
                                                     </div>
                                                 </div>
                                                 <div class="col-lg-12">
-                                                    <input type="text" class="input-field"
+                                                    <input type="text" class="form-control"
                                                         placeholder="{{ __('Estimated Shipping Time') }}" name="ship"
                                                         value="{{ $data->ship == null ? "" : $data->ship }}">
                                                 </div>
@@ -610,7 +610,7 @@
                                                                 <div class="color-area">
                                                                     <span class="remove color-remove"><i class="fas fa-times"></i></span>
                                                                     <div class="input-group colorpicker-component cp">
-                                                                        <input type="text" name="color_all[]" value="{{ $ct }}"  class="input-field cp tcolor"/>
+                                                                        <input type="text" name="color_all[]" value="{{ $ct }}"  class="form-control cp tcolor"/>
                                                                         <span class="input-group-addon"><i></i></span>
                                                                     </div>
                                                                     </div>
@@ -636,7 +636,7 @@
                                                                 <div class="color-area">
                                                                     <span class="remove color-remove"><i class="fas fa-times"></i></span>
                                                                     <div class="input-group colorpicker-component cp">
-                                                                        <input type="text"  name="color_all[]"  class="input-field cp tcolor"/>
+                                                                        <input type="text"  name="color_all[]"  class="form-control cp tcolor"/>
                                                                         <span class="input-group-addon"><i></i></span>
                                                                     </div>
                                                                     </div>
@@ -681,7 +681,7 @@
                                                                 @foreach(array_unique(explode(',',$data->size_all)) as $dt)
                                                                 <div class="tsize-area">
                                                                     <span class="remove tsize-remove"><i class="fas fa-times"></i></span>
-                                                                    <input  type="text" name="size_all[]" class="input-field tsize" placeholder="{{ __('Enter Product Size') }}" value="{{ $dt }}"  required="" >
+                                                                    <input  type="text" name="size_all[]" class="form-control tsize" placeholder="{{ __('Enter Product Size') }}" value="{{ $dt }}"  required="" >
                                                                     </div>
                                                                 @endforeach
                                                             </div>
@@ -704,7 +704,7 @@
                                                             <div class="select-input-tsize" id="tsize-section">
                                                                 <div class="tsize-area">
                                                                     <span class="remove tsize-remove"><i class="fas fa-times"></i></span>
-                                                                    <input  type="text" name="size_all[]" class="input-field tsize" placeholder="{{ __('Enter Product Size') }}"  >
+                                                                    <input  type="text" name="size_all[]" class="form-control tsize" placeholder="{{ __('Enter Product Size') }}"  >
                                                                     
                                                                     </div>
                                                             </div>
@@ -736,7 +736,7 @@
                                                 </div>
                                                 {{-- <div class="col-lg-1"></div> --}}
                                                 <div class="col-lg-6 {{ in_array($data->measure,explode(',', 'Gram,Kilogram,Litre,Pound')) ? 'hidden' : '' }}" id="measure">
-                                                    <input name="measure" type="text" id="measurement" class="input-field" placeholder="Enter Unit" value="{{$data->measure}}">
+                                                    <input name="measure" type="text" id="measurement" class="form-control" placeholder="Enter Unit" value="{{$data->measure}}">
                                                 </div>
                                             </div>
                                         </div>
@@ -766,7 +766,7 @@
                                                 </div>
                                             </div>
                                             <div class="col-lg-12">
-                                                <input name="stock"  type="number" class="input-field" placeholder="e.g 20" value="{{$data->stock}}" min="0">
+                                                <input name="stock"  type="number" class="form-control" placeholder="e.g 20" value="{{$data->stock}}" min="0">
                                             </div>
                                     </div>
 
@@ -794,7 +794,7 @@
                                                                                 {{ __('(eg. S,M,L,XL,3XL,4XL)') }}
                                                                             </span>
                                                                         </label>
-                                                                        <select name="size[]" class="input-field size-name">
+                                                                        <select name="size[]" class="form-control size-name">
                                                                             @foreach($data->size as $dt)
                                                                             <option value="{{ $dt }}" {{ $dt == $data1 ? 'selected' : '' }}>{{ $dt }}</option>
                                                                             @endforeach
@@ -807,7 +807,7 @@
                                                                                 {{ __('(Quantity of this size)') }}
                                                                             </span>
                                                                         </label>
-                                                                        <input type="number" name="size_qty[]" required class="input-field" placeholder="{{ __('Size Qty') }}" value="{{ $data->size_qty[$key] }}" min="1">
+                                                                        <input type="number" name="size_qty[]" required class="form-control" placeholder="{{ __('Size Qty') }}" value="{{ $data->size_qty[$key] }}" min="1">
                                                                     </div>
                                                                     <div class="col-md-3 col-sm-6">
                                                                         <label>
@@ -816,7 +816,7 @@
                                                                                 {{ __('(Added with base price)') }}
                                                                             </span>
                                                                         </label>
-                                                                        <input type="number" name="size_price[]" required class="input-field" placeholder="{{ __('Size Price') }}" value="{{ round($data->size_price[$key] * $sign->value , 2) }}" min="0">
+                                                                        <input type="number" name="size_price[]" required class="form-control" placeholder="{{ __('Size Price') }}" value="{{ round($data->size_price[$key] * $sign->value , 2) }}" min="0">
                                                                     </div>
                                                                     <div class="col-md-3 col-sm-6">
                                                                         <label>
@@ -825,7 +825,7 @@
                                                                                 {{ __('(Select color of this size)') }}
                                                                             </span>
                                                                         </label>
-                                                                        <select name="color[]" class="input-field color-name">
+                                                                        <select name="color[]" class="form-control color-name">
                                                                             @foreach($data->color as $ct)
                                                                             <option value="{{ $ct }}" style="background-color:{{ $ct }}" {{ $ct == $data->color[$key] ? 'selected' : '' }}></option>
                                                                             @endforeach
@@ -849,7 +849,7 @@
                                                                                 {{ __('(eg. S,M,L,XL,3XL,4XL)') }}
                                                                             </span>
                                                                         </label>
-                                                                        <select name="size[]" class="input-field size-name"></select>
+                                                                        <select name="size[]" class="form-control size-name"></select>
                                                                     </div>
                                                                     <div class="col-md-3 col-sm-6">
                                                                         <label>
@@ -858,7 +858,7 @@
                                                                                 {{ __('(Quantity of this size)') }}
                                                                             </span>
                                                                         </label>
-                                                                        <input type="number" name="size_qty[]" class="input-field" placeholder="{{ __('Size Qty') }}" value="1" min="1">
+                                                                        <input type="number" name="size_qty[]" class="form-control" placeholder="{{ __('Size Qty') }}" value="1" min="1">
                                                                     </div>
                                                                     <div class="col-md-3 col-sm-6">
                                                                         <label>
@@ -867,7 +867,7 @@
                                                                                 {{ __('(Added with base price)') }}
                                                                             </span>
                                                                         </label>
-                                                                        <input type="number" name="size_price[]" class="input-field" placeholder="{{ __('Size Price') }}" value="0" min="0">
+                                                                        <input type="number" name="size_price[]" class="form-control" placeholder="{{ __('Size Price') }}" value="0" min="0">
                                                                     </div>
                                                                     <div class="col-md-3 col-sm-6">
                                                                         <label>
@@ -876,7 +876,7 @@
                                                                                 {{ __('(Select color of this size)') }}
                                                                             </span>
                                                                         </label>
-                                                                        <select name="color[]" class="input-field color-name"></select>
+                                                                        <select name="color[]" class="form-control color-name"></select>
                                                                     </div>
 
                                                                 </div>
@@ -926,11 +926,11 @@
                                                                 <span class="remove whole-remove"><i class="fas fa-times"></i></span>
                                                                 <div class="row">
                                                                     <div class="col-lg-6">
-                                                                    <input type="number" name="whole_sell_qty[]" class="input-field" placeholder="{{ __('Enter Quantity') }}" min="0" value="{{ $data->whole_sell_qty[$key] }}" required="">
+                                                                    <input type="number" name="whole_sell_qty[]" class="form-control" placeholder="{{ __('Enter Quantity') }}" min="0" value="{{ $data->whole_sell_qty[$key] }}" required="">
                                                                     </div>
 
                                                                     <div class="col-lg-6">
-                                                                    <input type="number" name="whole_sell_discount[]" class="input-field" placeholder="{{ __('Enter Discount Percentage') }}" min="0" value="{{ $data->whole_sell_discount[$key] }}" required="">
+                                                                    <input type="number" name="whole_sell_discount[]" class="form-control" placeholder="{{ __('Enter Discount Percentage') }}" min="0" value="{{ $data->whole_sell_discount[$key] }}" required="">
                                                                     </div>
                                                                 </div>
                                                             </div>
@@ -944,11 +944,11 @@
                                                                 <span class="remove whole-remove"><i class="fas fa-times"></i></span>
                                                                 <div class="row">
                                                                     <div class="col-lg-6">
-                                                                    <input type="number" name="whole_sell_qty[]" class="input-field" placeholder="{{ __('Enter Quantity') }}" min="0">
+                                                                    <input type="number" name="whole_sell_qty[]" class="form-control" placeholder="{{ __('Enter Quantity') }}" min="0">
                                                                     </div>
 
                                                                     <div class="col-lg-6">
-                                                                    <input type="number" name="whole_sell_discount[]" class="input-field" placeholder="{{ __('Enter Discount Percentage') }}" min="0" />
+                                                                    <input type="number" name="whole_sell_discount[]" class="form-control" placeholder="{{ __('Enter Discount Percentage') }}" min="0" />
                                                                     </div>
                                                                 </div>
                                                             </div>
@@ -1029,7 +1029,7 @@
                                             </div>
                                             <div class="col-lg-12">
                                             <div class="text-editor">
-                                                <textarea name="meta_description" class="input-field" placeholder="{{ __('Details') }}">{{ $data->meta_description }}</textarea>
+                                                <textarea name="meta_description" class="form-control" placeholder="{{ __('Details') }}">{{ $data->meta_description }}</textarea>
                                             </div>
                                             </div>
                                         </div>
@@ -1057,7 +1057,7 @@
                                             <div class="col-lg-12">
                                                 <div class="panel panel-body">
                                                     <div class="span4 cropme text-center" id="landscape" style="width: 100%; height: 285px; border: 1px dashed #ddd; background: #f1f1f1;">
-                                                        <a href="javascript:;" id="crop-image" class="d-inline-block mybtn1">
+                                                        <a href="javascript:;" id="crop-image" class="d-inline-block btn btn-primary">
                                                             <i class="icofont-upload-alt"></i> {{ __('Upload Image Here') }}
                                                         </a>
                                                     </div>
@@ -1094,7 +1094,7 @@
                                                     </div>
                                                 </div>
                                                 <div class="col-lg-12">
-                                                    <input name="price" type="number" class="input-field" placeholder="e.g 20" step="0.1" min="0" value="{{round($data->price * $sign->value , 2)}}" required="">
+                                                    <input name="price" type="number" class="form-control" placeholder="e.g 20" step="0.1" min="0" value="{{round($data->price * $sign->value , 2)}}" required="">
                                                 </div>
                                             </div>
 
@@ -1106,7 +1106,7 @@
                                                     </div>
                                                 </div>
                                                 <div class="col-lg-12">
-                                                    <input name="previous_price" step="0.1" type="number" class="input-field" placeholder="e.g 20" value="{{round($data->previous_price * $sign->value , 2)}}" min="0">
+                                                    <input name="previous_price" step="0.1" type="number" class="form-control" placeholder="e.g 20" value="{{round($data->previous_price * $sign->value , 2)}}" min="0">
                                                 </div>
                                             </div>
                                             
@@ -1119,7 +1119,7 @@
                                                     </div>
                                                 </div>
                                                 <div class="col-lg-12">
-                                                    <input  name="youtube" type="text" class="input-field" placeholder="Enter Youtube Video URL" value="{{$data->youtube}}">
+                                                    <input  name="youtube" type="text" class="form-control" placeholder="Enter Youtube Video URL" value="{{$data->youtube}}">
                                             </div>
                                     </div>
 
@@ -1144,12 +1144,12 @@
                                                         <span class="remove feature-remove"><i class="fas fa-times"></i></span>
                                                         <div class="row">
                                                             <div class="col-lg-6">
-                                                            <input type="text" name="features[]" class="input-field" placeholder="{{ __('Enter Your Keyword') }}" value="{{ $data->features[$key] }}">
+                                                            <input type="text" name="features[]" class="form-control" placeholder="{{ __('Enter Your Keyword') }}" value="{{ $data->features[$key] }}">
                                                             </div>
 
                                                             <div class="col-lg-6">
                                                                 <div class="input-group colorpicker-component cp">
-                                                                    <input type="text" name="colors[]" value="{{ $data->colors[$key] }}" class="input-field cp"/>
+                                                                    <input type="text" name="colors[]" value="{{ $data->colors[$key] }}" class="form-control cp"/>
                                                                     <span class="input-group-addon"><i></i></span>
                                                                 </div>
                                                             </div>
@@ -1163,12 +1163,12 @@
                                                         <span class="remove feature-remove"><i class="fas fa-times"></i></span>
                                                         <div class="row">
                                                             <div class="col-lg-6">
-                                                            <input type="text" name="features[]" class="input-field" placeholder="{{ __('Enter Your Keyword') }}">
+                                                            <input type="text" name="features[]" class="form-control" placeholder="{{ __('Enter Your Keyword') }}">
                                                             </div>
 
                                                             <div class="col-lg-6">
                                                                 <div class="input-group colorpicker-component cp">
-                                                                    <input type="text" name="colors[]" value="#000000" class="input-field cp"/>
+                                                                    <input type="text" name="colors[]" value="#000000" class="form-control cp"/>
                                                                     <span class="input-group-addon"><i></i></span>
                                                                 </div>
                                                             </div>
@@ -1202,7 +1202,7 @@
 
                                         <div class="row text-center">
                                         <div class="col-6 offset-3">
-                                            <button class="addProductSubmit-btn" type="submit">{{ __('Save') }}</button>
+                                            <button class="btn btn-primary" type="submit">{{ __('Save') }}</button>
                                         </div>
                                     </div>
                                 </div>
@@ -1219,8 +1219,8 @@
             <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="exampleModalCenterTitle">{{ __('Image Gallery') }}</h5>
-                <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
-                <span aria-hidden="true">×</span>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                
                 </button>
             </div>
             <div class="modal-body">

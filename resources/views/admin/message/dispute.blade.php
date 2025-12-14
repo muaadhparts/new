@@ -56,8 +56,8 @@
 
   <div class="modal-header d-block text-center">
     <h4 class="modal-title d-inline-block">{{ __('Confirm Delete') }}</h4>
-      <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
-        <span aria-hidden="true">&times;</span>
+      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+        
       </button>
   </div>
 
@@ -69,7 +69,7 @@
 
       <!-- Modal footer -->
       <div class="modal-footer justify-content-center">
-            <button type="button" class="btn btn-default" data-bs-dismiss="modal">{{ __('Cancel') }}</button>
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ __('Cancel') }}</button>
             <form action="" class="d-inline delete-form" method="POST">
 				<input type="hidden" name="_method" value="delete" />
 				<input type="hidden" name="_token" value="{{ csrf_token() }}">
@@ -91,8 +91,8 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="vendorformLabel">{{ __('Add Dispute') }}</h5>
-                        <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
-                            <span aria-hidden="true">&times;</span>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                            
                         </button>
                 </div>
             <div class="modal-body">
@@ -104,17 +104,17 @@
                                     {{csrf_field()}}
                                     <ul>
                                         <li>
-                                            <input type="email" class="input-field eml-val" id="eml1" name="to" placeholder="{{ __('Email') }} *" value="" required="">
+                                            <input type="email" class="form-control eml-val" id="eml1" name="to" placeholder="{{ __('Email') }} *" value="" required="">
                                         </li>
                                         <li>
-                                            <input type="text" class="input-field" id="subj1" name="subject" placeholder="{{ __('Subject') }} *" required="">
+                                            <input type="text" class="form-control" id="subj1" name="subject" placeholder="{{ __('Subject') }} *" required="">
                                         </li>
                                         <li>
-                                            <textarea class="input-field textarea" name="message" id="msg1" placeholder="{{ __('Your Message') }} *" required=""></textarea>
+                                            <textarea class="form-control textarea" name="message" id="msg1" placeholder="{{ __('Your Message') }} *" required=""></textarea>
                                         </li>
                                         <input type="hidden" name="type" value="Dispute">
                                     </ul>
-                                    <button class="submit-btn" id="emlsub1" type="submit">{{ __('Send Message') }}</button>
+                                    <button class="btn btn-primary" id="emlsub1" type="submit">{{ __('Send Message') }}</button>
                                 </form>
                             </div>
                         </div>

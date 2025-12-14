@@ -18,7 +18,7 @@
                                     </div>
                                 </div>
                                 <div class="col-lg-7">
-                                    <input type="text" class="input-field" value="{{ $data->license_key }}" readonly style="background: #f5f5f5;">
+                                    <input type="text" class="form-control" value="{{ $data->license_key }}" readonly style="background: #f5f5f5;">
                                 </div>
                             </div>
 
@@ -29,7 +29,7 @@
                                     </div>
                                 </div>
                                 <div class="col-lg-7">
-                                    <input type="text" class="input-field" name="owner_name" placeholder="{{ __('Enter Owner Name') }}" value="{{ $data->owner_name }}">
+                                    <input type="text" class="form-control" name="owner_name" placeholder="{{ __('Enter Owner Name') }}" value="{{ $data->owner_name }}">
                                 </div>
                             </div>
 
@@ -40,7 +40,7 @@
                                     </div>
                                 </div>
                                 <div class="col-lg-7">
-                                    <input type="email" class="input-field" name="owner_email" placeholder="{{ __('Enter Owner Email') }}" value="{{ $data->owner_email }}">
+                                    <input type="email" class="form-control" name="owner_email" placeholder="{{ __('Enter Owner Email') }}" value="{{ $data->owner_email }}">
                                 </div>
                             </div>
 
@@ -84,7 +84,7 @@
                                     </div>
                                 </div>
                                 <div class="col-lg-7">
-                                    <input type="number" class="input-field" name="max_domains" value="{{ $data->max_domains }}" min="0" required>
+                                    <input type="number" class="form-control" name="max_domains" value="{{ $data->max_domains }}" min="0" required>
                                 </div>
                             </div>
 
@@ -95,7 +95,7 @@
                                     </div>
                                 </div>
                                 <div class="col-lg-7">
-                                    <input type="text" class="input-field" value="{{ $data->used_domains }}" readonly style="background: #f5f5f5;">
+                                    <input type="text" class="form-control" value="{{ $data->used_domains }}" readonly style="background: #f5f5f5;">
                                 </div>
                             </div>
 
@@ -106,7 +106,7 @@
                                     </div>
                                 </div>
                                 <div class="col-lg-7">
-                                    <input type="text" class="input-field" value="{{ $data->domain ?? 'N/A' }}" readonly style="background: #f5f5f5;">
+                                    <input type="text" class="form-control" value="{{ $data->domain ?? 'N/A' }}" readonly style="background: #f5f5f5;">
                                 </div>
                             </div>
 
@@ -118,7 +118,7 @@
                                     </div>
                                 </div>
                                 <div class="col-lg-7">
-                                    <input type="date" class="input-field" name="expires_at" value="{{ $data->expires_at ? $data->expires_at->format('Y-m-d') : '' }}">
+                                    <input type="date" class="form-control" name="expires_at" value="{{ $data->expires_at ? $data->expires_at->format('Y-m-d') : '' }}">
                                 </div>
                             </div>
 
@@ -129,7 +129,7 @@
                                     </div>
                                 </div>
                                 <div class="col-lg-7">
-                                    <input type="text" class="input-field" value="{{ $data->activated_at ? $data->activated_at->format('Y-m-d H:i:s') : 'Not activated yet' }}" readonly style="background: #f5f5f5;">
+                                    <input type="text" class="form-control" value="{{ $data->activated_at ? $data->activated_at->format('Y-m-d H:i:s') : 'Not activated yet' }}" readonly style="background: #f5f5f5;">
                                 </div>
                             </div>
 
@@ -140,7 +140,7 @@
                                     </div>
                                 </div>
                                 <div class="col-lg-7">
-                                    <textarea class="input-field" name="notes" rows="3" placeholder="{{ __('Any notes about this license...') }}">{{ $data->notes }}</textarea>
+                                    <textarea class="form-control" name="notes" rows="3" placeholder="{{ __('Any notes about this license...') }}">{{ $data->notes }}</textarea>
                                 </div>
                             </div>
 
@@ -150,7 +150,7 @@
                                     <div class="left-area"></div>
                                 </div>
                                 <div class="col-lg-7">
-                                    <button class="addProductSubmit-btn" type="submit">{{ __('Update License') }}</button>
+                                    <button class="btn btn-primary" type="submit">{{ __('Update License') }}</button>
                                 </div>
                             </div>
                         </form>

@@ -100,7 +100,7 @@
                 '{{ __('Size Name') }} :' +
                 '<span>{{ __('(eg. S,M,L,XL,3XL,4XL)') }}</span>' +
                 '</label>' +
-                `<input type="text" name="size[]" class="input-field tsize"
+                `<input type="text" name="size[]" class="form-control tsize"
 															placeholder="{{ __('Enter Product Size') }}"
 															value="" required="">` +
                 '</div>' +
@@ -109,14 +109,14 @@
                 '{{ __('Size Qty') }} :' +
                 '<span>{{ __('(Quantity of this size)') }}</span>' +
                 '</label>' +
-                '<input type="number" name="size_qty[]" required class="input-field" placeholder="{{ __('Size Qty') }}" value="1" min="1">' +
+                '<input type="number" name="size_qty[]" required class="form-control" placeholder="{{ __('Size Qty') }}" value="1" min="1">' +
                 '</div>' +
                 '<div class="col-md-4 col-sm-4">' +
                 '<label>' +
                 '{{ __('Size Price') }} :' +
                 '<span>{{ __('(Added with base price)') }}</span>' +
                 '</label>' +
-                '<input type="number" name="size_price[]" required class="input-field" placeholder="{{ __('Size Price') }}" value="0" min="0">' +
+                '<input type="number" name="size_price[]" required class="form-control" placeholder="{{ __('Size Price') }}" value="0" min="0">' +
                 '</div>' +
                 '</div>' +
                 '</div>' +
@@ -139,21 +139,21 @@
                     '{{ __('Size Name') }} :' +
                     '<span>{{ __('(eg. S,M,L,XL,3XL,4XL)') }}</span>' +
                     '</label>' +
-                    `<select name="size[]" class="input-field size-name">${tsizeText}</select>` +
+                    `<select name="size[]" class="form-control size-name">${tsizeText}</select>` +
                     '</div>' +
                     '<div class="col-md-3 col-sm-6">' +
                     '<label>' +
                     '{{ __('Size Qty') }} :' +
                     '<span>{{ __('(Quantity of this size)') }}</span>' +
                     '</label>' +
-                    '<input type="number" name="size_qty[]" required class="input-field" placeholder="{{ __('Size Qty') }}" value="1" min="1">' +
+                    '<input type="number" name="size_qty[]" required class="form-control" placeholder="{{ __('Size Qty') }}" value="1" min="1">' +
                     '</div>' +
                     '<div class="col-md-3 col-sm-6">' +
                     '<label>' +
                     '{{ __('Size Price') }} :' +
                     '<span>{{ __('(Added with base price)') }}</span>' +
                     '</label>' +
-                    '<input type="number" name="size_price[]" required class="input-field" placeholder="{{ __('Size Price') }}" value="0" min="0">' +
+                    '<input type="number" name="size_price[]" required class="form-control" placeholder="{{ __('Size Price') }}" value="0" min="0">' +
                     '</div>' +
                     '<div class="col-md-3 col-sm-6">' +
                     '<label>' +
@@ -162,7 +162,7 @@
                     '{{ __('(Select color of this size)') }}' +
                     '</span>' +
                     '</label>' +
-                    `<select name="color[]" class="input-field color-name" style="background-color:${tcolor[0]}">${tcolorText}</select>` +
+                    `<select name="color[]" class="form-control color-name" style="background-color:${tcolor[0]}">${tcolorText}</select>` +
                     '</div>' +
                     '</div>' +
                     '</div>' +
@@ -196,7 +196,7 @@
                                                                     </label>
 																	<div class="color-area">
 																		<div class="input-group colorpicker-component cp">
-																			<input type="text" name="color_all[]" value="#000000" class="input-field cp tcolor"/>
+																			<input type="text" name="color_all[]" value="#000000" class="form-control cp tcolor"/>
 																			<span class="input-group-addon"><i></i></span>
 																		</div>
 																	</div>
@@ -231,7 +231,7 @@
                             </label>
                             <div class="color-area">
                                 <div class="input-group colorpicker-component cp">
-                                    <input type="text" name="color_all[]" value="#000000" class="input-field cp tcolor"/>
+                                    <input type="text" name="color_all[]" value="#000000" class="form-control cp tcolor"/>
                                     <span class="input-group-addon"><i></i></span>
                                 </div>
                             </div>
@@ -245,7 +245,7 @@
                                 </span>
                             </label>
                             <input type="number" name="color_price[]" required
-                                class="input-field"
+                                class="form-control"
                                 placeholder="{{ __('Color Price') }}"
                                 value="" min="0">
                         </div>
@@ -275,11 +275,11 @@
                 '<span class="remove feature-remove"><i class="fas fa-times"></i></span>' +
                 '<div  class="row">' +
                 '<div class="col-lg-6">' +
-                '<input type="text" name="features[]" class="input-field" placeholder="{{ __('Enter Your Keyword') }}">' +
+                '<input type="text" name="features[]" class="form-control" placeholder="{{ __('Enter Your Keyword') }}">' +
                 '</div>' +
                 '<div class="col-lg-6">' +
                 '<div class="input-group colorpicker-component cp">' +
-                '<input type="text" name="colors[]" value="#000000" class="input-field cp"/>' +
+                '<input type="text" name="colors[]" value="#000000" class="form-control cp"/>' +
                 '<span class="input-group-addon"><i></i></span>' +
                 '</div>' +
                 '</div>' +
@@ -299,11 +299,11 @@
                     '<span class="remove feature-remove"><i class="fas fa-times"></i></span>' +
                     '<div  class="row">' +
                     '<div class="col-lg-6">' +
-                    '<input type="text" name="features[]" class="input-field" placeholder="{{ __('Enter Your Keyword') }}">' +
+                    '<input type="text" name="features[]" class="form-control" placeholder="{{ __('Enter Your Keyword') }}">' +
                     '</div>' +
                     '<div class="col-lg-6">' +
                     '<div class="input-group colorpicker-component cp">' +
-                    '<input type="text" name="colors[]" value="#000000" class="input-field cp"/>' +
+                    '<input type="text" name="colors[]" value="#000000" class="form-control cp"/>' +
                     '<span class="input-group-addon"><i></i></span>' +
                     '</div>' +
                     '</div>' +
@@ -347,10 +347,10 @@
                 '<span class="remove license-remove"><i class="fas fa-times"></i></span>' +
                 '<div  class="row">' +
                 '<div class="col-lg-6">' +
-                '<input type="text" name="license[]" class="input-field" placeholder="{{ __('License Key') }}" required="">' +
+                '<input type="text" name="license[]" class="form-control" placeholder="{{ __('License Key') }}" required="">' +
                 '</div>' +
                 '<div class="col-lg-6">' +
-                '<input type="number" name="license_qty[]" min="1" class="input-field" placeholder="{{ __('License Quantity') }}" value="1">' +
+                '<input type="number" name="license_qty[]" min="1" class="form-control" placeholder="{{ __('License Quantity') }}" value="1">' +
                 '</div>' +
                 '</div>' +
                 '</div>' +
@@ -367,10 +367,10 @@
                     '<span class="remove license-remove"><i class="fas fa-times"></i></span>' +
                     '<div  class="row">' +
                     '<div class="col-lg-6">' +
-                    '<input type="text" name="license[]" class="input-field" placeholder="{{ __('License Key') }}" required="">' +
+                    '<input type="text" name="license[]" class="form-control" placeholder="{{ __('License Key') }}" required="">' +
                     '</div>' +
                     '<div class="col-lg-6">' +
-                    '<input type="number" name="license_qty[]" min="1" class="input-field" placeholder="{{ __('License Quantity') }}" value="1">' +
+                    '<input type="number" name="license_qty[]" min="1" class="form-control" placeholder="{{ __('License Quantity') }}" value="1">' +
                     '</div>' +
                     '</div>' +
                     '</div>' +
@@ -411,10 +411,10 @@
                     '<span class="remove whole-remove"><i class="fas fa-times"></i></span>' +
                     '<div  class="row">' +
                     '<div class="col-lg-6">' +
-                    '<input type="number" name="whole_sell_qty[]" class="input-field" placeholder="{{ __('Enter Quantity') }}" min="0">' +
+                    '<input type="number" name="whole_sell_qty[]" class="form-control" placeholder="{{ __('Enter Quantity') }}" min="0">' +
                     '</div>' +
                     '<div class="col-lg-6">' +
-                    '<input type="number" name="whole_sell_discount[]" class="input-field" placeholder="{{ __('Enter Discount Percentage') }}" min="0">' +
+                    '<input type="number" name="whole_sell_discount[]" class="form-control" placeholder="{{ __('Enter Discount Percentage') }}" min="0">' +
                     '</div>' +
                     '</div>' +
                     '</div>' +
@@ -433,10 +433,10 @@
                     '<span class="remove whole-remove"><i class="fas fa-times"></i></span>' +
                     '<div  class="row">' +
                     '<div class="col-lg-6">' +
-                    '<input type="number" name="whole_sell_qty[]" class="input-field" placeholder="{{ __('Enter Quantity') }}" min="0">' +
+                    '<input type="number" name="whole_sell_qty[]" class="form-control" placeholder="{{ __('Enter Quantity') }}" min="0">' +
                     '</div>' +
                     '<div class="col-lg-6">' +
-                    '<input type="number" name="whole_sell_discount[]" class="input-field" placeholder="{{ __('Enter Discount Percentage') }}" min="0">' +
+                    '<input type="number" name="whole_sell_discount[]" class="form-control" placeholder="{{ __('Enter Discount Percentage') }}" min="0">' +
                     '</div>' +
                     '</div>' +
                     '</div>' +

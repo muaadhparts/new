@@ -22,7 +22,7 @@
                               </div>
                             </div>
                             <div class="col-lg-7">
-                              <input type="text" class="input-field" name="font_family" placeholder="{{ __('Font Family') }}" required="" value="">
+                              <input type="text" class="form-control" name="font_family" placeholder="{{ __('Font Family') }}" required="" value="">
                             </div>
                           </div>
 
@@ -33,7 +33,7 @@
                               </div>
                             </div>
                             <div class="col-lg-7">
-                              <button class="addProductSubmit-btn" type="submit">{{ __('Save') }}</button>
+                              <button class="btn btn-primary" type="submit">{{ __('Save') }}</button>
                             </div>
                           </div>
                         </form>

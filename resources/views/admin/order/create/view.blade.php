@@ -206,7 +206,7 @@
                          </tr>
                          <tr>
                             <td>
-                                <a href="{{route('admin-order-create-submit')}}" class="mybtn1">Order Submit</a>
+                                <a href="{{route('admin-order-create-submit')}}" class="btn btn-primary">Order Submit</a>
                             </td>
                          </tr>
                       </tbody>

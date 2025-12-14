@@ -66,7 +66,7 @@
 						                        <input type="hidden" name="type" value="Physical">
 												<div class="row">
 													<div class="col-lg-12 mt-4 text-center">
-														<button class="mybtn1 mr-5" type="submit">{{ __("Start Import") }}</button>
+														<button class="btn btn-primary mr-5" type="submit">{{ __("Start Import") }}</button>
 													</div>
 												</div>
 											</form>

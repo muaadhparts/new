@@ -10,8 +10,8 @@
                 <h5 class="modal-title">{{ __('Add Product') }} |  <code class="text-center show_vendor_message">
                     
                 </code></h5>
-                <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                    
                 </button>
             </div>
             <div class="modal-body">
@@ -36,7 +36,7 @@
                                                     </div>
                                                 </div>
                                                 <div class="col-lg-7">
-                                                    <input type="text" class="input-field" name="sku"
+                                                    <input type="text" class="form-control" name="sku"
                                                         placeholder="{{ __('Enter Product Sku') }}" required=""
                                                         value="">
                                                 </div>
@@ -51,7 +51,7 @@
                                                     </div>
                                                 </div>
                                                 <div class="col-lg-7">
-                                                    <button class="addProductSubmit-btn mt-0" type="submit">{{
+                                                    <button class="btn btn-primary mt-0" type="submit">{{
                                                         __('Submit') }}</button>
                                                 </div>
                                             </div>

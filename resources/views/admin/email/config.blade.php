@@ -59,7 +59,7 @@
                               </div>
                             </div>
                             <div class="col-lg-6">
-                              <select name="mail_driver" class="input-field" required> 
+                              <select name="mail_driver" class="form-control" required> 
                                 <option value="smtp" {{ $gs->mail_driver == 'smtp' ? 'selected' : '' }}>SMTP</option>
                                 <option value="sendmail" {{ $gs->mail_driver == 'sendmail' ? 'selected' : '' }}>SENDMAIL</option>
                               </select>
@@ -75,7 +75,7 @@
                             </div>
                           </div>
                           <div class="col-lg-6">
-                            <input type="text" class="input-field" placeholder="{{ __('Mail Host') }}" name="mail_host" value="{{ $gs->mail_host }}" required="">
+                            <input type="text" class="form-control" placeholder="{{ __('Mail Host') }}" name="mail_host" value="{{ $gs->mail_host }}" required="">
                           </div>
                         </div>
 
@@ -87,7 +87,7 @@
                             </div>
                           </div>
                           <div class="col-lg-6">
-                            <input type="text" class="input-field" placeholder="{{ __('Mail Port') }} " name="mail_port" value="{{ $gs->mail_port }}" required="">
+                            <input type="text" class="form-control" placeholder="{{ __('Mail Port') }} " name="mail_port" value="{{ $gs->mail_port }}" required="">
                           </div>
                         </div>
 
@@ -101,7 +101,7 @@
                             </div>
                           </div>
                           <div class="col-lg-6">
-                            <input type="text" class="input-field" placeholder="{{ __('Encryption') }} " name="mail_encryption" value="{{ $gs->mail_encryption }}" required="">
+                            <input type="text" class="form-control" placeholder="{{ __('Encryption') }} " name="mail_encryption" value="{{ $gs->mail_encryption }}" required="">
                           </div>
                         </div>
 
@@ -113,7 +113,7 @@
                             </div>
                           </div>
                           <div class="col-lg-6">
-                            <input type="text" class="input-field" placeholder="{{ __('Mail Username') }} " name="mail_user" value="{{ $gs->mail_user }}" required="">
+                            <input type="text" class="form-control" placeholder="{{ __('Mail Username') }} " name="mail_user" value="{{ $gs->mail_user }}" required="">
                           </div>
                         </div>
 
@@ -125,7 +125,7 @@
                             </div>
                           </div>
                           <div class="col-lg-6">
-                            <input type="text" class="input-field" placeholder="{{ __('Mail Password') }} " name="mail_pass" value="{{ $gs->mail_pass }}" required="">
+                            <input type="text" class="form-control" placeholder="{{ __('Mail Password') }} " name="mail_pass" value="{{ $gs->mail_pass }}" required="">
                           </div>
                         </div>
 
@@ -137,7 +137,7 @@
                             </div>
                           </div>
                           <div class="col-lg-6">
-                            <input type="text" class="input-field" placeholder="{{ __('From Email') }} " name="from_email" value="{{ $gs->from_email }}" required="">
+                            <input type="text" class="form-control" placeholder="{{ __('From Email') }} " name="from_email" value="{{ $gs->from_email }}" required="">
                           </div>
                         </div>
 
@@ -149,7 +149,7 @@
                             </div>
                           </div>
                           <div class="col-lg-6">
-                            <input type="text" class="input-field" placeholder="{{ __('From Name') }} " name="from_name" value="{{ $gs->from_name }}" required="">
+                            <input type="text" class="form-control" placeholder="{{ __('From Name') }} " name="from_name" value="{{ $gs->from_name }}" required="">
                           </div>
                         </div>
 
@@ -160,7 +160,7 @@
                             </div>
                           </div>
                           <div class="col-lg-6">
-                            <button class="addProductSubmit-btn" type="submit">{{ __('Submit') }}</button>
+                            <button class="btn btn-primary" type="submit">{{ __('Submit') }}</button>
                           </div>
                         </div>
                      </form>

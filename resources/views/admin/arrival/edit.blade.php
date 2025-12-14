@@ -45,7 +45,7 @@
                             </div>
                           </div>
                           <div class="col-lg-7">
-                            <input type="text" class="input-field" name="url" placeholder="{{ __('Add Url here') }}" required="" value="{{$data->url}}">
+                            <input type="text" class="form-control" name="url" placeholder="{{ __('Add Url here') }}" required="" value="{{$data->url}}">
                           </div>
                         </div>
                                      
@@ -73,7 +73,7 @@
                             </div>
                           </div>
                           <div class="col-lg-7">
-                            <button class="addProductSubmit-btn" type="submit">{{ __('Update') }}</button>
+                            <button class="btn btn-primary" type="submit">{{ __('Update') }}</button>
                           </div>
                         </div>
 

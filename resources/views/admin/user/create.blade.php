@@ -34,7 +34,7 @@
 														</div>
 													</div>
 													<div class="col-lg-7">
-														<input type="text" class="input-field" name="name" placeholder="{{ __("User Name") }}" required="" value="">
+														<input type="text" class="form-control" name="name" placeholder="{{ __("User Name") }}" required="" value="">
 													</div>
 												</div>
 
@@ -45,7 +45,7 @@
 														</div>
 													</div>
 													<div class="col-lg-7">
-														<input type="email" class="input-field" name="email" placeholder="{{ __("Email Address") }}" value="">
+														<input type="email" class="form-control" name="email" placeholder="{{ __("Email Address") }}" value="">
 													</div>
 												</div>
 
@@ -56,7 +56,7 @@
 														</div>
 													</div>
 													<div class="col-lg-7">
-														<input type="text" class="input-field" name="phone" placeholder="{{ __("Phone Number") }}" required="" value="">
+														<input type="text" class="form-control" name="phone" placeholder="{{ __("Phone Number") }}" required="" value="">
 													</div>
 												</div>
 
@@ -67,7 +67,7 @@
 														</div>
 													</div>
 													<div class="col-lg-7">
-														<input type="text" class="input-field" name="address" placeholder="{{ __("Address") }}" required="" value="">
+														<input type="text" class="form-control" name="address" placeholder="{{ __("Address") }}" required="" value="">
 													</div>
                                                 </div>
                                                 
@@ -78,7 +78,7 @@
 														</div>
 													</div>
 													<div class="col-lg-7">
-														<input type="text" class="input-field" name="city" placeholder="{{ __("City") }}" value="">
+														<input type="text" class="form-control" name="city" placeholder="{{ __("City") }}" value="">
 													</div>
 												</div>
 
@@ -90,7 +90,7 @@
 														</div>
 													</div>
 													<div class="col-lg-7">
-														<input type="text" class="input-field" name="state" placeholder="{{ __("State") }}" value="">
+														<input type="text" class="form-control" name="state" placeholder="{{ __("State") }}" value="">
 													</div>
 												</div>
 
@@ -102,7 +102,7 @@
 														</div>
 													</div>
 													<div class="col-lg-7">
-                                                        <select class="input-field" name="country" required>
+                                                        <select class="form-control" name="country" required>
                                                             <option value="">{{ __('Select Country') }}</option>
                                                             @foreach (DB::table('countries')->get() as $data)
                                                                 <option value="{{ $data->country_name }}">
@@ -120,7 +120,7 @@
 														</div>
 													</div>
 													<div class="col-lg-7">
-														<input type="text" class="input-field" name="fax" placeholder="{{ __("Fax") }}" value="">
+														<input type="text" class="form-control" name="fax" placeholder="{{ __("Fax") }}" value="">
 													</div>
 												</div>
 
@@ -132,7 +132,7 @@
 														</div>
 													</div>
 													<div class="col-lg-7">
-														<input type="text" class="input-field" name="zip" placeholder="{{ __("Postal Code") }}" value="">
+														<input type="text" class="form-control" name="zip" placeholder="{{ __("Postal Code") }}" value="">
 													</div>
 												</div>
 
@@ -143,7 +143,7 @@
 														</div>
 													</div>
 													<div class="col-lg-7">
-														<input type="password" class="input-field" name="password" placeholder="{{__('Enter Password')}}" value="" required>
+														<input type="password" class="form-control" name="password" placeholder="{{__('Enter Password')}}" value="" required>
 													</div>
 												</div>
 
@@ -155,7 +155,7 @@
 						                            </div>
 						                          </div>
 						                          <div class="col-lg-7">
-						                            <button class="addProductSubmit-btn" type="submit">{{ __("Create Customer") }}</button>
+						                            <button class="btn btn-primary" type="submit">{{ __("Create Customer") }}</button>
 						                          </div>
 						                        </div>
 

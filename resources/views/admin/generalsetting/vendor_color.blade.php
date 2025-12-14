@@ -43,7 +43,7 @@
                           <div class="col-lg-6">
                               <div class="form-group"> 
                                 <div class="input-group colorpicker-component cp">
-                                <input type="text" class="input-field color-field" name="vendor_color" value="{{ $gs->vendor_color }}"  class="form-control cp"  />
+                                <input type="text" class="form-control color-field" name="vendor_color" value="{{ $gs->vendor_color }}"  class="form-control cp"  />
                                   <span class="input-group-addon"><i></i></span>
                                 </div>
                               </div>
@@ -57,7 +57,7 @@
                             </div>
                           </div>
                           <div class="col-lg-6">
-                            <button class="addProductSubmit-btn" type="submit">{{ __('Save') }}</button>
+                            <button class="btn btn-primary" type="submit">{{ __('Save') }}</button>
                           </div>
                         </div>
                      </form>

@@ -102,7 +102,7 @@
                                       </div>
                                     </div>
                                     <div class="col-lg-6">
-                                      <select name="decimal_separator" class="input-field" required>
+                                      <select name="decimal_separator" class="form-control" required>
                                         <option value="">
                                           {{ __('Select Decimal Separator') }}
                                         </option>
@@ -125,7 +125,7 @@
                                       </div>
                                     </div>
                                     <div class="col-lg-6">
-                                      <select name="thousand_separator" class="input-field" required>
+                                      <select name="thousand_separator" class="form-control" required>
                                         <option value="">
                                           {{ __('Select Thousand Separator') }}
                                         </option>
@@ -147,7 +147,7 @@
                                       </div>
                                     </div>
                                     <div class="col-lg-6">
-                                      <input type="text" class="input-field" placeholder="{{ __('Withdraw Fee') }}" name="withdraw_fee" value="{{ $gs->withdraw_fee }}" required="">
+                                      <input type="text" class="form-control" placeholder="{{ __('Withdraw Fee') }}" name="withdraw_fee" value="{{ $gs->withdraw_fee }}" required="">
                                     </div>
                                   </div>
           
@@ -159,7 +159,7 @@
                                       </div>
                                     </div>
                                     <div class="col-lg-6">
-                                      <input type="text" class="input-field" placeholder="{{ __('Withdraw Charge(%)') }}" name="withdraw_charge" value="{{ $gs->withdraw_charge }}" required="">
+                                      <input type="text" class="form-control" placeholder="{{ __('Withdraw Charge(%)') }}" name="withdraw_charge" value="{{ $gs->withdraw_charge }}" required="">
                                     </div>
                                   </div>
                               </div>
@@ -175,7 +175,7 @@
                                     </div>
                                   </div>
                                   <div class="col-lg-6">
-                                    <input type="text" class="input-field" placeholder="{{ __('Fixed Commission') }}" name="fixed_commission" value="{{ $gs->fixed_commission }}" required="">
+                                    <input type="text" class="form-control" placeholder="{{ __('Fixed Commission') }}" name="fixed_commission" value="{{ $gs->fixed_commission }}" required="">
                                   </div>
                                 </div>
         
@@ -190,7 +190,7 @@
                                     </div>
                                   </div>
                                   <div class="col-lg-6">
-                                    <input type="text" class="input-field" placeholder="{{ __('Percentage Commission') }}" name="percentage_commission" value="{{ $gs->percentage_commission }}" required="">
+                                    <input type="text" class="form-control" placeholder="{{ __('Percentage Commission') }}" name="percentage_commission" value="{{ $gs->percentage_commission }}" required="">
                                   </div>
                                 </div>
         
@@ -243,7 +243,7 @@
                             </div>
                           </div>
                           <div class="col-lg-6">
-                            <button class="addProductSubmit-btn" type="submit">{{ __('Save') }}</button>
+                            <button class="btn btn-primary" type="submit">{{ __('Save') }}</button>
                           </div>
                         </div>
                      </form>

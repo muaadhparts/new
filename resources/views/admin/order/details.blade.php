@@ -1,16 +1,5 @@
 @extends('layouts.admin')
 
-@section('styles')
-
-<style type="text/css">
-    .order-table-wrap table#example2 {
-        margin: 10px 20px;
-    }
-</style>
-
-@endsection
-
-
 @section('content')
 <div class="content-area">
     <div class="mr-breadcrumb">
@@ -177,7 +166,7 @@
                         </table>
                     </div>
                     <div class="footer-area">
-                        <a href="{{ route('admin-order-invoice',$order->id) }}" class="mybtn1"><i
+                        <a href="{{ route('admin-order-invoice',$order->id) }}" class="btn btn-primary"><i
                                 class="fas fa-eye"></i> {{ __('View Invoice') }}</a>
                     </div>
                 </div>
@@ -491,7 +480,7 @@
                 <div class="mr-table">
                     <h4 class="title">
                         <a href="javascript:;" data-bs-toggle="modal" vendor="{{$key1}}"
-                            vendor-store="{{$vendor->shop_name}}" class="mybtn1 pl-2 show_add_product"
+                            vendor-store="{{$vendor->shop_name}}" class="btn btn-primary btn-sm pl-2 show_add_product"
                             data-bs-target="#add-product"><i class="fas fa-plus"></i>{{ __("Add Product") }}</a> {{
                         __('Products Ordered By') }} - <strong>{{$vendor->shop_name}}</strong>
 
@@ -622,7 +611,7 @@
 
                                         @if($product['license'] != '')
                                         <a href="javascript:;" data-bs-toggle="modal" data-bs-target="#confirm-delete"
-                                            class="btn btn-info product-btn license" style="padding: 5px 12px;"><i
+                                            class="btn btn-info btn-sm product-btn license"><i
                                                 class="fa fa-eye"></i> {{ __('View License') }}</a>
                                         @endif
 
@@ -643,8 +632,7 @@
                                         @endif
                                         @if($product['color'])
                                         <p>
-                                            <strong>{{ __('color') }} :</strong> <span
-                                                style="width: 20px; height: 20px; display: inline-block; vertical-align: middle; border-radius: 50%; background: #{{$product['color']}};"></span>
+                                            <strong>{{ __('color') }} :</strong> <span style="width: 20px; height: 20px; display: inline-block; vertical-align: middle; border-radius: 50%; background: #{{$product['color']}};"></span>
                                         </p>
                                         @endif
                                         <p>
@@ -681,13 +669,13 @@
                                         <div class="action-list">
 
                                             @if (App\Models\Product::whereId($product['item']['id'])->exists())
-                                            <a class="add-btn edit-product"data-href="{{ route('admin-order-product-edit',[$itemKey, $product['item']['id'] ,$order->id]) }}"
+                                            <a class="btn btn-primary btn-sm edit-product" data-href="{{ route('admin-order-product-edit',[$itemKey, $product['item']['id'] ,$order->id]) }}"
                                                 data-bs-toggle="modal" data-bs-target="#edit-product-modal">
                                                 <i class="fas fa-edit"></i> {{ __("Edit") }}
                                             </a>
                                             @endif
-                                            
-                                            <a class="add-btn delete-product"
+
+                                            <a class="btn btn-danger btn-sm delete-product"
                                                 data-href="{{ route('admin-order-product-delete',[$itemKey,$order->id]) }}"
                                                 data-bs-toggle="modal" data-bs-target="#delete-product-modal">
                                                 <i class="fas fa-trash"></i>
@@ -758,7 +746,7 @@
                 @endforeach
             </div>
             <div class="col-lg-12 text-center mt-2">
-                <a class="btn sendEmail send" href="javascript:;" class="send" data-email="{{ $order->customer_email }}"
+                <a class="btn btn-primary sendEmail send" href="javascript:;" data-email="{{ $order->customer_email }}"
                     data-bs-toggle="modal" data-bs-target="#vendorform">
                     <i class="fa fa-send"></i> {{ __('Send Email') }}
                 </a>
@@ -781,8 +769,8 @@
 
             <div class="modal-header d-block text-center">
                 <h4 class="modal-title d-inline-block">{{ __('License Key') }}</h4>
-                <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                    
                 </button>
             </div>
 
@@ -795,9 +783,9 @@
                     {{csrf_field()}}
                     <input type="hidden" name="license_key" id="license-key" value="">
                     <div class="form-group text-center">
-                        <input type="text" name="license" placeholder="{{ __('Enter New License Key') }}"
-                            style="width: 40%; border: none;" required=""><input type="submit" name="submit"
-                            class="btn btn-primary" style="border-radius: 0; padding: 2px; margin-bottom: 2px;">
+                        <input type="text" name="license" class="form-control d-inline-block" placeholder="{{ __('Enter New License Key') }}"
+                            required="">
+                        <input type="submit" name="submit" class="btn btn-primary btn-sm">
                     </div>
                 </form>
             </div>
@@ -845,8 +833,8 @@
                 <h5 class="modal-title">
                     {{ __('Edit Item') }}
                 </h5>
-                <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                    
                 </button>
             </div>
             <div class="modal-body">
@@ -873,8 +861,8 @@
 
             <div class="modal-header d-block text-center">
                 <h4 class="modal-title d-inline-block">{{ __('Confirm Delete') }}</h4>
-                <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                    
                 </button>
             </div>
 
@@ -886,7 +874,7 @@
 
             <!-- Modal footer -->
             <div class="modal-footer justify-content-center">
-                <button type="button" class="btn btn-default" data-bs-dismiss="modal">{{ __('Cancel') }}</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ __('Cancel') }}</button>
                 <a class="btn btn-danger btn-ok">{{ __('Delete') }}</a>
 
             </div>
@@ -906,8 +894,8 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="vendorformLabel">{{ __('Send Email') }}</h5>
-                    <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                        
                     </button>
                 </div>
                 <div class="modal-body">
@@ -919,19 +907,19 @@
                                         {{csrf_field()}}
                                         <ul>
                                             <li>
-                                                <input type="email" class="input-field eml-val" id="eml" name="to"
+                                                <input type="email" class="form-control eml-val" id="eml" name="to"
                                                     placeholder="{{ __('Email') }} *" value="" required="">
                                             </li>
                                             <li>
-                                                <input type="text" class="input-field" id="subj" name="subject"
+                                                <input type="text" class="form-control" id="subj" name="subject"
                                                     placeholder="{{ __('Subject') }} *" required="">
                                             </li>
                                             <li>
-                                                <textarea class="input-field textarea" name="message" id="msg"
+                                                <textarea class="form-control textarea" name="message" id="msg"
                                                     placeholder="{{ __('Your Message') }} *" required=""></textarea>
                                             </li>
                                         </ul>
-                                        <button class="submit-btn" id="emlsub" type="submit">{{ __('Send Email')
+                                        <button class="btn btn-primary" id="emlsub" type="submit">{{ __('Send Email')
                                             }}</button>
                                     </form>
                                 </div>
@@ -956,8 +944,8 @@
             </div>
             <div class="modal-header d-block text-center">
                 <h4 class="modal-title d-inline-block">{{ __('Update Status') }}</h4>
-                <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                    
                 </button>
             </div>
 
@@ -969,7 +957,7 @@
 
             <!-- Modal footer -->
             <div class="modal-footer justify-content-center">
-                <button type="button" class="btn btn-default" data-bs-dismiss="modal">{{ __('Cancel') }}</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ __('Cancel') }}</button>
                 <a class="btn btn-success btn-ok order-btn">{{ __('Proceed') }}</a>
             </div>
 
@@ -1078,7 +1066,7 @@ $(document).on('submit','#show-product',function(e){
   {
     $('.submit-loader').show();
   }
-    $('button.addProductSubmit-btn').prop('disabled',true);
+    $('button.btn.btn-primary').prop('disabled',true);
     disablekey();
       $.ajax({
        method:"POST",
@@ -1109,7 +1097,7 @@ $(document).on('submit','#show-product',function(e){
             $('#product-show').html('<div class="col-lg-12 text-center"><h4>'+data[1]+'.</h4></div>')
         }
 
-        $('button.addProductSubmit-btn').prop('disabled',false);
+        $('button.btn.btn-primary').prop('disabled',false);
 
         enablekey();
        }

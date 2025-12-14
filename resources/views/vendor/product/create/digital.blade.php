@@ -193,7 +193,7 @@
                                     <div class="span4 cropme text-center d-flex justify-content-center align-items-center"
                                         id="landscape"
                                         style="width: 100%; height: 285px; border: 1px dashed #ddd; background: #f1f1f1;">
-                                        <a href="javascript:;" id="crop-image" class="mybtn1 template-btn"
+                                        <a href="javascript:;" id="crop-image" class="btn btn-primary template-btn"
                                             style="">
                                             <i class="icofont-upload-alt"></i>
                                             @lang('Upload Image Here')

@@ -1,20 +1,5 @@
 @extends('layouts.admin')
 
-@section('styles')
-
-<style type="text/css">
-.table-responsive {
-    overflow-x: hidden;
-    overflow-y: hidden;
-}
-table#example2 {
-    margin-left: 10px;
-}
-
-</style>
-
-@endsection
-
 @section('content')
 
                     <div class="content-area">
@@ -49,7 +34,7 @@ table#example2 {
                                                             @else
                                                             <img src="{{ $data->photo ? asset('assets/images/users/'.$data->photo):asset('assets/images/noimage.png')}}" alt="{{ __("No Image") }}">                                            
                                                             @endif
-                                                        <a href="javascript:;" class="mybtn1 send" data-email="{{ $data->email }}" data-bs-toggle="modal" data-bs-target="#vendorform">{{ __("Send Message") }}</a>
+                                                        <a href="javascript:;" class="btn btn-primary send" data-email="{{ $data->email }}" data-bs-toggle="modal" data-bs-target="#vendorform">{{ __("Send Message") }}</a>
                                                         </div>
                                                     </div>
                                                     <div class="col-md-4">
@@ -214,8 +199,8 @@ table#example2 {
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="vendorformLabel">{{ __("Send Message") }}</h5>
-                        <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
-                            <span aria-hidden="true">&times;</span>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                            
                         </button>
                 </div>
             <div class="modal-body">
@@ -227,16 +212,16 @@ table#example2 {
                                     {{csrf_field()}}
                                     <ul>
                                         <li>
-                                            <input type="email" class="input-field eml-val" id="eml1" name="to" placeholder="{{ __("Email") }} *" value="" required="">
+                                            <input type="email" class="form-control eml-val" id="eml1" name="to" placeholder="{{ __("Email") }} *" value="" required="">
                                         </li>
                                         <li>
-                                            <input type="text" class="input-field" id="subj1" name="subject" placeholder="{{ __("Subject") }} *" required="">
+                                            <input type="text" class="form-control" id="subj1" name="subject" placeholder="{{ __("Subject") }} *" required="">
                                         </li>
                                         <li>
-                                            <textarea class="input-field textarea" name="message" id="msg1" placeholder="{{ __("Your Message") }} *" required=""></textarea>
+                                            <textarea class="form-control textarea" name="message" id="msg1" placeholder="{{ __("Your Message") }} *" required=""></textarea>
                                         </li>
                                     </ul>
-                                    <button class="submit-btn" id="emlsub1" type="submit">{{ __("Send Message") }}</button>
+                                    <button class="btn btn-primary" id="emlsub1" type="submit">{{ __("Send Message") }}</button>
                                 </form>
                             </div>
                         </div>
@@ -258,8 +243,8 @@ table#example2 {
 			<div class="modal-content">
 			<div class="modal-header">
 				<h5 class="modal-title" id="exampleModalCenterTitle">{{ __('Attachments') }}</h5>
-				<button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
-				<span aria-hidden="true">×</span>
+				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+				
 				</button>
 			</div>
 			<div class="modal-body">

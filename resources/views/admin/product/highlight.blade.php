@@ -108,7 +108,7 @@
                                             </div>
                                         </div>
                                         <div class="col-lg-7">
-                                            <button class="addProductSubmit-btn"
+                                            <button class="btn btn-primary"
                                                 type="submit">{{ __('Submit') }}</button>
                                         </div>
                                     </div>

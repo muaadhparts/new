@@ -187,7 +187,7 @@
                                                         <div class="col-10">
                                                             <div class="price-container">
                                                                 <span class="price-curr">{{ $sign->sign }}</span>
-                                                                <input type="text" class="input-field price-input"
+                                                                <input type="text" class="form-control price-input"
                                                                     id="{{ $catAttribute->input_name }}{{ $option->id }}_price"
                                                                     data-name="{{ $catAttribute->input_name }}_price[]"
                                                                     placeholder="@lang('0.00 (Additional Price)')"
@@ -270,7 +270,7 @@
                                                         <div class="col-10">
                                                             <div class="price-container">
                                                                 <span class="price-curr">{{ $sign->sign }}</span>
-                                                                <input type="text" class="input-field price-input"
+                                                                <input type="text" class="form-control price-input"
                                                                     id="{{ $subAttribute->input_name }}{{ $option->id }}_price"
                                                                     data-name="{{ $subAttribute->input_name }}_price[]"
                                                                     placeholder="@lang('0.00 (Additional Price)')"
@@ -353,7 +353,7 @@
                                                         <div class="col-10">
                                                             <div class="price-container">
                                                                 <span class="price-curr">{{ $sign->sign }}</span>
-                                                                <input type="text" class="input-field price-input"
+                                                                <input type="text" class="form-control price-input"
                                                                     id="{{ $childAttribute->input_name }}{{ $option->id }}_price"
                                                                     data-name="{{ $childAttribute->input_name }}_price[]"
                                                                     placeholder="@lang('0.00 (Additional Price)')"
@@ -805,7 +805,7 @@
                                 <div class="overlayed-img-wrapper">
                                     <div class="span4 cropme text-center" id="landscape"
                                         style="width: 100%; height: 285px; border: 1px dashed #ddd; background: #f1f1f1;">
-                                        <a href="javascript:;" id="crop-image" class=" mybtn1" style="">
+                                        <a href="javascript:;" id="crop-image" class="btn btn-primary" style="">
                                             <i class="icofont-upload-alt"></i>
                                             @lang('Upload Image Here')
                                         </a>

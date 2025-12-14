@@ -20,7 +20,7 @@
                             </div>
                           </div>
                           <div class="col-lg-7">
-                            <input type="text" class="input-field" name="title" placeholder="{{ __('Title') }}" value="{{$data->title}}" required="">
+                            <input type="text" class="form-control" name="title" placeholder="{{ __('Title') }}" value="{{$data->title}}" required="">
                           </div>
                         </div>
 
@@ -51,7 +51,7 @@
                             </div>
                           </div>
                           <div class="col-lg-7">
-                              <textarea class="input-field" name="details" placeholder="{{ __('Description') }}">{{ $data->details }}</textarea> 
+                              <textarea class="form-control" name="details" placeholder="{{ __('Description') }}">{{ $data->details }}</textarea> 
                           </div>
                         </div>
 
@@ -64,7 +64,7 @@
                             </div>
                           </div>
                           <div class="col-lg-7">
-                            <button class="addProductSubmit-btn" type="submit">{{ __('Save') }}</button>
+                            <button class="btn btn-primary" type="submit">{{ __('Save') }}</button>
                           </div>
                         </div>
                       </form>

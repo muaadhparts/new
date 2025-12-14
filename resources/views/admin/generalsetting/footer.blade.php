@@ -43,7 +43,7 @@
                               </div>
                               <div class="col-lg-6">
                                   <div class="tawk-area">
-                                    <textarea class="input-field"  name="footer" required=""> {{ $gs->footer }} </textarea>
+                                    <textarea class="form-control"  name="footer" required=""> {{ $gs->footer }} </textarea>
                                   </div>
                               </div>
                             </div>
@@ -71,7 +71,7 @@
                             </div>
                           </div>
                           <div class="col-lg-6">
-                            <button class="addProductSubmit-btn" type="submit">{{ __('Save') }}</button>
+                            <button class="btn btn-primary" type="submit">{{ __('Save') }}</button>
                           </div>
                         </div>
                      </form>

@@ -58,7 +58,7 @@
                             </div>
                           </div>
                           <div class="col-lg-7">
-                            <input type="text" class="input-field" name="title" placeholder="{{ __('Title') }}" required="" value="">
+                            <input type="text" class="form-control" name="title" placeholder="{{ __('Title') }}" required="" value="">
                           </div>
                         </div>
 
@@ -100,7 +100,7 @@
                             </div>
                           </div>
                           <div class="col-lg-7">
-                            <input type="text" class="input-field" name="source" placeholder="{{ __('Source') }}" required="" value="{{ Request::old('source') }}">
+                            <input type="text" class="form-control" name="source" placeholder="{{ __('Source') }}" required="" value="{{ Request::old('source') }}">
 
                             <div class="checkbox-wrapper">
                               <input type="checkbox" name="secheck" class="checkclick" id="allowProductSEO">
@@ -133,7 +133,7 @@
                             </div>
                             <div class="col-lg-7">
                               <div class="text-editor">
-                                <textarea class="input-field" name="meta_description" placeholder="{{ __('Meta Description') }}"></textarea> 
+                                <textarea class="form-control" name="meta_description" placeholder="{{ __('Meta Description') }}"></textarea> 
                               </div>
                             </div>
                           </div>
@@ -159,7 +159,7 @@
                             </div>
                           </div>
                           <div class="col-lg-7">
-                            <button class="addProductSubmit-btn" type="submit">{{ __('Create Post') }}</button>
+                            <button class="btn btn-primary" type="submit">{{ __('Create Post') }}</button>
                           </div>
                         </div>
                       </form>

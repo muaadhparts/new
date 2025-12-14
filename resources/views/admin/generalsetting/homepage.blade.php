@@ -45,7 +45,7 @@
                                                 </div>
                                             </div>
                                             <div class="row justify-content-center mt-3">
-                                                <button class="addProductSubmit-btn" type="submit">
+                                                <button class="btn btn-primary" type="submit">
                                                     @if ($gs->theme == 'theme1')
                                                         {{ __('Active') }}
                                                     @else
@@ -70,7 +70,7 @@
                                                 </div>
                                             </div>
                                             <div class="row justify-content-center mt-3">
-                                                <button class="addProductSubmit-btn" type="submit">
+                                                <button class="btn btn-primary" type="submit">
                                                     @if ($gs->theme == 'theme2')
                                                         {{ __('Active') }}
                                                     @else
@@ -94,7 +94,7 @@
                                                 </div>
                                             </div>
                                             <div class="row justify-content-center mt-3">
-                                                <button class="addProductSubmit-btn" type="submit">
+                                                <button class="btn btn-primary" type="submit">
                                                     @if ($gs->theme == 'theme3')
                                                         {{ __('Active') }}
                                                     @else

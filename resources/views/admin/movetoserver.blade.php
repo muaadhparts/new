@@ -40,7 +40,7 @@
                             <hr />
                             <div class="add-product-footer text-center">
                                 <button name="addProduct_btn" id="generateBkup" type="button"
-                                    class="addProductSubmit-btn">{{ __('Generate Backup') }}</button>
+                                    class="btn btn-primary">{{ __('Generate Backup') }}</button>
                             </div>
 
                         </div>

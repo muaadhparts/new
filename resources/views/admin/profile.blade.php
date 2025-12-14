@@ -53,7 +53,7 @@
 														</div>
 													</div>
 													<div class="col-lg-7">
-														<input type="text" class="input-field" name="name" placeholder="{{ __('User Name') }}" required="" value="{{$data->name}}">
+														<input type="text" class="form-control" name="name" placeholder="{{ __('User Name') }}" required="" value="{{$data->name}}">
 													</div>
 												</div>
 
@@ -65,7 +65,7 @@
 														</div>
 													</div>
 													<div class="col-lg-7">
-														<input type="email" class="input-field" name="email" placeholder="{{ __('Email Address') }}" required="" value="{{$data->email}}">
+														<input type="email" class="form-control" name="email" placeholder="{{ __('Email Address') }}" required="" value="{{$data->email}}">
 													</div>
 												</div>
 
@@ -76,7 +76,7 @@
 														</div>
 													</div>
 													<div class="col-lg-7">
-														<input type="text" class="input-field" name="phone" placeholder="{{ __('Phone Number') }}" required="" value="{{$data->phone}}">
+														<input type="text" class="form-control" name="phone" placeholder="{{ __('Phone Number') }}" required="" value="{{$data->phone}}">
 													</div>
 												</div>
 
@@ -88,7 +88,7 @@
 														</div>
 													</div>
 													<div class="col-lg-7">
-														<input type="text" class="input-field" name="shop_name" placeholder="{{ __('Shop Name') }}" required="" value="{{$data->shop_name}}">
+														<input type="text" class="form-control" name="shop_name" placeholder="{{ __('Shop Name') }}" required="" value="{{$data->shop_name}}">
 													</div>
 												</div>
 											@endif
@@ -102,7 +102,7 @@
 						                            </div>
 						                          </div>
 						                          <div class="col-lg-7">
-						                            <button class="addProductSubmit-btn" type="submit">{{ __('Save') }}</button>
+						                            <button class="btn btn-primary" type="submit">{{ __('Save') }}</button>
 						                          </div>
 						                        </div>
 

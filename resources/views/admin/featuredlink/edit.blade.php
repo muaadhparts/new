@@ -20,7 +20,7 @@
                             </div>
                           </div>
                           <div class="col-lg-7">
-                            <input type="text" class="input-field" name="name" placeholder="{{ __('Name') }}" value="{{$data->name}}" required="">
+                            <input type="text" class="form-control" name="name" placeholder="{{ __('Name') }}" value="{{$data->name}}" required="">
                           </div>
                         </div>
 
@@ -32,7 +32,7 @@
                             </div>
                           </div>
                           <div class="col-lg-7">
-                            <input type="text" class="input-field" name="link" placeholder="{{ __('Link') }}" value="{{$data->link}}" required="">
+                            <input type="text" class="form-control" name="link" placeholder="{{ __('Link') }}" value="{{$data->link}}" required="">
                           </div>
                         </div>
 
@@ -62,7 +62,7 @@
                             </div>
                           </div>
                           <div class="col-lg-7">
-                            <button class="addProductSubmit-btn" type="submit">{{ __('Save') }}</button>
+                            <button class="btn btn-primary" type="submit">{{ __('Save') }}</button>
                           </div>
                         </div>
                       </form>

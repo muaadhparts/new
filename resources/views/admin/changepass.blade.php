@@ -62,7 +62,7 @@
                   
                   <input type="hidden" name="file_token" value="{{ $token }}">
 
-                  <button class="submit-btn">{{ __('Submit') }}</button>
+                  <button class="btn btn-primary">{{ __('Submit') }}</button>
                 </form>
               </div>
             </div>

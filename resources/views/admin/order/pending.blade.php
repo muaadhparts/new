@@ -59,8 +59,8 @@
                                                 </div>
     <div class="modal-header d-block text-center">
         <h4 class="modal-title d-inline-block">{{ __('Update Status') }}</h4>
-            <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
-                <span aria-hidden="true">&times;</span>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                
             </button>
     </div>
 
@@ -72,7 +72,7 @@
 
       <!-- Modal footer -->
       <div class="modal-footer justify-content-center">
-            <button type="button" class="btn btn-default" data-bs-dismiss="modal">{{ __('Cancel') }}</button>
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ __('Cancel') }}</button>
             <a class="btn btn-success btn-ok order-btn">{{ __('Proceed') }}</a>
       </div>
 
@@ -91,8 +91,8 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="vendorformLabel">{{ __('Send Email') }}</h5>
-                        <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
-                            <span aria-hidden="true">&times;</span>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                            
                         </button>
                 </div>
             <div class="modal-body">
@@ -104,16 +104,16 @@
                                     {{csrf_field()}}
                                     <ul>
                                         <li>
-                                            <input type="email" class="input-field eml-val" id="eml" name="to" placeholder="{{ __('Email') }} *" value="" required="">
+                                            <input type="email" class="form-control eml-val" id="eml" name="to" placeholder="{{ __('Email') }} *" value="" required="">
                                         </li>
                                         <li>
-                                            <input type="text" class="input-field" id="subj" name="subject" placeholder="{{ __('Subject') }} *" required="">
+                                            <input type="text" class="form-control" id="subj" name="subject" placeholder="{{ __('Subject') }} *" required="">
                                         </li>
                                         <li>
-                                            <textarea class="input-field textarea" name="message" id="msg" placeholder="{{ __('Your Message') }} *" required=""></textarea>
+                                            <textarea class="form-control textarea" name="message" id="msg" placeholder="{{ __('Your Message') }} *" required=""></textarea>
                                         </li>
                                     </ul>
-                                    <button class="submit-btn" id="emlsub" type="submit">{{ __('Send Email') }}</button>
+                                    <button class="btn btn-primary" id="emlsub" type="submit">{{ __('Send Email') }}</button>
                                 </form>
                             </div>
                         </div>
@@ -138,8 +138,8 @@
                                                 </div>
                                             <div class="modal-header">
                                             <h5 class="modal-title"></h5>
-                                            <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
-                                                <span aria-hidden="true">&times;</span>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                                                
                                             </button>
                                             </div>
                                             <div class="modal-body">

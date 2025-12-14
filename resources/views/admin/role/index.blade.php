@@ -50,8 +50,8 @@
 
   <div class="modal-header d-block text-center">
     <h4 class="modal-title d-inline-block">{{ __("Confirm Delete") }}</h4>
-      <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
-        <span aria-hidden="true">&times;</span>
+      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+        
       </button>
   </div>
 
@@ -63,7 +63,7 @@
 
       <!-- Modal footer -->
       <div class="modal-footer justify-content-center">
-            <button type="button" class="btn btn-default" data-bs-dismiss="modal">{{ __('Cancel') }}</button>
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ __('Cancel') }}</button>
             			<form action="" class="d-inline delete-form" method="POST">
 				<input type="hidden" name="_method" value="delete" />
 				<input type="hidden" name="_token" value="{{ csrf_token() }}">

@@ -61,7 +61,7 @@
                             </div>
                           </div>
                           <div class="col-lg-7">
-                            <textarea class="input-field" required name="track_text" placeholder="{{ __('Enter Track Note Here') }}"></textarea>
+                            <textarea class="form-control" required name="track_text" placeholder="{{ __('Enter Track Note Here') }}"></textarea>
                           </div>
                         </div>
 
@@ -73,7 +73,7 @@
                             </div>
                           </div>
                           <div class="col-lg-7">
-                            <button class="addProductSubmit-btn" type="submit">{{ __('Save') }}</button>
+                            <button class="btn btn-primary" type="submit">{{ __('Save') }}</button>
                           </div>
                         </div>
                       </form>

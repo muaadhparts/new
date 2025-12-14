@@ -96,7 +96,7 @@
                   </div>
                   <div class="row">
                     <div class="col-lg-12">
-                      <button class="mybtn1" type="submit">{{ __('Submit') }}</button>
+                      <button class="btn btn-primary" type="submit">{{ __('Submit') }}</button>
                     </div>
                   </div>
                 </form>

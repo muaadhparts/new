@@ -56,7 +56,7 @@
                                   </div>
                                 </div>
                                 <div class="col-lg-7">
-                                  <input type="text" class="input-field" name="big_save_banner_link1" placeholder="{{ __('Link') }}" required="" value="{{ $data->big_save_banner_link1 }}">
+                                  <input type="text" class="form-control" name="big_save_banner_link1" placeholder="{{ __('Link') }}" required="" value="{{ $data->big_save_banner_link1 }}">
                                 </div>
                               </div>
       
@@ -65,7 +65,7 @@
                                   <div class="left-area"></div>
                                 </div>
                                 <div class="col-lg-7">
-                                    <button class="addProductSubmit-btn" type="submit">{{ __('Save') }}</button>
+                                    <button class="btn btn-primary" type="submit">{{ __('Save') }}</button>
                                 </div>
                               </div>
       

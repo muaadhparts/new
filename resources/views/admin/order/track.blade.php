@@ -25,7 +25,7 @@
                                                         </div>
                                                     </div>
                                                     <div class="col-lg-7">
-                                                        <textarea class="input-field" id="track-title" name="title" placeholder="{{ __('Title') }}" required=""></textarea>
+                                                        <textarea class="form-control" id="track-title" name="title" placeholder="{{ __('Title') }}" required=""></textarea>
                                                     </div>
                                                 </div>
 
@@ -38,7 +38,7 @@
                                                         </div>
                                                     </div>
                                                     <div class="col-lg-7">
-                                                        <textarea class="input-field" id="track-details" name="text" placeholder="{{ __('Details') }}" required=""></textarea>
+                                                        <textarea class="form-control" id="track-details" name="text" placeholder="{{ __('Details') }}" required=""></textarea>
                                                     </div>
                                                 </div>
 
@@ -49,8 +49,8 @@
                                                         </div>
                                                     </div>
                                                     <div class="col-lg-7">
-                                                        <button class="addProductSubmit-btn" id="track-btn" type="submit">{{ __('ADD') }}</button>
-                                                        <button class="addProductSubmit-btn ml=3 d-none" id="cancel-btn" type="button">{{ __('Cancel') }}</button>
+                                                        <button class="btn btn-primary" id="track-btn" type="submit">{{ __('ADD') }}</button>
+                                                        <button class="btn btn-secondary ml=3 d-none" id="cancel-btn" type="button">{{ __('Cancel') }}</button>
                                                         <input type="hidden" id="add-text" value="{{ __('ADD') }}">
                                                         <input type="hidden" id="edit-text" value="{{ __('UPDATE') }}">
                                                     </div>

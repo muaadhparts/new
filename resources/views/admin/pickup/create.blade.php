@@ -20,7 +20,7 @@
 														</div>
 													</div>
 													<div class="col-lg-7">
-														<input type="text" class="input-field" name="location" placeholder="{{ __('Location') }}" required="" value="">
+														<input type="text" class="form-control" name="location" placeholder="{{ __('Location') }}" required="" value="">
 													</div>
 												</div>
 
@@ -32,7 +32,7 @@
 														</div>
 													</div>
 													<div class="col-lg-7">
-														<button class="addProductSubmit-btn" type="submit">{{ __('Create') }}</button>
+														<button class="btn btn-primary" type="submit">{{ __('Create') }}</button>
 													</div>
 												</div>
 											</form>

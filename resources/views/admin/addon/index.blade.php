@@ -63,7 +63,7 @@
 			
 					<!-- Modal footer -->
 					<div class="modal-footer justify-content-center">
-						<button type="button" class="btn btn-default" data-bs-dismiss="modal">{{ __('Cancel') }}</button>
+						<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ __('Cancel') }}</button>
 						<a  class="btn btn-success btn-ok">{{ __('Uninstall') }}</a>
 					</div>
 			

@@ -1,10 +1,5 @@
 @extends('layouts.admin')
-@section('styles')
-    <link href="{{ asset('assets/admin/css/product.css') }}" rel="stylesheet" />
-    <link href="{{ asset('assets/admin/css/jquery.Jcrop.css') }}" rel="stylesheet" />
-    <link href="{{ asset('assets/admin/css/Jcrop-style.css') }}" rel="stylesheet" />
-    <link href="{{ asset('assets/admin/css/select2.css') }}" rel="stylesheet" />
-@endsection
+
 @section('content')
     <div class="content-area">
         <div class="mr-breadcrumb">
@@ -75,10 +70,10 @@
                                                 </div>
                                             </div>
                                             <div class="col-lg-12">
-                                                <select name="brand_id" class="input-field">
+                                                <select name="brand_id" class="form-control">
                                                     <option value="">{{ __('Select Brand') }}</option>
                                                     @foreach (\App\Models\Brand::all() as $brand)
-                                                        <option value="{{ $brand->id }}" style="color: #333;">
+                                                        <option value="{{ $brand->id }}">
                                                             {{ $brand->name }} {{ $brand->name_ar ? '- ' . $brand->name_ar : '' }}
                                                         </option>
                                                     @endforeach
@@ -94,10 +89,10 @@
                                                 </div>
                                             </div>
                                             <div class="col-lg-12">
-                                                <select name="brand_quality_id" class="input-field">
+                                                <select name="brand_quality_id" class="form-control">
                                                     <option value="">{{ __('Select Quality Brand') }}</option>
                                                     @foreach (\App\Models\QualityBrand::all() as $qb)
-                                                        <option value="{{ $qb->id }}" style="color: #333;">
+                                                        <option value="{{ $qb->id }}">
                                                             {{ $qb->name_en }} {{ $qb->name_ar ? '- ' . $qb->name_ar : '' }} {{ $qb->country ? '(' . $qb->country . ')' : '' }}
                                                         </option>
                                                     @endforeach
@@ -113,7 +108,7 @@
                                                 </div>
                                             </div>
                                             <div class="col-lg-12">
-                                                <input type="text" class="input-field"
+                                                <input type="text" class="form-control"
                                                     placeholder="{{ __('Enter Product Name') }}" name="name"
                                                     required="">
                                             </div>
@@ -127,7 +122,7 @@
                                                 </div>
                                             </div>
                                             <div class="col-lg-12">
-                                                <input type="text" class="input-field"
+                                                <input type="text" class="form-control"
                                                     placeholder="{{ __('Enter Product Name in English') }}"
                                                     name="label_en">
                                             </div>
@@ -141,7 +136,7 @@
                                                 </div>
                                             </div>
                                             <div class="col-lg-12">
-                                                <input type="text" class="input-field" dir="rtl"
+                                                <input type="text" class="form-control" dir="rtl"
                                                     placeholder="{{ __('Enter Product Name in Arabic') }}"
                                                     name="label_ar">
                                             </div>
@@ -154,7 +149,7 @@
                                                 </div>
                                             </div>
                                             <div class="col-lg-12">
-                                                <input type="text" class="input-field"
+                                                <input type="text" class="form-control"
                                                     placeholder="{{ __('Enter Product Sku') }}" name="sku"
                                                     required=""
                                                     value="{{ Str::random(3) . substr(time(), 6, 8) . Str::random(3) }}">
@@ -309,7 +304,7 @@
                                                     </div>
                                                 </div>
                                                 <div class="col-lg-12">
-                                                    <input type="number" class="input-field" min="1"
+                                                    <input type="number" class="form-control" min="1"
                                                         placeholder="{{ __('Minimum Order Qty') }}" name="minimum_qty">
                                                 </div>
                                             </div>
@@ -346,7 +341,7 @@
                                                     </div>
                                                 </div>
                                                 <div class="col-lg-12">
-                                                    <input type="text" class="input-field"
+                                                    <input type="text" class="form-control"
                                                         placeholder="{{ __('Estimated Shipping Time') }}" name="ship">
                                                 </div>
                                             </div>
@@ -392,14 +387,14 @@
                                                                 <div class="row">
                                                                     <div class="col-lg-6">
                                                                         <input type="number" name="whole_sell_qty[]"
-                                                                            class="input-field"
+                                                                            class="form-control"
                                                                             placeholder="{{ __('Enter Quantity') }}"
                                                                             min="0">
                                                                     </div>
 
                                                                     <div class="col-lg-6">
                                                                         <input type="number" name="whole_sell_discount[]"
-                                                                            class="input-field"
+                                                                            class="form-control"
                                                                             placeholder="{{ __('Enter Discount Percentage') }}"
                                                                             min="0" />
                                                                     </div>
@@ -454,7 +449,7 @@
                                                 {{-- <div class="col-lg-1"></div> --}}
                                                 <div class="col-lg-12 hidden" id="measure">
                                                     <input name="measure" type="text" id="measurement"
-                                                        class="input-field" placeholder="{{ __('Enter Unit') }}">
+                                                        class="form-control" placeholder="{{ __('Enter Unit') }}">
                                                 </div>
                                             </div>
                                         </div>
@@ -505,7 +500,7 @@
                                                                         <div class="input-group colorpicker-component cp">
                                                                             <input type="text" name="color_all[]"
                                                                                 value=""
-                                                                                class="input-field cp tcolor" />
+                                                                                class="form-control cp tcolor" />
                                                                             <span class="input-group-addon"><i></i></span>
                                                                         </div>
                                                                     </div>
@@ -519,7 +514,7 @@
                                                                         </span>
                                                                     </label>
                                                                     <input type="number" name="color_price[]" required
-                                                                        class="input-field"
+                                                                        class="form-control"
                                                                         placeholder="{{ __('Color Price') }}"
                                                                         value="" min="0">
                                                                 </div> --}}
@@ -572,7 +567,7 @@
                                                                         </span>
                                                                     </label>
                                                                     <input type="text" name="size[]"
-                                                                        class="input-field tsize"
+                                                                        class="form-control tsize"
                                                                         placeholder="{{ __('Enter Product Size') }}"
                                                                         value="" >
                                                                 </div>
@@ -584,7 +579,7 @@
                                                                         </span>
                                                                     </label>
                                                                     <input type="number" name="size_qty[]"
-                                                                        class="input-field"
+                                                                        class="form-control"
                                                                         placeholder="{{ __('Size Qty') }}" value="1"
                                                                         min="1">
                                                                 </div>
@@ -596,7 +591,7 @@
                                                                         </span>
                                                                     </label>
                                                                     <input type="number" name="size_price[]"
-                                                                        class="input-field"
+                                                                        class="form-control"
                                                                         placeholder="{{ __('Size Price') }}"
                                                                         value="0" min="0">
                                                                 </div>
@@ -621,7 +616,7 @@
                                                 </div>
                                             </div>
                                             <div class="col-lg-12">
-                                                <input name="stock" type="number" class="input-field"
+                                                <input name="stock" type="number" class="form-control"
                                                     placeholder="e.g 20" value="" min="0">
                                             </div>
                                         </div>
@@ -694,7 +689,7 @@
                                                 </div>
                                                 <div class="col-lg-12">
                                                     <div class="text-editor">
-                                                        <textarea name="meta_description" class="input-field" placeholder="{{ __('Meta Description') }}"></textarea>
+                                                        <textarea name="meta_description" class="form-control" placeholder="{{ __('Meta Description') }}"></textarea>
                                                     </div>
                                                 </div>
                                             </div>
@@ -724,7 +719,7 @@
                                                 <div class="panel panel-body">
                                                     <div class="span4 cropme text-center" id="landscape"
                                                         style="width: 100%; height: 285px; border: 1px dashed #ddd; background: #f1f1f1;">
-                                                        <a href="javascript:;" id="crop-image" class=" mybtn1"
+                                                        <a href="javascript:;" id="crop-image" class="btn btn-primary"
                                                             style="">
                                                             <i class="icofont-upload-alt"></i>
                                                             {{ __('Upload Image Here') }}
@@ -764,7 +759,7 @@
                                                 </div>
                                             </div>
                                             <div class="col-lg-12">
-                                                <input name="price" type="number" class="input-field"
+                                                <input name="price" type="number" class="form-control"
                                                     placeholder="{{ __('e.g 20') }}" step="0.1" required=""
                                                     min="0">
                                             </div>
@@ -779,7 +774,7 @@
                                             </div>
                                             <div class="col-lg-12">
                                                 <input name="previous_price" step="0.1" type="number"
-                                                    class="input-field" placeholder="{{ __('e.g 20') }}"
+                                                    class="form-control" placeholder="{{ __('e.g 20') }}"
                                                     min="0">
                                             </div>
                                         </div>
@@ -792,7 +787,7 @@
                                                 </div>
                                             </div>
                                             <div class="col-lg-12">
-                                                <input name="youtube" type="text" class="input-field"
+                                                <input name="youtube" type="text" class="form-control"
                                                     placeholder="{{ __('Enter Youtube Video URL') }}">
                                             </div>
                                         </div>
@@ -816,14 +811,14 @@
                                                             <div class="row">
                                                                 <div class="col-lg-6">
                                                                     <input type="text" name="features[]"
-                                                                        class="input-field"
+                                                                        class="form-control"
                                                                         placeholder="{{ __('Enter Your Keyword') }}">
                                                                 </div>
 
                                                                 <div class="col-lg-6">
                                                                     <div class="input-group colorpicker-component cp">
                                                                         <input type="text" name="colors[]"
-                                                                            value="#000000" class="input-field cp" />
+                                                                            value="#000000" class="form-control cp" />
                                                                         <span class="input-group-addon"><i></i></span>
                                                                     </div>
                                                                 </div>
@@ -851,7 +846,7 @@
 
                                         <div class="row text-center">
                                             <div class="col-6 offset-3">
-                                                <button class="addProductSubmit-btn"
+                                                <button class="btn btn-primary"
                                                     type="submit">{{ __('Create Product') }}</button>
                                             </div>
                                         </div>
@@ -872,8 +867,8 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="exampleModalCenterTitle">{{ __('Image Gallery') }}</h5>
-                    <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">×</span>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                        
                     </button>
                 </div>
                 <div class="modal-body">

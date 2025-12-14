@@ -18,7 +18,7 @@
 														</div>
 													</div>
                                                     <div class="col-lg-7">
-                                                        <textarea class="input-field" name="details" required="" placeholder="{{ __('Enter Verification Details') }}" ></textarea> 
+                                                        <textarea class="form-control" name="details" required="" placeholder="{{ __('Enter Verification Details') }}" ></textarea> 
                                                     </div>
 												</div>
                                                 <input type="hidden" name="user_id" value="{{ $data->id }}">
@@ -30,7 +30,7 @@
 														</div>
 													</div>
 													<div class="col-lg-7">
-														<button class="addProductSubmit-btn" type="submit">{{ __('Send') }}</button>
+														<button class="btn btn-primary" type="submit">{{ __('Send') }}</button>
 													</div>
 												</div>
 											</form>

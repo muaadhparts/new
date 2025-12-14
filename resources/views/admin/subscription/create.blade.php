@@ -20,7 +20,7 @@
                             </div>
                           </div>
                           <div class="col-lg-7">
-                            <input type="text" class="input-field" name="title" placeholder="{{ __("Enter Subscription Title") }}" required="" value="">
+                            <input type="text" class="form-control" name="title" placeholder="{{ __("Enter Subscription Title") }}" required="" value="">
                           </div>
                         </div>
 
@@ -31,7 +31,7 @@
                             </div>
                           </div>
                           <div class="col-lg-7">
-                            <input type="text" class="input-field" name="price" placeholder="{{ __("Enter Subscription Cost") }}" required="" value="">
+                            <input type="text" class="form-control" name="price" placeholder="{{ __("Enter Subscription Cost") }}" required="" value="">
                           </div>
                         </div>
 
@@ -42,7 +42,7 @@
                             </div>
                           </div>
                           <div class="col-lg-7">
-                            <input type="text" class="input-field" name="days" placeholder="{{ __("Enter Subscription Days") }}" required="" value="">
+                            <input type="text" class="form-control" name="days" placeholder="{{ __("Enter Subscription Days") }}" required="" value="">
                           </div>
                         </div>
 
@@ -69,7 +69,7 @@
                               </div>
                             </div>
                             <div class="col-lg-7">
-                              <input type="number" min="1" class="input-field" id="allowed_products" name="allowed_products" placeholder="{{ __("Enter Allowed Products") }}" value="1">
+                              <input type="number" min="1" class="form-control" id="allowed_products" name="allowed_products" placeholder="{{ __("Enter Allowed Products") }}" value="1">
                             </div>
                           </div>
                         </div>
@@ -95,7 +95,7 @@
                             </div>
                           </div>
                           <div class="col-lg-7">
-                            <button class="addProductSubmit-btn" type="submit">{{ __("Create Plan") }}</button>
+                            <button class="btn btn-primary" type="submit">{{ __("Create Plan") }}</button>
                           </div>
                         </div>
                       </form>

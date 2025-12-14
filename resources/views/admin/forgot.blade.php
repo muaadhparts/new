@@ -27,7 +27,11 @@
     <link href="{{asset('assets/admin/css/style.css')}}" rel="stylesheet"/>
     <link href="{{asset('assets/admin/css/custom.css')}}" rel="stylesheet"/>
     <link href="{{asset('assets/admin/css/responsive.css')}}" rel="stylesheet" />
-    @yield('styles')
+
+    {{-- NEW CSS Layer --}}
+    <link rel="stylesheet" href="{{ asset('assets/front/css/new/tokens.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/front/css/new/base.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/front/css/new/components.css') }}">
 
   </head>
   <body>
@@ -46,9 +50,8 @@
                 @include('alerts.admin.form-login')
                 <form id="forgotform" action="{{ route('admin.forgot.submit') }}" method="POST">
                   @csrf
-                  <div class="form-input">
-                    <input type="email" name="email" class="User Name" placeholder="{{ __('Type Email Address') }}" value="" required="" autofocus>
-                    <i class="icofont-user-alt-5"></i>
+                  <div class="mb-3">
+                    <input type="email" name="email" class="form-control" placeholder="{{ __('Type Email Address') }}" value="" required autofocus>
                   </div>
                   <div class="form-forgot-pass">
                     <div class="right">
@@ -58,7 +61,7 @@
                     </div>
                   </div>
                   <input id="authdata" type="hidden"  value="{{ __('Checking...') }}">
-                  <button class="submit-btn">{{ __('Login') }}</button>
+                  <button class="btn btn-primary">{{ __('Login') }}</button>
                 </form>
               </div>
             </div>

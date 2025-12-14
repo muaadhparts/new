@@ -7,8 +7,8 @@
             </div>
             <div class="modal-header">
                 <h5 class="modal-title">{{ __('Billing Details') }}</h5>
-                <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                    
                 </button>
             </div>
             <div class="modal-body">
@@ -30,7 +30,7 @@
                                                 </div>
                                             </div>
                                             <div class="col-lg-7">
-                                                <input type="text" class="input-field" name="customer_name" placeholder="{{ __('Name') }}" required="" value="{{$order->customer_name}}">
+                                                <input type="text" class="form-control" name="customer_name" placeholder="{{ __('Name') }}" required="" value="{{$order->customer_name}}">
                                             </div>
                                         </div>
 
@@ -41,7 +41,7 @@
                                                 </div>
                                             </div>
                                             <div class="col-lg-7">
-                                                <input type="email" class="input-field" name="customer_email" placeholder="{{ __('Email') }}" required="" value="{{$order->customer_email}}">
+                                                <input type="email" class="form-control" name="customer_email" placeholder="{{ __('Email') }}" required="" value="{{$order->customer_email}}">
                                             </div>
                                         </div>
 
@@ -52,7 +52,7 @@
                                                 </div>
                                             </div>
                                             <div class="col-lg-7">
-                                                <input type="text" class="input-field" name="customer_phone" placeholder="{{ __('Phone') }}" required="" value="{{$order->customer_phone}}">
+                                                <input type="text" class="form-control" name="customer_phone" placeholder="{{ __('Phone') }}" required="" value="{{$order->customer_phone}}">
                                             </div>
                                         </div>
 
@@ -64,7 +64,7 @@
                                                 </div>
                                             </div>
                                             <div class="col-lg-7">
-                                                <input type="text" class="input-field" name="customer_address" placeholder="{{ __('Address') }}" required="" value="{{$order->customer_address}}">
+                                                <input type="text" class="form-control" name="customer_address" placeholder="{{ __('Address') }}" required="" value="{{$order->customer_address}}">
                                             </div>
                                         </div>
 
@@ -76,7 +76,7 @@
                                                 </div>
                                             </div>
                                             <div class="col-lg-7">
-                                                <input type="text" class="input-field" name="customer_city" placeholder="{{ __('City') }}" required="" value="{{$order->customer_city}}">
+                                                <input type="text" class="form-control" name="customer_city" placeholder="{{ __('City') }}" required="" value="{{$order->customer_city}}">
                                             </div>
                                         </div>
 
@@ -88,7 +88,7 @@
                                                 </div>
                                             </div>
                                             <div class="col-lg-7">
-                                                <input type="text" class="input-field" name="customer_state" placeholder="{{ __('State') }}" required="" value="{{$order->customer_state}}">
+                                                <input type="text" class="form-control" name="customer_state" placeholder="{{ __('State') }}" required="" value="{{$order->customer_state}}">
                                             </div>
                                         </div>
 
@@ -100,7 +100,7 @@
                                                 </div>
                                             </div>
                                             <div class="col-lg-7">
-                                                <select type="text" class="input-field" name="customer_country" required="">
+                                                <select type="text" class="form-control" name="customer_country" required="">
                                                     <option value="">{{ __('Select Country') }}</option>
                                                     @foreach (DB::table('countries')->get() as $data)
                                                         <option value="{{ $data->country_name }}" {{ $order->customer_country == $data->country_name ? 'selected' : '' }}>
@@ -119,7 +119,7 @@
                                                 </div>
                                             </div>
                                             <div class="col-lg-7">
-                                                <input type="text" class="input-field" name="customer_zip" placeholder="{{ __('Postal Code') }}" required="" value="{{$order->customer_zip}}">
+                                                <input type="text" class="form-control" name="customer_zip" placeholder="{{ __('Postal Code') }}" required="" value="{{$order->customer_zip}}">
                                             </div>
                                         </div>
 
@@ -132,7 +132,7 @@
                                                 </div>
                                             </div>
                                             <div class="col-lg-7">
-                                                <button class="addProductSubmit-btn" type="submit">{{ __('Submit') }}</button>
+                                                <button class="btn btn-primary" type="submit">{{ __('Submit') }}</button>
                                             </div>
                                         </div>
                                     </form>

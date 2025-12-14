@@ -554,8 +554,8 @@
       <div class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title" id="vendorformLabel">{{ __('Send Message') }}</h5>
-            <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
-              <span aria-hidden="true">&times;</span>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+              
             </button>
         </div>
         <div class="modal-body">
@@ -584,7 +584,7 @@
                       <input type="hidden" name="vendor_id" value="{{ isset($merchant) ? $merchant->user_id : '' }}">
 
                     </ul>
-                    <button class="submit-btn" id="emlsub" type="submit">{{ __('Send Message') }}</button>
+                    <button class="btn btn-primary" id="emlsub" type="submit">{{ __('Send Message') }}</button>
                   </form>
                 </div>
               </div>
@@ -606,8 +606,8 @@
       <div class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title" id="sendMessageLabel">{{ __('Send Message') }}</h5>
-          <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+            
           </button>
         </div>
         <div class="modal-body">
@@ -619,14 +619,14 @@
                     @csrf
                     <ul>
                       <li>
-                        <input type="text" class="input-field" name="subject" placeholder="{{ __('Subject *') }}" required="">
+                        <input type="text" class="form-control" name="subject" placeholder="{{ __('Subject *') }}" required="">
                       </li>
                       <li>
-                        <textarea class="input-field textarea" name="message" placeholder="{{ __('Your Message') }}" required=""></textarea>
+                        <textarea class="form-control textarea" name="message" placeholder="{{ __('Your Message') }}" required=""></textarea>
                       </li>
                       <input type="hidden" name="type" value="Ticket">
                     </ul>
-                    <button class="submit-btn" type="submit">{{ __('Send Message') }}</button>
+                    <button class="btn btn-primary" type="submit">{{ __('Send Message') }}</button>
                   </form>
                 </div>
               </div>

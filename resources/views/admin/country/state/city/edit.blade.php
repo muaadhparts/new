@@ -21,7 +21,7 @@
                   </div>
                 </div>
                 <div class="col-lg-7">
-                  <input type="text" readonly class="input-field" value="{{$city->state->state}}">
+                  <input type="text" readonly class="form-control" value="{{$city->state->state}}">
                 </div>
               </div>
 
@@ -33,7 +33,7 @@
                   </div>
                 </div>
                 <div class="col-lg-7">
-                  <input type="text" class="input-field" name="city_name" placeholder="{{ __('Enter City') }}"
+                  <input type="text" class="form-control" name="city_name" placeholder="{{ __('Enter City') }}"
                     value="{{$city->city_name}}">
                 </div>
               </div>
@@ -46,7 +46,7 @@
                   </div>
                 </div>
                 <div class="col-lg-7">
-                  <button class="addProductSubmit-btn" type="submit">{{ __('Create City') }}</button>
+                  <button class="btn btn-primary" type="submit">{{ __('Create City') }}</button>
                 </div>
               </div>
             </form>

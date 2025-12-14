@@ -24,7 +24,7 @@
                     </div>
                   </div>
                   <div class="col-lg-7">
-                    <input type="text" class="input-field" name="name" placeholder="{{ __('Enter Name') }}" required="" value="">
+                    <input type="text" class="form-control" name="name" placeholder="{{ __('Enter Name') }}" required="" value="">
                   </div>
                 </div>
                 <br>
@@ -41,7 +41,7 @@
                              </div>
                            </div>
                            <div class="col-lg-6">
-                             <input :id="'optionfield'+n" type="text" class="input-field" name="options[]" value="" placeholder="Option label" required>
+                             <input :id="'optionfield'+n" type="text" class="form-control" name="options[]" value="" placeholder="Option label" required>
                            </div>
                            <div class="col-lg-1">
                              <button type="button" class="btn btn-danger text-white" @click="removeOption(n)"><i class="fa fa-times"></i></button>
@@ -84,7 +84,7 @@
                     </div>
                   </div>
                   <div class="col-lg-7">
-                    <button class="addProductSubmit-btn" type="submit">{{ __('Create Attribute') }}</button>
+                    <button class="btn btn-primary" type="submit">{{ __('Create Attribute') }}</button>
                   </div>
                 </div>
               </form>

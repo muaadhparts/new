@@ -149,7 +149,7 @@
         </div>
       </div>
 
-      <button type="button" id="orderaddcrt" class="addProductSubmit-btn1" href="javascript:;">
+      <button type="button" id="orderaddcrt" class="btn btn-primary1" href="javascript:;">
         {{ __('Add') }}
       </button>
 

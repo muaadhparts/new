@@ -19,10 +19,10 @@
                                     </div>
                                 </div>
                                 <div class="col-lg-5">
-                                    <input type="text" class="input-field" name="name" placeholder="{{ __('English') }}" required value="{{ old('name', $data->name) }}">
+                                    <input type="text" class="form-control" name="name" placeholder="{{ __('English') }}" required value="{{ old('name', $data->name) }}">
                                 </div>
                                 <div class="col-lg-5">
-                                    <input type="text" class="input-field" name="name_ar" placeholder="{{ __('Arabic') }}" required value="{{ old('name_ar', $data->name_ar) }}">
+                                    <input type="text" class="form-control" name="name_ar" placeholder="{{ __('Arabic') }}" required value="{{ old('name_ar', $data->name_ar) }}">
                                 </div>
                             </div>
 

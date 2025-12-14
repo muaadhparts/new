@@ -29,14 +29,14 @@
 								<div class="row text-center p-3">
 								   @include('includes.admin.form-both')  
 								   <div class="col-sm-6 col-lg-4 offset-lg-2 col-md-6  mt-3">
-									  <input type="text"  autocomplete="off" class="input-field discount_date" value="{{$start_date != '' ? $start_date->format('d-m-Y') : ''}}"  name="start_date"  placeholder="{{ __("Enter Date") }}"  value="">
+									  <input type="text"  autocomplete="off" class="form-control discount_date" value="{{$start_date != '' ? $start_date->format('d-m-Y') : ''}}"  name="start_date"  placeholder="{{ __("Enter Date") }}"  value="">
 								   </div>
 								   <div class="col-sm-6 col-lg-4 col-md-6  mt-3">
-									  <input type="text"  autocomplete="off" class="input-field discount_date" value="{{$end_date != '' ? $end_date->format('d-m-Y') : ''}}" name="end_date"  placeholder="{{ __("Enter Date") }}"  value="">
+									  <input type="text"  autocomplete="off" class="form-control discount_date" value="{{$end_date != '' ? $end_date->format('d-m-Y') : ''}}" name="end_date"  placeholder="{{ __("Enter Date") }}"  value="">
 								   </div>
 								   <div class="col-sm-12 mt-3">
-									  <button type="submit" class="mybtn1">Check</button>
-									  <button type="button" id="reset" class="mybtn1">Reset</button>
+									  <button type="submit" class="btn btn-primary">Check</button>
+									  <button type="button" id="reset" class="btn btn-primary">Reset</button>
 								   </div>
 								   <div class="col-lg-12 mt-2">
 									  <p class="text-center"> <b> {{$start_date != '' ? $start_date->format('d-m-Y') : ''}} {{$start_date != '' && $end_date != '' ? 'To' : ''}}  {{$end_date != '' ? $end_date->format('d-m-Y') : ''}} {{__('Total Earning')}} : {{$total}}</b></p>

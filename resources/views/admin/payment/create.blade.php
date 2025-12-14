@@ -21,7 +21,7 @@
                             </div>
                           </div>
                           <div class="col-lg-7">
-                            <input type="text" class="input-field" name="title" placeholder="{{ __('Name') }}" required="" value="">
+                            <input type="text" class="form-control" name="title" placeholder="{{ __('Name') }}" required="" value="">
                           </div>
                         </div>
 
@@ -35,7 +35,7 @@
                           </div>
                           <div class="col-lg-7">
 
-                              <input type="text" class="input-field" name="subtitle" placeholder="{{ __('Subtitle') }}" value="">
+                              <input type="text" class="form-control" name="subtitle" placeholder="{{ __('Subtitle') }}" value="">
 
                           </div>
                         </div>
@@ -62,7 +62,7 @@
                             </div>
                           </div>
                           <div class="col-lg-7">
-                            <button class="addProductSubmit-btn" type="submit">{{ __('Create Payment') }}</button>
+                            <button class="btn btn-primary" type="submit">{{ __('Create Payment') }}</button>
                           </div>
                         </div>
                       </form>

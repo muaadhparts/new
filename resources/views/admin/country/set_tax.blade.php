@@ -43,7 +43,7 @@
                           </div>
                         </div>
                         <div class="col-lg-7">
-                          <input type="text" readonly class="input-field"  value="{{$country->country_name}}">
+                          <input type="text" readonly class="form-control"  value="{{$country->country_name}}">
                         </div>
                       </div>
 
@@ -55,7 +55,7 @@
                           </div>
                         </div>
                         <div class="col-lg-7">
-                          <input type="text" name="tax" class="input-field" placeholder="{{__('Enter Tax')}}"  value="{{$country->tax}}">
+                          <input type="text" name="tax" class="form-control" placeholder="{{__('Enter Tax')}}"  value="{{$country->tax}}">
                         </div>
                       </div>
 
@@ -88,12 +88,12 @@
                               </div>
                             </div>
                             <div class="col-lg-7">
-                              <input type="text"  class="input-field" name="state_tax[]" placeholder="Enter Tax"  value="{{$state->tax }}">
+                              <input type="text"  class="form-control" name="state_tax[]" placeholder="Enter Tax"  value="{{$state->tax }}">
                             </div>
                           </div>
                     @empty
                     <div class="text-center">
-                        {{__('State Not Found Please')}}  <a class="mybtn1" href="{{route('admin-state-index',$country->id)}}">{{__('Insert State')}}</a>
+                        {{__('State Not Found Please')}}  <a class="btn btn-primary" href="{{route('admin-state-index',$country->id)}}">{{__('Insert State')}}</a>
                     </div>
                     @endforelse
                 </div>
@@ -106,7 +106,7 @@
                             </div>
                           </div>
                           <div class="col-lg-7">
-                            <button class="addProductSubmit-btn" type="submit">{{ __('Save') }}</button>
+                            <button class="btn btn-primary" type="submit">{{ __('Save') }}</button>
                           </div>
                         </div>
                     </form>

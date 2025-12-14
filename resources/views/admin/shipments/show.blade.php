@@ -329,7 +329,7 @@
                 @csrf
                 <div class="modal-header">
                     <h5 class="modal-title">{{ __('Cancel Shipment') }}</h5>
-                    <button type="button" class="close" data-bs-dismiss="modal">
+                    <button type="button" class="btn-close" data-bs-dismiss="modal">
                         <span>&times;</span>
                     </button>
                 </div>

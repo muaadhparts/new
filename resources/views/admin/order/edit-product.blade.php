@@ -151,7 +151,7 @@
                   </div>
                 </div>
 
-            <button type="button" id="qaddcrt" class="addProductSubmit-btn1" href="javascript:;">
+            <button type="button" id="qaddcrt" class="btn btn-primary1" href="javascript:;">
               {{ __('Update') }}
             </button>
 

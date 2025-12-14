@@ -149,7 +149,7 @@
 
               <div class="row">
                 <div class="col-12 text-center">
-                  <button type="submit" class="submit-btn">{{ __('Submit') }}</button>
+                  <button type="submit" class="btn btn-primary">{{ __('Submit') }}</button>
                 </div>
               </div>
 
