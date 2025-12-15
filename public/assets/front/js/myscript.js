@@ -710,4 +710,48 @@
         prices;
     }
   });
+
+  // ============================================
+  // Product Card Gallery - Switch images on indicator hover/click
+  // ============================================
+  $(document).on('mouseenter click', '.m-product-card__indicator', function() {
+    var $indicator = $(this);
+    var $card = $indicator.closest('.m-product-card');
+    var index = $indicator.data('index');
+
+    // Update indicators
+    $card.find('.m-product-card__indicator').removeClass('active');
+    $indicator.addClass('active');
+
+    // Update images
+    $card.find('.m-product-card__img').removeClass('active');
+    $card.find('.m-product-card__img[data-index="' + index + '"]').addClass('active');
+  });
+
+  // Auto-cycle images on card hover (optional - subtle effect)
+  var cardHoverInterval = null;
+  $(document).on('mouseenter', '.m-product-card__image', function() {
+    var $imageContainer = $(this);
+    var $card = $imageContainer.closest('.m-product-card');
+    var $indicators = $card.find('.m-product-card__indicator');
+
+    if ($indicators.length <= 1) return;
+
+    var currentIndex = 0;
+    cardHoverInterval = setInterval(function() {
+      currentIndex = (currentIndex + 1) % $indicators.length;
+      $indicators.eq(currentIndex).trigger('mouseenter');
+    }, 2000);
+  });
+
+  $(document).on('mouseleave', '.m-product-card__image', function() {
+    if (cardHoverInterval) {
+      clearInterval(cardHoverInterval);
+      cardHoverInterval = null;
+    }
+    // Reset to first image
+    var $card = $(this).closest('.m-product-card');
+    $card.find('.m-product-card__indicator').first().trigger('mouseenter');
+  });
+
 })(jQuery);

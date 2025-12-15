@@ -187,6 +187,31 @@
         </table>
     </div>
 
+@elseif($displayMode === 'compact')
+    {{-- Compact Display Mode - Best for modern product cards --}}
+    <div class="product-info-compact">
+        @if($showSku && $sku)
+            <span class="product-info-compact__item product-info-compact__sku">
+                {{ $sku }}
+            </span>
+        @endif
+
+        @if($showVendor && $vendorName)
+            <span class="product-info-compact__item product-info-compact__vendor">
+                <i class="fas fa-store"></i> {{ Str::limit($vendorName, 15) }}
+            </span>
+        @endif
+
+        @if($showQualityBrand && $qualityBrandName)
+            <span class="product-info-compact__item product-info-compact__quality">
+                @if($qualityBrandLogo)
+                    <img src="{{ $qualityBrandLogo }}" alt="{{ $qualityBrandName }}" class="product-info-compact__logo">
+                @endif
+                {{ $qualityBrandName }}
+            </span>
+        @endif
+    </div>
+
 @else
     {{-- Inline Display Mode (Default) - Best for compact product cards --}}
     <div class="product-info-inline small text-muted mb-1">
