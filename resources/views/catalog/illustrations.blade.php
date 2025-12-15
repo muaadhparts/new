@@ -48,34 +48,34 @@
 {{-- Callout Modal Component (Pure HTML/JS - No Livewire) --}}
 @include('catalog.partials.callout-modal')
 
-<div class="container py-2">
-</div>
+{{-- Single Container for Search + Image (like level3) --}}
+<div class="container py-3">
+    {{-- Search Box - Full Width on Mobile --}}
+    <div class="row mb-4">
+        <div class="col-12">
+            {{-- Specifications Button --}}
+            <div class="mb-3">
+                @include('catalog.partials.specs-modal', [
+                    'catalog' => $catalog,
+                    'filters' => $filters,
+                    'selectedFilters' => $selectedFilters,
+                    'isVinMode' => $isVinMode
+                ])
+            </div>
 
-{{-- Search box (تقييد السيكشن الحالي) - AJAX Based --}}
-<div class="container mb-3 search-container-elevated">
-    {{-- Specifications Button --}}
-    <div class="mb-3">
-        @include('catalog.partials.specs-modal', [
-            'catalog' => $catalog,
-            'filters' => $filters,
-            'selectedFilters' => $selectedFilters,
-            'isVinMode' => $isVinMode
-        ])
+            {{-- Chips Bar --}}
+            @include('catalog.partials.chips-bar', ['chips' => $chips])
+
+            {{-- Search --}}
+            @include('includes.frontend.vehicle-search-ajax', [
+                'catalog' => $catalog,
+                'uniqueId' => 'illustrations',
+                'showAttributes' => false
+            ])
+        </div>
     </div>
 
-    {{-- Chips Bar --}}
-    @include('catalog.partials.chips-bar', ['chips' => $chips])
-
-    {{-- Search --}}
-    @include('includes.frontend.vehicle-search-ajax', [
-        'catalog' => $catalog,
-        'uniqueId' => 'illustrations',
-        'showAttributes' => false
-    ])
-</div>
-
-{{-- Illustration Image Container - Responsive --}}
-<div class="container">
+    {{-- Illustration Image - Responsive --}}
     <div class="row justify-content-center">
         <div class="col-12 col-md-10 col-lg-8">
             <div class="card border-0 shadow-sm mb-4">

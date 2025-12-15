@@ -15428,13 +15428,6 @@ div[id*='zoom_container'] .landmarks .lable div {
     z-index: 1060;
 }
 
-/* Ensure search container is above illustration image */
-.container:has(.vehicle-search-ajax-wrapper),
-.search-container-elevated {
-    position: relative;
-    z-index: 600;
-}
-
 .vehicle-search-suggestions {
     position: absolute;
     top: 100%;
