@@ -87,10 +87,17 @@
         <div class="col-12 col-md-10 col-lg-8">
             <div class="card border-0 shadow-sm mb-4">
                 <div class="card-header bg-white border-0 py-3">
-                    <h5 class="mb-0 text-center text-md-start">
-                        <i class="fas fa-image me-2 d-none d-md-inline"></i>
-                        {{ $category->localized_name ?? $category->full_code }}
-                    </h5>
+                    <div class="text-center text-md-start">
+                        <h5 class="mb-1 illustration-title">
+                            <i class="fas fa-image me-2 d-none d-md-inline"></i>
+                            <span>{{ $category->full_code }}</span>
+                        </h5>
+                        @if(!empty($category->slug) || !empty($category->Applicability))
+                            <p class="text-muted mb-0 illustration-subtitle">
+                                {{ $category->Applicability ?? str_replace('-', ' ', $category->slug) }}
+                            </p>
+                        @endif
+                    </div>
                 </div>
                 <div class="card-body p-2 p-md-3">
                     <div class="products-view">

@@ -883,3 +883,40 @@
 @media (min-width: 768px) {
     .m-hidden-desktop { display: none; }
 }
+
+/* ============================================================================
+   SECTION 11: ILLUSTRATION PAGE
+   ============================================================================ */
+
+/* Title - Auto-scale to fit container */
+.illustration-title {
+    font-size: clamp(0.9rem, 4vw, 1.25rem);
+    font-weight: 700;
+    line-height: 1.3;
+    word-break: break-word;
+    overflow-wrap: break-word;
+}
+
+/* Subtitle - Auto-scale and truncate if too long */
+.illustration-subtitle {
+    font-size: clamp(0.75rem, 3vw, 0.95rem);
+    line-height: 1.4;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    word-break: break-word;
+    overflow-wrap: break-word;
+}
+
+/* Mobile adjustments */
+@media (max-width: 575.98px) {
+    .illustration-title {
+        font-size: clamp(0.85rem, 5vw, 1.1rem);
+    }
+    .illustration-subtitle {
+        font-size: clamp(0.7rem, 3.5vw, 0.85rem);
+        -webkit-line-clamp: 3;
+    }
+}
