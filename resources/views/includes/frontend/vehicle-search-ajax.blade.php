@@ -19,14 +19,14 @@
     {{-- Specifications Bar removed - now displayed via chips-bar.blade.php in parent views --}}
 
     {{-- Search Type Toggle --}}
-    <div class="d-flex gap-2 mb-3">
+    <div class="d-flex gap-2 mb-3 search-type-toggle">
         <button type="button" class="m-btn m-btn--ghost m-btn--sm search-type-btn active" data-type="number" id="typeNumber{{ $uniqueId }}">
             <i class="fas fa-hashtag me-1"></i>
-            <span class="d-none d-md-inline">{{ __('ui.part_number') }}</span>
+            <span class="search-type-text">{{ __('ui.part_number') }}</span>
         </button>
         <button type="button" class="m-btn m-btn--ghost m-btn--sm search-type-btn" data-type="label" id="typeLabel{{ $uniqueId }}">
             <i class="fas fa-tag me-1"></i>
-            <span class="d-none d-md-inline">{{ __('ui.part_name') }}</span>
+            <span class="search-type-text">{{ __('ui.part_name') }}</span>
         </button>
     </div>
 

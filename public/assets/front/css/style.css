@@ -11712,10 +11712,10 @@ ul.tagit li.tagit-choice .tagit-close {
     padding: 1rem;
 }
 
-/* Chips Bar */
+/* Chips Bar - Compact Scrollable Design */
 .catalog-chips-bar {
-    margin-bottom: 1rem;
-    padding: 1rem;
+    margin-bottom: 0.75rem;
+    padding: 0.5rem 0.75rem;
     border-radius: var(--muaadh-radius);
     background: linear-gradient(135deg, var(--theme-primary) 0%, var(--theme-primary-dark) 100%);
 }
@@ -11723,59 +11723,87 @@ ul.tagit li.tagit-choice .tagit-close {
 .catalog-chips-header {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    margin-bottom: 0.5rem;
+    gap: 0.35rem;
+    margin-bottom: 0.35rem;
 }
 
 .catalog-chips-title {
     color: var(--muaadh-white);
     font-weight: var(--muaadh-font-semibold);
+    font-size: 0.8rem;
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 0.35rem;
+}
+
+.catalog-chips-title i {
+    font-size: 0.75rem;
 }
 
 .catalog-chips-count {
     background: var(--muaadh-white);
     color: var(--muaadh-text);
-    padding: 0.15rem 0.5rem;
+    padding: 0.1rem 0.4rem;
     border-radius: var(--muaadh-radius-pill);
-    font-size: var(--muaadh-font-xs);
+    font-size: 0.7rem;
     font-weight: var(--muaadh-font-semibold);
 }
 
 .catalog-chips-container {
     display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
+    flex-wrap: nowrap;
+    gap: 0.4rem;
+    overflow-x: auto;
+    padding-bottom: 0.25rem;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255,255,255,0.5) transparent;
+    -webkit-overflow-scrolling: touch;
+}
+
+.catalog-chips-container::-webkit-scrollbar {
+    height: 4px;
+}
+
+.catalog-chips-container::-webkit-scrollbar-track {
+    background: rgba(255,255,255,0.2);
+    border-radius: 2px;
+}
+
+.catalog-chips-container::-webkit-scrollbar-thumb {
+    background: rgba(255,255,255,0.5);
+    border-radius: 2px;
 }
 
 .catalog-chip {
     display: inline-flex;
     align-items: center;
-    padding: 0.35rem 0.75rem;
+    padding: 0.2rem 0.5rem;
     background: var(--muaadh-white);
     border-radius: var(--muaadh-radius-pill);
-    font-size: var(--muaadh-font-sm);
+    font-size: 0.75rem;
     box-shadow: var(--muaadh-shadow-sm);
+    white-space: nowrap;
+    flex-shrink: 0;
 }
 
 .catalog-chip-label {
     color: var(--muaadh-text-muted);
     font-weight: var(--muaadh-font-medium);
+    font-size: 0.7rem;
 }
 
 .catalog-chip-value {
     font-weight: var(--muaadh-font-semibold);
     color: var(--muaadh-text);
-    margin-left: 0.25rem;
+    margin-left: 0.15rem;
+    font-size: 0.7rem;
 }
 
 .catalog-chip-source {
-    font-size: 0.65rem;
-    padding: 0.1rem 0.4rem;
+    font-size: 0.55rem;
+    padding: 0.05rem 0.3rem;
     border-radius: var(--muaadh-radius-pill);
-    margin-left: 0.5rem;
+    margin-left: 0.3rem;
     color: var(--muaadh-white);
 }
 
@@ -15334,6 +15362,44 @@ div[id*='zoom_container'] .landmarks .lable div {
     background-color: var(--muaadh-dark);
     color: var(--muaadh-white);
     border-color: var(--muaadh-dark);
+}
+
+/* Search Type Toggle - Responsive */
+.search-type-toggle {
+    flex-wrap: wrap;
+}
+
+.search-type-toggle .search-type-btn {
+    padding: 0.4rem 0.75rem;
+    font-size: 0.8rem;
+    flex: 1;
+    min-width: fit-content;
+    justify-content: center;
+}
+
+.search-type-toggle .search-type-btn i {
+    font-size: 0.75rem;
+}
+
+.search-type-toggle .search-type-text {
+    font-size: 0.75rem;
+}
+
+/* Mobile adjustments */
+@media (max-width: 576px) {
+    .search-type-toggle .search-type-btn {
+        padding: 0.35rem 0.5rem;
+        font-size: 0.75rem;
+    }
+
+    .search-type-toggle .search-type-text {
+        font-size: 0.7rem;
+    }
+
+    .search-type-toggle .search-type-btn i {
+        font-size: 0.7rem;
+        margin-right: 0.25rem !important;
+    }
 }
 
 /* Suggestions Dropdown */
