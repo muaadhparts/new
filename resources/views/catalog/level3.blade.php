@@ -79,7 +79,7 @@
                                 {{ $cat->full_code }}
                             </h6>
                             @if(!empty($cat->Applicability))
-                                <p class="text-muted small mb-0 d-none d-md-block">{{ $cat->Applicability }}</p>
+                                <p class="text-muted small mb-0">{{ $cat->Applicability }}</p>
                             @endif
                             @if(!empty($cat->debug_begin) || !empty($cat->debug_end))
                                 <p class="text-secondary small mb-0 mt-1">

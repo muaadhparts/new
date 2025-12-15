@@ -88,7 +88,7 @@
                                 <div class="shipping-feed-back">
                                     <div class="star-rating">
                                         <div class="rating-wrap">
-                                            <p><i class="fas fa-star"></i><span> {{ number_format($product->ratings_avg_rating, 1) }}
+                                            <p><i class="fas fa-star"></i><span> {{ number_format($product->ratings_avg_rating ?? 0, 1) }}
                                                     ({{ $product->ratings_count }})</span></p>
                                         </div>
                                     </div>
@@ -182,7 +182,7 @@
                                 <div class="shipping-feed-back">
                                     <div class="star-rating">
                                         <div class="rating-wrap">
-                                            <p><i class="fas fa-star"></i><span> {{ number_format($product->ratings_avg_rating, 1) }}
+                                            <p><i class="fas fa-star"></i><span> {{ number_format($product->ratings_avg_rating ?? 0, 1) }}
                                                     ({{ $product->ratings_count }})</span></p>
                                         </div>
                                     </div>
@@ -277,7 +277,7 @@
                             <div class="shipping-feed-back">
                                 <div class="star-rating">
                                     <div class="rating-wrap">
-                                        <p><i class="fas fa-star"></i><span> {{ number_format($product->ratings_avg_rating, 1) }}
+                                        <p><i class="fas fa-star"></i><span> {{ number_format($product->ratings_avg_rating ?? 0, 1) }}
                                                 ({{ $product->ratings_count }})</span></p>
                                     </div>
                                 </div>

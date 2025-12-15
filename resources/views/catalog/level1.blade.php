@@ -73,7 +73,7 @@
                                 {{ $cat->formatted_code ?? $cat->full_code }}
                             </h6>
                             @if(!empty($cat->label))
-                                <p class="text-muted small mb-0 d-none d-md-block">{{ $cat->label }}</p>
+                                <p class="text-muted small mb-0">{{ $cat->label }}</p>
                             @endif
                         </div>
                     </div>

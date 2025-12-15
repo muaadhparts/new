@@ -81,7 +81,7 @@
           <div class="shipping-feed-back">
              <div class="star-rating">
                 <div class="rating-wrap">
-                   <p><i class="fas fa-star"></i><span> {{ number_format($prod->ratings_avg_rating,1) }} ({{ $prod->ratings_count }})</span></p>
+                   <p><i class="fas fa-star"></i><span> {{ number_format($prod->ratings_avg_rating ?? 0, 1) }} ({{ $prod->ratings_count ?? 0 }})</span></p>
                 </div>
              </div>
           </div>

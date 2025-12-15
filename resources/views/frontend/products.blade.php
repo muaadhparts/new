@@ -446,8 +446,8 @@
                                                             fill="#EEAE0B" />
                                                     </svg>
                                                     <span
-                                                        class="rating">{{ number_format($product->ratings_avg_rating, 1) }}
-                                                        ({{ $product->ratings_count }})
+                                                        class="rating">{{ number_format($product->ratings_avg_rating ?? 0, 1) }}
+                                                        ({{ $product->ratings_count ?? 0 }})
                                                     </span>
                                                 </div>
                                             </div>

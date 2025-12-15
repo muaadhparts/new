@@ -76,7 +76,7 @@
                             </h6>
                             @php($catLabel = app()->getLocale() === 'ar' ? ($cat->label_ar ?? '') : str_replace('-', ' ', $cat->slug ?? ''))
                             @if(!empty($catLabel))
-                                <p class="text-muted small mb-0 d-none d-md-block">{{ $catLabel }}</p>
+                                <p class="text-muted small mb-0">{{ $catLabel }}</p>
                             @endif
                         </div>
                     </div>

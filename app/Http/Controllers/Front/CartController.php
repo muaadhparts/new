@@ -1393,8 +1393,10 @@ class CartController extends FrontBaseController
         $size = (string) $request->input('size', '');
         $color = (string) $request->input('color', '');
         $values = (string) $request->input('values', '');
-        $keys = $request->input('keys', []);
-        if (is_string($keys)) $keys = $keys ? explode(',', $keys) : [];
+        $keys = $request->input('keys');
+        if (!is_array($keys)) {
+            $keys = (is_string($keys) && $keys !== '') ? explode(',', $keys) : [];
+        }
 
         $result = CartHelper::addItem((int)$mpId, $qty, $size, $color, $values, $keys);
 

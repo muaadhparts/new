@@ -96,7 +96,7 @@
                                         d="M12 0.5L14.6942 8.7918H23.4127L16.3593 13.9164L19.0534 22.2082L12 17.0836L4.94658 22.2082L7.64074 13.9164L0.587322 8.7918H9.30583L12 0.5Z"
                                         fill="#EEAE0B" />
                                 </svg>
-                                <span class="rating">{{ number_format($productt->ratings_avg_rating, 1) }}
+                                <span class="rating">{{ number_format($productt->ratings_avg_rating ?? 0, 1) }}
                                     ({{ App\Models\Rating::ratingCount($productt->id) }} @lang('Reviews'))</span>
                             </div>
 
