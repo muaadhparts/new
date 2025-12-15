@@ -447,7 +447,7 @@
         font-weight: 500;
     }
     .muaadh-selection-tag.primary {
-        background: var(--primary-color, #EE1243);
+        background: var(--theme-primary);
         color: #fff;
     }
     .muaadh-selection-tag.secondary {
@@ -483,7 +483,7 @@
         margin-bottom: 6px;
     }
     .muaadh-mobile-step-label i {
-        color: var(--primary-color, #EE1243);
+        color: var(--theme-primary);
         font-size: 14px;
     }
     .muaadh-mobile-select-input {
@@ -504,9 +504,9 @@
         background-position: left 12px center;
     }
     .muaadh-mobile-select-input:focus {
-        border-color: var(--primary-color, #EE1243);
+        border-color: var(--theme-primary);
         outline: none;
-        box-shadow: 0 0 0 3px rgba(238, 18, 67, 0.1);
+        box-shadow: 0 0 0 3px rgba(var(--theme-primary-rgb), 0.1);
     }
     .muaadh-mobile-go-btn {
         width: 100%;
@@ -514,7 +514,7 @@
         font-size: 15px;
         font-weight: 600;
         color: #fff;
-        background: var(--primary-color, #EE1243);
+        background: var(--theme-primary);
         border: none;
         border-radius: 8px;
         cursor: pointer;
@@ -526,7 +526,7 @@
         transition: all 0.2s ease;
     }
     .muaadh-mobile-go-btn:hover {
-        background: var(--primary-color-dark, #d10f3a);
+        background: var(--theme-primary-hover);
         transform: translateY(-1px);
     }
     .muaadh-mobile-go-btn:disabled {

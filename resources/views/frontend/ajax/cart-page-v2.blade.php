@@ -42,7 +42,7 @@
             </div>
             <h4>{{ __('Your cart is empty') }}</h4>
             <p class="text-muted">{{ __('Add some products to your cart and come back here') }}</p>
-            <a href="{{ route('front.index') }}" class="template-btn mt-3">
+            <a href="{{ route('front.index') }}" class="m-btn m-btn--primary mt-3">
                 <i class="fas fa-arrow-left me-2"></i>{{ __('Continue Shopping') }}
             </a>
         </div>
@@ -166,7 +166,7 @@
                                                     <div class="input-group muaadh-cart-qty-group">
                                                         {{-- زر النقص --}}
                                                         <button type="button"
-                                                                class="btn btn-outline-secondary btn-sm cart-v2-minus"
+                                                                class="m-btn m-btn--ghost m-btn--xs cart-v2-minus"
                                                                 data-cart-key="{{ $cartKey }}"
                                                                 data-dom-key="{{ $domKey }}"
                                                                 data-min-qty="{{ $item['minimum_qty'] ?? 1 }}">
@@ -182,7 +182,7 @@
 
                                                         {{-- زر الزيادة --}}
                                                         <button type="button"
-                                                                class="btn btn-outline-secondary btn-sm cart-v2-plus"
+                                                                class="m-btn m-btn--ghost m-btn--xs cart-v2-plus"
                                                                 data-cart-key="{{ $cartKey }}"
                                                                 data-dom-key="{{ $domKey }}"
                                                                 data-stock="{{ $item['stock'] ?? 0 }}"
@@ -220,7 +220,7 @@
                                             {{-- زر الحذف --}}
                                             <td class="align-middle text-center">
                                                 <button type="button"
-                                                        class="btn btn-sm btn-outline-danger cart-v2-remove"
+                                                        class="m-btn m-btn--outline-danger m-btn--xs cart-v2-remove"
                                                         data-cart-key="{{ $cartKey }}"
                                                         data-dom-key="{{ $domKey }}"
                                                         title="{{ __('Remove') }}">
@@ -288,12 +288,12 @@
                                     <div class="cart-summary-btn">
                                         {{-- زر Checkout لهذا التاجر فقط --}}
                                         @auth
-                                            <a href="{{ route('front.checkout.vendor', $vendorId) }}" class="template-btn muaadh-checkout-btn">
-                                                <i class="fas fa-shopping-cart"></i>@lang('Checkout This Vendor')
+                                            <a href="{{ route('front.checkout.vendor', $vendorId) }}" class="m-btn m-btn--primary m-btn--block">
+                                                <i class="fas fa-shopping-cart me-2"></i>@lang('Checkout This Vendor')
                                             </a>
                                         @else
-                                            <a href="{{ route('user.login', ['redirect' => 'cart']) }}" class="template-btn muaadh-checkout-btn">
-                                                <i class="fas fa-shopping-cart"></i>@lang('Checkout This Vendor')
+                                            <a href="{{ route('user.login', ['redirect' => 'cart']) }}" class="m-btn m-btn--primary m-btn--block">
+                                                <i class="fas fa-shopping-cart me-2"></i>@lang('Checkout This Vendor')
                                             </a>
                                         @endauth
 
@@ -538,7 +538,7 @@ $(document).ready(function() {
 }
 
 .cart-page-v2 .product-name:hover {
-    color: var(--primary-color) !important;
+    color: var(--theme-primary) !important;
 }
 
 .cart-page-v2 .cart-qty-wrapper .input-group {
@@ -560,7 +560,7 @@ $(document).ready(function() {
 }
 
 .cart-page-v2 .vendor-header {
-    border-left: 4px solid var(--primary-color, #007bff);
+    border-left: 4px solid var(--theme-primary);
 }
 
 @media (max-width: 768px) {

@@ -71,6 +71,8 @@
 	<link rel="stylesheet" href="{{ asset('assets/front/css/bootstrap.min.css') }}">
 	{{-- Main Theme File - Contains all styles --}}
 	<link rel="stylesheet" href="{{ asset('assets/front/css/style.css') }}?v={{ time() }}">
+	{{-- Design System - New components with m- prefix --}}
+	<link rel="stylesheet" href="{{ asset('assets/front/css/muaadh-system.css') }}?v={{ @filemtime(public_path('assets/front/css/muaadh-system.css')) }}">
 	{{-- Theme Colors - Generated from Admin Panel (MUST load LAST to override :root variables) --}}
 	<link rel="stylesheet" href="{{ asset('assets/front/css/theme-colors.css') }}?v={{ @filemtime(public_path('assets/front/css/theme-colors.css')) }}">
 

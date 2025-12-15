@@ -135,7 +135,7 @@
 }
 
 .product-name-component a:hover {
-    color: var(--primary-color);
+    color: var(--theme-primary);
 }
 
 .product-name-component small a {
@@ -144,7 +144,7 @@
 }
 
 .product-name-component small a:hover {
-    color: var(--primary-color);
+    color: var(--theme-primary);
     text-decoration: underline;
 }
 

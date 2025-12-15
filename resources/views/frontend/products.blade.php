@@ -24,8 +24,8 @@
             transition: all 0.2s ease;
         }
         .category-step-selector .form-select:focus {
-            border-color: var(--primary-color, #EE1243);
-            box-shadow: 0 0 0 2px rgba(238, 18, 67, 0.1);
+            border-color: var(--theme-primary);
+            box-shadow: 0 0 0 2px rgba(var(--theme-primary-rgb), 0.1);
             outline: none;
         }
         .category-step-selector .form-select:hover {

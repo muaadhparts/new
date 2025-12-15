@@ -38,6 +38,8 @@
     <link rel="stylesheet" href="{{ asset('assets/front') }}/css/datatables.min.css">
     <link rel="stylesheet" href="{{ asset('assets/front') }}/css/style.css?v={{ time() }}">
     <link href="{{ asset('assets/admin/css/jquery.tagit.css') }}" rel="stylesheet" />
+    {{-- Design System - New components with m- prefix --}}
+    <link rel="stylesheet" href="{{ asset('assets/front/css/muaadh-system.css') }}?v={{ filemtime(public_path('assets/front/css/muaadh-system.css')) }}">
     @if($langg && $langg->rtl == 1)
         <link rel="stylesheet" href="{{ asset('assets/front') }}/css/rtl.css">
     @endif

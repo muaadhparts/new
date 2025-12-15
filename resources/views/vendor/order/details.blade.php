@@ -49,7 +49,7 @@
                         </h5>
                         @if (@App\Models\DeliveryRider::where('vendor_id', auth()->id())->where('order_id', $order->id)->first()->status == 'delivered' && $order->vendororders()->where('status', 'completed')->count() == 0)
                             <a href="{{ route('vendor-order-status', ['id1' => $order->order_number, 'status' => 'completed']) }}"
-                                class="template-btn  sm-btn">@lang('Make Complete')</a>
+                                class="m-btn m-btn--success m-btn--sm">@lang('Make Complete')</a>
                         @endif
                     </div>
                     <ul class="info-list">
@@ -128,17 +128,12 @@
 
 
                         <li class="info-list-item">
-
+                                <span class="info-type">@lang('Payment Status')</span>
                                 @if ($order->payment_status == 'Pending')
-                                <span class="info-type">@lang('Payment Status')</span> <span class="template-btn danger-btn sm-btn">
-                                    @lang('Unpaid')
-                                </span>
+                                    <span class="m-badge m-badge--danger">@lang('Unpaid')</span>
                                 @else
-                                <span class="info-type">@lang('Payment Status')</span> <span class="template-btn green-btn sm-btn">
-                                    @lang('Paid')
-                                </span>
+                                    <span class="m-badge m-badge--paid">@lang('Paid')</span>
                                 @endif
-
                         </li>
 
                         @if (!empty($order->order_note))
@@ -151,7 +146,7 @@
 
                     </ul>
                     <a href="{{ route('vendor-order-invoice', $order->order_number) }}"
-                        class="template-btn black-btn lg-btn">@lang('View Invoice')</a>
+                        class="m-btn m-btn--secondary m-btn--lg">@lang('View Invoice')</a>
                 </div>
             </div>
             <!-- Billing Details Card  -->
@@ -348,7 +343,7 @@
                                     </span>
                                 </li>
                                 <li class="info-list-item">
-                                    <a href="{{ route('vendor.delivery.index') }}" class="template-btn sm-btn primary-btn">
+                                    <a href="{{ route('vendor.delivery.index') }}" class="m-btn m-btn--primary m-btn--sm">
                                         <i class="fas fa-shipping-fast"></i> @lang('Assign Shipping')
                                     </a>
                                 </li>
@@ -408,24 +403,18 @@
                                                 @endphp
 
                                                 @if ($order->dp == 1 && $order->payment_status == 'Completed')
-                                                    <span
-                                                        class="template-btn bg-success sm-btn">{{ __('Completed') }}</span>
+                                                    <span class="m-badge m-badge--completed">{{ __('Completed') }}</span>
                                                 @else
                                                     @if ($user->status == 'pending')
-                                                        <span
-                                                            class="template-btn bg-warning sm-btn">{{ ucwords($user->status) }}</span>
+                                                        <span class="m-badge m-badge--pending">{{ ucwords($user->status) }}</span>
                                                     @elseif($user->status == 'processing')
-                                                        <span
-                                                            class="template-btn bg-info sm-btn">{{ ucwords($user->status) }}</span>
+                                                        <span class="m-badge m-badge--processing">{{ ucwords($user->status) }}</span>
                                                     @elseif($user->status == 'on delivery')
-                                                        <span
-                                                            class="template-btn bg-info sm-btn">{{ ucwords($user->status) }}</span>
+                                                        <span class="m-badge m-badge--shipped">{{ ucwords($user->status) }}</span>
                                                     @elseif($user->status == 'completed')
-                                                        <span
-                                                            class="template-btn bg-success sm-btn">{{ ucwords($user->status) }}</span>
+                                                        <span class="m-badge m-badge--completed">{{ ucwords($user->status) }}</span>
                                                     @elseif($user->status == 'declined')
-                                                        <span
-                                                            class="template-btn bg-danger sm-btn">{{ ucwords($user->status) }}</span>
+                                                        <span class="m-badge m-badge--cancelled">{{ ucwords($user->status) }}</span>
                                                     @endif
                                                 @endif
                                             @endif
@@ -461,9 +450,9 @@
                                         @if ($product['license'] != '')
                                             <a href="javascript:;" data-bs-toggle="modal"
                                                 data-bs-target="#confirm-delete"
-                                                class="btn btn-info product-btn" id="license"
-                                                style="padding: 5px 12px;"><i class="fa fa-eye"></i>
-                                                {{ __('View License') }}</a>
+                                                class="m-btn m-btn--info m-btn--xs" id="license">
+                                                <i class="fa fa-eye"></i> {{ __('View License') }}
+                                            </a>
                                         @endif
 
 

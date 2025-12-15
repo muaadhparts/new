@@ -254,7 +254,7 @@
 
                                                 {{-- Remove Button --}}
                                                 <td>
-                                                    <a class="cart-remove-btn btn btn-sm btn-outline-danger"
+                                                    <a class="cart-remove-btn m-btn m-btn--outline-danger m-btn--xs"
                                                        data-class="cremove{{ $domKey }}"
                                                        href="{{ route('product.cart.remove', $row) }}"
                                                        title="@lang('Remove')">
@@ -351,12 +351,12 @@
                                     <div class="cart-summary-btn">
                                         {{-- زر Checkout لهذا التاجر فقط --}}
                                         @auth
-                                            <a href="{{ route('front.checkout.vendor', $vendorId) }}" class="template-btn muaadh-checkout-btn">
-                                                <i class="fas fa-shopping-cart"></i>@lang('Checkout This Vendor')
+                                            <a href="{{ route('front.checkout.vendor', $vendorId) }}" class="m-btn m-btn--primary m-btn--block">
+                                                <i class="fas fa-shopping-cart me-2"></i>@lang('Checkout This Vendor')
                                             </a>
                                         @else
-                                            <a href="{{ route('user.login', ['redirect' => 'cart']) }}" class="template-btn muaadh-checkout-btn">
-                                                <i class="fas fa-shopping-cart"></i>@lang('Checkout This Vendor')
+                                            <a href="{{ route('user.login', ['redirect' => 'cart']) }}" class="m-btn m-btn--primary m-btn--block">
+                                                <i class="fas fa-shopping-cart me-2"></i>@lang('Checkout This Vendor')
                                             </a>
                                         @endauth
 
@@ -377,7 +377,7 @@
                         <i class="fas fa-shopping-cart fa-4x text-muted mb-3"></i>
                         <h4>@lang('Your cart is empty')</h4>
                         <p class="text-muted">@lang('Add some products to your cart')</p>
-                        <a href="{{ route('front.categories') }}" class="btn btn-primary mt-3">
+                        <a href="{{ route('front.categories') }}" class="m-btn m-btn--primary mt-3">
                             @lang('Start Shopping')
                         </a>
                     </div>
