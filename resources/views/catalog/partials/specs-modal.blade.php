@@ -12,6 +12,8 @@
     $catalogCode = $catalog->code ?? '';
     $catalogName = $catalog->name ?? $catalog->shortName ?? $catalogCode;
     $catalogYears = formatYearRange($catalog->beginYear ?? null, $catalog->endYear ?? null);
+    // Optional redirect URL after applying filters (for illustrations page)
+    $specsRedirectUrl = $specsRedirectUrl ?? null;
 @endphp
 
 {{-- Specifications Button --}}
@@ -186,6 +188,20 @@ document.addEventListener('DOMContentLoaded', function() {
     const btnApply = document.getElementById('btnApplySpecs');
     const btnClear = document.getElementById('btnClearSpecs');
     const offcanvasEl = document.getElementById('specsOffcanvas');
+    const redirectUrl = @json($specsRedirectUrl);
+
+    // Navigate after filter change
+    function navigateAfterChange() {
+        const offcanvas = bootstrap.Offcanvas.getInstance(offcanvasEl);
+        if (offcanvas) offcanvas.hide();
+        setTimeout(() => {
+            if (redirectUrl) {
+                window.location.href = redirectUrl;
+            } else {
+                window.location.reload();
+            }
+        }, 200);
+    }
 
     // Apply Filters
     if (btnApply) {
@@ -220,10 +236,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 const result = await response.json();
 
                 if (result.success) {
-                    // Close modal and reload page
-                    const offcanvas = bootstrap.Offcanvas.getInstance(offcanvasEl);
-                    if (offcanvas) offcanvas.hide();
-                    setTimeout(() => window.location.reload(), 200);
+                    navigateAfterChange();
                 } else {
                     alert(result.message || 'Error saving filters');
                     btnApply.disabled = false;
@@ -262,10 +275,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 const result = await response.json();
 
                 if (result.success) {
-                    // Close modal and reload page
-                    const offcanvas = bootstrap.Offcanvas.getInstance(offcanvasEl);
-                    if (offcanvas) offcanvas.hide();
-                    setTimeout(() => window.location.reload(), 200);
+                    navigateAfterChange();
                 } else {
                     alert(result.message || 'Error clearing filters');
                     btnClear.disabled = false;

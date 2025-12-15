@@ -81,6 +81,12 @@
                             @if(!empty($cat->Applicability))
                                 <p class="text-muted small mb-0 d-none d-md-block">{{ $cat->Applicability }}</p>
                             @endif
+                            @if(!empty($cat->debug_begin) || !empty($cat->debug_end))
+                                <p class="text-secondary small mb-0 mt-1">
+                                    <i class="fas fa-calendar-alt me-1"></i>
+                                    {{ $cat->debug_begin ?? '—' }} - {{ $cat->debug_end ?? '—' }}
+                                </p>
+                            @endif
                         </div>
                     </div>
                 </a>

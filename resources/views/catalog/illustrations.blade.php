@@ -53,13 +53,20 @@
     {{-- Search Box - Full Width on Mobile --}}
     <div class="row mb-4">
         <div class="col-12">
-            {{-- Specifications Button --}}
+            {{-- Specifications Button - Redirect to level3 after change --}}
             <div class="mb-3">
                 @include('catalog.partials.specs-modal', [
                     'catalog' => $catalog,
                     'filters' => $filters,
                     'selectedFilters' => $selectedFilters,
-                    'isVinMode' => $isVinMode
+                    'isVinMode' => $isVinMode,
+                    'specsRedirectUrl' => route('tree.level3', [
+                        'brand' => $brand->name,
+                        'catalog' => $catalog->code,
+                        'key1' => $parentCategory1->full_code ?? '',
+                        'key2' => $parentCategory2->full_code ?? '',
+                        'vin' => $vin
+                    ])
                 ])
             </div>
 
