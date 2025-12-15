@@ -228,10 +228,12 @@
             suggestionsDropdown.appendChild(item);
         });
         suggestionsDropdown.classList.remove('d-none');
+        suggestionsDropdown.parentElement.classList.add('suggestions-open');
     }
 
     function hideSuggestions() {
         suggestionsDropdown.classList.add('d-none');
+        suggestionsDropdown.parentElement.classList.remove('suggestions-open');
     }
 
     function showResultsModal(results) {

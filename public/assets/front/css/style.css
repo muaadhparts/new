@@ -3503,6 +3503,16 @@ p.text-lg {
   }
 }
 
+/* ===== Catalog Pages - Space after Breadcrumb on Mobile ===== */
+@media (max-width: 767.98px) {
+  .gs-breadcrumb-section.mb-4 + .container {
+    padding-top: 1rem;
+  }
+  .gs-breadcrumb-section.mb-4 + .container .mb-3:first-child {
+    margin-top: 0.5rem;
+  }
+}
+
 .gs-vendor-breadcrumb {
   display: flex;
   justify-content: space-between;
@@ -15403,18 +15413,28 @@ div[id*='zoom_container'] .landmarks .lable div {
 }
 
 /* Suggestions Dropdown */
+/* Search Input Container - Ensure suggestions appear above content */
+.vehicle-search-ajax-wrapper .position-relative {
+    z-index: 100;
+}
+
+.vehicle-search-ajax-wrapper .position-relative.suggestions-open,
+.vehicle-search-ajax-wrapper .position-relative:has(.vehicle-search-suggestions:not(.d-none)) {
+    z-index: 1060;
+}
+
 .vehicle-search-suggestions {
     position: absolute;
     top: 100%;
     left: 0;
     right: 0;
-    z-index: 1050;
-    max-height: 300px;
+    z-index: 9999;
+    max-height: 350px;
     overflow-y: auto;
     background: var(--muaadh-white);
     border: 1px solid var(--muaadh-border);
     border-radius: 0 0 var(--muaadh-radius) var(--muaadh-radius);
-    box-shadow: var(--muaadh-shadow-lg);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.25);
 }
 
 .vehicle-search-suggestion-item {
