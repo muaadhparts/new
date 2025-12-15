@@ -52,7 +52,7 @@
 </div>
 
 {{-- Search box (تقييد السيكشن الحالي) - AJAX Based --}}
-<div class="container mb-3">
+<div class="container mb-3 search-container-elevated">
     {{-- Specifications Button --}}
     <div class="mb-3">
         @include('catalog.partials.specs-modal', [

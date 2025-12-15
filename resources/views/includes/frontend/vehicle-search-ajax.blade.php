@@ -119,11 +119,25 @@
     const closeModalBtn = document.getElementById('closeResultsModal' + uniqueId);
     const closeResultsBtn = document.getElementById('closeResultsBtn' + uniqueId);
 
-    let searchType = 'number';
+    // Storage key for search type preference
+    const SEARCH_TYPE_KEY = 'vehicleSearchType';
+
+    // Get saved search type from localStorage or default to 'number'
+    let searchType = localStorage.getItem(SEARCH_TYPE_KEY) || 'number';
     let searchTimeout = null;
 
-    function setSearchType(type) {
+    function setSearchType(type, clearInput = false) {
+        // If changing type, clear the input
+        if (clearInput && searchType !== type) {
+            input.value = '';
+            hideSuggestions();
+        }
+
         searchType = type;
+
+        // Save to localStorage for persistence across pages
+        localStorage.setItem(SEARCH_TYPE_KEY, type);
+
         typeNumberBtn.classList.toggle('active', type === 'number');
         typeLabelBtn.classList.toggle('active', type === 'label');
         searchIcon.className = 'fas ' + (type === 'number' ? 'fa-hashtag' : 'fa-tag') + ' text-muted search-type-icon';
@@ -133,8 +147,12 @@
         hideError();
     }
 
-    typeNumberBtn.addEventListener('click', () => setSearchType('number'));
-    typeLabelBtn.addEventListener('click', () => setSearchType('label'));
+    // Initialize with saved search type (without clearing input)
+    setSearchType(searchType, false);
+
+    // Click handlers - clear input when switching types
+    typeNumberBtn.addEventListener('click', () => setSearchType('number', true));
+    typeLabelBtn.addEventListener('click', () => setSearchType('label', true));
 
     function doSearch() {
         const query = input.value.trim();

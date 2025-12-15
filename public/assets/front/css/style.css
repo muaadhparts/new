@@ -15414,6 +15414,11 @@ div[id*='zoom_container'] .landmarks .lable div {
 
 /* Suggestions Dropdown */
 /* Search Input Container - Ensure suggestions appear above content */
+.vehicle-search-ajax-wrapper {
+    position: relative;
+    z-index: 500;
+}
+
 .vehicle-search-ajax-wrapper .position-relative {
     z-index: 100;
 }
@@ -15421,6 +15426,13 @@ div[id*='zoom_container'] .landmarks .lable div {
 .vehicle-search-ajax-wrapper .position-relative.suggestions-open,
 .vehicle-search-ajax-wrapper .position-relative:has(.vehicle-search-suggestions:not(.d-none)) {
     z-index: 1060;
+}
+
+/* Ensure search container is above illustration image */
+.container:has(.vehicle-search-ajax-wrapper),
+.search-container-elevated {
+    position: relative;
+    z-index: 600;
 }
 
 .vehicle-search-suggestions {
