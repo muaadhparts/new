@@ -20,11 +20,11 @@
 
     {{-- Search Type Toggle --}}
     <div class="d-flex gap-2 mb-3">
-        <button type="button" class="btn btn-sm btn-outline-secondary search-type-btn active" data-type="number" id="typeNumber{{ $uniqueId }}">
+        <button type="button" class="m-btn m-btn--ghost m-btn--sm search-type-btn active" data-type="number" id="typeNumber{{ $uniqueId }}">
             <i class="fas fa-hashtag me-1"></i>
             <span class="d-none d-md-inline">{{ __('ui.part_number') }}</span>
         </button>
-        <button type="button" class="btn btn-sm btn-outline-secondary search-type-btn" data-type="label" id="typeLabel{{ $uniqueId }}">
+        <button type="button" class="m-btn m-btn--ghost m-btn--sm search-type-btn" data-type="label" id="typeLabel{{ $uniqueId }}">
             <i class="fas fa-tag me-1"></i>
             <span class="d-none d-md-inline">{{ __('ui.part_name') }}</span>
         </button>
@@ -44,7 +44,7 @@
                 autocomplete="off"
                 dir="ltr"
             >
-            <button class="btn btn-primary" type="button" id="vehicleSearchBtn{{ $uniqueId }}">
+            <button class="m-btn m-btn--primary" type="button" id="vehicleSearchBtn{{ $uniqueId }}">
                 <i class="fas fa-search search-icon"></i>
                 <span class="spinner-border spinner-border-sm d-none loading-spinner" role="status"></span>
                 <span class="d-none d-lg-inline ms-2">{{ __('ui.search') }}</span>

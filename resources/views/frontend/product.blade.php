@@ -327,12 +327,12 @@
                         <!-- add to cart buy btn wrapper -->
                         <div class="row row-cols-2">
                             <div class="col">
-                                <button type="button" class="template-btn w-100" id="addtodetailscart">
+                                <button type="button" class="m-btn m-btn--primary m-btn--block" id="addtodetailscart">
                                     @lang('add to cart')
                                 </button>
                             </div>
                             <div class="col">
-                                <button type="button" class="template-btn green-btn w-100"
+                                <button type="button" class="m-btn m-btn--success m-btn--block"
                                     id="addtobycard">@lang('buy now')</button>
                             </div>
                         </div>
@@ -529,7 +529,7 @@
                             <div class="action-btns-wrapper">
 
                                 @if (isset($merchant) && $merchant->user)
-                                    <a class="template-btn dark-outline"
+                                    <a class="m-btn m-btn--ghost"
                                         href="{{ route('front.vendor', str_replace(' ', '-', $merchant->user->shop_name)) }}">@lang('visit store')</a>
                                 @endif
 
@@ -539,18 +539,18 @@
 
                                     @if (Auth::check())
                                         @if (isset($merchant) && $merchant->user)
-                                            <a class="template-btn dark-outline" href="javascript:;"
+                                            <a class="m-btn m-btn--ghost" href="javascript:;"
                                                 data-bs-toggle="modal" data-bs-target="#vendorform">
                                                 <i class="icofont-ui-chat"></i>
                                                 {{ __('Contact Seller') }}
                                             </a>
                                         @else
-                                            <a class="template-btn dark-outline" href="javascript:;"
+                                            <a class="m-btn m-btn--ghost" href="javascript:;"
                                                 data-bs-toggle="modal"
                                                 data-bs-target="#sendMessage">@lang('contact seller')</a>
                                         @endif
                                     @else
-                                        <a class="template-btn dark-outline" href="{{ route('user.login') }}">
+                                        <a class="m-btn m-btn--ghost" href="{{ route('user.login') }}">
                                             <i class="icofont-ui-chat"></i>
                                             {{ __('Contact Seller') }}
                                         </a>
@@ -561,19 +561,19 @@
                                 @if (isset($merchant) && $merchant->user)
                                     @if (Auth::check())
                                         @if (Auth::user()->favorites()->where('vendor_id', '=', $merchant->user_id)->get()->count() > 0)
-                                            <a class="template-btn dark-outline" href="javascript:;" >
+                                            <a class="m-btn m-btn--ghost" href="javascript:;" >
                                                 <i class="fas fa-check"></i>
                                                 {{ __('Favorite') }}
                                             </a>
                                         @else
-                                            <a class="template-btn dark-outline favorite-prod" href="javascript:;"
+                                            <a class="m-btn m-btn--ghost favorite-prod" href="javascript:;"
                                                 data-href="{{ route('user-favorite', [Auth::user()->id, $merchant->user_id]) }}">
                                                 <i class="icofont-plus"></i>
                                                 {{ __('Add To Favorite Seller') }}
                                             </a>
                                         @endif
                                     @else
-                                        <a class="template-btn dark-outline" href="{{ route('user.login') }}">
+                                        <a class="m-btn m-btn--ghost" href="{{ route('user.login') }}">
                                             <i class="icofont-plus"></i>
                                             {{ __('Add To Favorite Seller') }}
                                         </a>
@@ -741,7 +741,7 @@
                                             </div>
                                             <div class="row">
                                                 <div class="col-lg-12">
-                                                    <button class="template-btn"
+                                                    <button class="m-btn m-btn--primary"
                                                         type="submit">{{ __('Submit') }}</button>
                                                 </div>
                                             </div>
@@ -875,7 +875,7 @@
                     </div>
 
                     <!-- Assign Rider Button  -->
-                    <button class="template-btn" data-bs-dismiss="modal" type="submit">{{ __('SUBMIT') }}</button>
+                    <button class="m-btn m-btn--primary" data-bs-dismiss="modal" type="submit">{{ __('SUBMIT') }}</button>
                     <!-- modal body end  -->
                 </div>
             </form>
@@ -923,7 +923,7 @@
                 <!-- Select Pickup Point -->
 
                 <!-- Assign Rider Button  -->
-                <button class="template-btn" data-bs-dismiss="modal" type="submit">@lang('Send Message')</button>
+                <button class="m-btn m-btn--primary" data-bs-dismiss="modal" type="submit">@lang('Send Message')</button>
                 <!-- modal body end  -->
             </div>
         </form>
@@ -957,7 +957,7 @@
                     </div>
                 </div>
 
-                <button class="template-btn" data-bs-dismiss="modal" type="submit">
+                <button class="m-btn m-btn--primary" data-bs-dismiss="modal" type="submit">
                     @lang('Send Message')
                 </button>
                 <!-- modal body end  -->

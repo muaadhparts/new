@@ -14856,17 +14856,18 @@ div[id*='zoom_container'] .landmarks .lable div {
     align-items: center;
     justify-content: center;
     padding: 15px 25px;
-    background: var(--muaadh-dark);
+    background: var(--theme-primary);
     border: none;
-    color: var(--muaadh-white);
+    color: var(--theme-btn-primary-text, #fff);
     font-weight: 600;
     font-size: 1rem;
     cursor: pointer;
-    transition: background 0.2s;
+    transition: var(--theme-transition-fast, all 0.2s ease);
 }
 
 .muaadh-search-btn:hover {
-    background: var(--muaadh-dark-light);
+    background: var(--theme-primary-hover);
+    color: var(--theme-btn-primary-text, #fff);
 }
 
 .muaadh-search-btn:disabled {

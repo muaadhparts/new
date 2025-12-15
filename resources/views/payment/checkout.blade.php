@@ -22,6 +22,8 @@
 		href="{{ asset('assets/front/css/styles.php?color=' . str_replace('#', '', $gs->colors) . '&header_color=' . $gs->header_color) }}">
 	<link rel="stylesheet" href="{{ asset('assets/front/css/bootstrap.min.css') }}">
 	<link rel="stylesheet" href="{{ asset('assets/front/css/style.css') }}">
+	<link rel="stylesheet" href="{{ asset('assets/front/css/muaadh-system.css') }}">
+	<link rel="stylesheet" href="{{ asset('assets/front/css/theme-colors.css') }}">
 	<link rel="stylesheet" href="{{ asset('assets/front/css/toastr.min.css') }}">
 	@if ($default_font->font_family)
 		<link rel="stylesheet" id="colorr"
@@ -159,7 +161,7 @@
 														value="{{ $order->pay_amount * $order->currency_value }}"
 														id="grandTotal">
 													<button type="submit" id="final-btn"
-														class="btn btn-primary">{{__('Checkout')}}</button>
+														class="m-btn m-btn--primary m-btn--lg">{{__('Checkout')}}</button>
 												</div>
 											</div>
 										</div>
