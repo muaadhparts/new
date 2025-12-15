@@ -48,20 +48,9 @@
         </div>
     </div>
 
-    @php
-        // Sort categories by numeric part of full_code
-        $sortedCategories = collect($categories)->sortBy(function($c) {
-            $code = is_array($c) ? ($c['full_code'] ?? '') : ($c->full_code ?? '');
-            if (preg_match('/\d+/', $code, $m)) {
-                return (int) $m[0];
-            }
-            return PHP_INT_MAX;
-        })->values();
-    @endphp
-
     {{-- Categories Grid - Responsive --}}
     <div class="row g-3 g-md-4 mb-5">
-        @forelse ($sortedCategories as $cat)
+        @forelse ($categories as $cat)
             <div class="col-6 col-sm-6 col-md-4 col-lg-3">
                 <a href="{{ route('tree.level3', [
                     'brand' => $brand->name,
@@ -71,7 +60,7 @@
                     'vin' => $vin
                 ]) }}" class="text-decoration-none">
                     <div class="card border-0 shadow-sm h-100 hover-lift transition">
-                        {{-- Image Container - Maintain Aspect Ratio --}}
+                        {{-- Image Container --}}
                         <div class="position-relative overflow-hidden rounded-top aspect-ratio-3-4">
                             <img class="position-absolute top-0 start-0 w-100 h-100 object-fit-cover"
                                  src="{{ ($cat->thumbnail ?? null) ? Storage::url($cat->thumbnail) : asset('assets/images/no-image.png') }}"
@@ -80,15 +69,14 @@
                                  onerror="this.onerror=null; this.src='{{ asset('assets/images/no-image.png') }}';">
                         </div>
 
-                        {{-- Card Body - Responsive Text --}}
+                        {{-- Card Body --}}
                         <div class="card-body p-2 p-md-3 text-center">
                             <h6 class="product-title text-dark fw-bold text-uppercase mb-1 fs-6 fs-md-5">
                                 {{ $cat->formatted_code ?? $cat->full_code }}
                             </h6>
-
-                            @php($catLabel = app()->getLocale() === 'ar' ? $cat->label_ar : str_replace('-', ' ', $cat->slug ?? ''))
+                            @php($catLabel = app()->getLocale() === 'ar' ? ($cat->label_ar ?? '') : str_replace('-', ' ', $cat->slug ?? ''))
                             @if(!empty($catLabel))
-                                <p class="text-muted small mb-0 d-none d-md-block text-uppercase">{{ $catLabel }}</p>
+                                <p class="text-muted small mb-0 d-none d-md-block">{{ $catLabel }}</p>
                             @endif
                         </div>
                     </div>

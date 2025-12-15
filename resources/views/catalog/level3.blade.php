@@ -52,59 +52,48 @@
     </div>
 
     {{-- Categories Grid - Responsive --}}
-    @if($categories && $categories->count() > 0)
-        <div class="row g-3 g-md-4 mb-5">
-            @foreach ($categories as $cat)
-                <div class="col-6 col-sm-6 col-md-4 col-lg-3">
-                    <a href="{{ route('illustrations', [
-                        'brand' => $brand->name,
-                        'catalog' => $catalog->code,
-                        'key1' => $parentCategory1->full_code,
-                        'key2' => $parentCategory2->full_code,
-                        'key3' => $cat->full_code,
-                        'vin' => $vin
-                    ]) }}" class="text-decoration-none">
-                        <div class="card border-0 shadow-sm h-100 hover-lift transition">
-                            {{-- Image Container - Maintain Aspect Ratio --}}
-                            <div class="position-relative overflow-hidden rounded-top aspect-ratio-3-4">
-                                <img class="position-absolute top-0 start-0 w-100 h-100 object-fit-cover"
-                                     src="{{ ($cat->thumbnail ?? null) ? Storage::url($cat->thumbnail) : asset('assets/images/no-image.png') }}"
-                                     alt="{{ $cat->full_code }}"
-                                     loading="lazy"
-                                     onerror="this.onerror=null; this.src='{{ asset('assets/images/no-image.png') }}';">
-                            </div>
-
-                            {{-- Card Body - Responsive Text --}}
-                            <div class="card-body p-2 p-md-3 text-center">
-                                <h6 class="product-title text-dark fw-bold text-uppercase mb-1 fs-6 fs-md-5">
-                                    {{ $cat->full_code }}
-                                </h6>
-                                @if(!empty($cat->Applicability))
-                                    <p class="text-muted small mb-0">{{ $cat->Applicability }}</p>
-                                @endif
-                                @if(!empty($cat->debug_begin) || !empty($cat->debug_end))
-                                    <p class="text-secondary small mb-0 mt-1">
-                                        <i class="fas fa-calendar-alt me-1"></i>
-                                        {{ $cat->debug_begin ?? '—' }} - {{ $cat->debug_end ?? '—' }}
-                                    </p>
-                                @endif
-                            </div>
+    <div class="row g-3 g-md-4 mb-5">
+        @forelse ($categories as $cat)
+            <div class="col-6 col-sm-6 col-md-4 col-lg-3">
+                <a href="{{ route('illustrations', [
+                    'brand' => $brand->name,
+                    'catalog' => $catalog->code,
+                    'key1' => $parentCategory1->full_code,
+                    'key2' => $parentCategory2->full_code,
+                    'key3' => $cat->full_code,
+                    'vin' => $vin
+                ]) }}" class="text-decoration-none">
+                    <div class="card border-0 shadow-sm h-100 hover-lift transition">
+                        {{-- Image Container --}}
+                        <div class="position-relative overflow-hidden rounded-top aspect-ratio-3-4">
+                            <img class="position-absolute top-0 start-0 w-100 h-100 object-fit-cover"
+                                 src="{{ ($cat->thumbnail ?? null) ? Storage::url($cat->thumbnail) : asset('assets/images/no-image.png') }}"
+                                 alt="{{ $cat->full_code }}"
+                                 loading="lazy"
+                                 onerror="this.onerror=null; this.src='{{ asset('assets/images/no-image.png') }}';">
                         </div>
-                    </a>
-                </div>
-            @endforeach
-        </div>
-    @else
-        <div class="row">
+
+                        {{-- Card Body --}}
+                        <div class="card-body p-2 p-md-3 text-center">
+                            <h6 class="product-title text-dark fw-bold text-uppercase mb-1 fs-6 fs-md-5">
+                                {{ $cat->full_code }}
+                            </h6>
+                            @if(!empty($cat->Applicability))
+                                <p class="text-muted small mb-0 d-none d-md-block">{{ $cat->Applicability }}</p>
+                            @endif
+                        </div>
+                    </div>
+                </a>
+            </div>
+        @empty
             <div class="col-12">
                 <div class="alert alert-info text-center">
                     <i class="fas fa-info-circle me-2"></i>
-                    <h5 class="mb-2">{{ __('No categories available') }}</h5>
-                    <p class="mb-0">{{ __('There are no categories in this level.') }}</p>
+                    {{ __('No categories available') }}
                 </div>
             </div>
-        </div>
-    @endif
+        @endforelse
+    </div>
 </div>
 
 {{-- Styles moved to MUAADH.css: .hover-lift, .object-fit-cover, .aspect-ratio-3-4 --}}
