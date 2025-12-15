@@ -1244,10 +1244,10 @@
 
     // console.log('🔍 Initializing smoothZoom with OLD settings...');
 
-    // ✅ إعدادات smoothZoom بالضبط كما في النسخة القديمة
+    // ✅ إعدادات smoothZoom محسّنة للتحريك في جميع الاتجاهات
     $img.smoothZoom({
-      width: 800,
-      height: 500,
+      width: '100%',
+      height: 600,
       responsive: true,
       container: 'zoom_container',
       responsive_maintain_ratio: true,
@@ -1257,15 +1257,24 @@
       animation_SMOOTHNESS: 3,
       animation_SPEED_ZOOM: 3,
       animation_SPEED_PAN: 3,
-      initial_POSITION: '200, 300',
-      zoom_MAX: 200,
+      initial_POSITION: '',
+      initial_ZOOM: '',
+      zoom_MIN: '',
+      zoom_MAX: 300,
+      zoom_OUT_TO_FIT: true,
+      pan_LIMIT_BOUNDARY: false,
+      pan_BUTTONS_SHOW: true,
+      pan_REVERSE: false,
+      touch_DRAG: true,
+      mouse_DRAG: true,
       button_SIZE: 20,
-      button_SIZE_TOUCH_DEVICE: 14,
-      button_AUTO_HIDE: 'YES',
+      button_SIZE_TOUCH_DEVICE: 18,
+      button_AUTO_HIDE: true,
       button_AUTO_HIDE_DELAY: 2,
       button_ALIGN: 'top right',
-      mouse_DOUBLE_CLICK: false,
+      mouse_DOUBLE_CLICK: true,
       mouse_WHEEL: true,
+      mouse_WHEEL_CURSOR_POS: true,
       use_3D_Transform: true,
       border_TRANSPARENCY: 0,
       on_IMAGE_LOAD: function() {
