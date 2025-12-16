@@ -14,7 +14,7 @@
             </div>
         </div>
     </section>
-    <section class="gs-cart-section load_cart">
+    <section class="gs-cart-section load_cart muaadh-section-gray">
         @include('frontend.ajax.cart-page')
     </section>
 @endsection

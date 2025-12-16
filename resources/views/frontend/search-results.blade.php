@@ -19,7 +19,7 @@
 </section>
 {{-- Breadcrumb End --}}
 
-<section class="muaadh-section py-4">
+<div class="muaadh-section muaadh-section-gray">
     <div class="container">
         {{-- Search Box --}}
         <div class="mb-4">
@@ -94,12 +94,10 @@
                         <!-- product list view start  -->
                         <div class="tab-pane fade show active" id="layout-list-pane" role="tabpanel" tabindex="0">
                             <div class="row gy-4 gy-lg-5">
-                                {{-- Main Products --}}
+                                {{-- Main Products - Pass MerchantProduct directly like category page --}}
                                 @foreach ($mainProducts as $item)
                                     @include('includes.frontend.list_view_product', [
-                                        'product'  => $item['product'],
-                                        'vendorId' => $item['merchant']->user_id,
-                                        'mp'       => $item['merchant'],
+                                        'product' => $item['merchant'],
                                     ])
                                 @endforeach
 
@@ -119,9 +117,7 @@
 
                                     @foreach ($alternativeProducts as $item)
                                         @include('includes.frontend.list_view_product', [
-                                            'product'  => $item['product'],
-                                            'vendorId' => $item['merchant']->user_id,
-                                            'mp'       => $item['merchant'],
+                                            'product' => $item['merchant'],
                                         ])
                                     @endforeach
                                 @endif
@@ -132,12 +128,11 @@
                         <!-- product grid view start  -->
                         <div class="tab-pane fade" id="layout-grid-pane" role="tabpanel" tabindex="0">
                             <div class="row gy-4">
-                                {{-- Main Products --}}
+                                {{-- Main Products - Pass MerchantProduct directly like category page --}}
                                 @foreach ($mainProducts as $item)
                                     @include('includes.frontend.home_product', [
-                                        'product'  => $item['product'],
-                                        'mp'       => $item['merchant'],
-                                        'class'    => 'col-6 col-md-4 col-lg-3',
+                                        'product' => $item['merchant'],
+                                        'class'   => 'col-6 col-md-4 col-lg-3',
                                     ])
                                 @endforeach
 
@@ -157,9 +152,8 @@
 
                                     @foreach ($alternativeProducts as $item)
                                         @include('includes.frontend.home_product', [
-                                            'product'  => $item['product'],
-                                            'mp'       => $item['merchant'],
-                                            'class'    => 'col-6 col-md-4 col-lg-3',
+                                            'product' => $item['merchant'],
+                                            'class'   => 'col-6 col-md-4 col-lg-3',
                                         ])
                                     @endforeach
                                 @endif
@@ -172,7 +166,7 @@
             </div>
         </div>
     </div>
-</section>
+</div>
 
 {{-- VIN Search Modal --}}
 <div class="modal fade" id="vinSearchModalResults" tabindex="-1" aria-hidden="true">

@@ -99,7 +99,7 @@
     <!-- breadcrumb end -->
 
     <!-- product wrapper start -->
-    <div class="gs-blog-wrapper">
+    <div class="muaadh-section muaadh-section-gray">
         <div class="container">
             <div class="row products-layout">
                 <div class="col-12 col-lg-4 col-xl-3 sidebar-column">

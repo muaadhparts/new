@@ -21,7 +21,7 @@
 
 
 
-    <div class="gs-success-invoice-section">
+    <div class="gs-success-invoice-section muaadh-section-gray">
         <div class="container">
             <div class="success-invoice-box">
                 <div class="success-invoice-header wow-replaced" data-wow-delay=".1s">

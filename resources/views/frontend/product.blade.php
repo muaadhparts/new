@@ -29,7 +29,7 @@
 
 
     <!-- single product details content wrapper start -->
-    <div class="single-product-details-content-wrapper">
+    <div class="single-product-details-content-wrapper muaadh-section-gray">
         <div class="container">
             <div class="row gy-4">
 

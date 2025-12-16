@@ -250,7 +250,7 @@
         </div>
     </section>
 
-    <div class="gs-compare-wrapper">
+    <div class="gs-compare-wrapper muaadh-section-gray">
         <div class="container">
             @if (isset($products) && count($products) > 0)
                 @php

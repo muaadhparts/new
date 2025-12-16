@@ -48,6 +48,7 @@ class SearchResultsController extends Controller
             $query = $product->merchantProducts()
                 ->where('status', 1)
                 ->with([
+                    'product' => fn($q) => $q->withCount('ratings')->withAvg('ratings', 'rating'),
                     'user:id,is_vendor,name,shop_name,email',
                     'qualityBrand:id,name_en,name_ar,logo'
                 ]);

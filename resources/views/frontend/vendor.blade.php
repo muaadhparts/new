@@ -17,7 +17,7 @@
     </section>
 
 
-    <div class="gs-blog-wrapper">
+    <div class="gs-blog-wrapper muaadh-section-gray">
         <div class="container">
             <div class="row flex-column-reverse flex-lg-row">
                 <div class="col-12 col-lg-4 col-xl-3 mt-40 mt-lg-0">

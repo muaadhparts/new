@@ -16,7 +16,7 @@
     </section>
 
 
-    <div class="gs-faq-section">
+    <div class="gs-faq-section muaadh-section-gray">
       <div class="container">
         <div class="faq-box">
           <div class="accordion hyp-accordians accordion-flush" id="faqlist">

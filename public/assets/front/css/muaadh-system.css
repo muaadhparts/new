@@ -1307,6 +1307,21 @@
 }
 
 /* ============================================================================
+   PAGE WRAPPER - Unified Background
+   ============================================================================ */
+.muaadh-page-wrapper {
+    min-height: 100vh;
+}
+
+.muaadh-page-wrapper .muaadh-section {
+    background: transparent;
+}
+
+.muaadh-page-wrapper .muaadh-hero {
+    background: transparent;
+}
+
+/* ============================================================================
    VIEW TOGGLE BUTTONS (List/Grid)
    ============================================================================ */
 .view-toggle-btns {
