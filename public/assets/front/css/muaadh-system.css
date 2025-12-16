@@ -1305,3 +1305,90 @@
         padding: 2px 6px;
     }
 }
+
+/* ============================================================================
+   VIEW TOGGLE BUTTONS (List/Grid)
+   ============================================================================ */
+.view-toggle-btns {
+    display: flex;
+    gap: 8px;
+}
+
+.view-toggle-btns .list-btn,
+.view-toggle-btns .grid-btn {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--border-color, #e5e7eb);
+    border-radius: 8px;
+    background: var(--surface-card, #fff);
+    color: var(--text-muted, #6b7280);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.view-toggle-btns .list-btn:hover,
+.view-toggle-btns .grid-btn:hover {
+    border-color: var(--action-primary, #7c3aed);
+    color: var(--action-primary, #7c3aed);
+}
+
+.view-toggle-btns .list-btn.active,
+.view-toggle-btns .grid-btn.active {
+    background: var(--action-primary, #7c3aed);
+    border-color: var(--action-primary, #7c3aed);
+    color: #fff;
+}
+
+.view-toggle-btns svg {
+    width: 18px;
+    height: 18px;
+}
+
+/* ============================================================================
+   SEARCH RESULTS HEADER
+   ============================================================================ */
+.muaadh-search-results-header {
+    padding: 16px;
+    background: var(--surface-card, #fff);
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.muaadh-search-results-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-primary, #1f2937);
+    margin: 0;
+}
+
+.muaadh-search-results-title i {
+    color: var(--action-primary, #7c3aed);
+    margin-inline-end: 8px;
+}
+
+.muaadh-search-results-count {
+    color: var(--action-primary, #7c3aed);
+    font-weight: 700;
+}
+
+.muaadh-search-results-query {
+    font-size: 0.9rem;
+    color: var(--text-muted, #6b7280);
+}
+
+/* Mobile adjustments */
+@media (max-width: 575.98px) {
+    .muaadh-search-results-header {
+        flex-direction: column;
+        gap: 12px;
+        align-items: flex-start !important;
+    }
+
+    .view-toggle-btns {
+        width: 100%;
+        justify-content: flex-end;
+    }
+}
