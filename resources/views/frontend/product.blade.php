@@ -803,16 +803,34 @@
 
 
     <!-- Related Products slider start -->
+    @php
+        // Get related products with stock > 0 through MerchantProduct
+        $relatedMerchantProducts = App\Models\MerchantProduct::where('status', 1)
+            ->where('stock', '>', 0)
+            ->whereHas('product', function($q) use ($productt) {
+                $q->where('status', 1)
+                  ->where('type', $productt->type)
+                  ->where('product_type', $productt->product_type)
+                  ->where('id', '!=', $productt->id);
+            })
+            ->whereHas('user', fn($u) => $u->where('is_vendor', 2))
+            ->with(['product' => fn($q) => $q->withCount('ratings')->withAvg('ratings', 'rating'), 'user', 'qualityBrand'])
+            ->inRandomOrder()
+            ->take(12)
+            ->get();
+    @endphp
+    @if($relatedMerchantProducts->count() > 0)
     <div class="gs-product-cards-slider-area wow-replaced" data-wow-delay=".1s">
         <div class="container">
             <h2 class="title text-center">@lang('Related Products')</h2>
             <div class="product-cards-slider">
-                @foreach (App\Models\Product::where('type', $productt->type)->where('product_type', $productt->product_type)->withCount('ratings')->withAvg('ratings', 'rating')->take(12)->get() as $product)
-                    @include('includes.frontend.home_product', ['class' => 'not'])
+                @foreach ($relatedMerchantProducts as $merchantProduct)
+                    @include('includes.frontend.home_product', ['class' => 'not', 'product' => $merchantProduct->product, 'mp' => $merchantProduct])
                 @endforeach
             </div>
         </div>
     </div>
+    @endif
     <!-- Related Products slider end -->
 
     <!-- More Products By Seller slider start -->
