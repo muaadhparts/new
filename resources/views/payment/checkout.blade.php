@@ -18,18 +18,15 @@
 		<link href="https://fonts.googleapis.com/css2?family=Jost:wght@100;200;300;400;500;600;700;800;900&display=swap"
 			rel="stylesheet">
 	@endif
-	<link rel="stylesheet"
-		href="{{ asset('assets/front/css/styles.php?color=' . str_replace('#', '', $gs->colors) . '&header_color=' . $gs->header_color) }}">
 	<link rel="stylesheet" href="{{ asset('assets/front/css/bootstrap.min.css') }}">
 	<link rel="stylesheet" href="{{ asset('assets/front/css/style.css') }}">
 	<link rel="stylesheet" href="{{ asset('assets/front/css/muaadh-system.css') }}">
 	<link rel="stylesheet" href="{{ asset('assets/front/css/theme-colors.css') }}">
 	<link rel="stylesheet" href="{{ asset('assets/front/css/toastr.min.css') }}">
-	@if ($default_font->font_family)
-		<link rel="stylesheet" id="colorr"
-			href="{{ asset('assets/front/css/font.php?font_familly=' . $default_font->font_family) }}">
+	@if ($default_font->font_family ?? false)
+		<style>body, * { font-family: '{{ $default_font->font_family }}', sans-serif; }</style>
 	@else
-		<link rel="stylesheet" id="colorr" href="{{ asset('assets/front/css/font.php?font_familly=' . " Open Sans") }}">
+		<style>body, * { font-family: 'Open Sans', sans-serif; }</style>
 	@endif
 </head>
 

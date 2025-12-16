@@ -108,6 +108,26 @@ class Product extends Model
         return $this->hasMany('App\Models\Gallery');
     }
 
+    /**
+     * Get galleries filtered by vendor user_id.
+     * Use this for vendor-specific gallery display.
+     *
+     * @param int|null $userId Vendor user ID
+     * @param int $limit Max number of galleries
+     * @return \Illuminate\Database\Eloquent\Collection
+     */
+    public function galleriesForVendor(?int $userId, int $limit = 3)
+    {
+        if (!$userId) {
+            return collect();
+        }
+
+        return Gallery::where('product_id', $this->id)
+            ->where('user_id', $userId)
+            ->take($limit)
+            ->get();
+    }
+
     public function ratings()
     {
         return $this->hasMany('App\Models\Rating');

@@ -36,6 +36,113 @@ body[dir="rtl"] {
     float: right;
 }
 
+/* Modern Product Card (m-product-card) RTL */
+[dir="rtl"] .m-product-card {
+    text-align: right;
+}
+
+[dir="rtl"] .m-product-card__content {
+    text-align: right;
+}
+
+[dir="rtl"] .m-product-card__price {
+    direction: rtl;
+}
+
+[dir="rtl"] .m-product-card__rating {
+    direction: rtl;
+}
+
+[dir="rtl"] .m-product-card__cart-btn {
+    direction: rtl;
+}
+
+/* Ensure product card images are visible in RTL */
+[dir="rtl"] .m-product-card__img {
+    display: block !important;
+}
+
+[dir="rtl"] .m-product-card__img:first-of-type,
+[dir="rtl"] .m-product-card__img.active {
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
+/* Product card image section RTL */
+[dir="rtl"] .m-product-card__image {
+    direction: ltr;
+}
+
+/* Badge positions for RTL */
+[dir="rtl"] .m-product-card__badge--discount {
+    left: auto;
+    right: 12px;
+}
+
+[dir="rtl"] .m-product-card__badge--stock {
+    left: auto;
+    right: 12px;
+}
+
+[dir="rtl"] .m-product-card__wishlist {
+    right: auto;
+    left: 12px;
+}
+
+[dir="rtl"] .m-product-card__actions {
+    right: auto;
+    left: 12px;
+}
+
+/* Slick Slider RTL Support */
+/* Slick handles RTL internally when rtl: true is set */
+/* Only override where needed for content display */
+
+/* CRITICAL: Ensure slick slides are visible in RTL */
+[dir="rtl"] .slick-slider {
+    direction: ltr; /* Slider container should be LTR for proper slide positioning */
+}
+
+[dir="rtl"] .slick-track {
+    direction: ltr;
+}
+
+[dir="rtl"] .slick-slide {
+    float: left; /* Ensure slides are positioned correctly */
+    direction: rtl; /* Content inside should be RTL */
+}
+
+/* Ensure content inside slides displays RTL */
+[dir="rtl"] .slick-slide .m-product-card {
+    direction: rtl;
+    text-align: right;
+}
+
+[dir="rtl"] .slick-slide .m-product-card__content {
+    direction: rtl;
+    text-align: right;
+}
+
+/* Ensure slick-initialized elements are visible */
+[dir="rtl"] .slick-initialized .slick-slide {
+    display: block;
+    visibility: visible;
+    opacity: 1;
+}
+
+/* Product info section RTL */
+[dir="rtl"] .single-product-details-content-wrapper .product-info-wrapper,
+[dir="rtl"] .single-product-details-content-wrapper .summary {
+    text-align: right;
+    direction: rtl;
+}
+
+/* Related Products section titles */
+[dir="rtl"] .gs-product-cards-slider-area .title {
+    direction: rtl;
+    text-align: center;
+}
+
 /* Buttons & Icons */
 [dir="rtl"] .btn i,
 [dir="rtl"] .button i {

@@ -224,6 +224,9 @@ $(document).ready(function () {
     }, 1000);
   }
 
+  // Detect RTL mode (used for all sliders)
+  var isRTL = $('html').attr('dir') === 'rtl' || $('body').attr('dir') === 'rtl';
+
   //****** 9. HERO SECTION SLIDER ******//
   if (typeof $.fn.slick !== 'undefined' && $(".hero-slider-wrapper").length > 0) {
     $(".hero-slider-wrapper").slick({
@@ -284,6 +287,7 @@ $(document).ready(function () {
   }
 
   //****** 11. PRODUCT DETAILS SLIDER ******//
+
   if (typeof $.fn.slick !== 'undefined' && $(".product-main-slider").length > 0) {
     $(".product-main-slider").slick({
       slidesToShow: 1,

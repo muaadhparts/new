@@ -75,10 +75,13 @@
                          loading="lazy">
                 @endif
 
-                {{-- Gallery Thumbnails --}}
-                @if(!empty($product->galleries) && count($product->galleries) > 0)
+                {{-- Gallery Thumbnails (vendor-specific) --}}
+                @php
+                    $vendorGalleries = $product->galleriesForVendor($vendorId, 4);
+                @endphp
+                @if($vendorGalleries->count() > 0)
                     <div class="catalog-quickview-gallery">
-                        @foreach($product->galleries->take(4) as $gallery)
+                        @foreach($vendorGalleries as $gallery)
                             @php
                                 $gUrl = filter_var($gallery->photo ?? '', FILTER_VALIDATE_URL)
                                     ? $gallery->photo

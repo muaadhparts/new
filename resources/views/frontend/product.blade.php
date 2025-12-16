@@ -7,10 +7,19 @@
         <div class="container">
             <div class="row justify-content-center content-wrapper">
                 <div class="col-12">
-                    <h2 class="breadcrumb-title">@lang('Product Details')</h2>
+                    <h2 class="breadcrumb-title">{{ $productt->localized_name }}</h2>
                     <ul class="bread-menu">
                         <li><a href="{{ route('front.index') }}">@lang('Home')</a></li>
-                        <li><a href="#">{{ $productt->localized_name }}</a></li>
+                        @if ($productt->category)
+                            <li><a href="{{ route('front.category', $productt->category->slug) }}">{{ $productt->category->localized_name }}</a></li>
+                        @endif
+                        @if ($productt->subcategory_id && $productt->subcategory)
+                            <li><a href="{{ route('front.category', [$productt->category->slug, $productt->subcategory->slug]) }}">{{ $productt->subcategory->localized_name }}</a></li>
+                        @endif
+                        @if ($productt->childcategory_id && $productt->childcategory)
+                            <li><a href="{{ route('front.category', [$productt->category->slug, $productt->subcategory->slug, $productt->childcategory->slug]) }}">{{ $productt->childcategory->localized_name }}</a></li>
+                        @endif
+                        <li><a href="javascript:;">{{ Str::limit($productt->localized_name, 30) }}</a></li>
                     </ul>
                 </div>
             </div>
@@ -23,38 +32,22 @@
     <div class="single-product-details-content-wrapper">
         <div class="container">
             <div class="row gy-4">
-                <div class="col-12">
-                    <!-- product-breadcrumb -->
-                    <ul class="product-breadcrumb">
-                        <li><a href="{{ route('front.index') }}">@lang('home')</a></li>
-                        <li><a
-                                href="{{ route('front.category', $productt->category->slug) }}">{{ $productt->category->localized_name }}</a>
-                        </li>
-                        @if ($productt->subcategory_id)
-          
-                            <li><a
-                                    href="{{ route('front.category', [$productt->category->slug, $productt->subcategory->slug]) }}">{{ $productt->subcategory->localized_name }}</a>
-                            </li>
-                        @endif
-                        @if ($productt->childcategory_id)
-             
-                            <li><a
-                                    href="{{ route('front.category', [$productt->category->slug, $productt->subcategory->slug, $productt->childcategory->slug]) }}">{{ $productt->childcategory->localized_name }}</a>
-                            </li>
-                        @endif
-                    </ul>
-                </div>
 
 
                 <!-- gs-product-details-gallery-wrapper -->
                 <div class="col-lg-6 wow-replaced" data-wow-delay=".1s">
                     <div class="gs-product-details-gallery-wrapper">
+                        @php
+                            // Get vendor-specific galleries
+                            $galleryVendorId = isset($merchantProduct) ? $merchantProduct->user_id : (isset($merchant) ? $merchant->user_id : null);
+                            $vendorGalleries = $productt->galleriesForVendor($galleryVendorId, 10);
+                        @endphp
                         <div class="product-main-slider">
                             <img src="{{ filter_var($productt->photo, FILTER_VALIDATE_URL) ? $productt->photo : ($productt->photo ? \Illuminate\Support\Facades\Storage::url($productt->photo) : asset('assets/images/noimage.png')) }}"
                                 alt="Thumb Image"
                                 data-zoom-image="{{ filter_var($productt->photo, FILTER_VALIDATE_URL) ? $productt->photo : ($productt->photo ? \Illuminate\Support\Facades\Storage::url($productt->photo) : asset('assets/images/noimage.png')) }}"
                                 class="main-img" alt="gallery-img">
-                            @foreach ($productt->galleries as $gal)
+                            @foreach ($vendorGalleries as $gal)
                                 <img src="{{ asset('assets/images/galleries/' . $gal->photo) }}"
                                     data-image="{{ asset('assets/images/galleries/' . $gal->photo) }}" class="main-img"
                                     alt="gallery-img">
@@ -66,7 +59,7 @@
                                 alt="Thumb Image"
                                 data-zoom-image="{{ filter_var($productt->photo, FILTER_VALIDATE_URL) ? $productt->photo : ($productt->photo ? \Illuminate\Support\Facades\Storage::url($productt->photo) : asset('assets/images/noimage.png')) }}"
                                 class="nav-img" alt="gallery-img">
-                            @foreach ($productt->galleries as $gal)
+                            @foreach ($vendorGalleries as $gal)
                                 <img src="{{ asset('assets/images/galleries/' . $gal->photo) }}"
                                     data-image="{{ asset('assets/images/galleries/' . $gal->photo) }}" class="nav-img"
                                     alt="gallery-img">
@@ -972,7 +965,8 @@
 @endsection
 
 @section('script')
-    <script src="{{ asset('assets/front/js/jquery.elevatezoom.js') }}"></script>
+    {{-- ElevateZoom from CDN --}}
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/elevatezoom/3.0.8/jquery.elevatezoom.min.js"></script>
 
     <!-- Initializing the slider -->
 
@@ -981,21 +975,26 @@
         (function($) {
             "use strict";
 
-            //initiate the plugin and pass the id of the div containing gallery images
-            $("#single-image-zoom").elevateZoom({
-                gallery: 'gallery_09',
-                zoomType: "inner",
-                cursor: "crosshair",
-                galleryActiveClass: 'active',
-                imageCrossfade: true,
-                loadingIcon: 'http://www.elevateweb.co.uk/spinner.gif'
-            });
-            //pass the images to Fancybox
-            $("#single-image-zoom").bind("click", function(e) {
-                var ez = $('#single-image-zoom').data('elevateZoom');
-                $.fancybox(ez.getGalleryList());
-                return false;
-            });
+            // Check if elevateZoom is available
+            if (typeof $.fn.elevateZoom !== 'undefined' && $("#single-image-zoom").length > 0) {
+                //initiate the plugin and pass the id of the div containing gallery images
+                $("#single-image-zoom").elevateZoom({
+                    gallery: 'gallery_09',
+                    zoomType: "inner",
+                    cursor: "crosshair",
+                    galleryActiveClass: 'active',
+                    imageCrossfade: true,
+                    loadingIcon: '{{ asset("assets/images/spinner.gif") }}'
+                });
+                //pass the images to Fancybox
+                $("#single-image-zoom").bind("click", function(e) {
+                    var ez = $('#single-image-zoom').data('elevateZoom');
+                    if (ez && typeof $.fancybox !== 'undefined') {
+                        $.fancybox(ez.getGalleryList());
+                    }
+                    return false;
+                });
+            }
 
             $(document).on("submit", "#emailreply", function() {
                 var token = $(this).find('input[name=_token]').val();

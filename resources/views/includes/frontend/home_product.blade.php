@@ -39,31 +39,39 @@
     $inStock = $stockQty > 0 || ($merchant && $merchant->preordered);
     $hasVendor = $merchant && $merchant->user_id > 0;
 
-    // Build images array (main photo + galleries)
+    // Build images array (main photo + vendor galleries)
     $images = [];
     $mainPhoto = $actualProduct->photo ?? null;
     $defaultImage = asset('assets/images/noimage.png');
+    $vendorUserId = $merchant ? $merchant->user_id : null;
 
-    // Add main photo first
+    // 1. Add main product photo first (product identity - always shown)
     if ($mainPhoto) {
         $images[] = filter_var($mainPhoto, FILTER_VALIDATE_URL)
             ? $mainPhoto
             : Storage::url($mainPhoto);
     }
 
-    // Add gallery images (limit to 4 total including main)
-    if ($actualProduct->relationLoaded('galleries')) {
-        $galleries = $actualProduct->galleries;
-    } else {
-        $galleries = $actualProduct->galleries()->take(3)->get();
-    }
+    // 2. Add vendor-specific gallery images (only if vendor context exists)
+    // DEBUG: Enable to see values
+    // dump(['vendorUserId' => $vendorUserId, 'productId' => $actualProduct->id ?? null]);
 
-    foreach ($galleries as $gallery) {
-        if (count($images) >= 4) break;
-        if ($gallery->photo) {
-            $images[] = filter_var($gallery->photo, FILTER_VALIDATE_URL)
-                ? $gallery->photo
-                : asset('assets/images/galleries/' . $gallery->photo);
+    if ($vendorUserId && $actualProduct && $actualProduct->id) {
+        $vendorGalleries = \App\Models\Gallery::where('product_id', $actualProduct->id)
+            ->where('user_id', $vendorUserId)
+            ->take(3)
+            ->get();
+
+        // DEBUG: Enable to see gallery count
+        // dump(['product_id' => $actualProduct->id, 'user_id' => $vendorUserId, 'galleries_found' => $vendorGalleries->count()]);
+
+        foreach ($vendorGalleries as $gallery) {
+            if (count($images) >= 4) break;
+            if ($gallery->photo) {
+                $images[] = filter_var($gallery->photo, FILTER_VALIDATE_URL)
+                    ? $gallery->photo
+                    : asset('assets/images/galleries/' . $gallery->photo);
+            }
         }
     }
 
@@ -105,6 +113,8 @@
                     <i class="far fa-heart"></i>
                 </a>
             @endauth
+
+            {{-- DEBUG: Product={{ $actualProduct->id ?? 'N/A' }}, Vendor={{ $vendorUserId ?? 'N/A' }}, Images={{ count($images) }} --}}
 
             {{-- Product Images Container --}}
             <a href="{{ $productUrl }}" class="m-product-card__image-link">

@@ -10,9 +10,14 @@
                                   <img  id="single-image-zoom" src="{{ filter_var($productt->photo, FILTER_VALIDATE_URL) ? $productt->photo : ($productt->photo ? \Illuminate\Support\Facades\Storage::url($productt->photo) : asset('assets/images/noimage.png')) }}" alt="Thumb Image" data-zoom-image="{{ filter_var($productt->photo, FILTER_VALIDATE_URL) ? $productt->photo : ($productt->photo ? \Illuminate\Support\Facades\Storage::url($productt->photo) : asset('assets/images/noimage.png')) }}" />
                               </div>
 
+                              @php
+                                  // Get vendor-specific galleries
+                                  $topGalleryVendorId = isset($merchant) ? $merchant->user_id : null;
+                                  $topVendorGalleries = $productt->galleriesForVendor($topGalleryVendorId, 10);
+                              @endphp
                               <div id="gallery_09" class="product-slide-thumb">
                                   <div class="owl-carousel four-carousel dot-disable nav-arrow-middle owl-mx-5">
-                                  @foreach($productt->galleries as $gal)
+                                  @foreach($topVendorGalleries as $gal)
                                       <div class="item">
                                           <a class="active" href="{{asset('assets/images/galleries/'.$gal->photo)}}" data-image="{{asset('assets/images/galleries/'.$gal->photo)}}" data-zoom-image="{{asset('assets/images/galleries/'.$gal->photo)}}">
                                               <img src="{{asset('assets/images/galleries/'.$gal->photo)}}" alt="Thumb Image" />

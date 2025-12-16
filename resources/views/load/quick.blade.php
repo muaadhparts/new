@@ -14,7 +14,12 @@
                         <img class="xzoom-gallery5" width="80" src="{{ $product->photo ? \Illuminate\Support\Facades\Storage::url($product->photo) : asset('assets/images/noimage.png') }}">
                       </a>
 
-                      @foreach($product->galleries as $gal)
+                      @php
+                        // Get vendor-specific galleries
+                        $quickVendorId = request()->get('user', $product->user_id);
+                        $vendorGalleries = $product->galleriesForVendor($quickVendorId, 4);
+                      @endphp
+                      @foreach($vendorGalleries as $gal)
 
                       <a href="{{asset('assets/images/galleries/'.$gal->photo)}}">
                         <img class="xzoom-gallery5" width="80" src="{{asset('assets/images/galleries/'.$gal->photo)}}" >
