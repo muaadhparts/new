@@ -1,7 +1,7 @@
 @extends('layouts.front')
 
 @section('content')
-<div class="gs-myshipments-page py-5">
+<div class="gs-myshipments-page py-5 muaadh-section-gray">
     <div class="container">
         <div class="row">
             <div class="col-12">

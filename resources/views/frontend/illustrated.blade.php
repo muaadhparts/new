@@ -2,6 +2,7 @@
 @extends('layouts.front')
 
 @section('content')
+    <div class="muaadh-section-gray">
     <div class="container m-md-2">
         <div class="row bg-white panel-body">
             <div class="col-md-6 content mt-auto mb-auto">
@@ -201,6 +202,7 @@
             </div>
         </div>
         {{-- </template> --}}
+    </div>
     </div>
 @endsection
 

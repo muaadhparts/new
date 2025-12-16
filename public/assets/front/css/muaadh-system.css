@@ -1307,18 +1307,143 @@
 }
 
 /* ============================================================================
-   PAGE WRAPPER - Unified Background
+   PAGE BACKGROUND SYSTEM - FINAL CONVENTION
+   ============================================================================
+
+   HIERARCHY (from outermost to innermost):
+   ┌─────────────────────────────────────────────────────────────────────────────┐
+   │  Level 1: PAGE WRAPPER (.m-page)                                            │
+   │  ├── Full page background color                                             │
+   │  │                                                                          │
+   │  │  Level 2: SECTIONS (.m-page__section)                                    │
+   │  │  ├── Transparent by default (inherits from page)                         │
+   │  │  │                                                                       │
+   │  │  │  Level 3: CARDS/CONTENT (.m-card, .m-content-box)                     │
+   │  │  │  └── White/elevated backgrounds for content areas                     │
+   │  └──┴───────────────────────────────────────────────────────────────────────┘
+
+   USAGE:
+   ┌─────────────────────────────────────────────────────────────────────────────┐
+   │  <div class="m-page m-page--gray">        ← Gray background page            │
+   │      <section class="m-page__section">   ← Transparent section              │
+   │          <div class="container">                                            │
+   │              <div class="m-card">         ← White card                       │
+   │              </div>                                                         │
+   │          </div>                                                             │
+   │      </section>                                                             │
+   │  </div>                                                                     │
+   └─────────────────────────────────────────────────────────────────────────────┘
+
+   VARIANTS:
+   - .m-page--gray     → Gray background (default for most pages)
+   - .m-page--white    → White background (for special pages)
+   - .m-page--gradient → Gradient background (for landing pages)
+
+   LEGACY SUPPORT:
+   - .muaadh-page-wrapper .muaadh-section-gray → Maps to new system
+   - .muaadh-section-gray → Still works on individual elements
+
    ============================================================================ */
+
+/* ----- Level 1: Page Wrapper ----- */
+.m-page {
+    min-height: 100vh;
+    padding-top: 1px; /* Prevent margin collapse */
+    padding-bottom: 1px;
+}
+
+/* Page Background Variants */
+.m-page--gray {
+    background-color: var(--surface-sunken, var(--theme-bg-light, #f3f4f6));
+}
+
+.m-page--white {
+    background-color: var(--surface-page, var(--theme-bg-body, #ffffff));
+}
+
+.m-page--gradient {
+    background: linear-gradient(180deg,
+        var(--surface-sunken, #f3f4f6) 0%,
+        var(--surface-page, #ffffff) 100%);
+}
+
+/* ----- Level 2: Page Sections ----- */
+.m-page__section {
+    padding: 40px 0;
+    background: transparent; /* Inherits from page */
+}
+
+.m-page__section--compact {
+    padding: 24px 0;
+}
+
+.m-page__section--spacious {
+    padding: 60px 0;
+}
+
+/* First section after breadcrumb - reduce top padding */
+.m-page__section:first-child,
+.m-page__section--no-top {
+    padding-top: 24px;
+}
+
+/* ----- Level 3: Content Boxes ----- */
+.m-content-box {
+    background: var(--surface-card, #ffffff);
+    border-radius: var(--radius-lg, 12px);
+    box-shadow: var(--shadow-sm, 0 1px 3px rgba(0, 0, 0, 0.1));
+    padding: var(--space-6, 24px);
+}
+
+.m-content-box--flat {
+    box-shadow: none;
+    border: 1px solid var(--border-light, #e5e7eb);
+}
+
+/* ----- LEGACY COMPATIBILITY (Backward Support) ----- */
+/* These classes still work but prefer m-page system for new code */
+
 .muaadh-page-wrapper {
     min-height: 100vh;
 }
 
-.muaadh-page-wrapper .muaadh-section {
+.muaadh-page-wrapper.muaadh-section-gray,
+.muaadh-section-gray {
+    background-color: var(--surface-sunken, var(--theme-bg-light, #f3f4f6));
+}
+
+/* Make nested sections transparent when inside page wrapper */
+.muaadh-page-wrapper .muaadh-section,
+.muaadh-page-wrapper .muaadh-hero,
+.m-page .muaadh-section,
+.m-page .muaadh-hero {
     background: transparent;
 }
 
-.muaadh-page-wrapper .muaadh-hero {
-    background: transparent;
+/* Legacy section styling */
+.muaadh-section {
+    padding: 50px 0;
+}
+
+/* ----- Utility Classes ----- */
+.m-bg-page {
+    background-color: var(--surface-page, #ffffff) !important;
+}
+
+.m-bg-gray {
+    background-color: var(--surface-sunken, #f3f4f6) !important;
+}
+
+.m-bg-card {
+    background-color: var(--surface-card, #ffffff) !important;
+}
+
+.m-bg-elevated {
+    background-color: var(--surface-elevated, #f9fafb) !important;
+}
+
+.m-bg-transparent {
+    background-color: transparent !important;
 }
 
 /* ============================================================================

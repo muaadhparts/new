@@ -16,7 +16,7 @@
         </div>
     </section>
 
-    <div class="gs-checkout-wrapper">
+    <div class="gs-checkout-wrapper muaadh-section-gray">
         <div class="container">
             <div class="row justify-content-center">
                 <div class="col-lg-6 wow-replaced" data-wow-delay=".1s">

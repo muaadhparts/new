@@ -1,7 +1,7 @@
 @extends('layouts.front')
 
 @section('content')
-<div class="gs-tracking-page py-5">
+<div class="gs-tracking-page py-5 muaadh-section-gray">
     <div class="container">
         <!-- Search Box -->
         <div class="row justify-content-center mb-5">
