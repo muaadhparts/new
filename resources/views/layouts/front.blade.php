@@ -117,6 +117,8 @@
     <script src="{{ asset('assets/front/js/toastr.min.js') }}"></script>
     <script src="{{ asset('assets/front/js/script.js') }}?v={{ time() }}"></script>
     <script src="{{ asset('assets/front/js/myscript.js') }}?v={{ time() }}"></script>
+    {{-- Unified Cart System --}}
+    <script src="{{ asset('assets/front/js/cart-unified.js') }}?v={{ time() }}"></script>
     <script src="{{ asset('assets/front/js/jquery.magnific-popup.js') }}"></script>
 
     {{-- Magnific Popup Init --}}

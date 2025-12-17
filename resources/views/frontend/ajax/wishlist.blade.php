@@ -1,43 +1,50 @@
 <tbody class="wishlist-items-wrapper">
     @foreach($wishlists as $wishlist)
     @php
-        $wishlistMerchant = $wishlist->merchantProducts()
-            ->where('status', 1)
-            ->whereHas('user', function ($user) {
-                $user->where('is_vendor', 2);
-            })
-            ->orderByRaw('CASE WHEN (stock IS NULL OR stock = 0) THEN 1 ELSE 0 END ASC')
-            ->orderBy('price')
-            ->first();
+        // Use effective_merchant_product from controller, or fetch from product
+        $wishlistMerchant = $wishlist->effective_merchant_product
+            ?? ($wishlist->product ? $wishlist->product->merchantProducts()
+                ->where('status', 1)
+                ->whereHas('user', function ($user) {
+                    $user->where('is_vendor', 2);
+                })
+                ->orderByRaw('CASE WHEN (stock IS NULL OR stock = 0) THEN 1 ELSE 0 END ASC')
+                ->orderBy('price')
+                ->first() : null);
 
-        $wishlistProductUrl = $wishlistMerchant && $wishlist->slug
-            ? route('front.product', ['slug' => $wishlist->slug, 'vendor_id' => $wishlistMerchant->user_id, 'merchant_product_id' => $wishlistMerchant->id])
-            : ($wishlist->slug ? route('front.product.legacy', $wishlist->slug) : '#');
+        $productSlug = $wishlist->product->slug ?? $wishlist->slug ?? null;
+        $wishlistProductUrl = $wishlistMerchant && $productSlug
+            ? route('front.product', ['slug' => $productSlug, 'vendor_id' => $wishlistMerchant->user_id, 'merchant_product_id' => $wishlistMerchant->id])
+            : ($productSlug ? route('front.product.legacy', $productSlug) : '#');
     @endphp
 
-    <tr id="yith-wcwl-row-103" data-row-id="103">
+    @php
+        $wishlistProduct = $wishlist->product;
+    @endphp
+    @if($wishlistProduct)
+    <tr id="yith-wcwl-row-{{ $wishlist->id }}" data-row-id="{{ $wishlist->id }}">
         <td class="product-remove">
             <div>
-                <a href="{{ route('user-wishlist-remove', App\Models\Wishlist::where('user_id','=',$user->id)->where('product_id','=',$wishlist->id)->first()->id ) }}" class="remove wishlist-remove remove_from_wishlist" title="Remove this product">×</a>
+                <a href="{{ route('user-wishlist-remove', $wishlist->id) }}" class="remove wishlist-remove remove_from_wishlist" title="Remove this product">×</a>
             </div>
         </td>
         <td class="product-thumbnail">
-            <a href="{{ $wishlistProductUrl }}"> <img src="{{ $wishlist->photo ? \Illuminate\Support\Facades\Storage::url($wishlist->photo) : asset('assets/images/noimage.png') }}" alt=""> </a>
+            <a href="{{ $wishlistProductUrl }}"> <img src="{{ $wishlistProduct->photo ? \Illuminate\Support\Facades\Storage::url($wishlistProduct->photo) : asset('assets/images/noimage.png') }}" alt=""> </a>
         </td>
-        <td class="product-name"> <a href="{{ $wishlistProductUrl }}">{{  mb_strlen($wishlist->name,'UTF-8') > 35 ? mb_substr($wishlist->name,0,35,'UTF-8').'...' : $wishlist->name }}</a></td>
-        <td class="product-price"> <span class="woocommerce-Price-amount amount"><bdi><span class="woocommerce-Price-currencySymbol">{{ $wishlist->showPrice() }}  <small>
+        <td class="product-name"> <a href="{{ $wishlistProductUrl }}">{{ mb_strlen($wishlistProduct->name,'UTF-8') > 35 ? mb_substr($wishlistProduct->name,0,35,'UTF-8').'...' : $wishlistProduct->name }}</a></td>
+        <td class="product-price"> <span class="woocommerce-Price-amount amount"><bdi><span class="woocommerce-Price-currencySymbol">{{ $wishlistProduct->showPrice() }}  <small>
             <del>
-                {{ $wishlist->showPreviousPrice() }}
+                {{ $wishlistProduct->showPreviousPrice() }}
             </del>
         </small></bdi>
             </span>
         </td>
         <td class="product-stock-status">
-            @if($wishlist->type == 'Physical')
-            @if($wishlist->emptyStock())
-            <div class="stock-availability out-stock">{{ ('Out Of Stock') }}</div>
+            @if($wishlistProduct->type == 'Physical')
+            @if($wishlistProduct->emptyStock())
+            <div class="stock-availability out-stock">{{ __('Out Of Stock') }}</div>
             @else
-            <div class="stock-availability in-stock text-bold">{{ ('In Stock') }}</div>
+            <div class="stock-availability in-stock text-bold">{{ __('In Stock') }}</div>
             @endif
             @endif
         </td>
@@ -46,11 +53,12 @@
             <button type="submit" id="addcrt" class="single_add_to_cart_button button alt single_add_to_cart_ajax_button">{{ __('Add to cart') }}</button>
             <!-- Remove from wishlist -->
         </td>
-    <input type="hidden" id="product_price" value="{{ round($wishlist->vendorPrice() * $curr->value,2) }}">
-    <input type="hidden" id="product_id" value="{{ $wishlist->id }}">
+    <input type="hidden" id="product_price" value="{{ round($wishlistProduct->vendorPrice() * $curr->value,2) }}">
+    <input type="hidden" id="product_id" value="{{ $wishlistProduct->id }}">
     <input type="hidden" id="curr_pos" value="{{ $gs->currency_format }}">
     <input type="hidden" id="curr_sign" value="{{ $curr->sign }}">
     </tr>
+    @endif
     @endforeach
 </tbody>
 

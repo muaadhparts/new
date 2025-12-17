@@ -1,12 +1,6 @@
 @php
-    $bestProdMerchant = $prod->merchantProducts()
-        ->where('status', 1)
-        ->whereHas('user', function ($user) {
-            $user->where('is_vendor', 2);
-        })
-        ->orderByRaw('CASE WHEN (stock IS NULL OR stock = 0) THEN 1 ELSE 0 END ASC')
-        ->orderBy('price')
-        ->first();
+    // Use eager-loaded accessor (avoids N+1 query)
+    $bestProdMerchant = $prod->best_merchant_product;
 
     $bestProdUrl = $bestProdMerchant && $prod->slug
         ? route('front.product', ['slug' => $prod->slug, 'vendor_id' => $bestProdMerchant->user_id, 'merchant_product_id' => $bestProdMerchant->id])

@@ -1237,31 +1237,8 @@ class CheckoutController extends FrontBaseController
         $oldCart = Session::get('cart');
         $cart = new Cart($oldCart);
 
-        // ✅ Ensure vendorId is integer for comparison
+        // Ensure vendorId is integer for comparison
         $vendorId = (int)$vendorId;
-
-        // ✅ DEBUG: Log cart structure
-        \Log::info('getVendorCartData: Starting', [
-            'vendor_id' => $vendorId,
-            'cart_exists' => !empty($oldCart),
-            'items_count' => $cart->items ? count($cart->items) : 0,
-            'first_item_keys' => $cart->items ? array_keys(array_slice($cart->items, 0, 1, true)) : []
-        ]);
-
-        if ($cart->items && count($cart->items) > 0) {
-            $firstItem = reset($cart->items);
-            $itemObj = data_get($firstItem, 'item');
-            \Log::info('getVendorCartData: First item structure', [
-                'item_user_id' => data_get($firstItem, 'item.user_id'),
-                'item_vendor_user_id' => data_get($firstItem, 'item.vendor_user_id'),
-                'user_id' => data_get($firstItem, 'user_id'),
-                'price' => data_get($firstItem, 'price'),
-                'item_is_object' => is_object($itemObj),
-                'item_is_array' => is_array($itemObj),
-                'item_type' => gettype($itemObj),
-                'item_keys' => is_array($itemObj) ? array_keys($itemObj) : (is_object($itemObj) ? get_object_vars($itemObj) : 'N/A')
-            ]);
-        }
 
         // Filter products for this vendor only
         $vendorProducts = [];
@@ -1286,16 +1263,6 @@ class CheckoutController extends FrontBaseController
             elseif (isset($product['item']) && is_object($product['item']) && isset($product['item']->vendor_user_id)) {
                 $productVendorId = (int)$product['item']->vendor_user_id;
             }
-
-            \Log::info('getVendorCartData: Checking item', [
-                'rowKey' => $rowKey,
-                'productVendorId' => $productVendorId,
-                'targetVendorId' => $vendorId,
-                'match' => $productVendorId === $vendorId,
-                'price' => $product['price'] ?? 0,
-                'has_direct_user_id' => isset($product['user_id']),
-                'direct_user_id_value' => $product['user_id'] ?? 'NOT_SET'
-            ]);
 
             if ($productVendorId === $vendorId) {
                 // إضافة بيانات الخصم والأبعاد باستخدام VendorCartService
@@ -1326,14 +1293,6 @@ class CheckoutController extends FrontBaseController
             $totalPrice += (float)($product['price'] ?? 0);
             $totalQty += (int)($product['qty'] ?? 1);
         }
-
-        // ✅ DEBUG: Log final results
-        \Log::info('getVendorCartData: FINAL RESULTS', [
-            'vendor_id' => $vendorId,
-            'vendorProducts_count' => count($vendorProducts),
-            'totalPrice' => $totalPrice,
-            'totalQty' => $totalQty
-        ]);
 
         // Check if all vendor products are digital
         $dp = 1;
@@ -1377,22 +1336,7 @@ class CheckoutController extends FrontBaseController
      */
     public function checkoutVendor($vendorId)
     {
-        // ====================================================================
-        // ✅ DIAGNOSTIC LOGGING: Track session and auth state at entry
-        // ====================================================================
-        \Log::info('checkoutVendor: ENTRY POINT', [
-            'vendor_id' => $vendorId,
-            'session_id' => Session::getId(),
-            'auth_check' => Auth::check(),
-            'user_id' => Auth::id(),
-            'has_cart' => Session::has('cart'),
-            'cart_items_count' => Session::has('cart') ? count(Session::get('cart')->items ?? []) : 0,
-            'checkout_vendor_id_in_session' => Session::get('checkout_vendor_id'),
-            'all_session_keys' => array_keys(Session::all())
-        ]);
-
         if (!Session::has('cart')) {
-            \Log::warning('checkoutVendor: No cart in session - redirecting', ['vendor_id' => $vendorId]);
             return redirect()->route('front.cart')->with('success', __("You don't have any product to checkout."));
         }
 
@@ -1410,10 +1354,6 @@ class CheckoutController extends FrontBaseController
                 'coupon_vendor_' . $previousVendorId,
                 'coupon_total_vendor_' . $previousVendorId,
             ]);
-            \Log::info('checkoutVendor: Cleared previous vendor data', [
-                'previous_vendor' => $previousVendorId,
-                'new_vendor' => $vendorId
-            ]);
         }
 
         // ====================================================================
@@ -1423,39 +1363,13 @@ class CheckoutController extends FrontBaseController
         Session::put('checkout_vendor_id', $vendorId);
         Session::save(); // Force save immediately
 
-        \Log::info('checkoutVendor: Saved checkout_vendor_id', [
-            'vendor_id' => $vendorId,
-            'session_id' => Session::getId(),
-            'verification' => Session::get('checkout_vendor_id')
-        ]);
-
         // Check if user is authenticated OR guest checkout is enabled
         if (!Auth::check() && $this->gs->guest_checkout != 1) {
-            // ✅ Session already saved above - vendor_id will persist through login redirect
-            \Log::warning('checkoutVendor: Not authenticated - Redirecting to login', [
-                'vendor_id' => $vendorId,
-                'session_id' => Session::getId(),
-                'guest_checkout_enabled' => $this->gs->guest_checkout
-            ]);
             return redirect()->route('user.login')->with('unsuccess', __('Please login to continue.'));
         }
 
-        // ====================================================================
-        // ✅ FIXED: Clean ONLY old steps for THIS vendor (not checkout_vendor_id)
-        // ====================================================================
-        // Remove only old step data for THIS vendor to allow form refresh
-        // Do NOT remove checkout_vendor_id - it must persist
+        // Clean old step data for THIS vendor to allow form refresh
         Session::forget(['vendor_step1_' . $vendorId, 'vendor_step2_' . $vendorId]);
-
-        \Log::info('checkoutVendor: Proceeding to checkout page', [
-            'vendor_id' => $vendorId,
-            'session_id' => Session::getId(),
-            'auth_check' => Auth::check(),
-            'user_id' => Auth::id(),
-            'user_email' => Auth::check() ? Auth::user()->email : null,
-            'checkout_vendor_id_verified' => Session::get('checkout_vendor_id') == $vendorId
-        ]);
-
 
         // Get vendor cart data using helper method (avoids code duplication)
         $cartData = $this->getVendorCartData($vendorId);
@@ -1464,15 +1378,6 @@ class CheckoutController extends FrontBaseController
         $totalQty = $cartData['totalQty'];
         $dp = $cartData['digital'];
         $vendorShippingData = $cartData['shipping_data'];
-
-        // ✅ DEBUG: Log cart data
-        \Log::info('checkoutVendor: Cart data loaded', [
-            'vendor_id' => $vendorId,
-            'products_count' => count($vendorProducts),
-            'total_price' => $totalPrice,
-            'total_qty' => $totalQty,
-            'digital' => $dp
-        ]);
 
         if (empty($vendorProducts)) {
             return redirect()->route('front.cart')->with('unsuccess', __("No products found for this vendor."));
@@ -1485,17 +1390,8 @@ class CheckoutController extends FrontBaseController
         $package_data = DB::table('packages')->where('user_id', $vendorId)->get();
         // No fallback to user 0 - if vendor has no packages, collection will be empty
 
-        // ========================================================================
-        // ✅ UNIFIED: productsTotal = RAW price (no coupon deduction)
-        // ========================================================================
-        $productsTotal = $totalPrice; // This is the RAW total from cart
-
-        // ✅ DEBUG: Log what we're sending to view
-        \Log::info('checkoutVendor: Sending to view', [
-            'vendor_id' => $vendorId,
-            'productsTotal' => $productsTotal,
-            'totalPrice' => $totalPrice
-        ]);
+        // productsTotal = RAW price (no coupon deduction)
+        $productsTotal = $totalPrice;
 
         $pickups = DB::table('pickups')->get();
         $curr = $this->curr;
@@ -1537,22 +1433,7 @@ class CheckoutController extends FrontBaseController
     {
         $step1 = $request->all();
 
-        // ✅ DEBUG: Log what's being submitted
-        \Log::info('checkoutVendorStep1: Form data received', [
-            'vendor_id' => $vendorId,
-            'customer_name' => $step1['customer_name'] ?? 'MISSING',
-            'customer_email' => $step1['customer_email'] ?? 'MISSING',
-            'customer_phone' => $step1['customer_phone'] ?? 'MISSING',
-            'customer_address' => $step1['customer_address'] ?? 'MISSING',
-            'customer_country' => $step1['customer_country'] ?? 'MISSING',
-            'customer_state' => $step1['customer_state'] ?? 'MISSING',
-            'customer_city' => $step1['customer_city'] ?? 'MISSING',
-            'city_id' => $step1['city_id'] ?? 'MISSING',
-            'country_id' => $step1['country_id'] ?? 'MISSING',
-            'state_id' => $step1['state_id'] ?? 'MISSING',
-        ]);
-
-        // ✅ BASE VALIDATION - Support both map selection (IDs) and legacy (names)
+        // BASE VALIDATION - Support both map selection (IDs) and legacy (names)
         $rules = [
             'customer_name' => 'required|string|max:255',
             'customer_email' => 'required|email|max:255',
@@ -1584,10 +1465,6 @@ class CheckoutController extends FrontBaseController
         ]);
 
         if ($validator->fails()) {
-            \Log::warning('checkoutVendorStep1: Validation failed', [
-                'vendor_id' => $vendorId,
-                'errors' => $validator->errors()->toArray()
-            ]);
             return back()->withErrors($validator->errors())->withInput();
         }
 
@@ -1629,16 +1506,10 @@ class CheckoutController extends FrontBaseController
             $user->is_provider = 0;
             $user->save();
 
-            // ✅ LOGIN THE USER IMMEDIATELY WITHOUT SESSION REGENERATION
+            // LOGIN THE USER IMMEDIATELY WITHOUT SESSION REGENERATION
             // Using 'false' as second parameter to prevent session regeneration
             // This prevents CSRF token mismatch during checkout
             Auth::login($user, true);
-
-            \Log::info('Checkout: Account created and logged in', [
-                'user_id' => $user->id,
-                'email' => $user->email,
-                'vendor_id' => $vendorId
-            ]);
         }
 
         // ====================================================================
@@ -1704,13 +1575,6 @@ class CheckoutController extends FrontBaseController
 
         $taxAmount = ($vendorSubtotal * $taxRate) / 100;
 
-        \Log::info('checkoutVendorStep1: Tax calculation', [
-            'vendorSubtotal' => $vendorSubtotal,
-            'taxRate' => $taxRate,
-            'taxAmount' => $taxAmount,
-            'taxLocation' => $taxLocation
-        ]);
-
         // ========================================================================
         // ✅ UNIFIED PRICE CALCULATION - DO NOT SUBTRACT COUPON HERE!
         // ========================================================================
@@ -1747,14 +1611,11 @@ class CheckoutController extends FrontBaseController
      */
     public function checkoutVendorStep2($vendorId)
     {
-
         if (!Session::has('vendor_step1_' . $vendorId)) {
-            \Log::warning('checkoutVendorStep2: Missing step1 data', ['vendor_id' => $vendorId]);
             return redirect()->route('front.checkout.vendor', $vendorId)->with('success', __("Please fill up step 1."));
         }
 
         if (!Session::has('cart')) {
-            \Log::warning('checkoutVendorStep2: Missing cart', ['vendor_id' => $vendorId]);
             return redirect()->route('front.cart')->with('success', __("You don't have any product to checkout."));
         }
 

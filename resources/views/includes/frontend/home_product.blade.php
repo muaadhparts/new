@@ -5,7 +5,7 @@
     // Check if $product is actually a MerchantProduct instance
     $isMerchantProduct = $product instanceof \App\Models\MerchantProduct;
 
-    // Determine merchant product
+    // Determine merchant product - USE EAGER LOADED DATA (avoids N+1)
     if ($isMerchantProduct) {
         $merchant = $product;
         $actualProduct = $product->product;
@@ -14,12 +14,8 @@
         $merchant = $mp ?? null;
 
         if (!$merchant) {
-            $merchant = $product->merchantProducts()
-                ->where('status', 1)
-                ->whereHas('user', fn($u) => $u->where('is_vendor', 2))
-                ->orderByRaw('CASE WHEN (stock IS NULL OR stock = 0) THEN 1 ELSE 0 END ASC')
-                ->orderBy('price')
-                ->first();
+            // Use the accessor which uses eager-loaded data
+            $merchant = $product->best_merchant_product;
         }
     }
 
@@ -52,28 +48,8 @@
             : Storage::url($mainPhoto);
     }
 
-    // 2. Add vendor-specific gallery images (only if vendor context exists)
-    // DEBUG: Enable to see values
-    // dump(['vendorUserId' => $vendorUserId, 'productId' => $actualProduct->id ?? null]);
-
-    if ($vendorUserId && $actualProduct && $actualProduct->id) {
-        $vendorGalleries = \App\Models\Gallery::where('product_id', $actualProduct->id)
-            ->where('user_id', $vendorUserId)
-            ->take(3)
-            ->get();
-
-        // DEBUG: Enable to see gallery count
-        // dump(['product_id' => $actualProduct->id, 'user_id' => $vendorUserId, 'galleries_found' => $vendorGalleries->count()]);
-
-        foreach ($vendorGalleries as $gallery) {
-            if (count($images) >= 4) break;
-            if ($gallery->photo) {
-                $images[] = filter_var($gallery->photo, FILTER_VALIDATE_URL)
-                    ? $gallery->photo
-                    : asset('assets/images/galleries/' . $gallery->photo);
-            }
-        }
-    }
+    // Gallery images disabled for performance (N+1 optimization)
+    // Use main product photo only for cards - gallery shown on product detail page
 
     // Ensure at least one image
     if (empty($images)) {
@@ -201,21 +177,18 @@
                 <span class="m-product-card__rating-count">({{ $actualProduct->ratings_count ?? 0 }})</span>
             </div>
 
-            {{-- Add to Cart --}}
+            {{-- Add to Cart - Uses Unified Cart System --}}
             @if ($actualProduct->type != 'Listing' && $actualProduct->product_type != 'affiliate')
-                @if ($inStock && $hasVendor)
-                    @php
-                        $addCartUrl = $merchant
-                            ? route('merchant.cart.add', $merchant->id) . '?user=' . $merchant->user_id
-                            : route('product.cart.add', $actualProduct->id);
-                        $qtyInputId = 'hp_' . ($merchant ? $merchant->id : $actualProduct->id);
-                    @endphp
+                @if ($inStock && $hasVendor && $merchant)
+                    {{-- UNIFIED: All data from $merchant (MerchantProduct) --}}
                     <button type="button"
-                        class="m-product-card__cart-btn add_cart_click hp-add-cart"
-                        data-href="{{ $addCartUrl }}"
-                        data-merchant-product="{{ $merchant->id ?? '' }}"
-                        data-qty-prefix="{{ $qtyInputId }}"
-                        data-cross-href="{{ route('front.show.cross.product', $actualProduct->id) }}">
+                        class="m-product-card__cart-btn m-cart-add"
+                        data-merchant-product-id="{{ $merchant->id }}"
+                        data-vendor-id="{{ $merchant->user_id }}"
+                        data-product-id="{{ $actualProduct->id }}"
+                        data-min-qty="{{ max(1, (int)($merchant->minimum_qty ?? 1)) }}"
+                        data-stock="{{ (int)($merchant->stock ?? 0) }}"
+                        data-preordered="{{ $merchant->preordered ? '1' : '0' }}">
                         <i class="fas fa-shopping-cart"></i>
                         <span>@lang('Add to Cart')</span>
                     </button>

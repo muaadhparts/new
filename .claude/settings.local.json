@@ -37,7 +37,9 @@
       "Bash(dir /b \"C:\\Users\\hp\\Herd\\new\\app\\Livewire\")",
       "Bash(dir /b \"C:\\Users\\hp\\Herd\\new\\.claude\")",
       "Bash(php artisan view:clear:*)",
-      "Bash(php -r:*)"
+      "Bash(php -r:*)",
+      "Bash(powershell -Command \"(Get-Content ''C:\\Users\\hp\\Herd\\new\\storage\\logs\\laravel.log'' | Measure-Object -Line).Lines\")",
+      "Bash(php artisan config:clear:*)"
     ],
     "deny": [],
     "ask": []

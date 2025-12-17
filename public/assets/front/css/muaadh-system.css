@@ -1532,3 +1532,278 @@
         justify-content: flex-end;
     }
 }
+
+/* ============================================================================
+   UNIFIED CART BUTTON COMPONENT
+   ============================================================================
+   Single source of truth for all cart add operations.
+   BEM naming: m-cart-button__{element}--{modifier}
+   ============================================================================ */
+
+.m-cart-button {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+/* ----- Labels ----- */
+.m-cart-button__label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-primary, #1f2937);
+    margin-bottom: 6px;
+}
+
+/* ----- Size Selector ----- */
+.m-cart-button__sizes {
+    margin-bottom: 8px;
+}
+
+.m-cart-button__size-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.m-cart-button__size {
+    min-width: 40px;
+    height: 36px;
+    padding: 0 12px;
+    border: 2px solid var(--border-color, #e5e7eb);
+    border-radius: 6px;
+    background: var(--surface-card, #fff);
+    color: var(--text-primary, #1f2937);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.m-cart-button__size:hover:not(.disabled) {
+    border-color: var(--action-primary, #7c3aed);
+    color: var(--action-primary, #7c3aed);
+}
+
+.m-cart-button__size.active {
+    background: var(--action-primary, #7c3aed);
+    border-color: var(--action-primary, #7c3aed);
+    color: #fff;
+}
+
+.m-cart-button__size.disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    text-decoration: line-through;
+}
+
+/* ----- Color Selector ----- */
+.m-cart-button__colors {
+    margin-bottom: 8px;
+}
+
+.m-cart-button__color-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.m-cart-button__color {
+    width: 32px;
+    height: 32px;
+    border: 2px solid var(--border-color, #e5e7eb);
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+}
+
+.m-cart-button__color:hover {
+    transform: scale(1.1);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.m-cart-button__color.active {
+    border-color: var(--action-primary, #7c3aed);
+    box-shadow: 0 0 0 2px var(--action-primary, #7c3aed);
+}
+
+.m-cart-button__color.active::after {
+    content: '\f00c';
+    font-family: 'Font Awesome 5 Free';
+    font-weight: 900;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: #fff;
+    font-size: 12px;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+/* ----- Quantity Selector ----- */
+.m-cart-button__qty {
+    margin-bottom: 8px;
+}
+
+.m-cart-button__qty-control {
+    display: inline-flex;
+    align-items: center;
+    border: 1px solid var(--border-color, #e5e7eb);
+    border-radius: 8px;
+    overflow: hidden;
+    background: var(--surface-card, #fff);
+}
+
+.m-cart-button__qty-btn {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--surface-secondary, #f3f4f6);
+    border: none;
+    color: var(--text-primary, #1f2937);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.m-cart-button__qty-btn:hover:not(:disabled) {
+    background: var(--action-primary, #7c3aed);
+    color: #fff;
+}
+
+.m-cart-button__qty-btn:disabled,
+.m-cart-button__qty-btn.disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.m-cart-button__qty-input {
+    width: 50px;
+    height: 36px;
+    text-align: center;
+    border: none;
+    background: transparent;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary, #1f2937);
+}
+
+.m-cart-button__qty-input:focus {
+    outline: none;
+}
+
+.m-cart-button__min-notice {
+    display: block;
+    font-size: 11px;
+    color: var(--text-muted, #6b7280);
+    margin-top: 4px;
+}
+
+/* ----- Add to Cart Button ----- */
+.m-cart-button__btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px 24px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    width: 100%;
+}
+
+.m-cart-button__add {
+    background: var(--action-primary, #7c3aed);
+    color: #fff;
+}
+
+.m-cart-button__add:hover {
+    background: var(--action-primary-hover, #6d28d9);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(124, 58, 237, 0.3);
+}
+
+.m-cart-button__add:active {
+    transform: translateY(0);
+}
+
+.m-cart-button__btn--disabled {
+    background: var(--surface-secondary, #f3f4f6);
+    color: var(--text-muted, #6b7280);
+    cursor: not-allowed;
+}
+
+/* ----- Loading State ----- */
+.m-cart-button__loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 12px;
+    color: var(--action-primary, #7c3aed);
+}
+
+/* ----- Compact Mode ----- */
+.m-cart-button[data-mode=compact] .m-cart-button__btn {
+    padding: 8px 16px;
+    font-size: 13px;
+}
+
+/* ----- Icon Only Mode ----- */
+.m-cart-button[data-mode=icon-only] .m-cart-button__btn {
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    border-radius: 50%;
+}
+
+/* ----- Inline Layout (for product cards) ----- */
+.m-cart-button--inline {
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+}
+
+.m-cart-button--inline .m-cart-button__qty {
+    margin-bottom: 0;
+}
+
+.m-cart-button--inline .m-cart-button__btn {
+    width: auto;
+    flex-shrink: 0;
+}
+
+/* ----- Mobile Responsive ----- */
+@media (max-width: 575.98px) {
+    .m-cart-button__qty-btn {
+        width: 32px;
+        height: 32px;
+    }
+
+    .m-cart-button__qty-input {
+        width: 40px;
+        height: 32px;
+    }
+
+    .m-cart-button__btn {
+        padding: 10px 16px;
+        font-size: 13px;
+    }
+
+    .m-cart-button__size {
+        min-width: 36px;
+        height: 32px;
+        padding: 0 10px;
+        font-size: 12px;
+    }
+}
+
+/* ----- RTL Support ----- */
+[dir=rtl] .m-cart-button__btn i {
+    margin-left: 8px;
+    margin-right: 0;
+}

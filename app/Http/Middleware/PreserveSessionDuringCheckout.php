@@ -25,35 +25,17 @@ class PreserveSessionDuringCheckout
      */
     public function handle(Request $request, Closure $next)
     {
-        // Log session state before request
+        // Capture state before request for monitoring
         $beforeSessionId = Session::getId();
         $beforeAuth = Auth::check();
         $beforeUserId = Auth::id();
 
-        Log::info('PreserveSession BEFORE', [
-            'url' => $request->fullUrl(),
-            'method' => $request->method(),
-            'session_id' => $beforeSessionId,
-            'auth_check' => $beforeAuth,
-            'user_id' => $beforeUserId,
-        ]);
-
         // Process request
         $response = $next($request);
 
-        // Log session state after request
+        // Check for critical issues only
         $afterSessionId = Session::getId();
         $afterAuth = Auth::check();
-        $afterUserId = Auth::id();
-
-        Log::info('PreserveSession AFTER', [
-            'url' => $request->fullUrl(),
-            'session_id' => $afterSessionId,
-            'auth_check' => $afterAuth,
-            'user_id' => $afterUserId,
-            'session_changed' => $beforeSessionId !== $afterSessionId,
-            'auth_changed' => $beforeAuth !== $afterAuth,
-        ]);
 
         // Warning if session ID changed unexpectedly
         if ($beforeSessionId !== $afterSessionId) {

@@ -52,7 +52,6 @@ class CouponController extends FrontBaseController
         // Find coupon
         $coupon = Coupon::where('code', $code)->first();
         if (!$coupon) {
-            \Log::info('Coupon not found', ['code' => $code]);
             return response()->json(0);
         }
 
@@ -66,20 +65,9 @@ class CouponController extends FrontBaseController
         $checkoutVendorId = Session::get('checkout_vendor_id');
         $isVendorCheckout = !empty($checkoutVendorId);
 
-        // Log for debugging
-        \Log::info('Coupon check', [
-            'code' => $code,
-            'coupon_id' => $coupon->id,
-            'coupon_user_id' => $coupon->user_id,
-            'checkout_vendor_id' => $checkoutVendorId,
-            'is_vendor_checkout' => $isVendorCheckout,
-            'request_total' => $requestTotal
-        ]);
-
         // Validate coupon ownership for vendor checkout
         if ($isVendorCheckout && $coupon->user_id) {
             if ((int)$coupon->user_id !== (int)$checkoutVendorId) {
-                \Log::info('Coupon rejected: vendor mismatch');
                 return response()->json(0);
             }
         }
@@ -87,28 +75,24 @@ class CouponController extends FrontBaseController
         // Validate coupon (status, dates, times)
         $validation = $this->validateCoupon($coupon);
         if (!$validation['valid']) {
-            \Log::info('Coupon validation failed', $validation);
             return response()->json(0);
         }
 
         // Check if already used in this session
         $alreadyKey = $isVendorCheckout ? 'already_vendor_' . $checkoutVendorId : 'already';
         if (Session::get($alreadyKey) === $code) {
-            \Log::info('Coupon already used in session');
             return response()->json(2);
         }
 
         // Calculate eligible amount
         $eligible = $this->calculateEligibleTotal($cart, $coupon, $checkoutVendorId);
         if ($eligible['total'] <= 0) {
-            \Log::info('No eligible products for coupon');
             return response()->json(0);
         }
 
         // Calculate discount
         $discountData = $this->calculateDiscount($coupon, $eligible['total']);
         if ($discountData['amount'] >= $requestTotal) {
-            \Log::info('Discount exceeds total');
             return response()->json(3);
         }
 
@@ -126,7 +110,7 @@ class CouponController extends FrontBaseController
         );
 
         // Return response
-        $response = [
+        return response()->json([
             0 => \PriceHelper::showCurrencyPrice($newTotal),
             1 => $code,
             2 => round($discountData['amount'], 2),
@@ -134,10 +118,7 @@ class CouponController extends FrontBaseController
             4 => $discountData['percentage'],
             5 => 1,
             6 => round($newTotal, 2)
-        ];
-
-        \Log::info('Coupon applied successfully', $response);
-        return response()->json($response);
+        ]);
     }
 
     /**
@@ -148,11 +129,6 @@ class CouponController extends FrontBaseController
     {
         $vendorId = $request->vendor_id ?? Session::get('checkout_vendor_id');
         $isVendorCheckout = !empty($vendorId);
-
-        \Log::info('Removing coupon', [
-            'vendor_id' => $vendorId,
-            'is_vendor_checkout' => $isVendorCheckout
-        ]);
 
         // Get current coupon amount before removing
         $couponAmount = 0;

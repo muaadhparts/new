@@ -429,19 +429,23 @@
                                         </a>
                                     @else
                                         @php
-                                            $stockEmpty = $product['merchant_product']
-                                                ? ($product['merchant_product']->stock !== null && $product['merchant_product']->stock == 0)
+                                            $mp = $product['merchant_product'];
+                                            $stockEmpty = $mp
+                                                ? (($mp->stock ?? 0) <= 0 && !$mp->preordered)
                                                 : $product['item']->emptyStock();
                                         @endphp
                                         @if ($stockEmpty)
                                             <span class="btn-cart disabled">@lang('Out Of Stock')</span>
                                         @else
-                                            @if ($product['item']->type != 'Listing')
-                                                <a href="javascript:;"
-                                                    data-href="{{ route('product.cart.add', $product['item']->id) }}{{ $product['merchant_product'] ? '?vendor=' . $product['merchant_product']->user_id : '' }}"
-                                                    class="add_cart_click btn-cart">
+                                            @if ($product['item']->type != 'Listing' && $mp)
+                                                {{-- UNIFIED: Use m-cart-add with merchant_product_id --}}
+                                                <button type="button"
+                                                    class="m-cart-add btn-cart"
+                                                    data-merchant-product-id="{{ $mp->id }}"
+                                                    data-vendor-id="{{ $mp->user_id }}"
+                                                    data-min-qty="{{ max(1, (int)($mp->minimum_qty ?? 1)) }}">
                                                     <i class="fas fa-shopping-cart"></i> @lang('Add To Cart')
-                                                </a>
+                                                </button>
                                             @endif
                                         @endif
                                     @endif

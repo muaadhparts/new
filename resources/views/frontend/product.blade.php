@@ -38,8 +38,12 @@
                 <div class="col-lg-6 wow-replaced" data-wow-delay=".1s">
                     <div class="gs-product-details-gallery-wrapper">
                         @php
-                            // Get vendor-specific galleries
-                            $galleryVendorId = isset($merchantProduct) ? $merchantProduct->user_id : (isset($merchant) ? $merchant->user_id : null);
+                            // STRICT: $merchant MUST exist - NO FALLBACK
+                            if (!$merchant) {
+                                throw new \LogicException('Product detail page requires $merchant (MerchantProduct) to be set');
+                            }
+                            // Get vendor-specific galleries from $merchant
+                            $galleryVendorId = $merchant->user_id;
                             $vendorGalleries = $productt->galleriesForVendor($galleryVendorId, 10);
                         @endphp
                         <div class="product-main-slider">
@@ -73,14 +77,24 @@
                         <!-- product-info-wrapper  -->
                         <div class="product-info-wrapper  {{ $productt->type != 'Physical' ? 'mb-3' : '' }}">
                             <h3>{{ $productt->localized_name }}</h3>
+                            {{-- PRICE: From $merchant (MerchantProduct) ONLY --}}
                             <div class="price-wrapper">
-                                <h5 id="sizeprice">{{ $productt->showPrice() }}</h5>
-                                <h5><del>{{ $productt->showPreviousPrice() }}</del></h5>
-
-                                @if ($productt->offPercentage() && round($productt->offPercentage()) > 0)
-                                    <span class="product-badge">-{{ round($productt->offPercentage()) }}%</span>
+                                @if($merchant)
+                                    <h5 id="sizeprice">{{ method_exists($merchant, 'showPrice') ? $merchant->showPrice() : \App\Models\Product::convertPrice($merchant->price) }}</h5>
+                                    @if($merchant->previous_price > 0)
+                                        <h5><del>{{ \App\Models\Product::convertPrice($merchant->previous_price) }}</del></h5>
+                                    @endif
+                                    @php
+                                        $offPercent = ($merchant->previous_price > 0 && $merchant->price > 0)
+                                            ? round((($merchant->previous_price - $merchant->price) * 100) / $merchant->previous_price)
+                                            : 0;
+                                    @endphp
+                                    @if ($offPercent > 0)
+                                        <span class="product-badge">-{{ $offPercent }}%</span>
+                                    @endif
+                                @else
+                                    <h5 id="sizeprice">{{ __('Price unavailable') }}</h5>
                                 @endif
-
                             </div>
                             <div class="rating-wrapper">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="23" viewBox="0 0 24 23"
@@ -94,9 +108,10 @@
                             </div>
 
                             {{-- Product Info: SKU, Brand, Quality Brand, Vendor, Stock --}}
+                            {{-- $merchant is AUTHORITATIVE for stock info --}}
                             <x-product-info
                                 :product="$productt"
-                                :mp="$merchantProduct ?? null"
+                                :mp="$merchant"
                                 display-mode="badges"
                                 :show-sku="true"
                                 :show-brand="true"
@@ -122,12 +137,18 @@
                             <div class="product-stocks-wraper">
                                 <ul>
                                     <li>
+                                        {{-- STOCK: From $merchant (MerchantProduct) ONLY --}}
                                         @if ($productt->type == 'Physical')
                                             <span><b>@lang('Availability :') </b></span>
-                                            @if ($productt->emptyStock())
+                                            @php
+                                                $merchantStock = $merchant ? (int) $merchant->stock : 0;
+                                                $merchantPreordered = $merchant ? (bool) $merchant->preordered : false;
+                                                $isOutOfStock = $merchantStock <= 0 && !$merchantPreordered;
+                                            @endphp
+                                            @if ($isOutOfStock)
                                                 <div class="stock-availability out-stock">{{ __('Out Of Stock') }}</div>
                                             @else
-                                                {{ $gs->show_stock == 0 ? '' : $productt->stock }} {{ __('In Stock') }}
+                                                {{ $gs->show_stock == 0 ? '' : $merchantStock }} {{ __('In Stock') }}
                                             @endif
                                         @endif
 
@@ -269,22 +290,22 @@
 
 
 
+                        {{-- STOCK/QTY/PRICE: From $merchant (MerchantProduct) ONLY - NO FALLBACK --}}
+                        @php
+                            // STRICT: Direct access - $merchant already validated at top of view
+                            $mpStock = (int) $merchant->stock;
+                            $mpPreordered = (bool) $merchant->preordered;
+                            $mpMinQty = max(1, (int) $merchant->minimum_qty);
+                            $mpPrice = (float) $merchant->price;
+                        @endphp
+
                         @if ($productt->type == 'Physical')
 
                             @if (is_array($productt->size))
                                 <input type="hidden" id="stock" value="{{ $productt->size_qty[0] }}">
                             @else
-                                @if (!$productt->emptyStock())
-                                    @if ($productt->stock_check == 1)
-                                        <input type="hidden" id="stock" value="{{ $productt->size_price[0] }}">
-                                    @else
-                                        <input type="hidden" id="stock" value="{{ $productt->stock }}">
-                                    @endif
-                                @elseif($productt->type != 'Physical')
-                                    <input type="hidden" id="stock" value="0">
-                                @else
-                                    <input type="hidden" id="stock" value="">
-                                @endif
+                                {{-- Stock from $merchant only --}}
+                                <input type="hidden" id="stock" value="{{ $mpStock }}">
                             @endif
 
 
@@ -294,27 +315,30 @@
                                 <div class="product-input-wrapper">
                                     <button class="action-btn qtminus" type="button">-</button>
 
+                                    {{-- minimum_qty from $merchant --}}
                                     <input class="qty-input qttotal" type="text" readonly id="order-qty"
-                                        value="{{ $productt->minimum_qty == null ? '1' : (int) $productt->minimum_qty }}">
+                                        value="{{ $mpMinQty }}">
 
                                     <input class="qty-input" type="hidden" id="affilate_user"
-                                        value="{{ $productt->minimum_qty == null ? '1' : (int) $productt->minimum_qty }}">
+                                        value="{{ $mpMinQty }}">
 
                                     <input class="qty-input" type="hidden" id="product_minimum_qty"
-                                        value="{{ $productt->minimum_qty == null ? '1' : (int) $productt->minimum_qty }}">
+                                        value="{{ $mpMinQty }}">
                                     <button class="action-btn qtplus" type="button">+</button>
                                 </div>
                             </div>
 
                         @endif
 
+                        {{-- Price from $merchant ONLY - NO FALLBACK --}}
                         <input type="hidden" id="product_price"
-                            value="{{ round($productt->vendorPrice() * $curr->value, 2) }}">
+                            value="{{ round($mpPrice * $curr->value, 2) }}">
                         <input type="hidden" id="product_id" value="{{ $productt->id }}">
-                        <input type="hidden" id="merchant_product_id" value="{{ isset($merchantProduct) ? $merchantProduct->id : (isset($merchant) ? $merchant->id : '') }}">
-                        <input type="hidden" id="vendor_user_id" value="{{ isset($merchantProduct) ? $merchantProduct->user_id : (isset($merchant) ? $merchant->user_id : '') }}">
+                        <input type="hidden" id="merchant_product_id" value="{{ $merchant->id }}">
+                        <input type="hidden" id="vendor_user_id" value="{{ $merchant->user_id }}">
                         <input type="hidden" id="curr_pos" value="{{ $gs->currency_format }}">
                         <input type="hidden" id="curr_sign" value="{{ $curr->sign }}">
+                        <input type="hidden" id="product_preordered" value="{{ $mpPreordered ? '1' : '0' }}" data-preordered="{{ $mpPreordered ? '1' : '0' }}">
 
 
                         <!-- add to cart buy btn wrapper -->
@@ -494,83 +518,58 @@
                             </div>
                         </div>
                         <script async src="https://static.addtoany.com/menu/page.js"></script>
-                        <!-- store & seller -->
+                        <!-- store & seller - STRICT: $merchant validated at top of view -->
                         <div class="store-seller-wrapper">
                             <span> <b>@lang('Sold By :')</b>
-
-                                @if (isset($merchant) && $merchant->user)
-                                    {{ $merchant->user->shop_name }}
-                                    @if ($merchant->user->checkStatus())
-                                        <a class="verify-link" href="javascript:;" data-original-title="">
-                                            {{ __('Verified') }} <i class="fas fa-check-circle"></i>
-                                        </a>
-                                    @endif
-                                @else
-                                    {{ App\Models\Admin::find(1)->shop_name }}
+                                {{ $merchant->user->shop_name }}
+                                @if ($merchant->user->checkStatus())
+                                    <a class="verify-link" href="javascript:;" data-original-title="">
+                                        {{ __('Verified') }} <i class="fas fa-check-circle"></i>
+                                    </a>
                                 @endif
-
-
                             </span>
                             <span> <b>@lang('Total Items :')</b>
-                                @if (isset($merchant) && $merchant->user)
-                                    {{ App\Models\MerchantProduct::where('user_id', '=', $merchant->user_id)->where('status', 1)->count() }}
-                                @else
-                                    {{ App\Models\Product::whereDoesntHave('merchantProducts')->count() }}
-                                @endif
+                                {{ App\Models\MerchantProduct::where('user_id', '=', $merchant->user_id)->where('status', 1)->count() }}
                             </span>
 
                             <div class="action-btns-wrapper">
 
-                                @if (isset($merchant) && $merchant->user)
-                                    <a class="m-btn m-btn--ghost"
-                                        href="{{ route('front.vendor', str_replace(' ', '-', $merchant->user->shop_name)) }}">@lang('visit store')</a>
-                                @endif
-
+                                <a class="m-btn m-btn--ghost"
+                                    href="{{ route('front.vendor', str_replace(' ', '-', $merchant->user->shop_name)) }}">@lang('visit store')</a>
 
                                 @if ($gs->is_contact_seller == 1)
-
-
                                     @if (Auth::check())
-                                        @if (isset($merchant) && $merchant->user)
-                                            <a class="m-btn m-btn--ghost" href="javascript:;"
-                                                data-bs-toggle="modal" data-bs-target="#vendorform">
-                                                <i class="icofont-ui-chat"></i>
-                                                {{ __('Contact Seller') }}
-                                            </a>
-                                        @else
-                                            <a class="m-btn m-btn--ghost" href="javascript:;"
-                                                data-bs-toggle="modal"
-                                                data-bs-target="#sendMessage">@lang('contact seller')</a>
-                                        @endif
+                                        <a class="m-btn m-btn--ghost" href="javascript:;"
+                                            data-bs-toggle="modal" data-bs-target="#vendorform">
+                                            <i class="icofont-ui-chat"></i>
+                                            {{ __('Contact Seller') }}
+                                        </a>
                                     @else
                                         <a class="m-btn m-btn--ghost" href="{{ route('user.login') }}">
                                             <i class="icofont-ui-chat"></i>
                                             {{ __('Contact Seller') }}
                                         </a>
                                     @endif
-
                                 @endif
 
-                                @if (isset($merchant) && $merchant->user)
-                                    @if (Auth::check())
-                                        @if (Auth::user()->favorites()->where('vendor_id', '=', $merchant->user_id)->get()->count() > 0)
-                                            <a class="m-btn m-btn--ghost" href="javascript:;" >
-                                                <i class="fas fa-check"></i>
-                                                {{ __('Favorite') }}
-                                            </a>
-                                        @else
-                                            <a class="m-btn m-btn--ghost favorite-prod" href="javascript:;"
-                                                data-href="{{ route('user-favorite', [Auth::user()->id, $merchant->user_id]) }}">
-                                                <i class="icofont-plus"></i>
-                                                {{ __('Add To Favorite Seller') }}
-                                            </a>
-                                        @endif
+                                @if (Auth::check())
+                                    @if (Auth::user()->favorites()->where('vendor_id', '=', $merchant->user_id)->get()->count() > 0)
+                                        <a class="m-btn m-btn--ghost" href="javascript:;" >
+                                            <i class="fas fa-check"></i>
+                                            {{ __('Favorite') }}
+                                        </a>
                                     @else
-                                        <a class="m-btn m-btn--ghost" href="{{ route('user.login') }}">
+                                        <a class="m-btn m-btn--ghost favorite-prod" href="javascript:;"
+                                            data-href="{{ route('user-favorite', [Auth::user()->id, $merchant->user_id]) }}">
                                             <i class="icofont-plus"></i>
                                             {{ __('Add To Favorite Seller') }}
                                         </a>
                                     @endif
+                                @else
+                                    <a class="m-btn m-btn--ghost" href="{{ route('user.login') }}">
+                                        <i class="icofont-plus"></i>
+                                        {{ __('Add To Favorite Seller') }}
+                                    </a>
                                 @endif
 
                             </div>
@@ -928,7 +927,7 @@
 
                     <input type="hidden" name="name" value="{{ Auth::user() ? Auth::user()->name : '' }}">
                     <input type="hidden" name="user_id" value="{{ Auth::user() ? Auth::user()->id : '' }}">
-                    <input type="hidden" name="vendor_id" value="{{ isset($merchant) ? $merchant->user_id : '' }}">
+                    <input type="hidden" name="vendor_id" value="{{ $merchant->user_id }}">
 
                 </div>
                 <!-- Select Pickup Point -->

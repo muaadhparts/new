@@ -15,18 +15,12 @@
         // $product is a Product model
         $actualProduct = $product;
 
-        // Use passed merchant product data or fallback to search
+        // Use passed merchant product data or fallback to eager-loaded accessor
         if (isset($mp)) {
             $merchant = $mp;
         } else {
-            $merchant = $product->merchantProducts()
-                ->where('status', 1)
-                ->whereHas('user', function ($user) {
-                    $user->where('is_vendor', 2);
-                })
-                ->orderByRaw('CASE WHEN (stock IS NULL OR stock = 0) THEN 1 ELSE 0 END ASC')
-                ->orderBy('price')
-                ->first();
+            // Use accessor (avoids N+1 query)
+            $merchant = $product->best_merchant_product;
         }
     }
 
@@ -127,29 +121,40 @@
                     ({{ $actualProduct->ratings_count ?? 0 }})</span>
             </div>
 
-            {{-- Quantity Selector --}}
-            @if ($actualProduct->type == 'Physical' && $hasVendor && ($inStock || ($merchant && $merchant->preordered)))
+            {{-- UNIFIED CART: Quantity Selector + Add Button --}}
+            @if ($actualProduct->type == 'Physical' && $hasVendor && $merchant && ($inStock || $merchant->preordered))
                 @php
-                    $minQty = $merchant ? (int)($merchant->minimum_qty ?? 1) : 1;
-                    if ($minQty < 1) $minQty = 1;
-                    $stock = (int)($stockQty ?? 999);
-                    $preordered = $merchant ? (int)($merchant->preordered ?? 0) : 0;
-                    $uniqueId = 'lp_' . ($merchant ? $merchant->id : $actualProduct->id) . '_' . uniqid();
+                    $minQty = max(1, (int)($merchant->minimum_qty ?? 1));
+                    $mpStock = (int)($merchant->stock ?? 0);
+                    $mpPreordered = (bool)$merchant->preordered;
+                    $maxQty = $mpPreordered ? 9999 : max($minQty, $mpStock);
+                    $uniqueId = 'lp_' . $merchant->id . '_' . uniqid();
                 @endphp
-                <div class="muaadh-qty-wrapper">
-                    <span class="muaadh-qty-label">@lang('Qty'):</span>
-                    <div class="muaadh-qty-control">
-                        <button type="button" class="muaadh-qty-btn hp-qtminus" data-target="{{ $uniqueId }}" data-min="{{ $minQty }}">-</button>
-                        <input type="text" class="muaadh-qty-input hp-qty-input" id="qty_{{ $uniqueId }}" value="{{ $minQty }}" readonly
-                               data-min="{{ $minQty }}" data-stock="{{ $stock }}" data-preordered="{{ $preordered }}">
-                        <button type="button" class="muaadh-qty-btn hp-qtplus" data-target="{{ $uniqueId }}" data-stock="{{ $stock }}" data-preordered="{{ $preordered }}">+</button>
+                <div class="m-cart-button m-cart-button--inline"
+                     data-mp-id="{{ $merchant->id }}"
+                     data-vendor-id="{{ $merchant->user_id }}"
+                     data-min-qty="{{ $minQty }}"
+                     data-max-qty="{{ $maxQty }}"
+                     data-stock="{{ $mpStock }}"
+                     data-preordered="{{ $mpPreordered ? '1' : '0' }}">
+                    <div class="m-cart-button__qty">
+                        <div class="m-cart-button__qty-control">
+                            <button type="button" class="m-cart-button__qty-btn m-cart-button__qty-minus" data-action="decrease">
+                                <i class="fas fa-minus"></i>
+                            </button>
+                            <input type="text" class="m-cart-button__qty-input" id="qty_{{ $uniqueId }}" value="{{ $minQty }}"
+                                   data-min="{{ $minQty }}" data-max="{{ $maxQty }}" readonly>
+                            <button type="button" class="m-cart-button__qty-btn m-cart-button__qty-plus" data-action="increase">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                        </div>
                     </div>
                 </div>
             @endif
 
             <div class="add-to-cart">
                 @if ($actualProduct->type != 'Listing')
-                    <a href="javascript:;" class="compare_product" data-href="{{ isset($merchant) ? route('merchant.compare.add', $merchant->id) : route('product.compare.add', $actualProduct->id) }}">
+                    <a href="javascript:;" class="compare_product" data-href="{{ $merchant ? route('merchant.compare.add', $merchant->id) : route('product.compare.add', $actualProduct->id) }}">
                         <div class="compare">
                             <svg class="icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24"
                                 viewBox="0 0 24 24" fill="none">
@@ -178,35 +183,28 @@
                 @endif
 
                 @if ($actualProduct->product_type == 'affiliate')
-                    <a href="javascript:;" data-href="{{ $actualProduct->affiliate_link }}" class="add_to_cart_button">
+                    <a href="{{ $actualProduct->affiliate_link }}" class="add_to_cart_button" target="_blank">
                         <div class="add-cart">
-                            @lang('Add To Cart')
+                            @lang('Buy Now')
                         </div>
                     </a>
                 @else
-                    @if (!$hasVendor || (!$inStock && !($merchant && $merchant->preordered)))
-                        <div class="add-cart">
+                    @if (!$hasVendor || !$merchant || (!$inStock && !$merchant->preordered))
+                        <div class="add-cart add-cart--disabled">
                             {{ __('Out of Stock') }}
                         </div>
                     @else
                         @if ($actualProduct->type != 'Listing')
-                            @php
-                                $addCartUrl = isset($merchant)
-                                    ? route('merchant.cart.add', $merchant->id) . '?user=' . $merchant->user_id
-                                    : route('product.cart.add', $actualProduct->id);
-                                $qtyInputId = 'lp_' . ($merchant ? $merchant->id : $actualProduct->id);
-                            @endphp
-                            <a {{ $actualProduct->cross_products ? 'data-bs-target=#exampleModal' : '' }} href="javascript:;"
-                                data-href="{{ $addCartUrl }}"
-                                data-cross-href="{{ route('front.show.cross.product', $actualProduct->id) }}"
-                                data-merchant-product="{{ $merchant->id ?? '' }}"
-                                data-qty-prefix="{{ $qtyInputId }}"
-                                data-product="{{ $actualProduct->id }}"
-                                class="add_cart_click hp-add-cart {{ $actualProduct->cross_products ? 'view_cross_product' : '' }}">
-                                <div class="add-cart">
-                                    @lang('Add To Cart')
-                                </div>
-                            </a>
+                            {{-- UNIFIED: Add to Cart Button --}}
+                            <button type="button"
+                                class="m-cart-add add-cart"
+                                data-merchant-product-id="{{ $merchant->id }}"
+                                data-vendor-id="{{ $merchant->user_id }}"
+                                data-product-id="{{ $actualProduct->id }}"
+                                data-min-qty="{{ max(1, (int)($merchant->minimum_qty ?? 1)) }}"
+                                data-qty-input="qty_{{ $uniqueId ?? '' }}">
+                                @lang('Add To Cart')
+                            </button>
                         @endif
                     @endif
                 @endif

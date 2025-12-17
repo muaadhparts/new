@@ -1902,38 +1902,43 @@ Route::group(['middleware' => 'maintenance'], function () {
     Route::get('/item/reply/delete/{id}', 'Front\ProductDetailsController@replydelete')->name('product.reply.delete');
     // REPLY SECTION ENDS
 
+    // ============ UNIFIED CART SYSTEM (v3) ============
+    // Single endpoint for ALL cart add operations
+    // Uses merchant_product_id EXCLUSIVELY - NO fallbacks
+    Route::post('/cart/unified', 'Front\CartController@unifiedAdd')->name('cart.unified.add');
+    Route::get('/cart/unified', 'Front\CartController@unifiedAdd')->name('cart.unified.add.get'); // For legacy GET requests
+
     // CART SECTION
     Route::get('/carts/view', 'Front\CartController@cartview');
     Route::get('/carts', 'Front\CartController@cart')->name('front.cart');
-    // New merchant-product-based cart routes
-    Route::get('/cart/add/merchant/{merchantProductId}', 'Front\CartController@addMerchantCart')->name('merchant.cart.add');
-    Route::get('/cart/quickadd/merchant/{merchantProductId}', 'Front\CartController@quickAddMerchantCart')->name('merchant.cart.quickadd');
 
     // Cart summary endpoint (AJAX only)
     Route::get('/cart/summary', 'Front\CartController@cartSummary')->name('cart.summary');
 
-    // Legacy cart routes (fallback for old links)
-    Route::get('/addcart/{id}', 'Front\CartController@addcart')->name('product.cart.add');
-    Route::get('/addtocart/{id}', 'Front\CartController@addtocart')->name('product.cart.quickadd');
-    Route::get('/addnumcart', 'Front\CartController@addnumcart')->name('details.cart');
-    Route::get('/addtonumcart', 'Front\CartController@addtonumcart');
+    // Increase/Decrease item quantity
+    Route::post('/cart/increase', 'Front\CartController@increaseItem')->name('cart.increase');
+    Route::post('/cart/decrease', 'Front\CartController@decreaseItem')->name('cart.decrease');
+    Route::get('/cart/increase', 'Front\CartController@increaseItem')->name('cart.increase.get');
+    Route::get('/cart/decrease', 'Front\CartController@decreaseItem')->name('cart.decrease.get');
+
+    // Remove item
+    Route::get('/removecart/{id}', 'Front\CartController@removecart')->name('product.cart.remove');
+
+    // ============ CART ADD ROUTES ============
+    // PRIMARY: Use POST /cart/unified with merchant_product_id for all cart additions
+    Route::get('/cart/add/merchant/{merchantProductId}', 'Front\CartController@addMerchantCart')->name('merchant.cart.add');
+
+    // DEPRECATED (return 410 Gone): These routes should NOT be used
+    // All cart add functionality should use POST /cart/unified with merchant_product_id
+    Route::get('/addcart/{id}', 'Front\CartController@addcart')->name('product.cart.add');          // DEPRECATED
+    Route::get('/addtocart/{id}', 'Front\CartController@addtocart')->name('product.cart.quickadd'); // DEPRECATED
+    Route::get('/addnumcart', 'Front\CartController@addnumcart')->name('details.cart');             // DEPRECATED
+    Route::get('/addtonumcart', 'Front\CartController@addtonumcart');                               // DEPRECATED
+
+    // ACTIVE: Cart quantity management routes
     Route::get('/addbyone', 'Front\CartController@addbyone');
     Route::get('/reducebyone', 'Front\CartController@reducebyone');
-
-    // ============ NEW UNIFIED CART SYSTEM (v2) ============
-    Route::prefix('cart/v2')->name('cart.v2.')->group(function () {
-        Route::post('/add/{mpId}', 'Front\CartController@v2AddItem')->name('add');
-        Route::get('/add/{mpId}', 'Front\CartController@v2AddItem')->name('add.get');
-        Route::post('/increase', 'Front\CartController@v2IncreaseQty')->name('increase');
-        Route::get('/increase', 'Front\CartController@v2IncreaseQty')->name('increase.get');
-        Route::post('/decrease', 'Front\CartController@v2DecreaseQty')->name('decrease');
-        Route::get('/decrease', 'Front\CartController@v2DecreaseQty')->name('decrease.get');
-        Route::post('/remove', 'Front\CartController@v2RemoveItem')->name('remove');
-        Route::get('/remove', 'Front\CartController@v2RemoveItem')->name('remove.get');
-        Route::get('/summary', 'Front\CartController@v2Summary')->name('summary');
-        Route::get('/page', 'Front\CartController@v2CartPage')->name('page');
-    });
-    // ============ END NEW CART SYSTEM ============
+    // ============ END CART ROUTES ============
     Route::get('/upcolor', 'Front\CartController@upcolor');
     Route::get('/removecart/{id}', 'Front\CartController@removecart')->name('product.cart.remove');
     Route::get('/carts/coupon', 'Front\CouponController@coupon');

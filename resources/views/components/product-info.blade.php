@@ -25,26 +25,24 @@
         return;
     }
 
-    // Get merchant product if not provided
-    if (!$mp) {
-        $mp = $product->merchantProducts()
-            ->where('status', 1)
-            ->whereHas('user', function ($user) {
-                $user->where('is_vendor', 2);
-            })
-            ->orderByRaw('CASE WHEN (stock IS NULL OR stock = 0) THEN 1 ELSE 0 END ASC')
-            ->orderBy('price')
-            ->first();
+    // STRICT: NO FALLBACK - $mp MUST be passed from Controller
+    // If on product detail page and $mp is missing, throw error
+    if (!$mp && request()->routeIs('front.product')) {
+        throw new \LogicException(
+            "ProductInfo component: \$mp (MerchantProduct) is REQUIRED on product detail page. " .
+            "Pass it explicitly from Controller. Product ID: {$product->id}"
+        );
     }
 
     // Extract all display values (using localized names)
+    // NO FALLBACK - if $mp is null, vendor-specific fields will be null
     $sku = $product->sku ?? null;
     $brandName = $product->brand ? $product->brand->localized_name : null;
-    $qualityBrand = ($mp && $mp->qualityBrand) ? $mp->qualityBrand : null;
-    $qualityBrandName = $qualityBrand ? $qualityBrand->localized_name : null;
-    $qualityBrandLogo = $qualityBrand ? $qualityBrand->logo_url : null;
-    $vendorName = ($mp && $mp->user) ? $mp->user->shop_name : null;
-    $stock = $mp ? $mp->stock : null;
+    $qualityBrand = $mp?->qualityBrand;
+    $qualityBrandName = $qualityBrand?->localized_name;
+    $qualityBrandLogo = $qualityBrand?->logo_url;
+    $vendorName = $mp?->user?->shop_name;
+    $stock = $mp?->stock;
 
     // Format stock display with colors
     if ($stock === null || $stock === '') {

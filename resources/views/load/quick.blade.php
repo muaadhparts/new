@@ -343,13 +343,23 @@
               {{-- PRODUCT ATTRIBUTE SECTION ENDS  --}}
 
               {{-- PRODUCT ADD CART SECTION --}}
+              @php
+                  $quickVendorId = request()->get('user', $product->user_id);
+                  $quickMp = $product->merchantProducts()->where('user_id', $quickVendorId)->where('status', 1)->first();
+                  $quickMinQty = $quickMp ? max(1, (int)($quickMp->minimum_qty ?? 1)) : max(1, (int)($product->minimum_qty ?? 1));
+                  $quickStock = $quickMp ? (int)($quickMp->stock ?? 0) : (int)($product->stock ?? 0);
+                  $quickPreordered = $quickMp ? (int)($quickMp->preordered ?? 0) : 0;
+                  $quickCanBuy = $quickStock > 0 || $quickPreordered;
+              @endphp
 
               <input type="hidden" id="mproduct_price" value="{{ round($product->vendorSizePrice() * $curr->value,2) }}">
               <input type="hidden" id="mproduct_id" value="{{ $product->id }}">
+              <input type="hidden" id="mmerchant_product_id" value="{{ $quickMp->id ?? '' }}">
+              <input type="hidden" id="mvendor_user_id" value="{{ $quickVendorId }}">
               <input type="hidden" id="mcurr_pos" value="{{ $gs->currency_format }}">
               <input type="hidden" id="mcurr_sign" value="{{ $curr->sign }}">
 
-              @if(!$product->emptyStock())
+              @if($quickCanBuy && $quickMp)
 
                 <div class="inner-box">
                   <div class="cart-btn">
@@ -365,8 +375,9 @@
                                 <span class="modal-plus">
                                   <i class="fas fa-plus"></i>
                                 </span>
-                                <input class="modal-total" type="text" id="order-qty1" value="{{ $product->minimum_qty == null ? '1' : (int)$product->minimum_qty }}">
-                                <input type="hidden" id="mproduct_minimum_qty" value="{{ $product->minimum_qty == null ? '0' : $product->minimum_qty }}">
+                                <input class="modal-total" type="text" id="order-qty1" value="{{ $quickMinQty }}"
+                                       data-min="{{ $quickMinQty }}" data-stock="{{ $quickStock }}" data-preordered="{{ $quickPreordered }}">
+                                <input type="hidden" id="mproduct_minimum_qty" value="{{ $quickMinQty }}">
                                 <span class="modal-minus">
                                   <i class="fas fa-minus"></i>
                                 </span>
@@ -389,18 +400,26 @@
 
                       @else
 
+                      {{-- UNIFIED: Use data attributes for cart-unified.js --}}
                       <li>
-                        <a href="javascript:;" id="maddcrt">
+                        <button type="button" id="maddcrt"
+                                data-merchant-product-id="{{ $quickMp->id }}"
+                                data-vendor-id="{{ $quickVendorId }}"
+                                data-min-qty="{{ $quickMinQty }}">
                           <i class="icofont-cart"></i>
                           {{ __('Add To Cart') }}
-                        </a>
+                        </button>
                       </li>
 
                       <li>
-                        <a id="mqaddcrt" href="javascript:;">
+                        <button type="button" id="mqaddcrt"
+                                data-merchant-product-id="{{ $quickMp->id }}"
+                                data-vendor-id="{{ $quickVendorId }}"
+                                data-min-qty="{{ $quickMinQty }}"
+                                data-redirect="/cart">
                           <i class="icofont-cart"></i>
                           {{ __('Purchase Now') }}
-                        </a>
+                        </button>
                       </li>
 
                       @endif
@@ -711,102 +730,121 @@
             $($tselector).val(total);
         });
 
+        // UNIFIED CART: Add to Cart
         $("#maddcrt").on("click", function(){
-            var qty = $('.modal-total').val() ? $('.modal-total').val() : 1;
-            var pid = $(this).parent().parent().parent().parent().parent().find("#mproduct_id").val();
-            var user_id = {{ $quickVendorId ?? 0 }};
+            var $btn = $(this);
+            var mpId = $btn.data('merchant-product-id');
+            var vendorId = $btn.data('vendor-id');
+            var minQty = parseInt($btn.data('min-qty')) || 1;
+            var qty = parseInt($('.modal-total').val()) || minQty;
 
-          if($('.mproduct-attr').length > 0)
-          {
-            values = $(".mproduct-attr:checked").map(function() {
-            return $(this).val();
-          }).get();
+            if (!mpId) {
+                toastr.error("{{ __('Product not available') }}");
+                return false;
+            }
 
-          keys = $(".mproduct-attr:checked").map(function() {
-            return $(this).data('key');
-          }).get();
+            if (qty < minQty) {
+                toastr.error("{{ __('Minimum Quantity is:') }} " + minQty);
+                return false;
+            }
 
+            // Build payload
+            var payload = {
+                merchant_product_id: mpId,
+                vendor_id: vendorId,
+                qty: qty,
+                size: sizes || '',
+                color: colors || ''
+            };
 
-          prices = $(".mproduct-attr:checked").map(function() {
-            return $(this).data('price');
-          }).get();
-
-          }
-
-          if (!isNaN(size_qty)) {
-          if(size_qty == '0'){
-            toastr.error(lang.cart_out);
-            return false;
-          }
-        } else {
-          size_qty = null;
-        }
-
+            // Show loading
+            var originalHtml = $btn.html();
+            $btn.html('<i class="fas fa-spinner fa-spin"></i>').prop('disabled', true);
 
             $.ajax({
-                type: "GET",
-                url:mainurl+"/addnumcart",
-                data:{id:pid,user:user_id,qty:qty,size:sizes,color:colors,size_qty:size_qty,size_price:size_price,size_key:size_key,keys:keys,values:values,prices:prices},
-                success:function(data){
-                    if(data == 'digital') {
-                        toastr.error("{{ __('Already Added To Cart.') }}");
-                    }
-                    else if(data == 0) {
-                        toastr.error("{{ __('Out Of Stock.') }}");
-                    }
-                    else if(data[3]) {
-                      toastr.error("{{ __('Minimum Quantity is:') }}"+' '+data[4]);
-                    }
-                    else {
-                        $("#cart-count").html(data[0]);
-                        $("#total-cost").html(data[1]);
+                type: "POST",
+                url: "/cart/unified",
+                data: JSON.stringify(payload),
+                contentType: "application/json",
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                },
+                success: function(data) {
+                    if (data.success || data.message) {
+                        toastr.success(data.message || data.success || "{{ __('Successfully Added To Cart.') }}");
+                        if (data.cart_count !== undefined) {
+                            $("#cart-count").html(data.cart_count);
+                        }
                         $("#cart-items").load(mainurl+'/carts/view');
-                        toastr.success("{{ __('Successfully Added To Cart.') }}");
+                    } else {
+                        toastr.error(data.error || "{{ __('Error adding to cart') }}");
                     }
+                },
+                error: function(xhr) {
+                    var msg = xhr.responseJSON?.message || xhr.responseJSON?.error || "{{ __('Error adding to cart') }}";
+                    toastr.error(msg);
+                },
+                complete: function() {
+                    $btn.html(originalHtml).prop('disabled', false);
                 }
             });
         });
 
+        // UNIFIED CART: Buy Now
+        $(document).on("click", "#mqaddcrt", function(){
+            var $btn = $(this);
+            var mpId = $btn.data('merchant-product-id');
+            var vendorId = $btn.data('vendor-id');
+            var minQty = parseInt($btn.data('min-qty')) || 1;
+            var qty = parseInt($('.modal-total').val()) || minQty;
 
-        $(document).on("click", "#mqaddcrt" , function(){
-          var qty = $('.modal-total').val();
-          var minimum_qty = $('#mproduct_minimum_qty').val();
-          var pid = $(this).parent().parent().parent().parent().parent().find("#mproduct_id").val();
-          var user_id = {{ $quickVendorId ?? 0 }};
+            if (!mpId) {
+                toastr.error("{{ __('Product not available') }}");
+                return false;
+            }
 
-          if($('.mproduct-attr').length > 0)
-          {
-          values = $(".mproduct-attr:checked").map(function() {
-          return $(this).val();
-          }).get();
+            if (qty < minQty) {
+                toastr.error("{{ __('Minimum Quantity is:') }} " + minQty);
+                return false;
+            }
 
-          keys = $(".mproduct-attr:checked").map(function() {
-          return $(this).data('key');
-          }).get();
+            // Build payload
+            var payload = {
+                merchant_product_id: mpId,
+                vendor_id: vendorId,
+                qty: qty,
+                size: sizes || '',
+                color: colors || ''
+            };
 
+            // Show loading
+            var originalHtml = $btn.html();
+            $btn.html('<i class="fas fa-spinner fa-spin"></i>').prop('disabled', true);
 
-          prices = $(".mproduct-attr:checked").map(function() {
-          return $(this).data('price');
-          }).get();
-
-          }
-
-          qty = parseInt(qty);
-          minimum_qty = parseInt(minimum_qty);
-
-          if(qty < minimum_qty){
-            toastr.error("{{ __('Minimum Quantity is:') }}"+' '+minimum_qty);
-            return false;
-          }
-
-          if(size_qty == '0'){
-            toastr.error("{{ __('Out Of Stock') }}");
-            return false;
-          }
-
-         window.location = mainurl+"/addtonumcart?id="+pid+"&user="+user_id+"&qty="+qty+"&size="+sizes+"&color="+colors.substring(1, colors.length)+"&size_qty="+size_qty+"&size_price="+size_price+"&size_key="+size_key+"&keys="+keys+"&values="+values+"&prices="+prices;
-
-         });
+            $.ajax({
+                type: "POST",
+                url: "/cart/unified",
+                data: JSON.stringify(payload),
+                contentType: "application/json",
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                },
+                success: function(data) {
+                    if (data.success || data.message) {
+                        // Redirect to cart
+                        window.location = '/cart';
+                    } else {
+                        toastr.error(data.error || "{{ __('Error adding to cart') }}");
+                        $btn.html(originalHtml).prop('disabled', false);
+                    }
+                },
+                error: function(xhr) {
+                    var msg = xhr.responseJSON?.message || xhr.responseJSON?.error || "{{ __('Error adding to cart') }}";
+                    toastr.error(msg);
+                    $btn.html(originalHtml).prop('disabled', false);
+                }
+            });
+        });
 
     })(jQuery);
 

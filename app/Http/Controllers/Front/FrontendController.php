@@ -306,16 +306,17 @@ class FrontendController extends FrontBaseController
             ->orderby('id', 'desc')
             ->get();
 
+        // ============================================================================
+        // OPTIMIZED EAGER LOADING - Avoids N+1 queries in views
+        // Using withBestMerchant scope for consistent merchant product loading
+        // ============================================================================
+
         // Sale products
         $data['sale_products'] = Product::whereSale(1)
             ->status(1)
-            ->whereHas('merchantProducts.user', function($query){
-                $query->where('is_vendor', 2);
-            })
+            ->whereHas('merchantProducts.user', fn($q) => $q->where('is_vendor', 2))
             ->take($gs->sale_count)
-            ->with(['merchantProducts' => function($q){
-                $q->where('status', 1)->with('user:id,is_vendor');
-            }])
+            ->withBestMerchant()
             ->withCount('ratings')
             ->withAvg('ratings', 'rating')
             ->orderby('id', 'desc')
@@ -324,13 +325,9 @@ class FrontendController extends FrontBaseController
         // Best products
         $data['best_products'] = Product::query()->whereBest(1)
             ->status(1)
-            ->whereHas('merchantProducts.user', function($query){
-                $query->where('is_vendor', 2);
-            })
+            ->whereHas('merchantProducts.user', fn($q) => $q->where('is_vendor', 2))
             ->take($gs->best_seller_count)
-            ->with(['merchantProducts' => function($q){
-                $q->where('status', 1)->with('user:id,is_vendor');
-            }])
+            ->withBestMerchant()
             ->withCount('ratings')
             ->withAvg('ratings', 'rating')
             ->orderby('id', 'desc')
@@ -339,13 +336,9 @@ class FrontendController extends FrontBaseController
         // Popular products (featured)
         $data['popular_products'] = Product::whereFeatured(1)
             ->status(1)
-            ->whereHas('merchantProducts.user', function($query){
-                $query->where('is_vendor', 2);
-            })
+            ->whereHas('merchantProducts.user', fn($q) => $q->where('is_vendor', 2))
             ->take($gs->popular_count)
-            ->with(['merchantProducts' => function($q){
-                $q->where('status', 1)->with('user:id,is_vendor');
-            }])
+            ->withBestMerchant()
             ->withCount('ratings')
             ->withAvg('ratings', 'rating')
             ->orderby('id', 'desc')
@@ -354,27 +347,20 @@ class FrontendController extends FrontBaseController
         // Top products
         $data['top_products'] = Product::whereTop(1)
             ->status(1)
-            ->whereHas('merchantProducts.user', function($query){
-                $query->where('is_vendor', 2);
-            })
+            ->whereHas('merchantProducts.user', fn($q) => $q->where('is_vendor', 2))
             ->take($gs->top_rated_count)
-            ->with(['merchantProducts' => function($q){
-                $q->where('status', 1)->with('user:id,is_vendor');
-            }])
-            ->withCount('ratings')->withAvg('ratings', 'rating')
+            ->withBestMerchant()
+            ->withCount('ratings')
+            ->withAvg('ratings', 'rating')
             ->orderby('id', 'desc')
             ->get();
 
         // Big products
         $data['big_products'] = Product::whereBig(1)
             ->status(1)
-            ->whereHas('merchantProducts.user', function($query){
-                $query->where('is_vendor', 2);
-            })
+            ->whereHas('merchantProducts.user', fn($q) => $q->where('is_vendor', 2))
             ->take($gs->big_save_count)
-            ->with(['merchantProducts' => function($q){
-                $q->where('status', 1)->with('user:id,is_vendor');
-            }])
+            ->withBestMerchant()
             ->withCount('ratings')
             ->withAvg('ratings', 'rating')
             ->orderby('id', 'desc')
@@ -383,13 +369,9 @@ class FrontendController extends FrontBaseController
         // Trending products
         $data['trending_products'] = Product::whereTrending(1)
             ->status(1)
-            ->whereHas('merchantProducts.user', function($query){
-                $query->where('is_vendor', 2);
-            })
+            ->whereHas('merchantProducts.user', fn($q) => $q->where('is_vendor', 2))
             ->take($gs->trending_count)
-            ->with(['merchantProducts' => function($q){
-                $q->where('status', 1)->with('user:id,is_vendor');
-            }])
+            ->withBestMerchant()
             ->withCount('ratings')
             ->withAvg('ratings', 'rating')
             ->orderby('id', 'desc')
@@ -399,12 +381,8 @@ class FrontendController extends FrontBaseController
         $data['flash_products'] = Product::whereIsDiscount(1)
             ->status(1)
             ->where('discount_date', '>=', date('Y-m-d'))
-            ->whereHas('merchantProducts.user', function($query){
-                $query->where('is_vendor', 2);
-            })
-            ->with(['merchantProducts' => function($q){
-                $q->where('status', 1)->with('user:id,is_vendor');
-            }])
+            ->whereHas('merchantProducts.user', fn($q) => $q->where('is_vendor', 2))
+            ->withBestMerchant()
             ->latest()
             ->first();
 

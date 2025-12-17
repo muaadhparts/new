@@ -2,17 +2,19 @@
 
 /**
  * ====================================================================
- * MULTI-VENDOR CART CONTROLLER
+ * UNIFIED CART CONTROLLER
  * ====================================================================
  *
- * This controller handles cart operations in a multi-vendor system:
+ * Single entry point for all cart operations.
+ * Uses merchant_product_id EXCLUSIVELY - NO fallbacks.
  *
  * Key Features:
- * 1. Groups cart products by vendor_id using groupProductsByVendor()
- * 2. Each vendor has independent product listing and calculations
- * 3. Passes $productsByVendor to views for separate vendor sections
+ * 1. Unified endpoint: POST /cart/unified
+ * 2. Strict validation - fails on missing required fields
+ * 3. All data from MerchantProduct - no Product fallback
+ * 4. Groups cart products by vendor_id
  *
- * Modified: 2025-01-XX for Multi-Vendor Checkout System
+ * @version 3.0 - Unified System
  * ====================================================================
  */
 
@@ -31,9 +33,359 @@ use App\Services\ShippingCalculatorService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\Validator;
 
 class CartController extends FrontBaseController
 {
+    /* =====================================================================
+     * UNIFIED CART ENDPOINT (v3)
+     * =====================================================================
+     * Single entry point for ALL cart add operations.
+     * REQUIRED: merchant_product_id
+     * STRICT: Fails immediately on missing/invalid data - NO fallbacks
+     * ===================================================================== */
+
+    /**
+     * Unified cart add endpoint
+     * POST /cart/unified
+     *
+     * Required payload:
+     * - merchant_product_id: int (REQUIRED)
+     * - qty: int (default: from minimum_qty)
+     * - size: string (optional)
+     * - color: string (optional)
+     *
+     * Optional payload:
+     * - vendor_id: int (validated against mp.user_id)
+     * - size_price: float
+     * - color_price: float
+     */
+    public function unifiedAdd(Request $request)
+    {
+        // ==========================================
+        // STEP 1: STRICT VALIDATION
+        // ==========================================
+        $validator = Validator::make($request->all(), [
+            'merchant_product_id' => 'required|integer|min:1',
+            'qty' => 'nullable|integer|min:1',
+            'size' => 'nullable|string|max:100',
+            'color' => 'nullable|string|max:50',
+            'vendor_id' => 'nullable|integer',
+            'size_price' => 'nullable|numeric|min:0',
+            'color_price' => 'nullable|numeric|min:0',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'status' => 'error',
+                'message' => $validator->errors()->first(),
+                'errors' => $validator->errors()->toArray(),
+            ], 422);
+        }
+
+        // ==========================================
+        // STRICT ASSERTIONS - Fail fast on missing required fields
+        // ==========================================
+        $mpId = $request->input('merchant_product_id');
+
+        // ASSERT: merchant_product_id is REQUIRED and must be a positive integer
+        if (!$mpId || !is_numeric($mpId) || (int)$mpId < 1) {
+            \Log::error('unifiedAdd: ASSERTION FAILED - merchant_product_id missing or invalid', [
+                'received' => $mpId,
+                'request' => $request->all(),
+                'ip' => $request->ip(),
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'status' => 'error',
+                'message' => 'merchant_product_id is required and must be a positive integer',
+                'error_code' => 'ASSERT_MP_ID_REQUIRED',
+            ], 400);
+        }
+
+        $mpId = (int)$mpId;
+
+        // Get qty with strict default
+        $qty = $request->input('qty');
+        if ($qty !== null && $qty !== '') {
+            $qty = (int)$qty;
+            if ($qty < 1) {
+                return response()->json([
+                    'success' => false,
+                    'status' => 'error',
+                    'message' => 'qty must be at least 1',
+                    'error_code' => 'ASSERT_QTY_INVALID',
+                ], 400);
+            }
+        }
+        // qty will be validated against minimum_qty after loading MerchantProduct
+
+        // ==========================================
+        // STEP 2: LOAD MERCHANT PRODUCT (NO FALLBACK)
+        // ==========================================
+        $mp = MerchantProduct::with(['product', 'user', 'qualityBrand'])->find($mpId);
+
+        if (!$mp) {
+            return response()->json([
+                'success' => false,
+                'status' => 'error',
+                'message' => __('Product not found'),
+                'error_code' => 'MP_NOT_FOUND',
+            ], 404);
+        }
+
+        // ==========================================
+        // STEP 3: STRICT GUARDS
+        // ==========================================
+
+        // Guard: MerchantProduct must be active
+        if ((int) $mp->status !== 1) {
+            return response()->json([
+                'success' => false,
+                'status' => 'error',
+                'message' => __('Product is not available'),
+                'error_code' => 'MP_INACTIVE',
+            ], 400);
+        }
+
+        // Guard: Vendor must be active (is_vendor = 2)
+        if (!$mp->user || (int) $mp->user->is_vendor !== 2) {
+            return response()->json([
+                'success' => false,
+                'status' => 'error',
+                'message' => __('Vendor is not active'),
+                'error_code' => 'VENDOR_INACTIVE',
+            ], 400);
+        }
+
+        // Guard: vendor_id must match (if provided)
+        if ($request->filled('vendor_id')) {
+            $requestedVendorId = (int) $request->input('vendor_id');
+            if ($requestedVendorId !== (int) $mp->user_id) {
+                \Log::warning('Cart: vendor_id mismatch', [
+                    'requested' => $requestedVendorId,
+                    'actual' => $mp->user_id,
+                    'mp_id' => $mpId,
+                    'ip' => $request->ip(),
+                ]);
+                return response()->json([
+                    'success' => false,
+                    'status' => 'error',
+                    'message' => __('Invalid vendor'),
+                    'error_code' => 'VENDOR_MISMATCH',
+                ], 403);
+            }
+        }
+
+        // ==========================================
+        // STEP 4: EXTRACT & VALIDATE QTY/SIZE/COLOR
+        // ==========================================
+        $minQty = max(1, (int) ($mp->minimum_qty ?? 1));
+
+        // Use the pre-validated $qty or default to minQty
+        if ($qty === null) {
+            $qty = $minQty;
+        } else {
+            $qty = max($minQty, $qty);
+        }
+
+        // ASSERT: qty must be >= minimum_qty
+        if ($qty < $minQty) {
+            return response()->json([
+                'success' => false,
+                'status' => 'error',
+                'message' => __('Minimum quantity is :min', ['min' => $minQty]),
+                'error_code' => 'ASSERT_QTY_BELOW_MIN',
+                'minimum_qty' => $minQty,
+            ], 400);
+        }
+
+        $size = trim((string) ($request->input('size') ?? ''));
+        $color = trim((string) ($request->input('color') ?? ''));
+
+        // Get stock
+        $stock = (int) ($mp->stock ?? 0);
+        $preordered = (bool) ($mp->preordered ?? false);
+
+        // Handle sizes
+        $sizes = $this->toArrayValues($mp->size ?? '');
+        $sizeQtys = $this->toArrayValues($mp->size_qty ?? '');
+        $sizePrices = $this->toArrayValues($mp->size_price ?? '');
+
+        $effectiveStock = $stock;
+        $sizePrice = 0;
+
+        if (count($sizes) > 0) {
+            // If size not provided, pick first available
+            if ($size === '') {
+                foreach ($sizes as $i => $sz) {
+                    $szQty = (int) ($sizeQtys[$i] ?? 0);
+                    if ($szQty > 0 || $preordered) {
+                        $size = $sz;
+                        $effectiveStock = $szQty;
+                        $sizePrice = (float) ($sizePrices[$i] ?? 0);
+                        break;
+                    }
+                }
+            } else {
+                // Validate provided size
+                $sizeIdx = array_search(trim($size), array_map('trim', $sizes), true);
+                if ($sizeIdx === false) {
+                    return response()->json([
+                        'success' => false,
+                        'status' => 'error',
+                        'message' => __('Invalid size selected'),
+                        'error_code' => 'INVALID_SIZE',
+                    ], 400);
+                }
+                $effectiveStock = (int) ($sizeQtys[$sizeIdx] ?? 0);
+                $sizePrice = (float) ($sizePrices[$sizeIdx] ?? 0);
+            }
+        }
+
+        // Handle colors
+        $colors = $this->toArrayValues($mp->color_all ?? '');
+        $colorPrices = $this->toArrayValues($mp->color_price ?? '');
+        $colorPrice = 0;
+
+        if (count($colors) > 0) {
+            if ($color === '') {
+                $color = ltrim(trim($colors[0] ?? ''), '#');
+                $colorPrice = (float) ($colorPrices[0] ?? 0);
+            } else {
+                $colorNorm = ltrim(trim($color), '#');
+                $colorIdx = false;
+                foreach ($colors as $i => $c) {
+                    if (ltrim(trim($c), '#') === $colorNorm) {
+                        $colorIdx = $i;
+                        break;
+                    }
+                }
+                if ($colorIdx !== false) {
+                    $colorPrice = (float) ($colorPrices[$colorIdx] ?? 0);
+                }
+            }
+        }
+
+        // ==========================================
+        // STEP 5: STOCK VALIDATION
+        // ==========================================
+        if ($effectiveStock <= 0 && !$preordered) {
+            return response()->json([
+                'success' => false,
+                'status' => 'error',
+                'message' => __('Out of Stock'),
+                'error_code' => 'OUT_OF_STOCK',
+            ], 422);
+        }
+
+        if (!$preordered && $qty > $effectiveStock) {
+            return response()->json([
+                'success' => false,
+                'status' => 'error',
+                'message' => __('Only') . ' ' . $effectiveStock . ' ' . __('items available'),
+                'error_code' => 'INSUFFICIENT_STOCK',
+                'available_stock' => $effectiveStock,
+            ], 422);
+        }
+
+        // Guard: qty >= minimum_qty
+        if ($qty < $minQty) {
+            return response()->json([
+                'success' => false,
+                'status' => 'error',
+                'message' => __('Minimum order quantity is') . ' ' . $minQty,
+                'error_code' => 'BELOW_MIN_QTY',
+                'min_qty' => $minQty,
+            ], 400);
+        }
+
+        // ==========================================
+        // STEP 6: RESERVE STOCK (Atomic)
+        // ==========================================
+        if (!($preordered && $effectiveStock <= 0)) {
+            try {
+                $this->reserveStock($mpId, $qty, $size);
+            } catch (\Exception $e) {
+                return response()->json([
+                    'success' => false,
+                    'status' => 'error',
+                    'message' => __('Out of Stock'),
+                    'error_code' => 'STOCK_RESERVE_FAILED',
+                ], 422);
+            }
+        }
+
+        // ==========================================
+        // STEP 7: BUILD PRODUCT WITH CONTEXT
+        // ==========================================
+        try {
+            $prod = ProductContextHelper::createWithContext($mp);
+        } catch (\Exception $e) {
+            // Return stock if product creation fails
+            if (!($preordered && $effectiveStock <= 0)) {
+                $this->returnStock($mpId, $qty, $size);
+            }
+            return response()->json([
+                'success' => false,
+                'status' => 'error',
+                'message' => __('Product not found'),
+                'error_code' => 'PRODUCT_CREATE_FAILED',
+            ], 500);
+        }
+
+        // Apply size/color prices
+        if ($sizePrice > 0) {
+            $prod->price += $sizePrice;
+        }
+        if ($colorPrice > 0) {
+            $prod->price += $colorPrice;
+        }
+
+        // ==========================================
+        // STEP 8: ADD TO CART
+        // ==========================================
+        $keys = (string) $request->input('keys', '');
+        $values = (string) $request->input('values', '');
+
+        $oldCart = Session::has('cart') ? Session::get('cart') : null;
+        $cart = new Cart($oldCart);
+
+        if ($qty == 1) {
+            $cart->add($prod, $mpId, $size, $color, $keys, $values);
+        } else {
+            $cart->addnum(
+                $prod, $mpId, $qty, $size, $color,
+                '', $sizePrice, $colorPrice, '',
+                $keys, $values, $request->input('affilate_user', '0')
+            );
+        }
+
+        $this->recomputeTotals($cart);
+        Session::put('cart', $cart);
+
+        // ==========================================
+        // STEP 9: RETURN SUCCESS RESPONSE
+        // ==========================================
+        return response()->json([
+            'success' => true,
+            'ok' => true,
+            'status' => 'success',
+            'message' => __('Item added to cart successfully'),
+            'cart_count' => count($cart->items),
+            'cart_total' => \PriceHelper::showCurrencyPrice($cart->totalPrice * $this->curr->value),
+            'totalQty' => $cart->totalQty,
+            'totalPrice' => $cart->totalPrice,
+            // Backwards compatibility
+            'data' => [
+                'cart_count' => count($cart->items),
+                'cart_total' => \PriceHelper::showCurrencyPrice($cart->totalPrice * $this->curr->value),
+            ],
+        ]);
+    }
+
     /* ===================== Cart Summary Endpoint ===================== */
 
     /**
@@ -154,21 +506,9 @@ class CartController extends FrontBaseController
      */
     public function addMerchantCart($merchantProductId)
     {
-        // Logging: تسجيل كل إضافة مع المعرفات
-        \Log::info('Cart Addition - addMerchantCart', [
-            'merchant_product_id' => $merchantProductId,
-            'request_data' => request()->all(),
-            'user_id' => auth()->id() ?? 'guest',
-            'ip' => request()->ip()
-        ]);
-
         $mp = MerchantProduct::with(['product', 'user', 'qualityBrand'])->findOrFail($merchantProductId);
 
         if (!$mp || $mp->status !== 1) {
-            \Log::warning('Cart Addition Failed - Product Unavailable', [
-                'merchant_product_id' => $merchantProductId,
-                'status' => $mp->status ?? 'not_found'
-            ]);
             return response()->json(['status' => 'error', 'msg' => __('Product not available')], 400);
         }
 
@@ -420,14 +760,7 @@ class CartController extends FrontBaseController
         }
         return [$picked, $pickedQty];
     }
-    private function pickDefaultListing(int $productId): ?MerchantProduct
-    {
-        return MerchantProduct::where('product_id', $productId)
-            ->where('status', 1)
-            ->orderByRaw('CASE WHEN (stock IS NULL OR stock=0) THEN 1 ELSE 0 END ASC')
-            ->orderBy('price', 'ASC')
-            ->first();
-    }
+    // REMOVED: pickDefaultListing - No longer needed, use unifiedAdd with explicit merchant_product_id
     private function effectiveStock(MerchantProduct $mp, string $size = ''): int
     {
         if (!empty($mp->size) && !empty($mp->size_qty) && $size !== '') {
@@ -452,17 +785,7 @@ class CartController extends FrontBaseController
         ])->find($id);
     }
 
-    private function fetchListingOrFallback(Product $prod, ?int $vendorId): ?MerchantProduct
-    {
-        if ($vendorId) {
-            $mp = MerchantProduct::where('product_id', $prod->id)
-                ->where('user_id', $vendorId)
-                ->where('status', 1)
-                ->first();
-            if ($mp) return $mp;
-        }
-        return $this->pickDefaultListing($prod->id);
-    }
+    // REMOVED: fetchListingOrFallback - No longer needed, use unifiedAdd with explicit merchant_product_id
 
     private function normNum($v, $default = 0.0) { return is_numeric($v) ? (float)$v : (float)$default; }
 
@@ -555,308 +878,46 @@ class CartController extends FrontBaseController
         return null;
     }
 
-    /* ===================== addcart / addtocart / addnumcart / addtonumcart ===================== */
+    /* ===================== DEPRECATED METHODS - Use unifiedAdd() instead ===================== */
+
+    /**
+     * @deprecated Use unifiedAdd() with merchant_product_id
+     */
     public function addcart($id)
     {
-        $prod = $this->fetchIdentity($id); if (!$prod) {
-            return response()->json(['ok' => false, 'error' => __('Product not found')], 404);
-        }
-
-        // IMPORTANT: user parameter مطلوب لتجنب fallback
-        $vendorId = (int) request('user');
-        if (!$vendorId) {
-            \Log::warning('addcart called without user parameter', ['product_id' => $id, 'request' => request()->all()]);
-        }
-
-        $mp = $this->fetchListingOrFallback($prod, $vendorId); if (!$mp) {
-            return response()->json(['ok' => false, 'error' => __('Vendor listing not found')], 404);
-        }
-
-        $size = (string) request('size', '');
-        if ($size === '') { [$size, $_] = $this->pickAvailableSize($mp->size, $mp->size_qty); }
-
-        // اللون الافتراضي من عرض البائع (merchant_products.color_all)
-        $color = (string) request('color', '');
-        if ($color === '' && !empty($mp->color_all)) {
-            $colors = $this->toArrayValues($mp->color_all);
-            if (!empty($colors)) {
-                $color = ltrim((string)$colors[0], '#'); // إزالة #
-            }
-        }
-
-        $effStock = $this->effectiveStock($mp, $size);
-
-        // فحص الحد الأدنى للكمية (MOQ)
-        $qty = max(1, (int) request('qty', 1));
-        if ($mp->minimum_qty && $qty < (int)$mp->minimum_qty) {
-            return response()->json([
-                'ok' => false,
-                'error' => __('Minimum order quantity is') . ' ' . $mp->minimum_qty
-            ], 400);
-        }
-
-        // فحص المخزون مع دعم Preorder
-        if ($effStock <= 0 && !$mp->preordered) {
-            return response()->json(['ok' => false, 'error' => __('Out of stock')], 422);
-        }
-
-        ProductContextHelper::apply($prod, $mp);
-        $keys   = (string) request('keys','');
-        $values = (string) request('values','');
-
-        $oldCart = Session::has('cart') ? Session::get('cart') : null;
-        $cart    = new Cart($oldCart);
-        $cart->add($prod, $prod->id, $size, $color, $keys, $values);
-
-        $this->recomputeTotals($cart);
-        Session::put('cart', $cart);
         return response()->json([
-            'ok' => true,
-            'cart_count' => count($cart->items),
-            'cart_total' => \PriceHelper::showCurrencyPrice($cart->totalPrice * $this->curr->value),
-            'totalQty' => $cart->totalQty,
-            'totalPrice' => $cart->totalPrice,
-            'success' => __('Item added to cart successfully')
-        ]);
+            'ok' => false,
+            'error' => 'This endpoint is deprecated. Use POST /cart/unified with merchant_product_id',
+            'deprecated' => true
+        ], 410);
     }
 
+    /**
+     * @deprecated Use unifiedAdd() with merchant_product_id
+     */
     public function addtocart($id)
     {
-        // Logging: تسجيل محاولة الإضافة
-        \Log::info('Cart Addition - addtocart', [
-            'product_id' => $id,
-            'vendor_id' => request('user', 0),
-            'request_data' => request()->all(),
-            'user_id' => auth()->id() ?? 'guest',
-            'ip' => request()->ip()
-        ]);
-
-        $prod = $this->fetchIdentity($id);
-        if (!$prod) {
-            \Log::warning('Cart Addition Failed - Product Not Found', ['product_id' => $id]);
-            return redirect()->route('front.cart')->with('unsuccess', __('Product not found.'));
-        }
-
-        $vendorId = (int) request('user', 0);
-        if (!$vendorId) {
-            \Log::warning('addtocart called without user parameter', ['product_id' => $id, 'request' => request()->all()]);
-        }
-
-        $mp = $this->fetchListingOrFallback($prod, $vendorId);
-        if (!$mp) {
-            \Log::warning('Cart Addition Failed - Vendor Listing Not Found', [
-                'product_id' => $id,
-                'vendor_id' => $vendorId
-            ]);
-            return redirect()->route('front.cart')->with('unsuccess', __('Vendor listing not found or inactive.'));
-        }
-
-        $size = (string) request('size','');
-        if ($size === '') { [$size, $_] = $this->pickAvailableSize($mp->size, $mp->size_qty); }
-
-        // اللون الافتراضي من عرض البائع
-        $color = (string) request('color', '');
-        if ($color === '' && !empty($mp->color_all)) {
-            $colors = $this->toArrayValues($mp->color_all);
-            if (!empty($colors)) {
-                $color = ltrim((string)$colors[0], '#');
-            }
-        }
-
-        $effStock = $this->effectiveStock($mp, $size);
-
-        // فحص الحد الأدنى للكمية (MOQ)
-        if ($mp->minimum_qty && 1 < (int)$mp->minimum_qty) {
-            return redirect()->route('front.cart')->with('unsuccess', __('Minimum order quantity is') . ' ' . $mp->minimum_qty);
-        }
-
-        // فحص المخزون مع دعم Preorder
-        if ($effStock <= 0 && !$mp->preordered) {
-            return redirect()->route('front.cart')->with('unsuccess', __('Out Of Stock.'));
-        }
-
-        ProductContextHelper::apply($prod, $mp);
-        $keys   = (string) request('keys','');
-        $values = (string) request('values','');
-
-        $oldCart = Session::has('cart') ? Session::get('cart') : null;
-        $cart    = new Cart($oldCart);
-        $cart->add($prod, $prod->id, $size, $color, $keys, $values);
-
-        $this->recomputeTotals($cart);
-        Session::put('cart', $cart);
-        return redirect()->route('front.cart');
+        return redirect()->route('front.cart')->with('unsuccess', __('This method is deprecated. Please refresh the page and try again.'));
     }
 
-
+    /**
+     * @deprecated Use unifiedAdd() with merchant_product_id
+     */
     public function addnumcart(Request $request)
     {
-        $id   = (int) ($request->id ?? $_GET['id'] ?? 0);
-        $qty  = (int) ($request->qty ?? 1);
-        $size = (string) ($request->size ?? '');
-        $color= (string) ($request->color ?? '');
-
-        $size_qty   = (string) ($request->size_qty   ?? '');
-        $size_price = $this->normNum($request->size_price ?? 0);
-        $color_price= $this->normNum($request->color_price ?? 0);
-
-        $size_key = (string) ($request->size_qty ?? '');
-        $keys     = (string) $request->input('keys','');
-        $values   = (string) $request->input('values','');
-        $prices   = $request->input('prices', 0);
-        $curr     = $this->curr;
-
-        // Logging: تسجيل محاولة الإضافة
-        \Log::info('Cart Addition - addnumcart', [
-            'product_id' => $id,
-            'vendor_id' => $request->input('user', 0),
-            'qty' => $qty,
-            'request_data' => $request->all(),
-            'user_id' => auth()->id() ?? 'guest',
-            'ip' => request()->ip()
-        ]);
-
-        $prod = $this->fetchIdentity($id);
-        if (!$prod) {
-            \Log::warning('Cart Addition Failed - Product Not Found', ['product_id' => $id]);
-            return 0;
-        }
-        if ($prod->type != 'Physical') { $qty = 1; }
-
-        $vendorId = (int) $request->input('user', 0);
-        if (!$vendorId) {
-            \Log::warning('addnumcart called without user parameter', ['product_id' => $id, 'request' => request()->all()]);
-        }
-
-        $mp = $this->fetchListingOrFallback($prod, $vendorId);
-        if (!$mp) {
-            \Log::warning('Cart Addition Failed - Vendor Listing Not Found', [
-                'product_id' => $id,
-                'vendor_id' => $vendorId
-            ]);
-            return 0;
-        }
-
-        if ($size === '') { [$size, $_] = $this->pickAvailableSize($mp->size, $mp->size_qty); }
-        $effStock = $this->effectiveStock($mp, $size);
-
-        // فحص الحد الأدنى للكمية (MOQ)
-        if ($mp->minimum_qty && $qty < (int)$mp->minimum_qty) {
-            return response()->json([
-                'ok' => false,
-                'error' => __('Minimum order quantity is') . ' ' . $mp->minimum_qty
-            ], 400);
-        }
-
-        // فحص المخزون مع دعم Preorder
-        if ($effStock <= 0 && !$mp->preordered) return 0;
-        if ($effStock > 0 && $qty > $effStock && !$mp->preordered) return 0;
-
-        ProductContextHelper::apply($prod, $mp);
-        if (!empty($prices)) foreach ((array)$prices as $p) $prod->price += ((float)$p / $curr->value);
-
-        $oldCart = Session::has('cart') ? Session::get('cart') : null;
-        $cart    = new Cart($oldCart);
-        $cart->addnum(
-            $prod, $prod->id, $qty, $size, $color,
-            $size_qty, $size_price, $color_price, $size_key,
-            $keys, $values, $request->input('affilate_user','0')
-        );
-
-        $this->recomputeTotals($cart);
-        Session::put('cart', $cart);
         return response()->json([
-            'ok' => true,
-            'cart_count' => count($cart->items),
-            'cart_total' => \PriceHelper::showCurrencyPrice($cart->totalPrice * $curr->value),
-            'totalQty' => $cart->totalQty,
-            'totalPrice' => $cart->totalPrice,
-            'success' => __('Item added to cart successfully')
-        ]);
+            'ok' => false,
+            'error' => 'This endpoint is deprecated. Use POST /cart/unified with merchant_product_id',
+            'deprecated' => true
+        ], 410);
     }
 
+    /**
+     * @deprecated Use unifiedAdd() with merchant_product_id
+     */
     public function addtonumcart(Request $request)
     {
-        $id   = (int) ($request->id ?? 0);
-        $qty  = (int) ($request->qty ?? 1);
-        $size = (string) ($request->size ?? '');
-        $color= (string) ($request->color ?? '');
-
-        $size_qty   = (string) ($request->size_qty   ?? '');
-        $size_price = $this->normNum($request->size_price ?? 0);
-        $colorPrice = $this->normNum($request->color_price ?? 0);
-
-        $size_key   = (string) ($request->size_qty ?? '');
-        $keysArr    = $request->input('keys')   ? explode(',', $request->input('keys'))   : '';
-        $valsArr    = $request->input('values') ? explode(',', $request->input('values')) : '';
-        $pricesArr  = $request->input('prices') ? explode(',', $request->input('prices')) : 0;
-        $keys   = !$keysArr ? '' : implode(',', $keysArr);
-        $values = !$valsArr ? '' : implode(',', $valsArr);
-        $curr   = $this->curr;
-
-        // Logging: تسجيل محاولة الإضافة
-        \Log::info('Cart Addition - addtonumcart', [
-            'product_id' => $id,
-            'vendor_id' => $request->input('user', 0),
-            'qty' => $qty,
-            'request_data' => $request->all(),
-            'user_id' => auth()->id() ?? 'guest',
-            'ip' => request()->ip()
-        ]);
-
-        $prod = $this->fetchIdentity($id);
-        if (!$prod) {
-            \Log::warning('Cart Addition Failed - Product Not Found', ['product_id' => $id]);
-            return redirect()->route('front.cart')->with('unsuccess', __('Product not found.'));
-        }
-        if ($prod->type != 'Physical') { $qty = 1; }
-
-        $vendorId = (int) $request->input('user', 0);
-        if (!$vendorId) {
-            \Log::warning('addtonumcart called without user parameter', ['product_id' => $id, 'request' => request()->all()]);
-        }
-
-        $mp = $this->fetchListingOrFallback($prod, $vendorId);
-        if (!$mp) {
-            \Log::warning('Cart Addition Failed - Vendor Listing Not Found', [
-                'product_id' => $id,
-                'vendor_id' => $vendorId
-            ]);
-            return redirect()->route('front.cart')->with('unsuccess', __('Vendor listing not found or inactive.'));
-        }
-
-        if ($size === '') { [$size, $_] = $this->pickAvailableSize($mp->size, $mp->size_qty); }
-        $effStock = $this->effectiveStock($mp, $size);
-
-        // فحص الحد الأدنى للكمية (MOQ)
-        if ($mp->minimum_qty && $qty < (int)$mp->minimum_qty) {
-            return redirect()->route('front.cart')->with('unsuccess', __('Minimum order quantity is') . ' ' . $mp->minimum_qty);
-        }
-
-        // فحص المخزون مع دعم Preorder
-        if ($effStock <= 0 && !$mp->preordered) {
-            return redirect()->route('front.cart')->with('unsuccess', __('Out Of Stock.'));
-        }
-        if ($effStock > 0 && $qty > $effStock && !$mp->preordered) {
-            return redirect()->route('front.cart')->with('unsuccess', __('Out Of Stock.'));
-        }
-
-        ProductContextHelper::apply($prod, $mp);
-        if (!empty($pricesArr) && !empty($pricesArr[0])) {
-            foreach ($pricesArr as $p) $prod->price += ((float)$p / $curr->value);
-        }
-
-        $oldCart = Session::has('cart') ? Session::get('cart') : null;
-        $cart    = new Cart($oldCart);
-        $cart->addnum(
-            $prod, $prod->id, $qty, $size, $color,
-            $size_qty, $size_price, $colorPrice, $size_key,
-            $keys, $values, $request->input('affilate_user','0')
-        );
-
-        $this->recomputeTotals($cart);
-        Session::put('cart', $cart);
-        return redirect()->route('front.cart')->with('success', __('Successfully Added To Cart.'));
+        return redirect()->route('front.cart')->with('unsuccess', __('This method is deprecated. Please refresh the page and try again.'));
     }
 
     /* ===================== زيادة/نقصان (الأسامي الجديدة) ===================== */
@@ -988,18 +1049,22 @@ class CartController extends FrontBaseController
         $row  = $oldCart->items[$itemid];
         $item = $row['item'] ?? null;
 
-        // استخراج vendor_id و merchant_product_id
-        $vendorId = $this->extractVendorIdFromRow($row);
-        if (!$vendorId) { return 0; }
-
+        // استخراج merchant_product_id من السلة (NO FALLBACK - يجب أن يكون موجوداً)
         $mpId = $this->extractMerchantProductId($row);
+        if (!$mpId) {
+            \Log::warning('addbyone: merchant_product_id not found in cart row', ['itemid' => $itemid]);
+            return 0;
+        }
 
-        // جلب عرض البائع MerchantProduct
-        $mp = MerchantProduct::where('product_id', $prod->id)
-            ->where('user_id', $vendorId)
-            ->where('status', 1)
-            ->first();
-        if (!$mp) { return 0; }
+        // جلب عرض البائع مباشرة بـ ID (NO QUERY by product_id+vendor_id)
+        $mp = MerchantProduct::find($mpId);
+        if (!$mp || (int)$mp->status !== 1) {
+            \Log::warning('addbyone: MerchantProduct not found or inactive', ['mp_id' => $mpId]);
+            return 0;
+        }
+
+        // تأكيد تطابق البائع (STRICT ASSERTION)
+        $vendorId = (int)$mp->user_id;
 
         // احسب المخزون الفعلي للمقاس الحالي
         $size = (string)($row['size'] ?? '');
@@ -1013,13 +1078,6 @@ class CartController extends FrontBaseController
 
         if ($stockCheckEnabled) {
             if ($effStock <= 0 || $newQty > $effStock) {
-                \Log::info('addbyone: Stock check failed', [
-                    'product_id' => $id,
-                    'vendor_id' => $vendorId,
-                    'effStock' => $effStock,
-                    'currentQty' => $currentQty,
-                    'stock_check' => $mp->stock_check
-                ]);
                 return 0;
             }
         }
@@ -1110,15 +1168,22 @@ class CartController extends FrontBaseController
 
         $row  = $oldCart->items[$itemid];
 
-        // استخراج vendor_id و merchant_product_id
-        $vendorId = $this->extractVendorIdFromRow($row);
-        if (!$vendorId) { return 0; }
+        // استخراج merchant_product_id من السلة (NO FALLBACK - يجب أن يكون موجوداً)
+        $mpId = $this->extractMerchantProductId($row);
+        if (!$mpId) {
+            \Log::warning('reducebyone: merchant_product_id not found in cart row', ['itemid' => $itemid]);
+            return 0;
+        }
 
-        $mp = MerchantProduct::where('product_id', $prod->id)
-            ->where('user_id', $vendorId)
-            ->where('status', 1)
-            ->first();
-        if (!$mp) { return 0; }
+        // جلب عرض البائع مباشرة بـ ID (NO QUERY by product_id+vendor_id)
+        $mp = MerchantProduct::find($mpId);
+        if (!$mp || (int)$mp->status !== 1) {
+            \Log::warning('reducebyone: MerchantProduct not found or inactive', ['mp_id' => $mpId]);
+            return 0;
+        }
+
+        // تأكيد تطابق البائع (STRICT ASSERTION)
+        $vendorId = (int)$mp->user_id;
 
         // التحقق من الحد الأدنى للكمية قبل التنقيص
         $currentQty = (int)($row['qty'] ?? 0);

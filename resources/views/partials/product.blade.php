@@ -216,44 +216,32 @@
 
             {{-- Action Buttons --}}
             <div class="catalog-quickview-actions">
-                @if($canBuy)
-                    @if($mp)
-                        <button type="button"
-                                class="catalog-quickview-btn catalog-quickview-btn-cart ill-add-to-cart"
-                                data-id="{{ $product->id }}"
-                                data-mp-id="{{ $mp->id }}"
-                                data-user="{{ $vendorId }}"
-                                data-addnum-url="{{ route('merchant.cart.add', $mp->id) }}">
-                            <i class="fas fa-cart-plus"></i> @lang('Add To Cart')
-                        </button>
+                @if($canBuy && $mp)
+                    {{-- UNIFIED: Use m-cart-add with merchant_product_id --}}
+                    <button type="button"
+                            class="catalog-quickview-btn catalog-quickview-btn-cart m-cart-add"
+                            data-merchant-product-id="{{ $mp->id }}"
+                            data-vendor-id="{{ $vendorId }}"
+                            data-product-id="{{ $product->id }}"
+                            data-min-qty="{{ $minQty }}"
+                            data-stock="{{ $stock }}"
+                            data-preordered="{{ $preordered }}"
+                            data-qty-input=".ill-qty">
+                        <i class="fas fa-cart-plus"></i> @lang('Add To Cart')
+                    </button>
 
-                        <button type="button"
-                                class="catalog-quickview-btn catalog-quickview-btn-buy ill-buy-now"
-                                data-id="{{ $product->id }}"
-                                data-mp-id="{{ $mp->id }}"
-                                data-user="{{ $vendorId }}"
-                                data-addtonum-url="{{ route('merchant.cart.add', $mp->id) }}"
-                                data-carts-url="{{ url('/carts') }}">
-                            <i class="fas fa-bolt"></i> @lang('Buy Now')
-                        </button>
-                    @else
-                        <button type="button"
-                                class="catalog-quickview-btn catalog-quickview-btn-cart ill-add-to-cart"
-                                data-id="{{ $product->id }}"
-                                data-user="{{ $vendorId }}"
-                                data-addnum-url="{{ url('/addnumcart') }}">
-                            <i class="fas fa-cart-plus"></i> @lang('Add To Cart')
-                        </button>
-
-                        <button type="button"
-                                class="catalog-quickview-btn catalog-quickview-btn-buy ill-buy-now"
-                                data-id="{{ $product->id }}"
-                                data-user="{{ $vendorId }}"
-                                data-addtonum-url="{{ url('/addtonumcart') }}"
-                                data-carts-url="{{ url('/carts') }}">
-                            <i class="fas fa-bolt"></i> @lang('Buy Now')
-                        </button>
-                    @endif
+                    <button type="button"
+                            class="catalog-quickview-btn catalog-quickview-btn-buy m-cart-add"
+                            data-merchant-product-id="{{ $mp->id }}"
+                            data-vendor-id="{{ $vendorId }}"
+                            data-product-id="{{ $product->id }}"
+                            data-min-qty="{{ $minQty }}"
+                            data-stock="{{ $stock }}"
+                            data-preordered="{{ $preordered }}"
+                            data-qty-input=".ill-qty"
+                            data-redirect="/cart">
+                        <i class="fas fa-bolt"></i> @lang('Buy Now')
+                    </button>
                 @else
                     <button type="button" class="catalog-quickview-btn catalog-quickview-btn-disabled" disabled>
                         <i class="fas fa-times-circle"></i> @lang('Out of Stock')
