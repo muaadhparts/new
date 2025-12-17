@@ -287,14 +287,17 @@
 
 
 @php
-$country = App\Models\Country::where('country_name', $step1->customer_country)->first();
-$isState = isset($step1->customer_state) ? $step1->customer_state : 0;
+    // ✅ N+1 FIX: Use pre-loaded country from CheckoutDataService
+    $country = $preloadedCountry ?? null;
+    $countryId = $country ? $country->id : 0;
+    $isState = isset($step1->state_id) ? $step1->state_id : (isset($step1->customer_state) ? $step1->customer_state : 0);
 @endphp
-<input type="hidden" id="select_country" name="country_id" value="{{ $country->id }}">
-<input type="hidden" id="state_id" name="state_id"
-    value="{{ isset($step1->customer_state) ? $step1->customer_state : 0 }}">
+<input type="hidden" id="select_country" name="country_id" value="{{ $countryId }}">
+<input type="hidden" id="state_id" name="state_id" value="{{ $isState }}">
 <input type="hidden" id="is_state" name="is_state" value="{{ $isState }}">
-<input type="hidden" id="state_url" name="state_url" value=" {{ route('country.wise.state', $country->id) }}">
+@if($country)
+<input type="hidden" id="state_url" name="state_url" value="{{ route('country.wise.state', $countryId) }}">
+@endif
 
 
 @endsection

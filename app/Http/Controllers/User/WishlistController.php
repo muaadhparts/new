@@ -21,8 +21,13 @@ class WishlistController extends UserBaseController
         $page_count = isset($pageby) ? $pageby : $gs->wishlist_count;
 
         // Get wishlist items with their effective merchant products
+        // ✅ N+1 FIX: Eager load product.merchantProducts for legacy items without merchant_product_id
         $wishlistQuery = Wishlist::where('user_id', $user->id)
-            ->with(['product', 'merchantProduct', 'merchantProduct.user']);
+            ->with([
+                'product.merchantProducts' => fn($q) => $q->where('status', 1)->orderBy('price'),
+                'merchantProduct',
+                'merchantProduct.user'
+            ]);
 
         // Apply sorting
         if (!empty($request->sort)) {

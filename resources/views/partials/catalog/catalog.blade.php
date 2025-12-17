@@ -1,5 +1,6 @@
 @php
-    $categories = App\Models\Category::with('subs')->withCount('subs')->where('status', 1)->get();
+    // ✅ N+1 FIX: Eager load subs AND childs
+    $categories = App\Models\Category::with('subs.childs')->withCount('subs')->where('status', 1)->get();
 
 @endphp
 <div class="col-xl-3">
@@ -23,7 +24,8 @@
                             @if($category->subs_count > 0)
                                 <span class="has-child"></span>
                                 <ul class="children">
-                                    @foreach ($category->subs()->get() as $subcategory)
+                                    {{-- ✅ N+1 FIX: Use eager-loaded subs --}}
+                                    @foreach ($category->subs as $subcategory)
                                         <li class="cat-item cat-parent">
                                             <a href="{{route('front.category', [$category->slug, $subcategory->slug])}}{{!empty(request()->input('search')) ? '?search=' . request()->input('search') : ''}}"
                                                 class="category-link {{ isset($subcat) ? ($subcat->id == $subcategory->id ? 'active' : '') : '' }}">{{$subcategory->name}}
@@ -32,7 +34,8 @@
                                             @if($subcategory->childs->count() != 0)
                                                 <span class="has-child"></span>
                                                 <ul class="children">
-                                                    @foreach ($subcategory->childs()->get() as $key => $childelement)
+                                                    {{-- ✅ N+1 FIX: Use eager-loaded childs --}}
+                                                    @foreach ($subcategory->childs as $childelement)
                                                         <li class="cat-item ">
                                                             <a href="{{route('front.category', [$category->slug, $subcategory->slug, $childelement->slug])}}{{!empty(request()->input('search')) ? '?search=' . request()->input('search') : ''}}"
                                                                 class="category-link {{ isset($childcat) ? ($childcat->id == $childelement->id ? 'active' : '') : '' }}">
@@ -164,15 +167,11 @@
 
                                 @foreach ($item as $prod)
                                     @php
-                                        $catalogProdObj = \App\Models\Product::find($prod['id']);
-                                        $catalogMerchant = $catalogProdObj ? $catalogProdObj->merchantProducts()
-                                            ->where('status', 1)
-                                            ->whereHas('user', function ($user) {
-                                                $user->where('is_vendor', 2);
-                                            })
-                                            ->orderByRaw('CASE WHEN (stock IS NULL OR stock = 0) THEN 1 ELSE 0 END ASC')
-                                            ->orderBy('price')
-                                            ->first() : null;
+                                        // ✅ N+1 FIX: Load product with eager-loaded merchantProducts
+                                        $catalogProdObj = \App\Models\Product::with(['merchantProducts' => fn($q) => $q->where('status', 1)->with('user')->orderBy('price')])->find($prod['id']);
+
+                                        // Use best_merchant_product from eager-loaded data
+                                        $catalogMerchant = $catalogProdObj?->best_merchant_product;
 
                                         $catalogProdUrl = $catalogMerchant && isset($prod['slug'])
                                             ? route('front.product', ['slug' => $prod['slug'], 'vendor_id' => $catalogMerchant->user_id, 'merchant_product_id' => $catalogMerchant->id])

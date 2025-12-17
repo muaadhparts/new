@@ -170,6 +170,7 @@ return [
         App\Providers\Filament\MUAADHPanelProvider::class,
         App\Providers\RouteServiceProvider::class,
         // App\Providers\TelescopeServiceProvider::class, // Disabled - Telescope is dev-only dependency
+        App\Providers\BladeQueryGuardServiceProvider::class, // N+1 Query Guard (local only)
     ])->toArray(),
 
     /*

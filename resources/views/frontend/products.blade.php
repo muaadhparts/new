@@ -409,14 +409,8 @@
                             <div class="gs-recent-post-widget">
                                 @foreach ($latest_products as $product)
                                     @php
-                                        $recentMerchant = $product->merchantProducts()
-                                            ->where('status', 1)
-                                            ->whereHas('user', function ($user) {
-                                                $user->where('is_vendor', 2);
-                                            })
-                                            ->orderByRaw('CASE WHEN (stock IS NULL OR stock = 0) THEN 1 ELSE 0 END ASC')
-                                            ->orderBy('price')
-                                            ->first();
+                                        // ✅ N+1 FIX: Use eager-loaded best_merchant_product
+                                        $recentMerchant = $product->best_merchant_product;
 
                                         $recentProductUrl = $recentMerchant && $product['slug']
                                             ? route('front.product', ['slug' => $product['slug'], 'vendor_id' => $recentMerchant->user_id, 'merchant_product_id' => $recentMerchant->id])

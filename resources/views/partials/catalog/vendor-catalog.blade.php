@@ -160,15 +160,11 @@
                             <div class="row row-cols-1">
                                 @foreach ($item as $prod)
                                     @php
-                                        $vCatalogProdObj = \App\Models\Product::find($prod['id']);
-                                        $vCatalogMerchant = $vCatalogProdObj ? $vCatalogProdObj->merchantProducts()
-                                            ->where('status', 1)
-                                            ->whereHas('user', function ($user) {
-                                                $user->where('is_vendor', 2);
-                                            })
-                                            ->orderByRaw('CASE WHEN (stock IS NULL OR stock = 0) THEN 1 ELSE 0 END ASC')
-                                            ->orderBy('price')
-                                            ->first() : null;
+                                        // ✅ N+1 FIX: Load product once and reuse
+                                        $vCatalogProdObj = \App\Models\Product::with(['merchantProducts' => fn($q) => $q->where('status', 1)->with('user')->orderBy('price')])->find($prod['id']);
+
+                                        // Use best_merchant_product from eager-loaded data
+                                        $vCatalogMerchant = $vCatalogProdObj?->best_merchant_product;
 
                                         $vCatalogProdUrl = $vCatalogMerchant && isset($prod['slug'])
                                             ? route('front.product', ['slug' => $prod['slug'], 'vendor_id' => $vCatalogMerchant->user_id, 'merchant_product_id' => $vCatalogMerchant->id])
@@ -200,16 +196,17 @@
                                                     </div>
                                                 </div>
                                                 <div class="product-info">
+                                                    {{-- ✅ N+1 FIX: Reuse $vCatalogProdObj instead of querying again --}}
                                                     <h3 class="product-title"><a
-                                                            href="{{ $vCatalogProdUrl }}">{{ App\Models\Product::whereId($prod['id'])->first()->showName() }}</a>
+                                                            href="{{ $vCatalogProdUrl }}">{{ $vCatalogProdObj?->showName() ?? '' }}</a>
                                                     </h3>
                                                     <div class="product-price">
                                                         <div class="price">
-                                                            <ins>{{ App\Models\Product::whereId($prod['id'])->first()->showPrice() }}</ins>
-                                                            <del>{{ App\Models\Product::whereId($prod['id'])->first()->showPreviousPrice() }}</del>
+                                                            <ins>{{ $vCatalogProdObj?->showPrice() ?? '' }}</ins>
+                                                            <del>{{ $vCatalogProdObj?->showPreviousPrice() ?? '' }}</del>
                                                         </div>
                                                         <div class="on-sale">
-                                                            <span>{{ round(App\Models\Product::whereId($prod['id'])->first()->offPercentage())}}</span><span>%
+                                                            <span>{{ $vCatalogProdObj ? round($vCatalogProdObj->offPercentage()) : 0 }}</span><span>%
                                                                 off</span></div>
                                                     </div>
                                                     <div class="shipping-feed-back">

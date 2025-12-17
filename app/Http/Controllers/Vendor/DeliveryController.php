@@ -24,33 +24,77 @@ class DeliveryController extends VendorBaseController
 {
     public function index()
     {
-
         $user = $this->user;
-        $datas = Order::orderby('id', 'desc')->with(array('vendororders' => function ($query) use ($user) {
-            $query->where('user_id', $user->id);
-        }))->get()->reject(function ($item) use ($user) {
-            if ($item->vendororders()->where('user_id', '=', $user->id)->count() == 0) {
-                return true;
-            }
-            return false;
-        });
 
+        // ✅ FIX: Use explicit query instead of silent reject
+        // Get orders that have vendor_orders for this vendor
+        $datas = Order::orderby('id', 'desc')
+            ->whereHas('vendororders', function ($query) use ($user) {
+                $query->where('user_id', $user->id);
+            })
+            ->with(['vendororders' => function ($query) use ($user) {
+                $query->where('user_id', $user->id);
+            }])
+            ->get();
 
-        return view('vendor.delivery.index', compact('datas'));
+        // ✅ Log for debugging if no orders found
+        if ($datas->isEmpty()) {
+            Log::info('Vendor Delivery: No orders found for vendor', [
+                'vendor_id' => $user->id,
+                'vendor_name' => $user->shop_name ?? $user->name,
+                'tip' => 'Check if vendor_orders table has records with this user_id'
+            ]);
+        } else {
+            Log::debug('Vendor Delivery: Found orders', [
+                'vendor_id' => $user->id,
+                'order_count' => $datas->count()
+            ]);
+        }
+
+        // ✅ Check Tryoto configuration status
+        $tryotoStatus = $this->checkTryotoStatus();
+
+        return view('vendor.delivery.index', compact('datas', 'tryotoStatus'));
+    }
+
+    /**
+     * Check Tryoto configuration status for display
+     */
+    private function checkTryotoStatus(): array
+    {
+        $tryotoService = new TryotoService();
+        $config = $tryotoService->checkConfiguration();
+
+        $status = [
+            'available' => $config['configured'],
+            'sandbox' => $config['sandbox'],
+            'has_token' => $config['has_cached_token'],
+            'issues' => $config['issues'] ?? [],
+            'message' => null
+        ];
+
+        if (!$config['configured']) {
+            $status['message'] = __('Smart Shipping (Tryoto) is not configured');
+            Log::warning('Vendor Delivery: Tryoto not configured', $config);
+        }
+
+        return $status;
     }
 
     //*** JSON Request
     public function datatables()
     {
         $user = $this->user;
-        $datas = Order::orderby('id', 'desc')->with(array('vendororders' => function ($query) use ($user) {
-            $query->where('user_id', $user->id);
-        }))->get()->reject(function ($item) use ($user) {
-            if ($item->vendororders()->where('user_id', '=', $user->id)->count() == 0) {
-                return true;
-            }
-            return false;
-        });
+
+        // ✅ FIX: Use whereHas instead of silent reject
+        $datas = Order::orderby('id', 'desc')
+            ->whereHas('vendororders', function ($query) use ($user) {
+                $query->where('user_id', $user->id);
+            })
+            ->with(['vendororders' => function ($query) use ($user) {
+                $query->where('user_id', $user->id);
+            }])
+            ->get();
 
 
         //--- Integrating This Collection Into Datatables
@@ -203,91 +247,245 @@ class DeliveryController extends VendorBaseController
 
     /**
      * عرض خيارات الشحن من Tryoto
+     * ✅ محسّن: معالجة أخطاء أفضل + تحديد المدن من المصادر الصحيحة
      */
     public function getShippingOptions(Request $request)
     {
-        $order = Order::find($request->order_id);
+        try {
+            $order = Order::find($request->order_id);
 
-        if (!$order) {
-            return response()->json(['success' => false, 'error' => __('Order not found')]);
-        }
-
-        $vendor = $this->user;
-
-        // الحصول على مدينة الأصل من البائع
-        $originCity = $this->resolveCityName($vendor->city_id, $vendor->warehouse_city ?? $vendor->shop_city);
-
-        if (!$originCity) {
-            return response()->json(['success' => false, 'error' => __('Vendor city not configured')]);
-        }
-
-        // الحصول على مدينة الوجهة من الطلب
-        $destinationCity = $this->resolveCityName(
-            $order->shipping_city_id ?? $order->customer_city_id,
-            $order->shipping_city ?: $order->customer_city
-        );
-
-        if (!$destinationCity) {
-            return response()->json(['success' => false, 'error' => __('Customer city not specified')]);
-        }
-
-        // حساب الوزن والأبعاد من السلة
-        $dimensions = $this->calculateOrderDimensions($order);
-        $weight = $dimensions['weight'];
-
-        // حساب مبلغ COD إذا كان الدفع عند الاستلام
-        $codAmount = in_array($order->method, ['cod', 'Cash On Delivery']) ? (float)$order->pay_amount : 0;
-
-        Log::debug('Vendor Delivery: Getting shipping options', [
-            'order_id' => $order->id,
-            'origin' => $originCity,
-            'destination' => $destinationCity,
-            'weight' => $weight
-        ]);
-
-        $tryotoService = new TryotoService();
-        $result = $tryotoService->getDeliveryOptions($originCity, $destinationCity, $weight, $codAmount, $dimensions);
-
-        if (!$result['success']) {
-            return response()->json([
-                'success' => false,
-                'error' => $result['error'] ?? __('Failed to get shipping options')
-            ]);
-        }
-
-        $options = $result['options'] ?? [];
-        $html = '<option value="">' . __('Select Shipping Company') . '</option>';
-
-        foreach ($options as $option) {
-            $price = $option['price'] ?? 0;
-            $company = $option['company'] ?? 'Unknown';
-            $deliveryOptionId = $option['deliveryOptionId'] ?? '';
-            $estimatedDays = $option['estimatedDeliveryDays'] ?? '';
-            $logo = $option['logo'] ?? '';
-            $serviceType = $option['serviceType'] ?? '';
-
-            $displayPrice = PriceHelper::showAdminCurrencyPrice($price);
-            $label = $company . ' - ' . $displayPrice;
-            if ($estimatedDays) {
-                $label .= ' (' . $estimatedDays . ' ' . __('days') . ')';
+            if (!$order) {
+                return response()->json([
+                    'success' => false,
+                    'error' => __('Order not found'),
+                    'error_code' => 'ORDER_NOT_FOUND'
+                ]);
             }
 
-            $html .= '<option value="' . $deliveryOptionId . '"
-                        data-company="' . htmlspecialchars($company) . '"
-                        data-price="' . $price . '"
-                        data-display-price="' . $displayPrice . '"
-                        data-days="' . $estimatedDays . '"
-                        data-logo="' . htmlspecialchars($logo) . '"
-                        data-service-type="' . htmlspecialchars($serviceType) . '">' . $label . '</option>';
+            $vendor = $this->user;
+
+            // ✅ مدينة البائع من جدول users (city_id)
+            $originCity = $this->resolveVendorCity($vendor);
+
+            if (!$originCity) {
+                Log::warning('Vendor Delivery: Vendor city not configured', [
+                    'vendor_id' => $vendor->id,
+                    'city_id' => $vendor->city_id,
+                    'shop_city' => $vendor->shop_city ?? null
+                ]);
+                return response()->json([
+                    'success' => false,
+                    'error' => __('Please configure your city in vendor settings'),
+                    'error_code' => 'VENDOR_CITY_MISSING',
+                    'show_settings_link' => true
+                ]);
+            }
+
+            // ✅ مدينة العميل من الخريطة/العنوان في الطلب
+            $destinationCity = $this->resolveCustomerCity($order);
+
+            if (!$destinationCity) {
+                Log::warning('Vendor Delivery: Customer city not found in order', [
+                    'order_id' => $order->id,
+                    'shipping_city' => $order->shipping_city,
+                    'customer_city' => $order->customer_city,
+                    'city_id' => $order->city_id ?? null
+                ]);
+                return response()->json([
+                    'success' => false,
+                    'error' => __('Customer city not specified in order'),
+                    'error_code' => 'CUSTOMER_CITY_MISSING'
+                ]);
+            }
+
+            // حساب الوزن والأبعاد من السلة
+            $dimensions = $this->calculateOrderDimensions($order);
+            $weight = $dimensions['weight'];
+
+            // حساب مبلغ COD إذا كان الدفع عند الاستلام
+            $codAmount = in_array($order->method, ['cod', 'Cash On Delivery']) ? (float)$order->pay_amount : 0;
+
+            Log::debug('Vendor Delivery: Getting shipping options', [
+                'order_id' => $order->id,
+                'vendor_id' => $vendor->id,
+                'origin' => $originCity,
+                'destination' => $destinationCity,
+                'weight' => $weight
+            ]);
+
+            $tryotoService = new TryotoService();
+
+            // ✅ التحقق من إعدادات Tryoto أولاً
+            $config = $tryotoService->checkConfiguration();
+            if (!$config['configured']) {
+                Log::error('Vendor Delivery: Tryoto not configured', $config);
+                return response()->json([
+                    'success' => false,
+                    'error' => __('Smart Shipping is temporarily unavailable'),
+                    'error_code' => 'TRYOTO_NOT_CONFIGURED',
+                    'details' => $config['issues']
+                ]);
+            }
+
+            $result = $tryotoService->getDeliveryOptions($originCity, $destinationCity, $weight, $codAmount, $dimensions);
+
+            if (!$result['success']) {
+                // ✅ معالجة أخطاء محددة
+                $errorCode = $result['error_code'] ?? 'UNKNOWN';
+                $userFriendlyError = $this->getShippingErrorMessage($errorCode, $result['error'] ?? '');
+
+                Log::warning('Vendor Delivery: Tryoto API failed', [
+                    'order_id' => $order->id,
+                    'origin' => $originCity,
+                    'destination' => $destinationCity,
+                    'error' => $result['error'],
+                    'error_code' => $errorCode
+                ]);
+
+                return response()->json([
+                    'success' => false,
+                    'error' => $userFriendlyError,
+                    'error_code' => $errorCode,
+                    'technical_error' => $result['error'] ?? null
+                ]);
+            }
+
+            $options = $result['options'] ?? [];
+
+            if (empty($options)) {
+                return response()->json([
+                    'success' => false,
+                    'error' => __('No shipping options available for this route'),
+                    'error_code' => 'NO_OPTIONS',
+                    'origin' => $originCity,
+                    'destination' => $destinationCity
+                ]);
+            }
+
+            $html = '<option value="">' . __('Select Shipping Company') . '</option>';
+
+            foreach ($options as $option) {
+                $price = $option['price'] ?? 0;
+                $company = $option['company'] ?? 'Unknown';
+                $deliveryOptionId = $option['deliveryOptionId'] ?? '';
+                $estimatedDays = $option['estimatedDeliveryDays'] ?? '';
+                $logo = $option['logo'] ?? '';
+                $serviceType = $option['serviceType'] ?? '';
+
+                $displayPrice = PriceHelper::showAdminCurrencyPrice($price);
+                $label = $company . ' - ' . $displayPrice;
+                if ($estimatedDays) {
+                    $label .= ' (' . $estimatedDays . ' ' . __('days') . ')';
+                }
+
+                $html .= '<option value="' . $deliveryOptionId . '"
+                            data-company="' . htmlspecialchars($company) . '"
+                            data-price="' . $price . '"
+                            data-display-price="' . $displayPrice . '"
+                            data-days="' . $estimatedDays . '"
+                            data-logo="' . htmlspecialchars($logo) . '"
+                            data-service-type="' . htmlspecialchars($serviceType) . '">' . $label . '</option>';
+            }
+
+            return response()->json([
+                'success' => true,
+                'options' => $html,
+                'options_count' => count($options),
+                'origin' => $originCity,
+                'destination' => $destinationCity
+            ]);
+
+        } catch (\Exception $e) {
+            // ✅ لا نُسقط الصفحة - نرجع رسالة خطأ ودية
+            Log::error('Vendor Delivery: Exception in getShippingOptions', [
+                'order_id' => $request->order_id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'error' => __('Shipping service temporarily unavailable. Please try again later.'),
+                'error_code' => 'EXCEPTION'
+            ]);
+        }
+    }
+
+    /**
+     * ✅ مدينة البائع من جدول users (city_id)
+     */
+    private function resolveVendorCity($vendor): ?string
+    {
+        // city_id في جدول users يحتوي على ID المدينة
+        if (!$vendor->city_id) {
+            Log::warning('Vendor has no city_id', [
+                'vendor_id' => $vendor->id,
+                'vendor_name' => $vendor->name
+            ]);
+            return null;
         }
 
-        return response()->json([
-            'success' => true,
-            'options' => $html,
-            'options_count' => count($options),
-            'origin' => $originCity,
-            'destination' => $destinationCity
-        ]);
+        $city = City::find($vendor->city_id);
+
+        if (!$city || !$city->city_name) {
+            Log::warning('City not found for vendor', [
+                'vendor_id' => $vendor->id,
+                'city_id' => $vendor->city_id
+            ]);
+            return null;
+        }
+
+        return $city->city_name;
+    }
+
+    /**
+     * ✅ مدينة العميل من الطلب
+     * customer_city يخزن ID المدينة (من الخريطة)
+     */
+    private function resolveCustomerCity(Order $order): ?string
+    {
+        // customer_city يحتوي على ID المدينة
+        $cityValue = $order->customer_city;
+
+        if (!$cityValue) {
+            Log::warning('Order has no customer_city', [
+                'order_id' => $order->id
+            ]);
+            return null;
+        }
+
+        // إذا كان رقماً (ID)، نبحث عن المدينة
+        if (is_numeric($cityValue)) {
+            $city = City::find($cityValue);
+            if ($city && $city->city_name) {
+                return $city->city_name;
+            }
+
+            Log::warning('City not found for order', [
+                'order_id' => $order->id,
+                'customer_city' => $cityValue
+            ]);
+            return null;
+        }
+
+        // إذا كان نصاً، نستخدمه مباشرة (حالة قديمة)
+        return $cityValue;
+    }
+
+    /**
+     * ✅ رسائل خطأ ودية للمستخدم
+     */
+    private function getShippingErrorMessage(string $errorCode, string $technicalError = ''): string
+    {
+        $messages = [
+            'TOKEN_ERROR' => __('Shipping service authentication failed. Please try again.'),
+            'AUTH_ERROR' => __('Shipping service authentication failed. Please try again.'),
+            'INCOMPLETE_DATA' => __('Missing shipping information. Please check order details.'),
+            'API_ERROR' => __('Shipping service temporarily unavailable.'),
+            'EXCEPTION' => __('Shipping service temporarily unavailable. Please try again later.'),
+        ];
+
+        return $messages[$errorCode] ?? __('Failed to get shipping options. Please try again.');
     }
 
     /**

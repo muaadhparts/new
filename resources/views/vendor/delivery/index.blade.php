@@ -32,6 +32,38 @@
         </div>
         <!-- breadcrumb end -->
 
+        {{-- ✅ Tryoto Status Alert --}}
+        @if(isset($tryotoStatus) && !$tryotoStatus['available'])
+            <div class="alert alert-warning mb-3">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                <strong>@lang('Smart Shipping (Tryoto)'):</strong>
+                {{ $tryotoStatus['message'] ?? __('Not configured') }}
+                @if(!empty($tryotoStatus['issues']))
+                    <ul class="mb-0 mt-2">
+                        @foreach($tryotoStatus['issues'] as $issue)
+                            <li>{{ $issue }}</li>
+                        @endforeach
+                    </ul>
+                @endif
+            </div>
+        @elseif(isset($tryotoStatus) && $tryotoStatus['sandbox'])
+            <div class="alert alert-info mb-3">
+                <i class="fas fa-info-circle me-2"></i>
+                <strong>@lang('Sandbox Mode'):</strong>
+                @lang('Tryoto is running in sandbox/test mode')
+            </div>
+        @endif
+
+        {{-- ✅ Empty Orders Alert --}}
+        @if($datas->isEmpty())
+            <div class="alert alert-secondary mb-3">
+                <i class="fas fa-inbox me-2"></i>
+                @lang('No orders found for delivery.')
+                <br>
+                <small class="text-muted">@lang('Orders will appear here once customers place orders with your products.')</small>
+            </div>
+        @endif
+
         <!-- Table area start  -->
         <div class="vendor-table-wrapper all-orders-table-wrapper">
             <div class="user-table table-responsive position-relative">
@@ -496,13 +528,33 @@
                     }
                 }
             } else {
-                $('#shippingCompanySelect').html('<option value="">@lang("No shipping options available")</option>');
-                if (response.error) {
+                // ✅ تحسين معالجة الأخطاء
+                let errorHtml = '<option value="">@lang("Shipping temporarily unavailable")</option>';
+                $('#shippingCompanySelect').html(errorHtml);
+
+                // عرض رسالة خطأ مناسبة
+                if (response.error_code === 'VENDOR_CITY_MISSING') {
+                    toastr.warning('@lang("Please configure your city in vendor settings")');
+                    if (response.show_settings_link) {
+                        $('#shippingCompanySelect').after('<a href="{{ route("vendor-profile") }}" class="btn btn-sm btn-link">@lang("Go to Settings")</a>');
+                    }
+                } else if (response.error_code === 'CUSTOMER_CITY_MISSING') {
+                    toastr.warning('@lang("Customer city not specified in order")');
+                } else if (response.error_code === 'TRYOTO_NOT_CONFIGURED') {
+                    toastr.error('@lang("Smart Shipping is not configured. Contact admin.")');
+                } else if (response.error) {
                     toastr.error(response.error);
                 }
+
+                // ✅ عرض تفاصيل تقنية في الـ console للتشخيص
+                if (response.technical_error) {
+                    console.warn('Shipping Error Details:', response);
+                }
             }
-        }).fail(function() {
-            $('#shippingCompanySelect').html('<option value="">@lang("Failed to load options")</option>');
+        }).fail(function(xhr) {
+            $('#shippingCompanySelect').html('<option value="">@lang("Connection error - Please try again")</option>');
+            toastr.error('@lang("Failed to connect to shipping service")');
+            console.error('Shipping API Error:', xhr);
         });
 
         // Load riders

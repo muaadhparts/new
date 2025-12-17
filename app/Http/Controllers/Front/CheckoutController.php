@@ -48,6 +48,7 @@ use App\Models\Order;
 use App\Models\PaymentGateway;
 use App\Models\State;
 use App\Services\VendorCartService;
+use App\Services\CheckoutDataService;
 use App\Services\ShippingCalculatorService;
 use Auth;
 use DB;
@@ -314,7 +315,10 @@ class CheckoutController extends FrontBaseController
             }
 //            dd($cart->items);
 
-            return view('frontend.checkout.step2', ['products' => $cart->items, 'totalPrice' => $total, 'pickups' => $pickups, 'totalQty' => $cart->totalQty,'shipping_cost' => 0, 'digital' => $dp, 'curr' => $curr, 'shipping_data' => $shipping_data, 'package_data' => $package_data, 'vendor_shipping_id' => $vendor_shipping_id, 'vendor_packing_id' => $vendor_packing_id, 'step1' => $step1]);
+            // N+1 FIX: Pre-load all vendor data
+            $step2Data = $this->prepareStep2VendorData($cart->items, $step1);
+
+            return view('frontend.checkout.step2', ['products' => $cart->items, 'totalPrice' => $total, 'pickups' => $pickups, 'totalQty' => $cart->totalQty,'shipping_cost' => 0, 'digital' => $dp, 'curr' => $curr, 'shipping_data' => $shipping_data, 'package_data' => $package_data, 'vendor_shipping_id' => $vendor_shipping_id, 'vendor_packing_id' => $vendor_packing_id, 'step1' => $step1, 'vendorData' => $step2Data['vendorData'], 'preloadedCountry' => $step2Data['country']]);
         } else {
 
             if ($this->gs->guest_checkout == 1) {
@@ -353,16 +357,19 @@ class CheckoutController extends FrontBaseController
                     $total = Session::get('coupon_total');
                     $total = str_replace($curr->sign, '', $total) + round(0 * $curr->value, 2);
                 }
+                // N+1 FIX: Pre-load all vendor data
+                $step2Data = $this->prepareStep2VendorData($cart->items, $step1 ?? null);
+
                 foreach ($products as $prod) {
                     if ($prod['item']['type'] != 'Physical') {
                         if (!Auth::check()) {
                             $ck = 1;
-                            return view('frontend.checkout.step2', ['products' => $cart->items, 'totalPrice' => $total, 'pickups' => $pickups, 'totalQty' => $cart->totalQty,'shipping_cost' => 0, 'digital' => $dp, 'curr' => $curr, 'shipping_data' => $shipping_data, 'package_data' => $package_data, 'vendor_shipping_id' => $vendor_shipping_id, 'vendor_packing_id' => $vendor_packing_id]);
+                            return view('frontend.checkout.step2', ['products' => $cart->items, 'totalPrice' => $total, 'pickups' => $pickups, 'totalQty' => $cart->totalQty,'shipping_cost' => 0, 'digital' => $dp, 'curr' => $curr, 'shipping_data' => $shipping_data, 'package_data' => $package_data, 'vendor_shipping_id' => $vendor_shipping_id, 'vendor_packing_id' => $vendor_packing_id, 'vendorData' => $step2Data['vendorData'], 'preloadedCountry' => $step2Data['country']]);
                         }
                     }
                 }
 //                dd($cart->items);
-                return view('frontend.checkout.step2', ['products' => $cart->items, 'totalPrice' => $total, 'pickups' => $pickups, 'totalQty' => $cart->totalQty, 'shipping_cost' => 0, 'digital' => $dp, 'curr' => $curr, 'shipping_data' => $shipping_data, 'package_data' => $package_data, 'vendor_shipping_id' => $vendor_shipping_id, 'vendor_packing_id' => $vendor_packing_id, 'step1' => $step1]);
+                return view('frontend.checkout.step2', ['products' => $cart->items, 'totalPrice' => $total, 'pickups' => $pickups, 'totalQty' => $cart->totalQty, 'shipping_cost' => 0, 'digital' => $dp, 'curr' => $curr, 'shipping_data' => $shipping_data, 'package_data' => $package_data, 'vendor_shipping_id' => $vendor_shipping_id, 'vendor_packing_id' => $vendor_packing_id, 'step1' => $step1, 'vendorData' => $step2Data['vendorData'], 'preloadedCountry' => $step2Data['country']]);
             }
 
             // If guest checkout is Deactivated then display pop up form with proper error message
@@ -401,7 +408,10 @@ class CheckoutController extends FrontBaseController
                 }
                 $ck = 1;
 //                dd($cart->items);
-                return view('frontend.checkout.step2', ['products' => $cart->items, 'totalPrice' => $total, 'pickups' => $pickups, 'totalQty' => $cart->totalQty,'shipping_cost' => 0, 'digital' => $dp, 'curr' => $curr, 'shipping_data' => $shipping_data, 'package_data' => $package_data, 'vendor_shipping_id' => $vendor_shipping_id, 'vendor_packing_id' => $vendor_packing_id, 'step1' => $step1]);
+                // N+1 FIX: Pre-load all vendor data
+                $step2Data = $this->prepareStep2VendorData($cart->items, $step1);
+
+                return view('frontend.checkout.step2', ['products' => $cart->items, 'totalPrice' => $total, 'pickups' => $pickups, 'totalQty' => $cart->totalQty,'shipping_cost' => 0, 'digital' => $dp, 'curr' => $curr, 'shipping_data' => $shipping_data, 'package_data' => $package_data, 'vendor_shipping_id' => $vendor_shipping_id, 'vendor_packing_id' => $vendor_packing_id, 'step1' => $step1, 'vendorData' => $step2Data['vendorData'], 'preloadedCountry' => $step2Data['country']]);
             }
         }
     }
@@ -884,6 +894,9 @@ class CheckoutController extends FrontBaseController
         }
 
         // أعرض صفحة وسائل الدفع (Step 3)
+        // ✅ N+1 FIX: Pre-load country for step3
+        $preloadedCountry = CheckoutDataService::loadCountry($step1);
+
         return view('frontend.checkout.step3', [
             'products'            => $cart->items,
             'totalPrice'          => $total,
@@ -900,6 +913,7 @@ class CheckoutController extends FrontBaseController
             'paystack'            => $paystackData,
             'step2'               => $step2,
             'step1'               => $step1,
+            'preloadedCountry'    => $preloadedCountry,
         ]);
     }
 
@@ -1643,8 +1657,9 @@ class CheckoutController extends FrontBaseController
         $pickups = DB::table('pickups')->get();
         $curr = $this->curr;
 
-        // Get country and state for tax calculation
-        $country = Country::where('country_name', $step1->customer_country)->first();
+        // N+1 FIX: Pre-load all vendor data
+        $step2VendorData = $this->prepareStep2VendorData($vendorProducts, $step1);
+        $country = $step2VendorData['country'];
         $isState = isset($step1->customer_state) ? 1 : 0;
 
         // Group products by vendor (will contain single vendor only)
@@ -1667,10 +1682,12 @@ class CheckoutController extends FrontBaseController
             'vendor_packing_id' => $vendorId,
             'step1' => $step1,
             'step2' => $step2, // ✅ Pass saved step2 data to view
-            'country' => $country, // For tax calculation
+            'country' => $country, // For tax calculation (N+1 FIX)
+            'preloadedCountry' => $country, // Alias for Blade
             'isState' => $isState, // For tax calculation
             'is_vendor_checkout' => true,
-            'vendor_id' => $vendorId
+            'vendor_id' => $vendorId,
+            'vendorData' => $step2VendorData['vendorData'], // N+1 FIX
         ]);
     }
 
@@ -1992,6 +2009,9 @@ class CheckoutController extends FrontBaseController
         // This is the ONLY source of truth for final total
         $finalTotal = $step2->total ?? $productsTotal;
 
+        // ✅ N+1 FIX: Pre-load country for step3
+        $preloadedCountry = CheckoutDataService::loadCountry($step1);
+
         return view('frontend.checkout.step3', [
             'products' => $vendorProducts,
             'productsTotal' => $productsTotal, // Products only - ALWAYS for "Total MRP" display
@@ -2010,7 +2030,8 @@ class CheckoutController extends FrontBaseController
             'step2' => $step2, // CRITICAL: Contains pre-calculated total (products + tax + shipping)
             'step1' => $step1,
             'is_vendor_checkout' => true,
-            'vendor_id' => $vendorId
+            'vendor_id' => $vendorId,
+            'preloadedCountry' => $preloadedCountry,
         ]);
     }
 
@@ -2204,5 +2225,30 @@ class CheckoutController extends FrontBaseController
                 ? 'City verified with Tryoto'
                 : 'City not supported by Tryoto shipping'
         ]);
+    }
+
+    /**
+     * ========================================================================
+     * N+1 OPTIMIZATION: Prepare vendor data for step2 view
+     * ========================================================================
+     * Pre-loads all vendor data (shipping, packaging, vendor info) in bulk
+     * to avoid N+1 queries inside Blade template.
+     *
+     * @param array $products Cart products
+     * @param object|null $step1 Step1 session data
+     * @return array [vendorData, country]
+     */
+    protected function prepareStep2VendorData(array $products, $step1 = null): array
+    {
+        // Pre-load all vendor data using CheckoutDataService
+        $vendorData = CheckoutDataService::loadVendorData($products);
+
+        // Pre-load country data
+        $country = CheckoutDataService::loadCountry($step1);
+
+        return [
+            'vendorData' => $vendorData,
+            'country' => $country,
+        ];
     }
 }

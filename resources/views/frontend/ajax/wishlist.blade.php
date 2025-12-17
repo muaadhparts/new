@@ -1,16 +1,10 @@
 <tbody class="wishlist-items-wrapper">
     @foreach($wishlists as $wishlist)
     @php
-        // Use effective_merchant_product from controller, or fetch from product
+        // ✅ N+1 FIX: Use pre-loaded effective_merchant_product from controller
+        // Falls back to getEffectiveMerchantProduct() which uses eager-loaded data
         $wishlistMerchant = $wishlist->effective_merchant_product
-            ?? ($wishlist->product ? $wishlist->product->merchantProducts()
-                ->where('status', 1)
-                ->whereHas('user', function ($user) {
-                    $user->where('is_vendor', 2);
-                })
-                ->orderByRaw('CASE WHEN (stock IS NULL OR stock = 0) THEN 1 ELSE 0 END ASC')
-                ->orderBy('price')
-                ->first() : null);
+            ?? $wishlist->getEffectiveMerchantProduct();
 
         $productSlug = $wishlist->product->slug ?? $wishlist->slug ?? null;
         $wishlistProductUrl = $wishlistMerchant && $productSlug

@@ -28,6 +28,8 @@ class Wishlist extends Model
     /**
      * Get the effective merchant product for this wishlist item
      * If merchant_product_id is set, use it. Otherwise, find first active merchant product
+     *
+     * ✅ N+1 FIX: Uses eager-loaded product.merchantProducts when available
      */
     public function getEffectiveMerchantProduct()
     {
@@ -35,7 +37,15 @@ class Wishlist extends Model
             return $this->merchantProduct;
         }
 
-        // Backward compatibility: find first active merchant product for this product
+        // ✅ N+1 FIX: Use eager-loaded product.merchantProducts if available
+        if ($this->relationLoaded('product') && $this->product && $this->product->relationLoaded('merchantProducts')) {
+            return $this->product->merchantProducts
+                ->filter(fn($mp) => $mp->status == 1)
+                ->sortBy('price')
+                ->first();
+        }
+
+        // Backward compatibility fallback (should rarely happen with proper eager loading)
         return \App\Models\MerchantProduct::where('product_id', $this->product_id)
             ->where('status', 1)
             ->orderBy('price')

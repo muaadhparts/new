@@ -205,23 +205,13 @@
 
                         @foreach ($resultArray as $vendor_id => $array_product)
                             @php
-
-                                if ($vendor_id != 0) {
-                                    $shipping = App\Models\Shipping::forVendor($vendor_id)->get();
-                                    $packaging = App\Models\Package::where('user_id', $vendor_id)->get();
-                                    // No fallback to user 0 - if vendor has no packages, $packaging will be empty
-                                    $vendor = App\Models\User::findOrFail($vendor_id);
-                                } else {
-                                    $shipping = App\Models\Shipping::forVendor(0)->get();
-                                    $packaging = collect(); // Empty collection - no global packaging
-                                    $vendor = App\Models\Admin::findOrFail(1);
-                                }
-
-                                // Group shipping by provider
-                                $groupedShipping = $shipping->groupBy('provider');
-
-                                // Provider labels
-                                $providerLabels = [
+                                // ✅ N+1 FIX: Use pre-loaded data from CheckoutDataService
+                                $vendorInfo = $vendorData[$vendor_id] ?? null;
+                                $shipping = isset($vendorInfo['shipping']) ? collect($vendorInfo['shipping']) : collect();
+                                $packaging = $vendorInfo['packaging'] ?? collect();
+                                $vendor = $vendorInfo['vendor'] ?? null;
+                                $groupedShipping = $vendorInfo['grouped_shipping'] ?? collect();
+                                $providerLabels = $vendorInfo['provider_labels'] ?? [
                                     'manual' => __('Manual Shipping'),
                                     'debts' => __('Debts Shipping'),
                                     'tryoto' => __('Smart Shipping (Tryoto)'),
@@ -686,14 +676,8 @@
     <!--  checkout wrapper end-->
 
     @php
-        // Try to get country by ID first (from map selection), then by name (legacy)
-        $country = null;
-        if (!empty($step1->country_id)) {
-            $country = App\Models\Country::find($step1->country_id);
-        }
-        if (!$country && !empty($step1->customer_country)) {
-            $country = App\Models\Country::where('country_name', $step1->customer_country)->first();
-        }
+        // ✅ N+1 FIX: Use pre-loaded country from CheckoutDataService
+        $country = $preloadedCountry ?? null;
         $countryId = $country ? $country->id : 0;
         $isState = isset($step1->state_id) ? $step1->state_id : (isset($step1->customer_state) ? $step1->customer_state : 0);
     @endphp

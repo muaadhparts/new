@@ -36,7 +36,9 @@ class CatalogController extends FrontBaseController
         $brand_qualities = QualityBrand::active()->orderBy('name_en', 'asc')->get();
 
         // Retrieve latest products that have at least one active merchant listing with a vendor account
+        // ✅ N+1 FIX: Use withBestMerchant() for eager loading
         $latest_products = Product::with('brand')
+            ->withBestMerchant()
             ->whereLatest(1)
             ->whereHas('merchantProducts', function ($q) {
                 $q->where('status', 1)
@@ -128,7 +130,9 @@ class CatalogController extends FrontBaseController
         }
 
         // Retrieve latest products that have at least one active merchant listing with a vendor account
+        // ✅ N+1 FIX: Use withBestMerchant() for eager loading
         $data['latest_products'] = Product::with('brand')
+            ->withBestMerchant()
             ->whereLatest(1)
             ->whereHas('merchantProducts', function ($q) {
                 $q->where('status', 1)
