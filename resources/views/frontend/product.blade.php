@@ -104,7 +104,7 @@
                                         fill="#EEAE0B" />
                                 </svg>
                                 <span class="rating">{{ number_format($productt->ratings_avg_rating ?? 0, 1) }}
-                                    ({{ App\Models\Rating::ratingCount($productt->id) }} @lang('Reviews'))</span>
+                                    ({{ $productt->ratings_count ?? 0 }} @lang('Reviews'))</span>
                             </div>
 
                             {{-- Product Info: SKU, Brand, Quality Brand, Vendor, Stock --}}
@@ -119,7 +119,6 @@
                                 :show-vendor="true"
                                 :show-stock="true"
                             />
-                            </div>
                         </div>
 
 
@@ -645,7 +644,7 @@
                             <div id="comments">
                                 <h5 class="woocommerce-Reviews-titleDDD my-3"> @lang('Ratings & Reviews')</h5>
                                 <ul class="all-comments">
-                                    @forelse($productt->ratings() as $review)
+                                    @forelse($productt->ratings as $review)
                                         <li>
                                             <div class="single-comment">
                                                 <div class="left-area">
@@ -812,22 +811,7 @@
 
 
     <!-- Related Products slider start -->
-    @php
-        // Get related products with stock > 0 through MerchantProduct
-        $relatedMerchantProducts = App\Models\MerchantProduct::where('status', 1)
-            ->where('stock', '>', 0)
-            ->whereHas('product', function($q) use ($productt) {
-                $q->where('status', 1)
-                  ->where('type', $productt->type)
-                  ->where('product_type', $productt->product_type)
-                  ->where('id', '!=', $productt->id);
-            })
-            ->whereHas('user', fn($u) => $u->where('is_vendor', 2))
-            ->with(['product' => fn($q) => $q->withCount('ratings')->withAvg('ratings', 'rating'), 'user', 'qualityBrand'])
-            ->inRandomOrder()
-            ->take(12)
-            ->get();
-    @endphp
+    {{-- NOTE: $relatedMerchantProducts is pre-loaded from Controller (optimized, no N+1) --}}
     @if($relatedMerchantProducts->count() > 0)
     <div class="gs-product-cards-slider-area wow-replaced" data-wow-delay=".1s">
         <div class="container">

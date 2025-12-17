@@ -20,10 +20,8 @@
                         <li><a class="border px-3 py-1" href="{{route('rider.login')}}">{{__('Rider Login')}}</a></li>
                         @endif
 
+                        {{-- Using cached $languges from AppServiceProvider --}}
                         <li class="my-account-dropdown">
-                            @php
-                            $languges = App\Models\Language::all();
-                            @endphp
                             <div class="language-selector nice-select">
                                 <i class="fas fa-globe-americas text-dark"></i>
                                 <select name="language" class="language selectors nice select2-js-init">
@@ -38,15 +36,11 @@
                                 </select>
                             </div>
                         </li>
-                        @php
-                        $currencies = App\Models\Currency::all();
-                        @endphp
+                        {{-- Using cached $currencies and $curr from AppServiceProvider --}}
                         <li class="my-account-dropdown">
                             <div class="currency-selector nice-select">
                                 <span class="text-dark">
-                                    {{ Session::has('currency') ?
-                                    $currencies->where('id','=',Session::get('currency'))->first()->sign :
-                                    DB::table('currencies')->where('is_default','=',1)->first()->sign }}
+                                    {{ $curr->sign ?? '$' }}
                                 </span>
                                 <select name="currency" class="currency selectors nice select2-js-init">
                                     @foreach($currencies as $currency)

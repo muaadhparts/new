@@ -52,8 +52,14 @@
 
 
             @if (Auth::check())
-                <a href="javascript" class="wishlist" data-href="{{ isset($merchant) ? route('merchant.wishlist.add', $merchant->id) : route('user-wishlist-add', $product->id) }}">
-                    <div class="add-to-wishlist-btn {{ isset($merchant) ? (merchantWishlistCheck($merchant->id) ? 'active' : '') : (wishlistCheck($product->id) ? 'active' : '') }}">
+                @php
+                    // Use pre-loaded wishlist data from Controller (no N+1 query)
+                    $isInWishlist = isset($merchant)
+                        ? (isset($wishlistMerchantIds) ? $wishlistMerchantIds->contains($merchant->id) : false)
+                        : (isset($wishlistProductIds) ? $wishlistProductIds->contains($actualProduct->id) : false);
+                @endphp
+                <a href="javascript" class="wishlist" data-href="{{ isset($merchant) ? route('merchant.wishlist.add', $merchant->id) : route('user-wishlist-add', $actualProduct->id) }}">
+                    <div class="add-to-wishlist-btn {{ $isInWishlist ? 'active' : '' }}">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
                             fill="none">
                             <path fill-rule="evenodd" clip-rule="evenodd"

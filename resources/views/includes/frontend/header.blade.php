@@ -72,9 +72,9 @@
 
                     <span class="muaadh-topbar-divider d-none d-lg-block"></span>
 
-                    {{-- Quick Auth Links --}}
+                    {{-- Quick Auth Links - Using $authUser/$riderUser from HeaderComposer --}}
                     <div class="muaadh-topbar-auth d-none d-lg-flex">
-                        @if (Auth::guard('web')->check() && Auth::guard('web')->user()->is_vendor == 2)
+                        @if ($authUser && $authUser->is_vendor == 2)
                             <a href="{{ route('vendor.dashboard') }}" class="muaadh-topbar-link">
                                 <i class="fas fa-store"></i>
                                 <span>@lang('Vendor Panel')</span>
@@ -86,7 +86,7 @@
                             </a>
                         @endif
 
-                        @if (!Auth::guard('rider')->check())
+                        @if (!($riderUser ?? null))
                             <a href="{{ route('rider.login') }}" class="muaadh-topbar-link">
                                 <i class="fas fa-motorcycle"></i>
                                 <span>@lang('Rider')</span>
@@ -123,18 +123,19 @@
                     <div class="muaadh-action-dropdown">
                         <button type="button" class="muaadh-action-btn" data-bs-toggle="dropdown">
                             <i class="fas fa-user"></i>
+                            {{-- Using $authUser/$riderUser from HeaderComposer --}}
                             <span class="muaadh-action-label d-none d-md-block">
-                                @if (Auth::guard('web')->check())
-                                    {{ Str::limit(Auth::guard('web')->user()->name, 10) }}
-                                @elseif(Auth::guard('rider')->check())
-                                    {{ Str::limit(Auth::guard('rider')->user()->name, 10) }}
+                                @if ($authUser)
+                                    {{ Str::limit($authUser->name, 10) }}
+                                @elseif($riderUser ?? null)
+                                    {{ Str::limit($riderUser->name, 10) }}
                                 @else
                                     @lang('Account')
                                 @endif
                             </span>
                         </button>
                         <div class="muaadh-action-menu">
-                            @if (Auth::guard('web')->check())
+                            @if ($authUser)
                                 <a href="{{ route('user-dashboard') }}" class="muaadh-action-menu-item">
                                     <i class="fas fa-tachometer-alt"></i>
                                     <span>@lang('Dashboard')</span>
@@ -152,7 +153,7 @@
                                     <i class="fas fa-sign-out-alt"></i>
                                     <span>@lang('Logout')</span>
                                 </a>
-                            @elseif(Auth::guard('rider')->check())
+                            @elseif($riderUser ?? null)
                                 <a href="{{ route('rider-dashboard') }}" class="muaadh-action-menu-item">
                                     <i class="fas fa-tachometer-alt"></i>
                                     <span>@lang('Dashboard')</span>
@@ -174,12 +175,10 @@
                         </div>
                     </div>
 
-                    {{-- Wishlist --}}
-                    <a href="{{ auth()->check() ? route('user-wishlists') : route('user.login') }}" class="muaadh-action-btn">
+                    {{-- Wishlist - Using cached $wishlistCount from HeaderComposer --}}
+                    <a href="{{ $authUser ? route('user-wishlists') : route('user.login') }}" class="muaadh-action-btn">
                         <i class="fas fa-heart"></i>
-                        <span class="muaadh-badge" id="wishlist-count">
-                            {{ Auth::guard('web')->check() ? Auth::guard('web')->user()->wishlistCount() : '0' }}
-                        </span>
+                        <span class="muaadh-badge" id="wishlist-count">{{ $wishlistCount }}</span>
                     </a>
 
                     {{-- Compare --}}

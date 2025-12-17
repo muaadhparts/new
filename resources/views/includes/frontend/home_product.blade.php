@@ -80,9 +80,13 @@
 
             {{-- Wishlist Button --}}
             @auth
+                @php
+                    // Use pre-loaded wishlist data from Controller (no N+1 query)
+                    $isInWishlist = isset($wishlistProductIds) ? $wishlistProductIds->contains($actualProduct->id) : false;
+                @endphp
                 <button type="button" class="m-product-card__wishlist wishlist"
                     data-href="{{ route('user-wishlist-add', $actualProduct->id) }}">
-                    <i class="{{ wishlistCheck($actualProduct->id) ? 'fas' : 'far' }} fa-heart"></i>
+                    <i class="{{ $isInWishlist ? 'fas' : 'far' }} fa-heart"></i>
                 </button>
             @else
                 <a href="{{ route('user.login') }}" class="m-product-card__wishlist">

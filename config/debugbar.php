@@ -15,11 +15,12 @@ return [
      */
 
     // DEBUGBAR_ENABLED=true في .env لتفعيله، الـ middleware يتحكم في من يراه
-    'enabled' => env('DEBUGBAR_ENABLED', false),
+    'enabled' => env('DEBUGBAR_ENABLED', true),
     'hide_empty_tabs' => true, // Hide tabs until they have content
     'except' => [
         'telescope*',
         'horizon*',
+        'api/*',
     ],
 
     /*
@@ -163,31 +164,31 @@ return [
      */
 
     'collectors' => [
-        'phpinfo'         => true,   // Php version
-        'messages'        => true,   // Messages
-        'time'            => true,   // Time Datalogger
-        'memory'          => true,   // Memory usage
-        'exceptions'      => true,   // Exception displayer
-        'log'             => true,   // Logs from Monolog (merged in messages if enabled)
-        'db'              => true,   // Show database (PDO) queries and bindings
-        'views'           => true,   // Views with their data
-        'route'           => true,   // Current route information
-        'auth'            => true,   // Display Laravel authentication status
-        'gate'            => true,   // Display Laravel Gate checks
-        'session'         => true,   // Display session data
-        'symfony_request' => true,   // Only one can be enabled..
-        'mail'            => true,   // Catch mail messages
-        'laravel'         => true,   // Laravel version and environment
-        'events'          => true,   // All events fired
-        'default_request' => false,  // Regular or special Symfony request logger
-        'logs'            => true,   // Add the latest log messages
-        'files'           => false,  // Show the included files
-        'config'          => false,  // Display config settings
-        'cache'           => true,   // Display cache events
-        'models'          => true,   // Display models
-        'livewire'        => true,   // Display Livewire (when available)
-        'jobs'            => true,   // Display dispatched jobs
-        'pennant'         => false,  // Display Pennant feature flags
+        'phpinfo'         => false,  // Php version
+        'messages'        => true,   // Messages (lightweight)
+        'time'            => true,   // Time Datalogger ✅
+        'memory'          => true,   // Memory usage (lightweight)
+        'exceptions'      => true,   // Exception displayer ✅
+        'log'             => true,   // Logs from Monolog
+        'db'              => true,   // Show database queries (useful for debugging)
+        'views'           => false,  // ❌ DISABLED - causes memory issues with DTOs
+        'route'           => true,   // Current route (lightweight)
+        'auth'            => false,  // ❌ DISABLED
+        'gate'            => false,  // ❌ DISABLED
+        'session'         => false,  // ❌ DISABLED - can be large
+        'symfony_request' => false,  // ❌ DISABLED - heavy request data
+        'mail'            => false,  // ❌ DISABLED
+        'laravel'         => true,   // Laravel version (lightweight)
+        'events'          => false,  // ❌ DISABLED - many events
+        'default_request' => false,  // ❌ DISABLED
+        'logs'            => false,  // ❌ DISABLED
+        'files'           => false,  // ❌ DISABLED
+        'config'          => false,  // ❌ DISABLED
+        'cache'           => false,  // ❌ DISABLED
+        'models'          => false,  // ❌ DISABLED - causes memory issues
+        'livewire'        => false,  // ❌ DISABLED
+        'jobs'            => false,  // ❌ DISABLED
+        'pennant'         => false,  // ❌ DISABLED
     ],
 
     /*
@@ -218,33 +219,31 @@ return [
         ],
         'db' => [
             'with_params'       => true,   // Render SQL with the parameters substituted
-            'exclude_paths'     => [       // Paths to exclude entirely from the collector
-//                'vendor/laravel/framework/src/Illuminate/Session', // Exclude sessions queries
+            'exclude_paths'     => [],     // Paths to exclude entirely from the collector
+            'backtrace'         => false,  // ❌ DISABLED - reduces memory
+            'backtrace_exclude_paths' => [],
+            'timeline'          => false,  // ❌ DISABLED - reduces memory
+            'duration_background'  => true,
+            'explain' => [
+                'enabled' => false,        // ❌ DISABLED - reduces memory
             ],
-            'backtrace'         => true,   // Use a backtrace to find the origin of the query in your files.
-            'backtrace_exclude_paths' => [],   // Paths to exclude from backtrace. (in addition to defaults)
-            'timeline'          => true,   // Add the queries to the timeline
-            'duration_background'  => true,   // Show shaded background on each query relative to how long it took to execute.
-            'explain' => [                 // Show EXPLAIN output on queries
-                'enabled' => true,
-            ],
-            'hints'             => true,   // Show hints for common mistakes
-            'show_copy'         => true,    // Show copy button next to the query,
-            'slow_threshold'    => 100,     // Track queries that last longer than 100ms (البطيئة)
-            'memory_usage'      => true,    // Show queries memory usage
-            'soft_limit'       => 200,      // After the soft limit, no parameters/backtrace are captured
-            'hard_limit'       => 1000,     // After the hard limit, queries are ignored
+            'hints'             => false,  // ❌ DISABLED
+            'show_copy'         => true,
+            'slow_threshold'    => 100,    // Track queries > 100ms
+            'memory_usage'      => false,  // ❌ DISABLED
+            'soft_limit'       => 50,      // Reduced from 200
+            'hard_limit'       => 100,     // Reduced from 1000
         ],
         'mail' => [
             'timeline' => true,  // Add mails to the timeline
             'show_body' => true,
         ],
         'views' => [
-            'timeline' => true,    // Add the views to the timeline
-            'data' => false,        // True for all data, 'keys' for only names, false for no parameters.
-            'group' => 50,          // Group duplicate views. Pass value to auto-group, or true/false to force
-            'exclude_paths' => [    // Add the paths which you don't want to appear in the views
-                'vendor/filament'   // Exclude Filament components by default
+            'timeline' => false,   // Add the views to the timeline - DISABLED
+            'data' => false,       // True for all data, 'keys' for only names, false for no parameters.
+            'group' => 50,         // Group duplicate views. Pass value to auto-group, or true/false to force
+            'exclude_paths' => [   // Add the paths which you don't want to appear in the views
+                'vendor/filament'  // Exclude Filament components by default
             ],
         ],
         'route' => [

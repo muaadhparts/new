@@ -131,10 +131,8 @@ class MerchantProduct extends Model
             return 0.0;
         }
 
-        // إضافة عمولة المنصّة (ثابتة + نسبة) على السعر الأساسي
-        $gs = \App\Models\Generalsetting::query()
-            ->select(['fixed_commission', 'percentage_commission'])
-            ->first();
+        // إضافة عمولة المنصّة (ثابتة + نسبة) على السعر الأساسي - مع cache
+        $gs = cache()->remember('generalsettings', now()->addDay(), fn () => DB::table('generalsettings')->first());
 
         $final = $base;
 

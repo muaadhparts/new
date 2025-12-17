@@ -22,28 +22,28 @@
         </button>
     </div>
 
-    {{-- User Info (if logged in) --}}
-    @if (Auth::guard('web')->check())
+    {{-- User Info (if logged in) - Using $authUser/$riderUser from HeaderComposer --}}
+    @if ($authUser)
         <div class="muaadh-mobile-user">
             <div class="muaadh-mobile-user-avatar">
-                @if(Auth::guard('web')->user()->photo)
-                    <img src="{{ asset('assets/images/users/' . Auth::guard('web')->user()->photo) }}" alt="">
+                @if($authUser->photo)
+                    <img src="{{ asset('assets/images/users/' . $authUser->photo) }}" alt="">
                 @else
                     <i class="fas fa-user"></i>
                 @endif
             </div>
             <div class="muaadh-mobile-user-info">
-                <span class="muaadh-mobile-user-name">{{ Auth::guard('web')->user()->name }}</span>
+                <span class="muaadh-mobile-user-name">{{ $authUser->name }}</span>
                 <a href="{{ route('user-dashboard') }}" class="muaadh-mobile-user-link">@lang('View Dashboard')</a>
             </div>
         </div>
-    @elseif (Auth::guard('rider')->check())
+    @elseif ($riderUser ?? null)
         <div class="muaadh-mobile-user">
             <div class="muaadh-mobile-user-avatar">
                 <i class="fas fa-motorcycle"></i>
             </div>
             <div class="muaadh-mobile-user-info">
-                <span class="muaadh-mobile-user-name">{{ Auth::guard('rider')->user()->name }}</span>
+                <span class="muaadh-mobile-user-name">{{ $riderUser->name }}</span>
                 <a href="{{ route('rider-dashboard') }}" class="muaadh-mobile-user-link">@lang('Rider Dashboard')</a>
             </div>
         </div>
@@ -271,9 +271,9 @@
             <script type="application/json" id="mobile-categories-data">{!! json_encode($mobileCategoriesJson) !!}</script>
         </div>
 
-        {{-- Account Tab --}}
+        {{-- Account Tab - Using $authUser/$riderUser from HeaderComposer --}}
         <div class="muaadh-mobile-tab-pane" id="menu-account">
-            @if (Auth::guard('web')->check())
+            @if ($authUser)
                 <nav class="muaadh-mobile-nav">
                     <a href="{{ route('user-dashboard') }}" class="muaadh-mobile-nav-item">
                         <i class="fas fa-tachometer-alt"></i>
@@ -300,7 +300,7 @@
                         <span>@lang('Logout')</span>
                     </a>
                 </nav>
-            @elseif (Auth::guard('rider')->check())
+            @elseif ($riderUser ?? null)
                 <nav class="muaadh-mobile-nav">
                     <a href="{{ route('rider-dashboard') }}" class="muaadh-mobile-nav-item">
                         <i class="fas fa-tachometer-alt"></i>
@@ -386,20 +386,17 @@
             </a>
         </div>
 
-        {{-- Social Links --}}
-        @php
-            $socialLinks = \App\Models\Socialsetting::first();
-        @endphp
-        @if($socialLinks && ($socialLinks->facebook || $socialLinks->twitter || $socialLinks->linkedin))
+        {{-- Social Links - Using cached $socialsetting from AppServiceProvider --}}
+        @if($socialsetting && ($socialsetting->facebook || $socialsetting->twitter || $socialsetting->linkedin))
             <div class="muaadh-mobile-social">
-                @if($socialLinks->facebook)
-                    <a href="{{ $socialLinks->facebook }}" target="_blank"><i class="fab fa-facebook-f"></i></a>
+                @if($socialsetting->facebook)
+                    <a href="{{ $socialsetting->facebook }}" target="_blank"><i class="fab fa-facebook-f"></i></a>
                 @endif
-                @if($socialLinks->twitter)
-                    <a href="{{ $socialLinks->twitter }}" target="_blank"><i class="fab fa-twitter"></i></a>
+                @if($socialsetting->twitter)
+                    <a href="{{ $socialsetting->twitter }}" target="_blank"><i class="fab fa-twitter"></i></a>
                 @endif
-                @if($socialLinks->linkedin)
-                    <a href="{{ $socialLinks->linkedin }}" target="_blank"><i class="fab fa-linkedin-in"></i></a>
+                @if($socialsetting->linkedin)
+                    <a href="{{ $socialsetting->linkedin }}" target="_blank"><i class="fab fa-linkedin-in"></i></a>
                 @endif
             </div>
         @endif

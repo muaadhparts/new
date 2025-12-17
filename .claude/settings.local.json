@@ -46,7 +46,10 @@
       "Bash(powershell -Command \"(Get-Content ''app\\Http\\Controllers\\GeocodingController.php'') -replace ''Log::info\\('', ''Log::debug('' | Set-Content ''app\\Http\\Controllers\\GeocodingController.php''\")",
       "Bash(powershell -Command \"(Get-Content ''app\\Http\\Controllers\\Api\\GeocodingController.php'') -replace ''Log::info\\('', ''Log::debug('' | Set-Content ''app\\Http\\Controllers\\Api\\GeocodingController.php''\")",
       "Bash(powershell -Command:*)",
-      "Bash(powershell -Command \"(Get-Content ''app\\Traits\\CreatesTryotoShipments.php'') -replace ''Log::info\\('', ''Log::debug('' | Set-Content ''app\\Traits\\CreatesTryotoShipments.php''\")"
+      "Bash(powershell -Command \"(Get-Content ''app\\Traits\\CreatesTryotoShipments.php'') -replace ''Log::info\\('', ''Log::debug('' | Set-Content ''app\\Traits\\CreatesTryotoShipments.php''\")",
+      "Bash(del \"C:\\Users\\hp\\Herd\\new\\app\\Http\\Middleware\\InitializeViewData.php\")",
+      "Bash(Select-String -Pattern \"Error|Exception|error\")",
+      "Bash(Select-Object -First 50)"
     ],
     "deny": [],
     "ask": []

@@ -41,11 +41,16 @@
                         <h4 class="muaadh-search-results-title mb-1">
                             <i class="fas fa-box-open"></i>
                             @lang('Total Listings Found:')
-                            <span class="muaadh-search-results-count">{{ $filteredMerchants->count() }}</span>
+                            <span class="muaadh-search-results-count">{{ $cards->total() + $alternativeCards->count() }}</span>
                         </h4>
                         <p class="muaadh-search-results-query mb-0">
                             <i class="fas fa-search me-1"></i>
                             @lang('Query') : <strong>{{ $sku }}</strong>
+                            @if($cards->total() > 12)
+                                <span class="text-muted ms-2">
+                                    (@lang('Page') {{ $cards->currentPage() }} @lang('of') {{ $cards->lastPage() }})
+                                </span>
+                            @endif
                         </p>
                     </div>
                     {{-- View Toggle Buttons --}}
@@ -72,7 +77,7 @@
                     </div>
                 </div>
 
-                @if ($filteredMerchants->isEmpty())
+                @if ($cards->total() === 0 && $alternativeCards->isEmpty())
                     {{-- No Results Found --}}
                     <div class="no-results-wrapper text-center py-5">
                         <div class="card shadow-sm">
@@ -84,80 +89,77 @@
                         </div>
                     </div>
                 @else
-                    @php
-                        $mainProducts = $filteredMerchants->where('is_alternative', false);
-                        $alternativeProducts = $filteredMerchants->where('is_alternative', true);
-                    @endphp
-
                     <!-- main content -->
                     <div class="tab-content" id="myTabContent">
                         <!-- product list view start  -->
                         <div class="tab-pane fade show active" id="layout-list-pane" role="tabpanel" tabindex="0">
                             <div class="row gy-4 gy-lg-5">
-                                {{-- Main Products - Pass MerchantProduct directly like category page --}}
-                                @foreach ($mainProducts as $item)
-                                    @include('includes.frontend.list_view_product', [
-                                        'product' => $item['merchant'],
-                                    ])
+                                {{-- Main Products --}}
+                                @foreach ($cards as $card)
+                                    @include('includes.frontend.product_card_dto', ['card' => $card, 'layout' => 'list'])
                                 @endforeach
-
-                                {{-- Alternatives Section --}}
-                                @if($alternativeProducts->count() > 0)
-                                    <div class="col-12">
-                                        <div class="alternatives-section mt-4">
-                                            <div class="section-header mb-4">
-                                                <h3 class="text-primary">
-                                                    <i class="fas fa-exchange-alt me-2"></i>
-                                                    {{ trans('Substitutions') }}
-                                                </h3>
-                                                <hr class="border-primary">
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    @foreach ($alternativeProducts as $item)
-                                        @include('includes.frontend.list_view_product', [
-                                            'product' => $item['merchant'],
-                                        ])
-                                    @endforeach
-                                @endif
                             </div>
+
+                            {{-- Pagination Links --}}
+                            @if($cards->hasPages())
+                                <div class="d-flex justify-content-center mt-4">
+                                    {{ $cards->links('pagination::bootstrap-5') }}
+                                </div>
+                            @endif
+
+                            {{-- Alternatives Section (shown only on first page) --}}
+                            @if($alternativeCards->isNotEmpty() && $cards->currentPage() === 1)
+                                <div class="alternatives-section mt-5">
+                                    <div class="section-header mb-4">
+                                        <h3 class="text-primary">
+                                            <i class="fas fa-exchange-alt me-2"></i>
+                                            @lang('Substitutions')
+                                        </h3>
+                                        <hr class="border-primary">
+                                    </div>
+                                    <div class="row gy-4 gy-lg-5">
+                                        @foreach ($alternativeCards as $card)
+                                            @include('includes.frontend.product_card_dto', ['card' => $card, 'layout' => 'list'])
+                                        @endforeach
+                                    </div>
+                                </div>
+                            @endif
                         </div>
                         <!-- product list view end  -->
 
                         <!-- product grid view start  -->
                         <div class="tab-pane fade" id="layout-grid-pane" role="tabpanel" tabindex="0">
                             <div class="row gy-4">
-                                {{-- Main Products - Pass MerchantProduct directly like category page --}}
-                                @foreach ($mainProducts as $item)
-                                    @include('includes.frontend.home_product', [
-                                        'product' => $item['merchant'],
-                                        'class'   => 'col-6 col-md-4 col-lg-3',
-                                    ])
+                                {{-- Main Products --}}
+                                @foreach ($cards as $card)
+                                    @include('includes.frontend.product_card_dto', ['card' => $card, 'layout' => 'grid', 'class' => 'col-6 col-md-4 col-lg-3'])
                                 @endforeach
-
-                                {{-- Alternatives Section --}}
-                                @if($alternativeProducts->count() > 0)
-                                    <div class="col-12">
-                                        <div class="alternatives-section mt-4">
-                                            <div class="section-header mb-4">
-                                                <h3 class="text-primary">
-                                                    <i class="fas fa-exchange-alt me-2"></i>
-                                                    {{ trans('Substitutions') }}
-                                                </h3>
-                                                <hr class="border-primary">
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    @foreach ($alternativeProducts as $item)
-                                        @include('includes.frontend.home_product', [
-                                            'product' => $item['merchant'],
-                                            'class'   => 'col-6 col-md-4 col-lg-3',
-                                        ])
-                                    @endforeach
-                                @endif
                             </div>
+
+                            {{-- Pagination Links --}}
+                            @if($cards->hasPages())
+                                <div class="d-flex justify-content-center mt-4">
+                                    {{ $cards->links('pagination::bootstrap-5') }}
+                                </div>
+                            @endif
+
+                            {{-- Alternatives Section (shown only on first page) --}}
+                            @if($alternativeCards->isNotEmpty() && $cards->currentPage() === 1)
+                                <div class="alternatives-section mt-5">
+                                    <div class="section-header mb-4">
+                                        <h3 class="text-primary">
+                                            <i class="fas fa-exchange-alt me-2"></i>
+                                            @lang('Substitutions')
+                                        </h3>
+                                        <hr class="border-primary">
+                                    </div>
+                                    <div class="row gy-4">
+                                        @foreach ($alternativeCards as $card)
+                                            @include('includes.frontend.product_card_dto', ['card' => $card, 'layout' => 'grid', 'class' => 'col-6 col-md-4 col-lg-3'])
+                                        @endforeach
+                                    </div>
+                                </div>
+                            @endif
                         </div>
                         <!-- product grid view end  -->
                     </div>

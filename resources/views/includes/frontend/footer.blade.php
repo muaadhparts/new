@@ -64,7 +64,8 @@
                         @if ($ps->contact == 1)
                             <li><a href="{{ route('front.contact') }}">@lang('Contact Us')</a></li>
                         @endif
-                        @foreach (DB::table('pages')->where('footer', '=', 1)->get() as $page)
+                        {{-- Using cached $footerPages from AppServiceProvider --}}
+                        @foreach ($footerPages as $page)
                             <li><a href="{{ route('front.vendor', $page->slug) }}">{{ $page->title }}</a></li>
                         @endforeach
                     </ul>
@@ -86,11 +87,8 @@
                         </div>
                     </form>
 
-                    {{-- Social Links --}}
+                    {{-- Social Links - Using cached $socialLinks from AppServiceProvider --}}
                     <div class="muaadh-footer-social">
-                        @php
-                            $socialLinks = DB::table('social_links')->where('user_id', 0)->where('status', 1)->get();
-                        @endphp
                         @foreach ($socialLinks as $link)
                             <a href="{{ $link->link }}" target="_blank" class="muaadh-social-link">
                                 <i class="{{ $link->icon }}"></i>

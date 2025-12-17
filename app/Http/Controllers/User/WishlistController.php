@@ -5,7 +5,8 @@ namespace App\Http\Controllers\User;
 use Illuminate\Http\Request;
 use App\{
     Models\Product,
-    Models\Wishlist
+    Models\Wishlist,
+    View\Composers\HeaderComposer
 };
 
 
@@ -107,6 +108,7 @@ class WishlistController extends UserBaseController
 
         if ($wishlist) {
             $wishlist->delete();
+            HeaderComposer::invalidateWishlistCache($user->id);
             $data[0] = 1;
             $data[1] = Wishlist::where('user_id', $user->id)->count();
             $data['success'] = __('Successfully Removed From The Wishlist.');
@@ -146,6 +148,7 @@ class WishlistController extends UserBaseController
         $wish->merchant_product_id = $merchantProductId;
         $wish->save();
 
+        HeaderComposer::invalidateWishlistCache($user->id);
         $data[0] = 1;
         $data[1] = Wishlist::where('user_id', $user->id)->count();
         $data['success'] = __('Successfully Added To The Wishlist.');
@@ -199,6 +202,7 @@ class WishlistController extends UserBaseController
         $wish->merchant_product_id = $merchantProduct->id;
         $wish->save();
 
+        HeaderComposer::invalidateWishlistCache($user->id);
         $data[0] = 1;
         $data[1] = Wishlist::where('user_id', $user->id)->count();
         $data['success'] = __('Successfully Added To The Wishlist.');
@@ -211,6 +215,7 @@ class WishlistController extends UserBaseController
         $wish = Wishlist::where('user_id', $user->id)->findOrFail($id);
         $wish->delete();
 
+        HeaderComposer::invalidateWishlistCache($user->id);
         $data[0] = 1;
         $data[1] = Wishlist::where('user_id', $user->id)->count();
         $data['success'] = __('Successfully Removed From Wishlist.');

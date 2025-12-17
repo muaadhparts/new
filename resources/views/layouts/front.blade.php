@@ -65,12 +65,7 @@
 
 <body>
 
-    @php
-        $categories = App\Models\Category::with('subs')->where('status', 1)->get();
-        $pages = App\Models\Page::get();
-        $currencies = App\Models\Currency::all();
-        $languges = App\Models\Language::all();
-    @endphp
+    {{-- Header data ($categories, $pages, $currencies, $languges) provided by AppServiceProvider with caching --}}
     <!-- header area -->
     @include('includes.frontend.header')
 
@@ -131,7 +126,15 @@
     <script>
         "use strict";
         var mainurl = "{{ url('/') }}";
-        var gs      = {!! json_encode(DB::table('generalsettings')->where('id','=',1)->first(['is_loader','decimal_separator','thousand_separator','is_cookie','is_talkto','talkto'])) !!};
+        // Using cached $gs from AppServiceProvider instead of direct DB query
+        var gs      = {!! json_encode((object)[
+            'is_loader' => $gs->is_loader ?? 0,
+            'decimal_separator' => $gs->decimal_separator ?? '.',
+            'thousand_separator' => $gs->thousand_separator ?? ',',
+            'is_cookie' => $gs->is_cookie ?? 0,
+            'is_talkto' => $gs->is_talkto ?? 0,
+            'talkto' => $gs->talkto ?? ''
+        ]) !!};
         var ps_category = {{ $ps->category }};
 
         // Setup CSRF token for all AJAX requests

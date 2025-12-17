@@ -163,8 +163,9 @@
             $gs->partner_text }}</span>
                 </div>
             </div>
+            {{-- Using cached $brands from Controller --}}
             <div class="row g-3">
-                @foreach (DB::table('brands')->get() as $data)
+                @foreach ($brands as $data)
                     <div class="col-6 col-sm-4 col-lg-3 col-xl-2">
                         <div class="simple-service">
                             <img src="{{ asset('assets/images/partner/' . $data->photo) }}" alt="">
@@ -233,7 +234,8 @@
                     </div>
                 </div>
             </div> --}}
-            @foreach (DB::table('services')->get() as $service)
+            {{-- Using cached $services from Controller --}}
+            @foreach ($services as $service)
                 <div class="col">
                     <div class="simple-service px-3 md-my-10 d-flex align-items-center">
                         <div class="box-80px rounded-pill position-relative bg-white">

@@ -106,9 +106,10 @@ class ProductDetailsController extends FrontBaseController
             abort(404, 'Product not found for this merchant listing');
         }
 
-        // Load ratings (catalog-level data)
+        // Load ratings (catalog-level data) - count, avg, and full list for reviews
         $productt->loadCount('ratings');
         $productt->loadAvg('ratings', 'rating');
+        $productt->load(['ratings' => fn($q) => $q->with('user')->orderBy('review_date', 'desc')]);
 
         // ======================================================================
         // STEP 7: Verify slug matches (SEO redirect if changed)
@@ -151,9 +152,27 @@ class ProductDetailsController extends FrontBaseController
             ->where('user_id', $merchantProduct->user_id)
             ->where('status', 1)
             ->where('id', '<>', $merchantProduct->id)
-            ->with('product')
+            ->with(['product' => fn($q) => $q->withCount('ratings')->withAvg('ratings', 'rating'), 'user', 'qualityBrand'])
             ->take(12)
             ->get();
+
+        // ======================================================================
+        // STEP 10b: Related Products (same type/product_type, different product)
+        // Optimized: Query MerchantProduct directly with product filters
+        // ======================================================================
+        $relatedMerchantProducts = MerchantProduct::where('status', 1)
+            ->where('stock', '>', 0)
+            ->whereHas('product', function($q) use ($productt) {
+                $q->where('type', $productt->type)
+                  ->where('product_type', $productt->product_type)
+                  ->where('id', '!=', $productt->id);
+            })
+            ->whereHas('user', fn($q) => $q->where('is_vendor', 2))
+            ->with(['product' => fn($q) => $q->withCount('ratings')->withAvg('ratings', 'rating'), 'user', 'qualityBrand'])
+            ->limit(50) // Get more than needed, then shuffle in PHP
+            ->get()
+            ->shuffle() // Randomize in PHP (much faster than MySQL ORDER BY RAND())
+            ->take(12); // Take only 12
 
         // ======================================================================
         // STEP 11: Track product click
@@ -176,13 +195,14 @@ class ProductDetailsController extends FrontBaseController
         $vendorId = $merchantProduct->user_id;
 
         return view('frontend.product', compact(
-            'productt',           // Product (READONLY - catalog only)
-            'merchant',           // MerchantProduct (AUTHORITATIVE - price/stock/qty)
-            'vendorId',           // Verified vendor ID
-            'otherSellers',       // Alternative sellers
-            'vendorListings',     // More from this vendor
-            'affilate_user',      // Affiliate tracking
-            'gs'                  // General settings
+            'productt',               // Product (READONLY - catalog only)
+            'merchant',               // MerchantProduct (AUTHORITATIVE - price/stock/qty)
+            'vendorId',               // Verified vendor ID
+            'otherSellers',           // Alternative sellers
+            'vendorListings',         // More from this vendor
+            'relatedMerchantProducts', // Related products (pre-loaded, optimized)
+            'affilate_user',          // Affiliate tracking
+            'gs'                      // General settings
         ));
     }
 

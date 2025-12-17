@@ -31,19 +31,18 @@
 
 
                 @foreach ($elements as $element)
-                    @if (is_array($element) && count($element) < 2)
-                    @else
-                        @if (is_array($element))
+                    @if (is_string($element))
+                        {{-- Ellipsis (...) --}}
+                        <li class="disabled" aria-disabled="true"><a href="javascript:void(0)" style="pointer-events: none; opacity: 0.6;">{{ $element }}</a></li>
+                    @elseif (is_array($element))
+                        @if (count($element) >= 1)
                             @foreach ($element as $page => $url)
                                 @if ($page == $paginator->currentPage())
-                                    <li class="active" aria-current="page"><a href="#">{{ $page }}</a>
-                                    </li>
+                                    <li class="active" aria-current="page"><a href="#">{{ $page }}</a></li>
                                 @else
                                     <li><a href="{{ $url }}">{{ $page }}</a></li>
                                 @endif
                             @endforeach
-                        @else
-                            <li><a href="{{ $url }}">{{ $page }}</a></li>
                         @endif
                     @endif
                 @endforeach

@@ -465,7 +465,7 @@
 
                     <!-- product nav wrapper -->
                     <div class=" product-nav-wrapper">
-                        <h5>@lang('Total Products Found:') {{ $prods->count() }}</h5>
+                        <h5>@lang('Total Products Found:') {{ $prods->total() }}</h5>
                         <div class="filter-wrapper">
                             <div class="sort-wrapper">
                                 <h5>@lang('Sort by:')</h5>
@@ -517,7 +517,7 @@
 
 
 
-                    @if ($prods->count() == 0)
+                    @if ($prods->total() == 0)
                         <!-- product nav wrapper for no data found -->
                         <div class="product-nav-wrapper d-flex justify-content-center ">
                             <h5>@lang('No Product Found')</h5>
@@ -529,8 +529,8 @@
                             <div class="tab-pane fade {{ $view == 'list-view' ? 'show active' : '' }}"
                                 id="layout-list-pane" role="tabpanel" tabindex="0">
                                 <div class="row gy-4 gy-lg-5 mt-20 ">
-                                    @foreach ($prods as $product)
-                                        @include('includes.frontend.list_view_product')
+                                    @foreach ($cards as $card)
+                                        @include('includes.frontend.product_card_dto', ['card' => $card, 'layout' => 'list'])
                                     @endforeach
                                 </div>
                             </div>
@@ -538,10 +538,8 @@
                             <div class="tab-pane fade {{ $view == 'grid-view' ? 'show active' : '' }}  "
                                 id="layout-grid-pane" role="tabpanel" tabindex="0">
                                 <div class="row gy-4 gy-lg-5 mt-20">
-                                    @foreach ($prods as $product)
-                                        @include('includes.frontend.home_product', [
-                                            'class' => 'col-sm-6 col-md-6 col-xl-4',
-                                        ])
+                                    @foreach ($cards as $card)
+                                        @include('includes.frontend.product_card_dto', ['card' => $card, 'layout' => 'grid', 'class' => 'col-sm-6 col-md-6 col-xl-4'])
                                     @endforeach
                                 </div>
                             </div>

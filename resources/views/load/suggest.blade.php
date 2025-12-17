@@ -1,15 +1,6 @@
-@php
-if (Session::has('language'))
-	{
-		$language = DB::table('languages')->find(Session::get('language'));
-	}
-else
-	{
-		$language = DB::table('languages')->where('is_default','=',1)->first();
-	}
-@endphp
+{{-- Using cached $langg from AppServiceProvider instead of DB query --}}
 @foreach($prods as $prod)
-	@if ($language->id == $prod->language_id)
+	@if ($langg->id == $prod->language_id)
 	@php
 		// Check if $prod is a MerchantProduct or Product model
 		$isMerchantProduct = $prod instanceof \App\Models\MerchantProduct;

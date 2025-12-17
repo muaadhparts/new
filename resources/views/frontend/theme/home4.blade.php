@@ -42,8 +42,9 @@
                 <h2 class="muaadh-section-title">@lang('Explore genuine OEM parts catalogues')</h2>
             </div>
 
+            {{-- Using cached $brands from Controller --}}
             <div class="muaadh-brands-grid">
-                @foreach (DB::table('brands')->get() as $brand)
+                @foreach ($brands as $brand)
                     <a href="{{ route('catlogs.index', $brand->name) }}" class="muaadh-brand-card">
                         <div class="muaadh-brand-img">
                             <img src="{{ asset('assets/images/brand/' . $brand->photo) }}" alt="{{ $brand->name }}" loading="lazy">
@@ -83,8 +84,9 @@
     <!-- Services Section -->
     <section class="muaadh-section">
         <div class="container">
+            {{-- Using cached $services from Controller --}}
             <div class="muaadh-services-grid">
-                @foreach (DB::table('services')->get() as $service)
+                @foreach ($services as $service)
                     <div class="muaadh-service-card">
                         <div class="muaadh-service-icon">
                             <img src="{{ asset('assets/images/services/' . $service->photo) }}" alt="{{ $service->title }}">

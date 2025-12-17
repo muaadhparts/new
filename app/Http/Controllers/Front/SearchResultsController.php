@@ -3,105 +3,84 @@
 namespace App\Http\Controllers\Front;
 
 use App\Http\Controllers\Controller;
+use App\Models\MerchantProduct;
 use App\Models\Product;
 use App\Models\SkuAlternative;
+use App\Services\ProductCardDataBuilder;
 use Illuminate\Http\Request;
 
 class SearchResultsController extends Controller
 {
+    private const PER_PAGE = 12;
+
+    public function __construct(
+        private ProductCardDataBuilder $cardBuilder
+    ) {}
+
     public function show(Request $request, $sku)
     {
-        // المنتج الأساسي
-        $prods = Product::where('sku', $sku)->get();
-
-        // جلب السطر من جدول sku_alternatives
-        $skuAlternative = SkuAlternative::where('sku', $sku)->first();
-
-        if ($skuAlternative && $skuAlternative->group_id) {
-            // جلب كل الـ SKUs في نفس القروب مع استثناء نفسه
-            $alternativeSkus = SkuAlternative::where('group_id', $skuAlternative->group_id)
-                ->where('sku', '<>', $sku)
-                ->pluck('sku')
-                ->toArray();
-
-            if (!empty($alternativeSkus)) {
-                $alternatives = Product::whereIn('sku', $alternativeSkus)->get();
-            } else {
-                $alternatives = collect();
-            }
-        } else {
-            $alternatives = collect();
-        }
-
         // Get filters from request
         $storeFilter = $request->get('store', 'all');
         $qualityFilter = $request->get('quality', 'all');
-        $sortBy = $request->get('sort', 'sku_asc');
+        $sortBy = $request->get('sort', 'default');
+        $page = $request->get('page', 1);
 
-        // جمع كل المنتجات (الأساسية + البدائل)
+        // Get main products and alternatives
+        $prods = Product::where('sku', $sku)->get();
+        $alternatives = $this->getAlternatives($sku);
+
+        // Merge all products
         $allProducts = $prods->merge($alternatives);
+        $productIds = $allProducts->pluck('id')->toArray();
 
-        // جمع كل merchant products مع الفلاتر
-        $filteredMerchants = collect();
-
-        foreach ($allProducts as $product) {
-            $query = $product->merchantProducts()
-                ->where('status', 1)
-                ->with([
-                    'product' => fn($q) => $q->withCount('ratings')->withAvg('ratings', 'rating'),
-                    'user:id,is_vendor,name,shop_name,email',
-                    'qualityBrand:id,name_en,name_ar,logo'
-                ]);
-
-            // تطبيق فلتر التاجر
-            if ($storeFilter !== 'all') {
-                $query->where('user_id', $storeFilter);
-            }
-
-            // تطبيق فلتر الكوالتي
-            if ($qualityFilter !== 'all') {
-                $query->where('brand_quality_id', $qualityFilter);
-            }
-
-            $merchants = $query->get();
-
-            foreach ($merchants as $merchant) {
-                $filteredMerchants->push([
-                    'product' => $product,
-                    'merchant' => $merchant,
-                    'is_alternative' => !$prods->contains('id', $product->id)
-                ]);
-            }
+        if (empty($productIds)) {
+            return view('frontend.search-results', [
+                'sku' => $sku,
+                'cards' => new \Illuminate\Pagination\LengthAwarePaginator([], 0, self::PER_PAGE),
+                'alternativeCards' => collect(),
+                'availableStores' => collect(),
+                'availableQualities' => collect(),
+                'storeFilter' => $storeFilter,
+                'qualityFilter' => $qualityFilter,
+                'sortBy' => $sortBy,
+            ]);
         }
 
-        // تطبيق الترتيب
-        $filteredMerchants = $this->applySorting($filteredMerchants, $sortBy);
+        $prodIds = $prods->pluck('id')->toArray();
+        $altIds = $alternatives->pluck('id')->toArray();
 
-        // جمع كل التجار المتاحين للفلترة
-        $availableStores = collect();
-        $availableQualities = collect();
+        // Query 1: Get available filters (lightweight - no eager loading needed)
+        $filtersQuery = MerchantProduct::whereIn('product_id', $productIds)
+            ->where('status', 1)
+            ->with(['user:id,shop_name', 'qualityBrand:id,name_en,name_ar']);
 
-        foreach ($allProducts as $product) {
-            $merchants = $product->merchantProducts()
-                ->where('status', 1)
-                ->with(['user:id,name,shop_name', 'qualityBrand:id,name_en,name_ar'])
-                ->get();
+        $allForFilters = $filtersQuery->get(['id', 'user_id', 'brand_quality_id']);
+        $availableStores = $allForFilters->pluck('user')->filter()->unique('id')->keyBy('id');
+        $availableQualities = $allForFilters->pluck('qualityBrand')->filter()->unique('id')->keyBy('id');
 
-            foreach ($merchants as $merchant) {
-                if ($merchant->user) {
-                    $availableStores->put($merchant->user_id, $merchant->user);
-                }
-                if ($merchant->qualityBrand) {
-                    $availableQualities->put($merchant->brand_quality_id, $merchant->qualityBrand);
-                }
-            }
+        // Query 2: Main products - PAGINATED (only 12 DTOs built)
+        $mainPaginator = $this->loadMerchantProductsPaginated(
+            $prodIds,
+            $storeFilter,
+            $qualityFilter,
+            $sortBy,
+            self::PER_PAGE
+        );
+
+        // Build DTOs only for the 12 items on current page
+        $cards = $this->cardBuilder->buildCardsFromPaginator($mainPaginator);
+
+        // Query 3: Alternative products - Limited to 12 (no pagination, just limit)
+        $alternativeCards = collect();
+        if (!empty($altIds)) {
+            $altMerchants = $this->loadMerchantProductsLimited($altIds, $storeFilter, $qualityFilter, $sortBy, 12);
+            $alternativeCards = $this->cardBuilder->buildCardsFromMerchants($altMerchants);
         }
 
         return view('frontend.search-results', [
             'sku' => $sku,
-            'alternatives' => $alternatives,
-            'prods' => $prods,
-            'filteredMerchants' => $filteredMerchants,
+            'cards' => $cards, // LengthAwarePaginator with DTOs
+            'alternativeCards' => $alternativeCards,
             'availableStores' => $availableStores,
             'availableQualities' => $availableQualities,
             'storeFilter' => $storeFilter,
@@ -110,51 +89,111 @@ class SearchResultsController extends Controller
         ]);
     }
 
-    private function applySorting($merchants, $sortBy)
+    /**
+     * Get alternative products for a SKU
+     */
+    private function getAlternatives(string $sku): \Illuminate\Support\Collection
     {
-        switch ($sortBy) {
-            case 'sku_asc':
-                return $merchants->sortBy(function ($item) {
-                    return $item['product']->sku ?? '';
-                });
+        $skuAlternative = SkuAlternative::where('sku', $sku)->first();
 
-            case 'sku_desc':
-                return $merchants->sortByDesc(function ($item) {
-                    return $item['product']->sku ?? '';
-                });
-
-            case 'price_asc':
-                return $merchants->sortBy(function ($item) {
-                    return $item['merchant']->price ?? PHP_INT_MAX;
-                });
-
-            case 'price_desc':
-                return $merchants->sortByDesc(function ($item) {
-                    return $item['merchant']->price ?? 0;
-                });
-
-            case 'stock_desc':
-                return $merchants->sortByDesc(function ($item) {
-                    return $item['merchant']->stock ?? 0;
-                });
-
-            case 'newest':
-                return $merchants->sortByDesc(function ($item) {
-                    return $item['merchant']->created_at ?? '';
-                });
-
-            default:
-                // Default: in stock first, then by price
-                return $merchants->sort(function ($a, $b) {
-                    $stockA = ($a['merchant']->stock ?? 0) > 0 ? 1 : 0;
-                    $stockB = ($b['merchant']->stock ?? 0) > 0 ? 1 : 0;
-
-                    if ($stockA !== $stockB) {
-                        return $stockB - $stockA; // In stock first
-                    }
-
-                    return ($a['merchant']->price ?? PHP_INT_MAX) <=> ($b['merchant']->price ?? PHP_INT_MAX);
-                });
+        if (!$skuAlternative || !$skuAlternative->group_id) {
+            return collect();
         }
+
+        $alternativeSkus = SkuAlternative::where('group_id', $skuAlternative->group_id)
+            ->where('sku', '<>', $sku)
+            ->pluck('sku')
+            ->toArray();
+
+        if (empty($alternativeSkus)) {
+            return collect();
+        }
+
+        return Product::whereIn('sku', $alternativeSkus)->get();
+    }
+
+    /**
+     * Load merchant products with PAGINATION at query level
+     * Sorting is done in the query, not after
+     */
+    private function loadMerchantProductsPaginated(
+        array $productIds,
+        string $storeFilter,
+        string $qualityFilter,
+        string $sortBy,
+        int $perPage
+    ) {
+        $query = MerchantProduct::whereIn('product_id', $productIds)
+            ->where('status', 1);
+
+        // Apply eager loading
+        $this->cardBuilder->applyMerchantProductEagerLoading($query);
+
+        // Apply filters
+        if ($storeFilter !== 'all') {
+            $query->where('user_id', $storeFilter);
+        }
+
+        if ($qualityFilter !== 'all') {
+            $query->where('brand_quality_id', $qualityFilter);
+        }
+
+        // Apply sorting at QUERY level (not collection level)
+        $this->applySortingToQuery($query, $sortBy);
+
+        // Return paginator - only fetches 12 rows from DB
+        return $query->paginate($perPage)->withQueryString();
+    }
+
+    /**
+     * Load merchant products with LIMIT (for alternatives)
+     */
+    private function loadMerchantProductsLimited(
+        array $productIds,
+        string $storeFilter,
+        string $qualityFilter,
+        string $sortBy,
+        int $limit
+    ) {
+        $query = MerchantProduct::whereIn('product_id', $productIds)
+            ->where('status', 1);
+
+        // Apply eager loading
+        $this->cardBuilder->applyMerchantProductEagerLoading($query);
+
+        // Apply filters
+        if ($storeFilter !== 'all') {
+            $query->where('user_id', $storeFilter);
+        }
+
+        if ($qualityFilter !== 'all') {
+            $query->where('brand_quality_id', $qualityFilter);
+        }
+
+        // Apply sorting at QUERY level
+        $this->applySortingToQuery($query, $sortBy);
+
+        return $query->limit($limit)->get();
+    }
+
+    /**
+     * Apply sorting directly to the query (ORDER BY in SQL)
+     */
+    private function applySortingToQuery($query, string $sortBy): void
+    {
+        match ($sortBy) {
+            'sku_asc' => $query->join('products', 'merchant_products.product_id', '=', 'products.id')
+                               ->orderBy('products.sku', 'asc')
+                               ->select('merchant_products.*'),
+            'sku_desc' => $query->join('products', 'merchant_products.product_id', '=', 'products.id')
+                                ->orderBy('products.sku', 'desc')
+                                ->select('merchant_products.*'),
+            'price_asc' => $query->orderBy('price', 'asc'),
+            'price_desc' => $query->orderBy('price', 'desc'),
+            'stock_desc' => $query->orderBy('stock', 'desc'),
+            'newest' => $query->orderBy('id', 'desc'),
+            default => $query->orderByRaw('CASE WHEN stock > 0 THEN 0 ELSE 1 END')
+                             ->orderBy('price', 'asc'),
+        };
     }
 }

@@ -267,6 +267,15 @@ class FrontendController extends FrontBaseController
 
         $data['blogs'] = Blog::latest()->take(2)->get();
 
+        // Cache brands and services for homepage (moved from Blade)
+        $data['brands'] = Cache::remember('homepage_brands', 3600, function () {
+            return DB::table('brands')->get();
+        });
+
+        $data['services'] = Cache::remember('homepage_services', 3600, function () {
+            return DB::table('services')->get();
+        });
+
         return view('frontend.index', $data);
     }
 
@@ -389,7 +398,15 @@ class FrontendController extends FrontBaseController
         $data['blogs'] = Blog::latest()->take(2)->get();
         $data['ps'] = $this->ps;
 
-//        dd($data);
+        // Cache brands and services (moved from Blade)
+        $data['brands'] = Cache::remember('homepage_brands', 3600, function () {
+            return DB::table('brands')->get();
+        });
+
+        $data['services'] = Cache::remember('homepage_services', 3600, function () {
+            return DB::table('services')->get();
+        });
+
         return view('partials.theme.extraindex', $data);
     }
 

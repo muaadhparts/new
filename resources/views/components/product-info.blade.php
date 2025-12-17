@@ -36,8 +36,9 @@
 
     // Extract all display values (using localized names)
     // NO FALLBACK - if $mp is null, vendor-specific fields will be null
+    // NOTE: All relationships MUST be eager loaded by Controller before passing to view
     $sku = $product->sku ?? null;
-    $brandName = $product->brand ? $product->brand->localized_name : null;
+    $brandName = $product->brand?->localized_name;
     $qualityBrand = $mp?->qualityBrand;
     $qualityBrandName = $qualityBrand?->localized_name;
     $qualityBrandLogo = $qualityBrand?->logo_url;

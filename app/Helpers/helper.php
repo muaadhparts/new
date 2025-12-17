@@ -1,25 +1,25 @@
 <?php
 
+/**
+ * @deprecated Use ProductCardDTO->isInWishlist from Controller instead.
+ * This helper always returns false - wishlist state should come from pre-loaded DTO.
+ */
 function wishlistCheck($product_id, $merchant_product_id = null)
 {
-    $query = \App\Models\Wishlist::where('user_id', auth()->id());
-
-    if ($merchant_product_id) {
-        // Check for specific merchant product
-        $query->where('merchant_product_id', $merchant_product_id);
-    } else {
-        // Legacy: check if any vendor of this product is in wishlist
-        $query->where('product_id', $product_id);
-    }
-
-    return $query->exists();
+    // DEPRECATED: Always return false
+    // Wishlist state should be pre-computed in ProductCardDTO
+    return false;
 }
 
+/**
+ * @deprecated Use ProductCardDTO->isInWishlist from Controller instead.
+ * This helper always returns false - wishlist state should come from pre-loaded DTO.
+ */
 function merchantWishlistCheck($merchant_product_id)
 {
-    return \App\Models\Wishlist::where('merchant_product_id', $merchant_product_id)
-        ->where('user_id', auth()->id())
-        ->exists();
+    // DEPRECATED: Always return false
+    // Wishlist state should be pre-computed in ProductCardDTO
+    return false;
 }
 
 function merchantCompareCheck($merchant_product_id)
