@@ -819,6 +819,51 @@ class Product extends Model
     }
 
     /**
+     * Get the best vendor merchant for this product.
+     *
+     * Returns the active merchant with:
+     * - status = 1
+     * - user is a vendor (is_vendor = 2)
+     * - prioritized by: has stock > cheapest price
+     *
+     * This method centralizes the logic previously duplicated in Blade views.
+     *
+     * @return \App\Models\MerchantProduct|null
+     */
+    public function bestVendorMerchant(): ?MerchantProduct
+    {
+        return $this->merchantProducts()
+            ->where('status', 1)
+            ->whereHas('user', fn($q) => $q->where('is_vendor', 2))
+            ->orderByRaw('CASE WHEN (stock IS NULL OR stock = 0) THEN 1 ELSE 0 END ASC')
+            ->orderBy('price')
+            ->first();
+    }
+
+    /**
+     * Get the product URL with all required route parameters.
+     *
+     * Uses bestVendorMerchant() to determine vendor_id and merchant_product_id.
+     * Falls back to legacy route if no active merchant found.
+     *
+     * @return string
+     */
+    public function getProductUrl(): string
+    {
+        $merchant = $this->bestVendorMerchant();
+
+        if ($merchant && $this->slug) {
+            return route('front.product', [
+                'slug' => $this->slug,
+                'vendor_id' => $merchant->user_id,
+                'merchant_product_id' => $merchant->id
+            ]);
+        }
+
+        return $this->slug ? route('front.product.legacy', $this->slug) : '#';
+    }
+
+    /**
      * Get merchant product data for a specific vendor
      *
      * AVOIDS CODE DUPLICATION - This helper eliminates repeated logic

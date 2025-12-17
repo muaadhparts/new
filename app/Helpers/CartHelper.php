@@ -205,6 +205,7 @@ class CartHelper
                 'merchant_product_id' => $mpId,
                 'product_id' => $mp->product_id,
                 'user_id' => $mp->user_id,
+                'vendor_id' => $mp->user_id, // صريح للاستخدام في route
                 'brand_quality_id' => $mp->brand_quality_id,
 
                 // معلومات المنتج

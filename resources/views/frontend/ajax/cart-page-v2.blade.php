@@ -106,10 +106,26 @@
                                             <td class="align-middle">
                                                 <div class="product-info">
                                                     {{-- اسم المنتج --}}
-                                                    <a href="{{ route('front.product', $item['slug'] ?? '') }}"
-                                                       class="product-name fw-bold text-dark">
-                                                        {{ app()->getLocale() == 'ar' && !empty($item['name_ar']) ? $item['name_ar'] : $item['name'] }}
-                                                    </a>
+                                                    @php
+                                                        $cartItemSlug = $item['slug'] ?? null;
+                                                        $cartItemVendorId = $item['vendor_id'] ?? $item['user_id'] ?? null;
+                                                        $cartItemMpId = $item['merchant_product_id'] ?? null;
+                                                        $hasAllParams = $cartItemSlug && $cartItemVendorId && $cartItemMpId;
+                                                    @endphp
+                                                    @if($hasAllParams)
+                                                        <a href="{{ route('front.product', ['slug' => $cartItemSlug, 'vendor_id' => $cartItemVendorId, 'merchant_product_id' => $cartItemMpId]) }}"
+                                                           class="product-name fw-bold text-dark">
+                                                            {{ app()->getLocale() == 'ar' && !empty($item['name_ar']) ? $item['name_ar'] : $item['name'] }}
+                                                        </a>
+                                                    @else
+                                                        {{-- إذا ناقص بيانات: اعرض الاسم بدون رابط + سجّل المشكلة --}}
+                                                        <span class="product-name fw-bold text-dark">
+                                                            {{ app()->getLocale() == 'ar' && !empty($item['name_ar']) ? $item['name_ar'] : $item['name'] }}
+                                                        </span>
+                                                        @php
+                                                            logger()->warning('Cart item missing route params', ['cart_key' => $item['cart_key'] ?? 'unknown', 'slug' => $cartItemSlug, 'vendor_id' => $cartItemVendorId, 'merchant_product_id' => $cartItemMpId]);
+                                                        @endphp
+                                                    @endif
 
                                                     {{-- تفاصيل إضافية (Size/Color فقط) --}}
                                                     @if ((!empty($item['size']) && $item['size'] !== '_') || (!empty($item['color']) && $item['color'] !== '_'))
