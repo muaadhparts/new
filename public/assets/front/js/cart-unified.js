@@ -27,10 +27,6 @@
             sizeBtn: '.m-cart-button__size',
             colorBtn: '.m-cart-button__color',
             loading: '.m-cart-button__loading',
-            // Legacy selectors for backward compatibility
-            legacyAdd: '.add_cart_click, .hp-add-cart, .add-to-cart-btn, .add_to_cart_button',
-            legacyQtyPlus: '.hp-qtplus, .qtplus',
-            legacyQtyMinus: '.hp-qtminus, .qtminus',
         }
     };
 
@@ -447,12 +443,16 @@
                 if (result.success) {
                     utils.toast(result.data.success || result.data.message || 'Added to cart', 'success');
                     utils.updateCartUI(result.data);
+                    this.setLoading(false);
+                } else if (result.message === 'Request in progress') {
+                    // Silent - keep loading state, no toast
+                    // Button stays disabled until the original request completes
                 } else {
                     utils.toast(result.message || 'Failed to add to cart', 'error');
+                    this.setLoading(false);
                 }
             } catch (error) {
                 utils.toast(error.message || 'An error occurred', 'error');
-            } finally {
                 this.setLoading(false);
             }
         }
@@ -487,23 +487,46 @@
             let qty = parseInt(btn.dataset.minQty) || 1;
             const qtyInputSelector = btn.dataset.qtyInput;
 
-            // Try to find qty input by selector or ID
+            // Try to find qty input - prioritize local container search
             if (qtyInputSelector) {
-                // First try as selector (e.g., ".ill-qty")
-                let qtyInput = document.querySelector(qtyInputSelector);
-                // Then try as ID
+                let qtyInput = null;
+
+                // 1. First: Search within closest modal/product container (for quickview modals)
+                const modalContainers = [
+                    '.catalog-quickview',
+                    '.ill-product',
+                    '.modal-body',
+                    '.mfp-content',
+                    '.m-cart-button'
+                ];
+
+                for (const containerSelector of modalContainers) {
+                    const container = btn.closest(containerSelector);
+                    if (container) {
+                        qtyInput = container.querySelector(qtyInputSelector);
+                        if (qtyInput) break;
+                    }
+                }
+
+                // 2. Fallback: Try as global selector
+                if (!qtyInput) {
+                    qtyInput = document.querySelector(qtyInputSelector);
+                }
+
+                // 3. Fallback: Try as ID
                 if (!qtyInput) {
                     qtyInput = document.getElementById(qtyInputSelector);
                 }
+
                 if (qtyInput) {
                     qty = parseInt(qtyInput.value) || qty;
                 }
             }
 
-            // Find qty from parent m-cart-button container
-            const container = btn.closest('.m-cart-button');
-            if (container) {
-                const containerInput = container.querySelector('.m-cart-button__qty-input');
+            // Also check parent m-cart-button container
+            const cartButtonContainer = btn.closest('.m-cart-button');
+            if (cartButtonContainer) {
+                const containerInput = cartButtonContainer.querySelector('.m-cart-button__qty-input');
                 if (containerInput) {
                     qty = parseInt(containerInput.value) || qty;
                 }
@@ -532,19 +555,22 @@
                             window.location.href = redirectUrl;
                             return; // Don't restore button state, we're redirecting
                         }
+                        // Restore button
+                        btn.innerHTML = originalHtml;
+                        btn.disabled = false;
+                    } else if (result.message === 'Request in progress') {
+                        // Silent - keep loading state, no toast
+                        // Button stays disabled until the original request completes
                     } else {
                         utils.toast(result.message || 'Failed to add to cart', 'error');
+                        btn.innerHTML = originalHtml;
+                        btn.disabled = false;
                     }
                 })
                 .catch(error => {
                     utils.toast(error.message || 'An error occurred', 'error');
-                })
-                .finally(() => {
-                    // Only restore if not redirecting
-                    if (!redirectUrl || !btn.disabled) {
-                        btn.innerHTML = originalHtml;
-                        btn.disabled = false;
-                    }
+                    btn.innerHTML = originalHtml;
+                    btn.disabled = false;
                 });
         },
 
@@ -562,360 +588,158 @@
     };
 
     // ========================================
-    // Product Detail Page Handler
+    // Quantity Controls for Product Detail Page
     // ========================================
-    const ProductDetailHandler = {
+    const QtyControls = {
         /**
-         * Get selected size from radio buttons
-         */
-        getSelectedSize() {
-            const sizeRadio = document.querySelector('input[name="size"]:checked');
-            if (sizeRadio) {
-                const label = document.querySelector(`label[for="${sizeRadio.id}"]`);
-                return {
-                    key: sizeRadio.dataset.key || '',
-                    value: sizeRadio.value,
-                    price: parseFloat(sizeRadio.dataset.price) || 0,
-                    qty: parseInt(sizeRadio.dataset.qty) || 0,
-                    text: label ? label.textContent.trim() : sizeRadio.dataset.key || ''
-                };
-            }
-            return null;
-        },
-
-        /**
-         * Get selected color from radio buttons
-         */
-        getSelectedColor() {
-            const colorRadio = document.querySelector('input[name="colors"]:checked');
-            if (colorRadio) {
-                return {
-                    value: colorRadio.dataset.color || colorRadio.value,
-                    price: parseFloat(colorRadio.dataset.price) || 0
-                };
-            }
-            return null;
-        },
-
-        /**
-         * Get selected attributes
-         */
-        getSelectedAttributes() {
-            const attrs = {};
-            document.querySelectorAll('.cart_attr:checked').forEach(radio => {
-                const key = radio.dataset.key;
-                if (key) {
-                    attrs[key] = {
-                        value: radio.value,
-                        price: parseFloat(radio.dataset.price) || 0
-                    };
-                }
-            });
-            return attrs;
-        },
-
-        /**
-         * Build payload from product detail page inputs
-         */
-        buildPayload() {
-            // Get required IDs
-            const mpId = document.getElementById('merchant_product_id')?.value;
-            const vendorId = document.getElementById('vendor_user_id')?.value;
-            const productId = document.getElementById('product_id')?.value;
-
-            if (!mpId) {
-                throw new Error('merchant_product_id is required');
-            }
-
-            // Get quantity
-            const qtyInput = document.getElementById('order-qty');
-            const minQty = parseInt(document.getElementById('product_minimum_qty')?.value) || 1;
-            const qty = parseInt(qtyInput?.value) || minQty;
-
-            // Validate qty >= minQty
-            if (qty < minQty) {
-                throw new Error(`Minimum quantity is ${minQty}`);
-            }
-
-            // Build payload
-            const payload = {
-                merchant_product_id: parseInt(mpId),
-                vendor_id: parseInt(vendorId) || 0,
-                product_id: parseInt(productId) || 0,
-                qty: qty,
-            };
-
-            // Get size (if selected)
-            const size = this.getSelectedSize();
-            if (size && size.key) {
-                payload.size = size.key;
-                payload.size_price = size.price;
-            }
-
-            // Get color (if selected)
-            const color = this.getSelectedColor();
-            if (color && color.value) {
-                payload.color = color.value;
-                payload.color_price = color.price;
-            }
-
-            // Get attributes
-            const attrs = this.getSelectedAttributes();
-            if (Object.keys(attrs).length > 0) {
-                payload.attributes = attrs;
-            }
-
-            return payload;
-        },
-
-        /**
-         * Handle Add to Cart click
-         */
-        async handleAddToCart(e, redirectToCart = false) {
-            e.preventDefault();
-
-            const btn = e.currentTarget;
-            const originalHtml = btn.innerHTML;
-
-            try {
-                // Show loading
-                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> ' + (redirectToCart ? 'جارٍ...' : 'جارٍ...');
-                btn.disabled = true;
-
-                // Build payload
-                const payload = this.buildPayload();
-
-                // Send request
-                const result = await CartAPI.addItem(payload);
-
-                if (result.success) {
-                    utils.toast(result.data.message || result.data.success || 'Added to cart', 'success');
-                    utils.updateCartUI(result.data);
-
-                    // Redirect to cart if Buy Now
-                    if (redirectToCart) {
-                        window.location.href = '/cart';
-                    }
-                } else {
-                    utils.toast(result.message || 'Failed to add to cart', 'error');
-                }
-
-            } catch (error) {
-                utils.toast(error.message || 'An error occurred', 'error');
-            } finally {
-                btn.innerHTML = originalHtml;
-                btn.disabled = false;
-            }
-        },
-
-        /**
-         * Handle quantity +/- buttons for product detail page
-         */
-        initQtyControls() {
-            const qtyInput = document.getElementById('order-qty');
-            const minQty = parseInt(document.getElementById('product_minimum_qty')?.value) || 1;
-            const stockInput = document.getElementById('stock');
-            const preorderedInput = document.getElementById('product_preordered');
-            const isPreordered = preorderedInput?.value === '1' || preorderedInput?.dataset?.preordered === '1';
-
-            // Handle plus button
-            document.querySelectorAll('.qtplus').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    if (!qtyInput) return;
-
-                    const stock = parseInt(stockInput?.value) || 9999;
-                    const maxQty = isPreordered ? 9999 : stock;
-                    const current = parseInt(qtyInput.value) || minQty;
-
-                    if (current < maxQty) {
-                        qtyInput.value = current + 1;
-                    }
-                });
-            });
-
-            // Handle minus button
-            document.querySelectorAll('.qtminus').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    if (!qtyInput) return;
-
-                    const current = parseInt(qtyInput.value) || minQty;
-                    if (current > minQty) {
-                        qtyInput.value = current - 1;
-                    }
-                });
-            });
-        },
-
-        /**
-         * Initialize product detail page handlers
+         * Initialize quantity +/- buttons
          */
         init() {
-            // Only initialize if we're on product detail page
-            const mpIdInput = document.getElementById('merchant_product_id');
-            if (!mpIdInput) return;
+            // Handle plus button (.qtplus, .modal-qtplus)
+            document.querySelectorAll('.qtplus, .modal-qtplus').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const input = this.findQtyInput(btn);
+                    if (!input) return;
 
-            // Bind Add to Cart button
-            const addBtn = document.getElementById('addtodetailscart');
-            if (addBtn) {
-                addBtn.addEventListener('click', (e) => this.handleAddToCart(e, false));
+                    const stock = parseInt(btn.dataset.stock || input.dataset.stock) || 9999;
+                    const preordered = (btn.dataset.preordered === '1') || (input.dataset.preordered === '1');
+                    const maxQty = preordered ? 9999 : stock;
+                    const current = parseInt(input.value) || 1;
+
+                    if (current < maxQty) {
+                        input.value = current + 1;
+                    }
+                });
+            });
+
+            // Handle minus button (.qtminus, .modal-qtminus)
+            document.querySelectorAll('.qtminus, .modal-qtminus').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const input = this.findQtyInput(btn);
+                    if (!input) return;
+
+                    const min = parseInt(btn.dataset.min || input.dataset.min) || 1;
+                    const current = parseInt(input.value) || 1;
+
+                    if (current > min) {
+                        input.value = current - 1;
+                    }
+                });
+            });
+        },
+
+        /**
+         * Find qty input relative to button
+         */
+        findQtyInput(btn) {
+            // 1. Try modal containers first
+            const containers = ['.catalog-quickview', '.ill-product', '.modal-body', '.mfp-content', '.qty', '.add-qty-wrapper'];
+            for (const sel of containers) {
+                const container = btn.closest(sel);
+                if (container) {
+                    const input = container.querySelector('.modal-qty-input, .ill-qty, .qttotal, #order-qty');
+                    if (input) return input;
+                }
             }
 
-            // Bind Buy Now button
-            const buyBtn = document.getElementById('addtobycard');
-            if (buyBtn) {
-                buyBtn.addEventListener('click', (e) => this.handleAddToCart(e, true));
-            }
-
-            // Initialize qty controls
-            this.initQtyControls();
-
-            console.log('[Cart] Product detail handler initialized');
+            // 2. Fallback to global order-qty
+            return document.getElementById('order-qty');
         }
     };
 
     // ========================================
-    // Legacy Support
+    // Event Delegation for Dynamic Content
     // ========================================
-    const LegacySupport = {
+    const EventDelegation = {
+        initialized: false,
+
         /**
-         * Handle legacy add-to-cart clicks
+         * Initialize event delegation for dynamically loaded content
+         * This handles modal content loaded via AJAX
          */
-        handleLegacyAdd(e) {
-            e.preventDefault();
-            const btn = e.currentTarget;
+        init() {
+            if (this.initialized) return;
+            this.initialized = true;
 
-            // Try to find merchant_product_id from various sources
-            let mpId = btn.dataset.merchantProduct ||
-                       btn.dataset.merchantProductId ||
-                       btn.closest('[data-merchant-product-id]')?.dataset.merchantProductId ||
-                       document.getElementById('merchant_product_id')?.value;
-
-            if (!mpId) {
-                console.error('Legacy cart: merchant_product_id not found');
-                utils.toast('Cannot add to cart - missing product data', 'error');
-                return;
-            }
-
-            // Find qty from various sources
-            const qtyPrefix = btn.dataset.qtyPrefix || '';
-            let qty = 1;
-
-            if (qtyPrefix) {
-                const qtyInput = document.querySelector(`[id^="qty_${qtyPrefix}"]`) ||
-                                 document.querySelector(`#qty_${qtyPrefix}`) ||
-                                 document.querySelector(`.hp-qty-input[id*="${qtyPrefix}"]`);
-                if (qtyInput) {
-                    qty = parseInt(qtyInput.value) || 1;
+            // Delegate .m-cart-add clicks
+            document.addEventListener('click', (e) => {
+                const btn = e.target.closest('.m-cart-add');
+                if (btn) {
+                    SimpleAddHandler.handleClick({ ...e, currentTarget: btn, preventDefault: () => e.preventDefault() });
                 }
-            } else {
-                const orderQty = document.getElementById('order-qty');
-                if (orderQty) {
-                    qty = parseInt(orderQty.value) || 1;
+            });
+
+            // Delegate modal qty plus clicks
+            document.addEventListener('click', (e) => {
+                const btn = e.target.closest('.modal-qtplus');
+                if (btn) {
+                    e.preventDefault();
+                    this.handleQtyPlus(btn);
                 }
-            }
+            });
 
-            // Find size
-            let size = '';
-            const sizeSelect = document.querySelector('select[name="size"]');
-            const sizeActive = document.querySelector('.size-option.active, .m-cart-button__size.active');
-            if (sizeSelect) {
-                size = sizeSelect.value;
-            } else if (sizeActive) {
-                size = sizeActive.dataset.size || sizeActive.textContent.trim();
-            }
+            // Delegate modal qty minus clicks
+            document.addEventListener('click', (e) => {
+                const btn = e.target.closest('.modal-qtminus');
+                if (btn) {
+                    e.preventDefault();
+                    this.handleQtyMinus(btn);
+                }
+            });
 
-            // Find color
-            let color = '';
-            const colorActive = document.querySelector('.color-option.active, .m-cart-button__color.active');
-            if (colorActive) {
-                color = colorActive.dataset.color || '';
-            }
-
-            // Get vendor_id
-            let vendorId = btn.dataset.vendorId ||
-                          document.getElementById('vendor_user_id')?.value ||
-                          0;
-
-            // Build payload
-            const payload = {
-                merchant_product_id: parseInt(mpId),
-                vendor_id: parseInt(vendorId) || 0,
-                qty: qty,
-                size: size,
-                color: color,
-            };
-
-            // Show loading on button
-            const originalText = btn.innerHTML;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-            btn.disabled = true;
-
-            CartAPI.addItem(payload)
-                .then(result => {
-                    if (result.success) {
-                        utils.toast(result.data.success || 'Added to cart', 'success');
-                        utils.updateCartUI(result.data);
-                    } else {
-                        utils.toast(result.message || 'Failed to add to cart', 'error');
-                    }
-                })
-                .catch(error => {
-                    utils.toast(error.message || 'An error occurred', 'error');
-                })
-                .finally(() => {
-                    btn.innerHTML = originalText;
-                    btn.disabled = false;
-                });
+            console.log('[Cart] Event delegation initialized for dynamic content');
         },
 
         /**
-         * Initialize legacy support
+         * Handle modal qty plus button
          */
-        init() {
-            // Bind to legacy add-to-cart buttons
-            document.querySelectorAll(CONFIG.selectors.legacyAdd).forEach(btn => {
-                // Remove old handlers by cloning
-                const newBtn = btn.cloneNode(true);
-                btn.parentNode.replaceChild(newBtn, btn);
-                newBtn.addEventListener('click', this.handleLegacyAdd);
-            });
+        handleQtyPlus(btn) {
+            const modalContainers = ['.catalog-quickview', '.ill-product', '.modal-body', '.mfp-content'];
+            let input = null;
 
-            // Handle legacy qty buttons
-            document.querySelectorAll(CONFIG.selectors.legacyQtyPlus).forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    const target = btn.dataset.target;
-                    const input = document.querySelector(`#qty_${target}`) ||
-                                 document.getElementById('order-qty');
-                    if (input) {
-                        const max = parseInt(input.dataset.max || input.dataset.stock) || 9999;
-                        const preordered = input.dataset.preordered === '1';
-                        const effectiveMax = preordered ? 9999 : max;
-                        const current = parseInt(input.value) || 1;
-                        if (current < effectiveMax) {
-                            input.value = current + 1;
-                        }
-                    }
-                });
-            });
+            for (const containerSelector of modalContainers) {
+                const container = btn.closest(containerSelector);
+                if (container) {
+                    input = container.querySelector('.modal-qty-input, .ill-qty');
+                    if (input) break;
+                }
+            }
 
-            document.querySelectorAll(CONFIG.selectors.legacyQtyMinus).forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    const target = btn.dataset.target;
-                    const input = document.querySelector(`#qty_${target}`) ||
-                                 document.getElementById('order-qty');
-                    if (input) {
-                        const min = parseInt(input.dataset.min || btn.dataset.min) || 1;
-                        const current = parseInt(input.value) || 1;
-                        if (current > min) {
-                            input.value = current - 1;
-                        }
-                    }
-                });
-            });
+            if (input) {
+                const max = parseInt(btn.dataset.stock || input.dataset.stock) || 9999;
+                const preordered = (btn.dataset.preordered === '1') || (input.dataset.preordered === '1');
+                const effectiveMax = preordered ? 9999 : max;
+                const current = parseInt(input.value) || 1;
+                if (current < effectiveMax) {
+                    input.value = current + 1;
+                }
+            }
+        },
+
+        /**
+         * Handle modal qty minus button
+         */
+        handleQtyMinus(btn) {
+            const modalContainers = ['.catalog-quickview', '.ill-product', '.modal-body', '.mfp-content'];
+            let input = null;
+
+            for (const containerSelector of modalContainers) {
+                const container = btn.closest(containerSelector);
+                if (container) {
+                    input = container.querySelector('.modal-qty-input, .ill-qty');
+                    if (input) break;
+                }
+            }
+
+            if (input) {
+                const min = parseInt(btn.dataset.min || input.dataset.min) || 1;
+                const current = parseInt(input.value) || 1;
+                if (current > min) {
+                    input.value = current - 1;
+                }
+            }
         }
     };
 
@@ -930,16 +754,16 @@
             }
         });
 
-        // Initialize simple add buttons (.m-cart-add)
+        // Initialize simple add buttons (.m-cart-add) for existing elements
         SimpleAddHandler.init();
 
-        // Initialize product detail page handler
-        ProductDetailHandler.init();
+        // Initialize quantity +/- controls
+        QtyControls.init();
 
-        // Initialize legacy support for backward compatibility
-        LegacySupport.init();
+        // Initialize event delegation for dynamic content (modals, AJAX)
+        EventDelegation.init();
 
-        console.log('[Cart] Unified cart system initialized v3');
+        console.log('[Cart] Unified cart system initialized v4.0 (m-cart-add only)');
     }
 
     // Initialize on DOM ready

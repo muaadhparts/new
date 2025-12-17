@@ -238,9 +238,12 @@
     $input.val(current - 1);
   });
 
-  // DEPRECATED: .add_cart_click - Use .m-cart-add with cart-unified.js instead
-  // This handler is kept for backward compatibility but will be removed in future
-  // All cart functionality is now handled by cart-unified.js
+  // ============================================
+  // CART SYSTEM: All cart functionality uses m-cart-add class
+  // Handled exclusively by cart-unified.js via POST /cart/unified
+  // Required: data-merchant-product-id, data-qty-input
+  // Optional: data-redirect="/cart" for Buy Now
+  // ============================================
 
   // حذف عنصر من المقارنة (Compare)
   $(document).on('click', 'a[href*="compare/remove"]', function (e) {
@@ -442,16 +445,7 @@
     }
   }
 
-  // DEPRECATED: #addtodetailscart - Now handled by cart-unified.js ProductDetailHandler
-  // This handler has been removed - use cart-unified.js instead
 
-
-
-
-
-
-  // DEPRECATED: #addtobycard - Now handled by cart-unified.js ProductDetailHandler
-  // This handler has been removed - use cart-unified.js instead
 
   // ============================================
   // Product Card Gallery - Switch images on indicator hover/click

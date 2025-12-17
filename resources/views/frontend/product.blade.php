@@ -344,13 +344,23 @@
                         <!-- add to cart buy btn wrapper -->
                         <div class="row row-cols-2">
                             <div class="col">
-                                <button type="button" class="m-btn m-btn--primary m-btn--block" id="addtodetailscart">
+                                <button type="button" class="m-btn m-btn--primary m-btn--block m-cart-add"
+                                    data-merchant-product-id="{{ $merchant->id }}"
+                                    data-vendor-id="{{ $merchant->user_id }}"
+                                    data-min-qty="{{ $mpMinQty }}"
+                                    data-qty-input="#order-qty">
                                     @lang('add to cart')
                                 </button>
                             </div>
                             <div class="col">
-                                <button type="button" class="m-btn m-btn--success m-btn--block"
-                                    id="addtobycard">@lang('buy now')</button>
+                                <button type="button" class="m-btn m-btn--success m-btn--block m-cart-add"
+                                    data-merchant-product-id="{{ $merchant->id }}"
+                                    data-vendor-id="{{ $merchant->user_id }}"
+                                    data-min-qty="{{ $mpMinQty }}"
+                                    data-qty-input="#order-qty"
+                                    data-redirect="/cart">
+                                    @lang('buy now')
+                                </button>
                             </div>
                         </div>
 

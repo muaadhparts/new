@@ -199,6 +199,12 @@
   @endif
               <input type="hidden" id="product_price" value="{{ round($productt->vendorPrice() * $curr->value,2) }}">
               <input type="hidden" id="product_id" value="{{ $productt->id }}">
+              @if(isset($merchant) && $merchant)
+                <input type="hidden" id="merchant_product_id" value="{{ $merchant->id }}">
+                <input type="hidden" id="vendor_user_id" value="{{ $merchant->user_id }}">
+                <input type="hidden" id="product_minimum_qty_mp" value="{{ max(1, (int)($merchant->minimum_qty ?? 1)) }}">
+                <input type="hidden" id="product_preordered" value="{{ $merchant->preordered ? '1' : '0' }}" data-preordered="{{ $merchant->preordered ? '1' : '0' }}">
+              @endif
               <input type="hidden" id="curr_pos" value="{{ $gs->currency_format }}">
               <input type="hidden" id="curr_sign" value="{{ $curr->sign }}">
                   {{-- PRODUCT STOCK CONDITION SECTION  --}}
@@ -262,15 +268,36 @@
                               </li>
                               @else
                               @if ($productt->type != "Listing")
-                                <li class="addtocart m-1">
-                                  <a href="javascript:;" id="addcrt">{{ __('Add to Cart')}}</a>
-                                </li>
+                                @if(isset($merchant) && $merchant)
+                                  @php
+                                      $topMpId = $merchant->id;
+                                      $topVendorId = $merchant->user_id;
+                                      $topMinQty = max(1, (int)($merchant->minimum_qty ?? 1));
+                                  @endphp
+                                  <li class="addtocart m-1">
+                                    <a href="javascript:;" class="m-cart-add"
+                                       data-merchant-product-id="{{ $topMpId }}"
+                                       data-vendor-id="{{ $topVendorId }}"
+                                       data-min-qty="{{ $topMinQty }}"
+                                       data-qty-input="#order-qty">{{ __('Add to Cart')}}</a>
+                                  </li>
 
-                                <li class="addtocart m-1">
-                                  <a id="qaddcrt" href="javascript:;">
-                                    {{ __('Buy Now') }}
-                                  </a>
-                                </li>
+                                  <li class="addtocart m-1">
+                                    <a href="javascript:;" class="m-cart-add"
+                                       data-merchant-product-id="{{ $topMpId }}"
+                                       data-vendor-id="{{ $topVendorId }}"
+                                       data-min-qty="{{ $topMinQty }}"
+                                       data-qty-input="#order-qty"
+                                       data-redirect="/cart">
+                                      {{ __('Buy Now') }}
+                                    </a>
+                                  </li>
+                                @else
+                                  {{-- No merchant available - cannot add to cart --}}
+                                  <li class="addtocart m-1">
+                                    <a href="javascript:;" class="cart-out-of-stock" disabled>{{ __('Not Available')}}</a>
+                                  </li>
+                                @endif
                               @endif
 
                               @if ($productt->type == "Listing")

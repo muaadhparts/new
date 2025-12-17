@@ -402,20 +402,22 @@
 
                       {{-- UNIFIED: Use data attributes for cart-unified.js --}}
                       <li>
-                        <button type="button" id="maddcrt"
+                        <button type="button" class="m-cart-add"
                                 data-merchant-product-id="{{ $quickMp->id }}"
                                 data-vendor-id="{{ $quickVendorId }}"
-                                data-min-qty="{{ $quickMinQty }}">
+                                data-min-qty="{{ $quickMinQty }}"
+                                data-qty-input=".modal-total">
                           <i class="icofont-cart"></i>
                           {{ __('Add To Cart') }}
                         </button>
                       </li>
 
                       <li>
-                        <button type="button" id="mqaddcrt"
+                        <button type="button" class="m-cart-add"
                                 data-merchant-product-id="{{ $quickMp->id }}"
                                 data-vendor-id="{{ $quickVendorId }}"
                                 data-min-qty="{{ $quickMinQty }}"
+                                data-qty-input=".modal-total"
                                 data-redirect="/cart">
                           <i class="icofont-cart"></i>
                           {{ __('Purchase Now') }}
@@ -730,121 +732,11 @@
             $($tselector).val(total);
         });
 
-        // UNIFIED CART: Add to Cart
-        $("#maddcrt").on("click", function(){
-            var $btn = $(this);
-            var mpId = $btn.data('merchant-product-id');
-            var vendorId = $btn.data('vendor-id');
-            var minQty = parseInt($btn.data('min-qty')) || 1;
-            var qty = parseInt($('.modal-total').val()) || minQty;
-
-            if (!mpId) {
-                toastr.error("{{ __('Product not available') }}");
-                return false;
-            }
-
-            if (qty < minQty) {
-                toastr.error("{{ __('Minimum Quantity is:') }} " + minQty);
-                return false;
-            }
-
-            // Build payload
-            var payload = {
-                merchant_product_id: mpId,
-                vendor_id: vendorId,
-                qty: qty,
-                size: sizes || '',
-                color: colors || ''
-            };
-
-            // Show loading
-            var originalHtml = $btn.html();
-            $btn.html('<i class="fas fa-spinner fa-spin"></i>').prop('disabled', true);
-
-            $.ajax({
-                type: "POST",
-                url: "/cart/unified",
-                data: JSON.stringify(payload),
-                contentType: "application/json",
-                headers: {
-                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-                },
-                success: function(data) {
-                    if (data.success || data.message) {
-                        toastr.success(data.message || data.success || "{{ __('Successfully Added To Cart.') }}");
-                        if (data.cart_count !== undefined) {
-                            $("#cart-count").html(data.cart_count);
-                        }
-                        $("#cart-items").load(mainurl+'/carts/view');
-                    } else {
-                        toastr.error(data.error || "{{ __('Error adding to cart') }}");
-                    }
-                },
-                error: function(xhr) {
-                    var msg = xhr.responseJSON?.message || xhr.responseJSON?.error || "{{ __('Error adding to cart') }}";
-                    toastr.error(msg);
-                },
-                complete: function() {
-                    $btn.html(originalHtml).prop('disabled', false);
-                }
-            });
-        });
-
-        // UNIFIED CART: Buy Now
-        $(document).on("click", "#mqaddcrt", function(){
-            var $btn = $(this);
-            var mpId = $btn.data('merchant-product-id');
-            var vendorId = $btn.data('vendor-id');
-            var minQty = parseInt($btn.data('min-qty')) || 1;
-            var qty = parseInt($('.modal-total').val()) || minQty;
-
-            if (!mpId) {
-                toastr.error("{{ __('Product not available') }}");
-                return false;
-            }
-
-            if (qty < minQty) {
-                toastr.error("{{ __('Minimum Quantity is:') }} " + minQty);
-                return false;
-            }
-
-            // Build payload
-            var payload = {
-                merchant_product_id: mpId,
-                vendor_id: vendorId,
-                qty: qty,
-                size: sizes || '',
-                color: colors || ''
-            };
-
-            // Show loading
-            var originalHtml = $btn.html();
-            $btn.html('<i class="fas fa-spinner fa-spin"></i>').prop('disabled', true);
-
-            $.ajax({
-                type: "POST",
-                url: "/cart/unified",
-                data: JSON.stringify(payload),
-                contentType: "application/json",
-                headers: {
-                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-                },
-                success: function(data) {
-                    if (data.success || data.message) {
-                        // Redirect to cart
-                        window.location = '/cart';
-                    } else {
-                        toastr.error(data.error || "{{ __('Error adding to cart') }}");
-                        $btn.html(originalHtml).prop('disabled', false);
-                    }
-                },
-                error: function(xhr) {
-                    var msg = xhr.responseJSON?.message || xhr.responseJSON?.error || "{{ __('Error adding to cart') }}";
-                    toastr.error(msg);
-                    $btn.html(originalHtml).prop('disabled', false);
-                }
-            });
-        });
+        // ============================================
+        // DEPRECATED: #maddcrt and #mqaddcrt handlers
+        // Now handled by cart-unified.js via .m-cart-add class
+        // Buttons use: class="m-cart-add" with data-merchant-product-id, data-qty-input, data-redirect
+        // ============================================
 
     })(jQuery);
 
