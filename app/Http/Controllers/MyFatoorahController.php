@@ -112,7 +112,7 @@ class MyFatoorahController extends CheckoutBaseControlller {
             $mfObj = new MyFatoorahPayment($this->mfConfig);
             $payment = $mfObj->getInvoiceURL($curlData, $paymentId, $orderId, $sessionId);
 
-            Log::info('MyFatoorah Invoice Created', [
+            Log::debug('MyFatoorah Invoice Created', [
                 'invoice_url' => $payment['invoiceURL'],
                 'payment_id' => $paymentId,
                 'total_from_step3' => $totalAmount,
@@ -164,7 +164,7 @@ class MyFatoorahController extends CheckoutBaseControlller {
             $mfObj = new MyFatoorahPaymentStatus($this->mfConfig);
             $data = $mfObj->getPaymentStatus($paymentId, 'PaymentId');
 
-            Log::info('MyFatoorah Payment Status', [
+            Log::debug('MyFatoorah Payment Status', [
                 'payment_id' => $paymentId,
                 'status' => $data->InvoiceStatus,
                 'invoice_id' => $data->InvoiceId ?? null,

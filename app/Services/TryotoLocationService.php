@@ -46,7 +46,7 @@ class TryotoLocationService
         float $latitude,
         float $longitude
     ): array {
-        Log::info('TryotoLocation: Resolving location from DB', [
+        Log::debug('TryotoLocation: Resolving location from DB', [
             'city' => $cityName,
             'state' => $stateName,
             'country' => $countryName,
@@ -81,14 +81,14 @@ class TryotoLocationService
                     'latitude' => $latitude,
                     'longitude' => $longitude
                 ]);
-                Log::info('TryotoLocation: Updated city coordinates', [
+                Log::debug('TryotoLocation: Updated city coordinates', [
                     'city' => $city->city_name,
                     'latitude' => $latitude,
                     'longitude' => $longitude
                 ]);
             }
 
-            Log::info('TryotoLocation: City found in DB', [
+            Log::debug('TryotoLocation: City found in DB', [
                 'city' => $city->city_name,
                 'has_coordinates' => ($city->latitude && $city->longitude)
             ]);
@@ -124,14 +124,14 @@ class TryotoLocationService
                         'latitude' => $latitude,
                         'longitude' => $longitude
                     ]);
-                    Log::info('TryotoLocation: Updated state city coordinates', [
+                    Log::debug('TryotoLocation: Updated state city coordinates', [
                         'city' => $stateCity->city_name,
                         'latitude' => $latitude,
                         'longitude' => $longitude
                     ]);
                 }
 
-                Log::info('TryotoLocation: State found as city in DB', [
+                Log::debug('TryotoLocation: State found as city in DB', [
                     'state' => $stateName,
                     'found_as' => $stateCity->city_name
                 ]);
@@ -161,7 +161,7 @@ class TryotoLocationService
         $nearestCity = $this->findNearestSupportedCity($country->id, $latitude, $longitude);
 
         if ($nearestCity) {
-            Log::info('TryotoLocation: Found nearest supported city', [
+            Log::debug('TryotoLocation: Found nearest supported city', [
                 'original_city' => $cityName,
                 'nearest_city' => $nearestCity->city_name,
                 'distance_km' => $nearestCity->distance_km
@@ -335,7 +335,7 @@ class TryotoLocationService
 
         // Fallback: إذا لم توجد مدن بإحداثيات، نختار أي مدينة مدعومة
         // ونحدث إحداثياتها بإحداثيات المستخدم الحالية
-        Log::info('TryotoLocation: No cities with coordinates, using fallback', [
+        Log::debug('TryotoLocation: No cities with coordinates, using fallback', [
             'country_id' => $countryId,
             'user_lat' => $lat,
             'user_lng' => $lng
@@ -355,7 +355,7 @@ class TryotoLocationService
             // إضافة distance_km = 0 لأنها الأقرب (الوحيدة المتاحة)
             $fallbackCity->distance_km = 0;
 
-            Log::info('TryotoLocation: Fallback city selected and coordinates updated', [
+            Log::debug('TryotoLocation: Fallback city selected and coordinates updated', [
                 'city' => $fallbackCity->city_name,
                 'latitude' => $lat,
                 'longitude' => $lng

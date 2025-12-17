@@ -238,7 +238,7 @@ class DeliveryController extends VendorBaseController
         // حساب مبلغ COD إذا كان الدفع عند الاستلام
         $codAmount = in_array($order->method, ['cod', 'Cash On Delivery']) ? (float)$order->pay_amount : 0;
 
-        Log::info('Vendor Delivery: Getting shipping options', [
+        Log::debug('Vendor Delivery: Getting shipping options', [
             'order_id' => $order->id,
             'origin' => $originCity,
             'destination' => $destinationCity,

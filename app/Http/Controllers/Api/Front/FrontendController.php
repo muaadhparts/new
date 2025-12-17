@@ -397,7 +397,7 @@ class FrontendController extends Controller
 
             $setting = DB::table($name)->first();
 //            dd($setting);
-            Log::info('mm',['status' => true, 'data' => $setting, 'error' => []]);
+            Log::debug('mm',['status' => true, 'data' => $setting, 'error' => []]);
             return response()->json(['status' => true, 'data' => $setting, 'error' => []]);
         } catch (\Exception $e) {
             return response()->json(['status' => true, 'data' => [], 'error' => ['message' => $e->getMessage()]]);

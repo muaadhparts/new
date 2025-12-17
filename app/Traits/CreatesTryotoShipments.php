@@ -118,7 +118,7 @@ trait CreatesTryotoShipments
                     'trackingNumber' => $result['tracking_number'] ?? null,
                 ];
 
-                Log::info('Tryoto Shipment Created via TryotoService', [
+                Log::debug('Tryoto Shipment Created via TryotoService', [
                     'order_id' => $order->id,
                     'vendor_id' => $vendorId,
                     'tracking_number' => $result['tracking_number'],

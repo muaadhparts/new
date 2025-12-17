@@ -167,7 +167,7 @@ class TryotoService
 
                 $this->token = $token;
 
-                Log::info('Tryoto: Token refreshed successfully', [
+                Log::debug('Tryoto: Token refreshed successfully', [
                     'expires_in' => $expiresIn,
                     'cache_ttl' => $cacheTtl,
                     'sandbox' => $this->isSandbox
@@ -338,7 +338,7 @@ class TryotoService
             $height = $height ?? $sideCm;
             $width = $width ?? $sideCm;
 
-            Log::info('Tryoto: Using calculated dimensions from weight', [
+            Log::debug('Tryoto: Using calculated dimensions from weight', [
                 'weight' => $weight,
                 'calculated_side' => $sideCm,
                 'dimensions' => ['length' => $length, 'height' => $height, 'width' => $width]
@@ -354,7 +354,7 @@ class TryotoService
             'xwidth' => $width,
         ];
 
-        Log::info('Tryoto: Requesting delivery options', $requestData);
+        Log::debug('Tryoto: Requesting delivery options', $requestData);
 
         $result = $this->makeApiRequest('POST', '/rest/v2/checkOTODeliveryFee', $requestData);
 
@@ -390,7 +390,7 @@ class TryotoService
             ];
         }
 
-        Log::info('Tryoto: Got ' . count($options) . ' delivery options');
+        Log::debug('Tryoto: Got ' . count($options) . ' delivery options');
 
         return [
             'success' => true,
@@ -552,7 +552,7 @@ class TryotoService
             $width = $width && $width > 0 ? $width : $sideCm;
             $height = $height && $height > 0 ? $height : $sideCm;
 
-            Log::info('Tryoto: createShipment - calculated dimensions from weight', [
+            Log::debug('Tryoto: createShipment - calculated dimensions from weight', [
                 'order_id' => $order->id,
                 'weight' => $weight,
                 'calculated_side' => $sideCm
@@ -666,7 +666,7 @@ class TryotoService
             'items' => $orderItems
         ];
 
-        Log::info('Tryoto: Creating order with shipment', [
+        Log::debug('Tryoto: Creating order with shipment', [
             'order_id' => $order->id,
             'tryoto_order_id' => $tryotoOrderId,
             'origin' => $originCity,
@@ -691,7 +691,7 @@ class TryotoService
             // Send notification to vendor
             $this->notifyVendor($vendorId, $order, 'shipment_created', $trackingRef);
 
-            Log::info('Tryoto: Order created successfully', [
+            Log::debug('Tryoto: Order created successfully', [
                 'order_id' => $order->id,
                 'oto_id' => $otoId,
                 'tracking_number' => $trackingNumber,
@@ -847,7 +847,7 @@ class TryotoService
 
         $data = $result['data'];
 
-        Log::info('Tryoto: orderDetails success', [
+        Log::debug('Tryoto: orderDetails success', [
             'order_id' => $orderId,
             'status' => $data['status'] ?? 'unknown',
             'tracking' => $data['trackingNumber'] ?? null,
@@ -1052,7 +1052,7 @@ class TryotoService
         // Cache positive results for 30 minutes
         Cache::put($cacheKey, $response, now()->addMinutes(30));
 
-        Log::info('Tryoto: verifyCitySupport', [
+        Log::debug('Tryoto: verifyCitySupport', [
             'location' => $locationName,
             'supported' => $response['supported'],
             'region' => $region,
@@ -1520,6 +1520,6 @@ class TryotoService
     {
         Cache::forget($this->getCacheKey());
         $this->token = null;
-        Log::info('Tryoto: Cached token cleared', ['cache_key' => $this->getCacheKey()]);
+        Log::debug('Tryoto: Cached token cleared', ['cache_key' => $this->getCacheKey()]);
     }
 }

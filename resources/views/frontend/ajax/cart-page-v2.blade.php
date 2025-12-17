@@ -19,8 +19,8 @@
     $totalQty = $cart['totalQty'] ?? 0;
     $productsByVendor = CartHelper::groupByVendor();
 
-    // العملة
-    $curr = \App\Models\Currency::where('is_default', 1)->first();
+    // العملة - استخدام المتغير العام المحمّل مسبقاً (N+1 FIX)
+    // $curr is already loaded globally in ViewComposerServiceProvider
     $currValue = $curr->value ?? 1;
     $currSign = $curr->sign ?? '$';
     $currPos = $gs->currency_format ?? 0;

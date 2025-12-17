@@ -61,14 +61,16 @@ return [
         'single' => [
             'driver' => 'single',
             'path' => storage_path('logs/laravel.log'),
-            'level' => env('LOG_LEVEL', 'debug'),
+            // Production: warning+ only (LOG_LEVEL=debug for local dev)
+            'level' => env('LOG_LEVEL', 'warning'),
             'replace_placeholders' => true,
         ],
 
         'daily' => [
             'driver' => 'daily',
             'path' => storage_path('logs/laravel.log'),
-            'level' => env('LOG_LEVEL', 'debug'),
+            // Production: warning+ only (LOG_LEVEL=debug for local dev)
+            'level' => env('LOG_LEVEL', 'warning'),
             'days' => 14,
             'replace_placeholders' => true,
         ],

@@ -56,7 +56,7 @@ class GeocodingController extends Controller
         $latitude = $request->latitude;
         $longitude = $request->longitude;
 
-        Log::info('Geocoding: Starting reverse geocode', compact('latitude', 'longitude'));
+        Log::debug('Geocoding: Starting reverse geocode', compact('latitude', 'longitude'));
 
         try {
             // ==========================================
@@ -88,7 +88,7 @@ class GeocodingController extends Controller
             $formattedAddress = $geocodeResult['formatted_address'] ?? '';
             $formattedAddressEn = $geocodeResult['formatted_address_en'] ?? '';
 
-            Log::info('Geocoding: Data from Google Maps', [
+            Log::debug('Geocoding: Data from Google Maps', [
                 'en' => compact('cityName', 'stateName', 'countryName'),
                 'ar' => ['city' => $cityNameAr, 'state' => $stateNameAr, 'country' => $countryNameAr]
             ]);
@@ -129,7 +129,7 @@ class GeocodingController extends Controller
                 // ==========================================
                 // السياسة الجديدة: إنشاء الدولة ومزامنة المدن تلقائياً
                 // ==========================================
-                Log::info('Geocoding: Country needs sync - starting auto sync', [
+                Log::debug('Geocoding: Country needs sync - starting auto sync', [
                     'country' => $countryName,
                     'reason' => $syncStatus['reason']
                 ]);
@@ -142,7 +142,7 @@ class GeocodingController extends Controller
                         $countryNameAr
                     );
 
-                    Log::info('Geocoding: Created new country from Google Maps', [
+                    Log::debug('Geocoding: Created new country from Google Maps', [
                         'country' => $countryName,
                         'country_ar' => $countryNameAr,
                         'code' => $countryCode,
@@ -160,7 +160,7 @@ class GeocodingController extends Controller
                     $countryNameAr
                 );
 
-                Log::info('Geocoding: Auto sync completed', [
+                Log::debug('Geocoding: Auto sync completed', [
                     'country' => $countryName,
                     'success' => $syncResult['success'],
                     'cities_count' => $syncResult['cities_count'] ?? 0
@@ -288,7 +288,7 @@ class GeocodingController extends Controller
                 $response['warning'] = $resolution['message'];
             }
 
-            Log::info('Geocoding: Completed successfully', [
+            Log::debug('Geocoding: Completed successfully', [
                 'strategy' => $resolution['strategy'],
                 'resolved' => $resolution['resolved_name'],
                 'original_city' => $cityName
@@ -329,7 +329,7 @@ class GeocodingController extends Controller
         $countryNameAr = $request->country_name_ar; // من Google Maps
         $sessionId = uniqid('sync_');
 
-        Log::info('GeocodingController: Starting country sync', [
+        Log::debug('GeocodingController: Starting country sync', [
             'country' => $countryName,
             'country_ar' => $countryNameAr,
             'code' => $countryCode,
@@ -469,7 +469,7 @@ class GeocodingController extends Controller
                     ->first();
 
                 if ($anyCity) {
-                    Log::info('Geocoding: Using random city from synced country (no coordinates available)', [
+                    Log::debug('Geocoding: Using random city from synced country (no coordinates available)', [
                         'city' => $anyCity->city_name,
                         'country' => $syncedCountry->country_name,
                         'user_coordinates' => compact('latitude', 'longitude')
@@ -504,7 +504,7 @@ class GeocodingController extends Controller
             return null;
         }
 
-        Log::info('Geocoding: Found nearest city globally', [
+        Log::debug('Geocoding: Found nearest city globally', [
             'city' => $city->city_name,
             'country' => $city->country?->country_name,
             'distance_km' => round($city->distance_km, 2)
@@ -559,7 +559,7 @@ class GeocodingController extends Controller
                 'status' => 1
             ]);
 
-            Log::info('Geocoding: New country cached', [
+            Log::debug('Geocoding: New country cached', [
                 'name' => $countryName,
                 'code' => $countryCode
             ]);
@@ -594,7 +594,7 @@ class GeocodingController extends Controller
                 'owner_id' => 0
             ]);
 
-            Log::info('Geocoding: New state cached', [
+            Log::debug('Geocoding: New state cached', [
                 'state' => $stateName
             ]);
         }
@@ -628,7 +628,7 @@ class GeocodingController extends Controller
                 'status' => 1
             ]);
 
-            Log::info('Geocoding: New city cached (verified by Tryoto API)', [
+            Log::debug('Geocoding: New city cached (verified by Tryoto API)', [
                 'city' => $cityName
             ]);
         } elseif (!$city->latitude || !$city->longitude) {

@@ -47,7 +47,7 @@ class ShippingApiController extends Controller
             // 2. Calculate shipping data using cart items
             $shippingData = VendorCartService::calculateVendorShipping($vendorId, $cart->items);
 
-            Log::info('ShippingApiController: Shipping data calculated', [
+            Log::debug('ShippingApiController: Shipping data calculated', [
                 'vendor_id' => $vendorId,
                 'shipping_data' => $shippingData
             ]);
@@ -88,7 +88,7 @@ class ShippingApiController extends Controller
             $weight = $shippingData['chargeable_weight'] ?? $shippingData['actual_weight'] ?? 0;
             $dimensions = $shippingData['dimensions'] ?? [];
 
-            Log::info('ShippingApiController: Calling Tryoto API', [
+            Log::debug('ShippingApiController: Calling Tryoto API', [
                 'vendor_id' => $vendorId,
                 'origin' => $originCity,
                 'destination' => $destinationCity,
@@ -119,7 +119,7 @@ class ShippingApiController extends Controller
 
             $deliveryCompany = $result['raw']['deliveryCompany'] ?? [];
 
-            Log::info('ShippingApiController: Got delivery options', [
+            Log::debug('ShippingApiController: Got delivery options', [
                 'vendor_id' => $vendorId,
                 'options_count' => count($deliveryCompany)
             ]);

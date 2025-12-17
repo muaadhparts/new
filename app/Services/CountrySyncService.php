@@ -86,7 +86,7 @@ class CountrySyncService
     {
         $this->sessionId = $sessionId ?? uniqid('sync_');
 
-        Log::info('CountrySyncService: Starting country sync', [
+        Log::debug('CountrySyncService: Starting country sync', [
             'country' => $countryName,
             'country_ar' => $countryNameAr,
             'code' => $countryCode,
@@ -145,7 +145,7 @@ class CountrySyncService
 
             $this->updateProgress(100, 'تمت المزامنة بنجاح!');
 
-            Log::info('CountrySyncService: Country sync completed', [
+            Log::debug('CountrySyncService: Country sync completed', [
                 'country' => $countryName,
                 'cities_synced' => $syncedCities
             ]);
@@ -255,7 +255,7 @@ class CountrySyncService
 
                 if (!empty($updates)) {
                     $existingCountry->update($updates);
-                    Log::info('CountrySyncService: Updated existing country', [
+                    Log::debug('CountrySyncService: Updated existing country', [
                         'id' => $existingCountry->id,
                         'updates' => $updates
                     ]);
@@ -280,7 +280,7 @@ class CountrySyncService
                 'synced_at' => null,
             ]);
 
-            Log::info('CountrySyncService: Created new country', [
+            Log::debug('CountrySyncService: Created new country', [
                 'id' => $country->id,
                 'name' => $countryName,
                 'name_ar' => $countryNameAr,
@@ -403,7 +403,7 @@ class CountrySyncService
 
         } while (count($allCities) < $totalCount && !empty($cities));
 
-        Log::info('CountrySyncService: Fetched cities from Tryoto', [
+        Log::debug('CountrySyncService: Fetched cities from Tryoto', [
             'country' => $countryCode,
             'count' => count($allCities),
             'sample' => array_slice($allCities, 0, 3)
@@ -771,7 +771,7 @@ class CountrySyncService
             'owner_id' => 0,
         ]);
 
-        Log::info('CountrySyncService: Created new state', [
+        Log::debug('CountrySyncService: Created new state', [
             'id' => $state->id,
             'name_en' => $stateNameEn,
             'name_ar' => $stateNameAr,
@@ -828,7 +828,7 @@ class CountrySyncService
             ], now()->addMinutes(30));
         }
 
-        Log::info('CountrySyncService: Progress', [
+        Log::debug('CountrySyncService: Progress', [
             'session' => $this->sessionId,
             'percent' => $percent,
             'message' => $message

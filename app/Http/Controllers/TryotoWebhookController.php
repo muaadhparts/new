@@ -42,7 +42,7 @@ class TryotoWebhookController extends Controller
             }
 
             // Log incoming webhook
-            Log::info('Tryoto Webhook Received', ['payload' => $request->all()]);
+            Log::debug('Tryoto Webhook Received', ['payload' => $request->all()]);
 
             // استخراج البيانات من Webhook
             $trackingNumber = $request->input('trackingNumber');
@@ -129,7 +129,7 @@ class TryotoWebhookController extends Controller
                 }
             }
 
-            Log::info('Tryoto Webhook Processed Successfully', [
+            Log::debug('Tryoto Webhook Processed Successfully', [
                 'tracking' => $trackingNumber,
                 'status' => $status,
                 'order_id' => $existingLog->order_id,

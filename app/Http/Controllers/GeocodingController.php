@@ -216,7 +216,7 @@ class GeocodingController extends Controller
             'status' => 1
         ]);
 
-        Log::info('Alternative Tryoto city created', [
+        Log::debug('Alternative Tryoto city created', [
             'city' => $cityName,
             'city_ar' => $cityNameAr,
             'country_id' => $countryId
@@ -494,7 +494,7 @@ class GeocodingController extends Controller
         $countryCode = strtoupper($request->country_code);
         $sessionId = uniqid('sync_');
 
-        Log::info('GeocodingController: Starting country sync', [
+        Log::debug('GeocodingController: Starting country sync', [
             'country' => $countryName,
             'code' => $countryCode,
             'session' => $sessionId
@@ -570,7 +570,7 @@ class GeocodingController extends Controller
         $latitude = $request->latitude;
         $longitude = $request->longitude;
 
-        Log::info('Geocoding: Starting reverse geocode', compact('latitude', 'longitude'));
+        Log::debug('Geocoding: Starting reverse geocode', compact('latitude', 'longitude'));
 
         // Get bilingual location data from Google
         $locationData = $this->googleMapsService->getBilingualNames($latitude, $longitude);
@@ -585,7 +585,7 @@ class GeocodingController extends Controller
         $arabicData = $locationData['data']['ar'];
         $englishData = $locationData['data']['en'];
 
-        Log::info('Geocoding: Data from Google Maps', [
+        Log::debug('Geocoding: Data from Google Maps', [
             'en' => [
                 'cityName' => $englishData['city'] ?? null,
                 'stateName' => $englishData['state'] ?? null,
@@ -641,7 +641,7 @@ class GeocodingController extends Controller
         $stateName = $englishData['state'] ?? null;
         $countryName = $englishData['country'] ?? null;
 
-        Log::info('TryotoLocation: Resolving location from DB', [
+        Log::debug('TryotoLocation: Resolving location from DB', [
             'city' => $cityName,
             'state' => $stateName,
             'country' => $countryName,

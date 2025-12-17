@@ -136,91 +136,59 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | OPTIMIZED WATCHERS CONFIGURATION
+    | PRODUCTION OPTIMIZED WATCHERS
     |--------------------------------------------------------------------------
-    | Only essential watchers enabled for production performance:
+    | Only critical watchers enabled:
     | - Exceptions (always)
-    | - Slow Queries (>100ms)
-    | - Failed/Slow Requests
+    | - Slow Queries (>100ms only)
+    | - Failed Requests (4xx/5xx only)
     | - Failed Jobs
     | - Logs (error level only)
+    |
+    | All verbose logging disabled for performance.
     */
     'watchers' => [
-        // DISABLED - Not essential for debugging
-        Watchers\BatchWatcher::class => env('TELESCOPE_BATCH_WATCHER', false),
-
-        Watchers\CacheWatcher::class => [
-            'enabled' => env('TELESCOPE_CACHE_WATCHER', false), // Disabled - too verbose
-            'hidden' => [],
-            'ignore' => [],
-        ],
-
-        Watchers\ClientRequestWatcher::class => [
-            'enabled' => env('TELESCOPE_CLIENT_REQUEST_WATCHER', false), // Disabled - external API calls logged separately
-            'ignore_hosts' => [],
-        ],
-
-        Watchers\CommandWatcher::class => [
-            'enabled' => env('TELESCOPE_COMMAND_WATCHER', false), // Disabled
-            'ignore' => [],
-        ],
-
-        Watchers\DumpWatcher::class => [
-            'enabled' => env('TELESCOPE_DUMP_WATCHER', false), // Disabled
-            'always' => false,
-        ],
-
-        Watchers\EventWatcher::class => [
-            'enabled' => env('TELESCOPE_EVENT_WATCHER', false), // Disabled - too verbose
-            'ignore' => [],
-        ],
+        // DISABLED - Not essential
+        Watchers\BatchWatcher::class => false,
+        Watchers\CacheWatcher::class => false,
+        Watchers\ClientRequestWatcher::class => false,
+        Watchers\CommandWatcher::class => false,
+        Watchers\DumpWatcher::class => false,
+        Watchers\EventWatcher::class => false,
+        Watchers\GateWatcher::class => false,
+        Watchers\MailWatcher::class => false,
+        Watchers\ModelWatcher::class => false,
+        Watchers\NotificationWatcher::class => false,
+        Watchers\RedisWatcher::class => false,
+        Watchers\ScheduleWatcher::class => false,
+        Watchers\ViewWatcher::class => false,
 
         // ENABLED - Critical for debugging
-        Watchers\ExceptionWatcher::class => env('TELESCOPE_EXCEPTION_WATCHER', true),
+        Watchers\ExceptionWatcher::class => true,
 
-        Watchers\GateWatcher::class => [
-            'enabled' => env('TELESCOPE_GATE_WATCHER', false), // Disabled
-            'ignore_abilities' => [],
-            'ignore_packages' => true,
-            'ignore_paths' => [],
-        ],
+        // ENABLED - Track failed jobs only
+        Watchers\JobWatcher::class => env('TELESCOPE_JOB_WATCHER', true),
 
-        Watchers\JobWatcher::class => env('TELESCOPE_JOB_WATCHER', true), // Keep - track failed jobs
-
+        // ENABLED - Error logs only (no info/debug)
         Watchers\LogWatcher::class => [
             'enabled' => env('TELESCOPE_LOG_WATCHER', true),
-            'level' => 'error', // Only errors and above
+            'level' => 'error', // Only error, critical, alert, emergency
         ],
 
-        Watchers\MailWatcher::class => env('TELESCOPE_MAIL_WATCHER', false), // Disabled
-
-        Watchers\ModelWatcher::class => [
-            'enabled' => env('TELESCOPE_MODEL_WATCHER', false), // Disabled - too verbose
-            'events' => ['eloquent.*'],
-            'hydrations' => false,
-        ],
-
-        Watchers\NotificationWatcher::class => env('TELESCOPE_NOTIFICATION_WATCHER', false), // Disabled
-
-        // ENABLED - Critical for performance monitoring
+        // ENABLED - Slow queries only (>100ms)
         Watchers\QueryWatcher::class => [
             'enabled' => env('TELESCOPE_QUERY_WATCHER', true),
             'ignore_packages' => true,
             'ignore_paths' => [],
-            'slow' => 50, // Lowered to 50ms to catch more slow queries
+            'slow' => 100, // Only log queries >= 100ms
         ],
 
-        Watchers\RedisWatcher::class => env('TELESCOPE_REDIS_WATCHER', false), // Disabled
-
-        // ENABLED - Track slow/failed requests
+        // ENABLED - Track failed/slow requests only
         Watchers\RequestWatcher::class => [
             'enabled' => env('TELESCOPE_REQUEST_WATCHER', true),
-            'size_limit' => env('TELESCOPE_RESPONSE_SIZE_LIMIT', 64),
-            'ignore_http_methods' => ['OPTIONS'], // Ignore preflight
-            'ignore_status_codes' => [], // Keep all status codes for debugging
+            'size_limit' => env('TELESCOPE_RESPONSE_SIZE_LIMIT', 32),
+            'ignore_http_methods' => ['OPTIONS', 'HEAD'],
+            'ignore_status_codes' => [200, 201, 204, 301, 302, 304], // Ignore success responses
         ],
-
-        Watchers\ScheduleWatcher::class => env('TELESCOPE_SCHEDULE_WATCHER', false), // Disabled
-        Watchers\ViewWatcher::class => env('TELESCOPE_VIEW_WATCHER', false), // Disabled - too verbose
     ],
 ];

@@ -634,7 +634,8 @@ class CartController extends FrontBaseController
         $productsByVendor = $this->groupProductsByVendor($products);
 
         if ($request->ajax()) {
-            return view('frontend.ajax.cart-page', compact('products', 'totalPrice', 'mainTotal', 'productsByVendor'));
+            // استخدام cart-page-v2 المحسّن (N+1 FIX)
+            return view('frontend.ajax.cart-page-v2', compact('products', 'totalPrice', 'mainTotal', 'productsByVendor'));
         }
         return view('frontend.cart', compact('products', 'totalPrice', 'mainTotal', 'productsByVendor'));
     }
@@ -728,7 +729,8 @@ class CartController extends FrontBaseController
         // تجميع المنتجات حسب التاجر
         $productsByVendor = $this->groupProductsByVendor($products);
 
-        return view('frontend.ajax.cart-page', compact('products', 'totalPrice', 'mainTotal', 'productsByVendor'));
+        // استخدام cart-page-v2 المحسّن (N+1 FIX)
+        return view('frontend.ajax.cart-page-v2', compact('products', 'totalPrice', 'mainTotal', 'productsByVendor'));
     }
 
     /* ===================== Utilities ===================== */
