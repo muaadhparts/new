@@ -1,24 +1,24 @@
 {{--
     Unified Product Card Component
     ==============================
-    Supports two data sources:
-    1. ProductCardDTO: $card (from category, search-results, products pages)
-    2. Product + MerchantProduct: $product, $mp (from wishlist, vendor, related products)
+    Single source of truth for all product cards.
 
-    Layout modes: $layout = 'grid' (default) | 'list'
+    Data sources:
+    1. ProductCardDTO: $card (from category, search-results, products)
+    2. Product + MerchantProduct: $product, $mp (from wishlist, vendor, related)
+
+    Layout: $layout = 'grid' (default) | 'list'
+
+    CSS: public/assets/css/product-card.css
 --}}
 
 @php
     // ========================================
-    // SECTION 1: Data Normalization
+    // Data Normalization
     // ========================================
-    // Normalize data from either ProductCardDTO or Product+MerchantProduct
-    // into unified variables for the template
-
     $layout = $layout ?? 'grid';
     $defaultImage = asset('assets/images/noimage.png');
 
-    // Check if we have a ProductCardDTO
     if (isset($card) && $card instanceof \App\DataTransferObjects\ProductCardDTO) {
         // === Source: ProductCardDTO ===
         $productId = $card->productId;
@@ -36,7 +36,6 @@
         $inStock = $card->inStock;
         $stockQty = $card->stock;
         $stockText = $card->stockText ?? ($inStock ? __('In Stock') : __('Out of Stock'));
-        $stockBadgeClass = $card->stockBadgeClass ?? ($inStock ? 'bg-success' : 'bg-danger');
         $hasVendor = $card->hasVendor;
         $priceFormatted = $card->priceFormatted;
         $previousPrice = $card->previousPrice;
@@ -51,16 +50,8 @@
         $wishlistUrl = $card->wishlistUrl;
         $isInWishlist = $card->isInWishlist;
         $compareUrl = $card->compareUrl;
-
-        // For component compatibility
-        $actualProduct = null;
-        $merchant = null;
-        $useComponent = false;
     } else {
         // === Source: Product + MerchantProduct ===
-        /** @var \App\Models\Product|\App\Models\MerchantProduct $product */
-        /** @var \App\Models\MerchantProduct|null $mp */
-
         $isMerchantProduct = $product instanceof \App\Models\MerchantProduct;
 
         if ($isMerchantProduct) {
@@ -68,13 +59,9 @@
             $actualProduct = $product->product;
         } else {
             $actualProduct = $product;
-            $merchant = $mp ?? null;
-            if (!$merchant) {
-                $merchant = $product->best_merchant_product;
-            }
+            $merchant = $mp ?? $product->best_merchant_product ?? null;
         }
 
-        // Build normalized variables
         $productId = $actualProduct->id ?? null;
         $merchantId = $merchant->id ?? null;
         $vendorId = $merchant->user_id ?? null;
@@ -103,7 +90,6 @@
         $stockQty = $merchant ? (int)($merchant->stock ?? 0) : 0;
         $inStock = $stockQty > 0 || ($merchant && $merchant->preordered);
         $stockText = $inStock ? __('In Stock') : __('Out of Stock');
-        $stockBadgeClass = $inStock ? 'bg-success' : 'bg-danger';
         $hasVendor = $merchant && $merchant->user_id > 0;
 
         if ($merchant) {
@@ -126,191 +112,173 @@
         $wishlistUrl = route('user-wishlist-add', $actualProduct->id);
         $isInWishlist = isset($wishlistProductIds) ? $wishlistProductIds->contains($actualProduct->id) : false;
         $compareUrl = route('product.compare.add', $actualProduct->id);
-
-        $useComponent = true;
     }
 
     $cardId = 'pc_' . ($productId ?? uniqid()) . '_' . ($merchantId ?? '0');
+    $cardClass = $layout === 'list' ? 'product-card product-card--list' : 'product-card';
 @endphp
 
 
 {{-- ========================================
-     SECTION 2: LIST VIEW
+     LIST VIEW
      ======================================== --}}
 @if($layout === 'list')
 <div class="col-sm-6 col-md-6 col-lg-12">
-    <div class="single-product-list-view">
-        {{-- Image Wrapper --}}
-        <div class="img-wrapper">
+    <div class="{{ $cardClass }}" id="{{ $cardId }}">
+        {{-- Media Section --}}
+        <div class="product-card__media">
             @if ($offPercentage && round($offPercentage) > 0)
-                <span class="product-badge">-{{ round($offPercentage) }}%</span>
+                <span class="product-card__badge product-card__badge--discount">
+                    -{{ round($offPercentage) }}%
+                </span>
             @endif
 
-            {{-- Wishlist Button --}}
+            @if (!$inStock)
+                <span class="product-card__badge product-card__badge--stock">
+                    {{ __('Out of Stock') }}
+                </span>
+            @endif
+
             @auth
-                <a href="javascript:;" class="wishlist" data-href="{{ $wishlistUrl }}">
-                    <div class="add-to-wishlist-btn {{ $isInWishlist ? 'active' : '' }}">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
-                            <path fill-rule="evenodd" clip-rule="evenodd"
-                                d="M11.9932 5.13581C9.9938 2.7984 6.65975 2.16964 4.15469 4.31001C1.64964 6.45038 1.29697 10.029 3.2642 12.5604C4.89982 14.6651 9.84977 19.1041 11.4721 20.5408C11.6536 20.7016 11.7444 20.7819 11.8502 20.8135C11.9426 20.8411 12.0437 20.8411 12.1361 20.8135C12.2419 20.7819 12.3327 20.7016 12.5142 20.5408C14.1365 19.1041 19.0865 14.6651 20.7221 12.5604C22.6893 10.029 22.3797 6.42787 19.8316 4.31001C17.2835 2.19216 13.9925 2.7984 11.9932 5.13581Z"
-                                stroke="#030712" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-                        </svg>
-                    </div>
+                <a href="javascript:;" class="product-card__wishlist wishlist {{ $isInWishlist ? 'active' : '' }}" data-href="{{ $wishlistUrl }}">
+                    <i class="{{ $isInWishlist ? 'fas' : 'far' }} fa-heart"></i>
                 </a>
             @else
-                <a href="{{ route('user.login') }}">
-                    <div class="add-to-wishlist-btn">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
-                            <path fill-rule="evenodd" clip-rule="evenodd"
-                                d="M11.9932 5.13581C9.9938 2.7984 6.65975 2.16964 4.15469 4.31001C1.64964 6.45038 1.29697 10.029 3.2642 12.5604C4.89982 14.6651 9.84977 19.1041 11.4721 20.5408C11.6536 20.7016 11.7444 20.7819 11.8502 20.8135C11.9426 20.8411 12.0437 20.8411 12.1361 20.8135C12.2419 20.7819 12.3327 20.7016 12.5142 20.5408C14.1365 19.1041 19.0865 14.6651 20.7221 12.5604C22.6893 10.029 22.3797 6.42787 19.8316 4.31001C17.2835 2.19216 13.9925 2.7984 11.9932 5.13581Z"
-                                stroke="#030712" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-                        </svg>
-                    </div>
+                <a href="{{ route('user.login') }}" class="product-card__wishlist">
+                    <i class="far fa-heart"></i>
                 </a>
             @endauth
 
-            <img class="product-img" src="{{ $photo }}" alt="{{ $productName }}"
-                 onerror="this.onerror=null; this.src='{{ $defaultImage }}';">
+            <a href="{{ $productUrl }}" class="product-card__media-link">
+                <img src="{{ $photo }}" alt="{{ $productName }}" class="product-card__img"
+                     loading="lazy" onerror="this.onerror=null; this.src='{{ $defaultImage }}';">
+            </a>
         </div>
 
-        {{-- Details Wrapper --}}
-        <div class="details-wrapper">
-            <a href="{{ $productUrl }}" class="product-title">{{ $productName }}</a>
+        {{-- Content Section --}}
+        <div class="product-card__content">
+            <h6 class="product-card__title">
+                <a href="{{ $productUrl }}">{{ $productName }}</a>
+            </h6>
 
             {{-- Product Info Badges --}}
-            <div class="product-info-badges my-2">
+            <div class="product-card__info-badges">
                 @if($sku)
-                    <span class="badge bg-light text-dark me-1">
+                    <span class="badge bg-light text-dark">
                         <i class="fas fa-barcode me-1"></i>{{ $sku }}
                     </span>
                 @endif
-
                 @if($brandName)
-                    <span class="badge bg-secondary me-1">{{ $brandName }}</span>
+                    <span class="badge bg-secondary">{{ $brandName }}</span>
                 @endif
-
                 @if($qualityBrandName)
-                    <span class="badge bg-info text-dark me-1">
+                    <span class="badge bg-info text-dark">
                         @if($qualityBrandLogo)
                             <img src="{{ $qualityBrandLogo }}" alt="" style="height: 14px;" class="me-1">
                         @endif
                         {{ $qualityBrandName }}
                     </span>
                 @endif
-
                 @if($vendorName)
-                    <span class="badge bg-primary me-1">
+                    <span class="badge bg-primary">
                         <i class="fas fa-store me-1"></i>{{ $vendorName }}
                     </span>
                 @endif
-
-                <span class="badge {{ $stockBadgeClass }}">{{ $stockText }}</span>
+                <span class="badge {{ $inStock ? 'bg-success' : 'bg-danger' }}">{{ $stockText }}</span>
             </div>
 
             {{-- Rating --}}
             @if($ratingsCount > 0)
-                <div class="rating-stars mb-2">
-                    @for($i = 1; $i <= 5; $i++)
-                        <i class="{{ $i <= round($ratingsAvg) ? 'fas' : 'far' }} fa-star text-warning"></i>
-                    @endfor
-                    <span class="ms-1">({{ $ratingsCount }})</span>
+                <div class="product-card__rating">
+                    <div class="product-card__rating-stars">
+                        @for($i = 1; $i <= 5; $i++)
+                            <i class="{{ $i <= round($ratingsAvg) ? 'fas' : 'far' }} fa-star"></i>
+                        @endfor
+                    </div>
+                    <span class="product-card__rating-count">({{ $ratingsCount }})</span>
                 </div>
             @endif
 
             {{-- Price --}}
-            <div class="product-price-wrap">
-                <span class="current-price">{{ $priceFormatted }}</span>
+            <div class="product-card__price">
+                <span class="product-card__price-current">{{ $priceFormatted }}</span>
                 @if($previousPrice > 0 && $offPercentage > 0)
-                    <span class="old-price text-muted text-decoration-line-through ms-2">
-                        {{ $previousPriceFormatted }}
-                    </span>
+                    <span class="product-card__price-old">{{ $previousPriceFormatted }}</span>
                 @endif
             </div>
 
             {{-- Add to Cart --}}
-            <div class="mt-3">
-                @if($productType !== 'Listing' && $affiliateProductType !== 'affiliate')
-                    @if($inStock && $hasVendor && $merchantId)
-                        <button class="template-btn cart-btn m-cart-add"
-                            data-product-id="{{ $productId }}"
-                            data-merchant-product-id="{{ $merchantId }}"
-                            data-vendor-id="{{ $vendorId }}"
-                            data-min-qty="{{ $minQty }}"
-                            data-stock="{{ $stockQty }}"
-                            data-preordered="{{ $preordered ? '1' : '0' }}">
-                            <i class="fas fa-cart-plus me-1"></i> @lang('Add to Cart')
-                        </button>
-                    @else
-                        <button class="template-btn btn-secondary" disabled>
-                            <i class="fas fa-times me-1"></i> @lang('Out of Stock')
-                        </button>
-                    @endif
-                @elseif($affiliateProductType === 'affiliate' && $affiliateLink)
-                    <a href="{{ $affiliateLink }}" target="_blank" class="template-btn">
-                        <i class="fas fa-external-link-alt me-1"></i> @lang('Buy Now')
-                    </a>
+            @if($productType !== 'Listing' && $affiliateProductType !== 'affiliate')
+                @if($inStock && $hasVendor && $merchantId)
+                    <button type="button" class="product-card__cart-btn m-cart-add"
+                        data-product-id="{{ $productId }}"
+                        data-merchant-product-id="{{ $merchantId }}"
+                        data-vendor-id="{{ $vendorId }}"
+                        data-min-qty="{{ $minQty }}"
+                        data-stock="{{ $stockQty }}"
+                        data-preordered="{{ $preordered ? '1' : '0' }}">
+                        <i class="fas fa-cart-plus"></i>
+                        <span>@lang('Add to Cart')</span>
+                    </button>
+                @else
+                    <button type="button" class="product-card__cart-btn product-card__cart-btn--disabled" disabled>
+                        <i class="fas fa-times"></i>
+                        <span>@lang('Out of Stock')</span>
+                    </button>
                 @endif
-            </div>
+            @elseif($affiliateProductType === 'affiliate' && $affiliateLink)
+                <a href="{{ $affiliateLink }}" target="_blank" class="product-card__cart-btn">
+                    <i class="fas fa-external-link-alt"></i>
+                    <span>@lang('Buy Now')</span>
+                </a>
+            @endif
         </div>
     </div>
 </div>
 
 
 {{-- ========================================
-     SECTION 3: GRID VIEW
+     GRID VIEW
      ======================================== --}}
 @else
 <div class="{{ $class ?? 'col-6 col-md-4 col-lg-3' }}">
-    <div class="m-product-card" id="{{ $cardId }}">
-        {{-- Image Section --}}
-        <div class="m-product-card__image">
-            {{-- Discount Badge --}}
+    <div class="{{ $cardClass }}" id="{{ $cardId }}">
+        {{-- Media Section --}}
+        <div class="product-card__media">
             @if ($offPercentage && round($offPercentage) > 0)
-                <span class="m-product-card__badge m-product-card__badge--discount">
+                <span class="product-card__badge product-card__badge--discount">
                     -{{ round($offPercentage) }}%
                 </span>
             @endif
 
-            {{-- Stock Badge --}}
             @if (!$inStock)
-                <span class="m-product-card__badge m-product-card__badge--stock">
+                <span class="product-card__badge product-card__badge--stock">
                     {{ __('Out of Stock') }}
                 </span>
             @endif
 
-            {{-- Wishlist Button --}}
             @auth
-                <button type="button" class="m-product-card__wishlist wishlist"
-                    data-href="{{ $wishlistUrl }}">
+                <button type="button" class="product-card__wishlist wishlist {{ $isInWishlist ? 'active' : '' }}" data-href="{{ $wishlistUrl }}">
                     <i class="{{ $isInWishlist ? 'fas' : 'far' }} fa-heart"></i>
                 </button>
             @else
-                <a href="{{ route('user.login') }}" class="m-product-card__wishlist">
+                <a href="{{ route('user.login') }}" class="product-card__wishlist">
                     <i class="far fa-heart"></i>
                 </a>
             @endauth
 
-            {{-- Product Image --}}
-            <a href="{{ $productUrl }}" class="m-product-card__image-link">
-                <img src="{{ $photo }}"
-                     alt="{{ $productName }}"
-                     class="m-product-card__img active"
-                     loading="lazy"
-                     onerror="this.onerror=null; this.src='{{ $defaultImage }}';">
+            <a href="{{ $productUrl }}" class="product-card__media-link">
+                <img src="{{ $photo }}" alt="{{ $productName }}" class="product-card__img"
+                     loading="lazy" onerror="this.onerror=null; this.src='{{ $defaultImage }}';">
             </a>
 
-            {{-- Quick Actions --}}
             @if ($productType !== 'Listing')
-                <div class="m-product-card__actions">
-                    {{-- Compare --}}
-                    <button type="button" class="m-product-card__action compare_product"
-                        data-href="{{ $compareUrl }}"
-                        title="@lang('Compare')">
+                <div class="product-card__actions">
+                    <button type="button" class="product-card__action compare_product"
+                        data-href="{{ $compareUrl }}" title="@lang('Compare')">
                         <i class="fas fa-exchange-alt"></i>
                     </button>
-
-                    {{-- Quick View --}}
-                    <a href="{{ $productUrl }}" class="m-product-card__action" title="@lang('View')">
+                    <a href="{{ $productUrl }}" class="product-card__action" title="@lang('View')">
                         <i class="far fa-eye"></i>
                     </a>
                 </div>
@@ -318,60 +286,45 @@
         </div>
 
         {{-- Content Section --}}
-        <div class="m-product-card__content">
-            {{-- Product Name --}}
-            <h6 class="m-product-card__title">
+        <div class="product-card__content">
+            <h6 class="product-card__title">
                 <a href="{{ $productUrl }}">{{ Str::limit($productName, 50) }}</a>
             </h6>
 
-            {{-- Product Info: SKU, Vendor, Brand --}}
-            @if($useComponent && isset($actualProduct))
-                <x-product-info
-                    :product="$actualProduct"
-                    :mp="$merchant"
-                    display-mode="compact"
-                    :show-sku="true"
-                    :show-vendor="true"
-                    :show-quality-brand="true"
-                    :show-brand="false"
-                    :show-stock="false"
-                />
-            @else
-                <div class="m-product-card__info">
-                    @if($sku)
-                        <span class="m-product-card__sku">{{ $sku }}</span>
-                    @endif
-                    @if($vendorName)
-                        <span class="m-product-card__vendor">
-                            <i class="fas fa-store"></i> {{ $vendorName }}
-                        </span>
-                    @endif
-                    @if($qualityBrandName)
-                        <span class="m-product-card__quality">{{ $qualityBrandName }}</span>
-                    @endif
-                </div>
-            @endif
+            {{-- Product Info --}}
+            <div class="product-card__info">
+                @if($sku)
+                    <span class="product-card__sku">{{ $sku }}</span>
+                @endif
+                @if($vendorName)
+                    <span class="product-card__vendor">
+                        <i class="fas fa-store"></i> {{ $vendorName }}
+                    </span>
+                @endif
+                @if($qualityBrandName)
+                    <span class="product-card__quality">{{ $qualityBrandName }}</span>
+                @endif
+            </div>
 
             {{-- Price --}}
-            <div class="m-product-card__price">
-                <span class="m-product-card__price-current">{{ $priceFormatted }}</span>
+            <div class="product-card__price">
+                <span class="product-card__price-current">{{ $priceFormatted }}</span>
                 @if($previousPrice > 0 && $offPercentage > 0)
-                    <span class="m-product-card__price-old">{{ $previousPriceFormatted }}</span>
+                    <span class="product-card__price-old">{{ $previousPriceFormatted }}</span>
                 @endif
             </div>
 
             {{-- Rating --}}
-            <div class="m-product-card__rating">
+            <div class="product-card__rating">
                 <i class="fas fa-star"></i>
                 <span>{{ number_format($ratingsAvg, 1) }}</span>
-                <span class="m-product-card__rating-count">({{ $ratingsCount }})</span>
+                <span class="product-card__rating-count">({{ $ratingsCount }})</span>
             </div>
 
             {{-- Add to Cart --}}
             @if ($productType !== 'Listing' && $affiliateProductType !== 'affiliate')
                 @if ($inStock && $hasVendor && $merchantId)
-                    <button type="button"
-                        class="m-product-card__cart-btn m-cart-add"
+                    <button type="button" class="product-card__cart-btn m-cart-add"
                         data-merchant-product-id="{{ $merchantId }}"
                         data-vendor-id="{{ $vendorId }}"
                         data-product-id="{{ $productId }}"
@@ -382,13 +335,13 @@
                         <span>@lang('Add to Cart')</span>
                     </button>
                 @else
-                    <button type="button" class="m-product-card__cart-btn m-product-card__cart-btn--disabled" disabled>
+                    <button type="button" class="product-card__cart-btn product-card__cart-btn--disabled" disabled>
                         <i class="fas fa-ban"></i>
                         <span>@lang('Out of Stock')</span>
                     </button>
                 @endif
             @elseif ($affiliateProductType === 'affiliate' && $affiliateLink)
-                <a href="{{ $affiliateLink }}" class="m-product-card__cart-btn" target="_blank">
+                <a href="{{ $affiliateLink }}" class="product-card__cart-btn" target="_blank">
                     <i class="fas fa-external-link-alt"></i>
                     <span>@lang('Buy Now')</span>
                 </a>

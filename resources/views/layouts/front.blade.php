@@ -44,6 +44,9 @@
     {{-- Design System - New components with m- prefix --}}
     <link rel="stylesheet" href="{{ asset('assets/front/css/muaadh-system.css') }}?v={{ filemtime(public_path('assets/front/css/muaadh-system.css')) }}">
 
+    {{-- Product Card - Unified styles for all product cards --}}
+    <link rel="stylesheet" href="{{ asset('assets/css/product-card.css') }}?v={{ filemtime(public_path('assets/css/product-card.css')) }}">
+
     @if($langg && $langg->rtl == 1)
         <link rel="stylesheet" href="{{ asset('assets/front/css/rtl.css') }}">
     @endif
