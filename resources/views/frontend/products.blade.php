@@ -530,7 +530,7 @@
                                 id="layout-list-pane" role="tabpanel" tabindex="0">
                                 <div class="row gy-4 gy-lg-5 mt-20 ">
                                     @foreach ($cards as $card)
-                                        @include('includes.frontend.product_card_dto', ['card' => $card, 'layout' => 'list'])
+                                        @include('includes.frontend.home_product', ['card' => $card, 'layout' => 'list'])
                                     @endforeach
                                 </div>
                             </div>
@@ -539,7 +539,7 @@
                                 id="layout-grid-pane" role="tabpanel" tabindex="0">
                                 <div class="row gy-4 gy-lg-5 mt-20">
                                     @foreach ($cards as $card)
-                                        @include('includes.frontend.product_card_dto', ['card' => $card, 'layout' => 'grid', 'class' => 'col-sm-6 col-md-6 col-xl-4'])
+                                        @include('includes.frontend.home_product', ['card' => $card, 'layout' => 'grid', 'class' => 'col-sm-6 col-md-6 col-xl-4'])
                                     @endforeach
                                 </div>
                             </div>

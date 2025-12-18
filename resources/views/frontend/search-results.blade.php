@@ -96,7 +96,7 @@
                             <div class="row gy-4 gy-lg-5">
                                 {{-- Main Products --}}
                                 @foreach ($cards as $card)
-                                    @include('includes.frontend.product_card_dto', ['card' => $card, 'layout' => 'list'])
+                                    @include('includes.frontend.home_product', ['card' => $card, 'layout' => 'list'])
                                 @endforeach
                             </div>
 
@@ -119,7 +119,7 @@
                                     </div>
                                     <div class="row gy-4 gy-lg-5">
                                         @foreach ($alternativeCards as $card)
-                                            @include('includes.frontend.product_card_dto', ['card' => $card, 'layout' => 'list'])
+                                            @include('includes.frontend.home_product', ['card' => $card, 'layout' => 'list'])
                                         @endforeach
                                     </div>
                                 </div>
@@ -132,7 +132,7 @@
                             <div class="row gy-4">
                                 {{-- Main Products --}}
                                 @foreach ($cards as $card)
-                                    @include('includes.frontend.product_card_dto', ['card' => $card, 'layout' => 'grid', 'class' => 'col-6 col-md-4 col-lg-3'])
+                                    @include('includes.frontend.home_product', ['card' => $card, 'layout' => 'grid', 'class' => 'col-6 col-md-4 col-lg-3'])
                                 @endforeach
                             </div>
 
@@ -155,7 +155,7 @@
                                     </div>
                                     <div class="row gy-4">
                                         @foreach ($alternativeCards as $card)
-                                            @include('includes.frontend.product_card_dto', ['card' => $card, 'layout' => 'grid', 'class' => 'col-6 col-md-4 col-lg-3'])
+                                            @include('includes.frontend.home_product', ['card' => $card, 'layout' => 'grid', 'class' => 'col-6 col-md-4 col-lg-3'])
                                         @endforeach
                                     </div>
                                 </div>

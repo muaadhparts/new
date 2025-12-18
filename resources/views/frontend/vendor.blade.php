@@ -169,7 +169,7 @@
                                 id="layout-list-pane" role="tabpanel" tabindex="0">
                                 <div class="row gy-4 mt-20 ">
                                     @foreach ($vprods as $product)
-                                        @include('includes.frontend.list_view_product')
+                                        @include('includes.frontend.home_product', ['layout' => 'list'])
                                     @endforeach
                                 </div>
                             </div>
