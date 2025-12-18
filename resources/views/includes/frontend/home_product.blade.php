@@ -174,7 +174,7 @@
                 @if($qualityBrandName)
                     <span class="badge bg-info text-dark">
                         @if($qualityBrandLogo)
-                            <img src="{{ $qualityBrandLogo }}" alt="" style="height: 14px;" class="me-1">
+                            <img src="{{ $qualityBrandLogo }}" alt="" class="product-card__quality-logo me-1">
                         @endif
                         {{ $qualityBrandName }}
                     </span>

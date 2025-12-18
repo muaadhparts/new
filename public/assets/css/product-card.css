@@ -269,6 +269,11 @@
     border-radius: 4px;
 }
 
+.product-card__quality-logo {
+    height: 14px;
+    width: auto;
+}
+
 /* Badges in Info Section (for list view) */
 .product-card__info-badges {
     display: flex;
@@ -517,10 +522,7 @@
 /* ========================================
    SLIDER CONTEXT
    ======================================== */
-.product-cards-slider .product-card {
-    margin: 0 8px;
-}
-
+/* Handled by .not .product-card in COMPATIBILITY section */
 .product-cards-slider .product-card--list {
     margin: 0;
 }
@@ -530,6 +532,7 @@
    COMPATIBILITY
    ======================================== */
 /* Support for pages that pass class="not" for sliders */
-.not.product-card {
+/* Note: .product-cards-slider .product-card above handles slider margin */
+.not .product-card {
     margin: 0 8px;
 }
