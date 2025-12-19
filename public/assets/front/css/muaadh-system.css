@@ -1807,3 +1807,20 @@
     margin-left: 8px;
     margin-right: 0;
 }
+
+/* ============================================================================
+   SECTION: MOBILE HEADER OPTIMIZATION
+   ============================================================================
+   Hide topbar on mobile screens where mobile_menu.blade.php is used.
+   The mobile menu already contains language/currency selectors,
+   so the topbar is redundant and wastes vertical space.
+
+   Breakpoint: < 1200px (Bootstrap xl) - matches d-xl-none on mobile toggle
+   ============================================================================ */
+
+@media (max-width: 1199.98px) {
+    /* Hide the top bar completely on mobile/tablet */
+    .muaadh-topbar {
+        display: none !important;
+    }
+}
