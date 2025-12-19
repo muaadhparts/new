@@ -274,6 +274,31 @@
     width: auto;
 }
 
+.product-card__brand {
+    background: #e5e7eb;
+    color: #374151;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-weight: 500;
+}
+
+.product-card__stock {
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.product-card__stock--in {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.product-card__stock--out {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
 /* Badges in Info Section (for list view) */
 .product-card__info-badges {
     display: flex;

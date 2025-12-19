@@ -388,12 +388,13 @@ $(document).ready(function () {
   // });
 
   //****** 16. PRODUCT CARDS SLIDER ******//
+  // Updated to match grid layout: col-6 col-md-4 col-lg-3 (4 cards on lg, 3 on md, 2 on sm)
   if (typeof $.fn.slick !== 'undefined' && $(".product-cards-slider").length > 0) {
     $(".product-cards-slider").slick({
       dots: false,
       infinite: true,
       speed: 300,
-      slidesToShow: 5,
+      slidesToShow: 4,
       slidesToScroll: 1,
       autoplay: false,
       arrows: true,
@@ -421,7 +422,13 @@ $(document).ready(function () {
           },
         },
         {
-          breakpoint: 425,
+          breakpoint: 576,
+          settings: {
+            slidesToShow: 2,
+          },
+        },
+        {
+          breakpoint: 400,
           settings: {
             slidesToShow: 1,
           },

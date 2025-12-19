@@ -296,14 +296,25 @@
                 @if($sku)
                     <span class="product-card__sku">{{ $sku }}</span>
                 @endif
+                @if($brandName)
+                    <span class="product-card__brand">{{ $brandName }}</span>
+                @endif
+                @if($qualityBrandName)
+                    <span class="product-card__quality">
+                        @if($qualityBrandLogo)
+                            <img src="{{ $qualityBrandLogo }}" alt="" class="product-card__quality-logo">
+                        @endif
+                        {{ $qualityBrandName }}
+                    </span>
+                @endif
                 @if($vendorName)
                     <span class="product-card__vendor">
                         <i class="fas fa-store"></i> {{ $vendorName }}
                     </span>
                 @endif
-                @if($qualityBrandName)
-                    <span class="product-card__quality">{{ $qualityBrandName }}</span>
-                @endif
+                <span class="product-card__stock {{ $inStock ? 'product-card__stock--in' : 'product-card__stock--out' }}">
+                    {{ $stockText }}
+                </span>
             </div>
 
             {{-- Price --}}
