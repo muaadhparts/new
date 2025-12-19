@@ -1811,16 +1811,11 @@
 /* ============================================================================
    SECTION: MOBILE HEADER OPTIMIZATION
    ============================================================================
-   Hide topbar on mobile screens where mobile_menu.blade.php is used.
-   The mobile menu already contains language/currency selectors,
-   so the topbar is redundant and wastes vertical space.
+   Topbar is now conditionally rendered via Blade (d-none d-xl-block wrapper)
+   in header.blade.php instead of CSS hide. This approach:
+   - Reduces HTML payload on mobile (not rendered at all)
+   - Cleaner separation of concerns (layout logic in Blade, not CSS)
+   - Better performance (no DOM elements to hide)
 
-   Breakpoint: < 1200px (Bootstrap xl) - matches d-xl-none on mobile toggle
+   See: includes/frontend/topbar.blade.php
    ============================================================================ */
-
-@media (max-width: 1199.98px) {
-    /* Hide the top bar completely on mobile/tablet */
-    .muaadh-topbar {
-        display: none !important;
-    }
-}

@@ -1,102 +1,18 @@
 <header class="muaadh-header">
-    {{-- Top Bar - Compact info strip --}}
-    <div class="muaadh-topbar">
-        <div class="container">
-            <div class="muaadh-topbar-inner">
-                {{-- Left: Contact --}}
-                <div class="muaadh-topbar-left">
-                    <a href="tel:{{ $ps->phone }}" class="muaadh-topbar-link">
-                        <i class="fas fa-phone-alt"></i>
-                        <span>{{ $ps->phone }}</span>
-                    </a>
-                    <span class="muaadh-topbar-divider"></span>
-                    <a href="mailto:{{ $ps->email ?? 'support@example.com' }}" class="muaadh-topbar-link d-none d-md-flex">
-                        <i class="fas fa-envelope"></i>
-                        <span>{{ $ps->email ?? __('Support') }}</span>
-                    </a>
-                </div>
-
-                {{-- Right: Language, Currency, Quick Links --}}
-                <div class="muaadh-topbar-right">
-                    {{-- Language Selector --}}
-                    <div class="muaadh-dropdown">
-                        <button class="muaadh-dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                            <i class="fas fa-globe"></i>
-                            <span>{{ Session::has('language')
-                                ? $languges->where('id', '=', Session::get('language'))->first()->language
-                                : $languges->where('is_default', '=', 1)->first()->language }}</span>
-                            <i class="fas fa-chevron-down"></i>
-                        </button>
-                        <ul class="muaadh-dropdown-menu">
-                            @foreach ($languges as $language)
-                                <li>
-                                    <a class="muaadh-dropdown-item {{ Session::has('language')
-                                        ? (Session::get('language') == $language->id ? 'active' : '')
-                                        : ($languges->where('is_default', '=', 1)->first()->id == $language->id ? 'active' : '') }}"
-                                        href="{{ route('front.language', $language->id) }}">
-                                        {{ $language->language }}
-                                    </a>
-                                </li>
-                            @endforeach
-                        </ul>
-                    </div>
-
-                    @if ($gs->is_currency == 1)
-                        <span class="muaadh-topbar-divider"></span>
-                        {{-- Currency Selector --}}
-                        @php
-                            $selectedCurrency = Session::has('currency')
-                                ? $currencies->where('id', '=', Session::get('currency'))->first()
-                                : $currencies->where('is_default', '=', 1)->first();
-                        @endphp
-                        <div class="muaadh-dropdown">
-                            <button class="muaadh-dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                                <span class="currency-sign">{{ $selectedCurrency->sign ?? '$' }}</span>
-                                <span>{{ $selectedCurrency->name ?? 'USD' }}</span>
-                                <i class="fas fa-chevron-down"></i>
-                            </button>
-                            <ul class="muaadh-dropdown-menu">
-                                @foreach ($currencies as $currency)
-                                    <li>
-                                        <a class="muaadh-dropdown-item {{ Session::has('currency')
-                                            ? (Session::get('currency') == $currency->id ? 'active' : '')
-                                            : ($currencies->where('is_default', '=', 1)->first()->id == $currency->id ? 'active' : '') }}"
-                                            href="{{ route('front.currency', $currency->id) }}">
-                                            {{ $currency->name }}
-                                        </a>
-                                    </li>
-                                @endforeach
-                            </ul>
-                        </div>
-                    @endif
-
-                    <span class="muaadh-topbar-divider d-none d-lg-block"></span>
-
-                    {{-- Quick Auth Links - Using $authUser/$riderUser from HeaderComposer --}}
-                    <div class="muaadh-topbar-auth d-none d-lg-flex">
-                        @if ($authUser && $authUser->is_vendor == 2)
-                            <a href="{{ route('vendor.dashboard') }}" class="muaadh-topbar-link">
-                                <i class="fas fa-store"></i>
-                                <span>@lang('Vendor Panel')</span>
-                            </a>
-                        @else
-                            <a href="{{ route('vendor.login') }}" class="muaadh-topbar-link">
-                                <i class="fas fa-store"></i>
-                                <span>@lang('Become Vendor')</span>
-                            </a>
-                        @endif
-
-                        @if (!($riderUser ?? null))
-                            <a href="{{ route('rider.login') }}" class="muaadh-topbar-link">
-                                <i class="fas fa-motorcycle"></i>
-                                <span>@lang('Rider')</span>
-                            </a>
-                        @endif
-                    </div>
-                </div>
-            </div>
+    {{--
+    ============================================================================
+    TOP BAR - Desktop Only (>= 1200px)
+    ============================================================================
+    Mobile users access language/currency from mobile_menu.blade.php
+    This prevents duplication and saves vertical space on small screens.
+    Bootstrap xl breakpoint = 1200px (matches d-xl-none on mobile toggle)
+    ============================================================================
+    --}}
+    @if (!request()->is('api/*'))
+        <div class="d-none d-xl-block">
+            @include('includes.frontend.topbar')
         </div>
-    </div>
+    @endif
 
     {{-- Main Header --}}
     <div class="muaadh-main-header">

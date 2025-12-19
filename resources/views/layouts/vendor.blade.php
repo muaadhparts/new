@@ -62,14 +62,8 @@
     <!--favicon-->
 
 </head>
-@php
-    $user = auth()->user();
-    $categories = App\Models\Category::with('subs')->where('status', 1)->get();
-    $pages = App\Models\Page::get();
-    $currencies = App\Models\Currency::all();
-    $languges = App\Models\Language::all();
-@endphp
 
+{{-- Header data ($categories, $pages, $currencies, $languges) provided by AppServiceProvider with caching --}}
 <body>
 
     <div class="frontend-header-wrapper">

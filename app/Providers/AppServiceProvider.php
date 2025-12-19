@@ -103,6 +103,7 @@ class AppServiceProvider extends ServiceProvider
         // Expected: 1 user query + 1 wishlist query (cached) - NOT an error in Telescope
         View::composer([
             'includes.frontend.header',
+            'includes.frontend.topbar',
             'includes.frontend.extra_head',
             'includes.frontend.mobile_menu',
         ], HeaderComposer::class);
