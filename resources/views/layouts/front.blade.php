@@ -72,26 +72,40 @@
     <!-- header area -->
     @include('includes.frontend.header')
 
-    <!-- if route is user panel then show vendor.mobile-header else show frontend.mobile_menu -->
-
+    <!-- Mobile Menus based on page type -->
     @php
         $url = url()->current();
         $explodeUrl = explode('/',$url);
-
+        $isUserPage = in_array('user', $explodeUrl);
+        $isRiderPage = in_array('rider', $explodeUrl);
     @endphp
 
-    @if(in_array('user',$explodeUrl))
-    <!-- frontend mobile menu -->
-    @include('includes.user.mobile-header')
-    @elseif(in_array("rider",$explodeUrl))
-    @include('includes.rider.mobile-header')
+    @if($isUserPage)
+        {{-- User pages need BOTH menus: Store menu + Dashboard menu --}}
+        {{-- Store Mobile Menu (for shopping) --}}
+        @include('includes.frontend.mobile_menu')
+        <div class="muaadh-mobile-overlay"></div>
+
+        {{-- User Dashboard Mobile Sidebar --}}
+        @include('includes.user.mobile-header')
+        <div class="overlay"></div>
+
+    @elseif($isRiderPage)
+        {{-- Rider pages need BOTH menus: Store menu + Rider menu --}}
+        {{-- Store Mobile Menu (for shopping) --}}
+        @include('includes.frontend.mobile_menu')
+        <div class="muaadh-mobile-overlay"></div>
+
+        {{-- Rider Dashboard Mobile Sidebar --}}
+        @include('includes.rider.mobile-header')
+        <div class="overlay"></div>
+
     @else
-    @include('includes.frontend.mobile_menu')
-        <!-- user panel mobile sidebar -->
-
+        {{-- Regular frontend pages: Store menu only --}}
+        @include('includes.frontend.mobile_menu')
+        <div class="muaadh-mobile-overlay"></div>
+        <div class="overlay"></div>
     @endif
-
-    <div class="overlay"></div>
 
     {{-- Livewire slot support --}}
     @isset($slot)

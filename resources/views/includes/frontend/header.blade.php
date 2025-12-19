@@ -22,11 +22,34 @@
                 <div class="muaadh-header-left">
                     {{-- Mobile Toggle (hidden in vendor/admin where they have their own toggle) --}}
                     @if (!($hideMobileToggle ?? false))
-                        <button type="button" class="muaadh-mobile-toggle d-xl-none" aria-label="Toggle Menu">
-                            <span></span>
-                            <span></span>
-                            <span></span>
-                        </button>
+                        @php
+                            $currentUrl = url()->current();
+                            $urlParts = explode('/', $currentUrl);
+                            $isUserDashboard = in_array('user', $urlParts);
+                            $isRiderDashboard = in_array('rider', $urlParts);
+                            $isDashboardPage = $isUserDashboard || $isRiderDashboard;
+                        @endphp
+
+                        @if($isDashboardPage)
+                            {{-- Dashboard pages: Show TWO toggle buttons --}}
+                            <div class="d-flex align-items-center gap-2 d-xl-none">
+                                {{-- Store Menu Toggle --}}
+                                <button type="button" class="muaadh-mobile-toggle" aria-label="@lang('Store Menu')" title="@lang('Store Menu')">
+                                    <i class="fas fa-store"></i>
+                                </button>
+                                {{-- Dashboard Menu Toggle --}}
+                                <button type="button" class="mobile-menu-toggle" aria-label="@lang('Dashboard Menu')" title="@lang('Dashboard Menu')">
+                                    <i class="fas fa-th-list"></i>
+                                </button>
+                            </div>
+                        @else
+                            {{-- Regular pages: Show single toggle for store menu --}}
+                            <button type="button" class="muaadh-mobile-toggle d-xl-none" aria-label="Toggle Menu">
+                                <span></span>
+                                <span></span>
+                                <span></span>
+                            </button>
+                        @endif
                     @endif
 
                     {{-- Logo --}}
@@ -76,7 +99,7 @@
                                     <i class="fas fa-tachometer-alt"></i>
                                     <span>@lang('Dashboard')</span>
                                 </a>
-                                <a href="{{ route('rider.logout') }}" class="muaadh-action-menu-item text-danger">
+                                <a href="{{ route('rider-logout') }}" class="muaadh-action-menu-item text-danger">
                                     <i class="fas fa-sign-out-alt"></i>
                                     <span>@lang('Logout')</span>
                                 </a>

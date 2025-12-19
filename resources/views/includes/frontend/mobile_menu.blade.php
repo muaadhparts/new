@@ -306,7 +306,7 @@
                         <i class="fas fa-tachometer-alt"></i>
                         <span>@lang('Rider Dashboard')</span>
                     </a>
-                    <a href="{{ route('rider.logout') }}" class="muaadh-mobile-nav-item text-danger">
+                    <a href="{{ route('rider-logout') }}" class="muaadh-mobile-nav-item text-danger">
                         <i class="fas fa-sign-out-alt"></i>
                         <span>@lang('Logout')</span>
                     </a>

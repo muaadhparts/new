@@ -71,10 +71,14 @@
         @include('includes.frontend.header', ['hideMobileToggle' => true])
     </div>
 
+    {{-- Store Mobile Menu (for shopping as customer) --}}
+    @include('includes.frontend.mobile_menu')
+    <div class="muaadh-mobile-overlay"></div>
+
     {{-- Vendor Dashboard Mobile Sidebar --}}
     @include('includes.vendor.vendor-mobile-header')
 
-    <!-- overlay -->
+    <!-- overlay for dashboard menu -->
     <div class="overlay"></div>
 
     <!-- user dashboard wrapper start -->

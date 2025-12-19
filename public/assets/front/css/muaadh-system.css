@@ -1819,3 +1819,41 @@
 
    See: includes/frontend/topbar.blade.php
    ============================================================================ */
+
+/* ============================================================================
+   SECTION: DASHBOARD TOGGLE BUTTONS
+   ============================================================================
+   Styles for dual toggle buttons on User/Vendor/Rider dashboard pages.
+   - Store Menu Toggle: Opens store mobile menu (for shopping)
+   - Dashboard Menu Toggle: Opens dashboard sidebar menu
+   ============================================================================ */
+
+/* When muaadh-mobile-toggle contains an icon instead of spans */
+.muaadh-mobile-toggle i,
+.mobile-menu-toggle i {
+    font-size: 20px;
+    color: var(--muaadh-text, #1F0300);
+}
+
+/* Dashboard menu toggle button (legacy menu) */
+.mobile-menu-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    min-width: 40px;
+    min-height: 40px;
+}
+
+.mobile-menu-toggle:hover i,
+.muaadh-mobile-toggle:hover i {
+    color: var(--action-primary, #7c3aed);
+}
+
+/* RTL Support for toggle buttons */
+[dir="rtl"] .muaadh-header-left .d-flex.gap-2 {
+    flex-direction: row-reverse;
+}

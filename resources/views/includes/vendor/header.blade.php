@@ -11,11 +11,17 @@
         <!-- this button will be visible under the 1200px resulation -->
 
 
-        <div class="d-flex align-items-center gap-4">
+        <div class="d-flex align-items-center gap-3">
             <a href="{{route("front.index")}}"><img class="vendor-res-header-logo d-xl-none" src="{{asset("assets/images/".$gs->logo)}}" alt="logo"></a>
 
-            <button class="header-toggle mobile-menu-toggle d-xl-none" type="button">
-                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48" fill="none">
+            {{-- Store Menu Toggle (for shopping) --}}
+            <button class="muaadh-mobile-toggle d-xl-none" type="button" title="@lang('Store Menu')">
+                <i class="fas fa-store" style="font-size: 20px; color: #1F0300;"></i>
+            </button>
+
+            {{-- Dashboard Menu Toggle --}}
+            <button class="header-toggle mobile-menu-toggle d-xl-none" type="button" title="@lang('Dashboard Menu')">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 48 48" fill="none">
                     <path d="M6 24H42M6 12H42M6 36H30" stroke="#1F0300" stroke-width="4" stroke-linecap="round"
                         stroke-linejoin="round" />
                 </svg>

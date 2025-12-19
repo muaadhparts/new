@@ -138,9 +138,16 @@ class LoginController extends FrontBaseController
         return response()->json(array('errors' => [0 => 'Credentials Doesn\'t Match !']));
     }
 
-    public function logout()
+    public function logout(Request $request)
     {
         Auth::guard('web')->logout();
+
+        // Invalidate the session
+        $request->session()->invalidate();
+
+        // Regenerate the CSRF token
+        $request->session()->regenerateToken();
+
         return redirect('/');
     }
 
