@@ -4,7 +4,9 @@
       "Bash(git grep:*)",
       "Bash(echo:*)",
       "Bash(npm run dev)",
-      "Bash(php artisan:*)"
+      "Bash(php artisan:*)",
+      "Bash(curl:*)",
+      "Bash(php -r:*)"
     ]
   }
 }

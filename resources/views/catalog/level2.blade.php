@@ -1,6 +1,6 @@
 @extends('layouts.front')
 
-@section('title', ($category->slug ?? $category->full_code) . ' - ' . __('Subcategories'))
+@section('title', $key1 . ' - ' . __('Subcategories'))
 
 @section('content')
 {{-- Breadcrumb Banner --}}
@@ -9,12 +9,12 @@
     <div class="container">
         <div class="row justify-content-center content-wrapper">
             <div class="col-12">
-                <h2 class="breadcrumb-title text-uppercase">{{ str_replace('-', ' ', $category->slug ?? $category->full_code) }}</h2>
+                <h2 class="breadcrumb-title text-uppercase">{{ $key1 }}</h2>
                 <ul class="bread-menu">
                     <li><a href="{{ route('front.index') }}">@lang('Home')</a></li>
                     <li><a href="{{ route('catlogs.index', $brand->name) }}">{{ $brand->name }}</a></li>
                     <li><a href="{{ route('tree.level1', ['brand' => $brand->name, 'catalog' => $catalog->code, 'vin' => $vin]) }}">{{ $catalog->shortName ?? $catalog->name ?? $catalog->code }}</a></li>
-                    <li><a href="javascript:;" class="text-uppercase">{{ str_replace('-', ' ', $category->slug ?? $category->full_code) }}</a></li>
+                    <li><a href="javascript:;" class="text-uppercase">{{ $key1 }}</a></li>
                 </ul>
             </div>
         </div>
@@ -50,21 +50,21 @@
 
     {{-- Categories Grid - Responsive --}}
     <div class="row g-3 g-md-4 mb-5">
-        @forelse ($categories as $cat)
+        @forelse ($nodes as $node)
             <div class="col-6 col-sm-6 col-md-4 col-lg-3">
                 <a href="{{ route('tree.level3', [
                     'brand' => $brand->name,
                     'catalog' => $catalog->code,
-                    'key1' => $category->full_code,
-                    'key2' => $cat->full_code,
+                    'key1' => $node->key1,
+                    'key2' => $node->key2,
                     'vin' => $vin
                 ]) }}" class="text-decoration-none">
                     <div class="card border-0 shadow-sm h-100 hover-lift transition">
                         {{-- Image Container --}}
                         <div class="position-relative overflow-hidden rounded-top aspect-ratio-3-4">
                             <img class="position-absolute top-0 start-0 w-100 h-100 object-fit-cover"
-                                 src="{{ ($cat->thumbnail ?? null) ? Storage::url($cat->thumbnail) : asset('assets/images/no-image.png') }}"
-                                 alt="{{ $cat->full_code }}"
+                                 src="{{ ($node->thumbnail ?? null) ? Storage::url($node->thumbnail) : asset('assets/images/no-image.png') }}"
+                                 alt="{{ $node->key2 }}"
                                  loading="lazy"
                                  onerror="this.onerror=null; this.src='{{ asset('assets/images/no-image.png') }}';">
                         </div>
@@ -72,11 +72,10 @@
                         {{-- Card Body --}}
                         <div class="card-body p-2 p-md-3 text-center">
                             <h6 class="product-title text-dark fw-bold text-uppercase mb-1 fs-6 fs-md-5">
-                                {{ $cat->formatted_code ?? $cat->full_code }}
+                                {{ $node->key2 }}
                             </h6>
-                            @php($catLabel = app()->getLocale() === 'ar' ? ($cat->label_ar ?? '') : str_replace('-', ' ', $cat->slug ?? ''))
-                            @if(!empty($catLabel))
-                                <p class="text-muted small mb-0">{{ $catLabel }}</p>
+                            @if(!empty($node->label))
+                                <p class="text-muted small mb-0">{{ $node->label }}</p>
                             @endif
                         </div>
                     </div>

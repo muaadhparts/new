@@ -135,27 +135,13 @@ class VehicleCatalogController extends Controller
 
         $this->sessionManager->setAllowedLevel3Codes($allowedLevel3Codes);
 
-        // Load Level 1 categories
-        $labelField = app()->getLocale() === 'ar' ? 'label_ar' : 'label_en';
-
-        $cacheKey = sprintf(
-            'catalog_level1_%d_%d_%s_%s_%s',
-            $catalog->id,
-            $brand->id,
-            $labelField,
-            $filterDate ?? 'no_date',
-            md5(serialize($allowedLevel3Codes))
+        // Load Level 1 nodes (ready-to-use with key1)
+        $nodes = $this->filterService->loadLevel1Nodes(
+            $catalog,
+            $brand,
+            $filterDate,
+            $allowedLevel3Codes
         );
-
-        $categories = Cache::remember($cacheKey, 3600, function() use ($catalog, $brand, $labelField, $filterDate, $allowedLevel3Codes) {
-            return $this->filterService->loadLevel1Categories(
-                $catalog,
-                $brand,
-                $labelField,
-                $filterDate,
-                $allowedLevel3Codes
-            );
-        });
 
         // Get filters for display
         $filters = $this->getFiltersData($catalog);
@@ -163,16 +149,16 @@ class VehicleCatalogController extends Controller
         $chips = $this->buildChips($selectedFilters);
         $isVinMode = !empty($vin);
 
-        return view('catalog.level1', compact(
-            'brand',
-            'catalog',
-            'categories',
-            'filters',
-            'selectedFilters',
-            'chips',
-            'vin',
-            'isVinMode'
-        ));
+        return view('catalog.level1', [
+            'brand' => $brand,
+            'catalog' => $catalog,
+            'nodes' => $nodes,
+            'filters' => $filters,
+            'selectedFilters' => $selectedFilters,
+            'chips' => $chips,
+            'vin' => $vin,
+            'isVinMode' => $isVinMode,
+        ]);
     }
 
     // ========================================
@@ -187,15 +173,6 @@ class VehicleCatalogController extends Controller
         $catalog = Catalog::where('code', $catalogCode)->where('brand_id', $brand->id)->first();
         if (!$catalog) abort(404, __('Catalog not found'));
 
-        // Parent category (Level 1)
-        $parentCategory = NewCategory::where('catalog_id', $catalog->id)
-            ->where('brand_id', $brand->id)
-            ->where('full_code', $key1)
-            ->where('level', 1)
-            ->first();
-
-        if (!$parentCategory) abort(404, __('Category not found'));
-
         // VIN
         $vin = $request->get('vin') ?? Session::get('vin');
 
@@ -203,14 +180,26 @@ class VehicleCatalogController extends Controller
         $specItemIds = $this->sessionManager->getSpecItemIds($catalog);
         $filterDate = $this->sessionManager->getFilterDate();
 
-        // Load Level 2 categories
-        $categories = $this->filterService->loadLevel2Categories(
+        // Load Level 2 nodes (ready-to-use with key1, key2)
+        $nodes = $this->filterService->loadLevel2Nodes(
             $catalog,
             $brand,
-            $parentCategory,
+            $key1,
             $filterDate,
             $specItemIds
         );
+
+        // If no nodes found, the parent category doesn't exist or is invalid
+        if ($nodes->isEmpty()) {
+            // Verify parent exists for proper 404
+            $parent = $this->filterService->findCategory($catalog, $brand, $key1, 1);
+            if (!$parent) {
+                abort(404, __('Category not found'));
+            }
+        }
+
+        // Get parent info for breadcrumb (from first node or lookup)
+        $parentInfo = $nodes->first() ?? $this->filterService->findCategory($catalog, $brand, $key1, 1);
 
         // Get filters for display
         $filters = $this->getFiltersData($catalog);
@@ -218,21 +207,18 @@ class VehicleCatalogController extends Controller
         $chips = $this->buildChips($selectedFilters);
         $isVinMode = !empty($vin);
 
-        // Rename for view compatibility
-        $category = $parentCategory;
-
-        return view('catalog.level2', compact(
-            'brand',
-            'catalog',
-            'category',
-            'categories',
-            'filters',
-            'selectedFilters',
-            'chips',
-            'vin',
-            'isVinMode',
-            'key1'
-        ));
+        return view('catalog.level2', [
+            'brand' => $brand,
+            'catalog' => $catalog,
+            'nodes' => $nodes,
+            'parentInfo' => $parentInfo,
+            'filters' => $filters,
+            'selectedFilters' => $selectedFilters,
+            'chips' => $chips,
+            'vin' => $vin,
+            'isVinMode' => $isVinMode,
+            'key1' => $key1,
+        ]);
     }
 
     // ========================================
@@ -247,21 +233,6 @@ class VehicleCatalogController extends Controller
         $catalog = Catalog::where('code', $catalogCode)->where('brand_id', $brand->id)->first();
         if (!$catalog) abort(404, __('Catalog not found'));
 
-        // Parent categories
-        $level1Category = NewCategory::where('catalog_id', $catalog->id)
-            ->where('brand_id', $brand->id)
-            ->where('full_code', $key1)
-            ->where('level', 1)
-            ->first();
-
-        $level2Category = NewCategory::where('catalog_id', $catalog->id)
-            ->where('brand_id', $brand->id)
-            ->where('full_code', $key2)
-            ->where('level', 2)
-            ->first();
-
-        if (!$level1Category || !$level2Category) abort(404, __('Category not found'));
-
         // VIN
         $vin = $request->get('vin') ?? Session::get('vin');
 
@@ -269,30 +240,40 @@ class VehicleCatalogController extends Controller
         $specItemIds = $this->sessionManager->getSpecItemIds($catalog);
         $filterDate = $this->sessionManager->getFilterDate();
 
-        // Load Level 3 categories
-        $categories = $this->filterService->loadLevel3Categories(
+        // Load Level 3 nodes (ready-to-use with key1, key2, key3)
+        $nodes = $this->filterService->loadLevel3Nodes(
             $catalog,
             $brand,
-            $level2Category,
+            $key1,
+            $key2,
             $filterDate,
             $specItemIds
         );
 
-        // Get allowed codes for display marking
-        $allowedCodes = $this->sessionManager->getAllowedLevel3Codes();
+        // If no nodes found, verify parent categories exist for proper 404
+        if ($nodes->isEmpty()) {
+            $parent1 = $this->filterService->findCategory($catalog, $brand, $key1, 1);
+            $parent2 = $this->filterService->findCategory($catalog, $brand, $key2, 2);
+            if (!$parent1 || !$parent2) {
+                abort(404, __('Category not found'));
+            }
+        }
 
-        // Auto-redirect if only one category
-        if ($categories->count() === 1) {
-            $single = $categories->first();
+        // Auto-redirect if only one node
+        if ($nodes->count() === 1) {
+            $single = $nodes->first();
             return redirect()->route('illustrations', [
                 'brand' => $brandName,
                 'catalog' => $catalogCode,
-                'key1' => $key1,
-                'key2' => $key2,
-                'key3' => $single->full_code,
+                'key1' => $single->key1,
+                'key2' => $single->key2,
+                'key3' => $single->key3,
                 'vin' => $vin,
             ]);
         }
+
+        // Get allowed codes for display marking
+        $allowedCodes = $this->sessionManager->getAllowedLevel3Codes();
 
         // Get filters for display
         $filters = $this->getFiltersData($catalog);
@@ -300,25 +281,19 @@ class VehicleCatalogController extends Controller
         $chips = $this->buildChips($selectedFilters);
         $isVinMode = !empty($vin);
 
-        // Rename for view compatibility
-        $parentCategory1 = $level1Category;
-        $parentCategory2 = $level2Category;
-
-        return view('catalog.level3', compact(
-            'brand',
-            'catalog',
-            'parentCategory1',
-            'parentCategory2',
-            'categories',
-            'filters',
-            'selectedFilters',
-            'chips',
-            'vin',
-            'isVinMode',
-            'key1',
-            'key2',
-            'allowedCodes'
-        ));
+        return view('catalog.level3', [
+            'brand' => $brand,
+            'catalog' => $catalog,
+            'nodes' => $nodes,
+            'filters' => $filters,
+            'selectedFilters' => $selectedFilters,
+            'chips' => $chips,
+            'vin' => $vin,
+            'isVinMode' => $isVinMode,
+            'key1' => $key1,
+            'key2' => $key2,
+            'allowedCodes' => $allowedCodes,
+        ]);
     }
 
     // ========================================
@@ -333,17 +308,30 @@ class VehicleCatalogController extends Controller
         $catalog = Catalog::where('code', $catalogCode)->where('brand_id', $brand->id)->first();
         if (!$catalog) abort(404, __('Catalog not found'));
 
-        // Load category hierarchy
+        // Load category hierarchy - must have valid full_code
         $level1Category = NewCategory::where('catalog_id', $catalog->id)
-            ->where('full_code', $key1)->where('level', 1)->first();
+            ->where('full_code', $key1)
+            ->where('level', 1)
+            ->whereNotNull('full_code')
+            ->where('full_code', '!=', '')
+            ->first();
 
         $level2Category = NewCategory::where('catalog_id', $catalog->id)
-            ->where('full_code', $key2)->where('level', 2)->first();
+            ->where('full_code', $key2)
+            ->where('level', 2)
+            ->whereNotNull('full_code')
+            ->where('full_code', '!=', '')
+            ->first();
 
         $level3Category = NewCategory::where('catalog_id', $catalog->id)
-            ->where('full_code', $key3)->where('level', 3)->first();
+            ->where('full_code', $key3)
+            ->where('level', 3)
+            ->whereNotNull('full_code')
+            ->where('full_code', '!=', '')
+            ->first();
 
-        if (!$level1Category || !$level2Category || !$level3Category) {
+        if (!$level1Category || !$level2Category || !$level3Category ||
+            empty($level1Category->full_code) || empty($level2Category->full_code) || empty($level3Category->full_code)) {
             abort(404, __('Category not found'));
         }
 

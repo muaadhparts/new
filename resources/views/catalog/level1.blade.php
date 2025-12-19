@@ -49,20 +49,20 @@
 
     {{-- Categories Grid - Responsive --}}
     <div class="row g-3 g-md-4 mb-5">
-        @forelse ($categories as $cat)
+        @forelse ($nodes as $node)
             <div class="col-6 col-sm-6 col-md-4 col-lg-3">
                 <a href="{{ route('tree.level2', [
                     'brand' => $brand->name,
                     'catalog' => $catalog->code,
-                    'key1' => $cat->full_code,
+                    'key1' => $node->key1,
                     'vin' => $vin
                 ]) }}" class="text-decoration-none">
                     <div class="card border-0 shadow-sm h-100 hover-lift transition">
                         {{-- Image Container --}}
                         <div class="position-relative overflow-hidden rounded-top aspect-ratio-3-4">
                             <img class="position-absolute top-0 start-0 w-100 h-100 object-fit-cover"
-                                 src="{{ ($cat->thumbnail ?? null) ? Storage::url($cat->thumbnail) : asset('assets/images/no-image.png') }}"
-                                 alt="{{ $cat->full_code }}"
+                                 src="{{ ($node->thumbnail ?? null) ? Storage::url($node->thumbnail) : asset('assets/images/no-image.png') }}"
+                                 alt="{{ $node->key1 }}"
                                  loading="lazy"
                                  onerror="this.onerror=null; this.src='{{ asset('assets/images/no-image.png') }}';">
                         </div>
@@ -70,10 +70,10 @@
                         {{-- Card Body --}}
                         <div class="card-body p-2 p-md-3 text-center">
                             <h6 class="product-title text-dark fw-bold text-uppercase mb-1 fs-6 fs-md-5">
-                                {{ $cat->formatted_code ?? $cat->full_code }}
+                                {{ $node->formatted_code ?? $node->key1 }}
                             </h6>
-                            @if(!empty($cat->label))
-                                <p class="text-muted small mb-0">{{ $cat->label }}</p>
+                            @if(!empty($node->label))
+                                <p class="text-muted small mb-0">{{ $node->label }}</p>
                             @endif
                         </div>
                     </div>
