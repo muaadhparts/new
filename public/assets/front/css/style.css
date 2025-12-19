@@ -8616,39 +8616,10 @@ ul.tagit li.tagit-choice .tagit-close {
     padding: 60px 0;
   }
 }
-.gs-product-cards-slider-area .product-cards-slider {
-  overflow: hidden;
-  position: relative;
-  width: 100%;
-}
-.gs-product-cards-slider-area .product-cards-slider .slick-list {
-  overflow: hidden !important;
-  margin: 0 -12px;
-  padding: 10px 0 !important;
-}
-.gs-product-cards-slider-area .product-cards-slider .slick-slide {
-  padding: 0 12px;
-  height: auto;
-  float: left;
-}
-.gs-product-cards-slider-area .product-cards-slider .slick-slide > div {
-  height: 100%;
-  display: block !important;
-  visibility: visible !important;
-}
-.gs-product-cards-slider-area .product-cards-slider .slick-track {
-  display: flex !important;
-  align-items: stretch;
-}
-.gs-product-cards-slider-area .product-cards-slider .slick-track > .slick-slide {
-  display: flex !important;
-  height: auto;
-}
-.gs-product-cards-slider-area .product-cards-slider .slick-slide-item {
-  opacity: 1 !important;
-  visibility: visible !important;
-}
-/* DEPRECATED: product-card styles moved to product-card.css */
+/* =====================================================
+   SLIDER CARD STYLES - MOVED TO product-card.css
+   ===================================================== */
+/* All .product-cards-slider card/track styles moved to product-card.css */
 .gs-product-cards-slider-area .slick-arrow {
   width: 48px;
   height: 48px;
@@ -8762,6 +8733,7 @@ ul.tagit li.tagit-choice .tagit-close {
 }
 */
 
+/* DEPRECATED: slick-track gap conflicts with product-card.css margin/padding approach
 .slick-track {
   display: flex;
   gap: 24px;
@@ -8771,6 +8743,7 @@ ul.tagit li.tagit-choice .tagit-close {
     gap: 0;
   }
 }
+*/
 
 .slick-dots {
   margin-top: 50px;
@@ -18703,26 +18676,27 @@ header.header {
     transform: translateY(-2px);
 }
 
-.product-card-image,
+/* DEPRECATED: Legacy .product-card-* styles - use product-card.css BEM classes instead */
+/* .product-card-image - use .product-card__media */
+/* .product-card-body - use .product-card__content */
+/* .product-card-title - use .product-card__title */
+/* .product-card-price - use .product-card__price */
 .product-img-wrapper {
     position: relative;
     overflow: hidden;
     background-color: var(--bg-subtle);
 }
 
-.product-card-image img,
 .product-img-wrapper img {
     width: 100%;
     height: auto;
     transition: var(--transition-slow);
 }
 
-.product-card-body,
 .product-content {
     padding: var(--space-4);
 }
 
-.product-card-title,
 .product-title {
     font-size: var(--text-sm);
     font-weight: var(--font-medium);
@@ -18735,14 +18709,12 @@ header.header {
     overflow: hidden;
 }
 
-.product-card-price,
 .product-price {
     font-size: var(--text-lg);
     font-weight: var(--font-bold);
     color: var(--color-primary);
 }
 
-.product-card-price del,
 .product-price del,
 .old-price {
     font-size: var(--text-sm);
@@ -19258,7 +19230,7 @@ table tbody tr:hover {
     right: var(--space-3);
 }
 
-[dir="rtl"] .product-card-price del,
+/* [dir="rtl"] .product-card-price del - moved to product-card.css */
 [dir="rtl"] .old-price {
     margin-left: 0;
     margin-right: var(--space-2);

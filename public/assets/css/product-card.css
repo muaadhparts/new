@@ -532,62 +532,17 @@
     }
 }
 
-/* Small Mobile - Convert Grid to List View */
+/* Small Mobile - Responsive adjustments (NO layout switching) */
 @media (max-width: 575.97px) {
-    /* Make grid cards behave like list cards */
-    .product-card:not(.product-card--list) {
-        flex-direction: row;
-        height: auto;
-    }
-
-    .product-card:not(.product-card--list) .product-card__media {
-        width: 120px;
-        min-width: 120px;
-        aspect-ratio: 1 / 1;
-        height: auto;
-    }
-
-    .product-card:not(.product-card--list) .product-card__content {
-        padding: 10px 12px;
-        gap: 6px;
-    }
-
-    .product-card:not(.product-card--list) .product-card__title {
-        font-size: 13px;
-        min-height: auto;
-        -webkit-line-clamp: 2;
-    }
-
-    .product-card__info {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 4px;
-    }
-
+    /* Grid cards stay grid, just smaller */
     .product-card__info > span {
         font-size: 10px;
         padding: 1px 5px;
     }
 
-    .product-card:not(.product-card--list) .product-card__price-current {
-        font-size: 14px;
-    }
-
-    .product-card:not(.product-card--list) .product-card__rating {
-        font-size: 11px;
-    }
-
-    .product-card:not(.product-card--list) .product-card__cart-btn {
-        padding: 6px 10px;
-        font-size: 12px;
-    }
-
-    .product-card:not(.product-card--list) .product-card__actions {
-        display: none;
-    }
-
-    .product-card--list .product-card__info {
-        display: flex;
+    .product-card__actions {
+        opacity: 1;
+        transform: translateY(0);
     }
 }
 
@@ -595,19 +550,27 @@
 /* ========================================
    SLIDER CONTEXT
    ======================================== */
-/* Slider spacing via slick padding/margin */
-.product-cards-slider {
-    margin: 0 -12px;
+/*
+ * Slider layout ONLY - no card overrides.
+ * Card inherits 100% from base .product-card (grid view).
+ * Slider controls: slidesToShow, spacing.
+ * Card appearance: identical to Category/Search/Wishlist.
+ */
+
+/* Slick track - flex for equal heights */
+.product-cards-slider .slick-track {
+    display: flex !important;
 }
 
+/* Slide wrapper - flex item */
 .product-cards-slider .slick-slide {
+    height: auto;
     padding: 0 12px;
 }
 
+/* Slide inner div - full height */
 .product-cards-slider .slick-slide > div {
     height: 100%;
 }
 
-.product-cards-slider .product-card {
-    height: 100%;
-}
+/* NO .product-card overrides - inherits from base grid styles */

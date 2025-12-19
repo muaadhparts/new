@@ -33,7 +33,7 @@
                         $mp = $wishlistItem->effective_merchant_product ?? $wishlistItem->merchantProduct;
                     @endphp
                     @include('includes.frontend.home_product', [
-                    'class' => 'col-12 col-sm-6 col-md-6 col-xl-4',
+                    'class' => 'col-6 col-md-4 col-lg-3',
                     'wishlist' => true,
                     'product' => $product,
                     'mp' => $mp

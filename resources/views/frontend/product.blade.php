@@ -818,7 +818,7 @@
             <h2 class="title text-center">@lang('Related Products')</h2>
             <div class="product-cards-slider">
                 @foreach ($relatedMerchantProducts as $merchantProduct)
-                    @include('includes.frontend.home_product', ['class' => 'not', 'product' => $merchantProduct->product, 'mp' => $merchantProduct])
+                    @include('includes.frontend.home_product', ['class' => '', 'product' => $merchantProduct->product, 'mp' => $merchantProduct])
                 @endforeach
             </div>
         </div>
@@ -834,7 +834,7 @@
                     <h2 class="title text-center">@lang('More Products By Seller')</h2>
                     <div class="product-cards-slider">
                         @foreach ($vendorListings as $merchantProduct)
-                            @include('includes.frontend.home_product', ['class' => 'not', 'product' => $merchantProduct->product, 'mp' => $merchantProduct])
+                            @include('includes.frontend.home_product', ['class' => '', 'product' => $merchantProduct->product, 'mp' => $merchantProduct])
                         @endforeach
                     </div>
                 </div>

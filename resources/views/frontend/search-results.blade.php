@@ -132,7 +132,7 @@
                             <div class="row gy-4">
                                 {{-- Main Products --}}
                                 @foreach ($cards as $card)
-                                    @include('includes.frontend.home_product', ['card' => $card, 'layout' => 'grid', 'class' => 'col-12 col-sm-6 col-md-6 col-xl-4'])
+                                    @include('includes.frontend.home_product', ['card' => $card, 'layout' => 'grid', 'class' => 'col-6 col-md-4 col-lg-3'])
                                 @endforeach
                             </div>
 
@@ -155,7 +155,7 @@
                                     </div>
                                     <div class="row gy-4">
                                         @foreach ($alternativeCards as $card)
-                                            @include('includes.frontend.home_product', ['card' => $card, 'layout' => 'grid', 'class' => 'col-12 col-sm-6 col-md-6 col-xl-4'])
+                                            @include('includes.frontend.home_product', ['card' => $card, 'layout' => 'grid', 'class' => 'col-6 col-md-4 col-lg-3'])
                                         @endforeach
                                     </div>
                                 </div>
