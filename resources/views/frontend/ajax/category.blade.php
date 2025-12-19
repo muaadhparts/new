@@ -18,7 +18,7 @@
         <div class="tab-pane fade {{ $view == 'grid-view' ? 'show active' : '' }}" id="layout-grid-pane" role="tabpanel" tabindex="0">
             <div class="row gy-4 gy-lg-5 mt-20">
                 @foreach ($cards ?? $prods as $card)
-                    @include('includes.frontend.home_product', ['card' => $card, 'layout' => 'grid', 'class' => 'col-sm-6 col-md-6 col-xl-4'])
+                    @include('includes.frontend.home_product', ['card' => $card, 'layout' => 'grid', 'class' => 'col-12 col-sm-6 col-md-6 col-xl-4'])
                 @endforeach
             </div>
         </div>

@@ -123,7 +123,7 @@
      LIST VIEW
      ======================================== --}}
 @if($layout === 'list')
-<div class="col-sm-6 col-md-6 col-lg-12">
+<div class="col-12">
     <div class="{{ $cardClass }}" id="{{ $cardId }}">
         {{-- Media Section --}}
         <div class="product-card__media">
