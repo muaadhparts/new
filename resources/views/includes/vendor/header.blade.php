@@ -56,7 +56,7 @@
 
                     </span>
                     <div class="d-none d-md-flex flex-column gap-1">
-                        <span class="user-name">{{ $user->name }}</span>
+                        <span class="user-name">{{ auth()->user()->name }}</span>
                         <span class="user-designation">@lang('Vendor')</span>
                     </div>
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16"
@@ -69,7 +69,7 @@
                 <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
                     <li>
                         <a class="dropdown-item"
-                            href="{{ route('front.vendor', str_replace(' ', '-', $user->shop_name)) }}">
+                            href="{{ route('front.vendor', str_replace(' ', '-', auth()->user()->shop_name)) }}">
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
                                 fill="none">
                                 <path

@@ -67,8 +67,8 @@
 <body>
 
     <div class="frontend-header-wrapper">
-        {{-- Frontend Header --}}
-        @include('includes.frontend.header')
+        {{-- Frontend Header (hide mobile toggle - vendor has its own in vendor/header) --}}
+        @include('includes.frontend.header', ['hideMobileToggle' => true])
     </div>
 
     {{-- Vendor Dashboard Mobile Sidebar --}}

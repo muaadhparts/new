@@ -388,6 +388,17 @@ body[dir="rtl"] {
     right: 0;
 }
 
+/* RTL: Mobile Menu Header - Ensure close button is properly positioned */
+[dir="rtl"] .muaadh-mobile-menu-header {
+    flex-direction: row-reverse;
+}
+
+[dir="rtl"] .muaadh-mobile-close {
+    cursor: pointer;
+    min-width: 44px;
+    min-height: 44px;
+}
+
 /* RTL: Ensure hidden mobile menus don't extend beyond viewport */
 [dir="rtl"] .mobile-menu {
     right: -290px;

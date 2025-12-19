@@ -20,12 +20,14 @@
             <div class="muaadh-header-inner">
                 {{-- Left Side: Toggle + Logo --}}
                 <div class="muaadh-header-left">
-                    {{-- Mobile Toggle --}}
-                    <button type="button" class="muaadh-mobile-toggle d-xl-none" aria-label="Toggle Menu">
-                        <span></span>
-                        <span></span>
-                        <span></span>
-                    </button>
+                    {{-- Mobile Toggle (hidden in vendor/admin where they have their own toggle) --}}
+                    @if (!($hideMobileToggle ?? false))
+                        <button type="button" class="muaadh-mobile-toggle d-xl-none" aria-label="Toggle Menu">
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                        </button>
+                    @endif
 
                     {{-- Logo --}}
                     <a href="{{ route('front.index') }}" class="muaadh-logo">

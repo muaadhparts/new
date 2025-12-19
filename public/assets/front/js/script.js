@@ -26,27 +26,61 @@ $(document).ready(function () {
 
   //****** 21. MUAADH ELEGANT HEADER ******//
   (function() {
-    // Elements
+    // Elements - Check which menu type exists on this page
     const $muaadhMobileMenu = $('.muaadh-mobile-menu');
     const $muaadhOverlay = $('.muaadh-mobile-overlay');
     const $mobileClose = $('.muaadh-mobile-close');
 
+    // Legacy menu elements (for User/Vendor/Rider pages that use .mobile-menu)
+    const $legacyMenu = $('.mobile-menu');
+    const $legacyOverlay = $('.overlay');
+
+    // Determine which menu system is available on this page
+    const hasMuaadhMenu = $muaadhMobileMenu.length > 0;
+    const hasLegacyMenu = $legacyMenu.length > 0;
+
     // Mobile Menu Toggle - Support both old and new triggers
-    $('.muaadh-mobile-toggle, .muaadh-menu-trigger').on('click', function() {
-      $muaadhMobileMenu.addClass('active');
-      $muaadhOverlay.addClass('active');
-      $('body').css('overflow', 'hidden');
+    // SMART FALLBACK: If .muaadh-mobile-menu doesn't exist, open .mobile-menu instead
+    $('.muaadh-mobile-toggle, .muaadh-menu-trigger').on('click', function(e) {
+      e.preventDefault();
+
+      if (hasMuaadhMenu) {
+        // Open new Muaadh mobile menu
+        $muaadhMobileMenu.addClass('active');
+        $muaadhOverlay.addClass('active');
+        $('body').css('overflow', 'hidden');
+      } else if (hasLegacyMenu) {
+        // Fallback: Open legacy mobile menu (for user pages like wishlist)
+        $legacyMenu.addClass('active');
+        $legacyOverlay.addClass('active');
+        $('body').css('overflow', 'hidden');
+      }
     });
 
-    // Close Mobile Menu
-    function closeMobileMenu() {
-      $muaadhMobileMenu.removeClass('active');
-      $muaadhOverlay.removeClass('active');
+    // Close Mobile Menu (Muaadh menu only)
+    // Using event delegation for robust handling (works in LTR and RTL)
+    function closeMuaadhMenu(e) {
+      if (e) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+      $('.muaadh-mobile-menu').removeClass('active');
+      $('.muaadh-mobile-overlay').removeClass('active');
       $('body').css('overflow', '');
     }
 
-    $mobileClose.on('click', closeMobileMenu);
-    $muaadhOverlay.on('click', closeMobileMenu);
+    // Use delegated event handlers for reliable click detection
+    $(document).on('click', '.muaadh-mobile-close', closeMuaadhMenu);
+    $(document).on('click', '.muaadh-mobile-overlay', closeMuaadhMenu);
+
+    // Also close menu when clicking any navigation link inside the mobile menu
+    $(document).on('click', '.muaadh-mobile-nav-item > a:not(.muaadh-accordion-toggle)', function() {
+      // Only close if the link actually navigates (not accordion toggles)
+      const href = $(this).attr('href');
+      if (href && href !== '#' && href !== 'javascript:void(0)') {
+        closeMuaadhMenu();
+      }
+    });
 
     // Mobile Menu Tabs
     $('.muaadh-mobile-tab').on('click', function() {
@@ -105,27 +139,46 @@ $(document).ready(function () {
     );
   });
 
-  //****** 2. MOBILE MENU (Legacy support) ******//
-  const $overlay = $(".overlay");
-  const $mobileMenu = $(".mobile-menu");
+  //****** 2. MOBILE MENU (Unified Handler) ******//
+  // This handles BOTH types of mobile menus:
+  // 1. .muaadh-mobile-menu (Frontend/Store) - opened by .muaadh-mobile-toggle
+  // 2. .mobile-menu (Vendor/Admin/User/Rider dashboards) - opened by .header-toggle, .mobile-menu-toggle
+  //
+  // Each menu type works independently - no conflicts between them.
 
+  const $overlay = $(".overlay");
+  const $legacyMobileMenu = $(".mobile-menu");
+  const $muaadhMobileMenu = $('.muaadh-mobile-menu');
+  const $muaadhOverlay = $('.muaadh-mobile-overlay');
+
+  // Legacy toggles (.header-toggle, .mobile-menu-toggle) - for Vendor/Admin/User/Rider
+  // These should ONLY open .mobile-menu (legacy), NOT .muaadh-mobile-menu
   $(".header-toggle, .mobile-menu-toggle").on("click", function (e) {
     e.preventDefault();
-    // Support both old and new mobile menus
-    if ($('.muaadh-mobile-menu').length) {
-      $('.muaadh-mobile-menu').addClass('active');
-      $('.muaadh-mobile-overlay').addClass('active');
-      $('body').css('overflow', 'hidden');
-    } else {
-      $mobileMenu.toggleClass("active");
+
+    // Only open legacy mobile menu (.mobile-menu)
+    // Do NOT open .muaadh-mobile-menu - that's handled separately by .muaadh-mobile-toggle
+    if ($legacyMobileMenu.length) {
+      $legacyMobileMenu.toggleClass("active");
       $overlay.addClass("active");
+      $('body').css('overflow', 'hidden');
     }
   });
 
-  $(".close").on("click", function (e) {
+  // Close legacy mobile menu (.mobile-menu)
+  $(".mobile-menu .close, .mobile-menu .btn-close").on("click", function (e) {
     e.preventDefault();
-    $mobileMenu.removeClass("active");
+    $legacyMobileMenu.removeClass("active");
     $overlay.removeClass("active");
+    $('body').css('overflow', '');
+  });
+
+  // Close on overlay click - handles both menu types
+  $overlay.on("click", function () {
+    // Close legacy menu
+    $legacyMobileMenu.removeClass("active");
+    $overlay.removeClass("active");
+    $('body').css('overflow', '');
   });
 
   //****** 3. STICKY HEADER ******//
@@ -147,10 +200,9 @@ $(document).ready(function () {
     $overlay.addClass("active");
   });
 
-  // close overlay - mobile menu and search bar
+  // Note: overlay click handler is already defined in section 2 (MOBILE MENU)
+  // Adding search bar close functionality to the same overlay
   $overlay.on("click", function () {
-    $mobileMenu.removeClass("active");
-    $overlay.removeClass("active");
     $searchBar.removeClass("show");
   });
 
