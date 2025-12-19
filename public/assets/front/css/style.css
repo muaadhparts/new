@@ -8644,12 +8644,11 @@ ul.tagit li.tagit-choice .tagit-close {
   display: flex !important;
   height: auto;
 }
-.gs-product-cards-slider-area .product-cards-slider .slick-slide-item,
-.gs-product-cards-slider-area .product-cards-slider .product-card {
+.gs-product-cards-slider-area .product-cards-slider .slick-slide-item {
   opacity: 1 !important;
   visibility: visible !important;
-  display: block !important;
 }
+/* DEPRECATED: product-card styles moved to product-card.css */
 .gs-product-cards-slider-area .slick-arrow {
   width: 48px;
   height: 48px;
@@ -8755,11 +8754,13 @@ ul.tagit li.tagit-choice .tagit-close {
 [dir=rtl] .gs-product-cards-slider-area .slick-next::before, .rtl .gs-product-cards-slider-area .slick-next::before {
   content: "\f053";
 }
+/* DEPRECATED: product-card styles moved to product-card.css
 .gs-product-cards-slider-area .product-card {
   opacity: 1 !important;
   visibility: visible !important;
   display: block !important;
 }
+*/
 
 .slick-track {
   display: flex;
@@ -18637,7 +18638,6 @@ header.header {
 
 .card,
 .muaadh-card,
-.product-card,
 .category-card {
     background-color: var(--card-bg, var(--color-white));
     border: 1px solid var(--card-border, var(--border-default));
@@ -18648,10 +18648,10 @@ header.header {
     overflow: hidden;
     transition: var(--transition-normal);
 }
+/* Note: .product-card styles moved to product-card.css */
 
 .card:hover,
-.muaadh-card:hover,
-.product-card:hover {
+.muaadh-card:hover {
     border-color: var(--color-gray-300);
     box-shadow: var(--shadow-sm);
     transform: none;
@@ -18682,9 +18682,10 @@ header.header {
 
 /* ============================================================================
    C06 — PRODUCT CARDS (Flat Modern)
+   DEPRECATED: All .product-card styles moved to public/assets/css/product-card.css
    ============================================================================ */
 
-.product-card,
+/* Legacy classes - kept for non-unified cards */
 .muaadh-product-card,
 .product-item {
     background-color: var(--bg-surface);
@@ -18695,7 +18696,6 @@ header.header {
     transition: var(--transition-normal);
 }
 
-.product-card:hover,
 .muaadh-product-card:hover,
 .product-item:hover {
     border-color: var(--color-primary-light);
@@ -18715,11 +18715,6 @@ header.header {
     width: 100%;
     height: auto;
     transition: var(--transition-slow);
-}
-
-.product-card:hover .product-card-image img,
-.product-card:hover .product-img-wrapper img {
-    transform: scale(1.05);
 }
 
 .product-card-body,

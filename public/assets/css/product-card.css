@@ -532,9 +532,57 @@
     }
 }
 
-/* Small Mobile */
+/* Small Mobile - Convert Grid to List View */
 @media (max-width: 575.97px) {
+    /* Make grid cards behave like list cards */
+    .product-card:not(.product-card--list) {
+        flex-direction: row;
+        height: auto;
+    }
+
+    .product-card:not(.product-card--list) .product-card__media {
+        width: 120px;
+        min-width: 120px;
+        aspect-ratio: 1 / 1;
+        height: auto;
+    }
+
+    .product-card:not(.product-card--list) .product-card__content {
+        padding: 10px 12px;
+        gap: 6px;
+    }
+
+    .product-card:not(.product-card--list) .product-card__title {
+        font-size: 13px;
+        min-height: auto;
+        -webkit-line-clamp: 2;
+    }
+
     .product-card__info {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px;
+    }
+
+    .product-card__info > span {
+        font-size: 10px;
+        padding: 1px 5px;
+    }
+
+    .product-card:not(.product-card--list) .product-card__price-current {
+        font-size: 14px;
+    }
+
+    .product-card:not(.product-card--list) .product-card__rating {
+        font-size: 11px;
+    }
+
+    .product-card:not(.product-card--list) .product-card__cart-btn {
+        padding: 6px 10px;
+        font-size: 12px;
+    }
+
+    .product-card:not(.product-card--list) .product-card__actions {
         display: none;
     }
 
@@ -547,17 +595,31 @@
 /* ========================================
    SLIDER CONTEXT
    ======================================== */
-/* Handled by .not .product-card in COMPATIBILITY section */
+.product-cards-slider .product-card,
+.gs-product-cards-slider-area .product-card {
+    height: 100%;
+    margin: 0;
+}
+
 .product-cards-slider .product-card--list {
     margin: 0;
+}
+
+/* Ensure slider cards display correctly */
+.gs-product-cards-slider-area .product-cards-slider .slick-slide > div {
+    height: 100%;
+}
+
+.gs-product-cards-slider-area .product-cards-slider .slick-slide > div > .not {
+    height: 100%;
+}
+
+.not .product-card {
+    height: 100%;
 }
 
 
 /* ========================================
    COMPATIBILITY
    ======================================== */
-/* Support for pages that pass class="not" for sliders */
-/* Note: .product-cards-slider .product-card above handles slider margin */
-.not .product-card {
-    margin: 0 8px;
-}
+/* Legacy support - kept for backwards compatibility */
