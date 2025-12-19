@@ -25,9 +25,11 @@ class WishlistController extends UserBaseController
         // ✅ N+1 FIX: Eager load product.merchantProducts for legacy items without merchant_product_id
         $wishlistQuery = Wishlist::where('user_id', $user->id)
             ->with([
-                'product.merchantProducts' => fn($q) => $q->where('status', 1)->orderBy('price'),
+                'product.merchantProducts' => fn($q) => $q->where('status', 1)->with(['qualityBrand', 'user'])->orderBy('price'),
+                'product.brand',
                 'merchantProduct',
-                'merchantProduct.user'
+                'merchantProduct.user',
+                'merchantProduct.qualityBrand'
             ]);
 
         // Apply sorting

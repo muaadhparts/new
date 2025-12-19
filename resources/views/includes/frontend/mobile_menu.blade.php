@@ -167,14 +167,14 @@
                 <div class="muaadh-mobile-selection-breadcrumb">
                     <span class="muaadh-selection-label">@lang('Selected'):</span>
                     <div class="muaadh-selection-tags">
-                        <span class="muaadh-selection-tag primary">{{ $selectedCat->name }}</span>
+                        <span class="muaadh-selection-tag primary">{{ $selectedCat->localized_name }}</span>
                         @if($selectedSubcat)
                             <i class="fas fa-chevron-{{ app()->getLocale() == 'ar' ? 'left' : 'right' }}"></i>
-                            <span class="muaadh-selection-tag secondary">{{ $selectedSubcat->name }}</span>
+                            <span class="muaadh-selection-tag secondary">{{ $selectedSubcat->localized_name }}</span>
                         @endif
                         @if($selectedChildcat)
                             <i class="fas fa-chevron-{{ app()->getLocale() == 'ar' ? 'left' : 'right' }}"></i>
-                            <span class="muaadh-selection-tag info">{{ $selectedChildcat->name }}</span>
+                            <span class="muaadh-selection-tag info">{{ $selectedChildcat->localized_name }}</span>
                         @endif
                     </div>
                     <a href="{{ route('front.category') }}" class="muaadh-clear-selection">
@@ -195,7 +195,7 @@
                             <option value="{{ $category->slug }}"
                                 data-has-subs="{{ $category->subs && $category->subs->count() > 0 ? '1' : '0' }}"
                                 {{ $currentCatSlug === $category->slug ? 'selected' : '' }}>
-                                {{ $category->name }}
+                                {{ $category->localized_name }}
                             </option>
                         @endforeach
                     </select>
@@ -214,7 +214,7 @@
                                 <option value="{{ $subcategory->slug }}"
                                     data-has-childs="{{ $subcategory->childs && $subcategory->childs->count() > 0 ? '1' : '0' }}"
                                     {{ $currentSubcatSlug === $subcategory->slug ? 'selected' : '' }}>
-                                    {{ $subcategory->name }}
+                                    {{ $subcategory->localized_name }}
                                 </option>
                             @endforeach
                         @endif
@@ -233,7 +233,7 @@
                             @foreach ($selectedSubcat->childs as $child)
                                 <option value="{{ $child->slug }}"
                                     {{ $currentChildcatSlug === $child->slug ? 'selected' : '' }}>
-                                    {{ $child->name }}
+                                    {{ $child->localized_name }}
                                 </option>
                             @endforeach
                         @endif
@@ -252,15 +252,15 @@
                 $mobileCategoriesJson = $categories->map(function($cat) {
                     return [
                         'slug' => $cat->slug,
-                        'name' => $cat->name,
+                        'name' => $cat->localized_name,
                         'subs' => $cat->subs ? $cat->subs->map(function($sub) use ($cat) {
                             return [
                                 'slug' => $sub->slug,
-                                'name' => $sub->name,
+                                'name' => $sub->localized_name,
                                 'childs' => $sub->childs ? $sub->childs->map(function($child) {
                                     return [
                                         'slug' => $child->slug,
-                                        'name' => $child->name,
+                                        'name' => $child->localized_name,
                                     ];
                                 })->values() : []
                             ];

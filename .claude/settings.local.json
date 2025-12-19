@@ -6,7 +6,9 @@
       "Bash(npm run dev)",
       "Bash(php artisan:*)",
       "Bash(curl:*)",
-      "Bash(php -r:*)"
+      "Bash(php -r:*)",
+      "Bash(git commit:*)",
+      "Bash(php -l:*)"
     ]
   }
 }

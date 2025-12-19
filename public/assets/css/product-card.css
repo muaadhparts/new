@@ -267,11 +267,22 @@
     color: #1e40af;
     padding: 2px 8px;
     border-radius: 4px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+    font-weight: 500;
+    max-width: 100%;
+    overflow: hidden;
 }
 
 .product-card__quality-logo {
-    height: 14px;
+    height: 16px;
     width: auto;
+    max-width: 40px;
+    object-fit: contain;
+    flex-shrink: 0;
+    border-radius: 2px;
 }
 
 .product-card__brand {
@@ -541,6 +552,21 @@
         height: 32px;
     }
 
+    .product-card__info {
+        gap: 4px;
+        font-size: 11px;
+    }
+
+    .product-card__quality {
+        font-size: 11px;
+        padding: 2px 6px;
+    }
+
+    .product-card__quality-logo {
+        height: 15px;
+        max-width: 36px;
+    }
+
     .product-card--list .product-card__title {
         font-size: 14px;
     }
@@ -556,6 +582,17 @@
     .product-card__info > span {
         font-size: 10px;
         padding: 1px 5px;
+    }
+
+    .product-card__quality {
+        font-size: 10px;
+        padding: 1px 5px;
+        gap: 3px;
+    }
+
+    .product-card__quality-logo {
+        height: 14px;
+        max-width: 32px;
     }
 
     .product-card__actions {

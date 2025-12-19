@@ -78,10 +78,10 @@
             : $defaultImage;
 
         $sku = $actualProduct->sku ?? null;
-        $brandName = $actualProduct->brand->name ?? null;
-        $qualityBrandName = $merchant->qualityBrand->name ?? null;
-        $qualityBrandLogo = $merchant->qualityBrand->photo ?? null;
-        $vendorName = $merchant ? ($merchant->user->shop_name ?? $merchant->user->name ?? null) : null;
+        $brandName = $actualProduct->brand?->localized_name;
+        $qualityBrandName = $merchant?->qualityBrand?->localized_name;
+        $qualityBrandLogo = $merchant?->qualityBrand?->logo_url;
+        $vendorName = $merchant?->user?->shop_name ?? $merchant?->user?->name;
 
         $offPercentage = $merchant && method_exists($merchant, 'offPercentage')
             ? $merchant->offPercentage()
