@@ -26,12 +26,11 @@ body[dir="rtl"] {
 }
 
 /* Product Cards & Lists */
-[dir="rtl"] .product-card,
+/* NOTE: .product-card RTL styles in product-card.css */
 [dir="rtl"] .product-item {
     text-align: right;
 }
 
-[dir="rtl"] .product-card .product-image,
 [dir="rtl"] .product-item .product-image {
     float: right;
 }

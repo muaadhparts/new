@@ -763,8 +763,9 @@ footer.footer {
 
 /* ========================================
    PRODUCT CARDS OVERRIDE
+   DEPRECATED: .product-card styles moved to product-card.css
    ======================================== */
-.product-card,
+/* Legacy classes only - .product-card excluded */
 .muaadh-product-card,
 .product-item {
     background-color: var(--bg-surface) !important;
@@ -775,7 +776,6 @@ footer.footer {
     transition: all var(--transition-normal);
 }
 
-.product-card:hover,
 .muaadh-product-card:hover,
 .product-item:hover {
     border-color: var(--color-primary-lighter) !important;
@@ -783,6 +783,7 @@ footer.footer {
     transform: translateY(-2px);
 }
 
+/* Legacy product card elements - not used by unified .product-card */
 .product-card-image,
 .product-img-wrapper {
     position: relative;
@@ -795,11 +796,6 @@ footer.footer {
     width: 100%;
     height: auto;
     transition: transform var(--transition-slow);
-}
-
-.product-card:hover .product-card-image img,
-.product-card:hover .product-img-wrapper img {
-    transform: scale(1.05);
 }
 
 .product-card-body,

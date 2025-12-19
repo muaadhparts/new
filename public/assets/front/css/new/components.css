@@ -378,9 +378,9 @@ button[type="submit"]:hover {
    ======================================== */
 
 /* Reset ALL cards */
+/* NOTE: .product-card excluded - styles in product-card.css */
 .card,
 .muaadh-card,
-.product-card,
 .category-card,
 .dashboard-card,
 .stat-card,
@@ -394,9 +394,7 @@ button[type="submit"]:hover {
 .product-description,
 .order-content,
 .settings-content,
-.vendor-content,
-[class*="-card"],
-[class*="-box"] {
+.vendor-content {
     background-color: var(--color-white) !important;
     border: 1px solid var(--border-default) !important;
     border-radius: var(--radius-lg) !important;
@@ -407,8 +405,7 @@ button[type="submit"]:hover {
 }
 
 .card:hover,
-.muaadh-card:hover,
-.product-card:hover {
+.muaadh-card:hover {
     border-color: var(--color-gray-300) !important;
     box-shadow: var(--shadow-sm) !important;
     transform: none !important;

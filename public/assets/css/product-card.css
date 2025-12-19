@@ -595,31 +595,19 @@
 /* ========================================
    SLIDER CONTEXT
    ======================================== */
-.product-cards-slider .product-card,
-.gs-product-cards-slider-area .product-card {
-    height: 100%;
-    margin: 0;
+/* Slider spacing via slick padding/margin */
+.product-cards-slider {
+    margin: 0 -12px;
 }
 
-.product-cards-slider .product-card--list {
-    margin: 0;
+.product-cards-slider .slick-slide {
+    padding: 0 12px;
 }
 
-/* Ensure slider cards display correctly */
-.gs-product-cards-slider-area .product-cards-slider .slick-slide > div {
+.product-cards-slider .slick-slide > div {
     height: 100%;
 }
 
-.gs-product-cards-slider-area .product-cards-slider .slick-slide > div > .not {
+.product-cards-slider .product-card {
     height: 100%;
 }
-
-.not .product-card {
-    height: 100%;
-}
-
-
-/* ========================================
-   COMPATIBILITY
-   ======================================== */
-/* Legacy support - kept for backwards compatibility */
