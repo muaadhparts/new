@@ -55,7 +55,7 @@
                             </div>
                           </div>
                           <div class="col-lg-7">
-                            <input type="text" class="input-field" name="title" placeholder="Title" value="{{$data->title}}" required="">
+                            <input type="text" class="form-control" name="title" placeholder="Title" value="{{$data->title}}" required="">
                           </div>
                         </div>
 
@@ -97,7 +97,7 @@
                             </div>
                           </div>
                           <div class="col-lg-7">
-                            <input type="text" class="input-field" name="source" placeholder="{{ __('Source') }}" required="" value="{{$data->source}}">
+                            <input type="text" class="form-control" name="source" placeholder="{{ __('Source') }}" required="" value="{{$data->source}}">
 
                             <div class="checkbox-wrapper">
                               <input type="checkbox" name="secheck" class="checkclick" id="allowProductSEO" {{ ($data->meta_tag != null || strip_tags($data->meta_description) != null) ? 'checked':'' }}>
@@ -133,7 +133,7 @@
                             </div>
                             <div class="col-lg-7">
                               <div class="text-editor">
-                                <textarea class="input-field"  name="meta_description" placeholder="{{ __('Meta Description') }}">{{ $data->meta_description }}</textarea> 
+                                <textarea class="form-control"  name="meta_description" placeholder="{{ __('Meta Description') }}">{{ $data->meta_description }}</textarea> 
                               </div>
                             </div>
                           </div>
@@ -161,7 +161,7 @@
                             </div>
                           </div>
                           <div class="col-lg-7">
-                            <button class="addProductSubmit-btn" type="submit">{{ __('Save') }}</button>
+                            <button class="btn btn-primary" type="submit">{{ __('Save') }}</button>
                           </div>
                         </div>
                       </form>

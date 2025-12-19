@@ -2,14 +2,13 @@
 
 @section('content')
     <div class="content-area">
-
       <div class="gs-vendor-outlet">
         <!-- breadcrumb start  -->
         <div class="gs-vendor-breadcrumb has-mb">
-            <h4 class="text-capitalize">@lang('Product Type')</h4>
+            <h4 class="text-capitalize">@lang('Add Product')</h4>
             <ul class="breadcrumb-menu">
                 <li>
-                    <a href="#" class="text-capitalize">
+                    <a href="{{ route('vendor.dashboard') }}" class="text-capitalize">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
                             fill="none" stroke="#4C3533" class="home-icon-vendor-panel-breadcrumb">
                             <path
@@ -24,7 +23,7 @@
                     </a>
                 </li>
                 <li>
-                    <a href="#" class="text-capitalize"> @lang('Products') </a>
+                    <a href="{{ route('vendor-prod-index') }}" class="text-capitalize"> @lang('Products') </a>
                 </li>
                 <li>
                     <a href="#" class="text-capitalize"> @lang('Add Product') </a>
@@ -33,65 +32,28 @@
         </div>
         <!-- breadcrumb end -->
 
-
-
-        <div class="ap-product-categories">
-          <div class="row justify-content-center gy-4">
-            @if($gs->physical == 1)
-            <div class="col-12 col-sm-6 col-lg-4">
-              <a href="{{ route('vendor-prod-create','physical') }}">
-                <div class="cat-box gs-product-type-card box1">
-                  <div class="icon">
-                    <i class="fas fa-tshirt"></i>
-                  </div>
-                  <h5 class="title">{{ __("Physical") }} </h5>
-                </div>
-              </a>
+        <!-- Redirect notice -->
+        <div class="card">
+            <div class="card-body text-center py-5">
+                <i class="fas fa-info-circle fa-3x text-primary mb-3"></i>
+                <h4 class="mb-3">@lang('New Product Addition System')</h4>
+                <p class="text-muted mb-4">
+                    @lang('To add a product, you need to search for it by SKU/Part Number from the catalog.')
+                    <br>
+                    @lang('You can then set your own price, stock, and other offer details.')
+                </p>
+                <a href="{{ route('vendor-prod-add') }}" class="btn btn-primary btn-lg">
+                    <i class="fas fa-plus me-2"></i>@lang('Add Product by SKU')
+                </a>
             </div>
-            @endif
-            @if($gs->digital == 1)
-            <div class="col-12 col-sm-6 col-lg-4">
-              <a href="{{ route('vendor-prod-create','digital') }}">
-                <div class="cat-box gs-product-type-card box2">
-                  <div class="icon">
-                    <i class="fas fa-camera-retro"></i>
-                  </div>
-                  <h5 class="title">{{ __("Digital") }} </h5>
-                </div>
-              </a>
-            </div>
-            @endif
-            @if($gs->license == 1)
-            <div class="col-12 col-sm-6 col-lg-4">
-              <a href="{{ route('vendor-prod-create','license') }}">
-                <div class="cat-box gs-product-type-card box3">
-                  <div class="icon">
-                    <i class="fas fa-award"></i>
-                  </div>
-                  <h5 class="title">{{ __("license") }} </h5>
-                </div>
-              </a>
-            </div>
-            @endif
-
-
-          @if($gs->listing == 1)
-          <div class="col-12 col-sm-6 col-lg-4">
-            <a href="{{ route('vendor-prod-create','listing') }}">
-              <div class="cat-box gs-product-type-card box4">
-                <div class="icon">
-                  <i class="fas fa-th-list"></i>
-                </div>
-                <h5 class="title">{{ __("Classified Listing") }} </h5>
-              </div>
-            </a>
-          </div>
-          @endif
-
         </div>
-
-
-
-
     </div>
+</div>
+
+<script>
+    // Auto redirect after 3 seconds
+    setTimeout(function() {
+        window.location.href = "{{ route('vendor-prod-add') }}";
+    }, 3000);
+</script>
 @endsection

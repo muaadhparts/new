@@ -58,7 +58,7 @@
                                         </div>
                                     </div>
                                     <div class="col-lg-7">
-                                        <input type="text" class="input-field" name="rightbannerlink1" placeholder="{{ __('Link') }}" required="" value="{{$data->rightbannerlink1}}">
+                                        <input type="text" class="form-control" name="rightbannerlink1" placeholder="{{ __('Link') }}" required="" value="{{$data->rightbannerlink1}}">
                                     </div>
                                     </div>
 
@@ -89,7 +89,7 @@
                                         </div>
                                     </div>
                                     <div class="col-lg-7">
-                                        <input type="text" class="input-field" name="rightbannerlink2" placeholder="{{ __('Link') }}" required="" value="{{$data->rightbannerlink2}}">
+                                        <input type="text" class="form-control" name="rightbannerlink2" placeholder="{{ __('Link') }}" required="" value="{{$data->rightbannerlink2}}">
                                     </div>
                                     </div>
 
@@ -101,7 +101,7 @@
                                         </div>
                                       </div>
                                       <div class="col-lg-7">
-                                        <button class="addProductSubmit-btn" type="submit">{{ __('Save') }}</button>
+                                        <button class="btn btn-primary" type="submit">{{ __('Save') }}</button>
                                       </div>
                                     </div>
 

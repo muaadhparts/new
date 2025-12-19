@@ -7,10 +7,19 @@ use Illuminate\Database\Eloquent\Model;
 class ProductClick extends Model
 {
 	protected $table = 'product_clicks';
-	protected $fillable = ['product_id'];
+	protected $fillable = ['product_id', 'merchant_product_id'];
 	public $timestamps = false;
+
     public function product()
     {
         return $this->belongsTo('App\Models\Product')->withDefault();
+    }
+
+    /**
+     * السجل التجاري المرتبط بالنقرة
+     */
+    public function merchantProduct()
+    {
+        return $this->belongsTo('App\Models\MerchantProduct')->withDefault();
     }
 }

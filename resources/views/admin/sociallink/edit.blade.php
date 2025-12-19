@@ -53,7 +53,7 @@
 														</div>
 													</div>
 													<div class="col-lg-7">
-														<input type="text" class="input-field" name="link" placeholder="{{ __('Location') }}" required="" value="{{ $data->link }}">
+														<input type="text" class="form-control" name="link" placeholder="{{ __('Location') }}" required="" value="{{ $data->link }}">
 													</div>
 												</div>
 
@@ -67,7 +67,7 @@
 
 														<div class="col-lg-7 d-flex">
 															<i class="" id="icn"></i>
-															<input type="text" id="icons" class="input-field" name="icon" placeholder="{{ __('Social Icon') }}" required="" value="{{ $data->icon }}">
+															<input type="text" id="icons" class="form-control" name="icon" placeholder="{{ __('Social Icon') }}" required="" value="{{ $data->icon }}">
 															   
 														</div>
 												</div>
@@ -80,7 +80,7 @@
 														</div>
 													</div>
 													<div class="col-lg-7">
-														<button class="addProductSubmit-btn" type="submit">{{ __('Save') }}</button>
+														<button class="btn btn-primary" type="submit">{{ __('Save') }}</button>
 													</div>
 												</div>
 											</form>

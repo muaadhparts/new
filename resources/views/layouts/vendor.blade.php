@@ -1,37 +1,83 @@
+{{--
+================================================================================
+    MUAADH THEME - VENDOR LAYOUT
+================================================================================
+    CSS GUIDELINES FOR AI AGENTS:
+    -----------------------------
+    1. The ONLY file for adding/modifying custom CSS is: public/assets/front/css/style.css
+    2. DO NOT add <style> tags in Blade files - move all styles to style.css
+    3. DO NOT create new CSS files - use style.css sections instead
+    4. Use CSS variables from style.css (--theme-* or --muaadh-*)
+    5. Add new styles under appropriate section comments in style.css
+
+    FILE STRUCTURE:
+    - style.css = MAIN THEME FILE (ALL CUSTOMIZATIONS HERE)
+    - theme-colors.css = Generated from Admin Panel (overrides :root variables)
+    - Vendor CSS in assets/vendor/css = Vendor-specific only
+================================================================================
+--}}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" dir="{{ $langg && $langg->rtl == 1 ? 'rtl' : 'ltr' }}">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@lang('Vendor Dashboard')</title>
     <!--Essential css files-->
-    <link rel="stylesheet" href="{{ asset('assets/front') }}/css/bootstrap.min.css">
-    <link rel="stylesheet" href="{{ asset('assets/front') }}/css/all.css">
+    @if($langg && $langg->rtl == 1)
+        <link rel="stylesheet" href="{{ asset('assets/front') }}/css/bootstrap.rtl.min.css">
+    @else
+        <link rel="stylesheet" href="{{ asset('assets/front') }}/css/bootstrap.min.css">
+    @endif
+    <link rel="stylesheet" href="{{ asset('assets/front/css/all.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/front') }}/css/slick.css">
     <link rel="stylesheet" href="{{ asset('assets/front') }}/css/nice-select.css">
     <link rel="stylesheet" href="{{ asset('assets/front') }}/css/jquery-ui.css">
     <link rel="stylesheet" href="{{ asset('assets/front') }}/css/animate.css">
-    <link rel="stylesheet" href="{{ asset('assets/front/css/all.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/front/css/toastr.min.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/front') }}/css/datatables.min.css">
-    <link rel="stylesheet" href="{{ asset('assets/front/css/toastr.min.css') }}">
-    <link rel="stylesheet" href="{{ asset('assets/front') }}/css/style.css">
+    <link rel="stylesheet" href="{{ asset('assets/front') }}/css/style.css?v={{ time() }}">
     <link href="{{ asset('assets/admin/css/jquery.tagit.css') }}" rel="stylesheet" />
-    <link rel="stylesheet" href="{{ asset('assets/front') }}/css/custom.css">
+    {{-- Design System - New components with m- prefix --}}
+    <link rel="stylesheet" href="{{ asset('assets/front/css/muaadh-system.css') }}?v={{ filemtime(public_path('assets/front/css/muaadh-system.css')) }}">
+    @if($langg && $langg->rtl == 1)
+        <link rel="stylesheet" href="{{ asset('assets/front') }}/css/rtl.css">
+    @endif
     <link rel="stylesheet" href="{{ asset('assets/vendor') }}/css/custom.css">
+    {{-- Theme Colors - Generated from Admin Panel (MUST load LAST to override :root variables) --}}
+    <link rel="stylesheet" href="{{ asset('assets/front/css/theme-colors.css') }}?v={{ filemtime(public_path('assets/front/css/theme-colors.css')) }}">
+
     <link rel="icon" href="{{ asset('assets/images/' . $gs->favicon) }}">
     @include('includes.frontend.extra_head')
+    @livewireStyles
+
+    {{-- Hide bottom layer --}}
+    <style>
+        .frontend-header-wrapper .header-top {
+            display: none !important;
+        }
+    </style>
+
     @yield('css')
     <!--favicon-->
 
 </head>
-
-<body>
 @php
     $user = auth()->user();
+    $categories = App\Models\Category::with('subs')->where('status', 1)->get();
+    $pages = App\Models\Page::get();
+    $currencies = App\Models\Currency::all();
+    $languges = App\Models\Language::all();
 @endphp
 
+<body>
+
+    <div class="frontend-header-wrapper">
+        {{-- Frontend Header --}}
+        @include('includes.frontend.header')
+    </div>
+
+    {{-- Vendor Dashboard Mobile Sidebar --}}
     @include('includes.vendor.vendor-mobile-header')
 
     <!-- overlay -->
@@ -100,7 +146,7 @@
     <script src="{{ asset('assets/admin/js/tag-it.js') }}"></script>
     <script src="{{ asset('assets/front/js/toastr.min.js') }}"></script>
     <script src="{{ asset('assets/front') }}/js/jquery.counterup.js"></script>
-    <script src="{{ asset('assets/front') }}/js/script.js"></script>
+    <script src="{{ asset('assets/front') }}/js/script.js?v={{ time() }}"></script>
 
     <script type="text/javascript">
         var mainurl = "{{ url('/') }}";
@@ -131,6 +177,7 @@
         }
     @endphp
 
+@livewireScripts
 
 </body>
 

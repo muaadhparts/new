@@ -50,7 +50,7 @@
 										</div>
 									</div>
 									<div class="col-lg-12">
-										<input type="text" class="input-field" placeholder="{{ __('Enter Product Name') }}" name="name" required="" value="{{ $data->name }}">
+										<input type="text" class="form-control" placeholder="{{ __('Enter Product Name') }}" name="name" required="" value="{{ $data->name }}">
 									</div>
 								</div>
 		
@@ -61,7 +61,7 @@
 										</div>
 									</div>
 									<div class="col-lg-12">
-										<input type="text" class="input-field" placeholder="{{ __('Enter Product Sku') }}" name="sku" required="" value="{{ $data->sku }}">
+										<input type="text" class="form-control" placeholder="{{ __('Enter Product Sku') }}" name="sku" required="" value="{{ $data->sku }}">
 									</div>
 								</div>
 
@@ -73,7 +73,7 @@
 										</div>
 									</div>
 									<div class="col-lg-12">
-										<input type="text" class="input-field" placeholder="{{ __("Enter Product Link") }}" name="affiliate_link" required="" value="{{ $data->affiliate_link }}">
+										<input type="text" class="form-control" placeholder="{{ __("Enter Product Link") }}" name="affiliate_link" required="" value="{{ $data->affiliate_link }}">
 									</div>
 								</div>
 
@@ -148,7 +148,7 @@
 											</div>
 										</div>
 										<div class="col-lg-12">
-											<input name="stock" type="text" class="input-field" placeholder="{{ __("e.g 20") }}" value="{{ $merchantProduct->stock ?? '' }}">
+											<input name="stock" type="text" class="form-control" placeholder="{{ __("e.g 20") }}" value="{{ $data->stock }}">
 											<div class="checkbox-wrapper">
 												<input type="checkbox" name="measure_check" class="checkclick" id="allowProductMeasurement" value="1" {{ $data->measure == null ? '' : 'checked' }}>
 												<label for="allowProductMeasurement">{{ __("Allow Product Measurement") }}</label>
@@ -175,7 +175,7 @@
 												</select>
 										</div>
 										<div class="col-lg-12 {{ in_array($data->measure,explode(',', 'Gram,Kilogram,Litre,Pound')) ? 'hidden' : '' }}" id="measure">
-											<input name="measure" type="text" id="measurement" class="input-field" placeholder="@lang('Enter Unit')" value="{{$data->measure}}">
+											<input name="measure" type="text" id="measurement" class="form-control" placeholder="@lang('Enter Unit')" value="{{$data->measure}}">
 										</div>
 									</div>
 								</div>
@@ -238,7 +238,7 @@
 											</div>
 										</div>
 										<div class="col-lg-12">
-											<input type="text" class="input-field" placeholder="@lang('Estimated Shipping Time')" name="ship" value="{{ $data->ship == null ? "" : $data->ship }}">
+											<input type="text" class="form-control" placeholder="@lang('Estimated Shipping Time')" name="ship" value="{{ $data->ship == null ? "" : $data->ship }}">
 										</div>
 									</div>
 								</div>
@@ -253,16 +253,16 @@
 									<div class="col-lg-12">
 										<ul class="list">
 											<li>
-												<input class="checkclickc" name="color_check" type="checkbox" id="check3" value="1" {{ !empty($merchantProduct->color_all ?? '') ? "checked":"" }}>
+												<input class="checkclickc" name="color_check" type="checkbox" id="check3" value="1" {{ !empty($data->color_all) ? "checked":"" }}>
 												<label for="check3">{{ __('Allow Product Colors') }}</label>
 											</li>
 										</ul>
 									</div>
 								</div>
 
-								<div class="{{ !empty($merchantProduct->color_all ?? '') ? "":"showbox" }}">
+								<div class="{{ !empty($data->color_all) ? "":"showbox" }}">
 									<div class="row">
-										@if(!empty($merchantProduct->color_all ?? '')) 
+										@if(!empty($data->color_all)) 
 										<div  class="col-lg-12">
 												<div class="left-area">
 													<h4 class="heading">
@@ -275,11 +275,11 @@
 											</div>
 											<div  class="col-lg-12">
 													<div class="select-input-color" id="color-section">
-														@foreach(array_unique(explode(',', $merchantProduct->color_all ?? '')) as $ct)
+														@foreach(array_unique(explode(',',$data->color_all)) as $ct)
 														<div class="color-area">
 															<span class="remove color-remove"><i class="fas fa-times"></i></span>
 															<div class="input-group colorpicker-component cp">
-															  <input type="text" name="color_all[]" value="{{ $ct }}"  class="input-field cp tcolor"/>
+															  <input type="text" name="color_all[]" value="{{ $ct }}"  class="form-control cp tcolor"/>
 															  <span class="input-group-addon"><i></i></span>
 															</div>
 														 </div>
@@ -305,7 +305,7 @@
 														<div class="color-area">
 															<span class="remove color-remove"><i class="fas fa-times"></i></span>
 															<div class="input-group colorpicker-component cp">
-															  <input type="text"  name="color_all[]"  class="input-field cp tcolor"/>
+															  <input type="text"  name="color_all[]"  class="form-control cp tcolor"/>
 															  <span class="input-group-addon"><i></i></span>
 															</div>
 														 </div>
@@ -349,7 +349,7 @@
 														@foreach(array_unique(explode(',',$data->size_all)) as $dt)
 														<div class="tsize-area">
 															<span class="remove tsize-remove"><i class="fas fa-times"></i></span>
-															<input  type="text" name="size_all[]" class="input-field tsize" placeholder="{{ __('Enter Product Size') }}" value="{{ $dt }}"  required="" >
+															<input  type="text" name="size_all[]" class="form-control tsize" placeholder="{{ __('Enter Product Size') }}" value="{{ $dt }}"  required="" >
 														 </div>
 														@endforeach
 													</div>
@@ -372,7 +372,7 @@
 													<div class="select-input-tsize" id="tsize-section">
 														<div class="tsize-area">
 															<span class="remove tsize-remove"><i class="fas fa-times"></i></span>
-															<input  type="text" name="size_all[]" class="input-field tsize" placeholder="{{ __('Enter Product Size') }}"  >
+															<input  type="text" name="size_all[]" class="form-control tsize" placeholder="{{ __('Enter Product Size') }}"  >
 															
 														 </div>
 													</div>
@@ -451,7 +451,7 @@
 									  </div>
 									  <div class="col-lg-12">
 										<div class="text-editor">
-										  <textarea name="meta_description" class="input-field" placeholder="{{ __("Meta Description") }}">{{ $data->meta_description }}</textarea> 
+										  <textarea name="meta_description" class="form-control" placeholder="{{ __("Meta Description") }}">{{ $data->meta_description }}</textarea> 
 										</div>
 									  </div>
 									</div>
@@ -496,7 +496,7 @@
 										<div class="row">
 											<div class="panel panel-body">
 												<div class="span4 cropme text-center" id="landscape" style="width: 100%; height: 285px; border: 1px dashed #ddd; background: #f1f1f1;">
-													<a href="javascript:;" id="crop-image" class=" mybtn1" style="">
+													<a href="javascript:;" id="crop-image" class="btn btn-primary" style="">
 														<i class="icofont-upload-alt"></i> {{ __('Upload Image Here') }}
 													</a>
 												</div>
@@ -516,7 +516,7 @@
 										  </div>
 									  </div>
 									  <div class="col-lg-12">
-										  <input type="text" name="photolink" value="{{ $data->photo }}" class="input-field">
+										  <input type="text" name="photolink" value="{{ $data->photo }}" class="form-control">
 									  </div>
 								  </div>
 							  </div>
@@ -530,7 +530,7 @@
 										</div>
 									</div>
 									<div class="col-lg-7">
-										<a href="javascript" class="set-gallery"  data-toggle="modal" data-target="#setgallery">
+										<a href="javascript" class="set-gallery"  data-bs-toggle="modal" data-bs-target="#setgallery">
 											<input type="hidden" value="{{$data->id}}">
 											<i class="icofont-plus"></i> {{ __("Set Gallery") }}
 										</a>
@@ -549,7 +549,7 @@
 										</div>
 									</div>
 									<div class="col-lg-12">
-										<input name="price" step="0.1" type="number" class="input-field" placeholder="{{ __("e.g 20") }}" value="{{round(($merchantProduct->price ?? 0) * $sign->value , 2)}}" required="" min="0">
+										<input name="price" step="0.1" type="number" class="form-control" placeholder="{{ __("e.g 20") }}" value="{{round($data->price * $sign->value , 2)}}" required="" min="0">
 									</div>
 								</div>
 
@@ -561,7 +561,7 @@
 										</div>
 									</div>
 									<div class="col-lg-12">
-										<input name="previous_price" step="0.1" type="number" class="input-field" placeholder="{{ __("e.g 20") }}" value="{{round(($merchantProduct->previous_price ?? 0) * $sign->value , 2)}}" min="0">
+										<input name="previous_price" step="0.1" type="number" class="form-control" placeholder="{{ __("e.g 20") }}" value="{{round($data->previous_price * $sign->value , 2)}}" min="0">
 									</div>
 								</div>
 
@@ -573,7 +573,7 @@
 										</div>
 									</div>
 									<div class="col-lg-12">
-										<input  name="youtube" type="text" class="input-field" placeholder="{{ __("Enter Youtube Video URL") }}" value="{{$data->youtube}}">
+										<input  name="youtube" type="text" class="form-control" placeholder="{{ __("Enter Youtube Video URL") }}" value="{{$data->youtube}}">
 									</div>
 								</div>
 
@@ -598,12 +598,12 @@
 															<span class="remove feature-remove"><i class="fas fa-times"></i></span>
 															<div class="row">
 																<div class="col-lg-6">
-																<input type="text" name="features[]" class="input-field" placeholder="{{ __("Enter Your Keyword") }}" value="{{ $data->features[$key] }}">
+																<input type="text" name="features[]" class="form-control" placeholder="{{ __("Enter Your Keyword") }}" value="{{ $data->features[$key] }}">
 																</div>
 
 																<div class="col-lg-6">
 																	<div class="input-group colorpicker-component cp">
-																	<input type="text" name="colors[]" value="{{ ($merchantProduct->colors ?? [])[$key] ?? '' }}" class="input-field cp"/>
+																	<input type="text" name="colors[]" value="{{ $data->colors[$key] }}" class="form-control cp"/>
 																	<span class="input-group-addon"><i></i></span>
 																	</div>
 																</div>
@@ -615,12 +615,12 @@
 														<span class="remove feature-remove"><i class="fas fa-times"></i></span>
 														<div class="row">
 															<div class="col-lg-6">
-															<input type="text" name="features[]" class="input-field" placeholder="{{ __("Enter Your Keyword") }}">
+															<input type="text" name="features[]" class="form-control" placeholder="{{ __("Enter Your Keyword") }}">
 															</div>
 
 															<div class="col-lg-6">
 																<div class="input-group colorpicker-component cp">
-																<input type="text" name="colors[]" value="#000000" class="input-field cp"/>
+																<input type="text" name="colors[]" value="#000000" class="form-control cp"/>
 																<span class="input-group-addon"><i></i></span>
 																</div>
 															</div>
@@ -654,11 +654,11 @@
 								<div class="row">
 									<div class="col-lg-3">
 										<div class="left-area">
-											
+
 										</div>
 									</div>
 									<div class="col-lg-8 text-center">
-										<button class="addProductSubmit-btn" type="submit">{{ __("Save") }}</button>
+										<button class="btn btn-primary" type="submit">{{ __("Save") }}</button>
 									</div>
 								</div>
 							</div>
@@ -677,8 +677,8 @@
 		<div class="modal-content">
 			<div class="modal-header">
 				<h5 class="modal-title" id="exampleModalCenterTitle">{{ __("Image Gallery") }}</h5>
-				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
-					<span aria-hidden="true">×</span>
+				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+					
 				</button>
 			</div>
 			<div class="modal-body">
@@ -697,7 +697,7 @@
 							</div>
 						</div>
 						<div class="col-sm-6">
-							<a href="javascript:;" class="upload-done" data-dismiss="modal"> <i
+							<a href="javascript:;" class="upload-done" data-bs-dismiss="modal"> <i
 									class="fas fa-check"></i> {{ __("Done") }}</a>
 						</div>
 						<div class="col-sm-12 text-center">( <small>{{ __("You can upload multiple Images.") }}</small> )</div>
@@ -862,7 +862,7 @@
 	$(document).ready(function () {
 
 		let html =
-			`<img src="{{ \Illuminate\Support\Facades\Storage::url($data->photo) ?? asset('assets/images/noimage.png') }}" alt="">`;
+			`<img src="{{ empty($data->photo) ? asset('assets/images/noimage.png') : (filter_var($data->photo, FILTER_VALIDATE_URL) ? $data->photo : ($data->photo ? \Illuminate\Support\Facades\Storage::url($data->photo) : asset('assets/images/noimage.png'))) }}" alt="">`;
 		$(".span4.cropme").html(html);
 
 		$.ajaxSetup({

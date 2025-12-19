@@ -21,7 +21,7 @@
 														</div>
 													</div>
 													<div class="col-lg-7">
-														<input type="text" class="input-field" name="shop_name" placeholder="{{ __('Shop Name') }}" required="" value="">
+														<input type="text" class="form-control" name="shop_name" placeholder="{{ __('Shop Name') }}" required="" value="">
 													</div>
 												</div>
 
@@ -32,7 +32,7 @@
 														</div>
 													</div>
 													<div class="col-lg-7">
-														<input type="text" class="input-field" name="owner_name" placeholder="{{ __('Owner Name') }}" required="" value="">
+														<input type="text" class="form-control" name="owner_name" placeholder="{{ __('Owner Name') }}" required="" value="">
 													</div>
 												</div>
 
@@ -43,7 +43,7 @@
 														</div>
 													</div>
 													<div class="col-lg-7">
-														<input type="text" class="input-field" name="shop_number" placeholder="{{ __('Shop Number') }}" required="" value="">
+														<input type="text" class="form-control" name="shop_number" placeholder="{{ __('Shop Number') }}" required="" value="">
 													</div>
 												</div>
 
@@ -54,7 +54,7 @@
 														</div>
 													</div>
 													<div class="col-lg-7">
-														<input type="text" class="input-field" name="shop_address" placeholder="{{ __('Shop Address') }}" required="" value="">
+														<input type="text" class="form-control" name="shop_address" placeholder="{{ __('Shop Address') }}" required="" value="">
 													</div>
 												</div>
 
@@ -66,7 +66,7 @@
 														</div>
 													</div>
 													<div class="col-lg-7">
-														<input type="text" class="input-field" name="reg_number" placeholder="{{ __('Registration Number') }}" value="">
+														<input type="text" class="form-control" name="reg_number" placeholder="{{ __('Registration Number') }}" value="">
 													</div>
 												</div>
 
@@ -78,7 +78,7 @@
 														</div>
 													</div>
 													<div class="col-lg-7">
-                                                        <textarea name="shop_address" class="input-field" placeholder="{{ __('Shop Details') }}" required></textarea>
+                                                        <textarea name="shop_address" class="form-control" placeholder="{{ __('Shop Details') }}" required></textarea>
 													</div>
 												</div>
 
@@ -104,7 +104,7 @@
 														</div>
 													</div>
 													<div class="col-lg-7">
-														<button class="addProductSubmit-btn" type="submit">{{ __('Submit') }}</button>
+														<button class="btn btn-primary" type="submit">{{ __('Submit') }}</button>
 													</div>
 												</div>
 											</form>

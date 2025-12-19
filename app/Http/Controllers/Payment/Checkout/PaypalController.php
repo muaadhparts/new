@@ -1,5 +1,23 @@
 <?php
 
+/**
+ * ====================================================================
+ * PAYPAL PAYMENT CONTROLLER - VENDOR CHECKOUT ONLY
+ * ====================================================================
+ *
+ * This controller handles PayPal payments in vendor checkout system.
+ *
+ * Key Changes:
+ * - Uses HandlesVendorCheckout trait for vendor isolation
+ * - Reads from vendor_step1_{id} and vendor_step2_{id} ONLY
+ * - NO fallback to regular checkout sessions (step1/step2)
+ * - Filters cart to process only vendor's products
+ * - Removes only vendor's products from cart after order
+ *
+ * Modified: 2025-01-19 for Vendor Checkout System
+ * ====================================================================
+ */
+
 namespace App\Http\Controllers\Payment\Checkout;
 
 use App\{
@@ -12,6 +30,8 @@ use App\Helpers\PriceHelper;
 use App\Models\Country;
 use App\Models\Reward;
 use App\Models\State;
+use App\Traits\HandlesVendorCheckout;
+use App\Traits\SavesCustomerShippingChoice;
 
 use Illuminate\Http\Request;
 use Illuminate\Routing\Route;
@@ -23,6 +43,7 @@ use Omnipay\Omnipay;
 
 class PaypalController extends CheckoutBaseControlller
 {
+    use HandlesVendorCheckout, SavesCustomerShippingChoice;
     public $_api_context;
     public $gateway;
     public function __construct()
@@ -39,11 +60,24 @@ class PaypalController extends CheckoutBaseControlller
 
     public function store(Request $request)
     {
+        // ====================================================================
+        // VENDOR CHECKOUT: Get vendor-specific session data
+        // ====================================================================
+        $vendorData = $this->getVendorCheckoutData();
+        $vendorId = $vendorData['vendor_id'];
+        $isVendorCheckout = $vendorData['is_vendor_checkout'];
 
+        // Get steps from vendor sessions ONLY
+        $steps = $this->getCheckoutSteps($vendorId, $isVendorCheckout);
+        $step1 = $steps['step1'];
+        $step2 = $steps['step2'];
+
+        // Validate vendor checkout data exists
+        if (!$step1 || !$step2) {
+            return redirect()->route('front.cart')->with('unsuccess', __('Checkout session expired. Please start checkout again.'));
+        }
 
         $input = $request->all();
-        $step1 = Session::get('step1');
-        $step2 = Session::get('step2');
         $input = array_merge($step1, $step2, $input);
         
         $total = $request->total / $this->curr->value;
@@ -107,19 +141,37 @@ class PaypalController extends CheckoutBaseControlller
 
     public function notify(Request $request)
     {
-        $success_url = route('front.payment.return');
-        $cancel_url = route('front.payment.cancle');
+        // ====================================================================
+        // VENDOR CHECKOUT: Get vendor-specific session data
+        // ====================================================================
+        $vendorData = $this->getVendorCheckoutData();
+        $vendorId = $vendorData['vendor_id'];
+        $isVendorCheckout = $vendorData['is_vendor_checkout'];
+
+        // Get steps from vendor sessions ONLY
+        $steps = $this->getCheckoutSteps($vendorId, $isVendorCheckout);
+        $step1 = $steps['step1'];
+        $step2 = $steps['step2'];
+
+        if (!$step1 || !$step2) {
+            return redirect()->route('front.cart')->with('unsuccess', __('Checkout session expired.'));
+        }
 
         $input = Session::get('input_data');
-        $step1 = Session::get('step1');
-        $step2 = Session::get('step2');
         $input = array_merge($step1, $step2, $input);
+
+        // Get cart and filter for vendor
+        $oldCart = Session::get('cart');
+        $originalCart = new Cart($oldCart);
+        $cart = $this->filterCartForVendor($originalCart, $vendorId);
+
+        $success_url = $this->getSuccessUrl($vendorId, $originalCart);
+        $cancel_url = route('front.payment.cancle');
         
 
 
         $responseData = $request->all();
 
-        dd($responseData);
         if (empty($responseData['PayerID']) || empty($responseData['token'])) {
             return [
                 'status' => false,
@@ -134,15 +186,13 @@ class PaypalController extends CheckoutBaseControlller
 
         if ($response->isSuccessful()) {
 
-            $oldCart = Session::get('cart');
-            $cart = new Cart($oldCart);
             OrderHelper::license_check($cart); // For License Checking
-            $t_oldCart = Session::get('cart');
-            $t_cart = new Cart($t_oldCart);
+
+            // Serialize cart for order (using filtered vendor cart)
             $new_cart = [];
-            $new_cart['totalQty'] = $t_cart->totalQty;
-            $new_cart['totalPrice'] = $t_cart->totalPrice;
-            $new_cart['items'] = $t_cart->items;
+            $new_cart['totalQty'] = $cart->totalQty;
+            $new_cart['totalPrice'] = $cart->totalPrice;
+            $new_cart['items'] = $cart->items;
             $new_cart = json_encode($new_cart);
             $temp_affilate_users = OrderHelper::product_affilate_check($cart); // For Product Based Affilate Checking
             $affilate_users = $temp_affilate_users == null ? null : json_encode($temp_affilate_users);
@@ -161,12 +211,10 @@ class PaypalController extends CheckoutBaseControlller
             $input['order_number'] = Str::random(4) . time();
             $input['wallet_price'] = $input['wallet_price'] / $this->curr->value;
             $input['payment_status'] = "Completed";
-            if ($input['tax_type'] == 'state_tax') {
-                $input['tax_location'] = State::findOrFail($input['tax'])->state;
-            } else {
-                $input['tax_location'] = Country::findOrFail($input['tax'])->country_name;
-            }
-            $input['tax'] = Session::get('current_tax');
+
+            // Get tax data from vendor step2 (already calculated and saved)
+            $input['tax'] = $step2['tax_amount'] ?? 0;
+            $input['tax_location'] = $step2['tax_location'] ?? '';
 
             $input['txnid'] = $response->getData()['transactions'][0]['related_resources'][0]['sale']['id'];
             if ($input['dp'] == 1) {
@@ -204,12 +252,11 @@ class PaypalController extends CheckoutBaseControlller
 
             Session::put('temporder', $order);
             Session::put('tempcart', $cart);
-            Session::forget('cart');
-            Session::forget('already');
-            Session::forget('coupon');
-            Session::forget('coupon_total');
-            Session::forget('coupon_total1');
-            Session::forget('coupon_percentage');
+
+            // ====================================================================
+            // VENDOR CHECKOUT: Remove only vendor's products from cart
+            // ====================================================================
+            $this->removeVendorProductsFromCart($vendorId, $originalCart);
 
             if ($order->user_id != 0 && $order->wallet_price != 0) {
                 OrderHelper::add_to_transaction($order, $order->wallet_price); // Store To Transactions

@@ -46,16 +46,16 @@
             <!-- order address info -->
             <div class="user-purchase-title-wrapper">
                 <div>
-                    <h4 class="order-number">@lang('Muaadh Shop')</h4>
+                    <h4 class="order-number">@lang('Genius Shop')</h4>
                 </div>
 
-                <a href="{{route('vendor-order-print',$order->order_number)}}" class="template-btn dark-btn" type="button">
+                <a href="{{route('vendor-order-print',$order->order_number)}}" class="m-btn m-btn--secondary" type="button">
                     @lang('Print Order')
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
                         xmlns="http://www.w3.org/2000/svg">
                         <path
                             d="M18 7V5.2C18 4.0799 18 3.51984 17.782 3.09202C17.5903 2.71569 17.2843 2.40973 16.908 2.21799C16.4802 2 15.9201 2 14.8 2H9.2C8.0799 2 7.51984 2 7.09202 2.21799C6.71569 2.40973 6.40973 2.71569 6.21799 3.09202C6 3.51984 6 4.0799 6 5.2V7M6 18C5.07003 18 4.60504 18 4.22354 17.8978C3.18827 17.6204 2.37962 16.8117 2.10222 15.7765C2 15.395 2 14.93 2 14V11.8C2 10.1198 2 9.27976 2.32698 8.63803C2.6146 8.07354 3.07354 7.6146 3.63803 7.32698C4.27976 7 5.11984 7 6.8 7H17.2C18.8802 7 19.7202 7 20.362 7.32698C20.9265 7.6146 21.3854 8.07354 21.673 8.63803C22 9.27976 22 10.1198 22 11.8V14C22 14.93 22 15.395 21.8978 15.7765C21.6204 16.8117 20.8117 17.6204 19.7765 17.8978C19.395 18 18.93 18 18 18M15 10.5H18M9.2 22H14.8C15.9201 22 16.4802 22 16.908 21.782C17.2843 21.5903 17.5903 21.2843 17.782 20.908C18 20.4802 18 19.9201 18 18.8V17.2C18 16.0799 18 15.5198 17.782 15.092C17.5903 14.7157 17.2843 14.4097 16.908 14.218C16.4802 14 15.9201 14 14.8 14H9.2C8.0799 14 7.51984 14 7.09202 14.218C6.71569 14.4097 6.40973 14.7157 6.21799 15.092C6 15.5198 6 16.0799 6 17.2V18.8C6 19.9201 6 20.4802 6.21799 20.908C6.40973 21.2843 6.71569 21.5903 7.09202 21.782C7.51984 22 8.07989 22 9.2 22Z"
-                            stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
                     </svg>
                 </a>
             </div>
@@ -74,46 +74,19 @@
                         $vendor_shipping = json_decode($order->vendor_shipping_id);
                         $user_id = auth()->id();
                         // shipping cost
-                    //     $shipping_id = $vendor_shipping->$user_id;
-                    //     $shipping = App\Models\Shipping::findOrFail($shipping_id);
-                    //     if ($shipping) {
-                    //         $price = $price + round($shipping->price * $order->currency_value, 2);
-                    //     }
-
-                    //     // packaging cost
-                    //     $vendor_packing_id = json_decode($order->vendor_packing_id);
-                    //     $packing_id = $vendor_packing_id->$user_id;
-                    //     $packaging = App\Models\Package::findOrFail($packing_id);
-                    //     if ($packaging) {
-                    //         $price = $price + round($packaging->price * $order->currency_value, 2);
-                    //     }
-
-                    // shipping cost
-                    $shipping_id_raw = $vendor_shipping->$user_id ?? null;
-                    if ($shipping_id_raw) {
-                        // بعض القيم تجي مثل "7178#omnillama#10" → نأخذ الرقم فقط
-                        $shippingId = intval(explode('#', $shipping_id_raw)[0]);
-                        $shipping = App\Models\Shipping::find($shippingId);
+                        $shipping_id = $vendor_shipping->$user_id;
+                        $shipping = App\Models\Shipping::findOrFail($shipping_id);
                         if ($shipping) {
-                            $price += round($shipping->price * $order->currency_value, 2);
+                            $price = $price + round($shipping->price * $order->currency_value, 2);
                         }
-                    } else {
-                        $shipping = null;
-                    }
 
-                    // packaging cost
-                    $vendor_packing_id = json_decode($order->vendor_packing_id);
-                    $packing_id_raw = $vendor_packing_id->$user_id ?? null;
-                    if ($packing_id_raw) {
-                        $packingId = intval(explode('#', $packing_id_raw)[0]);
-                        $packaging = App\Models\Package::find($packingId);
+                        // packaging cost
+                        $vendor_packing_id = json_decode($order->vendor_packing_id);
+                        $packing_id = $vendor_packing_id->$user_id;
+                        $packaging = App\Models\Package::findOrFail($packing_id);
                         if ($packaging) {
-                            $price += round($packaging->price * $order->currency_value, 2);
+                            $price = $price + round($packaging->price * $order->currency_value, 2);
                         }
-                    } else {
-                        $packaging = null;
-                    }
-
                     }
 
                 @endphp
@@ -157,6 +130,42 @@
                             </li>
                         @endif
 
+                        @php
+                            $invoiceVendorId = $user->id;
+                            $invoiceCustomerChoice = $order->getCustomerShippingChoice($invoiceVendorId);
+                        @endphp
+                        @if ($invoiceCustomerChoice)
+                            <li>
+                                <span class="fw-semibold">@lang('Customer Selected Shipping :')</span>
+                                <span class="fw-normal">
+                                    {{ $invoiceCustomerChoice['company_name'] ?? 'N/A' }}
+                                    @if(isset($invoiceCustomerChoice['price']))
+                                    | {{ \PriceHelper::showOrderCurrencyPrice($invoiceCustomerChoice['price'] * $order->currency_value, $order->currency_sign) }}
+                                    @endif
+                                </span>
+                            </li>
+                        @endif
+
+                        @php
+                            $invoiceShipmentLog = App\Models\ShipmentStatusLog::where('order_id', $order->id)
+                                ->where('vendor_id', $invoiceVendorId)
+                                ->orderBy('status_date', 'desc')
+                                ->first();
+                        @endphp
+                        @if ($invoiceShipmentLog)
+                            <li>
+                                <span class="fw-semibold">@lang('Tracking Number :')</span>
+                                <span class="fw-normal">{{ $invoiceShipmentLog->tracking_number }}</span>
+                            </li>
+                            <li>
+                                <span class="fw-semibold">@lang('Shipping Company :')</span>
+                                <span class="fw-normal">{{ $invoiceShipmentLog->company_name ?? 'N/A' }}</span>
+                            </li>
+                            <li>
+                                <span class="fw-semibold">@lang('Shipment Status :')</span>
+                                <span class="fw-normal">{{ ucfirst($invoiceShipmentLog->status) }}</span>
+                            </li>
+                        @endif
 
                         <li>
                             <span class="fw-semibold">@lang('Payment Method :')</span>
@@ -170,15 +179,10 @@
                         <li>
                             <span class="fw-semibold">@lang('Payment Status :')</span>
                             @if ($order->payment_status == 'Pending')
-                                <span class="template-btn danger-btn sm-btn">
-                                    @lang('Unpaid')
-                                </span>
+                                <span class="m-badge m-badge--danger">@lang('Unpaid')</span>
                             @else
-                                <span class="template-btn green-btn sm-btn">
-                                    @lang('Paid')
-                                </span>
+                                <span class="m-badge m-badge--paid">@lang('Paid')</span>
                             @endif
-
                         </li>
                     </ul>
                 </div>
@@ -338,15 +342,9 @@
                     <table class="gs-data-table w-100">
                         <thead>
                             <tr>
-                                <th><span class="header-title">@lang('Image')</span></th>
-                                <th><span class="header-title">@lang('Name')</span></th>
-                                <th><span class="header-title">@lang('Part Number')</span></th>
-                                <th><span class="header-title">@lang('Shop Name')</span></th>
-                                <th><span class="header-title">@lang('Brand')</span></th>
-                                <th><span class="header-title">@lang('Brand Quality')</span></th>
-                                <th><span class="header-title">@lang('Price')</span></th>
-                                <th><span class="header-title">@lang('Quantity')</span></th>
-                                <th><span class="header-title">@lang('Total')</span></th>
+                                <th><span class="header-title">@lang('Product Title')</span></th>
+                                <th><span class="header-title">@lang('Details')</span></th>
+                                <th><span class="header-title">@lang('Total Price')</span></th>
                             </tr>
                         </thead>
                         <tbody>
@@ -355,103 +353,101 @@
                                 $subtotal = 0;
                                 $data = 0;
                                 $tax = 0;
+
                             @endphp
 
                             @foreach ($cart['items'] as $key => $product)
                                 @if ($product['item']['user_id'] != 0)
                                     @if ($product['item']['user_id'] == $user->id)
-                                        @php
-                                            $vendorUser = App\Models\User::find($product['item']['user_id']);
-                                            $invoiceProduct = App\Models\Product::where('slug', $product['item']['slug'])->first();
-                                            $invoiceMerchant = $invoiceProduct && $vendorUser ? $invoiceProduct->merchantProducts()->with('user')->where('user_id', $product['item']['user_id'])->where('status', 1)->first() : null;
-                                            $invoiceMerchantId = $invoiceMerchant->id ?? null;
-                                            $shopName = $invoiceMerchant && $invoiceMerchant->user ? ($invoiceMerchant->user->shop_name ?? $invoiceMerchant->user->name) : '-';
-                                        @endphp
                                         <tr>
-                                            <!-- Image -->
-                                            <td class="product-img">
-                                                <img src="{{ \Illuminate\Support\Facades\Storage::url($product['item']['photo']) ?? asset('assets/images/noimage.png') }}"
-                                                    alt="" style="width: 80px; height: 80px; object-fit: cover;">
-                                            </td>
 
-                                            <!-- Name -->
-                                            <td class="text-start">
-                                                <span class="content product-title d-inline-block">
-                                                    @if (isset($vendorUser))
-                                                        <x-product-name :item="$product['item']" :vendor-id="$product['item']['user_id']" :merchant-product-id="$invoiceMerchantId" :showSku="false" target="_blank" class="d-inline-block" />
-                                                    @else
-                                                        <x-product-name :item="$product['item']" :showSku="false" target="_self" class="d-inline-block" />
-                                                    @endif
-                                                </span>
+                                            <td>
 
-                                                @if (!empty($product['color']) || !empty($product['size']))
-                                                    <div class="d-flex align-items-center gap-2 mt-2">
-                                                        @if (!empty($product['color']))
-                                                            <span class="text-muted small">@lang('Color'): </span>
-                                                            <span class="d-inline-block rounded-2" style="border:10px solid #{{ $product['color']==''?'white':$product['color'] }};"></span>
-                                                        @endif
-                                                        @if (!empty($product['size']))
-                                                            <span class="text-muted small">@lang('Size'): {{ $product['size'] }}</span>
-                                                        @endif
-                                                    </div>
+                                                @if ($product['item']['user_id'] != 0)
+                                                    @php
+                                                        $user = App\Models\User::find($product['item']['user_id']);
+                                                        $vendorInvoiceProductUrl = '#';
+                                                        if (isset($product['item']['slug']) && isset($product['user_id']) && isset($product['merchant_product_id'])) {
+                                                            $vendorInvoiceProductUrl = route('front.product', [
+                                                                'slug' => $product['item']['slug'],
+                                                                'vendor_id' => $product['user_id'],
+                                                                'merchant_product_id' => $product['merchant_product_id']
+                                                            ]);
+                                                        } elseif (isset($product['item']['slug'])) {
+                                                            $vendorInvoiceProductUrl = route('front.product.legacy', $product['item']['slug']);
+                                                        }
+                                                    @endphp
+                                                    <span class="content product-title d-inline-block">
+                                                        <a target="_blank" href="{{ $vendorInvoiceProductUrl }}">
+                                                            {{ getLocalizedProductName($product['item'], 30) }}
+                                                        </a>
+                                                    </span>
+                                                    <br><small class="text-muted">SKU: {{ $product['item']['sku'] ?? 'N/A' }}</small>
                                                 @endif
-                                                @if (!empty($product['keys']))
-                                                    <div class="mt-2">
-                                                        @foreach (array_combine(explode(',', $product['keys']), explode(',', $product['values'])) as $key => $value)
-                                                            <small class="text-muted d-block">{{ ucwords(str_replace('_', ' ', $key)) }}: {{ $value }}</small>
-                                                        @endforeach
-                                                    </div>
-                                                @endif
+
 
                                                 @if ($product['license'] != '')
-                                                    <div class="mt-2">
-                                                        <a href="javascript:;" data-toggle="modal"
-                                                            data-target="#confirm-delete" class="btn btn-info product-btn"
-                                                            id="license" style="padding: 5px 12px;">
-                                                            <i class="fa fa-eye"></i>
-                                                            {{ __('View License') }}
-                                                        </a>
-                                                    </div>
+                                                    <a href="javascript:;" data-bs-toggle="modal"
+                                                        data-bs-target="#confirm-delete" class="m-btn m-btn--info m-btn--xs"
+                                                        id="license">
+                                                        <i class="fa fa-eye"></i> {{ __('View License') }}
+                                                    </a>
                                                 @endif
-                                            </td>
 
-                                            <!-- Part Number -->
-                                            <td class="text-start">
-                                                <span class="content">{{ $product['item']['sku'] ?? '-' }}</span>
                                             </td>
-
-                                            <!-- Shop Name -->
+                                            <!-- Details -->
                                             <td class="text-start">
-                                                <span class="content">{{ $shopName }}</span>
-                                            </td>
+                                                <div class="rider">
 
-                                            <!-- Brand -->
-                                            <td class="text-start">
-                                                <span class="content">{{ $invoiceProduct && $invoiceProduct->brand ? Str::ucfirst($invoiceProduct->brand->name) : '-' }}</span>
-                                            </td>
-
-                                            <!-- Brand Quality -->
-                                            <td class="text-start">
-                                                <span class="content">{{ $invoiceMerchant && $invoiceMerchant->qualityBrand ? (app()->getLocale() == 'ar' && $invoiceMerchant->qualityBrand->name_ar ? $invoiceMerchant->qualityBrand->name_ar : $invoiceMerchant->qualityBrand->name_en) : '-' }}</span>
-                                            </td>
-
-                                            <!-- Price -->
-                                            <td class="text-start">
-                                                <span class="content">{{ \PriceHelper::showOrderCurrencyPrice($product['item_price'] * $order->currency_value, $order->currency_sign) }}</span>
-                                            </td>
-
-                                            <!-- Quantity -->
-                                            <td class="text-start">
-                                                <span class="content">{{ $product['qty'] }}</span>
-                                            </td>
-
-                                            <!-- Total -->
-                                            <td class="text-start">
-                                                <span class="content">
-                                                    {{ \PriceHelper::showOrderCurrencyPrice($product['price'] * $order->currency_value, $order->currency_sign) }}
-                                                    @if($product['discount'] != 0)
-                                                        <br><small>{{ $product['discount'] }}% {{ __('Off') }}</small>
+                                                    @if ($product['size'])
+                                                        <div class="d-flex align-items-center gap-2">
+                                                            <span class="key">@lang('Size :')</span>
+                                                            <span
+                                                                class="value">{{ str_replace('-', '', $product['size']) }}</span>
+                                                        </div>
                                                     @endif
+
+                                                    @if ($product['color'])
+                                                        <div class="d-flex align-items-center gap-2">
+                                                            <span class="key">{{ __('Color') }} :</span>
+                                                            <span
+                                                                style="width: 20px; height: 20px; display: inline-block; vertical-align: middle; border-radius: 50%; background: #{{ $product['color'] }};"
+                                                                class="value"></span>
+                                                        </div>
+                                                    @endif
+
+                                                    <div class="d-flex align-items-center gap-2">
+                                                        <span class="key">@lang('Price :')</span>
+                                                        <span
+                                                            class="value">{{ \PriceHelper::showOrderCurrencyPrice($product['item_price'] * $order->currency_value, $order->currency_sign) }}</span>
+                                                    </div>
+
+
+
+                                                    <div class="d-flex align-items-center gap-2">
+                                                        <span class="key">@lang('Qty :')</span>
+                                                        <span class="value">{{ $product['qty'] }}
+                                                            {{ $product['item']['measure'] }}</span>
+                                                    </div>
+
+                                                    @if (!empty($product['keys']))
+                                                        @foreach (array_combine(explode(',', $product['keys']), explode(',', $product['values'])) as $key => $value)
+                                                            <div class="d-flex align-items-center gap-2">
+                                                                <span
+                                                                    class="key">{{ ucwords(str_replace('_', ' ', $key)) }}
+                                                                    :</span>
+                                                                <span class="value">{{ $value }}</span>
+                                                            </div>
+                                                        @endforeach
+                                                    @endif
+
+                                                </div>
+                                            </td>
+                                            <!-- Total Price -->
+                                            <td class="text-start">
+                                                <span class="content ">
+                                                    {{ \PriceHelper::showOrderCurrencyPrice($product['price'] * $order->currency_value, $order->currency_sign) }}
+                                                    <small>{{ $product['discount'] == 0 ? '' : '(' . $product['discount'] . '% ' . __('Off') . ')' }}</small>
                                                 </span>
                                             </td>
 
@@ -477,27 +473,7 @@
                 @if (Auth::user()->id == $order->vendor_shipping_id)
                     @if ($order->shipping_cost != 0)
                         <li class="calculation-list-item">
-                            <span class="amount-type">
-                                @if($order->shipping_title)
-                                    @php
-                                        $shippingTitles = is_string($order->shipping_title) ? json_decode($order->shipping_title, true) : $order->shipping_title;
-                                    @endphp
-                                    @if(is_array($shippingTitles))
-                                        @foreach($shippingTitles as $vendorId => $shippingId)
-                                            @if($vendorId == Auth::user()->id)
-                                                @php
-                                                    $shipping = \App\Models\Shipping::find($shippingId);
-                                                @endphp
-                                                {{ $shipping ? $shipping->title : __('Shipping Cost') }}
-                                            @endif
-                                        @endforeach
-                                    @else
-                                        {{ $order->shipping_title }}
-                                    @endif
-                                @else
-                                    @lang('Shipping Cost')
-                                @endif
-                            </span> <span
+                            <span class="amount-type">@lang('Shipping Cost')</span> <span
                                 class="amount">{{ \PriceHelper::showOrderCurrencyPrice($order->shipping_cost, $order->currency_sign) }}</span>
                         </li>
 

@@ -20,7 +20,7 @@
                             </div>
                           </div>
                           <div class="col-lg-7">
-                            <input type="text" class="input-field" name="title" placeholder="{{ __('Title') }}" required="" value="{{ $data->title }}">
+                            <input type="text" class="form-control" name="title" placeholder="{{ __('Title') }}" required="" value="{{ $data->title }}">
                           </div>
                         </div>
 
@@ -32,7 +32,7 @@
                             </div>
                           </div>
                           <div class="col-lg-7">
-                            <input type="text" class="input-field" name="subtitle" placeholder="{{ __('Subtitle') }}" required="" value="{{ $data->subtitle }}">
+                            <input type="text" class="form-control" name="subtitle" placeholder="{{ __('Subtitle') }}" required="" value="{{ $data->subtitle }}">
                           </div>
                         </div>
 
@@ -44,7 +44,7 @@
                             </div>
                           </div>
                           <div class="col-lg-7">
-                            <input type="number" class="input-field" name="price" placeholder="{{ __('Price') }}" required="" value="{{ $data->price * $sign->value }}" min="0" step="0.01">
+                            <input type="number" class="form-control" name="price" placeholder="{{ __('Price') }}" required="" value="{{ $data->price * $sign->value }}" min="0" step="0.01">
                           </div>
                         </div>
 
@@ -55,7 +55,7 @@
                             </div>
                           </div>
                           <div class="col-lg-7">
-                            <button class="addProductSubmit-btn" type="submit">{{ __('Save') }}</button>
+                            <button class="btn btn-primary" type="submit">{{ __('Save') }}</button>
                           </div>
                         </div>
                       </form>

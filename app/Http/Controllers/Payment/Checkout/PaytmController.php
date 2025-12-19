@@ -13,6 +13,8 @@ use App\Helpers\PriceHelper;
 use App\Models\Country;
 use App\Models\Reward;
 use App\Models\State;
+use App\Traits\HandlesVendorCheckout;
+use App\Traits\SavesCustomerShippingChoice;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
@@ -21,14 +23,24 @@ use OrderHelper;
 
 class PaytmController extends CheckoutBaseControlller
 {
-    use Paytm;
+    use Paytm, HandlesVendorCheckout, SavesCustomerShippingChoice;
 
     public function store(Request $request)
     {
-        $input = $request->all();
-        $step1 = Session::get('step1');
-        $step2 = Session::get('step2');
-        $input = array_merge($step1, $step2, $input);
+        // Get vendor checkout data
+        $vendorData = $this->getVendorCheckoutData();
+        $vendorId = $vendorData['vendor_id'];
+
+        // Get steps from vendor sessions ONLY
+        $steps = $this->getCheckoutSteps($vendorId, $vendorData['is_vendor_checkout']);
+        $step1 = $steps['step1'];
+        $step2 = $steps['step2'];
+
+        if (!$step1 || !$step2) {
+            return redirect()->route('front.cart')->with('unsuccess', __('Checkout session expired.'));
+        }
+
+        $input = array_merge($step1, $step2, $request->all());
         $data = PaymentGateway::whereKeyword('paytm')->first();
         $total = $request->total;
 
@@ -68,12 +80,22 @@ class PaytmController extends CheckoutBaseControlller
 
     public function notify(Request $request)
     {
-        $input_data = $request->all();
+        // Get vendor checkout data at start
+        $vendorData = $this->getVendorCheckoutData();
+        $vendorId = $vendorData['vendor_id'];
 
+        $steps = $this->getCheckoutSteps($vendorId, $vendorData['is_vendor_checkout']);
+        $step1 = $steps['step1'];
+        $step2 = $steps['step2'];
+
+        if (!$step1 || !$step2) {
+            return redirect()->route('front.cart')->with('unsuccess', __('Checkout session expired.'));
+        }
+
+        $input_data = $request->all();
 
         $input = Session::get('input_data');
         $order_data = Session::get('order_data');
-        $success_url = route('front.payment.return');
         $cancel_url = route('front.payment.cancle');
 
         /** Get the payment ID before session clear **/
@@ -90,10 +112,12 @@ class PaytmController extends CheckoutBaseControlller
 
             if ($payment_id == $input_data['ORDERID']) {
 
-                $cart = Session::get('cart');
+                $oldCart = Session::get('cart');
+                $originalCart = new Cart($oldCart);
+                $cart = $this->filterCartForVendor($originalCart, $vendorId);
                 OrderHelper::license_check($cart); // For License Checking
 
-                $t_cart = new Cart($cart);
+                $t_cart = new Cart($oldCart);
                 $new_cart = [];
                 $new_cart['totalQty'] = $t_cart->totalQty;
                 $new_cart['totalPrice'] = $t_cart->totalPrice;
@@ -118,12 +142,9 @@ class PaytmController extends CheckoutBaseControlller
                 $input['payment_status'] = "Completed";
                 $input['txnid'] = $input_data['TXNID'];
 
-                if ($input['tax_type'] == 'state_tax') {
-                    $input['tax_location'] = State::findOrFail($input['tax'])->state;
-                } else {
-                    $input['tax_location'] = Country::findOrFail($input['tax'])->country_name;
-                }
-                $input['tax'] = Session::get('current_tax');
+                // Get tax data from vendor step2
+                $input['tax'] = $step2['tax_amount'] ?? 0;
+                $input['tax_location'] = $step2['tax_location'] ?? '';
 
 
                 if ($input['dp'] == 1) {
@@ -177,14 +198,10 @@ class PaytmController extends CheckoutBaseControlller
                 OrderHelper::vendor_order_check($cart, $order); // For Vendor Order Checking
 
                 Session::put('temporder', $order);
-                Session::put('tempcart', Session::get('cart'));
-                Session::forget('cart');
-                Session::forget('tcart');
-                Session::forget('already');
-                Session::forget('coupon');
-                Session::forget('coupon_total');
-                Session::forget('coupon_total1');
-                Session::forget('coupon_percentage');
+                Session::put('tempcart', $cart);
+
+                // Remove only vendor's products from cart
+                $this->removeVendorProductsFromCart($vendorId, $originalCart);
 
                 if ($order->user_id != 0 && $order->wallet_price != 0) {
                     OrderHelper::add_to_transaction($order, $order->wallet_price); // Store To Transactions
@@ -213,6 +230,8 @@ class PaytmController extends CheckoutBaseControlller
                 $mailer = new MuaadhMailer();
                 $mailer->sendCustomMail($data);
 
+                // Determine success URL based on remaining cart items
+                $success_url = $this->getSuccessUrl($vendorId, $originalCart);
                 return redirect($success_url);
             }
         }

@@ -2,8 +2,10 @@
 
 namespace App\Providers;
 
+use App\Models\Category;
 use App\Models\Currency;
 use App\Models\Language;
+use App\Models\Page;
 use Illuminate\{Support\Facades\DB,
     Support\Collection,
     Support\Facades\URL,
@@ -11,30 +13,26 @@ use Illuminate\{Support\Facades\DB,
     Pagination\LengthAwarePaginator};
 
 use App\Models\Font;
+use App\View\Composers\HeaderComposer;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\View;
 
 
 class AppServiceProvider extends ServiceProvider
 {
-    // public function boot()
-    // {
-    //     Cache::flush();
-    //     Paginator::useBootstrap();
-
-
-
-    //     if ($this->app->environment('production')) {
-    //         URL::forceScheme('https');
-    //     }
     public function boot()
     {
+        // Cache::flush(); // معطل مؤقتاً - يمسح الكاش في كل request
         Paginator::useBootstrap();
+
+
 
         if ($this->app->environment('production')) {
             URL::forceScheme('https');
         }
+
 
         view()->composer('*', function ($settings) {
             $settings->with('gs', cache()->remember('generalsettings', 3600, function () {
@@ -72,7 +70,42 @@ class AppServiceProvider extends ServiceProvider
                     return Language::where('is_default', '=', 1)->first();
                 }));
             }
+
+            // Header data - cached and eager loaded
+            $settings->with('categories', cache()->remember('header_categories', 3600, function () {
+                return Category::with(['subs.childs'])->where('status', 1)->get();
+            }));
+
+            $settings->with('pages', cache()->remember('header_pages', 3600, function () {
+                return Page::all();
+            }));
+
+            $settings->with('currencies', cache()->remember('all_currencies', 3600, function () {
+                return Currency::all();
+            }));
+
+            $settings->with('languges', cache()->remember('all_languages', 3600, function () {
+                return Language::all();
+            }));
+
+            // Footer data - cached
+            $settings->with('footerPages', cache()->remember('footer_pages', 3600, function () {
+                return Page::where('footer', 1)->get();
+            }));
+
+            $settings->with('socialLinks', cache()->remember('footer_social_links', 3600, function () {
+                return DB::table('social_links')->where('user_id', 0)->where('status', 1)->get();
+            }));
         });
+
+        // HeaderComposer: provides $authUser, $riderUser, $wishlistCount
+        // Scoped to header-related views only (not all views)
+        // Expected: 1 user query + 1 wishlist query (cached) - NOT an error in Telescope
+        View::composer([
+            'includes.frontend.header',
+            'includes.frontend.extra_head',
+            'includes.frontend.mobile_menu',
+        ], HeaderComposer::class);
 
 
 

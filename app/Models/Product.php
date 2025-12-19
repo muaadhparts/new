@@ -108,6 +108,26 @@ class Product extends Model
         return $this->hasMany('App\Models\Gallery');
     }
 
+    /**
+     * Get galleries filtered by vendor user_id.
+     * Use this for vendor-specific gallery display.
+     *
+     * @param int|null $userId Vendor user ID
+     * @param int $limit Max number of galleries
+     * @return \Illuminate\Database\Eloquent\Collection
+     */
+    public function galleriesForVendor(?int $userId, int $limit = 3)
+    {
+        if (!$userId) {
+            return collect();
+        }
+
+        return Gallery::where('product_id', $this->id)
+            ->where('user_id', $userId)
+            ->take($limit)
+            ->get();
+    }
+
     public function ratings()
     {
         return $this->hasMany('App\Models\Rating');
@@ -160,6 +180,73 @@ class Product extends Model
             ->when($userId, fn ($q) => $q->where('user_id', $userId))
             ->where('status', 1)
             ->first();
+    }
+
+    /**
+     * Get best merchant product from EAGER LOADED collection (avoids N+1).
+     * Returns the first active merchant with stock, sorted by price.
+     *
+     * IMPORTANT: merchantProducts MUST be eager loaded before accessing this!
+     * In local environment, throws LogicException if not eager loaded.
+     * In production, falls back to query (with performance penalty).
+     *
+     * @return MerchantProduct|null
+     * @throws \LogicException In local environment when relation not eager loaded
+     */
+    public function getBestMerchantProductAttribute(): ?MerchantProduct
+    {
+        // Enforce eager loading in local environment
+        if (!$this->relationLoaded('merchantProducts')) {
+            if (app()->environment('local')) {
+                throw new \LogicException(
+                    "N+1 Query Detected: Product #{$this->id} accessed 'best_merchant_product' without eager loading. " .
+                    "Use ->withBestMerchant() or ->with('merchantProducts') in your query."
+                );
+            }
+
+            // Production fallback (silent query - log warning)
+            \Log::warning("N+1 Query: Product #{$this->id} best_merchant_product accessed without eager loading");
+
+            return $this->merchantProducts()
+                ->where('status', 1)
+                ->whereHas('user', fn($u) => $u->where('is_vendor', 2))
+                ->orderByRaw('CASE WHEN (stock IS NULL OR stock = 0) THEN 1 ELSE 0 END ASC')
+                ->orderBy('price')
+                ->first();
+        }
+
+        // Filter and sort from eager loaded collection
+        return $this->merchantProducts
+            ->filter(function ($mp) {
+                // Only active merchants with active vendor
+                if ($mp->status != 1) return false;
+                // Check if user relation is loaded
+                if ($mp->relationLoaded('user') && $mp->user) {
+                    return $mp->user->is_vendor == 2;
+                }
+                return true; // If user not loaded, include it
+            })
+            ->sortBy([
+                // Stock priority: items with stock first
+                fn ($mp) => ($mp->stock ?? 0) > 0 ? 0 : 1,
+                // Then by price
+                fn ($mp) => (float) $mp->price,
+            ])
+            ->first();
+    }
+
+    /**
+     * Scope to eager load merchant products with optimal relations.
+     * Use this for listing pages to avoid N+1.
+     */
+    public function scopeWithBestMerchant(Builder $query): Builder
+    {
+        return $query->with(['merchantProducts' => function ($q) {
+            $q->where('status', 1)
+              ->with(['user:id,is_vendor,shop_name,shop_name_ar', 'qualityBrand:id,name,name_ar'])
+              ->orderByRaw('CASE WHEN (stock IS NULL OR stock = 0) THEN 1 ELSE 0 END ASC')
+              ->orderBy('price');
+        }]);
     }
 
     /**
@@ -330,9 +417,31 @@ class Product extends Model
         return $price;
     }
 
+    /**
+     * Get localized product name based on current locale.
+     * Arabic: label_ar (fallback to label_en, then name)
+     * English: label_en (fallback to label_ar, then name)
+     */
+    public function getLocalizedNameAttribute(): string
+    {
+        $isAr = app()->getLocale() === 'ar';
+        $labelAr = trim((string)($this->label_ar ?? ''));
+        $labelEn = trim((string)($this->label_en ?? ''));
+        $name = trim((string)($this->name ?? ''));
+
+        if ($isAr) {
+            return $labelAr !== '' ? $labelAr : ($labelEn !== '' ? $labelEn : $name);
+        }
+        return $labelEn !== '' ? $labelEn : ($labelAr !== '' ? $labelAr : $name);
+    }
+
+    /**
+     * Show truncated localized name for display.
+     */
     public function showName()
     {
-        return mb_strlen($this->name, 'UTF-8') > 50 ? mb_substr($this->name, 0, 50, 'UTF-8') . '...' : $this->name;
+        $displayName = $this->localized_name;
+        return mb_strlen($displayName, 'UTF-8') > 50 ? mb_substr($displayName, 0, 50, 'UTF-8') . '...' : $displayName;
     }
 
     /**
@@ -774,6 +883,51 @@ class Product extends Model
     {
         $sizes = array_unique($this->size);
         return in_array($value, $sizes);
+    }
+
+    /**
+     * Get the best vendor merchant for this product.
+     *
+     * Returns the active merchant with:
+     * - status = 1
+     * - user is a vendor (is_vendor = 2)
+     * - prioritized by: has stock > cheapest price
+     *
+     * This method centralizes the logic previously duplicated in Blade views.
+     *
+     * @return \App\Models\MerchantProduct|null
+     */
+    public function bestVendorMerchant(): ?MerchantProduct
+    {
+        return $this->merchantProducts()
+            ->where('status', 1)
+            ->whereHas('user', fn($q) => $q->where('is_vendor', 2))
+            ->orderByRaw('CASE WHEN (stock IS NULL OR stock = 0) THEN 1 ELSE 0 END ASC')
+            ->orderBy('price')
+            ->first();
+    }
+
+    /**
+     * Get the product URL with all required route parameters.
+     *
+     * Uses bestVendorMerchant() to determine vendor_id and merchant_product_id.
+     * Falls back to legacy route if no active merchant found.
+     *
+     * @return string
+     */
+    public function getProductUrl(): string
+    {
+        $merchant = $this->bestVendorMerchant();
+
+        if ($merchant && $this->slug) {
+            return route('front.product', [
+                'slug' => $this->slug,
+                'vendor_id' => $merchant->user_id,
+                'merchant_product_id' => $merchant->id
+            ]);
+        }
+
+        return $this->slug ? route('front.product.legacy', $this->slug) : '#';
     }
 
     /**

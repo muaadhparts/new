@@ -32,6 +32,38 @@
         </div>
         <!-- breadcrumb end -->
 
+        {{-- ✅ Tryoto Status Alert --}}
+        @if(isset($tryotoStatus) && !$tryotoStatus['available'])
+            <div class="alert alert-warning mb-3">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                <strong>@lang('Smart Shipping (Tryoto)'):</strong>
+                {{ $tryotoStatus['message'] ?? __('Not configured') }}
+                @if(!empty($tryotoStatus['issues']))
+                    <ul class="mb-0 mt-2">
+                        @foreach($tryotoStatus['issues'] as $issue)
+                            <li>{{ $issue }}</li>
+                        @endforeach
+                    </ul>
+                @endif
+            </div>
+        @elseif(isset($tryotoStatus) && $tryotoStatus['sandbox'])
+            <div class="alert alert-info mb-3">
+                <i class="fas fa-info-circle me-2"></i>
+                <strong>@lang('Sandbox Mode'):</strong>
+                @lang('Tryoto is running in sandbox/test mode')
+            </div>
+        @endif
+
+        {{-- ✅ Empty Orders Alert --}}
+        @if($datas->isEmpty())
+            <div class="alert alert-secondary mb-3">
+                <i class="fas fa-inbox me-2"></i>
+                @lang('No orders found for delivery.')
+                <br>
+                <small class="text-muted">@lang('Orders will appear here once customers place orders with your products.')</small>
+            </div>
+        @endif
+
         <!-- Table area start  -->
         <div class="vendor-table-wrapper all-orders-table-wrapper">
             <div class="user-table table-responsive position-relative">
@@ -42,194 +74,192 @@
                             <th>{{ __('Customer') }}</th>
                             <th>{{ __('Total Cost') }}</th>
                             <th>{{ __('Payment Method') }}</th>
-                            <th>{{ __('Rider') }}</th>
+                            <th>{{ __('Shipping Status') }}</th>
                             <th>{{ __('Actions') }}</th>
                         </tr>
                     </thead>
                     <tbody>
                         @foreach ($datas as $data)
+                            @php
+                                $vendorId = auth()->id();
+
+                                // Check for local rider delivery
+                                $delivery = App\Models\DeliveryRider::where('order_id', $data->id)
+                                    ->where('vendor_id', $vendorId)
+                                    ->first();
+
+                                // Check for Tryoto shipment
+                                $shipment = App\Models\ShipmentStatusLog::where('order_id', $data->id)
+                                    ->where('vendor_id', $vendorId)
+                                    ->orderBy('status_date', 'desc')
+                                    ->orderBy('created_at', 'desc')
+                                    ->first();
+
+                                // ✅ Get customer's shipping choice
+                                $customerChoice = $data->getCustomerShippingChoice($vendorId);
+
+                                // Calculate price
+                                $order = $data;
+                                $price = $order->vendororders()->where('user_id', $vendorId)->sum('price');
+
+                                if ($order->is_shipping == 1) {
+                                    $vendor_shipping = json_decode($order->vendor_shipping_id);
+                                    $vendor_packing_id = json_decode($order->vendor_packing_id);
+
+                                    $shipping_id = optional($vendor_shipping)->$vendorId ?? null;
+                                    if ($shipping_id && is_numeric($shipping_id)) {
+                                        $shipping = App\Models\Shipping::find($shipping_id);
+                                        if ($shipping) {
+                                            $price += round($shipping->price * $order->currency_value, 2);
+                                        }
+                                    }
+
+                                    $packing_id = optional($vendor_packing_id)->$vendorId ?? null;
+                                    if ($packing_id && is_numeric($packing_id)) {
+                                        $packaging = App\Models\Package::find($packing_id);
+                                        if ($packaging) {
+                                            $price += round($packaging->price * $order->currency_value, 2);
+                                        }
+                                    }
+                                }
+                            @endphp
                             <tr>
                                 <!-- Order Number -->
-                                <td><span class="content">{{ $data->order_number }}</span></td>
-
-
-                                <td class="text-start">
-                                    <div class="customer">
-                                        <div class="d-flex align-items-center gap-2">
-                                            <span class="key">@lang('Name:')</span>
-                                            <span class="value">{{ $data->customer_name }}</span>
-                                        </div>
-                                        <div class="d-flex align-items-center gap-2">
-                                            <span class="key">@lang('Email:')</span>
-                                            <span class="value">{{ $data->customer_email }}</span>
-                                        </div>
-                                        <div class="d-flex align-items-center gap-2">
-                                            <span class="key">@lang('Phone:')</span>
-                                            <span class="value">{{ $data->customer_phone }}</span>
-                                        </div>
-                                        <div class="d-flex align-items-center gap-2">
-                                            <span class="key">@lang('Country:')</span>
-                                            <span class="value">{{ $data->customer_country }}</span>
-                                        </div>
-                                        <div class="d-flex align-items-center gap-2">
-                                            <span class="key">@lang('City:')</span>
-                                            <span class="value">{{ $data->customer_city }}</span>
-                                        </div>
-                                        <div class="d-flex align-items-center gap-2">
-                                            <span class="key">@lang('Postal Code:')</span>
-                                            <span class="value">{{ $data->customer_zip }}</span>
-                                        </div>
-                                        <div class="d-flex align-items-center gap-2">
-                                            <span class="key">@lang('Address:')</span>
-                                            <span class="value">{{ $data->customer_address }}</span>
-                                        </div>
-                                        <div class="d-flex align-items-center gap-2">
-                                            <span class="key">@lang('Order Date:')</span>
-                                            <span class="value">{{ $data->created_at->diffForHumans() }}</span>
-                                        </div>
-                                    </div>
+                                <td>
+                                    <span class="content">{{ $data->order_number }}</span>
+                                    <br>
+                                    <small class="text-muted">{{ $data->created_at->format('Y-m-d') }}</small>
                                 </td>
 
-
-
-
+                                <!-- Customer Info -->
+                                <td>
+                                    <strong>{{ $data->customer_name }}</strong>
+                                    <br>
+                                    <small><i class="fas fa-phone"></i> {{ $data->customer_phone }}</small>
+                                    <br>
+                                    <small><i class="fas fa-city"></i> {{ $data->customer_city }}</small>
+                                    <br>
+                                    <small title="{{ $data->customer_address }}"><i class="fas fa-map-marker-alt"></i> {{ Str::limit($data->customer_address, 25) }}</small>
+                                </td>
 
                                 <!-- Total Cost -->
                                 <td>
-                                    @php
-                                      $order = App\Models\Order::findOrFail($data->id);
-                                        $user = auth()->user();
-                                        $user_id = $user->id;
-                                        
-                                        // Calculate base price for the vendor orders by the user
-                                        $price = $order->vendororders()->where('user_id', $user_id)->sum('price');
-                                        
-                                        // Check if shipping is required
-                                        if ($order->is_shipping == 1) {
-                                            // Decode the JSON data and access shipping ID
-                                            $vendor_shipping = json_decode($order->vendor_shipping_id);
-                                            $vendor_packing_id = json_decode($order->vendor_packing_id);
-                                        
-                                            // Attempt to retrieve shipping cost if the ID exists
-                                            $shipping_id = optional($vendor_shipping)->$user_id ?? null;
-                                            if ($shipping_id) {
-                                                $shipping = App\Models\Shipping::find($shipping_id);
-                                                if ($shipping) {
-                                                    $price += round($shipping->price * $order->currency_value, 2);
-                                                }
-                                            }
-                                        
-                                            // Attempt to retrieve packaging cost if the ID exists
-                                            $packing_id = optional($vendor_packing_id)->$user_id ?? null;
-                                            if ($packing_id) {
-                                                $packaging = App\Models\Package::find($packing_id);
-                                                if ($packaging) {
-                                                    $price += round($packaging->price * $order->currency_value, 2);
-                                                }
-                                            }
-                                        }
-
-                                    @endphp
-                                    <span
-                                        class="content">{{ PriceHelper::showOrderCurrencyPrice($price, $data->currency_sign) }}</span>
+                                    <span class="content">{{ PriceHelper::showOrderCurrencyPrice($price, $data->currency_sign) }}</span>
                                 </td>
+
                                 <!-- Payment Method -->
                                 <td>
-                                    <span class="content">
-                                        {{ $data->method }}
+                                    {{ $data->method }}
+                                    <br>
+                                    <span class="badge {{ $data->payment_status == 'Completed' ? 'bg-success' : 'bg-warning text-dark' }}">
+                                        {{ $data->payment_status }}
                                     </span>
                                 </td>
-                                <!-- Status -->
 
-
-
-
-                                <td class="text-start">
-                                    @php
-                                        $delivery = App\Models\DeliveryRider::where('order_id', $data->id)
-                                            ->whereVendorId(auth()->id())
-                                            ->first();
-                                    @endphp
-
-
-                                    <div class="rider">
-                                        @if ($delivery)
-                                            <div class="d-flex align-items-center gap-2">
-                                                <span class="key">@lang('Rider :')</span>
-                                                <span class="value">{{ $delivery->rider->name }}</span>
-                                            </div>
-                                            <div class="d-flex align-items-center gap-2">
-                                                <span class="key">@lang('Delivery Cost :')</span>
-                                                <span
-                                                    class="value">{{ PriceHelper::showAdminCurrencyPrice($delivery->servicearea->price) }}</span>
-                                            </div>
-                                            <div class="d-flex align-items-center gap-2">
-                                                <span class="key">@lang('Pickup Point :')</span>
-                                                <span class="value">{{ $delivery->pickup->location }}</span>
-                                            </div>
-                                            <div class="d-flex align-items-center gap-2">
-                                                <span class="key">@lang('Status :')</span>
-                                                <button type="button" disabled=""
-                                                    class="template-btn md-btn yellow-btn">
-                                                    {{ $delivery->status }}
-                                                </button>
-                                            </div>
-                                        @else
-                                            <span class="template-btn md-btn primary-btn">
-                                                @lang('Not Assigned')
-                                            </span>
-                                        @endif
-                                    </div>
+                                <!-- Shipping Status -->
+                                <td>
+                                    {{-- ✅ Show Customer's Shipping Choice --}}
+                                    @if ($customerChoice && !$shipment && !$delivery)
+                                        @php
+                                            $isFreeShipping = $customerChoice['is_free_shipping'] ?? false;
+                                            $originalPrice = $customerChoice['original_price'] ?? $customerChoice['price'] ?? 0;
+                                            $actualPrice = $customerChoice['price'] ?? 0;
+                                        @endphp
+                                        <div class="mb-1">
+                                            <small class="text-primary fw-bold">
+                                                <i class="fas fa-user-check"></i> @lang('Customer Selected:')
+                                            </small>
+                                            <br>
+                                            <span class="badge bg-primary">{{ $customerChoice['company_name'] ?? 'N/A' }}</span>
+                                            <br>
+                                            @if($isFreeShipping)
+                                                {{-- ✅ Free Shipping Alert --}}
+                                                <span class="text-decoration-line-through text-muted">
+                                                    {{ $data->currency_sign }}{{ number_format($originalPrice, 2) }}
+                                                </span>
+                                                <span class="badge bg-success">
+                                                    <i class="fas fa-gift"></i> @lang('Free!')
+                                                </span>
+                                                <br>
+                                                <small class="text-danger fw-bold">
+                                                    <i class="fas fa-exclamation-circle"></i>
+                                                    @lang('Vendor pays shipping')
+                                                </small>
+                                            @else
+                                                <small>{{ $data->currency_sign }}{{ number_format($actualPrice, 2) }}</small>
+                                            @endif
+                                        </div>
+                                        <span class="badge bg-warning text-dark">@lang('Not Assigned')</span>
+                                    @elseif ($shipment)
+                                        {{-- Tryoto Shipment --}}
+                                        <span class="badge bg-info mb-1">{{ $shipment->company_name }}</span>
+                                        <br>
+                                        <small>{{ $shipment->tracking_number }}</small>
+                                        <br>
+                                        <span class="badge
+                                            @if($shipment->status == 'delivered') bg-success
+                                            @elseif($shipment->status == 'in_transit') bg-primary
+                                            @elseif($shipment->status == 'out_for_delivery') bg-info
+                                            @elseif(in_array($shipment->status, ['failed', 'returned', 'cancelled'])) bg-danger
+                                            @else bg-secondary
+                                            @endif">
+                                            {{ $shipment->status_ar ?? $shipment->status }}
+                                        </span>
+                                    @elseif ($delivery)
+                                        {{-- Local Rider Delivery --}}
+                                        <span class="badge bg-secondary mb-1">@lang('Local Rider')</span>
+                                        <br>
+                                        <small>{{ $delivery->rider->name ?? 'N/A' }}</small>
+                                        <br>
+                                        <span class="badge
+                                            @if($delivery->status == 'delivered') bg-success
+                                            @elseif($delivery->status == 'accepted') bg-primary
+                                            @elseif($delivery->status == 'rejected') bg-danger
+                                            @else bg-warning
+                                            @endif">
+                                            {{ ucfirst($delivery->status) }}
+                                        </span>
+                                    @else
+                                        {{-- Not Assigned --}}
+                                        <span class="badge bg-danger">@lang('Not Assigned')</span>
+                                    @endif
                                 </td>
-
-
-
 
                                 <!-- Actions -->
                                 <td>
-
-
-
-                                    @php
-                                        $delevery = App\Models\DeliveryRider::where('vendor_id', auth()->id())
-                                            ->where('order_id', $data->id)
-                                            ->first();
-                                        $delevery = App\Models\DeliveryRider::where('vendor_id', auth()->id())
-                                            ->where('order_id', $data->id)
-                                            ->first();
-                                    @endphp
-
-                                    @if ($delevery && $delevery->status == 'delivered')
-                                        <a href="{{ route('vendor-order-show', $data->order_number) }}"
-                                            class="template-btn md-btn black-btn mx-auto">
-                                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
-                                                xmlns="http://www.w3.org/2000/svg">
-                                                <g clip-path="url(#clip0_548_165891)">
-                                                    <path
-                                                        d="M12 4.84668C7.41454 4.84668 3.25621 7.35543 0.187788 11.4303C-0.0625959 11.7641 -0.0625959 12.2305 0.187788 12.5644C3.25621 16.6442 7.41454 19.1529 12 19.1529C16.5855 19.1529 20.7438 16.6442 23.8122 12.5693C24.0626 12.2354 24.0626 11.769 23.8122 11.4352C20.7438 7.35543 16.5855 4.84668 12 4.84668ZM12.3289 17.0369C9.28506 17.2284 6.7714 14.7196 6.96287 11.6709C7.11998 9.1572 9.15741 7.11977 11.6711 6.96267C14.7149 6.7712 17.2286 9.27994 17.0371 12.3287C16.8751 14.8375 14.8377 16.8749 12.3289 17.0369ZM12.1767 14.7098C10.537 14.8129 9.18196 13.4628 9.28997 11.8231C9.37343 10.468 10.4732 9.37322 11.8282 9.28485C13.4679 9.18175 14.823 10.5319 14.7149 12.1716C14.6266 13.5316 13.5268 14.6264 12.1767 14.7098Z"
-                                                        fill="white"></path>
-                                                </g>
-                                                <defs>
-                                                    <clipPath id="clip0_548_165891">
-                                                        <rect width="24" height="24" fill="white"></rect>
-                                                    </clipPath>
-                                                </defs>
-                                            </svg>
-                                            @lang('View Order')
+                                    @if ($shipment && !in_array($shipment->status, ['cancelled', 'returned', 'delivered']))
+                                        <button type="button" class="btn btn-sm btn-info mb-1 trackShipmentBtn"
+                                            data-tracking="{{ $shipment->tracking_number }}"
+                                            data-bs-toggle="modal" data-bs-target="#trackingModal">
+                                            <i class="fas fa-map-marker-alt"></i> @lang('Track')
+                                        </button>
+                                        @if(!in_array($shipment->status, ['out_for_delivery', 'delivered']))
+                                        <br>
+                                        <button type="button" class="btn btn-sm btn-danger cancelShipmentBtn"
+                                            data-tracking="{{ $shipment->tracking_number }}"
+                                            data-bs-toggle="modal" data-bs-target="#cancelModal">
+                                            <i class="fas fa-times"></i> @lang('Cancel')
+                                        </button>
+                                        @endif
+                                    @elseif ($shipment && $shipment->status == 'delivered')
+                                        <a href="{{ route('vendor-order-show', $data->order_number) }}" class="btn btn-sm btn-success">
+                                            <i class="fas fa-eye"></i> @lang('View')
+                                        </a>
+                                    @elseif ($delivery && $delivery->status == 'delivered')
+                                        <a href="{{ route('vendor-order-show', $data->order_number) }}" class="btn btn-sm btn-success">
+                                            <i class="fas fa-eye"></i> @lang('View')
                                         </a>
                                     @else
-                                        <a href="{{ route('vendor-order-show', $data->order_number) }}"
-                                            class="template-btn md-btn black-btn mx-auto searchDeliveryRider" data-bs-toggle="modal"
-                                            data-bs-target="#riderList" customer-city="{{ $data->customer_city }}"
-                                            order_id="{{ $data->id }}">
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-                                                viewBox="0 0 24 24" fill="none">
-                                                <path
-                                                    d="M20 21C20 19.6044 20 18.9067 19.8278 18.3389C19.44 17.0605 18.4395 16.06 17.1611 15.6722C16.5933 15.5 15.8956 15.5 14.5 15.5H9.5C8.10444 15.5 7.40665 15.5 6.83886 15.6722C5.56045 16.06 4.56004 17.0605 4.17224 18.3389C4 18.9067 4 19.6044 4 21M16.5 7.5C16.5 9.98528 14.4853 12 12 12C9.51472 12 7.5 9.98528 7.5 7.5C7.5 5.01472 9.51472 3 12 3C14.4853 3 16.5 5.01472 16.5 7.5Z"
-                                                    stroke="white" stroke-width="2" stroke-linecap="round"
-                                                    stroke-linejoin="round"></path>
-                                            </svg>
-                                            @lang('Assign Rider')
+                                        <button type="button" class="btn btn-sm btn-primary mb-1 assignShippingBtn"
+                                            data-order-id="{{ $data->id }}"
+                                            data-customer-city="{{ $data->customer_city }}"
+                                            data-customer-choice='@json($customerChoice)'
+                                            data-bs-toggle="modal" data-bs-target="#shippingModal">
+                                            <i class="fas fa-shipping-fast"></i> @lang('Assign')
+                                        </button>
+                                        <br>
+                                        <a href="{{ route('vendor-order-show', $data->order_number) }}" class="btn btn-sm btn-secondary">
+                                            <i class="fas fa-eye"></i> @lang('View')
                                         </a>
                                     @endif
                                 </td>
@@ -243,144 +273,418 @@
     </div>
     <!-- outlet end  -->
 
-
-
-    <div class="modal gs-modal fade" id="riderList" tabindex="-1" aria-hidden="true">
-        <form action="{{ route('vendor-rider-search-submit') }}"
-            class="modal-dialog assign-rider-modal-dialog modal-dialog-centered" method="POST">
-            @csrf
-            <input type="hidden" name="order_id" value="" id="vendor_rider_find_order_id">
-
-            <div class="modal-content assign-rider-modal-content form-group">
-                <div class="modal-header w-100">
-                    <h4 class="title">@lang('Assign Rider')</h4>
-                    <button type="button" data-bs-dismiss="modal">
-                        <i class="fa-regular fa-circle-xmark gs-modal-close-btn"></i>
-                    </button>
-
+    {{-- Shipping Assignment Modal --}}
+    <div class="modal gs-modal fade" id="shippingModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">@lang('Assign Shipping Method')</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <!-- modal body start  -->
-                <!-- Select Rider -->
-                <div class="input-label-wrapper w-100">
-                    <label>@lang('Select Rider')</label>
-                    <div class="dropdown-container">
-                        <select class="form-control nice-select nice-list form__control" name="rider_id" id="redierList"
-                            required>
+                <div class="modal-body">
+                    <input type="hidden" id="modal_order_id" value="">
 
-                        </select>
-                    </div>
-                </div>
-                <!-- Select Pickup Point -->
-                <div class="input-label-wrapper w-100">
-                    <label>@lang('Select Rider')</label>
-                    <div class="dropdown-container">
-                        <select class="form-control nice-select form__control" name="pickup_point_id"
-                            id="pickup_point_id" required>
-                            <option value="" selected>@lang('Select Pickup Point')</option>
-                            @foreach (App\Models\PickupPoint::where('user_id', auth()->id())->whereStatus(1)->get() as $pickup)
-                                <option value="{{ $pickup->id }}">{{ $pickup->location }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                </div>
-
-
-                <div class="col-lg-12 py-3 d-none viewRider">
-                    <div><strong>
-                        @lang('Rider Name :') <span id="ridername"></span>
-                        </strong></div>
-                    <div>
-                        <strong>
-                            @lang('Delivery Cost :') <span id="ridercost"></span>
-                        </strong>
-                    </div>
-                    <div>
-                        <strong>
-                            @lang('Service Area :') <span id="serviceArea"></span>
-                        </strong>
+                    {{-- ✅ Customer Choice Alert --}}
+                    <div id="customerChoiceAlert" class="alert alert-info d-none mb-3">
+                        <i class="fas fa-user-check me-2"></i>
+                        <strong>@lang('Customer Preference:')</strong>
+                        <span id="customerChoiceText"></span>
+                        <br>
+                        <small class="text-muted">@lang('You can use the customer\'s choice or select a different option.')</small>
                     </div>
 
-                </div>
+                    {{-- ✅ Free Shipping Warning for Vendor --}}
+                    <div id="freeShippingWarning" class="alert alert-warning d-none mb-3">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <strong>@lang('Free Shipping Order!')</strong>
+                        <br>
+                        <span>@lang('The customer received free shipping on this order. You are responsible for paying the shipping cost.')</span>
+                        <br>
+                        <small class="text-muted">
+                            @lang('Original shipping price:'): <strong id="originalShippingPrice"></strong>
+                        </small>
+                    </div>
 
-                <!-- Assign Rider Button  -->
-                <button class="template-btn" data-bs-dismiss="modal" type="submit">@lang('Assign Rider')</button>
-                <!-- modal body end  -->
+                    {{-- Shipping Method Tabs --}}
+                    <ul class="nav nav-tabs mb-3" id="shippingTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="tryoto-tab" data-bs-toggle="tab" data-bs-target="#tryoto-content" type="button" role="tab">
+                                <i class="fas fa-truck"></i> @lang('Shipping Company')
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="rider-tab" data-bs-toggle="tab" data-bs-target="#rider-content" type="button" role="tab">
+                                <i class="fas fa-motorcycle"></i> @lang('Local Rider')
+                            </button>
+                        </li>
+                    </ul>
+
+                    <div class="tab-content" id="shippingTabsContent">
+                        {{-- Tryoto Tab --}}
+                        <div class="tab-pane fade show active" id="tryoto-content" role="tabpanel">
+                            <form id="tryotoForm" action="{{ route('vendor.send.tryoto') }}" method="POST">
+                                @csrf
+                                <input type="hidden" name="order_id" id="tryoto_order_id">
+                                <input type="hidden" name="delivery_option_id" id="delivery_option_id">
+                                <input type="hidden" name="company" id="selected_company">
+                                <input type="hidden" name="price" id="selected_price">
+                                <input type="hidden" name="service_type" id="selected_service_type">
+
+                                <div class="mb-3">
+                                    <label class="form-label">@lang('Select Shipping Company')</label>
+                                    <select class="form-select" id="shippingCompanySelect" required>
+                                        <option value="">@lang('Loading shipping options...')</option>
+                                    </select>
+                                </div>
+
+                                <div id="shippingDetails" class="d-none mb-3 p-3 bg-light rounded">
+                                    <div class="row">
+                                        <div class="col-6">
+                                            <strong>@lang('Company:')</strong>
+                                            <span id="detail_company"></span>
+                                        </div>
+                                        <div class="col-6">
+                                            <strong>@lang('Price:')</strong>
+                                            <span id="detail_price"></span>
+                                        </div>
+                                        <div class="col-12 mt-2">
+                                            <strong>@lang('Estimated Delivery:')</strong>
+                                            <span id="detail_days"></span> @lang('days')
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="alert alert-info">
+                                    <i class="fas fa-info-circle"></i>
+                                    @lang('The shipment will be created with Tryoto and you will receive a tracking number.')
+                                </div>
+
+                                <button type="submit" class="template-btn w-100" id="submitTryotoBtn" disabled>
+                                    <i class="fas fa-paper-plane"></i> @lang('Create Shipment')
+                                </button>
+                            </form>
+                        </div>
+
+                        {{-- Local Rider Tab --}}
+                        <div class="tab-pane fade" id="rider-content" role="tabpanel">
+                            <form action="{{ route('vendor-rider-search-submit') }}" method="POST">
+                                @csrf
+                                <input type="hidden" name="order_id" id="rider_order_id">
+
+                                <div class="mb-3">
+                                    <label class="form-label">@lang('Select Rider')</label>
+                                    <select class="form-select" name="rider_id" id="riderSelect" required>
+                                        <option value="">@lang('Select Rider')</option>
+                                    </select>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label">@lang('Select Pickup Point')</label>
+                                    <select class="form-select" name="pickup_point_id" id="pickupPointSelect" required>
+                                        <option value="">@lang('Select Pickup Point')</option>
+                                        @foreach (App\Models\PickupPoint::where('user_id', auth()->id())->whereStatus(1)->get() as $pickup)
+                                            <option value="{{ $pickup->id }}">{{ $pickup->location }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+
+                                <div id="riderDetails" class="d-none mb-3 p-3 bg-light rounded">
+                                    <div class="row">
+                                        <div class="col-6">
+                                            <strong>@lang('Rider:')</strong>
+                                            <span id="rider_name"></span>
+                                        </div>
+                                        <div class="col-6">
+                                            <strong>@lang('Cost:')</strong>
+                                            <span id="rider_cost"></span>
+                                        </div>
+                                        <div class="col-12 mt-2">
+                                            <strong>@lang('Service Area:')</strong>
+                                            <span id="rider_area"></span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <button type="submit" class="template-btn w-100">
+                                    <i class="fas fa-user-check"></i> @lang('Assign Rider')
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
             </div>
-        </form>
+        </div>
+    </div>
+
+    {{-- Tracking Modal --}}
+    <div class="modal gs-modal fade" id="trackingModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">@lang('Shipment Tracking')</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="trackingContent">
+                        <div class="text-center py-4">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                            <p class="mt-2">@lang('Loading tracking information...')</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{-- Cancel Shipment Modal --}}
+    <div class="modal gs-modal fade" id="cancelModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <form action="{{ route('vendor.cancel.shipment') }}" method="POST">
+                    @csrf
+                    <input type="hidden" name="tracking_number" id="cancel_tracking_number">
+
+                    <div class="modal-header">
+                        <h5 class="modal-title">@lang('Cancel Shipment')</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            @lang('Are you sure you want to cancel this shipment?')
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">@lang('Cancellation Reason')</label>
+                            <textarea class="form-control" name="reason" rows="3" placeholder="@lang('Enter reason for cancellation...')"></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">@lang('Close')</button>
+                        <button type="submit" class="btn btn-danger">@lang('Cancel Shipment')</button>
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
 @endsection
+
 @section('script')
-    {{-- DATA TABLE --}}
-    <script src="{{ asset('assets/front/js/select2.min.js') }}"></script>
+<script>
+(function($) {
+    "use strict";
 
-    <script type="text/javascript">
-        (function($) {
-            "use strict";
-            $(document).on('change', '.vendor-btn', function() {
-                $('#vendor-status').modal('show');
-                $('#vendor-status').find('.btn-ok').attr('href', $(this).val());
-            });
+    // Store customer choice globally
+    let currentCustomerChoice = null;
 
-            $(document).on('click', '.searchDeliveryRider', function() {
-                let city = $(this).attr('customer-city');
-                let order_id = $(this).attr('order_id');
-                $('#vendor_rider_find_order_id').val(order_id);
-                $.get("{{ route('vendor.find.rider') }}", {
-                    city: city
-                }, function(data) {
+    // Open shipping modal
+    $(document).on('click', '.assignShippingBtn', function() {
+        const orderId = $(this).data('order-id');
+        const customerCity = $(this).data('customer-city');
+        currentCustomerChoice = $(this).data('customer-choice');
 
-                    $('#redierList').html(data.riders);
-                    $(".nice-list").niceSelect("update");
-                })
-            })
+        $('#modal_order_id').val(orderId);
+        $('#tryoto_order_id').val(orderId);
+        $('#rider_order_id').val(orderId);
 
+        // ✅ Show customer choice alert if exists
+        if (currentCustomerChoice && currentCustomerChoice.provider === 'tryoto') {
+            $('#customerChoiceAlert').removeClass('d-none');
+            $('#customerChoiceText').html(
+                '<span class="badge bg-primary">' + (currentCustomerChoice.company_name || 'Tryoto') + '</span> - ' +
+                '@lang("Price"): ' + (currentCustomerChoice.price || 0) + ' @lang("SAR")'
+            );
+        } else {
+            $('#customerChoiceAlert').addClass('d-none');
+        }
 
-            $(document).on('change', '#redierList', function() {
-                let rider_id = $(this).val();
-                let area = $(this).find('option:selected').attr('area');
-                let riderName = $(this).find('option:selected').attr('riderName');
-                let rider_cost = $(this).find('option:selected').attr('riderCost');
-                $('#ridername').text(riderName);
-                $('#serviceArea').text(area);
-                $('#ridercost').text(rider_cost);
-                $('.viewRider').removeClass('d-none');
+        // ✅ Show free shipping warning if applicable
+        if (currentCustomerChoice && currentCustomerChoice.is_free_shipping) {
+            $('#freeShippingWarning').removeClass('d-none');
+            $('#originalShippingPrice').text((currentCustomerChoice.original_price || 0) + ' @lang("SAR")');
+        } else {
+            $('#freeShippingWarning').addClass('d-none');
+        }
 
-            })
+        // Reset forms
+        $('#shippingCompanySelect').html('<option value="">@lang("Loading shipping options...")</option>');
+        $('#shippingDetails').addClass('d-none');
+        $('#submitTryotoBtn').prop('disabled', true);
 
-            $('.rider_select2').select2({
-                placeholder: "Select Rider",
-                allowClear: true
-            });
+        // Load Tryoto options
+        $.get("{{ route('vendor.shipping.options') }}", { order_id: orderId }, function(response) {
+            if (response.success) {
+                $('#shippingCompanySelect').html(response.options);
 
-            $('.pickup_select2').select2({
-                placeholder: "Select Pickup Point",
-                allowClear: true
-            });
-
-
-            $(document).on('submit', '#riderSearchForm', function(e) {
-                e.preventDefault();
-                var form = $(this);
-                var actionUrl = form.attr('action');
-
-                $.ajax({
-                    type: "POST",
-                    url: actionUrl,
-                    data: form.serialize(), // serializes the form's elements.
-                    success: function(data) {
-                        if (data.success == true) {
-                            $('#riderList').modal('hide');
-                            $('#redierList').val(null).trigger('change');
-                            $('.viewRider').addClass('d-none');
-                            $('#vendor_rider_find_order_id').val('');
-                            $.notify(data.message, "success");
-                            table.ajax.reload();
-                        }
+                // ✅ Auto-select customer's choice if available
+                if (currentCustomerChoice && currentCustomerChoice.provider === 'tryoto' && currentCustomerChoice.delivery_option_id) {
+                    const optionToSelect = $('#shippingCompanySelect option[value="' + currentCustomerChoice.delivery_option_id + '"]');
+                    if (optionToSelect.length) {
+                        optionToSelect.prop('selected', true);
+                        $('#shippingCompanySelect').trigger('change');
+                        toastr.info('@lang("Customer\'s preferred shipping company selected automatically")');
                     }
-                });
-            })
+                }
+            } else {
+                // ✅ تحسين معالجة الأخطاء
+                let errorHtml = '<option value="">@lang("Shipping temporarily unavailable")</option>';
+                $('#shippingCompanySelect').html(errorHtml);
 
+                // عرض رسالة خطأ مناسبة
+                if (response.error_code === 'VENDOR_CITY_MISSING') {
+                    toastr.warning('@lang("Please configure your city in vendor settings")');
+                    if (response.show_settings_link) {
+                        $('#shippingCompanySelect').after('<a href="{{ route("vendor-profile") }}" class="btn btn-sm btn-link">@lang("Go to Settings")</a>');
+                    }
+                } else if (response.error_code === 'CUSTOMER_CITY_MISSING') {
+                    toastr.warning('@lang("Customer city not specified in order")');
+                } else if (response.error_code === 'TRYOTO_NOT_CONFIGURED') {
+                    toastr.error('@lang("Smart Shipping is not configured. Contact admin.")');
+                } else if (response.error) {
+                    toastr.error(response.error);
+                }
 
-        })(jQuery);
-    </script>
+                // ✅ عرض تفاصيل تقنية في الـ console للتشخيص
+                if (response.technical_error) {
+                    console.warn('Shipping Error Details:', response);
+                }
+            }
+        }).fail(function(xhr) {
+            $('#shippingCompanySelect').html('<option value="">@lang("Connection error - Please try again")</option>');
+            toastr.error('@lang("Failed to connect to shipping service")');
+            console.error('Shipping API Error:', xhr);
+        });
+
+        // Load riders
+        $.get("{{ route('vendor.find.rider') }}", { city: customerCity }, function(response) {
+            $('#riderSelect').html(response.riders);
+        });
+    });
+
+    // Shipping company selection
+    $(document).on('change', '#shippingCompanySelect', function() {
+        const selected = $(this).find('option:selected');
+        const deliveryOptionId = $(this).val();
+
+        if (deliveryOptionId) {
+            $('#delivery_option_id').val(deliveryOptionId);
+            $('#selected_company').val(selected.data('company'));
+            $('#selected_price').val(selected.data('price'));
+            $('#selected_service_type').val(selected.data('service-type') || 'express');
+
+            $('#detail_company').text(selected.data('company'));
+            $('#detail_price').text(selected.data('display-price'));
+            $('#detail_days').text(selected.data('days') || 'N/A');
+
+            $('#shippingDetails').removeClass('d-none');
+            $('#submitTryotoBtn').prop('disabled', false);
+        } else {
+            $('#shippingDetails').addClass('d-none');
+            $('#submitTryotoBtn').prop('disabled', true);
+        }
+    });
+
+    // Rider selection
+    $(document).on('change', '#riderSelect', function() {
+        const selected = $(this).find('option:selected');
+
+        if ($(this).val()) {
+            $('#rider_name').text(selected.attr('riderName'));
+            $('#rider_cost').text(selected.attr('riderCost'));
+            $('#rider_area').text(selected.attr('area'));
+            $('#riderDetails').removeClass('d-none');
+        } else {
+            $('#riderDetails').addClass('d-none');
+        }
+    });
+
+    // Track shipment
+    $(document).on('click', '.trackShipmentBtn', function() {
+        const trackingNumber = $(this).data('tracking');
+
+        $('#trackingContent').html(`
+            <div class="text-center py-4">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <p class="mt-2">@lang('Loading tracking information...')</p>
+            </div>
+        `);
+
+        $.get("{{ route('vendor.track.shipment') }}", { tracking_number: trackingNumber }, function(response) {
+            if (response.success) {
+                let statusClass = 'secondary';
+                if (response.status === 'delivered') statusClass = 'success';
+                else if (response.status === 'in_transit') statusClass = 'primary';
+                else if (response.status === 'out_for_delivery') statusClass = 'info';
+                else if (['failed', 'returned'].includes(response.status)) statusClass = 'danger';
+
+                let html = `
+                    <div class="tracking-info">
+                        <div class="text-center mb-4">
+                            <span class="badge bg-${statusClass} fs-5 p-2">${response.status_ar || response.status}</span>
+                        </div>
+                        <div class="mb-3">
+                            <strong>@lang('Tracking Number:')</strong> ${trackingNumber}
+                        </div>
+                `;
+
+                if (response.location) {
+                    html += `
+                        <div class="mb-3">
+                            <strong>@lang('Current Location:')</strong> ${response.location}
+                        </div>
+                    `;
+                }
+
+                if (response.estimated_delivery) {
+                    html += `
+                        <div class="mb-3">
+                            <strong>@lang('Estimated Delivery:')</strong> ${response.estimated_delivery}
+                        </div>
+                    `;
+                }
+
+                if (response.events && response.events.length > 0) {
+                    html += `<hr><h6>@lang('Shipment History')</h6><ul class="list-group">`;
+                    response.events.forEach(function(event) {
+                        html += `
+                            <li class="list-group-item">
+                                <small class="text-muted">${event.date || ''}</small>
+                                <br>${event.description || event.status}
+                            </li>
+                        `;
+                    });
+                    html += `</ul>`;
+                }
+
+                html += `</div>`;
+                $('#trackingContent').html(html);
+            } else {
+                $('#trackingContent').html(`
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-circle"></i>
+                        ${response.error || '@lang("Failed to get tracking information")'}
+                    </div>
+                `);
+            }
+        }).fail(function() {
+            $('#trackingContent').html(`
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-circle"></i>
+                    @lang('Failed to get tracking information')
+                </div>
+            `);
+        });
+    });
+
+    // Cancel shipment
+    $(document).on('click', '.cancelShipmentBtn', function() {
+        $('#cancel_tracking_number').val($(this).data('tracking'));
+    });
+
+})(jQuery);
+</script>
 @endsection

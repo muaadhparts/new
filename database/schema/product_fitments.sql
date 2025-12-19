@@ -1,0 +1,20 @@
+CREATE TABLE `product_fitments` (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `product_id` int unsigned NOT NULL,
+  `category_id` int NOT NULL,
+  `subcategory_id` int NOT NULL,
+  `childcategory_id` int NOT NULL,
+  `rol` tinyint unsigned DEFAULT NULL,
+  `beginYear` int NOT NULL,
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uq_prod_cat_sub_child` (`product_id`,`category_id`,`subcategory_id`,`childcategory_id`),
+  KEY `idx_cat` (`category_id`),
+  KEY `idx_sub` (`subcategory_id`),
+  KEY `idx_child` (`childcategory_id`),
+  CONSTRAINT `fk_pf_category` FOREIGN KEY (`category_id`) REFERENCES `categories` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_pf_child` FOREIGN KEY (`childcategory_id`) REFERENCES `childcategories` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_pf_product` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_pf_sub` FOREIGN KEY (`subcategory_id`) REFERENCES `subcategories` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=1263168 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

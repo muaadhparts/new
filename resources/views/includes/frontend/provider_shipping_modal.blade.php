@@ -57,50 +57,79 @@
 </div>
 
 <script>
-    // Handle shipping selection for {{ $provider }} provider
-    document.addEventListener('DOMContentLoaded', function() {
-        const modalId = '{{ $modalId }}';
-        const vendorId = {{ $vendor_id }};
+(function() {
+    const modalId = '{{ $modalId }}';
+    const vendorId = {{ $vendor_id }};
+    const currSign = '{{ $curr->sign }}';
+
+    @php
+        $vendorProductsTotal = 0;
+        if (isset($array_product)) {
+            foreach ($array_product as $product) {
+                $vendorProductsTotal += $product['price'] ?? 0;
+            }
+        }
+    @endphp
+    const vendorCartTotal = {{ round($vendorProductsTotal * $curr->value, 2) }};
+
+    function initShippingModal() {
         const modal = document.getElementById(modalId);
+        if (!modal) {
+            setTimeout(initShippingModal, 100);
+            return;
+        }
 
-        if (modal) {
-            const shippingRadios = modal.querySelectorAll('input.shipping[ref="{{ $vendor_id }}"]');
+        const shippingRadios = modal.querySelectorAll('input.shipping[ref="' + vendorId + '"]');
 
-            shippingRadios.forEach(radio => {
-                radio.addEventListener('change', function() {
-                    if (this.checked) {
-                        const shippingText = document.getElementById('shipping_text' + vendorId);
-                        const price = parseFloat(this.getAttribute('data-price')) || 0;
-                        const freeAbove = parseFloat(this.getAttribute('data-free-above')) || 0;
-                        const viewPrice = this.getAttribute('view');
-                        const title = this.getAttribute('data-form');
+        shippingRadios.forEach(function(radio) {
+            radio.addEventListener('change', function() {
+                if (!this.checked) return;
 
-                        // Get current cart subtotal for this vendor (you may need to adjust this)
-                        const cartTotal = parseFloat(document.querySelector('[data-vendor-total="{{ $vendor_id }}"]')?.getAttribute('data-amount')) || 0;
+                const originalPrice = parseFloat(this.getAttribute('data-price')) || 0;
+                const freeAbove = parseFloat(this.getAttribute('data-free-above')) || 0;
+                const title = this.getAttribute('data-form');
 
-                        // Check if free shipping applies
-                        if (freeAbove > 0 && cartTotal >= freeAbove) {
-                            shippingText.innerHTML = '<span class="text-success">' + title + ' (@lang("Free"))</span>';
-                        } else {
-                            shippingText.textContent = title + ': ' + viewPrice;
-                        }
+                // Check if free shipping applies
+                let finalPrice = originalPrice;
+                let isFreeShipping = (freeAbove > 0 && vendorCartTotal >= freeAbove);
+                if (isFreeShipping) finalPrice = 0;
 
-                        // Trigger recalculation of totals
-                        if (typeof calculateTotals === 'function') {
-                            calculateTotals();
-                        }
+                // Update shipping text display
+                const shippingText = document.getElementById('shipping_text' + vendorId);
+                if (shippingText) {
+                    if (isFreeShipping) {
+                        shippingText.innerHTML = '<span class="text-success"><i class="fas fa-gift"></i> ' + title + ' (@lang("Free!"))</span>';
+                    } else {
+                        shippingText.textContent = title + ': ' + currSign + originalPrice.toFixed(2);
                     }
-                });
-            });
+                }
 
-            // تم إزالة auto-select - المستخدم يجب أن يختار يدوياً
-            // فقط نحدّث العرض إذا كان هناك اختيار موجود
-            modal.addEventListener('shown.bs.modal', function() {
-                const checkedRadio = modal.querySelector('input.shipping[ref="{{ $vendor_id }}"]:checked');
-                if (checkedRadio) {
-                    checkedRadio.dispatchEvent(new Event('change'));
+                // ✅ Update PriceSummary directly
+                if (typeof window.PriceSummary !== 'undefined') {
+                    window.PriceSummary.updateShipping(finalPrice, originalPrice, isFreeShipping);
+                    console.log('✅ Shipping updated via PriceSummary:', { final: finalPrice, original: originalPrice, free: isFreeShipping });
+                }
+
+                // Also call global functions for backward compatibility
+                if (typeof window.getShipping === 'function') {
+                    window.getShipping();
                 }
             });
-        }
-    });
+        });
+
+        // Trigger update when modal opens if already selected
+        modal.addEventListener('shown.bs.modal', function() {
+            const checkedRadio = modal.querySelector('input.shipping[ref="' + vendorId + '"]:checked');
+            if (checkedRadio) {
+                checkedRadio.dispatchEvent(new Event('change'));
+            }
+        });
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initShippingModal);
+    } else {
+        initShippingModal();
+    }
+})();
 </script>

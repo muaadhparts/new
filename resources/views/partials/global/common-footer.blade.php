@@ -55,8 +55,9 @@
                         @endif
                     </div>
                 </div>
+                {{-- Using cached $socialLinks from AppServiceProvider --}}
                 <div class="footer-widget media-widget mb-4">
-                    @foreach(DB::table('social_links')->where('user_id', 0)->where('status', 1)->get() as $link)
+                    @foreach($socialLinks as $link)
                         <a href="{{ $link->link }}" target="_blank">
                             <i class="{{ $link->icon }}"></i>
                         </a>
@@ -94,7 +95,8 @@
                                 <a href="{{ route('front.faq') }}">{{ __('Faq') }}</a>
                             </li>
                         @endif
-                        @foreach(DB::table('pages')->where('footer', '=', 1)->get() as $data)
+                        {{-- Using cached $footerPages from AppServiceProvider --}}
+                        @foreach($footerPages as $data)
                             <li><a href="{{ route('front.vendor', $data->slug) }}">{{ $data->title }}</a></li>
                         @endforeach
                         @if($ps->contact == 1)

@@ -6,7 +6,8 @@ use App\{
     Models\Product,
     Models\Wishlist,
     Http\Controllers\Controller,
-    Http\Resources\ProductlistResource
+    Http\Resources\ProductlistResource,
+    View\Composers\HeaderComposer
 };
 
 use Auth;
@@ -71,32 +72,32 @@ class WishlistController extends Controller
             $user = Auth::guard('api')->user();
             $ck = Wishlist::where('user_id',$user->id)->where('product_id',$input['product_id'])->exists();
             if(!$ck){
-            $wish = new Wishlist();
-            $wish->user_id = $user->id;
-            $wish->product_id = $input['product_id'];
-            $wish->save();
+                $wish = new Wishlist();
+                $wish->user_id = $user->id;
+                $wish->product_id = $input['product_id'];
+                $wish->save();
+                HeaderComposer::invalidateWishlistCache($user->id);
                 return response()->json(['status' => true, 'data' => ['message' => 'Successfully Added To Wishlist.'], 'error' => []]);
             }else{
                 return response()->json(['status' => true, 'data' => [], 'error' => ['message' => 'Already Added To Wishlist.']]);
             }
-    
-            }
-            catch(\Exception $e){
-                return response()->json(['status' => true, 'data' => [], 'error' => $e->getMessage()]);
-            }
+        }
+        catch(\Exception $e){
+            return response()->json(['status' => true, 'data' => [], 'error' => $e->getMessage()]);
+        }
     }
 
     public function removewish($id)
     {
-       
         try{
-            $wish = Wishlist::where('product_id',$id)->where('user_id',Auth::user()->id)->first();
+            $user = Auth::user();
+            $wish = Wishlist::where('product_id',$id)->where('user_id',$user->id)->first();
             $wish->delete();
+            HeaderComposer::invalidateWishlistCache($user->id);
             return response()->json(['status' => true, 'data' => ['message' => 'Successfully Removed From Wishlist.'], 'error' => []]);
         }
         catch(\Exception $e){
             return response()->json(['status' => true, 'data' => [], 'error' => $e->getMessage()]);
         }
-
     }
 }

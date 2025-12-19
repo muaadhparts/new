@@ -1,5 +1,15 @@
 <?php
 
+/**
+ * ====================================================================
+ * MYFATOORAH PAYMENT CONTROLLER - VENDOR CHECKOUT ONLY
+ * ====================================================================
+ * Modified: 2025-01-19 for Vendor Checkout System
+ * - Uses HandlesVendorCheckout trait
+ * - Reads from vendor_step1/step2 ONLY
+ * ====================================================================
+ */
+
 namespace App\Http\Controllers\Payment\Checkout;
 
 use App\Classes\MuaadhMailer;
@@ -12,6 +22,8 @@ use App\Models\Order;
 use App\Models\PaymentGateway;
 use App\Models\Reward;
 use App\Models\State;
+use App\Traits\HandlesVendorCheckout;
+use App\Traits\SavesCustomerShippingChoice;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Contracts\View\View;
@@ -26,6 +38,7 @@ use MyFatoorah\Library\API\Payment\MyFatoorahPaymentStatus;
 use Exception;
 
 class MyFatoorahController extends CheckoutBaseControlller {
+    use HandlesVendorCheckout, SavesCustomerShippingChoice;
 
     /**
      * @var array
@@ -52,19 +65,28 @@ class MyFatoorahController extends CheckoutBaseControlller {
 
     public function store(Request $request)
     {
+        // Get vendor checkout data
+        $vendorData = $this->getVendorCheckoutData();
+        $vendorId = $vendorData['vendor_id'];
 
-        dd($request->all());
-        $input = array_merge(
-            Session::get('step1', []),
-            Session::get('step2', []),
-            $request->all()
-        );
+        // Get steps from vendor sessions ONLY
+        $steps = $this->getCheckoutSteps($vendorId, $vendorData['is_vendor_checkout']);
+        $step1 = $steps['step1'];
+        $step2 = $steps['step2'];
+
+        if (!$step1 || !$step2) {
+            return redirect()->route('front.cart')->with('unsuccess', __('Checkout session expired.'));
+        }
+
+        $input = array_merge($step1, $step2, $request->all());
 
         if (!Session::has('cart')) {
             return redirect()->route('front.cart')->with('success', __("You don't have any product to checkout."));
         }
 
-        $cart = new Cart(Session::get('cart'));
+        $oldCart = Session::get('cart');
+        $originalCart = new Cart($oldCart);
+        $cart = $this->filterCartForVendor($originalCart, $vendorId);
         OrderHelper::license_check($cart);
 
         $cartData = [
@@ -85,13 +107,9 @@ class MyFatoorahController extends CheckoutBaseControlller {
         $input['pay_amount'] = $orderTotal;
         $input['order_number'] = Str::random(4) . time();
 
-        // Handle tax location
-        if ($input['tax_type'] === 'state_tax') {
-            $input['tax_location'] = State::findOrFail($input['tax'])->state;
-        } else {
-            $input['tax_location'] = Country::findOrFail($input['tax'])->country_name;
-        }
-        $input['tax'] = Session::get('current_tax');
+        // Get tax data from vendor step2 (already fetched at method start)
+        $input['tax'] = $step2['tax_amount'] ?? 0;
+        $input['tax_location'] = $step2['tax_location'] ?? '';
         $input['user_id'] = Auth::id();
 
 
@@ -123,7 +141,7 @@ class MyFatoorahController extends CheckoutBaseControlller {
         OrderHelper::vendor_order_check($cart, $order);
 
         // Clear Session and Prepare for Next Order
-        $this->clearOrderSession($order, $cart);
+        $this->clearOrderSession($order, $cart, $vendorId, $originalCart);
 
         // Send Emails
         $this->sendOrderEmails($order);
@@ -182,11 +200,13 @@ class MyFatoorahController extends CheckoutBaseControlller {
         }
     }
 
-    private function clearOrderSession(Order $order, Cart $cart)
+    private function clearOrderSession(Order $order, Cart $cart, $vendorId, $originalCart)
     {
         Session::put('temporder', $order);
         Session::put('tempcart', $cart);
-        Session::forget(['cart', 'already', 'coupon', 'coupon_total', 'coupon_total1', 'coupon_percentage']);
+
+        // Remove only vendor's products from cart
+        $this->removeVendorProductsFromCart($vendorId, $originalCart);
 
         if ($order->user_id && $order->wallet_price) {
             OrderHelper::add_to_transaction($order, $order->wallet_price);

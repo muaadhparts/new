@@ -1,10 +1,10 @@
-{{-- Product Name Component with SKU and Language Support --}}
+{{-- Product Name Component with Language Support --}}
 @props([
     'product' => null,
     'item' => null, // for cart items format
     'vendorId' => null,
     'merchantProductId' => null,
-    'showSku' => true,
+    'showSku' => false, // SKU يعرض في product-info component
     'target' => '_self',
     'class' => '',
     'nameClass' => '',
@@ -23,8 +23,6 @@
     // Extract data based on format
     if (isset($productData['item'])) {
         // Cart item format: $product['item']['name']
-        $name = $productData['item']['name'] ?? '';
-        $labelAr = $productData['item']['label_ar'] ?? '';
         $sku = $productData['item']['sku'] ?? '';
         $slug = $productData['item']['slug'] ?? '';
         $userId = $vendorId ?? $productData['item']['user_id'] ?? $productData['user_id'] ?? 0;
@@ -36,10 +34,10 @@
                 ? $productData->id
                 : ($productData['item']['id'] ?? $productData['id'] ?? null);
         }
+        // Use centralized helper for localized name
+        $displayName = getLocalizedProductName($productData['item']);
     } else {
         // Direct product object format: $product->name
-        $name = $productData->name ?? $productData['name'] ?? '';
-        $labelAr = $productData->label_ar ?? $productData['label_ar'] ?? '';
         $sku = $productData->sku ?? $productData['sku'] ?? '';
         $slug = $productData->slug ?? $productData['slug'] ?? '';
         $userId = $vendorId ?? $productData->user_id ?? $productData['user_id'] ?? 0;
@@ -55,10 +53,9 @@
                 $mpId = $mp->id ?? null;
             }
         }
+        // Use centralized helper for localized name
+        $displayName = getLocalizedProductName($productData);
     }
-
-    // Language-aware name selection
-    $displayName = app()->getLocale() == 'ar' && !empty($labelAr) ? $labelAr : $name;
 
     // SKU display
     $displaySku = !empty($sku) ? $sku : '-';
@@ -138,7 +135,7 @@
 }
 
 .product-name-component a:hover {
-    color: var(--primary-color);
+    color: var(--theme-primary);
 }
 
 .product-name-component small a {
@@ -147,7 +144,7 @@
 }
 
 .product-name-component small a:hover {
-    color: var(--primary-color);
+    color: var(--theme-primary);
     text-decoration: underline;
 }
 

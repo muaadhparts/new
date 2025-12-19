@@ -6,7 +6,6 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Support\Facades\Auth;
 use App\Models\NewCategory;
 
@@ -66,16 +65,6 @@ class Catalog extends Model
     public function brand(): BelongsTo
     {
         return $this->belongsTo(Brand::class, 'brand_id');
-    }
-
-    /**
-     * 🔗 المستويات المرتبطة بالكتالوج (إذا موجودة)
-     */
-    public function levels(): BelongsToMany
-    {
-        return $this->belongsToMany(Level::class, 'catalog_level')
-                    ->withPivot('catalog_id', 'level_id')
-                    ->withTimestamps();
     }
 
     /**

@@ -73,6 +73,7 @@ class Kernel extends HttpKernel
         'maintenance' => \App\Http\Middleware\MaintenanceMode::class,
         'setapi' => \App\Http\Middleware\SetApiGuard::class,
         'localization' => \App\Http\Middleware\LocalizationMiddleware::class,
-        
+        'preserve.session' => \App\Http\Middleware\PreserveSessionDuringCheckout::class,
+
     ];
 }

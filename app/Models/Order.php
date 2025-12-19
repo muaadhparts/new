@@ -7,12 +7,22 @@ use Illuminate\Database\Eloquent\Model;
 
 class Order extends Model
 {
-	protected $fillable = ['user_id', 'cart', 'method','shipping', 'pickup_location', 'totalQty', 'pay_amount', 'txnid', 'charge_id', 'order_number', 'payment_status', 'customer_name', 'customer_email', 'customer_phone', 'customer_address', 'customer_city', 'customer_zip','customer_state', 'customer_country','shipping_name', 'shipping_email', 'shipping_phone', 'shipping_address', 'shipping_city', 'shipping_zip','shipping_state','shipping_country', 'order_note','coupon_code','coupon_discount','status','affilate_user','affilate_charge','currency_sign','currency_name','currency_value','shipping_cost','packing_cost','tax','tax_location','dp','pay_id','vendor_shipping_id','vendor_packing_id','wallet_price','shipping_title','packing_title','affilate_users','commission','is_shipping','vendor_ids'];
+	protected $fillable = ['user_id', 'cart', 'method','shipping', 'pickup_location', 'totalQty', 'pay_amount', 'txnid', 'charge_id', 'order_number', 'payment_status', 'customer_name', 'customer_email', 'customer_phone', 'customer_address', 'customer_city', 'customer_zip','customer_state', 'customer_country','shipping_name', 'shipping_email', 'shipping_phone', 'shipping_address', 'shipping_city', 'shipping_zip','shipping_state','shipping_country', 'order_note','coupon_code','coupon_discount','status','affilate_user','affilate_charge','currency_sign','currency_name','currency_value','shipping_cost','packing_cost','tax','tax_location','dp','pay_id','vendor_shipping_id','vendor_packing_id','wallet_price','shipping_title','packing_title','affilate_users','commission','is_shipping','vendor_ids','customer_shipping_choice','shipping_status'];
 
 
     protected $casts = [
         'cart' => 'array',
+        'customer_shipping_choice' => 'array',
+        'shipping_status' => 'array',
     ];
+
+    /**
+     * Get the user that owns this order.
+     */
+    public function user()
+    {
+        return $this->belongsTo('App\Models\User', 'user_id');
+    }
 
     public function vendororders()
     {
@@ -148,18 +158,84 @@ class Order extends Model
         {
             $package_data  = DB::table('packages')->whereUserId($users[0])->get();
 
-            if(count($package_data) == 0){
-                $package_data  = DB::table('packages')->whereUserId(0)->get();
-            }
-            else{
+            // No fallback - if vendor has no packages, return empty collection
+            if(count($package_data) > 0){
                 $vendor_packing_id = $users[0];
-            }  
+            }
         }
         else {
-            $package_data  = DB::table('packages')->whereUserId(0)->get();
+            // Multi-vendor cart - no global packaging
+            $package_data = collect();
         }
         $data['package_data'] = $package_data;
         $data['vendor_packing_id'] = $vendor_packing_id;
-        return $data; 
+        return $data;
+    }
+
+    /**
+     * Get customer's shipping choice for a specific vendor
+     *
+     * @param int $vendorId
+     * @return array|null
+     */
+    public function getCustomerShippingChoice($vendorId)
+    {
+        $choices = $this->customer_shipping_choice;
+
+        // Handle double-encoded JSON string
+        if (is_string($choices)) {
+            $choices = json_decode($choices, true);
+        }
+
+        if (!$choices || !is_array($choices)) {
+            return null;
+        }
+
+        // vendorId might be string or int
+        return $choices[$vendorId] ?? $choices[(string)$vendorId] ?? null;
+    }
+
+    /**
+     * Get shipping status for a specific vendor
+     *
+     * @param int $vendorId
+     * @return array|null
+     */
+    public function getVendorShippingStatus($vendorId)
+    {
+        $statuses = $this->shipping_status;
+
+        if (!$statuses || !is_array($statuses)) {
+            return null;
+        }
+
+        return $statuses[$vendorId] ?? null;
+    }
+
+    /**
+     * Update shipping status for a vendor
+     *
+     * @param int $vendorId
+     * @param array $statusData
+     * @return void
+     */
+    public function updateVendorShippingStatus($vendorId, array $statusData)
+    {
+        $statuses = $this->shipping_status ?? [];
+        $statuses[$vendorId] = array_merge($statuses[$vendorId] ?? [], $statusData);
+        $this->shipping_status = $statuses;
+        $this->save();
+    }
+
+    /**
+     * Check if vendor has Tryoto shipping choice from customer
+     *
+     * @param int $vendorId
+     * @return bool
+     */
+    public function hasTryotoChoice($vendorId)
+    {
+        $choice = $this->getCustomerShippingChoice($vendorId);
+        return $choice && ($choice['provider'] ?? '') === 'tryoto';
     }
 }

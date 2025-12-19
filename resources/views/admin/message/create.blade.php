@@ -89,7 +89,7 @@
                                         <textarea class="form-control" name="message" id="wrong-invoice" rows="5" required="" placeholder="{{ __('Message') }}"></textarea>
                                     </div>
                                     <div class="form-group">
-                                        <button type="submit" class="mybtn1">
+                                        <button type="submit" class="btn btn-primary">
                                             {{ __('Add Reply') }}
                                         </button>
                                     </div>

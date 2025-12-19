@@ -2,7 +2,7 @@
     <div class="col-8">
         <div id="comments">
             @if($productt->ratings()->count() > 0)
-            <h2 class="MUAADH-Reviews-title my-3"> {{ __('Ratings & Reviews') }}</h2>
+            <h2 class="woocommerce-Reviews-title my-3"> {{ __('Ratings & Reviews') }}</h2>
 
             <div class="reating-area">
                 <div class="stars"><span id="star-rating">{{ App\Models\Rating::normalRating($productt->id) }}</span> <i class="fas fa-star"></i></div>
@@ -96,7 +96,7 @@
                   </div>
                   <div class="row">
                     <div class="col-lg-12">
-                      <button class="mybtn1" type="submit">{{ __('Submit') }}</button>
+                      <button class="btn btn-primary" type="submit">{{ __('Submit') }}</button>
                     </div>
                   </div>
                 </form>

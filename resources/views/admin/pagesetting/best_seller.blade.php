@@ -58,7 +58,7 @@
                             </div>
                           </div>
                           <div class="col-lg-7">
-                            <input type="text" class="input-field" name="best_seller_banner_link" placeholder="{{ __('Link') }}" required="" value="{{$data->best_seller_banner_link}}">
+                            <input type="text" class="form-control" name="best_seller_banner_link" placeholder="{{ __('Link') }}" required="" value="{{$data->best_seller_banner_link}}">
                           </div>
                         </div>
 
@@ -91,7 +91,7 @@
                             </div>
                           </div>
                           <div class="col-lg-7">
-                            <input type="text" class="input-field" name="best_seller_banner_link1" placeholder="{{ __('Link') }}" required="" value="{{$data->best_seller_banner_link1}}">
+                            <input type="text" class="form-control" name="best_seller_banner_link1" placeholder="{{ __('Link') }}" required="" value="{{$data->best_seller_banner_link1}}">
                           </div>
                         </div>
 
@@ -103,7 +103,7 @@
                                         </div>
                                       </div>
                                       <div class="col-lg-7">
-                                        <button class="addProductSubmit-btn" type="submit">{{ __('Save') }}</button>
+                                        <button class="btn btn-primary" type="submit">{{ __('Save') }}</button>
                                       </div>
                                     </div>
 

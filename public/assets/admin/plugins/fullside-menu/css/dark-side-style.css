@@ -157,7 +157,7 @@
 	font-weight: 600;
 	background: #e8e8e8 !important;
   }
-  #sidebar a[data-toggle="collapse"] {
+  #sidebar a[data-bs-toggle="collapse"] {
 	position: relative;
   }
   #sidebar li a {

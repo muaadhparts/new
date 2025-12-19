@@ -35,9 +35,9 @@
                                 <div class="col-lg-4 mb-4 mb-lg-0">
                                     <form action="{{ route('admin-gs-update-theme') }}" method="POST">
                                         @csrf
-                                        <input type="hidden" name="theme" value="muaadh_oem">
+                                        <input type="hidden" name="theme" value="theme1">
                                         <div class="d-flex flex-column align-items-center" >
-                                            <label for="">MUAADH OEM</label>
+                                            <label for="">Home Page 1</label>
                                             <div class="img-upload scroll-container"
                                                 style="max-height: 240px; overflow-y: hidden;">
                                                 <div id="image-preview" class="img-preview text-center"
@@ -45,11 +45,11 @@
                                                 </div>
                                             </div>
                                             <div class="row justify-content-center mt-3">
-                                                <button class="addProductSubmit-btn" type="submit">
-                                                    @if ($gs->theme == 'muaadh_oem')
+                                                <button class="btn btn-primary" type="submit">
+                                                    @if ($gs->theme == 'theme1')
                                                         {{ __('Active') }}
                                                     @else
-                                                        {{ __('MUAADH OEM') }}
+                                                        {{ __('Theme 1') }}
                                                     @endif
                                                 </button>
                                             </div>
@@ -59,10 +59,10 @@
                                 <div class="col-lg-4 mb-4 mb-lg-0">
                                     <form action="{{ route('admin-gs-update-theme') }}" method="POST">
                                         @csrf
-                                        <input type="hidden" name="theme" value="muaadh_storefront">
+                                        <input type="hidden" name="theme" value="theme2">
 
                                         <div class="d-flex flex-column align-items-center" >
-                                            <label for="">MUAADH Storefront</label>
+                                            <label for="">Home Page 2</label>
                                             <div class="img-upload scroll-container"
                                                 style="max-height: 240px; overflow-y: hidden;">
                                                 <div id="image-preview" class="img-preview text-center"
@@ -70,11 +70,11 @@
                                                 </div>
                                             </div>
                                             <div class="row justify-content-center mt-3">
-                                                <button class="addProductSubmit-btn" type="submit">
-                                                    @if ($gs->theme == 'muaadh_storefront')
+                                                <button class="btn btn-primary" type="submit">
+                                                    @if ($gs->theme == 'theme2')
                                                         {{ __('Active') }}
                                                     @else
-                                                        {{ __('MUAADH Storefront') }}
+                                                        {{ __('Theme 2') }}
                                                     @endif
                                                 </button>
                                             </div>
@@ -84,9 +84,9 @@
                                 <div class="col-lg-4 mb-4 mb-lg-0">
                                     <form action="{{ route('admin-gs-update-theme') }}" method="POST">
                                         @csrf
-                                        <input type="hidden" name="theme" value="muaadh_minimal">
+                                        <input type="hidden" name="theme" value="theme3">
                                         <div class="d-flex flex-column align-items-center" >
-                                            <label for="">MUAADH Minimal</label>
+                                            <label for="">Home Page 3</label>
                                             <div class="img-upload scroll-container"
                                                 style="max-height: 240px; overflow-y: hidden;">
                                                 <div id="image-preview" class="img-preview text-center"
@@ -94,11 +94,11 @@
                                                 </div>
                                             </div>
                                             <div class="row justify-content-center mt-3">
-                                                <button class="addProductSubmit-btn" type="submit">
-                                                    @if ($gs->theme == 'muaadh_minimal')
+                                                <button class="btn btn-primary" type="submit">
+                                                    @if ($gs->theme == 'theme3')
                                                         {{ __('Active') }}
                                                     @else
-                                                        {{ __('MUAADH Minimal') }}
+                                                        {{ __('Theme 3') }}
                                                     @endif
                                                 </button>
                                             </div>

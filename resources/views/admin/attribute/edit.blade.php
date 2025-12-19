@@ -42,7 +42,7 @@
                           <div class="form-group">
                                <label for=""><strong>{{__('Name')}}</strong></label>
                                <div class="">
-                                 <input type="text" class="input-field" name="name" value="{{$attr->name}}" placeholder="{{__('Enter Name')}}" required>
+                                 <input type="text" class="form-control" name="name" value="{{$attr->name}}" placeholder="{{__('Enter Name')}}" required>
                                </div>
                                @if ($errors->has('name'))
                                  <p class="text-danger mb-0">{{$errors->first('name')}}</p>
@@ -57,7 +57,7 @@
                                <label for=""><strong>{{__('Options')}}</strong></label>
                                <div class="row mb-2 counterrow" v-for="option in options" :key="option.id">
                                  <div class="col-md-11">
-                                   <input class="input-field optionin" type="text" name="options[]" :value="option.name" placeholder="{{__('Option label')}}" required>
+                                   <input class="form-control optionin" type="text" name="options[]" :value="option.name" placeholder="{{__('Option label')}}" required>
                                  </div>
 
                                  <div class="col-md-1">
@@ -66,7 +66,7 @@
                                </div>
                                <div class="row mb-2 counterrow" v-for="n in counter" :id="'newOption'+n">
                                  <div class="col-md-11">
-                                   <input class="input-field optionin" type="text" name="options[]" value="" placeholder="{{__('Option label')}}" required>
+                                   <input class="form-control optionin" type="text" name="options[]" value="" placeholder="{{__('Option label')}}" required>
                                  </div>
 
                                  <div class="col-md-1">
@@ -103,7 +103,7 @@
 
 
                       <div class="text-left">
-                        <button type="submit" class="btn btn-primary addProductSubmit-btn">{{__('UPDATE FIELD')}}</button>
+                        <button type="submit" class="btn btn-primary">{{__('UPDATE FIELD')}}</button>
                       </div>
                   </form>
 

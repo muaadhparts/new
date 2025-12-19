@@ -1,4 +1,8 @@
 @extends('layouts.vendor')
+@php
+    $isDashboard = true;
+    $isVendor = true;
+@endphp
 
 @section('content')
 <div class="gs-vendor-outlet">
@@ -28,8 +32,9 @@
                     </div>
                     <div class="card-body">
                         <div class="text-center mb-3">
-                            <img src="{{ asset('assets/images/products/' . $data->photo) }}"
+                            <img src="{{ filter_var($data->photo, FILTER_VALIDATE_URL) ? $data->photo : ($data->photo ? \Illuminate\Support\Facades\Storage::url($data->photo) : asset('assets/images/noimage.png')) }}"
                                  alt="{{ $data->name }}" class="img-fluid" style="max-height: 200px;">
+                            <p class="text-muted small mt-1">@lang('Product Main Image')</p>
                         </div>
                         <h6>{{ $data->name }}</h6>
                         <p><strong>@lang('SKU'):</strong> {{ $data->sku }}</p>
@@ -38,6 +43,49 @@
                         @if($data->size)
                             <p><strong>@lang('Sizes'):</strong> {{ is_array($data->size) ? implode(', ', $data->size) : $data->size }}</p>
                         @endif
+                    </div>
+                </div>
+
+                <!-- Vendor Gallery Section -->
+                <div class="card mt-3">
+                    <div class="card-header">
+                        <h5>@lang('Your Product Images')</h5>
+                        <small class="text-muted">@lang('Add your own images for this product')</small>
+                    </div>
+                    <div class="card-body">
+                        <!-- Existing Vendor Images -->
+                        <div id="vendor-gallery-list" class="row g-2 mb-3">
+                            @php
+                                $vendorGalleries = \App\Models\Gallery::where('product_id', $data->id)
+                                    ->where('user_id', auth()->id())
+                                    ->get();
+                            @endphp
+                            @foreach($vendorGalleries as $gallery)
+                                <div class="col-4" id="gallery-item-{{ $gallery->id }}">
+                                    <div class="position-relative">
+                                        <img src="{{ asset('assets/images/galleries/' . $gallery->photo) }}"
+                                             class="img-fluid rounded" style="height: 100px; width: 100%; object-fit: cover;">
+                                        <button type="button" class="btn btn-danger btn-sm position-absolute top-0 end-0 m-1 remove-gallery-btn"
+                                                data-id="{{ $gallery->id }}" title="@lang('Remove')">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+
+                        <!-- Upload New Images -->
+                        <div class="mb-3">
+                            <label class="form-label">@lang('Add Images')</label>
+                            <input type="file" class="form-control" id="gallery-upload" name="gallery[]"
+                                   multiple accept="image/jpeg,image/png,image/jpg,image/webp">
+                            <small class="text-muted">@lang('Max 3 images. Allowed: JPG, PNG, WEBP')</small>
+                        </div>
+
+                        <!-- Preview New Uploads -->
+                        <div id="gallery-preview" class="row g-2"></div>
+
+                        <input type="hidden" id="product_id" value="{{ $data->id }}">
                     </div>
                 </div>
             </div>
@@ -97,15 +145,15 @@
                                 </div>
                             </div>
 
-                            <!-- Brand Quality -->
+                            <!-- Quality Brand -->
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                    <label class="form-label">@lang('Brand Quality*')</label>
+                                    <label class="form-label">@lang('Quality Brand*')</label>
                                     <select class="form-control" name="brand_quality_id" required>
-                                        <option value="">@lang('Select Brand Quality')</option>
-                                        @foreach(\App\Models\QualityBrand::active()->get() as $qualityBrand)
-                                            <option value="{{ $qualityBrand->id }}" {{ $merchantProduct->brand_quality_id == $qualityBrand->id ? 'selected' : '' }}>
-                                                {{ $qualityBrand->display_name }}
+                                        <option value="">@lang('Select Quality Brand')</option>
+                                        @foreach(\App\Models\QualityBrand::where('is_active', 1)->get() as $qb)
+                                            <option value="{{ $qb->id }}" {{ $merchantProduct->brand_quality_id == $qb->id ? 'selected' : '' }}>
+                                                {{ $qb->name_en }} {{ $qb->name_ar ? '- ' . $qb->name_ar : '' }}
                                             </option>
                                         @endforeach
                                     </select>
@@ -297,6 +345,104 @@ document.addEventListener('DOMContentLoaded', function() {
     document.addEventListener('click', function(e) {
         if (e.target.classList.contains('remove-color')) {
             e.target.closest('.row').remove();
+        }
+    });
+
+    // ============================================
+    // Vendor Gallery Upload
+    // ============================================
+    const galleryUpload = document.getElementById('gallery-upload');
+    const galleryPreview = document.getElementById('gallery-preview');
+    const productId = document.getElementById('product_id').value;
+
+    // Preview selected images before upload
+    galleryUpload.addEventListener('change', function() {
+        galleryPreview.innerHTML = '';
+        const files = this.files;
+
+        if (files.length > 3) {
+            alert('@lang("Maximum 3 images allowed")');
+            this.value = '';
+            return;
+        }
+
+        for (let i = 0; i < files.length; i++) {
+            const file = files[i];
+            const reader = new FileReader();
+
+            reader.onload = function(e) {
+                const col = document.createElement('div');
+                col.className = 'col-4';
+                col.innerHTML = `
+                    <div class="position-relative">
+                        <img src="${e.target.result}" class="img-fluid rounded" style="height: 100px; width: 100%; object-fit: cover;">
+                        <span class="badge bg-warning position-absolute top-0 start-0 m-1">@lang('New')</span>
+                    </div>
+                `;
+                galleryPreview.appendChild(col);
+            };
+
+            reader.readAsDataURL(file);
+        }
+    });
+
+    // Upload gallery images via AJAX
+    const mainForm = document.getElementById('muaadhform');
+    mainForm.addEventListener('submit', function(e) {
+        const galleryFiles = galleryUpload.files;
+
+        if (galleryFiles.length > 0) {
+            e.preventDefault();
+
+            const formData = new FormData();
+            formData.append('product_id', productId);
+            formData.append('_token', '{{ csrf_token() }}');
+
+            for (let i = 0; i < galleryFiles.length; i++) {
+                formData.append('gallery[]', galleryFiles[i]);
+            }
+
+            // Upload gallery first
+            fetch('{{ route("vendor-gallery-store") }}', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Gallery uploaded:', data);
+                // Clear file input and submit main form
+                galleryUpload.value = '';
+                mainForm.submit();
+            })
+            .catch(error => {
+                console.error('Gallery upload error:', error);
+                // Submit form anyway
+                mainForm.submit();
+            });
+        }
+    });
+
+    // Remove gallery image
+    document.addEventListener('click', function(e) {
+        if (e.target.classList.contains('remove-gallery-btn') || e.target.closest('.remove-gallery-btn')) {
+            const btn = e.target.classList.contains('remove-gallery-btn') ? e.target : e.target.closest('.remove-gallery-btn');
+            const galleryId = btn.dataset.id;
+
+            if (confirm('@lang("Are you sure you want to delete this image?")')) {
+                fetch('{{ route("vendor-gallery-delete") }}?id=' + galleryId, {
+                    method: 'GET',
+                    headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('gallery-item-' + galleryId).remove();
+                })
+                .catch(error => {
+                    console.error('Delete error:', error);
+                });
+            }
         }
     });
 });

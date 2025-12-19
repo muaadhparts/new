@@ -37,7 +37,7 @@ class VendorController extends AdminBaseController
                 return $url;
             })
             ->addColumn('action', function (User $data) {
-                return '<div class="godropdown"><button class="go-dropdown-toggle"> ' . __("Actions") . '<i class="fas fa-chevron-down"></i></button><div class="action-list"><a href="' . route('admin-vendor-secret', $data->id) . '" > <i class="fas fa-user"></i> ' . __("Secret Login") . '</a><a href="javascript:;" data-href="' . route('admin-vendor-add-subs', $data->id) . '" class="add-subs" data-toggle="modal" data-target="#ad-subscription-modal"> <i class="fas fa-plus"></i> ' . __("Add New Plan") . '</a><a href="javascript:;" data-href="' . route('admin-vendor-verify', $data->id) . '" class="verify" data-toggle="modal" data-target="#verify-modal"> <i class="fas fa-question"></i> ' . __("Ask For Verification") . '</a><a href="' . route('admin-vendor-show', $data->id) . '" > <i class="fas fa-eye"></i> ' . __("Details") . '</a><a data-href="' . route('admin-vendor-edit', $data->id) . '" class="edit" data-toggle="modal" data-target="#modal1"> <i class="fas fa-edit"></i> ' . __("Edit") . '</a><a href="javascript:;" class="send" data-email="' . $data->email . '" data-toggle="modal" data-target="#vendorform"><i class="fas fa-envelope"></i> ' . __("Send Email") . '</a><a href="javascript:;" data-href="' . route('admin-vendor-delete', $data->id) . '" data-toggle="modal" data-target="#confirm-delete" class="delete"><i class="fas fa-trash-alt"></i> ' . __("Delete") . '</a></div></div>';
+                return '<div class="godropdown"><button class="go-dropdown-toggle"> ' . __("Actions") . '<i class="fas fa-chevron-down"></i></button><div class="action-list"><a href="' . route('admin-vendor-secret', $data->id) . '" > <i class="fas fa-user"></i> ' . __("Secret Login") . '</a><a href="javascript:;" data-href="' . route('admin-vendor-add-subs', $data->id) . '" class="add-subs" data-bs-toggle="modal" data-bs-target="#ad-subscription-modal"> <i class="fas fa-plus"></i> ' . __("Add New Plan") . '</a><a href="javascript:;" data-href="' . route('admin-vendor-verify', $data->id) . '" class="verify" data-bs-toggle="modal" data-bs-target="#verify-modal"> <i class="fas fa-question"></i> ' . __("Ask For Verification") . '</a><a href="' . route('admin-vendor-show', $data->id) . '" > <i class="fas fa-eye"></i> ' . __("Details") . '</a><a data-href="' . route('admin-vendor-edit', $data->id) . '" class="edit" data-bs-toggle="modal" data-bs-target="#modal1"> <i class="fas fa-edit"></i> ' . __("Edit") . '</a><a href="javascript:;" class="send" data-email="' . $data->email . '" data-bs-toggle="modal" data-bs-target="#vendorform"><i class="fas fa-envelope"></i> ' . __("Send Email") . '</a><a href="javascript:;" data-href="' . route('admin-vendor-delete', $data->id) . '" data-bs-toggle="modal" data-bs-target="#confirm-delete" class="delete"><i class="fas fa-trash-alt"></i> ' . __("Delete") . '</a></div></div>';
             })
             ->rawColumns(['status', 'action', 'admin_commission'])
             ->toJson(); //--- Returning Json Data To Client Side
@@ -136,7 +136,11 @@ class VendorController extends AdminBaseController
     //*** GET Request
     public function show($id)
     {
-        $data = User::findOrFail($id);
+        $data = User::with([
+            'merchantProducts' => function($query) {
+                $query->with(['product.brand', 'qualityBrand', 'user']);
+            }
+        ])->findOrFail($id);
         return view('admin.vendor.show', compact('data'));
     }
 
@@ -202,9 +206,9 @@ class VendorController extends AdminBaseController
                 return \PriceHelper::showAdminCurrencyPrice($amount);
             })
             ->addColumn('action', function (Withdraw $data) {
-                $action = '<div class="action-list"><a data-href="' . route('admin-vendor-withdraw-show', $data->id) . '" class="view details-width" data-toggle="modal" data-target="#modal1"> <i class="fas fa-eye"></i> Details</a>';
+                $action = '<div class="action-list"><a data-href="' . route('admin-vendor-withdraw-show', $data->id) . '" class="view details-width" data-bs-toggle="modal" data-bs-target="#modal1"> <i class="fas fa-eye"></i> Details</a>';
                 if ($data->status == "pending") {
-                    $action .= '<a data-href="' . route('admin-vendor-withdraw-accept', $data->id) . '" data-toggle="modal" data-target="#status-modal1"> <i class="fas fa-check"></i> Accept</a><a data-href="' . route('admin-vendor-withdraw-reject', $data->id) . '" data-toggle="modal" data-target="#status-modal"> <i class="fas fa-trash-alt"></i> Reject</a>';
+                    $action .= '<a data-href="' . route('admin-vendor-withdraw-accept', $data->id) . '" data-bs-toggle="modal" data-bs-target="#status-modal1"> <i class="fas fa-check"></i> Accept</a><a data-href="' . route('admin-vendor-withdraw-reject', $data->id) . '" data-bs-toggle="modal" data-bs-target="#status-modal"> <i class="fas fa-trash-alt"></i> Reject</a>';
                 }
                 $action .= '</div>';
                 return $action;

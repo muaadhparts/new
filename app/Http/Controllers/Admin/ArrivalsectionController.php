@@ -33,7 +33,7 @@ class ArrivalsectionController extends Controller
             })
           
             ->addColumn('action', function (ArrivalSection $data) {
-                return '<div class="action-list"><a href="' . route('admin-arrival-edit', $data->id) . '"> <i class="fas fa-edit"></i>' . __('Edit') . '</a><a href="javascript:;" data-href="' . route('admin-arrival-delete', $data->id) . '" data-toggle="modal" data-target="#confirm-delete" class="delete"><i class="fas fa-trash-alt"></i></a></div>';
+                return '<div class="action-list"><a href="' . route('admin-arrival-edit', $data->id) . '"> <i class="fas fa-edit"></i>' . __('Edit') . '</a><a href="javascript:;" data-href="' . route('admin-arrival-delete', $data->id) . '" data-bs-toggle="modal" data-bs-target="#confirm-delete" class="delete"><i class="fas fa-trash-alt"></i></a></div>';
             })
             ->rawColumns(['photo', 'action', 'up_sale'])
             ->toJson();

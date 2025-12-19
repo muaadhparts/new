@@ -60,7 +60,7 @@
                           </div>
 
                           <div class="submit-area mb-4">
-                            <button type="submit" class="submit-btn">{{ __('Submit') }}</button>
+                            <button type="submit" class="btn btn-primary">{{ __('Submit') }}</button>
                           </div>
                         </form>
                     </div>
@@ -106,7 +106,7 @@
 
 
                           <div class="submit-area mb-4">
-                            <button type="submit" class="submit-btn">{{ __('Submit') }}</button>
+                            <button type="submit" class="btn btn-primary">{{ __('Submit') }}</button>
                           </div>
                         </form>
                     </div>

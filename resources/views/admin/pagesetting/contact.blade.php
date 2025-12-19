@@ -40,7 +40,7 @@
                                 </div>
                               </div>
                               <div class="col-lg-6">
-                                <input type="email" class="input-field" placeholder="{{ __('Enter Email') }}" name="email" value="{{ $data->email }}">
+                                <input type="email" class="form-control" placeholder="{{ __('Enter Email') }}" name="email" value="{{ $data->email }}">
                               </div>
                             </div>
     
@@ -52,7 +52,7 @@
                                 </div>
                               </div>
                               <div class="col-lg-6">
-                                <input type="text" class="input-field" placeholder="{{ __('Enter Website') }}" name="site" value="{{ $data->site }}">
+                                <input type="text" class="form-control" placeholder="{{ __('Enter Website') }}" name="site" value="{{ $data->site }}">
                               </div>
                             </div>
     
@@ -64,7 +64,7 @@
                                 </div>
                               </div>
                               <div class="col-lg-6">
-                                <input type="text" class="input-field" placeholder="{{ __('Enter Phone') }}" name="phone" value="{{ $data->phone }}">
+                                <input type="text" class="form-control" placeholder="{{ __('Enter Phone') }}" name="phone" value="{{ $data->phone }}">
                               </div>
                             </div>
     
@@ -76,7 +76,7 @@
                                 </div>
                               </div>
                               <div class="col-lg-6">
-                                <input type="text" class="input-field" placeholder="{{ __('Enter Fax') }}" name="fax" value="{{ $data->fax }}">
+                                <input type="text" class="form-control" placeholder="{{ __('Enter Fax') }}" name="fax" value="{{ $data->fax }}">
                               </div>
                             </div>
 
@@ -89,7 +89,7 @@
                                   </div>
                                 </div>
                                 <div class="col-lg-6">
-                                      <textarea name="street" class="input-field" placeholder="Enter Street Address"> {{ $data->street }} </textarea>
+                                      <textarea name="street" class="form-control" placeholder="Enter Street Address"> {{ $data->street }} </textarea>
                                 </div>
                               </div>
 
@@ -115,7 +115,7 @@
                             </div>
                           </div>
                           <div class="col-lg-6">
-                            <button class="addProductSubmit-btn" type="submit">{{ __('Save') }}</button>
+                            <button class="btn btn-primary" type="submit">{{ __('Save') }}</button>
                           </div>
                         </div>
                      </form>

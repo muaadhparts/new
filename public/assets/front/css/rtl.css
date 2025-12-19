@@ -1,0 +1,474 @@
+/* RTL Styles for Frontend */
+
+/* General RTL fixes */
+body[dir="rtl"] {
+    text-align: right;
+}
+
+/* Navigation & Menu */
+[dir="rtl"] .navbar-nav {
+    margin-left: 0;
+    margin-right: auto;
+}
+
+[dir="rtl"] .dropdown-menu {
+    text-align: right;
+    right: 0;
+    left: auto;
+}
+
+/* Breadcrumb */
+[dir="rtl"] .breadcrumb-item + .breadcrumb-item::before {
+    float: right;
+    padding-right: 0;
+    padding-left: 0.5rem;
+    content: "/";
+}
+
+/* Product Cards & Lists */
+/* NOTE: .product-card RTL styles in product-card.css */
+[dir="rtl"] .product-item {
+    text-align: right;
+}
+
+[dir="rtl"] .product-item .product-image {
+    float: right;
+}
+
+/* Modern Product Card (m-product-card) RTL */
+[dir="rtl"] .m-product-card {
+    text-align: right;
+}
+
+[dir="rtl"] .m-product-card__content {
+    text-align: right;
+}
+
+[dir="rtl"] .m-product-card__price {
+    direction: rtl;
+}
+
+[dir="rtl"] .m-product-card__rating {
+    direction: rtl;
+}
+
+[dir="rtl"] .m-product-card__cart-btn {
+    direction: rtl;
+}
+
+/* Ensure product card images are visible in RTL */
+[dir="rtl"] .m-product-card__img {
+    display: block !important;
+}
+
+[dir="rtl"] .m-product-card__img:first-of-type,
+[dir="rtl"] .m-product-card__img.active {
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
+/* Product card image section RTL */
+[dir="rtl"] .m-product-card__image {
+    direction: ltr;
+}
+
+/* Badge positions for RTL */
+[dir="rtl"] .m-product-card__badge--discount {
+    left: auto;
+    right: 12px;
+}
+
+[dir="rtl"] .m-product-card__badge--stock {
+    left: auto;
+    right: 12px;
+}
+
+[dir="rtl"] .m-product-card__wishlist {
+    right: auto;
+    left: 12px;
+}
+
+[dir="rtl"] .m-product-card__actions {
+    right: auto;
+    left: 12px;
+}
+
+/* Slick Slider RTL Support */
+/* Slick handles RTL internally when rtl: true is set */
+/* Only override where needed for content display */
+
+/* CRITICAL: Ensure slick slides are visible in RTL */
+[dir="rtl"] .slick-slider {
+    direction: ltr; /* Slider container should be LTR for proper slide positioning */
+}
+
+[dir="rtl"] .slick-track {
+    direction: ltr;
+}
+
+[dir="rtl"] .slick-slide {
+    float: left; /* Ensure slides are positioned correctly */
+    direction: rtl; /* Content inside should be RTL */
+}
+
+/* Ensure content inside slides displays RTL */
+[dir="rtl"] .slick-slide .m-product-card {
+    direction: rtl;
+    text-align: right;
+}
+
+[dir="rtl"] .slick-slide .m-product-card__content {
+    direction: rtl;
+    text-align: right;
+}
+
+/* Ensure slick-initialized elements are visible */
+[dir="rtl"] .slick-initialized .slick-slide {
+    display: block;
+    visibility: visible;
+    opacity: 1;
+}
+
+/* Product info section RTL */
+[dir="rtl"] .single-product-details-content-wrapper .product-info-wrapper,
+[dir="rtl"] .single-product-details-content-wrapper .summary {
+    text-align: right;
+    direction: rtl;
+}
+
+/* Related Products section titles */
+[dir="rtl"] .gs-product-cards-slider-area .title {
+    direction: rtl;
+    text-align: center;
+}
+
+/* Buttons & Icons */
+[dir="rtl"] .btn i,
+[dir="rtl"] .button i {
+    margin-left: 0.5rem;
+    margin-right: 0;
+}
+
+[dir="rtl"] .btn-group {
+    direction: rtl;
+}
+
+/* Forms */
+[dir="rtl"] .form-check {
+    padding-left: 0;
+    padding-right: 1.5rem;
+}
+
+[dir="rtl"] .form-check-input {
+    float: right;
+    margin-left: 0;
+    margin-right: -1.5rem;
+}
+
+/* Input Groups */
+[dir="rtl"] .input-group > :not(:first-child):not(.dropdown-menu):not(.valid-tooltip):not(.valid-feedback):not(.invalid-tooltip):not(.invalid-feedback) {
+    margin-left: 0;
+    margin-right: -1px;
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+    border-top-right-radius: 0.25rem;
+    border-bottom-right-radius: 0.25rem;
+}
+
+/* Tables */
+[dir="rtl"] table {
+    text-align: right;
+}
+
+[dir="rtl"] .table th,
+[dir="rtl"] .table td {
+    text-align: right;
+}
+
+/* Sliders & Carousels */
+[dir="rtl"] .slick-prev {
+    right: auto;
+    left: 25px;
+}
+
+[dir="rtl"] .slick-next {
+    left: auto;
+    right: 25px;
+}
+
+[dir="rtl"] .carousel-control-prev {
+    left: auto;
+    right: 0;
+}
+
+[dir="rtl"] .carousel-control-next {
+    right: auto;
+    left: 0;
+}
+
+/* Pagination */
+[dir="rtl"] .pagination {
+    direction: rtl;
+}
+
+/* Modals */
+[dir="rtl"] .modal-header .btn-close {
+    margin: -0.5rem auto -0.5rem -0.5rem;
+}
+
+/* Alerts */
+[dir="rtl"] .alert-dismissible {
+    padding-right: 1rem;
+    padding-left: 3rem;
+}
+
+[dir="rtl"] .alert-dismissible .btn-close {
+    right: auto;
+    left: 0;
+}
+
+/* Cart & Checkout */
+[dir="rtl"] .cart-item,
+[dir="rtl"] .checkout-item {
+    text-align: right;
+}
+
+[dir="rtl"] .cart-total,
+[dir="rtl"] .order-summary {
+    text-align: right;
+}
+
+/* Badges & Labels */
+[dir="rtl"] .badge {
+    margin-left: 0.5rem;
+    margin-right: 0;
+}
+
+/* Custom Selects */
+[dir="rtl"] .nice-select {
+    text-align: right;
+}
+
+[dir="rtl"] .nice-select::after {
+    left: 12px;
+    right: auto;
+}
+
+[dir="rtl"] .nice-select .list {
+    text-align: right;
+}
+
+/* Toast/Notifications */
+[dir="rtl"] .toast {
+    text-align: right;
+}
+
+[dir="rtl"] #toast-container > div {
+    text-align: right;
+}
+
+[dir="rtl"] .toast-close-button {
+    float: left;
+    right: auto;
+    left: -0.3em;
+}
+
+/* Sidebar */
+[dir="rtl"] .sidebar {
+    text-align: right;
+}
+
+[dir="rtl"] .sidebar .widget {
+    text-align: right;
+}
+
+/* Footer */
+[dir="rtl"] .footer {
+    text-align: right;
+}
+
+/* DataTables */
+[dir="rtl"] .dataTables_wrapper .dataTables_filter {
+    text-align: left;
+}
+
+[dir="rtl"] .dataTables_wrapper .dataTables_paginate {
+    text-align: left;
+}
+
+/* Mobile Menu */
+[dir="rtl"] .mobile-menu {
+    left: auto;
+    right: -280px;
+}
+
+[dir="rtl"] .mobile-menu.active {
+    right: 0;
+}
+
+/* Search Bar */
+[dir="rtl"] .search-bar input {
+    text-align: right;
+    padding-right: 1rem;
+    padding-left: 3rem;
+}
+
+[dir="rtl"] .search-bar button,
+[dir="rtl"] .search-bar .search-icon {
+    right: auto;
+    left: 0;
+}
+
+/* Price & Currency */
+[dir="rtl"] .price {
+    direction: ltr;
+    display: inline-block;
+}
+
+/* Rating Stars */
+[dir="rtl"] .rating {
+    direction: ltr;
+    display: inline-block;
+}
+
+/* Social Icons */
+[dir="rtl"] .social-icons li {
+    float: right;
+    margin-left: 10px;
+    margin-right: 0;
+}
+
+/* Custom adjustments */
+[dir="rtl"] .text-start {
+    text-align: right !important;
+}
+
+[dir="rtl"] .text-end {
+    text-align: left !important;
+}
+
+[dir="rtl"] .float-start {
+    float: right !important;
+}
+
+[dir="rtl"] .float-end {
+    float: left !important;
+}
+
+[dir="rtl"] .me-1 { margin-right: 0 !important; margin-left: 0.25rem !important; }
+[dir="rtl"] .me-2 { margin-right: 0 !important; margin-left: 0.5rem !important; }
+[dir="rtl"] .me-3 { margin-right: 0 !important; margin-left: 1rem !important; }
+[dir="rtl"] .me-4 { margin-right: 0 !important; margin-left: 1.5rem !important; }
+[dir="rtl"] .me-5 { margin-right: 0 !important; margin-left: 3rem !important; }
+
+[dir="rtl"] .ms-1 { margin-left: 0 !important; margin-right: 0.25rem !important; }
+[dir="rtl"] .ms-2 { margin-left: 0 !important; margin-right: 0.5rem !important; }
+[dir="rtl"] .ms-3 { margin-left: 0 !important; margin-right: 1rem !important; }
+[dir="rtl"] .ms-4 { margin-left: 0 !important; margin-right: 1.5rem !important; }
+[dir="rtl"] .ms-5 { margin-left: 0 !important; margin-right: 3rem !important; }
+
+[dir="rtl"] .pe-1 { padding-right: 0 !important; padding-left: 0.25rem !important; }
+[dir="rtl"] .pe-2 { padding-right: 0 !important; padding-left: 0.5rem !important; }
+[dir="rtl"] .pe-3 { padding-right: 0 !important; padding-left: 1rem !important; }
+[dir="rtl"] .pe-4 { padding-right: 0 !important; padding-left: 1.5rem !important; }
+[dir="rtl"] .pe-5 { padding-right: 0 !important; padding-left: 3rem !important; }
+
+[dir="rtl"] .ps-1 { padding-left: 0 !important; padding-right: 0.25rem !important; }
+[dir="rtl"] .ps-2 { padding-left: 0 !important; padding-right: 0.5rem !important; }
+[dir="rtl"] .ps-3 { padding-left: 0 !important; padding-right: 1rem !important; }
+[dir="rtl"] .ps-4 { padding-left: 0 !important; padding-right: 1.5rem !important; }
+[dir="rtl"] .ps-5 { padding-left: 0 !important; padding-right: 3rem !important; }
+
+/* RTL: Fix full-width fixed elements to prevent horizontal gap on zoom */
+[dir="rtl"] .header-top.sticky,
+[dir="rtl"] .search-bar,
+[dir="rtl"] .overlay,
+[dir="rtl"] .muaadh-mobile-overlay {
+    left: 0;
+    right: 0;
+}
+
+/* RTL: Ensure hidden mobile menus don't extend beyond viewport */
+[dir="rtl"] .mobile-menu {
+    right: -290px;
+}
+
+/* ============================================================================
+   FIX: RTL Mobile White Space / Horizontal Scroll Issue
+   ============================================================================ */
+
+/* Prevent page overflow caused by negative margins in RTL mode */
+[dir="rtl"] html,
+[dir="rtl"] body {
+    overflow-x: hidden;
+    max-width: 100%;
+}
+
+/* Fix Bootstrap row negative margins in RTL on mobile */
+@media (max-width: 991.98px) {
+    [dir="rtl"] .row {
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+    }
+
+    [dir="rtl"] .container,
+    [dir="rtl"] .container-fluid {
+        padding-left: 15px;
+        padding-right: 15px;
+        max-width: 100%;
+        overflow-x: hidden;
+    }
+
+    /* Fix any elements that might overflow */
+    [dir="rtl"] .section,
+    [dir="rtl"] section,
+    [dir="rtl"] .wrapper {
+        max-width: 100%;
+        overflow-x: hidden;
+    }
+}
+
+/* Fix slick slider overflow in RTL */
+[dir="rtl"] .slick-slider {
+    max-width: 100%;
+    overflow: hidden;
+}
+
+[dir="rtl"] .slick-list {
+    overflow: hidden;
+}
+
+/* Fix any absolute/fixed positioned elements that extend beyond viewport */
+[dir="rtl"] .header-top,
+[dir="rtl"] .sticky-header,
+[dir="rtl"] footer,
+[dir="rtl"] .overlay {
+    left: 0;
+    right: 0;
+    max-width: 100%;
+}
+
+/* Ensure main content doesn't overflow */
+[dir="rtl"] main,
+[dir="rtl"] #main,
+[dir="rtl"] .main-content {
+    max-width: 100%;
+    overflow-x: hidden;
+}
+
+/* Fix header logo negative margin in RTL on mobile */
+@media (max-width: 767.98px) {
+    [dir="rtl"] .header-top .create-navbar .nav-left img {
+        margin-left: 0;
+        margin-right: 0;
+    }
+}
+
+/* Fix any other elements with negative margins on mobile */
+@media (max-width: 991.98px) {
+    [dir="rtl"] [style*="margin-left: -"],
+    [dir="rtl"] [style*="margin-right: -"] {
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+    }
+}

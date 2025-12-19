@@ -5,7 +5,7 @@
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="keywords" content="{{$seo->meta_keys}}">
-        <meta name="author" content="MUAADH">
+        <meta name="author" content="Muaadh">
 
         <title>{{$gs->title}}</title>
   <!-- Tell the browser to be responsive to screen width -->
@@ -146,6 +146,23 @@ html {
                                        @else
                                        <p>{{ __('Pick Up') }}</p>
                                        @endif
+                                       @php
+                                          $printShipments = App\Models\ShipmentStatusLog::where('order_id', $order->id)
+                                              ->orderBy('status_date', 'desc')
+                                              ->get()
+                                              ->groupBy('tracking_number');
+                                       @endphp
+                                       @if($printShipments->count() > 0)
+                                       <h5>{{ __('Shipment Info') }}</h5>
+                                       @foreach($printShipments as $trackingNum => $logs)
+                                          @php $latestLog = $logs->first(); @endphp
+                                          <p>
+                                             <strong>{{ __('Tracking:') }}</strong> {{ $trackingNum }}<br>
+                                             <strong>{{ __('Company:') }}</strong> {{ $latestLog->company_name ?? 'N/A' }}<br>
+                                             <strong>{{ __('Status:') }}</strong> {{ ucfirst($latestLog->status) }}
+                                          </p>
+                                       @endforeach
+                                       @endif
                                     </div>
                                  </div>
                                  @endif
@@ -168,7 +185,7 @@ html {
                                           @foreach($cart['items'] as $product)
                                           <tr>
                                              <td>{{ $product['item']['id'] }}</td>
-                                             <td><x-product-name :item="$product" :vendor-id="$product['item']['user_id']" /></td>
+                                             <td>{{ getLocalizedProductName($product['item'], 50) }}</td>
                                              <td>
                                                 <b>{{ __('Quantity') }}</b>: {{$product['qty']}} <br>
                                                 @if(!empty($product['size']))

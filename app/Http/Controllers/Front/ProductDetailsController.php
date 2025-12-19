@@ -20,62 +20,101 @@ use Illuminate\Support\Facades\Validator;
 class ProductDetailsController extends FrontBaseController
 {
     /**
-     * New preferred method: /item/{slug}/store/{vendor_id}/merchant_products/{merchant_product_id}
-     * Load Product by slug and MerchantProduct by id
-     * Assert merchant_products.product_id == products.id and vendor_id matches, else 404
+     * ==========================================================================
+     * STRICT MERCHANT PRODUCT ROUTE
+     * ==========================================================================
+     * /item/{slug}/store/{vendor_id}/merchant_products/{merchant_product_id}
+     *
+     * SECURITY RULES:
+     * 1. MerchantProduct MUST exist and be active
+     * 2. vendor_id MUST match merchant_product.user_id (STRICT - no fallback)
+     * 3. Product data is READONLY - price/stock/qty come ONLY from MerchantProduct
+     * 4. NO best_merchant_product or merchantProducts()->first() allowed
+     * ==========================================================================
      */
     public function showByMerchantProduct(Request $request, $slug, $vendor_id = null, $merchant_product_id = null)
     {
-        $affilate_user = 0;
         $gs = $this->gs;
 
-        // Affiliate logic
-        if ($gs->product_affilate == 1 && $request->has('ref') && !empty($request->ref)) {
-            $ref = $request->ref;
-            $userRef = User::where('affilate_code', $ref)->first();
-            if ($userRef) {
-                if (Auth::check() && Auth::id() != $userRef->id) {
-                    $affilate_user = $userRef->id;
-                } elseif (!Auth::check()) {
-                    $affilate_user = $userRef->id;
-                }
-            }
-        }
-
-        // Handle different route formats
-        // Check if this is the old short route format by examining the number of route parameters
+        // ======================================================================
+        // STEP 1: PARSE ROUTE PARAMETERS
+        // ======================================================================
         $routeParams = $request->route()->parameters();
 
+        // Handle old short route format: /item/{slug}/{merchant_product_id}
         if (count($routeParams) == 2) {
-            // Old short format: /item/{slug}/{merchant_product_id}
-            // $vendor_id actually contains the merchant_product_id
             $merchant_product_id = $vendor_id;
             $vendor_id = null;
         }
-        // Otherwise it's the new format: /item/{slug}/store/{vendor_id}/merchant_products/{merchant_product_id}
 
-        // 1) Load merchant product by ID first (with product relationship)
-        $merchantProduct = MerchantProduct::with(['user', 'qualityBrand', 'product.galleries'])
-            ->find($merchant_product_id);
+        // ======================================================================
+        // STEP 2: STRICT GUARD - MerchantProduct MUST exist
+        // ======================================================================
+        $merchantProduct = MerchantProduct::with([
+            'user',
+            'qualityBrand',
+            'product.galleries',
+            'product.brand',
+            'product.category',
+            'product.subcategory',
+        ])->find($merchant_product_id);
 
         if (!$merchantProduct) {
-            return response()->view('errors.404')->setStatusCode(404);
+            abort(404, 'Merchant product not found');
         }
 
-        // 2) Get the product from the merchant product
+        // ======================================================================
+        // STEP 3: STRICT GUARD - Vendor ID MUST match (when provided)
+        // ======================================================================
+        if ($vendor_id !== null) {
+            $vendor_id = (int) $vendor_id;
+            $actualVendorId = (int) $merchantProduct->user_id;
+
+            if ($vendor_id !== $actualVendorId) {
+                // Log security violation attempt
+                \Log::warning('ProductDetails: vendor_id mismatch', [
+                    'requested_vendor_id' => $vendor_id,
+                    'actual_vendor_id' => $actualVendorId,
+                    'merchant_product_id' => $merchant_product_id,
+                    'ip' => $request->ip(),
+                ]);
+
+                abort(403, 'Vendor ID does not match merchant product owner');
+            }
+        }
+
+        // ======================================================================
+        // STEP 4: STRICT GUARD - MerchantProduct MUST be active
+        // ======================================================================
+        if ((int) $merchantProduct->status !== 1) {
+            abort(404, 'Merchant product is not active');
+        }
+
+        // ======================================================================
+        // STEP 5: STRICT GUARD - Vendor MUST be active (is_vendor = 2)
+        // ======================================================================
+        if (!$merchantProduct->user || (int) $merchantProduct->user->is_vendor !== 2) {
+            abort(404, 'Vendor is not active');
+        }
+
+        // ======================================================================
+        // STEP 6: Get Product (READONLY - catalog data only)
+        // ======================================================================
         $productt = $merchantProduct->product;
 
         if (!$productt) {
-            return response()->view('errors.404')->setStatusCode(404);
+            abort(404, 'Product not found for this merchant listing');
         }
 
-        // Load additional product data
+        // Load ratings (catalog-level data) - count, avg, and full list for reviews
         $productt->loadCount('ratings');
         $productt->loadAvg('ratings', 'rating');
+        $productt->load(['ratings' => fn($q) => $q->with('user')->orderBy('review_date', 'desc')]);
 
-        // 3) Verify slug matches (in case the product was updated)
+        // ======================================================================
+        // STEP 7: Verify slug matches (SEO redirect if changed)
+        // ======================================================================
         if ($productt->slug !== $slug) {
-            // Redirect to the correct slug
             return redirect()->route('front.product', [
                 'slug' => $productt->slug,
                 'vendor_id' => $merchantProduct->user_id,
@@ -83,38 +122,61 @@ class ProductDetailsController extends FrontBaseController
             ], 301);
         }
 
-        // 4) Verify vendor_id matches if provided
-        if ($vendor_id !== null && $merchantProduct->user_id != $vendor_id) {
-            return response()->view('errors.404')->setStatusCode(404);
+        // ======================================================================
+        // STEP 8: Affiliate tracking (optional)
+        // ======================================================================
+        $affilate_user = 0;
+        if ($gs->product_affilate == 1 && $request->has('ref') && !empty($request->ref)) {
+            $userRef = User::where('affilate_code', $request->ref)->first();
+            if ($userRef && (!Auth::check() || Auth::id() != $userRef->id)) {
+                $affilate_user = $userRef->id;
+            }
         }
 
-        // 5) Check if merchant product is active
-        if ((int) $merchantProduct->status !== 1) {
-            return response()->view('errors.404')->setStatusCode(404);
-        }
-
-        // 5) Other sellers for same product
+        // ======================================================================
+        // STEP 9: Other sellers (same product, different vendors)
+        // ======================================================================
         $otherSellers = MerchantProduct::query()
             ->where('product_id', $productt->id)
             ->where('status', 1)
             ->where('id', '<>', $merchantProduct->id)
-            ->with(['user:id,shop_name,is_vendor', 'qualityBrand'])
+            ->whereHas('user', fn($q) => $q->where('is_vendor', 2))
+            ->with(['user', 'qualityBrand'])
+            ->orderBy('price')
             ->get();
 
-        // 6) Other listings from same vendor
+        // ======================================================================
+        // STEP 10: Other listings from same vendor
+        // ======================================================================
         $vendorListings = MerchantProduct::query()
             ->where('user_id', $merchantProduct->user_id)
             ->where('status', 1)
             ->where('id', '<>', $merchantProduct->id)
-            ->with('product')
+            ->with(['product' => fn($q) => $q->withCount('ratings')->withAvg('ratings', 'rating'), 'user', 'qualityBrand'])
             ->take(12)
             ->get();
 
-        // Set variables for view
-        $merchant = $merchantProduct;
-        $vendorId = $merchantProduct->user_id;
+        // ======================================================================
+        // STEP 10b: Related Products (same type/product_type, different product)
+        // Optimized: Query MerchantProduct directly with product filters
+        // ======================================================================
+        $relatedMerchantProducts = MerchantProduct::where('status', 1)
+            ->where('stock', '>', 0)
+            ->whereHas('product', function($q) use ($productt) {
+                $q->where('type', $productt->type)
+                  ->where('product_type', $productt->product_type)
+                  ->where('id', '!=', $productt->id);
+            })
+            ->whereHas('user', fn($q) => $q->where('is_vendor', 2))
+            ->with(['product' => fn($q) => $q->withCount('ratings')->withAvg('ratings', 'rating'), 'user', 'qualityBrand'])
+            ->limit(50) // Get more than needed, then shuffle in PHP
+            ->get()
+            ->shuffle() // Randomize in PHP (much faster than MySQL ORDER BY RAND())
+            ->take(12); // Take only 12
 
-        // Track click
+        // ======================================================================
+        // STEP 11: Track product click
+        // ======================================================================
         if (!session()->has('click_' . $productt->id)) {
             ProductClick::create([
                 'product_id' => $productt->id,
@@ -124,9 +186,23 @@ class ProductDetailsController extends FrontBaseController
             session()->put('click_' . $productt->id, 1);
         }
 
+        // ======================================================================
+        // STEP 12: PASS TO VIEW
+        // $merchant is the AUTHORITATIVE source for price/stock/qty
+        // $productt is READONLY catalog data (name, description, images)
+        // ======================================================================
+        $merchant = $merchantProduct;
+        $vendorId = $merchantProduct->user_id;
+
         return view('frontend.product', compact(
-            'productt', 'gs', 'otherSellers', 'vendorListings', 'affilate_user',
-            'merchant', 'vendorId'
+            'productt',               // Product (READONLY - catalog only)
+            'merchant',               // MerchantProduct (AUTHORITATIVE - price/stock/qty)
+            'vendorId',               // Verified vendor ID
+            'otherSellers',           // Alternative sellers
+            'vendorListings',         // More from this vendor
+            'relatedMerchantProducts', // Related products (pre-loaded, optimized)
+            'affilate_user',          // Affiliate tracking
+            'gs'                      // General settings
         ));
     }
 
@@ -231,11 +307,13 @@ class ProductDetailsController extends FrontBaseController
     public function quickFragment(int $id)
     {
         $product = \App\Models\Product::findOrFail($id);
+        $mp = null;
 
         // البائع من ?user=
         $vendorId = (int) request()->query('user', 0);
         if ($vendorId > 0) {
-            $mp = \App\Models\MerchantProduct::where('product_id', $product->id)
+            $mp = \App\Models\MerchantProduct::with(['qualityBrand', 'user'])
+                ->where('product_id', $product->id)
                 ->where('user_id', $vendorId)
                 ->first();
 
@@ -245,7 +323,13 @@ class ProductDetailsController extends FrontBaseController
             }
         }
 
-        return response()->view('partials.product', compact('product'));
+        // جلب البراند من المنتج
+        $brand = null;
+        if ($product->brand_id) {
+            $brand = \App\Models\Brand::find($product->brand_id);
+        }
+
+        return response()->view('partials.product', compact('product', 'mp', 'brand'));
     }
 
 

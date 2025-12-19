@@ -42,7 +42,7 @@
                             </div>
                           </div>
                           <div class="col-lg-6">
-                            <input type="text" class="input-field" placeholder="{{ __('Write Your Site Title Here') }}" name="title" value="{{ $gs->title }}" required="">
+                            <input type="text" class="form-control" placeholder="{{ __('Write Your Site Title Here') }}" name="title" value="{{ $gs->title }}" required="">
                           </div>
                         </div>
 
@@ -54,7 +54,7 @@
                               </div>
                             </div>
                             <div class="col-lg-6">
-                              <input type="text" class="input-field" placeholder="{{ __('Write Your Site Copyright Text Here') }}" name="copyright" value="{{ $gs->copyright }}" required="">
+                              <input type="text" class="form-control" placeholder="{{ __('Write Your Site Copyright Text Here') }}" name="copyright" value="{{ $gs->copyright }}" required="">
                             </div>
                           </div>
 
@@ -127,7 +127,7 @@
                             </div>
                             <div class="col-lg-6">
                                 <div class="tawk-area">
-                                  <input class="input-field" name="capcha_site_key" value="{{$gs->capcha_site_key}}">
+                                  <input class="form-control" name="capcha_site_key" value="{{$gs->capcha_site_key}}">
                                 </div>
                             </div>
                           </div>
@@ -142,7 +142,7 @@
                             </div>
                             <div class="col-lg-6">
                                 <div class="tawk-area">
-                                  <input class="input-field" name="capcha_secret_key" value="{{$gs->capcha_secret_key}}">
+                                  <input class="form-control" name="capcha_secret_key" value="{{$gs->capcha_secret_key}}">
                                 </div>
                             </div>
                           </div>
@@ -194,7 +194,7 @@
                               </div>
                               <div class="col-lg-6">
                                   <div class="tawk-area">
-                                    <textarea class="input-field" name="talkto">{{$gs->talkto}}</textarea>
+                                    <textarea class="form-control" name="talkto">{{$gs->talkto}}</textarea>
                                   </div>
                               </div>
                             </div>
@@ -210,7 +210,7 @@
                               </div>
                               <div class="col-lg-6">
                                   <div >
-                                  <textarea class="input-field"  readonly="">{{ url('/vendor/subscription/check') }}</textarea>
+                                  <textarea class="form-control"  readonly="">{{ url('/vendor/subscription/check') }}</textarea>
                                   </div>
                               </div>
                             </div>
@@ -225,7 +225,7 @@
                             </div>
                           </div>
                           <div class="col-lg-6">
-                            <button class="addProductSubmit-btn" type="submit">{{ __('Save') }}</button>
+                            <button class="btn btn-primary" type="submit">{{ __('Save') }}</button>
                           </div>
                         </div>
                      </form>

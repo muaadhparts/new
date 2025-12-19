@@ -81,9 +81,37 @@ class User extends Authenticatable implements JWTSubject
 
     // Multi Vendor
 
+    /**
+     * Legacy relationship - DEPRECATED
+     * Note: products table no longer has user_id column
+     * Use merchantProducts() or vendorProducts() instead
+     *
+     * @deprecated Use merchantProducts() for direct merchant listings
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
     public function products()
     {
-        return $this->hasMany('App\Models\Product');
+        // Return empty collection to prevent errors
+        // This method is kept for backward compatibility only
+        return $this->hasMany('App\Models\Product')->whereRaw('1 = 0');
+    }
+
+    /**
+     * Get all unique products that this vendor sells via merchantProducts
+     * This returns Product models, not MerchantProduct models
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasManyThrough
+     */
+    public function vendorProducts()
+    {
+        return $this->hasManyThrough(
+            'App\Models\Product',
+            'App\Models\MerchantProduct',
+            'user_id',        // Foreign key on merchant_products table
+            'id',             // Foreign key on products table
+            'id',             // Local key on users table
+            'product_id'      // Local key on merchant_products table
+        );
     }
 
     public function services()

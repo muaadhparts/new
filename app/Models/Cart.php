@@ -8,16 +8,16 @@ use Session;
 
 class Cart extends Model
 {
-    public $items = null;
+    public $items = [];
     public $totalQty = 0;
     public $totalPrice = 0;
 
     public function __construct($oldCart = null)
     {
         if ($oldCart) {
-            $this->items      = $oldCart->items;
-            $this->totalQty   = $oldCart->totalQty;
-            $this->totalPrice = $oldCart->totalPrice;
+            $this->items      = $oldCart->items ?? [];
+            $this->totalQty   = $oldCart->totalQty ?? 0;
+            $this->totalPrice = $oldCart->totalPrice ?? 0;
         }
     }
 
@@ -103,7 +103,9 @@ class Cart extends Model
             'values'              => $values,
             'item_price'          => $item->price,
             'discount'            => 0,
-            'affilate_user'       => 0
+            'affilate_user'       => 0,
+            'minimum_qty'         => $item->minimum_qty ?? 1,
+            'preordered'          => $item->preordered ?? 0,
         ];
 
         // مفتاح Vendor-aware
@@ -199,6 +201,8 @@ class Cart extends Model
 
         $storedItem = [
             'user_id'      => $this->vendorIdFromItem($item),
+            'merchant_product_id' => $item->merchant_product_id ?? 0,
+            'brand_quality_id'    => $item->brand_quality_id ?? null,
             'qty'          => 0,
             'size_key'     => 0,
             'size_qty'     => $item->size_qty,
@@ -215,7 +219,9 @@ class Cart extends Model
             'values'       => $values,
             'item_price'   => $item->price,
             'discount'     => 0,
-            'affilate_user'=> 0
+            'affilate_user'=> 0,
+            'minimum_qty'  => $item->minimum_qty ?? 1,
+            'preordered'   => $item->preordered ?? 0,
         ];
 
         // مفتاح Vendor-aware
@@ -332,6 +338,8 @@ class Cart extends Model
     {
         $storedItem = [
             'user_id'      => $this->vendorIdFromItem($item),
+            'merchant_product_id' => $item->merchant_product_id ?? 0,
+            'brand_quality_id'    => $item->brand_quality_id ?? null,
             'qty'          => 0,
             'size_key'     => 0,
             'size_qty'     => $item->size_qty,
@@ -347,7 +355,9 @@ class Cart extends Model
             'values'       => '',
             'item_price'   => $item->price,
             'discount'     => 0,
-            'affilate_user'=> 0
+            'affilate_user'=> 0,
+            'minimum_qty'  => $item->minimum_qty ?? 1,
+            'preordered'   => $item->preordered ?? 0,
         ];
         if ($this->items && array_key_exists($id, $this->items)) {
             $storedItem = $this->items[$id];
@@ -389,6 +399,8 @@ class Cart extends Model
     {
         $storedItem = [
             'user_id'      => $this->vendorIdFromItem($item),
+            'merchant_product_id' => $item->merchant_product_id ?? 0,
+            'brand_quality_id'    => $item->brand_quality_id ?? null,
             'qty'          => 0,
             'size_key'     => 0,
             'size_qty'     => $item->size_qty,
@@ -404,12 +416,17 @@ class Cart extends Model
             'values'       => '',
             'item_price'   => $item->price,
             'discount'     => 0,
-            'affilate_user'=> 0
+            'affilate_user'=> 0,
+            'minimum_qty'  => $item->minimum_qty ?? 1,
+            'preordered'   => $item->preordered ?? 0,
         ];
         if ($this->items && array_key_exists($id, $this->items)) {
             $storedItem = $this->items[$id];
         }
-        if ($storedItem['qty'] == 1) return;
+
+        // التحقق من الحد الأدنى للكمية قبل التنقيص
+        $minQty = (int)($storedItem['minimum_qty'] ?? 1);
+        if ($storedItem['qty'] <= $minQty) return;
 
         $storedItem['qty']--;
         if ($item->stock !== null && $item->stock !== '') $storedItem['stock']++;

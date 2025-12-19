@@ -2,74 +2,7 @@
 @extends('layouts.front')
 
 @section('content')
-    <style>
-        #zoom_container .landmarks {
-            position: absolute;
-            z-index: 10;
-            top: 0px;
-            left: 0px;
-        }
-
-        /**/
-        #zoom_container .landmarks .item {
-            position: absolute;
-            text-align: center;
-            display: none;
-        }
-
-        .hovered {
-            border: 2px solid rgb(219, 16, 16) !important;
-            background-color: #bce8f1 !important;
-        }
-
-        div[id*='zoom_container'] .landmarks .lable div {
-            z-index: 19999;
-            text-align: center;
-            vertical-align: middle;
-            border: 2px solid blue;
-            background-color: transparent;
-            display: table-cell;
-            cursor: pointer;
-            padding-left: 4px !important;
-            padding-right: 4px !important;
-            position: absolute;
-            border-radius: 999px;
-            font: bold 15px tahoma, arial, verdana, sans-serif;
-        }
-
-
-        .inner-card {
-            height: 20px;
-            background-color: #eee;
-        }
-
-        .card-1 {
-
-            height: 200px;
-            background-color: #eee;
-        }
-
-        .card-2 {
-            height: 130px;
-        }
-
-        .h-screen {
-            height: 100vh;
-        }
-
-        .animate-pulse {
-
-            animation: pulse 2s cubic-bezier(.4, 0, .6, 1) infinite;
-        }
-
-
-        @keyframes pulse {
-            50% {
-                opacity: .2;
-            }
-        }
-    </style>
-    </div>
+    <div class="muaadh-section-gray">
     <div class="container m-md-2">
         <div class="row bg-white panel-body">
             <div class="col-md-6 content mt-auto mb-auto">
@@ -81,7 +14,7 @@
 
                                 <div class="view-options2 xview-options__body--filters ">
 
-                                    <div class="view-options__label" style="top:-10px">{{ $category->localized_name }}
+                                    <div class="view-options__label muaadh-view-options-label">{{ $category->localized_name }}
 {{--                                        @dd($category)--}}
                                         {{-- <img class="image__tag flex-fill" src="{{env('NISSAN_URL').$category->thumbnailImage }}" alt="{{$category->localized_name}}">  --}}
                                     </div>
@@ -154,7 +87,7 @@
                                     <tr class="part-search-tr" x-data="{ isHovered: false }" class="pointer correct-callout"
                                         data-category-id="{{ $category->id }}" data-index="{{ $item->callout }}">
 
-                                        <td class="codeonimage " style="color: blue; cursor: pointer;"
+                                        <td class="codeonimage muaadh-code-link"
                                             x-on:click="$dispatch('modal', {partNumber: '{{ $item->callout }}',isLoading:true, isOpen: true ,categoryId:'{{ $category->id }}' })"
                                             id="part_{{ $item->callout }}">{{ $item->callout }}</td>
 
@@ -257,7 +190,7 @@
                     <!-- Modal footer -->
                     <div class="modal-footer">
                         <button type="button" x-on:click="closeCartPartItems();" class="btn btn-danger"
-                            data-dismiss="modal">
+                            data-bs-dismiss="modal">
                             <h5 class="font_14 f_w_500 theme_text3 ">{{ __('common.cancel') }}
                         </button>
                     </div>
@@ -269,6 +202,7 @@
             </div>
         </div>
         {{-- </template> --}}
+    </div>
     </div>
 @endsection
 

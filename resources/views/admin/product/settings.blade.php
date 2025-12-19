@@ -68,7 +68,7 @@
                                     </div>
                                 </div>
                                 <div class="col-lg-6">
-                                    <input type="number" class="input-field"
+                                    <input type="number" class="form-control"
                                         placeholder="{{ __('Product Whole Sale Max Quantity') }}" name="wholesell"
                                         value="{{ $gs->wholesell }}" required="" min="0">
                                 </div>
@@ -95,7 +95,7 @@
                                     </div>
                                 </div>
                                 <div class="col-lg-6">
-                                    <input type="number" class="input-field"
+                                    <input type="number" class="form-control"
                                         placeholder="{{ __('Display New Products') }}" name="new_count"
                                         value="{{ $gs->new_count }}" required="" min="0">
                                 </div>
@@ -111,7 +111,7 @@
                                     </div>
                                 </div>
                                 <div class="col-lg-6">
-                                    <input type="number" class="input-field"
+                                    <input type="number" class="form-control"
                                         placeholder="{{ __('Display Best Seller Products') }}"
                                         name="best_seller_count" value="{{ $gs->best_seller_count }}" required=""
                                         min="0">
@@ -127,7 +127,7 @@
                                     </div>
                                 </div>
                                 <div class="col-lg-6">
-                                    <input type="number" class="input-field"
+                                    <input type="number" class="form-control"
                                         placeholder="{{ __('Display Popular Products') }}" name="popular_count"
                                         value="{{ $gs->popular_count }}" required="" min="0">
                                 </div>
@@ -145,7 +145,7 @@
                                     </div>
                                 </div>
                                 <div class="col-lg-6">
-                                    <input type="number" class="input-field"
+                                    <input type="number" class="form-control"
                                         placeholder="{{ __('Display Trending Products') }}" name="trending_count"
                                         value="{{ $gs->trending_count }}" required="" min="0">
                                 </div>
@@ -167,7 +167,7 @@
                                     </div>
                                 </div>
                                 <div class="col-lg-6">
-                                    <input type="number" class="input-field"
+                                    <input type="number" class="form-control"
                                         placeholder="{{ __('Display Products Per Page') }}" name="page_count"
                                         value="{{ $gs->page_count }}" required="" min="0">
                                 </div>
@@ -188,7 +188,7 @@
                                     </div>
                                 </div>
                                 <div class="col-lg-6">
-                                    <input type="number" class="input-field"
+                                    <input type="number" class="form-control"
                                         placeholder="{{ __('Display Products Per Page') }}" name="vendor_page_count"
                                         value="{{ $gs->vendor_page_count }}" required="" min="0">
                                 </div>
@@ -234,7 +234,7 @@
                                     </div>
                                 </div>
                                 <div class="col-lg-6">
-                                    <input type="number" class="input-field"
+                                    <input type="number" class="form-control"
                                         placeholder="{{ __('Display Products Per Page') }}" name="seller_product_count"
                                         value="{{ $gs->seller_product_count }}" required="" min="0">
                                 </div>
@@ -379,7 +379,7 @@
                                         </div>
                                     </div>
                                     <div class="col-lg-6">
-                                        <input type="number" class="input-field"
+                                        <input type="number" class="form-control"
                                             placeholder="{{ __('Display Products Per Page') }}" name="wishlist_count"
                                             value="{{ $gs->wishlist_count }}" required="" min="0">
                                     </div>
@@ -417,7 +417,7 @@
                                         </div>
                                     </div>
                                     <div class="col-lg-6">
-                                        <input type="number" class="input-field"
+                                        <input type="number" class="form-control"
                                             placeholder="{{ __('Minimum Price') }}" name="min_price"
                                             value="{{ $gs->min_price }}" required="" min="0">
                                     </div>
@@ -431,7 +431,7 @@
                                         </div>
                                     </div>
                                     <div class="col-lg-6">
-                                        <input type="number" class="input-field"
+                                        <input type="number" class="form-control"
                                             placeholder="{{ __('Maximum Price') }}" name="max_price"
                                             value="{{ $gs->max_price }}" required="" min="0">
                                     </div>
@@ -461,7 +461,7 @@
                                     </div>
                                 </div>
                                 <div class="col-lg-6">
-                                    <button class="addProductSubmit-btn" type="submit">{{ __('Save') }}</button>
+                                    <button class="btn btn-primary" type="submit">{{ __('Save') }}</button>
                                 </div>
                             </div>
                         </form>

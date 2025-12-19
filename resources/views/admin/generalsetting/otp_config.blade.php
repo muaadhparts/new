@@ -71,7 +71,7 @@
                                         </div>
                                     </div>
                                     <div class="col-lg-6">
-                                        <input type="text" class="input-field" placeholder="{{ __('VONAGE_KEY') }} "
+                                        <input type="text" class="form-control" placeholder="{{ __('VONAGE_KEY') }} "
                                             name="vonage_key" value="{{ $gs->vonage_key }}" required="">
                                     </div>
                                 </div>
@@ -85,7 +85,7 @@
                                         </div>
                                     </div>
                                     <div class="col-lg-6">
-                                        <input type="text" class="input-field" placeholder="{{ __('VONAGE_SECRET') }} "
+                                        <input type="text" class="form-control" placeholder="{{ __('VONAGE_SECRET') }} "
                                             name="vonage_secret" value="{{ $gs->vonage_secret }}" required="">
                                     </div>
                                 </div>
@@ -98,7 +98,7 @@
                                         </div>
                                     </div>
                                     <div class="col-lg-6">
-                                        <input type="text" class="input-field"
+                                        <input type="text" class="form-control"
                                             placeholder="{{ __('OTP FROM NUMBER') }} " name="from_number"
                                             value="{{ $gs->from_number }}" required="">
                                     </div>
@@ -113,7 +113,7 @@
                                         </div>
                                     </div>
                                     <div class="col-lg-6">
-                                        <button class="addProductSubmit-btn" type="submit">{{ __('Update') }}</button>
+                                        <button class="btn btn-primary" type="submit">{{ __('Update') }}</button>
                                     </div>
                                 </div>
                             </form>

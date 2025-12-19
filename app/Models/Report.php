@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class Report extends Model
 {
 
-    protected $fillable = ['product_id', 'user_id','title','note'];
+    protected $fillable = ['product_id', 'merchant_product_id', 'user_id', 'title', 'note'];
 
     public function user()
     {
@@ -25,6 +25,14 @@ class Report extends Model
 				$data[$dt] = __('Deleted');
 			}
 		});
+    }
+
+    /**
+     * السجل التجاري المرتبط بالبلاغ
+     */
+    public function merchantProduct()
+    {
+        return $this->belongsTo('App\Models\MerchantProduct')->withDefault();
     }
 
 }

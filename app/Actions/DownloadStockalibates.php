@@ -34,7 +34,7 @@ class DownloadStockalibates
     //         }
     //     }
 
-    //     Log::info('DownloadStock', $stocks);
+    //     Log::debug('DownloadStock', $stocks);
     //     // dd($stocks); // ← للتجربة
     // }
     public function handle(): array
@@ -55,7 +55,7 @@ class DownloadStockalibates
             }
         }
 
-        Log::info('DownloadStock', $stocks);
+        Log::debug('DownloadStock', $stocks);
 
         return $stocks; // ✅ مهم: رجّع الملفات
     }

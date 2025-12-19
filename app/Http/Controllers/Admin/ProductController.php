@@ -24,193 +24,213 @@ class ProductController extends AdminBaseController
 
     public function datatables(Request $request)
     {
-        // // dd(['admin_datatables' => true]); // اختباري
+        // الاستعلام على السجلات التجارية مباشرة - كل سجل تجاري = صف مستقل
+        $query = \App\Models\MerchantProduct::with(['product.brand', 'product.category', 'user', 'qualityBrand'])
+            ->whereHas('product', function($q) {
+                $q->where('product_type', 'normal');
+            });
 
-        if ($request->type == 'all') {
-            $datas = \App\Models\Product::whereProductType('normal')->latest('id')->limit(50);
-        } elseif ($request->type == 'deactive') {
-            $datas = \App\Models\Product::whereProductType('normal')->whereStatus(0)->latest('id')->limit(50);
-        } else {
-            $datas = \App\Models\Product::latest('id')->limit(50);
+        if ($request->type == 'deactive') {
+            $query->where('status', 0);
         }
+
+        $datas = $query->latest('id');
 
         return \Datatables::of($datas)
             ->filterColumn('name', function ($query, $keyword) {
-                $query->where(function($q) use ($keyword) {
+                $query->whereHas('product', function($q) use ($keyword) {
                     $q->where('name', 'like', "%{$keyword}%")
                       ->orWhere('sku', 'like', "%{$keyword}%")
                       ->orWhere('label_ar', 'like', "%{$keyword}%")
                       ->orWhere('label_en', 'like', "%{$keyword}%");
                 });
             })
-            ->editColumn('name', function (\App\Models\Product $data) {
-                // استخرج أول/أرخص عرض بائع نشط لهذا المنتج (المتوفر أولاً ثم الأرخص)
-                $mp = $data->merchantProducts()
-                    ->where('status', 1)
-                    ->orderByRaw('CASE WHEN (stock IS NULL OR stock = 0) THEN 1 ELSE 0 END ASC')
-                    ->orderBy('price')
-                    ->first();
+            ->addColumn('photo', function (\App\Models\MerchantProduct $mp) {
+                $product = $mp->product;
+                if (!$product) return '<img src="' . asset('assets/images/noimage.png') . '" class="img-thumbnail" style="width:80px">';
 
-                $vendorId = optional($mp)->user_id ?: 0;
-                $merchantProductId = optional($mp)->id ?: 0;
-
-                $prodLink = ($vendorId && $merchantProductId)
-                    ? route('front.product', ['slug' => $data->slug, 'vendor_id' => $vendorId, 'merchant_product_id' => $merchantProductId])
-                    : '#';
-
-                // Use the product name component WITHOUT showing SKU
-                $nameComponent = view('components.product-name', [
-                    'product' => $data,
-                    'vendorId' => $vendorId,
-                    'merchantProductId' => $merchantProductId,
-                    'target' => '_blank',
-                    'showSku' => false  // إخفاء SKU من عمود الاسم
-                ])->render();
-
-                $id  = '<small>' . __("ID") . ': <a href="' . $prodLink . '" target="_blank">' . sprintf("%'.08d", $data->id) . '</a></small>';
-
-                // checkVendor() تم تحديثها لقراءة أول بائع نشط
-                return $nameComponent . '<br>' . $id . $data->checkVendor();
-            })
-            ->addColumn('sku', function (\App\Models\Product $data) {
-                if ($data->type != 'Physical' || !$data->sku) {
-                    return '-';
-                }
-
-                // في صفحات الأدمن، نستخدم route('search.result', sku)
-                $prodLink = route('search.result', $data->sku);
-                return '<a href="' . $prodLink . '" target="_blank">' . $data->sku . '</a>';
-            })
-            ->editColumn('price', function (\App\Models\Product $data) {
-                // أقل سعر نشط من عروض البائعين
-                $min = DB::table('merchant_products')
-                    ->where('product_id', $data->id)
-                    ->where('status', 1)
-                    ->min('price');
-
-                if ($min === null) {
-                    return \PriceHelper::showAdminCurrencyPrice(0);
-                }
-
-                // عمولة المنصة (ثابت + نسبة)
-                $gs = cache()->remember(
-                    'generalsettings',
-                    now()->addDay(),
-                    fn () => DB::table('generalsettings')->first()
-                );
-
-                $base = (float) $min
-                      + (float) $gs->fixed_commission
-                      + ((float) $min * (float) $gs->percentage_commission / 100);
-
-                // إظهار حسب عملة الأدمن
-                return \PriceHelper::showAdminCurrencyPrice($base * $this->curr->value);
-            })
-            ->editColumn('stock', function (\App\Models\Product $data) {
-                // مجموع مخزون العروض النشطة
-                $sum = DB::table('merchant_products')
-                    ->where('product_id', $data->id)
-                    ->where('status', 1)
-                    ->sum('stock');
-
-                if ((int) $sum === 0) {
-                    return __("Out Of Stock");
-                }
-                return $sum;
-            })
-            ->editColumn('photo', function (\App\Models\Product $data) {
-                $photo = $data->photo ? asset('assets/images/products/' . $data->photo) : asset('assets/images/noimage.png');
+                $photo = filter_var($product->photo, FILTER_VALIDATE_URL)
+                    ? $product->photo
+                    : ($product->photo ? \Illuminate\Support\Facades\Storage::url($product->photo) : asset('assets/images/noimage.png'));
                 return '<img src="' . $photo . '" alt="Image" class="img-thumbnail" style="width:80px">';
             })
-            ->addColumn('status', function (\App\Models\Product $data) {
-                $class = $data->status == 1 ? 'drop-success' : 'drop-danger';
-                $s     = $data->status == 1 ? 'selected' : '';
-                $ns    = $data->status == 0 ? 'selected' : '';
-                return '<div class="action-list">
-                            <select class="process select droplinks ' . $class . '">
-                                <option data-val="1" value="' . route('admin-prod-status', ['id1' => $data->id, 'id2' => 1]) . '" ' . $s . '>' . __("Activated") . '</option>
-                                <option data-val="0" value="' . route('admin-prod-status', ['id1' => $data->id, 'id2' => 0]) . '" ' . $ns . '>' . __("Deactivated") . '</option>
-                            </select>
-                        </div>';
+            ->addColumn('name', function (\App\Models\MerchantProduct $mp) {
+                $product = $mp->product;
+                if (!$product) return __('N/A');
+
+                $prodLink = route('front.product', [
+                    'slug' => $product->slug,
+                    'vendor_id' => $mp->user_id,
+                    'merchant_product_id' => $mp->id
+                ]);
+
+                $displayName = getLocalizedProductName($product);
+                $sku = $product->sku ? '<br><small class="text-muted">' . __('SKU') . ': ' . $product->sku . '</small>' : '';
+                $condition = $mp->product_condition == 1 ? '<span class="badge badge-warning">' . __('Used') . '</span>' : '';
+
+                return '<a href="' . $prodLink . '" target="_blank">' . $displayName . '</a>' . $sku . ' ' . $condition;
             })
-            ->addColumn('action', function (\App\Models\Product $data) {
-                $catalog = $data->type == 'Physical'
-                    ? ($data->is_catalog == 1
-                        ? '<a href="javascript:;" data-href="' . route('admin-prod-catalog', ['id1' => $data->id, 'id2' => 0]) . '" data-toggle="modal" data-target="#catalog-modal" class="delete"><i class="fas fa-trash-alt"></i> ' . __("Remove Catalog") . '</a>'
-                        : '<a href="javascript:;" data-href="' . route('admin-prod-catalog', ['id1' => $data->id, 'id2' => 1]) . '" data-toggle="modal" data-target="#catalog-modal"> <i class="fas fa-plus"></i> ' . __("Add To Catalog") . '</a>')
+            ->addColumn('brand', function (\App\Models\MerchantProduct $mp) {
+                $product = $mp->product;
+                return $product && $product->brand ? getLocalizedBrandName($product->brand) : __('N/A');
+            })
+            ->addColumn('quality_brand', function (\App\Models\MerchantProduct $mp) {
+                return $mp->qualityBrand ? getLocalizedQualityName($mp->qualityBrand) : __('N/A');
+            })
+            ->addColumn('vendor', function (\App\Models\MerchantProduct $mp) {
+                if (!$mp->user) return __('N/A');
+                $shopName = $mp->user->shop_name ?: $mp->user->name;
+                return '<span title="' . $mp->user->name . '">' . $shopName . '</span>';
+            })
+            ->addColumn('price', function (\App\Models\MerchantProduct $mp) {
+                $gs = cache()->remember('generalsettings', now()->addDay(), fn () => DB::table('generalsettings')->first());
+
+                $price = (float) $mp->price;
+                $base = $price + (float) $gs->fixed_commission + ($price * (float) $gs->percentage_commission / 100);
+
+                return \PriceHelper::showAdminCurrencyPrice($base * $this->curr->value);
+            })
+            ->addColumn('stock', function (\App\Models\MerchantProduct $mp) {
+                if ($mp->stock === null) return __('Unlimited');
+                if ((int) $mp->stock === 0) return '<span class="text-danger">' . __('Out Of Stock') . '</span>';
+                return $mp->stock;
+            })
+            ->addColumn('type', function (\App\Models\MerchantProduct $mp) {
+                return $mp->product ? $mp->product->type : __('N/A');
+            })
+            ->addColumn('status', function (\App\Models\MerchantProduct $mp) {
+                $class = $mp->status == 1 ? 'drop-success' : 'drop-danger';
+                $s = $mp->status == 1 ? 'selected' : '';
+                $ns = $mp->status == 0 ? 'selected' : '';
+
+                // حالة السجل التجاري
+                return '<div class="action-list">
+                    <select class="process select droplinks ' . $class . '">
+                        <option data-val="1" value="' . route('admin-merchant-product-status', ['id' => $mp->id, 'status' => 1]) . '" ' . $s . '>' . __("Activated") . '</option>
+                        <option data-val="0" value="' . route('admin-merchant-product-status', ['id' => $mp->id, 'status' => 0]) . '" ' . $ns . '>' . __("Deactivated") . '</option>
+                    </select>
+                </div>';
+            })
+            ->addColumn('action', function (\App\Models\MerchantProduct $mp) {
+                $product = $mp->product;
+                if (!$product) return '';
+
+                $catalog = $product->type == 'Physical'
+                    ? ($product->is_catalog == 1
+                        ? '<a href="javascript:;" data-href="' . route('admin-prod-catalog', ['id1' => $product->id, 'id2' => 0]) . '" data-bs-toggle="modal" data-bs-target="#catalog-modal" class="delete"><i class="fas fa-trash-alt"></i> ' . __("Remove Catalog") . '</a>'
+                        : '<a href="javascript:;" data-href="' . route('admin-prod-catalog', ['id1' => $product->id, 'id2' => 1]) . '" data-bs-toggle="modal" data-bs-target="#catalog-modal"> <i class="fas fa-plus"></i> ' . __("Add To Catalog") . '</a>')
                     : '';
 
                 return '<div class="godropdown"><button class="go-dropdown-toggle"> ' . __("Actions") . '<i class="fas fa-chevron-down"></i></button>
-                        <div class="action-list">
-                            <a href="' . route('admin-prod-edit', $data->id) . '"><i class="fas fa-edit"></i> ' . __("Edit") . '</a>
-                            <a href="javascript" class="set-gallery" data-toggle="modal" data-target="#setgallery"><input type="hidden" value="' . $data->id . '"><i class="fas fa-eye"></i> ' . __("View Gallery") . '</a>'
-                            . $catalog .
-                            '<a data-href="' . route('admin-prod-feature', $data->id) . '" class="feature" data-toggle="modal" data-target="#modal2"> <i class="fas fa-star"></i> ' . __("Highlight") . '</a>
-                            <a href="javascript:;" data-href="' . route('admin-prod-delete', $data->id) . '" data-toggle="modal" data-target="#confirm-delete" class="delete"><i class="fas fa-trash-alt"></i> ' . __("Delete") . '</a>
-                        </div></div>';
+                    <div class="action-list">
+                        <a href="' . route('admin-prod-edit', $mp->id) . '"><i class="fas fa-edit"></i> ' . __("Edit Product") . '</a>
+                        <a href="javascript" class="set-gallery" data-bs-toggle="modal" data-bs-target="#setgallery"><input type="hidden" value="' . $product->id . '"><i class="fas fa-eye"></i> ' . __("View Gallery") . '</a>'
+                        . $catalog .
+                        '<a data-href="' . route('admin-prod-feature', $product->id) . '" class="feature" data-bs-toggle="modal" data-bs-target="#modal2"> <i class="fas fa-star"></i> ' . __("Highlight") . '</a>
+                        <a href="javascript:;" data-href="' . route('admin-prod-delete', $product->id) . '" data-bs-toggle="modal" data-bs-target="#confirm-delete" class="delete"><i class="fas fa-trash-alt"></i> ' . __("Delete Product") . '</a>
+                    </div></div>';
             })
-            ->rawColumns(['name', 'sku', 'status', 'action', 'photo'])
+            ->rawColumns(['name', 'stock', 'status', 'action', 'photo', 'vendor'])
             ->toJson();
     }
 
     //*** JSON Request
     public function catalogdatatables()
     {
-        // // dd(['admin_catalog_datatables' => true]); // اختباري
+        // الاستعلام على السجلات التجارية مباشرة - كل سجل تجاري = صف مستقل
+        // فقط المنتجات المضافة للكتالوج (is_catalog = 1)
+        $query = \App\Models\MerchantProduct::with(['product.brand', 'product.category', 'user', 'qualityBrand'])
+            ->whereHas('product', function($q) {
+                $q->where('is_catalog', 1);
+            });
 
-        $datas = Product::where('is_catalog', '=', 1)->orderBy('id', 'desc');
+        $datas = $query->latest('id');
 
-        //--- Integrating This Collection Into Datatables
-        return Datatables::of($datas)
-            ->editColumn('name', function (Product $data) {
-                // استخرج أول/أرخص عرض بائع نشط لهذا المنتج (المتوفر أولاً ثم الأرخص)
-                $mp = $data->merchantProducts()
-                    ->where('status', 1)
-                    ->orderByRaw('CASE WHEN (stock IS NULL OR stock = 0) THEN 1 ELSE 0 END ASC')
-                    ->orderBy('price')
-                    ->first();
-
-                $vendorId = optional($mp)->user_id ?: 0;
-                $merchantProductId = optional($mp)->id ?: 0;
-
-                $prodLink = ($vendorId && $merchantProductId)
-                    ? route('front.product', ['slug' => $data->slug, 'vendor_id' => $vendorId, 'merchant_product_id' => $merchantProductId])
-                    : '#';
-
-                // Use the product name component WITHOUT showing SKU
-                $nameComponent = view('components.product-name', [
-                    'product' => $data,
-                    'vendorId' => $vendorId,
-                    'merchantProductId' => $merchantProductId,
-                    'target' => '_blank',
-                    'showSku' => false  // إخفاء SKU من عمود الاسم
-                ])->render();
-
-                $id  = '<small>' . __("ID") . ': <a href="' . $prodLink . '" target="_blank">' . sprintf("%'.08d", $data->id) . '</a></small>';
-
-                // checkVendor() تم تحديثها لقراءة أول بائع نشط
-                return $nameComponent . '<br>' . $id . $data->checkVendor();
+        return \Datatables::of($datas)
+            ->filterColumn('name', function ($query, $keyword) {
+                $query->whereHas('product', function($q) use ($keyword) {
+                    $q->where('name', 'like', "%{$keyword}%")
+                      ->orWhere('sku', 'like', "%{$keyword}%")
+                      ->orWhere('label_ar', 'like', "%{$keyword}%")
+                      ->orWhere('label_en', 'like', "%{$keyword}%");
+                });
             })
-            ->addColumn('sku', function (\App\Models\Product $data) {
-                if ($data->type != 'Physical' || !$data->sku) {
-                    return '-';
-                }
+            ->addColumn('photo', function (\App\Models\MerchantProduct $mp) {
+                $product = $mp->product;
+                if (!$product) return '<img src="' . asset('assets/images/noimage.png') . '" class="img-thumbnail" style="width:80px">';
 
-                // في صفحات الأدمن، نستخدم route('search.result', sku)
-                $prodLink = route('search.result', $data->sku);
-                return '<a href="' . $prodLink . '" target="_blank">' . $data->sku . '</a>';
+                $photo = filter_var($product->photo, FILTER_VALIDATE_URL)
+                    ? $product->photo
+                    : ($product->photo ? \Illuminate\Support\Facades\Storage::url($product->photo) : asset('assets/images/noimage.png'));
+                return '<img src="' . $photo . '" alt="Image" class="img-thumbnail" style="width:80px">';
             })
-            ->addColumn('status', function (Product $data) {
-                $class = $data->status == 1 ? 'drop-success' : 'drop-danger';
-                $s = $data->status == 1 ? 'selected' : '';
-                $ns = $data->status == 0 ? 'selected' : '';
-                return '<div class="action-list"><select class="process select droplinks ' . $class . '"><option data-val="1" value="' . route('admin-prod-status', ['id1' => $data->id, 'id2' => 1]) . '" ' . $s . '>' . __("Activated") . '</option><option data-val="0" value="' . route('admin-prod-status', ['id1' => $data->id, 'id2' => 0]) . '" ' . $ns . '>' . __("Deactivated") . '</option>/select></div>';
+            ->addColumn('name', function (\App\Models\MerchantProduct $mp) {
+                $product = $mp->product;
+                if (!$product) return __('N/A');
+
+                $prodLink = route('front.product', [
+                    'slug' => $product->slug,
+                    'vendor_id' => $mp->user_id,
+                    'merchant_product_id' => $mp->id
+                ]);
+
+                $displayName = getLocalizedProductName($product);
+                $sku = $product->sku ? '<br><small class="text-muted">' . __('SKU') . ': ' . $product->sku . '</small>' : '';
+                $condition = $mp->product_condition == 1 ? '<span class="badge badge-warning">' . __('Used') . '</span>' : '';
+
+                return '<a href="' . $prodLink . '" target="_blank">' . $displayName . '</a>' . $sku . ' ' . $condition;
             })
-            ->addColumn('action', function (Product $data) {
-                return '<div class="godropdown"><button class="go-dropdown-toggle">  ' . __("Actions") . '<i class="fas fa-chevron-down"></i></button><div class="action-list"><a href="' . route('admin-prod-edit', $data->id) . '"> <i class="fas fa-edit"></i> ' . __("Edit") . '</a><a href="javascript" class="set-gallery" data-toggle="modal" data-target="#setgallery"><input type="hidden" value="' . $data->id . '"><i class="fas fa-eye"></i> ' . __("View Gallery") . '</a><a data-href="' . route('admin-prod-feature', $data->id) . '" class="feature" data-toggle="modal" data-target="#modal2"> <i class="fas fa-star"></i> ' . __("Highlight") . '</a><a href="javascript:;" data-href="' . route('admin-prod-catalog', ['id1' => $data->id, 'id2' => 0]) . '" data-toggle="modal" data-target="#catalog-modal"><i class="fas fa-trash-alt"></i> ' . __("Remove Catalog") . '</a></div></div>';
+            ->addColumn('brand', function (\App\Models\MerchantProduct $mp) {
+                $product = $mp->product;
+                return $product && $product->brand ? getLocalizedBrandName($product->brand) : __('N/A');
             })
-            ->rawColumns(['name', 'sku', 'status', 'action'])
-            ->toJson(); //--- Returning Json Data To Client Side
+            ->addColumn('quality_brand', function (\App\Models\MerchantProduct $mp) {
+                return $mp->qualityBrand ? getLocalizedQualityName($mp->qualityBrand) : __('N/A');
+            })
+            ->addColumn('vendor', function (\App\Models\MerchantProduct $mp) {
+                if (!$mp->user) return __('N/A');
+                $shopName = $mp->user->shop_name ?: $mp->user->name;
+                return '<span title="' . $mp->user->name . '">' . $shopName . '</span>';
+            })
+            ->addColumn('price', function (\App\Models\MerchantProduct $mp) {
+                $gs = cache()->remember('generalsettings', now()->addDay(), fn () => DB::table('generalsettings')->first());
+
+                $price = (float) $mp->price;
+                $base = $price + (float) $gs->fixed_commission + ($price * (float) $gs->percentage_commission / 100);
+
+                return \PriceHelper::showAdminCurrencyPrice($base * $this->curr->value);
+            })
+            ->addColumn('stock', function (\App\Models\MerchantProduct $mp) {
+                if ($mp->stock === null) return __('Unlimited');
+                if ((int) $mp->stock === 0) return '<span class="text-danger">' . __('Out Of Stock') . '</span>';
+                return $mp->stock;
+            })
+            ->addColumn('status', function (\App\Models\MerchantProduct $mp) {
+                $class = $mp->status == 1 ? 'drop-success' : 'drop-danger';
+                $s = $mp->status == 1 ? 'selected' : '';
+                $ns = $mp->status == 0 ? 'selected' : '';
+
+                return '<div class="action-list">
+                    <select class="process select droplinks ' . $class . '">
+                        <option data-val="1" value="' . route('admin-merchant-product-status', ['id' => $mp->id, 'status' => 1]) . '" ' . $s . '>' . __("Activated") . '</option>
+                        <option data-val="0" value="' . route('admin-merchant-product-status', ['id' => $mp->id, 'status' => 0]) . '" ' . $ns . '>' . __("Deactivated") . '</option>
+                    </select>
+                </div>';
+            })
+            ->addColumn('action', function (\App\Models\MerchantProduct $mp) {
+                $product = $mp->product;
+                if (!$product) return '';
+
+                return '<div class="godropdown"><button class="go-dropdown-toggle"> ' . __("Actions") . '<i class="fas fa-chevron-down"></i></button>
+                    <div class="action-list">
+                        <a href="' . route('admin-prod-edit', $mp->id) . '"><i class="fas fa-edit"></i> ' . __("Edit Product") . '</a>
+                        <a href="javascript" class="set-gallery" data-bs-toggle="modal" data-bs-target="#setgallery"><input type="hidden" value="' . $product->id . '"><i class="fas fa-eye"></i> ' . __("View Gallery") . '</a>
+                        <a data-href="' . route('admin-prod-feature', $product->id) . '" class="feature" data-bs-toggle="modal" data-bs-target="#modal2"> <i class="fas fa-star"></i> ' . __("Highlight") . '</a>
+                        <a href="javascript:;" data-href="' . route('admin-prod-catalog', ['id1' => $product->id, 'id2' => 0]) . '" data-bs-toggle="modal" data-bs-target="#catalog-modal"><i class="fas fa-trash-alt"></i> ' . __("Remove Catalog") . '</a>
+                    </div></div>';
+            })
+            ->rawColumns(['name', 'stock', 'status', 'action', 'photo', 'vendor'])
+            ->toJson();
     }
 
     public function productscatalog()
@@ -260,6 +280,18 @@ class ProductController extends AdminBaseController
         $data = Product::findOrFail($id1);
         $data->status = $id2;
         $data->update();
+        //--- Redirect Section
+        $msg = __('Status Updated Successfully.');
+        return response()->json($msg);
+        //--- Redirect Section Ends
+    }
+
+    //*** GET Request - Merchant Product Status
+    public function merchantProductStatus($id, $status)
+    {
+        $merchantProduct = \App\Models\MerchantProduct::findOrFail($id);
+        $merchantProduct->status = $status;
+        $merchantProduct->update();
         //--- Redirect Section
         $msg = __('Status Updated Successfully.');
         return response()->json($msg);
@@ -414,8 +446,12 @@ class ProductController extends AdminBaseController
         $basePrice = isset($input['price']) ? ($input['price'] / $sign->value) : 0;
         $basePreviousPrice = isset($input['previous_price']) ? ($input['previous_price'] / $sign->value) : null;
 
-        // Remove legacy fields from product table
-        unset($input['price'], $input['previous_price'], $input['stock'], $input['user_id']);
+        // Store vendor-specific data before removing from input
+        $vendorId = (int) ($request->input('user_id') ?? 0);
+        $brandQualityId = $request->input('brand_quality_id') ?: null;
+
+        // Remove vendor-specific fields from product table input
+        unset($input['price'], $input['previous_price'], $input['stock'], $input['user_id'], $input['brand_quality_id'], $input['vendor_id']);
         if ($request->cross_products) {
             $input['cross_products'] = implode(',', $request->cross_products);
         }
@@ -483,20 +519,22 @@ class ProductController extends AdminBaseController
         $data->fill($input)->save();
 
         // Create merchant_product entry for the vendor
-        $vendorId = (int) ($request->input('user_id') ?? 0);
         if ($vendorId > 0) {
-            \App\Models\MerchantProduct::updateOrCreate(
-                ['product_id' => $data->id, 'user_id' => $vendorId],
-                [
-                    'price' => $basePrice,
-                    'previous_price' => $basePreviousPrice,
-                    'stock' => (int) $request->input('stock', 0),
-                    'minimum_qty' => $request->input('minimum_qty') ?: null,
-                    'whole_sell_qty' => $input['whole_sell_qty'] ?? null,
-                    'whole_sell_discount' => $input['whole_sell_discount'] ?? null,
-                    'status' => 1
-                ]
-            );
+            \App\Models\MerchantProduct::create([
+                'product_id' => $data->id,
+                'user_id' => $vendorId,
+                'brand_quality_id' => $brandQualityId,
+                'price' => $basePrice,
+                'previous_price' => $basePreviousPrice,
+                'stock' => (int) $request->input('stock', 0),
+                'minimum_qty' => $request->input('minimum_qty') ?: null,
+                'whole_sell_qty' => !empty($request->whole_sell_qty) ? implode(',', $request->whole_sell_qty) : null,
+                'whole_sell_discount' => !empty($request->whole_sell_discount) ? implode(',', $request->whole_sell_discount) : null,
+                'ship' => $request->input('ship') ?: null,
+                'product_condition' => $request->input('product_condition') ?? 0,
+                'color_all' => !empty($request->color_all) ? implode(',', $request->color_all) : null,
+                'status' => 1
+            ]);
         }
 
         // Set SLug
@@ -698,25 +736,32 @@ class ProductController extends AdminBaseController
     }
 
     //*** GET Request
-    public function edit($id)
+    public function edit($merchantProductId)
     {
         $cats = Category::all();
-        $data = Product::findOrFail($id);
+        $merchantProduct = \App\Models\MerchantProduct::with(['product', 'user', 'qualityBrand'])->findOrFail($merchantProductId);
+        $data = $merchantProduct->product;
         $sign = $this->curr;
 
+        // Get vendors list for dropdown (vendors + admins with ID=1)
+        $vendors = \App\Models\User::where('is_vendor', 1)->orWhere('id', 1)->get();
+
+        // Get quality brands for dropdown
+        $qualityBrands = \App\Models\QualityBrand::all();
+
         if ($data->type == 'Digital') {
-            return view('admin.product.edit.digital', compact('cats', 'data', 'sign'));
+            return view('admin.product.edit.digital', compact('cats', 'data', 'merchantProduct', 'sign', 'vendors', 'qualityBrands'));
         } elseif ($data->type == 'License') {
-            return view('admin.product.edit.license', compact('cats', 'data', 'sign'));
+            return view('admin.product.edit.license', compact('cats', 'data', 'merchantProduct', 'sign', 'vendors', 'qualityBrands'));
         } elseif ($data->type == 'Listing') {
-            return view('admin.product.edit.listing', compact('cats', 'data', 'sign'));
+            return view('admin.product.edit.listing', compact('cats', 'data', 'merchantProduct', 'sign', 'vendors', 'qualityBrands'));
         } else {
-            return view('admin.product.edit.physical', compact('cats', 'data', 'sign'));
+            return view('admin.product.edit.physical', compact('cats', 'data', 'merchantProduct', 'sign', 'vendors', 'qualityBrands'));
         }
     }
 
     //*** POST Request
-    public function update(Request $request, $id)
+    public function update(Request $request, $merchantProductId)
     {
         // return $request;
         //--- Validation Section
@@ -732,7 +777,8 @@ class ProductController extends AdminBaseController
         //--- Validation Section Ends
 
         //-- Logic Section
-        $data = Product::findOrFail($id);
+        $merchantProduct = \App\Models\MerchantProduct::findOrFail($merchantProductId);
+        $data = Product::findOrFail($merchantProduct->product_id);
         $sign = $this->curr;
         $input = $request->all();
 
@@ -934,22 +980,20 @@ class ProductController extends AdminBaseController
 
         $data->update($input);
 
-        // Update merchant_product entry for the vendor
-        $vendorId = (int) ($request->input('user_id') ?? 0);
-        if ($vendorId > 0) {
-            \App\Models\MerchantProduct::updateOrCreate(
-                ['product_id' => $data->id, 'user_id' => $vendorId],
-                [
-                    'price' => $basePrice,
-                    'previous_price' => $basePreviousPrice,
-                    'stock' => (int) $request->input('stock', 0),
-                    'minimum_qty' => $request->input('minimum_qty') ?: null,
-                    'whole_sell_qty' => $input['whole_sell_qty'] ?? null,
-                    'whole_sell_discount' => $input['whole_sell_discount'] ?? null,
-                    'status' => 1
-                ]
-            );
-        }
+        // Update merchant_product entry
+        $merchantProduct->update([
+            'user_id' => (int) ($request->input('vendor_id') ?? $merchantProduct->user_id),
+            'brand_quality_id' => $request->input('brand_quality_id') ?: null,
+            'price' => $basePrice,
+            'previous_price' => $basePreviousPrice,
+            'stock' => $request->input('stock') !== null ? (int) $request->input('stock') : null,
+            'minimum_qty' => $request->input('minimum_qty') ?: null,
+            'whole_sell_qty' => !empty($request->whole_sell_qty) ? implode(',', $request->whole_sell_qty) : null,
+            'whole_sell_discount' => !empty($request->whole_sell_discount) ? implode(',', $request->whole_sell_discount) : null,
+            'ship' => $request->input('ship') ?: null,
+            'product_condition' => $request->input('product_condition') ?? 0,
+            'color_all' => !empty($request->color_all) ? implode(',', $request->color_all) : null,
+        ]);
         //-- Logic Section Ends
 
         //--- Redirect Section

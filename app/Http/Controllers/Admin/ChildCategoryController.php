@@ -20,19 +20,19 @@ class ChildCategoryController extends AdminBaseController
         //--- Integrating This Collection Into Datatables
         return Datatables::of($datas)
             ->addColumn('category', function (Childcategory $data) {
-                return $data->subcategory->category->name;
+                return $data->subcategory && $data->subcategory->category ? getLocalizedCategoryName($data->subcategory->category) : __('N/A');
             })
             ->addColumn('subcategory', function (Childcategory $data) {
-                return $data->subcategory->name;
+                return $data->subcategory ? getLocalizedCategoryName($data->subcategory) : __('N/A');
             })
             ->addColumn('status', function (Childcategory $data) {
                 $class = $data->status == 1 ? 'drop-success' : 'drop-danger';
                 $s = $data->status == 1 ? 'selected' : '';
                 $ns = $data->status == 0 ? 'selected' : '';
-                return '<div class="action-list"><select class="process select droplinks ' . $class . '"><option data-val="1" value="' . route('admin-childcat-status', ['id1' => $data->id, 'id2' => 1]) . '" ' . $s . '>' . __("Activated") . '</option><option data-val="0" value="' . route('admin-childcat-status', ['id1' => $data->id, 'id2' => 0]) . '" ' . $ns . '>' . __("Deactivated") . '</option>/select></div>';
+                return '<div class="action-list"><select class="process select droplinks ' . $class . '"><option data-val="1" value="' . route('admin-childcat-status', ['id1' => $data->id, 'id2' => 1]) . '" ' . $s . '>' . __("Activated") . '</option><option data-val="0" value="' . route('admin-childcat-status', ['id1' => $data->id, 'id2' => 0]) . '" ' . $ns . '>' . __("Deactivated") . '</option></select></div>';
             })
             ->addColumn('attributes', function (Childcategory $data) {
-                $buttons = '<div class="action-list"><a data-href="' . route('admin-attr-createForChildcategory', $data->id) . '" class="attribute" data-toggle="modal" data-target="#attribute"> <i class="fas fa-edit"></i>' . __("Create") . '</a>';
+                $buttons = '<div class="action-list"><a data-href="' . route('admin-attr-createForChildcategory', $data->id) . '" class="attribute" data-bs-toggle="modal" data-bs-target="#attribute"> <i class="fas fa-edit"></i>' . __("Create") . '</a>';
                 if ($data->attributes()->count() > 0) {
                     $buttons .= '<a href="' . route('admin-attr-manage', $data->id) . '?type=childcategory' . '" class="edit"> <i class="fas fa-edit"></i>' . __("Manage") . '</a>';
                 }
@@ -41,7 +41,7 @@ class ChildCategoryController extends AdminBaseController
                 return $buttons;
             })
             ->addColumn('action', function (Childcategory $data) {
-                return '<div class="action-list"><a data-href="' . route('admin-childcat-edit', $data->id) . '" class="edit" data-toggle="modal" data-target="#modal1"> <i class="fas fa-edit"></i>' . __('Edit') . '</a><a href="javascript:;" data-href="' . route('admin-childcat-delete', $data->id) . '" data-toggle="modal" data-target="#confirm-delete" class="delete"><i class="fas fa-trash-alt"></i></a></div>';
+                return '<div class="action-list"><a data-href="' . route('admin-childcat-edit', $data->id) . '" class="edit" data-bs-toggle="modal" data-bs-target="#modal1"> <i class="fas fa-edit"></i>' . __('Edit') . '</a><a href="javascript:;" data-href="' . route('admin-childcat-delete', $data->id) . '" data-bs-toggle="modal" data-bs-target="#confirm-delete" class="delete"><i class="fas fa-trash-alt"></i></a></div>';
             })
             ->rawColumns(['status', 'attributes', 'action'])
             ->toJson(); //--- Returning Json Data To Client Side

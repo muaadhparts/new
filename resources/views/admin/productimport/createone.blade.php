@@ -4,6 +4,7 @@
 	<link href="{{asset('assets/admin/css/product.css')}}" rel="stylesheet"/>
 	<link href="{{asset('assets/admin/css/jquery.Jcrop.css')}}" rel="stylesheet"/>
 	<link href="{{asset('assets/admin/css/Jcrop-style.css')}}" rel="stylesheet"/>
+	<link href="{{asset('assets/admin/css/select2.css')}}" rel="stylesheet"/>
 @endsection
 
 @section('content')
@@ -42,7 +43,63 @@
 					<div class="col-lg-12">
 						<div class="product-description">
 							<div class="body-area">
-						
+
+								{{-- Vendor Selection --}}
+								<div class="row">
+									<div class="col-lg-12">
+										<div class="left-area">
+											<h4 class="heading">{{ __('Vendor') }}*</h4>
+										</div>
+									</div>
+									<div class="col-lg-12">
+										<select id="vendor_id" name="user_id" required="" class="select2">
+											<option value="">{{ __('Select Vendor') }}</option>
+											@foreach (\App\Models\User::where('is_vendor', 2)->where('ban', 0)->orderBy('shop_name')->get() as $vendor)
+												<option value="{{ $vendor->id }}">
+													{{ $vendor->shop_name ?: $vendor->name }} ({{ $vendor->email }})
+												</option>
+											@endforeach
+										</select>
+									</div>
+								</div>
+
+								{{-- Brand (العلامة التجارية) --}}
+								<div class="row">
+									<div class="col-lg-12">
+										<div class="left-area">
+											<h4 class="heading">{{ __('Brand') }} ({{ __('Trademark') }})</h4>
+										</div>
+									</div>
+									<div class="col-lg-12">
+										<select name="brand_id" class="form-control">
+											<option value="">{{ __('Select Brand') }}</option>
+											@foreach (\App\Models\Brand::all() as $brand)
+												<option value="{{ $brand->id }}" style="color: #333;">
+													{{ $brand->name }} {{ $brand->name_ar ? '- ' . $brand->name_ar : '' }}
+												</option>
+											@endforeach
+										</select>
+									</div>
+								</div>
+
+								{{-- Quality Brand (جودة التصنيع) --}}
+								<div class="row">
+									<div class="col-lg-12">
+										<div class="left-area">
+											<h4 class="heading">{{ __('Quality Brand') }} ({{ __('Manufacturing Quality') }})</h4>
+										</div>
+									</div>
+									<div class="col-lg-12">
+										<select name="brand_quality_id" class="form-control">
+											<option value="">{{ __('Select Quality Brand') }}</option>
+											@foreach (\App\Models\QualityBrand::all() as $qb)
+												<option value="{{ $qb->id }}" style="color: #333;">
+													{{ $qb->name }} {{ $qb->name_ar ? '- ' . $qb->name_ar : '' }}
+												</option>
+											@endforeach
+										</select>
+									</div>
+								</div>
 
 								<div class="row">
 									<div class="col-lg-12">
@@ -52,7 +109,7 @@
 										</div>
 									</div>
 									<div class="col-lg-12">
-										<input type="text" class="input-field" placeholder="{{ __('Enter Product Name') }}" name="name" required="">
+										<input type="text" class="form-control" placeholder="{{ __('Enter Product Name') }}" name="name" required="">
 									</div>
 								</div>
 
@@ -63,7 +120,7 @@
 										</div>
 									</div>
 									<div class="col-lg-12">
-										<input type="text" class="input-field" placeholder="{{ __('Enter Product Sku') }}" name="sku" required="" value="{{ Str::random(3).substr(time(), 6,8).Str::random(3) }}">
+										<input type="text" class="form-control" placeholder="{{ __('Enter Product Sku') }}" name="sku" required="" value="{{ Str::random(3).substr(time(), 6,8).Str::random(3) }}">
 									</div>
 								</div>
 
@@ -75,7 +132,7 @@
 										</div>
 									</div>
 									<div class="col-lg-12">
-										<input type="text" class="input-field" placeholder="{{ __("Enter Product Link") }}" name="affiliate_link" required="">
+										<input type="text" class="form-control" placeholder="{{ __("Enter Product Link") }}" name="affiliate_link" required="">
 									</div>
 								</div>
 
@@ -130,7 +187,7 @@
 										</div>
 									</div>
 									<div class="col-lg-12">
-										<input name="stock" type="text" class="input-field" placeholder="{{ __("e.g 20") }}">
+										<input name="stock" type="text" class="form-control" placeholder="{{ __("e.g 20") }}">
 										<div class="checkbox-wrapper">
 											<input type="checkbox" name="measure_check" class="checkclick" id="allowProductMeasurement" value="1">
 											<label for="allowProductMeasurement">{{ __("Allow Product Measurement") }}</label>
@@ -157,7 +214,7 @@
 											</select>
 										</div>
 										<div class="col-lg-12 hidden" id="measure">
-											<input name="measure" type="text" id="measurement" class="input-field" placeholder="{{ __("Enter Unit") }}">
+											<input name="measure" type="text" id="measurement" class="form-control" placeholder="{{ __("Enter Unit") }}">
 										</div>
 									</div>
 								</div>
@@ -220,7 +277,7 @@
 											</div>
 										</div>
 										<div class="col-lg-12">
-											<input type="text" class="input-field" placeholder="{{ __("Estimated Shipping Time") }}" name="ship">
+											<input type="text" class="form-control" placeholder="{{ __("Estimated Shipping Time") }}" name="ship">
 										</div>
 									</div>
 								</div>
@@ -259,7 +316,7 @@
 																					<div class="color-area">
 																						<span class="remove color-remove"><i class="fas fa-times"></i></span>
 																						<div class="input-group colorpicker-component cp">
-																						  <input type="text" name="color_all[]" class="input-field cp tcolor"/>
+																						  <input type="text" name="color_all[]" class="form-control cp tcolor"/>
 																						  <span class="input-group-addon"><i></i></span>
 																						</div>
 																					 </div>
@@ -302,7 +359,7 @@
 																				<div class="select-input-tsize" id="tsize-section">
 																					<div class="tsize-area">
 																						<span class="remove tsize-remove"><i class="fas fa-times"></i></span>
-																						<input  type="text" name="size_all[]" class="input-field tsize" placeholder="{{ __('Enter Product Size') }}"  >
+																						<input  type="text" name="size_all[]" class="form-control tsize" placeholder="{{ __('Enter Product Size') }}"  >
 																						
 																					 </div>
 																				</div>
@@ -379,7 +436,7 @@
 									  </div>
 									  <div class="col-lg-12">
 										<div class="text-editor">
-										  <textarea name="meta_description" class="input-field" placeholder="{{ __("Meta Description") }}"></textarea> 
+										  <textarea name="meta_description" class="form-control" placeholder="{{ __("Meta Description") }}"></textarea> 
 										</div>
 									  </div>
 									</div>
@@ -393,7 +450,7 @@
 										</div>
 									</div>
 									<div class="col-lg-7 text-center">
-										<button class="addProductSubmit-btn" type="submit">{{ __("Create Product") }}</button>
+										<button class="btn btn-primary" type="submit">{{ __("Create Product") }}</button>
 									</div>
 								</div>
 							</div>
@@ -434,7 +491,7 @@
 											<div class="panel panel-body">
 												<div class="span4 cropme text-center" id="landscape"
 													style="width: 100%; height: 285px; border: 1px dashed #ddd; background: #f1f1f1;">
-													<a href="javascript:;" id="crop-image" class=" mybtn1" style="">
+													<a href="javascript:;" id="crop-image" class="btn btn-primary" style="">
 														<i class="icofont-upload-alt"></i> {{ __('Upload Image Here') }}
 													</a>
 												</div>
@@ -452,7 +509,7 @@
 											</div>
 										</div>
 										<div class="col-lg-12">
-											<input type="text" name="photolink" value="" class="input-field">
+											<input type="text" name="photolink" value="" class="form-control">
 										</div>
 									</div>
 								</div>
@@ -466,7 +523,7 @@
 										</div>
 									</div>
 									<div class="col-lg-7">
-										<a href="#" class="set-gallery"  data-toggle="modal" data-target="#setgallery">
+										<a href="#" class="set-gallery" data-bs-toggle="modal" data-bs-target="#setgallery">
 											<i class="icofont-plus"></i> {{ __("Set Gallery") }}
 										</a>
 									</div>
@@ -484,7 +541,7 @@
 										</div>
 									</div>
 									<div class="col-lg-12">
-										<input name="price" step="0.1" type="number" class="input-field" placeholder="{{ __("e.g 20") }}" required min="0">
+										<input name="price" step="0.1" type="number" class="form-control" placeholder="{{ __("e.g 20") }}" required min="0">
 									</div>
 								</div>
 
@@ -496,7 +553,7 @@
 										</div>
 									</div>
 									<div class="col-lg-12">
-										<input name="previous_price" step="0.1" type="number" class="input-field" placeholder="{{ __("e.g 20") }}" min="0">
+										<input name="previous_price" step="0.1" type="number" class="form-control" placeholder="{{ __("e.g 20") }}" min="0">
 									</div>
 								</div>
 
@@ -508,7 +565,7 @@
 										</div>
 									</div>
 									<div class="col-lg-12">
-										<input  name="youtube" type="text" class="input-field" placeholder="{{ __("Enter Youtube Video URL") }}">
+										<input  name="youtube" type="text" class="form-control" placeholder="{{ __("Enter Youtube Video URL") }}">
 									</div>
 								</div>
 
@@ -529,12 +586,12 @@
 													<span class="remove feature-remove"><i class="fas fa-times"></i></span>
 													<div class="row">
 														<div class="col-lg-6">
-														<input type="text" name="features[]" class="input-field" placeholder="Enter Your Keyword">
+														<input type="text" name="features[]" class="form-control" placeholder="Enter Your Keyword">
 														</div>
 
 														<div class="col-lg-6">
 															<div class="input-group colorpicker-component cp">
-															  <input type="text" name="colors[]" value="#000000" class="input-field cp"/>
+															  <input type="text" name="colors[]" value="#000000" class="form-control cp"/>
 															  <span class="input-group-addon"><i></i></span>
 															</div>
 														</div>
@@ -574,8 +631,8 @@
 		<div class="modal-content">
 		<div class="modal-header">
 			<h5 class="modal-title" id="exampleModalCenterTitle">{{ __("Image Gallery") }}</h5>
-			<button type="button" class="close" data-dismiss="modal" aria-label="Close">
-			<span aria-hidden="true">×</span>
+			<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+			
 			</button>
 		</div>
 		<div class="modal-body">
@@ -587,7 +644,7 @@
 						</div>
 					</div>
 					<div class="col-sm-6">
-						<a href="javascript:;" class="upload-done" data-dismiss="modal"> <i class="fas fa-check"></i> {{ __("Done") }}</a>
+						<a href="javascript:;" class="upload-done" data-bs-dismiss="modal"> <i class="fas fa-check"></i> {{ __("Done") }}</a>
 					</div>
 					<div class="col-sm-12 text-center">( <small>{{ __("You can upload multiple Images.") }}</small> )</div>
 				</div>
@@ -610,6 +667,18 @@
 
 <script src="{{asset('assets/admin/js/jquery.Jcrop.js')}}"></script>
 <script src="{{asset('assets/admin/js/jquery.SimpleCropper.js')}}"></script>
+<script src="{{asset('assets/admin/js/select2.js')}}"></script>
+
+<script type="text/javascript">
+(function($) {
+	"use strict";
+	$(document).ready(function() {
+		$('.select2').select2({
+			placeholder: "{{ __('Select Vendor') }}",
+		});
+	});
+})(jQuery);
+</script>
 
 <script type="text/javascript">
 	
@@ -681,11 +750,13 @@
   </script>
 
 <script type="text/javascript">
-	
+
     (function($) {
 		"use strict";
 
-$('.cropme').simpleCropper();
+$(document).ready(function() {
+	$('.cropme').simpleCropper();
+});
 
 	})(jQuery);
 	

@@ -1,12 +1,5 @@
 @extends('layouts.admin')
-@section('styles')
 
-<link href="{{asset('assets/admin/css/product.css')}}" rel="stylesheet"/>
-<link href="{{asset('assets/admin/css/jquery.Jcrop.css')}}" rel="stylesheet"/>
-<link href="{{asset('assets/admin/css/Jcrop-style.css')}}" rel="stylesheet"/>
-<link href="{{asset('assets/admin/css/select2.css')}}" rel="stylesheet"/>
-
-@endsection
 @section('content')
 	<div class="content-area">
 		<div class="mr-breadcrumb">
@@ -31,7 +24,7 @@
 			</div>
 		</div>
 
-		<form id="muaadhform" action="{{route('admin-prod-update',$data->id)}}" method="POST" enctype="multipart/form-data">
+		<form id="muaadhform" action="{{route('admin-prod-update',$merchantProduct->id)}}" method="POST" enctype="multipart/form-data">
 			{{csrf_field()}}
 			@include('alerts.admin.form-both')
 			<div class="row">
@@ -42,7 +35,66 @@
 								<div class="product-description">
 									<div class="body-area">
 										<div class="gocover" style="background: url({{asset('assets/images/'.$gs->admin_loader)}}) no-repeat scroll center center rgba(45, 45, 45, 0.5);"></div>
-										
+
+										{{-- Vendor Selection --}}
+										<div class="row">
+											<div class="col-lg-12">
+												<div class="left-area">
+													<h4 class="heading">{{ __('Vendor') }}*</h4>
+												</div>
+											</div>
+											<div class="col-lg-12">
+												<select name="vendor_id" required="">
+													<option value="">{{ __('Select Vendor') }}</option>
+													@foreach ($vendors as $vendor)
+														<option value="{{ $vendor->id }}"
+															{{ $merchantProduct->user_id == $vendor->id ? 'selected' : '' }}>
+															{{ $vendor->shop_name ?: $vendor->name }} ({{ $vendor->email }})
+														</option>
+													@endforeach
+												</select>
+											</div>
+										</div>
+
+										{{-- Brand (العلامة التجارية) --}}
+										<div class="row">
+											<div class="col-lg-12">
+												<div class="left-area">
+													<h4 class="heading">{{ __('Brand') }} ({{ __('Trademark') }})</h4>
+												</div>
+											</div>
+											<div class="col-lg-12">
+												<select name="brand_id" class="form-control">
+													<option value="">{{ __('Select Brand') }}</option>
+													@foreach (\App\Models\Brand::all() as $brand)
+														<option value="{{ $brand->id }}"
+															{{ $data->brand_id == $brand->id ? 'selected' : '' }}>
+															{{ $brand->name }} {{ $brand->name_ar ? '- ' . $brand->name_ar : '' }}
+														</option>
+													@endforeach
+												</select>
+											</div>
+										</div>
+
+										{{-- Quality Brand (جودة التصنيع) --}}
+										<div class="row">
+											<div class="col-lg-12">
+												<div class="left-area">
+													<h4 class="heading">{{ __('Quality Brand') }} ({{ __('Manufacturing Quality') }})</h4>
+												</div>
+											</div>
+											<div class="col-lg-12">
+												<select name="brand_quality_id" class="form-control">
+													<option value="">{{ __('Select Quality Brand') }}</option>
+													@foreach ($qualityBrands as $qb)
+														<option value="{{ $qb->id }}"
+															{{ $merchantProduct->brand_quality_id == $qb->id ? 'selected' : '' }}>
+															{{ $qb->name_en }} {{ $qb->name_ar ? '- ' . $qb->name_ar : '' }} {{ $qb->country ? '(' . $qb->country . ')' : '' }}
+														</option>
+													@endforeach
+												</select>
+											</div>
+										</div>
 
 										<div class="row">
 											<div class="col-lg-12">
@@ -52,7 +104,35 @@
 												</div>
 											</div>
 											<div class="col-lg-12">
-												<input type="text" class="input-field" placeholder="{{ __("Enter Product Name") }}" name="name" required="" value="{{ $data->name }}">
+												<input type="text" class="form-control" placeholder="{{ __("Enter Product Name") }}" name="name" required="" value="{{ $data->name }}">
+											</div>
+										</div>
+
+										{{-- Label English --}}
+										<div class="row">
+											<div class="col-lg-12">
+												<div class="left-area">
+													<h4 class="heading">{{ __('Product Name (English)') }}</h4>
+												</div>
+											</div>
+											<div class="col-lg-12">
+												<input type="text" class="form-control"
+													placeholder="{{ __('Enter Product Name in English') }}"
+													name="label_en" value="{{ $data->label_en }}">
+											</div>
+										</div>
+
+										{{-- Label Arabic --}}
+										<div class="row">
+											<div class="col-lg-12">
+												<div class="left-area">
+													<h4 class="heading">{{ __('Product Name (Arabic)') }}</h4>
+												</div>
+											</div>
+											<div class="col-lg-12">
+												<input type="text" class="form-control" dir="rtl"
+													placeholder="{{ __('Enter Product Name in Arabic') }}"
+													name="label_ar" value="{{ $data->label_ar }}">
 											</div>
 										</div>
 
@@ -151,7 +231,7 @@
 												</div>
 											</div>
 											<div class="col-lg-12">
-													<textarea class="input-field" rows="4" name="link" placeholder="{{ __("Link") }}" {{ $data->link != null ? 'required':'' }}>{{ $data->link }}</textarea> 
+													<textarea class="form-control" rows="4" name="link" placeholder="{{ __("Link") }}" {{ $data->link != null ? 'required':'' }}>{{ $data->link }}</textarea> 
 											</div>
 										</div>
 
@@ -223,7 +303,7 @@
 										  </div>
 										  <div class="col-lg-12">
 											<div class="text-editor">
-											  <textarea name="meta_description" class="input-field" placeholder="{{ __('Details') }}">{{ $data->meta_description }}</textarea>
+											  <textarea name="meta_description" class="form-control" placeholder="{{ __('Details') }}">{{ $data->meta_description }}</textarea>
 											</div>
 										  </div>
 										</div>
@@ -252,7 +332,7 @@
 											<div class="col-lg-12">
 												<div class="panel panel-body">
 													<div class="span4 cropme text-center" id="landscape" style="width: 100%; height: 285px; border: 1px dashed #ddd; background: #f1f1f1;">
-														<a href="javascript:;" id="crop-image" class="d-inline-block mybtn1">
+														<a href="javascript:;" id="crop-image" class="d-inline-block btn btn-primary">
 															<i class="icofont-upload-alt"></i> {{ __('Upload Image Here') }}
 														</a>
 													</div>
@@ -270,13 +350,40 @@
 													</div>
 												</div>
 												<div class="col-lg-12">
-													<a href="javascript" class="set-gallery"  data-toggle="modal" data-target="#setgallery">
+													<a href="javascript" class="set-gallery"  data-bs-toggle="modal" data-bs-target="#setgallery">
 														<input type="hidden" value="{{$data->id}}">
 															<i class="icofont-plus"></i> {{ __('Set Gallery') }}
 													</a>
 												</div>
 											</div>
 
+											<div class="row">
+												<div class="col-lg-12">
+													<div class="left-area">
+														<h4 class="heading">
+															{{ __('Product Current Price') }}*
+														</h4>
+														<p class="sub-heading">
+															({{ __('In') }} {{$sign->name}})
+														</p>
+													</div>
+												</div>
+												<div class="col-lg-12">
+													<input name="price" type="number" class="form-control" placeholder="e.g 20" step="0.1" min="0" value="{{round($data->price * $sign->value , 2)}}" required="">
+												</div>
+											</div>
+
+											<div class="row">
+												<div class="col-lg-12">
+													<div class="left-area">
+															<h4 class="heading">{{ __('Product Discount Price') }}*</h4>
+															<p class="sub-heading">{{ __('(Optional)') }}</p>
+													</div>
+												</div>
+												<div class="col-lg-12">
+													<input name="previous_price" step="0.1" type="number" class="form-control" placeholder="e.g 20" value="{{round($data->previous_price * $sign->value , 2)}}" min="0">
+												</div>
+											</div>
 
 											<div class="row">
 												<div class="col-lg-12">
@@ -286,7 +393,7 @@
 													</div>
 												</div>
 												<div class="col-lg-12">
-													<input  name="youtube" type="text" class="input-field" placeholder="Enter Youtube Video URL" value="{{$data->youtube}}">
+													<input  name="youtube" type="text" class="form-control" placeholder="Enter Youtube Video URL" value="{{$data->youtube}}">
 											</div>
 									</div>
 
@@ -311,12 +418,12 @@
 														<span class="remove feature-remove"><i class="fas fa-times"></i></span>
 														<div class="row">
 															<div class="col-lg-6">
-															<input type="text" name="features[]" class="input-field" placeholder="{{ __('Enter Your Keyword') }}" value="{{ $data->features[$key] }}">
+															<input type="text" name="features[]" class="form-control" placeholder="{{ __('Enter Your Keyword') }}" value="{{ $data->features[$key] }}">
 															</div>
 
 															<div class="col-lg-6">
 																<div class="input-group colorpicker-component cp">
-																  <input type="text" name="colors[]" value="{{ $data->colors[$key] }}" class="input-field cp"/>
+																  <input type="text" name="colors[]" value="{{ $data->colors[$key] }}" class="form-control cp"/>
 																  <span class="input-group-addon"><i></i></span>
 																</div>
 															</div>
@@ -330,12 +437,12 @@
 														<span class="remove feature-remove"><i class="fas fa-times"></i></span>
 														<div class="row">
 															<div class="col-lg-6">
-															<input type="text" name="features[]" class="input-field" placeholder="{{ __('Enter Your Keyword') }}">
+															<input type="text" name="features[]" class="form-control" placeholder="{{ __('Enter Your Keyword') }}">
 															</div>
 
 															<div class="col-lg-6">
 																<div class="input-group colorpicker-component cp">
-																  <input type="text" name="colors[]" value="#000000" class="input-field cp"/>
+																  <input type="text" name="colors[]" value="#000000" class="form-control cp"/>
 																  <span class="input-group-addon"><i></i></span>
 																</div>
 															</div>
@@ -369,7 +476,7 @@
 
 									  <div class="row text-center">
 										<div class="col-6 offset-3">
-											<button class="addProductSubmit-btn" type="submit">{{ __('Save') }}</button>
+											<button class="btn btn-primary" type="submit">{{ __('Save') }}</button>
 										</div>
 									</div>
 
@@ -387,8 +494,8 @@
 				<div class="modal-content">
 				<div class="modal-header">
 					<h5 class="modal-title" id="exampleModalCenterTitle">{{ __("Image Gallery") }}</h5>
-					<button type="button" class="close" data-dismiss="modal" aria-label="Close">
-					<span aria-hidden="true">×</span>
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+					
 					</button>
 				</div>
 				<div class="modal-body">
@@ -405,7 +512,7 @@
 								</div>
 							</div>
 							<div class="col-sm-6">
-								<a href="javascript:;" class="upload-done" data-dismiss="modal"> <i class="fas fa-check"></i> {{ __("Done") }}</a>
+								<a href="javascript:;" class="upload-done" data-bs-dismiss="modal"> <i class="fas fa-check"></i> {{ __("Done") }}</a>
 							</div>
 							<div class="col-sm-12 text-center">( <small>{{ __("You can upload multiple Images.") }}</small> )</div>
 						</div>
@@ -561,7 +668,7 @@ $(document).ready(function() {
 
   $(document).ready(function() {
 
-    let html = `<img src="{{ \Illuminate\Support\Facades\Storage::url($data->photo) ?? asset('assets/images/noimage.png') }}" alt="">`;
+    let html = `<img src="{{ empty($data->photo) ? asset('assets/images/noimage.png') : (filter_var($data->photo, FILTER_VALIDATE_URL) ? $data->photo : ($data->photo ? \Illuminate\Support\Facades\Storage::url($data->photo) : asset('assets/images/noimage.png'))) }}" alt="">`;
     $(".span4.cropme").html(html);
 
     $.ajaxSetup({

@@ -6,7 +6,7 @@
 
     @if($activation_notify != "")
     <div class="alert alert-danger validation">
-        <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"><span
                 aria-hidden="true">×</span></button>
         <h3 class="text-center">{!! clean($activation_notify, array('Attr.EnableID' => true)) !!}</h3>
         
@@ -16,7 +16,7 @@
     @if(Session::has('cache'))
 
     <div class="alert alert-success validation">
-        <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"><span
                 aria-hidden="true">×</span></button>
         <h3 class="text-center">{{ Session::get("cache") }}</h3>
     </div>
@@ -70,7 +70,7 @@
             <div class="mycard bg4">
                 <div class="left">
                     <h5 class="title">{{ __('Total Products!') }}</h5>
-                    <span class="number">{{ $products}}</span>
+                    <span class="number">{{$products}}</span>
                     <a href="{{route('admin-prod-index')}}" class="link">{{ __('View All') }}</a>
                 </div>
                 <div class="right d-flex align-self-center">
@@ -84,7 +84,7 @@
             <div class="mycard bg5">
                 <div class="left">
                     <h5 class="title">{{ __('Total Customers!') }}</h5>
-                    <span class="number">{{ $users}}</span>
+                    <span class="number">{{$users}}</span>
                     <a href="{{route('admin-user-index')}}" class="link">{{ __('View All') }}</a>
                 </div>
                 <div class="right d-flex align-self-center">
@@ -237,49 +237,36 @@
                                         <thead>
                                             <tr>
                                                 <th>{{ __('Featured Image') }}</th>
-                                                <th>{{ __('Product') }}</th>
-                                                <th>{{ __('SKU') }}</th>
-                                                <th>{{ __('Brand') }}</th>
-                                                <th>{{ __('Manufacturer') }}</th>
-                                                <th>{{ __('Store') }}</th>
+                                                <th>{{ __('Name') }}</th>
+                                                <th>{{ __('Category') }}</th>
+                                                <th>{{ __('Type') }}</th>
                                                 <th>{{ __('Price') }}</th>
                                                 <th></th>
+                                                
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            @foreach($poproducts as $mp)
-                                            @php
-                                                $product = $mp->product;
-                                                $vendor = $mp->user;
-                                                $productLink = route('front.product', [
-                                                    'slug' => $product->slug,
-                                                    'vendor_id' => $vendor->id,
-                                                    'merchant_product_id' => $mp->id
-                                                ]);
-                                            @endphp
+                                            @foreach($poproducts as $data)
                                             <tr>
-                                                <td><img src="{{ \Illuminate\Support\Facades\Storage::url($product->photo) ?? asset('assets/images/noimage.png') }}" style="width: 50px; height: 50px; object-fit: cover;"></td>
-                                                <td>
-                                                    <a href="{{ $productLink }}" target="_blank">
-                                                        @if(app()->getLocale() == 'ar' && !empty($product->label_ar))
-                                                            {{ mb_strlen(strip_tags($product->label_ar),'UTF-8') > 40 ? mb_substr(strip_tags($product->label_ar),0,40,'UTF-8').'...' : strip_tags($product->label_ar) }}
-                                                        @else
-                                                            {{ mb_strlen(strip_tags($product->name),'UTF-8') > 40 ? mb_substr(strip_tags($product->name),0,40,'UTF-8').'...' : strip_tags($product->name) }}
-                                                        @endif
-                                                    </a>
+                                            <td><img src="{{filter_var($data->product->photo ?? '', FILTER_VALIDATE_URL) ? $data->product->photo : ($data->product->photo ?? null ? \Illuminate\Support\Facades\Storage::url($data->product->photo) : asset('assets/images/noimage.png'))}}"></td>
+                                            <td>{{ $data->product ? getLocalizedProductName($data->product, 50) : 'N/A' }}</td>
+                                            <td>{{ $data->product && $data->product->category ? getLocalizedCategoryName($data->product->category) : 'N/A' }}
+                                                    @if(isset($data->product->subcategory))
+                                                    <br>
+                                                    {{ getLocalizedCategoryName($data->product->subcategory) }}
+                                                    @endif
+                                                    @if(isset($data->product->childcategory))
+                                                    <br>
+                                                    {{ getLocalizedCategoryName($data->product->childcategory) }}
+                                                    @endif
                                                 </td>
-                                                <td><a href="{{ $productLink }}" target="_blank">{{ $product->sku ?? '-' }}</a></td>
-                                                <td>{{ $product->brand->name ?? '-' }}</td>
-                                                <td>{{ $mp->qualityBrand->display_name ?? '-' }}</td>
+                                                <td>{{ $data->product->type ?? 'N/A' }}</td>
+
+                                                <td> {{ $data->showPrice() }} </td>
+
                                                 <td>
-                                                    <a href="{{ route('front.vendor', str_replace(' ', '-', $vendor->shop_name)) }}" target="_blank">
-                                                        {{ $vendor->shop_name }}
-                                                    </a>
-                                                </td>
-                                                <td>{{ \PriceHelper::showAdminCurrencyPrice($mp->price) }}</td>
-                                                <td>
-                                                    <div class="action-list">
-                                                        <a href="{{ $productLink }}" target="_blank"><i class="fas fa-eye"></i> {{ __('View') }}</a>
+                                                    <div class="action-list"><a href="{{ route('admin-prod-edit',$data->id) }}"><i
+                                                                class="fas fa-eye"></i> {{ __('Details') }}</a>
                                                     </div>
                                                 </td>
                                             </tr>
@@ -306,49 +293,34 @@
                                             <thead>
                                                     <tr>
                                                         <th>{{ __('Featured Image') }}</th>
-                                                        <th>{{ __('Product') }}</th>
-                                                        <th>{{ __('SKU') }}</th>
-                                                        <th>{{ __('Brand') }}</th>
-                                                        <th>{{ __('Manufacturer') }}</th>
-                                                        <th>{{ __('Store') }}</th>
+                                                        <th>{{ __('Name') }}</th>
+                                                        <th>{{ __('Category') }}</th>
+                                                        <th>{{ __('Type') }}</th>
                                                         <th>{{ __('Price') }}</th>
                                                         <th></th>
+                                                        
                                                     </tr>
                                                 </thead>
                                                 <tbody>
-                                                    @foreach($pproducts as $mp)
-                                                    @php
-                                                        $product = $mp->product;
-                                                        $vendor = $mp->user;
-                                                        $productLink = route('front.product', [
-                                                            'slug' => $product->slug,
-                                                            'vendor_id' => $vendor->id,
-                                                            'merchant_product_id' => $mp->id
-                                                        ]);
-                                                    @endphp
+                                                    @foreach($pproducts as $data)
                                                     <tr>
-                                                        <td><img src="{{ \Illuminate\Support\Facades\Storage::url($product->photo) ?? asset('assets/images/noimage.png') }}" style="width: 50px; height: 50px; object-fit: cover;"></td>
+                                                    <td><img src="{{filter_var($data->product->photo ?? '', FILTER_VALIDATE_URL) ? $data->product->photo : ($data->product->photo ?? null ? \Illuminate\Support\Facades\Storage::url($data->product->photo) : asset('assets/images/noimage.png'))}}"></td>
+                                                    <td>{{ $data->product ? getLocalizedProductName($data->product, 50) : 'N/A' }}</td>
+                                                    <td>{{ $data->product && $data->product->category ? getLocalizedCategoryName($data->product->category) : 'N/A' }}
+                                                        @if(isset($data->product->subcategory))
+                                                        <br>
+                                                        {{ getLocalizedCategoryName($data->product->subcategory) }}
+                                                        @endif
+                                                        @if(isset($data->product->childcategory))
+                                                        <br>
+                                                        {{ getLocalizedCategoryName($data->product->childcategory) }}
+                                                        @endif
+                                                    </td>
+                                                        <td>{{ $data->product->type ?? 'N/A' }}</td>
+                                                        <td> {{ $data->showPrice() }} </td>
                                                         <td>
-                                                            <a href="{{ $productLink }}" target="_blank">
-                                                                @if(app()->getLocale() == 'ar' && !empty($product->label_ar))
-                                                                    {{ mb_strlen(strip_tags($product->label_ar),'UTF-8') > 40 ? mb_substr(strip_tags($product->label_ar),0,40,'UTF-8').'...' : strip_tags($product->label_ar) }}
-                                                                @else
-                                                                    {{ mb_strlen(strip_tags($product->name),'UTF-8') > 40 ? mb_substr(strip_tags($product->name),0,40,'UTF-8').'...' : strip_tags($product->name) }}
-                                                                @endif
-                                                            </a>
-                                                        </td>
-                                                        <td><a href="{{ $productLink }}" target="_blank">{{ $product->sku ?? '-' }}</a></td>
-                                                        <td>{{ $product->brand->name ?? '-' }}</td>
-                                                        <td>{{ $mp->qualityBrand->display_name ?? '-' }}</td>
-                                                        <td>
-                                                            <a href="{{ route('front.vendor', str_replace(' ', '-', $vendor->shop_name)) }}" target="_blank">
-                                                                {{ $vendor->shop_name }}
-                                                            </a>
-                                                        </td>
-                                                        <td>{{ \PriceHelper::showAdminCurrencyPrice($mp->price) }}</td>
-                                                        <td>
-                                                            <div class="action-list">
-                                                                <a href="{{ $productLink }}" target="_blank"><i class="fas fa-eye"></i> {{ __('View') }}</a>
+                                                            <div class="action-list"><a href="{{ route('admin-prod-edit',$data->product->id ?? $data->id) }}"><i
+                                                                        class="fas fa-eye"></i> {{ __('Details') }}</a>
                                                             </div>
                                                         </td>
                                                     </tr>

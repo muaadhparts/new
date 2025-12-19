@@ -58,6 +58,15 @@ class CheckoutBaseControlller extends Controller
         // ✅ استخدام المبلغ من step3 مباشرة (لا إعادة حساب)
         $orderTotal = (float)($input['total'] ?? 0) / $this->curr->value;
 
+        // ✅ حفظ طريقة الشحن الأصلية (shipto/pickup) قبل أي معالجة
+        $step1 = Session::get('step1', []);
+        $originalShippingMethod = $step1['shipping'] ?? 'shipto';
+
+        // إذا كان shipping string (shipto/pickup) وليس array، نحفظه
+        if (isset($input['shipping']) && is_string($input['shipping']) && in_array($input['shipping'], ['shipto', 'pickup'])) {
+            $originalShippingMethod = $input['shipping'];
+        }
+
         // تحضير vendor_ids من السلة
         $vendor_ids = [];
         foreach ($cart->items as $item) {
@@ -118,13 +127,164 @@ class CheckoutBaseControlller extends Controller
                 $input['vendor_packing_id'] = json_encode([]);
             }
 
-            unset($input['shipping']);
             unset($input['packeging']);
         }
+
+        // ✅ إعادة تعيين قيمة shipping الأصلية (shipto/pickup) للعرض في الفاتورة
+        $input['shipping'] = $originalShippingMethod;
+
+        // ✅ حفظ بيانات شركة الشحن المختارة من العميل (Tryoto وغيرها)
+        // نمرر step2 من الجلسة
+        $step2 = Session::get('step2', []);
+        $input['customer_shipping_choice'] = $this->extractCustomerShippingChoice($step2);
 
         return [
             'input' => $input,
             'order_total' => $orderTotal,
         ];
+    }
+
+    /**
+     * Extract customer's shipping choice data from step2
+     * Parses Tryoto format: "deliveryOptionId#companyName#price"
+     *
+     * @param array $step2Data Step2 session data
+     * @param int|null $vendorId Vendor ID for vendor-specific checkout
+     * @param bool $isVendorCheckout Whether this is vendor-specific checkout
+     * @return string JSON encoded shipping choices per vendor
+     */
+    protected function extractCustomerShippingChoice($step2Data, $vendorId = null, $isVendorCheckout = false)
+    {
+        $choices = [];
+
+        // Get shipping selections from step2 data
+        $shippingSelections = $step2Data['shipping'] ?? [];
+
+        // ✅ Get free shipping info from step2
+        $isFreeShipping = $step2Data['is_free_shipping'] ?? false;
+        $originalShippingCost = $step2Data['original_shipping_cost'] ?? 0;
+        $freeShippingDiscount = $step2Data['free_shipping_discount'] ?? 0;
+
+        // For vendor checkout, the shipping might be stored directly
+        if ($isVendorCheckout && $vendorId) {
+            // Check if shipping is stored as vendor_id => value
+            if (isset($shippingSelections[$vendorId])) {
+                $shippingValue = $shippingSelections[$vendorId];
+            } elseif (!is_array($shippingSelections)) {
+                // Shipping value stored directly
+                $shippingValue = $shippingSelections;
+                $shippingSelections = [$vendorId => $shippingValue];
+            }
+        }
+
+        if (!is_array($shippingSelections)) {
+            // If single value, try to use it with vendorId
+            if ($vendorId && !empty($shippingSelections)) {
+                $shippingSelections = [$vendorId => $shippingSelections];
+            } else {
+                return json_encode($choices);
+            }
+        }
+
+        foreach ($shippingSelections as $vid => $shippingValue) {
+            if (empty($shippingValue)) continue;
+
+            // Check if it's Tryoto format: "deliveryOptionId#companyName#price"
+            if (is_string($shippingValue) && strpos($shippingValue, '#') !== false) {
+                $parts = explode('#', $shippingValue);
+
+                if (count($parts) >= 3) {
+                    $originalPrice = (float) $parts[2];
+
+                    // ✅ Check if this vendor qualifies for free shipping
+                    $vendorFreeShipping = $this->checkVendorFreeShipping($vid, $originalPrice);
+
+                    $choices[$vid] = [
+                        'provider' => 'tryoto',
+                        'delivery_option_id' => $parts[0],
+                        'company_name' => $parts[1],
+                        'price' => $vendorFreeShipping['is_free'] ? 0 : $originalPrice,
+                        'original_price' => $originalPrice,
+                        'is_free_shipping' => $vendorFreeShipping['is_free'],
+                        'free_shipping_reason' => $vendorFreeShipping['reason'] ?? null,
+                        'selected_at' => now()->toIso8601String(),
+                    ];
+                }
+            } elseif (is_numeric($shippingValue)) {
+                // Regular shipping ID (manual/debts)
+                $shipping = \DB::table('shippings')->find($shippingValue);
+
+                if ($shipping) {
+                    $originalPrice = (float) ($shipping->price ?? 0);
+
+                    // ✅ Check if this vendor qualifies for free shipping
+                    $vendorFreeShipping = $this->checkVendorFreeShipping($vid, $originalPrice, $shippingValue);
+
+                    $choices[$vid] = [
+                        'provider' => $shipping->provider ?? 'manual',
+                        'shipping_id' => (int) $shippingValue,
+                        'title' => $shipping->title ?? '',
+                        'price' => $vendorFreeShipping['is_free'] ? 0 : $originalPrice,
+                        'original_price' => $originalPrice,
+                        'is_free_shipping' => $vendorFreeShipping['is_free'],
+                        'free_shipping_reason' => $vendorFreeShipping['reason'] ?? null,
+                        'selected_at' => now()->toIso8601String(),
+                    ];
+                }
+            }
+        }
+
+        // Return array (Model will handle JSON encoding via cast)
+        return !empty($choices) ? $choices : null;
+    }
+
+    /**
+     * Check if vendor qualifies for free shipping based on free_above threshold
+     *
+     * @param int $vendorId Vendor ID
+     * @param float $shippingPrice Original shipping price
+     * @param int|null $shippingId Shipping method ID (for manual/debts)
+     * @return array ['is_free' => bool, 'reason' => string|null]
+     */
+    protected function checkVendorFreeShipping($vendorId, $shippingPrice, $shippingId = null)
+    {
+        // Get cart from session
+        $cart = Session::get('cart');
+        if (!$cart || empty($cart->items)) {
+            return ['is_free' => false, 'reason' => null];
+        }
+
+        // Calculate vendor's products total
+        $vendorProductsTotal = 0;
+        foreach ($cart->items as $item) {
+            $itemVendorId = $item['item']['user_id'] ?? $item['item']['vendor_user_id'] ?? 0;
+            if ($itemVendorId == $vendorId) {
+                $vendorProductsTotal += (float)($item['price'] ?? 0);
+            }
+        }
+
+        // Get free_above from shipping method
+        $freeAbove = 0;
+        if ($shippingId) {
+            $shipping = \DB::table('shippings')->find($shippingId);
+            $freeAbove = (float)($shipping->free_above ?? 0);
+        } else {
+            // For Tryoto, check vendor's Tryoto shipping entry
+            $vendorTryotoShipping = \DB::table('shippings')
+                ->where('user_id', $vendorId)
+                ->where('provider', 'tryoto')
+                ->first();
+            $freeAbove = (float)($vendorTryotoShipping->free_above ?? 0);
+        }
+
+        // Check if qualifies for free shipping
+        if ($freeAbove > 0 && $vendorProductsTotal >= $freeAbove) {
+            return [
+                'is_free' => true,
+                'reason' => "Order total ({$vendorProductsTotal}) exceeds free shipping threshold ({$freeAbove})"
+            ];
+        }
+
+        return ['is_free' => false, 'reason' => null];
     }
 }

@@ -36,7 +36,7 @@
 														</div>
 													</div>
 													<div class="col-lg-7">
-														<input type="password" class="input-field" name="cpass" placeholder="Enter Current Password" required="" value="">
+														<input type="password" class="form-control" name="cpass" placeholder="Enter Current Password" required="" value="">
 													</div>
 												</div>
 
@@ -48,7 +48,7 @@
 														</div>
 													</div>
 													<div class="col-lg-7">
-														<input type="password" class="input-field" name="newpass" placeholder="Enter New Password" required="" value="">
+														<input type="password" class="form-control" name="newpass" placeholder="Enter New Password" required="" value="">
 													</div>
 												</div>
 
@@ -59,7 +59,7 @@
 														</div>
 													</div>
 													<div class="col-lg-7">
-														<input type="password" class="input-field" name="renewpass" placeholder="{{ __('Re-Type New Password') }}" required="" value="">
+														<input type="password" class="form-control" name="renewpass" placeholder="{{ __('Re-Type New Password') }}" required="" value="">
 													</div>
 												</div>
 
@@ -70,7 +70,7 @@
 						                            </div>
 						                          </div>
 						                          <div class="col-lg-7">
-						                            <button class="addProductSubmit-btn" type="submit">{{ __('Save') }}</button>
+						                            <button class="btn btn-primary" type="submit">{{ __('Save') }}</button>
 						                          </div>
 						                        </div>
 

@@ -5,7 +5,7 @@
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="keywords" content="{{$seo->meta_keys}}">
-        <meta name="author" content="MUAADH">
+        <meta name="author" content="Muaadh">
 
         <title>{{$gs->title}}</title>
   <!-- Tell the browser to be responsive to screen width -->
@@ -48,7 +48,7 @@ html {
                 <div class="row">
                     <div class="col-sm-6">
                         <div class="invoice__logo text-left">
-                           <img src="{{ asset('assets/images/'.$gs->invoice_logo) }}" alt="logo">
+                           <img src="{{ asset('assets/images/'.$gs->invoice_logo) }}" alt="woo commerce logo">
                         </div>
                     </div>
                 </div>
@@ -71,6 +71,22 @@ html {
                         </span><br>
                         @endif
                         <span> <strong>{{ __('Payment Method') }} :</strong> {{$order->method}}</span>
+                        @php
+                            $printVendorId = $user->id;
+                            $printCustomerChoice = $order->getCustomerShippingChoice($printVendorId);
+                            $printShipmentLog = App\Models\ShipmentStatusLog::where('order_id', $order->id)
+                                ->where('vendor_id', $printVendorId)
+                                ->orderBy('status_date', 'desc')
+                                ->first();
+                        @endphp
+                        @if ($printCustomerChoice)
+                        <br><span><strong>{{ __('Customer Selected') }}:</strong> {{ $printCustomerChoice['company_name'] ?? 'N/A' }}</span>
+                        @endif
+                        @if ($printShipmentLog)
+                        <br><span><strong>{{ __('Tracking') }}:</strong> {{ $printShipmentLog->tracking_number }}</span>
+                        <br><span><strong>{{ __('Shipping Company') }}:</strong> {{ $printShipmentLog->company_name ?? 'N/A' }}</span>
+                        <br><span><strong>{{ __('Status') }}:</strong> {{ ucfirst($printShipmentLog->status) }}</span>
+                        @endif
                     </div>
                 </div>
             </div>
@@ -122,19 +138,8 @@ html {
                                             @if($product['item']['user_id'] == $user->id)
                                         <tr>
                                             <td width="50%">
-                                                @if($product['item']['user_id'] != 0)
-                                                @php
-                                                $user = App\Models\User::find($product['item']['user_id']);
-                                                @endphp
-                                                @if(isset($user))
-                                                {{ $product['item']['name']}}
-                                                @else
-                                                {{$product['item']['name']}}
-                                                @endif
-
-                                                @else
-                                                {{ $product['item']['name']}}
-                                                @endif
+                                                {{ getLocalizedProductName($product['item']) }}
+                                                <br><small>SKU: {{ $product['item']['sku'] ?? 'N/A' }}</small>
                                             </td>
 
                                             <td>

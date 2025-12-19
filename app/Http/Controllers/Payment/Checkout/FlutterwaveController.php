@@ -12,6 +12,8 @@ use App\Helpers\PriceHelper;
 use App\Models\Country;
 use App\Models\Reward;
 use App\Models\State;
+use App\Traits\HandlesVendorCheckout;
+use App\Traits\SavesCustomerShippingChoice;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Session;
@@ -20,6 +22,7 @@ use Illuminate\Support\Str;
 
 class FlutterwaveController extends CheckoutBaseControlller
 {
+    use HandlesVendorCheckout, SavesCustomerShippingChoice;
     public $public_key;
     private $secret_key;
 
@@ -35,8 +38,21 @@ class FlutterwaveController extends CheckoutBaseControlller
     public function store(Request $request)
     {
         $input = $request->all();
-        $step1 = Session::get('step1');
-        $step2 = Session::get('step2');
+
+        // Get vendor checkout data
+        $vendorData = $this->getVendorCheckoutData();
+        $vendorId = $vendorData['vendor_id'];
+        $isVendorCheckout = $vendorData['is_vendor_checkout'];
+
+        // Get steps from vendor sessions
+        $steps = $this->getCheckoutSteps($vendorId, $isVendorCheckout);
+        $step1 = $steps['step1'];
+        $step2 = $steps['step2'];
+
+        if (!$step1 || !$step2) {
+            return redirect()->route('front.cart')->with('unsuccess', __('Checkout session expired.'));
+        }
+
         $input = array_merge($step1, $step2, $input);
         $data = PaymentGateway::whereKeyword('flutterwave')->first();
         $curr = $this->curr;
@@ -121,21 +137,30 @@ class FlutterwaveController extends CheckoutBaseControlller
 
     public function notify(Request $request)
     {
-
         $input_data = $request->all();
 
+        // Get vendor checkout data
+        $vendorData = $this->getVendorCheckoutData();
+        $vendorId = $vendorData['vendor_id'];
+        $isVendorCheckout = $vendorData['is_vendor_checkout'];
 
+        // Get steps from vendor sessions
+        $steps = $this->getCheckoutSteps($vendorId, $isVendorCheckout);
+        $step1 = $steps['step1'];
+        $step2 = $steps['step2'];
 
         $input = Session::get('input_data');
-
 
         if ($request->cancelled == "true") {
             return redirect()->route('front.cart')->with('success', __('Payment Cancelled!'));
         }
 
-
         $order_data = Session::get('order_data');
-        $success_url = route('front.payment.return');
+
+        // Get cart and filter for vendor
+        $oldCart = Session::get('cart');
+        $originalCart = new Cart($oldCart);
+        $success_url = $this->getSuccessUrl($vendorId, $originalCart);
         $cancel_url = route('front.payment.cancle');
 
         /** Get the payment ID before session clear **/
@@ -179,13 +204,14 @@ class FlutterwaveController extends CheckoutBaseControlller
 
                     if (($chargeResponsecode == "00" || $chargeResponsecode == "0") && ($paymentStatus == "successful")) {
 
-                        $cart = Session::get('cart');
+                        // Filter cart for vendor if vendor checkout
+                        $cart = $this->filterCartForVendor($originalCart, $vendorId);
                         OrderHelper::license_check($cart); // For License Checking
-                        $t_cart = new Cart($cart);
+
                         $new_cart = [];
-                        $new_cart['totalQty'] = $t_cart->totalQty;
-                        $new_cart['totalPrice'] = $t_cart->totalPrice;
-                        $new_cart['items'] = $t_cart->items;
+                        $new_cart['totalQty'] = $cart->totalQty;
+                        $new_cart['totalPrice'] = $cart->totalPrice;
+                        $new_cart['items'] = $cart->items;
                         $new_cart = json_encode($new_cart);
                         $temp_affilate_users = OrderHelper::product_affilate_check($cart); // For Product Based Affilate Checking
                         $affilate_users = $temp_affilate_users == null ? null : json_encode($temp_affilate_users);
@@ -205,12 +231,9 @@ class FlutterwaveController extends CheckoutBaseControlller
                         $input['payment_status'] = "Completed";
                         $input['txnid'] = $resp['data']['txid'];
 
-                        if ($input['tax_type'] == 'state_tax') {
-                            $input['tax_location'] = State::findOrFail($input['tax'])->state;
-                        } else {
-                            $input['tax_location'] = Country::findOrFail($input['tax'])->country_name;
-                        }
-                        $input['tax'] = Session::get('current_tax');
+                        // Get tax data from step2 (already calculated and saved)
+                        $input['tax'] = $step2['tax_amount'] ?? 0;
+                        $input['tax_location'] = $step2['tax_location'] ?? '';
 
                         if ($input['dp'] == 1) {
                             $input['status'] = 'completed';
@@ -262,13 +285,10 @@ class FlutterwaveController extends CheckoutBaseControlller
                         OrderHelper::vendor_order_check($cart, $order); // For Vendor Order Checking
 
                         Session::put('temporder', $order);
-                        Session::put('tempcart', Session::get('cart'));
-                        Session::forget('cart');
-                        Session::forget('already');
-                        Session::forget('coupon');
-                        Session::forget('coupon_total');
-                        Session::forget('coupon_total1');
-                        Session::forget('coupon_percentage');
+                        Session::put('tempcart', $cart);
+
+                        // Remove only vendor's products from cart
+                        $this->removeVendorProductsFromCart($vendorId, $originalCart);
 
                         if ($order->user_id != 0 && $order->wallet_price != 0) {
                             OrderHelper::add_to_transaction($order, $order->wallet_price); // Store To Transactions

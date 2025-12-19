@@ -17,7 +17,7 @@
     </section>
 
 
-    <section class="gs-reg-section wow-replaced" data-wow-delay=".1s">
+    <section class="gs-reg-section muaadh-section-gray wow-replaced" data-wow-delay=".1s">
         <div class="container">
             <div class="row">
                 <div class="col-lg-6 mx-auto reg-area">
@@ -78,10 +78,8 @@
                                     <div class="col d-flex ">
                                         <!-- Checkbox -->
                                         <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" value=""
-                                                id="form2Example31">
-                                            <label class="form-check-label" for="form2Example31"> @lang('Remember me')
-                                            </label>
+                                            <input class="form-check-input" type="checkbox" name="remember" value="1" id="form2Example31">
+                                            <label class="form-check-label" for="form2Example31"> @lang('Remember me')</label>
                                         </div>
                                     </div>
 

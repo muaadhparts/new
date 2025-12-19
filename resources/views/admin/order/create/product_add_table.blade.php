@@ -27,20 +27,22 @@
            <tr>
               <td><input type="hidden" value="{{$key1}}">{{ $product['item']['id'] }}</td>
               <td>
-                @php
-                    // Fetch merchant_product_id for admin order view
-                    $adminProduct = \App\Models\Product::where('slug', $product['item']['slug'])->first();
-                    $adminMerchant = $adminProduct ? $adminProduct->merchantProducts()->where('user_id', $product['item']['user_id'])->where('status', 1)->first() : null;
-                    $adminMerchantId = $adminMerchant->id ?? null;
-                @endphp
-                <img src="{{ \Illuminate\Support\Facades\Storage::url($product['item']['photo']) ?? asset('assets/images/noimage.png') }}" alt="">
+                <img src="{{ filter_var($product['item']['photo'] ?? '', FILTER_VALIDATE_URL) ? $product['item']['photo'] : ($product['item']['photo'] ?? null ? \Illuminate\Support\Facades\Storage::url($product['item']['photo']) : asset('assets/images/noimage.png')) }}" alt="">
                 <br>
                  <input type="hidden" value="{{ $product['license'] }}">
-                @if($adminMerchantId)
-                    <a target="_blank" href="{{ route('front.product', ['slug' => $product['item']['slug'], 'vendor_id' => $product['item']['user_id'], 'merchant_product_id' => $adminMerchantId]) }}" >{{mb_strlen($product['item']['name'],'utf-8') > 30 ? mb_substr($product['item']['name'],0,30,'utf-8').'...' : $product['item']['name']}}</a>
-                @else
-                    <span>{{mb_strlen($product['item']['name'],'utf-8') > 30 ? mb_substr($product['item']['name'],0,30,'utf-8').'...' : $product['item']['name']}}</span>
-                @endif
+                 @php
+                    $prodAddTableUrl = '#';
+                    if (isset($product['item']['slug']) && isset($product['user_id']) && isset($product['merchant_product_id'])) {
+                        $prodAddTableUrl = route('front.product', [
+                            'slug' => $product['item']['slug'],
+                            'vendor_id' => $product['user_id'],
+                            'merchant_product_id' => $product['merchant_product_id']
+                        ]);
+                    } elseif (isset($product['item']['slug'])) {
+                        $prodAddTableUrl = route('front.product.legacy', $product['item']['slug']);
+                    }
+                 @endphp
+                <a target="_blank" href="{{ $prodAddTableUrl }}">{{ getLocalizedProductName($product['item'], 30) }}</a>
               </td>
               <td class="product-price">
                  <span>{{ App\Models\Product::convertPrice($product['item_price']) }}
@@ -79,7 +81,7 @@
                  @endif
               </td>
               <td>
-                 <a href="javascript:;"  data-href="{{ route('admin.order.remove.cart',$product['item']['id'].$product['size'].$product['color'].str_replace(str_split(' ,'),'',$product['values'])) }}" class="mybtn1 removeOrder"><i class="fa fa-trash"></i> {{ __('Remove') }}</a>
+                 <a href="javascript:;"  data-href="{{ route('admin.order.remove.cart',$product['item']['id'].$product['size'].$product['color'].str_replace(str_split(' ,'),'',$product['values'])) }}" class="btn btn-primary removeOrder"><i class="fa fa-trash"></i> {{ __('Remove') }}</a>
               </td>
            </tr>
            @endforeach
@@ -90,7 +92,7 @@
    
     
     <div class="col-lg-12 text-right">
-      <button type="submit" class="mybtn1">View & Continue</button>
+      <button type="submit" class="btn btn-primary">View & Continue</button>
     </div>
 
   </div>

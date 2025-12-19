@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-      <meta name="author" content="MUAADH">
+      <meta name="author" content="Muaadh">
     <!-- Title -->
     <title>{{$gs->title}}</title>
     <!-- favicon -->
@@ -27,7 +27,11 @@
     <link href="{{asset('assets/admin/css/style.css')}}" rel="stylesheet"/>
     <link href="{{asset('assets/admin/css/custom.css')}}" rel="stylesheet"/>
     <link href="{{asset('assets/admin/css/responsive.css')}}" rel="stylesheet" />
-    @yield('styles')
+
+    {{-- Frontend Theme Files --}}
+    <link rel="stylesheet" href="{{ asset('assets/front/css/style.css') }}">
+    {{-- Theme Colors - Generated from Admin Panel (MUST load LAST) --}}
+    <link rel="stylesheet" href="{{ asset('assets/front/css/theme-colors.css') }}">
 
   </head>
   <body>
@@ -46,9 +50,8 @@
                 @include('alerts.admin.form-login')
                 <form id="forgotform" action="{{ route('admin.forgot.submit') }}" method="POST">
                   @csrf
-                  <div class="form-input">
-                    <input type="email" name="email" class="User Name" placeholder="{{ __('Type Email Address') }}" value="" required="" autofocus>
-                    <i class="icofont-user-alt-5"></i>
+                  <div class="mb-3">
+                    <input type="email" name="email" class="form-control" placeholder="{{ __('Type Email Address') }}" value="" required autofocus>
                   </div>
                   <div class="form-forgot-pass">
                     <div class="right">
@@ -58,7 +61,7 @@
                     </div>
                   </div>
                   <input id="authdata" type="hidden"  value="{{ __('Checking...') }}">
-                  <button class="submit-btn">{{ __('Login') }}</button>
+                  <button class="btn btn-primary">{{ __('Login') }}</button>
                 </form>
               </div>
             </div>

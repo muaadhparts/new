@@ -1,20 +1,5 @@
 @extends('layouts.admin')
 
-@section('styles')
-
-<style type="text/css">
-.table-responsive {
-    overflow-x: hidden;
-    overflow-y: hidden;
-}
-table#example2 {
-    margin-left: 10px;
-}
-
-</style>
-
-@endsection
-
 @section('content')
 
                     <div class="content-area">
@@ -49,7 +34,7 @@ table#example2 {
                                                             @else
                                                             <img src="{{ $data->photo ? asset('assets/images/users/'.$data->photo):asset('assets/images/noimage.png')}}" alt="{{ __("No Image") }}">                                            
                                                             @endif
-                                                        <a href="javascript:;" class="mybtn1 send" data-email="{{ $data->email }}" data-toggle="modal" data-target="#vendorform">{{ __("Send Message") }}</a>
+                                                        <a href="javascript:;" class="btn btn-primary send" data-email="{{ $data->email }}" data-bs-toggle="modal" data-bs-target="#vendorform">{{ __("Send Message") }}</a>
                                                         </div>
                                                     </div>
                                                     <div class="col-md-4">
@@ -98,7 +83,7 @@ table#example2 {
                                                         </tr>
                                                         <tr>
                                                             <th>{{ __("Total Product(s)") }}</th>
-                                                            <td>{{ $data->products()->count() }}</td>
+                                                            <td>{{ $data->merchantProducts()->count() }}</td>
                                                         </tr>
                                                         <tr>
                                                             <th>{{ __("Joined") }}</th>
@@ -112,7 +97,7 @@ table#example2 {
                                                             <td>
                                                                     @if($data->checkStatus())
                                                                     <a class="badge badge-success verify-link" href="javascript:;">Verified</a>
-                                                                    <a class="set-gallery1" href="javascript:;" data-toggle="modal" data-target="#setgallery"><input type="hidden" value="{{ $data->verifies()->where('status','=','Verified')->first()->id }}">(View)</a>
+                                                                    <a class="set-gallery1" href="javascript:;" data-bs-toggle="modal" data-bs-target="#setgallery"><input type="hidden" value="{{ $data->verifies()->where('status','=','Verified')->first()->id }}">(View)</a>
                                                                     @else 
                                                                     <a class="badge badge-danger verify-link" href="javascript:;">Unverified</a>
                                                                     @endif
@@ -133,8 +118,11 @@ table#example2 {
                                                                 <table id="example2" class="table table-hover dt-responsive" cellspacing="0" width="100%">
                                                                     <thead>
                                                                         <tr>
-                                                                            <th>{{ __("Product ID") }}</th>
-                                                                            <th>{{ __("Type") }}</th>
+                                                                            <th>{{ __("MP ID") }}</th>
+                                                                            <th>{{ __("Name") }}</th>
+                                                                            <th>{{ __("Brand") }}</th>
+                                                                            <th>{{ __("Quality Brand") }}</th>
+                                                                            <th>{{ __("Condition") }}</th>
                                                                             <th>{{ __("Stock") }}</th>
                                                                             <th>{{ __("Price") }}</th>
                                                                             <th>{{ __("Status") }}</th>
@@ -142,39 +130,51 @@ table#example2 {
                                                                         </tr>
                                                                     </thead>
                                                                     <tbody>
-                                                                        @foreach($data->products as $dt)
+                                                                        @foreach($data->merchantProducts as $merchantProduct)
                                                                         @php
-                                                                            $dtMerchant = $dt->merchantProducts()->where('user_id', $data->id)->where('status', 1)->first();
-                                                                            $dtMerchantId = $dtMerchant->id ?? null;
+                                                                            // Get the actual product
+                                                                            $dt = $merchantProduct->product;
+
+                                                                            $adminVendorUrl = $dt && $dt->slug
+                                                                                ? route('front.product', ['slug' => $dt->slug, 'vendor_id' => $merchantProduct->user_id, 'merchant_product_id' => $merchantProduct->id])
+                                                                                : '#';
+
+
+                                                                            // حالة المنتج (جديد/مستعمل)
+                                                                            $condition = $merchantProduct->product_condition == 1 ? __('Used') : __('New');
+
+                                                                            // المخزون
+                                                                            $stck = $merchantProduct->stock;
+                                                                            if($stck === null || $stck === '')
+                                                                                $stckDisplay = __('Unlimited');
+                                                                            elseif((int)$stck === 0)
+                                                                                $stckDisplay = '<span class="text-danger">'.__('Out Of Stock').'</span>';
+                                                                            else
+                                                                                $stckDisplay = $stck;
+
+                                                                            // السعر مع العمولة
+                                                                            $gs = cache()->remember('generalsettings', now()->addDay(), fn () => DB::table('generalsettings')->first());
+                                                                            $price = (float) $merchantProduct->price;
+                                                                            $finalPrice = $price + (float) $gs->fixed_commission + ($price * (float) $gs->percentage_commission / 100);
                                                                         @endphp
                                                                         <tr>
-                                                                        <td>
-                                                                            @if($dtMerchantId)
-                                                                                <a href="{{ route('front.product', ['slug' => $dt->slug, 'vendor_id' => $data->id, 'merchant_product_id' => $dtMerchantId]) }}" target="_blank">{{ sprintf("%'.08d",$dt->id) }}</a>
-                                                                            @else
-                                                                                <span>{{ sprintf("%'.08d",$dt->id) }}</span>
-                                                                            @endif
-                                                                        </td>
-                                                                            <td>{{ $dt->type }}</td>
-                                                                            @php 
-                                                                            $stck = (string)$dt->stock;
-                                                                            if($stck == "0")
-                                                                            $stck = "Out Of Stock";
-                                                                            elseif($stck == null)
-                                                                            $stck = "Unlimited";
-                                                                            @endphp
-                                                                            <td>{{ $stck  }}</td>
-                                                                            <td>{{ \App\Models\Product::convertPrice($dt->price) }}</td>
+                                                                            <td><a href="{{ $adminVendorUrl }}" target="_blank">{{ sprintf("%'.06d", $merchantProduct->id) }}</a></td>
+                                                                            <td>{{ $dt ? getLocalizedProductName($dt, 50) : __('N/A') }}</td>
+                                                                            <td>{{ $dt && $dt->brand ? getLocalizedBrandName($dt->brand) : __('N/A') }}</td>
+                                                                            <td>{{ $merchantProduct->qualityBrand ? getLocalizedQualityName($merchantProduct->qualityBrand) : __('N/A') }}</td>
+                                                                            <td><span class="badge {{ $merchantProduct->product_condition == 1 ? 'badge-warning' : 'badge-success' }}">{{ $condition }}</span></td>
+                                                                            <td>{!! $stckDisplay !!}</td>
+                                                                            <td>{{ \PriceHelper::showAdminCurrencyPrice($finalPrice) }}</td>
                                                                             <td>
                                                                                 <div class="action-list">
-                                                                                <select class="process select droplinks {{ $dt->status == 1 ? 'drop-success' : 'drop-danger' }}">
-                                                                                    <option data-val="1" value="{{ route('admin-prod-status',['id1' => $data->id, 'id2' => 1]) }}" {{ $dt->status == 1 ? 'selected' : '' }}>{{ __("Activated") }}</option>
-                                                                                    <<option data-val="0" value="{{ route('admin-prod-status',['id1' => $data->id, 'id2' => 0]) }}" {{ $dt->status == 0 ? 'selected' : '' }}>{{ __("Deactivated") }}</option>
+                                                                                <select class="process select droplinks {{ $merchantProduct->status == 1 ? 'drop-success' : 'drop-danger' }}">
+                                                                                    <option data-val="1" value="{{ route('admin-merchant-product-status',['id' => $merchantProduct->id, 'status' => 1]) }}" {{ $merchantProduct->status == 1 ? 'selected' : '' }}>{{ __("Activated") }}</option>
+                                                                                    <option data-val="0" value="{{ route('admin-merchant-product-status',['id' => $merchantProduct->id, 'status' => 0]) }}" {{ $merchantProduct->status == 0 ? 'selected' : '' }}>{{ __("Deactivated") }}</option>
                                                                                 </select>
                                                                                 </div>
                                                                             </td>
                                                                             <td>
-                                                                                <a href=" {{ route('admin-prod-edit',$dt->id) }}" class="view-details">
+                                                                                <a href="{{ route('admin-prod-edit', $dt->id ?? 0) }}" class="view-details">
                                                                                     <i class="fas fa-eye"></i>{{ __("Details") }}
                                                                                 </a>
                                                                             </td>
@@ -199,8 +199,8 @@ table#example2 {
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="vendorformLabel">{{ __("Send Message") }}</h5>
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                            <span aria-hidden="true">&times;</span>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                            
                         </button>
                 </div>
             <div class="modal-body">
@@ -212,16 +212,16 @@ table#example2 {
                                     {{csrf_field()}}
                                     <ul>
                                         <li>
-                                            <input type="email" class="input-field eml-val" id="eml1" name="to" placeholder="{{ __("Email") }} *" value="" required="">
+                                            <input type="email" class="form-control eml-val" id="eml1" name="to" placeholder="{{ __("Email") }} *" value="" required="">
                                         </li>
                                         <li>
-                                            <input type="text" class="input-field" id="subj1" name="subject" placeholder="{{ __("Subject") }} *" required="">
+                                            <input type="text" class="form-control" id="subj1" name="subject" placeholder="{{ __("Subject") }} *" required="">
                                         </li>
                                         <li>
-                                            <textarea class="input-field textarea" name="message" id="msg1" placeholder="{{ __("Your Message") }} *" required=""></textarea>
+                                            <textarea class="form-control textarea" name="message" id="msg1" placeholder="{{ __("Your Message") }} *" required=""></textarea>
                                         </li>
                                     </ul>
-                                    <button class="submit-btn" id="emlsub1" type="submit">{{ __("Send Message") }}</button>
+                                    <button class="btn btn-primary" id="emlsub1" type="submit">{{ __("Send Message") }}</button>
                                 </form>
                             </div>
                         </div>
@@ -243,8 +243,8 @@ table#example2 {
 			<div class="modal-content">
 			<div class="modal-header">
 				<h5 class="modal-title" id="exampleModalCenterTitle">{{ __('Attachments') }}</h5>
-				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
-				<span aria-hidden="true">×</span>
+				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+				
 				</button>
 			</div>
 			<div class="modal-body">

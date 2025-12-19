@@ -50,7 +50,7 @@ class VendorSubscriptionController extends AdminBaseController
                                                 </select>';                                        
                                 }
 
-                                return '<div class="action-list">'.$status.'<a data-href="' . route('admin-vendor-sub',$data->id) . '" class="view details-width" data-toggle="modal" data-target="#modal1"> <i class="fas fa-eye"></i>'.__('Details').'</a></div>';
+                                return '<div class="action-list">'.$status.'<a data-href="' . route('admin-vendor-sub',$data->id) . '" class="view details-width" data-bs-toggle="modal" data-bs-target="#modal1"> <i class="fas fa-eye"></i>'.__('Details').'</a></div>';
                             }) 
                             ->rawColumns(['action'])
                             ->toJson(); //--- Returning Json Data To Client Side

@@ -5,26 +5,26 @@
 @elseif(isset($blog->meta_tag) && isset($blog->meta_description))
     <meta property="og:title" content="{{ $blog->title }}" />
     <meta property="og:description"
-        content="{{ $blog->meta_description != null ? $blog->meta_description : strip_tags($blog->meta_description) }}" />
+        content="{{ $blog->meta_description ?? strip_tags($blog->description ?? '') }}" />
     <meta property="og:image" content="{{ asset('assets/images/blogs/' . $blog->photo) }}" />
     <meta name="keywords" content="{{ $blog->meta_tag }}">
     <meta name="description" content="{{ $blog->meta_description }}">
     <title>{{ $gs->title }}</title>
 @elseif(isset($productt))
-    <meta name="keywords" content="{{ !empty($productt->meta_tag) ? implode(',', $productt->meta_tag) : '' }}">
+    <meta name="keywords" content="{{ $productt->meta_tag ?? '' }}">
     <meta name="description"
-        content="{{ $productt->meta_description != null ? $productt->meta_description : strip_tags($productt->description) }}">
+        content="{{ $productt->meta_description ?? strip_tags($productt->description ?? '') }}">
     <meta property="og:title" content="{{ $productt->name }}" />
     <meta property="og:description"
-        content="{{ $productt->meta_description != null ? $productt->meta_description : strip_tags($productt->description) }}" />
-    <meta property="og:image" content="{{ asset('assets/images/thumbnails/' . $productt->thumbnail) }}" />
-    <meta name="author" content="MUAADH">
+        content="{{ $productt->meta_description ?? strip_tags($productt->description ?? '') }}" />
+    <meta property="og:image" content="{{ filter_var($productt->photo, FILTER_VALIDATE_URL) ? $productt->photo : ($productt->photo ? \Illuminate\Support\Facades\Storage::url($productt->photo) : asset('assets/images/noimage.png')) }}" />
+    <meta name="author" content="Muaadh">
     <title>{{ substr($productt->name, 0, 11) . '-' }}{{ $gs->title }}</title>
 @else
     <meta property="og:title" content="{{ $gs->title }}" />
     <meta property="og:image" content="{{ asset('assets/images/' . $gs->logo) }}" />
     <meta name="keywords" content="{{ $seo->meta_keys }}">
-    <meta name="author" content="MUAADH">
+    <meta name="author" content="Muaadh">
     <title>{{ $gs->title }}</title>
 @endif
 
@@ -37,18 +37,13 @@
         rel="stylesheet">
 @endif
 
-{{-- ✨ Enhanced Theme CSS --}}
-<link rel="stylesheet" href="{{ asset('assets/front/css/enhanced-theme.css') }}?v={{ time() }}">
-
-{{--<link rel="stylesheet"--}}
-{{--    href="{{ asset('assets/front/css/styles.php?color=' . str_replace('#', '', $gs->colors) . '&header_color=' . $gs->header_color) }}">--}}
-
-{{--@if ($default_font->font_family)--}}
-{{--    <link rel="stylesheet" id="colorr"--}}
-{{--        href="{{ asset('assets/front/css/font.php?font_familly=' . $default_font->font_family) }}">--}}
-{{--@else--}}
-{{--    <link rel="stylesheet" id="colorr" href="{{ asset('assets/front/css/font.php?font_familly=' . ' Open Sans') }}">--}}
-{{--@endif--}}
+{{-- Dynamic styles handled by theme-colors.css in layouts/front.blade.php --}}
+{{-- Font styles --}}
+@if ($default_font->font_family ?? false)
+    <style>
+        body, * { font-family: '{{ $default_font->font_family }}', sans-serif; }
+    </style>
+@endif
 
 @if (!empty($seo->google_analytics))
     <script>
@@ -61,7 +56,7 @@
         gtag('config', '{{ $seo->google_analytics }}');
     </script>
 @endif
-@if (!empty($seo->facebook_pixel))
+@if (isset($seo) && isset($seo->facebook_pixel) && !empty($seo->facebook_pixel) && $seo->facebook_pixel != 'null' && $seo->facebook_pixel != null && trim($seo->facebook_pixel) != '' && strlen(trim($seo->facebook_pixel)) > 5)
     <script>
         "use strict";
 

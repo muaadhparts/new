@@ -295,8 +295,60 @@
                                     @else
                                         <p>{{ __('Pick Up') }}</p>
                                     @endif
+
+                                    {{-- عرض معلومات شركة الشحن (Tryoto) إذا كانت موجودة --}}
+                                    @if ($order->shipping_title && !empty($order->shipping_title) && !is_array(json_decode($order->shipping_title, true)))
+                                        <p class="mt-2"><strong>{{ __('Carrier') }}:</strong> {{ $order->shipping_title }}</p>
+                                    @endif
                                 </div>
 
+                            </div>
+                        @endif
+
+                        {{-- ✅ Shipment Tracking Section --}}
+                        @php
+                            $shipments = App\Models\ShipmentStatusLog::where('order_id', $order->id)
+                                ->orderBy('status_date', 'desc')
+                                ->get()
+                                ->groupBy('vendor_id');
+                        @endphp
+
+                        @if($shipments->count() > 0)
+                            <div class="address-item w-100">
+                                <h5><i class="fas fa-shipping-fast"></i> @lang('Shipment Tracking')</h5>
+                                @foreach($shipments as $vendorId => $vendorShipments)
+                                    @php
+                                        $latestShipment = $vendorShipments->first();
+                                        $vendor = App\Models\User::find($vendorId);
+                                    @endphp
+                                    <div class="shipment-item mb-3 p-3 border rounded">
+                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                            <strong>{{ $vendor->shop_name ?? $vendor->name ?? 'Vendor' }}</strong>
+                                            <span class="badge
+                                                @if($latestShipment->status == 'delivered') bg-success
+                                                @elseif($latestShipment->status == 'in_transit') bg-primary
+                                                @elseif($latestShipment->status == 'out_for_delivery') bg-info
+                                                @elseif(in_array($latestShipment->status, ['failed', 'returned', 'cancelled'])) bg-danger
+                                                @else bg-secondary
+                                                @endif">
+                                                {{ $latestShipment->status_ar ?? ucfirst(str_replace('_', ' ', $latestShipment->status)) }}
+                                            </span>
+                                        </div>
+                                        <ul class="list-unstyled mb-0">
+                                            <li><i class="fas fa-truck me-2"></i> <strong>@lang('Company'):</strong> {{ $latestShipment->company_name }}</li>
+                                            <li><i class="fas fa-barcode me-2"></i> <strong>@lang('Tracking'):</strong> <span class="text-primary">{{ $latestShipment->tracking_number }}</span></li>
+                                            @if($latestShipment->location)
+                                                <li><i class="fas fa-map-marker-alt me-2"></i> <strong>@lang('Location'):</strong> {{ $latestShipment->location }}</li>
+                                            @endif
+                                            @if($latestShipment->message_ar || $latestShipment->message)
+                                                <li><i class="fas fa-info-circle me-2"></i> {{ $latestShipment->message_ar ?? $latestShipment->message }}</li>
+                                            @endif
+                                            @if($latestShipment->status_date)
+                                                <li><i class="fas fa-clock me-2"></i> <strong>@lang('Last Update'):</strong> {{ $latestShipment->status_date->format('Y-m-d H:i') }}</li>
+                                            @endif
+                                        </ul>
+                                    </div>
+                                @endforeach
                             </div>
                         @endif
 
@@ -313,115 +365,104 @@
                         <div class="user-table table-responsive position-relative">
                             <table class="gs-data-table w-100">
                                 <tr class="thead-bg">
-                                    <th><span class="title">@lang('Image')</span></th>
-                                    <th><span class="title">@lang('Name')</span></th>
-                                    <th><span class="title">@lang('Part Number')</span></th>
-                                    <th><span class="title">@lang('Shop Name')</span></th>
-                                    <th><span class="title">@lang('Brand')</span></th>
-                                    <th><span class="title">@lang('Brand Quality')</span></th>
-                                    <th><span class="title">@lang('Price')</span></th>
-                                    <th><span class="title">@lang('Quantity')</span></th>
-                                    <th><span class="title">@lang('Total')</span></th>
+                                    <th><span class="title">@lang('ID#')</span></th>
+                                    <th><span class="title">@lang('Product Name')</span></th>
+                                    <th><span class="title">@lang('Details')</span></th>
+                                    <th><span class="title">@lang('Unit Price')</span></th>
+                                    <th><span class="title">@lang('Total Price')</span></th>
                                 </tr>
 
                                 @foreach ($cart['items'] as $product)
-                                    @php
-                                        $userOrderProduct = \App\Models\Product::where('slug', $product['item']['slug'])->first();
-                                        $userOrderVendorId = $product['item']['user_id'] ?? 0;
-                                        $userOrderMerchant = $userOrderProduct && $userOrderVendorId ? $userOrderProduct->merchantProducts()->with('user')->where('user_id', $userOrderVendorId)->where('status', 1)->first() : null;
-                                        $userOrderMerchantId = $userOrderMerchant->id ?? null;
-                                        $shopName = $userOrderMerchant && $userOrderMerchant->user ? ($userOrderMerchant->user->shop_name ?? $userOrderMerchant->user->name) : '-';
-                                    @endphp
                                     <tr class="tbody-product">
-                                        <td class="product-img">
-                                            <img src="{{ \Illuminate\Support\Facades\Storage::url($product['item']['photo']) ?? asset('assets/images/noimage.png') }}"
-                                                alt="" style="width: 80px; height: 80px; object-fit: cover;">
-                                        </td>
+                                        <td><b><span class="td-title">{{ $product['item']['id'] }}</span></b></td>
 
                                         <td class="td-product-name">
+
                                             <div class="td-title td-product-namee">
                                                 <input type="hidden" value="{{ $product['license'] }}">
-                                                <b><x-product-name :item="$product['item']" :vendor-id="$userOrderVendorId" :merchant-product-id="$userOrderMerchantId" :showSku="false" target="_blank" class="a_title_link d-block title-hover-color" /></b>
-
-                                                @if (!empty($product['color']) || !empty($product['size']))
-                                                    <div class="d-flex align-items-center gap-2 mt-2">
-                                                        @if (!empty($product['color']))
-                                                            <span class="text-muted small">@lang('Color'): </span>
-                                                            <span class="d-inline-block rounded-2" style="border:10px solid #{{ $product['color']==''?'white':$product['color'] }};"></span>
-                                                        @endif
-                                                        @if (!empty($product['size']))
-                                                            <span class="text-muted small">@lang('Size'): {{ $product['size'] }}</span>
-                                                        @endif
-                                                    </div>
+                                                @php
+                                                    $userOrderProductUrl = '#';
+                                                    if (isset($product['item']['slug']) && isset($product['user_id']) && isset($product['merchant_product_id'])) {
+                                                        $userOrderProductUrl = route('front.product', [
+                                                            'slug' => $product['item']['slug'],
+                                                            'vendor_id' => $product['user_id'],
+                                                            'merchant_product_id' => $product['merchant_product_id']
+                                                        ]);
+                                                    } elseif (isset($product['item']['slug'])) {
+                                                        $userOrderProductUrl = route('front.product.legacy', $product['item']['slug']);
+                                                    }
+                                                @endphp
+                                                <b>
+                                                    <a class="a_title_link d-block title-hover-color" target="_blank"
+                                                        href="{{ $userOrderProductUrl }}">
+                                                        {{ getLocalizedProductName($product['item'], 50) }}
+                                                    </a>
+                                                </b>
+                                                <small class="text-muted d-block">SKU: {{ $product['item']['sku'] ?? 'N/A' }}</small>
+                                                @if(isset($product['vendor_name']))
+                                                <small class="d-block"><strong>{{ __('Vendor') }}:</strong> {{ $product['vendor_name'] }}</small>
                                                 @endif
-                                                @if (!empty($product['keys']))
-                                                    <div class="mt-2">
-                                                        @foreach (array_combine(explode(',', $product['keys']), explode(',', $product['values'])) as $key => $value)
-                                                            <small class="text-muted d-block">{{ ucwords(str_replace('_', ' ', $key)) }}: {{ $value }}</small>
-                                                        @endforeach
-                                                    </div>
-                                                @endif
-
                                                 @if ($product['item']['type'] != 'Physical')
                                                     @if ($order->payment_status == 'Completed')
-                                                        <div class="mt-2">
-                                                            @if ($product['item']['file'] != null)
-                                                                <a class="btn btn-sm btn-primary"
-                                                                    href="{{ route('user-order-download', ['slug' => $order->order_number, 'id' => $product['item']['id']]) }}">
-                                                                    <i class="fa fa-download"></i>
-                                                                    {{ __('Download') }}
-                                                                </a>
-                                                            @else
-                                                                <a class="btn btn-sm btn-primary" target="_blank"
-                                                                    href="{{ $product['item']['link'] }}">
-                                                                    <i class="fa fa-download"></i>
-                                                                    {{ __('Download') }}
-                                                                </a>
-                                                            @endif
-                                                            @if ($product['license'] != '')
-                                                                <a href="javascript:;" data-toggle="modal"
-                                                                    data-target="#licence"
-                                                                    class="btn btn-sm btn-info product-btn" id="license">
-                                                                    <i class="fa fa-eye"></i>
-                                                                    {{ __('View License') }}
-                                                                </a>
-                                                            @endif
-                                                        </div>
+                                                        @if ($product['item']['file'] != null)
+                                                            <a class="title-hover-color"
+                                                                href="{{ route('user-order-download', ['slug' => $order->order_number, 'id' => $product['item']['id']]) }}"
+                                                                class="btn btn-sm btn-primary">
+                                                                <i class="fa fa-download"></i>
+                                                                {{ __('Download') }}
+                                                            </a>
+                                                        @else
+                                                            <a class="title-hover-color" target="_blank"
+                                                                href="{{ $product['item']['link'] }}"
+                                                                class="btn btn-sm btn-primary">
+                                                                <i class="fa fa-download"></i>
+                                                                {{ __('Download') }}
+                                                            </a>
+                                                        @endif
+                                                        @if ($product['license'] != '')
+                                                            <a href="javascript:;" data-bs-toggle="modal"
+                                                                data-bs-target="#licence"
+                                                                class="btn btn-sm btn-info product-btn" id="license"><i
+                                                                    class="fa fa-eye"></i>
+                                                                {{ __('View License') }}</a>
+                                                        @endif
                                                     @endif
                                                 @endif
                                             </div>
+
+                                            <span class="license-key">Licenes key: ...</span>
                                         </td>
 
                                         <td>
-                                            <span>{{ $product['item']['sku'] ?? '-' }}</span>
+                                            <ul>
+                                                <li><b><span>@lang('Quantity:')</span></b> {{ $product['qty'] }}</li>
+                                                @if (!empty($product['size']))
+                                                    <li><b><span>@lang('Size:')</span></b>
+                                                        {{ $product['item']['measure'] }}{{ str_replace('-', '', $product['size']) }}
+                                                    </li>
+                                                @endif
+                                                @if (!empty($product['color']))
+                                                    <li><b><span>Color:</span></b>
+                                                        <span id="color-bar"
+                                                            style="width: 20px; height: 20px; display: inline-block; vertical-align: middle; border-radius: 50%; background: #{{ $product['color'] }};"></span>
+                                                    </li>
+                                                @endif
+
+                                                @if (!empty($product['keys']))
+                                                    @foreach (array_combine(explode(',', $product['keys']), explode(',', $product['values'])) as $key => $value)
+                                                        <li><b><span>{{ ucwords(str_replace('_', ' ', $key)) }}:</span></b>
+                                                            {{ $value }}</li>
+                                                    @endforeach
+                                                @endif
+                                            </ul>
                                         </td>
 
-                                        <td>
-                                            <span>{{ $shopName }}</span>
+                                        <td><b><span
+                                                    class="td-title">{{ \PriceHelper::showCurrencyPrice($product['item_price'] * $order->currency_value) }}</span></b>
                                         </td>
-
-                                        <td>
-                                            <span>{{ $userOrderProduct && $userOrderProduct->brand ? Str::ucfirst($userOrderProduct->brand->name) : '-' }}</span>
-                                        </td>
-
-                                        <td>
-                                            <span>{{ $userOrderMerchant && $userOrderMerchant->qualityBrand ? (app()->getLocale() == 'ar' && $userOrderMerchant->qualityBrand->name_ar ? $userOrderMerchant->qualityBrand->name_ar : $userOrderMerchant->qualityBrand->name_en) : '-' }}</span>
-                                        </td>
-
-                                        <td>
-                                            <b><span class="td-title">{{ \PriceHelper::showCurrencyPrice($product['item_price'] * $order->currency_value) }}</span></b>
-                                        </td>
-
-                                        <td>
-                                            <span>{{ $product['qty'] }}</span>
-                                        </td>
-
                                         <td>
                                             <b><span class="td-title">{{ \PriceHelper::showCurrencyPrice($product['price'] * $order->currency_value) }}
-                                                @if($product['discount'] != 0)
-                                                    <br><small>{{ $product['discount'] }}% {{ __('Off') }}</small>
-                                                @endif
-                                            </span></b>
+                                                    <small>{{ $product['discount'] == 0 ? '' : '(' . $product['discount'] . '% ' . __('Off') . ')' }}</small></small></span></b>
                                         </td>
                                     </tr>
                                 @endforeach
@@ -440,15 +481,15 @@
             <div class="modal-content">
                 <div class="modal-header d-block text-center">
                     <h4 class="modal-title d-inline-block">{{ __('License Key') }}</h4>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                        
                     </button>
                 </div>
                 <div class="modal-body">
                     <p class="text-center">{{ __('The Licenes Key is :') }} <span id="key"></span></p>
                 </div>
                 <div class="modal-footer justify-content-center">
-                    <button type="button" class="btn btn-danger" data-dismiss="modal">{{ __('Close') }}</button>
+                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal">{{ __('Close') }}</button>
                 </div>
             </div>
         </div>

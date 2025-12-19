@@ -1,190 +1,673 @@
-@php
-  /** @var \App\Models\Product $productt */
-  /** @var \App\Models\MerchantProduct|null $merchant */
-  $vendorId  = $vendorId ?? optional($merchant)->user_id ?? 0;
-  $merchantProductId = $merchant->id ?? null;
-  $hasVendor = $vendorId > 0;
+<div class="full-row pb-0">
+  <div class="container">
+      <div class="row single-product-wrapper">
+          <div class="col-12 col-lg-4 mb-4 mb-lg-0">
+              <div class="product-images overflow-hidden">
+                  <div class="images-inner">
+                      <div class="woocommerce-product-gallery woocommerce-product-gallery--with-images woocommerce-product-gallery--columns-4 images" data-columns="4" style="opacity: 1; transition: opacity 0.25s ease-in-out 0s;">
+                          <figure class="woocommerce-product-gallery__wrapper">
+                              <div class="bg-light">
+                                  <img  id="single-image-zoom" src="{{ filter_var($productt->photo, FILTER_VALIDATE_URL) ? $productt->photo : ($productt->photo ? \Illuminate\Support\Facades\Storage::url($productt->photo) : asset('assets/images/noimage.png')) }}" alt="Thumb Image" data-zoom-image="{{ filter_var($productt->photo, FILTER_VALIDATE_URL) ? $productt->photo : ($productt->photo ? \Illuminate\Support\Facades\Storage::url($productt->photo) : asset('assets/images/noimage.png')) }}" />
+                              </div>
 
-  // حساب السعر/الخصم Vendor-aware
-  $currentPrice = $merchant
-      ? (method_exists($merchant, 'showPrice') ? $merchant->showPrice() : \App\Models\Product::convertPrice($merchant->price))
-      : (method_exists($productt, 'showPrice') ? $productt->showPrice($vendorId) : $productt->showPrice());
+                              @php
+                                  // Get vendor-specific galleries
+                                  $topGalleryVendorId = isset($merchant) ? $merchant->user_id : null;
+                                  $topVendorGalleries = $productt->galleriesForVendor($topGalleryVendorId, 10);
+                              @endphp
+                              <div id="gallery_09" class="product-slide-thumb">
+                                  <div class="owl-carousel four-carousel dot-disable nav-arrow-middle owl-mx-5">
+                                  @foreach($topVendorGalleries as $gal)
+                                      <div class="item">
+                                          <a class="active" href="{{asset('assets/images/galleries/'.$gal->photo)}}" data-image="{{asset('assets/images/galleries/'.$gal->photo)}}" data-zoom-image="{{asset('assets/images/galleries/'.$gal->photo)}}">
+                                              <img src="{{asset('assets/images/galleries/'.$gal->photo)}}" alt="Thumb Image" />
+                                          </a>
+                                      </div>
+                                  @endforeach
+                                  </div>
+                              </div>
+                          </figure>
+                      </div>
+                  </div>
+              </div>
+          </div>
 
-  $previousPrice = ($merchant && $merchant->previous_price)
-      ? \App\Models\Product::convertPrice($merchant->previous_price)
-      : null;
+          <div class="col-12 col-lg-5 col-md-8">
+              <div class="summary entry-summary">
+                  <div class="summary-inner">
+                      <div class="entry-breadcrumbs w-100">
+                          <nav class="breadcrumb-divider-slash" aria-label="breadcrumb">
+                              <ol class="breadcrumb pro-bread">
+                                  <li class="breadcrumb-item"><a href="{{route('front.index')}}">{{__('Home')}}</a></li>
+                                  <li class="breadcrumb-item"><a href="{{route('front.category',$productt->category->slug)}}">{{$productt->category->name}}</a></li>
+                                  @if($productt->subcategory_id != null)
+                                  <li class="breadcrumb-item">
+                                      <a href="{{ route('front.category',[$productt->category->slug, $productt->subcategory->slug]) }}">
+                                      {{$productt->subcategory->name}}
+                                      </a>
+                                  </li>
+                                  @endif
+                                  @if($productt->childcategory_id != null)
+                                  <li class="breadcrumb-item">
+                                      <a href="{{ route('front.category',[ $productt->category->slug,$productt->subcategory->slug,$productt->childcategory->slug]) }}">
+                                      {{$productt->childcategory->name}}
+                                      </a>
+                                  </li>
+                                  @endif
 
-  $offPercent = null;
-  if ($merchant && $merchant->previous_price > 0 && $merchant->price > 0) {
-      $offPercent = round((1 - ($merchant->price / $merchant->previous_price)) * 100);
-  } elseif (method_exists($productt, 'offPercentage')) {
-      $offPercent = (int) round($productt->offPercentage());
-  }
+                              </ol>
+                          </nav>
+                      </div>
+                      <h1 class="product_title entry-title">{{ $productt->name }}</h1>
 
-  // مقاسات/كميات البائع
-  $sizes = [];
-  $qtys  = [];
-  if ($merchant && !empty($merchant->size)) {
-      $sizes = is_string($merchant->size) ? array_map('trim', explode(',', $merchant->size)) : (array) $merchant->size;
-  }
-  if ($merchant && !empty($merchant->size_qty)) {
-      $qtys = is_string($merchant->size_qty) ? array_map('trim', explode(',', $merchant->size_qty)) : (array) $merchant->size_qty;
-  }
+                      <div class="pro-details">
+                         <div class="pro-info">
+                              <div class="woocommerce-product-rating">
+                                  <div class="fancy-star-rating">
+                                      <div class="rating-wrap"> <span class="fancy-rating good">{{ App\Models\Rating::ratings($productt->id) }} ★</span>
+                                      </div>
+                                      <div class="rating-counts-wrap">
+                                          <a href="#reviews" class="bigbazar-rating-review-link" rel="nofollow"> <span class="rating-counts"> ({{ App\Models\Rating::ratingCount($productt->id) }}) </span> </a>
+                                      </div>
+                                  </div>
+                              </div>
 
-  // ألوان الهوية العامة (من المنتج)
-  $colors = [];
-  if (!empty($productt->color)) {
-      $colors = is_string($productt->color) ? array_map('trim', explode(',', $productt->color)) : (array) $productt->color;
-  }
-@endphp
+                              <p class="price">
+                                  <span class="woocommerce-Price-amount amount mr-4">
+                                      <bdi><span class="woocommerce-Price-currencySymbol" id="sizeprice">{{ $productt->showPrice() }}</bdi>
+                                  </span>
+                                  <del class="ml-3"><small>{{ $productt->showPreviousPrice() }}</small></del>
+                                 <span class="on-sale"><span>{{ round($productt->offPercentage() )}}</span>% @lang('Off')</span>
 
-<div class="product-top">
-  <div class="row g-4 align-items-start">
-    <div class="col-md-6">
-      <div class="product-media position-relative">
-        @if(!is_null($offPercent) && $offPercent > 0)
-          <span class="badge bg-success position-absolute" style="top:10px;left:10px;">-{{ $offPercent }}%</span>
-        @endif
-        <img class="img-fluid"
-             src="{{ $productt->photo ? \Illuminate\Support\Facades\Storage::url($productt->photo) : asset('assets/images/noimage.png') }}"
-             alt="{{ $productt->name }}">
+                              </p>
+
+                            @if($productt->type == 'Physical')
+                               @if($productt->emptyStock())
+                                     <div class="stock-availability out-stock">{{ ('Out Of Stock') }}</div>
+                                     @else
+                                     <div class="stock-availability in-stock text-bold">{{ $gs->show_stock == 0 ? '' : $productt->stock }} {{ ('In Stock') }}</div>
+                               @endif
+                            @endif
+
+
+
+                         {{-- PRODUCT OTHER DETAILS SECTION --}}
+                         <div class="product-offers">
+                            <ul class="product-offers-list">
+                               @if($productt->ship != null)
+                               <li class="product-offer-item"><span class="h6">{{ __('Estimated Shipping Time:') }}</span> {{ $productt->ship }}
+                               </li>
+                               @endif
+                               @if( $productt->sku != null )
+                               <li class="product-offer-item product-id{{ $productt->product_type == 'affiliate' ? 'mt-4' : '' }}"><span class="h6">{{ __('Product SKU:') }} </span> {{ $productt->sku }}
+                               </li>
+                               @endif
+                                  {{-- PRODUCT LICENSE SECTION --}}
+                                  @if($productt->type == 'License')
+                                  @if($productt->platform != null)
+                                  <li class="product-offer-item license-id"><span class="h6">{{ __('Platform:') }}</span> {{ $productt->platform }}
+                                  </li>
+                                  @endif
+                                  @if($productt->region != null)
+                                  <li class="product-offer-item license-id"><span class="h6">{{ __('Region:') }}</span> {{ $productt->region }}
+                                  </li>
+                                  @endif
+                                  @if($productt->licence_type != null)
+                                  <li class="product-offer-item license-id"><span class="h6"> {{ __('License Type:') }}</span> {{ $productt->licence_type }}
+                                  </li>
+                                  @endif
+                               @endif
+                               {{-- PRODUCT LICENSE SECTION ENDS--}}
+                            </ul>
+                         </div>
+                         </div>
+                         {{-- PRODUCT OTHER DETAILS SECTION ENDS --}}
+                          </div>
+                         @if ($productt->stock_check == 1)
+                              @if(!empty($productt->size))
+                              <div class="product-size">
+                                  <p class="title">{{ __('Size :') }}</p>
+                                  <ul class="siz-list">
+                                    @foreach(array_unique($productt->size) as $key => $data1)
+                                  <li class="{{ $loop->first ? 'active' : '' }}" data-key="{{ str_replace(' ','',$data1) }}">
+                                        <span class="box">
+                                          {{ $data1 }}
+                                        </span>
+                                      </li>
+                                    @endforeach
+                                  </ul>
+                                </div>
+                         @endif
+                         {{-- PRODUCT COLOR SECTION  --}}
+
+    @if(!empty($productt->color))
+
+      <div class="product-color">
+          <div class="title">{{ __('Color :') }}</div>
+          <ul class="color-list">
+            @foreach($productt->color as $key => $data1)
+              <li class="{{ $loop->first ? 'active' : '' }} {{ $productt->IsSizeColor($productt->size[$key]) ? str_replace(' ','',$productt->size[$key]) : ''  }} {{ $productt->size[$key] == $productt->size[0] ? 'show-colors' : '' }}">
+                <span class="box" data-color="{{ $productt->color[$key] }}" style="background-color: {{ $productt->color[$key] }}">
+
+                  <input type="hidden" class="size" value="{{ $productt->size[$key] }}">
+                  <input type="hidden" class="size_qty" value="{{ $productt->size_qty[$key] }}">
+                  <input type="hidden" class="size_key" value="{{$key}}">
+                  <input type="hidden" class="size_price" value="{{ round($productt->size_price[$key] * $curr->value,2) }}">
+
+                </span>
+              </li>
+            @endforeach
+          </ul>
+       </div>
+
+    @endif
+
+      {{-- PRODUCT COLOR SECTION ENDS  --}}
+      @else
+      @if(!empty($productt->size_all))
+      <div class="product-size" data-key="false">
+       <p class="title">{{ __('Size :') }}</p>
+       <ul class="siz-list">
+             @foreach(array_unique(explode(',',$productt->size_all)) as $key => $data1)
+             <li class="{{ $loop->first ? 'active' : '' }}" data-key="{{ str_replace(' ','',$data1) }}">
+                <span class="box">
+                {{ $data1 }}
+                <input type="hidden" class="size" value="{{$data1}}">
+                <input type="hidden" class="size_key" value="{{$key}}">
+                </span>
+             </li>
+             @endforeach
+       </ul>
       </div>
-    </div>
-
-    <div class="col-md-6">
-      <h1 class="h4 mb-1"><x-product-name :product="$productt" :vendor-id="$vendorId" target="_self" /></h1>
-      @if(!empty($productt->sku))
-        <p class="text-muted mb-2"><strong>SKU:</strong>
-          <a href="{{ route('search.result', $productt->sku) }}" class="text-primary" target="_blank">{{ $productt->sku }}</a>
-        </p>
       @endif
+      @if(!empty($productt->color_all))
+       <div class="product-color" data-key="false">
+       <div class="title">{{ __('Color :') }}</div>
+          <ul class="color-list">
 
-      <div class="mb-3">
-        <span class="h5 d-block" id="top-current-price">{{ $currentPrice }}</span>
-        @if($previousPrice)
-          <small class="text-muted"><del id="top-previous-price">{{ $previousPrice }}</del></small>
-        @endif>
+                @foreach(explode(',',$productt->color_all) as $key => $color1)
+
+                <li class="{{ $loop->first ? 'active' : '' }} show-colors">
+                   <span class="box" data-color="{{ $color1 }}" style="background-color: {{ $color1 }}">
+                   <input type="hidden" class="size_price" value="0">
+                   </span>
+                </li>
+                @endforeach
+          </ul>
+       </div>
+       @endif
+  @endif
+              <input type="hidden" id="product_price" value="{{ round($productt->vendorPrice() * $curr->value,2) }}">
+              <input type="hidden" id="product_id" value="{{ $productt->id }}">
+              @if(isset($merchant) && $merchant)
+                <input type="hidden" id="merchant_product_id" value="{{ $merchant->id }}">
+                <input type="hidden" id="vendor_user_id" value="{{ $merchant->user_id }}">
+                <input type="hidden" id="product_minimum_qty_mp" value="{{ max(1, (int)($merchant->minimum_qty ?? 1)) }}">
+                <input type="hidden" id="product_preordered" value="{{ $merchant->preordered ? '1' : '0' }}" data-preordered="{{ $merchant->preordered ? '1' : '0' }}">
+              @endif
+              <input type="hidden" id="curr_pos" value="{{ $gs->currency_format }}">
+              <input type="hidden" id="curr_sign" value="{{ $curr->sign }}">
+                  {{-- PRODUCT STOCK CONDITION SECTION  --}}
+
+      @if(!empty($productt->size))
+      <input type="hidden" id="stock" value="{{ $productt->size_qty[0] }}">
+      @else
+      @if(!$productt->emptyStock())
+        <input type="hidden" id="stock" value="{{ $productt->stock }}">
+      @elseif($productt->type != 'Physical')
+        <input type="hidden" id="stock" value="0">
+      @else
+        <input type="hidden" id="stock" value="">
+      @endif
+    @endif
+   
+    @if($productt->is_discount==1 && $productt->discount_date >= date('Y-m-d') && $productt->user->is_vendor==2)
+    <div class="time-count time-box text-center my-30 flex-between w-75" data-countdown="{{ $productt['discount_date']}}"></div>
+  
+    @endif
+    {{-- PRODUCT STOCK CONDITION SECTION ENDS --}}
+                         <div class="d-flex flex-wrap mt-3">
+                            @if($productt->product_type != "affiliate" && $productt->type == 'Physical')
+                               <div class="multiple-item-price m-1 me-3">
+                                  <div class="qty">
+                                     <ul class="qty-buttons">
+                                     <li>
+                                        <span class="qtminus">
+                                           <i class="icofont-minus"></i>
+                                        </span>
+                                     </li>
+                                     <li>
+                                      <input class="qttotal" type="text" id="order-qty" value="{{ $productt->minimum_qty == null ? '1' : (int)$productt->minimum_qty }}">
+                                      <input type="hidden" id="affilate_user" value="{{ $affilate_user }}">
+                                      <input type="hidden" id="product_minimum_qty" value="{{ $productt->minimum_qty == null ? '0' : $productt->minimum_qty }}">
+                                    </li>
+                                     <li>
+                                        <span class="qtplus">
+                                           <i class="icofont-plus"></i>
+                                        </span>
+                                     </li>
+                                     </ul>
+                                  </div>
+                               </div>
+                          @endif
+
+
+                          {{-- PRODUCT QUANTITY SECTION ENDS --}}
+                          <ul>
+                          @if($productt->product_type == "affiliate")
+
+                              <li class="addtocart m-1">
+                                <a  href="javascript:;" class="affilate-btn"  data-href="{{ $productt->affiliate_link }}" target="_blank"> {{ __('Buy Now') }}</a>
+                              </li>
+                              @else
+                              @if($productt->emptyStock())
+                              <li class="addtocart m-1">
+                                <a href="javascript:;" class="cart-out-of-stock">
+
+                                  {{ __('Out Of Stock') }}</a>
+                              </li>
+                              @else
+                              @if ($productt->type != "Listing")
+                                @if(isset($merchant) && $merchant)
+                                  @php
+                                      $topMpId = $merchant->id;
+                                      $topVendorId = $merchant->user_id;
+                                      $topMinQty = max(1, (int)($merchant->minimum_qty ?? 1));
+                                  @endphp
+                                  <li class="addtocart m-1">
+                                    <a href="javascript:;" class="m-cart-add"
+                                       data-merchant-product-id="{{ $topMpId }}"
+                                       data-vendor-id="{{ $topVendorId }}"
+                                       data-min-qty="{{ $topMinQty }}"
+                                       data-qty-input="#order-qty">{{ __('Add to Cart')}}</a>
+                                  </li>
+
+                                  <li class="addtocart m-1">
+                                    <a href="javascript:;" class="m-cart-add"
+                                       data-merchant-product-id="{{ $topMpId }}"
+                                       data-vendor-id="{{ $topVendorId }}"
+                                       data-min-qty="{{ $topMinQty }}"
+                                       data-qty-input="#order-qty"
+                                       data-redirect="/cart">
+                                      {{ __('Buy Now') }}
+                                    </a>
+                                  </li>
+                                @else
+                                  {{-- No merchant available - cannot add to cart --}}
+                                  <li class="addtocart m-1">
+                                    <a href="javascript:;" class="cart-out-of-stock" disabled>{{ __('Not Available')}}</a>
+                                  </li>
+                                @endif
+                              @endif
+
+                              @if ($productt->type == "Listing")
+                                  @if (auth()->check())
+                                    @if(isset($merchant) && $merchant->user)
+                                      <li>
+                                        <a class="view-stor btn--base p-2" href="javascript:;" data-bs-toggle="modal" data-bs-target="#vendorform">
+                                          <i class="icofont-ui-chat"></i>
+                                          {{ __('Contact Seller') }}
+                                        </a>
+                                      </li>
+                                    @else
+                                      <li>
+                                        <a class="view-stor btn--base p-2" href="javascript:;" data-bs-toggle="modal" data-bs-target="#sendMessage">
+                                          <i class="icofont-ui-chat"></i>
+                                          {{ __('Contact Seller') }}
+                                        </a>
+                                      </li>
+                                    @endif
+                                  @else
+                                    <li>
+                                      <a class="view-stor btn--base p-2" href="{{ route('user.login') }}" >
+                                        <i class="icofont-ui-chat"></i>
+                                        {{ __('Contact Seller') }}
+                                      </a>
+                                    </li>
+                                  @endif
+                              @endif
+
+                              @endif
+                            </ul>
+                         @endif
+                   </div>
+                      <div class="yith-wcwl-add-to-wishlist wishlist-fragment mt-3">
+                          @if(Auth::check())
+                          <div class="wishlist-button">
+                              <a class="add_to_wishlist new" id="add-to-wish" href="javascript:;" data-href="{{ route('user-wishlist-add',$productt->id) }}"data-bs-toggle="tooltip" data-bs-placement="top" title="" data-bs-original-title="Add to Wishlist" aria-label="Add to Wishlist">{{ __('Wishlist') }}</a>
+                          </div>
+                          @else
+                          <div class="wishlist-button">
+                              <a class="add_to_wishlist" href="{{ route('user.login') }}" data-bs-toggle="tooltip" data-bs-placement="top" title="" data-bs-original-title="Add to Wishlist" aria-label="Add to Wishlist">{{ __('Wishlist') }}</a>
+                          </div>
+                          @endif
+
+                          @if ($productt->type != "Listing")
+                            <div class="compare-button">
+                              <a class="compare button" data-href="{{ route('product.compare.add',$productt->id) }}" href="javascrit:;" data-bs-toggle="tooltip" data-bs-placement="top" title="" data-bs-original-title="Compare" aria-label="Compare">{{ __('Compare') }}</a>
+                            </div>
+                          @endif
+
+                      </div>
+
+
+                       @if($gs->is_report)
+
+    {{-- PRODUCT REPORT SECTION --}}
+
+                  @if(Auth::guard('web')->check())
+
+                  <div class="report-area">
+                      <a class="report-item" href="javascript:;" data-bs-toggle="modal" data-bs-target="#report-modal"><i class="fas fa-flag"></i> {{__('Report This Item')}}</a>
+                  </div>
+                  @else
+                  <div class="report-area">
+                      <a class="report-item" href="{{route('user.login')}}"><i class="fas fa-flag"></i> {{__('Report This Item')}} </a>
+                  </div>
+                  @endif
+
+    {{-- PRODUCT REPORT SECTION ENDS --}}
+
+    @endif
+
+                          <div class="my-4 social-linkss social-sharing a2a_kit a2a_kit_size_32">
+                              <h5 class="mb-2">{{ __('Share Now') }}</h5>
+                              <ul class="social-icons py-1 share-product social-linkss py-md-0">
+                                  <li>
+                                  <a class="facebook a2a_button_facebook" href="">
+                                      <i class="fab fa-facebook-f"></i>
+                                  </a>
+                                  </li>
+                                  <li>
+                                  <a class="twitter a2a_button_twitter" href="">
+                                      <i class="fab fa-twitter"></i>
+                                  </a>
+                                  </li>
+                                  <li>
+                                  <a class="linkedin a2a_button_linkedin" href="">
+                                      <i class="fab fa-linkedin-in"></i>
+                                  </a>
+                                  </li>
+                                  <li>
+                                  <a class="pinterest a2a_button_pinterest" href="">
+                                      <i class="fab fa-pinterest-p"></i>
+                                  </a>
+                                  </li>
+                                  <li>
+                                      <a class="instagram a2a_button_whatsapp" href="">
+                                      <i class="fab fa-whatsapp"></i>
+                                      </a>
+                                  </li>
+                              </ul>
+
+                          </div>
+                          <script async src="https://static.addtoany.com/menu/page.js"></script>
+
+                          @if (!empty($productt->attributes))
+                      @php
+                        $attrArr = json_decode($productt->attributes, true);
+                      @endphp
+                    @endif
+                    @if (!empty($attrArr))
+                      <div class="product-attributes my-4">
+                        <div class="row gy-4">
+                        @foreach ($attrArr as $attrKey => $attrVal)
+                          @if (array_key_exists("details_status",$attrVal) && $attrVal['details_status'] == 1)
+
+                        <div class="col-lg-6">
+                            <div class="form-group">
+                              <strong class="text-capitalize mb-2 d-block">{{ str_replace("_", " ", $attrKey) }} :</strong>
+                              <div class="">
+                              @foreach ($attrVal['values'] as $optionKey => $optionVal)
+                                <div class="custom-control custom-radio form-check">
+                                  <input type="hidden" class="keys" value="">
+                                  <input type="hidden" class="values" value="">
+                                  <input type="radio" id="{{$attrKey}}{{ $optionKey }}" name="{{ $attrKey }}" class="form-check-input custom-control-input product-attr"  data-key="{{ $attrKey }}" data-price = "{{ $attrVal['prices'][$optionKey] * $curr->value }}" value="{{ $optionVal }}" {{ $loop->first ? 'checked' : '' }}>
+                                  <label class="form-check-label" for="{{$attrKey}}{{ $optionKey }}">{{ $optionVal }}
+
+                                  @if (!empty($attrVal['prices'][$optionKey]))
+                                    +
+                                    {{$curr->sign}} {{$attrVal['prices'][$optionKey] * $curr->value}}
+                                  @endif
+                                  </label>
+                                </div>
+                              @endforeach
+                              </div>
+                            </div>
+                        </div>
+                          @endif
+                        @endforeach
+                        </div>
+                      </div>
+                    @endif
+
+                  </div>
+              </div>
+          </div>
+          <div class="col-lg-3 col-md-4">
+             <div class="pro-details-sidebar-item mb-4">
+                <span>{{ __('Sold By') }}</span>
+                <h5>@if(isset($merchant) && $merchant->user)
+                    {{ $merchant->user->shop_name }}
+                  @if($merchant->user->checkStatus())
+                  <br>
+                  <a class="verify-link" href="javascript:;" data-bs-toggle="tooltip" data-placement="top" title=""
+                    data-original-title="{{ __('Verified') }}">
+                    <i class="fas fa-check-circle"></i>
+                  </a>
+                  @endif
+                @else
+                {{ App\Models\Admin::find(1)->shop_name }}
+                @endif</h5>
+                @if(isset($merchant) && $merchant->user)
+                <h3>{{ App\Models\MerchantProduct::where('user_id','=',$merchant->user_id)->where('status', 1)->count() }}</h3>
+                @else
+                <h3>{{ App\Models\Product::whereDoesntHave('merchantProducts')->count() }}</h3>
+                @endif
+                <h6>{{ __('Total Items') }}</h6>
+
+                @if(isset($merchant) && $merchant->user)
+              <li class="{{ $gs->is_contact_seller == 0 ? 'contact_seller' : '' }} cnt-sell">
+                <a href="{{ route('front.vendor',str_replace(' ', '-', $merchant->user->shop_name)) }}" class="view-stor btn--base">
+                  <i class="icofont-ui-travel"></i>
+                  {{ __('Visit Store') }}
+                </a>
+            </li>
+          
+            @endif
+
+            {{-- Visit Store Ends--}}
+
+            @if($gs->is_contact_seller == 1)
+
+              {{-- Contact Seller --}}
+
+              @if(Auth::check())
+
+
+                @if(isset($merchant) && $merchant->user)
+
+
+                  <a class="view-stor btn--base" href="javascript:;" data-bs-toggle="modal" data-bs-target="#vendorform">
+                    <i class="icofont-ui-chat"></i>
+                    {{ __('Contact Seller') }}
+                  </a>
+
+
+                @else
+
+
+                  <a class="view-stor btn--base" href="javascript:;" data-bs-toggle="modal" data-bs-target="#sendMessage">
+                    <i class="icofont-ui-chat"></i>
+                    {{ __('Contact Seller') }}
+                  </a>
+
+
+                @endif
+
+              @else
+
+
+              <a class="view-stor btn--base" href="{{ route('user.login') }}" >
+                  <i class="icofont-ui-chat"></i>
+                  {{ __('Contact Seller') }}
+                </a>
+
+
+              @endif
+
+            @endif
+
+<br>
+            @if(isset($merchant) && $merchant->user)
+              @if(Auth::check())
+                  @if(Auth::user()->favorites()->where('vendor_id','=',$merchant->user_id)->get()->count() > 0)
+
+                  <a class="fvrt btn--base" href="javascript:;">
+                      <i class="icofont-check"></i>
+                      {{ __('Favorite') }}
+                  </a>
+                  @else
+                  <a class="view-stor favorite-prod btn--base" href="javascript:;" data-href="{{ route('user-favorite',[Auth::user()->id,$merchant->user_id]) }}">
+                      <i class="icofont-plus"></i>
+                      {{ __('Add To Favorite Seller') }}
+                  </a>
+                  @endif
+
+              @else
+
+              <a class="view-stor btn--base" href="{{ route('user.login') }}" >
+                <i class="icofont-plus"></i>
+                {{ __('Add To Favorite Seller') }}
+              </a>
+
+              @endif
+            @endif
+
+            {{-- Favorite Seller Ends--}}
+             </div>
+             @if(!empty($productt->whole_sell_qty))
+             <div class="pro-summary mb-4">
+                <div class="price-summary">
+                   <div class="price-summary-content">
+                      <h5 class="text-center">{{ __('Wholesell') }}</h5>
+                      <ul class="price-summary-list">
+                            <li class="regular-price"> <h6>{{ __('Quantity') }}</h6>
+                               <span>
+                                  <span class="woocommerce-Price-amount amount"><h6>{{ __('Discount') }}</h6>
+                               </span>
+                               </span>
+                            </li>
+                            @foreach($productt->whole_sell_qty as $key => $data1)
+                            <li class="selling-price"> <label>{{ $productt->whole_sell_qty[$key] }}+</label> <span><span class="woocommerce-Price-amount amount">{{ $productt->whole_sell_discount[$key] }}% {{ __('Off') }}
+                               </span>
+                               </span>
+                            </li>
+                            @endforeach
+                      </ul>
+                   </div>
+                </div>
+             </div>
+             @endif
+
+
+
+          </div>
       </div>
+  </div>
+</div>
 
-      {{-- خيارات اللون/المقاس (إن لزم) --}}
-      <form id="buy-form" class="mb-3">
-        <input type="hidden" id="vendorId"   name="user"    value="{{ $vendorId }}">
-        <input type="hidden" id="productId"  name="product" value="{{ $productt->id }}">
-        <input type="hidden" id="product_price"
-               value="{{ round((($merchant && method_exists($merchant,'vendorSizePrice')) ? $merchant->vendorSizePrice() : $productt->vendorPrice()) * (isset($curr)?$curr->value:1), 2) }}">
 
-        {{-- اختر مقاس (إن وجد) --}}
-        @if(!empty($sizes))
-          <div class="mb-2">
-            <label class="form-label">{{ __('Size') }}</label>
-            <select class="form-select" id="sizeSelect" name="size">
-              <option value="">{{ __('Select') }}</option>
-              @foreach($sizes as $i => $sz)
-                @php $q = (int)($qtys[$i] ?? 0); @endphp
-                <option value="{{ $sz }}" data-size-qty="{{ $q }}">{{ $sz }} {{ $q>0 ? "($q)" : '(0)' }}</option>
-              @endforeach
-            </select>
-          </div>
-        @endif
+{{-- MESSAGE MODAL --}}
+{{-- MESSAGE MODAL --}}
+<div class="message-modal">
+  <div class="modal" id="vendorform" tabindex="-1" role="dialog" aria-labelledby="vendorformLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="vendorformLabel">{{ __('Send Message') }}</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+              
+            </button>
+        </div>
+        <div class="modal-body">
+          <div class="container-fluid p-0">
+            <div class="row">
+              <div class="col-md-12">
+                <div class="contact-form">
+                  <form id="emailreply">
+                    {{csrf_field()}}
+                    <ul>
 
-        {{-- اللون (إن وجد على المنتج) --}}
-        @if(!empty($colors))
-          <div class="mb-2">
-            <label class="form-label">{{ __('Color') }}</label>
-            <select class="form-select" id="colorSelect" name="color">
-              <option value="">{{ __('Select') }}</option>
-              @foreach($colors as $c)
-                <option value="{{ ltrim($c,'#') }}">{{ $c }}</option>
-              @endforeach
-            </select>
-          </div>
-        @endif
+                      <li>
+                        <input type="email" class="form-control border mb-1" id="eml" name="email" placeholder="{{ __('Email *') }}" value="{{auth()->user() ? auth()->user()->email : ''}}" required="" readonly>
+                      </li>
 
-        {{-- التوفّر من عرض البائع --}}
-        @php $mpStock = $merchant ? (int) $merchant->stock : null; @endphp
-        <p class="mb-2">
-          <strong>@lang('Availability'):</strong>
-          @if (is_null($mpStock) || $mpStock <= 0)
-            <span class="badge bg-warning">@lang('Out of Stock')</span>
-          @else
-            <span class="badge bg-success">{{ $mpStock }}</span>
-          @endif
-        </p>
+                      <li>
+                        <input type="text" class="form-control border mb-1" id="subj" name="subject" placeholder="{{ __('Subject *') }}" required="">
+                      </li>
 
-        <div class="d-flex align-items-center gap-2 my-3">
-          <label class="form-label mb-0">{{ __('Quantity') }}</label>
-          <div class="input-group" style="width:140px;">
-            <button class="btn btn-outline-secondary" type="button" id="qtyDown">-</button>
-            <input type="text" class="form-control text-center" id="qtyInput" name="qty"
-                   value="{{ $productt->minimum_qty == null ? '1' : (int) $productt->minimum_qty }}" readonly>
-            <button class="btn btn-outline-secondary" type="button" id="qtyUp">+</button>
+                      <li>
+                        <textarea class="form-control textarea border mb-1" name="message" id="msg" placeholder="{{ __('Your Message *') }}" required=""></textarea>
+                      </li>
+
+                      <input type="hidden" name="name" value="{{ Auth::user() ? Auth::user()->name:'' }}">
+                      <input type="hidden" name="user_id" value="{{ Auth::user() ? Auth::user()->id:'' }}">
+                      <input type="hidden" name="vendor_id" value="{{ isset($merchant) ? $merchant->user_id : '' }}">
+
+                    </ul>
+                    <button class="btn btn-primary" id="emlsub" type="submit">{{ __('Send Message') }}</button>
+                  </form>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
-
-        <div class="d-flex gap-2">
-          {{-- زر إضافة للسلة (Ajax) --}}
-          <a href="javascript:;" id="addToCartBtn"
-             data-href="{{ $merchantProductId ? route('merchant.cart.add', $merchantProductId) : 'javascript:;' }}"
-             data-cross-href="{{ route('front.show.cross.product', $productt->id) }}"
-             data-user="{{ $vendorId }}" data-product="{{ $productt->id }}"
-             class="btn btn-primary add_cart_click {{ $productt->cross_products ? 'view_cross_product' : '' }}">
-            {{ __('Add To Cart') }}
-          </a>
-
-          {{-- شراء الآن: يعيد التوجيه إلى addtonumcart مع تمرير user --}}
-          <a href="javascript:;" id="buyNowBtn" class="btn btn-outline-primary">
-            {{ __('Buy Now') }}
-          </a>
-        </div>
-      </form>
-
-      <div class="mt-3">
-        @if($hasVendor && $merchant)
-          <a class="text-decoration-none"
-             href="{{ route('front.product', ['slug'=>$productt->slug, 'vendor_id'=>$vendorId, 'merchant_product_id'=>$merchant->id]) }}">
-            {{ __('View Details') }}
-          </a>
-        @endif
       </div>
     </div>
   </div>
 </div>
 
-@push('scripts')
-<script>
-(function(){
-  const qtyInput = document.getElementById('qtyInput');
-  document.getElementById('qtyUp')?.addEventListener('click', ()=>{
-    let v = parseInt(qtyInput.value||'1',10); qtyInput.value = (v+1);
-  });
-  document.getElementById('qtyDown')?.addEventListener('click', ()=>{
-    let v = parseInt(qtyInput.value||'1',10); qtyInput.value = Math.max(1, v-1);
-  });
+{{-- MESSAGE MODAL ENDS --}}
 
-  const buyBtn = document.getElementById('buyNowBtn');
-  buyBtn?.addEventListener('click', function(){
-    const pid   = document.getElementById('productId').value;
-    const user  = document.getElementById('vendorId').value || 0;
-    const size  = document.getElementById('sizeSelect')?.value || '';
-    const color = document.getElementById('colorSelect')?.value || '';
-    const qty   = document.getElementById('qtyInput').value || 1;
+{{-- MESSAGE MODAL ENDS --}}
 
-    // استخراج size_qty من الـ option المحدد إن وُجد
-    const size_qty   = document.getElementById('sizeSelect')?.selectedOptions[0]?.getAttribute('data-size-qty') || '';
-    const size_price = 0; // إن أردت حساب فرق سعر المقاس، احقنه هنا لاحقًا
-    const color_price= 0;
+<div class="message-modal">
+  <div class="modal show" id="sendMessage" tabindex="-1" role="dialog" aria-labelledby="sendMessageLabel" aria-modal="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="sendMessageLabel">{{ __('Send Message') }}</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+            
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="container-fluid p-0">
+            <div class="row">
+              <div class="col-md-12">
+                <div class="contact-form">
+                <form action="{{ route('user-send-message') }}" class="emailreply">
+                    @csrf
+                    <ul>
+                      <li>
+                        <input type="text" class="form-control" name="subject" placeholder="{{ __('Subject *') }}" required="">
+                      </li>
+                      <li>
+                        <textarea class="form-control textarea" name="message" placeholder="{{ __('Your Message') }}" required=""></textarea>
+                      </li>
+                      <input type="hidden" name="type" value="Ticket">
+                    </ul>
+                    <button class="btn btn-primary" type="submit">{{ __('Send Message') }}</button>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 
-    const params = new URLSearchParams({
-      id: pid, qty: qty,
-      size: size, color: color,
-      size_qty: size_qty, size_price: size_price,
-      color_price: color_price, size_key: size_qty,
-      keys: '', values: '', prices: '',
-      user: user
-    });
 
-    window.location.href = "{{ url('addtonumcart') }}?" + params.toString();
-  });
-})();
-</script>
-@endpush

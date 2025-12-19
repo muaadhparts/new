@@ -37,6 +37,7 @@ use App\Models\Reward;
 use App\Models\State;
 use App\Traits\CreatesTryotoShipments;
 use App\Traits\HandlesVendorCheckout;
+use App\Traits\SavesCustomerShippingChoice;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
@@ -44,7 +45,7 @@ use Illuminate\Support\Str;
 
 class CashOnDeliveryController extends CheckoutBaseControlller
 {
-    use CreatesTryotoShipments, HandlesVendorCheckout;
+    use CreatesTryotoShipments, HandlesVendorCheckout, SavesCustomerShippingChoice;
 
     /**
      * Process COD payment for single vendor or complete cart
@@ -118,6 +119,14 @@ class CashOnDeliveryController extends CheckoutBaseControlller
 
         // تحضير بيانات الشحن والتغليف - تأكد من تحويل كل القيم إلى JSON
         $input['vendor_ids'] = json_encode($vendor_ids);
+
+        // ✅ حفظ طريقة الشحن الأصلية (shipto/pickup) قبل أي معالجة
+        $originalShippingMethod = $steps['step1']['shipping'] ?? 'shipto';
+
+        // إذا كان shipping string (shipto/pickup) وليس array، نحفظه
+        if (isset($input['shipping']) && is_string($input['shipping']) && in_array($input['shipping'], ['shipto', 'pickup'])) {
+            $originalShippingMethod = $input['shipping'];
+        }
 
         if ($isVendorCheckout) {
             // Vendor checkout
@@ -194,8 +203,13 @@ class CashOnDeliveryController extends CheckoutBaseControlller
         }
 
         // تأكد من إزالة أي مصفوفات متبقية
-        unset($input['shipping']);
         unset($input['packeging']);
+
+        // ✅ إعادة تعيين قيمة shipping الأصلية (shipto/pickup) للعرض في الفاتورة
+        $input['shipping'] = $originalShippingMethod;
+
+        // ✅ حفظ بيانات شركة الشحن المختارة من العميل
+        $input['customer_shipping_choice'] = $this->extractCustomerShippingChoice($steps['step2'], $vendorId, $isVendorCheckout);
 
         $order = new Order;
 
@@ -210,19 +224,15 @@ class CashOnDeliveryController extends CheckoutBaseControlller
         $input['order_number'] = Str::random(4) . time();
         $input['wallet_price'] = $request->wallet_price / $this->curr->value;
 
-        // التعامل مع tax_location بشكل آمن
-        if (isset($input['tax_type']) && $input['tax_type'] == 'state_tax') {
-            $state = State::find($input['tax']);
-            $input['tax_location'] = $state ? $state->state : '';
+        // Get tax data from step2 (already calculated and saved)
+        if ($isVendorCheckout) {
+            $step2 = Session::get('vendor_step2_' . $vendorId);
         } else {
-            if (isset($input['tax']) && $input['tax']) {
-                $country = Country::find($input['tax']);
-                $input['tax_location'] = $country ? $country->country_name : '';
-            } else {
-                $input['tax_location'] = '';
-            }
+            $step2 = Session::get('step2');
         }
-        $input['tax'] = Session::get('current_tax');
+
+        $input['tax'] = $step2['tax_amount'] ?? 0;
+        $input['tax_location'] = $step2['tax_location'] ?? '';
 
         if (Session::has('affilate')) {
             $val = $request->total / $this->curr->value;

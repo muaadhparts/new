@@ -18,7 +18,7 @@
     <div class="modal fade" id="{{ $modalId }}" tabindex="-1" aria-labelledby="{{ $modalId }}Label" aria-hidden="true">
         <div class="modal-dialog modal-xl modal-dialog-centered">
             <div class="modal-content">
-                <div class="modal-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                <div class="modal-header" style="background: linear-gradient(135deg, var(--theme-primary) 0%, var(--theme-secondary) 100%); color: white;">
                     <h5 class="modal-title" id="{{ $modalId }}Label">
                         <i class="fas fa-map-marker-alt"></i> @lang('Select Location on Map')
                     </h5>

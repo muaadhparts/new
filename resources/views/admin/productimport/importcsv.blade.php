@@ -107,7 +107,7 @@
 														</div>
 													</div>
 													<div class="col-lg-7 text-center">
-														<button class="addProductSubmit-btn" type="submit">{{ __("Start Import") }}</button>
+														<button class="btn btn-primary" type="submit">{{ __("Start Import") }}</button>
 													</div>
 												</div>
 											</form>

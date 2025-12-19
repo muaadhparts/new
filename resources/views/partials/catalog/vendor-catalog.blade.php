@@ -5,14 +5,14 @@
             method="GET">
 
             <div id="woocommerce_product_categories-4"
-                class="widget MUAADH widget_product_categories widget-toggle">
+                class="widget woocommerce widget_product_categories widget-toggle">
                 <h2 class="widget-title">{{ __('Product categories') }}</h2>
                 <ul class="product-categories">
                     @foreach (App\Models\Category::where('status', 1)->get() as $category)
 
                         <li class="cat-item cat-parent">
                             <a href="{{route('front.category', $category->slug)}}{{!empty(request()->input('search')) ? '?search=' . request()->input('search') : ''}}"
-                                class="category-link" id="cat">{{ $category->localized_name }} <span class="count"></span></a>
+                                class="category-link" id="cat">{{ $category->name }} <span class="count"></span></a>
 
                             @if($category->subs->count() > 0)
                                 <span class="has-child"></span>
@@ -20,18 +20,18 @@
                                     @foreach (App\Models\Subcategory::where('category_id', $category->id)->get() as $subcategory)
                                         <li class="cat-item cat-parent">
                                             <a href="{{route('front.category', [$category->slug, $subcategory->slug])}}{{!empty(request()->input('search')) ? '?search=' . request()->input('search') : ''}}"
-                                                class="category-link {{ isset($subcat) ? ($subcat->id == $subcategory->id ? 'active' : '') : '' }}">{{$subcategory->localized_name}}
+                                                class="category-link {{ isset($subcat) ? ($subcat->id == $subcategory->id ? 'active' : '') : '' }}">{{$subcategory->name}}
                                                 <span class="count"></span></a>
 
 
                                             @if($subcategory->childs->count() != 0)
                                                 <span class="has-child"></span>
                                                 <ul class="children">
-                                                    @foreach (App\Models\Childcategory::where('subcategory_id', $subcategory->id)->get() as $key => $childelement)
+                                                    @foreach (DB::table('childcategories')->where('subcategory_id', $subcategory->id)->get() as $key => $childelement)
                                                         <li class="cat-item ">
                                                             <a href="{{route('front.category', [$category->slug, $subcategory->slug, $childelement->slug])}}{{!empty(request()->input('search')) ? '?search=' . request()->input('search') : ''}}"
                                                                 class="category-link {{ isset($childcat) ? ($childcat->id == $childelement->id ? 'active' : '') : '' }}">
-                                                                {{$childelement->localized_name}} <span class="count"></span></a>
+                                                                {{$childelement->name}} <span class="count"></span></a>
                                                         </li>
                                                     @endforeach
                                                 </ul>
@@ -78,7 +78,7 @@
                     @foreach ($cat->attributes as $key => $attr)
 
                         <div id="bigbazar-attributes-filter-{{$attr->name}}"
-                            class="widget MUAADH bigbazar-attributes-filter widget_layered_nav widget-toggle">
+                            class="widget woocommerce bigbazar-attributes-filter widget_layered_nav widget-toggle">
                             <h2 class="widget-title">{{$attr->name}}</h2>
                             <ul class="swatch-filter-pa_color">
                                 @if (!empty($attr->attribute_options))
@@ -99,7 +99,7 @@
                 @if (!empty($subcat) && !empty(json_decode($subcat->attributes, true)))
                     @foreach ($subcat->attributes as $key => $attr)
                         <div id="bigbazar-attributes-filter-{{$attr->name}}"
-                            class="widget MUAADH bigbazar-attributes-filter widget_layered_nav widget-toggle">
+                            class="widget woocommerce bigbazar-attributes-filter widget_layered_nav widget-toggle">
                             <h2 class="widget-title">{{$attr->name}}</h2>
                             <ul class="swatch-filter-pa_color">
                                 @if (!empty($attr->attribute_options))
@@ -120,7 +120,7 @@
                 @if (!empty($childcat) && !empty(json_decode($childcat->attributes, true)))
                     @foreach ($childcat->attributes as $key => $attr)
                         <div id="bigbazar-attributes-filter-{{$attr->name}}"
-                            class="widget MUAADH bigbazar-attributes-filter widget_layered_nav widget-toggle">
+                            class="widget woocommerce bigbazar-attributes-filter widget_layered_nav widget-toggle">
                             <h2 class="widget-title">{{$attr->name}}</h2>
                             <ul class="swatch-filter-pa_color">
                                 @if (!empty($attr->attribute_options))
@@ -160,34 +160,32 @@
                             <div class="row row-cols-1">
                                 @foreach ($item as $prod)
                                     @php
-                                        $catalogProduct = App\Models\Product::whereId($prod['id'])->first();
-                                        $catalogMerchant = $catalogProduct ? $catalogProduct->merchantProducts()->where('status', 1)->orderBy('price')->first() : null;
-                                        $catalogVendorId = $catalogMerchant->user_id ?? 0;
-                                        $catalogMerchantId = $catalogMerchant->id ?? null;
+                                        // ✅ N+1 FIX: Load product once and reuse
+                                        $vCatalogProdObj = \App\Models\Product::with(['merchantProducts' => fn($q) => $q->where('status', 1)->with('user')->orderBy('price')])->find($prod['id']);
+
+                                        // Use best_merchant_product from eager-loaded data
+                                        $vCatalogMerchant = $vCatalogProdObj?->best_merchant_product;
+
+                                        $vCatalogProdUrl = $vCatalogMerchant && isset($prod['slug'])
+                                            ? route('front.product', ['slug' => $prod['slug'], 'vendor_id' => $vCatalogMerchant->user_id, 'merchant_product_id' => $vCatalogMerchant->id])
+                                            : (isset($prod['slug']) ? route('front.product.legacy', $prod['slug']) : '#');
                                     @endphp
+
                                     <div class="col mb-1">
                                         <div class="product type-product">
                                             <div class="product-wrapper">
                                                 <div class="product-image">
-                                                    @if($catalogMerchantId)
-                                                        <a href="{{ route('front.product', ['slug' => $prod['slug'], 'vendor_id' => $catalogVendorId, 'merchant_product_id' => $catalogMerchantId]) }}"
-                                                            class="MUAADH-LoopProduct-link"><img
-                                                                src="{{ $prod['thumbnail'] ? asset('assets/images/thumbnails/' . $prod['thumbnail']) : asset('assets/images/noimage.png') }}"
-                                                                alt="Product Image"></a>
-                                                    @else
-                                                        <span class="MUAADH-LoopProduct-link" style="cursor: not-allowed;"><img
-                                                                src="{{ $prod['thumbnail'] ? asset('assets/images/thumbnails/' . $prod['thumbnail']) : asset('assets/images/noimage.png') }}"
-                                                                alt="Product Image"></span>
-                                                    @endif
+                                                    <a href="{{ $vCatalogProdUrl }}"
+                                                        class="woocommerce-LoopProduct-link"><img
+                                                            src="{{ filter_var($prod['photo'] ?? '', FILTER_VALIDATE_URL) ? $prod['photo'] : (($prod['photo'] ?? null) ? \Illuminate\Support\Facades\Storage::url($prod['photo']) : asset('assets/images/noimage.png')) }}"
+                                                            alt="Product Image"></a>
                                                     <div class="wishlist-view">
                                                         <div class="quickview-button">
-                                                            @if($catalogMerchantId)
-                                                                <a class="quickview-btn"
-                                                                    href="{{ route('front.product', ['slug' => $prod['slug'], 'vendor_id' => $catalogVendorId, 'merchant_product_id' => $catalogMerchantId]) }}"
-                                                                    data-bs-toggle="tooltip" data-bs-placement="top" title=""
-                                                                    data-bs-original-title="Quick View"
-                                                                    aria-label="Quick View">{{ __('Quick View') }}</a>
-                                                            @endif
+                                                            <a class="quickview-btn"
+                                                                href="{{ $vCatalogProdUrl }}"
+                                                                data-bs-toggle="tooltip" data-bs-placement="top" title=""
+                                                                data-bs-original-title="Quick View"
+                                                                aria-label="Quick View">{{ __('Quick View') }}</a>
                                                         </div>
                                                         <div class="whishlist-button">
                                                             <a class="add_to_wishlist" href="#" data-bs-toggle="tooltip"
@@ -198,22 +196,17 @@
                                                     </div>
                                                 </div>
                                                 <div class="product-info">
-                                                    <h3 class="product-title">
-                                                        @if($catalogMerchantId)
-                                                            <a href="{{ route('front.product', ['slug' => $prod['slug'], 'vendor_id' => $catalogVendorId, 'merchant_product_id' => $catalogMerchantId]) }}">
-                                                                <x-product-name :product="$catalogProduct" :vendor-id="$catalogVendorId" :merchant-product-id="$catalogMerchantId" target="_self" />
-                                                            </a>
-                                                        @else
-                                                            <span><x-product-name :product="$catalogProduct" :vendor-id="0" target="_self" /></span>
-                                                        @endif
+                                                    {{-- ✅ N+1 FIX: Reuse $vCatalogProdObj instead of querying again --}}
+                                                    <h3 class="product-title"><a
+                                                            href="{{ $vCatalogProdUrl }}">{{ $vCatalogProdObj?->showName() ?? '' }}</a>
                                                     </h3>
                                                     <div class="product-price">
                                                         <div class="price">
-                                                            <ins>{{ App\Models\Product::whereId($prod['id'])->first()->showPrice() }}</ins>
-                                                            <del>{{ App\Models\Product::whereId($prod['id'])->first()->showPreviousPrice() }}</del>
+                                                            <ins>{{ $vCatalogProdObj?->showPrice() ?? '' }}</ins>
+                                                            <del>{{ $vCatalogProdObj?->showPreviousPrice() ?? '' }}</del>
                                                         </div>
                                                         <div class="on-sale">
-                                                            <span>{{ round(App\Models\Product::whereId($prod['id'])->first()->offPercentage())}}</span><span>%
+                                                            <span>{{ $vCatalogProdObj ? round($vCatalogProdObj->offPercentage()) : 0 }}</span><span>%
                                                                 off</span></div>
                                                     </div>
                                                     <div class="shipping-feed-back">

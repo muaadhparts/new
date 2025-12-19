@@ -1,4 +1,5 @@
-{{-- resources/views/partials/product.blade.php --}}
+{{-- resources/views/partials/product.blade.php - Quick View Modal --}}
+{{-- Uses catalog-unified.css for styling --}}
 
 @php
     /**
@@ -12,23 +13,21 @@
     // صورة أساسية
     $mainPhoto = filter_var($product->photo ?? '', FILTER_VALIDATE_URL)
         ? $product->photo
-        : (isset($product->photo) ? \Illuminate\Support\Facades\Storage::url($product->photo) : '');
+        : (($product->photo ?? null) ? \Illuminate\Support\Facades\Storage::url($product->photo) : asset('assets/images/noimage.png'));
 
-    // حماية في حال عدم تمرير $gs من الـ View الأب
-    $gs = $gs ?? (isset($__data['gs']) ? $__data['gs'] : null);
+    // MerchantProduct من الكنترولر
+    $mp = $mp ?? null;
+    $brand = $brand ?? null;
 
-    // --- 👇 أهم نقطة: إجبار القراءة من السعر المحقون مع البائع، وتجنّب showPrice() حين تتوفر هوية البائع ---
-    $forceVendor = request()->has('user') || isset($product->vendor_user_id);
-
+    // السعر
     $rawPrice = $product->price ?? null;
     $rawPrev  = $product->previous_price ?? null;
 
-    // لو لدينا بائع محدد (forceVendor) نستخدم السعر المحقون مباشرةً
+    $forceVendor = request()->has('user') || isset($product->vendor_user_id);
     if ($forceVendor) {
         $priceHtml = $rawPrice !== null ? \App\Models\Product::convertPrice($rawPrice) : '-';
         $prevHtml  = $rawPrev  !== null ? \App\Models\Product::convertPrice($rawPrev)  : null;
     } else {
-        // خلاف ذلك: اسمح باستخدام showPrice() كالمعتاد
         $priceHtml = method_exists($product, 'showPrice')
             ? $product->showPrice()
             : (\App\Models\Product::convertPrice($rawPrice ?? 0));
@@ -37,124 +36,229 @@
             : ($rawPrev !== null ? \App\Models\Product::convertPrice($rawPrev) : null);
     }
 
-    // تقييمات (اختياري)
+    // تقييمات
     $avg   = $product->ratings_avg_rating ?? null;
     $count = class_exists('App\\Models\\Rating') && method_exists('App\\Models\\Rating', 'ratingCount')
         ? \App\Models\Rating::ratingCount($product->id)
         : null;
 
-    // اسم عربي/إنجليزي اختياري
-    $locale = app()->getLocale();
-    $secondaryLabel = $locale === 'ar'
-        ? ($product->label_ar ?: $product->label_en)
-        : ($product->label_en ?: $product->label_ar);
+    // Quality Brand
+    $qualityBrand = $mp?->qualityBrand;
+
+    // Vendor
+    $vendor = $mp?->user;
+
+    // الحد الأدنى للكمية
+    $minQty = $mp ? (int)($mp->minimum_qty ?? 1) : 1;
+    if ($minQty < 1) $minQty = 1;
+
+    // المخزون
+    $stock = $mp ? (int)($mp->stock ?? 999) : (int)($product->stock ?? 999);
+    $inStock = $stock > 0;
+
+    // Preorder
+    $preordered = $mp ? (int)($mp->preordered ?? 0) : 0;
+
+    // حالة التوفر
+    $canBuy = $inStock || $preordered;
 @endphp
 
-<div class="row gy-4 ill-product" data-product-id="{{ $product->id }}" data-user="{{ $vendorId }}">
-    <div class="col-12 col-lg-6">
-        {{-- Main image --}}
-        @if($mainPhoto)
-            <img src="{{ $mainPhoto }}" alt="{{ $product->name ?? $product->sku }}" class="img-fluid rounded w-100 mb-3">
-        @endif
+<div class="catalog-quickview ill-product" data-product-id="{{ $product->id }}" data-user="{{ $vendorId }}">
+    <div class="row g-3 g-md-4">
+        {{-- Image Column --}}
+        <div class="col-12 col-md-5">
+            <div class="catalog-quickview-image">
+                @if($mainPhoto)
+                    <img src="{{ $mainPhoto }}"
+                         alt="{{ $product->name ?? $product->sku }}"
+                         class="catalog-quickview-main-img"
+                         loading="lazy">
+                @endif
 
-        {{-- Gallery --}}
-        @if(!empty($product->galleries))
-            <div class="d-flex flex-wrap gap-2">
-                @foreach($product->galleries as $gallery)
-                    @php
-                        $url = filter_var($gallery->photo ?? '', FILTER_VALIDATE_URL)
-                            ? $gallery->photo
-                            : asset('assets/images/galleries/'.$gallery->photo);
-                    @endphp
-                    <img src="{{ $url }}" alt="{{ $product->name ?? '' }}" class="img-fluid rounded" style="width:75px;height:75px;object-fit:cover;">
-                @endforeach
-            </div>
-        @endif
-    </div>
-
-    <div class="col-12 col-lg-6">
-        {{-- عنوان المنتج --}}
-        <h3 class="fw-bold mb-2">
-            <x-product-name :product="$product" :vendor-id="$vendorId" target="_blank" />
-        </h3>
-
-        {{-- تسمية ثانوية (اختياري)
-        @if(!empty($secondaryLabel))
-            <h5 class="text-muted mb-3">{{ $secondaryLabel }}</h5>
-        @endif --}}
-
-        {{-- التقييم (اختياري) --}}
-        @if(!empty($avg))
-            <div class="mb-2">
-                <span class="me-1 fw-semibold">{{ number_format($avg, 1) }}</span>
-                @for($i = 1; $i <= 5; $i++)
-                    <i class="fa{{ $i <= round($avg) ? 's' : 'r' }} fa-star text-warning"></i>
-                @endfor
-                @if($count !== null)
-                    <span class="ms-1 text-muted">({{ $count }} @lang('Reviews'))</span>
+                {{-- Gallery Thumbnails (vendor-specific) --}}
+                @php
+                    $vendorGalleries = $product->galleriesForVendor($vendorId, 4);
+                @endphp
+                @if($vendorGalleries->count() > 0)
+                    <div class="catalog-quickview-gallery">
+                        @foreach($vendorGalleries as $gallery)
+                            @php
+                                $gUrl = filter_var($gallery->photo ?? '', FILTER_VALIDATE_URL)
+                                    ? $gallery->photo
+                                    : asset('assets/images/galleries/'.$gallery->photo);
+                            @endphp
+                            <img src="{{ $gUrl }}"
+                                 alt="{{ $product->name ?? '' }}"
+                                 class="catalog-quickview-thumb"
+                                 loading="lazy">
+                        @endforeach
+                    </div>
                 @endif
             </div>
-        @endif
+        </div>
 
-        {{-- السعر --}}
-        <div class="mb-3">
-            <span class="h4 text-primary">{!! $priceHtml !!}</span>
-            @if($prevHtml)
-                <del class="text-muted ms-2">{!! $prevHtml !!}</del>
+        {{-- Details Column --}}
+        <div class="col-12 col-md-7">
+            {{-- Product Name --}}
+            <h4 class="catalog-quickview-title">
+                <x-product-name :product="$product" :vendor-id="$vendorId" target="_blank" />
+            </h4>
+
+            {{-- Rating --}}
+            @if(!empty($avg))
+                <div class="catalog-quickview-rating">
+                    @for($i = 1; $i <= 5; $i++)
+                        <i class="fa{{ $i <= round($avg) ? 's' : 'r' }} fa-star"></i>
+                    @endfor
+                    <span class="catalog-quickview-rating-text">{{ number_format($avg, 1) }}</span>
+                    @if($count)
+                        <span class="catalog-quickview-rating-count">({{ $count }})</span>
+                    @endif
+                </div>
             @endif
-        </div>
 
-        {{-- SKU --}}
-        {{-- @if(!empty($product->sku))
-            <div class="mb-2">
-                <strong>@lang('SKU'):</strong> <span>{{ $product->sku }}</span>
-            </div>
-        @endif --}}
-
-        {{-- المخزون (للمنتجات الفيزيائية) --}}
-        @if(($product->type ?? '') === 'Physical')
-            <div class="mb-2">
-                <strong>@lang('Stock'):</strong>
-                @if(method_exists($product, 'emptyStock') ? $product->emptyStock() : false)
-                    <span class="text-danger">@lang('Out Of Stock')</span>
-                @else
-                    @php $showStock = is_object($gs) && property_exists($gs,'show_stock') ? $gs->show_stock : null; @endphp
-                    <span class="text-success">
-                        {{ ($showStock === 0 || $showStock === '0') ? '' : ($product->vendorSizeStock() ?? '') }} @lang('In Stock')
-                    </span>
+            {{-- Price --}}
+            <div class="catalog-quickview-price">
+                <span class="catalog-quickview-price-current">{!! $priceHtml !!}</span>
+                @if($prevHtml)
+                    <del class="catalog-quickview-price-old">{!! $prevHtml !!}</del>
                 @endif
             </div>
-        @endif
 
-        {{-- الكمية --}}
-        <div class="d-flex align-items-center mb-3">
-            <button type="button" class="btn btn-outline-secondary btn-sm"
-                    onclick="var q=this.parentNode.querySelector('input.ill-qty'); if(parseInt(q.value)>1) q.value=parseInt(q.value)-1;">−</button>
-            <input type="number" name="quantity" value="1" min="1" class="form-control mx-2 text-center ill-qty" style="max-width:80px;">
-            <button type="button" class="btn btn-outline-secondary btn-sm"
-                    onclick="var q=this.parentNode.querySelector('input.ill-qty'); q.value=parseInt(q.value||1)+1;">+</button>
-        </div>
+            {{-- Product Info Table --}}
+            <div class="catalog-quickview-info">
+                <table class="catalog-info-table">
+                    <tbody>
+                        {{-- SKU --}}
+                        @if($product->sku)
+                            <tr>
+                                <td class="catalog-info-label"><i class="fas fa-barcode"></i> @lang('SKU')</td>
+                                <td class="catalog-info-value"><code>{{ $product->sku }}</code></td>
+                            </tr>
+                        @endif
 
-        {{-- الأزرار --}}
-        <div class="d-flex gap-2">
-            {{-- إضافة للسلة (AJAX، يبقى داخل المودال) --}}
-            <button
-                type="button"
-                class="btn btn-primary ill-add-to-cart"
-                data-id="{{ $product->id }}"
-                data-user="{{ $vendorId }}"
-                data-addnum-url="{{ url('/addnumcart') }}"
-            >@lang('Add To Cart')</button>
+                        {{-- Brand --}}
+                        @if($product->brand)
+                            <tr>
+                                <td class="catalog-info-label"><i class="fas fa-tag"></i> @lang('Brand')</td>
+                                <td class="catalog-info-value">{{ getLocalizedBrandName($product->brand) }}</td>
+                            </tr>
+                        @endif
 
-            {{-- شراء الآن: يضيف ثم يوجّه للسلة --}}
-            <button
-                type="button"
-                class="btn btn-success ill-buy-now"
-                data-id="{{ $product->id }}"
-                data-user="{{ $vendorId }}"
-                data-addtonum-url="{{ url('/addtonumcart') }}"
-                data-carts-url="{{ url('/carts') }}"
-            >@lang('buttons.purchase_now')</button>
+                        {{-- Quality Brand with Logo --}}
+                        @if($qualityBrand)
+                            <tr>
+                                <td class="catalog-info-label"><i class="fas fa-certificate"></i> @lang('Quality')</td>
+                                <td class="catalog-info-value">
+                                    <div class="catalog-quickview-quality">
+                                        @if($qualityBrand->logo)
+                                            <img src="{{ $qualityBrand->logo_url }}"
+                                                 alt="{{ getLocalizedQualityName($qualityBrand) }}"
+                                                 class="catalog-quickview-quality-logo">
+                                        @endif
+                                        <span>{{ getLocalizedQualityName($qualityBrand) }}</span>
+                                    </div>
+                                </td>
+                            </tr>
+                        @endif
+
+                        {{-- Vendor --}}
+                        @if($vendor)
+                            <tr>
+                                <td class="catalog-info-label"><i class="fas fa-store"></i> @lang('Vendor')</td>
+                                <td class="catalog-info-value">{{ $vendor->shop_name ?: $vendor->name }}</td>
+                            </tr>
+                        @endif
+
+                        {{-- Stock --}}
+                        <tr>
+                            <td class="catalog-info-label"><i class="fas fa-boxes"></i> @lang('Stock')</td>
+                            <td class="catalog-info-value">
+                                @if($inStock)
+                                    <span class="catalog-badge catalog-badge-success">{{ $stock }} @lang('Available')</span>
+                                @elseif($preordered)
+                                    <span class="catalog-badge catalog-badge-warning">@lang('Preorder')</span>
+                                @else
+                                    <span class="catalog-badge catalog-badge-danger">@lang('Out of Stock')</span>
+                                @endif
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            {{-- Quantity Selector --}}
+            @if(($product->type ?? 'Physical') === 'Physical' && $canBuy)
+                <div class="catalog-quickview-quantity">
+                    <label class="catalog-quickview-qty-label">@lang('Quantity'):</label>
+                    <div class="catalog-quickview-qty-control">
+                        <button type="button" class="catalog-quickview-qty-btn modal-qtminus" data-min="{{ $minQty }}">
+                            <i class="fas fa-minus"></i>
+                        </button>
+                        <input type="number"
+                               name="quantity"
+                               value="{{ $minQty }}"
+                               min="{{ $minQty }}"
+                               class="catalog-quickview-qty-input ill-qty modal-qty-input"
+                               data-min="{{ $minQty }}"
+                               data-stock="{{ $stock }}"
+                               data-preordered="{{ $preordered }}"
+                               readonly>
+                        <button type="button" class="catalog-quickview-qty-btn modal-qtplus" data-stock="{{ $stock }}" data-preordered="{{ $preordered }}">
+                            <i class="fas fa-plus"></i>
+                        </button>
+                    </div>
+                    @if($minQty > 1)
+                        <small class="catalog-quickview-qty-hint">@lang('Min'): {{ $minQty }}</small>
+                    @endif
+                </div>
+            @endif
+
+            {{-- Action Buttons --}}
+            <div class="catalog-quickview-actions">
+                @if($canBuy && $mp)
+                    {{-- UNIFIED: Use m-cart-add with merchant_product_id --}}
+                    <button type="button"
+                            class="catalog-quickview-btn catalog-quickview-btn-cart m-cart-add"
+                            data-merchant-product-id="{{ $mp->id }}"
+                            data-vendor-id="{{ $vendorId }}"
+                            data-product-id="{{ $product->id }}"
+                            data-min-qty="{{ $minQty }}"
+                            data-stock="{{ $stock }}"
+                            data-preordered="{{ $preordered }}"
+                            data-qty-input=".ill-qty">
+                        <i class="fas fa-cart-plus"></i> @lang('Add To Cart')
+                    </button>
+
+                    <button type="button"
+                            class="catalog-quickview-btn catalog-quickview-btn-buy m-cart-add"
+                            data-merchant-product-id="{{ $mp->id }}"
+                            data-vendor-id="{{ $vendorId }}"
+                            data-product-id="{{ $product->id }}"
+                            data-min-qty="{{ $minQty }}"
+                            data-stock="{{ $stock }}"
+                            data-preordered="{{ $preordered }}"
+                            data-qty-input=".ill-qty"
+                            data-redirect="/cart">
+                        <i class="fas fa-bolt"></i> @lang('Buy Now')
+                    </button>
+                @else
+                    <button type="button" class="catalog-quickview-btn catalog-quickview-btn-disabled" disabled>
+                        <i class="fas fa-times-circle"></i> @lang('Out of Stock')
+                    </button>
+                @endif
+
+                {{-- View Details Link --}}
+                @if($mp)
+                    <a href="{{ route('front.product', ['slug' => $product->slug, 'vendor_id' => $vendorId, 'merchant_product_id' => $mp->id]) }}"
+                       class="catalog-quickview-btn catalog-quickview-btn-details"
+                       target="_blank">
+                        <i class="fas fa-external-link-alt"></i> @lang('View Details')
+                    </a>
+                @endif
+            </div>
         </div>
     </div>
 </div>
+
+{{-- JavaScript moved to illustrated.js for proper event delegation --}}

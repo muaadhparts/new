@@ -1,5 +1,6 @@
 @php
-    $categories = App\Models\Category::with('subs')->withCount('subs')->where('status', 1)->get();
+    // ✅ N+1 FIX: Eager load subs AND childs
+    $categories = App\Models\Category::with('subs.childs')->withCount('subs')->where('status', 1)->get();
 
 @endphp
 <div class="col-xl-3">
@@ -12,31 +13,33 @@
             method="GET">
 
             <div id="woocommerce_product_categories-4"
-                class="widget MUAADH widget_product_categories widget-toggle">
+                class="widget woocommerce widget_product_categories widget-toggle">
                 <h2 class="widget-title">{{ __('Product categories') }}</h2>
                 <ul class="product-categories">
                     @foreach ($categories as $category)
                         <li class="cat-item cat-parent">
                             <a href="{{route('front.category', $category->slug)}}{{!empty(request()->input('search')) ? '?search=' . request()->input('search') : ''}}"
-                                class="category-link" id="cat">{{ $category->localized_name }} <span class="count"></span></a>
+                                class="category-link" id="cat">{{ $category->name }} <span class="count"></span></a>
 
                             @if($category->subs_count > 0)
                                 <span class="has-child"></span>
                                 <ul class="children">
-                                    @foreach ($category->subs()->get() as $subcategory)
+                                    {{-- ✅ N+1 FIX: Use eager-loaded subs --}}
+                                    @foreach ($category->subs as $subcategory)
                                         <li class="cat-item cat-parent">
                                             <a href="{{route('front.category', [$category->slug, $subcategory->slug])}}{{!empty(request()->input('search')) ? '?search=' . request()->input('search') : ''}}"
-                                                class="category-link {{ isset($subcat) ? ($subcat->id == $subcategory->id ? 'active' : '') : '' }}">{{$subcategory->localized_name}}
+                                                class="category-link {{ isset($subcat) ? ($subcat->id == $subcategory->id ? 'active' : '') : '' }}">{{$subcategory->name}}
                                                 <span class="count"></span></a>
 
                                             @if($subcategory->childs->count() != 0)
                                                 <span class="has-child"></span>
                                                 <ul class="children">
-                                                    @foreach ($subcategory->childs()->get() as $key => $childelement)
+                                                    {{-- ✅ N+1 FIX: Use eager-loaded childs --}}
+                                                    @foreach ($subcategory->childs as $childelement)
                                                         <li class="cat-item ">
                                                             <a href="{{route('front.category', [$category->slug, $subcategory->slug, $childelement->slug])}}{{!empty(request()->input('search')) ? '?search=' . request()->input('search') : ''}}"
                                                                 class="category-link {{ isset($childcat) ? ($childcat->id == $childelement->id ? 'active' : '') : '' }}">
-                                                                {{$childelement->localized_name}} <span class="count"></span></a>
+                                                                {{$childelement->name}} <span class="count"></span></a>
                                                         </li>
                                                     @endforeach
                                                 </ul>
@@ -83,7 +86,7 @@
                     @foreach ($cat->attributes as $key => $attr)
 
                         <div id="bigbazar-attributes-filter-{{$attr->name}}"
-                            class="widget MUAADH bigbazar-attributes-filter widget_layered_nav widget-toggle">
+                            class="widget woocommerce bigbazar-attributes-filter widget_layered_nav widget-toggle">
                             <h2 class="widget-title">{{$attr->name}}</h2>
                             <ul class="swatch-filter-pa_color">
                                 @if (!empty($attr->attribute_options))
@@ -104,7 +107,7 @@
                 @if (!empty($subcat) && !empty(json_decode($subcat->attributes, true)))
                     @foreach ($subcat->attributes as $key => $attr)
                         <div id="bigbazar-attributes-filter-{{$attr->name}}"
-                            class="widget MUAADH bigbazar-attributes-filter widget_layered_nav widget-toggle">
+                            class="widget woocommerce bigbazar-attributes-filter widget_layered_nav widget-toggle">
                             <h2 class="widget-title">{{$attr->name}}</h2>
                             <ul class="swatch-filter-pa_color">
                                 @if (!empty($attr->attribute_options))
@@ -125,7 +128,7 @@
                 @if (!empty($childcat) && !empty(json_decode($childcat->attributes, true)))
                     @foreach ($childcat->attributes as $key => $attr)
                         <div id="bigbazar-attributes-filter-{{$attr->name}}"
-                            class="widget MUAADH bigbazar-attributes-filter widget_layered_nav widget-toggle px-3">
+                            class="widget woocommerce bigbazar-attributes-filter widget_layered_nav widget-toggle px-3">
                             <h2 class="widget-title">{{$attr->name}}</h2>
                             <ul class="swatch-filter-pa_color">
                                 @if (!empty($attr->attribute_options))
@@ -163,21 +166,30 @@
                             <div class="row row-cols-1">
 
                                 @foreach ($item as $prod)
+                                    @php
+                                        // ✅ N+1 FIX: Load product with eager-loaded merchantProducts
+                                        $catalogProdObj = \App\Models\Product::with(['merchantProducts' => fn($q) => $q->where('status', 1)->with('user')->orderBy('price')])->find($prod['id']);
+
+                                        // Use best_merchant_product from eager-loaded data
+                                        $catalogMerchant = $catalogProdObj?->best_merchant_product;
+
+                                        $catalogProdUrl = $catalogMerchant && isset($prod['slug'])
+                                            ? route('front.product', ['slug' => $prod['slug'], 'vendor_id' => $catalogMerchant->user_id, 'merchant_product_id' => $catalogMerchant->id])
+                                            : (isset($prod['slug']) ? route('front.product.legacy', $prod['slug']) : '#');
+                                    @endphp
 
                                     <div class="col mb-1">
                                         <div class="product type-product">
                                             <div class="product-wrapper">
                                                 <div class="product-image">
-                                                    <a href="{{ route('front.product', ['slug' => $prod['slug'], 'vendor_id' => $prod['user_id'], 'merchant_product_id' => $prod['id']]) }}"
-                                                        class="MUAADH-LoopProduct-link"><img
-                                                            src="{{ $prod['thumbnail'] ? asset('assets/images/thumbnails/' . $prod['thumbnail']) : asset('assets/images/noimage.png') }}"
+                                                    <a href="{{ $catalogProdUrl }}"
+                                                        class="woocommerce-LoopProduct-link"><img
+                                                            src="{{ filter_var($prod['photo'] ?? '', FILTER_VALIDATE_URL) ? $prod['photo'] : (($prod['photo'] ?? null) ? \Illuminate\Support\Facades\Storage::url($prod['photo']) : asset('assets/images/noimage.png')) }}"
                                                             alt="Product Image"></a>
                                                     <div class="wishlist-view">
                                                         <div class="quickview-button">
-                                                            <a class="quickview-btn quick-view"
-                                                                href="{{ route('front.product', ['slug' => $prod['slug'], 'vendor_id' => $prod['user_id'], 'merchant_product_id' => $prod['id']]) }}"
-                                                                data-url="{{ route('modal.quickview', ['id' => $prod['id']]) }}"
-                                                                data-user="{{ $prod['user_id'] ?? '' }}"
+                                                            <a class="quickview-btn"
+                                                                href="{{ $catalogProdUrl }}"
                                                                 data-bs-toggle="tooltip" data-bs-placement="top" title=""
                                                                 data-bs-original-title="Quick View"
                                                                 aria-label="Quick View">{{ __('Quick View') }}</a>
@@ -192,7 +204,7 @@
                                                 </div>
                                                 <div class="product-info">
                                                     <h3 class="product-title"><a
-                                                            href="{{ route('front.product', ['slug' => $prod['slug'], 'vendor_id' => $prod['user_id'], 'merchant_product_id' => $prod['id']]) }}" ><x-product-name :product="$prod" :vendor-id="$prod['user_id']" :merchant-product-id="$prod['id']" target="_self" /></a>
+                                                            href="{{ $catalogProdUrl }}">{{ $prod['name']  }}</a>
                                                     </h3>
                                                     <div class="product-price">
                                                         <div class="price">

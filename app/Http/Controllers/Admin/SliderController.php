@@ -24,7 +24,7 @@ class SliderController extends AdminBaseController
                                 return  $title;
                             })
                             ->addColumn('action', function(Slider $data) {
-                                return '<div class="action-list"><a href="' . route('admin-sl-edit',$data->id) . '"> <i class="fas fa-edit"></i>'.__('Edit').'</a><a href="javascript:;" data-href="' . route('admin-sl-delete',$data->id) . '" data-toggle="modal" data-target="#confirm-delete" class="delete"><i class="fas fa-trash-alt"></i></a></div>';
+                                return '<div class="action-list"><a href="' . route('admin-sl-edit',$data->id) . '"> <i class="fas fa-edit"></i>'.__('Edit').'</a><a href="javascript:;" data-href="' . route('admin-sl-delete',$data->id) . '" data-bs-toggle="modal" data-bs-target="#confirm-delete" class="delete"><i class="fas fa-trash-alt"></i></a></div>';
                             })
                             ->rawColumns(['photo', 'action'])
                             ->toJson(); //--- Returning Json Data To Client Side

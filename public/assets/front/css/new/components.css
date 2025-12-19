@@ -1,0 +1,1384 @@
+/**
+ * ========================================
+ * UNIFIED COMPONENTS - Flat Modern System
+ * ========================================
+ * Single Design System across ALL pages
+ * Frontend / Admin / Vendor = Same Look
+ */
+
+/* ========================================
+   1. BUTTONS - UNIFIED SYSTEM
+   ======================================== */
+
+/* Reset ALL buttons to same base */
+.btn,
+button,
+[type="button"],
+[type="submit"],
+[type="reset"],
+a.btn,
+.btn-primary,
+.btn-secondary,
+.btn-success,
+.btn-danger,
+.btn-warning,
+.btn-info,
+.btn-light,
+.btn-dark,
+.btn-link,
+.btn-outline-primary,
+.btn-outline-secondary,
+.btn-outline-success,
+.btn-outline-danger,
+.btn-outline-warning,
+.btn-outline-info,
+/* Admin specific buttons */
+.add-btn,
+.mybtn1,
+.mybtn2,
+.mybtn3,
+.category-add-btn,
+.product-add-btn,
+.export-btn,
+.import-btn,
+/* Action buttons */
+.edit-btn,
+.delete-btn,
+.view-btn,
+.status-btn,
+/* Custom project buttons */
+.muaadh-btn,
+[class*="btn-"] {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2);
+    min-height: 40px;
+    padding: 0 var(--space-4);
+    font-family: var(--font-sans) !important;
+    font-size: var(--text-sm);
+    font-weight: var(--font-medium);
+    line-height: 1.2;
+    text-align: center;
+    text-decoration: none !important;
+    white-space: nowrap;
+    vertical-align: middle;
+    cursor: pointer;
+    user-select: none;
+    border: 1px solid transparent;
+    border-radius: var(--radius-md) !important;
+    background-image: none !important;
+    box-shadow: none !important;
+    transition: all var(--transition-normal);
+    outline: none !important;
+}
+
+/* Remove ALL transforms and scales */
+.btn:hover,
+[class*="btn-"]:hover,
+button:hover {
+    transform: none !important;
+    box-shadow: none !important;
+    text-decoration: none !important;
+}
+
+/* Focus state - unified */
+.btn:focus,
+.btn:focus-visible,
+[class*="btn-"]:focus,
+button:focus {
+    outline: none !important;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15) !important;
+}
+
+/* Disabled state - unified */
+.btn:disabled,
+.btn.disabled,
+[class*="btn-"]:disabled,
+button:disabled {
+    opacity: 0.5 !important;
+    cursor: not-allowed !important;
+    pointer-events: none;
+}
+
+/* ===== PRIMARY BUTTON ===== */
+.btn-primary,
+.btn.btn-primary,
+button.btn-primary,
+a.btn-primary,
+.add-btn,
+.mybtn1,
+.category-add-btn,
+.product-add-btn,
+input[type="submit"],
+button[type="submit"]:not(.btn-secondary):not(.btn-danger):not(.btn-outline-primary) {
+    background-color: var(--color-primary) !important;
+    border-color: var(--color-primary) !important;
+    color: var(--color-white) !important;
+}
+
+.btn-primary:hover,
+.btn.btn-primary:hover,
+.add-btn:hover,
+.mybtn1:hover,
+input[type="submit"]:hover,
+button[type="submit"]:hover {
+    background-color: var(--color-primary-hover) !important;
+    border-color: var(--color-primary-hover) !important;
+    color: var(--color-white) !important;
+}
+
+/* ===== SECONDARY BUTTON ===== */
+.btn-secondary,
+.btn.btn-secondary,
+.mybtn2,
+.export-btn,
+.import-btn {
+    background-color: var(--color-secondary) !important;
+    border-color: var(--color-secondary) !important;
+    color: var(--color-white) !important;
+}
+
+.btn-secondary:hover,
+.mybtn2:hover,
+.export-btn:hover,
+.import-btn:hover {
+    background-color: var(--color-secondary-hover) !important;
+    border-color: var(--color-secondary-hover) !important;
+    color: var(--color-white) !important;
+}
+
+/* ===== DANGER BUTTON ===== */
+.btn-danger,
+.btn.btn-danger,
+.delete-btn,
+.mybtn3,
+.remove-btn {
+    background-color: var(--color-danger) !important;
+    border-color: var(--color-danger) !important;
+    color: var(--color-white) !important;
+}
+
+.btn-danger:hover,
+.delete-btn:hover,
+.mybtn3:hover,
+.remove-btn:hover {
+    background-color: var(--color-danger-hover) !important;
+    border-color: var(--color-danger-hover) !important;
+    color: var(--color-white) !important;
+}
+
+/* ===== SUCCESS BUTTON ===== */
+.btn-success,
+.btn.btn-success,
+.status-btn.active,
+.approve-btn {
+    background-color: var(--color-success) !important;
+    border-color: var(--color-success) !important;
+    color: var(--color-white) !important;
+}
+
+.btn-success:hover,
+.approve-btn:hover {
+    background-color: var(--color-success-hover) !important;
+    border-color: var(--color-success-hover) !important;
+}
+
+/* ===== WARNING BUTTON ===== */
+.btn-warning,
+.btn.btn-warning,
+.edit-btn,
+.pending-btn {
+    background-color: var(--color-warning) !important;
+    border-color: var(--color-warning) !important;
+    color: var(--color-gray-900) !important;
+}
+
+.btn-warning:hover,
+.edit-btn:hover,
+.pending-btn:hover {
+    background-color: var(--color-warning-hover) !important;
+    border-color: var(--color-warning-hover) !important;
+    color: var(--color-gray-900) !important;
+}
+
+/* ===== INFO BUTTON ===== */
+.btn-info,
+.btn.btn-info,
+.view-btn,
+.details-btn {
+    background-color: var(--color-info) !important;
+    border-color: var(--color-info) !important;
+    color: var(--color-white) !important;
+}
+
+.btn-info:hover,
+.view-btn:hover,
+.details-btn:hover {
+    background-color: var(--color-info-hover) !important;
+    border-color: var(--color-info-hover) !important;
+}
+
+/* ===== LIGHT BUTTON ===== */
+.btn-light,
+.btn.btn-light {
+    background-color: var(--color-gray-100) !important;
+    border-color: var(--color-gray-200) !important;
+    color: var(--text-primary) !important;
+}
+
+.btn-light:hover {
+    background-color: var(--color-gray-200) !important;
+    border-color: var(--color-gray-300) !important;
+}
+
+/* ===== DARK BUTTON ===== */
+.btn-dark,
+.btn.btn-dark {
+    background-color: var(--color-gray-800) !important;
+    border-color: var(--color-gray-800) !important;
+    color: var(--color-white) !important;
+}
+
+.btn-dark:hover {
+    background-color: var(--color-gray-900) !important;
+    border-color: var(--color-gray-900) !important;
+}
+
+/* ===== OUTLINE BUTTONS ===== */
+.btn-outline-primary,
+.btn.btn-outline-primary {
+    background-color: transparent !important;
+    border-color: var(--color-primary) !important;
+    color: var(--color-primary) !important;
+}
+
+.btn-outline-primary:hover {
+    background-color: var(--color-primary) !important;
+    color: var(--color-white) !important;
+}
+
+.btn-outline-secondary,
+.btn.btn-outline-secondary {
+    background-color: transparent !important;
+    border-color: var(--color-gray-300) !important;
+    color: var(--text-secondary) !important;
+}
+
+.btn-outline-secondary:hover {
+    background-color: var(--color-gray-100) !important;
+    border-color: var(--color-gray-400) !important;
+    color: var(--text-primary) !important;
+}
+
+.btn-outline-danger,
+.btn.btn-outline-danger {
+    background-color: transparent !important;
+    border-color: var(--color-danger) !important;
+    color: var(--color-danger) !important;
+}
+
+.btn-outline-danger:hover {
+    background-color: var(--color-danger) !important;
+    color: var(--color-white) !important;
+}
+
+.btn-outline-success,
+.btn.btn-outline-success {
+    background-color: transparent !important;
+    border-color: var(--color-success) !important;
+    color: var(--color-success) !important;
+}
+
+.btn-outline-success:hover {
+    background-color: var(--color-success) !important;
+    color: var(--color-white) !important;
+}
+
+/* ===== LINK BUTTON ===== */
+.btn-link,
+.btn.btn-link {
+    background-color: transparent !important;
+    border-color: transparent !important;
+    color: var(--color-primary) !important;
+    padding: 0 !important;
+    min-height: auto !important;
+}
+
+.btn-link:hover {
+    color: var(--color-primary-hover) !important;
+    text-decoration: underline !important;
+}
+
+/* ===== BUTTON SIZES ===== */
+.btn-sm,
+.btn.btn-sm {
+    min-height: 32px;
+    padding: 0 var(--space-3);
+    font-size: var(--text-xs);
+}
+
+.btn-lg,
+.btn.btn-lg {
+    min-height: 48px;
+    padding: 0 var(--space-6);
+    font-size: var(--text-base);
+}
+
+.btn-block,
+.btn.btn-block {
+    display: flex;
+    width: 100%;
+}
+
+/* ===== ICON BUTTONS ===== */
+.btn-icon,
+.icon-btn,
+.btn i,
+.btn svg {
+    font-size: 1em;
+    line-height: 1;
+}
+
+.btn-icon-only,
+.btn-square {
+    width: 40px;
+    height: 40px;
+    padding: 0 !important;
+}
+
+.btn-icon-only.btn-sm {
+    width: 32px;
+    height: 32px;
+}
+
+/* ===== ACTION BUTTONS GROUP (Admin Tables) ===== */
+.action-btns,
+.table-actions,
+.btn-group-action {
+    display: flex;
+    gap: var(--space-1);
+    align-items: center;
+}
+
+.action-btns .btn,
+.table-actions .btn,
+.action-btns a,
+.table-actions a {
+    width: 32px;
+    height: 32px;
+    min-height: 32px;
+    padding: 0 !important;
+    font-size: var(--text-sm);
+    border-radius: var(--radius-sm) !important;
+}
+
+/* ========================================
+   2. CARDS - UNIFIED PADDING & STYLE
+   ======================================== */
+
+/* Reset ALL cards */
+/* NOTE: .product-card excluded - styles in product-card.css */
+.card,
+.muaadh-card,
+.category-card,
+.dashboard-card,
+.stat-card,
+.info-card,
+.panel,
+.box,
+.widget,
+/* Admin cards */
+.mr-table,
+.add-product-content,
+.product-description,
+.order-content,
+.settings-content,
+.vendor-content {
+    background-color: var(--color-white) !important;
+    border: 1px solid var(--border-default) !important;
+    border-radius: var(--radius-lg) !important;
+    box-shadow: none !important;
+    padding: 0;
+    margin-bottom: var(--space-4);
+    overflow: hidden;
+}
+
+.card:hover,
+.muaadh-card:hover {
+    border-color: var(--color-gray-300) !important;
+    box-shadow: var(--shadow-sm) !important;
+    transform: none !important;
+}
+
+/* Card Header - UNIFIED */
+.card-header,
+.panel-header,
+.box-header,
+.content-header,
+.mr-table .table-header,
+.add-product-content > h4:first-child,
+.settings-content > h4:first-child {
+    background-color: var(--bg-subtle) !important;
+    border-bottom: 1px solid var(--border-default) !important;
+    padding: var(--space-4) var(--space-5) !important;
+    margin: 0 !important;
+    font-size: var(--text-base) !important;
+    font-weight: var(--font-semibold) !important;
+    color: var(--text-primary) !important;
+}
+
+/* Card Body - UNIFIED PADDING */
+.card-body,
+.panel-body,
+.box-body,
+.content-body,
+.mr-table .table-responsive,
+.add-product-content .form-group:first-of-type,
+.settings-content .form-group:first-of-type {
+    padding: var(--space-5) !important;
+}
+
+/* Card Footer - UNIFIED */
+.card-footer,
+.panel-footer,
+.box-footer,
+.content-footer {
+    background-color: var(--bg-subtle) !important;
+    border-top: 1px solid var(--border-default) !important;
+    padding: var(--space-4) var(--space-5) !important;
+}
+
+/* Card Title */
+.card-title,
+.panel-title,
+.box-title {
+    font-size: var(--text-lg);
+    font-weight: var(--font-semibold);
+    color: var(--text-primary);
+    margin: 0 0 var(--space-2);
+}
+
+/* Card Text */
+.card-text {
+    color: var(--text-secondary);
+    font-size: var(--text-sm);
+}
+
+/* ========================================
+   3. BADGES - UNIFIED
+   ======================================== */
+
+/* Reset ALL badges */
+.badge,
+.label,
+.tag,
+.status,
+.chip,
+[class*="badge-"],
+[class*="label-"],
+/* Status badges */
+.order-status,
+.product-status,
+.payment-status,
+.user-status {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px 10px !important;
+    font-size: 11px !important;
+    font-weight: var(--font-semibold) !important;
+    line-height: 1.2;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    border-radius: var(--radius-full) !important;
+    border: none !important;
+    white-space: nowrap;
+}
+
+/* Badge Colors */
+.badge-primary,
+.bg-primary,
+.label-primary {
+    background-color: var(--color-primary) !important;
+    color: var(--color-white) !important;
+}
+
+.badge-secondary,
+.bg-secondary,
+.label-secondary {
+    background-color: var(--color-gray-500) !important;
+    color: var(--color-white) !important;
+}
+
+.badge-success,
+.bg-success,
+.label-success,
+.status-active,
+.status-completed,
+.status-approved,
+.status-paid {
+    background-color: var(--color-success) !important;
+    color: var(--color-white) !important;
+}
+
+.badge-danger,
+.bg-danger,
+.label-danger,
+.status-inactive,
+.status-cancelled,
+.status-rejected,
+.status-failed {
+    background-color: var(--color-danger) !important;
+    color: var(--color-white) !important;
+}
+
+.badge-warning,
+.bg-warning,
+.label-warning,
+.status-pending,
+.status-processing,
+.status-on-hold {
+    background-color: var(--color-warning) !important;
+    color: var(--color-gray-900) !important;
+}
+
+.badge-info,
+.bg-info,
+.label-info,
+.status-shipped,
+.status-in-transit {
+    background-color: var(--color-info) !important;
+    color: var(--color-white) !important;
+}
+
+.badge-light,
+.bg-light,
+.label-light {
+    background-color: var(--color-gray-100) !important;
+    color: var(--text-primary) !important;
+}
+
+.badge-dark,
+.bg-dark,
+.label-dark {
+    background-color: var(--color-gray-800) !important;
+    color: var(--color-white) !important;
+}
+
+/* Soft Badges */
+.badge-soft-primary {
+    background-color: var(--color-primary-light) !important;
+    color: var(--color-primary) !important;
+}
+
+.badge-soft-success {
+    background-color: var(--color-success-light) !important;
+    color: var(--color-success-dark) !important;
+}
+
+.badge-soft-danger {
+    background-color: var(--color-danger-light) !important;
+    color: var(--color-danger-dark) !important;
+}
+
+.badge-soft-warning {
+    background-color: var(--color-warning-light) !important;
+    color: var(--color-warning-dark) !important;
+}
+
+.badge-soft-info {
+    background-color: var(--color-info-light) !important;
+    color: var(--color-info-dark) !important;
+}
+
+/* ========================================
+   4. ALERTS - UNIFIED
+   ======================================== */
+
+/* Reset ALL alerts */
+.alert,
+.message,
+.notification,
+.notice,
+[class*="alert-"] {
+    position: relative;
+    padding: var(--space-4) var(--space-5) !important;
+    margin-bottom: var(--space-4);
+    border: 1px solid transparent !important;
+    border-radius: var(--radius-md) !important;
+    font-size: var(--text-sm);
+}
+
+.alert-primary {
+    background-color: var(--color-primary-light) !important;
+    border-color: var(--color-primary-lighter) !important;
+    color: var(--color-primary-dark) !important;
+}
+
+.alert-success {
+    background-color: #dcfce7 !important;
+    border-color: #bbf7d0 !important;
+    color: #166534 !important;
+}
+
+.alert-danger,
+.alert-error {
+    background-color: #fee2e2 !important;
+    border-color: #fecaca !important;
+    color: #991b1b !important;
+}
+
+.alert-warning {
+    background-color: #fef3c7 !important;
+    border-color: #fde68a !important;
+    color: #92400e !important;
+}
+
+.alert-info {
+    background-color: #e0f2fe !important;
+    border-color: #bae6fd !important;
+    color: #075985 !important;
+}
+
+.alert .close,
+.alert .btn-close {
+    position: absolute;
+    top: 50%;
+    right: var(--space-4);
+    transform: translateY(-50%);
+    padding: var(--space-2);
+    background: transparent;
+    border: none;
+    font-size: var(--text-lg);
+    opacity: 0.5;
+    cursor: pointer;
+}
+
+[dir="rtl"] .alert .close,
+[dir="rtl"] .alert .btn-close {
+    right: auto;
+    left: var(--space-4);
+}
+
+.alert .close:hover,
+.alert .btn-close:hover {
+    opacity: 1;
+}
+
+/* ========================================
+   5. TABLES - UNIFIED
+   ======================================== */
+
+/* Reset ALL tables */
+.table,
+table,
+.data-table,
+.datatable,
+.dataTable,
+#DataTables_Table_0,
+.mr-table table,
+.gd-responsive-table {
+    width: 100% !important;
+    margin-bottom: 0 !important;
+    color: var(--text-primary);
+    border-collapse: collapse !important;
+    border-spacing: 0 !important;
+    background-color: var(--color-white) !important;
+}
+
+/* Table Header - UNIFIED */
+.table thead th,
+table thead th,
+.dataTable thead th,
+.mr-table thead th {
+    background-color: var(--color-gray-50) !important;
+    color: var(--text-primary) !important;
+    font-size: var(--text-xs) !important;
+    font-weight: var(--font-semibold) !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+    padding: var(--space-3) var(--space-4) !important;
+    border-bottom: 2px solid var(--border-default) !important;
+    border-top: none !important;
+    white-space: nowrap;
+    vertical-align: middle !important;
+}
+
+/* Table Body Cells - UNIFIED */
+.table tbody td,
+table tbody td,
+.dataTable tbody td,
+.mr-table tbody td {
+    padding: var(--space-3) var(--space-4) !important;
+    vertical-align: middle !important;
+    border-bottom: 1px solid var(--border-default) !important;
+    border-top: none !important;
+    font-size: var(--text-sm) !important;
+    color: var(--text-secondary) !important;
+}
+
+/* Table Row Hover */
+.table tbody tr:hover,
+table tbody tr:hover,
+.dataTable tbody tr:hover {
+    background-color: var(--color-gray-50) !important;
+}
+
+/* Table Striped */
+.table-striped tbody tr:nth-of-type(odd),
+.table.table-striped tbody tr:nth-of-type(odd) {
+    background-color: var(--color-gray-50) !important;
+}
+
+.table-striped tbody tr:nth-of-type(odd):hover {
+    background-color: var(--color-gray-100) !important;
+}
+
+/* Table Bordered */
+.table-bordered,
+.table.table-bordered {
+    border: 1px solid var(--border-default) !important;
+}
+
+.table-bordered th,
+.table-bordered td {
+    border: 1px solid var(--border-default) !important;
+}
+
+/* Responsive Table Container */
+.table-responsive,
+.dataTables_wrapper {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* DataTables Specific */
+.dataTables_wrapper .dataTables_length,
+.dataTables_wrapper .dataTables_filter,
+.dataTables_wrapper .dataTables_info,
+.dataTables_wrapper .dataTables_paginate {
+    padding: var(--space-3) var(--space-4) !important;
+    font-size: var(--text-sm) !important;
+}
+
+.dataTables_wrapper .dataTables_length select,
+.dataTables_wrapper .dataTables_filter input {
+    min-height: 36px !important;
+    padding: var(--space-2) var(--space-3) !important;
+    border: 1px solid var(--border-default) !important;
+    border-radius: var(--radius-md) !important;
+    font-size: var(--text-sm) !important;
+}
+
+/* ========================================
+   6. FORMS - UNIFIED
+   ======================================== */
+
+/* Form Group */
+.form-group,
+.mb-3,
+.form-row {
+    margin-bottom: var(--space-4) !important;
+}
+
+/* Labels - UNIFIED */
+label,
+.form-label,
+.control-label {
+    display: block;
+    font-size: var(--text-sm) !important;
+    font-weight: var(--font-medium) !important;
+    color: var(--text-primary) !important;
+    margin-bottom: var(--space-2) !important;
+}
+
+/* Required indicator */
+label .required,
+.form-label .required,
+label::after[content="*"] {
+    color: var(--color-danger);
+    margin-left: 2px;
+}
+
+/* Input Fields - UNIFIED */
+.form-control,
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+input[type="tel"],
+input[type="url"],
+input[type="search"],
+input[type="date"],
+input[type="time"],
+input[type="datetime-local"],
+select,
+select.form-control,
+.form-select,
+.nice-select,
+textarea {
+    display: block;
+    width: 100%;
+    min-height: 42px !important;
+    padding: var(--space-2) var(--space-3) !important;
+    font-family: var(--font-sans) !important;
+    font-size: var(--text-sm) !important;
+    font-weight: var(--font-normal);
+    line-height: var(--leading-normal);
+    color: var(--text-primary) !important;
+    background-color: var(--color-white) !important;
+    background-clip: padding-box;
+    border: 1px solid var(--border-default) !important;
+    border-radius: var(--radius-md) !important;
+    box-shadow: none !important;
+    transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+    appearance: none;
+}
+
+/* Input Hover */
+.form-control:hover,
+input:hover,
+select:hover,
+textarea:hover {
+    border-color: var(--color-gray-400) !important;
+}
+
+/* Input Focus - UNIFIED */
+.form-control:focus,
+input:focus,
+select:focus,
+textarea:focus {
+    border-color: var(--color-primary) !important;
+    outline: none !important;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1) !important;
+}
+
+/* Placeholder */
+.form-control::placeholder,
+input::placeholder,
+textarea::placeholder {
+    color: var(--text-muted) !important;
+    opacity: 1;
+}
+
+/* Disabled */
+.form-control:disabled,
+.form-control[readonly],
+input:disabled,
+input[readonly],
+select:disabled,
+textarea:disabled {
+    background-color: var(--color-gray-100) !important;
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+/* Select with arrow */
+select.form-control,
+select.form-select,
+.nice-select {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23475569' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e") !important;
+    background-repeat: no-repeat !important;
+    background-position: right 12px center !important;
+    background-size: 14px !important;
+    padding-right: 36px !important;
+}
+
+[dir="rtl"] select.form-control,
+[dir="rtl"] select.form-select,
+[dir="rtl"] .nice-select {
+    background-position: left 12px center !important;
+    padding-right: var(--space-3) !important;
+    padding-left: 36px !important;
+}
+
+/* Textarea */
+textarea.form-control,
+textarea {
+    min-height: 100px !important;
+    resize: vertical;
+}
+
+/* Input Sizes */
+.form-control-sm,
+input.form-control-sm,
+select.form-control-sm {
+    min-height: 34px !important;
+    padding: var(--space-1) var(--space-2) !important;
+    font-size: var(--text-xs) !important;
+}
+
+.form-control-lg,
+input.form-control-lg,
+select.form-control-lg {
+    min-height: 50px !important;
+    padding: var(--space-3) var(--space-4) !important;
+    font-size: var(--text-base) !important;
+}
+
+/* Validation States */
+.form-control.is-valid,
+.was-validated .form-control:valid,
+input.is-valid {
+    border-color: var(--color-success) !important;
+}
+
+.form-control.is-invalid,
+.was-validated .form-control:invalid,
+input.is-invalid {
+    border-color: var(--color-danger) !important;
+}
+
+.valid-feedback {
+    display: none;
+    font-size: var(--text-xs);
+    color: var(--color-success);
+    margin-top: var(--space-1);
+}
+
+.invalid-feedback,
+.text-danger {
+    font-size: var(--text-xs) !important;
+    color: var(--color-danger) !important;
+    margin-top: var(--space-1);
+}
+
+.is-valid ~ .valid-feedback,
+.is-invalid ~ .invalid-feedback {
+    display: block;
+}
+
+/* Checkbox & Radio - UNIFIED */
+input[type="checkbox"],
+input[type="radio"],
+.form-check-input {
+    width: 18px !important;
+    height: 18px !important;
+    margin: 0 !important;
+    vertical-align: middle;
+    background-color: var(--color-white) !important;
+    border: 2px solid var(--border-emphasis) !important;
+    appearance: none;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+input[type="checkbox"],
+.form-check-input[type="checkbox"] {
+    border-radius: var(--radius-sm) !important;
+}
+
+input[type="radio"],
+.form-check-input[type="radio"] {
+    border-radius: var(--radius-full) !important;
+}
+
+input[type="checkbox"]:checked,
+input[type="radio"]:checked,
+.form-check-input:checked {
+    background-color: var(--color-primary) !important;
+    border-color: var(--color-primary) !important;
+}
+
+input[type="checkbox"]:checked {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3e%3cpath fill='none' stroke='%23fff' stroke-linecap='round' stroke-linejoin='round' stroke-width='3' d='M6 10l3 3l6-6'/%3e%3c/svg%3e") !important;
+    background-position: center !important;
+    background-repeat: no-repeat !important;
+    background-size: 12px !important;
+}
+
+input[type="radio"]:checked {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='2' fill='%23fff'/%3e%3c/svg%3e") !important;
+    background-position: center !important;
+    background-repeat: no-repeat !important;
+}
+
+input[type="checkbox"]:focus,
+input[type="radio"]:focus,
+.form-check-input:focus {
+    outline: none !important;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15) !important;
+}
+
+.form-check-label {
+    margin-left: var(--space-2);
+    font-weight: var(--font-normal) !important;
+    color: var(--text-secondary) !important;
+    cursor: pointer;
+}
+
+[dir="rtl"] .form-check-label {
+    margin-left: 0;
+    margin-right: var(--space-2);
+}
+
+/* Input Group */
+.input-group {
+    display: flex;
+    position: relative;
+}
+
+.input-group .form-control {
+    flex: 1;
+}
+
+.input-group-text,
+.input-group-prepend .btn,
+.input-group-append .btn {
+    display: flex;
+    align-items: center;
+    padding: var(--space-2) var(--space-3);
+    font-size: var(--text-sm);
+    color: var(--text-secondary);
+    background-color: var(--color-gray-100) !important;
+    border: 1px solid var(--border-default) !important;
+    border-radius: 0;
+}
+
+.input-group > :first-child {
+    border-top-left-radius: var(--radius-md) !important;
+    border-bottom-left-radius: var(--radius-md) !important;
+}
+
+.input-group > :last-child {
+    border-top-right-radius: var(--radius-md) !important;
+    border-bottom-right-radius: var(--radius-md) !important;
+}
+
+.input-group > :not(:first-child) {
+    margin-left: -1px;
+}
+
+/* ========================================
+   7. DROPDOWNS - UNIFIED
+   ======================================== */
+
+.dropdown-menu,
+.dropdown-content {
+    position: absolute;
+    z-index: var(--z-dropdown);
+    min-width: 180px;
+    padding: var(--space-2) 0 !important;
+    margin: var(--space-1) 0 0 !important;
+    background-color: var(--color-white) !important;
+    border: 1px solid var(--border-default) !important;
+    border-radius: var(--radius-md) !important;
+    box-shadow: var(--shadow-lg) !important;
+}
+
+.dropdown-item,
+.dropdown-menu a,
+.dropdown-menu li a {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-2) var(--space-4) !important;
+    font-size: var(--text-sm) !important;
+    color: var(--text-primary) !important;
+    text-decoration: none !important;
+    transition: background-color var(--transition-fast);
+}
+
+.dropdown-item:hover,
+.dropdown-menu a:hover,
+.dropdown-menu li a:hover {
+    background-color: var(--color-gray-100) !important;
+    color: var(--text-primary) !important;
+}
+
+.dropdown-item.active,
+.dropdown-item:active {
+    background-color: var(--color-primary) !important;
+    color: var(--color-white) !important;
+}
+
+.dropdown-divider {
+    height: 0;
+    margin: var(--space-2) 0 !important;
+    border-top: 1px solid var(--border-default) !important;
+}
+
+/* ========================================
+   8. MODALS - UNIFIED
+   ======================================== */
+
+.modal-content {
+    background-color: var(--color-white) !important;
+    border: none !important;
+    border-radius: var(--radius-xl) !important;
+    box-shadow: var(--shadow-xl) !important;
+}
+
+.modal-header {
+    padding: var(--space-4) var(--space-5) !important;
+    border-bottom: 1px solid var(--border-default) !important;
+    background-color: var(--bg-subtle) !important;
+}
+
+.modal-title {
+    font-size: var(--text-lg) !important;
+    font-weight: var(--font-semibold) !important;
+    color: var(--text-primary) !important;
+}
+
+.modal-body {
+    padding: var(--space-5) !important;
+}
+
+.modal-footer {
+    padding: var(--space-4) var(--space-5) !important;
+    border-top: 1px solid var(--border-default) !important;
+    gap: var(--space-2);
+}
+
+.modal .btn-close,
+.modal .close {
+    padding: var(--space-2);
+    background: transparent;
+    border: none;
+    font-size: var(--text-xl);
+    color: var(--text-muted);
+    opacity: 0.5;
+    cursor: pointer;
+}
+
+.modal .btn-close:hover,
+.modal .close:hover {
+    opacity: 1;
+}
+
+/* ========================================
+   9. PAGINATION - UNIFIED
+   ======================================== */
+
+.pagination {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-1);
+    padding: 0;
+    margin: var(--space-4) 0;
+    list-style: none;
+}
+
+.page-item .page-link,
+.pagination li a,
+.pagination li span,
+.paginate_button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 36px;
+    height: 36px;
+    padding: 0 var(--space-3) !important;
+    font-size: var(--text-sm) !important;
+    font-weight: var(--font-medium);
+    color: var(--text-primary) !important;
+    background-color: var(--color-white) !important;
+    border: 1px solid var(--border-default) !important;
+    border-radius: var(--radius-md) !important;
+    text-decoration: none !important;
+    transition: all var(--transition-fast);
+}
+
+.page-item .page-link:hover,
+.pagination li a:hover,
+.paginate_button:hover {
+    color: var(--color-primary) !important;
+    background-color: var(--color-primary-light) !important;
+    border-color: var(--color-primary) !important;
+}
+
+.page-item.active .page-link,
+.pagination li.active a,
+.pagination li.active span,
+.paginate_button.current {
+    color: var(--color-white) !important;
+    background-color: var(--color-primary) !important;
+    border-color: var(--color-primary) !important;
+}
+
+.page-item.disabled .page-link,
+.pagination li.disabled a,
+.paginate_button.disabled {
+    color: var(--text-muted) !important;
+    background-color: var(--color-gray-100) !important;
+    border-color: var(--border-default) !important;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+/* ========================================
+   10. BREADCRUMB - UNIFIED
+   ======================================== */
+
+.breadcrumb {
+    display: flex;
+    flex-wrap: wrap;
+    padding: 0;
+    margin: 0 0 var(--space-4);
+    list-style: none;
+    background-color: transparent !important;
+}
+
+.breadcrumb-item {
+    display: flex;
+    align-items: center;
+    font-size: var(--text-sm);
+}
+
+.breadcrumb-item + .breadcrumb-item::before {
+    content: "/" !important;
+    padding: 0 var(--space-2);
+    color: var(--text-muted);
+}
+
+.breadcrumb-item a {
+    color: var(--text-secondary);
+}
+
+.breadcrumb-item a:hover {
+    color: var(--color-primary);
+}
+
+.breadcrumb-item.active {
+    color: var(--text-muted);
+}
+
+/* ========================================
+   11. TABS - UNIFIED
+   ======================================== */
+
+.nav-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    border-bottom: 2px solid var(--border-default) !important;
+    margin-bottom: var(--space-4);
+}
+
+.nav-tabs .nav-item {
+    margin-bottom: -2px;
+}
+
+.nav-tabs .nav-link {
+    padding: var(--space-3) var(--space-4) !important;
+    font-size: var(--text-sm) !important;
+    font-weight: var(--font-medium) !important;
+    color: var(--text-secondary) !important;
+    background-color: transparent !important;
+    border: 2px solid transparent !important;
+    border-bottom: none !important;
+    border-top-left-radius: var(--radius-md) !important;
+    border-top-right-radius: var(--radius-md) !important;
+}
+
+.nav-tabs .nav-link:hover {
+    color: var(--color-primary) !important;
+    border-color: transparent !important;
+}
+
+.nav-tabs .nav-link.active {
+    color: var(--color-primary) !important;
+    background-color: var(--color-white) !important;
+    border-color: var(--border-default) var(--border-default) var(--color-white) !important;
+}
+
+/* Pills */
+.nav-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+}
+
+.nav-pills .nav-link {
+    padding: var(--space-2) var(--space-4) !important;
+    font-size: var(--text-sm) !important;
+    font-weight: var(--font-medium) !important;
+    color: var(--text-secondary) !important;
+    background-color: transparent !important;
+    border-radius: var(--radius-md) !important;
+}
+
+.nav-pills .nav-link:hover {
+    color: var(--color-primary) !important;
+    background-color: var(--color-primary-light) !important;
+}
+
+.nav-pills .nav-link.active {
+    color: var(--color-white) !important;
+    background-color: var(--color-primary) !important;
+}
+
+/* ========================================
+   12. PROGRESS - UNIFIED
+   ======================================== */
+
+.progress {
+    display: flex;
+    height: 8px;
+    overflow: hidden;
+    background-color: var(--color-gray-200) !important;
+    border-radius: var(--radius-full) !important;
+}
+
+.progress-bar {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    background-color: var(--color-primary) !important;
+    transition: width var(--transition-slow);
+}
+
+.progress-bar-success {
+    background-color: var(--color-success) !important;
+}
+
+.progress-bar-danger {
+    background-color: var(--color-danger) !important;
+}
+
+.progress-bar-warning {
+    background-color: var(--color-warning) !important;
+}
+
+/* ========================================
+   13. SPINNERS - UNIFIED
+   ======================================== */
+
+.spinner-border,
+.spinner,
+.loading {
+    display: inline-block;
+    width: 24px;
+    height: 24px;
+    border: 3px solid currentColor;
+    border-right-color: transparent;
+    border-radius: var(--radius-full);
+    animation: spinner 0.75s linear infinite;
+}
+
+.spinner-border-sm {
+    width: 16px;
+    height: 16px;
+    border-width: 2px;
+}
+
+@keyframes spinner {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* ========================================
+   14. TOOLTIPS - UNIFIED
+   ======================================== */
+
+.tooltip-inner {
+    max-width: 200px;
+    padding: var(--space-2) var(--space-3) !important;
+    font-size: var(--text-xs) !important;
+    color: var(--color-white) !important;
+    background-color: var(--color-gray-800) !important;
+    border-radius: var(--radius-sm) !important;
+}

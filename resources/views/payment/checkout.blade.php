@@ -18,16 +18,15 @@
 		<link href="https://fonts.googleapis.com/css2?family=Jost:wght@100;200;300;400;500;600;700;800;900&display=swap"
 			rel="stylesheet">
 	@endif
-	<link rel="stylesheet"
-		href="{{ asset('assets/front/css/styles.php?color=' . str_replace('#', '', $gs->colors) . '&header_color=' . $gs->header_color) }}">
 	<link rel="stylesheet" href="{{ asset('assets/front/css/bootstrap.min.css') }}">
 	<link rel="stylesheet" href="{{ asset('assets/front/css/style.css') }}">
+	<link rel="stylesheet" href="{{ asset('assets/front/css/muaadh-system.css') }}">
+	<link rel="stylesheet" href="{{ asset('assets/front/css/theme-colors.css') }}">
 	<link rel="stylesheet" href="{{ asset('assets/front/css/toastr.min.css') }}">
-	@if ($default_font->font_family)
-		<link rel="stylesheet" id="colorr"
-			href="{{ asset('assets/front/css/font.php?font_familly=' . $default_font->font_family) }}">
+	@if ($default_font->font_family ?? false)
+		<style>body, * { font-family: '{{ $default_font->font_family }}', sans-serif; }</style>
 	@else
-		<link rel="stylesheet" id="colorr" href="{{ asset('assets/front/css/font.php?font_familly=' . " Open Sans") }}">
+		<style>body, * { font-family: 'Open Sans', sans-serif; }</style>
 	@endif
 </head>
 
@@ -62,7 +61,7 @@
 																		data-show="{{$gt->showForm()}}"
 																		data-form="{{ $gt->showApiCheckoutLink() }}"
 																		data-href="{{ route('front.load.payment', ['slug1' => $gt->showKeyword(), 'slug2' => $gt->id]) }}"
-																		id="v-pills-tab{{ $gt->id }}-tab" data-toggle="pill"
+																		id="v-pills-tab{{ $gt->id }}-tab" data-bs-toggle="pill"
 																		href="#v-pills-tab{{ $gt->id }}" role="tab"
 																		aria-controls="v-pills-tab{{ $gt->id }}"
 																		aria-selected="false">
@@ -84,7 +83,7 @@
 																	data-show="{{$gt->showForm()}}"
 																	data-form="{{ $gt->showApiCheckoutLink() }}"
 																	data-href="{{ route('front.load.payment', ['slug1' => $gt->showKeyword(), 'slug2' => $gt->id]) }}"
-																	id="v-pills-tab{{ $gt->id }}-tab" data-toggle="pill"
+																	id="v-pills-tab{{ $gt->id }}-tab" data-bs-toggle="pill"
 																	href="#v-pills-tab{{ $gt->id }}" role="tab"
 																	aria-controls="v-pills-tab{{ $gt->id }}"
 																	aria-selected="false">
@@ -107,7 +106,7 @@
 
 														{{-- wallet checkout start --}}
 														<a class="nav-link payment" href="javascript:;" data-show="no"
-															data-val="{{ $gt->keyword }}" data-toggle="pill" role="tab"
+															data-val="{{ $gt->keyword }}" data-bs-toggle="pill" role="tab"
 															data-form="{{ route('api.wallet.submit') }}"
 															aria-controls="v-pills-tab{{ $gt->id }}"
 															aria-selected="false">
@@ -159,7 +158,7 @@
 														value="{{ $order->pay_amount * $order->currency_value }}"
 														id="grandTotal">
 													<button type="submit" id="final-btn"
-														class="mybtn1">{{__('Checkout')}}</button>
+														class="m-btn m-btn--primary m-btn--lg">{{__('Checkout')}}</button>
 												</div>
 											</div>
 										</div>

@@ -74,7 +74,7 @@
 
                         <div class="form-group">
                             <label for="provider">@lang('Provider')</label>
-                            <select name="provider" id="provider" class="form-control">
+                            <select id="provider" class="form-control" name="provider">
                                 <option value="manual" {{ $data->provider == 'manual' ? 'selected' : '' }}>@lang('Manual')</option>
                                 <option value="tryoto" {{ $data->provider == 'tryoto' ? 'selected' : '' }}>@lang('Tryoto')</option>
                             </select>
@@ -84,12 +84,11 @@
                         </div>
 
                         <div class="form-group">
-                            <label for="free_above">@lang('Free Shipping Above (Optional)')</label>
+                            <label for="free_above">@lang('Free Shipping Above')</label>
                             <input type="number" step="any" id="free_above" class="form-control"
                                 placeholder="@lang('Free shipping if cart total above this amount')"
-                                value="{{ $data->free_above * $sign->value }}"
-                                name="free_above">
-                            <small class="text-muted">@lang('Set 0 to disable free shipping')</small>
+                                value="{{ ($data->free_above ?? 0) * $sign->value }}" name="free_above">
+                            <small class="form-text text-muted">@lang('Leave empty or 0 to disable free shipping')</small>
                             @error('free_above')
                                 <span class="text-danger">{{ $message }}</span>
                             @enderror

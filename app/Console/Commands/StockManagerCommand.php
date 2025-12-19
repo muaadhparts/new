@@ -245,33 +245,75 @@ class StockManagerCommand extends Command
 
     protected function doFullRefresh(bool $all, int $userId, float $margin, ?string $remote, ?string $local): int
     {
-        // 1) Download
-        $this->doDownload($remote, $local);
-
-        // 2) Import
-        $this->doImport($local);
-
-        // 3) Aggregate
-        $this->doAggregate();
-
-        // 4) Updates
-        $this->line("🛠 Updating products from stock_all...");
-        if ($all) {
-            $this->line("Updating ALL vendors stock from stock_all...");
-            $this->updateStockForAll();
-
-            $this->line("Updating ALL vendors price from stock_all.cost_price * {$margin}...");
-            $this->updatePriceForAll($margin);
-        } else {
-            $this->line("Updating merchant_products stock for user_id={$userId}...");
-            $this->updateStockForOne($userId);
-
-            $this->line("Updating merchant_products price for user_id={$userId} with margin={$margin}...");
-            $this->updatePriceForOne($userId, $margin);
+        // إنشاء سجل في vendor_stock_updates
+        $stockUpdate = null;
+        if (!$all && $userId > 0) {
+            $stockUpdate = DB::table('vendor_stock_updates')->insertGetId([
+                'user_id' => $userId,
+                'update_type' => 'automatic',
+                'status' => 'processing',
+                'started_at' => now(),
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
         }
 
-        $this->info("🎉 Full refresh + product update completed successfully.");
-        return self::SUCCESS;
+        try {
+            // 1) Download
+            $this->doDownload($remote, $local);
+
+            // 2) Import
+            $this->doImport($local);
+
+            // 3) Aggregate
+            $this->doAggregate();
+
+            // 4) Updates
+            $this->line("🛠 Updating products from stock_all...");
+            if ($all) {
+                $this->line("Updating ALL vendors stock from stock_all...");
+                $this->updateStockForAll();
+
+                $this->line("Updating ALL vendors price from stock_all.cost_price * {$margin}...");
+                $this->updatePriceForAll($margin);
+            } else {
+                $this->line("Updating merchant_products stock for user_id={$userId}...");
+                $this->updateStockForOne($userId);
+
+                $this->line("Updating merchant_products price for user_id={$userId} with margin={$margin}...");
+                $this->updatePriceForOne($userId, $margin);
+            }
+
+            $this->info("🎉 Full refresh + product update completed successfully.");
+
+            // تحديث السجل كـ مكتمل
+            if ($stockUpdate) {
+                DB::table('vendor_stock_updates')
+                    ->where('id', $stockUpdate)
+                    ->update([
+                        'status' => 'completed',
+                        'completed_at' => now(),
+                        'updated_at' => now(),
+                    ]);
+            }
+
+            return self::SUCCESS;
+
+        } catch (\Throwable $e) {
+            // تحديث السجل كـ فاشل
+            if ($stockUpdate) {
+                DB::table('vendor_stock_updates')
+                    ->where('id', $stockUpdate)
+                    ->update([
+                        'status' => 'failed',
+                        'completed_at' => now(),
+                        'error_log' => $e->getMessage(),
+                        'updated_at' => now(),
+                    ]);
+            }
+
+            throw $e;
+        }
     }
 
     protected function doCheck(bool $all, int $userId, float $margin): int

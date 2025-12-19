@@ -42,7 +42,7 @@
                               </div>
                               <div class="col-lg-6">
                                   <div class="tawk-area">
-                                    <input type="text" class="input-field" placeholder="{{ __('Header Email') }}" name="header_email" value="{{ $gs->header_email }}">
+                                    <input type="text" class="form-control" placeholder="{{ __('Header Email') }}" name="header_email" value="{{ $gs->header_email }}">
                                   </div>
                               </div>
                             </div>
@@ -56,7 +56,7 @@
                               </div>
                               <div class="col-lg-6">
                                   <div class="tawk-area">
-                                    <input type="text" class="input-field" placeholder="{{ __('Header Phone') }}" name="header_phone" value="{{ $gs->header_phone }}">
+                                    <input type="text" class="form-control" placeholder="{{ __('Header Phone') }}" name="header_phone" value="{{ $gs->header_phone }}">
                                   </div>
                               </div>
                             </div>
@@ -69,7 +69,7 @@
                             </div>
                           </div>
                           <div class="col-lg-6">
-                            <button class="addProductSubmit-btn" type="submit">{{ __('Save') }}</button>
+                            <button class="btn btn-primary" type="submit">{{ __('Save') }}</button>
                           </div>
                         </div>
                      </form>

@@ -47,7 +47,7 @@ class RiderController extends AdminBaseController
                         <i class="fas fa-eye"></i> ' . __("Details") . '
                     </a>
                     
-                    <a href="javascript:;" data-href="' . route('admin-rider-delete', $data->id) . '" data-toggle="modal" data-target="#confirm-delete" class="delete">
+                    <a href="javascript:;" data-href="' . route('admin-rider-delete', $data->id) . '" data-bs-toggle="modal" data-bs-target="#confirm-delete" class="delete">
                             <i class="fas fa-trash-alt"></i>
                             </a>
                             
@@ -122,9 +122,9 @@ class RiderController extends AdminBaseController
                 return \PriceHelper::showAdminCurrencyPrice($amount);;
             })
             ->addColumn('action', function (Withdraw $data) {
-                $action = '<div class="action-list"><a data-href="' . route('admin-withdraw-rider-show', $data->id) . '" class="view details-width" data-toggle="modal" data-target="#modal1"> <i class="fas fa-eye"></i> ' . __("Details") . '</a>';
+                $action = '<div class="action-list"><a data-href="' . route('admin-withdraw-rider-show', $data->id) . '" class="view details-width" data-bs-toggle="modal" data-bs-target="#modal1"> <i class="fas fa-eye"></i> ' . __("Details") . '</a>';
                 if ($data->status == "pending") {
-                    $action .= '<a data-href="' . route('admin-withdraw-rider-accept', $data->id) . '" data-toggle="modal" data-target="#status-modal1"> <i class="fas fa-check"></i> ' . __("Accept") . '</a><a data-href="' . route('admin-withdraw-rider-reject', $data->id) . '" data-toggle="modal" data-target="#status-modal"> <i class="fas fa-trash-alt"></i> ' . __("Reject") . '</a>';
+                    $action .= '<a data-href="' . route('admin-withdraw-rider-accept', $data->id) . '" data-bs-toggle="modal" data-bs-target="#status-modal1"> <i class="fas fa-check"></i> ' . __("Accept") . '</a><a data-href="' . route('admin-withdraw-rider-reject', $data->id) . '" data-bs-toggle="modal" data-bs-target="#status-modal"> <i class="fas fa-trash-alt"></i> ' . __("Reject") . '</a>';
                 }
                 $action .= '</div>';
                 return $action;

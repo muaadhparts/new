@@ -1,7 +1,18 @@
 (function ($) {
   "use strict";
 
-  console.log('🚀 myscript.js loaded - v2.0.0 - Cart Update Fixed');
+  // console.log('🚀 myscript.js loaded - v2.0.1 - Currency/Language Selector Fixed');
+
+  // ============================================
+  // Currency & Language Selector Handler
+  // When user selects currency or language, redirect to the URL in option value
+  // ============================================
+  $(document).on('change', '.selectors', function() {
+    var selectedValue = $(this).val();
+    if (selectedValue && selectedValue.startsWith('http')) {
+      window.location.href = selectedValue;
+    }
+  });
 
   // ✅ Global cart state updater function
   window.applyCartState = function(data) {
@@ -129,28 +140,35 @@
   $(document).on("click", ".qtplus", function () {
     var $tselector = $("#order-qty");
     var stock = $("#stock").val();
-    var total = $($tselector).val();
-    if (stock != "") {
+    var total = parseInt($($tselector).val()) || 1;
+
+    // التحقق من المخزون قبل الزيادة
+    if (stock != "" && stock != null) {
       var stk = parseInt(stock);
       if (total < stk) {
         total++;
         $($tselector).val(total);
       }
     } else {
+      // إذا لم يكن هناك مخزون محدد، السماح بالزيادة (للمنتجات الرقمية أو preorder)
       total++;
+      $($tselector).val(total);
     }
-
-    $($tselector).val(total);
   });
 
   // Product Minus Qty
   $(document).on("click", ".qtminus", function () {
     var $tselector = $("#order-qty");
-    var total = $($tselector).val();
-    if (total > 1) {
+    var total = parseInt($($tselector).val()) || 1;
+
+    // الحصول على الحد الأدنى للكمية
+    var minQty = parseInt($("#product_minimum_qty").val()) || 1;
+
+    // التحقق من الحد الأدنى للكمية قبل التنقيص
+    if (total > minQty) {
       total--;
+      $($tselector).val(total);
     }
-    $($tselector).val(total);
   });
 
   $(".qttotal").keypress(function (e) {
@@ -181,39 +199,51 @@
     $("#rating").val($(this).data("val"));
   });
 
-  // add to card
-  $(document).on("click", ".add_cart_click", function (e) {
+  // ========== Home Product Quantity Controls ==========
+  // زيادة الكمية في home_product
+  $(document).on('click', '.hp-qtplus', function(e) {
     e.preventDefault();
+    e.stopPropagation();
+    var targetId = $(this).data('target');
+    var $input = $('[id^="qty_' + targetId + '"]');
+    if (!$input.length) return;
 
-    // Get merchant product ID from data attribute
-    const mpId = $(this).data('merchant-product');
-    const href = $(this).attr("data-href");
+    var stock = parseInt($(this).data('stock')) || 999;
+    var preordered = parseInt($(this).data('preordered')) || 0;
+    var current = parseInt($input.val()) || 1;
 
-    // Use merchant product ID if available, otherwise fallback to href
-    const requestUrl = mpId ? href : href;
-
-    console.log('🛒 Adding to cart:', requestUrl);
-
-    $.get(requestUrl, function (data) {
-      console.log('📦 Cart response:', data);
-
-      if (data == "digital") {
-        toastr.error(lang.cart_already);
-      } else if (data.ok === false || data[0] == 0) {
-        toastr.error(data.msg || data.error || lang.cart_out);
-      } else {
-        // Use global cart state updater
-        window.applyCartState(data);
-
-        const successMsg = data.success || lang.cart_success;
-        toastr.success(successMsg);
-      }
-    }).fail(function(xhr, status, error) {
-      console.error('❌ Cart add failed:', error, xhr.responseText);
-      toastr.error('Failed to add to cart. Please try again.');
-    });
-    return true;
+    // فحص المخزون
+    if (stock > 0 && current >= stock && preordered == 0) {
+      toastr.warning(lang.stock_limit || 'Stock limit reached');
+      return;
+    }
+    $input.val(current + 1);
   });
+
+  // إنقاص الكمية في home_product
+  $(document).on('click', '.hp-qtminus', function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    var targetId = $(this).data('target');
+    var $input = $('[id^="qty_' + targetId + '"]');
+    if (!$input.length) return;
+
+    var minQty = parseInt($(this).data('min')) || 1;
+    var current = parseInt($input.val()) || 1;
+
+    if (current <= minQty) {
+      toastr.warning((lang.minimum_qty || 'Minimum quantity is') + ' ' + minQty);
+      return;
+    }
+    $input.val(current - 1);
+  });
+
+  // ============================================
+  // CART SYSTEM: All cart functionality uses m-cart-add class
+  // Handled exclusively by cart-unified.js via POST /cart/unified
+  // Required: data-merchant-product-id, data-qty-input
+  // Optional: data-redirect="/cart" for Buy Now
+  // ============================================
 
   // حذف عنصر من المقارنة (Compare)
   $(document).on('click', 'a[href*="compare/remove"]', function (e) {
@@ -282,23 +312,11 @@
     var domkey     = $box.find('.domkey').val();     // نسخة آمنة للـ DOM
     var size_qty   = $box.find('.size_qty').val();
     var size_price = $box.find('.size_price').val();
-    var minQty     = parseInt($box.find('.minimum_qty').val() || '0', 10);
 
     var $qtyInput  = $('#qty' + domkey);
     var $priceCell = $('#prc' + domkey);
-    var $stock     = $('#stock' + domkey);
 
-    var currentQty = parseInt($qtyInput.val() || '0', 10);
-    var maxStock   = parseInt($stock.val() || '0', 10);
-
-    // تحقّق محلي سريع قبل الطلب (الخادم سيتحقق أيضًا)
-    if (maxStock > 0 && (currentQty + 1) > maxStock) {
-      if (typeof $.notify === 'function') { $.notify('غير متوفر', 'error'); }
-      else if (typeof toastr !== 'undefined') { toastr.error('غير متوفر'); }
-      else { alert('غير متوفر'); }
-      return;
-    }
-
+    // نعتمد على الـ server للتحقق من المخزون - لا فحص محلي
     $.ajax({
       url: '/addbyone',
       type: 'GET',
@@ -311,9 +329,8 @@
       },
       success: function (resp) {
         if (resp === 0 || resp === '0') {
-          if (typeof $.notify === 'function') { $.notify('غير متوفر', 'error'); }
-          else if (typeof toastr !== 'undefined') { toastr.error('غير متوفر'); }
-          else { alert('غير متوفر'); }
+          if (typeof toastr !== 'undefined') { toastr.error('غير متوفر في المخزون'); }
+          else { alert('غير متوفر في المخزون'); }
           return;
         }
 
@@ -323,8 +340,7 @@
         $('.total-cart-price').html(resp[0]);
       },
       error: function () {
-        if (typeof $.notify === 'function') { $.notify('حدث خطأ غير متوقع', 'error'); }
-        else if (typeof toastr !== 'undefined') { toastr.error('حدث خطأ غير متوقع'); }
+        if (typeof toastr !== 'undefined') { toastr.error('حدث خطأ غير متوقع'); }
         else { alert('حدث خطأ غير متوقع'); }
       }
     });
@@ -341,25 +357,19 @@
     var domkey     = $box.find('.domkey').val();     // نسخة آمنة للـ DOM
     var size_qty   = $box.find('.size_qty').val();
     var size_price = $box.find('.size_price').val();
-    var minQty     = parseInt($box.find('.minimum_qty').val() || '0', 10);
+    var minQty     = parseInt($box.find('.minimum_qty').val() || '1', 10);
 
     var $qtyInput  = $('#qty' + domkey);
     var $priceCell = $('#prc' + domkey);
 
-    var currentQty = parseInt($qtyInput.val() || '0', 10);
+    var currentQty = parseInt($qtyInput.val() || '1', 10);
 
-    // احترم الحد الأدنى إن وُجد
-    if (minQty > 0 && (currentQty - 1) < minQty) {
-      if (typeof $.notify === 'function') { $.notify('لا يمكن النزول عن الحد الأدنى', 'warning'); }
-      else if (typeof toastr !== 'undefined') { toastr.warning('لا يمكن النزول عن الحد الأدنى'); }
-      else { alert('لا يمكن النزول عن الحد الأدنى'); }
+    // فحص محلي سريع للحد الأدنى
+    if (minQty < 1) minQty = 1;
+    if (currentQty <= minQty) {
+      if (typeof toastr !== 'undefined') { toastr.warning('الحد الأدنى للكمية هو ' + minQty); }
+      else { alert('الحد الأدنى للكمية هو ' + minQty); }
       return;
-    }
-
-    // إن كان سيصبح 0، اترك منطق الحذف الحالي يتولى (إن كان عندك زر حذف)
-    if ((currentQty - 1) < 1) {
-      // يمكنك هنا الاكتفاء بعدم الاستدعاء أو الاعتماد على زر الحذف
-      // return;
     }
 
     $.ajax({
@@ -374,9 +384,8 @@
       },
       success: function (resp) {
         if (resp === 0 || resp === '0') {
-          if (typeof $.notify === 'function') { $.notify('غير متوفر', 'error'); }
-          else if (typeof toastr !== 'undefined') { toastr.error('غير متوفر'); }
-          else { alert('غير متوفر'); }
+          if (typeof toastr !== 'undefined') { toastr.warning('وصلت للحد الأدنى للكمية'); }
+          else { alert('وصلت للحد الأدنى للكمية'); }
           return;
         }
 
@@ -385,8 +394,7 @@
         $('.total-cart-price').html(resp[0]);
       },
       error: function () {
-        if (typeof $.notify === 'function') { $.notify('حدث خطأ غير متوقع', 'error'); }
-        else if (typeof toastr !== 'undefined') { toastr.error('حدث خطأ غير متوقع'); }
+        if (typeof toastr !== 'undefined') { toastr.error('حدث خطأ غير متوقع'); }
         else { alert('حدث خطأ غير متوقع'); }
       }
     });
@@ -437,161 +445,49 @@
     }
   }
 
-  $(document).on("click", "#addtodetailscart", function (e) {
-    let pid = "";
-    let qty = "";
-    let size_key = "";
-    let size = "";
-    let size_qty = "";
-    let size_price = "";
-    let color = "";
-    let color_price = "";
-    let values = "";
-    let keys = "";
-    let prices = "";
 
-    // get all the input values
-    pid = $("#product_id").val();
-    qty = $("#order-qty").val();
-    size_key = $(".cart_size input:checked").val();
-    size = $(".cart_size input:checked").attr("data-key");
-    size_qty = $(".cart_size input:checked").attr("data-qty");
-    size_price = $(".cart_size input:checked").attr("data-price");
-    color = $(".cart_color input:checked").attr("data-color");
-    color_price = $(".cart_color input:checked").attr("data-price");
-    values = $(".cart_attr:checked")
-      .map(function () {
-        return $(this).val();
-      })
-      .get();
-    keys = $(".cart_attr:checked")
-      .map(function () {
-        return $(this).attr("data-key");
-      })
-      .get();
-    prices = $(".cart_attr:checked")
-      .map(function () {
-        return $(this).attr("data-price");
-      })
-      .get();
 
-    //return true;
+  // ============================================
+  // Product Card Gallery - Switch images on indicator hover/click
+  // ============================================
+  $(document).on('mouseenter click', '.m-product-card__indicator', function() {
+    var $indicator = $(this);
+    var $card = $indicator.closest('.m-product-card');
+    var index = $indicator.data('index');
 
-    $.ajax({
-      type: "GET",
-      url: mainurl + "/addnumcart",
-      data: {
-        id: pid,
-        qty: qty,
-        size: size,
-        color: color,
-        color_price: color_price,
-        size_qty: size_qty,
-        size_price: size_price,
-        size_key: size_key,
-        keys: keys,
-        values: values,
-        prices: prices,
-      },
-      success: function (data) {
-        if (data == "digital") {
-          toastr.error("Already Added To Cart");
-        } else if (data == 0 || data.ok === false) {
-          toastr.error(data.msg || data.error || "Out Of Stock");
-        } else if (data[3]) {
-          toastr.error(lang.minimum_qty_error + " " + data[4]);
-        } else {
-          // Use global cart state updater
-          window.applyCartState(data);
-          toastr.success(data.success || "Successfully Added To Cart");
-        }
-      },
-    });
+    // Update indicators
+    $card.find('.m-product-card__indicator').removeClass('active');
+    $indicator.addClass('active');
+
+    // Update images
+    $card.find('.m-product-card__img').removeClass('active');
+    $card.find('.m-product-card__img[data-index="' + index + '"]').addClass('active');
   });
 
+  // Auto-cycle images on card hover (optional - subtle effect)
+  var cardHoverInterval = null;
+  $(document).on('mouseenter', '.m-product-card__image', function() {
+    var $imageContainer = $(this);
+    var $card = $imageContainer.closest('.m-product-card');
+    var $indicators = $card.find('.m-product-card__indicator');
 
+    if ($indicators.length <= 1) return;
 
-
-
-
-  $(document).on("click", "#addtobycard", function () {
-    let pid = "";
-    let qty = "";
-    let size_key = "";
-    let size = "";
-    let size_qty = "";
-    let size_price = "";
-    let color = "";
-    let color_price = "";
-    let values = "";
-    let keys = "";
-    let prices = "";
-
-    // get all the input values
-    pid = $("#product_id").val();
-    qty = $("#order-qty").val();
-    size_key = $(".cart_size input:checked").val();
-    size = $(".cart_size input:checked").attr("data-key");
-    size_qty = $(".cart_size input:checked").attr("data-qty");
-    size_price = $(".cart_size input:checked").attr("data-price");
-    color = $(".cart_color input:checked").attr("data-color");
-
-    if (size_key == undefined) {
-      size_key = "";
-    }
-    if (size == undefined) {
-      size = "";
-    }
-    if (size_qty == undefined) {
-      size_qty = "";
-    }
-
-    if (color != undefined) {
-      color = color.replace("#", "");
-    } else {
-      color = "";
-    }
-
-    color_price = $(".cart_color input:checked").attr("data-price");
-    values = $(".cart_attr:checked")
-      .map(function () {
-        return $(this).val();
-      })
-      .get();
-    keys = $(".cart_attr:checked")
-      .map(function () {
-        return $(this).attr("data-key");
-      })
-      .get();
-    prices = $(".cart_attr:checked")
-      .map(function () {
-        return $(this).attr("data-price");
-      })
-      .get();
-
-    window.location =
-      mainurl +
-      "/addtonumcart?id=" +
-      pid +
-      "&qty=" +
-      qty +
-      "&size=" +
-      size +
-      "&color=" +
-      color +
-      "&color_price=" +
-      color_price +
-      "&size_qty=" +
-      size_qty +
-      "&size_price=" +
-      size_price +
-      "&size_key=" +
-      size_key +
-      "&keys=" +
-      keys +
-      "&values=" +
-      values +
-      "&prices=" +
-      prices;
+    var currentIndex = 0;
+    cardHoverInterval = setInterval(function() {
+      currentIndex = (currentIndex + 1) % $indicators.length;
+      $indicators.eq(currentIndex).trigger('mouseenter');
+    }, 2000);
   });
+
+  $(document).on('mouseleave', '.m-product-card__image', function() {
+    if (cardHoverInterval) {
+      clearInterval(cardHoverInterval);
+      cardHoverInterval = null;
+    }
+    // Reset to first image
+    var $card = $(this).closest('.m-product-card');
+    $card.find('.m-product-card__indicator').first().trigger('mouseenter');
+  });
+
 })(jQuery);

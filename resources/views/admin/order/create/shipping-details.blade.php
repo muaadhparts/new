@@ -7,8 +7,8 @@
             </div>
             <div class="modal-header">
                 <h5 class="modal-title">{{ __('Shipping Details') }}</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                    
                 </button>
             </div>
             <div class="modal-body">
@@ -30,7 +30,7 @@
                                                 </div>
                                             </div>
                                             <div class="col-lg-7">
-                                                <input type="text" class="input-field" name="shipping_name" placeholder="{{ __('Name') }}" required="" value="{{$order->shipping_name == null ? $order->customer_name : $order->shipping_name}}">
+                                                <input type="text" class="form-control" name="shipping_name" placeholder="{{ __('Name') }}" required="" value="{{$order->shipping_name == null ? $order->customer_name : $order->shipping_name}}">
                                             </div>
                                         </div>
 
@@ -41,7 +41,7 @@
                                                 </div>
                                             </div>
                                             <div class="col-lg-7">
-                                                <input type="email" class="input-field" name="shipping_email" placeholder="{{ __('Email') }}" required="" value="{{$order->shipping_email == null ? $order->customer_email : $order->shipping_email}}">
+                                                <input type="email" class="form-control" name="shipping_email" placeholder="{{ __('Email') }}" required="" value="{{$order->shipping_email == null ? $order->customer_email : $order->shipping_email}}">
                                             </div>
                                         </div>
 
@@ -52,7 +52,7 @@
                                                 </div>
                                             </div>
                                             <div class="col-lg-7">
-                                                <input type="text" class="input-field" name="shipping_phone" placeholder="{{ __('Phone') }}" required="" value="{{$order->shipping_phone == null ? $order->customer_phone : $order->shipping_phone}}">
+                                                <input type="text" class="form-control" name="shipping_phone" placeholder="{{ __('Phone') }}" required="" value="{{$order->shipping_phone == null ? $order->customer_phone : $order->shipping_phone}}">
                                             </div>
                                         </div>
 
@@ -64,7 +64,7 @@
                                                 </div>
                                             </div>
                                             <div class="col-lg-7">
-                                                <input type="text" class="input-field" name="shipping_address" placeholder="{{ __('Address') }}" required="" value="{{$order->shipping_address == null ? $order->customer_address : $order->shipping_address}}">
+                                                <input type="text" class="form-control" name="shipping_address" placeholder="{{ __('Address') }}" required="" value="{{$order->shipping_address == null ? $order->customer_address : $order->shipping_address}}">
                                             </div>
                                         </div>
 
@@ -76,7 +76,7 @@
                                                 </div>
                                             </div>
                                             <div class="col-lg-7">
-                                                <input type="text" class="input-field" name="shipping_city" placeholder="{{ __('City') }}" required="" value="{{$order->shipping_city == null ? $order->customer_city : $order->shipping_city}}">
+                                                <input type="text" class="form-control" name="shipping_city" placeholder="{{ __('City') }}" required="" value="{{$order->shipping_city == null ? $order->customer_city : $order->shipping_city}}">
                                             </div>
                                         </div>
 
@@ -88,7 +88,7 @@
                                                 </div>
                                             </div>
                                             <div class="col-lg-7">
-                                                <input type="text" class="input-field" name="shipping_state" placeholder="{{ __('State') }}" required="" value="{{$order->shipping_state == null ?  $order->customer_state: $order->shipping_state }}">
+                                                <input type="text" class="form-control" name="shipping_state" placeholder="{{ __('State') }}" required="" value="{{$order->shipping_state == null ?  $order->customer_state: $order->shipping_state }}">
                                             </div>
                                         </div>
 
@@ -100,7 +100,7 @@
                                                 </div>
                                             </div>
                                             <div class="col-lg-7">
-                                                <select type="text" class="input-field" name="shipping_country" required="">
+                                                <select type="text" class="form-control" name="shipping_country" required="">
                                                     <option value="">{{ __('Select Country') }}</option>
                                                     @foreach (DB::table('countries')->get() as $data)
                                                         <option value="{{ $data->country_name }}" {{ $order->shipping_country == $data->country_name ? 'selected' : '' }}>
@@ -119,7 +119,7 @@
                                                 </div>
                                             </div>
                                             <div class="col-lg-7">
-                                                <input type="text" class="input-field" name="shipping_zip" placeholder="{{ __('Postal Code') }}" required="" value="{{$order->shipping_zip == null ? $order->customer_zip : $order->shipping_zip}}">
+                                                <input type="text" class="form-control" name="shipping_zip" placeholder="{{ __('Postal Code') }}" required="" value="{{$order->shipping_zip == null ? $order->customer_zip : $order->shipping_zip}}">
                                             </div>
                                         </div>
 
@@ -132,7 +132,7 @@
                                                 </div>
                                             </div>
                                             <div class="col-lg-7">
-                                                <button class="addProductSubmit-btn" type="submit">{{ __('Submit') }}</button>
+                                                <button class="btn btn-primary" type="submit">{{ __('Submit') }}</button>
                                             </div>
                                         </div>
                                     </form>
@@ -145,7 +145,7 @@
 
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">{{ __('Close') }}</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ __('Close') }}</button>
             </div>
         </div>
     </div>

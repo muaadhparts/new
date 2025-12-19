@@ -273,7 +273,7 @@
     });
 
     $(document).on("change", ".data-droplinks", function (e) {
-      $("#confirm-delete1").modal("show");
+      bootstrap.Modal.getOrCreateInstance(document.getElementById('confirm-delete1')).show();
       $("#confirm-delete1").find(".btn-ok").attr("href", $(this).val());
       $("#muaadhtable").DataTable().ajax.reload();
       var data = $(this).children("option:selected").html();
@@ -288,13 +288,13 @@
     });
 
     $(document).on("change", ".vendor-droplinks", function (e) {
-      $("#status-modal").modal("show");
+      bootstrap.Modal.getOrCreateInstance(document.getElementById('status-modal')).show();
       $("#status-modal").find(".btn-ok").attr("href", $(this).val());
       $("#muaadhtable").DataTable().ajax.reload();
     });
 
     $(document).on("change", ".order-droplinks", function (e) {
-      $("#confirm-delete2").modal("show");
+      bootstrap.Modal.getOrCreateInstance(document.getElementById('confirm-delete2')).show();
       $("#confirm-delete2").find(".btn-ok").attr("href", $(this).val());
     });
 
@@ -501,9 +501,14 @@
               $(".submit-loader").hide();
             }
             $("button.addProductSubmit-btn").prop("disabled", false);
-            $(
-              "#modal1,#modal2,#verify-modal,#attribute,#ad-subscription-modal"
-            ).modal("hide");
+            // Hide all modals using Bootstrap 5 API
+            ["modal1", "modal2", "verify-modal", "attribute", "ad-subscription-modal"].forEach(function(id) {
+              var el = document.getElementById(id);
+              if (el) {
+                var modal = bootstrap.Modal.getInstance(el);
+                if (modal) modal.hide();
+              }
+            });
           }
           enablekey();
         },
@@ -573,7 +578,7 @@
         type: "GET",
         url: $(this).attr("href"),
         success: function (data) {
-          $("#catalog-modal").modal("toggle");
+          bootstrap.Modal.getOrCreateInstance(document.getElementById('catalog-modal')).hide();
           $("#muaadhtable").DataTable().ajax.reload();
           $(".alert-danger").hide();
           $(".alert-success").show();
@@ -612,7 +617,7 @@
         cache: false,
         processData: false,
         success: function (data) {
-          $("#confirm-delete").modal("toggle");
+          bootstrap.Modal.getOrCreateInstance(document.getElementById('confirm-delete')).hide();
           $("#muaadhtable").DataTable().ajax.reload();
           $(".alert-danger").hide();
           $(".alert-success").show();
@@ -634,7 +639,7 @@
         type: "GET",
         url: $(this).attr("href"),
         success: function (data) {
-          $("#confirm-delete").modal("toggle");
+          bootstrap.Modal.getOrCreateInstance(document.getElementById('confirm-delete')).hide();
           $("#muaadhtable").DataTable().ajax.reload();
           $(".alert-danger").hide();
           $(".alert-success").show();
@@ -657,7 +662,7 @@
         type: "GET",
         url: $(this).attr("href"),
         success: function (data) {
-          $("#status-modal").modal("toggle");
+          bootstrap.Modal.getOrCreateInstance(document.getElementById('status-modal')).hide();
           $("#muaadhtable").DataTable().ajax.reload();
           $(".alert-danger").hide();
           $(".alert-success").show();
@@ -680,7 +685,7 @@
         type: "GET",
         url: $(this).attr("href"),
         success: function (data) {
-          $("#status-modal1").modal("toggle");
+          bootstrap.Modal.getOrCreateInstance(document.getElementById('status-modal1')).hide();
           $("#muaadhtable").DataTable().ajax.reload();
           $(".alert-danger").hide();
           $(".alert-success").show();
@@ -703,7 +708,7 @@
         type: "GET",
         url: $(this).attr("href"),
         success: function (data) {
-          $("#confirm-delete1").modal("toggle");
+          bootstrap.Modal.getOrCreateInstance(document.getElementById('confirm-delete1')).hide();
           $("#muaadhtable").DataTable().ajax.reload();
           $(".alert-danger").hide();
           $(".alert-success").show();
@@ -746,7 +751,7 @@
             $(".submit-loader").hide();
           }
 
-          $("#confirm-delete2").modal("toggle");
+          bootstrap.Modal.getOrCreateInstance(document.getElementById('confirm-delete2')).hide();
           $(".alert-danger").hide();
           $(".alert-success").show();
           $(".alert-success p").html(data[0]);

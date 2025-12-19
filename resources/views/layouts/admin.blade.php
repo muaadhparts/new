@@ -1,11 +1,35 @@
+{{--
+================================================================================
+    MUAADH THEME - ADMIN LAYOUT
+================================================================================
+    CSS GUIDELINES FOR AI AGENTS:
+    -----------------------------
+    1. The ONLY file for adding/modifying custom CSS is: public/assets/front/css/style.css
+    2. DO NOT add <style> tags in Blade files - move all styles to style.css
+    3. DO NOT create new CSS files - use style.css sections instead
+    4. Use CSS variables from style.css (--theme-* or --muaadh-*)
+    5. Add new styles under appropriate section comments in style.css
+
+    FILE STRUCTURE:
+    - style.css = MAIN THEME FILE (ALL CUSTOMIZATIONS HERE)
+    - theme-colors.css = Generated from Admin Panel (overrides :root variables)
+    - Admin CSS files in assets/admin/css = DO NOT MODIFY
+================================================================================
+--}}
 <!doctype html>
-<html lang="en" dir="ltr">
+@php
+	// Get language from Session (same as frontend)
+	$adminLang = Session::has('language')
+		? \App\Models\Language::find(Session::get('language'))
+		: \App\Models\Language::where('is_default', 1)->first();
+@endphp
+<html lang="en" dir="{{ $adminLang && $adminLang->rtl == 1 ? 'rtl' : 'ltr' }}">
 
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<meta name="author" content="MUAADH">
+	<meta name="author" content="Muaadh">
 	<meta name="csrf-token" content="{{ csrf_token() }}">
 	<!-- Title -->
 	<title>{{$gs->title}}</title>
@@ -24,11 +48,11 @@
 	<link href="{{asset('assets/admin/css/plugin.css')}}" rel="stylesheet" />
 
 	<link href="{{asset('assets/admin/css/jquery.tagit.css')}}" rel="stylesheet" />
-	<link rel="stylesheet" href="{{ asset('assets/admin/css/bootstrap-coloroicker.css') }}">
+	<link rel="stylesheet" href="{{ asset('assets/admin/css/bootstrap-colorpicker.css') }}">
 	<!-- Main Css -->
 
 	<!-- stylesheet -->
-	@if(DB::table('admin_languages')->where('is_default', '=', 1)->first()->rtl == 1)
+	@if($adminLang && $adminLang->rtl == 1)
 
 		<link href="{{asset('assets/admin/css/rtl/style.css')}}" rel="stylesheet" />
 		<link href="{{asset('assets/admin/css/rtl/custom.css')}}" rel="stylesheet" />
@@ -43,13 +67,118 @@
 		<link href="{{asset('assets/admin/css/common.css')}}" rel="stylesheet" />
 	@endif
 
+	{{-- Frontend CSS for Header Display --}}
+	<link rel="stylesheet" href="{{ asset('assets/front/css/bootstrap.min.css') }}">
+	{{-- Main Theme File - Contains all styles --}}
+	<link rel="stylesheet" href="{{ asset('assets/front/css/style.css') }}?v={{ time() }}">
+	{{-- Design System - New components with m- prefix --}}
+	<link rel="stylesheet" href="{{ asset('assets/front/css/muaadh-system.css') }}?v={{ @filemtime(public_path('assets/front/css/muaadh-system.css')) }}">
+	{{-- Theme Colors - Generated from Admin Panel (MUST load LAST to override :root variables) --}}
+	<link rel="stylesheet" href="{{ asset('assets/front/css/theme-colors.css') }}?v={{ @filemtime(public_path('assets/front/css/theme-colors.css')) }}">
+
+	{{-- Hide bottom layer and raise header above all content --}}
+	<style>
+		.frontend-header-wrapper .header-top {
+			display: none !important;
+		}
+		.frontend-header-wrapper {
+			position: relative;
+			z-index: 99999;
+		}
+
+		/* Fix Admin Notifications Dropdown - Override Frontend CSS Conflicts */
+		.page .header .right-eliment .list li .dropdown-menu {
+			border: 0px !important;
+			width: 280px !important;
+			padding: 0px !important;
+			left: auto !important;
+			top: 97% !important;
+			right: -15px !important;
+			border-radius: 0px !important;
+			box-shadow: 0px 3px 25px rgba(0, 0, 0, 0.15) !important;
+			background: #fff !important;
+			z-index: 99999 !important;
+			position: absolute !important;
+			display: none !important;
+			min-width: auto !important;
+			text-align: left !important;
+		}
+
+		.page .header .right-eliment .list li .dropdown-menu.show {
+			display: block !important;
+		}
+
+		.page .header .right-eliment .list li .dropdown-menu .dropdownmenu-wrapper {
+			padding: 7px 25px 20px !important;
+			text-align: left !important;
+		}
+
+		.page .header .right-eliment .list li .dropdown-menu .dropdownmenu-wrapper a,
+		.page .header .right-eliment .list li .dropdown-menu .dropdownmenu-wrapper p,
+		.page .header .right-eliment .list li .dropdown-menu .dropdownmenu-wrapper span {
+			color: #143250 !important;
+		}
+
+		.page .header .right-eliment .list li .dropdown-menu .dropdownmenu-wrapper ul {
+			padding-left: 0px !important;
+			list-style: none !important;
+		}
+
+		.page .header .right-eliment .list li .dropdown-menu .dropdownmenu-wrapper ul li {
+			display: block !important;
+			border-bottom: none !important;
+		}
+
+		.page .header .right-eliment .list li .dropdown-menu .dropdownmenu-wrapper ul li a {
+			margin-bottom: 0px !important;
+			padding: 0px !important;
+			font-size: 14px !important;
+			line-height: 28px !important;
+			height: auto !important;
+			border-bottom: none !important;
+			display: block !important;
+			font-family: inherit !important;
+		}
+
+		.page .header .right-eliment .list li .dropdown-menu .dropdownmenu-wrapper ul li a:hover {
+			background: transparent !important;
+		}
+
+		.page .header .right-eliment .list li .dropdown-menu .dropdownmenu-wrapper h5 {
+			color: #143250 !important;
+			font-size: 16px !important;
+			margin-bottom: 10px !important;
+		}
+	</style>
+
 	@yield('styles')
 
 	<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+	@livewireStyles
 
 </head>
 
 <body id="page-top">
+
+	@php
+		$categories = App\Models\Category::with('subs')->where('status', 1)->get();
+		$pages = App\Models\Page::get();
+		$currencies = App\Models\Currency::all();
+		$languges = App\Models\Language::all();
+	@endphp
+
+	<div class="frontend-header-wrapper">
+		{{-- Frontend Header --}}
+		@include('includes.frontend.header')
+
+		{{-- Frontend Mobile Menu --}}
+		@include('includes.frontend.mobile_menu')
+	</div>
+
+	<!-- overlay for mobile menu -->
+	<div class="overlay"></div>
+
+	<div style="margin-top:20px;"></div>
 
 	<div class="page">
 		<div class="page-main">
@@ -188,9 +317,6 @@
 			</div>
 		</div>
 	</div>
-	@php
-		$curr = \App\Models\Currency::where('is_default', '=', 1)->first();
-	@endphp
 	<script type="text/javascript">
 		var mainurl = "{{url('/')}}";
 		var admin_loader = {{ $gs->is_admin_loader }};
@@ -205,7 +331,8 @@
 	<!-- Dashboard Core -->
 	<script src="{{asset('assets/admin/js/vendors/jquery-1.12.4.min.js')}}"></script>
 	<script src="{{asset('assets/admin/js/vendors/vue.js')}}"></script>
-	<script src="{{asset('assets/admin/js/vendors/bootstrap.min.js')}}"></script>
+	{{-- Frontend Bootstrap 5 for dropdowns --}}
+	<script src="{{asset('assets/front/js/bootstrap.bundle.min.js')}}"></script>
 	<script src="{{asset('assets/admin/js/jqueryui.min.js')}}"></script>
 	<!-- Fullside-menu Js-->
 	<script src="{{asset('assets/admin/plugins/fullside-menu/jquery.slimscroll.min.js')}}"></script>
@@ -222,11 +349,41 @@
 	<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
 	<script src="{{asset('assets/admin/js/load.js')}}"></script>
+	<!-- Frontend Mobile Menu Js (loaded before custom.js to avoid conflicts)-->
+	<script src="{{asset('assets/front/js/script.js')}}?v={{ time() }}"></script>
 	<!-- Custom Js-->
 	<script src="{{asset('assets/admin/js/custom.js')}}"></script>
 	<!-- AJAX Js-->
 	<script src="{{asset('assets/admin/js/myscript.js')}}"></script>
+
+	<!-- Admin Dropdown Fix - Ensure Admin dropdowns work correctly -->
+	<script>
+		$(document).ready(function() {
+			// Re-bind Admin dropdown functionality to override any conflicts
+			$(".page .header .right-eliment .list .dropdown-toggle-1").off('click').on("click", function (e) {
+				e.preventDefault();
+				e.stopPropagation();
+
+				// Hide all other dropdowns
+				$(this).parent().siblings().find(".dropdown-menu").removeClass('show').hide();
+
+				// Toggle current dropdown
+				$(this).next(".dropdown-menu").toggleClass('show').toggle();
+			});
+
+			// Close dropdowns when clicking outside
+			$(document).on("click", function (e) {
+				var container = $(".page .header .right-eliment .list .dropdown-toggle-1");
+
+				if (!container.is(e.target) && container.has(e.target).length === 0) {
+					$(".page .header .right-eliment .list .dropdown-menu").removeClass('show').hide();
+				}
+			});
+		});
+	</script>
+
 	@yield('scripts')
+	@livewireScripts
 
 	@if($gs->is_admin_loader == 0)
 		<style>

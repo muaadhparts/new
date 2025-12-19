@@ -64,7 +64,7 @@
                                   </div>
                                   <div class="col-lg-6">
                                       <div class="tawk-area">
-                                        <textarea class="input-field" name="disqus">{{$gs->disqus}}</textarea>
+                                        <textarea class="form-control" name="disqus">{{$gs->disqus}}</textarea>
                                       </div>
                                   </div>
                                 </div>
@@ -77,7 +77,7 @@
                                     </div>
                                 </div>
                                 <div class="col-lg-6">
-                                    <input type="number" class="input-field" placeholder="{{ __('Display Posts Per Page') }}" name="post_count" 
+                                    <input type="number" class="form-control" placeholder="{{ __('Display Posts Per Page') }}" name="post_count" 
                                     value="{{ $gs->post_count }}" required="" min="0">
                                 </div>
                             </div>
@@ -89,7 +89,7 @@
                                     </div>
                                 </div>
                                 <div class="col-lg-6">
-                                    <button class="addProductSubmit-btn" type="submit">{{ __('Save') }}</button>
+                                    <button class="btn btn-primary" type="submit">{{ __('Save') }}</button>
                                 </div>
                             </div>
                         </form>

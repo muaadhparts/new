@@ -10,7 +10,6 @@ use App\Models\Section;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
-use Illuminate\Support\Facades\Cache;
 
 class CalloutController extends Controller
 {
@@ -25,6 +24,8 @@ class CalloutController extends Controller
     /**
      * ✅ جلب معلومات Callouts الأساسية فقط (coordinates + types)
      * يستخدم من JS لبناء landmarks بدون تحميل بيانات كاملة
+     *
+     * محسّن: استخدام استعلام واحد مع select محدد + batch lookup للـ section callouts
      */
     public function metadata(Request $request)
     {
@@ -32,15 +33,7 @@ class CalloutController extends Controller
         $categoryId  = (int) $request->query('category_id');
         $catalogCode = (string) $request->query('catalog_code');
 
-        // Debug logging
-        \Log::info('CalloutController metadata called', [
-            'section_id' => $sectionId,
-            'category_id' => $categoryId,
-            'catalog_code' => $catalogCode
-        ]);
-
         if (!$sectionId || !$categoryId || !$catalogCode) {
-            \Log::warning('CalloutController: Missing parameters');
             return response()->json([
                 'ok'       => false,
                 'error'    => 'Missing required parameters',
@@ -49,39 +42,64 @@ class CalloutController extends Controller
         }
 
         try {
-            // ✅ استخدام Eloquent Models بدلاً من DB مباشرة (نفس طريقة Livewire)
-            \Log::info('🔍 Fetching illustration', ['section_id' => $sectionId, 'category_id' => $categoryId]);
-
-            // جلب illustration مع callouts من Model
-            $illustration = Illustration::with('callouts')
+            // ✅ استعلام محسّن: جلب الـ callouts مباشرة مع select محدد
+            $illustration = Illustration::select('id', 'section_id')
+                ->with(['callouts' => function ($q) {
+                    $q->select(
+                        'id', 'illustration_id', 'callout_key', 'callout_type',
+                        'applicable', 'selective_fit',
+                        'rectangle_left', 'rectangle_top', 'rectangle_right', 'rectangle_bottom'
+                    );
+                }])
                 ->where('section_id', $sectionId)
                 ->first();
 
-            \Log::info('📊 Query result', [
-                'found' => $illustration ? 'yes' : 'no',
-                'illustration_id' => $illustration?->id,
-                'callouts_count' => $illustration?->callouts?->count() ?? 0
-            ]);
-
-            if (!$illustration) {
-                \Log::warning('⚠️ No illustration found', ['section_id' => $sectionId]);
-                return response()->json(['ok' => true, 'callouts' => [], 'note' => 'No illustration']);
+            if (!$illustration || $illustration->callouts->isEmpty()) {
+                return response()->json(['ok' => true, 'callouts' => []]);
             }
 
-            if ($illustration->callouts->isEmpty()) {
-                \Log::warning('⚠️ No callouts for illustration', ['illustration_id' => $illustration->id]);
-                return response()->json(['ok' => true, 'callouts' => [], 'note' => 'No callouts']);
+            // ✅ جمع section callouts للبحث batch واحد بدلاً من N queries
+            $sectionCalloutKeys = $illustration->callouts
+                ->filter(fn($c) => ($c->callout_type ?? 'part') === 'section' && !empty($c->callout_key))
+                ->pluck('callout_key')
+                ->unique()
+                ->values()
+                ->toArray();
+
+            // ✅ استعلام batch واحد لجميع parents_key
+            $parentsKeyMap = [];
+            if (!empty($sectionCalloutKeys)) {
+                // بناء CASE WHEN للبحث الأمثل
+                $parentsKeyMap = NewCategory::where('level', 3)
+                    ->where(function ($q) use ($sectionCalloutKeys) {
+                        foreach ($sectionCalloutKeys as $key) {
+                            $q->orWhere('full_code', 'LIKE', $key . '%');
+                        }
+                    })
+                    ->orderBy('id')
+                    ->get(['full_code', 'parents_key'])
+                    ->groupBy(function ($cat) use ($sectionCalloutKeys) {
+                        foreach ($sectionCalloutKeys as $key) {
+                            if (str_starts_with($cat->full_code, $key)) {
+                                return $key;
+                            }
+                        }
+                        return null;
+                    })
+                    ->map(fn($group) => $group->first()->parents_key)
+                    ->filter()
+                    ->toArray();
             }
 
             // تحويل callouts إلى الصيغة المطلوبة للـ JS
-            $callouts = $illustration->callouts->map(function ($c) use ($catalogCode) {
-                // حساب العرض والارتفاع من right/bottom
+            $callouts = $illustration->callouts->map(function ($c) use ($parentsKeyMap) {
                 $width = ($c->rectangle_right ?? 0) - ($c->rectangle_left ?? 0);
                 $height = ($c->rectangle_bottom ?? 0) - ($c->rectangle_top ?? 0);
+                $calloutKey = $c->callout_key ?? '';
 
                 $data = [
                     'id'               => $c->id,
-                    'callout_key'      => $c->callout_key ?? $c->callout ?? '',
+                    'callout_key'      => $calloutKey,
                     'callout_type'     => $c->callout_type ?? 'part',
                     'applicable'       => $c->applicable ?? null,
                     'selective_fit'    => $c->selective_fit ?? null,
@@ -91,21 +109,9 @@ class CalloutController extends Controller
                     'rectangle_height' => $height > 0 ? $height : 30,
                 ];
 
-                // ✅ إذا كان callout من نوع section، أضف parents_key للـ navigation
-                if (($c->callout_type ?? 'part') === 'section' && !empty($c->callout_key)) {
-                    // استخدام cache للـ section callouts (لتحسين الأداء)
-                    $cacheKey = "section_parents_key_{$c->callout_key}";
-
-                    $parentsKey = Cache::remember($cacheKey, 7200, function() use ($c) {
-                        // ابحث عن أول category في level 3 بـ full_code يبدأ بـ callout_key
-                        $targetCategory = NewCategory::where('full_code', 'LIKE', $c->callout_key . '%')
-                            ->where('level', 3)
-                            ->orderBy('id')
-                            ->first(['parents_key']);
-
-                        return $targetCategory ? $targetCategory->parents_key : null;
-                    });
-
+                // ✅ استخدام الـ map المحسوب مسبقاً
+                if (($c->callout_type ?? 'part') === 'section' && !empty($calloutKey)) {
+                    $parentsKey = $parentsKeyMap[$calloutKey] ?? null;
                     if (!empty($parentsKey)) {
                         $data['parents_key'] = $parentsKey;
                     }
@@ -122,25 +128,21 @@ class CalloutController extends Controller
         } catch (\Exception $e) {
             \Log::error('CalloutController metadata error', [
                 'section_id'   => $sectionId,
-                'category_id'  => $categoryId,
-                'catalog_code' => $catalogCode,
                 'error'        => $e->getMessage(),
-                'trace'        => $e->getTraceAsString()
             ]);
 
             return response()->json([
                 'ok'       => false,
-                'error'    => 'Failed to fetch callout metadata: ' . $e->getMessage(),
+                'error'    => 'Failed to fetch callout metadata',
                 'callouts' => [],
             ], 500);
         }
     }
 
     /**
-     * إرجاع جميع القطع الموافقة لـ callout داخل section/category معينين:
-     *  - مطابقة القروب العام (group_index=0 بدون قيم) ← دائمًا مطابق
-     *  - أو أي قروب قيمه ⊆ expectedSet (مع مراعاة الفترة الزمنية لو وُجدت)
-     * ثم إلحاق تفاصيل القطعة + الامتدادات فقط (بدون أي حقول متجر).
+     * ✅ إرجاع القطع للـ callout مع احترام الفلترة والقروبات
+     *
+     * محسّن: استعلام مجمّع + فلترة ذكية
      */
     public function show(Request $request)
     {
@@ -151,55 +153,182 @@ class CalloutController extends Controller
         $catalogCode = (string) $request->query('catalog_code');
         $calloutKey  = (string) $request->query('callout');
 
-        // ✅ Pagination parameters
         $page     = max(1, (int) $request->query('page', 1));
-        $perPage  = min(100, max(10, (int) $request->query('per_page', 50))); // بين 10 و 100
+        $perPage  = min(100, max(10, (int) $request->query('per_page', 50)));
 
         if (!$sectionId || !$categoryId || !$catalogCode || !$calloutKey) {
             return response()->json([
                 'ok'    => false,
-                'error' => 'Missing required parameters: section_id, category_id, catalog_code, callout',
+                'error' => 'Missing required parameters',
             ], 422);
         }
 
-        $category = NewCategory::with('catalog')->find($categoryId);
-        if (!$category || !$category->catalog) {
-            return response()->json([
-                'ok'    => false,
-                'error' => 'Invalid category or catalog',
-            ], 404);
+        $category = NewCategory::select('id', 'catalog_id')->find($categoryId);
+        if (!$category) {
+            return response()->json(['ok' => false, 'error' => 'Invalid category'], 404);
         }
 
-        // مواصفات المستخدم من السيشن (إن وُجدت)
-        $specs     = Session::get('selected_filters', []);
-        $yearMonth = $this->extractYearMonth($specs); // مثل "202307"
+        $catalogId = $category->catalog_id;
 
-        // جلب القطع المرتبطة بالكول آوت داخل السيكشن
-        $parts = $this->fetchPartsWithSpecs($sectionId, $calloutKey, $catalogCode, $category->catalog_id);
-        if (empty($parts)) {
+        // مواصفات المستخدم من السيشن
+        $specs     = Session::get('selected_filters', []);
+        $yearMonth = $this->extractYearMonth($specs);
+
+        // ✅ جلب القطع مع القروبات في استعلام مجمّع واحد
+        $partsWithGroups = $this->fetchPartsWithGroupsOptimized($sectionId, $calloutKey, $catalogCode, $catalogId);
+
+        if (empty($partsWithGroups)) {
             return response()->json([
                 'ok'         => true,
                 'elapsed_ms' => (int) round((microtime(true) - $t0) * 1000),
                 'products'   => [],
+                'pagination' => ['total' => 0, 'per_page' => $perPage, 'current_page' => $page, 'last_page' => 0],
                 'rawResults' => [],
             ]);
         }
 
-        // expectedSet من مواصفات المستخدم أو مواصفات الفئة عند عدم اختيار المستخدم
+        // ✅ بناء expectedSet
         if (!empty($specs)) {
-            $expectedSet   = collect($specs)->pluck('value_id')->filter()->map(fn($v) => (string) $v)->unique()->values()->all();
-            $categorySpecs = null;
+            $expectedSet = collect($specs)->pluck('value_id')->filter()->map(fn($v) => (string) $v)->unique()->values()->all();
         } else {
-            $categorySpecs = $this->fetchCategorySpecs($categoryId, $category->catalog_id);
-            $expectedSet   = collect($categorySpecs)->pluck('spec_items')->flatten(1)
-                ->pluck('value_id')->filter()->map(fn($v) => (string) $v)->unique()->values()->all();
+            $categorySpecs = $this->fetchCategorySpecsOptimized($categoryId, $catalogId);
+            $expectedSet   = $categorySpecs;
         }
 
-        // مطابقة القروبات (يشمل القروب العام)
-        $matchedBasic = [];
+        // ✅ تطبيق الفلترة على القروبات
+        $matchedParts = $this->filterPartsBySpecs($partsWithGroups, $expectedSet, $yearMonth);
+
+        // ترتيب
+        usort($matchedParts, function ($a, $b) {
+            $byCount = count($b['match_value_ids']) <=> count($a['match_value_ids']);
+            return $byCount !== 0 ? $byCount : strcmp($a['part_number'], $b['part_number']);
+        });
+
+        // Pagination
+        $total = count($matchedParts);
+        $offset = ($page - 1) * $perPage;
+        $paginatedParts = array_slice($matchedParts, $offset, $perPage);
+
+        $elapsed = (int) round((microtime(true) - $t0) * 1000);
+
+        return response()->json([
+            'ok'         => true,
+            'elapsed_ms' => $elapsed,
+            'products'   => $paginatedParts,
+            'pagination' => [
+                'total'        => $total,
+                'per_page'     => $perPage,
+                'current_page' => $page,
+                'last_page'    => (int) ceil($total / $perPage),
+                'from'         => $total > 0 ? $offset + 1 : 0,
+                'to'           => min($offset + $perPage, $total),
+            ],
+            'rawResults' => $paginatedParts,
+        ]);
+    }
+
+    /**
+     * ✅ جلب القطع مع القروبات - استعلام SQL واحد مع JOINs
+     */
+    protected function fetchPartsWithGroupsOptimized(int $sectionId, string $calloutKey, string $catalogCode, int $catalogId): array
+    {
+        $partsTable        = $this->dyn('parts', $catalogCode);
+        $sectionPartsTable = $this->dyn('section_parts', $catalogCode);
+        $groupTable        = $this->dyn('part_spec_groups', $catalogCode);
+        $itemTable         = $this->dyn('part_spec_group_items', $catalogCode);
+        $periodTable       = $this->dyn('part_periods', $catalogCode);
+
+        // ✅ استعلام واحد مع كل الـ JOINs
+        // LIMIT 5000 لمنع timeout
+        // ✅ FORCE INDEX لإجبار MySQL على استخدام الفهرس على part_spec_group_items
+        $indexName = "idx_psgi_group_id_{$catalogCode}";
+        $sql = "
+            SELECT
+                p.id as part_id,
+                p.part_number,
+                p.label_en as part_label_en,
+                p.label_ar as part_label_ar,
+                p.qty as part_qty,
+                p.callout as part_callout,
+                g.id as group_id,
+                g.group_index,
+                pp.begin_date,
+                pp.end_date,
+                si.value_id
+            FROM {$partsTable} p
+            INNER JOIN {$sectionPartsTable} sp ON sp.part_id = p.id AND sp.section_id = ?
+            LEFT JOIN {$groupTable} g ON g.part_id = p.id AND g.section_id = ? AND g.catalog_id = ?
+            LEFT JOIN {$periodTable} pp ON pp.id = g.part_period_id
+            LEFT JOIN {$itemTable} gi FORCE INDEX ({$indexName}) ON gi.group_id = g.id
+            LEFT JOIN specification_items si ON si.id = gi.specification_item_id
+            WHERE p.callout = ?
+            LIMIT 5000
+        ";
+
+        $rows = DB::select($sql, [$sectionId, $sectionId, $catalogId, $calloutKey]);
+
+        if (empty($rows)) return [];
+
+        // تجميع النتائج
+        $partsMap = [];
+        $groupsMap = [];
+
+        foreach ($rows as $row) {
+            $partId = $row->part_id;
+
+            // إضافة القطعة
+            if (!isset($partsMap[$partId])) {
+                $partsMap[$partId] = [
+                    'part_id'       => (int) $partId,
+                    'part_number'   => $row->part_number,
+                    'part_label_en' => $row->part_label_en,
+                    'part_label_ar' => $row->part_label_ar,
+                    'part_qty'      => $row->part_qty,
+                    'part_callout'  => $row->part_callout,
+                    'groups'        => [],
+                ];
+                $groupsMap[$partId] = [];
+            }
+
+            // إضافة القروب (إن وجد)
+            if ($row->group_id) {
+                $groupId = $row->group_id;
+
+                if (!isset($groupsMap[$partId][$groupId])) {
+                    $groupsMap[$partId][$groupId] = [
+                        'group_id'    => (int) $groupId,
+                        'group_index' => (int) $row->group_index,
+                        'begin_date'  => $row->begin_date,
+                        'end_date'    => $row->end_date,
+                        'spec_items'  => [],
+                    ];
+                }
+
+                // إضافة value_id
+                if ($row->value_id) {
+                    $groupsMap[$partId][$groupId]['spec_items'][] = ['value_id' => $row->value_id];
+                }
+            }
+        }
+
+        // دمج القروبات مع القطع
+        foreach ($partsMap as $partId => &$part) {
+            $part['groups'] = array_values($groupsMap[$partId] ?? []);
+        }
+
+        return array_values($partsMap);
+    }
+
+    /**
+     * ✅ فلترة القطع حسب المواصفات
+     */
+    protected function filterPartsBySpecs(array $parts, array $expectedSet, ?string $yearMonth): array
+    {
+        $matched = [];
+
         foreach ($parts as $part) {
             $matchedGroupIds = [];
-            $unionValues     = []; // اتحاد value_ids للقروبات المطابقة (غير العامة)
+            $unionValues     = [];
             $partBegin       = null;
             $partEnd         = null;
             $hasAnyMatch     = false;
@@ -208,97 +337,93 @@ class CalloutController extends Controller
                 $gIndex = (int) ($group['group_index'] ?? 0);
                 $values = collect($group['spec_items'])->pluck('value_id')->map(fn($v) => (string) $v)->all();
 
-                // (A) القروب العام: group_index=0 بدون قيم → مطابق دائمًا (بدون شرط تاريخ)
-                if ($gIndex === 0 && count($values) === 0) {
+                // (A) القروب العام: group_index=0 بدون قيم
+                if ($gIndex === 0 && empty($values)) {
                     $hasAnyMatch = true;
-                    $matchedGroupIds[] = (int) ($group['group_id'] ?? 0);
-
-                    $gBegin = $group['begin_date'] ?? null;
-                    $gEnd   = $group['end_date']   ?? null;
-                    if (is_null($partBegin) || ($gBegin && $gBegin < $partBegin)) $partBegin = $gBegin;
-                    if (is_null($partEnd)) {
-                        $partEnd = $gEnd;
-                    } else {
-                        if (is_null($gEnd)) $partEnd = null;
-                        elseif (!is_null($partEnd) && $gEnd > $partEnd) $partEnd = $gEnd;
-                    }
+                    $matchedGroupIds[] = $group['group_id'];
+                    $this->updateDateRange($group, $partBegin, $partEnd);
                     continue;
                 }
 
-                // (B) قروبات ذات قيم: ⊆ expectedSet + ضمن الفترة (إن وُجد yearMonth)
+                // (B) قروبات ذات قيم: ⊆ expectedSet
                 if (!empty($values) && !empty($expectedSet)) {
-                    $difference = array_diff($values, $expectedSet);
-                    if (count($difference) !== 0) continue;
+                    if (count(array_diff($values, $expectedSet)) !== 0) continue;
 
+                    // فحص التاريخ
                     if ($yearMonth) {
-                        $begin = $group['begin_date'] ?? null; // "YYYYMM"
-                        $end   = $group['end_date']   ?? null;
+                        $begin = $group['begin_date'] ?? null;
+                        $end   = $group['end_date'] ?? null;
                         if (($begin && $yearMonth < $begin) || ($end && $yearMonth > $end)) continue;
                     }
 
                     $hasAnyMatch = true;
-                    $matchedGroupIds[] = (int) ($group['group_id'] ?? 0);
-                    $unionValues = array_values(array_unique(array_merge($unionValues, $values)));
-
-                    $gBegin = $group['begin_date'] ?? null;
-                    $gEnd   = $group['end_date']   ?? null;
-                    if (is_null($partBegin) || ($gBegin && $gBegin < $partBegin)) $partBegin = $gBegin;
-                    if (is_null($partEnd)) {
-                        $partEnd = $gEnd;
-                    } else {
-                        if (is_null($gEnd)) $partEnd = null;
-                        elseif (!is_null($partEnd) && $gEnd > $partEnd) $partEnd = $gEnd;
-                    }
+                    $matchedGroupIds[] = $group['group_id'];
+                    $unionValues = array_merge($unionValues, $values);
+                    $this->updateDateRange($group, $partBegin, $partEnd);
                 }
             }
 
             if ($hasAnyMatch && !empty($matchedGroupIds)) {
-                $matchedBasic[] = [
-                    'part_id'           => (int) $part['part_id'],
-                    'part_number'       => (string) $part['part_number'],
-                    'matched_group_ids' => array_values(array_unique($matchedGroupIds)),
-                    'match_value_ids'   => array_values(array_unique($unionValues)), // فارغة = "عام"
+                $matched[] = [
+                    'part_id'           => $part['part_id'],
+                    'part_number'       => $part['part_number'],
+                    'part_label_ar'     => $part['part_label_ar'],
+                    'part_label_en'     => $part['part_label_en'],
+                    'part_qty'          => $part['part_qty'],
+                    'part_callout'      => $part['part_callout'],
                     'part_begin'        => $partBegin,
                     'part_end'          => $partEnd,
+                    'match_values'      => array_values(array_unique($unionValues)),
+                    'details'           => array_values(array_unique($unionValues)),
+                    'extensions'        => [],
+                    'match_count'       => count(array_unique($unionValues)),
+                    'difference_count'  => 0,
+                    'match_value_ids'   => array_values(array_unique($unionValues)),
                 ];
             }
         }
 
-        // ترتيب: الأكثر match_values أولًا ثم رقم القطعة تصاعديًا
-        usort($matchedBasic, function ($a, $b) {
-            $byCount = count($b['match_value_ids']) <=> count($a['match_value_ids']);
-            if ($byCount !== 0) return $byCount;
-            return strcmp($a['part_number'], $b['part_number']);
-        });
+        return $matched;
+    }
 
-        // ✅ حساب pagination
-        $total = count($matchedBasic);
-        $offset = ($page - 1) * $perPage;
-        $paginatedBasic = array_slice($matchedBasic, $offset, $perPage);
+    /**
+     * تحديث نطاق التاريخ
+     */
+    protected function updateDateRange(array $group, &$partBegin, &$partEnd): void
+    {
+        $gBegin = $group['begin_date'] ?? null;
+        $gEnd   = $group['end_date'] ?? null;
 
-        // إلحاق التفاصيل + الامتدادات (بدون حقول متجر) - فقط للصفحة الحالية
-        $products = collect($paginatedBasic)->map(function ($p) use ($sectionId, $catalogCode, $category) {
-            return $this->appendDetails($p, $sectionId, $catalogCode, $category->catalog_id);
-        })->values()->all();
+        if ($gBegin && (is_null($partBegin) || $gBegin < $partBegin)) {
+            $partBegin = $gBegin;
+        }
+        if (is_null($partEnd)) {
+            $partEnd = $gEnd;
+        } elseif (is_null($gEnd)) {
+            $partEnd = null;
+        } elseif ($gEnd > $partEnd) {
+            $partEnd = $gEnd;
+        }
+    }
 
-        $elapsed = (int) round((microtime(true) - $t0) * 1000);
+    /**
+     * ✅ جلب مواصفات الفئة محسّن
+     */
+    protected function fetchCategorySpecsOptimized(int $categoryId, int $catalogId): array
+    {
+        $valueIds = DB::table('category_spec_groups as csg')
+            ->join('category_spec_group_items as csgi', 'csgi.group_id', '=', 'csg.id')
+            ->join('specification_items as si', 'si.id', '=', 'csgi.specification_item_id')
+            ->where('csg.category_id', $categoryId)
+            ->where('csg.catalog_id', $catalogId)
+            ->pluck('si.value_id')
+            ->filter()
+            ->map(fn($v) => (string) $v)
+            ->unique()
+            ->values()
+            ->all();
 
-        return response()->json([
-            'ok'         => true,
-            'elapsed_ms' => $elapsed,
-            'products'   => $products,
-            // ✅ Pagination metadata
-            'pagination' => [
-                'total'        => $total,
-                'per_page'     => $perPage,
-                'current_page' => $page,
-                'last_page'    => (int) ceil($total / $perPage),
-                'from'         => $offset + 1,
-                'to'           => min($offset + $perPage, $total),
-            ],
-            // للحفاظ على التوافق مع واجهات قديمة
-            'rawResults' => $products,
-        ]);
+        return $valueIds;
     }
 
     /**
@@ -313,6 +438,8 @@ class CalloutController extends Controller
 
     /**
      * جلب القطع + مجموعات المواصفات + عناصرها للقسم والكول آوت المحددين.
+     *
+     * ✅ محسّن: استخدام الفهارس الجديدة على part_spec_groups + section_parts
      */
     protected function fetchPartsWithSpecs(int $sectionId, string $calloutKey, string $catalogCode, int $catalogId): array
     {
@@ -322,6 +449,7 @@ class CalloutController extends Controller
         $partsTable        = $this->dyn('parts', $catalogCode);
         $sectionPartsTable = $this->dyn('section_parts', $catalogCode);
 
+        // ✅ استعلام محسّن: استخدام فهرس (section_id, part_id) + (callout)
         $parts = DB::table("{$partsTable} as p")
             ->join("{$sectionPartsTable} as sp", 'sp.part_id', '=', 'p.id')
             ->where('sp.section_id', $sectionId)
@@ -333,21 +461,31 @@ class CalloutController extends Controller
 
         $partIds = $parts->pluck('part_id')->all();
 
+        // ✅ استعلام محسّن: استخدام فهرس (section_id, catalog_id, part_id)
         $groups = DB::table("{$groupTable} as g")
             ->leftJoin("{$periodTable} as pp", 'pp.id', '=', 'g.part_period_id')
-            ->whereIn('g.part_id', $partIds)
             ->where('g.section_id', $sectionId)
             ->where('g.catalog_id', $catalogId)
+            ->whereIn('g.part_id', $partIds)
             ->select('g.id as group_id', 'g.part_id', 'g.group_index', 'pp.begin_date', 'pp.end_date')
             ->get();
 
+        if ($groups->isEmpty()) {
+            // القطع موجودة لكن بدون groups - أعدها بدون groups
+            return $parts->map(fn($part) => [
+                'part_id'     => (int) $part->part_id,
+                'part_number' => (string) $part->part_number,
+                'groups'      => [],
+            ])->toArray();
+        }
+
         $groupIds = $groups->pluck('group_id')->all();
 
-        $items = empty($groupIds) ? collect() : DB::table("{$itemTable} as gi")
+        // ✅ استعلام محسّن: استخدام فهرس group_id
+        $items = DB::table("{$itemTable} as gi")
             ->join('specification_items as si', 'si.id', '=', 'gi.specification_item_id')
-            ->join('specifications as s', 's.id', '=', 'si.specification_id')
             ->whereIn('gi.group_id', $groupIds)
-            ->select('gi.group_id', 's.name as spec_code', 'si.value_id')
+            ->select('gi.group_id', 'si.value_id')
             ->get();
 
         $itemsGrouped = $items->groupBy('group_id');
@@ -364,7 +502,9 @@ class CalloutController extends Controller
                         'group_index' => (int) $g->group_index,
                         'begin_date'  => $g->begin_date,
                         'end_date'    => $g->end_date,
-                        'spec_items'  => isset($itemsGrouped[$g->group_id]) ? $itemsGrouped[$g->group_id]->values()->all() : [],
+                        'spec_items'  => isset($itemsGrouped[$g->group_id])
+                            ? $itemsGrouped[$g->group_id]->map(fn($i) => ['value_id' => $i->value_id])->values()->all()
+                            : [],
                     ];
                 })->values()->all(),
             ];
@@ -407,6 +547,8 @@ class CalloutController extends Controller
 
     /**
      * إلحاق تفاصيل القطعة + الامتدادات (بدون أي مفاتيح متجر).
+     *
+     * ✅ محسّن: إزالة information_schema check + استعلام واحد
      */
     protected function appendDetails(array $part, int $sectionId, string $catalogCode, int $catalogId): array
     {
@@ -417,7 +559,7 @@ class CalloutController extends Controller
         $matchedGroupIds = $part['matched_group_ids'] ?? [];
         $matchValueIds   = $part['match_value_ids'] ?? [];
 
-        // تفاصيل أساسية
+        // تفاصيل أساسية - استعلام محسّن
         $details = DB::table("{$partsTable} as p")
             ->join("{$sectionPartsTable} as sp", 'sp.part_id', '=', 'p.id')
             ->where('sp.section_id', $sectionId)
@@ -432,14 +574,10 @@ class CalloutController extends Controller
             ->first();
 
         // الامتدادات عبر القروبات المطابقة
+        // ✅ محسّن: استخدام try-catch بدلاً من information_schema query
         $extensions = [];
         if (!empty($matchedGroupIds)) {
-            $exists = DB::table('information_schema.tables')
-                ->where('table_schema', DB::getDatabaseName())
-                ->where('table_name', $extTable)
-                ->exists();
-
-            if ($exists) {
+            try {
                 $extensionRows = DB::table($extTable)
                     ->where('part_id', $part['part_id'])
                     ->where('section_id', $sectionId)
@@ -450,24 +588,113 @@ class CalloutController extends Controller
                 foreach ($extensionRows as $row) {
                     $extensions[$row->extension_key] = $row->extension_value;
                 }
+            } catch (\Exception $e) {
+                // الجدول غير موجود - تجاهل
             }
         }
 
         return [
             'part_id'           => (int) $part['part_id'],
-            'part_number'       => optional($details)->part_number,
-            'part_label_ar'     => optional($details)->part_label_ar,
-            'part_label_en'     => optional($details)->part_label_en,
-            'part_qty'          => optional($details)->part_qty,
-            'part_callout'      => optional($details)->callout,
+            'part_number'       => $details->part_number ?? null,
+            'part_label_ar'     => $details->part_label_ar ?? null,
+            'part_label_en'     => $details->part_label_en ?? null,
+            'part_qty'          => $details->part_qty ?? null,
+            'part_callout'      => $details->callout ?? null,
             'part_begin'        => $part['part_begin'] ?? null,
             'part_end'          => $part['part_end']   ?? null,
             'match_values'      => array_values(array_unique($matchValueIds)),
-            'details'           => array_values(array_unique($matchValueIds)), // توافق قديم
+            'details'           => array_values(array_unique($matchValueIds)),
             'extensions'        => $extensions,
             'match_count'       => count($matchValueIds),
             'difference_count'  => 0,
         ];
+    }
+
+    /**
+     * ✅ جلب تفاصيل batch من القطع بدلاً من واحدة تلو الأخرى
+     */
+    protected function appendDetailsBatch(array $parts, int $sectionId, string $catalogCode, int $catalogId): array
+    {
+        if (empty($parts)) return [];
+
+        $partsTable        = $this->dyn('parts', $catalogCode);
+        $sectionPartsTable = $this->dyn('section_parts', $catalogCode);
+        $extTable          = $this->dyn('part_extensions', $catalogCode);
+
+        $partIds = array_column($parts, 'part_id');
+        $partsById = array_column($parts, null, 'part_id');
+
+        // ✅ استعلام واحد لجميع التفاصيل
+        $detailsRows = DB::table("{$partsTable} as p")
+            ->join("{$sectionPartsTable} as sp", 'sp.part_id', '=', 'p.id')
+            ->where('sp.section_id', $sectionId)
+            ->whereIn('p.id', $partIds)
+            ->select(
+                'p.id as part_id',
+                'p.label_en as part_label_en',
+                'p.label_ar as part_label_ar',
+                'p.qty      as part_qty',
+                'p.callout  as callout',
+                'p.part_number'
+            )
+            ->get()
+            ->keyBy('part_id');
+
+        // ✅ جمع جميع group_ids للاستعلام batch واحد
+        $allGroupIds = [];
+        foreach ($parts as $part) {
+            $allGroupIds = array_merge($allGroupIds, $part['matched_group_ids'] ?? []);
+        }
+        $allGroupIds = array_unique($allGroupIds);
+
+        // ✅ استعلام واحد لجميع الامتدادات
+        $extensionsMap = [];
+        if (!empty($allGroupIds)) {
+            try {
+                $extensionRows = DB::table($extTable)
+                    ->whereIn('part_id', $partIds)
+                    ->where('section_id', $sectionId)
+                    ->whereIn('group_id', $allGroupIds)
+                    ->select('part_id', 'group_id', 'extension_key', 'extension_value')
+                    ->get();
+
+                foreach ($extensionRows as $row) {
+                    $key = $row->part_id . '_' . $row->group_id;
+                    if (!isset($extensionsMap[$row->part_id])) {
+                        $extensionsMap[$row->part_id] = [];
+                    }
+                    $extensionsMap[$row->part_id][$row->extension_key] = $row->extension_value;
+                }
+            } catch (\Exception $e) {
+                // الجدول غير موجود
+            }
+        }
+
+        // بناء النتائج
+        $results = [];
+        foreach ($parts as $part) {
+            $partId = $part['part_id'];
+            $details = $detailsRows[$partId] ?? null;
+            $matchValueIds = $part['match_value_ids'] ?? [];
+
+            $results[] = [
+                'part_id'           => (int) $partId,
+                'part_number'       => $details->part_number ?? null,
+                'part_label_ar'     => $details->part_label_ar ?? null,
+                'part_label_en'     => $details->part_label_en ?? null,
+                'part_qty'          => $details->part_qty ?? null,
+                'part_callout'      => $details->callout ?? null,
+                'part_begin'        => $part['part_begin'] ?? null,
+                'part_end'          => $part['part_end']   ?? null,
+                'match_values'      => array_values(array_unique($matchValueIds)),
+                'details'           => array_values(array_unique($matchValueIds)),
+                'extensions'        => $extensionsMap[$partId] ?? [],
+                'match_count'       => count($matchValueIds),
+                'difference_count'  => 0,
+            ];
+        }
+
+        return $results;
     }
 }
 

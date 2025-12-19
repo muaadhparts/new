@@ -19,38 +19,38 @@ class VendorBaseController extends Controller
 
     public function __construct()
     {
-        $this->middleware('auth');
-
-        // Set Global GeneralSettings
-
+        // Set Global GeneralSettings (يمكن الوصول إليه بدون auth)
         $this->gs = DB::table('generalsettings')->find(1);
 
+        // Middleware للتحقق من المصادقة والإعدادات العامة
         $this->middleware(function ($request, $next) {
 
-        // Set Global Users
-
-        $this->user = Auth::user();
-
-            // Set Global Language
-
-            // Set Global Language
-
-            if (Session::has('language')) 
-            {
-                $this->language = DB::table('languages')->find(Session::get('language'));
+            // التحقق من تسجيل الدخول
+            if (!Auth::check()) {
+                return redirect()->route('user.login');
             }
-            else
-            {
-                $this->language = DB::table('languages')->where('is_default','=',1)->first();
-            }  
-            view()->share('langg', $this->language);
-            App::setlocale($this->language->name);
-    
-            // Set Global Currency
 
-            $this->curr = DB::table('currencies')->where('is_default','=',1)->first();
-            
-    
+            // Set Global Users
+            $this->user = Auth::user();
+
+            // Set Global Language
+            if (Session::has('language')) {
+                $this->language = DB::table('languages')->find(Session::get('language'));
+            } else {
+                $this->language = DB::table('languages')->where('is_default', '=', 1)->first();
+            }
+
+            if ($this->language) {
+                view()->share('langg', $this->language);
+                App::setlocale($this->language->name);
+            }
+
+            // Set Global Currency
+            $this->curr = DB::table('currencies')->where('is_default', '=', 1)->first();
+
+            view()->share('curr', $this->curr);
+            view()->share('gs', $this->gs);
+
             return $next($request);
         });
     }

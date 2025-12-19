@@ -9,13 +9,13 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
 /**
- * خدمة فلترة الفئات الموحدة
- * تحتوي على منطق الفلترة المشترك لجميع مستويات الشجرة
+ * خدمة تحميل عُقد الفئات (Nodes) الجاهزة للعرض
+ * كل Node تحتوي على مفاتيح التوجيه (key1, key2, key3) من نفس السجل
  */
 class CategoryFilterService
 {
     /**
-     * الحصول على أكواد المستوى الثالث المفلترة بناءً على التاريخ والمواصفات
+     * الحصول على أكواد المستوى الثالث المفلترة
      */
     public function getFilteredLevel3FullCodes(
         Catalog $catalog,
@@ -23,318 +23,346 @@ class CategoryFilterService
         ?string $filterDate,
         array $specItemIds
     ): array {
-        // لو ما فيه مواصفات ممرّرة: فلترة بالتاريخ فقط (إن وُجد)
-        if (empty($specItemIds)) {
-            return DB::table('newcategories as nc')
-                ->join('category_periods as cp', 'cp.category_id', '=', 'nc.id')
-                ->where('nc.catalog_id', $catalog->id)
-                ->where('nc.brand_id', $brand->id)
-                ->where('nc.level', 3)
-                ->when($filterDate, fn($q) =>
-                    $q->where('cp.begin_date', '<=', $filterDate)
-                    ->where(function ($sub) use ($filterDate) {
-                        $sub->whereNull('cp.end_date')
-                            ->orWhere('cp.end_date', '>=', $filterDate);
-                    })
-                )
-                ->distinct()
-                ->pluck('nc.full_code')
-                ->toArray();
-        }
-
-        // يوجد مواصفات: نطبق "الوتر الحساس" — كل قيم القروب ⊆ specItemIds
-        return DB::table('newcategories as nc')
+        $query = DB::table('newcategories as nc')
             ->join('category_periods as cp', 'cp.category_id', '=', 'nc.id')
             ->where('nc.catalog_id', $catalog->id)
             ->where('nc.brand_id', $brand->id)
             ->where('nc.level', 3)
-            ->when($filterDate, fn($q) =>
-                $q->where('cp.begin_date', '<=', $filterDate)
-                ->where(function ($sub) use ($filterDate) {
-                    $sub->whereNull('cp.end_date')
-                        ->orWhere('cp.end_date', '>=', $filterDate);
-                })
-            )
-            // يجب أن يوجد قروب واحد على الأقل يحقق subset
-            ->whereExists(function ($q) use ($catalog, $specItemIds) {
+            ->whereNotNull('nc.full_code')
+            ->where('nc.full_code', '!=', '')
+            ->when($filterDate, fn($q) => $this->applyDateFilter($q, $filterDate));
+
+        if (!empty($specItemIds)) {
+            $query->whereExists(function ($q) use ($catalog, $specItemIds) {
                 $q->from('category_spec_groups as csg2')
-                ->whereColumn('csg2.category_id', 'nc.id')
-                ->where('csg2.catalog_id', $catalog->id)
-                // لا توجد قيمة واحدة في هذا القروب خارج المواصفات الممرّرة
-                ->whereNotExists(function ($sub) use ($specItemIds) {
-                    $sub->from('category_spec_group_items as csgi2')
-                        ->whereColumn('csgi2.group_id', 'csg2.id')
-                        ->whereNotIn('csgi2.specification_item_id', $specItemIds);
-                });
-            })
-            ->distinct()
-            ->pluck('nc.full_code')
-            ->toArray();
+                    ->whereColumn('csg2.category_id', 'nc.id')
+                    ->where('csg2.catalog_id', $catalog->id)
+                    ->whereNotExists(function ($sub) use ($specItemIds) {
+                        $sub->from('category_spec_group_items as csgi2')
+                            ->whereColumn('csgi2.group_id', 'csg2.id')
+                            ->whereNotIn('csgi2.specification_item_id', $specItemIds);
+                    });
+            });
+        }
+
+        return $query->distinct()->pluck('nc.full_code')->toArray();
     }
 
     /**
-     * تحميل فئات المستوى الأول
+     * تحميل عُقد المستوى الأول
+     * كل Node تحتوي على: key1 (مفتاح التوجيه)
      */
-    public function loadLevel1Categories(
+    public function loadLevel1Nodes(
         Catalog $catalog,
         Brand $brand,
-        string $labelField,
         ?string $filterDate,
         array $allowedLevel3Codes
     ): Collection {
-        return DB::table('newcategories as level1')
-            ->join('newcategories as level2', 'level2.parent_id', '=', 'level1.id')
+        $labelField = $this->getLabelField();
+
+        return DB::table('newcategories as n')
+            ->join('newcategories as level2', 'level2.parent_id', '=', 'n.id')
             ->join('newcategories as level3', 'level3.parent_id', '=', 'level2.id')
             ->join('category_periods as cp', 'cp.category_id', '=', 'level3.id')
-            ->where('level1.catalog_id', $catalog->id)
-            ->where('level1.brand_id', $brand->id)
-            ->where('level1.level', 1)
-            ->whereNull('level1.parent_id')
-            ->when($filterDate, fn($q) =>
-                $q->where('cp.begin_date', '<=', $filterDate)
-                    ->where(function ($sub) use ($filterDate) {
-                        $sub->whereNull('cp.end_date')->orWhere('cp.end_date', '>=', $filterDate);
-                    })
-            )
-            ->when(!empty($allowedLevel3Codes), fn($q) =>
-                $q->whereIn('level3.full_code', $allowedLevel3Codes)
-            )
-            ->select('level1.id', 'level1.full_code', "level1.{$labelField} as label", 'level1.slug', 'level1.thumbnail', 'level1.images')
+            ->where('n.catalog_id', $catalog->id)
+            ->where('n.brand_id', $brand->id)
+            ->where('n.level', 1)
+            ->whereNull('n.parent_id')
+            ->whereNotNull('n.full_code')
+            ->where('n.full_code', '!=', '')
+            ->when($filterDate, fn($q) => $this->applyDateFilter($q, $filterDate))
+            ->when(!empty($allowedLevel3Codes), fn($q) => $q->whereIn('level3.full_code', $allowedLevel3Codes))
+            ->select([
+                'n.id',
+                'n.full_code as key1',
+                "n.{$labelField} as label",
+                'n.slug',
+                'n.thumbnail',
+                'n.images',
+                'n.formatted_code',
+            ])
             ->distinct()
-            ->orderBy('level1.full_code')
+            ->orderBy('n.full_code')
             ->get();
     }
 
     /**
-     * تحميل فئات المستوى الثاني مع الفلترة
+     * تحميل عُقد المستوى الثاني
+     * كل Node تحتوي على: key1 (من الأب) + key2 (مفتاح التوجيه)
      */
-    public function loadLevel2Categories(
+    public function loadLevel2Nodes(
         Catalog $catalog,
         Brand $brand,
-        NewCategory $parentCategory,
+        string $parentKey1,
         ?string $filterDate,
         array $specItemIds
     ): Collection {
-        $query = DB::table('newcategories as level2')
-            ->where('level2.catalog_id', $catalog->id)
-            ->where('level2.brand_id', $brand->id)
-            ->where('level2.parent_id', $parentCategory->id)
-            ->where('level2.level', 2);
+        // البحث عن الفئة الأب
+        $parent = $this->findCategory($catalog, $brand, $parentKey1, 1);
+        if (!$parent) {
+            return collect();
+        }
 
-        // إن كانت هناك مواصفات: نطبق "الوتر الحساس" على أي قروب في أي طفل Level3
+        $query = DB::table('newcategories as n')
+            ->join('newcategories as parent', 'parent.id', '=', 'n.parent_id')
+            ->where('n.catalog_id', $catalog->id)
+            ->where('n.brand_id', $brand->id)
+            ->where('n.parent_id', $parent->id)
+            ->where('n.level', 2)
+            ->whereNotNull('n.full_code')
+            ->where('n.full_code', '!=', '')
+            ->whereNotNull('parent.full_code')
+            ->where('parent.full_code', '!=', '');
+
+        // تطبيق فلتر المواصفات
         if (!empty($specItemIds)) {
-            $idsList = implode(',', array_map('intval', $specItemIds));
-
-            $matchedGroupIndexSql = "
-                (
-                    SELECT MAX(csg2.group_index)
-                    FROM newcategories l3
-                    JOIN category_spec_groups csg2
-                    ON csg2.category_id = l3.id AND csg2.catalog_id = {$catalog->id}
-                    " . ($filterDate ? "
-                    JOIN category_periods cp2
-                    ON cp2.category_id = l3.id
-                    " : "") . "
-                    WHERE l3.parent_id = level2.id
-                    AND l3.catalog_id = {$catalog->id}
-                    AND l3.brand_id = {$brand->id}
-                    AND l3.level = 3
-                    " . ($filterDate ? "
-                    AND cp2.begin_date <= '{$filterDate}'
-                    AND (cp2.end_date IS NULL OR cp2.end_date >= '{$filterDate}')
-                    " : "") . "
-                    AND NOT EXISTS (
-                        SELECT 1 FROM category_spec_group_items csgi2
-                        WHERE csgi2.group_id = csg2.id
-                            AND csgi2.specification_item_id NOT IN ({$idsList})
-                    )
-                )
-            ";
-
-            $query
-                ->addSelect(
-                    'level2.id',
-                    'level2.full_code',
-                    'level2.label_en',
-                    'level2.label_ar',
-                    'level2.thumbnail',
-                    'level2.images',
-                    'level2.level',
-                    'level2.slug',
-                    DB::raw("{$matchedGroupIndexSql} as matched_group_index")
-                )
-                ->whereRaw("{$matchedGroupIndexSql} IS NOT NULL")
-                ->orderByDesc('matched_group_index');
-
+            $this->applySpecFilterForLevel2($query, $catalog, $brand, $filterDate, $specItemIds);
         } else {
-            // لا توجد مواصفات: فقط نضمن وجود طفل Level3 يغطي التاريخ (إن وُجد تاريخ)
-            if ($filterDate) {
-                $query->whereExists(function ($q) use ($catalog, $brand, $filterDate) {
-                    $q->from('newcategories as l3')
-                    ->join('category_periods as cp2', 'cp2.category_id', '=', 'l3.id')
-                    ->whereColumn('l3.parent_id', 'level2.id')
-                    ->where('l3.catalog_id', $catalog->id)
-                    ->where('l3.brand_id', $brand->id)
-                    ->where('l3.level', 3)
-                    ->where('cp2.begin_date', '<=', $filterDate)
-                    ->where(function ($sub) use ($filterDate) {
-                        $sub->whereNull('cp2.end_date')
-                            ->orWhere('cp2.end_date', '>=', $filterDate);
-                    });
-                });
-            }
-
-            $query->addSelect(
-                'level2.id',
-                'level2.full_code',
-                'level2.label_en',
-                'level2.label_ar',
-                'level2.thumbnail',
-                'level2.images',
-                'level2.level',
-                'level2.slug',
-                DB::raw('NULL as matched_group_index')
-            )
-            ->orderBy('level2.full_code', 'asc');
+            $this->applyDateFilterForLevel2($query, $catalog, $brand, $filterDate);
+            $query->addSelect([
+                'n.id',
+                'parent.full_code as key1',
+                'n.full_code as key2',
+                'n.label_en',
+                'n.label_ar',
+                'n.slug',
+                'n.thumbnail',
+                'n.images',
+                DB::raw('NULL as matched_group_index'),
+            ])->orderBy('n.full_code');
         }
 
-        return $query->get();
+        return $query->get()->map(fn($row) => $this->addLocalizedLabel($row));
     }
 
     /**
-     * تحميل فئات المستوى الثالث مع الفلترة
+     * تحميل عُقد المستوى الثالث
+     * كل Node تحتوي على: key1 + key2 (من الآباء) + key3 (مفتاح التوجيه)
      */
-    public function loadLevel3Categories(
+    public function loadLevel3Nodes(
         Catalog $catalog,
         Brand $brand,
-        NewCategory $parentCategory2,
+        string $parentKey1,
+        string $parentKey2,
         ?string $filterDate,
         array $specItemIds
     ): Collection {
-        // إذا ما فيه مواصفات ممرّرة: نحتفظ بمنطق التاريخ فقط ونرجّع كل Level3 تحت الأب
-        if (empty($specItemIds)) {
-            return DB::table('newcategories as level3')
-                ->join('category_periods as cp', 'cp.category_id', '=', 'level3.id')
-                ->where('level3.catalog_id', $catalog->id)
-                ->where('level3.brand_id', $brand->id)
-                ->where('level3.parent_id', $parentCategory2->id)
-                ->where('level3.level', 3)
-                ->when($filterDate, fn($q) =>
-                    $q->where('cp.begin_date', '<=', $filterDate)
-                    ->where(function ($sub) use ($filterDate) {
-                        $sub->whereNull('cp.end_date')
-                            ->orWhere('cp.end_date', '>=', $filterDate);
-                    })
-                )
-                ->select(
-                    'level3.id',
-                    'level3.full_code',
-                    'level3.label_en',
-                    'level3.label_ar',
-                    'level3.thumbnail',
-                    'level3.images',
-                    'level3.level',
-                    'level3.slug',
-                    DB::raw('NULL as matched_group_index'),
-                    'cp.begin_date as debug_begin',
-                    'cp.end_date as debug_end'
-                )
-                ->groupBy(
-                    'level3.id',
-                    'level3.full_code',
-                    'level3.label_en',
-                    'level3.label_ar',
-                    'level3.thumbnail',
-                    'level3.images',
-                    'level3.level',
-                    'level3.slug',
-                    'cp.begin_date',
-                    'cp.end_date'
-                )
-                ->orderBy('level3.full_code', 'asc')
-                ->get();
+        // البحث عن الفئة الأب
+        $parent2 = $this->findCategory($catalog, $brand, $parentKey2, 2);
+        if (!$parent2) {
+            return collect();
         }
 
-        // الوتر الحساس: نبني Subquery يعيد أعلى group_index بين القروبات المطابقة (subset)
-        $idsList = implode(',', array_map('intval', $specItemIds));
-        $matchedGroupIndexSql = "
-            (
-                SELECT MAX(csg2.group_index)
-                FROM category_spec_groups csg2
-                WHERE csg2.category_id = level3.id
-                AND csg2.catalog_id = {$catalog->id}
-                AND NOT EXISTS (
-                    SELECT 1
-                    FROM category_spec_group_items csgi2
-                    WHERE csgi2.group_id = csg2.id
-                        AND csgi2.specification_item_id NOT IN ({$idsList})
-                )
-            )
-        ";
+        $baseQuery = DB::table('newcategories as n')
+            ->join('category_periods as cp', 'cp.category_id', '=', 'n.id')
+            ->join('newcategories as parent2', 'parent2.id', '=', 'n.parent_id')
+            ->join('newcategories as parent1', 'parent1.id', '=', 'parent2.parent_id')
+            ->where('n.catalog_id', $catalog->id)
+            ->where('n.brand_id', $brand->id)
+            ->where('n.parent_id', $parent2->id)
+            ->where('n.level', 3)
+            ->whereNotNull('n.full_code')
+            ->where('n.full_code', '!=', '')
+            ->whereNotNull('parent1.full_code')
+            ->where('parent1.full_code', '!=', '')
+            ->whereNotNull('parent2.full_code')
+            ->where('parent2.full_code', '!=', '')
+            ->when($filterDate, fn($q) => $this->applyDateFilter($q, $filterDate));
 
-        return DB::table('newcategories as level3')
-            ->join('category_periods as cp', 'cp.category_id', '=', 'level3.id')
-            ->where('level3.catalog_id', $catalog->id)
-            ->where('level3.brand_id', $brand->id)
-            ->where('level3.parent_id', $parentCategory2->id)
-            ->where('level3.level', 3)
-            ->when($filterDate, fn($q) =>
-                $q->where('cp.begin_date', '<=', $filterDate)
-                ->where(function ($sub) use ($filterDate) {
-                    $sub->whereNull('cp.end_date')
-                        ->orWhere('cp.end_date', '>=', $filterDate);
-                })
-            )
-            ->whereRaw("{$matchedGroupIndexSql} IS NOT NULL")
-            ->select(
-                'level3.id',
-                'level3.full_code',
-                'level3.label_en',
-                'level3.label_ar',
-                'level3.thumbnail',
-                'level3.images',
-                'level3.level',
-                'level3.slug',
-                DB::raw("{$matchedGroupIndexSql} as matched_group_index"),
-                'cp.begin_date as debug_begin',
-                'cp.end_date as debug_end'
-            )
-            ->groupBy(
-                'level3.id',
-                'level3.full_code',
-                'level3.label_en',
-                'level3.label_ar',
-                'level3.thumbnail',
-                'level3.images',
-                'level3.level',
-                'level3.slug',
-                'cp.begin_date',
-                'cp.end_date'
-            )
-            ->orderByDesc('matched_group_index')
-            ->get();
+        $selectColumns = [
+            'n.id',
+            'parent1.full_code as key1',
+            'parent2.full_code as key2',
+            'n.full_code as key3',
+            'n.formatted_code',
+            'n.label_en',
+            'n.label_ar',
+            'n.slug',
+            'n.thumbnail',
+            'n.images',
+            'n.Applicability',
+        ];
+
+        $groupByColumns = [
+            'n.id', 'n.full_code', 'n.formatted_code', 'n.label_en', 'n.label_ar',
+            'n.slug', 'n.thumbnail', 'n.images', 'n.Applicability',
+            'parent1.full_code', 'parent2.full_code', 'cp.begin_date', 'cp.end_date',
+        ];
+
+        if (!empty($specItemIds)) {
+            $matchedGroupIndexSql = $this->buildMatchedGroupIndexSql($catalog->id, $specItemIds);
+
+            $baseQuery
+                ->whereRaw("{$matchedGroupIndexSql} IS NOT NULL")
+                ->select(array_merge($selectColumns, [DB::raw("{$matchedGroupIndexSql} as matched_group_index")]))
+                ->groupBy($groupByColumns)
+                ->orderByDesc('matched_group_index');
+        } else {
+            $baseQuery
+                ->select(array_merge($selectColumns, [DB::raw('NULL as matched_group_index')]))
+                ->groupBy($groupByColumns)
+                ->orderBy('n.full_code');
+        }
+
+        return $baseQuery->get()->map(fn($row) => $this->addLocalizedLabel($row));
     }
 
     /**
-     * حساب الأكواد المسموح بها للبحث بالمستوى الثاني في وضع Section
+     * التحقق من وجود الفئة الأب
      */
-    public function computeAllowedCodesForSections(Collection $categories, array $preloadedCodes): array
+    public function findCategory(Catalog $catalog, Brand $brand, string $fullCode, int $level): ?object
     {
-        if ($categories->isEmpty()) {
+        return DB::table('newcategories')
+            ->where('catalog_id', $catalog->id)
+            ->where('brand_id', $brand->id)
+            ->where('full_code', $fullCode)
+            ->where('level', $level)
+            ->whereNotNull('full_code')
+            ->where('full_code', '!=', '')
+            ->first();
+    }
+
+    /**
+     * حساب الأكواد المسموح بها
+     */
+    public function computeAllowedCodesForSections(Collection $nodes, array $preloadedCodes): array
+    {
+        if ($nodes->isEmpty()) {
             return [];
         }
 
-        // جلب full_code لكل فئة مستوى ثالث تحت الفئات المحمّلة
         $level3Codes = DB::table('newcategories')
-            ->whereIn('parent_id', $categories->pluck('id')->toArray())
+            ->whereIn('parent_id', $nodes->pluck('id')->toArray())
             ->where('level', 3)
             ->pluck('full_code')
-            ->map(fn($v) => (string) $v)
+            ->map(fn($v) => (string)$v)
             ->toArray();
 
-        // التقاطع بين أكواد level3 والأكواد المحملة مسبقاً
-        $preloaded = array_map('strval', $preloadedCodes);
+        return array_values(array_intersect($level3Codes, array_map('strval', $preloadedCodes)));
+    }
 
-        return array_values(array_intersect($level3Codes, $preloaded));
+    // ========================================
+    // PRIVATE HELPERS
+    // ========================================
+
+    private function getLabelField(): string
+    {
+        return app()->getLocale() === 'ar' ? 'label_ar' : 'label_en';
+    }
+
+    private function addLocalizedLabel(object $row): object
+    {
+        $row->label = app()->getLocale() === 'ar'
+            ? ($row->label_ar ?? $row->label_en)
+            : ($row->label_en ?? $row->label_ar);
+        return $row;
+    }
+
+    private function applyDateFilter($query, string $filterDate): void
+    {
+        $query->where('cp.begin_date', '<=', $filterDate)
+            ->where(function ($sub) use ($filterDate) {
+                $sub->whereNull('cp.end_date')
+                    ->orWhere('cp.end_date', '>=', $filterDate);
+            });
+    }
+
+    private function applyDateFilterForLevel2($query, Catalog $catalog, Brand $brand, ?string $filterDate): void
+    {
+        if (!$filterDate) return;
+
+        $query->whereExists(function ($q) use ($catalog, $brand, $filterDate) {
+            $q->from('newcategories as l3')
+                ->join('category_periods as cp2', 'cp2.category_id', '=', 'l3.id')
+                ->whereColumn('l3.parent_id', 'n.id')
+                ->where('l3.catalog_id', $catalog->id)
+                ->where('l3.brand_id', $brand->id)
+                ->where('l3.level', 3)
+                ->where('cp2.begin_date', '<=', $filterDate)
+                ->where(function ($sub) use ($filterDate) {
+                    $sub->whereNull('cp2.end_date')
+                        ->orWhere('cp2.end_date', '>=', $filterDate);
+                });
+        });
+    }
+
+    private function applySpecFilterForLevel2($query, Catalog $catalog, Brand $brand, ?string $filterDate, array $specItemIds): void
+    {
+        $idsList = implode(',', array_map('intval', $specItemIds));
+
+        $dateJoin = $filterDate ? "JOIN category_periods cp2 ON cp2.category_id = l3.id" : "";
+        $dateWhere = $filterDate
+            ? "AND cp2.begin_date <= '{$filterDate}' AND (cp2.end_date IS NULL OR cp2.end_date >= '{$filterDate}')"
+            : "";
+
+        $matchedGroupIndexSql = "
+            (SELECT MAX(csg2.group_index)
+             FROM newcategories l3
+             JOIN category_spec_groups csg2 ON csg2.category_id = l3.id AND csg2.catalog_id = {$catalog->id}
+             {$dateJoin}
+             WHERE l3.parent_id = n.id
+               AND l3.catalog_id = {$catalog->id}
+               AND l3.brand_id = {$brand->id}
+               AND l3.level = 3
+               {$dateWhere}
+               AND NOT EXISTS (
+                   SELECT 1 FROM category_spec_group_items csgi2
+                   WHERE csgi2.group_id = csg2.id
+                     AND csgi2.specification_item_id NOT IN ({$idsList})
+               ))
+        ";
+
+        $query
+            ->addSelect([
+                'n.id',
+                'parent.full_code as key1',
+                'n.full_code as key2',
+                'n.label_en',
+                'n.label_ar',
+                'n.slug',
+                'n.thumbnail',
+                'n.images',
+                DB::raw("{$matchedGroupIndexSql} as matched_group_index"),
+            ])
+            ->whereRaw("{$matchedGroupIndexSql} IS NOT NULL")
+            ->orderByDesc(DB::raw($matchedGroupIndexSql));
+    }
+
+    private function buildMatchedGroupIndexSql(int $catalogId, array $specItemIds): string
+    {
+        $idsList = implode(',', array_map('intval', $specItemIds));
+
+        return "
+            (SELECT MAX(csg2.group_index)
+             FROM category_spec_groups csg2
+             WHERE csg2.category_id = n.id
+               AND csg2.catalog_id = {$catalogId}
+               AND NOT EXISTS (
+                   SELECT 1 FROM category_spec_group_items csgi2
+                   WHERE csgi2.group_id = csg2.id
+                     AND csgi2.specification_item_id NOT IN ({$idsList})
+               ))
+        ";
+    }
+
+    // ========================================
+    // LEGACY COMPATIBILITY (will be removed)
+    // ========================================
+
+    public function loadLevel1Categories(...$args): Collection
+    {
+        return $this->loadLevel1Nodes($args[0], $args[1], $args[3] ?? null, $args[4] ?? []);
+    }
+
+    public function loadLevel2Categories(Catalog $catalog, Brand $brand, NewCategory $parent, ?string $filterDate, array $specItemIds): Collection
+    {
+        return $this->loadLevel2Nodes($catalog, $brand, $parent->full_code, $filterDate, $specItemIds);
+    }
+
+    public function loadLevel3Categories(Catalog $catalog, Brand $brand, NewCategory $parent2, ?string $filterDate, array $specItemIds): Collection
+    {
+        // نحتاج key1 من الأب الأول
+        $parent1 = DB::table('newcategories')->where('id', $parent2->parent_id)->first();
+        return $this->loadLevel3Nodes($catalog, $brand, $parent1->full_code ?? '', $parent2->full_code, $filterDate, $specItemIds);
     }
 }

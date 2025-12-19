@@ -689,7 +689,7 @@
     if (type === 'section'){ goToSection(key); return; }
 
     const container = modalBodyEl();
-    try { $('#modal').modal('show'); } catch {}
+    try { bootstrap.Modal.getOrCreateInstance(document.getElementById('modal')).show(); } catch {}
     const titleRoot = t('catalog.modal.title');
     setTitle(titleRoot);
 
@@ -855,6 +855,145 @@
       openCompatibilityInline($(this).data('sku'));
     });
 
+    /* ============== أزرار الكمية في Alternatives و Quick View ============== */
+    /* ✅ Selectors موحّدة تدعم الكلاسات الجديدة (catalog-*) والقديمة للتوافقية */
+
+    // زيادة الكمية - للـ Alternatives (يدعم .catalog-qty-control و .qty-control)
+    $(document).off('click.qty_plus').on('click.qty_plus', '.qty-plus', function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+
+      const $btn = $(this);
+      // ✅ يبحث في الـ container الجديد أو القديم
+      const $container = $btn.closest('.catalog-qty-control, .qty-control');
+      const $input = $container.find('.catalog-qty-input, .qty-input');
+      if (!$input.length) return;
+
+      const stock = parseInt($btn.data('stock')) || 999;
+      const preordered = parseInt($btn.data('preordered')) || 0;
+      const current = parseInt($input.val()) || 1;
+
+      // نفس شرط Quick View
+      if (stock > 0 && current >= stock && preordered == 0) {
+        if (window.toastr) {
+          toastr.warning(t('messages.stock_limit') + ': ' + stock);
+        }
+        return;
+      }
+      $input.val(current + 1);
+    });
+
+    // إنقاص الكمية - للـ Alternatives (يدعم .catalog-qty-control و .qty-control)
+    $(document).off('click.qty_minus').on('click.qty_minus', '.qty-minus', function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+
+      const $btn = $(this);
+      // ✅ يبحث في الـ container الجديد أو القديم
+      const $container = $btn.closest('.catalog-qty-control, .qty-control');
+      const $input = $container.find('.catalog-qty-input, .qty-input');
+      if (!$input.length) return;
+
+      const minQty = parseInt($btn.data('min')) || 1;
+      const current = parseInt($input.val()) || 1;
+
+      // نفس شرط Quick View
+      if (current <= minQty) {
+        if (window.toastr) {
+          toastr.warning(t('messages.min_qty') + ' ' + minQty);
+        }
+        return;
+      }
+      $input.val(current - 1);
+    });
+
+    // زيادة الكمية - للـ Quick View (modal-qtplus) (يدعم .catalog-quickview-qty-control و .qv-qty-control)
+    $(document).off('click.modal_qtplus').on('click.modal_qtplus', '.modal-qtplus', function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+
+      const $btn = $(this);
+      // ✅ يبحث في الـ container الجديد أو القديم
+      const $container = $btn.closest('.catalog-quickview-qty-control, .qv-qty-control');
+      const $input = $container.find('.catalog-quickview-qty-input, .modal-qty-input');
+      if (!$input.length) return;
+
+      const stock = parseInt($btn.data('stock')) || 999;
+      const preordered = parseInt($btn.data('preordered')) || 0;
+      const current = parseInt($input.val()) || 1;
+
+      if (stock > 0 && current >= stock && preordered == 0) {
+        if (window.toastr) {
+          toastr.warning(t('messages.stock_limit') + ': ' + stock);
+        }
+        return;
+      }
+      $input.val(current + 1);
+    });
+
+    // إنقاص الكمية - للـ Quick View (modal-qtminus) (يدعم .catalog-quickview-qty-control و .qv-qty-control)
+    $(document).off('click.modal_qtminus').on('click.modal_qtminus', '.modal-qtminus', function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+
+      const $btn = $(this);
+      // ✅ يبحث في الـ container الجديد أو القديم
+      const $container = $btn.closest('.catalog-quickview-qty-control, .qv-qty-control');
+      const $input = $container.find('.catalog-quickview-qty-input, .modal-qty-input');
+      if (!$input.length) return;
+
+      const minQty = parseInt($btn.data('min')) || 1;
+      const current = parseInt($input.val()) || 1;
+
+      if (current <= minQty) {
+        if (window.toastr) {
+          toastr.warning(t('messages.min_qty') + ' ' + minQty);
+        }
+        return;
+      }
+      $input.val(current - 1);
+    });
+
+    /* إضافة للسلة من Alternatives */
+    $(document).off('click.alt_addcart').on('click.alt_addcart', '.alt-add-to-cart', function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+
+      const btn = this;
+      const $btn = $(btn);
+      const $row = $btn.closest('tr').length ? $btn.closest('tr') : $btn.closest('.modal-card');
+      const $input = $row.find('.qty-input');
+      const qty = $input.length ? (parseInt($input.val()) || 1) : 1;
+
+      const addUrl = $btn.data('addnum-url') || $btn.data('addnumUrl');
+      const user = $btn.data('user');
+
+      if (!addUrl) {
+        console.warn('alt-add-to-cart: missing addnum-url');
+        return;
+      }
+
+      let url = addUrl + '?qty=' + qty;
+      if (user) url += '&user=' + encodeURIComponent(user);
+
+      btn.disabled = true;
+
+      fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+        .then(r => r.ok ? r.json() : Promise.reject(new Error('HTTP ' + r.status)))
+        .then(data => {
+          if (typeof window.applyCartState === 'function') {
+            window.applyCartState(data);
+          }
+          const msg = data.success || t('messages.added_to_cart');
+          if (window.toastr) toastr.success(msg);
+        })
+        .catch(err => {
+          const msg = t('messages.api_error');
+          if (window.toastr) toastr.error(msg + ': ' + (err.message || err));
+        })
+        .finally(() => { btn.disabled = false; });
+    });
+
     /* ✅ Pagination Links */
     $(document).off('click.ill_pagination').on('click.ill_pagination', '.pagination-link', function (e) {
       e.preventDefault();
@@ -901,7 +1040,8 @@
 
       const btn = this;
       const id  = $(btn).data('id');
-      if (!id) { console.warn('ill-add-to-cart: missing data-id'); return; }
+      const mpId = $(btn).data('mp-id') || $(btn).data('mpId'); // merchant_product_id
+      if (!id && !mpId) { console.warn('ill-add-to-cart: missing data-id or data-mp-id'); return; }
 
       // كمية إن وُجدت داخل بطاقة المنتج، وإلا = 1 (جدول البدائل)
       const $root = $(btn).closest('.ill-product');
@@ -915,9 +1055,16 @@
       const addUrl = $(btn).data('addnumUrl') || $(btn).data('addnum-url') || '/addnumcart';
       const user   = $(btn).data('user');
 
-      // ضمّن user في الرابط إذا كان موجود
-      const url = `${addUrl}?id=${encodeURIComponent(id)}&qty=${encodeURIComponent(qty)}`
-                + (user ? `&user=${encodeURIComponent(user)}` : '');
+      // بناء الـ URL بناءً على نوع الـ route
+      let url;
+      if (mpId && (addUrl.includes('/cart/add/merchant/') || addUrl.includes('/cart/merchant/add/'))) {
+        // استخدام route الجديد (merchant.cart.add) - الـ ID موجود في الـ path
+        url = `${addUrl}?qty=${encodeURIComponent(qty)}` + (user ? `&user=${encodeURIComponent(user)}` : '');
+      } else {
+        // استخدام route القديم
+        url = `${addUrl}?id=${encodeURIComponent(id)}&qty=${encodeURIComponent(qty)}`
+                  + (user ? `&user=${encodeURIComponent(user)}` : '');
+      }
 
       btn.disabled = true;
       fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
@@ -950,7 +1097,8 @@
 
       const btn = this;
       const id  = $(btn).data('id');
-      if (!id) { console.warn('ill-buy-now: missing data-id'); return; }
+      const mpId = $(btn).data('mp-id') || $(btn).data('mpId'); // merchant_product_id
+      if (!id && !mpId) { console.warn('ill-buy-now: missing data-id or data-mp-id'); return; }
 
       // كمية من الحقل إن وُجد، وإلا = 1
       const $root = $(btn).closest('.ill-product');
@@ -963,11 +1111,32 @@
 
       const addUrl = $(btn).data('addtonumUrl') || $(btn).data('addtonum-url') || '/addtonumcart';
       const user   = $(btn).data('user');
+      const cartsUrl = $(btn).data('carts-url') || $(btn).data('cartsUrl') || '/carts';
 
-      let url = `${addUrl}?id=${encodeURIComponent(id)}&qty=${encodeURIComponent(qty)}`;
-      if (user) url += `&user=${encodeURIComponent(user)}`;
-
-      window.location.href = url;
+      // بناء الـ URL بناءً على نوع الـ route
+      let url;
+      if (mpId && (addUrl.includes('/cart/add/merchant/') || addUrl.includes('/cart/merchant/add/'))) {
+        // استخدام route الجديد (merchant.cart.add) - الـ ID موجود في الـ path
+        // نضيف للسلة عبر AJAX ثم نذهب للـ carts
+        url = `${addUrl}?qty=${encodeURIComponent(qty)}` + (user ? `&user=${encodeURIComponent(user)}` : '');
+        btn.disabled = true;
+        fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+          .then(r => r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`)))
+          .then(data => {
+            window.location.href = cartsUrl;
+          })
+          .catch(err => {
+            const msg = t('messages.api_error');
+            if (window.toastr) toastr.error(`${msg} ${err.message || err}`); else alert(`${msg}\n${err.message || err}`);
+            btn.disabled = false;
+          });
+        return;
+      } else {
+        // استخدام route القديم
+        url = `${addUrl}?id=${encodeURIComponent(id)}&qty=${encodeURIComponent(qty)}`;
+        if (user) url += `&user=${encodeURIComponent(user)}`;
+        window.location.href = url;
+      }
     });
 
   }
@@ -1075,10 +1244,10 @@
 
     // console.log('🔍 Initializing smoothZoom with OLD settings...');
 
-    // ✅ إعدادات smoothZoom بالضبط كما في النسخة القديمة
+    // ✅ إعدادات smoothZoom محسّنة للتحريك في جميع الاتجاهات
     $img.smoothZoom({
-      width: 800,
-      height: 500,
+      width: '100%',
+      height: 600,
       responsive: true,
       container: 'zoom_container',
       responsive_maintain_ratio: true,
@@ -1088,14 +1257,24 @@
       animation_SMOOTHNESS: 3,
       animation_SPEED_ZOOM: 3,
       animation_SPEED_PAN: 3,
-      initial_POSITION: '200, 300',
-      zoom_MAX: 200,
+      initial_POSITION: '',
+      initial_ZOOM: '',
+      zoom_MIN: '',
+      zoom_MAX: 300,
+      zoom_OUT_TO_FIT: true,
+      pan_LIMIT_BOUNDARY: false,
+      pan_BUTTONS_SHOW: true,
+      pan_REVERSE: false,
+      touch_DRAG: true,
+      mouse_DRAG: true,
       button_SIZE: 20,
-      button_AUTO_HIDE: 'YES',
+      button_SIZE_TOUCH_DEVICE: 18,
+      button_AUTO_HIDE: true,
       button_AUTO_HIDE_DELAY: 2,
       button_ALIGN: 'top right',
-      mouse_DOUBLE_CLICK: false,
+      mouse_DOUBLE_CLICK: true,
       mouse_WHEEL: true,
+      mouse_WHEEL_CURSOR_POS: true,
       use_3D_Transform: true,
       border_TRANSPARENCY: 0,
       on_IMAGE_LOAD: function() {

@@ -5,12 +5,17 @@ namespace App\Traits;
 use App\Helpers\PriceHelper;
 use App\Models\Order;
 use App\Models\User;
+use App\Models\City;
 use App\Models\UserNotification;
-use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Http;
+use App\Services\TryotoService;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
 
+/**
+ * Trait for creating Tryoto shipments
+ *
+ * يستخدم TryotoService الموحد لجميع عمليات Tryoto
+ */
 trait CreatesTryotoShipments
 {
     /**
@@ -36,29 +41,13 @@ trait CreatesTryotoShipments
 
         $selections = is_array($shippingInput) ? $shippingInput : [0 => $shippingInput];
 
-        // Ensure OTO token exists (we use cache, with fallback to renew the token)
-        $token = Cache::get('tryoto-token');
-        $isSandbox = config('services.tryoto.sandbox');
-        $baseUrl = $isSandbox ? config('services.tryoto.test.url') : config('services.tryoto.live.url');
-
-        if (!$token) {
-            $refresh = $isSandbox
-                ? (config('services.tryoto.test.token') ?? env('TRYOTO_TEST_REFRESH_TOKEN'))
-                : (config('services.tryoto.live.token') ?? env('TRYOTO_REFRESH_TOKEN'));
-
-            $resp = Http::post($baseUrl . '/rest/v2/refreshToken', ['refresh_token' => $refresh]);
-            if ($resp->successful()) {
-                $token = $resp->json()['access_token'];
-                $expiresIn = (int)($resp->json()['expires_in'] ?? 3600);
-                Cache::put('tryoto-token', $token, now()->addSeconds(max(300, $expiresIn - 60)));
-            } else {
-                Log::error('Tryoto token refresh failed on shipment', ['body' => $resp->body()]);
-                return; // Don't break the order
-            }
-        }
+        // استخدام TryotoService الموحد
+        $tryotoService = app(TryotoService::class);
 
         // Shipment destination: Preferably shipping fields, then customer, then default
-        $destinationCity = $order->shipping_city ?: $order->customer_city ?: 'Riyadh';
+        // تحويل city ID إلى city name باستخدام TryotoService
+        $destinationCityValue = $order->shipping_city ?: $order->customer_city;
+        $destinationCity = $tryotoService->resolveCityName($destinationCityValue);
 
         // Preparing cart items for dimension/weight calculations
         $cartRaw = $order->cart;
@@ -102,96 +91,44 @@ trait CreatesTryotoShipments
             [$deliveryOptionId, $company, $price] = explode('#', $value);
             $codAmount = ($order->method === 'cod' || $order->method === 'Cash On Delivery' || $order->payment_status === 'Cash On Delivery') ? (float)$order->pay_amount : 0.0;
 
-            // ⭐ الحصول على warehouse address من التاجر
+            // الحصول على warehouse address من التاجر
             $vendor = User::find($vendorId);
-            $originCity = $vendor && $vendor->warehouse_city
-                ? $vendor->warehouse_city
-                : ($vendor && $vendor->shop_city ? $vendor->shop_city : 'Riyadh');
 
-            $originAddress = $vendor && $vendor->warehouse_address
-                ? $vendor->warehouse_address
-                : ($vendor && $vendor->shop_address ? $vendor->shop_address : '');
+            // تحويل city ID إلى city name باستخدام TryotoService
+            $originCityValue = $vendor->city_id ?? $vendor->warehouse_city ?? $vendor->shop_city;
+            $originCity = $tryotoService->resolveCityName($originCityValue);
 
-            $payload = [
-                'otoId' => $order->order_number, // ⭐ Using otoId instead of orderId
-                'deliveryOptionId' => $deliveryOptionId,
-                'originCity' => $originCity,
-                'destinationCity' => $destinationCity,
-                'receiverName' => $order->shipping_name ?: $order->customer_name,
-                'receiverPhone' => $order->shipping_phone ?: $order->customer_phone,
-                'receiverAddress' => $order->shipping_address ?: $order->customer_address,
-                'weight' => max(0.1, $dims['weight']),
-                'xlength' => max(30, $dims['length']),
-                'xheight' => max(30, $dims['height']),
-                'xwidth' => max(30, $dims['width']),
-                'codAmount' => $codAmount,
-            ];
+            // استخدام createShipment من TryotoService بدلاً من الاتصال المباشر
+            $result = $tryotoService->createShipment(
+                $order,
+                (int)$vendorId,
+                $deliveryOptionId,
+                $company,
+                (float)$price,
+                'express'
+            );
 
-            $res = Http::withToken($token)->post($baseUrl . '/rest/v2/createShipment', $payload);
-
-            if ($res->successful()) {
-                $data = $res->json();
-                $shipmentId = $data['shipmentId'] ?? null;
-                $trackingNumber = $data['trackingNumber'] ?? null;
-
+            if ($result['success']) {
                 $otoPayloads[] = [
                     'vendor_id' => (string)$vendorId,
                     'company' => $company,
                     'price' => (float)$price,
                     'deliveryOptionId'=> $deliveryOptionId,
-                    'shipmentId' => $shipmentId,
-                    'trackingNumber' => $trackingNumber,
+                    'shipmentId' => $result['shipment_id'] ?? null,
+                    'trackingNumber' => $result['tracking_number'] ?? null,
                 ];
 
-                // ⭐ حفظ Initial Log في shipment_status_logs
-                if ($trackingNumber) {
-                    DB::table('shipment_status_logs')->insert([
-                        'order_id' => $order->id,
-                        'vendor_id' => $vendorId,
-                        'tracking_number' => $trackingNumber,
-                        'shipment_id' => $shipmentId,
-                        'company_name' => $company,
-                        'status' => 'created',
-                        'status_ar' => 'تم إنشاء الشحنة',
-                        'message' => 'Shipment created successfully',
-                        'message_ar' => 'تم إنشاء الشحنة بنجاح. في انتظار استلام السائق من المستودع.',
-                        'location' => $originCity,
-                        'status_date' => now(),
-                        'raw_data' => json_encode($data),
-                        'created_at' => now(),
-                        'updated_at' => now(),
-                    ]);
-
-                    // ⭐ إرسال Notification للتاجر
-                    if ($vendor) {
-                        try {
-                            $notification = new UserNotification();
-                            $notification->user_id = $vendorId;
-                            $notification->order_number = $order->order_number;
-                            // فقط إضافة order_id إذا كان العمود موجوداً
-                            if (\Schema::hasColumn('user_notifications', 'order_id')) {
-                                $notification->order_id = $order->id;
-                            }
-                            $notification->is_read = 0;
-                            $notification->save();
-                        } catch (\Exception $e) {
-                            Log::warning('Failed to create notification', ['error' => $e->getMessage()]);
-                        }
-                    }
-                }
-
-                Log::info('Tryoto Shipment Created', [
+                Log::debug('Tryoto Shipment Created via TryotoService', [
                     'order_id' => $order->id,
                     'vendor_id' => $vendorId,
-                    'tracking_number' => $trackingNumber,
+                    'tracking_number' => $result['tracking_number'],
                     'company' => $company,
                 ]);
             } else {
                 Log::error('Tryoto createShipment failed', [
                     'order_id' => $order->id,
                     'vendor_id' => $vendorId,
-                    'payload' => $payload,
-                    'body' => $res->body()
+                    'error' => $result['error'] ?? 'Unknown error'
                 ]);
             }
         }
@@ -202,10 +139,26 @@ trait CreatesTryotoShipments
 
             // 2) Quick display and explanation
             $first = $otoPayloads[0];
-            $order->shipping = 'OTO';
-            $order->shipping_title = 'OTO - ' . ($first['company'] ?? 'N/A') . ' (tracking: ' . ($first['trackingNumber'] ?? 'N/A') . ')';
+
+            // لا نُعيد تعيين $order->shipping لأنها تحتوي على طريقة التوصيل (shipto/pickup)
+            // بدلاً من ذلك، نحفظ معلومات Tryoto في shipping_title فقط
+            $order->shipping_title = 'Tryoto - ' . ($first['company'] ?? 'N/A') . ' (Tracking: ' . ($first['trackingNumber'] ?? 'N/A') . ')';
+
+            // إذا كانت shipping فارغة أو غير محددة، نضع 'shipto' كقيمة افتراضية
+            if (empty($order->shipping) || !in_array($order->shipping, ['shipto', 'pickup'])) {
+                $order->shipping = 'shipto';
+            }
 
             $order->save();
         }
+    }
+
+    /**
+     * @deprecated Use TryotoService::resolveCityName() instead
+     * تحويل city ID أو اسم إلى اسم المدينة الصحيح لـ Tryoto
+     */
+    protected function resolveCityNameForTryoto($cityValue): string
+    {
+        return app(TryotoService::class)->resolveCityName($cityValue);
     }
 }

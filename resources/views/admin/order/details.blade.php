@@ -1,18 +1,5 @@
 @extends('layouts.admin')
 
-@section('styles')
-
-<link rel="stylesheet" href="{{ asset('assets/admin/css/order-table-enhancements.css') }}">
-
-<style type="text/css">
-    .order-table-wrap table#example2 {
-        margin: 10px 20px;
-    }
-</style>
-
-@endsection
-
-
 @section('content')
 <div class="content-area">
     <div class="mr-breadcrumb">
@@ -179,7 +166,7 @@
                         </table>
                     </div>
                     <div class="footer-area">
-                        <a href="{{ route('admin-order-invoice',$order->id) }}" class="mybtn1"><i
+                        <a href="{{ route('admin-order-invoice',$order->id) }}" class="btn btn-primary"><i
                                 class="fas fa-eye"></i> {{ __('View Invoice') }}</a>
                     </div>
                 </div>
@@ -189,8 +176,8 @@
                     <div class="heading-area">
                         <h4 class="title">
                             {{ __('Billing Details') }}
-                            <a class="f15" href="javascript:;" data-toggle="modal"
-                                data-target="#billing-details-edit"><i class="fas fa-edit"></i>{{ __("Edit") }}</a>
+                            <a class="f15" href="javascript:;" data-bs-toggle="modal"
+                                data-bs-target="#billing-details-edit"><i class="fas fa-edit"></i>{{ __("Edit") }}</a>
                         </h4>
                     </div>
                     <div class="table-responsive-sm">
@@ -292,8 +279,8 @@
                     <div class="heading-area">
                         <h4 class="title">
                             {{ __('Shipping Details') }}
-                            <a class="f15" href="javascript:;" data-toggle="modal"
-                                data-target="#shipping-details-edit"><i class="fas fa-edit"></i>{{ __("Edit") }}</a>
+                            <a class="f15" href="javascript:;" data-bs-toggle="modal"
+                                data-bs-target="#shipping-details-edit"><i class="fas fa-edit"></i>{{ __("Edit") }}</a>
                         </h4>
                     </div>
                     <div class="table-responsive-sm">
@@ -370,8 +357,102 @@
             @endif
         </div>
 
+        {{-- ✅ Shipment Status Section --}}
         @php
-        $resultArray = [];
+            $shipments = App\Models\ShipmentStatusLog::where('order_id', $order->id)
+                ->select('vendor_id', 'company_name', 'tracking_number', 'status', 'status_ar', 'message', 'message_ar', 'location', 'status_date')
+                ->orderBy('vendor_id')
+                ->orderBy('status_date', 'desc')
+                ->get()
+                ->groupBy('vendor_id');
+
+            $deliveries = App\Models\DeliveryRider::where('order_id', $order->id)->get();
+        @endphp
+
+        @if($shipments->count() > 0 || $deliveries->count() > 0)
+        <div class="row mt-4">
+            <div class="col-lg-12">
+                <div class="special-box">
+                    <div class="heading-area">
+                        <h4 class="title">
+                            <i class="fas fa-truck"></i> {{ __('Shipment Status') }}
+                        </h4>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>{{ __('Vendor') }}</th>
+                                    <th>{{ __('Shipping Company') }}</th>
+                                    <th>{{ __('Tracking Number') }}</th>
+                                    <th>{{ __('Status') }}</th>
+                                    <th>{{ __('Location') }}</th>
+                                    <th>{{ __('Last Update') }}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach($shipments as $vendorId => $vendorShipments)
+                                    @php
+                                        $latestShipment = $vendorShipments->first();
+                                        $vendor = App\Models\User::find($vendorId);
+                                    @endphp
+                                    <tr>
+                                        <td>{{ $vendor->shop_name ?? $vendor->name ?? 'Vendor #' . $vendorId }}</td>
+                                        <td>
+                                            <span class="badge badge-info">{{ $latestShipment->company_name }}</span>
+                                        </td>
+                                        <td>
+                                            <strong class="text-primary">{{ $latestShipment->tracking_number }}</strong>
+                                        </td>
+                                        <td>
+                                            <span class="badge
+                                                @if($latestShipment->status == 'delivered') badge-success
+                                                @elseif($latestShipment->status == 'in_transit') badge-primary
+                                                @elseif($latestShipment->status == 'out_for_delivery') badge-info
+                                                @elseif(in_array($latestShipment->status, ['failed', 'returned', 'cancelled'])) badge-danger
+                                                @else badge-secondary
+                                                @endif">
+                                                {{ $latestShipment->status_ar ?? $latestShipment->status }}
+                                            </span>
+                                        </td>
+                                        <td>{{ $latestShipment->location ?? '-' }}</td>
+                                        <td>{{ $latestShipment->status_date ? $latestShipment->status_date->format('Y-m-d H:i') : '-' }}</td>
+                                    </tr>
+                                @endforeach
+
+                                @foreach($deliveries as $delivery)
+                                    @php
+                                        $vendor = App\Models\User::find($delivery->vendor_id);
+                                    @endphp
+                                    <tr>
+                                        <td>{{ $vendor->shop_name ?? $vendor->name ?? 'Vendor #' . $delivery->vendor_id }}</td>
+                                        <td>
+                                            <span class="badge badge-secondary">{{ __('Local Rider') }}</span>
+                                        </td>
+                                        <td>{{ $delivery->rider->name ?? 'N/A' }}</td>
+                                        <td>
+                                            <span class="badge
+                                                @if($delivery->status == 'delivered') badge-success
+                                                @elseif($delivery->status == 'accepted') badge-primary
+                                                @elseif($delivery->status == 'rejected') badge-danger
+                                                @else badge-warning
+                                                @endif">
+                                                {{ ucfirst($delivery->status) }}
+                                            </span>
+                                        </td>
+                                        <td>{{ $delivery->servicearea->name ?? '-' }}</td>
+                                        <td>{{ $delivery->updated_at->format('Y-m-d H:i') }}</td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        @endif
+
+        @php
         foreach ($cart['items'] as $key => $item) {
         $userId = $item["user_id"];
         if (!isset($resultArray[$userId])) {
@@ -398,31 +479,24 @@
                 @endphp
                 <div class="mr-table">
                     <h4 class="title">
-                        <a href="javascript:;" data-toggle="modal" vendor="{{$key1}}"
-                            vendor-store="{{$vendor->shop_name}}" class="mybtn1 pl-2 show_add_product"
-                            data-target="#add-product"><i class="fas fa-plus"></i>{{ __("Add Product") }}</a> {{
+                        <a href="javascript:;" data-bs-toggle="modal" vendor="{{$key1}}"
+                            vendor-store="{{$vendor->shop_name}}" class="btn btn-primary btn-sm pl-2 show_add_product"
+                            data-bs-target="#add-product"><i class="fas fa-plus"></i>{{ __("Add Product") }}</a> {{
                         __('Products Ordered By') }} - <strong>{{$vendor->shop_name}}</strong>
 
                     </h4>
-                    <div class="table-responsive order-table-responsive">
-                        <table class="table table-hover order-table-enhanced" cellspacing="0" width="100%">
+                    <div class="table-responsive">
+                        <table class="table table-hover dt-responsive" cellspacing="0" width="100%">
                             <thead>
 
                                 <tr>
-                                    <th class="col-id">{{ __('Product ID#') }}</th>
-                                    <th class="col-title">{{ __('Product Title') }}</th>
-                                    <th class="col-sku">{{ __('SKU') }}</th>
-                                    <th class="col-brand">{{ __('Brand') }}</th>
-                                    <th class="col-manufacturer">{{ __('Manufacturer') }}</th>
-                                    <th class="col-shop">{{ __('Shop Name') }}</th>
-                                    <th class="col-size">{{ __('Size') }}</th>
-                                    <th class="col-color">{{ __('Color') }}</th>
-                                    <th class="col-price">{{ __('Price') }}</th>
-                                    <th class="col-qty">{{ __('Qty') }}</th>
-                                    <th class="col-discount">{{ __('Discount') }}</th>
-                                    <th class="col-status">{{ __('Vendor Status') }}</th>
-                                    <th class="col-total">{{ __('Total Price') }}</th>
-                                    <th class="col-action">{{ __('Action') }}</th>
+                                    <th>{{ __('Product ID#') }}</th>
+                                    <th>{{ __('Shop Name') }}</th>
+                                    <th>{{ __('Vendor Status') }}</th>
+                                    <th>{{ __('Product Title') }}</th>
+                                    <th>{{ __('Details') }}</th>
+                                    <th>{{ __('Total Price') }}</th>
+                                    <th>{{ __('Action') }}</th>
 
                                 </tr>
                             </thead>
@@ -434,175 +508,181 @@
                                 @php
                                 $vendor_total += $product['price'];
                                 @endphp
-                                @php
-                                    $orderProduct = \App\Models\Product::find($product['item']['id']);
-                                    $orderVendorId = $product['item']['user_id'] ?? 0;
-                                    $orderMerchant = $orderProduct && $orderVendorId ? $orderProduct->merchantProducts()->where('user_id', $orderVendorId)->where('status', 1)->first() : null;
-                                    $vendorUser = App\Models\User::find($product['item']['user_id']);
-                                    $vendorOrder = App\Models\VendorOrder::where('order_id','=',$order->id)->where('user_id','=',$product['item']['user_id'])->first();
-                                @endphp
                                 <tr>
-                                    <td class="col-id"><input type="hidden" value="{{$key1}}">{{ $product['item']['id'] }}</td>
+                                    <td><input type="hidden" value="{{$key1}}">{{ $product['item']['id'] }}</td>
 
-                                    {{-- Product Title --}}
-                                    <td class="col-title">
+                                    <td>
+                                        @if($product['item']['user_id'] != 0)
+                                        @php
+                                        $user = App\Models\User::find($product['item']['user_id']);
+                                        @endphp
+                                        @if(isset($user))
+                                        <a target="_blank"
+                                            href="{{route('admin-vendor-show',$user->id)}}">{{$user->shop_name}}</a>
+                                        @else
+                                        {{ __('Vendor Removed') }}
+                                        @endif
+                                        @else
+                                        <a href="javascript:;">{{ App\Models\Admin::find(1)->shop_name }}</a>
+                                        @endif
+
+                                    </td>
+                                    <td>
+                                        @if($product['item']['user_id'] != 0)
+                                        @php
+                                        $user = App\Models\VendorOrder::where('order_id','=',$order->id)->where('user_id','=',$product['item']['user_id'])->first();
+
+
+                                        @endphp
+
+                                        @if($order->dp == 1 && $order->payment_status == 'Completed')
+
+                                        <span class="badge badge-success">{{ __('Completed') }}</span>
+
+                                        @else
+                                        @if($user->status == 'pending')
+                                        <span class="badge badge-warning">{{ucwords($user->status)}}</span>
+                                        @elseif($user->status == 'processing')
+                                        <span class="badge badge-info">{{ucwords($user->status)}}</span>
+                                        @elseif($user->status == 'on delivery')
+                                        <span class="badge badge-primary">{{ucwords($user->status)}}</span>
+                                        @elseif($user->status == 'completed')
+                                        <span class="badge badge-success">{{ucwords($user->status)}}</span>
+                                        @elseif($user->status == 'declined')
+                                        <span class="badge badge-danger">{{ucwords($user->status)}}</span>
+                                        @endif
+                                        @endif
+
+                                        @endif
+                                    </td>
+
+
+                                    <td>
                                         <input type="hidden" value="{{ $product['license'] }}">
 
                                         @php
-                                            $productName = $product['item']['name'] ?? '';
-                                            $truncatedName = mb_strlen($productName) > 50 ? mb_substr($productName, 0, 50) . '...' : $productName;
+                                        $detailsProductUrl = '#';
+                                        if (isset($product['item']['slug']) && isset($product['user_id']) && isset($product['merchant_product_id'])) {
+                                            $detailsProductUrl = route('front.product', [
+                                                'slug' => $product['item']['slug'],
+                                                'vendor_id' => $product['user_id'],
+                                                'merchant_product_id' => $product['merchant_product_id']
+                                            ]);
+                                        } elseif (isset($product['item']['slug'])) {
+                                            $detailsProductUrl = route('front.product.legacy', $product['item']['slug']);
+                                        }
                                         @endphp
-
-                                        <div class="tooltip-wrapper">
-                                            <span class="text-truncate-custom">
-                                                @if($product['item']['user_id'] != 0)
-                                                    @if(isset($vendorUser))
-                                                    <x-product-name :item="$product" :vendor-id="$product['item']['user_id']" :merchant-product-id="$product['item']['id']" target="_blank" />
-                                                    @else
-                                                    <x-product-name :item="$product" :vendor-id="$product['item']['user_id']" :merchant-product-id="$product['item']['id']" target="_blank" />
-                                                    @endif
-                                                @else
-                                                    <x-product-name :item="$product" :vendor-id="$product['item']['user_id']" target="_blank" />
-                                                @endif
-                                            </span>
-                                            @if(mb_strlen($productName) > 50)
-                                                <span class="tooltip-text">{{ $productName }}</span>
-                                            @endif
-                                        </div>
+                                        <a target="_blank" href="{{ $detailsProductUrl }}">{{ getLocalizedProductName($product['item'], 30) }}</a>
+                                        <br><small class="text-muted">SKU: {{ $product['item']['sku'] ?? 'N/A' }}</small>
+                                        @php
+                                        $user = isset($product['item']['user_id']) && $product['item']['user_id'] != 0
+                                            ? App\Models\User::find($product['item']['user_id'])
+                                            : null;
+                                        @endphp
+                                        @if(isset($user) || isset($product['vendor_name']))
+                                        <p class="mb-0 mt-1">
+                                            <strong>{{ __('Vendor') }}:</strong>
+                                            {{ $product['vendor_name'] ?? ($user->shop_name ?? $user->name ?? '') }}
+                                        </p>
+                                        @endif
+                                        @if(isset($product['item']['brand_name']))
+                                        <p class="mb-0">
+                                            <strong>{{ __('Brand') }}:</strong> {{ $product['item']['brand_name'] }}
+                                        </p>
+                                        @endif
+                                        @php
+                                            // جودة البراند والشركة المصنعة
+                                            $qualityBrand = null;
+                                            if (isset($product['brand_quality_id']) && $product['brand_quality_id']) {
+                                                $qualityBrand = \App\Models\QualityBrand::find($product['brand_quality_id']);
+                                            }
+                                            // حالة المنتج (جديد/مستعمل)
+                                            $productCondition = isset($product['item']['product_condition']) && $product['item']['product_condition'] == 1 ? __('Used') : __('New');
+                                        @endphp
+                                        @if($qualityBrand)
+                                        <p class="mb-0">
+                                            <strong>{{ __('Quality Brand') }}:</strong> {{ getLocalizedQualityName($qualityBrand) }}
+                                        </p>
+                                        @endif
+                                        <p class="mb-0">
+                                            <strong>{{ __('Condition') }}:</strong>
+                                            <span class="badge {{ isset($product['item']['product_condition']) && $product['item']['product_condition'] == 1 ? 'badge-warning' : 'badge-success' }}">{{ $productCondition }}</span>
+                                        </p>
 
                                         @if($product['license'] != '')
-                                        <br><a href="javascript:;" data-toggle="modal" data-target="#confirm-delete"
-                                            class="btn btn-info product-btn license" style="padding: 5px 12px;"><i
+                                        <a href="javascript:;" data-bs-toggle="modal" data-bs-target="#confirm-delete"
+                                            class="btn btn-info btn-sm product-btn license"><i
                                                 class="fa fa-eye"></i> {{ __('View License') }}</a>
                                         @endif
 
                                         @if($product['affilate_user'] != 0)
-                                        <br><small><strong>{{ __('Referral User') }} :</strong> {{
-                                            \App\Models\User::find($product['affilate_user'])->name }}</small>
+                                        <p>
+                                            <strong>{{ __('Referral User') }} :</strong> {{
+                                            \App\Models\User::find($product['affilate_user'])->name }}
+                                        </p>
                                         @endif
-                                    </td>
 
-                                    {{-- SKU --}}
-                                    <td class="col-sku">
-                                        @if($product['item']['sku'])
-                                            <span class="badge-custom badge-sku">{{ $product['item']['sku'] }}</span>
-                                        @else
-                                            -
+                                    </td>
+                                    <td>
+                                        @if($product['size'])
+                                        <p>
+                                            <strong>{{ __('Size') }} :</strong> {{str_replace('-','
+                                            ',$product['size'])}}
+                                        </p>
                                         @endif
-                                    </td>
-
-                                    {{-- Brand --}}
-                                    <td class="col-brand">
-                                        @php
-                                            $brandName = $orderProduct && $orderProduct->brand ? Str::ucfirst($orderProduct->brand->name) : '-';
-                                        @endphp
-                                        <div class="tooltip-wrapper">
-                                            <span class="text-truncate-custom">{{ $brandName }}</span>
-                                            @if(mb_strlen($brandName) > 15)
-                                                <span class="tooltip-text">{{ $brandName }}</span>
-                                            @endif
-                                        </div>
-                                    </td>
-
-                                    {{-- Manufacturer --}}
-                                    <td class="col-manufacturer">
-                                        @if($orderMerchant && $orderMerchant->qualityBrand)
-                                            @php
-                                                $manufacturerName = app()->getLocale() == 'ar' && $orderMerchant->qualityBrand->name_ar ? $orderMerchant->qualityBrand->name_ar : $orderMerchant->qualityBrand->name_en;
-                                            @endphp
-                                            <div class="tooltip-wrapper">
-                                                <span class="text-truncate-custom">{{ $manufacturerName }}</span>
-                                                @if(mb_strlen($manufacturerName) > 15)
-                                                    <span class="tooltip-text">{{ $manufacturerName }}</span>
-                                                @endif
-                                            </div>
-                                        @else
-                                            -
-                                        @endif
-                                    </td>
-
-                                    {{-- Shop Name --}}
-                                    <td class="col-shop">
-                                        @if($product['item']['user_id'] != 0)
-                                            @if(isset($vendorUser))
-                                                <div class="tooltip-wrapper">
-                                                    <a target="_blank" href="{{route('admin-vendor-show',$vendorUser->id)}}" class="text-truncate-custom">{{$vendorUser->shop_name}}</a>
-                                                    @if(mb_strlen($vendorUser->shop_name) > 20)
-                                                        <span class="tooltip-text">{{ $vendorUser->shop_name }}</span>
-                                                    @endif
-                                                </div>
-                                            @else
-                                            {{ __('Vendor Removed') }}
-                                            @endif
-                                        @else
-                                            <a href="javascript:;">{{ App\Models\Admin::find(1)->shop_name }}</a>
-                                        @endif
-                                    </td>
-
-                                    {{-- Size --}}
-                                    <td class="col-size">{{ $product['size'] ? str_replace('-', ' ', $product['size']) : '-' }}</td>
-
-                                    {{-- Color --}}
-                                    <td class="col-color">
                                         @if($product['color'])
-                                            <div class="tooltip-wrapper">
-                                                <span class="color-circle" style="background: #{{$product['color']}};"></span>
-                                                <span class="tooltip-text">#{{ strtoupper($product['color']) }}</span>
-                                            </div>
-                                        @else
-                                            -
+                                        <p>
+                                            <strong>{{ __('color') }} :</strong> <span style="width: 20px; height: 20px; display: inline-block; vertical-align: middle; border-radius: 50%; background: #{{$product['color']}};"></span>
+                                        </p>
                                         @endif
+                                        <p>
+                                            <strong>{{ __('Price') }} :</strong> {{
+                                            \PriceHelper::showCurrencyPrice(($product['item_price'] ) *
+                                            $order->currency_value) }}
+                                        </p>
+                                        <p>
+                                            <strong>{{ __('Qty') }} :</strong> {{$product['qty']}} {{
+                                            $product['item']['measure'] }}
+                                        </p>
+                                        @if(!empty($product['keys']))
+
+                                        @foreach( array_combine(explode(',', $product['keys']), explode(',',
+                                        $product['values'])) as $key => $value)
+                                        <p>
+                                            <b>{{ ucwords(str_replace('_', ' ', $key)) }} : </b> {{ $value }}
+                                        </p>
+                                        @endforeach
+
+                                        @endif
+
                                     </td>
 
-                                    {{-- Price --}}
-                                    <td class="col-price">{{ \PriceHelper::showCurrencyPrice(($product['item_price'] ) * $order->currency_value) }}</td>
-
-                                    {{-- Qty --}}
-                                    <td class="col-qty">{{$product['qty']}} {{ $product['item']['measure'] }}</td>
-
-                                    {{-- Discount --}}
-                                    <td class="col-discount">{{ $product['discount'] == 0 ? '-' : $product['discount'].'%' }}</td>
-
-                                    {{-- Vendor Status --}}
-                                    <td class="col-status">
-                                        @if($product['item']['user_id'] != 0)
-                                            @if($order->dp == 1 && $order->payment_status == 'Completed')
-                                                <span class="badge badge-success">{{ __('Completed') }}</span>
-                                            @else
-                                                @if($vendorOrder && $vendorOrder->status == 'pending')
-                                                <span class="badge badge-warning">{{ ucwords($vendorOrder->status) }}</span>
-                                                @elseif($vendorOrder && $vendorOrder->status == 'processing')
-                                                <span class="badge badge-info">{{ucwords($vendorOrder->status)}}</span>
-                                                @elseif($vendorOrder && $vendorOrder->status == 'on delivery')
-                                                <span class="badge badge-primary">{{ucwords($vendorOrder->status)}}</span>
-                                                @elseif($vendorOrder && $vendorOrder->status == 'completed')
-                                                <span class="badge badge-success">{{ucwords($vendorOrder->status)}}</span>
-                                                @elseif($vendorOrder && $vendorOrder->status == 'declined')
-                                                <span class="badge badge-danger">{{ucwords($vendorOrder->status)}}</span>
-                                                @endif
-                                            @endif
-                                        @endif
+                                    <td> {{ \PriceHelper::showCurrencyPrice($product['price'] *
+                                        $order->currency_value)
+                                        }} <small>{{ $product['discount'] == 0 ? '' : '('.$product['discount'].'%
+                                            '.__('Off').')' }}</small>
                                     </td>
 
-                                    {{-- Total Price --}}
-                                    <td class="col-total">{{ \PriceHelper::showCurrencyPrice($product['price'] * $order->currency_value) }}</td>
 
-                                    {{-- Action --}}
-                                    <td class="col-action">
+                                    <td>
+
                                         <div class="action-list">
+
                                             @if (App\Models\Product::whereId($product['item']['id'])->exists())
-                                            <a class="add-btn edit-product"data-href="{{ route('admin-order-product-edit',[$itemKey, $product['item']['id'] ,$order->id]) }}"
-                                                data-toggle="modal" data-target="#edit-product-modal">
+                                            <a class="btn btn-primary btn-sm edit-product" data-href="{{ route('admin-order-product-edit',[$itemKey, $product['item']['id'] ,$order->id]) }}"
+                                                data-bs-toggle="modal" data-bs-target="#edit-product-modal">
                                                 <i class="fas fa-edit"></i> {{ __("Edit") }}
                                             </a>
                                             @endif
 
-                                            <a class="add-btn delete-product"
+                                            <a class="btn btn-danger btn-sm delete-product"
                                                 data-href="{{ route('admin-order-product-delete',[$itemKey,$order->id]) }}"
-                                                data-toggle="modal" data-target="#delete-product-modal">
+                                                data-bs-toggle="modal" data-bs-target="#delete-product-modal">
                                                 <i class="fas fa-trash"></i>
                                             </a>
+
                                         </div>
+
                                     </td>
 
                                 </tr>
@@ -627,39 +707,37 @@
                                 }
 
                                 @endphp
-                                <tr>
-                                    <td colspan="14" class="text-right">
-                                        <div class="mx-4">
-                                            @if ($shipping)
-                                            <p>
-                                                {{ __('Shipping Method') }} :
-                                                <strong>{{$shipping->title}} | {{
-                                                    \PriceHelper::showCurrencyPrice($shipping->price *
-                                                    $order->currency_value) }}</strong>
-                                            </p>
-                                            @endif
-                                            @if ($package)
+                                <td colspan="7">
+                                    <div class="text-right mx-4">
+                                        @if ($shipping)
+                                        <p>
+                                            {{ __('Shipping Method') }} :
+                                            <strong>{{$shipping->title}} | {{
+                                                \PriceHelper::showCurrencyPrice($shipping->price *
+                                                $order->currency_value) }}</strong>
+                                        </p>
+                                        @endif
+                                        @if ($package)
 
-                                            <p>
-                                                {{ __('Packaging Method') }} :
-                                                <strong>{{$package->title}} | {{
-                                                    \PriceHelper::showCurrencyPrice($package->price *
-                                                    $order->currency_value) }}</strong>
-                                            </p>
+                                        <p>
+                                            {{ __('Packaging Method') }} :
+                                            <strong>{{$package->title}} | {{
+                                                \PriceHelper::showCurrencyPrice($package->price *
+                                                $order->currency_value) }}</strong>
+                                        </p>
 
-                                            @endif
-                                            <p>
-                                                {{ __('Total Amount') }} :
-                                                <strong>
-                                                    {{ \PriceHelper::showCurrencyPrice(($vendor_total +
-                                                    @$shipping->price + @$package->price ) *
-                                                    $order->currency_value )}}
-                                                </strong>
-                                            </p>
+                                        @endif
+                                        <p>
+                                            {{ __('Total Amount') }} :
+                                            <strong>
+                                                {{ \PriceHelper::showCurrencyPrice(($vendor_total +
+                                                @$shipping->price + @$package->price ) *
+                                                $order->currency_value )}}
+                                            </strong>
+                                        </p>
 
-                                        </div>
-                                    </td>
-                                </tr>
+                                    </div>
+                                </td>
 
                             </tbody>
                         </table>
@@ -668,8 +746,8 @@
                 @endforeach
             </div>
             <div class="col-lg-12 text-center mt-2">
-                <a class="btn sendEmail send" href="javascript:;" class="send" data-email="{{ $order->customer_email }}"
-                    data-toggle="modal" data-target="#vendorform">
+                <a class="btn btn-primary sendEmail send" href="javascript:;" data-email="{{ $order->customer_email }}"
+                    data-bs-toggle="modal" data-bs-target="#vendorform">
                     <i class="fa fa-send"></i> {{ __('Send Email') }}
                 </a>
             </div>
@@ -691,8 +769,8 @@
 
             <div class="modal-header d-block text-center">
                 <h4 class="modal-title d-inline-block">{{ __('License Key') }}</h4>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                    
                 </button>
             </div>
 
@@ -705,14 +783,14 @@
                     {{csrf_field()}}
                     <input type="hidden" name="license_key" id="license-key" value="">
                     <div class="form-group text-center">
-                        <input type="text" name="license" placeholder="{{ __('Enter New License Key') }}"
-                            style="width: 40%; border: none;" required=""><input type="submit" name="submit"
-                            class="btn btn-primary" style="border-radius: 0; padding: 2px; margin-bottom: 2px;">
+                        <input type="text" name="license" class="form-control d-inline-block" placeholder="{{ __('Enter New License Key') }}"
+                            required="">
+                        <input type="submit" name="submit" class="btn btn-primary btn-sm">
                     </div>
                 </form>
             </div>
             <div class="modal-footer justify-content-center">
-                <button type="button" class="btn btn-danger" data-dismiss="modal">{{ __('Close') }}</button>
+                <button type="button" class="btn btn-danger" data-bs-dismiss="modal">{{ __('Close') }}</button>
             </div>
         </div>
     </div>
@@ -755,15 +833,15 @@
                 <h5 class="modal-title">
                     {{ __('Edit Item') }}
                 </h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                    
                 </button>
             </div>
             <div class="modal-body">
 
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
                     {{ __('Close') }}
                 </button>
             </div>
@@ -783,8 +861,8 @@
 
             <div class="modal-header d-block text-center">
                 <h4 class="modal-title d-inline-block">{{ __('Confirm Delete') }}</h4>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                    
                 </button>
             </div>
 
@@ -796,7 +874,7 @@
 
             <!-- Modal footer -->
             <div class="modal-footer justify-content-center">
-                <button type="button" class="btn btn-default" data-dismiss="modal">{{ __('Cancel') }}</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ __('Cancel') }}</button>
                 <a class="btn btn-danger btn-ok">{{ __('Delete') }}</a>
 
             </div>
@@ -816,8 +894,8 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="vendorformLabel">{{ __('Send Email') }}</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                        
                     </button>
                 </div>
                 <div class="modal-body">
@@ -829,19 +907,19 @@
                                         {{csrf_field()}}
                                         <ul>
                                             <li>
-                                                <input type="email" class="input-field eml-val" id="eml" name="to"
+                                                <input type="email" class="form-control eml-val" id="eml" name="to"
                                                     placeholder="{{ __('Email') }} *" value="" required="">
                                             </li>
                                             <li>
-                                                <input type="text" class="input-field" id="subj" name="subject"
+                                                <input type="text" class="form-control" id="subj" name="subject"
                                                     placeholder="{{ __('Subject') }} *" required="">
                                             </li>
                                             <li>
-                                                <textarea class="input-field textarea" name="message" id="msg"
+                                                <textarea class="form-control textarea" name="message" id="msg"
                                                     placeholder="{{ __('Your Message') }} *" required=""></textarea>
                                             </li>
                                         </ul>
-                                        <button class="submit-btn" id="emlsub" type="submit">{{ __('Send Email')
+                                        <button class="btn btn-primary" id="emlsub" type="submit">{{ __('Send Email')
                                             }}</button>
                                     </form>
                                 </div>
@@ -866,8 +944,8 @@
             </div>
             <div class="modal-header d-block text-center">
                 <h4 class="modal-title d-inline-block">{{ __('Update Status') }}</h4>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                    
                 </button>
             </div>
 
@@ -879,7 +957,7 @@
 
             <!-- Modal footer -->
             <div class="modal-footer justify-content-center">
-                <button type="button" class="btn btn-default" data-dismiss="modal">{{ __('Cancel') }}</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ __('Cancel') }}</button>
                 <a class="btn btn-success btn-ok order-btn">{{ __('Proceed') }}</a>
             </div>
 
@@ -988,7 +1066,7 @@ $(document).on('submit','#show-product',function(e){
   {
     $('.submit-loader').show();
   }
-    $('button.addProductSubmit-btn').prop('disabled',true);
+    $('button.btn.btn-primary').prop('disabled',true);
     disablekey();
       $.ajax({
        method:"POST",
@@ -1019,7 +1097,7 @@ $(document).on('submit','#show-product',function(e){
             $('#product-show').html('<div class="col-lg-12 text-center"><h4>'+data[1]+'.</h4></div>')
         }
 
-        $('button.addProductSubmit-btn').prop('disabled',false);
+        $('button.btn.btn-primary').prop('disabled',false);
 
         enablekey();
        }

@@ -5,7 +5,7 @@
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="keywords" content="{{$seo->meta_keys}}">
-        <meta name="author" content="MUAADH">
+        <meta name="author" content="Muaadh">
 
         <title>{{$gs->title}}</title>
   <!-- Tell the browser to be responsive to screen width -->
@@ -48,7 +48,7 @@ html {
                 <div class="row">
                     <div class="col-sm-6">
                         <div class="invoice__logo text-left">
-                           <img src="{{ asset('assets/images/'.$gs->invoice_logo) }}" alt="logo">
+                           <img src="{{ asset('assets/images/'.$gs->invoice_logo) }}" alt="woo commerce logo">
                         </div>
                     </div>
                 </div>
@@ -72,6 +72,27 @@ html {
                         </span><br>
                         @endif
                         <span> <strong>{{ __('Payment Method') }} :</strong> {{$order->method}}</span>
+                        @php
+                            $adminPrintShipments = App\Models\ShipmentStatusLog::where('order_id', $order->id)
+                                ->orderBy('status_date', 'desc')
+                                ->get()
+                                ->groupBy('vendor_id');
+                        @endphp
+                        @if($adminPrintShipments->count() > 0)
+                        <br><br>
+                        <p><strong>{{ __('Shipment Info') }}</strong></p>
+                        @foreach($adminPrintShipments as $vendorId => $logs)
+                            @php
+                                $latestLog = $logs->first();
+                                $vendor = App\Models\User::find($vendorId);
+                            @endphp
+                            <span><strong>{{ __('Vendor') }}:</strong> {{ $vendor->shop_name ?? $vendor->name ?? 'N/A' }}</span><br>
+                            <span><strong>{{ __('Tracking') }}:</strong> {{ $latestLog->tracking_number }}</span><br>
+                            <span><strong>{{ __('Company') }}:</strong> {{ $latestLog->company_name ?? 'N/A' }}</span><br>
+                            <span><strong>{{ __('Status') }}:</strong> {{ ucfirst($latestLog->status) }}</span><br>
+                            @if(!$loop->last)<hr style="margin:5px 0;">@endif
+                        @endforeach
+                        @endif
                     </div>
                 </div>
             </div>
@@ -108,6 +129,7 @@ html {
                                     <thead style="border-top:1px solid rgba(0, 0, 0, 0.1) !important;">
                                         <tr>
                                             <th>{{ __('Product') }}</th>
+                                            <th>{{ __('Vendor') }}</th>
                                             <th>{{ __('Details') }}</th>
                                             <th>{{ __('Total') }}</th>
                                         </tr>
@@ -119,19 +141,30 @@ html {
                                         @endphp
                                         @foreach($cart['items'] as $product)
                                         <tr>
-                                            <td width="50%">
-                                                @if($product['item']['user_id'] != 0)
-                                                @php
-                                                $user = App\Models\User::find($product['item']['user_id']);
-                                                @endphp
-                                                @if(isset($user))
-                                                {{ $product['item']['name']}}
-                                                @else
-                                                {{$product['item']['name']}}
+                                            <td width="40%">
+                                                {{ getLocalizedProductName($product['item']) }}
+                                                <br><small>SKU: {{ $product['item']['sku'] ?? 'N/A' }}</small>
+                                                @if(isset($product['item']['brand_name']))
+                                                <br><small>{{ __('Brand') }}: {{ $product['item']['brand_name'] }}</small>
                                                 @endif
-
-                                                @else
-                                                {{ $product['item']['name']}}
+                                                @php
+                                                    $printQualityBrand = null;
+                                                    if (isset($product['brand_quality_id']) && $product['brand_quality_id']) {
+                                                        $printQualityBrand = \App\Models\QualityBrand::find($product['brand_quality_id']);
+                                                    }
+                                                    $printCondition = isset($product['item']['product_condition']) && $product['item']['product_condition'] == 1 ? __('Used') : __('New');
+                                                @endphp
+                                                @if($printQualityBrand)
+                                                <br><small>{{ __('Quality') }}: {{ getLocalizedQualityName($printQualityBrand) }}</small>
+                                                @endif
+                                                <br><small>{{ __('Condition') }}: {{ $printCondition }}</small>
+                                            </td>
+                                            <td width="15%">
+                                                @if(isset($product['vendor_name']))
+                                                    {{ $product['vendor_name'] }}
+                                                @elseif(isset($product['item']['user_id']) && $product['item']['user_id'] != 0)
+                                                    @php $user = App\Models\User::find($product['item']['user_id']); @endphp
+                                                    {{ $user->shop_name ?? $user->name ?? '' }}
                                                 @endif
                                             </td>
 

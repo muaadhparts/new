@@ -1,4 +1,8 @@
 @extends('layouts.vendor')
+@php
+    $isDashboard = true;
+    $isVendor = true;
+@endphp
 
 @section('content')
 <div class="gs-vendor-outlet">
@@ -29,7 +33,7 @@
                     </div>
                     <div class="card-body">
                         <div class="text-center mb-3">
-                            <img src="{{ asset('assets/images/products/' . $product->photo) }}"
+                            <img src="{{ $product->photo ? \Illuminate\Support\Facades\Storage::url($product->photo) : asset('assets/images/noimage.png') }}"
                                  alt="{{ $product->name }}" class="img-fluid" style="max-height: 200px;">
                         </div>
                         <h6>{{ $product->name }}</h6>

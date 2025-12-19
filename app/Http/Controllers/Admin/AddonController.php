@@ -3,10 +3,10 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Models\Addon;
+use App\Models\License;
 use Datatables;
 use DB;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use ZipArchive;
@@ -43,14 +43,10 @@ class AddonController extends AdminBaseController
             'file' => 'required|mimes:zip',
         ]);
 
-        $script_key = @file_get_contents(base_path() . '/license.txt');
-        if (!$script_key) {
-            return response()->json('Please activate your system first.');
-        }
-
-        $res = $this->addonLicenceCheck($script_key, $request->purchase_key);
-        if ($res && $res['status'] == false) {
-            return response()->json($res['message']);
+        // التحقق من تفعيل النظام عبر جدول licenses
+        $license = License::getActiveLicense();
+        if (!$license) {
+            return response()->json(__('يرجى تفعيل النظام أولاً.'));
         }
 
         if (class_exists('ZipArchive')) {
@@ -60,52 +56,42 @@ class AddonController extends AdminBaseController
                 $zip = new ZipArchive;
                 $result = $zip->open(storage_path('app/' . $path));
                 $random_dir = strtolower(Str::random(10));
-                
+
                 if ($result === true) {
                     $result = $zip->extractTo(base_path('temp/' . $random_dir . '/addons'));
                     $zip->close();
                 } else {
-                    return response()->json('Can\'t open the zip file.');
+                    return response()->json(__('لا يمكن فتح ملف الـ ZIP.'));
                 }
 
-           
-  
-                $str = file_get_contents(base_path('temp/' . $random_dir . '/addons/addon.json'));
+                $configPath = base_path('temp/' . $random_dir . '/addons/addon.json');
+                if (!file_exists($configPath)) {
+                    \File::deleteDirectory(base_path('temp'));
+                    Storage::delete($path);
+                    return response()->json(__('ملف addon.json غير موجود في الإضافة.'));
+                }
+
+                $str = file_get_contents($configPath);
                 $config = json_decode($str, true);
+
+                if (!$config || !isset($config['keyword'])) {
+                    \File::deleteDirectory(base_path('temp'));
+                    Storage::delete($path);
+                    return response()->json(__('ملف addon.json غير صالح.'));
+                }
 
                 $addon = Addon::where('keyword', $config['keyword'])->exists();
 
                 if ($addon) {
-                    return response()->json('This addon is already installed.');
-                }
-
-                if (isset($request->purchase_key)) {
-                    // Define the file path
-                    $filePath = base_path('vendor/markury/src/Adapter/addon/otp.txt');
-
-                    // Open the file for writing (this will overwrite the file if it already exists)
-                    $file = fopen($filePath, 'w');
-
-                    // Check if the file is successfully opened
-                    if ($file) {
-                        // Write the purchase key to the file
-                        fwrite($file, $request->purchase_key);
-
-                        // Close the file after writing
-                        fclose($file);
-                    } else {
-                        return response()->json('Failed to open file for writing');
-                    }
-                } else {
-                    return response()->json('Purchase key not provided.');
-
+                    \File::deleteDirectory(base_path('temp'));
+                    Storage::delete($path);
+                    return response()->json(__('هذه الإضافة مثبتة مسبقاً.'));
                 }
 
                 Storage::delete($path);
                 \File::deleteDirectory(base_path('temp'));
 
                 try {
-
                     $addn = Addon::where('keyword', $config['keyword'])->first();
                     if ($addn) {
                         $addn->delete();
@@ -115,18 +101,15 @@ class AddonController extends AdminBaseController
                     $addon->keyword = $config['keyword'];
                     $addon->name = $config['name'];
                     $addon->save();
-                    return response()->json('Addon installed successfully.');
+
+                    return response()->json(__('تم تثبيت الإضافة بنجاح.'));
                 } catch (\Throwable $th) {
-                    return response()->json('Something went wrong.');
+                    return response()->json(__('حدث خطأ أثناء التثبيت: ') . $th->getMessage());
                 }
-
             }
+        } else {
+            return response()->json(__('ZipArchive غير مثبت على السيرفر.'));
         }
-    }
-
-    public function addonLicenceCheck($script_key, $addon_key)
-    {
-        return Http::get("https://MUAADH.com/verify/addoncheck.php?script_code=$script_key&addon_code=$addon_key")->json();
     }
 
     //*** GET Request Status
@@ -136,20 +119,24 @@ class AddonController extends AdminBaseController
 
         $files = json_decode($data->uninstall_files, true);
 
-        foreach ($files['files'] as $file) {
-            if (file_exists(base_path() . $file)) {
-                unlink(base_path() . $file);
+        if ($files && isset($files['files'])) {
+            foreach ($files['files'] as $file) {
+                if (file_exists(base_path() . $file)) {
+                    unlink(base_path() . $file);
+                }
             }
         }
 
-        foreach ($files['codes'] as $code) {
-            DB::statement($code);
+        if ($files && isset($files['codes'])) {
+            foreach ($files['codes'] as $code) {
+                DB::statement($code);
+            }
         }
 
         $data->delete();
 
         //--- Redirect Section
-        $msg = __('Addon Uninstalled Successfully.');
+        $msg = __('تم إلغاء تثبيت الإضافة بنجاح.');
         return redirect()->back()->withSuccess($msg);
         //--- Redirect Section Ends
     }
@@ -162,7 +149,6 @@ class AddonController extends AdminBaseController
             } else {
                 unlink($file);
             }
-
         }
         rmdir($dir);
     }

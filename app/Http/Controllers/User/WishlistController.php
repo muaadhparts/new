@@ -5,7 +5,8 @@ namespace App\Http\Controllers\User;
 use Illuminate\Http\Request;
 use App\{
     Models\Product,
-    Models\Wishlist
+    Models\Wishlist,
+    View\Composers\HeaderComposer
 };
 
 
@@ -21,8 +22,13 @@ class WishlistController extends UserBaseController
         $page_count = isset($pageby) ? $pageby : $gs->wishlist_count;
 
         // Get wishlist items with their effective merchant products
+        // ✅ N+1 FIX: Eager load product.merchantProducts for legacy items without merchant_product_id
         $wishlistQuery = Wishlist::where('user_id', $user->id)
-            ->with(['product', 'merchantProduct', 'merchantProduct.user']);
+            ->with([
+                'product.merchantProducts' => fn($q) => $q->where('status', 1)->orderBy('price'),
+                'merchantProduct',
+                'merchantProduct.user'
+            ]);
 
         // Apply sorting
         if (!empty($request->sort)) {
@@ -71,11 +77,14 @@ class WishlistController extends UserBaseController
             return $wishlistItem;
         });
 
+        // Use $wishlists for consistency with the view
+        $wishlists = $wishlistItems;
+
         if ($request->ajax()) {
-            return view('frontend.ajax.wishlist', compact('user', 'wishlistItems', 'sort', 'pageby'));
+            return view('frontend.ajax.wishlist', compact('user', 'wishlists', 'sort', 'pageby'));
         }
 
-        return view('user.wishlist', compact('user', 'wishlistItems', 'sort', 'pageby'));
+        return view('user.wishlist', compact('user', 'wishlists', 'sort', 'pageby'));
     }
 
     /**
@@ -99,6 +108,7 @@ class WishlistController extends UserBaseController
 
         if ($wishlist) {
             $wishlist->delete();
+            HeaderComposer::invalidateWishlistCache($user->id);
             $data[0] = 1;
             $data[1] = Wishlist::where('user_id', $user->id)->count();
             $data['success'] = __('Successfully Removed From The Wishlist.');
@@ -138,6 +148,7 @@ class WishlistController extends UserBaseController
         $wish->merchant_product_id = $merchantProductId;
         $wish->save();
 
+        HeaderComposer::invalidateWishlistCache($user->id);
         $data[0] = 1;
         $data[1] = Wishlist::where('user_id', $user->id)->count();
         $data['success'] = __('Successfully Added To The Wishlist.');
@@ -191,6 +202,7 @@ class WishlistController extends UserBaseController
         $wish->merchant_product_id = $merchantProduct->id;
         $wish->save();
 
+        HeaderComposer::invalidateWishlistCache($user->id);
         $data[0] = 1;
         $data[1] = Wishlist::where('user_id', $user->id)->count();
         $data['success'] = __('Successfully Added To The Wishlist.');
@@ -203,6 +215,7 @@ class WishlistController extends UserBaseController
         $wish = Wishlist::where('user_id', $user->id)->findOrFail($id);
         $wish->delete();
 
+        HeaderComposer::invalidateWishlistCache($user->id);
         $data[0] = 1;
         $data[1] = Wishlist::where('user_id', $user->id)->count();
         $data['success'] = __('Successfully Removed From Wishlist.');

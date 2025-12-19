@@ -35,22 +35,6 @@ class Section extends Model
     }
 
     /**
-     * 🔗 القطع المرتبطة بهذا القسم
-     */
-    public function sectionParts(): HasMany
-    {
-        return $this->hasMany(SectionPart::class, 'section_id');
-    }
-
-    /**
-     * 🔗 الامتدادات الخاصة بالقطع ضمن هذا القسم
-     */
-    public function partExtensions(): HasMany
-    {
-        return $this->hasMany(PartExtension::class, 'section_id');
-    }
-
-    /**
      * 🖼️ الرسومات التوضيحية المرتبطة بالقسم
      */
     public function illustrations(): HasMany

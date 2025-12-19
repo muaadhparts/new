@@ -16,7 +16,7 @@
     </section>
 
 
-    <div class="gs-contact-section">
+    <div class="gs-contact-section muaadh-section-gray">
         <div class="container">
             <div class="row">
                 <div class="col-lg-5 wow-replaced" data-wow-delay=".1s">

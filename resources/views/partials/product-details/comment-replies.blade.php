@@ -19,7 +19,7 @@
           </div>
           <div class="row mt-3">
           <div class="col-lg-12">
-            <button class="submit-btn mybtn1" type="submit">{{ __('Post Comment') }}</button>
+            <button class="btn btn-primary" type="submit">{{ __('Post Comment') }}</button>
           </div>
           </div>
         </form>

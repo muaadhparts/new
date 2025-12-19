@@ -43,7 +43,7 @@
   @if($gs->reg_vendor == 1)
     <div class="row mt-4">
     <div class="col-lg-12 text-center">
-      <a href="{{ route('user-package') }}" class="mybtn1 lg">
+      <a href="{{ route('user-package') }}" class="btn btn-primary lg">
       <i class="fas fa-dollar-sign"></i>
       {{ Auth::user()->is_vendor == 1 ? __('Start Selling') : (Auth::user()->is_vendor == 0 ? __('Start Selling') : __('Pricing Plans')) }}
       </a>

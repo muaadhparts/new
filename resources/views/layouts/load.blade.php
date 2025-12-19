@@ -1,3 +1,18 @@
+{{--
+================================================================================
+    MUAADH THEME - LOAD LAYOUT (AJAX/Modal Content)
+================================================================================
+    CSS GUIDELINES FOR AI AGENTS:
+    -----------------------------
+    1. The ONLY file for adding/modifying custom CSS is: public/assets/front/css/style.css
+    2. DO NOT add <style> tags in Blade files - move all styles to style.css
+    3. DO NOT create new CSS files - use style.css sections instead
+================================================================================
+--}}
+{{-- Main Theme File - Contains all styles --}}
+<link rel="stylesheet" href="{{ asset('assets/front/css/style.css') }}">
+{{-- Theme Colors - Generated from Admin Panel (MUST load LAST to override :root variables) --}}
+<link rel="stylesheet" href="{{ asset('assets/front/css/theme-colors.css') }}">
 @yield('styles')
 
 

@@ -48,7 +48,23 @@
                             </div>
                           </div>
                           <div class="col-lg-7">
-                            <input type="text" class="input-field" name="code" placeholder="{{ __('Enter Code') }}" required="" value="">
+                            <input type="text" class="form-control" name="code" placeholder="{{ __('Enter Code') }}" required="" value="">
+                          </div>
+                        </div>
+
+                        <div class="row">
+                          <div class="col-lg-4">
+                            <div class="left-area">
+                                <h4 class="heading">{{ __('Vendor') }}</h4>
+                            </div>
+                          </div>
+                          <div class="col-lg-7">
+                              <select name="user_id">
+                                  <option value="">{{ __('Select Vendor') }}</option>
+                                  @foreach($vendors as $vendor)
+                                    <option value="{{ $vendor->id }}">{{ $vendor->shop_name ?? $vendor->name }}</option>
+                                  @endforeach
+                              </select>
                           </div>
                         </div>
 
@@ -139,7 +155,7 @@
                             </div>
                           </div>
                           <div class="col-lg-3">
-                            <input type="text" class="input-field less-width" name="price" placeholder="" required="" value=""><span></span>
+                            <input type="text" class="form-control less-width" name="price" placeholder="" required="" value=""><span></span>
                           </div>
                         </div>
 
@@ -164,7 +180,7 @@
                             </div>
                           </div>
                           <div class="col-lg-7">
-                            <input type="text" class="input-field less-width" name="times" placeholder="{{ __('Enter Value') }}" value=""><span></span>
+                            <input type="text" class="form-control less-width" name="times" placeholder="{{ __('Enter Value') }}" value=""><span></span>
                           </div>
                         </div>
 
@@ -177,7 +193,7 @@
                             </div>
                           </div>
                           <div class="col-lg-7">
-                            <input type="text" class="input-field" name="start_date" autocomplete="off" id="from" placeholder="{{ __('Select a date') }}" required="" value="">
+                            <input type="text" class="form-control" name="start_date" autocomplete="off" id="from" placeholder="{{ __('Select a date') }}" required="" value="">
                           </div>
                         </div>
 
@@ -189,7 +205,7 @@
                             </div>
                           </div>
                           <div class="col-lg-7">
-                            <input type="text" class="input-field" name="end_date" autocomplete="off" id="to" placeholder="{{ __('Select a date') }}" required="" value="">
+                            <input type="text" class="form-control" name="end_date" autocomplete="off" id="to" placeholder="{{ __('Select a date') }}" required="" value="">
                           </div>
                         </div>
 
@@ -201,7 +217,7 @@
                             </div>
                           </div>
                           <div class="col-lg-7">
-                            <button class="addProductSubmit-btn" type="submit">{{ __('Create Coupon') }}</button>
+                            <button class="btn btn-primary" type="submit">{{ __('Create Coupon') }}</button>
                           </div>
                         </div>
                       </form>

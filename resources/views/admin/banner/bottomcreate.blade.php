@@ -40,7 +40,7 @@
                             </div>
                           </div>
                           <div class="col-lg-7">
-                            <input type="text" class="input-field" name="link" placeholder="{{ __('Link') }}" value="">
+                            <input type="text" class="form-control" name="link" placeholder="{{ __('Link') }}" value="">
                           </div>
                         </div>
 
@@ -52,7 +52,7 @@
                             </div>
                           </div>
                           <div class="col-lg-7">
-                            <button class="addProductSubmit-btn" type="submit">{{ __('Create Banner') }}</button>
+                            <button class="btn btn-primary" type="submit">{{ __('Create Banner') }}</button>
                           </div>
                         </div>
                       </form>

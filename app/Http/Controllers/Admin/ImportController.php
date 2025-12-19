@@ -25,100 +25,100 @@ class ImportController extends AdminBaseController
     //*** JSON Request
     public function datatables()
     {
-         $datas = Product::where('product_type','=','affiliate')->latest('id')->get();
+        // الاستعلام على السجلات التجارية مباشرة - كل سجل تجاري = صف مستقل
+        // فقط المنتجات من نوع affiliate
+        $query = MerchantProduct::with(['product.brand', 'user', 'qualityBrand'])
+            ->whereHas('product', function($q) {
+                $q->where('product_type', 'affiliate');
+            });
 
-         //--- Integrating This Collection Into Datatables
-         return Datatables::of($datas)
-                ->editColumn('name', function(Product $data) {
-                    $name = mb_strlen(strip_tags($data->name),'utf-8') > 50 ? mb_substr(strip_tags($data->name),0,50,'utf-8').'...' : strip_tags($data->name);
+        $datas = $query->latest('id');
 
-                    // اختر عرض البائع النشط (المتوفر أولاً ثم الأرخص)
-                    $mp = $data->merchantProducts()
-                          ->where('status',1)
-                          ->orderByRaw('CASE WHEN (stock IS NULL OR stock=0) THEN 1 ELSE 0 END ASC')
-                          ->orderBy('price')
-                          ->first();
+        return \Datatables::of($datas)
+            ->filterColumn('name', function ($query, $keyword) {
+                $query->whereHas('product', function($q) use ($keyword) {
+                    $q->where('name', 'like', "%{$keyword}%")
+                      ->orWhere('sku', 'like', "%{$keyword}%")
+                      ->orWhere('label_ar', 'like', "%{$keyword}%")
+                      ->orWhere('label_en', 'like', "%{$keyword}%");
+                });
+            })
+            ->addColumn('photo', function (MerchantProduct $mp) {
+                $product = $mp->product;
+                if (!$product) return '<img src="' . asset('assets/images/noimage.png') . '" class="img-thumbnail" style="width:80px">';
 
-                    $vendorId = optional($mp)->user_id;
-                    $merchantProductId = optional($mp)->id;
-                    $prodLink = ($vendorId && $merchantProductId)
-                        ? route('front.product', ['slug' => $data->slug, 'vendor_id' => $vendorId, 'merchant_product_id' => $merchantProductId])
-                        : '#';
+                $photo = filter_var($product->photo, FILTER_VALIDATE_URL)
+                    ? $product->photo
+                    : ($product->photo ? \Illuminate\Support\Facades\Storage::url($product->photo) : asset('assets/images/noimage.png'));
+                return '<img src="' . $photo . '" alt="Image" class="img-thumbnail" style="width:80px">';
+            })
+            ->addColumn('name', function (MerchantProduct $mp) {
+                $product = $mp->product;
+                if (!$product) return __('N/A');
 
-                    $id  = '<small>'.__("Product ID").': <a href="'.$prodLink.'" target="_blank">'.sprintf("%'.08d",$data->id).'</a></small>';
+                $prodLink = route('front.product', [
+                    'slug' => $product->slug,
+                    'vendor_id' => $mp->user_id,
+                    'merchant_product_id' => $mp->id
+                ]);
 
-                    // اسم المتجر إن توفر
-                    $vendorBadge = '';
-                    if ($vendorId) {
-                        $shopName = optional(optional($mp)->user)->shop_name ?: ('#'.$vendorId);
-                        $vendorBadge = ' <small class="ml-2">'.__("Vendor").': <a href="'.route('admin-vendor-show',$vendorId).'" target="_blank">'.$shopName.'</a></small>';
-                    }
+                $displayName = getLocalizedProductName($product);
+                $sku = $product->sku ? '<br><small class="text-muted">' . __('SKU') . ': ' . $product->sku . '</small>' : '';
+                $condition = $mp->product_condition == 1 ? '<span class="badge badge-warning">' . __('Used') . '</span>' : '';
 
-                    return  $name.'<br>'.$id.$vendorBadge;
-                })
-                ->editColumn('price', function(Product $data) {
-                    // أقل سعر نشط من عروض البائعين
-                    $min = DB::table('merchant_products')
-                        ->where('product_id', $data->id)
-                        ->where('status', 1)
-                        ->min('price');
+                return '<a href="' . $prodLink . '" target="_blank">' . $displayName . '</a>' . $sku . ' ' . $condition;
+            })
+            ->addColumn('brand', function (MerchantProduct $mp) {
+                $product = $mp->product;
+                return $product && $product->brand ? getLocalizedBrandName($product->brand) : __('N/A');
+            })
+            ->addColumn('quality_brand', function (MerchantProduct $mp) {
+                return $mp->qualityBrand ? getLocalizedQualityName($mp->qualityBrand) : __('N/A');
+            })
+            ->addColumn('vendor', function (MerchantProduct $mp) {
+                if (!$mp->user) return __('N/A');
+                $shopName = $mp->user->shop_name ?: $mp->user->name;
+                return '<a href="' . route('admin-vendor-show', $mp->user_id) . '" target="_blank">' . $shopName . '</a>';
+            })
+            ->addColumn('price', function (MerchantProduct $mp) {
+                $gs = cache()->remember('generalsettings', now()->addDay(), fn () => DB::table('generalsettings')->first());
 
-                    if ($min === null) {
-                        return \PriceHelper::showAdminCurrencyPrice(0);
-                    }
+                $price = (float) $mp->price;
+                $base = $price + (float) $gs->fixed_commission + ($price * (float) $gs->percentage_commission / 100);
 
-                    // عمولة المنصة (ثابت + نسبة)
-                    $gs = cache()->remember('generalsettings', now()->addDay(), fn () => DB::table('generalsettings')->first());
-                    $base = (float)$min + (float)$gs->fixed_commission + ((float)$min * (float)$gs->percentage_commission / 100);
+                return \PriceHelper::showAdminCurrencyPrice($base * $this->curr->value);
+            })
+            ->addColumn('stock', function (MerchantProduct $mp) {
+                if ($mp->stock === null) return __('Unlimited');
+                if ((int) $mp->stock === 0) return '<span class="text-danger">' . __('Out Of Stock') . '</span>';
+                return $mp->stock;
+            })
+            ->addColumn('status', function (MerchantProduct $mp) {
+                $class = $mp->status == 1 ? 'drop-success' : 'drop-danger';
+                $s = $mp->status == 1 ? 'selected' : '';
+                $ns = $mp->status == 0 ? 'selected' : '';
 
-                    // عرض حسب عملة الأدمن
-                    return \PriceHelper::showAdminCurrencyPrice($base * $this->curr->value);
-                })
-                ->editColumn('stock', function(Product $data) {
-                    // مجموع المخزون للعروض النشطة
-                    $sum = DB::table('merchant_products')
-                        ->where('product_id', $data->id)
-                        ->where('status', 1)
-                        ->sum('stock');
+                return '<div class="action-list">
+                    <select class="process select droplinks ' . $class . '">
+                        <option data-val="1" value="' . route('admin-merchant-product-status', ['id' => $mp->id, 'status' => 1]) . '" ' . $s . '>' . __("Activated") . '</option>
+                        <option data-val="0" value="' . route('admin-merchant-product-status', ['id' => $mp->id, 'status' => 0]) . '" ' . $ns . '>' . __("Deactivated") . '</option>
+                    </select>
+                </div>';
+            })
+            ->addColumn('action', function (MerchantProduct $mp) {
+                $product = $mp->product;
+                if (!$product) return '';
 
-                    if ((int)$sum === 0) {
-                        return __("Out Of Stock");
-                    }
-                    return $sum;
-                })
-                ->addColumn('status', function(Product $data) {
-                    $class = $data->status == 1 ? 'drop-success' : 'drop-danger';
-                    $s = $data->status == 1 ? 'selected' : '';
-                    $ns = $data->status == 0 ? 'selected' : '';
-                    return '<div class="action-list">
-                                <select class="process select droplinks '.$class.'">
-                                    <option data-val="1" value="'. route('admin-prod-status',['id1' => $data->id, 'id2' => 1]).'" '.$s.'>'.__("Activated"). '</option>
-                                    <option data-val="0" value="'. route('admin-prod-status',['id1' => $data->id, 'id2' => 0]).'" '.$ns.'>'.__("Deactivated").'</option>
-                                </select>
-                            </div>';
-                })
-                ->addColumn('action', function(Product $data) {
-                    return '<div class="godropdown">
-                                <button class="go-dropdown-toggle">'.__('Actions').'<i class="fas fa-chevron-down"></i></button>
-                                <div class="action-list">
-                                    <a href="' . route('admin-import-edit',$data->id) . '">
-                                        <i class="fas fa-edit"></i> '.__("Edit").'
-                                    </a>
-                                    <a href="javascript" class="set-gallery" data-toggle="modal" data-target="#setgallery">
-                                        <input type="hidden" value="'.$data->id.'">
-                                        <i class="fas fa-eye"></i> '.__("View Gallery").'
-                                    </a>
-                                    <a data-href="' . route('admin-prod-feature',$data->id) . '" class="feature" data-toggle="modal" data-target="#modal2">
-                                        <i class="fas fa-star"></i> '.__("Highlight").'
-                                    </a>
-                                    <a href="javascript:;" data-href="' . route('admin-affiliate-prod-delete',$data->id) . '" data-toggle="modal" data-target="#confirm-delete" class="delete">
-                                        <i class="fas fa-trash-alt"></i> '.__("Delete").'
-                                    </a>
-                                </div>
-                            </div>';
-                })
-                ->rawColumns(['name', 'status', 'action'])
-                ->toJson();
+                return '<div class="godropdown"><button class="go-dropdown-toggle"> ' . __("Actions") . '<i class="fas fa-chevron-down"></i></button>
+                    <div class="action-list">
+                        <a href="' . route('admin-import-edit', $product->id) . '"><i class="fas fa-edit"></i> ' . __("Edit") . '</a>
+                        <a href="javascript" class="set-gallery" data-bs-toggle="modal" data-bs-target="#setgallery"><input type="hidden" value="' . $product->id . '"><i class="fas fa-eye"></i> ' . __("View Gallery") . '</a>
+                        <a data-href="' . route('admin-prod-feature', $product->id) . '" class="feature" data-bs-toggle="modal" data-bs-target="#modal2"> <i class="fas fa-star"></i> ' . __("Highlight") . '</a>
+                        <a href="javascript:;" data-href="' . route('admin-affiliate-prod-delete', $product->id) . '" data-bs-toggle="modal" data-bs-target="#confirm-delete" class="delete"><i class="fas fa-trash-alt"></i> ' . __("Delete") . '</a>
+                    </div></div>';
+            })
+            ->rawColumns(['name', 'stock', 'status', 'action', 'photo', 'vendor'])
+            ->toJson();
     }
 
     public function index(){
@@ -308,13 +308,25 @@ class ImportController extends AdminBaseController
 
         // Thumbnail
         $fimageData = public_path().'/assets/images/products/'.$prod->photo;
-        if(filter_var($prod->photo,FILTER_VALIDATE_URL)){
+        if(filter_var($prod->photo, FILTER_VALIDATE_URL)){
             $fimageData = $prod->photo;
         }
-        $img = Image::make($fimageData)->resize(285, 285);
-        $thumbnail = time().Str::random(8).'.jpg';
-        $img->save(public_path().'/assets/images/thumbnails/'.$thumbnail);
-        $prod->thumbnail  = $thumbnail;
+
+        // التحقق من وجود الصورة قبل إنشاء الـ thumbnail
+        try {
+            if (!empty($prod->photo) && (filter_var($prod->photo, FILTER_VALIDATE_URL) || file_exists($fimageData))) {
+                $img = Image::make($fimageData)->resize(285, 285);
+                $thumbnail = time().Str::random(8).'.jpg';
+                $img->save(public_path().'/assets/images/thumbnails/'.$thumbnail);
+                $prod->thumbnail = $thumbnail;
+            } else {
+                // استخدام صورة افتراضية
+                $prod->thumbnail = 'noimage.png';
+            }
+        } catch (\Exception $e) {
+            \Log::warning('Could not create thumbnail for product: ' . $prod->id . ' - ' . $e->getMessage());
+            $prod->thumbnail = 'noimage.png';
+        }
         $prod->update();
 
         // إنشاء/تحديث عرض البائع (MerchantProduct)
@@ -365,10 +377,10 @@ class ImportController extends AdminBaseController
                 'preordered'          => (int) ($request->input('preordered') ?? 0),
                 'product_condition'   => (int) ($request->input('product_condition') ?? 0),
                 'ship'                => $request->input('ship') ?: null,
+                'brand_quality_id'    => $request->input('brand_quality_id') ?: null,
                 'status'              => 1,
             ]
         );
-        // // dd(['mp_upsert' => 'done']); // اختباري
 
         // Add To Gallery If any
         $lastid = $data->id;
@@ -377,10 +389,10 @@ class ImportController extends AdminBaseController
                 if(in_array($key, (array)$request->galval))
                 {
                     $gallery = new Gallery;
-                    $name = time().\Str::random(8).str_replace(' ', '', $file->getClientOriginalExtension());
+                    $extension = $file->getClientOriginalExtension() ?: 'jpg';
+                    $name = time() . Str::random(8) . '.' . $extension;
                     $img = Image::make($file->getRealPath())->resize(800, 800);
-                    $thumbnail = time().Str::random(8).'.jpg';
-                    $img->save(public_path().'/assets/images/galleries/'.$name);
+                    $img->save(public_path() . '/assets/images/galleries/' . $name);
                     $gallery['photo'] = $name;
                     $gallery['product_id'] = $lastid;
                     $gallery->save();
@@ -541,21 +553,33 @@ class ImportController extends AdminBaseController
         //-- Logic Section Ends
 
         // تحديث الـ Thumbnail
-        if($data->photo != null)
+        if($data->photo != null && !empty($data->thumbnail))
         {
-            if (file_exists(public_path().'/assets/images/thumbnails/'.$data->thumbnail)) {
-                unlink(public_path().'/assets/images/thumbnails/'.$data->thumbnail);
+            $oldThumb = public_path().'/assets/images/thumbnails/'.$data->thumbnail;
+            if (file_exists($oldThumb) && $data->thumbnail != 'noimage.png') {
+                @unlink($oldThumb);
             }
         }
 
         $fimageData = public_path().'/assets/images/products/'.$prod->photo;
-        if(filter_var($prod->photo,FILTER_VALIDATE_URL)){
+        if(filter_var($prod->photo, FILTER_VALIDATE_URL)){
             $fimageData = $prod->photo;
         }
-        $img = Image::make($fimageData)->resize(285, 285);
-        $thumbnail = time().Str::random(8).'.jpg';
-        $img->save(public_path().'/assets/images/thumbnails/'.$thumbnail);
-        $prod->thumbnail  = $thumbnail;
+
+        // التحقق من وجود الصورة قبل إنشاء الـ thumbnail
+        try {
+            if (!empty($prod->photo) && (filter_var($prod->photo, FILTER_VALIDATE_URL) || file_exists($fimageData))) {
+                $img = Image::make($fimageData)->resize(285, 285);
+                $thumbnail = time().Str::random(8).'.jpg';
+                $img->save(public_path().'/assets/images/thumbnails/'.$thumbnail);
+                $prod->thumbnail = $thumbnail;
+            } else {
+                $prod->thumbnail = 'noimage.png';
+            }
+        } catch (\Exception $e) {
+            \Log::warning('Could not create thumbnail for product: ' . $prod->id . ' - ' . $e->getMessage());
+            $prod->thumbnail = 'noimage.png';
+        }
         $prod->update();
 
         // تحديث/إنشاء سجل MerchantProduct
@@ -602,10 +626,10 @@ class ImportController extends AdminBaseController
                 'preordered'          => (int) ($request->input('preordered') ?? 0),
                 'product_condition'   => (int) ($request->input('product_condition') ?? 0),
                 'ship'                => $request->input('ship') ?: null,
+                'brand_quality_id'    => $request->input('brand_quality_id') ?: null,
                 'status'              => 1,
             ]
         );
-        // // dd(['mp_update' => 'done']); // اختباري
 
         //--- Redirect Section
         $msg = __('Product Updated Successfully.').'<a href="'.route('admin-import-index').'">'.__("View Product Lists.").'</a>';

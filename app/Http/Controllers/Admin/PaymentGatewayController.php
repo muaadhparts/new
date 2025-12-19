@@ -90,12 +90,12 @@ class PaymentGatewayController extends AdminBaseController
                                 $editLink = route('admin-payment-edit',$data->id);
                                 $deleteLink = route('admin-payment-delete',$data->id);
 
-                                $delete = $data->type == 'automatic' || $data->keyword != null ? "" : "<a href='javascript:;' data-href='{$deleteLink}' data-toggle='modal' data-target='#confirm-delete' class='delete'>
+                                $delete = $data->type == 'automatic' || $data->keyword != null ? "" : "<a href='javascript:;' data-href='{$deleteLink}' data-bs-toggle='modal' data-bs-target='#confirm-delete' class='delete'>
                                 <i class='fas fa-trash-alt'></i>
                                 </a>";
                                 $editText = __('Edit');
                                 return "<div class='action-list'>
-                                            <a data-href='{$editLink}' class='edit' data-toggle='modal' data-target='#modal1'> 
+                                            <a data-href='{$editLink}' class='edit' data-bs-toggle='modal' data-bs-target='#modal1'>
                                             <i class='fas fa-edit'></i>{$editText}
                                             </a>
                                             {$delete}

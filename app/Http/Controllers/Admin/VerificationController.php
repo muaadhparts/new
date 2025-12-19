@@ -43,11 +43,11 @@ class VerificationController extends AdminBaseController
                             }) 
                             ->addColumn('action', function(Verification $data) {
                                 return '<div class="action-list">
-                                            <a href="javascript:;" class="set-gallery" data-toggle="modal" data-target="#setgallery">
+                                            <a href="javascript:;" class="set-gallery" data-bs-toggle="modal" data-bs-target="#setgallery">
                                                 <input type="hidden" value="'.$data->id.'">
                                                 <i class="fas fa-paperclip"></i> '.__('View Attachments').
                                             '</a>
-                                            <a href="javascript:;" data-href="' . route('admin-vr-delete',$data->id) . '" data-toggle="modal" data-target="#confirm-delete" class="delete">
+                                            <a href="javascript:;" data-href="' . route('admin-vr-delete',$data->id) . '" data-bs-toggle="modal" data-bs-target="#confirm-delete" class="delete">
                                             <i class="fas fa-trash-alt"></i>
                                             </a>
                                         </div>';

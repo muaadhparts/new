@@ -45,7 +45,63 @@
 													<div class="product-description">
 														<div class="body-area">
 															<div class="gocover" style="background: url({{asset('assets/images/'.$gs->admin_loader)}}) no-repeat scroll center center rgba(45, 45, 45, 0.5);"></div>
-															
+
+															{{-- Vendor Selection --}}
+															<div class="row">
+																<div class="col-lg-12">
+																	<div class="left-area">
+																		<h4 class="heading">{{ __('Vendor') }}*</h4>
+																	</div>
+																</div>
+																<div class="col-lg-12">
+																	<select id="vendor_id" name="user_id" required="" class="select2">
+																		<option value="">{{ __('Select Vendor') }}</option>
+																		@foreach (\App\Models\User::where('is_vendor', 2)->where('ban', 0)->orderBy('shop_name')->get() as $vendor)
+																			<option value="{{ $vendor->id }}">
+																				{{ $vendor->shop_name ?: $vendor->name }} ({{ $vendor->email }})
+																			</option>
+																		@endforeach
+																	</select>
+																</div>
+															</div>
+
+															{{-- Brand (العلامة التجارية) --}}
+															<div class="row">
+																<div class="col-lg-12">
+																	<div class="left-area">
+																		<h4 class="heading">{{ __('Brand') }} ({{ __('Trademark') }})</h4>
+																	</div>
+																</div>
+																<div class="col-lg-12">
+																	<select name="brand_id" class="form-control">
+																		<option value="">{{ __('Select Brand') }}</option>
+																		@foreach (\App\Models\Brand::all() as $brand)
+																			<option value="{{ $brand->id }}" style="color: #333;">
+																				{{ $brand->name }} {{ $brand->name_ar ? '- ' . $brand->name_ar : '' }}
+																			</option>
+																		@endforeach
+																	</select>
+																</div>
+															</div>
+
+															{{-- Quality Brand (جودة التصنيع) --}}
+															<div class="row">
+																<div class="col-lg-12">
+																	<div class="left-area">
+																		<h4 class="heading">{{ __('Quality Brand') }} ({{ __('Manufacturing Quality') }})</h4>
+																	</div>
+																</div>
+																<div class="col-lg-12">
+																	<select name="brand_quality_id" class="form-control">
+																		<option value="">{{ __('Select Quality Brand') }}</option>
+																		@foreach (\App\Models\QualityBrand::all() as $qb)
+																			<option value="{{ $qb->id }}" style="color: #333;">
+																				{{ $qb->name_en }} {{ $qb->name_ar ? '- ' . $qb->name_ar : '' }} {{ $qb->country ? '(' . $qb->country . ')' : '' }}
+																			</option>
+																		@endforeach
+																	</select>
+																</div>
+															</div>
 
 															<div class="row">
 																<div class="col-lg-12">
@@ -55,10 +111,37 @@
 																	</div>
 																</div>
 																<div class="col-lg-12">
-																	<input type="text" class="input-field" placeholder="{{ __('Enter Product Name') }}" name="name" required="">
+																	<input type="text" class="form-control" placeholder="{{ __('Enter Product Name') }}" name="name" required="">
 																</div>
 															</div>
 
+															{{-- Label English --}}
+															<div class="row">
+																<div class="col-lg-12">
+																	<div class="left-area">
+																		<h4 class="heading">{{ __('Product Name (English)') }}</h4>
+																	</div>
+																</div>
+																<div class="col-lg-12">
+																	<input type="text" class="form-control"
+																		placeholder="{{ __('Enter Product Name in English') }}"
+																		name="label_en">
+																</div>
+															</div>
+
+															{{-- Label Arabic --}}
+															<div class="row">
+																<div class="col-lg-12">
+																	<div class="left-area">
+																		<h4 class="heading">{{ __('Product Name (Arabic)') }}</h4>
+																	</div>
+																</div>
+																<div class="col-lg-12">
+																	<input type="text" class="form-control" dir="rtl"
+																		placeholder="{{ __('Enter Product Name in Arabic') }}"
+																		name="label_ar">
+																</div>
+															</div>
 
 															<div class="row">
 																<div class="col-lg-12">
@@ -139,7 +222,7 @@
 																	</div>
 																</div>
 																<div class="col-lg-7">
-																		<textarea class="input-field" rows="4" name="link" placeholder="{{ __("Link") }}"></textarea> 
+																		<textarea class="form-control" rows="4" name="link" placeholder="{{ __("Link") }}"></textarea> 
 																</div>
 															</div>
 
@@ -160,10 +243,10 @@
 																				<span class="remove license-remove"><i class="fas fa-times"></i></span>
 																					<div  class="row">
 																					   <div class="col-lg-6">
-																						  <input type="text" name="license[]" class="input-field" placeholder="{{ __("License Key") }}" required="">
+																						  <input type="text" name="license[]" class="form-control" placeholder="{{ __("License Key") }}" required="">
 																						</div>
 																						<div class="col-lg-6">
-																						   <input type="number" min="1" name="license_qty[]" class="input-field" placeholder="{{ __("License Quantity") }}" value="1">
+																						   <input type="number" min="1" name="license_qty[]" class="form-control" placeholder="{{ __("License Quantity") }}" value="1">
 																						</div>
 																				   </div>
 																			</div>
@@ -238,7 +321,7 @@
 															  </div>
 															  <div class="col-lg-12">
 																<div class="text-editor">
-																  <textarea name="meta_description" class="input-field" placeholder="{{ __('Meta Description') }}"></textarea>
+																  <textarea name="meta_description" class="form-control" placeholder="{{ __('Meta Description') }}"></textarea>
 																</div>
 															  </div>
 															</div>
@@ -253,7 +336,7 @@
 																</div>
 															</div>
 															<div class="col-lg-12">
-																<input type="text" class="input-field" placeholder="{{__("Enter Platform")}}" name="platform">
+																<input type="text" class="form-control" placeholder="{{__("Enter Platform")}}" name="platform">
 															</div>
 														</div>
 
@@ -265,7 +348,7 @@
 																</div>
 															</div>
 															<div class="col-lg-12">
-																<input type="text" class="input-field" placeholder="{{ __("Enter Region") }}" name="region">
+																<input type="text" class="form-control" placeholder="{{ __("Enter Region") }}" name="region">
 															</div>
 														</div>
 
@@ -277,7 +360,7 @@
 																</div>
 															</div>
 															<div class="col-lg-12">
-																<input type="text" class="input-field" placeholder="{{ __("Enter Type") }}" name="licence_type">
+																<input type="text" class="form-control" placeholder="{{ __("Enter Type") }}" name="licence_type">
 															</div>
 														</div>
 
@@ -305,7 +388,7 @@
 																		<div class="panel panel-body">
 																			<div class="span4 cropme text-center" id="landscape"
 																				style="width: 100%; height: 285px; border: 1px dashed #ddd; background: #f1f1f1;">
-																				<a href="javascript:;" id="crop-image" class=" mybtn1" style="">
+																				<a href="javascript:;" id="crop-image" class="btn btn-primary" style="">
 																					<i class="icofont-upload-alt"></i> {{ __('Upload Image Here') }}
 																				</a>
 																			</div>
@@ -324,7 +407,7 @@
 																	</div>
 																</div>
 																<div class="col-lg-12">
-																	<a href="#" class="set-gallery" data-toggle="modal" data-target="#setgallery">
+																	<a href="#" class="set-gallery" data-bs-toggle="modal" data-bs-target="#setgallery">
 																		<i class="icofont-plus"></i> {{ __('Set Gallery') }}
 																	</a>
 																</div>
@@ -342,7 +425,7 @@
 																	</div>
 																</div>
 																<div class="col-lg-12">
-																	<input name="price" type="number" class="input-field" placeholder="{{ __('e.g 20') }}" step="0.1" required="" min="0">
+																	<input name="price" type="number" class="form-control" placeholder="{{ __('e.g 20') }}" step="0.1" required="" min="0">
 																</div>
 															</div>
 			
@@ -354,7 +437,7 @@
 																	</div>
 																</div>
 																<div class="col-lg-12">
-																	<input name="previous_price" step="0.1" type="number" class="input-field" placeholder="{{ __('e.g 20') }}" min="0">
+																	<input name="previous_price" step="0.1" type="number" class="form-control" placeholder="{{ __('e.g 20') }}" min="0">
 																</div>
 															</div>
 
@@ -366,7 +449,7 @@
 																	</div>
 																</div>
 																<div class="col-lg-12">
-																	<input  name="youtube" type="text" class="input-field" placeholder="{{ __('Enter Youtube Video URL') }}">
+																	<input  name="youtube" type="text" class="form-control" placeholder="{{ __('Enter Youtube Video URL') }}">
 																</div>
 															</div>
 
@@ -387,12 +470,12 @@
 																				<span class="remove feature-remove"><i class="fas fa-times"></i></span>
 																				<div class="row">
 																					<div class="col-lg-6">
-																					<input type="text" name="features[]" class="input-field" placeholder="{{ __('Enter Your Keyword') }}">
+																					<input type="text" name="features[]" class="form-control" placeholder="{{ __('Enter Your Keyword') }}">
 																					</div>
 			
 																					<div class="col-lg-6">
 																						<div class="input-group colorpicker-component cp">
-																						  <input type="text" name="colors[]" value="#000000" class="input-field cp"/>
+																						  <input type="text" name="colors[]" value="#000000" class="form-control cp"/>
 																						  <span class="input-group-addon"><i></i></span>
 																						</div>
 																					</div>
@@ -419,7 +502,7 @@
 
 															  <div class="row text-center">
 																<div class="col-6 offset-3">
-																	<button class="addProductSubmit-btn" type="submit">{{ __('Create Product') }}</button>
+																	<button class="btn btn-primary" type="submit">{{ __('Create Product') }}</button>
 																</div>
 															</div>
 
@@ -438,8 +521,8 @@
 				<div class="modal-content">
 				<div class="modal-header">
 					<h5 class="modal-title" id="exampleModalCenterTitle">{{ __("Image Gallery") }}</h5>
-					<button type="button" class="close" data-dismiss="modal" aria-label="Close">
-					<span aria-hidden="true">×</span>
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+					
 					</button>
 				</div>
 				<div class="modal-body">
@@ -451,7 +534,7 @@
 								</div>
 							</div>
 							<div class="col-sm-6">
-								<a href="javascript:;" class="upload-done" data-dismiss="modal"> <i class="fas fa-check"></i> {{ __("Done") }}</a>
+								<a href="javascript:;" class="upload-done" data-bs-dismiss="modal"> <i class="fas fa-check"></i> {{ __("Done") }}</a>
 							</div>
 							<div class="col-sm-12 text-center">( <small>{{ __("You can upload multiple Images.") }}</small> )</div>
 						</div>
@@ -524,14 +607,14 @@
 </script>
 
 <script type="text/javascript">
-	
     (function($) {
 		"use strict";
 
-$('.cropme').simpleCropper();
+		$(document).ready(function() {
+			$('.cropme').simpleCropper();
+		});
 
 	})(jQuery);
-
 </script>
 
 

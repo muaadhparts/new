@@ -2,7 +2,10 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\GeocodingController;
+use App\Http\Controllers\Api\GeocodingController;
+use App\Http\Controllers\Api\SpecificationApiController;
+use App\Http\Controllers\Api\ProductApiController;
+use App\Http\Controllers\Api\ShippingApiController;
 
 /*
 |--------------------------------------------------------------------------
@@ -15,14 +18,42 @@ use App\Http\Controllers\GeocodingController;
 |
 */
 
-// --------------------- GOOGLE MAPS GEOCODING ROUTES ---------------------
-Route::prefix('geocoding')->group(function () {
-    Route::post('/reverse', [GeocodingController::class, 'reverseGeocode']);
-    Route::get('/countries', [GeocodingController::class, 'getCountries']);
-    Route::get('/states', [GeocodingController::class, 'getStatesByCountry']);
-    Route::get('/cities', [GeocodingController::class, 'getCitiesByState']);
+// --------------------- SPECIFICATION API ROUTES ---------------------
+Route::prefix('specs')->middleware(['web'])->group(function () {
+    Route::post('/save', [SpecificationApiController::class, 'save'])->name('api.specs.save');
+    Route::post('/clear', [SpecificationApiController::class, 'clear'])->name('api.specs.clear');
+    Route::get('/current', [SpecificationApiController::class, 'current'])->name('api.specs.current');
 });
+// --------------------- SPECIFICATION API ROUTES END ---------------------
+
+// --------------------- PRODUCT API ROUTES ---------------------
+Route::prefix('product')->middleware(['web'])->group(function () {
+    // Alternatives
+    Route::get('/alternatives/{sku}', [ProductApiController::class, 'getAlternatives'])->name('api.product.alternatives');
+    Route::get('/alternatives/{sku}/related', [ProductApiController::class, 'getAlternativeRelatedProducts'])->name('api.product.alternatives.related');
+    Route::get('/alternatives/{sku}/html', [ProductApiController::class, 'getAlternativesHtml'])->name('api.product.alternatives.html');
+
+    // Compatibility
+    Route::get('/compatibility/{sku}', [ProductApiController::class, 'getCompatibility'])->name('api.product.compatibility');
+    Route::get('/compatibility/{sku}/html', [ProductApiController::class, 'getCompatibilityHtml'])->name('api.product.compatibility.html');
+});
+// --------------------- PRODUCT API ROUTES END ---------------------
+
+// --------------------- SHIPPING API ROUTES ---------------------
+Route::prefix('shipping')->middleware(['web'])->group(function () {
+    Route::post('/tryoto/options', [ShippingApiController::class, 'getTryotoOptions'])->name('api.shipping.tryoto.options');
+    Route::post('/tryoto/html', [ShippingApiController::class, 'getTryotoHtml'])->name('api.shipping.tryoto.html');
+});
+// --------------------- SHIPPING API ROUTES END ---------------------
+
+// --------------------- GOOGLE MAPS GEOCODING ROUTES ---------------------
+// MOVED TO web.php to share session with checkout
+// Routes are now at: /geocoding/reverse, /geocoding/search-cities, etc.
 // --------------------- GOOGLE MAPS GEOCODING ROUTES END ---------------------
+
+// --------------------- TRYOTO WEBHOOK ROUTES ---------------------
+Route::post('/tryoto/webhook', 'Admin\ShipmentController@webhook')->name('api.tryoto.webhook');
+// --------------------- TRYOTO WEBHOOK ROUTES END ---------------------
 
 
 Route::group(['prefix' => 'user'], function () {

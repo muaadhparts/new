@@ -58,7 +58,7 @@
                             </div>
                           </div>
                           <div class="col-lg-6">
-                            <input type="text" class="input-field" placeholder="{{ __('Enter App ID') }}" name="fclient_id" value="{{ $data->fclient_id }}" required="">
+                            <input type="text" class="form-control" placeholder="{{ __('Enter App ID') }}" name="fclient_id" value="{{ $data->fclient_id }}" required="">
                           </div>
                         </div>
 
@@ -70,7 +70,7 @@
                             </div>
                           </div>
                           <div class="col-lg-6">
-                            <input type="text" class="input-field" placeholder="{{ __('Enter App Secret') }}" name="fclient_secret" value="{{ $data->fclient_secret }}" required="">
+                            <input type="text" class="form-control" placeholder="{{ __('Enter App Secret') }}" name="fclient_secret" value="{{ $data->fclient_secret }}" required="">
                           </div>
                         </div>
 
@@ -82,7 +82,7 @@
                             </div>
                           </div>
                           <div class="col-lg-6">
-                            <input type="text" class="input-field" placeholder="{{ __('Website URL') }}"  value="{{ url('/') }}" readonly="">
+                            <input type="text" class="form-control" placeholder="{{ __('Website URL') }}"  value="{{ url('/') }}" readonly="">
                           </div>
                         </div>
 
@@ -98,7 +98,7 @@
                             $url = url('/auth/facebook/callback');
                             $url = preg_replace("/^http:/i", "https:", $url);
                             @endphp
-                            <input type="text" class="input-field" placeholder="{{ __('Enter Site URL') }}" name="fredirect" value="{{$url}}" readonly>
+                            <input type="text" class="form-control" placeholder="{{ __('Enter Site URL') }}" name="fredirect" value="{{$url}}" readonly>
                           </div>
                         </div>
 
@@ -110,7 +110,7 @@
                             </div>
                           </div>
                           <div class="col-lg-6">
-                            <button class="addProductSubmit-btn" type="submit">{{ __('Save') }}</button>
+                            <button class="btn btn-primary" type="submit">{{ __('Save') }}</button>
                           </div>
                         </div>
                      </form>

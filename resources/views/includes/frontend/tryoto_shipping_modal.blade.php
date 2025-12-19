@@ -12,8 +12,14 @@
                 <div class="summary-inner-box">
                     <div class="inputs-wrapper">
                         <div class="shipping-provider-section tryoto-shipping-section">
-                            <div class="provider-methods-wrapper">
-                                <livewire:tryoto-componet :products="$array_product" :vendor-id="$vendor_id" />
+                            <div class="provider-methods-wrapper" id="tryoto-options-container-{{ $vendor_id }}">
+                                {{-- سيتم تحميل خيارات الشحن عبر API --}}
+                                <div class="text-center py-4">
+                                    <div class="spinner-border text-primary" role="status">
+                                        <span class="visually-hidden">جاري التحميل...</span>
+                                    </div>
+                                    <p class="mt-2 text-muted">جاري تحميل خيارات الشحن...</p>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -27,35 +33,35 @@
 (function() {
     const modalId = '{{ $modalId }}';
     const vendorId = {{ $vendor_id }};
+    const containerId = 'tryoto-options-container-' + vendorId;
+    let optionsLoaded = false;
 
-    // دالة لتحديث نص الشحن - استخدام updateVendorShippingText المركزية
-    function updateTryotoShippingDisplay_{{ $vendor_id }}(selectedRadio) {
-        // استخدام الدالة المركزية لضمان العرض الموحد
+    // دالة لتحديث نص الشحن
+    function updateTryotoShippingDisplay(selectedRadio) {
         if (typeof updateVendorShippingText === 'function') {
             updateVendorShippingText(vendorId);
         } else {
-            // Fallback إذا لم تكن الدالة موجودة
             if (!selectedRadio) return;
 
             const shippingText = document.getElementById('shipping_text' + vendorId);
             const logo = selectedRadio.getAttribute('data-logo') || '';
             const service = selectedRadio.getAttribute('data-service') || '';
-            const companyName = selectedRadio.getAttribute('data-form') || '';
-            const viewPrice = selectedRadio.getAttribute('view') || '';
+            const companyName = selectedRadio.getAttribute('data-company') || selectedRadio.getAttribute('data-form') || '';
+            const viewPrice = selectedRadio.getAttribute('data-view') || selectedRadio.getAttribute('view') || '';
 
             if (shippingText) {
-                let html = '<div style="display: flex; align-items: center; gap: 10px;">';
+                let html = '<div class="muaadh-shipping-option">';
                 if (logo) {
-                    html += '<img src="' + logo + '" alt="' + companyName + '" style="max-width: 40px; max-height: 40px; object-fit: contain; border-radius: 4px;">';
+                    html += '<img src="' + logo + '" alt="' + companyName + '" class="muaadh-shipping-logo">';
                 }
-                html += '<div style="display: flex; flex-direction: column;">';
-                html += '<span style="font-weight: 600; color: #4C3533;">' + companyName + '</span>';
+                html += '<div class="muaadh-shipping-info">';
+                html += '<span class="muaadh-shipping-company">' + companyName + '</span>';
                 if (service) {
-                    html += '<small style="color: #6c757d;">' + service + '</small>';
+                    html += '<small class="muaadh-shipping-service">' + service + '</small>';
                 }
                 html += '</div>';
                 if (viewPrice) {
-                    html += '<span style="margin-left: auto; font-weight: 600; color: #EE1243;">+ ' + viewPrice + '</span>';
+                    html += '<span class="muaadh-shipping-price">+ ' + viewPrice + '</span>';
                 }
                 html += '</div>';
                 shippingText.innerHTML = html;
@@ -67,66 +73,131 @@
         }
     }
 
-    // Initialize when DOM is ready
-    function initTryotoModal_{{ $vendor_id }}() {
+    // جلب خيارات الشحن من API
+    function loadTryotoOptions() {
+        if (optionsLoaded) return;
+
+        const container = document.getElementById(containerId);
+        if (!container) return;
+
+        fetch('{{ route("api.shipping.tryoto.html") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || '{{ csrf_token() }}',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({
+                vendor_id: vendorId
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            optionsLoaded = true;
+            if (data.success && data.html) {
+                container.innerHTML = data.html;
+                initRadioListeners();
+            } else if (data.error) {
+                container.innerHTML = '<div class="alert alert-warning">' +
+                    '<i class="fas fa-exclamation-triangle me-2"></i>' +
+                    '<strong>خدمة الشحن الذكي غير متاحة</strong><br>' +
+                    '<span>' + (data.error || 'حدث خطأ غير متوقع') + '</span></div>';
+            } else {
+                container.innerHTML = '<div class="alert alert-info">' +
+                    '<i class="fas fa-info-circle me-2"></i>' +
+                    'لا توجد خيارات شحن متاحة</div>';
+            }
+        })
+        .catch(error => {
+            console.error('Tryoto API Error:', error);
+            container.innerHTML = '<div class="alert alert-danger">' +
+                '<i class="fas fa-times-circle me-2"></i>' +
+                'حدث خطأ في تحميل خيارات الشحن</div>';
+        });
+    }
+
+    // ربط الأحداث بالـ radio buttons
+    function initRadioListeners() {
+        const container = document.getElementById(containerId);
+        if (!container) return;
+
+        container.querySelectorAll('input[type="radio"]').forEach(function(radio) {
+            radio.addEventListener('change', function() {
+                updateTryotoShippingDisplay(this);
+
+                // ✅ تحديث سعر الشحن في الملخص
+                updateShippingSummary();
+            });
+        });
+    }
+
+    // ✅ تحديث سعر الشحن في الملخص والإجمالي
+    function updateShippingSummary() {
+        const container = document.getElementById(containerId);
+        if (!container) return;
+
+        const selectedRadio = container.querySelector('input[type="radio"]:checked');
+        if (selectedRadio) {
+            const originalPrice = parseFloat(selectedRadio.getAttribute('data-price')) || 0;
+            const freeAbove = parseFloat(selectedRadio.getAttribute('data-free-above')) || 0;
+
+            // Get vendor products total
+            let vendorTotal = 0;
+            if (typeof window.getVendorTotal === 'function') {
+                vendorTotal = window.getVendorTotal(vendorId);
+            } else {
+                vendorTotal = parseFloat(document.getElementById('ttotal')?.value) || 0;
+            }
+
+            // Check if free shipping applies
+            let finalPrice = originalPrice;
+            let isFreeShipping = (freeAbove > 0 && vendorTotal >= freeAbove);
+            if (isFreeShipping) finalPrice = 0;
+
+            // ✅ Update PriceSummary directly
+            if (typeof window.PriceSummary !== 'undefined') {
+                window.PriceSummary.updateShipping(finalPrice, originalPrice, isFreeShipping);
+                console.log('✅ Tryoto Shipping updated via PriceSummary:', { final: finalPrice, original: originalPrice, free: isFreeShipping });
+            }
+        }
+
+        // Also call global functions for backward compatibility
+        if (typeof window.getShipping === 'function') {
+            window.getShipping();
+        }
+    }
+
+    // Initialize modal
+    function initTryotoModal() {
         const modal = document.getElementById(modalId);
         if (!modal) {
-            setTimeout(initTryotoModal_{{ $vendor_id }}, 500);
+            setTimeout(initTryotoModal, 500);
             return;
         }
 
-        // Handle manual radio changes in Tryoto modal
-        modal.addEventListener('change', function(e) {
-            if (e.target.matches('input[type="radio"][name="shipping[' + vendorId + ']"]')) {
-                updateTryotoShippingDisplay_{{ $vendor_id }}(e.target);
-            }
+        // تحميل الخيارات عند فتح Modal
+        modal.addEventListener('show.bs.modal', function() {
+            loadTryotoOptions();
         });
 
         // تحديث العرض عند فتح Modal
         modal.addEventListener('shown.bs.modal', function() {
             const selectedRadio = modal.querySelector('input[type="radio"][name="shipping[' + vendorId + ']"]:checked');
             if (selectedRadio) {
-                updateTryotoShippingDisplay_{{ $vendor_id }}(selectedRadio);
+                updateTryotoShippingDisplay(selectedRadio);
             }
         });
-
-        // تحديث العرض للعنصر المختار فقط (بدون اختيار تلقائي)
-        setTimeout(function() {
-            const checkedRadio = modal.querySelector('input[type="radio"][name="shipping[' + vendorId + ']"]:checked');
-            if (checkedRadio) {
-                updateTryotoShippingDisplay_{{ $vendor_id }}(checkedRadio);
-            }
-        }, 500);
     }
 
-    // Listen for Livewire events
-    document.addEventListener('livewire:load', function() {
-        if (window.Livewire) {
-            Livewire.on('shipping-updated', function(data) {
-                if (data.vendorId === vendorId || data['vendorId'] === vendorId || data['vendor_id'] === vendorId) {
-                    const modal = document.getElementById(modalId);
-                    if (modal) {
-                        const selectedRadio = modal.querySelector('input[type="radio"][name="shipping[' + vendorId + ']"]:checked');
-                        updateTryotoShippingDisplay_{{ $vendor_id }}(selectedRadio);
-                    }
-                }
-            });
-        }
-
-        // Initialize modal after Livewire loads
-        setTimeout(initTryotoModal_{{ $vendor_id }}, 500);
-    });
-
-    // Fallback if Livewire doesn't exist
+    // Start initialization
     if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', function() {
-            setTimeout(initTryotoModal_{{ $vendor_id }}, 1000);
-        });
+        document.addEventListener('DOMContentLoaded', initTryotoModal);
     } else {
-        setTimeout(initTryotoModal_{{ $vendor_id }}, 1000);
+        initTryotoModal();
     }
 
-    // Make function globally accessible for restoration
-    window['updateTryotoShippingDisplay_' + vendorId] = updateTryotoShippingDisplay_{{ $vendor_id }};
+    // Make function globally accessible
+    window['updateTryotoShippingDisplay_' + vendorId] = updateTryotoShippingDisplay;
+    window['loadTryotoOptions_' + vendorId] = loadTryotoOptions;
 })();
 </script>

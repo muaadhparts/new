@@ -19,7 +19,7 @@
                             </div>
                           </div>
                           <div class="col-lg-7">
-                            <input type="text" class="input-field" name="title" placeholder="{{ __("Enter Subscription Title") }}" required="" value="{{ $data->title }}">
+                            <input type="text" class="form-control" name="title" placeholder="{{ __("Enter Subscription Title") }}" required="" value="{{ $data->title }}">
                           </div>
                         </div>
 
@@ -30,7 +30,7 @@
                             </div>
                           </div>
                           <div class="col-lg-7">
-                            <input type="text" class="input-field" name="price" placeholder="{{ __("Enter Subscription Cost") }}" required="" value="{{ $data->price * $sign->value }}">
+                            <input type="text" class="form-control" name="price" placeholder="{{ __("Enter Subscription Cost") }}" required="" value="{{ $data->price * $sign->value }}">
                           </div>
                         </div>
 
@@ -41,7 +41,7 @@
                             </div>
                           </div>
                           <div class="col-lg-7">
-                            <input type="text" class="input-field" name="days" placeholder="{{ __("Enter Subscription Days") }}" required="" value="{{ $data->days }}">
+                            <input type="text" class="form-control" name="days" placeholder="{{ __("Enter Subscription Days") }}" required="" value="{{ $data->days }}">
                           </div>
                         </div>
 
@@ -68,7 +68,7 @@
                               </div>
                             </div>
                             <div class="col-lg-7">
-                              <input type="number" min="1" class="input-field" id="allowed_products" name="allowed_products" placeholder="{{ __("Enter Allowed Products") }}" {{ $data->allowed_products != 0 ? "required" : "" }} value="{{ $data->allowed_products != 0 ? $data->allowed_products : '1' }}">
+                              <input type="number" min="1" class="form-control" id="allowed_products" name="allowed_products" placeholder="{{ __("Enter Allowed Products") }}" {{ $data->allowed_products != 0 ? "required" : "" }} value="{{ $data->allowed_products != 0 ? $data->allowed_products : '1' }}">
                             </div>
                           </div>
                         </div>
@@ -93,7 +93,7 @@
                             </div>
                           </div>
                           <div class="col-lg-7">
-                            <button class="addProductSubmit-btn" type="submit">{{ __("Save") }}</button>
+                            <button class="btn btn-primary" type="submit">{{ __("Save") }}</button>
                           </div>
                         </div>
                       </form>

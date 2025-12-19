@@ -32,37 +32,43 @@
 													<thead>
 														<tr>
 									                        <th>{{ __('Name') }}</th>
+									                        <th>{{ __('Brand') }}</th>
+									                        <th>{{ __('Quality Brand') }}</th>
+									                        <th>{{ __('Vendor') }}</th>
 									                        <th>{{ __('Category') }}</th>
-									                        <th>{{ __('Type') }}</th>
 									                        <th>{{ __('Clicks') }}</th>
 														</tr>
 													</thead>
 
                                               <tbody>
-                                                @foreach($productss as $productt) 
+                                                @foreach($productss as $productt)
                     								@foreach($productt as $prod)
-
                                                         <tr>
-
 														<td>
-															<x-product-name :product="$prod->product" :vendor-id="0" target="_blank" />
+															{{ $prod->product ? getLocalizedProductName($prod->product, 60) : __('N/A') }}
 														</td>
-                                                      <td>
-                                                        {{$prod->product->category->name}}
-                                                      </td>
-												  <td>
-												{{$prod->product->type}}
-												  </td>
-                                      <td>{{$productt->count('product_id')}}</td>
-                                                  </tr>
-
-                                                  @break
-                    @endforeach
-
-
-
-                                                  @endforeach
-                                                  </tbody>
+                                                        <td>
+                                                            {{ $prod->product && $prod->product->brand ? getLocalizedBrandName($prod->product->brand) : __('N/A') }}
+                                                        </td>
+                                                        <td>
+                                                            {{ $prod->merchantProduct && $prod->merchantProduct->qualityBrand ? getLocalizedQualityName($prod->merchantProduct->qualityBrand) : __('N/A') }}
+                                                        </td>
+                                                        <td>
+                                                            @if($prod->merchantProduct && $prod->merchantProduct->user)
+                                                                {{ $prod->merchantProduct->user->shop_name ?: $prod->merchantProduct->user->name }}
+                                                            @else
+                                                                {{ __('N/A') }}
+                                                            @endif
+                                                        </td>
+                                                        <td>
+                                                            {{ $prod->product && $prod->product->category ? getLocalizedCategoryName($prod->product->category) : __('N/A') }}
+                                                        </td>
+                                                        <td>{{ $productt->count() }}</td>
+                                                        </tr>
+                                                        @break
+                    								@endforeach
+                                                @endforeach
+                                              </tbody>
 
 												</table>
 										</div>

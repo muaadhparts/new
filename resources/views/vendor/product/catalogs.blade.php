@@ -4,7 +4,13 @@
     <div class="gs-vendor-outlet">
         <!-- breadcrumb start  -->
         <div class="gs-vendor-breadcrumb has-mb">
-            <h4 class="text-capitalize">@lang('Product Catalogs')</h4>
+            <div class="d-flex gap-4 flex-wrap align-items-center custom-gap-sm-2">
+                <h4 class="text-capitalize">@lang('Product Catalogs')</h4>
+                <a href="{{ route('vendor-stock-management') }}"
+                    class="template-btn md-btn primary-btn">
+                    <i class="fas fa-boxes"></i> إدارة المخزون
+                </a>
+            </div>
             <ul class="breadcrumb-menu">
                 <li>
                     <a href="{{ route('vendor.dashboard') }}" class="text-capitalize">
@@ -52,9 +58,7 @@
                                 <td class="text-start">
                                     <div class="product-name">
                                         <span class="content">
-                                            {{ mb_strlen(strip_tags($data->name), 'UTF-8') > 50
-                                                ? mb_substr(strip_tags($data->name), 0, 50, 'UTF-8') . '...'
-                                                : strip_tags($data->name) }}
+                                            {{ getLocalizedProductName($data, 50) }}
                                         </span>
                                     </div>
                                 </td>
@@ -69,17 +73,19 @@
                                     <div class="table-icon-btns-wrapper">
 
                                         @php
-                                            // Check if vendor already has an offer for this product
-                                            $hasOffer = $user->merchantProducts()
-                                                ->where('product_id', $data->id)
-                                                ->exists();
+                                            $ck =
+                                                $user
+                                                    ->products()
+                                                    ->where('catalog_id', '=', $data->id)
+                                                    ->count() > 0;
                                         @endphp
 
-                                        @if ($hasOffer)
-                                            <span class="badge bg-success">{{ __('Offer Created') }}</span>
+
+                                        @if ($ck)
+                                            {{ __('Added To Catalog') }}
                                         @else
-                                            <a href="{{ route('vendor-prod-create-offer', $data->id) }}"
-                                                class="btn btn-primary btn-sm">
+                                            <a href="{{ route('vendor-prod-catalog-edit', $data->id) }}"
+                                                class="view-btn edit-btn">
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12"
                                                     viewBox="0 0 12 12" fill="none">
                                                     <g clip-path="url(#clip0_1880_39494)">
@@ -93,7 +99,7 @@
                                                         </clipPath>
                                                     </defs>
                                                 </svg>
-                                                {{ __('Create Offer') }}
+
                                             </a>
                                         @endif
                                     </div>

@@ -96,9 +96,9 @@
                 <div class="col-lg-2"></div>
 
                 <div class="col-lg-4 d-flex justify-content-between">
-                  <label class="control-label" for="brand">{{ __('Brand') }} *</label>
+                  <label class="control-label" for="partner">{{ __('Brand') }} *</label>
                   <label class="switch">
-                    <input type="checkbox" name="brand" value="1" {{ $data->brand == 1 ? "checked" : "" }}>
+                    <input type="checkbox" name="partner" value="1" {{ $data->partner == 1 ? "checked" : "" }}>
                     <span class="slider round"></span>
                   </label>
                 </div>
@@ -149,7 +149,7 @@
 
               <div class="row">
                 <div class="col-12 text-center">
-                  <button type="submit" class="submit-btn">{{ __('Submit') }}</button>
+                  <button type="submit" class="btn btn-primary">{{ __('Submit') }}</button>
                 </div>
               </div>
 

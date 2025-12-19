@@ -31,10 +31,6 @@ return [
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
 
-    'muaadh' => [
-        'ocean' => 'https://MUAADH.com/verify/'
-    ],
-
     'tryoto' => [
         'sandbox' => env('TRYOTO_SANDBOX', false),
         'test' => [
@@ -67,7 +63,7 @@ return [
     // ],
 
     'google_maps' => [
-        'key' => env('GOOGLE_MAPS_KEY'),
+        'api_key' => env('GOOGLE_MAPS_API_KEY'),
     ],
 
 ];

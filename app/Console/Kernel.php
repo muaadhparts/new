@@ -19,6 +19,33 @@ class Kernel extends ConsoleKernel
         $schedule->command('stock:manage full-refresh --user_id=59 --margin=1.3 --branch=ATWJRY')
                 ->dailyAt('02:00')
                 ->withoutOverlapping();
+
+        // ✅ Tryoto: تحديث حالة الشحنات النشطة كل 30 دقيقة
+        $schedule->command('shipments:update --limit=50')
+                ->everyThirtyMinutes()
+                ->withoutOverlapping()
+                ->appendOutputTo(storage_path('logs/shipments-cron.log'));
+
+        // ✅ Tryoto: تحديث شامل للشحنات مرتين يومياً (الساعة 8 صباحاً و 6 مساءً)
+        $schedule->command('shipments:update --limit=200 --force')
+                ->twiceDaily(8, 18)
+                ->withoutOverlapping()
+                ->appendOutputTo(storage_path('logs/shipments-cron.log'));
+
+        // ✅ Performance: تقرير الأداء الأسبوعي يوم الأحد الساعة 6 صباحاً
+        $schedule->command('performance:report --days=7')
+                ->weeklyOn(0, '06:00')
+                ->appendOutputTo(storage_path('logs/performance-report.log'));
+
+        // ✅ Performance: تنظيف بيانات Telescope القديمة (أكثر من 30 يوم) يوم الأول من كل شهر
+        $schedule->command('performance:report --prune=30')
+                ->monthlyOn(1, '03:00')
+                ->appendOutputTo(storage_path('logs/telescope-prune.log'));
+
+        // ✅ Telescope: تنظيف تلقائي للبيانات القديمة
+        $schedule->command('telescope:prune --hours=720')
+                ->daily()
+                ->withoutOverlapping();
     }
 
 

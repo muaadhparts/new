@@ -20,7 +20,7 @@ class FaqController extends AdminBaseController
                                 return  $details;
                             })
                             ->addColumn('action', function(Faq $data) {
-                                return '<div class="action-list"><a href="' . route('admin-faq-edit',$data->id) . '"> <i class="fas fa-edit"></i>'.__("Edit").'</a><a href="javascript:;" data-href="' . route('admin-faq-delete',$data->id) . '" data-toggle="modal" data-target="#confirm-delete" class="delete"><i class="fas fa-trash-alt"></i></a></div>';
+                                return '<div class="action-list"><a href="' . route('admin-faq-edit',$data->id) . '"> <i class="fas fa-edit"></i>'.__("Edit").'</a><a href="javascript:;" data-href="' . route('admin-faq-delete',$data->id) . '" data-bs-toggle="modal" data-bs-target="#confirm-delete" class="delete"><i class="fas fa-trash-alt"></i></a></div>';
                             }) 
                             ->rawColumns(['action'])
                             ->toJson(); //--- Returning Json Data To Client Side

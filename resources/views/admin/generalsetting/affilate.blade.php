@@ -59,7 +59,7 @@
                             </div>
                           </div>
                           <div class="col-lg-6">
-                            <input type="text" class="input-field" placeholder="{{ __('Write Your Site Title Here') }}" name="affilate_charge" value="{{ $gs->affilate_charge }}" required="">
+                            <input type="text" class="form-control" placeholder="{{ __('Write Your Site Title Here') }}" name="affilate_charge" value="{{ $gs->affilate_charge }}" required="">
                           </div>
                         </div>
 
@@ -88,7 +88,7 @@
                             </div>
                           </div>
                           <div class="col-lg-6">
-                            <button class="addProductSubmit-btn" type="submit">{{ __('Save') }}</button>
+                            <button class="btn btn-primary" type="submit">{{ __('Save') }}</button>
                           </div>
                         </div>
                      </form>

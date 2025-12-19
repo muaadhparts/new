@@ -18,7 +18,7 @@
 
 
 
-    <div class="gs-blog-wrapper">
+    <div class="gs-blog-wrapper muaadh-section-gray">
         <div class="container">
             <div class="row">
                 <div class="col-12 col-lg-8 gs-main-blog-wrapper wow-replaced" data-wow-delay=".1s">

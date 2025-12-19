@@ -32,7 +32,7 @@
 														</div>
 													</div>
 													<div class="col-lg-7">
-														<input type="number" class="input-field" name="amount" placeholder="{{ __("Amount") }}" required="" value="1" min="1" step="0.1">
+														<input type="number" class="form-control" name="amount" placeholder="{{ __("Amount") }}" required="" value="1" min="1" step="0.1">
 													</div>
 												</div>
 
@@ -43,7 +43,7 @@
 														</div>
 													</div>
 													<div class="col-lg-7">
-														<input type="text" class="input-field" name="details" placeholder="{{ __("Details") }}" required="" value="">
+														<input type="text" class="form-control" name="details" placeholder="{{ __("Details") }}" required="" value="">
 													</div>
 												</div>
 
@@ -54,7 +54,7 @@
 														</div>
 													</div>
 													<div class="col-lg-7">
-                                                        <select class="input-field" name="type">
+                                                        <select class="form-control" name="type">
                                                             <option value="plus">{{__('Add')}}</option>
                                                             <option value="minus">{{__('Subtract')}}</option>
                                                         </select>
@@ -71,7 +71,7 @@
 						                            </div>
 						                          </div>
 						                          <div class="col-lg-7">
-						                            <button class="addProductSubmit-btn" type="submit">{{ __("Submit") }}</button>
+						                            <button class="btn btn-primary" type="submit">{{ __("Submit") }}</button>
 						                          </div>
 						                        </div>
 

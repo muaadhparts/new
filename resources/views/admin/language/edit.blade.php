@@ -53,7 +53,7 @@ textarea.input-field {
                             </div>
                           </div>
                           <div class="col-lg-7">
-                            <input type="text" class="input-field" name="language" placeholder="{{ __('Language') }}" required="" value="{{$data->language}}">
+                            <input type="text" class="form-control" name="language" placeholder="{{ __('Language') }}" required="" value="{{$data->language}}">
                           </div>
                         </div>
                         
@@ -66,7 +66,7 @@ textarea.input-field {
                             </div>
                           </div>
                           <div class="col-lg-7">
-                            <select name="rtl" class="input-field" required="">
+                            <select name="rtl" class="form-control" required="">
                               <option value="0" {{ $data->rtl == '0'  ? 'selected' : '' }}>{{ __('Left To Right') }}</option>
                               <option value="1" {{ $data->rtl == '1'  ? 'selected' : '' }}>{{ __('Right To Left') }}</option>
                             </select>
@@ -98,11 +98,11 @@ textarea.input-field {
                                   <span class="remove lang-remove"><i class="fas fa-times"></i></span>
                                   <div class="row">
                                     <div class="col-lg-6">
-                                      <textarea name="keys[]" class="input-field" placeholder="{{ __('Enter Language Key') }}" required="">{{ $key }}</textarea>
+                                      <textarea name="keys[]" class="form-control" placeholder="{{ __('Enter Language Key') }}" required="">{{ $key }}</textarea>
                                     </div>
 
                                     <div class="col-lg-6">
-                                      <textarea  name="values[]" class="input-field" placeholder="{{ __('Enter Language Value') }}" required="">{{ $val }}</textarea>
+                                      <textarea  name="values[]" class="form-control" placeholder="{{ __('Enter Language Value') }}" required="">{{ $val }}</textarea>
                                     </div>
                                   </div>
                                 </div>
@@ -132,7 +132,7 @@ textarea.input-field {
                             </div>
                           </div>
                           <div class="col-lg-7">
-                            <button class="addProductSubmit-btn" type="submit">{{ __('Save') }}</button>
+                            <button class="btn btn-primary" type="submit">{{ __('Save') }}</button>
                           </div>
                         </div>
                       </form>
@@ -166,10 +166,10 @@ $("#lang-btn").on('click', function(){
                                   '<span class="remove lang-remove"><i class="fas fa-times"></i></span>'+
                                   '<div class="row">'+
                                     '<div class="col-lg-6">'+
-                                    '<textarea name="keys[]" class="input-field" placeholder="{{ __('Enter Language Key') }}" required=""></textarea>'+
+                                    '<textarea name="keys[]" class="form-control" placeholder="{{ __('Enter Language Key') }}" required=""></textarea>'+
                                     '</div>'+
                                     '<div class="col-lg-6">'+
-                                    '<textarea  name="values[]" class="input-field" placeholder="{{ __('Enter Language Value') }}" required=""></textarea>'+
+                                    '<textarea  name="values[]" class="form-control" placeholder="{{ __('Enter Language Value') }}" required=""></textarea>'+
                                     '</div>'+
                                   '</div>'+
                                 '</div>'+
@@ -187,10 +187,10 @@ $(document).on('click','.lang-remove', function(){
                                   '<span class="remove lang-remove"><i class="fas fa-times"></i></span>'+
                                   '<div class="row">'+
                                     '<div class="col-lg-6">'+
-                                    '<textarea name="keys[]" class="input-field" placeholder="{{ __('Enter Language Key') }}" required=""></textarea>'+
+                                    '<textarea name="keys[]" class="form-control" placeholder="{{ __('Enter Language Key') }}" required=""></textarea>'+
                                     '</div>'+
                                     '<div class="col-lg-6">'+
-                                    '<textarea  name="values[]" class="input-field" placeholder="{{ __('Enter Language Value') }}" required=""></textarea>'+
+                                    '<textarea  name="values[]" class="form-control" placeholder="{{ __('Enter Language Value') }}" required=""></textarea>'+
                                     '</div>'+
                                   '</div>'+
                                 '</div>'+

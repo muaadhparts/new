@@ -77,14 +77,8 @@ class CompareController extends FrontBaseController
     public function addcompare($merchantProductId)
     {
         $data[0] = 0;
-        $merchantProduct = MerchantProduct::with('product')->findOrFail($merchantProductId);
+        $merchantProduct = MerchantProduct::with(['product', 'user', 'qualityBrand'])->findOrFail($merchantProductId);
         $oldCompare = Session::has('compare') ? Session::get('compare') : null;
-
-        if ($oldCompare && count($oldCompare->items) >= 3) {
-            $data[0] = 1;
-            $data['error'] = __('You can compare maximum 3 products.');
-            return response()->json($data);
-        }
 
         $compare = new Compare($oldCompare);
         $compare->add($merchantProduct, $merchantProductId);
@@ -111,24 +105,18 @@ class CompareController extends FrontBaseController
         $product = Product::findOrFail($productId);
         $oldCompare = Session::has('compare') ? Session::get('compare') : null;
 
-        if ($oldCompare && count($oldCompare->items) >= 3) {
-            $data[0] = 1;
-            $data['error'] = __('You can compare maximum 3 products.');
-            return response()->json($data);
-        }
-
         $userId = $request->get('user');
 
         // If user parameter is provided, find specific merchant product for that vendor
         if ($userId) {
-            $merchantProduct = MerchantProduct::with('product')
+            $merchantProduct = MerchantProduct::with(['product', 'user', 'qualityBrand'])
                 ->where('product_id', $productId)
                 ->where('user_id', $userId)
                 ->where('status', 1)
                 ->first();
         } else {
             // Fallback: find the first active merchant product
-            $merchantProduct = MerchantProduct::with('product')
+            $merchantProduct = MerchantProduct::with(['product', 'user', 'qualityBrand'])
                 ->where('product_id', $productId)
                 ->where('status', 1)
                 ->orderBy('price')
@@ -155,20 +143,60 @@ class CompareController extends FrontBaseController
         return response()->json($data);
     }
 
-    public function removecompare($merchantProductId)
+    public function removecompare(Request $request, $merchantProductId)
     {
-        $data[0] = 0;
         $oldCompare = Session::has('compare') ? Session::get('compare') : null;
+        $isAjax = $request->expectsJson() || $request->ajax();
+
+        // Check if compare session exists
+        if (!$oldCompare || !$oldCompare->items) {
+            if ($isAjax) {
+                return response()->json([
+                    'ok' => false,
+                    'error' => __('Compare list is empty.')
+                ]);
+            }
+            return back()->with('unsuccess', __('Compare list is empty.'));
+        }
+
+        // Check if item exists in compare list (handle both string and integer keys)
+        $itemExists = isset($oldCompare->items[$merchantProductId]) ||
+                      isset($oldCompare->items[(int)$merchantProductId]) ||
+                      isset($oldCompare->items[(string)$merchantProductId]);
+
+        if (!$itemExists) {
+            if ($isAjax) {
+                return response()->json([
+                    'ok' => false,
+                    'error' => __('Item not found in compare list.')
+                ]);
+            }
+            return back()->with('unsuccess', __('Item not found in compare list.'));
+        }
+
         $compare = new Compare($oldCompare);
         $compare->removeItem($merchantProductId);
+        // Also try removing with type casting
+        $compare->removeItem((int)$merchantProductId);
+        $compare->removeItem((string)$merchantProductId);
 
-        if (count($compare->items) > 0) {
+        $remainingCount = $compare->items ? count($compare->items) : 0;
+
+        if ($remainingCount > 0) {
             Session::put('compare', $compare);
-            return back()->with('success', __('Successfully Removed From Compare.'));
         } else {
             Session::forget('compare');
-            return back()->with('success', __('Compare List Cleared.'));
         }
+
+        if ($isAjax) {
+            return response()->json([
+                'ok' => true,
+                'success' => __('Successfully Removed From Compare.'),
+                'compare_count' => $remainingCount
+            ]);
+        }
+
+        return back()->with('success', $remainingCount > 0 ? __('Successfully Removed From Compare.') : __('Compare List Cleared.'));
     }
 
     public function clearcompare()

@@ -15,7 +15,7 @@ class GoogleMapsLocationPicker {
             debounceDelay: config.debounceDelay || 400,
             showSearchBox: config.showSearchBox !== false,
             showCurrentLocationBtn: config.showCurrentLocationBtn !== false,
-            apiEndpoint: config.apiEndpoint || '/api/geocoding/reverse',
+            apiEndpoint: config.apiEndpoint || '/geocoding/reverse',
             csrfToken: config.csrfToken || document.querySelector('meta[name="csrf-token"]')?.content
         };
 

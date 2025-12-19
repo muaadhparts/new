@@ -56,8 +56,7 @@ $app->singleton(
 */
 
 
-$path = base_path();
-$modifiedPath = Str::finish(dirname($path), DIRECTORY_SEPARATOR);
-$app->usePublicPath($modifiedPath);
+// تعيين مسار public الصحيح
+$app->usePublicPath(base_path('public'));
 
 return $app;

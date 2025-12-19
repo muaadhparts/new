@@ -1,25 +1,25 @@
 <?php
 
+/**
+ * @deprecated Use ProductCardDTO->isInWishlist from Controller instead.
+ * This helper always returns false - wishlist state should come from pre-loaded DTO.
+ */
 function wishlistCheck($product_id, $merchant_product_id = null)
 {
-    $query = \App\Models\Wishlist::where('user_id', auth()->id());
-
-    if ($merchant_product_id) {
-        // Check for specific merchant product
-        $query->where('merchant_product_id', $merchant_product_id);
-    } else {
-        // Legacy: check if any vendor of this product is in wishlist
-        $query->where('product_id', $product_id);
-    }
-
-    return $query->exists();
+    // DEPRECATED: Always return false
+    // Wishlist state should be pre-computed in ProductCardDTO
+    return false;
 }
 
+/**
+ * @deprecated Use ProductCardDTO->isInWishlist from Controller instead.
+ * This helper always returns false - wishlist state should come from pre-loaded DTO.
+ */
 function merchantWishlistCheck($merchant_product_id)
 {
-    return \App\Models\Wishlist::where('merchant_product_id', $merchant_product_id)
-        ->where('user_id', auth()->id())
-        ->exists();
+    // DEPRECATED: Always return false
+    // Wishlist state should be pre-computed in ProductCardDTO
+    return false;
 }
 
 function merchantCompareCheck($merchant_product_id)
@@ -49,14 +49,216 @@ function getMerchantDisplayName($merchantProduct)
 }
 
 
+/**
+ * Get localized product name from cart item array or Product model
+ * Supports both array format (cart) and object format (Product model)
+ */
+if (! function_exists('getLocalizedProductName')) {
+    function getLocalizedProductName($item, $maxLength = null): string
+    {
+        $isAr = app()->getLocale() === 'ar';
+
+        // Handle array format (cart item)
+        if (is_array($item)) {
+            $labelAr = trim($item['label_ar'] ?? '');
+            $labelEn = trim($item['label_en'] ?? '');
+            $name = trim($item['name'] ?? '');
+        }
+        // Handle object format (Product model)
+        elseif (is_object($item)) {
+            // If model has localized_name accessor, use it
+            if (method_exists($item, 'getLocalizedNameAttribute') || property_exists($item, 'localized_name')) {
+                $displayName = $item->localized_name ?? $item->name ?? '';
+                if ($maxLength && mb_strlen($displayName, 'UTF-8') > $maxLength) {
+                    return mb_substr($displayName, 0, $maxLength, 'UTF-8') . '...';
+                }
+                return $displayName;
+            }
+            $labelAr = trim($item->label_ar ?? '');
+            $labelEn = trim($item->label_en ?? '');
+            $name = trim($item->name ?? '');
+        } else {
+            return '';
+        }
+
+        // Determine display name based on locale
+        if ($isAr) {
+            $displayName = $labelAr !== '' ? $labelAr : ($labelEn !== '' ? $labelEn : $name);
+        } else {
+            $displayName = $labelEn !== '' ? $labelEn : ($labelAr !== '' ? $labelAr : $name);
+        }
+
+        // Truncate if maxLength specified
+        if ($maxLength && mb_strlen($displayName, 'UTF-8') > $maxLength) {
+            return mb_substr($displayName, 0, $maxLength, 'UTF-8') . '...';
+        }
+
+        return $displayName;
+    }
+}
+
+/**
+ * Get localized brand name from Brand model or array
+ */
+if (! function_exists('getLocalizedBrandName')) {
+    function getLocalizedBrandName($brand): string
+    {
+        if (!$brand) return '';
+
+        $isAr = app()->getLocale() === 'ar';
+
+        if (is_array($brand)) {
+            $nameAr = trim($brand['name_ar'] ?? '');
+            $name = trim($brand['name'] ?? '');
+        } elseif (is_object($brand)) {
+            // If model has localized_name accessor, use it
+            if (method_exists($brand, 'getLocalizedNameAttribute') || property_exists($brand, 'localized_name')) {
+                return $brand->localized_name ?? $brand->name ?? '';
+            }
+            $nameAr = trim($brand->name_ar ?? '');
+            $name = trim($brand->name ?? '');
+        } else {
+            return '';
+        }
+
+        if ($isAr) {
+            return $nameAr !== '' ? $nameAr : $name;
+        }
+        return $name !== '' ? $name : $nameAr;
+    }
+}
+
+/**
+ * Get localized quality brand name from QualityBrand model or array
+ */
+if (! function_exists('getLocalizedQualityName')) {
+    function getLocalizedQualityName($quality): string
+    {
+        if (!$quality) return '';
+
+        $isAr = app()->getLocale() === 'ar';
+
+        if (is_array($quality)) {
+            $nameAr = trim($quality['name_ar'] ?? '');
+            $nameEn = trim($quality['name_en'] ?? '');
+        } elseif (is_object($quality)) {
+            // If model has localized_name accessor, use it
+            if (method_exists($quality, 'getLocalizedNameAttribute') || property_exists($quality, 'localized_name')) {
+                return $quality->localized_name ?? '';
+            }
+            $nameAr = trim($quality->name_ar ?? '');
+            $nameEn = trim($quality->name_en ?? '');
+        } else {
+            return '';
+        }
+
+        if ($isAr) {
+            return $nameAr !== '' ? $nameAr : $nameEn;
+        }
+        return $nameEn !== '' ? $nameEn : $nameAr;
+    }
+}
+
+/**
+ * Get localized category name from Category/Subcategory/Childcategory model or array
+ */
+if (! function_exists('getLocalizedCategoryName')) {
+    function getLocalizedCategoryName($category): string
+    {
+        if (!$category) return '';
+
+        $isAr = app()->getLocale() === 'ar';
+
+        if (is_array($category)) {
+            $nameAr = trim($category['name_ar'] ?? '');
+            $name = trim($category['name'] ?? '');
+        } elseif (is_object($category)) {
+            // If model has localized_name accessor, use it
+            if (method_exists($category, 'getLocalizedNameAttribute') || property_exists($category, 'localized_name')) {
+                return $category->localized_name ?? $category->name ?? '';
+            }
+            $nameAr = trim($category->name_ar ?? '');
+            $name = trim($category->name ?? '');
+        } else {
+            return '';
+        }
+
+        if ($isAr) {
+            return $nameAr !== '' ? $nameAr : $name;
+        }
+        return $name !== '' ? $name : $nameAr;
+    }
+}
+
+/**
+ * Get vendor/store name from cart product or MerchantProduct
+ */
+if (! function_exists('getVendorName')) {
+    function getVendorName($product): string
+    {
+        if (!$product) return '';
+
+        // From cart array
+        if (is_array($product)) {
+            return $product['vendor_name'] ?? $product['shop_name'] ?? '';
+        }
+
+        // From MerchantProduct or similar object
+        if (is_object($product)) {
+            if (isset($product->user) && $product->user) {
+                return $product->user->shop_name ?? $product->user->name ?? '';
+            }
+            if (isset($product->vendor_name)) {
+                return $product->vendor_name;
+            }
+            if (isset($product->shop_name)) {
+                return $product->shop_name;
+            }
+        }
+
+        return '';
+    }
+}
+
+/**
+ * Get manufacturer name from product
+ */
+if (! function_exists('getManufacturerName')) {
+    function getManufacturerName($product): string
+    {
+        if (!$product) return '';
+
+        // From array
+        if (is_array($product)) {
+            $item = $product['item'] ?? $product;
+            return $item['manufacturer'] ?? $item['manufacturer_name'] ?? '';
+        }
+
+        // From object
+        if (is_object($product)) {
+            // If has manufacturer relationship
+            if (isset($product->manufacturer) && $product->manufacturer) {
+                return $product->manufacturer->name ?? '';
+            }
+            // If has manufacturer_name attribute
+            if (isset($product->manufacturer_name)) {
+                return $product->manufacturer_name;
+            }
+            // If has manufacturer attribute
+            if (isset($product->manufacturer)) {
+                return $product->manufacturer;
+            }
+        }
+
+        return '';
+    }
+}
+
+// Legacy alias for backward compatibility
 if (! function_exists('getLocalizedLabel')) {
     function getLocalizedLabel($item): string
     {
-        $locale = app()->getLocale();
-        if ($locale === 'ar') {
-            return $item['label_ar'] ?: $item['label_en'];
-        }
-        return $item['label_en'] ?: $item['label_ar'];
+        return getLocalizedProductName($item);
     }
 }
 

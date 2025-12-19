@@ -20,10 +20,8 @@
                         <li><a class="border px-3 py-1" href="{{route('rider.login')}}">{{__('Rider Login')}}</a></li>
                         @endif
 
+                        {{-- Using cached $languges from AppServiceProvider --}}
                         <li class="my-account-dropdown">
-                            @php
-                            $languges = App\Models\Language::all();
-                            @endphp
                             <div class="language-selector nice-select">
                                 <i class="fas fa-globe-americas text-dark"></i>
                                 <select name="language" class="language selectors nice select2-js-init">
@@ -38,15 +36,11 @@
                                 </select>
                             </div>
                         </li>
-                        @php
-                        $currencies = App\Models\Currency::all();
-                        @endphp
+                        {{-- Using cached $currencies and $curr from AppServiceProvider --}}
                         <li class="my-account-dropdown">
                             <div class="currency-selector nice-select">
                                 <span class="text-dark">
-                                    {{ Session::has('currency') ?
-                                    $currencies->where('id','=',Session::get('currency'))->first()->sign :
-                                    DB::table('currencies')->where('is_default','=',1)->first()->sign }}
+                                    {{ $curr->sign ?? '$' }}
                                 </span>
                                 <select name="currency" class="currency selectors nice select2-js-init">
                                     @foreach($currencies as $currency)
@@ -110,8 +104,8 @@
                     <nav class="navbar navbar-expand-lg nav-dark nav-primary-hover nav-line-active">
                         <a class="navbar-brand" href="{{ route('front.index') }}"><img class="nav-logo "
                                 src="{{ asset('assets/images/'.$gs->logo) }}" alt="Image not found !"></a>
-                        <button class="navbar-toggler" type="button" data-toggle="collapse"
-                            data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+                        <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                            data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
                             aria-expanded="false" aria-label="Toggle navigation">
                             <i class="flaticon-menu-2 flat-small text-primary"></i>
                         </button>
@@ -134,12 +128,12 @@
                                                 <div class="col">
                                                     <span
                                                         class="d-inline-block px-3 font-600 text-uppercase text-secondary pb-2">{{
-                                                        $category->localized_name }}</span>
+                                                        $category->name }}</span>
                                                     <ul>
                                                         @if($category->subs->count() > 0)
                                                         @foreach ($category->subs as $subcategory)
                                                         <li><a class="dropdown-item"
-                                                                href="{{route('front.category', [$category->slug, $subcategory->slug])}}{{!empty(request()->input('search')) ? '?search='.request()->input('search') : ''}}">{{$subcategory->localized_name}}</a>
+                                                                href="{{route('front.category', [$category->slug, $subcategory->slug])}}{{!empty(request()->input('search')) ? '?search='.request()->input('search') : ''}}">{{$subcategory->name}}</a>
                                                         </li>
                                                         @endforeach
                                                         @endif
@@ -305,7 +299,7 @@
                                             </li>
                                         </ul>
                                         <div class="tab-content" id="menu-and-categoryContent">
-                                            <div class="tab-pane fade show active MUAADH-Tabs-panel MUAADH-Tabs-panel--description"
+                                            <div class="tab-pane fade show active woocommerce-Tabs-panel woocommerce-Tabs-panel--description"
                                                 id="pills-push-menu" role="tabpanel"
                                                 aria-labelledby="pills-push-menu-tab">
                                                 <div class="push-navbar">
@@ -351,7 +345,7 @@
                                                     <ul class="menu">
                                                         @foreach ($categories as $category)
                                                         <li class="menu-item-has-children"><a
-                                                                href="{{route('front.category',$category->slug)}}">{{$category->localized_name}}</a>
+                                                                href="{{route('front.category',$category->slug)}}">{{$category->name}}</a>
                                                         </li>
                                                         @endforeach
                                                     </ul>

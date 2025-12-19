@@ -81,7 +81,7 @@
                             </div>
                           </div>
                           <div class="col-lg-7">
-                            <button class="addProductSubmit-btn" type="submit">{{ __('Update Deal') }}</button>
+                            <button class="btn btn-primary" type="submit">{{ __('Update Deal') }}</button>
                           </div>
                         </div>
 

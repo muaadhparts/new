@@ -1,5 +1,17 @@
 <?php
 
+/**
+ * ====================================================================
+ * STRIPE PAYMENT CONTROLLER - VENDOR CHECKOUT ONLY
+ * ====================================================================
+ *
+ * Modified: 2025-01-19 for Vendor Checkout System
+ * - Uses HandlesVendorCheckout trait
+ * - Reads from vendor_step1/step2 ONLY
+ * - Filters cart for vendor products
+ * ====================================================================
+ */
+
 namespace App\Http\Controllers\Payment\Checkout;
 
 use App\Classes\MuaadhMailer;
@@ -10,6 +22,8 @@ use App\Models\Order;
 use App\Models\PaymentGateway;
 use App\Models\Reward;
 use App\Models\State;
+use App\Traits\HandlesVendorCheckout;
+use App\Traits\SavesCustomerShippingChoice;
 use Config;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -19,6 +33,7 @@ use Str;
 
 class StripeController extends CheckoutBaseControlller
 {
+    use HandlesVendorCheckout, SavesCustomerShippingChoice;
     public function __construct()
     {
         parent::__construct();
@@ -30,9 +45,20 @@ class StripeController extends CheckoutBaseControlller
 
     public function store(Request $request)
     {
+        // Get vendor checkout data
+        $vendorData = $this->getVendorCheckoutData();
+        $vendorId = $vendorData['vendor_id'];
+
+        // Get steps from vendor sessions ONLY
+        $steps = $this->getCheckoutSteps($vendorId, $vendorData['is_vendor_checkout']);
+        $step1 = $steps['step1'];
+        $step2 = $steps['step2'];
+
+        if (!$step1 || !$step2) {
+            return redirect()->route('front.cart')->with('unsuccess', __('Checkout session expired.'));
+        }
+
         $input = $request->all();
-        $step1 = Session::get('step1');
-        $step2 = Session::get('step2');
         $input = array_merge($step1, $step2, $input);
 
         if ($request->pass_check) {
@@ -48,7 +74,8 @@ class StripeController extends CheckoutBaseControlller
 
         try {
             $oldCart = Session::get('cart');
-            $cart = new Cart($oldCart);
+            $originalCart = new Cart($oldCart);
+            $cart = $this->filterCartForVendor($originalCart, $vendorId);
             $gs = Generalsetting::first();
             $total = $request->total / $this->curr->value;
             $total = $total * $this->curr->value;
@@ -85,21 +112,35 @@ class StripeController extends CheckoutBaseControlller
 
     public function notify(Request $request)
     {
-       
+        // Get vendor checkout data
+        $vendorData = $this->getVendorCheckoutData();
+        $vendorId = $vendorData['vendor_id'];
+
+        // Get steps from vendor sessions
+        $steps = $this->getCheckoutSteps($vendorId, $vendorData['is_vendor_checkout']);
+        $step1 = $steps['step1'];
+        $step2 = $steps['step2'];
+
+        if (!$step1 || !$step2) {
+            return redirect()->route('front.cart')->with('unsuccess', __('Checkout session expired.'));
+        }
+
         $input = Session::get('input_data');
         $stripe = new \Stripe\StripeClient(Config::get('services.stripe.secret'));
         $response = $stripe->checkout->sessions->retrieve($request->session_id);
        
         if ($response->status == 'complete') {
             $oldCart = Session::get('cart');
-            $cart = new Cart($oldCart);
+            $originalCart = new Cart($oldCart);
+            $cart = $this->filterCartForVendor($originalCart, $vendorId);
+
             OrderHelper::license_check($cart); // For License Checking
-            $t_oldCart = Session::get('cart');
-            $t_cart = new Cart($t_oldCart);
+
+            // Serialize filtered cart for order
             $new_cart = [];
-            $new_cart['totalQty'] = $t_cart->totalQty;
-            $new_cart['totalPrice'] = $t_cart->totalPrice;
-            $new_cart['items'] = $t_cart->items;
+            $new_cart['totalQty'] = $cart->totalQty;
+            $new_cart['totalPrice'] = $cart->totalPrice;
+            $new_cart['items'] = $cart->items;
             $new_cart = json_encode($new_cart);
             $temp_affilate_users = \OrderHelper::product_affilate_check($cart); // For Product Based Affilate Checking
             $affilate_users = $temp_affilate_users == null ? null : json_encode($temp_affilate_users);
@@ -119,12 +160,10 @@ class StripeController extends CheckoutBaseControlller
             $input['payment_status'] = 'Completed';
             $input['txnid'] = $response->payment_intent;
             $input['method'] = 'Stripe';
-            if ($input['tax_type'] == 'state_tax') {
-                $input['tax_location'] = State::findOrFail($input['tax'])->state;
-            } else {
-                $input['tax_location'] = Country::findOrFail($input['tax'])->country_name;
-            }
-            $input['tax'] = Session::get('current_tax');
+
+            // Get tax data from vendor step2 (already fetched at method start)
+            $input['tax'] = $step2['tax_amount'] ?? 0;
+            $input['tax_location'] = $step2['tax_location'] ?? '';
 
             if ($input['dp'] == 1) {
                 $input['status'] = 'completed';
@@ -181,12 +220,9 @@ class StripeController extends CheckoutBaseControlller
 
             Session::put('temporder', $order);
             Session::put('tempcart', $cart);
-            Session::forget('cart');
-            Session::forget('already');
-            Session::forget('coupon');
-            Session::forget('coupon_total');
-            Session::forget('coupon_total1');
-            Session::forget('coupon_percentage');
+
+            // Remove only vendor's products from cart
+            $this->removeVendorProductsFromCart($vendorId, $originalCart);
 
             if ($order->user_id != 0 && $order->wallet_price != 0) {
                 OrderHelper::add_to_transaction($order, $order->wallet_price); // Store To Transactions
@@ -215,9 +251,11 @@ class StripeController extends CheckoutBaseControlller
             ];
             $mailer = new MuaadhMailer();
             $mailer->sendCustomMail($data);
-            return redirect(route('front.payment.return'));
+
+            // Determine success URL based on remaining cart items
+            $success_url = $this->getSuccessUrl($vendorId, $originalCart);
+            return redirect($success_url);
         } else {
-            dd($response->status);
             return redirect(route('front.payment.cancle'));
         }
     }

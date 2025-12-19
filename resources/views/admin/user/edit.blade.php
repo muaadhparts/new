@@ -42,7 +42,7 @@
 														</div>
 													</div>
 													<div class="col-lg-7">
-														<input type="text" class="input-field" name="name" placeholder="{{ __("User Name") }}" required="" value="{{ $data->name }}">
+														<input type="text" class="form-control" name="name" placeholder="{{ __("User Name") }}" required="" value="{{ $data->name }}">
 													</div>
 												</div>
 
@@ -54,7 +54,7 @@
 														</div>
 													</div>
 													<div class="col-lg-7">
-														<input type="email" class="input-field" name="email" placeholder="{{ __("Email Address") }}" value="{{ $data->email }}">
+														<input type="email" class="form-control" name="email" placeholder="{{ __("Email Address") }}" value="{{ $data->email }}">
 													</div>
 												</div>
 
@@ -65,7 +65,7 @@
 														</div>
 													</div>
 													<div class="col-lg-7">
-														<input type="text" class="input-field" name="phone" placeholder="{{ __("Phone Number") }}" required="" value="{{ $data->phone }}">
+														<input type="text" class="form-control" name="phone" placeholder="{{ __("Phone Number") }}" required="" value="{{ $data->phone }}">
 													</div>
 												</div>
 
@@ -76,7 +76,7 @@
 														</div>
 													</div>
 													<div class="col-lg-7">
-														<input type="text" class="input-field" name="address" placeholder="{{ __("Address") }}" required="" value="{{ $data->address }}">
+														<input type="text" class="form-control" name="address" placeholder="{{ __("Address") }}" required="" value="{{ $data->address }}">
 													</div>
 												</div>
 
@@ -88,7 +88,7 @@
 														</div>
 													</div>
 													<div class="col-lg-7">
-														<input type="text" class="input-field" name="city" placeholder="{{ __("City") }}" value="{{ $data->city }}">
+														<input type="text" class="form-control" name="city" placeholder="{{ __("City") }}" value="{{ $data->city }}">
 													</div>
 												</div>
 
@@ -99,7 +99,7 @@
 														</div>
 													</div>
 													<div class="col-lg-7">
-														<input type="text" class="input-field" name="state" placeholder="{{ __("State") }}" value="{{ $data->state }}">
+														<input type="text" class="form-control" name="state" placeholder="{{ __("State") }}" value="{{ $data->state }}">
 													</div>
 												</div>
 
@@ -111,17 +111,12 @@
 														</div>
 													</div>
 													<div class="col-lg-7">
-                                                        <select class="input-field" name="country" required>
+                                                        <select class="form-control" name="country" required>
                                                             <option value="">{{ __('Select Country') }}</option>
-                                                            @foreach (App\Models\Country::where('status', 1)->get() as $dt)
-                                                                @php
-                                                                    $countryDisplayName = (app()->getLocale() == 'ar')
-                                                                        ? ($dt->country_name_ar ?: $dt->country_name)
-                                                                        : $dt->country_name;
-                                                                @endphp
+                                                            @foreach (DB::table('countries')->get() as $dt)
                                                                 <option value="{{ $dt->country_name }}" {{ $data->country == $dt->country_name ? 'selected' : '' }}>
-                                                                    {{ $countryDisplayName }}
-                                                                </option>
+                                                                    {{ $dt->country_name }}
+                                                                </option>		
                                                              @endforeach
                                                         </select>
 													</div>
@@ -134,7 +129,7 @@
 														</div>
 													</div>
 													<div class="col-lg-7">
-														<input type="text" class="input-field" name="fax" placeholder="{{ __("Fax") }}" value="{{ $data->fax }}">
+														<input type="text" class="form-control" name="fax" placeholder="{{ __("Fax") }}" value="{{ $data->fax }}">
 													</div>
 												</div>
 
@@ -146,7 +141,7 @@
 														</div>
 													</div>
 													<div class="col-lg-7">
-														<input type="text" class="input-field" name="zip" placeholder="{{ __("Postal Code") }}" value="{{ $data->zip }}">
+														<input type="text" class="form-control" name="zip" placeholder="{{ __("Postal Code") }}" value="{{ $data->zip }}">
 													</div>
 												</div>
 
@@ -158,7 +153,7 @@
 														</div>
 													</div>
 													<div class="col-lg-7">
-														<input type="password" class="input-field" name="password" placeholder="{{__('Enter Password')}}" value="">
+														<input type="password" class="form-control" name="password" placeholder="{{__('Enter Password')}}" value="">
 													</div>
 												</div>
 
@@ -170,7 +165,7 @@
 						                            </div>
 						                          </div>
 						                          <div class="col-lg-7">
-						                            <button class="addProductSubmit-btn" type="submit">{{ __("Save") }}</button>
+						                            <button class="btn btn-primary" type="submit">{{ __("Save") }}</button>
 						                          </div>
 						                        </div>
 

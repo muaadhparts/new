@@ -6,6 +6,7 @@ use App\Models\Category;
 use App\Models\Childcategory;
 use App\Models\Coupon;
 use App\Models\Subcategory;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 use Datatables;
@@ -27,14 +28,21 @@ class CouponController extends AdminBaseController
                 $price = $data->type == 0 ? $data->price . '%' : \PriceHelper::showAdminCurrencyPrice($data->price * $this->curr->value);
                 return $price;
             })
+            ->addColumn('vendor', function (Coupon $data) {
+                if ($data->user_id) {
+                    $vendor = User::find($data->user_id);
+                    return $vendor ? ($vendor->shop_name ?? $vendor->name) : '-';
+                }
+                return '-';
+            })
             ->addColumn('status', function (Coupon $data) {
                 $class = $data->status == 1 ? 'drop-success' : 'drop-danger';
                 $s = $data->status == 1 ? 'selected' : '';
                 $ns = $data->status == 0 ? 'selected' : '';
-                return '<div class="action-list"><select class="process select droplinks ' . $class . '"><option data-val="1" value="' . route('admin-coupon-status', ['id1' => $data->id, 'id2' => 1]) . '" ' . $s . '>' . __("Activated") . '</option><<option data-val="0" value="' . route('admin-coupon-status', ['id1' => $data->id, 'id2' => 0]) . '" ' . $ns . '>' . __("Deactivated") . '</option>/select></div>';
+                return '<div class="action-list"><select class="process select droplinks ' . $class . '"><option data-val="1" value="' . route('admin-coupon-status', ['id1' => $data->id, 'id2' => 1]) . '" ' . $s . '>' . __("Activated") . '</option><option data-val="0" value="' . route('admin-coupon-status', ['id1' => $data->id, 'id2' => 0]) . '" ' . $ns . '>' . __("Deactivated") . '</option></select></div>';
             })
             ->addColumn('action', function (Coupon $data) {
-                return '<div class="action-list"><a href="' . route('admin-coupon-edit', $data->id) . '"> <i class="fas fa-edit"></i>' . __('Edit') . '</a><a href="javascript:;" data-href="' . route('admin-coupon-delete', $data->id) . '" data-toggle="modal" data-target="#confirm-delete" class="delete"><i class="fas fa-trash-alt"></i></a></div>';
+                return '<div class="action-list"><a href="' . route('admin-coupon-edit', $data->id) . '"> <i class="fas fa-edit"></i>' . __('Edit') . '</a><a href="javascript:;" data-href="' . route('admin-coupon-delete', $data->id) . '" data-bs-toggle="modal" data-bs-target="#confirm-delete" class="delete"><i class="fas fa-trash-alt"></i></a></div>';
             })
             ->rawColumns(['status', 'action'])
             ->toJson(); //--- Returning Json Data To Client Side
@@ -52,7 +60,8 @@ class CouponController extends AdminBaseController
         $categories = Category::where('status', 1)->get();
         $sub_categories = Subcategory::where('status', 1)->get();
         $child_categories = Childcategory::where('status', 1)->get();
-        return view('admin.coupon.create', compact('categories', 'sub_categories', 'child_categories'));
+        $vendors = User::where('is_vendor', 2)->get();
+        return view('admin.coupon.create', compact('categories', 'sub_categories', 'child_categories', 'vendors'));
     }
 
     //*** POST Request
@@ -98,8 +107,9 @@ class CouponController extends AdminBaseController
         $categories = Category::where('status', 1)->get();
         $sub_categories = Subcategory::where('status', 1)->get();
         $child_categories = Childcategory::where('status', 1)->get();
+        $vendors = User::where('is_vendor', 2)->get();
         $data = Coupon::findOrFail($id);
-        return view('admin.coupon.edit', compact('data', 'categories', 'sub_categories', 'child_categories'));
+        return view('admin.coupon.edit', compact('data', 'categories', 'sub_categories', 'child_categories', 'vendors'));
     }
 
 

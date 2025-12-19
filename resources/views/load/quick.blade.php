@@ -5,16 +5,21 @@
           <div class="col-lg-5">
               <div class="xzoom-container">
                   <img class="xzoom5" id="xzoom-magnific"
-                    src="{{ \Illuminate\Support\Facades\Storage::url($product->photo) ?? asset('assets/images/noimage.png') }}"
-                    xoriginal="{{ \Illuminate\Support\Facades\Storage::url($product->photo) ?? asset('assets/images/noimage.png') }}" />
+                    src="{{ $product->photo ? \Illuminate\Support\Facades\Storage::url($product->photo) : asset('assets/images/noimage.png') }}"
+                    xoriginal="{{ $product->photo ? \Illuminate\Support\Facades\Storage::url($product->photo) : asset('assets/images/noimage.png') }}" />
                   <div class="xzoom-thumbs">
                     <div class="all-slider">
 
-                      <a href="{{ \Illuminate\Support\Facades\Storage::url($product->photo) ?? asset('assets/images/noimage.png') }}">
-                        <img class="xzoom-gallery5" width="80" src="{{ \Illuminate\Support\Facades\Storage::url($product->photo) ?? asset('assets/images/noimage.png') }}">
+                      <a href="{{ $product->photo ? \Illuminate\Support\Facades\Storage::url($product->photo) : asset('assets/images/noimage.png') }}">
+                        <img class="xzoom-gallery5" width="80" src="{{ $product->photo ? \Illuminate\Support\Facades\Storage::url($product->photo) : asset('assets/images/noimage.png') }}">
                       </a>
 
-                      @foreach($product->galleries as $gal)
+                      @php
+                        // Get vendor-specific galleries
+                        $quickVendorId = request()->get('user', $product->user_id);
+                        $vendorGalleries = $product->galleriesForVendor($quickVendorId, 4);
+                      @endphp
+                      @foreach($vendorGalleries as $gal)
 
                       <a href="{{asset('assets/images/galleries/'.$gal->photo)}}">
                         <img class="xzoom-gallery5" width="80" src="{{asset('assets/images/galleries/'.$gal->photo)}}" >
@@ -92,13 +97,13 @@
 
                       @if(Auth::check())
 
-                      <a class="add-to-wish" href="javascript:;" data-href="{{ route('user-wishlist-add',$product->id) }}" data-toggle="tooltip" data-placement="top" title="{{ __('Wish') }}">
+                      <a class="add-to-wish" href="javascript:;" data-href="{{ route('user-wishlist-add',$product->id) }}" data-bs-toggle="tooltip" data-bs-placement="top" title="{{ __('Wish') }}">
                         <i class="far fa-heart"></i>
                       </a>
 
                       @else
 
-                      <a rel-toggle="tooltip" href="javascript:;" title="{{ __('Wish') }}" data-placement="top" class="add-to-wish" data-toggle="modal" data-target="#user-login">
+                      <a rel-toggle="tooltip" href="javascript:;" title="{{ __('Wish') }}" data-bs-placement="top" class="add-to-wish" data-bs-toggle="modal" data-bs-target="#user-login">
                         <i class="far fa-heart"></i>
                       </a>
 
@@ -112,7 +117,7 @@
 
                     <div class="compear">
 
-                      <a class="add-to-compare" href="javascript:;" data-href="{{ route('product.compare.add',$product->id) }}" data-toggle="tooltip" data-placement="top" title="{{ __('Compare') }}">
+                      <a class="add-to-compare" href="javascript:;" data-href="{{ route('product.compare.add',$product->id) }}" data-bs-toggle="tooltip" data-bs-placement="top" title="{{ __('Compare') }}">
                         <i class="fas fa-random"></i>
                       </a>
 
@@ -125,7 +130,7 @@
                     @if($product->youtube != null)
                       <div class="play-video">
                         <a href="{{ $product->youtube }}" class="video-play-btn mfp-iframe"
-                          data-toggle="tooltip" data-placement="top" title="{{ __('Play Video') }}">
+                          data-bs-toggle="tooltip" data-bs-placement="top" title="{{ __('Play Video') }}">
                           <i class="fas fa-play"></i>
                         </a>
                       </div>
@@ -338,13 +343,23 @@
               {{-- PRODUCT ATTRIBUTE SECTION ENDS  --}}
 
               {{-- PRODUCT ADD CART SECTION --}}
+              @php
+                  $quickVendorId = request()->get('user', $product->user_id);
+                  $quickMp = $product->merchantProducts()->where('user_id', $quickVendorId)->where('status', 1)->first();
+                  $quickMinQty = $quickMp ? max(1, (int)($quickMp->minimum_qty ?? 1)) : max(1, (int)($product->minimum_qty ?? 1));
+                  $quickStock = $quickMp ? (int)($quickMp->stock ?? 0) : (int)($product->stock ?? 0);
+                  $quickPreordered = $quickMp ? (int)($quickMp->preordered ?? 0) : 0;
+                  $quickCanBuy = $quickStock > 0 || $quickPreordered;
+              @endphp
 
               <input type="hidden" id="mproduct_price" value="{{ round($product->vendorSizePrice() * $curr->value,2) }}">
               <input type="hidden" id="mproduct_id" value="{{ $product->id }}">
+              <input type="hidden" id="mmerchant_product_id" value="{{ $quickMp->id ?? '' }}">
+              <input type="hidden" id="mvendor_user_id" value="{{ $quickVendorId }}">
               <input type="hidden" id="mcurr_pos" value="{{ $gs->currency_format }}">
               <input type="hidden" id="mcurr_sign" value="{{ $curr->sign }}">
 
-              @if(!$product->emptyStock())
+              @if($quickCanBuy && $quickMp)
 
                 <div class="inner-box">
                   <div class="cart-btn">
@@ -360,8 +375,9 @@
                                 <span class="modal-plus">
                                   <i class="fas fa-plus"></i>
                                 </span>
-                                <input class="modal-total" type="text" id="order-qty1" value="{{ $product->minimum_qty == null ? '1' : (int)$product->minimum_qty }}">
-                                <input type="hidden" id="mproduct_minimum_qty" value="{{ $product->minimum_qty == null ? '0' : $product->minimum_qty }}">
+                                <input class="modal-total" type="text" id="order-qty1" value="{{ $quickMinQty }}"
+                                       data-min="{{ $quickMinQty }}" data-stock="{{ $quickStock }}" data-preordered="{{ $quickPreordered }}">
+                                <input type="hidden" id="mproduct_minimum_qty" value="{{ $quickMinQty }}">
                                 <span class="modal-minus">
                                   <i class="fas fa-minus"></i>
                                 </span>
@@ -384,18 +400,28 @@
 
                       @else
 
+                      {{-- UNIFIED: Use data attributes for cart-unified.js --}}
                       <li>
-                        <a href="javascript:;" id="maddcrt">
+                        <button type="button" class="m-cart-add"
+                                data-merchant-product-id="{{ $quickMp->id }}"
+                                data-vendor-id="{{ $quickVendorId }}"
+                                data-min-qty="{{ $quickMinQty }}"
+                                data-qty-input=".modal-total">
                           <i class="icofont-cart"></i>
                           {{ __('Add To Cart') }}
-                        </a>
+                        </button>
                       </li>
 
                       <li>
-                        <a id="mqaddcrt" href="javascript:;">
+                        <button type="button" class="m-cart-add"
+                                data-merchant-product-id="{{ $quickMp->id }}"
+                                data-vendor-id="{{ $quickVendorId }}"
+                                data-min-qty="{{ $quickMinQty }}"
+                                data-qty-input=".modal-total"
+                                data-redirect="/cart">
                           <i class="icofont-cart"></i>
                           {{ __('Purchase Now') }}
-                        </a>
+                        </button>
                       </li>
 
                       @endif
@@ -431,7 +457,7 @@
               @if($product->brand)
               <div class="product-id">
                 {{ __('Brand:') }}
-                <span>{{ Str::ucfirst($product->brand->name) }}</span>
+                <span>{{ Str::ucfirst(getLocalizedBrandName($product->brand)) }}</span>
               </div>
               @endif
 
@@ -443,7 +469,7 @@
               @if($quickMerchant && $quickMerchant->qualityBrand)
               <div class="product-id">
                 {{ __('Brand qualities:') }}
-                <span>{{ app()->getLocale() == 'ar' && $quickMerchant->qualityBrand->name_ar ? $quickMerchant->qualityBrand->name_ar : $quickMerchant->qualityBrand->name_en }}</span>
+                <span>{{ getLocalizedQualityName($quickMerchant->qualityBrand) }}</span>
               </div>
               @endif
 
@@ -706,102 +732,11 @@
             $($tselector).val(total);
         });
 
-        $("#maddcrt").on("click", function(){
-            var qty = $('.modal-total').val() ? $('.modal-total').val() : 1;
-            var pid = $(this).parent().parent().parent().parent().parent().find("#mproduct_id").val();
-            var user_id = {{ $quickVendorId ?? 0 }};
-
-          if($('.mproduct-attr').length > 0)
-          {
-            values = $(".mproduct-attr:checked").map(function() {
-            return $(this).val();
-          }).get();
-
-          keys = $(".mproduct-attr:checked").map(function() {
-            return $(this).data('key');
-          }).get();
-
-
-          prices = $(".mproduct-attr:checked").map(function() {
-            return $(this).data('price');
-          }).get();
-
-          }
-
-          if (!isNaN(size_qty)) {
-          if(size_qty == '0'){
-            toastr.error(lang.cart_out);
-            return false;
-          }
-        } else {
-          size_qty = null;
-        }
-
-
-            $.ajax({
-                type: "GET",
-                url:mainurl+"/addnumcart",
-                data:{id:pid,user:user_id,qty:qty,size:sizes,color:colors,size_qty:size_qty,size_price:size_price,size_key:size_key,keys:keys,values:values,prices:prices},
-                success:function(data){
-                    if(data == 'digital') {
-                        toastr.error("{{ __('Already Added To Cart.') }}");
-                    }
-                    else if(data == 0) {
-                        toastr.error("{{ __('Out Of Stock.') }}");
-                    }
-                    else if(data[3]) {
-                      toastr.error("{{ __('Minimum Quantity is:') }}"+' '+data[4]);
-                    }
-                    else {
-                        $("#cart-count").html(data[0]);
-                        $("#total-cost").html(data[1]);
-                        $("#cart-items").load(mainurl+'/carts/view');
-                        toastr.success("{{ __('Successfully Added To Cart.') }}");
-                    }
-                }
-            });
-        });
-
-
-        $(document).on("click", "#mqaddcrt" , function(){
-          var qty = $('.modal-total').val();
-          var minimum_qty = $('#mproduct_minimum_qty').val();
-          var pid = $(this).parent().parent().parent().parent().parent().find("#mproduct_id").val();
-          var user_id = {{ $quickVendorId ?? 0 }};
-
-          if($('.mproduct-attr').length > 0)
-          {
-          values = $(".mproduct-attr:checked").map(function() {
-          return $(this).val();
-          }).get();
-
-          keys = $(".mproduct-attr:checked").map(function() {
-          return $(this).data('key');
-          }).get();
-
-
-          prices = $(".mproduct-attr:checked").map(function() {
-          return $(this).data('price');
-          }).get();
-
-          }
-
-          qty = parseInt(qty);
-          minimum_qty = parseInt(minimum_qty);
-
-          if(qty < minimum_qty){
-            toastr.error("{{ __('Minimum Quantity is:') }}"+' '+minimum_qty);
-            return false;
-          }
-
-          if(size_qty == '0'){
-            toastr.error("{{ __('Out Of Stock') }}");
-            return false;
-          }
-
-         window.location = mainurl+"/addtonumcart?id="+pid+"&user="+user_id+"&qty="+qty+"&size="+sizes+"&color="+colors.substring(1, colors.length)+"&size_qty="+size_qty+"&size_price="+size_price+"&size_key="+size_key+"&keys="+keys+"&values="+values+"&prices="+prices;
-
-         });
+        // ============================================
+        // DEPRECATED: #maddcrt and #mqaddcrt handlers
+        // Now handled by cart-unified.js via .m-cart-add class
+        // Buttons use: class="m-cart-add" with data-merchant-product-id, data-qty-input, data-redirect
+        // ============================================
 
     })(jQuery);
 

@@ -12,10 +12,35 @@ use Siberfx\LaravelTryoto\app\Http\Controllers\Api\TryOtoController;
 
 use App\Http\Controllers\Api\CalloutController;
 use App\Http\Controllers\Front\ProductDetailsController;
+use App\Http\Controllers\Front\SearchApiController;
+use App\Http\Controllers\Front\VehicleSearchApiController;
 
 // Google Maps Demo Route
 Route::get('/google-maps-demo', function () {
     return view('google-maps-demo');
+});
+
+// Test Livewire
+Route::get('/test-livewire', function () {
+    return view('test-livewire');
+});
+
+// Test Location Picker Modal
+Route::get('/test-location-picker', function () {
+    return view('test.location-picker-demo');
+});
+
+// Search API Routes (AJAX-based)
+Route::prefix('api/search')->group(function () {
+    Route::get('/part', [SearchApiController::class, 'searchPart'])->name('api.search.part');
+    Route::get('/vin', [SearchApiController::class, 'searchVin'])->name('api.search.vin');
+    Route::post('/vin/select', [SearchApiController::class, 'selectVin'])->name('api.search.vin.select');
+});
+
+// Vehicle Search API Routes (AJAX-based)
+Route::prefix('api/vehicle')->group(function () {
+    Route::get('/suggestions', [VehicleSearchApiController::class, 'searchSuggestions'])->name('api.vehicle.suggestions');
+    Route::get('/search', [VehicleSearchApiController::class, 'search'])->name('api.vehicle.search');
 });
 
 
@@ -192,6 +217,16 @@ Route::prefix('admin')->group(function () {
     Route::post('/password/update', 'Admin\DashboardController@changepass')->name('admin.password.update');
     //------------ ADMIN DASHBOARD & PROFILE SECTION ENDS ------------
 
+    //------------ ADMIN PERFORMANCE MONITORING SECTION ------------
+    Route::get('/performance', 'Admin\PerformanceController@index')->name('admin-performance');
+    Route::get('/performance/slow-queries', 'Admin\PerformanceController@slowQueries')->name('admin-performance-slow-queries');
+    Route::get('/performance/slow-requests', 'Admin\PerformanceController@slowRequests')->name('admin-performance-slow-requests');
+    Route::get('/performance/repeated-queries', 'Admin\PerformanceController@repeatedQueries')->name('admin-performance-repeated-queries');
+    Route::get('/performance/report', 'Admin\PerformanceController@downloadReport')->name('admin-performance-report');
+    Route::get('/performance/api/summary', 'Admin\PerformanceController@apiSummary')->name('admin-performance-api-summary');
+    Route::post('/performance/prune', 'Admin\PerformanceController@pruneOldEntries')->name('admin-performance-prune');
+    //------------ ADMIN PERFORMANCE MONITORING SECTION ENDS ------------
+
     //------------ ADMIN ORDER SECTION ------------
 
     Route::group(['middleware' => 'permissions:orders'], function () {
@@ -242,6 +277,20 @@ Route::prefix('admin')->group(function () {
     });
 
     //------------ ADMIN ORDER SECTION ENDS------------
+
+    //------------ ADMIN SHIPMENTS SECTION ------------
+
+    Route::group(['middleware' => 'permissions:orders'], function () {
+        Route::get('/shipments', 'Admin\ShipmentController@index')->name('admin.shipments.index');
+        Route::get('/shipments/show/{tracking}', 'Admin\ShipmentController@show')->name('admin.shipments.show');
+        Route::get('/shipments/refresh/{tracking}', 'Admin\ShipmentController@refresh')->name('admin.shipments.refresh');
+        Route::post('/shipments/cancel/{tracking}', 'Admin\ShipmentController@cancel')->name('admin.shipments.cancel');
+        Route::get('/shipments/export', 'Admin\ShipmentController@export')->name('admin.shipments.export');
+        Route::post('/shipments/bulk-refresh', 'Admin\ShipmentController@bulkRefresh')->name('admin.shipments.bulk-refresh');
+        Route::get('/shipments/reports', 'Admin\ShipmentController@reports')->name('admin.shipments.reports');
+    });
+
+    //------------ ADMIN SHIPMENTS SECTION ENDS------------
 
     /////////////////////////////// ////////////////////////////////////////////
 
@@ -382,8 +431,8 @@ Route::prefix('admin')->group(function () {
         // CREATE SECTION
 
         // EDIT SECTION
-        Route::get('/products/edit/{id}', 'Admin\ProductController@edit')->name('admin-prod-edit');
-        Route::post('/products/edit/{id}', 'Admin\ProductController@update')->name('admin-prod-update');
+        Route::get('/products/edit/{merchantProductId}', 'Admin\ProductController@edit')->name('admin-prod-edit');
+        Route::post('/products/edit/{merchantProductId}', 'Admin\ProductController@update')->name('admin-prod-update');
         // EDIT SECTION ENDS
 
         // DELETE SECTION
@@ -680,6 +729,8 @@ Route::prefix('admin')->group(function () {
         Route::get('/general-settings/favicon', 'Admin\GeneralSettingController@favicon')->name('admin-gs-fav');
         Route::get('/general-settings/loader', 'Admin\GeneralSettingController@loader')->name('admin-gs-load');
         Route::get('/general-settings/contents', 'Admin\GeneralSettingController@websitecontent')->name('admin-gs-contents');
+        Route::get('/general-settings/theme-colors', 'Admin\GeneralSettingController@themeColors')->name('admin-theme-colors');
+        Route::post('/general-settings/theme-colors/update', 'Admin\GeneralSettingController@updateThemeColors')->name('admin-theme-colors-update');
         Route::get('/general-settings/affilate', 'Admin\GeneralSettingController@affilate')->name('admin-gs-affilate');
         Route::get('/general-settings/error-banner', 'Admin\GeneralSettingController@error_banner')->name('admin-gs-error-banner');
         Route::get('/general-settings/popup', 'Admin\GeneralSettingController@popup')->name('admin-gs-popup');
@@ -953,18 +1004,6 @@ Route::prefix('admin')->group(function () {
         Route::get('/languages/status/{id1}/{id2}', 'Admin\LanguageController@status')->name('admin-lang-st');
         Route::delete('/languages/delete/{id}', 'Admin\LanguageController@destroy')->name('admin-lang-delete');
 
-        //------------ ADMIN PANEL LANGUAGE SETTINGS SECTION ------------
-
-        Route::get('/adminlanguages/datatables', 'Admin\AdminLanguageController@datatables')->name('admin-tlang-datatables'); //JSON REQUEST
-        Route::get('/adminlanguages', 'Admin\AdminLanguageController@index')->name('admin-tlang-index');
-        Route::get('/adminlanguages/create', 'Admin\AdminLanguageController@create')->name('admin-tlang-create');
-        Route::get('/adminlanguages/edit/{id}', 'Admin\AdminLanguageController@edit')->name('admin-tlang-edit');
-        Route::post('/adminlanguages/create', 'Admin\AdminLanguageController@store')->name('admin-tlang-store');
-        Route::post('/adminlanguages/edit/{id}', 'Admin\AdminLanguageController@update')->name('admin-tlang-update');
-        Route::get('/adminlanguages/status/{id1}/{id2}', 'Admin\AdminLanguageController@status')->name('admin-tlang-st');
-        Route::delete('/adminlanguages/delete/{id}', 'Admin\AdminLanguageController@destroy')->name('admin-tlang-delete');
-
-        //------------ ADMIN PANEL LANGUAGE SETTINGS SECTION ENDS ------------
 
         //------------ ADMIN LANGUAGE SETTINGS SECTION ENDS ------------
 
@@ -1030,6 +1069,7 @@ Route::prefix('admin')->group(function () {
 
     // STATUS SECTION
     Route::get('/products/status/{id1}/{id2}', 'Admin\ProductController@status')->name('admin-prod-status');
+    Route::get('/merchant-products/status/{id}/{status}', 'Admin\ProductController@merchantProductStatus')->name('admin-merchant-product-status');
     // STATUS SECTION ENDS
 
     // FEATURE SECTION
@@ -1065,9 +1105,22 @@ Route::prefix('admin')->group(function () {
 
         Route::get('/check/movescript', 'Admin\DashboardController@movescript')->name('admin-move-script');
         Route::get('/generate/backup', 'Admin\DashboardController@generate_bkup')->name('admin-generate-backup');
-        Route::get('/activation', 'Admin\DashboardController@activation')->name('admin-activation-form');
-        Route::post('/activation', 'Admin\DashboardController@activation_submit')->name('admin-activate-purchase');
         Route::get('/clear/backup', 'Admin\DashboardController@clear_bkup')->name('admin-clear-backup');
+
+        // ------------ LICENSE SECTION ----------------------
+        Route::get('/license/datatables', 'Admin\LicenseController@datatables')->name('admin-license-datatables');
+        Route::get('/license', 'Admin\LicenseController@index')->name('admin-license-index');
+        Route::get('/license/create', 'Admin\LicenseController@create')->name('admin-license-create');
+        Route::post('/license/create', 'Admin\LicenseController@store')->name('admin-license-store');
+        Route::get('/license/edit/{id}', 'Admin\LicenseController@edit')->name('admin-license-edit');
+        Route::post('/license/edit/{id}', 'Admin\LicenseController@update')->name('admin-license-update');
+        Route::delete('/license/delete/{id}', 'Admin\LicenseController@destroy')->name('admin-license-delete');
+        Route::get('/license/activate/{id}', 'Admin\LicenseController@activateLicense')->name('admin-license-activate-license');
+        Route::get('/license/deactivate/{id}', 'Admin\LicenseController@deactivate')->name('admin-license-deactivate');
+        Route::get('/license/generate-key', 'Admin\LicenseController@generateKey')->name('admin-license-generate-key');
+        Route::get('/activation', 'Admin\LicenseController@activation')->name('admin-activation-form');
+        Route::post('/activation', 'Admin\LicenseController@activateWithKey')->name('admin-activate-purchase');
+        // ------------ LICENSE SECTION ENDS ----------------------
 
         // ------------ ROLE SECTION ----------------------
 
@@ -1093,11 +1146,6 @@ Route::prefix('admin')->group(function () {
 
     });
 
-    Route::get('/check/movescript', 'Admin\DashboardController@movescript')->name('admin-move-script');
-    Route::get('/generate/backup', 'Admin\DashboardController@generate_bkup')->name('admin-generate-backup');
-    Route::get('/activation', 'Admin\DashboardController@activation')->name('admin-activation-form');
-    Route::post('/activation', 'Admin\DashboardController@activation_submit')->name('admin-activate-purchase');
-    Route::get('/clear/backup', 'Admin\DashboardController@clear_bkup')->name('admin-clear-backup');
 });
 
 // ************************************ ADMIN SECTION ENDS**********************************************
@@ -1132,6 +1180,16 @@ Route::group(['middleware' => 'maintenance'], function () {
             Route::get('delivery/boy/find', 'Vendor\DeliveryController@findReider')->name('vendor.find.rider');
             Route::post('rider/search/submit', 'Vendor\DeliveryController@findReiderSubmit')->name('vendor-rider-search-submit');
 
+            // Tryoto Shipping Routes
+            Route::get('delivery/shipping-options', 'Vendor\DeliveryController@getShippingOptions')->name('vendor.shipping.options');
+            Route::post('delivery/send-to-tryoto', 'Vendor\DeliveryController@sendToTryoto')->name('vendor.send.tryoto');
+            Route::get('delivery/track-shipment', 'Vendor\DeliveryController@trackShipment')->name('vendor.track.shipment');
+            Route::get('delivery/shipment-history/{orderId}', 'Vendor\DeliveryController@shipmentHistory')->name('vendor.shipment.history');
+            Route::post('delivery/cancel-shipment', 'Vendor\DeliveryController@cancelShipment')->name('vendor.cancel.shipment');
+            Route::post('delivery/ready-for-pickup', 'Vendor\DeliveryController@markReadyForPickup')->name('vendor.ready.pickup');
+            Route::get('delivery/stats', 'Vendor\DeliveryController@shippingStats')->name('vendor.shipping.stats');
+            Route::get('delivery/order-status/{orderId}', 'Vendor\DeliveryController@getOrderShipmentStatus')->name('vendor.order.shipment.status');
+
             //------------ SUBCATEGORY SECTION ------------
 
             Route::get('/load/subcategories/{id}/', 'Vendor\VendorController@subcatload')->name('vendor-subcat-load'); //JSON REQUEST
@@ -1151,7 +1209,13 @@ Route::group(['middleware' => 'maintenance'], function () {
 
             Route::post('/products/upload/update/{id}', 'Vendor\ProductController@uploadUpdate')->name('vendor-prod-upload-update');
 
-            // CREATE SECTION
+            // CREATE SECTION - NEW SIMPLIFIED SYSTEM
+            Route::get('/products/add', 'Vendor\ProductController@add')->name('vendor-prod-add');
+            Route::get('/products/search-sku', 'Vendor\ProductController@searchSku')->name('vendor-prod-search-sku');
+            Route::post('/products/store-offer', 'Vendor\ProductController@storeOffer')->name('vendor-prod-store-offer');
+            Route::put('/products/update-offer/{merchantProductId}', 'Vendor\ProductController@updateOffer')->name('vendor-prod-update-offer');
+
+            // LEGACY CREATE ROUTES (kept for compatibility)
             Route::get('/products/types', 'Vendor\ProductController@types')->name('vendor-prod-types');
             Route::get('/products/{slug}/create', 'Vendor\ProductController@create')->name('vendor-prod-create');
             Route::post('/products/store', 'Vendor\ProductController@store')->name('vendor-prod-store');
@@ -1162,10 +1226,8 @@ Route::group(['middleware' => 'maintenance'], function () {
             Route::get('/products/catalog/datatables', 'Vendor\ProductController@catalogdatatables')->name('admin-vendor-catalog-datatables');
             Route::get('/products/catalogs', 'Vendor\ProductController@catalogs')->name('vendor-prod-catalogs');
 
-            // NEW OFFER SYSTEM ROUTES
+            // CATALOG OFFER ROUTES
             Route::get('/products/create-offer/{product_id}', 'Vendor\ProductController@createOffer')->name('vendor-prod-create-offer');
-            Route::post('/products/store-offer', 'Vendor\ProductController@storeOffer')->name('vendor-prod-store-offer');
-            Route::put('/products/update-offer/{merchantProductId}', 'Vendor\ProductController@updateOffer')->name('vendor-prod-update-offer');
 
             // CREATE SECTION
 
@@ -1200,6 +1262,20 @@ Route::group(['middleware' => 'maintenance'], function () {
             // DELETE SECTION ENDS
 
             //------------ VENDOR PRODUCT SECTION ENDS------------
+
+            //------------ STOCK MANAGEMENT SECTION ------------
+            Route::get('/stock/management', 'Vendor\StockManagementController@index')->name('vendor-stock-management');
+            Route::get('/stock/datatables', 'Vendor\StockManagementController@datatables')->name('vendor-stock-datatables');
+            Route::get('/stock/export', 'Vendor\StockManagementController@export')->name('vendor-stock-export');
+            Route::get('/stock/upload-form', 'Vendor\StockManagementController@uploadForm')->name('vendor-stock-upload-form');
+            Route::post('/stock/upload', 'Vendor\StockManagementController@upload')->name('vendor-stock-upload');
+            Route::get('/stock/download/{id}', 'Vendor\StockManagementController@download')->name('vendor-stock-download');
+            Route::post('/stock/auto-update', 'Vendor\StockManagementController@triggerAutoUpdate')->name('vendor-stock-auto-update');
+            Route::post('/stock/full-refresh', 'Vendor\StockManagementController@triggerFullRefresh')->name('vendor-stock-full-refresh');
+            Route::post('/stock/process-full-refresh', 'Vendor\StockManagementController@processFullRefresh')->name('vendor-stock-process-full-refresh');
+            Route::get('/stock/progress/{id}', 'Vendor\StockManagementController@getUpdateProgress')->name('vendor-stock-progress');
+            Route::get('/stock/template', 'Vendor\StockManagementController@downloadTemplate')->name('vendor-stock-template');
+            //------------ STOCK MANAGEMENT SECTION ENDS ------------
 
             //------------ VENDOR GALLERY SECTION ------------
 
@@ -1302,6 +1378,32 @@ Route::group(['middleware' => 'maintenance'], function () {
             Route::get('/social-link/status/{id1}/{id2}', 'Vendor\SocialLinkController@status')->name('vendor-sociallink-status');
 
             //------------ VENDOR SOCIAL LINK ENDS ------------
+
+            //------------ VENDOR SHIPMENTS SECTION ------------
+
+            Route::get('/shipments', 'Vendor\ShipmentController@index')->name('vendor.shipments.index');
+            Route::get('/shipments/show/{tracking}', 'Vendor\ShipmentController@show')->name('vendor.shipments.show');
+            Route::get('/shipments/refresh/{tracking}', 'Vendor\ShipmentController@refresh')->name('vendor.shipments.refresh');
+            Route::post('/shipments/cancel/{tracking}', 'Vendor\ShipmentController@cancel')->name('vendor.shipments.cancel');
+            Route::get('/shipments/export', 'Vendor\ShipmentController@export')->name('vendor.shipments.export');
+            Route::post('/shipments/bulk-refresh', 'Vendor\ShipmentController@bulkRefresh')->name('vendor.shipments.bulk-refresh');
+
+            //------------ VENDOR SHIPMENTS SECTION ENDS------------
+
+            //------------ VENDOR COUPON SECTION ------------
+
+            Route::get('/coupon/datatables', 'Vendor\CouponController@datatables')->name('vendor-coupon-datatables');
+            Route::get('/coupon', 'Vendor\CouponController@index')->name('vendor-coupon-index');
+            Route::get('/coupon/create', 'Vendor\CouponController@create')->name('vendor-coupon-create');
+            Route::post('/coupon/create', 'Vendor\CouponController@store')->name('vendor-coupon-store');
+            Route::get('/coupon/edit/{id}', 'Vendor\CouponController@edit')->name('vendor-coupon-edit');
+            Route::post('/coupon/edit/{id}', 'Vendor\CouponController@update')->name('vendor-coupon-update');
+            Route::delete('/coupon/delete/{id}', 'Vendor\CouponController@destroy')->name('vendor-coupon-delete');
+            Route::get('/coupon/status/{id1}/{id2}', 'Vendor\CouponController@status')->name('vendor-coupon-status');
+            Route::get('/coupon/get-categories', 'Vendor\CouponController@getCategories')->name('vendor-coupon-get-categories');
+
+            //------------ VENDOR COUPON SECTION ENDS------------
+
             // -------------------------- Vendor Income ------------------------------------//
             Route::get('earning/datatables', "Vendor\IncomeController@datatables")->name('vendor.income.datatables');
             Route::get('total/earning', "Vendor\IncomeController@index")->name('vendor.income');
@@ -1375,6 +1477,10 @@ Route::group(['middleware' => 'maintenance'], function () {
         Route::get('/country/wise/state/{country_id}', 'Front\CheckoutController@getState')->name('country.wise.state');
         Route::get('/state/wise/city', 'Front\CheckoutController@getCity')->name('state.wise.city');
         Route::get('/user/state/wise/city', 'Front\CheckoutController@getCityUser')->name('state.wise.city.user');
+
+        // Tryoto Dynamic Location Verification
+        Route::post('/tryoto/verify-city', 'Front\CheckoutController@verifyTryotoCity')->name('tryoto.verify.city');
+        Route::post('/tryoto/verify-city-id', 'Front\CheckoutController@verifyTryotoCityById')->name('tryoto.verify.city.id');
 
         // User Wishlist
         Route::get('/wishlists', 'User\WishlistController@wishlists')->name('user-wishlists');
@@ -1683,6 +1789,14 @@ Route::group(['middleware' => 'maintenance'], function () {
     Route::get('/currency/{id}', 'Front\FrontendController@currency')->name('front.currency');
     Route::get('/language/{id}', 'Front\FrontendController@language')->name('front.language');
     Route::get('/order/track/{id}', 'Front\FrontendController@trackload')->name('front.track.search');
+
+    // SHIPMENT TRACKING SECTION
+    Route::get('/tracking', 'Front\ShipmentTrackingController@index')->name('front.tracking');
+    Route::get('/tracking/status', 'Front\ShipmentTrackingController@getStatus')->name('front.tracking.status');
+    Route::get('/tracking/refresh', 'Front\ShipmentTrackingController@refresh')->name('front.tracking.refresh');
+    Route::get('/my-shipments', 'Front\ShipmentTrackingController@myShipments')->name('front.my-shipments');
+    // SHIPMENT TRACKING SECTION ENDS
+
     // BLOG SECTION
     Route::get('/blog', 'Front\FrontendController@blog')->name('front.blog');
     Route::get('/blog/{slug}', 'Front\FrontendController@blogshow')->name('front.blogshow');
@@ -1755,14 +1869,6 @@ Route::group(['middleware' => 'maintenance'], function () {
     Route::get('/item/{slug}', 'Front\ProductDetailsController@show')
     ->name('front.product.legacy');
 
-    Route::get('/item/{slug}', 'Front\ProductDetailsController@show')->name('front.product.legacy');
-    Route::get('/item/{slug}/{user}', 'Front\ProductDetailsController@showByUser')->name('front.product.user');
-
-    // New preferred route with vendor and merchant_product_id (main route name: front.product)
-    Route::get('/item/{slug}/store/{vendor_id}/merchant_products/{merchant_product_id}', 'Front\ProductDetailsController@showByMerchantProduct')
-         ->whereNumber('vendor_id')->whereNumber('merchant_product_id')
-         ->name('front.product');
-
     // Alternative shorter route (legacy compatibility)
     Route::get('/item/{slug}/{merchant_product_id}', 'Front\ProductDetailsController@showByMerchantProduct')
          ->whereNumber('merchant_product_id')
@@ -1796,23 +1902,43 @@ Route::group(['middleware' => 'maintenance'], function () {
     Route::get('/item/reply/delete/{id}', 'Front\ProductDetailsController@replydelete')->name('product.reply.delete');
     // REPLY SECTION ENDS
 
+    // ============ UNIFIED CART SYSTEM (v3) ============
+    // Single endpoint for ALL cart add operations
+    // Uses merchant_product_id EXCLUSIVELY - NO fallbacks
+    Route::post('/cart/unified', 'Front\CartController@unifiedAdd')->name('cart.unified.add');
+    Route::get('/cart/unified', 'Front\CartController@unifiedAdd')->name('cart.unified.add.get'); // For legacy GET requests
+
     // CART SECTION
     Route::get('/carts/view', 'Front\CartController@cartview');
     Route::get('/carts', 'Front\CartController@cart')->name('front.cart');
-    // New merchant-product-based cart routes
-    Route::get('/cart/add/merchant/{merchantProductId}', 'Front\CartController@addMerchantCart')->name('merchant.cart.add');
-    Route::get('/cart/quickadd/merchant/{merchantProductId}', 'Front\CartController@quickAddMerchantCart')->name('merchant.cart.quickadd');
 
     // Cart summary endpoint (AJAX only)
     Route::get('/cart/summary', 'Front\CartController@cartSummary')->name('cart.summary');
 
-    // Legacy cart routes (fallback for old links)
-    Route::get('/addcart/{id}', 'Front\CartController@addcart')->name('product.cart.add');
-    Route::get('/addtocart/{id}', 'Front\CartController@addtocart')->name('product.cart.quickadd');
-    Route::get('/addnumcart', 'Front\CartController@addnumcart')->name('details.cart');
-    Route::get('/addtonumcart', 'Front\CartController@addtonumcart');
+    // Increase/Decrease item quantity
+    Route::post('/cart/increase', 'Front\CartController@increaseItem')->name('cart.increase');
+    Route::post('/cart/decrease', 'Front\CartController@decreaseItem')->name('cart.decrease');
+    Route::get('/cart/increase', 'Front\CartController@increaseItem')->name('cart.increase.get');
+    Route::get('/cart/decrease', 'Front\CartController@decreaseItem')->name('cart.decrease.get');
+
+    // Remove item
+    Route::get('/removecart/{id}', 'Front\CartController@removecart')->name('product.cart.remove');
+
+    // ============ CART ADD ROUTES ============
+    // PRIMARY: Use POST /cart/unified with merchant_product_id for all cart additions
+    Route::get('/cart/add/merchant/{merchantProductId}', 'Front\CartController@addMerchantCart')->name('merchant.cart.add');
+
+    // DEPRECATED (return 410 Gone): These routes should NOT be used
+    // All cart add functionality should use POST /cart/unified with merchant_product_id
+    Route::get('/addcart/{id}', 'Front\CartController@addcart')->name('product.cart.add');          // DEPRECATED
+    Route::get('/addtocart/{id}', 'Front\CartController@addtocart')->name('product.cart.quickadd'); // DEPRECATED
+    Route::get('/addnumcart', 'Front\CartController@addnumcart')->name('details.cart');             // DEPRECATED
+    Route::get('/addtonumcart', 'Front\CartController@addtonumcart');                               // DEPRECATED
+
+    // ACTIVE: Cart quantity management routes
     Route::get('/addbyone', 'Front\CartController@addbyone');
     Route::get('/reducebyone', 'Front\CartController@reducebyone');
+    // ============ END CART ROUTES ============
     Route::get('/upcolor', 'Front\CartController@upcolor');
     Route::get('/removecart/{id}', 'Front\CartController@removecart')->name('product.cart.remove');
     Route::get('/carts/coupon', 'Front\CouponController@coupon');
@@ -1828,25 +1954,66 @@ Route::group(['middleware' => 'maintenance'], function () {
 
     // CHECKOUT SECTION
     Route::get('/buy-now/{id}', 'Front\CheckoutController@buynow')->name('front.buynow');
-    // Checkout
+
+    // ====================================================================
+    // VENDOR CHECKOUT ONLY - Regular checkout disabled
+    // ====================================================================
+    // All checkout flows now use vendor-specific routes
+    // This ensures proper vendor attribution and commission tracking
+
+    // Vendor-specific checkout routes (with session preservation middleware)
+    Route::middleware(['preserve.session'])->group(function () {
+        Route::get('/checkout/vendor/{vendorId}', 'Front\CheckoutController@checkoutVendor')->name('front.checkout.vendor');
+        Route::post('/checkout/vendor/{vendorId}/step1/submit', 'Front\CheckoutController@checkoutVendorStep1')->name('front.checkout.vendor.step1.submit');
+        // Redirect GET requests to step1/submit back to step1 (handles refresh/back button)
+        Route::get('/checkout/vendor/{vendorId}/step1/submit', function($vendorId) {
+            return redirect()->route('front.checkout.vendor', $vendorId)->with('info', __('Please fill out the form and submit again.'));
+        });
+        Route::get('/checkout/vendor/{vendorId}/step2', 'Front\CheckoutController@checkoutVendorStep2')->name('front.checkout.vendor.step2');
+        Route::post('/checkout/vendor/{vendorId}/step2/submit', 'Front\CheckoutController@checkoutVendorStep2Submit')->name('front.checkout.vendor.step2.submit');
+        // Redirect GET requests to step2/submit back to step2
+        Route::get('/checkout/vendor/{vendorId}/step2/submit', function($vendorId) {
+            return redirect()->route('front.checkout.vendor.step2', $vendorId)->with('info', __('Please fill out the form and submit again.'));
+        });
+        Route::get('/checkout/vendor/{vendorId}/step3', 'Front\CheckoutController@checkoutVendorStep3')->name('front.checkout.vendor.step3');
+
+        // ====================================================================
+        // GEOCODING ROUTES - Inside session middleware to share session with checkout
+        // ====================================================================
+        Route::prefix('geocoding')->group(function () {
+            Route::post('/reverse', [\App\Http\Controllers\Api\GeocodingController::class, 'reverseGeocode'])->name('geocoding.reverse');
+            Route::get('/search-cities', [\App\Http\Controllers\Api\GeocodingController::class, 'searchCities'])->name('geocoding.search');
+            Route::post('/sync-country', [\App\Http\Controllers\Api\GeocodingController::class, 'startCountrySync'])->name('geocoding.sync');
+            Route::get('/sync-progress', [\App\Http\Controllers\Api\GeocodingController::class, 'getSyncProgress'])->name('geocoding.progress');
+        });
+    });
+
+    // ====================================================================
+    // REGULAR CHECKOUT - DISABLED (Now using vendor checkout only)
+    // ====================================================================
+    // Regular checkout routes (non-vendor specific)
     Route::get('/checkout', 'Front\CheckoutController@checkout')->name('front.checkout');
-
-    // Vendor-specific checkout routes
-    Route::get('/checkout/vendor/{vendorId}', 'Front\CheckoutController@checkoutVendor')->name('front.checkout.vendor');
-    Route::post('/checkout/vendor/{vendorId}/step1/submit', 'Front\CheckoutController@checkoutVendorStep1')->name('front.checkout.vendor.step1.submit');
-    Route::get('/checkout/vendor/{vendorId}/step2', 'Front\CheckoutController@checkoutVendorStep2')->name('front.checkout.vendor.step2');
-    Route::post('/checkout/vendor/{vendorId}/step2/submit', 'Front\CheckoutController@checkoutVendorStep2Submit')->name('front.checkout.vendor.step2.submit');
-    Route::get('/checkout/vendor/{vendorId}/step3', 'Front\CheckoutController@checkoutVendorStep3')->name('front.checkout.vendor.step3');
-
     Route::post('/checkout/step1/submit', 'Front\CheckoutController@checkoutStep1')->name('front.checkout.step1.submit');
-
+    // Redirect GET requests to step1/submit back to step1
+    Route::get('/checkout/step1/submit', function() {
+        return redirect()->route('front.checkout')->with('info', __('Please fill out the form and submit again.'));
+    });
     Route::get('/checkout/step2', 'Front\CheckoutController@checkoutstep2')->name('front.checkout.step2');
     Route::post('/checkout/step2/submit', 'Front\CheckoutController@checkoutStep2Submit')->name('front.checkout.step2.submit');
-
+    // Redirect GET requests to step2/submit back to step2
+    Route::get('/checkout/step2/submit', function() {
+        return redirect()->route('front.checkout.step2')->with('info', __('Please fill out the form and submit again.'));
+    });
     Route::get('/checkout/step3', 'Front\CheckoutController@checkoutstep3')->name('front.checkout.step3');
 
 
     Route::get('/carts/coupon/check', 'Front\CouponController@couponcheck')->name('front.coupon.check');
+    Route::post('/carts/coupon/remove', 'Front\CouponController@removeCoupon')->name('front.coupon.remove');
+
+    // CSRF Token refresh endpoint
+    Route::get('/csrf-token', function() {
+        return response()->json(['token' => csrf_token()]);
+    })->name('csrf.token');
 
 //    Route::get('/checkout/payment/{slug1}/{slug2}', 'Front\CheckoutController@loadpayment')->name('front.load.payment');
     Route::get('/checkout/payment/return', 'Front\CheckoutController@payreturn')->name('front.payment.return');
@@ -1943,8 +2110,9 @@ Route::group(['middleware' => 'maintenance'], function () {
 
     Route::get('/checkout/payment/{slug1}/{slug2}', 'Front\CheckoutController@loadpayment')->name('front.load.payment');
 
-    Route::post('/api/flutter/submit', 'Payment\FlutterWaveController@store')->name('api.flutter.submit');
-    Route::post('/flutter/notify', 'Payment\FlutterWaveController@notify')->name('api.flutter.notify');
+    // Note: Flutter Wave routes moved to Api\Payment section below
+    // Route::post('/api/flutter/submit', 'Api\Payment\FlutterWaveController@store')->name('api.flutter.submit');
+    // Route::post('/flutter/notify', 'Api\Payment\FlutterWaveController@notify')->name('api.flutter.notify');
 
     Route::get('/payment/successfull/{get}', 'Front\FrontendController@success')->name('front.payment.success');
 

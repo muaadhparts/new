@@ -21,33 +21,11 @@ class UserController extends UserBaseController
     public function profile()
     {
         $user = $this->user;
-
-        // Log current user data for debugging
-        \Log::info('User Profile Page Loaded:', [
-            'user_id' => $user->id,
-            'country' => $user->country,
-            'state_id' => $user->state_id,
-            'city_id' => $user->city_id,
-            'address' => $user->address,
-            'latitude' => $user->latitude,
-            'longitude' => $user->longitude,
-        ]);
-
         return view('user.profile', compact('user'));
     }
 
     public function profileupdate(Request $request)
     {
-        // Log received data for debugging
-        \Log::info('User Profile Update - Received Data:', [
-            'country' => $request->country,
-            'state_id' => $request->state_id,
-            'city_id' => $request->city_id,
-            'address' => $request->address,
-            'latitude' => $request->latitude,
-            'longitude' => $request->longitude,
-        ]);
-
         $rules =
             [
             'photo' => 'mimes:jpeg,jpg,png,svg',
@@ -79,17 +57,6 @@ class UserController extends UserBaseController
             $input['photo'] = $name;
         }
         $data->update($input);
-
-        // Log saved data for verification
-        \Log::info('User Profile Update - Data Saved Successfully:', [
-            'user_id' => $data->id,
-            'country' => $data->country,
-            'state_id' => $data->state_id,
-            'city_id' => $data->city_id,
-            'address' => $data->address,
-            'latitude' => $data->latitude,
-            'longitude' => $data->longitude,
-        ]);
 
         return redirect()->route('user-profile')->with('success', __('Profile Updated Successfully!'));
     }

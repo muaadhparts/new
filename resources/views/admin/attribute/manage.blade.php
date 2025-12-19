@@ -53,8 +53,8 @@
                         <div class="col-md-12">
                           <div class="alert alert-success alert-dismissible fade show" role="alert">
                             {{ session('success') }}
-                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                              <span aria-hidden="true">&times;</span>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close">
+                              
                             </button>
                           </div>
                         </div>
@@ -142,7 +142,7 @@
                         <div class="col-md-3">
                           <a href="{{route('admin-attr-edit', $attribute->id)}}" class="btn btn-warning"><i class="fas fa-edit"></i></a>
                           <form class="d-inline-block" action="{{ route('admin-attr-delete', $attribute->id) }}" method="get">
-                            <button type="submit" class="btn btn-danger" data-target="#confirm-delete" data-toggle="modal"><i class="fas fa-trash-alt"></i></button>
+                            <button type="submit" class="btn btn-danger" data-bs-target="#confirm-delete" data-bs-toggle="modal"><i class="fas fa-trash-alt"></i></button>
                           </form>
                         </div>
                       </div>
@@ -167,14 +167,14 @@
            </div>
            <div class="modal-header">
               <h5 class="modal-title"></h5>
-              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-              <span aria-hidden="true">&times;</span>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+              
               </button>
            </div>
            <div class="modal-body">
            </div>
            <div class="modal-footer">
-              <button type="button" class="btn btn-secondary" data-dismiss="modal">{{ __('Close') }}</button>
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ __('Close') }}</button>
            </div>
         </div>
      </div>

@@ -52,7 +52,7 @@
 							<input type="number" min="0" name="reward_dolar" class="form-control" value="{{$gs->reward_dolar}}" placeholder="{{__('USD')}}">
 						</div>
 						<div class="action-list ml-2">
-							<button class="mybtn1" type="submit">Save</button>
+							<button class="btn btn-primary" type="submit">Save</button>
 						</div>
 					</form>
 					</div>
@@ -78,12 +78,12 @@
 																<div class="col-lg-6">
 																	
 																	<input type="number" name="order_amount[]"
-																		class="input-field"
+																		class="form-control"
 																		placeholder="{{ __('Order Amount (USD)') }}" min="0" value="{{$data->order_amount}}">
 																</div>
 																<div class="col-lg-6">
 																	<input type="number" name="reward[]"
-																		class="input-field"
+																		class="form-control"
 																		placeholder="{{ __('Reward') }}"
 																		min="0" value="{{$data->reward}}" />
 																</div>
@@ -103,7 +103,7 @@
                             </div>
                           </div>
                           <div class="col-lg-12">
-                            <button class="addProductSubmit-btn" type="submit">{{ __('Update Reward') }}</button>
+                            <button class="btn btn-primary" type="submit">{{ __('Update Reward') }}</button>
                           </div>
                         </div>
                       </form>
@@ -129,10 +129,10 @@ $("#whole-section").append(''+
 							'<span class="remove whole-remove"><i class="fas fa-times"></i></span>'+
 								'<div  class="row">'+
 									'<div class="col-lg-6">'+
-										'<input type="number" name="order_amount[]" class="input-field" placeholder="Order Amount (USD)" min="0" required>'+
+										'<input type="number" name="order_amount[]" class="form-control" placeholder="Order Amount (USD)" min="0" required>'+
 									'</div>'+
 									'<div class="col-lg-6">'+
-										'<input type="number" name="reward[]" class="input-field" placeholder="Reward" min="0" required>'+
+										'<input type="number" name="reward[]" class="form-control" placeholder="Reward" min="0" required>'+
 									'</div>'+
 								'</div>'+
 						'</div>'
@@ -150,11 +150,11 @@ $("#whole-section").append(''+
 							'<span class="remove whole-remove"><i class="fas fa-times"></i></span>'+
 								'<div  class="row">'+
 									'<div class="col-lg-4">'+
-										'<input type="number" name="order_amount[]" class="input-field" placeholder="Order Amount" min="0" required>'+
+										'<input type="number" name="order_amount[]" class="form-control" placeholder="Order Amount" min="0" required>'+
 									'</div>'+
 									
 									'<div class="col-lg-4">'+
-										'<input type="number" name="reward[]" class="input-field" placeholder="Reward" min="0" required>'+
+										'<input type="number" name="reward[]" class="form-control" placeholder="Reward" min="0" required>'+
 									'</div>'+
 								'</div>'+
 						'</div>'

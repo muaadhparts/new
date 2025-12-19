@@ -44,9 +44,12 @@
                             <table id="muaadhtable" class="table table-hover dt-responsive" cellspacing="0" width="100%">
                                 <thead>
                                     <tr>
-                                        <th width="15%">{{ __('Product') }}</th>
-                                        <th width="15%">{{ __('Reporter') }}</th>
-                                        <th width="30%">{{ __('Title') }}</th>
+                                        <th>{{ __('Product') }}</th>
+                                        <th>{{ __('Brand') }}</th>
+                                        <th>{{ __('Quality Brand') }}</th>
+                                        <th>{{ __('Vendor') }}</th>
+                                        <th>{{ __('Reporter') }}</th>
+                                        <th>{{ __('Title') }}</th>
                                         <th>{{ __('Date & Time') }}</th>
                                         <th>{{ __('Options') }}</th>
                                     </tr>
@@ -70,15 +73,15 @@
                 </div>
                 <div class="modal-header">
                     <h5 class="modal-title"></h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                        
                     </button>
                 </div>
                 <div class="modal-body">
 
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">{{ __('Close') }}</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ __('Close') }}</button>
                 </div>
             </div>
         </div>
@@ -107,7 +110,7 @@
 
                 <!-- Modal footer -->
                 <div class="modal-footer justify-content-center">
-                    <button type="button" class="btn btn-default" data-dismiss="modal">{{ __('Cancel') }}</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ __('Cancel') }}</button>
                     <form action="" class="d-inline delete-form" method="POST">
                         <input type="hidden" name="_method" value="delete" />
                         <input type="hidden" name="_token" value="{{ csrf_token() }}">
@@ -137,30 +140,15 @@
                 processing: true,
                 serverSide: true,
                 ajax: '{{ route('admin-report-datatables') }}',
-                columns: [{
-                        data: 'product',
-                        name: 'product',
-                        searchable: false,
-                        orderable: false
-                    },
-                    {
-                        data: 'reporter',
-                        name: 'reporter'
-                    },
-                    {
-                        data: 'title',
-                        name: 'title'
-                    },
-                    {
-                        data: 'created_at',
-                        name: 'created_at'
-                    },
-                    {
-                        data: 'action',
-                        searchable: false,
-                        orderable: false
-                    }
-
+                columns: [
+                    { data: 'product', name: 'product', searchable: false, orderable: false },
+                    { data: 'brand', name: 'brand' },
+                    { data: 'quality_brand', name: 'quality_brand' },
+                    { data: 'vendor', name: 'vendor' },
+                    { data: 'reporter', name: 'reporter' },
+                    { data: 'title', name: 'title' },
+                    { data: 'created_at', name: 'created_at' },
+                    { data: 'action', searchable: false, orderable: false }
                 ],
                 language: {
                     processing: '<img src="{{ asset('assets/images/' . $gs->admin_loader) }}">'

@@ -49,7 +49,7 @@
                         </h5>
                         @if (@App\Models\DeliveryRider::where('vendor_id', auth()->id())->where('order_id', $order->id)->first()->status == 'delivered' && $order->vendororders()->where('status', 'completed')->count() == 0)
                             <a href="{{ route('vendor-order-status', ['id1' => $order->order_number, 'status' => 'completed']) }}"
-                                class="template-btn  sm-btn">@lang('Make Complete')</a>
+                                class="m-btn m-btn--success m-btn--sm">@lang('Make Complete')</a>
                         @endif
                     </div>
                     <ul class="info-list">
@@ -70,46 +70,20 @@
                             if ($order->is_shipping == 1) {
                                 $vendor_shipping = json_decode($order->vendor_shipping_id);
                                 $user_id = auth()->id();
-                                // // shipping cost
-                                // $shipping_id = $vendor_shipping->$user_id;
-                                // $shipping = App\Models\Shipping::findOrFail($shipping_id);
-                                // if ($shipping) {
-                                //     $price = $price + round($shipping->price * $order->currency_value, 2);
-                                // }
-
-                                // // packaging cost
-                                // $vendor_packing_id = json_decode($order->vendor_packing_id);
-                                // $packing_id = $vendor_packing_id->$user_id;
-                                // $packaging = App\Models\Package::findOrFail($packing_id);
-                                // if ($packaging) {
-                                //     $price = $price + round($packaging->price * $order->currency_value, 2);
-                                // }
                                 // shipping cost
-                                $shipping_id_raw = $vendor_shipping->$user_id ?? null;
-                                if ($shipping_id_raw) {
-                                    // بعض القيم تجي مثل "7178#omnillama#10" → نأخذ الرقم فقط
-                                    $shippingId = intval(explode('#', $shipping_id_raw)[0]);
-                                    $shipping = App\Models\Shipping::find($shippingId);
-                                    if ($shipping) {
-                                        $price += round($shipping->price * $order->currency_value, 2);
-                                    }
-                                } else {
-                                    $shipping = null;
+                                $shipping_id = $vendor_shipping->$user_id;
+                                $shipping = App\Models\Shipping::findOrFail($shipping_id);
+                                if ($shipping) {
+                                    $price = $price + round($shipping->price * $order->currency_value, 2);
                                 }
 
                                 // packaging cost
                                 $vendor_packing_id = json_decode($order->vendor_packing_id);
-                                $packing_id_raw = $vendor_packing_id->$user_id ?? null;
-                                if ($packing_id_raw) {
-                                    $packingId = intval(explode('#', $packing_id_raw)[0]);
-                                    $packaging = App\Models\Package::find($packingId);
-                                    if ($packaging) {
-                                        $price += round($packaging->price * $order->currency_value, 2);
-                                    }
-                                } else {
-                                    $packaging = null;
+                                $packing_id = $vendor_packing_id->$user_id;
+                                $packaging = App\Models\Package::findOrFail($packing_id);
+                                if ($packaging) {
+                                    $price = $price + round($packaging->price * $order->currency_value, 2);
                                 }
-
                             }
 
                         @endphp
@@ -154,17 +128,12 @@
 
 
                         <li class="info-list-item">
-
+                                <span class="info-type">@lang('Payment Status')</span>
                                 @if ($order->payment_status == 'Pending')
-                                <span class="info-type">@lang('Payment Status')</span> <span class="template-btn danger-btn sm-btn">
-                                    @lang('Unpaid')
-                                </span>
+                                    <span class="m-badge m-badge--danger">@lang('Unpaid')</span>
                                 @else
-                                <span class="info-type">@lang('Payment Status')</span> <span class="template-btn green-btn sm-btn">
-                                    @lang('Paid')
-                                </span>
+                                    <span class="m-badge m-badge--paid">@lang('Paid')</span>
                                 @endif
-
                         </li>
 
                         @if (!empty($order->order_note))
@@ -177,7 +146,7 @@
 
                     </ul>
                     <a href="{{ route('vendor-order-invoice', $order->order_number) }}"
-                        class="template-btn black-btn lg-btn">@lang('View Invoice')</a>
+                        class="m-btn m-btn--secondary m-btn--lg">@lang('View Invoice')</a>
                 </div>
             </div>
             <!-- Billing Details Card  -->
@@ -261,6 +230,128 @@
                     </div>
                 </div>
             @endif
+
+            {{-- ✅ Shipment Status Card --}}
+            @php
+                $vendorId = auth()->id();
+                $shipment = App\Models\ShipmentStatusLog::where('order_id', $order->id)
+                    ->where('vendor_id', $vendorId)
+                    ->orderBy('status_date', 'desc')
+                    ->orderBy('created_at', 'desc')
+                    ->first();
+
+                $delivery = App\Models\DeliveryRider::where('order_id', $order->id)
+                    ->where('vendor_id', $vendorId)
+                    ->first();
+
+                $customerChoice = $order->getCustomerShippingChoice($vendorId);
+            @endphp
+
+            @if ($shipment || $delivery || $customerChoice)
+                <div class="col">
+                    <div class="order-info-card">
+                        <h5 class="title">
+                            <i class="fas fa-truck"></i> @lang('Shipping Status')
+                        </h5>
+                        <ul class="info-list">
+                            @if ($shipment)
+                                {{-- Tryoto Shipment Info --}}
+                                <li class="info-list-item">
+                                    <span class="info-type">@lang('Shipping Company')</span>
+                                    <span class="info">
+                                        <span class="badge bg-info">{{ $shipment->company_name }}</span>
+                                    </span>
+                                </li>
+                                <li class="info-list-item">
+                                    <span class="info-type">@lang('Tracking Number')</span>
+                                    <span class="info text-primary fw-bold">{{ $shipment->tracking_number }}</span>
+                                </li>
+                                <li class="info-list-item">
+                                    <span class="info-type">@lang('Status')</span>
+                                    <span class="info">
+                                        <span class="badge
+                                            @if($shipment->status == 'delivered') bg-success
+                                            @elseif($shipment->status == 'in_transit') bg-primary
+                                            @elseif($shipment->status == 'out_for_delivery') bg-info
+                                            @elseif(in_array($shipment->status, ['failed', 'returned', 'cancelled'])) bg-danger
+                                            @else bg-secondary
+                                            @endif">
+                                            {{ $shipment->status_ar ?? $shipment->status }}
+                                        </span>
+                                    </span>
+                                </li>
+                                @if($shipment->message_ar || $shipment->message)
+                                <li class="info-list-item">
+                                    <span class="info-type">@lang('Message')</span>
+                                    <span class="info">{{ $shipment->message_ar ?? $shipment->message }}</span>
+                                </li>
+                                @endif
+                                @if($shipment->location)
+                                <li class="info-list-item">
+                                    <span class="info-type">@lang('Current Location')</span>
+                                    <span class="info">{{ $shipment->location }}</span>
+                                </li>
+                                @endif
+                                @if($shipment->status_date)
+                                <li class="info-list-item">
+                                    <span class="info-type">@lang('Last Update')</span>
+                                    <span class="info">{{ $shipment->status_date->format('Y-m-d H:i') }}</span>
+                                </li>
+                                @endif
+                            @elseif ($delivery)
+                                {{-- Local Rider Info --}}
+                                <li class="info-list-item">
+                                    <span class="info-type">@lang('Delivery Type')</span>
+                                    <span class="info"><span class="badge bg-secondary">@lang('Local Rider')</span></span>
+                                </li>
+                                <li class="info-list-item">
+                                    <span class="info-type">@lang('Rider Name')</span>
+                                    <span class="info">{{ $delivery->rider->name ?? 'N/A' }}</span>
+                                </li>
+                                <li class="info-list-item">
+                                    <span class="info-type">@lang('Delivery Cost')</span>
+                                    <span class="info">{{ PriceHelper::showAdminCurrencyPrice($delivery->servicearea->price ?? 0) }}</span>
+                                </li>
+                                <li class="info-list-item">
+                                    <span class="info-type">@lang('Status')</span>
+                                    <span class="info">
+                                        <span class="badge
+                                            @if($delivery->status == 'delivered') bg-success
+                                            @elseif($delivery->status == 'accepted') bg-primary
+                                            @elseif($delivery->status == 'rejected') bg-danger
+                                            @else bg-warning
+                                            @endif">
+                                            {{ ucfirst($delivery->status) }}
+                                        </span>
+                                    </span>
+                                </li>
+                            @elseif ($customerChoice)
+                                {{-- Customer Choice (Not Yet Assigned) --}}
+                                <li class="info-list-item">
+                                    <span class="info-type">@lang('Status')</span>
+                                    <span class="info"><span class="badge bg-warning">@lang('Not Assigned')</span></span>
+                                </li>
+                                <li class="info-list-item">
+                                    <span class="info-type">@lang('Customer Selected')</span>
+                                    <span class="info">
+                                        @if ($customerChoice['provider'] === 'tryoto')
+                                            <span class="badge bg-primary">{{ $customerChoice['company_name'] ?? 'Tryoto' }}</span>
+                                            - {{ $order->currency_sign }}{{ number_format($customerChoice['price'] ?? 0, 2) }}
+                                        @else
+                                            {{ $customerChoice['title'] ?? $customerChoice['provider'] ?? 'Manual' }}
+                                        @endif
+                                    </span>
+                                </li>
+                                <li class="info-list-item">
+                                    <a href="{{ route('vendor.delivery.index') }}" class="m-btn m-btn--primary m-btn--sm">
+                                        <i class="fas fa-shipping-fast"></i> @lang('Assign Shipping')
+                                    </a>
+                                </li>
+                            @endif
+                        </ul>
+                    </div>
+                </div>
+            @endif
         </div>
         <!-- Order info cards end  -->
 
@@ -271,16 +362,12 @@
                 <table  class="gs-data-table w-100">
                     <thead>
                         <tr>
-                            <th><span class="header-title">@lang('Image')</span></th>
-                            <th><span class="header-title">@lang('Name')</span></th>
-                            <th><span class="header-title">@lang('Part Number')</span></th>
+                            <th><span class="header-title">@lang('Product ID#')</span></th>
                             <th><span class="header-title">@lang('Shop Name')</span></th>
-                            <th><span class="header-title">@lang('Brand')</span></th>
-                            <th><span class="header-title">@lang('Brand Quality')</span></th>
-                            <th><span class="header-title">@lang('Price')</span></th>
-                            <th><span class="header-title">@lang('Quantity')</span></th>
-                            <th><span class="header-title">@lang('Total')</span></th>
                             <th><span class="header-title">@lang('Status')</span></th>
+                            <th><span class="header-title">@lang('Product Title')</span></th>
+                            <th><span class="header-title">@lang('Details')</span></th>
+                            <th><span class="header-title">@lang('Total Price')</span></th>
                         </tr>
                     </thead>
                     <tbody>
@@ -288,123 +375,138 @@
                         @foreach ($cart['items'] as $key => $product)
                             @if ($product['item']['user_id'] != 0)
                                 @if ($product['item']['user_id'] == $user->id)
-                                    @php
-                                        $vendorUser = App\Models\User::find($product['item']['user_id']);
-                                        $orderProduct = App\Models\Product::where('slug', $product['item']['slug'])->first();
-                                        $orderMerchant = $orderProduct && $vendorUser ? $orderProduct->merchantProducts()->with('user')->where('user_id', $product['item']['user_id'])->where('status', 1)->first() : null;
-                                        $orderMerchantId = $orderMerchant->id ?? null;
-                                        $shopName = $orderMerchant && $orderMerchant->user ? ($orderMerchant->user->shop_name ?? $orderMerchant->user->name) : '-';
-                                        $vendorOrderStatus = App\Models\VendorOrder::where('order_id', '=', $order->id)
-                                            ->where('user_id', '=', $product['item']['user_id'])
-                                            ->first();
-                                    @endphp
                                     <tr>
-                                        <!-- Image -->
-                                        <td class="product-img">
-                                            <img src="{{ \Illuminate\Support\Facades\Storage::url($product['item']['photo']) ?? asset('assets/images/noimage.png') }}"
-                                                alt="" style="width: 80px; height: 80px; object-fit: cover;">
+                                        <!-- Product ID# -->
+                                        <td class="text-start"><span class="content ">{{ $product['item']['id'] }}</span>
                                         </td>
-
-                                        <!-- Name -->
-                                        <td class="text-start">
-                                            <x-product-name :item="$product['item']" :vendor-id="$product['item']['user_id']" :merchant-product-id="$orderMerchantId" :showSku="false" target="_blank" class="title-hover-color content product-title d-inline-block" />
-
-                                            @if (!empty($product['color']) || !empty($product['size']))
-                                                <div class="d-flex align-items-center gap-2 mt-2">
-                                                    @if (!empty($product['color']))
-                                                        <span class="text-muted small">@lang('Color'): </span>
-                                                        <span class="d-inline-block rounded-2" style="border:10px solid #{{ $product['color']==''?'white':$product['color'] }};"></span>
-                                                    @endif
-                                                    @if (!empty($product['size']))
-                                                        <span class="text-muted small">@lang('Size'): {{ $product['size'] }}</span>
-                                                    @endif
-                                                </div>
-                                            @endif
-                                            @if (!empty($product['keys']))
-                                                <div class="mt-2">
-                                                    @foreach (array_combine(explode(',', $product['keys']), explode(',', $product['values'])) as $key => $value)
-                                                        <small class="text-muted d-block">{{ ucwords(str_replace('_', ' ', $key)) }}: {{ $value }}</small>
-                                                    @endforeach
-                                                </div>
-                                            @endif
-
-                                            @if ($product['license'] != '')
-                                                <div class="mt-2">
-                                                    <a href="javascript:;" data-toggle="modal"
-                                                        data-target="#confirm-delete"
-                                                        class="btn btn-info product-btn" id="license"
-                                                        style="padding: 5px 12px;">
-                                                        <i class="fa fa-eye"></i>
-                                                        {{ __('View License') }}
-                                                    </a>
-                                                </div>
-                                            @endif
-                                        </td>
-
-                                        <!-- Part Number -->
-                                        <td class="text-start">
-                                            <span class="content">{{ $product['item']['sku'] ?? '-' }}</span>
-                                        </td>
-
                                         <!-- Shop Name -->
                                         <td class="text-start">
-                                            @if ($vendorUser)
-                                                <a class="title-hover-color content" target="_blank"
-                                                    href="{{ route('admin-vendor-show', $vendorUser->id) }}">{{ $shopName }}</a>
-                                            @else
-                                                <span class="content">{{ __('Vendor Removed') }}</span>
-                                            @endif
-                                        </td>
-
-                                        <!-- Brand -->
-                                        <td class="text-start">
-                                            <span class="content">{{ $orderProduct && $orderProduct->brand ? Str::ucfirst($orderProduct->brand->name) : '-' }}</span>
-                                        </td>
-
-                                        <!-- Brand Quality -->
-                                        <td class="text-start">
-                                            <span class="content">{{ $orderMerchant && $orderMerchant->qualityBrand ? (app()->getLocale() == 'ar' && $orderMerchant->qualityBrand->name_ar ? $orderMerchant->qualityBrand->name_ar : $orderMerchant->qualityBrand->name_en) : '-' }}</span>
-                                        </td>
-
-                                        <!-- Price -->
-                                        <td class="text-start">
-                                            <span class="content">{{ \PriceHelper::showOrderCurrencyPrice($product['item_price'] * $order->currency_value, $order->currency_sign) }}</span>
-                                        </td>
-
-                                        <!-- Quantity -->
-                                        <td class="text-start">
-                                            <span class="content">{{ $product['qty'] }}</span>
-                                        </td>
-
-                                        <!-- Total -->
-                                        <td class="text-start">
-                                            <span class="content">
-                                                {{ \PriceHelper::showOrderCurrencyPrice($product['price'] * $order->currency_value, $order->currency_sign) }}
-                                                @if($product['discount'] != 0)
-                                                    <br><small>{{ $product['discount'] }}% {{ __('Off') }}</small>
+                                                @if ($product['item']['user_id'] != 0)
+                                                    @php
+                                                        $user = App\Models\User::find($product['item']['user_id']);
+                                                    @endphp
+                                                    @if (isset($user))
+                                                        <a class="title-hover-color content" target="_blank"
+                                                            href="{{ route('admin-vendor-show', $user->id) }}">{{ $user->shop_name }}</a>
+                                                    @else
+                                                        {{ __('Vendor Removed') }}
+                                                    @endif
                                                 @endif
-                                            </span>
                                         </td>
-
                                         <!-- Status -->
                                         <td>
-                                            @if ($order->dp == 1 && $order->payment_status == 'Completed')
-                                                <span class="template-btn bg-success sm-btn">{{ __('Completed') }}</span>
-                                            @else
-                                                @if ($vendorOrderStatus)
-                                                    @if ($vendorOrderStatus->status == 'pending')
-                                                        <span class="template-btn bg-warning sm-btn">{{ ucwords($vendorOrderStatus->status) }}</span>
-                                                    @elseif($vendorOrderStatus->status == 'processing')
-                                                        <span class="template-btn bg-info sm-btn">{{ ucwords($vendorOrderStatus->status) }}</span>
-                                                    @elseif($vendorOrderStatus->status == 'on delivery')
-                                                        <span class="template-btn bg-info sm-btn">{{ ucwords($vendorOrderStatus->status) }}</span>
-                                                    @elseif($vendorOrderStatus->status == 'completed')
-                                                        <span class="template-btn bg-success sm-btn">{{ ucwords($vendorOrderStatus->status) }}</span>
-                                                    @elseif($vendorOrderStatus->status == 'declined')
-                                                        <span class="template-btn bg-danger sm-btn">{{ ucwords($vendorOrderStatus->status) }}</span>
+                                            @if ($product['item']['user_id'] != 0)
+                                                @php
+                                                    $user = App\Models\VendorOrder::where('order_id', '=', $order->id)
+                                                        ->where('user_id', '=', $product['item']['user_id'])
+                                                        ->first();
+                                                @endphp
+
+                                                @if ($order->dp == 1 && $order->payment_status == 'Completed')
+                                                    <span class="m-badge m-badge--completed">{{ __('Completed') }}</span>
+                                                @else
+                                                    @if ($user->status == 'pending')
+                                                        <span class="m-badge m-badge--pending">{{ ucwords($user->status) }}</span>
+                                                    @elseif($user->status == 'processing')
+                                                        <span class="m-badge m-badge--processing">{{ ucwords($user->status) }}</span>
+                                                    @elseif($user->status == 'on delivery')
+                                                        <span class="m-badge m-badge--shipped">{{ ucwords($user->status) }}</span>
+                                                    @elseif($user->status == 'completed')
+                                                        <span class="m-badge m-badge--completed">{{ ucwords($user->status) }}</span>
+                                                    @elseif($user->status == 'declined')
+                                                        <span class="m-badge m-badge--cancelled">{{ ucwords($user->status) }}</span>
                                                     @endif
                                                 @endif
                                             @endif
+                                        </td>
+
+                                        <!-- Product Title -->
+                                        <td>
+
+                                            @if ($product['item']['user_id'] != 0)
+                                            @php
+                                                $user = App\Models\User::find(
+                                                    $product['item']['user_id'],
+                                                );
+                                                $vendorOrderProductUrl = '#';
+                                                if (isset($product['item']['slug']) && isset($product['user_id']) && isset($product['merchant_product_id'])) {
+                                                    $vendorOrderProductUrl = route('front.product', [
+                                                        'slug' => $product['item']['slug'],
+                                                        'vendor_id' => $product['user_id'],
+                                                        'merchant_product_id' => $product['merchant_product_id']
+                                                    ]);
+                                                } elseif (isset($product['item']['slug'])) {
+                                                    $vendorOrderProductUrl = route('front.product.legacy', $product['item']['slug']);
+                                                }
+                                            @endphp
+                                            <a class="title-hover-color content product-title d-inline-block" target="_blank"
+                                                href="{{ $vendorOrderProductUrl }}">
+                                                {{ getLocalizedProductName($product['item'], 30) }}
+                                            </a>
+                                            <br><small class="text-muted">SKU: {{ $product['item']['sku'] ?? 'N/A' }}</small>
+                                        @endif
+
+
+                                        @if ($product['license'] != '')
+                                            <a href="javascript:;" data-bs-toggle="modal"
+                                                data-bs-target="#confirm-delete"
+                                                class="m-btn m-btn--info m-btn--xs" id="license">
+                                                <i class="fa fa-eye"></i> {{ __('View License') }}
+                                            </a>
+                                        @endif
+
+
+
+
+                                        </td>
+                                        <!-- Details -->
+                                        <td class="text-start">
+                                            <div class="rider">
+
+                                                @if ($product['size'])
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <span class="key">@lang('Size :')</span>
+                                                    <span class="value">{{ str_replace('-','',$product['size'],) }}</span>
+                                                </div>
+                                                @endif
+
+                                                @if ($product['color'])
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <span class="key">{{ __('Color') }} :</span>
+                                                    <span style="width: 20px; height: 20px; display: inline-block; vertical-align: middle; border-radius: 50%; background: #{{ $product['color'] }};" class="value"></span>
+                                                </div>
+                                                @endif
+
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <span class="key">@lang('Price :')</span>
+                                                    <span class="value">{{ \PriceHelper::showOrderCurrencyPrice($product['item_price'] * $order->currency_value, $order->currency_sign) }}</span>
+                                                </div>
+
+
+
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <span class="key">@lang('Qty :')</span>
+                                                    <span class="value">{{ $product['qty'] }}
+                                                        {{ $product['item']['measure'] }}</span>
+                                                </div>
+
+                                                @if (!empty($product['keys']))
+                                                            @foreach (array_combine(explode(',', $product['keys']), explode(',', $product['values'])) as $key => $value)
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <span class="key">{{ ucwords(str_replace('_', ' ', $key)) }} :</span>
+                                                    <span class="value">{{ $value }}</span>
+                                                </div>
+                                                @endforeach
+                                                @endif
+
+                                            </div>
+                                        </td>
+                                        <!-- Total Price -->
+                                        <td class="text-start">
+                                            <span class="content ">
+                                                {{ \PriceHelper::showOrderCurrencyPrice($product['price'] * $order->currency_value, $order->currency_sign) }}
+                                                        <small>{{ $product['discount'] == 0 ? '' : '(' . $product['discount'] . '% ' . __('Off') . ')' }}</small>
+                                            </span>
                                         </td>
                                     </tr>
                                 @endif

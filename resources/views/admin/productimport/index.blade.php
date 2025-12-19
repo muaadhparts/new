@@ -32,8 +32,11 @@
 												<table id="muaadhtable" class="table table-hover dt-responsive" cellspacing="0" width="100%">
 													<thead>
 														<tr>
+									                        <th>{{ __("Image") }}</th>
 									                        <th>{{ __("Name") }}</th>
-									                        <th>{{ __("Type") }}</th>
+									                        <th>{{ __("Brand") }}</th>
+									                        <th>{{ __("Quality Brand") }}</th>
+									                        <th>{{ __("Vendor") }}</th>
 									                        <th>{{ __("Stock") }}</th>
 									                        <th>{{ __("Price") }}</th>
 									                        <th>{{ __("Status") }}</th>
@@ -62,15 +65,15 @@
 												</div>
 											<div class="modal-header">
 											<h5 class="modal-title"></h5>
-											<button type="button" class="close" data-dismiss="modal" aria-label="Close">
-												<span aria-hidden="true">&times;</span>
+											<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+												
 											</button>
 											</div>
 											<div class="modal-body">
 
 											</div>
 											<div class="modal-footer">
-											<button type="button" class="btn btn-secondary" data-dismiss="modal">{{ __("Close") }}</button>
+											<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ __("Close") }}</button>
 											</div>
 										</div>
 										</div>
@@ -87,8 +90,8 @@
 
 	<div class="modal-header d-block text-center">
 		<h4 class="modal-title d-inline-block">{{ __("Confirm Delete") }}</h4>
-			<button type="button" class="close" data-dismiss="modal" aria-label="Close">
-				<span aria-hidden="true">&times;</span>
+			<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+				
 			</button>
 	</div>
 
@@ -100,7 +103,7 @@
 
       <!-- Modal footer -->
       <div class="modal-footer justify-content-center">
-            <button type="button" class="btn btn-default" data-dismiss="modal">{{ __("Cancel") }}</button>
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ __("Cancel") }}</button>
             			<form action="" class="d-inline delete-form" method="POST">
 				<input type="hidden" name="_method" value="delete" />
 				<input type="hidden" name="_token" value="{{ csrf_token() }}">
@@ -122,8 +125,8 @@
 				<div class="modal-content">
 				<div class="modal-header">
 					<h5 class="modal-title" id="exampleModalCenterTitle">{{ __("Image Gallery") }}</h5>
-					<button type="button" class="close" data-dismiss="modal" aria-label="Close">
-					<span aria-hidden="true">×</span>
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+					
 					</button>
 				</div>
 				<div class="modal-body">
@@ -140,7 +143,7 @@
 								</div>
 							</div>
 							<div class="col-sm-6">
-								<a href="javascript:;" class="upload-done" data-dismiss="modal"> <i class="fas fa-check"></i> {{ __("Done") }}</a>
+								<a href="javascript:;" class="upload-done" data-bs-dismiss="modal"> <i class="fas fa-check"></i> {{ __("Done") }}</a>
 							</div>
 							<div class="col-sm-12 text-center">( <small>{{ __("You can upload multiple Images.") }}</small> )</div>
 						</div>
@@ -181,8 +184,11 @@
                serverSide: true,
                ajax: '{{ route('admin-import-datatables') }}',
                columns: [
+                        { data: 'photo', name: 'photo' },
                         { data: 'name', name: 'name' },
-                        { data: 'type', name: 'type' },
+                        { data: 'brand', name: 'brand' },
+                        { data: 'quality_brand', name: 'quality_brand' },
+                        { data: 'vendor', name: 'vendor' },
                         { data: 'stock', name: 'stock' },
                         { data: 'price', name: 'price' },
                         { data: 'status', searchable: false, orderable: false},

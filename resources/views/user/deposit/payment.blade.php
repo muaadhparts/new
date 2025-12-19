@@ -157,41 +157,24 @@
 
         let original_tax = 0;
 
-        // $(document).ready(function() {
-        //     let country_id = $('#select_country').val();
-        //     let state_id = $('#state_id').val();
-        //     let is_state = $('#is_state').val();
-        //     let state_url = $('#state_url').val();
-
-
-        //     if (is_state == 1) {
-        //         if (is_state == 1) {
-        //             $('.select_state').removeClass('d-none');
-        //             $.get(state_url, function(response) {
-        //                 $('#show_state').html(response.data);
-        //                 tax_submit(country_id, response.state);
-        //             });
-
-        //         } else {
-        //             tax_submit(country_id, state_id);
-        //         }
-        //     } else {
-        //         tax_submit(country_id, state_id);
-        //     }
-        // });
-        
-        $(window).on('load', function() {
+        $(document).ready(function() {
             let country_id = $('#select_country').val();
-            let state_id   = $('#state_id').val();
-            let is_state   = $('#is_state').val();
-            let state_url  = $('#state_url').val();
+            let state_id = $('#state_id').val();
+            let is_state = $('#is_state').val();
+            let state_url = $('#state_url').val();
 
-            if (is_state == 1 && state_url) {
-                $('.select_state').removeClass('d-none');
-                $.get(state_url, function(response) {
-                    $('#show_state').html(response.data);
-                    tax_submit(country_id, response.state);
-                });
+
+            if (is_state == 1) {
+                if (is_state == 1) {
+                    $('.select_state').removeClass('d-none');
+                    $.get(state_url, function(response) {
+                        $('#show_state').html(response.data);
+                        tax_submit(country_id, response.state);
+                    });
+
+                } else {
+                    tax_submit(country_id, state_id);
+                }
             } else {
                 tax_submit(country_id, state_id);
             }

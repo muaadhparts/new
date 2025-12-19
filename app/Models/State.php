@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class State extends Model
 {
     public $timestamps = false;
-    protected $fillable = ['state', 'state_ar', 'country_id', 'status', 'tax', 'owner_id'];
+    protected $fillable = ['state', 'state_ar', 'country_id', 'status', 'tax', 'owner_id', 'latitude', 'longitude'];
 
     public function country()
     {

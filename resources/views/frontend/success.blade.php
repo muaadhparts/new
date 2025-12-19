@@ -21,7 +21,7 @@
 
 
 
-    <div class="gs-success-invoice-section">
+    <div class="gs-success-invoice-section muaadh-section-gray">
         <div class="container">
             <div class="success-invoice-box">
                 <div class="success-invoice-header wow-replaced" data-wow-delay=".1s">
@@ -49,67 +49,28 @@
                     </svg>
                     <h3>@lang('THANK YOU FOR YOUR PURCHASE')</h3>
                     <h5>@lang("We'll email you an order confirmation with details and tracking info")</h5>
-                    @php
-                        // Check if there are remaining items in cart (from other vendors)
-                        $hasRemainingCart = Session::has('cart') && count(Session::get('cart')->items ?? []) > 0;
 
-                        // تحديد الـ URL بناءً على وجود سلة
-                        if ($hasRemainingCart) {
-                            $buttonUrl = route('front.cart');
-                            $buttonText = __('Continue Shopping - Cart');
-                        } else {
-                            $buttonUrl = route('front.index');
-                            $buttonText = __('Back to Homepage');
-                        }
+                    {{-- زر العودة: للسلة إذا فيها منتجات، أو للرئيسية إذا فارغة --}}
+                    @php
+                        $hasRemainingCart = Session::has('cart') && !empty(Session::get('cart')->items);
                     @endphp
-                    <a href="{{ $buttonUrl }}" class="template-btn btn-success-page">{{ $buttonText }}</a>
+
+                    @if($hasRemainingCart)
+                        <a href="{{ route('front.cart') }}" class="template-btn btn-success-page">
+                            <i class="fas fa-shopping-cart me-2"></i>@lang('Continue Shopping - Complete Other Vendors')
+                        </a>
+                        <p class="mt-2 text-muted small">@lang('You still have items from other vendors in your cart')</p>
+                    @else
+                        <a href="{{ route('front.index') }}" class="template-btn btn-success-page">@lang('Get Back to Our Homepage')</a>
+                    @endif
                 </div>
                 <div class=" success-invoice-body wow-replaced" data-wow-delay=".1s">
                     <h4>@lang('Order#') {{ $order->order_number }}</h4>
                     <p>@lang('Order Date') {{ date('d-M-Y', strtotime($order->created_at)) }}</p>
-
-                    @php
-                        // استخراج tracking numbers من vendor_shipping_id
-                        $trackingInfo = [];
-                        if ($order->vendor_shipping_id) {
-                            $shippingData = is_string($order->vendor_shipping_id)
-                                ? json_decode($order->vendor_shipping_id, true)
-                                : $order->vendor_shipping_id;
-
-                            if (isset($shippingData['oto']) && is_array($shippingData['oto'])) {
-                                $trackingInfo = $shippingData['oto'];
-                            }
-                        }
-                    @endphp
-
-                    @if(!empty($trackingInfo))
-                        <div class="tracking-info mt-3">
-                            <h5>@lang('Tracking Information')</h5>
-                            @foreach($trackingInfo as $info)
-                                @if(!empty($info['trackingNumber']))
-                                    <div class="tracking-item" style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 10px;">
-                                        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
-                                            <div>
-                                                <strong style="color: #EE1243;">{{ $info['company'] ?? 'Shipping Company' }}</strong>
-                                                <p style="margin: 5px 0; font-size: 14px;">
-                                                    @lang('Tracking#'): <span style="font-weight: 600;">{{ $info['trackingNumber'] }}</span>
-                                                </p>
-                                            </div>
-                                            <a href="{{ route('front.track.search', $info['trackingNumber']) }}"
-                                               class="template-btn"
-                                               style="margin-top: 10px;">
-                                                @lang('Track Shipment')
-                                            </a>
-                                        </div>
-                                    </div>
-                                @endif
-                            @endforeach
-                        </div>
-                    @endif
                 </div>
                 <div class="row order-details-area wow-replaced" data-wow-delay=".1s">
 
-{{--                            @dd(json_decode($order->cart,true) ,$order->cart);--}}
+
                     @if ($order->dp == 1)
                         <div class="col-lg-6 col-md-6 col-sm-12">
                             <h5>@lang('Shipping Address')</h5>
@@ -371,23 +332,6 @@
 
                                 @if ($order->shipping == 'shipto')
                                     <p>{{ __('Ship To Address') }}</p>
-                                    @if($order->shipping_title)
-                                        @php
-                                            $shippingTitles = json_decode($order->shipping_title, true);
-                                        @endphp
-                                        @if(is_array($shippingTitles))
-                                            @foreach($shippingTitles as $vendorId => $shippingId)
-                                                @php
-                                                    $shipping = \App\Models\Shipping::find($shippingId);
-                                                @endphp
-                                                @if($shipping)
-                                                    <p><strong>{{ __('Shipping:') }}</strong> {{ $shipping->title }}</p>
-                                                @endif
-                                            @endforeach
-                                        @else
-                                            <p><strong>{{ __('Shipping:') }}</strong> {{ $order->shipping_title }}</p>
-                                        @endif
-                                    @endif
                                 @else
                                     <p>{{ __('Pick Up') }}</p>
                                 @endif
@@ -401,78 +345,68 @@
                 <div class="ordered-products wow-replaced" data-wow-delay=".1s">
                     <h4>@lang('Ordered Products:')</h4>
                     <div class="table-responsive">
-                        <table class="table table-bordered">
+                        <table>
                             <thead>
                                 <tr class="wow-replaced" data-wow-delay=".1s">
-                                    <th>@lang('Image')</th>
-                                    <th>@lang('Name')</th>
-                                    <th>@lang('Part Number')</th>
-                                    <th>@lang('Shop Name')</th>
-                                    <th>@lang('Brand')</th>
-                                    <th>@lang('Brand Quality')</th>
-                                    <th>@lang('Price')</th>
-                                    <th>@lang('Quantity')</th>
-                                    <th>@lang('Total')</th>
+                                    <th class="d-none d-lg-table-cell">@lang('Product Image')</th>
+                                    <th>@lang('Product Details')</th>
+                                    <th class="d-none d-lg-table-cell">@lang('Unit Price')</th>
+                                    <th class="d-none d-lg-table-cell">@lang('Total')</th>
                                 </tr>
                             </thead>
                             <tbody>
+
+
                                 @foreach ($tempcart->items as $product)
-                                    @php
-                                        $successProduct = \App\Models\Product::where('slug', $product['item']['slug'])->first();
-                                        $successVendorId = $product['item']['user_id'] ?? 0;
-                                        $successMerchant = $successProduct && $successVendorId ? $successProduct->merchantProducts()->with('user')->where('user_id', $successVendorId)->where('status', 1)->first() : null;
-                                        $successMerchantId = $successMerchant->id ?? null;
-                                        $shopName = $successMerchant && $successMerchant->user ? ($successMerchant->user->shop_name ?? $successMerchant->user->name) : '-';
-                                    @endphp
                                     <tr class="wow-replaced" data-wow-delay=".1s">
-                                        <td class="product-img">
-                                            <img src="{{ \Illuminate\Support\Facades\Storage::url($product['item']['photo']) ?? asset('assets/images/noimage.png') }}"
-                                                alt="" style="width: 80px; height: 80px; object-fit: cover;">
+                                        <td colspan="1" class="product-img d-none d-lg-table-cell">
+                                            <img src="{{ $product['item']['photo'] ? \Illuminate\Support\Facades\Storage::url($product['item']['photo']) : asset('assets/images/noimage.png') }}"
+                                                alt="">
                                         </td>
-                                        <td class="product-name">
-                                            <x-product-name :item="$product['item']" :vendor-id="$successVendorId" :merchant-product-id="$successMerchantId" :showSku="false" target="_blank" />
-                                            @if (!empty($product['color']) || !empty($product['size']))
-                                                <div class="d-flex align-items-center gap-2 mt-2">
-                                                    @if (!empty($product['color']))
-                                                        <span class="text-muted small">@lang('Color'): </span>
-                                                        <span class="d-inline-block rounded-2" style="border:10px solid #{{ $product['color']==''?'white':$product['color'] }};"></span>
-                                                    @endif
-                                                    @if (!empty($product['size']))
-                                                        <span class="text-muted small">@lang('Size'): {{ $product['size'] }}</span>
-                                                    @endif
-                                                </div>
-                                            @endif
+                                        <td class="product-details">
+                                            <img src="{{ $product['item']['photo'] ? \Illuminate\Support\Facades\Storage::url($product['item']['photo']) : asset('assets/images/noimage.png') }}"
+                                                alt="" class="d-lg-none d-table-cell pb-24 small-device-img">
+                                            <h6>{{ getLocalizedProductName($product['item']) }}</h6>
+                                            <p><span>@lang('Quantity:')</span> {{ $product['qty'] }}</p>
+                                            <p><span>Size:</span>
+                                                @if (!empty($product['size']))
+                                                    <b>{{ __('Size') }}</b>:
+                                                    {{ $product['item']['measure'] }}{{ str_replace('-', '                                                                ', $product['size']) }}
+                                                    <br>
+                                                @endif
+
+                                            </p>
+                                            <p><span>@lang('Color:')</span>
+
+                                                @if (!empty($product['color']))
+                                                    <div class="d-flex mt-2">
+                                                        <b>{{ __('Color') }}</b>: <span class="color-show-btn mt-1 ms-3 muaadh-success-color-swatch" id="color-bar"
+                                                            style="--swatch-color: #{{ $product['color'] == '' ? 'fff' : $product['color'] }};"></span>
+                                                    </div>
+                                                @endif
+                                            </p>
+
                                             @if (!empty($product['keys']))
-                                                <div class="mt-2">
-                                                    @foreach (array_combine(explode(',', $product['keys']), explode(',', $product['values'])) as $key => $value)
-                                                        <small class="text-muted d-block">{{ ucwords(str_replace('_', ' ', $key)) }}: {{ $value }}</small>
-                                                    @endforeach
-                                                </div>
+                                                @foreach (array_combine(explode(',', $product['keys']), explode(',', $product['values'])) as $key => $value)
+                                                    <p><span>{{ ucwords(str_replace('_', ' ', $key)) }}:</span>
+                                                        {{ $value }}</p>
+                                                @endforeach
                                             @endif
+
+                                            <p class="d-lg-none d-table-cell"><span>@lang('Unit Price:')</span>
+                                                {{ \PriceHelper::showCurrencyPrice($product['item_price'] * $order->currency_value) }}
+                                            </p>
+                                            <p class="d-lg-none"><span>@lang('Total Price:')</span>{{ \PriceHelper::showCurrencyPrice($product['price'] * $order->currency_value) }}
+                                                <small>{{ $product['discount'] == 0 ? '' : '(' . $product['discount'] . '% ' . __('Off') . ')' }}</small>
+                                            </p>
+
                                         </td>
-                                        <td>
-                                            <span>{{ $product['item']['sku'] ?? '-' }}</span>
-                                        </td>
-                                        <td>
-                                            <span>{{ $shopName }}</span>
-                                        </td>
-                                        <td>
-                                            <span>{{ $successProduct && $successProduct->brand ? Str::ucfirst($successProduct->brand->name) : '-' }}</span>
-                                        </td>
-                                        <td>
-                                            <span>{{ $successMerchant && $successMerchant->qualityBrand ? (app()->getLocale() == 'ar' && $successMerchant->qualityBrand->name_ar ? $successMerchant->qualityBrand->name_ar : $successMerchant->qualityBrand->name_en) : '-' }}</span>
-                                        </td>
-                                        <td>
+                                        <td class="d-none d-lg-table-cell">
                                             {{ \PriceHelper::showCurrencyPrice($product['item_price'] * $order->currency_value) }}
                                         </td>
-                                        <td>
-                                            {{ $product['qty'] }}
-                                        </td>
-                                        <td>
+                                        <td class="d-none d-lg-table-cell">
                                             {{ \PriceHelper::showCurrencyPrice($product['price'] * $order->currency_value) }}
-                                            @if($product['discount'] != 0)
-                                                <br><small>{{ $product['discount'] }}% {{ __('Off') }}</small>
-                                            @endif
+                                            <small>{{ $product['discount'] == 0 ? '' : '(' . $product['discount'] . '% ' . __('Off') . ')' }}</small>
                                         </td>
                                     </tr>
                                 @endforeach
@@ -483,4 +417,36 @@
             </div>
         </div>
     </div>
+@endsection
+
+@section('script')
+<script>
+    // ============================================
+    // مسح بيانات الموقع المحفوظة بعد نجاح الطلب
+    // ============================================
+    $(document).ready(function() {
+        // Clear checkout location data from localStorage after successful order
+        if (localStorage.getItem('selectedLocation')) {
+            localStorage.removeItem('selectedLocation');
+            console.log('✅ تم مسح بيانات الموقع المحفوظة بعد نجاح الطلب');
+        }
+
+        // Also clear any other checkout-related data if exists
+        const checkoutKeys = [
+            'checkout_shipping_selection',
+            'checkout_packing_selection',
+            'checkout_step1_data',
+            'checkout_step2_data'
+        ];
+
+        checkoutKeys.forEach(function(key) {
+            if (localStorage.getItem(key)) {
+                localStorage.removeItem(key);
+                console.log(`✅ تم مسح ${key} من localStorage`);
+            }
+        });
+
+        console.log('🎉 تم تنظيف localStorage بنجاح بعد إتمام الطلب');
+    });
+</script>
 @endsection

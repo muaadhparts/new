@@ -54,7 +54,7 @@
                                                 </div>
                                             </div>
                                             <div class="col-lg-12">
-                                                <input type="text" class="input-field"
+                                                <input type="text" class="form-control"
                                                     placeholder="{{ __('Enter Product Name') }}" name="name"
                                                     required="">
                                             </div>
@@ -67,7 +67,7 @@
                                                 </div>
                                             </div>
                                             <div class="col-lg-12">
-                                                <input type="text" class="input-field"
+                                                <input type="text" class="form-control"
                                                     placeholder="{{ __('Enter Product Sku') }}" name="sku"
                                                     required=""
                                                     value="{{ Str::random(3) . substr(time(), 6, 8) . Str::random(3) }}">
@@ -82,7 +82,7 @@
                                                 </div>
                                             </div>
                                             <div class="col-lg-12">
-                                                <input type="text" class="input-field"
+                                                <input type="text" class="form-control"
                                                     placeholder="{{ __('Enter Product Link') }}" name="affiliate_link"
                                                     required="">
                                             </div>
@@ -141,7 +141,7 @@
                                                 </div>
                                             </div>
                                             <div class="col-lg-12">
-                                                <input name="stock" type="text" class="input-field"
+                                                <input name="stock" type="text" class="form-control"
                                                     placeholder="{{ __('e.g 20') }}">
                                                 <div class="checkbox-wrapper">
                                                     <input type="checkbox" name="measure_check" class="checkclick"
@@ -172,7 +172,7 @@
                                                 </div>
                                                 <div class="col-lg-12 hidden" id="measure">
                                                     <input name="measure" type="text" id="measurement"
-                                                        class="input-field" placeholder="{{ __('Enter Unit') }}">
+                                                        class="form-control" placeholder="{{ __('Enter Unit') }}">
                                                 </div>
                                             </div>
                                         </div>
@@ -240,7 +240,7 @@
                                                     </div>
                                                 </div>
                                                 <div class="col-lg-12">
-                                                    <input type="text" class="input-field"
+                                                    <input type="text" class="form-control"
                                                         placeholder="{{ __('Estimated Shipping Time') }}" name="ship">
                                                 </div>
                                             </div>
@@ -282,7 +282,7 @@
                                                             <span class="remove color-remove"><i
                                                                     class="fas fa-times"></i></span>
                                                             <div class="input-group colorpicker-component cp">
-                                                                <input type="text" class="input-field cp tcolor" />
+                                                                <input type="text" class="form-control cp tcolor" />
                                                                 <span class="input-group-addon"><i></i></span>
                                                             </div>
                                                         </div>
@@ -327,7 +327,7 @@
                                                         <div class="tsize-area">
                                                             <span class="remove tsize-remove"><i
                                                                     class="fas fa-times"></i></span>
-                                                            <input type="text" class="input-field tsize"
+                                                            <input type="text" class="form-control tsize"
                                                                 placeholder="{{ __('Enter Product Size') }}">
                                                         </div>
                                                     </div>
@@ -373,7 +373,7 @@
                                                                         </span>
                                                                     </label>
                                                                     <select name="size[]"
-                                                                        class="input-field size-name"></select>
+                                                                        class="form-control size-name"></select>
                                                                 </div>
                                                                 <div class="col-md-3 col-sm-6">
                                                                     <label>
@@ -383,7 +383,7 @@
                                                                         </span>
                                                                     </label>
                                                                     <input type="number" name="size_qty[]" required
-                                                                        class="input-field"
+                                                                        class="form-control"
                                                                         placeholder="{{ __('Size Qty') }}" value="1"
                                                                         min="1">
                                                                 </div>
@@ -395,7 +395,7 @@
                                                                         </span>
                                                                     </label>
                                                                     <input type="number" name="size_price[]" required
-                                                                        class="input-field"
+                                                                        class="form-control"
                                                                         placeholder="{{ __('Size Price') }}"
                                                                         value="0" min="0">
                                                                 </div>
@@ -407,7 +407,7 @@
                                                                         </span>
                                                                     </label>
                                                                     <select name="color[]"
-                                                                        class="input-field color-name"></select>
+                                                                        class="form-control color-name"></select>
                                                                 </div>
 
                                                             </div>
@@ -484,7 +484,7 @@
                                                 </div>
                                                 <div class="col-lg-12">
                                                     <div class="text-editor">
-                                                        <textarea name="meta_description" class="input-field" placeholder="{{ __('Meta Description') }}"></textarea>
+                                                        <textarea name="meta_description" class="form-control" placeholder="{{ __('Meta Description') }}"></textarea>
                                                     </div>
                                                 </div>
                                             </div>
@@ -530,7 +530,7 @@
                                                     <div class="panel panel-body">
                                                         <div class="span4 cropme text-center" id="landscape"
                                                             style="width: 100%; height: 285px; border: 1px dashed #ddd; background: #f1f1f1;">
-                                                            <a href="javascript:;" id="crop-image" class=" mybtn1"
+                                                            <a href="javascript:;" id="crop-image" class="btn btn-primary"
                                                                 style="">
                                                                 <i class="icofont-upload-alt"></i>
                                                                 {{ __('Upload Image Here') }}
@@ -551,7 +551,7 @@
                                                 </div>
                                                 <div class="col-lg-12">
                                                     <input type="text" name="photolink" value=""
-                                                        class="input-field">
+                                                        class="form-control">
                                                 </div>
                                             </div>
                                         </div>
@@ -566,8 +566,8 @@
                                                 </div>
                                             </div>
                                             <div class="col-lg-7">
-                                                <a href="#" class="set-gallery" data-toggle="modal"
-                                                    data-target="#setgallery">
+                                                <a href="#" class="set-gallery" data-bs-toggle="modal"
+                                                    data-bs-target="#setgallery">
                                                     <i class="icofont-plus"></i> {{ __('Set Gallery') }}
                                                 </a>
                                             </div>
@@ -585,7 +585,7 @@
                                                 </div>
                                             </div>
                                             <div class="col-lg-12">
-                                                <input name="price" step="0.1" type="number" class="input-field"
+                                                <input name="price" step="0.1" type="number" class="form-control"
                                                     placeholder="{{ __('e.g 20') }}" required="" min="0">
                                             </div>
                                         </div>
@@ -599,7 +599,7 @@
                                             </div>
                                             <div class="col-lg-12">
                                                 <input name="previous_price" step="0.1" type="number"
-                                                    class="input-field" placeholder="{{ __('e.g 20') }}"
+                                                    class="form-control" placeholder="{{ __('e.g 20') }}"
                                                     min="0">
                                             </div>
                                         </div>
@@ -612,7 +612,7 @@
                                                 </div>
                                             </div>
                                             <div class="col-lg-12">
-                                                <input name="youtube" type="text" class="input-field"
+                                                <input name="youtube" type="text" class="form-control"
                                                     placeholder="{{ __('Enter Youtube Video URL') }}">
                                             </div>
                                         </div>
@@ -636,14 +636,14 @@
                                                             <div class="row">
                                                                 <div class="col-lg-6">
                                                                     <input type="text" name="features[]"
-                                                                        class="input-field"
+                                                                        class="form-control"
                                                                         placeholder="@lang('Enter Your Keyword')">
                                                                 </div>
 
                                                                 <div class="col-lg-6">
                                                                     <div class="input-group colorpicker-component cp">
                                                                         <input type="text" name="colors[]"
-                                                                            value="#000000" class="input-field cp" />
+                                                                            value="#000000" class="form-control cp" />
                                                                         <span class="input-group-addon"><i></i></span>
                                                                     </div>
                                                                 </div>
@@ -672,7 +672,7 @@
 
                                         <div class="row text-center">
                                             <div class="col-6 offset-3">
-                                                <button class="addProductSubmit-btn"
+                                                <button class="btn btn-primary"
                                                     type="submit">{{ __('Save Product') }}</button>
                                             </div>
                                         </div>
@@ -692,8 +692,8 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="exampleModalCenterTitle">{{ __('Image Gallery') }}</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">×</span>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                        
                     </button>
                 </div>
                 <div class="modal-body">
@@ -706,7 +706,7 @@
                                 </div>
                             </div>
                             <div class="col-sm-6">
-                                <a href="javascript:;" class="upload-done" data-dismiss="modal"> <i
+                                <a href="javascript:;" class="upload-done" data-bs-dismiss="modal"> <i
                                         class="fas fa-check"></i> {{ __('Done') }}</a>
                             </div>
                             <div class="col-sm-12 text-center">(
