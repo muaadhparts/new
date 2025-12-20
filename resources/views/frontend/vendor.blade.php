@@ -19,7 +19,7 @@
 
     <div class="gs-blog-wrapper muaadh-section-gray">
         <div class="container">
-            <div class="row flex-column-reverse flex-lg-row">
+            <div class="row">
                 <div class="col-12 col-lg-4 col-xl-3 mt-40 mt-lg-0">
                     <div class="gs-product-sidebar-wrapper">
                         <div class="single-product-widget contact-vendor-wrapper">
@@ -28,7 +28,7 @@
                                 <img src="{{ asset('assets/images/users/' . $vendor->photo) }}" alt="vendor img">
                             </div>
                             <ul>
-                                <li><span><b>@lang('Store Name:') </b>{{ $vendor->shop_name }}</span></li>
+                                <li><span><b>@lang('Store Name:') </b>{{ app()->getLocale() === 'ar' && $vendor->shop_name_ar ? $vendor->shop_name_ar : $vendor->shop_name }}</span></li>
                                 <li><span><b>@lang('Owner Name:') </b>{{ $vendor->owner_name }}</span></li>
                                 <li><span><b>@lang('Phone:') </b> {{ $vendor->shop_number }}</span></li>
                                 <li><span><b>@lang('Email:') </b>{{ $vendor->email }}</span></li>
@@ -67,29 +67,37 @@
                             
                             
                         </div>
-                        <!-- Price Range -->
+                        <!-- Brand Quality Filter -->
+                        @if(isset($brand_qualities) && $brand_qualities->count() > 0)
                         <div class="single-product-widget">
-                            <h5 class="widget-title">@lang('Price Range')</h5>
-                            <div class="price-range">
-                                <div class="d-none">
-                                    <!-- start value -->
-                                    <input id="start_value" type="number" name="min"
-                                        value="{{ isset($_GET['min']) ? $_GET['min'] : $gs->min_price }}">
-                                    <!-- end value -->
-                                    <input id="end_value" type="number"
-                                        value="{{ isset($_GET['max']) ? $_GET['max'] : $gs->max_price }}">
-                                    <!-- max value -->
-                                    <input id="max_value" type="number" name="max" value="{{ $gs->max_price }}">
-                                </div>
-                                <div id="slider-range"></div>
-
-                                <input type="text" id="amount" readonly class="range_output">
+                            <h5 class="widget-title">@lang('Brand Quality')</h5>
+                            <div class="warranty-type">
+                                <ul>
+                                    @foreach ($brand_qualities as $quality)
+                                        <li class="gs-checkbox-wrapper">
+                                            <input type="checkbox" class="attribute-input brand-quality-filter"
+                                                name="brand_quality[]"
+                                                {{ isset($_GET['brand_quality']) && in_array($quality->id, (array)$_GET['brand_quality']) ? 'checked' : '' }}
+                                                id="brand_quality_{{ $quality->id }}"
+                                                value="{{ $quality->id }}">
+                                            <label class="icon-label"
+                                                for="brand_quality_{{ $quality->id }}">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="12"
+                                                    height="12" viewBox="0 0 12 12" fill="none">
+                                                    <path d="M10 3L4.5 8.5L2 6" stroke="#EE1243"
+                                                        stroke-width="1.6666" stroke-linecap="round"
+                                                        stroke-linejoin="round" />
+                                                </svg>
+                                            </label>
+                                            <label for="brand_quality_{{ $quality->id }}">{{ $quality->localized_name }}</label>
+                                        </li>
+                                    @endforeach
+                                </ul>
                             </div>
-
-                            <button class="template-btn mt-3 w-100" id="price_filter">@lang('Apply Filter')</button>
-                            <a href="{{ route('front.category') }}"
+                            <a href="{{ route('front.vendor', str_replace(' ', '-', $vendor->shop_name)) }}"
                                 class="template-btn dark-btn w-100 mt-3">@lang('Clear Filter')</a>
                         </div>
+                        @endif
                     </div>
                 </div>
                 <div class="col-12 col-lg-8 col-xl-9 gs-main-blog-wrapper">
@@ -105,7 +113,7 @@
 
                     <!-- product nav wrapper -->
                     <div class=" product-nav-wrapper">
-                        <h5>@lang('Total Products Found:') {{ $vprods->count() }}</h5>
+                        <h5>@lang('Total Products Found:') {{ $vprods->total() }}</h5>
                         <div class="filter-wrapper">
                             <div class="sort-wrapper">
                                 <h5>@lang('Sort by:')</h5>
@@ -147,7 +155,7 @@
 
 
 
-                    @if ($vprods->count() == 0)
+                    @if ($vprods->total() == 0)
                         <!-- product nav wrapper for no data found -->
                         <div class="product-nav-wrapper d-flex justify-content-center ">
                             <h5>@lang('No Product Found')</h5>
@@ -160,7 +168,7 @@
                                 id="layout-list-pane" role="tabpanel" tabindex="0">
                                 <div class="row gy-4 mt-20 ">
                                     @foreach ($vprods as $product)
-                                        @include('includes.frontend.home_product', ['layout' => 'list'])
+                                        @include('includes.frontend.home_product', ['layout' => 'list', 'mp' => $product->vendor_merchant_product ?? null])
                                     @endforeach
                                 </div>
                             </div>
@@ -171,6 +179,7 @@
                                     @foreach ($vprods as $product)
                                         @include('includes.frontend.home_product', [
                                             'class' => 'col-sm-6 col-md-6 col-xl-4',
+                                            'mp' => $product->vendor_merchant_product ?? null,
                                         ])
                                     @endforeach
                                 </div>
@@ -185,140 +194,42 @@
         </div>
     </div>
 
-    <input type="hidden" id="update_min_price" value="">
-    <input type="hidden" id="update_max_price" value="">
-
-
 @endsection
 @section('script')
     <script>
-        $(document).on("click", "#price_filter", function() {
-            let amountString = $("#amount").val();
+        (function($) {
+            "use strict";
 
-            amountString = amountString.replace(/\$/g, '');
-
-            // Split the string into two amounts
-            let amounts = amountString.split('-');
-
-            // Trim whitespace from each amount
-            let amount1 = amounts[0].trim();
-            let amount2 = amounts[1].trim();
-
-
-            $("#update_min_price").val(amount1);
-            $("#update_max_price").val(amount2);
-
-            filter();
-
-        });
-
-
-
-        // when dynamic attribute changes
-        $(".attribute-input, #sortby, #pageby").on('change', function() {
-            $(".ajax-loader").show();
-            filter();
-        });
-
-
-        function filter() {
-            let filterlink =
-                '{{ route('front.vendor', str_replace(' ', '-', $vendor->shop_name)) }}';
-            let params = new URLSearchParams();
-
-
-            $(".attribute-input").each(function() {
-                if ($(this).is(':checked')) {
-                    params.append($(this).attr('name'), $(this).val());
-                }
+            // عند تغيير أي فلتر
+            $(".attribute-input, #sortby, #pageby").on('change', function() {
+                filter();
             });
 
-            if ($("#sortby").val() != '') {
-                params.append($("#sortby").attr('name'), $("#sortby").val());
-            }
-
-            if ($("#start_value").val() != '') {
-                params.append($("#start_value").attr('name'), $("#start_value").val());
-            }
-
-            let check_view = $('.check_view.active').data('shopview');
-
-            if (check_view) {
-                params.append('view_check', check_view);
-            }
-
-            if ($("#update_min_price").val() != '') {
-                params.append('min', $("#update_min_price").val());
-            }
-            if ($("#update_max_price").val() != '') {
-                params.append('max', $("#update_max_price").val());
-            }
-
-            filterlink += '?' + params.toString();
-
-            console.log(filterlink);
-            location.href = filterlink;
-        }
-
-        // append parameters to pagination links
-        function addToPagination() {
-            $('ul.pagination li a').each(function() {
-                let url = $(this).attr('href');
-                let queryString = '?' + url.split('?')[1]; // "?page=1234...."
-                let urlParams = new URLSearchParams(queryString);
-                let page = urlParams.get('page'); // value of 'page' parameter
-
-                let fullUrl =
-                    '{{ route('front.category', [Request::route('category'), Request::route('subcategory'), Request::route('childcategory')]) }}';
+            function filter() {
+                let filterlink = '{{ route('front.vendor', str_replace(' ', '-', $vendor->shop_name)) }}';
                 let params = new URLSearchParams();
 
+                // جمع كل الـ checkboxes المحددة
                 $(".attribute-input").each(function() {
                     if ($(this).is(':checked')) {
                         params.append($(this).attr('name'), $(this).val());
                     }
                 });
 
+                // الترتيب
                 if ($("#sortby").val() != '') {
                     params.append('sort', $("#sortby").val());
                 }
 
-
-                if ($("#pageby").val() != '') {
-                    params.append('pageby', $("#pageby").val());
+                // طريقة العرض
+                let check_view = $('.check_view.active').data('shopview');
+                if (check_view) {
+                    params.append('view_check', check_view);
                 }
 
-                params.append('page', page);
-
-                $(this).attr('href', fullUrl + '?' + params.toString());
-            });
-        }
-    </script>
-
-    <script type="text/javascript">
-        (function($) {
-            "use strict";
-            $(function() {
-                const start_value = $("#start_value").val();
-                const end_value = $("#end_value").val();
-                const max_value = $("#max_value").val();
-
-                $("#slider-range").slider({
-                    range: true,
-                    min: 0,
-                    max: max_value,
-                    values: [start_value, end_value],
-                    step: 10,
-                    slide: function(event, ui) {
-                        $("#amount").val("$" + ui.values[0] + " - $" + ui.values[1]);
-                    },
-                });
-                $("#amount").val(
-                    "$" +
-                    $("#slider-range").slider("values", 0) +
-                    " - $" +
-                    $("#slider-range").slider("values", 5000)
-                );
-            });
+                filterlink += '?' + params.toString();
+                location.href = filterlink;
+            }
 
         })(jQuery);
     </script>

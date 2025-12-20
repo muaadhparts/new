@@ -10,6 +10,7 @@ use App\{
     Models\Conversation
 };
 use App\Models\Category;
+use App\Models\QualityBrand;
 use Illuminate\{
     Http\Request,
     Support\Facades\DB
@@ -19,10 +20,9 @@ class VendorController extends FrontBaseController
 {
     public function index(Request $request, $slug)
     {
-        $minprice = $request->min;
-        $maxprice = $request->max;
-        $sort     = $request->sort;
-        $pageby   = $request->pageby;
+        $sort   = $request->sort;
+        $pageby = $request->pageby;
+        $brandQualityFilter = $request->input('brand_quality', []);
 
         $string = str_replace('-', ' ', $slug);
         $vendor = User::where('shop_name', '=', $string)->first();
@@ -39,6 +39,16 @@ class VendorController extends FrontBaseController
         $data['vendor']     = $vendor;
         $data['services']   = DB::table('services')->where('user_id', '=', $vendor->id)->get();
         $data['categories'] = Category::where('status', 1)->get();
+
+        // جلب Brand Qualities المتاحة لهذا التاجر
+        $vendorQualityIds = DB::table('merchant_products')
+            ->where('user_id', $vendor->id)
+            ->where('status', 1)
+            ->whereNotNull('brand_quality_id')
+            ->distinct()
+            ->pluck('brand_quality_id');
+
+        $data['brand_qualities'] = QualityBrand::whereIn('id', $vendorQualityIds)->get();
 
         // أحدث المنتجات: مبنية على merchant_products (نشط + البائع مفعل)
         $data['latest_products'] = Product::status(1)             // يعتمد على merchant_products.status
@@ -61,16 +71,21 @@ class VendorController extends FrontBaseController
         // بناء استعلام منتجات البائع مع فلاتر السعر والخصم والفرز
         $prods = Product::query();
 
-        // فلترة بالسعر والخصم والمزوّد المحدد عبر merchant_products
-        $prods = $prods->whereHas('merchantProducts', function ($q) use ($vendor, $minprice, $maxprice, $request) {
+        // ✅ Eager load merchantProducts لتجنب N+1 query
+        $prods = $prods->with(['merchantProducts' => function ($q) use ($vendor) {
+            $q->where('user_id', $vendor->id)
+              ->where('status', 1)
+              ->with(['user:id,is_vendor,shop_name,shop_name_ar', 'qualityBrand:id,name_en,name_ar']);
+        }]);
+
+        // فلترة بالمزوّد المحدد و Brand Quality عبر merchant_products
+        $prods = $prods->whereHas('merchantProducts', function ($q) use ($vendor, $brandQualityFilter, $request) {
             $q->where('user_id', $vendor->id)
               ->where('status', 1);
 
-            if (!is_null($minprice) && $minprice !== '') {
-                $q->where('price', '>=', $minprice);
-            }
-            if (!is_null($maxprice) && $maxprice !== '') {
-                $q->where('price', '<=', $maxprice);
+            // فلترة حسب Brand Quality
+            if (!empty($brandQualityFilter)) {
+                $q->whereIn('brand_quality_id', (array) $brandQualityFilter);
             }
 
             // فلترة الخصم (type) من merchant_products
@@ -109,12 +124,15 @@ class VendorController extends FrontBaseController
         $prods   = $prods->paginate($perPage);
 
         // ضبط السعر الظاهر في القائمة ليكون سعر هذا البائع تحديداً
+        // ✅ استخدام العلاقة المحملة مسبقاً بدلاً من استعلام جديد (تجنب N+1)
         $prods->getCollection()->transform(function ($item) use ($vendor) {
-            $mp = $item->merchantProducts()
-                       ->where('user_id', $vendor->id)
-                       ->where('status', 1)
-                       ->first();
+            // استخدام العلاقة المحملة مسبقاً
+            $mp = $item->merchantProducts->first();
+
             if ($mp) {
+                // حفظ الـ merchant product للاستخدام في الـ view
+                $item->vendor_merchant_product = $mp;
+
                 // استخدام دالة حساب سعر التاجر من MerchantProduct
                 if (method_exists($mp, 'vendorSizePrice')) {
                     $item->price = $mp->vendorSizePrice();
@@ -123,6 +141,7 @@ class VendorController extends FrontBaseController
                     $item->price = $mp->price;
                 }
             } else {
+                $item->vendor_merchant_product = null;
                 $item->price = null;
             }
             return $item;
