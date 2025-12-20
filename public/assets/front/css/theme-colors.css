@@ -4,15 +4,15 @@
  * ========================================
  * Generated from Admin Panel Theme Builder
  * Do not edit manually - changes will be overwritten
- * Generated at: 2025-12-20 03:14:47
+ * Generated at: 2025-12-20 05:35:37
  */
 :root {
     /* ===== PRIMARY BRAND COLORS ===== */
-    --theme-primary: #7c3aed;
-    --theme-primary-hover: #6d28d9;
-    --theme-primary-dark: #5b21b6;
-    --theme-primary-light: #f5f3ff;
-    --theme-primary-rgb: 124, 58, 237;
+    --theme-primary: #0d9488;
+    --theme-primary-hover: #0f766e;
+    --theme-primary-dark: #115e59;
+    --theme-primary-light: #f0fdfa;
+    --theme-primary-rgb: 13, 148, 136;
 
     /* ===== SECONDARY COLORS ===== */
     --theme-secondary: #1f2937;
@@ -29,25 +29,25 @@
 
     /* ===== BACKGROUND COLORS ===== */
     --theme-bg-body: #ffffff;
-    --theme-bg-light: #faf8ff;
+    --theme-bg-light: #f9fafb;
     --theme-bg-lighter: #f6f6f6;
-    --theme-bg-gray: #f5f3ff;
-    --theme-bg-dark: #1e1b4b;
+    --theme-bg-gray: #f0fdfa;
+    --theme-bg-dark: #134e4a;
 
     /* ===== BORDER COLORS ===== */
-    --theme-border: #e9d5ff;
-    --theme-border-light: #f5f3ff;
-    --theme-border-dark: #d8b4fe;
+    --theme-border: #99f6e4;
+    --theme-border-light: #ccfbf1;
+    --theme-border-dark: #5eead4;
 
     /* ===== STATUS COLORS ===== */
     --theme-success: #10b981;
     --theme-warning: #f59e0b;
     --theme-danger: #ef4444;
-    --theme-info: #06b6d4;
+    --theme-info: #38bdf8;
     --theme-success-rgb: 16, 185, 129;
     --theme-warning-rgb: 245, 158, 11;
     --theme-danger-rgb: 239, 68, 68;
-    --theme-info-rgb: 6, 182, 212;
+    --theme-info-rgb: 56, 189, 248;
 
     /* ===== STATUS LIGHT COLORS ===== */
     --theme-success-light: #e8f8ef;
@@ -63,7 +63,7 @@
 
     /* ===== TEXT-ON COLORS (WCAG Contrast Safe) ===== */
     /* Auto-calculated based on background luminance */
-    --theme-text-on-primary: #ffffff;
+    --theme-text-on-primary: #1f0300;
     --theme-text-on-secondary: #ffffff;
     --theme-text-on-success: #1f0300;
     --theme-text-on-warning: #1f0300;
@@ -74,25 +74,25 @@
 
     /* ===== TYPOGRAPHY ===== */
     --theme-font-primary: 'Poppins', sans-serif;
-    --theme-font-heading: 'Playfair Display', sans-serif;
+    --theme-font-heading: 'Saira', sans-serif;
     --theme-font-size-base: 15px;
-    --theme-font-size-sm: 13px;
-    --theme-font-size-lg: 19px;
+    --theme-font-size-sm: 14px;
+    --theme-font-size-lg: 18px;
     --theme-line-height: 1.5;
 
     /* ===== BORDER RADIUS ===== */
-    --theme-radius-xs: 6px;
-    --theme-radius-sm: 8px;
-    --theme-radius: 14px;
-    --theme-radius-lg: 18px;
-    --theme-radius-xl: 24px;
-    --theme-radius-pill: 9999px;
+    --theme-radius-xs: 3px;
+    --theme-radius-sm: 4px;
+    --theme-radius: 10px;
+    --theme-radius-lg: 14px;
+    --theme-radius-xl: 18px;
+    --theme-radius-pill: 50px;
 
     /* ===== SHADOWS ===== */
     --theme-shadow-xs: 0 1px 2px rgba(0,0,0,0.04);
-    --theme-shadow-sm: 0 1px 3px rgba(124,58,237,0.08);
-    --theme-shadow: 0 4px 16px rgba(124,58,237,0.1);
-    --theme-shadow-lg: 0 12px 32px rgba(124,58,237,0.15);
+    --theme-shadow-sm: 0 1px 2px rgba(13,148,136,0.05);
+    --theme-shadow: 0 2px 8px rgba(13,148,136,0.08);
+    --theme-shadow-lg: 0 6px 20px rgba(13,148,136,0.12);
     --theme-shadow-xl: 0 8px 30px rgba(0,0,0,0.2);
 
     /* ===== SPACING ===== */
@@ -103,21 +103,21 @@
     --theme-spacing-xl: 32px;
 
     /* ===== BUTTONS ===== */
-    --theme-btn-padding-x: 26px;
-    --theme-btn-padding-y: 13px;
+    --theme-btn-padding-x: 24px;
+    --theme-btn-padding-y: 12px;
     --theme-btn-font-size: 14px;
     --theme-btn-font-weight: 500;
-    --theme-btn-radius: 12px;
-    --theme-btn-shadow: 0 2px 6px rgba(124,58,237,0.2);
+    --theme-btn-radius: 8px;
+    --theme-btn-shadow: none;
     --theme-btn-shadow-hover: 0 4px 12px rgba(0,0,0,0.15);
     --theme-btn-transition: all 0.3s ease;
     
     /* Primary Button */
-    --theme-btn-primary-bg: #7c3aed;
+    --theme-btn-primary-bg: #0d9488;
     --theme-btn-primary-text: #ffffff;
-    --theme-btn-primary-hover-bg: #6d28d9;
+    --theme-btn-primary-hover-bg: #0f766e;
     --theme-btn-primary-hover-text: #ffffff;
-    --theme-btn-primary-border: #7c3aed;
+    --theme-btn-primary-border: #0d9488;
     
     /* Secondary Button */
     --theme-btn-secondary-bg: #1f2937;
@@ -148,89 +148,89 @@
     --theme-btn-warning-border: #f59e0b;
     
     /* Info Button */
-    --theme-btn-info-bg: #06b6d4;
+    --theme-btn-info-bg: #38bdf8;
     --theme-btn-info-text: #ffffff;
     --theme-btn-info-hover-bg: #0284c7;
     --theme-btn-info-hover-text: #ffffff;
-    --theme-btn-info-border: #06b6d4;
+    --theme-btn-info-border: #38bdf8;
     
     /* Outline Button */
     --theme-btn-outline-bg: transparent;
     --theme-btn-outline-text: #111827;
-    --theme-btn-outline-border: #e9d5ff;
-    --theme-btn-outline-hover-bg: #faf8ff;
+    --theme-btn-outline-border: #99f6e4;
+    --theme-btn-outline-hover-bg: #f9fafb;
     --theme-btn-outline-hover-text: #111827;
-    --theme-btn-outline-hover-border: #d8b4fe;
+    --theme-btn-outline-hover-border: #5eead4;
     
     /* Ghost Button */
     --theme-btn-ghost-bg: transparent;
     --theme-btn-ghost-text: #111827;
-    --theme-btn-ghost-hover-bg: #faf8ff;
-    --theme-btn-ghost-hover-text: #7c3aed;
+    --theme-btn-ghost-hover-bg: #f9fafb;
+    --theme-btn-ghost-hover-text: #0d9488;
 
     /* ===== CARDS ===== */
     --theme-card-bg: #ffffff;
-    --theme-card-border: #e9d5ff;
-    --theme-card-radius: 18px;
-    --theme-card-shadow: 0 2px 12px rgba(124,58,237,0.08);
-    --theme-card-hover-shadow: 0 12px 32px rgba(124,58,237,0.15);
-    --theme-card-padding: 24px;
+    --theme-card-border: #99f6e4;
+    --theme-card-radius: 14px;
+    --theme-card-shadow: 0 1px 4px rgba(13,148,136,0.06);
+    --theme-card-hover-shadow: 0 6px 18px rgba(13,148,136,0.1);
+    --theme-card-padding: 22px;
 
     /* ===== HEADER ===== */
     --theme-header-bg: #ffffff;
-    --theme-header-height: 72px;
-    --theme-header-shadow: 0 2px 8px rgba(124,58,237,0.08);
+    --theme-header-height: 68px;
+    --theme-header-shadow: 0 1px 3px rgba(13,148,136,0.06);
     --theme-header-text: #1f0300;
     --theme-nav-link-color: #374151;
-    --theme-nav-link-hover: #7c3aed;
-    --theme-nav-link-active: #7c3aed;
+    --theme-nav-link-hover: #0d9488;
+    --theme-nav-link-active: #0d9488;
     --theme-nav-font-size: 15px;
     --theme-nav-font-weight: 500;
 
     /* ===== FOOTER ===== */
-    --theme-footer-bg: #1e1b4b;
-    --theme-footer-text: #f5f3ff;
-    --theme-footer-padding: 60px;
-    --theme-footer-text-muted: #c4b5fd;
-    --theme-footer-link: #e9d5ff;
-    --theme-footer-link-hover: #a78bfa;
-    --theme-footer-border: #5b21b6;
+    --theme-footer-bg: #134e4a;
+    --theme-footer-text: #f0fdfa;
+    --theme-footer-padding: 55px;
+    --theme-footer-text-muted: #99f6e4;
+    --theme-footer-link: #ccfbf1;
+    --theme-footer-link-hover: #5eead4;
+    --theme-footer-border: #0f766e;
 
     /* ===== PRODUCT CARDS ===== */
     --theme-product-title-size: 14px;
     --theme-product-title-weight: 500;
-    --theme-product-price-size: 17px;
+    --theme-product-price-size: 16px;
     --theme-product-price-weight: 700;
     --theme-product-card-radius: 12px;
     --theme-product-img-radius: 8px;
-    --theme-product-hover-scale: 1.03;
+    --theme-product-hover-scale: 1.02;
 
     /* ===== MODALS ===== */
     --theme-modal-bg: #ffffff;
-    --theme-modal-radius: 20px;
+    --theme-modal-radius: 16px;
     --theme-modal-shadow: 0 25px 50px rgba(0,0,0,0.25);
-    --theme-modal-backdrop: rgba(30,27,75,0.6);
+    --theme-modal-backdrop: rgba(19,78,74,0.5);
     --theme-modal-header-bg: #f8f7f7;
 
     /* ===== TABLES ===== */
-    --theme-table-header-bg: #faf8ff;
+    --theme-table-header-bg: #f0fdfa;
     --theme-table-header-text: #1f0300;
-    --theme-table-border: #e9d5ff;
-    --theme-table-hover-bg: #f5f3ff;
+    --theme-table-border: #99f6e4;
+    --theme-table-hover-bg: #ccfbf1;
     --theme-table-stripe-bg: #fafafa;
 
     /* ===== FORMS ===== */
-    --theme-input-height: 50px;
+    --theme-input-height: 48px;
     --theme-input-bg: #ffffff;
-    --theme-input-border: #e9d5ff;
-    --theme-input-radius: 12px;
-    --theme-input-focus-border: #7c3aed;
-    --theme-input-focus-shadow: 0 0 0 4px rgba(124,58,237,0.12);
-    --theme-input-placeholder: #a1a1aa;
+    --theme-input-border: #99f6e4;
+    --theme-input-radius: 8px;
+    --theme-input-focus-border: #0d9488;
+    --theme-input-focus-shadow: 0 0 0 3px rgba(13,148,136,0.12);
+    --theme-input-placeholder: #94a3b8;
 
     /* ===== BADGES ===== */
-    --theme-badge-radius: 10px;
-    --theme-badge-padding: 5px 14px;
+    --theme-badge-radius: 6px;
+    --theme-badge-padding: 4px 12px;
     --theme-badge-font-size: 12px;
     --theme-badge-font-weight: 500;
 
@@ -242,9 +242,9 @@
 
     /* ===== SCROLLBAR ===== */
     --theme-scrollbar-width: 8px;
-    --theme-scrollbar-track: #f5f3ff;
-    --theme-scrollbar-thumb: #d8b4fe;
-    --theme-scrollbar-thumb-hover: #c084fc;
+    --theme-scrollbar-track: #f0fdfa;
+    --theme-scrollbar-thumb: #5eead4;
+    --theme-scrollbar-thumb-hover: #2dd4bf;
 
     /* ===== TRANSITIONS ===== */
     --theme-transition-fast: all 0.15s ease;
@@ -287,8 +287,8 @@
     --theme-linkedin: #0a66c2;
 
     /* ===== LINK COLORS ===== */
-    --theme-link: #7c3aed;
-    --theme-link-hover: #6d28d9;
+    --theme-link: #0d9488;
+    --theme-link-hover: #0f766e;
 
     /* ===== TOPBAR ===== */
     --theme-topbar-bg: #1f2937;
@@ -382,29 +382,29 @@
     --color-primary-light: var(--theme-primary-light);
 
     /* ===== LEGACY VARIABLES (Backwards Compatibility) ===== */
-    --muaadh-primary: #7c3aed;
-    --muaadh-primary-hover: #6d28d9;
-    --muaadh-primary-dark: #5b21b6;
-    --muaadh-primary-light: #f5f3ff;
-    --muaadh-primary-rgb: 124, 58, 237;
+    --muaadh-primary: #0d9488;
+    --muaadh-primary-hover: #0f766e;
+    --muaadh-primary-dark: #115e59;
+    --muaadh-primary-light: #f0fdfa;
+    --muaadh-primary-rgb: 13, 148, 136;
     --muaadh-secondary: #1f2937;
     --muaadh-secondary-hover: #374151;
     --muaadh-success: #10b981;
     --muaadh-warning: #f59e0b;
     --muaadh-danger: #ef4444;
-    --muaadh-info: #06b6d4;
+    --muaadh-info: #38bdf8;
     --muaadh-text: #111827;
     --muaadh-text-muted: #6b7280;
-    --muaadh-border: #e9d5ff;
-    --muaadh-border-light: #f5f3ff;
-    --muaadh-bg-light: #faf8ff;
-    --muaadh-bg-gray: #f5f3ff;
+    --muaadh-border: #99f6e4;
+    --muaadh-border-light: #ccfbf1;
+    --muaadh-bg-light: #f9fafb;
+    --muaadh-bg-gray: #f0fdfa;
     --muaadh-white: #ffffff;
     --muaadh-dark: #1f2937;
-    --muaadh-light: #faf8ff;
-    --muaadh-radius: 14px;
-    --muaadh-radius-lg: 18px;
-    --muaadh-shadow-lg: 0 12px 32px rgba(124,58,237,0.15);
+    --muaadh-light: #f9fafb;
+    --muaadh-radius: 10px;
+    --muaadh-radius-lg: 14px;
+    --muaadh-shadow-lg: 0 6px 20px rgba(13,148,136,0.12);
 }
 
 /* ===== SCROLLBAR STYLING ===== */

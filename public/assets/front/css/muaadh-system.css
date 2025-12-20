@@ -60,6 +60,8 @@
     --text-primary: var(--theme-text-primary);
     --text-secondary: var(--theme-text-secondary);
     --text-muted: var(--theme-text-muted);
+    /* WCAG-safe muted text for use on gray backgrounds (4.5:1 minimum) */
+    --text-muted-safe: var(--theme-text-secondary);
     --text-inverse: var(--theme-text-white);
     --text-link: var(--theme-link);
     --text-link-hover: var(--theme-link-hover);
@@ -2303,5 +2305,87 @@ select option {
     }
     & a:not(.btn):not(.nav-link):not(.dropdown-item):hover {
         color: var(--text-link-hover);
+    }
+
+    /* ===================================================================
+       WCAG CONTRAST FIXES
+       Overrides for elements that need improved contrast ratios
+       =================================================================== */
+
+    /* ----- MUTED TEXT ON GRAY BACKGROUNDS ----- */
+    /* .text-muted (#6b7280) on gray (#f3f4f6) = 4.39 ratio (needs 4.5) */
+    /* Use --text-muted-safe (--text-secondary) for better contrast */
+    & .bg-light .text-muted,
+    & .bg-gray .text-muted,
+    & [class*="muaadh-section-gray"] .text-muted {
+        color: var(--text-muted-safe) !important;
+    }
+
+    /* ----- BUTTONS WITH COLORED BACKGROUNDS ----- */
+    /* Ensure all buttons use proper text-on-* colors */
+    & .btn-primary,
+    & .m-btn--primary,
+    & .template-btn {
+        color: var(--text-on-primary) !important;
+    }
+    & .btn-success,
+    & .m-btn--success {
+        color: var(--text-on-success) !important;
+    }
+    & .btn-danger,
+    & .m-btn--danger {
+        color: var(--text-on-danger) !important;
+    }
+    & .btn-warning,
+    & .m-btn--warning {
+        color: var(--text-on-warning) !important;
+    }
+    & .btn-info,
+    & .m-btn--info {
+        color: var(--text-on-info) !important;
+    }
+    & .btn-dark,
+    & .m-btn--dark {
+        color: var(--text-on-dark) !important;
+    }
+
+    /* ----- FOOTER TEXT CONTRAST ----- */
+    /* Footer has dark background, text should be light */
+    & .muaadh-footer .text-muted,
+    & .muaadh-footer p,
+    & .gs-footer-area .text-muted,
+    & .gs-footer-area p,
+    & footer .text-muted,
+    & footer p {
+        color: var(--text-inverse) !important;
+        opacity: 0.85;
+    }
+    & .muaadh-footer-desc,
+    & .muaadh-footer-newsletter-text {
+        color: var(--text-inverse) !important;
+        opacity: 0.7;
+    }
+
+    /* ----- BREADCRUMB TEXT ON IMAGE ----- */
+    /* Breadcrumb has background-image, ensure text is visible */
+    & .gs-breadcrumb-section h1,
+    & .gs-breadcrumb-section h2,
+    & .gs-breadcrumb-section h3,
+    & .gs-breadcrumb-section h4,
+    & .gs-breadcrumb-section .breadcrumb-title,
+    & .breadcrumb-section h1,
+    & .breadcrumb-section h2,
+    & .breadcrumb-section h3,
+    & .breadcrumb-section h4,
+    & .breadcrumb-section .breadcrumb-title {
+        color: var(--text-inverse) !important;
+        text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+    }
+    & .gs-breadcrumb-section .bread-menu li,
+    & .gs-breadcrumb-section .bread-menu a,
+    & .breadcrumb-section .bread-menu li,
+    & .breadcrumb-section .bread-menu a {
+        color: var(--text-inverse) !important;
+        opacity: 0.9;
     }
 }

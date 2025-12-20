@@ -14,7 +14,14 @@
       "Bash(sort -u echo \"=== DEFINED VARIABLES ===\" grep -ohE '^\\\\s*--[a-zA-Z0-9_-]+:' public/assets/front/css/theme-colors.css public/assets/front/css/new/tokens.css)",
       "Bash(comm -23:*)",
       "Bash(comm:*)",
-      "Bash(php regenerate_theme_css.php:*)"
+      "Bash(php regenerate_theme_css.php:*)",
+      "Bash(npm install)",
+      "Bash(npx playwright install chromium)",
+      "Bash(node run-all-presets.js:*)",
+      "Bash(sort:*)",
+      "Bash(grep:*)",
+      "Bash(node:*)",
+      "Bash(NODE_OPTIONS=\"--max-old-space-size=1024\" node:*)"
     ]
   }
 }

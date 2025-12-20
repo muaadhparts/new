@@ -1,11 +1,18 @@
 /**
- * WCAG Contrast Ratio Audit Script
+ * WCAG Contrast Ratio Audit Script - Enhanced
  * Uses Playwright to check color contrast across the site
  *
+ * Features:
+ * - State checking: default, hover, focus, disabled
+ * - Inherited background calculation (traverses DOM + computed styles)
+ * - Screenshots for violations
+ * - JSON/CSV reports
+ *
  * Usage:
- *   node audit.js                    # Run on default pages
- *   node audit.js --theme=nissan     # Specify theme
+ *   node audit.js                    # Run on all pages
+ *   node audit.js --theme=nissan     # Specify theme name
  *   node audit.js --url=http://...   # Custom base URL
+ *   node audit.js --screenshot       # Take screenshots of violations
  */
 
 const { chromium } = require('playwright');
@@ -116,10 +123,146 @@ function blendColors(fg, bg) {
 }
 
 // ============================================================
+// Element State Checking
+// ============================================================
+
+/**
+ * Get element styles in different states
+ */
+async function getElementStates(page, selector, index) {
+    return await page.evaluate(({ selector, index }) => {
+        const elements = document.querySelectorAll(selector);
+        const el = elements[index];
+        if (!el) return null;
+
+        const getStyles = () => {
+            const styles = window.getComputedStyle(el);
+
+            // Get effective background by traversing up
+            let bgColor = styles.backgroundColor;
+            let parent = el.parentElement;
+            let depth = 0;
+
+            while (parent && depth < 20 && (bgColor === 'transparent' || bgColor === 'rgba(0, 0, 0, 0)')) {
+                const parentStyles = window.getComputedStyle(parent);
+                bgColor = parentStyles.backgroundColor;
+
+                // Also check for background-image (gradients)
+                if (bgColor === 'transparent' || bgColor === 'rgba(0, 0, 0, 0)') {
+                    const bgImage = parentStyles.backgroundImage;
+                    if (bgImage && bgImage !== 'none') {
+                        // Try to extract first color from gradient
+                        const gradientMatch = bgImage.match(/rgba?\([^)]+\)|#[a-f0-9]{3,8}/i);
+                        if (gradientMatch) {
+                            bgColor = gradientMatch[0];
+                        }
+                    }
+                }
+
+                parent = parent.parentElement;
+                depth++;
+            }
+
+            // Default to white if no background found
+            if (!bgColor || bgColor === 'transparent' || bgColor === 'rgba(0, 0, 0, 0)') {
+                bgColor = 'rgb(255, 255, 255)';
+            }
+
+            return {
+                color: styles.color,
+                backgroundColor: bgColor,
+                fontSize: styles.fontSize,
+                fontWeight: styles.fontWeight
+            };
+        };
+
+        return {
+            default: getStyles(),
+            isDisabled: el.disabled || el.hasAttribute('disabled') || el.classList.contains('disabled'),
+            rect: el.getBoundingClientRect()
+        };
+    }, { selector, index });
+}
+
+/**
+ * Get hover state styles
+ */
+async function getHoverState(page, selector, index) {
+    try {
+        const elements = await page.$$(selector);
+        if (!elements[index]) return null;
+
+        await elements[index].hover();
+        await page.waitForTimeout(100); // Wait for CSS transition
+
+        return await page.evaluate(({ selector, index }) => {
+            const el = document.querySelectorAll(selector)[index];
+            if (!el) return null;
+
+            const styles = window.getComputedStyle(el);
+            let bgColor = styles.backgroundColor;
+
+            // Check parent backgrounds for hover too
+            if (bgColor === 'transparent' || bgColor === 'rgba(0, 0, 0, 0)') {
+                let parent = el.parentElement;
+                while (parent) {
+                    const parentStyles = window.getComputedStyle(parent);
+                    if (parentStyles.backgroundColor !== 'transparent' && parentStyles.backgroundColor !== 'rgba(0, 0, 0, 0)') {
+                        bgColor = parentStyles.backgroundColor;
+                        break;
+                    }
+                    parent = parent.parentElement;
+                }
+            }
+
+            if (!bgColor || bgColor === 'transparent') bgColor = 'rgb(255, 255, 255)';
+
+            return {
+                color: styles.color,
+                backgroundColor: bgColor
+            };
+        }, { selector, index });
+    } catch (e) {
+        return null;
+    }
+}
+
+/**
+ * Get focus state styles
+ */
+async function getFocusState(page, selector, index) {
+    try {
+        const elements = await page.$$(selector);
+        if (!elements[index]) return null;
+
+        await elements[index].focus();
+        await page.waitForTimeout(100);
+
+        return await page.evaluate(({ selector, index }) => {
+            const el = document.querySelectorAll(selector)[index];
+            if (!el) return null;
+
+            const styles = window.getComputedStyle(el);
+            let bgColor = styles.backgroundColor;
+            if (bgColor === 'transparent' || bgColor === 'rgba(0, 0, 0, 0)') {
+                bgColor = 'rgb(255, 255, 255)';
+            }
+
+            return {
+                color: styles.color,
+                backgroundColor: bgColor
+            };
+        }, { selector, index });
+    } catch (e) {
+        return null;
+    }
+}
+
+// ============================================================
 // Main Audit Function
 // ============================================================
 
-async function auditPage(page, url, pageName) {
+async function auditPage(page, url, pageName, options) {
     const results = [];
 
     console.log(`  Auditing: ${pageName} (${url})`);
@@ -134,127 +277,145 @@ async function auditPage(page, url, pageName) {
     // Wait for styles to apply
     await page.waitForTimeout(1000);
 
-    // Get all interactive/text elements
-    const elements = await page.evaluate(() => {
-        const selectors = [
-            // Buttons
-            '.m-btn', '.btn', 'button', '[type="submit"]', '[type="button"]',
-            // Badges
-            '.badge', '.m-badge', '[class*="badge-"]',
-            // Alerts
-            '.alert', '.m-alert', '[class*="alert-"]',
-            // Links
-            'a',
-            // Text utilities
-            '[class*="text-"]', '[class*="bg-"]',
-            // Inputs
-            'input', 'select', 'textarea', '.form-control',
-            // Labels
-            'label', '.form-label',
-            // Cards
-            '.card', '.m-card', '.card-header', '.card-body',
-            // Navigation
-            '.nav-link', '.dropdown-item',
-            // Text elements
-            'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'span', 'li', 'td', 'th'
-        ];
+    // Define selectors to check
+    const selectors = [
+        // Buttons (high priority)
+        { selector: '.m-btn', type: 'button', priority: 'high' },
+        { selector: '.btn', type: 'button', priority: 'high' },
+        { selector: 'button:not([type="hidden"])', type: 'button', priority: 'high' },
+        { selector: '[type="submit"]', type: 'button', priority: 'high' },
+        { selector: '.add-to-cart', type: 'button', priority: 'high' },
+        { selector: '.cart-btn', type: 'button', priority: 'high' },
+        { selector: '.template-btn', type: 'button', priority: 'high' },
 
-        const results = [];
-        const seen = new Set();
+        // Badges
+        { selector: '.badge', type: 'badge', priority: 'high' },
+        { selector: '.m-badge', type: 'badge', priority: 'high' },
 
-        selectors.forEach(selector => {
+        // Alerts
+        { selector: '.alert', type: 'alert', priority: 'medium' },
+
+        // Links
+        { selector: 'a:not(.btn):not(.nav-link)', type: 'link', priority: 'medium' },
+
+        // Navigation
+        { selector: '.nav-link', type: 'nav', priority: 'medium' },
+        { selector: '.dropdown-item', type: 'nav', priority: 'medium' },
+
+        // Form elements
+        { selector: '.form-control', type: 'input', priority: 'medium' },
+        { selector: 'label', type: 'label', priority: 'low' },
+
+        // Text elements
+        { selector: 'h1, h2, h3, h4', type: 'heading', priority: 'medium' },
+        { selector: 'p', type: 'text', priority: 'low' }
+    ];
+
+    for (const { selector, type, priority } of selectors) {
+        const elements = await page.$$(selector);
+        const maxElements = priority === 'high' ? 20 : priority === 'medium' ? 10 : 5;
+
+        for (let i = 0; i < Math.min(elements.length, maxElements); i++) {
             try {
-                document.querySelectorAll(selector).forEach(el => {
-                    // Skip hidden elements
-                    if (el.offsetParent === null && !el.closest('nav')) return;
+                const states = await getElementStates(page, selector, i);
+                if (!states || !states.default) continue;
 
-                    // Get unique identifier
-                    const rect = el.getBoundingClientRect();
-                    const key = `${rect.x}-${rect.y}-${rect.width}-${rect.height}`;
-                    if (seen.has(key)) return;
-                    seen.add(key);
+                const text = await elements[i].textContent();
+                const trimmedText = (text || '').trim().substring(0, 50);
+                if (!trimmedText) continue;
 
-                    const styles = window.getComputedStyle(el);
-                    const text = (el.textContent || '').trim().substring(0, 50);
-
-                    if (!text) return; // Skip empty elements
-
-                    // Get element type
-                    let elementType = 'text';
-                    const classList = el.className.toString();
-                    if (el.tagName === 'BUTTON' || classList.includes('btn')) elementType = 'button';
-                    else if (classList.includes('badge')) elementType = 'badge';
-                    else if (classList.includes('alert')) elementType = 'alert';
-                    else if (el.tagName === 'A') elementType = 'link';
-                    else if (el.tagName === 'INPUT' || el.tagName === 'SELECT') elementType = 'input';
-                    else if (el.tagName === 'LABEL') elementType = 'label';
-                    else if (classList.includes('card')) elementType = 'card';
-                    else if (classList.includes('nav')) elementType = 'nav';
-
-                    // Get background by traversing up the DOM
-                    let bgColor = styles.backgroundColor;
-                    let parent = el.parentElement;
-                    while (parent && (bgColor === 'transparent' || bgColor === 'rgba(0, 0, 0, 0)')) {
-                        const parentStyles = window.getComputedStyle(parent);
-                        bgColor = parentStyles.backgroundColor;
-                        parent = parent.parentElement;
-                    }
-
-                    // Default to white if no background found
-                    if (bgColor === 'transparent' || bgColor === 'rgba(0, 0, 0, 0)') {
-                        bgColor = 'rgb(255, 255, 255)';
-                    }
-
-                    results.push({
-                        selector: el.tagName.toLowerCase() + (el.className ? '.' + el.className.toString().split(' ').slice(0, 3).join('.') : ''),
-                        elementType,
-                        textColor: styles.color,
-                        bgColor,
-                        fontSize: styles.fontSize,
-                        fontWeight: styles.fontWeight,
-                        text,
-                        classes: classList.substring(0, 100)
-                    });
+                // Check default state
+                const defaultResult = checkContrast(states.default, {
+                    page: pageName,
+                    selector,
+                    index: i,
+                    text: trimmedText,
+                    elementType: type,
+                    state: 'default',
+                    isDisabled: states.isDisabled
                 });
+                if (defaultResult) results.push(defaultResult);
+
+                // Check hover state for interactive elements
+                if (['button', 'link', 'nav'].includes(type) && options.checkHover) {
+                    const hoverStyles = await getHoverState(page, selector, i);
+                    if (hoverStyles) {
+                        const hoverResult = checkContrast({
+                            ...states.default,
+                            ...hoverStyles
+                        }, {
+                            page: pageName,
+                            selector,
+                            index: i,
+                            text: trimmedText,
+                            elementType: type,
+                            state: 'hover',
+                            isDisabled: states.isDisabled
+                        });
+                        if (hoverResult) results.push(hoverResult);
+                    }
+                }
+
+                // Check focus state for interactive elements
+                if (['button', 'input'].includes(type) && options.checkFocus) {
+                    const focusStyles = await getFocusState(page, selector, i);
+                    if (focusStyles) {
+                        const focusResult = checkContrast({
+                            ...states.default,
+                            ...focusStyles
+                        }, {
+                            page: pageName,
+                            selector,
+                            index: i,
+                            text: trimmedText,
+                            elementType: type,
+                            state: 'focus',
+                            isDisabled: states.isDisabled
+                        });
+                        if (focusResult) results.push(focusResult);
+                    }
+                }
+
             } catch (e) {
-                // Ignore selector errors
+                // Skip problematic elements
             }
-        });
-
-        return results;
-    });
-
-    // Calculate contrast ratios
-    elements.forEach(el => {
-        const textColor = parseColor(el.textColor);
-        const bgColor = parseColor(el.bgColor);
-
-        if (textColor && bgColor) {
-            const blendedText = blendColors(textColor, bgColor);
-            const ratio = getContrastRatio(blendedText, bgColor);
-            const wcag = checkWCAG(ratio, el.fontSize, el.fontWeight);
-
-            results.push({
-                page: pageName,
-                url,
-                selector: el.selector,
-                elementType: el.elementType,
-                text: el.text,
-                textColor: el.textColor,
-                bgColor: el.bgColor,
-                fontSize: el.fontSize,
-                fontWeight: el.fontWeight,
-                ratio: ratio ? ratio.toFixed(2) : 'N/A',
-                wcagAA: wcag.aa ? 'PASS' : 'FAIL',
-                wcagAAA: wcag.aaa ? 'PASS' : 'FAIL',
-                aaRequired: wcag.aaRequired,
-                isLargeText: wcag.isLargeText,
-                classes: el.classes
-            });
         }
-    });
+    }
 
     return results;
+}
+
+/**
+ * Check contrast and return result object
+ */
+function checkContrast(styles, meta) {
+    const textColor = parseColor(styles.color);
+    const bgColor = parseColor(styles.backgroundColor);
+
+    if (!textColor || !bgColor) return null;
+
+    const blendedText = blendColors(textColor, bgColor);
+    const ratio = getContrastRatio(blendedText, bgColor);
+    const wcag = checkWCAG(ratio, styles.fontSize, styles.fontWeight);
+
+    return {
+        page: meta.page,
+        selector: meta.selector,
+        index: meta.index,
+        elementType: meta.elementType,
+        state: meta.state,
+        isDisabled: meta.isDisabled,
+        text: meta.text,
+        textColor: styles.color,
+        bgColor: styles.backgroundColor,
+        fontSize: styles.fontSize,
+        fontWeight: styles.fontWeight,
+        ratio: ratio ? ratio.toFixed(2) : 'N/A',
+        wcagAA: wcag.aa ? 'PASS' : 'FAIL',
+        wcagAAA: wcag.aaa ? 'PASS' : 'FAIL',
+        aaRequired: wcag.aaRequired,
+        isLargeText: wcag.isLargeText
+    };
 }
 
 // ============================================================
@@ -263,9 +424,9 @@ async function auditPage(page, url, pageName) {
 
 function generateCSV(results) {
     const headers = [
-        'page', 'url', 'elementType', 'selector', 'text',
+        'page', 'elementType', 'state', 'selector', 'text',
         'textColor', 'bgColor', 'ratio', 'wcagAA', 'wcagAAA',
-        'fontSize', 'fontWeight', 'isLargeText', 'classes'
+        'fontSize', 'fontWeight', 'isLargeText', 'isDisabled'
     ];
 
     let csv = headers.join(',') + '\n';
@@ -273,7 +434,6 @@ function generateCSV(results) {
     results.forEach(r => {
         csv += headers.map(h => {
             const val = r[h] || '';
-            // Escape quotes and wrap in quotes if contains comma
             const escaped = String(val).replace(/"/g, '""');
             return escaped.includes(',') ? `"${escaped}"` : escaped;
         }).join(',') + '\n';
@@ -289,31 +449,77 @@ function generateSummary(results) {
     const aaaPass = results.filter(r => r.wcagAAA === 'PASS').length;
 
     const byType = {};
+    const byState = {};
+
     results.forEach(r => {
+        // By type
         if (!byType[r.elementType]) {
             byType[r.elementType] = { total: 0, pass: 0, fail: 0 };
         }
         byType[r.elementType].total++;
         if (r.wcagAA === 'PASS') byType[r.elementType].pass++;
         else byType[r.elementType].fail++;
+
+        // By state
+        if (!byState[r.state]) {
+            byState[r.state] = { total: 0, pass: 0, fail: 0 };
+        }
+        byState[r.state].total++;
+        if (r.wcagAA === 'PASS') byState[r.state].pass++;
+        else byState[r.state].fail++;
     });
 
     const violations = results.filter(r => r.wcagAA === 'FAIL');
 
     return {
         total,
-        wcagAA: { pass: aaPass, fail: aaFail, rate: ((aaPass / total) * 100).toFixed(1) + '%' },
-        wcagAAA: { pass: aaaPass, fail: total - aaaPass, rate: ((aaaPass / total) * 100).toFixed(1) + '%' },
+        wcagAA: { pass: aaPass, fail: aaFail, rate: total > 0 ? ((aaPass / total) * 100).toFixed(1) + '%' : '0%' },
+        wcagAAA: { pass: aaaPass, fail: total - aaaPass, rate: total > 0 ? ((aaaPass / total) * 100).toFixed(1) + '%' : '0%' },
         byType,
+        byState,
         topViolations: violations.slice(0, 20).map(v => ({
             page: v.page,
             type: v.elementType,
+            state: v.state,
             selector: v.selector,
             ratio: v.ratio,
             required: v.aaRequired,
-            colors: `${v.textColor} on ${v.bgColor}`
+            colors: `${v.textColor} on ${v.bgColor}`,
+            text: v.text
         }))
     };
+}
+
+// ============================================================
+// Screenshot Functionality
+// ============================================================
+
+async function takeViolationScreenshots(page, violations, reportDir, theme) {
+    const screenshotDir = path.join(reportDir, `screenshots-${theme}`);
+    if (!fs.existsSync(screenshotDir)) {
+        fs.mkdirSync(screenshotDir, { recursive: true });
+    }
+
+    console.log(`\nTaking screenshots of violations...`);
+
+    // Group violations by page
+    const byPage = {};
+    violations.forEach(v => {
+        if (!byPage[v.page]) byPage[v.page] = [];
+        byPage[v.page].push(v);
+    });
+
+    for (const [pageName, pageViolations] of Object.entries(byPage)) {
+        const filename = `${theme}-${pageName.replace(/[^a-z0-9]/gi, '_')}.png`;
+        const filepath = path.join(screenshotDir, filename);
+
+        try {
+            await page.screenshot({ path: filepath, fullPage: true });
+            console.log(`  Saved: ${filename}`);
+        } catch (e) {
+            console.log(`  Failed to save screenshot for ${pageName}`);
+        }
+    }
 }
 
 // ============================================================
@@ -324,15 +530,36 @@ async function main() {
     const args = process.argv.slice(2);
     const theme = args.find(a => a.startsWith('--theme='))?.split('=')[1] || 'current';
     const customUrl = args.find(a => a.startsWith('--url='))?.split('=')[1];
+    const takeScreenshots = args.includes('--screenshot');
+    const checkHover = !args.includes('--no-hover');
+    const checkFocus = !args.includes('--no-focus');
 
-    const pagesConfig = JSON.parse(fs.readFileSync(path.join(__dirname, 'pages.json'), 'utf-8'));
+    // Try to load generated pages first, fall back to static pages.json
+    let pagesConfig;
+    const generatedPath = path.join(__dirname, 'pages.generated.json');
+    const staticPath = path.join(__dirname, 'pages.json');
+
+    if (fs.existsSync(generatedPath)) {
+        pagesConfig = JSON.parse(fs.readFileSync(generatedPath, 'utf-8'));
+        console.log('Using pages.generated.json');
+    } else if (fs.existsSync(staticPath)) {
+        pagesConfig = JSON.parse(fs.readFileSync(staticPath, 'utf-8'));
+        console.log('Using pages.json');
+    } else {
+        console.error('No pages config found. Run: php artisan audit:generate-pages');
+        process.exit(1);
+    }
+
     const baseUrl = customUrl || pagesConfig.baseUrl;
 
     console.log('='.repeat(60));
-    console.log(' WCAG Contrast Ratio Audit');
+    console.log(' WCAG Contrast Ratio Audit - Enhanced');
     console.log('='.repeat(60));
     console.log(`Theme: ${theme}`);
     console.log(`Base URL: ${baseUrl}`);
+    console.log(`Check Hover: ${checkHover}`);
+    console.log(`Check Focus: ${checkFocus}`);
+    console.log(`Screenshots: ${takeScreenshots}`);
     console.log('');
 
     const browser = await chromium.launch({ headless: true });
@@ -342,17 +569,19 @@ async function main() {
     const page = await context.newPage();
 
     let allResults = [];
+    const options = { checkHover, checkFocus };
 
     for (const pageConfig of pagesConfig.pages) {
+        // Skip auth-required pages for now
+        if (pageConfig.requiresAuth) continue;
+
         const url = baseUrl + pageConfig.path;
-        const results = await auditPage(page, url, pageConfig.name);
+        const results = await auditPage(page, url, pageConfig.name, options);
         allResults = allResults.concat(results);
 
         const failures = results.filter(r => r.wcagAA === 'FAIL').length;
         console.log(`    Found ${results.length} elements, ${failures} WCAG AA failures`);
     }
-
-    await browser.close();
 
     // Generate reports
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-').substring(0, 19);
@@ -361,6 +590,14 @@ async function main() {
     if (!fs.existsSync(reportDir)) {
         fs.mkdirSync(reportDir, { recursive: true });
     }
+
+    // Take screenshots of violations
+    const violations = allResults.filter(r => r.wcagAA === 'FAIL');
+    if (takeScreenshots && violations.length > 0) {
+        await takeViolationScreenshots(page, violations, reportDir, theme);
+    }
+
+    await browser.close();
 
     // CSV Report
     const csvPath = path.join(reportDir, `contrast-audit-${theme}-${timestamp}.csv`);
@@ -387,15 +624,23 @@ async function main() {
     console.log('');
     console.log('By Element Type:');
     Object.entries(summary.byType).forEach(([type, stats]) => {
-        const rate = ((stats.pass / stats.total) * 100).toFixed(0);
+        const rate = stats.total > 0 ? ((stats.pass / stats.total) * 100).toFixed(0) : 0;
         console.log(`  ${type.padEnd(10)} ${stats.pass}/${stats.total} pass (${rate}%)`);
+    });
+
+    console.log('');
+    console.log('By State:');
+    Object.entries(summary.byState).forEach(([state, stats]) => {
+        const rate = stats.total > 0 ? ((stats.pass / stats.total) * 100).toFixed(0) : 0;
+        console.log(`  ${state.padEnd(10)} ${stats.pass}/${stats.total} pass (${rate}%)`);
     });
 
     if (summary.topViolations.length > 0) {
         console.log('');
         console.log('Top Violations:');
         summary.topViolations.slice(0, 10).forEach((v, i) => {
-            console.log(`  ${i + 1}. [${v.page}] ${v.type} - ratio ${v.ratio} (need ${v.required})`);
+            console.log(`  ${i + 1}. [${v.page}] ${v.type}:${v.state} - ratio ${v.ratio} (need ${v.required})`);
+            console.log(`     "${v.text}" - ${v.colors}`);
         });
     }
 
@@ -403,6 +648,18 @@ async function main() {
     console.log(`Reports saved to:`);
     console.log(`  CSV:  ${csvPath}`);
     console.log(`  JSON: ${jsonPath}`);
+
+    // Return exit code based on violations
+    if (summary.wcagAA.fail > 0) {
+        console.log(`\n[FAIL] ${summary.wcagAA.fail} WCAG AA violations found!`);
+        process.exit(1);
+    } else {
+        console.log(`\n[PASS] No WCAG AA violations found!`);
+        process.exit(0);
+    }
 }
 
-main().catch(console.error);
+main().catch(err => {
+    console.error(err);
+    process.exit(1);
+});

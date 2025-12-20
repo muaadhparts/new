@@ -1,0 +1,186 @@
+{
+    "baseUrl": "http://new.test",
+    "generated": "2025-12-20T04:22:16+00:00",
+    "totalPages": 22,
+    "pages": [
+        {
+            "name": "Home",
+            "path": "/",
+            "requiresAuth": false,
+            "priority": "high"
+        },
+        {
+            "name": "Contact",
+            "path": "/contact",
+            "requiresAuth": false,
+            "priority": "high"
+        },
+        {
+            "name": "FAQ",
+            "path": "/faq",
+            "requiresAuth": false,
+            "priority": "high"
+        },
+        {
+            "name": "About",
+            "path": "/about",
+            "requiresAuth": false,
+            "priority": "high"
+        },
+        {
+            "name": "Cart",
+            "path": "/cart",
+            "requiresAuth": false,
+            "priority": "high"
+        },
+        {
+            "name": "Checkout",
+            "path": "/checkout",
+            "requiresAuth": false,
+            "priority": "high"
+        },
+        {
+            "name": "Login",
+            "path": "/login",
+            "requiresAuth": false,
+            "priority": "high"
+        },
+        {
+            "name": "Register",
+            "path": "/register",
+            "requiresAuth": false,
+            "priority": "high"
+        },
+        {
+            "name": "Blog",
+            "path": "/blog",
+            "requiresAuth": false,
+            "priority": "high"
+        },
+        {
+            "name": "Brands",
+            "path": "/brands",
+            "requiresAuth": false,
+            "priority": "high"
+        },
+        {
+            "name": "User Dashboard",
+            "path": "/user/dashboard",
+            "requiresAuth": true,
+            "priority": "high"
+        },
+        {
+            "name": "User Orders",
+            "path": "/user/orders",
+            "requiresAuth": true,
+            "priority": "high"
+        },
+        {
+            "name": "User Wishlist",
+            "path": "/user/wishlist",
+            "requiresAuth": true,
+            "priority": "high"
+        },
+        {
+            "name": "User Profile",
+            "path": "/user/profile",
+            "requiresAuth": true,
+            "priority": "high"
+        },
+        {
+            "name": "Category: nissan",
+            "path": "/category/nissan",
+            "requiresAuth": false,
+            "priority": "high"
+        },
+        {
+            "name": "Category: infiniti",
+            "path": "/category/infiniti",
+            "requiresAuth": false,
+            "priority": "high"
+        },
+        {
+            "name": "Subcategory: safari-patrol-1997",
+            "path": "/subcategory/safari-patrol-1997",
+            "requiresAuth": false,
+            "priority": "medium"
+        },
+        {
+            "name": "Subcategory: patrol-2010",
+            "path": "/subcategory/patrol-2010",
+            "requiresAuth": false,
+            "priority": "medium"
+        },
+        {
+            "name": "Brand: 1",
+            "path": "/brand/1",
+            "requiresAuth": false,
+            "priority": "medium"
+        },
+        {
+            "name": "Brand: 2",
+            "path": "/brand/2",
+            "requiresAuth": false,
+            "priority": "medium"
+        },
+        {
+            "name": "Blog: find-your-perfect-nissanwdPk",
+            "path": "/blog/find-your-perfect-nissanwdPk",
+            "requiresAuth": false,
+            "priority": "low"
+        },
+        {
+            "name": "Blog: nissan-offers-special-offersYGim",
+            "path": "/blog/nissan-offers-special-offersYGim",
+            "requiresAuth": false,
+            "priority": "low"
+        }
+    ],
+    "stateChecks": {
+        "default": true,
+        "hover": true,
+        "focus": true,
+        "disabled": true
+    },
+    "elementSelectors": {
+        "buttons": [
+            ".m-btn",
+            ".btn",
+            "button",
+            "[type=\"submit\"]",
+            "[type=\"button\"]",
+            ".template-btn",
+            ".add-to-cart",
+            ".cart-btn"
+        ],
+        "badges": [
+            ".badge",
+            ".m-badge",
+            "[class*=\"badge-\"]"
+        ],
+        "alerts": [
+            ".alert",
+            ".m-alert",
+            "[class*=\"alert-\"]"
+        ],
+        "links": [
+            "a"
+        ],
+        "inputs": [
+            "input",
+            "select",
+            "textarea",
+            ".form-control"
+        ],
+        "cards": [
+            ".card",
+            ".m-card",
+            ".product-card"
+        ],
+        "navigation": [
+            ".nav-link",
+            ".dropdown-item",
+            ".menu-link"
+        ]
+    }
+}
