@@ -406,7 +406,7 @@
 {{-- Mobile Menu Overlay --}}
 <div class="muaadh-mobile-overlay"></div>
 
-{{-- Mobile Category Selector Styles --}}
+{{-- Mobile Category Selector Styles - Using CSS Variables for Theme Support --}}
 <style>
     .muaadh-mobile-category-selector {
         padding: 15px;
@@ -416,14 +416,14 @@
         align-items: center;
         gap: 8px;
         padding: 10px 12px;
-        background: linear-gradient(135deg, #f0f4ff 0%, #e8f0fe 100%);
+        background: var(--surface-sunken, #f5f5f5);
         border-radius: 8px;
         margin-bottom: 15px;
         flex-wrap: wrap;
     }
     .muaadh-selection-label {
         font-size: 11px;
-        color: #666;
+        color: var(--text-muted, #666);
         font-weight: 500;
     }
     .muaadh-selection-tags {
@@ -435,7 +435,7 @@
     }
     .muaadh-selection-tags i {
         font-size: 10px;
-        color: #999;
+        color: var(--text-muted, #999);
     }
     .muaadh-selection-tag {
         font-size: 11px;
@@ -444,16 +444,16 @@
         font-weight: 500;
     }
     .muaadh-selection-tag.primary {
-        background: var(--theme-primary);
-        color: #fff;
+        background: var(--action-primary, var(--theme-primary));
+        color: var(--text-inverse, #fff);
     }
     .muaadh-selection-tag.secondary {
-        background: #6c757d;
-        color: #fff;
+        background: var(--action-secondary, #6c757d);
+        color: var(--text-inverse, #fff);
     }
     .muaadh-selection-tag.info {
-        background: #17a2b8;
-        color: #fff;
+        background: var(--action-info, #17a2b8);
+        color: var(--text-inverse, #fff);
     }
     .muaadh-clear-selection {
         width: 24px;
@@ -461,11 +461,11 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        background: #fff;
+        background: var(--surface-card, #fff);
         border-radius: 50%;
-        color: #dc3545;
+        color: var(--action-danger, #dc3545);
         font-size: 12px;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        box-shadow: var(--shadow-sm, 0 1px 3px rgba(0,0,0,0.1));
     }
     .muaadh-mobile-step {
         margin-bottom: 12px;
@@ -476,20 +476,20 @@
         gap: 8px;
         font-size: 13px;
         font-weight: 600;
-        color: #333;
+        color: var(--text-body, #333);
         margin-bottom: 6px;
     }
     .muaadh-mobile-step-label i {
-        color: var(--theme-primary);
+        color: var(--action-primary, var(--theme-primary));
         font-size: 14px;
     }
     .muaadh-mobile-select-input {
         width: 100%;
         padding: 12px 15px;
         font-size: 15px;
-        border: 1px solid #ddd;
-        border-radius: 8px;
-        background-color: #fff;
+        border: 1px solid var(--border-default, #ddd);
+        border-radius: var(--radius-md, 8px);
+        background-color: var(--surface-card, #fff);
         cursor: pointer;
         transition: all 0.2s ease;
         appearance: none;
@@ -501,7 +501,7 @@
         background-position: left 12px center;
     }
     .muaadh-mobile-select-input:focus {
-        border-color: var(--theme-primary);
+        border-color: var(--border-focus, var(--theme-primary));
         outline: none;
         box-shadow: 0 0 0 3px rgba(var(--theme-primary-rgb), 0.1);
     }
@@ -510,10 +510,10 @@
         padding: 14px 20px;
         font-size: 15px;
         font-weight: 600;
-        color: #fff;
-        background: var(--theme-primary);
+        color: var(--text-inverse, #fff);
+        background: var(--action-primary, var(--theme-primary));
         border: none;
-        border-radius: 8px;
+        border-radius: var(--radius-md, 8px);
         cursor: pointer;
         display: flex;
         align-items: center;
@@ -523,11 +523,11 @@
         transition: all 0.2s ease;
     }
     .muaadh-mobile-go-btn:hover {
-        background: var(--theme-primary-hover);
+        background: var(--action-primary-hover, var(--theme-primary-hover));
         transform: translateY(-1px);
     }
     .muaadh-mobile-go-btn:disabled {
-        background: #ccc;
+        background: var(--text-muted, #ccc);
         cursor: not-allowed;
         transform: none;
     }

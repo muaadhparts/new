@@ -16,7 +16,7 @@
 
             {{-- Store Menu Toggle (for shopping) --}}
             <button class="muaadh-mobile-toggle d-xl-none" type="button" title="@lang('Store Menu')">
-                <i class="fas fa-store" style="font-size: 20px; color: #1F0300;"></i>
+                <i class="fas fa-store"></i>
             </button>
 
             {{-- Dashboard Menu Toggle --}}

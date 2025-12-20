@@ -242,12 +242,12 @@
     --header-bg: var(--color-white);
     --header-border: var(--border-default);
 
-    /* Footer */
-    --footer-bg: var(--color-gray-900);
-    --footer-text: var(--color-gray-300);
-    --footer-heading: var(--color-white);
-    --footer-link: var(--color-gray-400);
-    --footer-link-hover: var(--color-white);
+    /* Footer - Connected to Theme System */
+    --footer-bg: var(--theme-footer-bg, var(--color-gray-900));
+    --footer-text: var(--theme-footer-text, var(--color-gray-300));
+    --footer-heading: var(--theme-footer-text, var(--color-white));
+    --footer-link: var(--theme-footer-text-muted, var(--color-gray-400));
+    --footer-link-hover: var(--theme-footer-link-hover, var(--color-white));
 
     /* Sidebar */
     --sidebar-width: 260px;

@@ -1465,126 +1465,127 @@ $(document).ready(function() {
         updatePreview();
     });
 
-    // Presets - تصميمات متناسقة مع ألوان مكسورة (accent colors)
+    // Presets - ثيمات احترافية مع ألوان نص محايدة وقابلة للقراءة
+    // القاعدة الذهبية: ألوان النص دائماً محايدة (رمادي/أسود) - اللون الرئيسي للأزرار والروابط فقط
     var presets = {
         nissan: {
-            // أحمر نيسان الكلاسيكي مع ذهبي دافئ
+            // أحمر نيسان الكلاسيكي - احترافي لقطع الغيار
             theme_primary: '#c3002f', theme_primary_hover: '#a00025', theme_primary_dark: '#8a0020', theme_primary_light: '#fef2f4',
-            theme_secondary: '#1a1a2e', theme_secondary_hover: '#2d2d44', theme_secondary_light: '#3d3d5c',
-            theme_text_primary: '#1a1a2e', theme_text_secondary: '#4a4a5e', theme_text_muted: '#6b6b7d', theme_text_light: '#9a9aab',
-            theme_bg_body: '#ffffff', theme_bg_light: '#faf9f7', theme_bg_gray: '#f0eeec', theme_bg_dark: '#1a1a2e',
-            theme_success: '#10b981', theme_warning: '#d4a017', theme_danger: '#c3002f', theme_info: '#3b82f6',
-            theme_border: '#e5e2df', theme_border_light: '#f0eeec', theme_border_dark: '#d4d0cc',
-            theme_header_bg: '#ffffff', theme_footer_bg: '#1a1a2e', theme_footer_text: '#f5f5f7', theme_footer_link_hover: '#c3002f'
+            theme_secondary: '#1f2937', theme_secondary_hover: '#374151', theme_secondary_light: '#4b5563',
+            theme_text_primary: '#111827', theme_text_secondary: '#374151', theme_text_muted: '#6b7280', theme_text_light: '#9ca3af',
+            theme_bg_body: '#ffffff', theme_bg_light: '#f9fafb', theme_bg_gray: '#f3f4f6', theme_bg_dark: '#111827',
+            theme_success: '#10b981', theme_warning: '#f59e0b', theme_danger: '#ef4444', theme_info: '#3b82f6',
+            theme_border: '#e5e7eb', theme_border_light: '#f3f4f6', theme_border_dark: '#d1d5db',
+            theme_header_bg: '#ffffff', theme_footer_bg: '#111827', theme_footer_text: '#f9fafb', theme_footer_link_hover: '#c3002f'
         },
         blue: {
-            // أزرق ملكي مع برتقالي مُشرق كـ accent
+            // أزرق ملكي - مناسب للتقنية والمهنية
             theme_primary: '#2563eb', theme_primary_hover: '#1d4ed8', theme_primary_dark: '#1e40af', theme_primary_light: '#eff6ff',
-            theme_secondary: '#0f172a', theme_secondary_hover: '#1e293b', theme_secondary_light: '#334155',
+            theme_secondary: '#1e293b', theme_secondary_hover: '#334155', theme_secondary_light: '#475569',
             theme_text_primary: '#0f172a', theme_text_secondary: '#334155', theme_text_muted: '#64748b', theme_text_light: '#94a3b8',
             theme_bg_body: '#ffffff', theme_bg_light: '#f8fafc', theme_bg_gray: '#f1f5f9', theme_bg_dark: '#0f172a',
-            theme_success: '#10b981', theme_warning: '#f97316', theme_danger: '#ef4444', theme_info: '#06b6d4',
+            theme_success: '#10b981', theme_warning: '#f59e0b', theme_danger: '#ef4444', theme_info: '#06b6d4',
             theme_border: '#e2e8f0', theme_border_light: '#f1f5f9', theme_border_dark: '#cbd5e1',
             theme_header_bg: '#ffffff', theme_footer_bg: '#0f172a', theme_footer_text: '#f1f5f9', theme_footer_link_hover: '#60a5fa'
         },
         green: {
-            // أخضر زمردي مع ذهبي أنيق
+            // أخضر زمردي - مناسب للبيئة والصحة
             theme_primary: '#059669', theme_primary_hover: '#047857', theme_primary_dark: '#065f46', theme_primary_light: '#ecfdf5',
-            theme_secondary: '#14532d', theme_secondary_hover: '#166534', theme_secondary_light: '#22863a',
-            theme_text_primary: '#14532d', theme_text_secondary: '#166534', theme_text_muted: '#4d7c5f', theme_text_light: '#86a896',
-            theme_bg_body: '#ffffff', theme_bg_light: '#f7faf8', theme_bg_gray: '#ecf5ef', theme_bg_dark: '#14532d',
-            theme_success: '#10b981', theme_warning: '#ca8a04', theme_danger: '#dc2626', theme_info: '#0891b2',
-            theme_border: '#d1e7d9', theme_border_light: '#ecf5ef', theme_border_dark: '#b8d4c4',
-            theme_header_bg: '#ffffff', theme_footer_bg: '#14532d', theme_footer_text: '#ecfdf5', theme_footer_link_hover: '#34d399'
+            theme_secondary: '#1f2937', theme_secondary_hover: '#374151', theme_secondary_light: '#4b5563',
+            theme_text_primary: '#111827', theme_text_secondary: '#374151', theme_text_muted: '#6b7280', theme_text_light: '#9ca3af',
+            theme_bg_body: '#ffffff', theme_bg_light: '#f9fafb', theme_bg_gray: '#f3f4f6', theme_bg_dark: '#111827',
+            theme_success: '#10b981', theme_warning: '#f59e0b', theme_danger: '#ef4444', theme_info: '#0891b2',
+            theme_border: '#e5e7eb', theme_border_light: '#f3f4f6', theme_border_dark: '#d1d5db',
+            theme_header_bg: '#ffffff', theme_footer_bg: '#111827', theme_footer_text: '#f9fafb', theme_footer_link_hover: '#34d399'
         },
         purple: {
-            // بنفسجي أنيق مع وردي ناعم
+            // بنفسجي أنيق - مناسب للإبداع والفخامة
             theme_primary: '#7c3aed', theme_primary_hover: '#6d28d9', theme_primary_dark: '#5b21b6', theme_primary_light: '#f5f3ff',
-            theme_secondary: '#1e1b4b', theme_secondary_hover: '#312e81', theme_secondary_light: '#4338ca',
-            theme_text_primary: '#1e1b4b', theme_text_secondary: '#3730a3', theme_text_muted: '#6366f1', theme_text_light: '#a5b4fc',
-            theme_bg_body: '#ffffff', theme_bg_light: '#faf8ff', theme_bg_gray: '#f3f0ff', theme_bg_dark: '#1e1b4b',
-            theme_success: '#10b981', theme_warning: '#f59e0b', theme_danger: '#f43f5e', theme_info: '#06b6d4',
-            theme_border: '#e0dbf5', theme_border_light: '#f3f0ff', theme_border_dark: '#c7bfea',
+            theme_secondary: '#1f2937', theme_secondary_hover: '#374151', theme_secondary_light: '#4b5563',
+            theme_text_primary: '#111827', theme_text_secondary: '#374151', theme_text_muted: '#6b7280', theme_text_light: '#9ca3af',
+            theme_bg_body: '#ffffff', theme_bg_light: '#faf8ff', theme_bg_gray: '#f5f3ff', theme_bg_dark: '#1e1b4b',
+            theme_success: '#10b981', theme_warning: '#f59e0b', theme_danger: '#ef4444', theme_info: '#06b6d4',
+            theme_border: '#e5e7eb', theme_border_light: '#f3f4f6', theme_border_dark: '#d1d5db',
             theme_header_bg: '#ffffff', theme_footer_bg: '#1e1b4b', theme_footer_text: '#f5f3ff', theme_footer_link_hover: '#a78bfa'
         },
         orange: {
-            // برتقالي دافئ مع أزرق داكن
+            // برتقالي حيوي - مناسب للطاقة والنشاط
             theme_primary: '#ea580c', theme_primary_hover: '#c2410c', theme_primary_dark: '#9a3412', theme_primary_light: '#fff7ed',
-            theme_secondary: '#1c1917', theme_secondary_hover: '#292524', theme_secondary_light: '#44403c',
-            theme_text_primary: '#1c1917', theme_text_secondary: '#44403c', theme_text_muted: '#78716c', theme_text_light: '#a8a29e',
-            theme_bg_body: '#ffffff', theme_bg_light: '#fefcfa', theme_bg_gray: '#faf5f0', theme_bg_dark: '#1c1917',
-            theme_success: '#22c55e', theme_warning: '#eab308', theme_danger: '#dc2626', theme_info: '#0284c7',
-            theme_border: '#e7e1db', theme_border_light: '#faf5f0', theme_border_dark: '#d6cdc4',
+            theme_secondary: '#1f2937', theme_secondary_hover: '#374151', theme_secondary_light: '#4b5563',
+            theme_text_primary: '#111827', theme_text_secondary: '#374151', theme_text_muted: '#6b7280', theme_text_light: '#9ca3af',
+            theme_bg_body: '#ffffff', theme_bg_light: '#fffbf5', theme_bg_gray: '#fef3e2', theme_bg_dark: '#1c1917',
+            theme_success: '#10b981', theme_warning: '#f59e0b', theme_danger: '#ef4444', theme_info: '#0284c7',
+            theme_border: '#e5e7eb', theme_border_light: '#f3f4f6', theme_border_dark: '#d1d5db',
             theme_header_bg: '#ffffff', theme_footer_bg: '#1c1917', theme_footer_text: '#fafaf9', theme_footer_link_hover: '#fb923c'
         },
         teal: {
-            // تركوازي هادئ مع كورال
+            // تركوازي - مناسب للهدوء والاحترافية
             theme_primary: '#0d9488', theme_primary_hover: '#0f766e', theme_primary_dark: '#115e59', theme_primary_light: '#f0fdfa',
-            theme_secondary: '#134e4a', theme_secondary_hover: '#1e6b66', theme_secondary_light: '#2a8882',
-            theme_text_primary: '#134e4a', theme_text_secondary: '#2a7a75', theme_text_muted: '#4d9e98', theme_text_light: '#80c9c3',
-            theme_bg_body: '#ffffff', theme_bg_light: '#f5fffe', theme_bg_gray: '#e6f7f5', theme_bg_dark: '#134e4a',
-            theme_success: '#22c55e', theme_warning: '#f59e0b', theme_danger: '#f87171', theme_info: '#38bdf8',
-            theme_border: '#c8e8e4', theme_border_light: '#e6f7f5', theme_border_dark: '#a8d8d4',
+            theme_secondary: '#1f2937', theme_secondary_hover: '#374151', theme_secondary_light: '#4b5563',
+            theme_text_primary: '#111827', theme_text_secondary: '#374151', theme_text_muted: '#6b7280', theme_text_light: '#9ca3af',
+            theme_bg_body: '#ffffff', theme_bg_light: '#f9fafb', theme_bg_gray: '#f3f4f6', theme_bg_dark: '#134e4a',
+            theme_success: '#10b981', theme_warning: '#f59e0b', theme_danger: '#ef4444', theme_info: '#38bdf8',
+            theme_border: '#e5e7eb', theme_border_light: '#f3f4f6', theme_border_dark: '#d1d5db',
             theme_header_bg: '#ffffff', theme_footer_bg: '#134e4a', theme_footer_text: '#f0fdfa', theme_footer_link_hover: '#5eead4'
         },
         gold: {
-            // ذهبي فاخر مع كحلي
+            // ذهبي فاخر - مناسب للفخامة والرفاهية
             theme_primary: '#b8860b', theme_primary_hover: '#996f09', theme_primary_dark: '#7a5807', theme_primary_light: '#fef9e7',
-            theme_secondary: '#1a1a2e', theme_secondary_hover: '#2d2d44', theme_secondary_light: '#3d3d5c',
-            theme_text_primary: '#1a1a2e', theme_text_secondary: '#3d3d5c', theme_text_muted: '#6b6b7d', theme_text_light: '#9a9aab',
-            theme_bg_body: '#fffef9', theme_bg_light: '#fefbf0', theme_bg_gray: '#f5f0e1', theme_bg_dark: '#1a1a2e',
-            theme_success: '#22c55e', theme_warning: '#b8860b', theme_danger: '#dc2626', theme_info: '#3b82f6',
-            theme_border: '#e8e2d0', theme_border_light: '#f5f0e1', theme_border_dark: '#d4cbb4',
-            theme_header_bg: '#fffef9', theme_footer_bg: '#1a1a2e', theme_footer_text: '#fef9e7', theme_footer_link_hover: '#d4a017'
+            theme_secondary: '#1f2937', theme_secondary_hover: '#374151', theme_secondary_light: '#4b5563',
+            theme_text_primary: '#111827', theme_text_secondary: '#374151', theme_text_muted: '#6b7280', theme_text_light: '#9ca3af',
+            theme_bg_body: '#fffef8', theme_bg_light: '#fefbf0', theme_bg_gray: '#f5f0e1', theme_bg_dark: '#1a1a2e',
+            theme_success: '#10b981', theme_warning: '#f59e0b', theme_danger: '#ef4444', theme_info: '#3b82f6',
+            theme_border: '#e5e7eb', theme_border_light: '#f3f4f6', theme_border_dark: '#d1d5db',
+            theme_header_bg: '#fffef8', theme_footer_bg: '#1a1a2e', theme_footer_text: '#fef9e7', theme_footer_link_hover: '#d4a017'
         },
         rose: {
-            // وردي أنيق مع رمادي داكن
+            // وردي أنيق - مناسب للجمال والأناقة
             theme_primary: '#e11d48', theme_primary_hover: '#be123c', theme_primary_dark: '#9f1239', theme_primary_light: '#fff1f2',
-            theme_secondary: '#18181b', theme_secondary_hover: '#27272a', theme_secondary_light: '#3f3f46',
-            theme_text_primary: '#18181b', theme_text_secondary: '#3f3f46', theme_text_muted: '#71717a', theme_text_light: '#a1a1aa',
-            theme_bg_body: '#ffffff', theme_bg_light: '#fefcfd', theme_bg_gray: '#fdf2f4', theme_bg_dark: '#18181b',
-            theme_success: '#22c55e', theme_warning: '#f59e0b', theme_danger: '#e11d48', theme_info: '#06b6d4',
-            theme_border: '#f5d0d7', theme_border_light: '#fdf2f4', theme_border_dark: '#e8b4be',
+            theme_secondary: '#1f2937', theme_secondary_hover: '#374151', theme_secondary_light: '#4b5563',
+            theme_text_primary: '#111827', theme_text_secondary: '#374151', theme_text_muted: '#6b7280', theme_text_light: '#9ca3af',
+            theme_bg_body: '#ffffff', theme_bg_light: '#fdf2f4', theme_bg_gray: '#fce7eb', theme_bg_dark: '#18181b',
+            theme_success: '#10b981', theme_warning: '#f59e0b', theme_danger: '#ef4444', theme_info: '#06b6d4',
+            theme_border: '#e5e7eb', theme_border_light: '#f3f4f6', theme_border_dark: '#d1d5db',
             theme_header_bg: '#ffffff', theme_footer_bg: '#18181b', theme_footer_text: '#fafafa', theme_footer_link_hover: '#fb7185'
         },
         ocean: {
-            // أزرق محيطي مع فيروزي
+            // أزرق محيطي - مناسب للسياحة والسفر
             theme_primary: '#0891b2', theme_primary_hover: '#0e7490', theme_primary_dark: '#155e75', theme_primary_light: '#ecfeff',
-            theme_secondary: '#164e63', theme_secondary_hover: '#0e7490', theme_secondary_light: '#0891b2',
-            theme_text_primary: '#164e63', theme_text_secondary: '#0e7490', theme_text_muted: '#06b6d4', theme_text_light: '#67e8f9',
+            theme_secondary: '#1f2937', theme_secondary_hover: '#374151', theme_secondary_light: '#4b5563',
+            theme_text_primary: '#111827', theme_text_secondary: '#374151', theme_text_muted: '#6b7280', theme_text_light: '#9ca3af',
             theme_bg_body: '#ffffff', theme_bg_light: '#f0fdff', theme_bg_gray: '#e0f7fa', theme_bg_dark: '#164e63',
             theme_success: '#10b981', theme_warning: '#f59e0b', theme_danger: '#ef4444', theme_info: '#06b6d4',
-            theme_border: '#b3e5f0', theme_border_light: '#e0f7fa', theme_border_dark: '#80d4e6',
+            theme_border: '#e5e7eb', theme_border_light: '#f3f4f6', theme_border_dark: '#d1d5db',
             theme_header_bg: '#ffffff', theme_footer_bg: '#164e63', theme_footer_text: '#ecfeff', theme_footer_link_hover: '#22d3ee'
         },
         forest: {
-            // أخضر غابات مع بني دافئ
+            // أخضر غابات - مناسب للطبيعة والبيئة
             theme_primary: '#16a34a', theme_primary_hover: '#15803d', theme_primary_dark: '#166534', theme_primary_light: '#f0fdf4',
-            theme_secondary: '#14532d', theme_secondary_hover: '#166534', theme_secondary_light: '#15803d',
-            theme_text_primary: '#14532d', theme_text_secondary: '#166534', theme_text_muted: '#15803d', theme_text_light: '#4ade80',
-            theme_bg_body: '#ffffff', theme_bg_light: '#f7fef9', theme_bg_gray: '#e8f5e9', theme_bg_dark: '#14532d',
-            theme_success: '#22c55e', theme_warning: '#d97706', theme_danger: '#dc2626', theme_info: '#0891b2',
-            theme_border: '#c8e6c9', theme_border_light: '#e8f5e9', theme_border_dark: '#a5d6a7',
+            theme_secondary: '#1f2937', theme_secondary_hover: '#374151', theme_secondary_light: '#4b5563',
+            theme_text_primary: '#111827', theme_text_secondary: '#374151', theme_text_muted: '#6b7280', theme_text_light: '#9ca3af',
+            theme_bg_body: '#ffffff', theme_bg_light: '#f7fef9', theme_bg_gray: '#ecfdf0', theme_bg_dark: '#14532d',
+            theme_success: '#10b981', theme_warning: '#f59e0b', theme_danger: '#ef4444', theme_info: '#0891b2',
+            theme_border: '#e5e7eb', theme_border_light: '#f3f4f6', theme_border_dark: '#d1d5db',
             theme_header_bg: '#ffffff', theme_footer_bg: '#14532d', theme_footer_text: '#f0fdf4', theme_footer_link_hover: '#4ade80'
         },
         midnight: {
-            // أزرق منتصف الليل مع ذهبي
+            // أزرق منتصف الليل - مناسب للتقنية والابتكار
             theme_primary: '#4f46e5', theme_primary_hover: '#4338ca', theme_primary_dark: '#3730a3', theme_primary_light: '#eef2ff',
-            theme_secondary: '#1e1b4b', theme_secondary_hover: '#312e81', theme_secondary_light: '#4338ca',
-            theme_text_primary: '#1e1b4b', theme_text_secondary: '#312e81', theme_text_muted: '#6366f1', theme_text_light: '#a5b4fc',
-            theme_bg_body: '#ffffff', theme_bg_light: '#f5f7ff', theme_bg_gray: '#e0e7ff', theme_bg_dark: '#1e1b4b',
+            theme_secondary: '#1f2937', theme_secondary_hover: '#374151', theme_secondary_light: '#4b5563',
+            theme_text_primary: '#111827', theme_text_secondary: '#374151', theme_text_muted: '#6b7280', theme_text_light: '#9ca3af',
+            theme_bg_body: '#ffffff', theme_bg_light: '#f5f7ff', theme_bg_gray: '#eef2ff', theme_bg_dark: '#1e1b4b',
             theme_success: '#10b981', theme_warning: '#f59e0b', theme_danger: '#ef4444', theme_info: '#06b6d4',
-            theme_border: '#c7d2fe', theme_border_light: '#e0e7ff', theme_border_dark: '#a5b4fc',
+            theme_border: '#e5e7eb', theme_border_light: '#f3f4f6', theme_border_dark: '#d1d5db',
             theme_header_bg: '#ffffff', theme_footer_bg: '#1e1b4b', theme_footer_text: '#eef2ff', theme_footer_link_hover: '#818cf8'
         },
         crimson: {
-            // أحمر قرمزي مع رمادي فحمي
+            // أحمر قرمزي - مناسب للقوة والطاقة
             theme_primary: '#dc2626', theme_primary_hover: '#b91c1c', theme_primary_dark: '#991b1b', theme_primary_light: '#fef2f2',
-            theme_secondary: '#7f1d1d', theme_secondary_hover: '#991b1b', theme_secondary_light: '#b91c1c',
-            theme_text_primary: '#7f1d1d', theme_text_secondary: '#991b1b', theme_text_muted: '#dc2626', theme_text_light: '#f87171',
+            theme_secondary: '#1f2937', theme_secondary_hover: '#374151', theme_secondary_light: '#4b5563',
+            theme_text_primary: '#111827', theme_text_secondary: '#374151', theme_text_muted: '#6b7280', theme_text_light: '#9ca3af',
             theme_bg_body: '#ffffff', theme_bg_light: '#fef8f8', theme_bg_gray: '#fee2e2', theme_bg_dark: '#7f1d1d',
-            theme_success: '#10b981', theme_warning: '#f59e0b', theme_danger: '#dc2626', theme_info: '#3b82f6',
-            theme_border: '#fecaca', theme_border_light: '#fee2e2', theme_border_dark: '#fca5a5',
+            theme_success: '#10b981', theme_warning: '#f59e0b', theme_danger: '#ef4444', theme_info: '#3b82f6',
+            theme_border: '#e5e7eb', theme_border_light: '#f3f4f6', theme_border_dark: '#d1d5db',
             theme_header_bg: '#ffffff', theme_footer_bg: '#7f1d1d', theme_footer_text: '#fef2f2', theme_footer_link_hover: '#f87171'
         }
     };

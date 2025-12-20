@@ -4,50 +4,50 @@
  * ========================================
  * Generated from Admin Panel Theme Builder
  * Do not edit manually - changes will be overwritten
- * Generated at: 2025-12-19 22:46:26
+ * Generated at: 2025-12-20 00:22:55
  */
 :root {
     /* ===== PRIMARY BRAND COLORS ===== */
-    --theme-primary: #e11d48;
-    --theme-primary-hover: #be123c;
-    --theme-primary-dark: #9f1239;
-    --theme-primary-light: #fff1f2;
-    --theme-primary-rgb: 225, 29, 72;
+    --theme-primary: #c3002f;
+    --theme-primary-hover: #a00025;
+    --theme-primary-dark: #8a0020;
+    --theme-primary-light: #fef2f4;
+    --theme-primary-rgb: 195, 0, 47;
 
     /* ===== SECONDARY COLORS ===== */
-    --theme-secondary: #18181b;
-    --theme-secondary-hover: #27272a;
-    --theme-secondary-light: #3f3f46;
+    --theme-secondary: #1f2937;
+    --theme-secondary-hover: #374151;
+    --theme-secondary-light: #4b5563;
 
     /* ===== TEXT COLORS ===== */
-    --theme-text-primary: #18181b;
-    --theme-text-secondary: #3f3f46;
-    --theme-text-muted: #71717a;
-    --theme-text-light: #a1a1aa;
+    --theme-text-primary: #111827;
+    --theme-text-secondary: #374151;
+    --theme-text-muted: #6b7280;
+    --theme-text-light: #9ca3af;
     --theme-text-lighter: #b7aead;
     --theme-text-white: #ffffff;
 
     /* ===== BACKGROUND COLORS ===== */
     --theme-bg-body: #ffffff;
-    --theme-bg-light: #fefcfd;
+    --theme-bg-light: #f9fafb;
     --theme-bg-lighter: #f6f6f6;
-    --theme-bg-gray: #fdf2f4;
-    --theme-bg-dark: #18181b;
+    --theme-bg-gray: #f3f4f6;
+    --theme-bg-dark: #111827;
 
     /* ===== BORDER COLORS ===== */
-    --theme-border: #f5d0d7;
-    --theme-border-light: #fdf2f4;
-    --theme-border-dark: #e8b4be;
+    --theme-border: #e5e7eb;
+    --theme-border-light: #f3f4f6;
+    --theme-border-dark: #d1d5db;
 
     /* ===== STATUS COLORS ===== */
-    --theme-success: #22c55e;
+    --theme-success: #10b981;
     --theme-warning: #f59e0b;
-    --theme-danger: #e11d48;
-    --theme-info: #06b6d4;
-    --theme-success-rgb: 34, 197, 94;
+    --theme-danger: #ef4444;
+    --theme-info: #3b82f6;
+    --theme-success-rgb: 16, 185, 129;
     --theme-warning-rgb: 245, 158, 11;
-    --theme-danger-rgb: 225, 29, 72;
-    --theme-info-rgb: 6, 182, 212;
+    --theme-danger-rgb: 239, 68, 68;
+    --theme-info-rgb: 59, 130, 246;
 
     /* ===== STATUS LIGHT COLORS ===== */
     --theme-success-light: #e8f8ef;
@@ -102,32 +102,32 @@
     --theme-btn-transition: all 0.3s ease;
     
     /* Primary Button */
-    --theme-btn-primary-bg: #e11d48;
+    --theme-btn-primary-bg: #c3002f;
     --theme-btn-primary-text: #ffffff;
-    --theme-btn-primary-hover-bg: #be123c;
+    --theme-btn-primary-hover-bg: #a00025;
     --theme-btn-primary-hover-text: #ffffff;
-    --theme-btn-primary-border: #e11d48;
+    --theme-btn-primary-border: #c3002f;
     
     /* Secondary Button */
-    --theme-btn-secondary-bg: #18181b;
+    --theme-btn-secondary-bg: #1f2937;
     --theme-btn-secondary-text: #ffffff;
-    --theme-btn-secondary-hover-bg: #27272a;
+    --theme-btn-secondary-hover-bg: #374151;
     --theme-btn-secondary-hover-text: #ffffff;
-    --theme-btn-secondary-border: #18181b;
+    --theme-btn-secondary-border: #1f2937;
     
     /* Success Button */
-    --theme-btn-success-bg: #22c55e;
+    --theme-btn-success-bg: #10b981;
     --theme-btn-success-text: #ffffff;
     --theme-btn-success-hover-bg: #1fa058;
     --theme-btn-success-hover-text: #ffffff;
-    --theme-btn-success-border: #22c55e;
+    --theme-btn-success-border: #10b981;
     
     /* Danger Button */
-    --theme-btn-danger-bg: #e11d48;
+    --theme-btn-danger-bg: #ef4444;
     --theme-btn-danger-text: #ffffff;
     --theme-btn-danger-hover-bg: #d93a50;
     --theme-btn-danger-hover-text: #ffffff;
-    --theme-btn-danger-border: #e11d48;
+    --theme-btn-danger-border: #ef4444;
     
     /* Warning Button */
     --theme-btn-warning-bg: #f59e0b;
@@ -137,25 +137,25 @@
     --theme-btn-warning-border: #f59e0b;
     
     /* Info Button */
-    --theme-btn-info-bg: #06b6d4;
+    --theme-btn-info-bg: #3b82f6;
     --theme-btn-info-text: #ffffff;
     --theme-btn-info-hover-bg: #0284c7;
     --theme-btn-info-hover-text: #ffffff;
-    --theme-btn-info-border: #06b6d4;
+    --theme-btn-info-border: #3b82f6;
     
     /* Outline Button */
     --theme-btn-outline-bg: transparent;
-    --theme-btn-outline-text: #18181b;
-    --theme-btn-outline-border: #f5d0d7;
-    --theme-btn-outline-hover-bg: #fefcfd;
-    --theme-btn-outline-hover-text: #18181b;
-    --theme-btn-outline-hover-border: #e8b4be;
+    --theme-btn-outline-text: #111827;
+    --theme-btn-outline-border: #e5e7eb;
+    --theme-btn-outline-hover-bg: #f9fafb;
+    --theme-btn-outline-hover-text: #111827;
+    --theme-btn-outline-hover-border: #d1d5db;
     
     /* Ghost Button */
     --theme-btn-ghost-bg: transparent;
-    --theme-btn-ghost-text: #18181b;
-    --theme-btn-ghost-hover-bg: #fefcfd;
-    --theme-btn-ghost-hover-text: #e11d48;
+    --theme-btn-ghost-text: #111827;
+    --theme-btn-ghost-hover-bg: #f9fafb;
+    --theme-btn-ghost-hover-text: #c3002f;
 
     /* ===== CARDS ===== */
     --theme-card-bg: #ffffff;
@@ -177,12 +177,12 @@
     --theme-nav-font-weight: 500;
 
     /* ===== FOOTER ===== */
-    --theme-footer-bg: #18181b;
-    --theme-footer-text: #fafafa;
+    --theme-footer-bg: #111827;
+    --theme-footer-text: #f9fafb;
     --theme-footer-padding: 60px;
     --theme-footer-text-muted: #d9d4d4;
     --theme-footer-link: #ffffff;
-    --theme-footer-link-hover: #fb7185;
+    --theme-footer-link-hover: #c3002f;
     --theme-footer-border: #64c800;
 
     /* ===== PRODUCT CARDS ===== */
@@ -276,35 +276,35 @@
     --theme-linkedin: #0a66c2;
 
     /* ===== LINK COLORS ===== */
-    --theme-link: #e11d48;
-    --theme-link-hover: #be123c;
+    --theme-link: #c3002f;
+    --theme-link-hover: #a00025;
 
     /* ===== TOPBAR ===== */
-    --theme-topbar-bg: #18181b;
+    --theme-topbar-bg: #1f2937;
     --theme-topbar-text: rgba(255, 255, 255, 0.9);
     --theme-topbar-text-hover: #ffffff;
 
     /* ===== LEGACY VARIABLES (Backwards Compatibility) ===== */
-    --muaadh-primary: #e11d48;
-    --muaadh-primary-hover: #be123c;
-    --muaadh-primary-dark: #9f1239;
-    --muaadh-primary-light: #fff1f2;
-    --muaadh-primary-rgb: 225, 29, 72;
-    --muaadh-secondary: #18181b;
-    --muaadh-secondary-hover: #27272a;
-    --muaadh-success: #22c55e;
+    --muaadh-primary: #c3002f;
+    --muaadh-primary-hover: #a00025;
+    --muaadh-primary-dark: #8a0020;
+    --muaadh-primary-light: #fef2f4;
+    --muaadh-primary-rgb: 195, 0, 47;
+    --muaadh-secondary: #1f2937;
+    --muaadh-secondary-hover: #374151;
+    --muaadh-success: #10b981;
     --muaadh-warning: #f59e0b;
-    --muaadh-danger: #e11d48;
-    --muaadh-info: #06b6d4;
-    --muaadh-text: #18181b;
-    --muaadh-text-muted: #71717a;
-    --muaadh-border: #f5d0d7;
-    --muaadh-border-light: #fdf2f4;
-    --muaadh-bg-light: #fefcfd;
-    --muaadh-bg-gray: #fdf2f4;
+    --muaadh-danger: #ef4444;
+    --muaadh-info: #3b82f6;
+    --muaadh-text: #111827;
+    --muaadh-text-muted: #6b7280;
+    --muaadh-border: #e5e7eb;
+    --muaadh-border-light: #f3f4f6;
+    --muaadh-bg-light: #f9fafb;
+    --muaadh-bg-gray: #f3f4f6;
     --muaadh-white: #ffffff;
-    --muaadh-dark: #18181b;
-    --muaadh-light: #fefcfd;
+    --muaadh-dark: #1f2937;
+    --muaadh-light: #f9fafb;
     --muaadh-radius: 11px;
     --muaadh-radius-lg: 16px;
     --muaadh-shadow-lg: 0 4px 16px rgba(0,0,0,0.15);
