@@ -270,12 +270,13 @@
             // ========================================
             const $paginationContainer = $('.m-pagination-simple');
             const $scrollContainer = $('.vendor-products-scroll');
-            const $productsContent = $('#myTabContent');
+            const $productsContainer = $('.vendor-products-scroll');
+            let isLoading = false;
 
             if ($paginationContainer.length) {
                 const baseUrl = $paginationContainer.data('base-url');
                 let currentPage = parseInt($paginationContainer.data('current'));
-                const lastPage = parseInt($paginationContainer.data('last'));
+                let lastPage = parseInt($paginationContainer.data('last'));
 
                 // Build URL with current filters
                 function buildUrl(page) {
@@ -286,41 +287,62 @@
 
                 // Load page via AJAX
                 function loadPage(page) {
-                    if (page < 1 || page > lastPage || page === currentPage) return;
+                    if (isLoading) return;
+                    if (page < 1 || page > lastPage) return;
+                    if (page === currentPage) return;
 
-                    // Show loading
-                    $scrollContainer.css('opacity', '0.5');
+                    isLoading = true;
+
+                    // Show loading state
+                    $scrollContainer.addClass('is-loading');
+                    $paginationContainer.find('.m-pagination-simple__btn').prop('disabled', true);
 
                     $.ajax({
                         url: buildUrl(page),
                         type: 'GET',
-                        headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                        dataType: 'html',
                         success: function(response) {
-                            // Parse response and extract products
-                            const $response = $(response);
+                            // Parse response
+                            const $response = $('<div>').html(response);
                             const $newContent = $response.find('#myTabContent');
-                            const $newPagination = $response.find('.m-pagination-simple');
+                            const $paginationData = $response.find('#ajax-pagination-data');
 
+                            // Update products content
                             if ($newContent.length) {
-                                $productsContent.html($newContent.html());
+                                $productsContainer.find('#myTabContent').replaceWith($newContent);
                             }
 
-                            // Update pagination state
-                            currentPage = page;
+                            // Update pagination data from JSON
+                            if ($paginationData.length) {
+                                try {
+                                    const data = JSON.parse($paginationData.text());
+                                    currentPage = data.currentPage;
+                                    lastPage = data.lastPage;
+                                } catch(e) {
+                                    currentPage = page;
+                                }
+                            } else {
+                                currentPage = page;
+                            }
+
+                            // Update UI
                             updatePaginationUI();
 
                             // Scroll to top of container
                             $scrollContainer.scrollTop(0);
 
                             // Update URL without reload
-                            history.pushState({page: page}, '', buildUrl(page));
+                            history.pushState({page: currentPage}, '', buildUrl(currentPage));
                         },
-                        error: function() {
-                            // Fallback to normal navigation
+                        error: function(xhr, status, error) {
+                            console.error('AJAX Error:', error);
+                            // Fallback to normal navigation on error
                             window.location.href = buildUrl(page);
                         },
                         complete: function() {
-                            $scrollContainer.css('opacity', '1');
+                            isLoading = false;
+                            $scrollContainer.removeClass('is-loading');
+                            updatePaginationUI();
                         }
                     });
                 }
@@ -330,8 +352,11 @@
                     const $input = $paginationContainer.find('.m-pagination-simple__input');
                     const $prevBtn = $paginationContainer.find('.m-pagination-simple__prev');
                     const $nextBtn = $paginationContainer.find('.m-pagination-simple__next');
+                    const $total = $paginationContainer.find('.m-pagination-simple__total');
 
-                    $input.val(currentPage);
+                    // Update input and total
+                    $input.val(currentPage).attr('max', lastPage);
+                    $total.text(lastPage);
 
                     // Update prev button
                     if (currentPage <= 1) {
@@ -349,47 +374,67 @@
                 }
 
                 // Previous button click
-                $paginationContainer.on('click', '.m-pagination-simple__prev', function() {
-                    if (!$(this).prop('disabled')) {
+                $paginationContainer.on('click', '.m-pagination-simple__prev', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    if (!$(this).prop('disabled') && !isLoading) {
                         loadPage(currentPage - 1);
                     }
+                    return false;
                 });
 
                 // Next button click
-                $paginationContainer.on('click', '.m-pagination-simple__next', function() {
-                    if (!$(this).prop('disabled')) {
+                $paginationContainer.on('click', '.m-pagination-simple__next', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    if (!$(this).prop('disabled') && !isLoading) {
                         loadPage(currentPage + 1);
                     }
+                    return false;
                 });
 
-                // Input change (Enter or blur)
-                $paginationContainer.on('keypress', '.m-pagination-simple__input', function(e) {
+                // Input - Enter key
+                $paginationContainer.on('keydown', '.m-pagination-simple__input', function(e) {
                     if (e.which === 13) { // Enter key
                         e.preventDefault();
-                        let page = parseInt($(this).val());
-                        if (page >= 1 && page <= lastPage) {
+                        e.stopPropagation();
+                        let page = parseInt($(this).val()) || 1;
+                        page = Math.max(1, Math.min(page, lastPage));
+                        if (page !== currentPage) {
                             loadPage(page);
-                        } else {
-                            $(this).val(currentPage);
                         }
+                        $(this).blur();
+                        return false;
                     }
                 });
 
+                // Input - Blur
                 $paginationContainer.on('blur', '.m-pagination-simple__input', function() {
-                    let page = parseInt($(this).val());
-                    if (page >= 1 && page <= lastPage && page !== currentPage) {
+                    let page = parseInt($(this).val()) || currentPage;
+                    page = Math.max(1, Math.min(page, lastPage));
+                    if (page !== currentPage) {
                         loadPage(page);
                     } else {
                         $(this).val(currentPage);
                     }
                 });
 
+                // Prevent form submission if input is inside a form
+                $paginationContainer.on('submit', function(e) {
+                    e.preventDefault();
+                    return false;
+                });
+
                 // Handle browser back/forward
                 $(window).on('popstate', function(e) {
-                    if (e.originalEvent.state && e.originalEvent.state.page) {
-                        loadPage(e.originalEvent.state.page);
+                    const state = e.originalEvent.state;
+                    if (state && state.page && state.page !== currentPage) {
+                        loadPage(state.page);
                     }
                 });
+
+                // Set initial state
+                history.replaceState({page: currentPage}, '', window.location.href);
             }
 
         })(jQuery);

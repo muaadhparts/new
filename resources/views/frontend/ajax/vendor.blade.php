@@ -1,35 +1,44 @@
-{{-- <div id="ajaxContent"> --}}
+{{-- AJAX Response for Vendor Products --}}
+@php
+    // Determine view mode
+    $view = request()->input('view_check', 'list-view');
+@endphp
 
-@foreach($vprods as $prod)
-<div class="col-lg-12">
-    @include('partials.product.product-different-view')
-</div>
-@endforeach
+{{-- Products Content --}}
+<div id="ajax-products-content">
+    <div class="tab-content" id="myTabContent">
+        <!-- product list view -->
+        <div class="tab-pane fade {{ $view == 'list-view' ? 'show active' : '' }}"
+            id="layout-list-pane" role="tabpanel" tabindex="0">
+            <div class="row gy-4">
+                @foreach ($vprods as $product)
+                    @include('includes.frontend.home_product', ['layout' => 'list', 'mp' => $product->vendor_merchant_product ?? null])
+                @endforeach
+            </div>
+        </div>
 
-<div class="col-lg-12">
-    <div class="page-center category">
-        {!! $vprods->appends(['sort' => request()->input('sort'), 'min' => request()->input('min'), 'max' =>
-        request()->input('max')])->links() !!}
+        <!-- product grid view -->
+        <div class="tab-pane fade {{ $view == 'grid-view' ? 'show active' : '' }}"
+            id="layout-grid-pane" role="tabpanel" tabindex="0">
+            <div class="row gy-4">
+                @foreach ($vprods as $product)
+                    @include('includes.frontend.home_product', [
+                        'class' => 'col-sm-6 col-md-6 col-xl-4',
+                        'mp' => $product->vendor_merchant_product ?? null,
+                    ])
+                @endforeach
+            </div>
+        </div>
     </div>
 </div>
-{{-- </div> --}}
 
-<script>
-
-    // Tooltip Section
-
-    $('[data-bs-toggle="tooltip"]').tooltip({});
-
-    $('[rel-toggle="tooltip"]').tooltip();
-
-    $('[data-bs-toggle="tooltip"]').on('click', function () {
-        $(this).tooltip('hide');
-    })
-
-
-    $('[rel-toggle="tooltip"]').on('click', function () {
-        $(this).tooltip('hide');
-    })
-
-    // Tooltip Section Ends
+{{-- Pagination Data (JSON for JavaScript) --}}
+<script type="application/json" id="ajax-pagination-data">
+{
+    "currentPage": {{ $vprods->currentPage() }},
+    "lastPage": {{ $vprods->lastPage() }},
+    "total": {{ $vprods->total() }},
+    "hasMorePages": {{ $vprods->hasMorePages() ? 'true' : 'false' }},
+    "onFirstPage": {{ $vprods->onFirstPage() ? 'true' : 'false' }}
+}
 </script>
