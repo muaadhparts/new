@@ -617,28 +617,28 @@ button[type="submit"]:hover {
 }
 
 .alert-success {
-    background-color: #dcfce7 !important;
-    border-color: #bbf7d0 !important;
-    color: #166534 !important;
+    background-color: var(--color-success-light) !important;
+    border-color: var(--color-success-light) !important;
+    color: var(--color-success-dark) !important;
 }
 
 .alert-danger,
 .alert-error {
-    background-color: #fee2e2 !important;
-    border-color: #fecaca !important;
-    color: #991b1b !important;
+    background-color: var(--color-danger-light) !important;
+    border-color: var(--color-danger-light) !important;
+    color: var(--color-danger-dark) !important;
 }
 
 .alert-warning {
-    background-color: #fef3c7 !important;
-    border-color: #fde68a !important;
-    color: #92400e !important;
+    background-color: var(--color-warning-light) !important;
+    border-color: var(--color-warning-light) !important;
+    color: var(--color-warning-dark) !important;
 }
 
 .alert-info {
-    background-color: #e0f2fe !important;
-    border-color: #bae6fd !important;
-    color: #075985 !important;
+    background-color: var(--color-info-light) !important;
+    border-color: var(--color-info-light) !important;
+    color: var(--color-info-dark) !important;
 }
 
 .alert .close,

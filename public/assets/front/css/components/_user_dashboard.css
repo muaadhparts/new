@@ -11,16 +11,16 @@
   -ms-flex-align: center;
   align-items: center;
   gap: 16px;
-  border-radius: 8px; }
+  border-radius: var(--theme-radius, 8px); }
   .gs-single-statatics h5, .gs-single-statatics p {
     padding: 0;
     margin: 0;
     line-height: 1; }
   .gs-single-statatics.first-child {
-    background: #EFF0FF; }
+    background: var(--theme-primary-light, #eff6ff); }
   .gs-single-statatics.second-child {
-    background: #E9F9F6; }
+    background: var(--theme-success-light, #e8f8ef); }
   .gs-single-statatics.third-child {
-    background: #FFF7EB; }
+    background: var(--theme-warning-light, #fff8e6); }
   .gs-single-statatics.fourth-child {
-    background: #E5F9FF; }
+    background: var(--theme-info-light, #e0f2fe); }

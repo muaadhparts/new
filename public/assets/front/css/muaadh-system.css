@@ -50,6 +50,7 @@
     --surface-card: var(--theme-card-bg);
     --surface-elevated: var(--theme-bg-light);
     --surface-sunken: var(--theme-bg-gray);
+    --surface-secondary: var(--theme-secondary-light);
     --surface-inverse: var(--theme-bg-dark);
     --surface-overlay: rgba(0, 0, 0, 0.5);
 
@@ -63,6 +64,7 @@
 
     /* ----- Border Colors ----- */
     --border-default: var(--theme-border);
+    --border-color: var(--theme-border);
     --border-light: var(--theme-border-light);
     --border-strong: var(--theme-border-dark);
     --border-focus: var(--theme-primary);
@@ -842,7 +844,7 @@
 .m-product-card__image {
     position: relative;
     aspect-ratio: 1 / 1;
-    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    background: linear-gradient(135deg, var(--surface-elevated, #f8f9fa) 0%, var(--border-default, #e9ecef) 100%);
     overflow: hidden;
 }
 
@@ -908,13 +910,13 @@
     width: 8px;
     height: 8px;
     border-radius: 50%;
-    background: #d1d5db;
+    background: var(--border-default, #d1d5db);
     cursor: pointer;
     transition: all 0.2s ease;
 }
 
 .m-product-card__indicator:hover {
-    background: #9ca3af;
+    background: var(--text-muted, #9ca3af);
 }
 
 .m-product-card__indicator.active {
@@ -937,7 +939,7 @@
 .m-product-card__badge--discount {
     left: 12px;
     background: var(--action-danger, #dc3545);
-    color: #fff;
+    color: var(--text-inverse, #fff);
 }
 
 .m-product-card__badge--stock {
@@ -945,7 +947,7 @@
     top: auto;
     bottom: 12px;
     background: rgba(0, 0, 0, 0.7);
-    color: #fff;
+    color: var(--text-inverse, #fff);
 }
 
 /* RTL Badges */
@@ -963,7 +965,7 @@
     width: 36px;
     height: 36px;
     border-radius: 50%;
-    background: #fff;
+    background: var(--surface-card, #fff);
     border: none;
     display: flex;
     align-items: center;
@@ -972,13 +974,13 @@
     z-index: 2;
     transition: all 0.3s ease;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    color: #666;
+    color: var(--text-muted, #666);
     text-decoration: none;
 }
 
 .m-product-card__wishlist:hover {
     background: var(--action-danger, #dc3545);
-    color: #fff;
+    color: var(--text-inverse, #fff);
     transform: scale(1.1);
 }
 
@@ -987,7 +989,7 @@
 }
 
 .m-product-card__wishlist:hover .fas.fa-heart {
-    color: #fff;
+    color: var(--text-inverse, #fff);
 }
 
 /* RTL Wishlist */
@@ -1018,7 +1020,7 @@
     width: 36px;
     height: 36px;
     border-radius: 50%;
-    background: #fff;
+    background: var(--surface-card, #fff);
     border: none;
     display: flex;
     align-items: center;
@@ -1026,14 +1028,14 @@
     cursor: pointer;
     transition: all 0.3s ease;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    color: #666;
+    color: var(--text-muted, #666);
     text-decoration: none;
     font-size: 14px;
 }
 
 .m-product-card__action:hover {
-    background: var(--action-primary, #7c3aed);
-    color: #fff;
+    background: var(--action-primary);
+    color: var(--text-inverse, #fff);
 }
 
 /* RTL Actions */
@@ -1090,7 +1092,7 @@
 
 .m-product-card__price-old {
     font-size: 14px;
-    color: #9ca3af;
+    color: var(--text-muted);
     text-decoration: line-through;
 }
 
@@ -1100,15 +1102,15 @@
     align-items: center;
     gap: 4px;
     font-size: 13px;
-    color: #6b7280;
+    color: var(--text-secondary);
 }
 
 .m-product-card__rating .fa-star {
-    color: #fbbf24;
+    color: var(--action-warning);
 }
 
 .m-product-card__rating-count {
-    color: #9ca3af;
+    color: var(--text-muted);
 }
 
 /* Add to Cart Button */
@@ -1125,26 +1127,26 @@
     font-weight: 600;
     cursor: pointer;
     transition: all 0.3s ease;
-    background: var(--action-primary, #7c3aed);
-    color: #fff;
+    background: var(--action-primary);
+    color: var(--text-inverse);
     margin-top: auto;
     text-decoration: none;
 }
 
 .m-product-card__cart-btn:hover {
-    background: var(--action-primary-hover, #6d28d9);
+    background: var(--action-primary-hover);
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(124, 58, 237, 0.3);
+    box-shadow: 0 4px 12px rgba(var(--theme-primary-rgb), 0.3);
 }
 
 .m-product-card__cart-btn--disabled {
-    background: #e5e7eb;
-    color: #9ca3af;
+    background: var(--border-default);
+    color: var(--text-muted);
     cursor: not-allowed;
 }
 
 .m-product-card__cart-btn--disabled:hover {
-    background: #e5e7eb;
+    background: var(--border-default);
     transform: none;
     box-shadow: none;
 }
@@ -1222,7 +1224,7 @@
     height: 100%;
     object-fit: contain;
     object-position: center;
-    background-color: #f8f9fa;
+    background-color: var(--surface-elevated);
     transition: transform 0.3s ease;
 }
 
@@ -1257,9 +1259,9 @@
     align-items: center;
     gap: 4px;
     padding: 2px 8px;
-    background: #f3f4f6;
+    background: var(--surface-sunken);
     border-radius: 4px;
-    color: #6b7280;
+    color: var(--text-secondary);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -1269,13 +1271,13 @@
 .product-info-compact__sku {
     font-family: monospace;
     font-size: 10px;
-    background: #e5e7eb;
-    color: #4b5563;
+    background: var(--border-default);
+    color: var(--text-secondary);
 }
 
 .product-info-compact__vendor {
-    color: #059669;
-    background: #d1fae5;
+    color: var(--action-success);
+    background: var(--action-success-light);
 }
 
 .product-info-compact__vendor i {
@@ -1283,8 +1285,8 @@
 }
 
 .product-info-compact__quality {
-    color: #7c3aed;
-    background: #ede9fe;
+    color: var(--action-primary);
+    background: var(--color-primary-light);
 }
 
 .product-info-compact__logo {
@@ -1856,4 +1858,53 @@
 /* RTL Support for toggle buttons */
 [dir="rtl"] .muaadh-header-left .d-flex.gap-2 {
     flex-direction: row-reverse;
+}
+
+/* ============================================================================
+   SECTION: UTILITY CLASSES FOR INLINE STYLE REPLACEMENT
+   ============================================================================
+   These classes replace common inline styles found in admin/vendor views
+   Usage: Replace style="..." with appropriate class
+   ============================================================================ */
+
+/* Image Upload Area - Replaces: style="width: 100%; height: 285px; border: 1px dashed #ddd; background: #f1f1f1;" */
+.m-upload-zone {
+    width: 100%;
+    height: 285px;
+    border: 1px dashed var(--border-default, #ddd);
+    background: var(--surface-elevated, #f1f1f1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-md, 8px);
+    transition: all 0.3s ease;
+}
+
+.m-upload-zone:hover {
+    border-color: var(--action-primary);
+    background: var(--surface-card, #fff);
+}
+
+/* Readonly Field Background - Replaces: style="background: #f5f5f5;" */
+.m-input-readonly,
+input[readonly],
+textarea[readonly] {
+    background-color: var(--surface-elevated, #f5f5f5) !important;
+    cursor: not-allowed;
+}
+
+/* Select Option Text - Replaces: style="color: #333;" */
+select option {
+    color: var(--text-primary, #333);
+}
+
+/* Category/Subcategory Option Styling */
+.m-option-category {
+    color: var(--text-primary, #333);
+    font-weight: 600;
+}
+
+.m-option-subcategory {
+    color: var(--text-secondary, #555);
+    padding-left: 1rem;
 }
