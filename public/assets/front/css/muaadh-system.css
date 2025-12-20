@@ -2389,3 +2389,179 @@ select option {
         opacity: 0.9;
     }
 }
+
+/* ============================================================================
+   SECTION: VENDOR PRODUCTS BOX
+   ============================================================================
+   Scrollable container for vendor products with fixed height
+   ============================================================================ */
+
+.vendor-products-box {
+    display: flex;
+    flex-direction: column;
+    background: var(--surface-card);
+    border-radius: 8px;
+    box-shadow: var(--shadow-sm, 0 2px 8px rgba(0, 0, 0, 0.08));
+    overflow: hidden;
+}
+
+.vendor-products-scroll {
+    height: 600px;
+    overflow-y: auto;
+    padding: 1rem;
+    scrollbar-width: thin;
+    scrollbar-color: var(--action-primary) var(--surface-secondary);
+}
+
+/* Webkit scrollbar styling */
+.vendor-products-scroll::-webkit-scrollbar {
+    width: 8px;
+}
+
+.vendor-products-scroll::-webkit-scrollbar-track {
+    background: var(--surface-secondary);
+    border-radius: 4px;
+}
+
+.vendor-products-scroll::-webkit-scrollbar-thumb {
+    background: var(--action-primary);
+    border-radius: 4px;
+}
+
+.vendor-products-scroll::-webkit-scrollbar-thumb:hover {
+    background: var(--action-primary-hover);
+}
+
+.vendor-products-pagination {
+    padding: 0.75rem 1rem;
+    border-top: 1px solid var(--border-light);
+    background: var(--surface-card);
+}
+
+/* Simple Pagination - Prev/Next with Counter */
+.m-pagination-simple {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+}
+
+.m-pagination-simple__btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--action-primary);
+    color: var(--text-on-primary);
+    text-decoration: none;
+    transition: all 0.2s ease;
+    border: none;
+    cursor: pointer;
+}
+
+.m-pagination-simple__btn:hover {
+    background: var(--action-primary-hover);
+    color: var(--text-on-primary);
+    transform: scale(1.05);
+}
+
+.m-pagination-simple__btn--disabled {
+    background: var(--surface-secondary);
+    color: var(--text-muted);
+    cursor: not-allowed;
+    opacity: 0.5;
+}
+
+.m-pagination-simple__btn--disabled:hover {
+    transform: none;
+    background: var(--surface-secondary);
+}
+
+.m-pagination-simple__input-group {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.m-pagination-simple__input {
+    width: 50px;
+    height: 36px;
+    padding: 0 0.5rem;
+    border: 1px solid var(--border-light);
+    border-radius: 6px;
+    background: var(--surface-card);
+    color: var(--text-primary);
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-align: center;
+    transition: all 0.2s ease;
+    -moz-appearance: textfield;
+}
+
+.m-pagination-simple__input::-webkit-outer-spin-button,
+.m-pagination-simple__input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.m-pagination-simple__input:focus {
+    outline: none;
+    border-color: var(--action-primary);
+    box-shadow: 0 0 0 3px var(--action-primary-light);
+}
+
+.m-pagination-simple__separator {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
+.m-pagination-simple__total {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+/* Responsive heights */
+@media (max-width: 991.98px) {
+    .vendor-products-scroll {
+        height: 400px;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .vendor-products-scroll {
+        height: 450px;
+        padding: 0.75rem;
+    }
+
+    .vendor-products-pagination {
+        padding: 0.5rem;
+    }
+
+    .m-pagination-simple {
+        gap: 0.5rem;
+    }
+
+    .m-pagination-simple__btn {
+        width: 32px;
+        height: 32px;
+    }
+
+    .m-pagination-simple__input {
+        width: 45px;
+        height: 32px;
+        font-size: 0.8rem;
+    }
+
+    .m-pagination-simple__separator,
+    .m-pagination-simple__total {
+        font-size: 0.8rem;
+    }
+
+    .m-pagination-simple__input-group {
+        gap: 0.35rem;
+    }
+}
+

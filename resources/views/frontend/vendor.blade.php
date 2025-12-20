@@ -161,32 +161,66 @@
                             <h5>@lang('No Product Found')</h5>
                         </div>
                     @else
-                        <!-- main content -->
-                        <div class="tab-content" id="myTabContent">
-                            <!-- product list view start  -->
-                            <div class="tab-pane fade {{ $view == 'list-view' ? 'show active' : '' }}"
-                                id="layout-list-pane" role="tabpanel" tabindex="0">
-                                <div class="row gy-4 mt-20 ">
-                                    @foreach ($vprods as $product)
-                                        @include('includes.frontend.home_product', ['layout' => 'list', 'mp' => $product->vendor_merchant_product ?? null])
-                                    @endforeach
-                                </div>
-                            </div>
+                        <!-- main content inside scrollable box -->
+                        <div class="vendor-products-box">
+                            <div class="vendor-products-scroll">
+                                <div class="tab-content" id="myTabContent">
+                                    <!-- product list view start  -->
+                                    <div class="tab-pane fade {{ $view == 'list-view' ? 'show active' : '' }}"
+                                        id="layout-list-pane" role="tabpanel" tabindex="0">
+                                        <div class="row gy-4">
+                                            @foreach ($vprods as $product)
+                                                @include('includes.frontend.home_product', ['layout' => 'list', 'mp' => $product->vendor_merchant_product ?? null])
+                                            @endforeach
+                                        </div>
+                                    </div>
 
-                            <div class="tab-pane fade {{ $view == 'grid-view' ? 'show active' : '' }}  "
-                                id="layout-grid-pane" role="tabpanel" tabindex="0">
-                                <div class="row gy-4 mt-20">
-                                    @foreach ($vprods as $product)
-                                        @include('includes.frontend.home_product', [
-                                            'class' => 'col-sm-6 col-md-6 col-xl-4',
-                                            'mp' => $product->vendor_merchant_product ?? null,
-                                        ])
-                                    @endforeach
+                                    <div class="tab-pane fade {{ $view == 'grid-view' ? 'show active' : '' }}  "
+                                        id="layout-grid-pane" role="tabpanel" tabindex="0">
+                                        <div class="row gy-4">
+                                            @foreach ($vprods as $product)
+                                                @include('includes.frontend.home_product', [
+                                                    'class' => 'col-sm-6 col-md-6 col-xl-4',
+                                                    'mp' => $product->vendor_merchant_product ?? null,
+                                                ])
+                                            @endforeach
+                                        </div>
+                                    </div>
+                                    <!-- product grid view end  -->
                                 </div>
                             </div>
-                            <!-- product grid view end  -->
+                            <!-- Pagination outside scroll area -->
+                            <div class="vendor-products-pagination">
+                                <div class="m-pagination-simple"
+                                     data-current="{{ $vprods->currentPage() }}"
+                                     data-last="{{ $vprods->lastPage() }}"
+                                     data-base-url="{{ route('front.vendor', str_replace(' ', '-', $vendor->shop_name)) }}">
+
+                                    {{-- Previous Button --}}
+                                    <button type="button" class="m-pagination-simple__btn m-pagination-simple__prev {{ $vprods->onFirstPage() ? 'm-pagination-simple__btn--disabled' : '' }}"
+                                            {{ $vprods->onFirstPage() ? 'disabled' : '' }}>
+                                        <i class="fas fa-chevron-{{ app()->getLocale() === 'ar' ? 'right' : 'left' }}"></i>
+                                    </button>
+
+                                    {{-- Page Input --}}
+                                    <div class="m-pagination-simple__input-group">
+                                        <input type="number"
+                                               class="m-pagination-simple__input"
+                                               value="{{ $vprods->currentPage() }}"
+                                               min="1"
+                                               max="{{ $vprods->lastPage() }}">
+                                        <span class="m-pagination-simple__separator">@lang('of')</span>
+                                        <span class="m-pagination-simple__total">{{ $vprods->lastPage() }}</span>
+                                    </div>
+
+                                    {{-- Next Button --}}
+                                    <button type="button" class="m-pagination-simple__btn m-pagination-simple__next {{ !$vprods->hasMorePages() ? 'm-pagination-simple__btn--disabled' : '' }}"
+                                            {{ !$vprods->hasMorePages() ? 'disabled' : '' }}>
+                                        <i class="fas fa-chevron-{{ app()->getLocale() === 'ar' ? 'left' : 'right' }}"></i>
+                                    </button>
+                                </div>
+                            </div>
                         </div>
-                        {{ $vprods->links('includes.frontend.pagination') }}
                     @endif
 
                 </div>
@@ -229,6 +263,133 @@
 
                 filterlink += '?' + params.toString();
                 location.href = filterlink;
+            }
+
+            // ========================================
+            // AJAX Pagination
+            // ========================================
+            const $paginationContainer = $('.m-pagination-simple');
+            const $scrollContainer = $('.vendor-products-scroll');
+            const $productsContent = $('#myTabContent');
+
+            if ($paginationContainer.length) {
+                const baseUrl = $paginationContainer.data('base-url');
+                let currentPage = parseInt($paginationContainer.data('current'));
+                const lastPage = parseInt($paginationContainer.data('last'));
+
+                // Build URL with current filters
+                function buildUrl(page) {
+                    let params = new URLSearchParams(window.location.search);
+                    params.set('page', page);
+                    return baseUrl + '?' + params.toString();
+                }
+
+                // Load page via AJAX
+                function loadPage(page) {
+                    if (page < 1 || page > lastPage || page === currentPage) return;
+
+                    // Show loading
+                    $scrollContainer.css('opacity', '0.5');
+
+                    $.ajax({
+                        url: buildUrl(page),
+                        type: 'GET',
+                        headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                        success: function(response) {
+                            // Parse response and extract products
+                            const $response = $(response);
+                            const $newContent = $response.find('#myTabContent');
+                            const $newPagination = $response.find('.m-pagination-simple');
+
+                            if ($newContent.length) {
+                                $productsContent.html($newContent.html());
+                            }
+
+                            // Update pagination state
+                            currentPage = page;
+                            updatePaginationUI();
+
+                            // Scroll to top of container
+                            $scrollContainer.scrollTop(0);
+
+                            // Update URL without reload
+                            history.pushState({page: page}, '', buildUrl(page));
+                        },
+                        error: function() {
+                            // Fallback to normal navigation
+                            window.location.href = buildUrl(page);
+                        },
+                        complete: function() {
+                            $scrollContainer.css('opacity', '1');
+                        }
+                    });
+                }
+
+                // Update pagination UI
+                function updatePaginationUI() {
+                    const $input = $paginationContainer.find('.m-pagination-simple__input');
+                    const $prevBtn = $paginationContainer.find('.m-pagination-simple__prev');
+                    const $nextBtn = $paginationContainer.find('.m-pagination-simple__next');
+
+                    $input.val(currentPage);
+
+                    // Update prev button
+                    if (currentPage <= 1) {
+                        $prevBtn.addClass('m-pagination-simple__btn--disabled').prop('disabled', true);
+                    } else {
+                        $prevBtn.removeClass('m-pagination-simple__btn--disabled').prop('disabled', false);
+                    }
+
+                    // Update next button
+                    if (currentPage >= lastPage) {
+                        $nextBtn.addClass('m-pagination-simple__btn--disabled').prop('disabled', true);
+                    } else {
+                        $nextBtn.removeClass('m-pagination-simple__btn--disabled').prop('disabled', false);
+                    }
+                }
+
+                // Previous button click
+                $paginationContainer.on('click', '.m-pagination-simple__prev', function() {
+                    if (!$(this).prop('disabled')) {
+                        loadPage(currentPage - 1);
+                    }
+                });
+
+                // Next button click
+                $paginationContainer.on('click', '.m-pagination-simple__next', function() {
+                    if (!$(this).prop('disabled')) {
+                        loadPage(currentPage + 1);
+                    }
+                });
+
+                // Input change (Enter or blur)
+                $paginationContainer.on('keypress', '.m-pagination-simple__input', function(e) {
+                    if (e.which === 13) { // Enter key
+                        e.preventDefault();
+                        let page = parseInt($(this).val());
+                        if (page >= 1 && page <= lastPage) {
+                            loadPage(page);
+                        } else {
+                            $(this).val(currentPage);
+                        }
+                    }
+                });
+
+                $paginationContainer.on('blur', '.m-pagination-simple__input', function() {
+                    let page = parseInt($(this).val());
+                    if (page >= 1 && page <= lastPage && page !== currentPage) {
+                        loadPage(page);
+                    } else {
+                        $(this).val(currentPage);
+                    }
+                });
+
+                // Handle browser back/forward
+                $(window).on('popstate', function(e) {
+                    if (e.originalEvent.state && e.originalEvent.state.page) {
+                        loadPage(e.originalEvent.state.page);
+                    }
+                });
             }
 
         })(jQuery);
