@@ -12,7 +12,7 @@
 {{-- Main Theme File - Contains all styles --}}
 <link rel="stylesheet" href="{{ asset('assets/front/css/style.css') }}">
 {{-- Theme Colors - Generated from Admin Panel (MUST load LAST to override :root variables) --}}
-<link rel="stylesheet" href="{{ asset('assets/front/css/theme-colors.css') }}">
+@themeStyles
 @yield('styles')
 
 

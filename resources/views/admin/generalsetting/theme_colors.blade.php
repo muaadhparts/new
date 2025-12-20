@@ -10,7 +10,7 @@
 }
 
 .theme-builder-header {
-    background: linear-gradient(135deg, #1f0300 0%, #4c3533 100%);
+    background: linear-gradient(135deg, #1e293b 0%, #475569 100%);
     color: #fff;
     padding: 25px 30px;
     border-radius: 12px;
@@ -48,7 +48,7 @@
     padding: 12px 20px;
     border: none;
     background: transparent;
-    color: #666;
+    color: #64748b;
     font-size: 14px;
     font-weight: 500;
     border-radius: 8px;
@@ -60,12 +60,12 @@
 }
 
 .theme-tab:hover {
-    background: #f0f0f0;
-    color: #333;
+    background: #f1f5f9;
+    color: #334155;
 }
 
 .theme-tab.active {
-    background: #c3002f;
+    background: #2563eb;
     color: #fff;
 }
 
@@ -102,7 +102,7 @@
 .theme-section-title {
     font-size: 16px;
     font-weight: 600;
-    color: #333;
+    color: #334155;
     margin-bottom: 5px;
     display: flex;
     align-items: center;
@@ -110,12 +110,12 @@
 }
 
 .theme-section-title i {
-    color: #c3002f;
+    color: #2563eb;
 }
 
 .theme-section-desc {
     font-size: 13px;
-    color: #888;
+    color: #64748b;
     margin-bottom: 20px;
 }
 
@@ -128,7 +128,7 @@
     display: block;
     font-size: 13px;
     font-weight: 500;
-    color: #555;
+    color: #475569;
     margin-bottom: 8px;
 }
 
@@ -146,7 +146,7 @@
     border: none;
     padding: 10px 12px;
     font-size: 14px;
-    color: #333;
+    color: #334155;
     background: transparent;
 }
 
@@ -180,24 +180,24 @@
     display: block;
     font-size: 13px;
     font-weight: 500;
-    color: #555;
+    color: #475569;
     margin-bottom: 8px;
 }
 
 .text-input-wrapper input,
 .text-input-wrapper select {
     width: 100%;
-    border: 1px solid #ddd;
+    border: 1px solid #e2e8f0;
     border-radius: 8px;
     padding: 10px 12px;
     font-size: 14px;
-    color: #333;
+    color: #334155;
 }
 
 .text-input-wrapper input:focus,
 .text-input-wrapper select:focus {
     outline: none;
-    border-color: #c3002f;
+    border-color: #2563eb;
 }
 
 /* Range Input */
@@ -210,12 +210,12 @@
     justify-content: space-between;
     font-size: 13px;
     font-weight: 500;
-    color: #555;
+    color: #475569;
     margin-bottom: 8px;
 }
 
 .range-input-wrapper .range-value {
-    color: #c3002f;
+    color: #2563eb;
     font-weight: 600;
 }
 
@@ -223,7 +223,7 @@
     width: 100%;
     height: 6px;
     border-radius: 3px;
-    background: #e0e0e0;
+    background: #e2e8f0;
     outline: none;
     -webkit-appearance: none;
 }
@@ -233,7 +233,7 @@
     width: 18px;
     height: 18px;
     border-radius: 50%;
-    background: #c3002f;
+    background: #2563eb;
     cursor: pointer;
 }
 
@@ -372,7 +372,7 @@
 }
 
 .save-btn {
-    background: linear-gradient(135deg, #c3002f 0%, #a00025 100%);
+    background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
     color: #fff;
     border: none;
     padding: 15px 40px;
@@ -380,7 +380,7 @@
     font-weight: 600;
     border-radius: 50px;
     cursor: pointer;
-    box-shadow: 0 4px 20px rgba(195, 0, 47, 0.4);
+    box-shadow: 0 4px 20px rgba(37, 99, 235, 0.4);
     transition: all 0.3s;
     display: flex;
     align-items: center;
@@ -389,7 +389,7 @@
 
 .save-btn:hover {
     transform: translateY(-2px);
-    box-shadow: 0 6px 25px rgba(195, 0, 47, 0.5);
+    box-shadow: 0 6px 25px rgba(37, 99, 235, 0.5);
 }
 
 /* Responsive */

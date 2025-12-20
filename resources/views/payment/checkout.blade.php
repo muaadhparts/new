@@ -21,7 +21,7 @@
 	<link rel="stylesheet" href="{{ asset('assets/front/css/bootstrap.min.css') }}">
 	<link rel="stylesheet" href="{{ asset('assets/front/css/style.css') }}">
 	<link rel="stylesheet" href="{{ asset('assets/front/css/muaadh-system.css') }}">
-	<link rel="stylesheet" href="{{ asset('assets/front/css/theme-colors.css') }}">
+	@themeStyles
 	<link rel="stylesheet" href="{{ asset('assets/front/css/toastr.min.css') }}">
 	@if ($default_font->font_family ?? false)
 		<style>body, * { font-family: '{{ $default_font->font_family }}', sans-serif; }</style>

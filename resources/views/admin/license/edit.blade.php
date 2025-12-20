@@ -18,7 +18,7 @@
                                     </div>
                                 </div>
                                 <div class="col-lg-7">
-                                    <input type="text" class="form-control" value="{{ $data->license_key }}" readonly style="background: #f5f5f5;">
+                                    <input type="text" class="form-control" value="{{ $data->license_key }}" readonly>
                                 </div>
                             </div>
 
@@ -95,7 +95,7 @@
                                     </div>
                                 </div>
                                 <div class="col-lg-7">
-                                    <input type="text" class="form-control" value="{{ $data->used_domains }}" readonly style="background: #f5f5f5;">
+                                    <input type="text" class="form-control" value="{{ $data->used_domains }}" readonly>
                                 </div>
                             </div>
 
@@ -106,7 +106,7 @@
                                     </div>
                                 </div>
                                 <div class="col-lg-7">
-                                    <input type="text" class="form-control" value="{{ $data->domain ?? 'N/A' }}" readonly style="background: #f5f5f5;">
+                                    <input type="text" class="form-control" value="{{ $data->domain ?? 'N/A' }}" readonly>
                                 </div>
                             </div>
 
@@ -129,7 +129,7 @@
                                     </div>
                                 </div>
                                 <div class="col-lg-7">
-                                    <input type="text" class="form-control" value="{{ $data->activated_at ? $data->activated_at->format('Y-m-d H:i:s') : 'Not activated yet' }}" readonly style="background: #f5f5f5;">
+                                    <input type="text" class="form-control" value="{{ $data->activated_at ? $data->activated_at->format('Y-m-d H:i:s') : 'Not activated yet' }}" readonly>
                                 </div>
                             </div>
 

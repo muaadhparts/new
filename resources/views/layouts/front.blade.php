@@ -52,7 +52,7 @@
     @endif
 
     {{-- Theme Colors - Generated from Admin Panel (MUST load LAST to override :root variables) --}}
-    <link rel="stylesheet" href="{{ asset('assets/front/css/theme-colors.css') }}?v={{ filemtime(public_path('assets/front/css/theme-colors.css')) }}">
+    @themeStyles
 
     {{-- AutoComplete.js for search --}}
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tarekraafat/autocomplete.js@10.2.9/dist/css/autoComplete.min.css">
@@ -66,7 +66,7 @@
 
 </head>
 
-<body>
+<body class="m-theme-scope">
 
     {{-- Header data ($categories, $pages, $currencies, $languges) provided by AppServiceProvider with caching --}}
     <!-- header area -->

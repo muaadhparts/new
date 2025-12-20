@@ -11,16 +11,16 @@
   -ms-flex-align: center;
   align-items: center;
   gap: 16px;
-  border-radius: var(--theme-radius, 8px); }
+  border-radius: var(--radius-md); }
   .gs-single-statatics h5, .gs-single-statatics p {
     padding: 0;
     margin: 0;
     line-height: 1; }
   .gs-single-statatics.first-child {
-    background: var(--theme-primary-light, #eff6ff); }
+    background: var(--action-primary-light); }
   .gs-single-statatics.second-child {
-    background: var(--theme-success-light, #e8f8ef); }
+    background: var(--action-success-light); }
   .gs-single-statatics.third-child {
-    background: var(--theme-warning-light, #fff8e6); }
+    background: var(--action-warning-light); }
   .gs-single-statatics.fourth-child {
-    background: var(--theme-info-light, #e0f2fe); }
+    background: var(--action-info-light); }

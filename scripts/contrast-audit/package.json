@@ -1,0 +1,15 @@
+{
+  "name": "wcag-contrast-audit",
+  "version": "1.0.0",
+  "description": "Automated WCAG contrast ratio checker using Playwright",
+  "main": "audit.js",
+  "scripts": {
+    "audit": "node audit.js",
+    "audit:nissan": "node audit.js --theme=nissan",
+    "audit:purple": "node audit.js --theme=purple",
+    "report": "node generate-report.js"
+  },
+  "dependencies": {
+    "playwright": "^1.40.0"
+  }
+}

@@ -74,7 +74,7 @@
 										<select name="brand_id" class="form-control">
 											<option value="">{{ __('Select Brand') }}</option>
 											@foreach (\App\Models\Brand::all() as $brand)
-												<option value="{{ $brand->id }}" style="color: #333;">
+												<option value="{{ $brand->id }}">
 													{{ $brand->name }} {{ $brand->name_ar ? '- ' . $brand->name_ar : '' }}
 												</option>
 											@endforeach
@@ -93,7 +93,7 @@
 										<select name="brand_quality_id" class="form-control">
 											<option value="">{{ __('Select Quality Brand') }}</option>
 											@foreach (\App\Models\QualityBrand::all() as $qb)
-												<option value="{{ $qb->id }}" style="color: #333;">
+												<option value="{{ $qb->id }}">
 													{{ $qb->name }} {{ $qb->name_ar ? '- ' . $qb->name_ar : '' }}
 												</option>
 											@endforeach
@@ -490,7 +490,7 @@
 										<div class="col-lg-12">
 											<div class="panel panel-body">
 												<div class="span4 cropme text-center" id="landscape"
-													style="width: 100%; height: 285px; border: 1px dashed #ddd; background: #f1f1f1;">
+													class="m-upload-zone">
 													<a href="javascript:;" id="crop-image" class="btn btn-primary" style="">
 														<i class="icofont-upload-alt"></i> {{ __('Upload Image Here') }}
 													</a>

@@ -717,8 +717,7 @@
                                             </div>
                                             <div class="col-lg-12">
                                                 <div class="panel panel-body">
-                                                    <div class="span4 cropme text-center" id="landscape"
-                                                        style="width: 100%; height: 285px; border: 1px dashed #ddd; background: #f1f1f1;">
+                                                    <div class="span4 cropme text-center m-upload-zone" id="landscape">
                                                         <a href="javascript:;" id="crop-image" class="btn btn-primary"
                                                             style="">
                                                             <i class="icofont-upload-alt"></i>

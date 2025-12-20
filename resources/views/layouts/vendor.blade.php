@@ -45,7 +45,7 @@
     @endif
     <link rel="stylesheet" href="{{ asset('assets/vendor') }}/css/custom.css">
     {{-- Theme Colors - Generated from Admin Panel (MUST load LAST to override :root variables) --}}
-    <link rel="stylesheet" href="{{ asset('assets/front/css/theme-colors.css') }}?v={{ filemtime(public_path('assets/front/css/theme-colors.css')) }}">
+    @themeStyles
 
     <link rel="icon" href="{{ asset('assets/images/' . $gs->favicon) }}">
     @include('includes.frontend.extra_head')
@@ -64,7 +64,7 @@
 </head>
 
 {{-- Header data ($categories, $pages, $currencies, $languges) provided by AppServiceProvider with caching --}}
-<body>
+<body class="m-theme-scope">
 
     <div class="frontend-header-wrapper">
         {{-- Frontend Header (hide mobile toggle - vendor has its own in vendor/header) --}}

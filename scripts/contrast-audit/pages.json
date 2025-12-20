@@ -1,0 +1,61 @@
+{
+  "baseUrl": "http://new.test",
+  "pages": [
+    {
+      "name": "Home",
+      "path": "/",
+      "selectors": ["header", "footer", ".m-btn", ".btn", ".badge", ".alert", "a", "nav"]
+    },
+    {
+      "name": "Category",
+      "path": "/category/1",
+      "selectors": [".product-card", ".m-btn", ".btn", ".badge", ".breadcrumb", "a"]
+    },
+    {
+      "name": "Product",
+      "path": "/product/1",
+      "selectors": [".product-details", ".m-btn", ".btn", ".badge", ".alert", "a", ".price"]
+    },
+    {
+      "name": "Cart",
+      "path": "/cart",
+      "selectors": [".cart-item", ".m-btn", ".btn", ".badge", ".alert", "a", ".total"]
+    },
+    {
+      "name": "Wishlist",
+      "path": "/wishlist",
+      "selectors": [".wishlist-item", ".m-btn", ".btn", ".badge", "a"]
+    },
+    {
+      "name": "User Dashboard",
+      "path": "/user/dashboard",
+      "selectors": [".dashboard-card", ".m-btn", ".btn", ".badge", ".alert", "a", ".stat"]
+    },
+    {
+      "name": "Vendor Dashboard",
+      "path": "/vendor/dashboard",
+      "selectors": [".dashboard-card", ".m-btn", ".btn", ".badge", ".alert", "a", ".stat"]
+    },
+    {
+      "name": "Login",
+      "path": "/login",
+      "selectors": [".form-control", ".m-btn", ".btn", "a", "label"]
+    },
+    {
+      "name": "Register",
+      "path": "/register",
+      "selectors": [".form-control", ".m-btn", ".btn", "a", "label"]
+    }
+  ],
+  "elementTypes": {
+    "button": [".m-btn", ".btn", "button", "[type='submit']"],
+    "link": ["a:not(.btn):not(.m-btn)"],
+    "badge": [".badge", ".m-badge"],
+    "alert": [".alert", ".m-alert"],
+    "input": ["input", "select", "textarea", ".form-control"],
+    "label": ["label", ".form-label"],
+    "card": [".card", ".m-card", ".product-card"],
+    "nav": ["nav a", ".nav-link", ".dropdown-item"],
+    "text": ["p", "span", "h1", "h2", "h3", "h4", "h5", "h6", "li"]
+  }
+}

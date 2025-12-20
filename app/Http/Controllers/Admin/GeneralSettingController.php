@@ -590,6 +590,49 @@ class GeneralSettingController extends AdminBaseController
     }
 
     /**
+     * Calculate relative luminance of a hex color (WCAG 2.1)
+     * Returns value between 0 (black) and 1 (white)
+     */
+    private function getLuminance($hex)
+    {
+        // Remove # if present
+        $hex = ltrim($hex, '#');
+
+        // Parse RGB values
+        $r = hexdec(substr($hex, 0, 2)) / 255;
+        $g = hexdec(substr($hex, 2, 2)) / 255;
+        $b = hexdec(substr($hex, 4, 2)) / 255;
+
+        // Apply gamma correction
+        $r = $r <= 0.03928 ? $r / 12.92 : pow(($r + 0.055) / 1.055, 2.4);
+        $g = $g <= 0.03928 ? $g / 12.92 : pow(($g + 0.055) / 1.055, 2.4);
+        $b = $b <= 0.03928 ? $b / 12.92 : pow(($b + 0.055) / 1.055, 2.4);
+
+        // Calculate luminance
+        return 0.2126 * $r + 0.7152 * $g + 0.0722 * $b;
+    }
+
+    /**
+     * Get best text color (black or white) for contrast on given background
+     * Uses WCAG contrast ratio calculation
+     */
+    private function getContrastTextColor($bgHex, $darkText = '#1f0300', $lightText = '#ffffff')
+    {
+        $bgLuminance = $this->getLuminance($bgHex);
+
+        // Calculate contrast ratio with white text
+        $whiteLuminance = 1; // White = 1
+        $whiteContrast = ($whiteLuminance + 0.05) / ($bgLuminance + 0.05);
+
+        // Calculate contrast ratio with dark text
+        $darkLuminance = $this->getLuminance($darkText);
+        $darkContrast = ($bgLuminance + 0.05) / ($darkLuminance + 0.05);
+
+        // Return color with better contrast
+        return $whiteContrast > $darkContrast ? $lightText : $darkText;
+    }
+
+    /**
      * Generate theme CSS file with all database colors
      * Complete Theme Builder System
      */
@@ -637,6 +680,18 @@ class GeneralSettingController extends AdminBaseController
         $warning = $gs->theme_warning ?? '#fac03c';
         $danger = $gs->theme_danger ?? '#f2415a';
         $info = $gs->theme_info ?? '#0ea5e9';
+
+        // ==================================
+        // AUTO-CALCULATED TEXT-ON COLORS (WCAG Contrast)
+        // ==================================
+        $textOnPrimary = $this->getContrastTextColor($primary);
+        $textOnSecondary = $this->getContrastTextColor($secondary);
+        $textOnSuccess = $this->getContrastTextColor($success);
+        $textOnWarning = $this->getContrastTextColor($warning);
+        $textOnDanger = $this->getContrastTextColor($danger);
+        $textOnInfo = $this->getContrastTextColor($info);
+        $textOnDark = $this->getContrastTextColor($bgDark);
+        $textOnLight = $this->getContrastTextColor($bgLight);
 
         // ==================================
         // BORDER COLORS
@@ -919,6 +974,17 @@ class GeneralSettingController extends AdminBaseController
     --theme-danger-hover: #d93a50;
     --theme-info-hover: #0284c7;
 
+    /* ===== TEXT-ON COLORS (WCAG Contrast Safe) ===== */
+    /* Auto-calculated based on background luminance */
+    --theme-text-on-primary: {$textOnPrimary};
+    --theme-text-on-secondary: {$textOnSecondary};
+    --theme-text-on-success: {$textOnSuccess};
+    --theme-text-on-warning: {$textOnWarning};
+    --theme-text-on-danger: {$textOnDanger};
+    --theme-text-on-info: {$textOnInfo};
+    --theme-text-on-dark: {$textOnDark};
+    --theme-text-on-light: {$textOnLight};
+
     /* ===== TYPOGRAPHY ===== */
     --theme-font-primary: '{$fontPrimary}', sans-serif;
     --theme-font-heading: '{$fontHeading}', sans-serif;
@@ -1141,6 +1207,92 @@ class GeneralSettingController extends AdminBaseController
     --theme-topbar-bg: {$secondary};
     --theme-topbar-text: rgba(255, 255, 255, 0.9);
     --theme-topbar-text-hover: #ffffff;
+
+    /* ===== SEMANTIC MAPPING LAYER ===== */
+    /* These map semantic names to theme variables for consistency */
+
+    /* Text Semantic */
+    --text-primary: var(--theme-text-primary);
+    --text-secondary: var(--theme-text-secondary);
+    --text-muted: var(--theme-text-muted);
+    --text-light: var(--theme-text-light);
+    --text-inverse: var(--theme-text-white);
+    --text-body: var(--theme-text-primary);
+    --text-link: var(--theme-link);
+    --text-link-hover: var(--theme-link-hover);
+
+    /* Text-On Colors (WCAG Contrast Safe) */
+    --text-on-primary: var(--theme-text-on-primary);
+    --text-on-secondary: var(--theme-text-on-secondary);
+    --text-on-success: var(--theme-text-on-success);
+    --text-on-warning: var(--theme-text-on-warning);
+    --text-on-danger: var(--theme-text-on-danger);
+    --text-on-info: var(--theme-text-on-info);
+    --text-on-dark: var(--theme-text-on-dark);
+    --text-on-light: var(--theme-text-on-light);
+
+    /* Text Sizes */
+    --text-xs: 11px;
+    --text-sm: 13px;
+    --text-base: 15px;
+    --text-lg: 18px;
+    --text-xl: 22px;
+
+    /* Surface/Background Semantic */
+    --surface-page: var(--theme-bg-body);
+    --surface-card: var(--theme-card-bg);
+    --surface-elevated: var(--theme-bg-light);
+    --surface-sunken: var(--theme-bg-gray);
+    --surface-secondary: var(--theme-secondary-light);
+
+    /* Border Semantic */
+    --border-default: var(--theme-border);
+    --border-light: var(--theme-border-light);
+    --border-strong: var(--theme-border-dark);
+    --border-color: var(--theme-border);
+    --border-focus: var(--theme-primary);
+
+    /* Action Semantic (for buttons, links, interactive elements) */
+    --action-primary: var(--theme-primary);
+    --action-primary-hover: var(--theme-primary-hover);
+    --action-primary-active: var(--theme-primary-dark);
+    --action-secondary: var(--theme-secondary);
+    --action-secondary-hover: var(--theme-secondary-hover);
+    --action-success: var(--theme-success);
+    --action-success-hover: var(--theme-success-hover);
+    --action-success-light: var(--theme-success-light);
+    --action-warning: var(--theme-warning);
+    --action-warning-hover: var(--theme-warning-hover);
+    --action-warning-light: var(--theme-warning-light);
+    --action-danger: var(--theme-danger);
+    --action-danger-hover: var(--theme-danger-hover);
+    --action-danger-light: var(--theme-danger-light);
+    --action-info: var(--theme-info);
+    --action-info-hover: var(--theme-info-hover);
+    --action-info-light: var(--theme-info-light);
+
+    /* Radius Semantic */
+    --radius-sm: var(--theme-radius-sm);
+    --radius-md: var(--theme-radius);
+    --radius-lg: var(--theme-radius-lg);
+    --radius-full: var(--theme-radius-pill);
+
+    /* Shadow Semantic */
+    --shadow-sm: var(--theme-shadow-sm);
+    --shadow-md: var(--theme-shadow);
+    --shadow-lg: var(--theme-shadow-lg);
+
+    /* Spacing Semantic */
+    --space-1: 4px;
+    --space-2: 8px;
+    --space-3: 12px;
+    --space-4: 16px;
+    --space-5: 20px;
+    --space-6: 24px;
+    --space-8: 32px;
+
+    /* Color Semantic Helpers */
+    --color-primary-light: var(--theme-primary-light);
 
     /* ===== LEGACY VARIABLES (Backwards Compatibility) ===== */
     --muaadh-primary: {$primary};

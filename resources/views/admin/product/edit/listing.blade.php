@@ -73,7 +73,7 @@
                                                 <select name="brand_id" class="form-control">
                                                     <option value="">{{ __('Select Brand') }}</option>
                                                     @foreach (\App\Models\Brand::all() as $brand)
-                                                        <option value="{{ $brand->id }}" style="color: #333;"
+                                                        <option value="{{ $brand->id }}"
                                                             {{ $data->brand_id == $brand->id ? 'selected' : '' }}>
                                                             {{ $brand->name }} {{ $brand->name_ar ? '- ' . $brand->name_ar : '' }}
                                                         </option>
@@ -93,7 +93,7 @@
                                                 <select name="brand_quality_id" class="form-control">
                                                     <option value="">{{ __('Select Quality Brand') }}</option>
                                                     @foreach ($qualityBrands as $qb)
-                                                        <option value="{{ $qb->id }}" style="color: #333;"
+                                                        <option value="{{ $qb->id }}"
                                                             {{ $merchantProduct->brand_quality_id == $qb->id ? 'selected' : '' }}>
                                                             {{ $qb->name_en }} {{ $qb->name_ar ? '- ' . $qb->name_ar : '' }} {{ $qb->country ? '(' . $qb->country . ')' : '' }}
                                                         </option>
@@ -1056,7 +1056,7 @@
                                             </div>
                                             <div class="col-lg-12">
                                                 <div class="panel panel-body">
-                                                    <div class="span4 cropme text-center" id="landscape" style="width: 100%; height: 285px; border: 1px dashed #ddd; background: #f1f1f1;">
+                                                    <div class="span4 cropme text-center" id="landscape" class="m-upload-zone">
                                                         <a href="javascript:;" id="crop-image" class="d-inline-block btn btn-primary">
                                                             <i class="icofont-upload-alt"></i> {{ __('Upload Image Here') }}
                                                         </a>

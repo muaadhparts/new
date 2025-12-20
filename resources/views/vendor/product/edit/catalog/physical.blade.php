@@ -804,7 +804,7 @@
                             <div class="w-100">
                                 <div class="overlayed-img-wrapper">
                                     <div class="span4 cropme text-center" id="landscape"
-                                        style="width: 100%; height: 285px; border: 1px dashed #ddd; background: #f1f1f1;">
+                                        class="m-upload-zone">
                                         <a href="javascript:;" id="crop-image" class="btn btn-primary" style="">
                                             <i class="icofont-upload-alt"></i>
                                             @lang('Upload Image Here')

@@ -31,7 +31,7 @@
     {{-- Frontend Theme Files --}}
     <link rel="stylesheet" href="{{ asset('assets/front/css/style.css') }}">
     {{-- Theme Colors - Generated from Admin Panel (MUST load LAST) --}}
-    <link rel="stylesheet" href="{{ asset('assets/front/css/theme-colors.css') }}">
+    @themeStyles
 
   </head>
   <body>

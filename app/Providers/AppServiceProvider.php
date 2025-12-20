@@ -15,6 +15,7 @@ use Illuminate\{Support\Facades\DB,
 use App\Models\Font;
 use App\View\Composers\HeaderComposer;
 use Illuminate\Pagination\Paginator;
+use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\View;
@@ -136,6 +137,20 @@ class AppServiceProvider extends ServiceProvider
 //
 //
 //        });
+
+        // =========================================================
+        // BLADE DIRECTIVE: @themeStyles
+        // =========================================================
+        // Centralized theme CSS loading with cache-busting
+        // Usage: @themeStyles in any blade template
+        // Handles missing file gracefully
+        Blade::directive('themeStyles', function () {
+            return "<?php
+                \$themeFile = public_path('assets/front/css/theme-colors.css');
+                \$version = file_exists(\$themeFile) ? filemtime(\$themeFile) : time();
+                echo '<link rel=\"stylesheet\" href=\"' . asset('assets/front/css/theme-colors.css') . '?v=' . \$version . '\">';
+            ?>";
+        });
     }
 
     public function register()

@@ -8,7 +8,13 @@
       "Bash(curl:*)",
       "Bash(php -r:*)",
       "Bash(git commit:*)",
-      "Bash(php -l:*)"
+      "Bash(php -l:*)",
+      "Bash(find:*)",
+      "Bash({ echo \"=== USED VARIABLES ===\" grep -ohE 'var\\\\\\(--[a-zA-Z0-9_-]+' public/assets/front/css/muaadh-system.css public/assets/front/css/new/tokens.css public/assets/front/css/new/components.css public/assets/front/css/new/base.css public/assets/front/css/components/_user_dashboard.css)",
+      "Bash(sort -u echo \"=== DEFINED VARIABLES ===\" grep -ohE '^\\\\s*--[a-zA-Z0-9_-]+:' public/assets/front/css/theme-colors.css public/assets/front/css/new/tokens.css)",
+      "Bash(comm -23:*)",
+      "Bash(comm:*)",
+      "Bash(php regenerate_theme_css.php:*)"
     ]
   }
 }

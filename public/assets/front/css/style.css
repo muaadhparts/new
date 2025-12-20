@@ -4000,7 +4000,7 @@ p.text-lg {
 }
 
 .dropdown__item {
-  color: black !important;
+  color: var(--theme-text-primary) !important;
 }
 
 .dropdown__item:hover {
@@ -7218,7 +7218,7 @@ ul.tagit li.tagit-choice .tagit-close {
   width: 48px;
   height: 48px;
   background: var(--theme-danger);
-  color: white !important;
+  color: var(--theme-text-white) !important;
   border-radius: 5px;
 }
 
@@ -17070,7 +17070,7 @@ a.text-primary:hover {
 .muaadh-btn-outline-primary:hover {
     background-color: var(--theme-primary);
     border-color: var(--theme-primary);
-    color: #ffffff;
+    color: var(--text-inverse);
     transform: translateY(-2px);
 }
 
@@ -17088,7 +17088,7 @@ a.text-primary:hover {
 .muaadh-btn-outline-secondary:hover {
     background-color: var(--theme-secondary, #4b5563);
     border-color: var(--theme-secondary, #4b5563);
-    color: #ffffff;
+    color: var(--text-inverse);
 }
 
 /* Outline Success */
@@ -17101,7 +17101,7 @@ a.text-primary:hover {
 .btn-outline-success:hover {
     background-color: var(--theme-success, #10b981);
     border-color: var(--theme-success, #10b981);
-    color: #ffffff;
+    color: var(--text-inverse);
 }
 
 /* Outline Danger */
@@ -17114,7 +17114,7 @@ a.text-primary:hover {
 .btn-outline-danger:hover {
     background-color: var(--theme-danger, #ef4444);
     border-color: var(--theme-danger, #ef4444);
-    color: #ffffff;
+    color: var(--text-inverse);
 }
 
 /* Outline Warning */
@@ -17127,7 +17127,7 @@ a.text-primary:hover {
 .btn-outline-warning:hover {
     background-color: var(--theme-warning, #f59e0b);
     border-color: var(--theme-warning, #f59e0b);
-    color: #1f2937;
+    color: var(--theme-text-primary);
 }
 
 /* Outline Info */
@@ -17140,7 +17140,7 @@ a.text-primary:hover {
 .btn-outline-info:hover {
     background-color: var(--theme-info, #3b82f6);
     border-color: var(--theme-info, #3b82f6);
-    color: #ffffff;
+    color: var(--text-inverse);
 }
 
 /* ========== 8. GHOST BUTTONS ========== */
@@ -17202,7 +17202,7 @@ a.text-primary:hover {
 .cart-btn {
     background-color: var(--theme-primary);
     border-color: var(--theme-primary);
-    color: #ffffff;
+    color: var(--text-inverse);
     font-weight: 600;
 }
 
@@ -17218,7 +17218,7 @@ a.text-primary:hover {
 .buy-now-btn {
     background-color: var(--theme-success, #10b981);
     border-color: var(--theme-success, #10b981);
-    color: #ffffff;
+    color: var(--text-inverse);
     font-weight: 600;
 }
 
@@ -17233,7 +17233,7 @@ a.text-primary:hover {
 .proceed-btn {
     background-color: var(--theme-primary);
     border-color: var(--theme-primary);
-    color: #ffffff;
+    color: var(--text-inverse);
     font-weight: 600;
     min-width: 200px;
 }
@@ -17281,7 +17281,7 @@ a.text-primary:hover {
 .quick-view-btn {
     background-color: rgba(0, 0, 0, 0.7);
     border-color: transparent;
-    color: #ffffff;
+    color: var(--text-inverse);
 }
 
 .quick-view-btn:hover {
@@ -17357,7 +17357,7 @@ a.text-primary:hover {
     position: absolute;
     width: 18px;
     height: 18px;
-    border: 2px solid #ffffff;
+    border: 2px solid currentColor;
     border-top-color: transparent;
     border-radius: 50%;
     animation: btn-spin 0.7s linear infinite;
