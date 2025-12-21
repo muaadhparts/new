@@ -414,9 +414,71 @@
 
 
                     @if ($prods->total() == 0)
-                        <!-- product nav wrapper for no data found -->
-                        <div class="product-nav-wrapper d-flex justify-content-center ">
-                            <h5>@lang('No Product Found')</h5>
+                        {{-- Zero Results Box with Filter Summary --}}
+                        <div class="category-products-box">
+                            <div class="category-products-scroll" id="products-container">
+                                <div class="m-no-results-box">
+                                    <div class="m-no-results-box__icon">
+                                        <i class="fas fa-search"></i>
+                                    </div>
+                                    <h4 class="m-no-results-box__title">@lang('No matching products')</h4>
+                                    <p class="m-no-results-box__subtitle">@lang('Try adjusting your filters to find what you are looking for.')</p>
+
+                                    @if(isset($filterSummary) && $filterSummary['hasFilters'])
+                                    <div class="m-no-results-box__filters">
+                                        <h6 class="m-no-results-box__filters-title">@lang('Applied Filters:')</h6>
+                                        <ul class="m-no-results-box__filters-list">
+                                            @if($filterSummary['category'])
+                                            <li>
+                                                <span class="m-no-results-box__filter-label">@lang('Category'):</span>
+                                                <span class="m-no-results-box__filter-value">
+                                                    {{ $filterSummary['category'] }}
+                                                    @if($filterSummary['subcategory'])
+                                                        <i class="fas fa-chevron-{{ app()->getLocale() === 'ar' ? 'left' : 'right' }} mx-1"></i>
+                                                        {{ $filterSummary['subcategory'] }}
+                                                    @endif
+                                                    @if($filterSummary['childcategory'])
+                                                        <i class="fas fa-chevron-{{ app()->getLocale() === 'ar' ? 'left' : 'right' }} mx-1"></i>
+                                                        {{ $filterSummary['childcategory'] }}
+                                                    @endif
+                                                </span>
+                                            </li>
+                                            @endif
+
+                                            @if(!empty($filterSummary['vendors']))
+                                            <li>
+                                                <span class="m-no-results-box__filter-label">@lang('Vendor'):</span>
+                                                <span class="m-no-results-box__filter-value">{{ implode(', ', $filterSummary['vendors']) }}</span>
+                                            </li>
+                                            @endif
+
+                                            @if(!empty($filterSummary['brandQualities']))
+                                            <li>
+                                                <span class="m-no-results-box__filter-label">@lang('Brand Quality'):</span>
+                                                <span class="m-no-results-box__filter-value">{{ implode(', ', $filterSummary['brandQualities']) }}</span>
+                                            </li>
+                                            @endif
+                                        </ul>
+                                    </div>
+                                    @endif
+                                </div>
+                            </div>
+                            {{-- Empty pagination for consistency --}}
+                            <div class="category-products-pagination">
+                                <div class="m-pagination-simple" data-current="1" data-last="1" data-total="0">
+                                    <button type="button" class="m-pagination-simple__btn m-pagination-simple__prev m-pagination-simple__btn--disabled" disabled>
+                                        <i class="fas fa-chevron-{{ app()->getLocale() === 'ar' ? 'right' : 'left' }}"></i>
+                                    </button>
+                                    <div class="m-pagination-simple__input-group">
+                                        <input type="number" class="m-pagination-simple__input" value="1" min="1" max="1">
+                                        <span class="m-pagination-simple__separator">@lang('of')</span>
+                                        <span class="m-pagination-simple__total">1</span>
+                                    </div>
+                                    <button type="button" class="m-pagination-simple__btn m-pagination-simple__next m-pagination-simple__btn--disabled" disabled>
+                                        <i class="fas fa-chevron-{{ app()->getLocale() === 'ar' ? 'left' : 'right' }}"></i>
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     @else
                         <!-- main content inside scrollable box -->
@@ -572,12 +634,15 @@
                     success: function(response) {
                         // Parse response
                         const $response = $('<div>').html(response);
-                        const $newContent = $response.find('#myTabContent');
+                        const $ajaxContent = $response.find('#ajax-products-content');
                         const $paginationData = $response.find('#ajax-pagination-data');
 
-                        // Update products content
-                        if ($newContent.length) {
-                            $productsContainer.find('#myTabContent').replaceWith($newContent);
+                        // Update products content (handles both products and no-results box)
+                        if ($ajaxContent.length) {
+                            // Get the inner content from AJAX response
+                            const innerContent = $ajaxContent.html();
+                            // Replace the entire scroll container content
+                            $scrollContainer.html(innerContent);
                         }
 
                         // Update pagination data from JSON
