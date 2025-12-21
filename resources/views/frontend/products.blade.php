@@ -318,7 +318,7 @@
                                                         stroke-linejoin="round" />
                                                 </svg>
                                             </label>
-                                            <label for="vendor_{{ $vendor->user_id }}">{{ $vendor->shop_name ?? __('Unknown Vendor') }}</label>
+                                            <label for="vendor_{{ $vendor->user_id }}">{{ getLocalizedShopName($vendor) }}</label>
                                         </li>
                                     @endforeach
                                 </ul>
@@ -376,11 +376,12 @@
                             <div class="sort-wrapper">
                                 <h5>@lang('Sort by:')</h5>
 
+                                @php $currentSort = request('sort', 'date_desc'); @endphp
                                 <select class="nice-select" id="sortby" name="sort">
-                                    <option value="date_desc">{{ __('Latest Product') }}</option>
-                                    <option value="date_asc">{{ __('Oldest Product') }}</option>
-                                    <option value="price_asc">{{ __('Lowest Price') }}</option>
-                                    <option value="price_desc">{{ __('Highest Price') }}</option>
+                                    <option value="date_desc" {{ $currentSort === 'date_desc' ? 'selected' : '' }}>{{ __('Latest Product') }}</option>
+                                    <option value="date_asc" {{ $currentSort === 'date_asc' ? 'selected' : '' }}>{{ __('Oldest Product') }}</option>
+                                    <option value="price_asc" {{ $currentSort === 'price_asc' ? 'selected' : '' }}>{{ __('Lowest Price') }}</option>
+                                    <option value="price_desc" {{ $currentSort === 'price_desc' ? 'selected' : '' }}>{{ __('Highest Price') }}</option>
                                 </select>
                             </div>
                             <!-- list and grid view tab btns  start -->
@@ -554,6 +555,9 @@
 
 @section('script')
     <script>
+        // Global sort state (accessible from Category Selector script)
+        var categoryPageSort = '{{ request('sort', 'date_desc') }}';
+
         (function($) {
             "use strict";
 
@@ -569,6 +573,10 @@
             let isLoading = false;
             let currentPage = parseInt($paginationContainer.data('current')) || 1;
             let lastPage = parseInt($paginationContainer.data('last')) || 1;
+
+            // Persistent sort state - initialized from current value or URL
+            // Update global variable too for cross-script access
+            categoryPageSort = $('#sortby').val() || categoryPageSort;
 
             // ========================================
             // Build URL with all current filters
@@ -586,10 +594,9 @@
                     params.append($(this).attr('name'), $(this).val());
                 });
 
-                // Sort
-                const sortVal = $("#sortby").val();
-                if (sortVal && sortVal !== '') {
-                    params.set('sort', sortVal);
+                // Sort - always use persistent global sort state
+                if (categoryPageSort && categoryPageSort !== '') {
+                    params.set('sort', categoryPageSort);
                 }
 
                 // Price filter
@@ -718,10 +725,21 @@
             }
 
             // ========================================
-            // Filter Events (Brand Quality, Vendor, Sort)
+            // Filter Events (Brand Quality, Vendor)
             // ========================================
-            $(".attribute-input, #sortby").on('change', function() {
+            $(".attribute-input").on('change', function() {
                 // Reset to page 1 when filter changes
+                currentPage = 1;
+                loadContent(1);
+            });
+
+            // ========================================
+            // Sort Event - Update persistent state
+            // ========================================
+            $("#sortby").on('change', function() {
+                // Update global persistent sort state
+                categoryPageSort = $(this).val();
+                // Reset to page 1 when sort changes
                 currentPage = 1;
                 loadContent(1);
             });
@@ -803,8 +821,9 @@
                     // Update checkboxes and sort from URL
                     const urlParams = new URLSearchParams(window.location.search);
 
-                    // Update sort dropdown
+                    // Update sort dropdown and persistent global state
                     const sortVal = urlParams.get('sort') || 'date_desc';
+                    categoryPageSort = sortVal; // Update global persistent state
                     $('#sortby').val(sortVal);
 
                     // Update filter checkboxes
@@ -871,8 +890,57 @@
             const $paginationContainer = $('.m-pagination-simple');
             const $totalProducts = $('.product-nav-wrapper h5').first();
 
+            // Build URL with current filters preserved
+            function buildCategoryUrl(basePath) {
+                let params = new URLSearchParams();
+
+                // Preserve Sort (from global categoryPageSort)
+                if (categoryPageSort && categoryPageSort !== '') {
+                    params.set('sort', categoryPageSort);
+                }
+
+                // Preserve Vendor filters
+                $(".vendor-filter:checked").each(function() {
+                    params.append('vendor[]', $(this).val());
+                });
+
+                // Preserve Brand Quality filters
+                $(".brand-quality-filter:checked").each(function() {
+                    params.append('brand_quality[]', $(this).val());
+                });
+
+                // Preserve other attribute filters
+                $(".attribute-input:checked").each(function() {
+                    const name = $(this).attr('name');
+                    // Skip vendor and brand_quality as they're handled above
+                    if (name !== 'vendor[]' && name !== 'brand_quality[]') {
+                        params.append(name, $(this).val());
+                    }
+                });
+
+                // Preserve Price filter
+                const minPrice = $("#update_min_price").val();
+                const maxPrice = $("#update_max_price").val();
+                if (minPrice && minPrice !== '') {
+                    params.set('min', minPrice);
+                }
+                if (maxPrice && maxPrice !== '') {
+                    params.set('max', maxPrice);
+                }
+
+                // Preserve View mode
+                const viewMode = $('.check_view.active').data('shopview');
+                if (viewMode) {
+                    params.set('view_check', viewMode);
+                }
+
+                const queryString = params.toString();
+                return queryString ? basePath + '?' + queryString : basePath;
+            }
+
             // Load category content via AJAX
-            function loadCategoryContent(url) {
+            function loadCategoryContent(basePath) {
+                const url = buildCategoryUrl(basePath);
                 $scrollContainer.addClass('is-loading');
 
                 $.ajax({
@@ -881,13 +949,13 @@
                     dataType: 'html',
                     success: function(response) {
                         const $response = $('<div>').html(response);
-                        const $newContent = $response.find('#myTabContent');
+                        const $ajaxContent = $response.find('#ajax-products-content');
                         const $paginationData = $response.find('#ajax-pagination-data');
                         const $newPagination = $response.find('.m-pagination-simple');
 
-                        // Update products content
-                        if ($newContent.length) {
-                            $productsContainer.find('#myTabContent').replaceWith($newContent);
+                        // Update products content (handles both products and no-results box)
+                        if ($ajaxContent.length) {
+                            $scrollContainer.html($ajaxContent.html());
                         }
 
                         // Update pagination

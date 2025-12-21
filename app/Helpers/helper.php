@@ -191,22 +191,62 @@ if (! function_exists('getLocalizedCategoryName')) {
 }
 
 /**
+ * Get localized shop name from vendor/user object
+ * Handles both User model and query result objects
+ */
+if (! function_exists('getLocalizedShopName')) {
+    function getLocalizedShopName($vendor): string
+    {
+        if (!$vendor) return '';
+
+        $isAr = app()->getLocale() === 'ar';
+
+        if (is_array($vendor)) {
+            $shopNameAr = trim($vendor['shop_name_ar'] ?? '');
+            $shopName = trim($vendor['shop_name'] ?? '');
+        } elseif (is_object($vendor)) {
+            $shopNameAr = trim($vendor->shop_name_ar ?? '');
+            $shopName = trim($vendor->shop_name ?? '');
+        } else {
+            return '';
+        }
+
+        if ($isAr && $shopNameAr !== '') {
+            return $shopNameAr;
+        }
+        return $shopName !== '' ? $shopName : __('Unknown Vendor');
+    }
+}
+
+/**
  * Get vendor/store name from cart product or MerchantProduct
+ * Now with localization support
  */
 if (! function_exists('getVendorName')) {
     function getVendorName($product): string
     {
         if (!$product) return '';
 
+        $isAr = app()->getLocale() === 'ar';
+
         // From cart array
         if (is_array($product)) {
+            if ($isAr && !empty($product['shop_name_ar'])) {
+                return $product['shop_name_ar'];
+            }
             return $product['vendor_name'] ?? $product['shop_name'] ?? '';
         }
 
         // From MerchantProduct or similar object
         if (is_object($product)) {
             if (isset($product->user) && $product->user) {
+                if ($isAr && !empty($product->user->shop_name_ar)) {
+                    return $product->user->shop_name_ar;
+                }
                 return $product->user->shop_name ?? $product->user->name ?? '';
+            }
+            if ($isAr && isset($product->shop_name_ar) && !empty($product->shop_name_ar)) {
+                return $product->shop_name_ar;
             }
             if (isset($product->vendor_name)) {
                 return $product->vendor_name;

@@ -43,9 +43,20 @@ class ProductFilterService
             ->where('merchant_products.status', 1)
             ->where('users.is_vendor', 2)
             ->groupBy('merchant_products.user_id')
-            ->selectRaw('merchant_products.user_id, users.shop_name')
+            ->selectRaw('merchant_products.user_id, users.shop_name, users.shop_name_ar')
             ->orderBy('users.shop_name', 'asc')
             ->get();
+    }
+
+    /**
+     * Get localized shop name
+     */
+    private function getLocalizedShopName($vendor): string
+    {
+        if (app()->getLocale() === 'ar' && !empty($vendor->shop_name_ar)) {
+            return $vendor->shop_name_ar;
+        }
+        return $vendor->shop_name ?? '';
     }
 
     /**
@@ -369,12 +380,12 @@ class ProductFilterService
             $summary['hasFilters'] = true;
         }
 
-        // Selected vendors
+        // Selected vendors (use localized shop name)
         $vendorIds = $this->normalizeArrayInput($request->vendor);
         if (!empty($vendorIds)) {
             foreach ($allVendors as $vendor) {
                 if (in_array($vendor->user_id, $vendorIds)) {
-                    $summary['vendors'][] = $vendor->shop_name;
+                    $summary['vendors'][] = $this->getLocalizedShopName($vendor);
                 }
             }
             $summary['hasFilters'] = true;
