@@ -2867,3 +2867,123 @@ select option {
     }
 }
 
+/* ============================================================================
+   SECTION: HEADER CART BUTTON FIX
+   ============================================================================
+   Make cart button same style as wishlist/compare buttons
+   Remove the special primary background styling
+   ============================================================================ */
+
+/* Reset cart button to match other action buttons */
+.muaadh-cart-btn {
+    background: var(--muaadh-bg-light, #f3f4f6) !important;
+    color: var(--muaadh-text, #1f2937) !important;
+}
+
+.muaadh-cart-btn:hover {
+    background: var(--muaadh-primary-light, #ede9fe) !important;
+    color: var(--muaadh-primary, var(--action-primary)) !important;
+}
+
+/* =============================================================================
+   VIN SEARCH MODAL FIX
+   ============================================================================= */
+
+/* Fix transparent modal - ensure solid background */
+.muaadh-modal {
+    background: var(--theme-modal-bg, #ffffff) !important;
+}
+
+.muaadh-modal .modal-body {
+    background: var(--theme-modal-bg, #ffffff);
+}
+
+/* Modal header - use theme secondary color */
+.muaadh-modal-header {
+    background: var(--theme-secondary, var(--muaadh-dark, #1f2937)) !important;
+    color: var(--theme-text-on-secondary, #ffffff) !important;
+}
+
+.muaadh-modal-header .modal-title {
+    color: inherit;
+}
+
+.muaadh-modal-header .btn-close-white {
+    filter: brightness(0) invert(1);
+}
+
+/* =============================================================================
+   HEADER & FOOTER THEME FIX
+   ============================================================================= */
+
+/* Topbar - follows theme secondary color */
+.muaadh-topbar {
+    background: var(--theme-secondary, #1f2937) !important;
+}
+
+.muaadh-topbar-link,
+.muaadh-topbar .muaadh-dropdown-toggle {
+    color: var(--theme-text-on-secondary, rgba(255, 255, 255, 0.9)) !important;
+}
+
+.muaadh-topbar-link:hover,
+.muaadh-topbar .muaadh-dropdown-toggle:hover {
+    color: var(--theme-primary-light, #ffffff) !important;
+}
+
+.muaadh-topbar-divider {
+    background: var(--theme-secondary-light, rgba(255, 255, 255, 0.3)) !important;
+}
+
+/* Header - follows theme colors */
+.muaadh-header {
+    background: var(--theme-header-bg, #ffffff) !important;
+}
+
+.muaadh-main-header {
+    background: var(--theme-header-bg, #ffffff);
+}
+
+/* Footer - follows theme colors */
+.muaadh-footer {
+    background: var(--theme-footer-bg, var(--theme-secondary, #1f2937)) !important;
+    color: var(--theme-footer-text, #ffffff) !important;
+}
+
+/* Footer Bottom - use theme border instead of hardcoded rgba */
+.muaadh-footer-bottom {
+    background: var(--theme-footer-border, rgba(0, 0, 0, 0.15)) !important;
+    border-top: 1px solid var(--theme-footer-border, rgba(255, 255, 255, 0.1));
+}
+
+.muaadh-copyright {
+    color: var(--theme-footer-text-muted, rgba(255, 255, 255, 0.7)) !important;
+}
+
+/* Footer links */
+.muaadh-footer-links a {
+    color: var(--theme-footer-link, rgba(255, 255, 255, 0.8));
+}
+
+.muaadh-footer-links a:hover {
+    color: var(--theme-footer-link-hover, #ffffff);
+}
+
+.muaadh-footer-title {
+    color: var(--theme-footer-text, #ffffff);
+}
+
+.muaadh-footer-contact-item {
+    color: var(--theme-footer-text-muted, rgba(255, 255, 255, 0.8));
+}
+
+.muaadh-footer-social .muaadh-social-link {
+    background: var(--theme-footer-border, rgba(255, 255, 255, 0.1));
+    color: var(--theme-footer-text, #ffffff);
+}
+
+.muaadh-footer-social .muaadh-social-link:hover {
+    background: var(--theme-primary);
+    color: var(--theme-text-on-primary, #ffffff);
+}
+

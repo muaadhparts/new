@@ -484,6 +484,7 @@
                                 <button type="button" class="preset-btn" data-preset="forest" style="background: linear-gradient(135deg, #16a34a 0%, #14532d 100%); color: #fff; box-shadow: 0 4px 12px rgba(22,163,74,0.3);">{{ __('Forest Green') }}</button>
                                 <button type="button" class="preset-btn" data-preset="midnight" style="background: linear-gradient(135deg, #4f46e5 0%, #1e1b4b 100%); color: #fff; box-shadow: 0 4px 12px rgba(79,70,229,0.3);">{{ __('Midnight') }}</button>
                                 <button type="button" class="preset-btn" data-preset="crimson" style="background: linear-gradient(135deg, #dc2626 0%, #7f1d1d 100%); color: #fff; box-shadow: 0 4px 12px rgba(220,38,38,0.3);">{{ __('Crimson') }}</button>
+                                <button type="button" class="preset-btn" data-preset="saudi" style="background: linear-gradient(135deg, #006c35 0%, #d4af37 50%, #1a1510 100%); color: #fff; box-shadow: 0 4px 12px rgba(0,108,53,0.4);">{{ __('Saudi Heritage') }}</button>
                             </div>
                         </div>
 
@@ -1475,37 +1476,37 @@ $(document).ready(function() {
             // ===== أحمر نيسان الكلاسيكي - احترافي لقطع الغيار =====
             // الألوان الأساسية
             theme_primary: '#c3002f', theme_primary_hover: '#a00025', theme_primary_dark: '#8a0020', theme_primary_light: '#fef2f4',
-            theme_secondary: '#1f2937', theme_secondary_hover: '#374151', theme_secondary_light: '#4b5563',
-            theme_text_primary: '#111827', theme_text_secondary: '#374151', theme_text_muted: '#6b7280', theme_text_light: '#9ca3af',
-            theme_bg_body: '#ffffff', theme_bg_light: '#f9fafb', theme_bg_gray: '#f3f4f6', theme_bg_dark: '#111827',
+            theme_secondary: '#1c1917', theme_secondary_hover: '#292524', theme_secondary_light: '#44403c',
+            theme_text_primary: '#1c1917', theme_text_secondary: '#44403c', theme_text_muted: '#78716c', theme_text_light: '#a8a29e',
+            theme_bg_body: '#ffffff', theme_bg_light: '#fafaf9', theme_bg_gray: '#fef2f4', theme_bg_dark: '#1c1917',
             theme_success: '#10b981', theme_warning: '#f59e0b', theme_danger: '#ef4444', theme_info: '#3b82f6',
-            theme_border: '#e5e7eb', theme_border_light: '#f3f4f6', theme_border_dark: '#d1d5db',
+            theme_border: '#fecdd3', theme_border_light: '#fef2f4', theme_border_dark: '#fda4af',
             // الخطوط والأحجام
             theme_font_primary: 'Poppins', theme_font_heading: 'Poppins',
             theme_font_size_base: '15px', theme_font_size_sm: '13px', theme_font_size_lg: '18px',
             theme_radius_xs: '2px', theme_radius_sm: '4px', theme_radius: '8px', theme_radius_lg: '10px', theme_radius_xl: '12px', theme_radius_pill: '50px',
-            theme_shadow_sm: '0 1px 2px rgba(0,0,0,0.05)', theme_shadow: '0 2px 8px rgba(0,0,0,0.08)', theme_shadow_lg: '0 4px 16px rgba(0,0,0,0.12)',
+            theme_shadow_sm: '0 1px 2px rgba(195,0,47,0.05)', theme_shadow: '0 2px 8px rgba(195,0,47,0.08)', theme_shadow_lg: '0 4px 16px rgba(195,0,47,0.12)',
             // الأزرار
             theme_btn_padding_x: '20px', theme_btn_padding_y: '10px', theme_btn_font_size: '14px', theme_btn_font_weight: '600',
             theme_btn_radius: '6px', theme_btn_shadow: 'none',
             // البطاقات
-            theme_card_bg: '#ffffff', theme_card_border: '#e5e7eb', theme_card_radius: '10px',
-            theme_card_shadow: '0 1px 4px rgba(0,0,0,0.06)', theme_card_hover_shadow: '0 4px 12px rgba(0,0,0,0.1)', theme_card_padding: '20px',
+            theme_card_bg: '#ffffff', theme_card_border: '#fecdd3', theme_card_radius: '10px',
+            theme_card_shadow: '0 1px 4px rgba(195,0,47,0.06)', theme_card_hover_shadow: '0 4px 12px rgba(195,0,47,0.1)', theme_card_padding: '20px',
             theme_product_title_size: '14px', theme_product_title_weight: '500', theme_product_price_size: '16px', theme_product_hover_scale: '1.02',
             // النماذج
-            theme_input_height: '44px', theme_input_bg: '#ffffff', theme_input_border: '#d1d5db',
-            theme_input_radius: '6px', theme_input_focus_border: '#c3002f', theme_input_focus_shadow: '0 0 0 3px rgba(195,0,47,0.1)', theme_input_placeholder: '#9ca3af',
+            theme_input_height: '44px', theme_input_bg: '#ffffff', theme_input_border: '#fecdd3',
+            theme_input_radius: '6px', theme_input_focus_border: '#c3002f', theme_input_focus_shadow: '0 0 0 3px rgba(195,0,47,0.1)', theme_input_placeholder: '#a8a29e',
             // الرأس
-            theme_header_bg: '#ffffff', theme_header_height: '70px', theme_header_shadow: '0 1px 3px rgba(0,0,0,0.08)',
-            theme_nav_link_color: '#374151', theme_nav_link_hover: '#c3002f', theme_nav_font_size: '15px', theme_nav_font_weight: '500',
+            theme_header_bg: '#ffffff', theme_header_height: '70px', theme_header_shadow: '0 1px 3px rgba(195,0,47,0.08)',
+            theme_nav_link_color: '#44403c', theme_nav_link_hover: '#c3002f', theme_nav_font_size: '15px', theme_nav_font_weight: '500',
             // التذييل
-            theme_footer_bg: '#111827', theme_footer_text: '#f9fafb', theme_footer_text_muted: '#9ca3af',
-            theme_footer_link_hover: '#c3002f', theme_footer_padding: '50px', theme_footer_link: '#e5e7eb', theme_footer_border: '#374151',
+            theme_footer_bg: '#1c1917', theme_footer_text: '#fafaf9', theme_footer_text_muted: '#a8a29e',
+            theme_footer_link_hover: '#fb7185', theme_footer_padding: '50px', theme_footer_link: '#d6d3d1', theme_footer_border: '#44403c',
             // المكونات
             theme_badge_radius: '4px', theme_badge_padding: '4px 10px', theme_badge_font_size: '12px', theme_badge_font_weight: '600',
-            theme_scrollbar_width: '8px', theme_scrollbar_track: '#f1f5f9', theme_scrollbar_thumb: '#cbd5e1', theme_scrollbar_thumb_hover: '#94a3b8',
-            theme_modal_bg: '#ffffff', theme_modal_radius: '12px', theme_modal_backdrop: 'rgba(0,0,0,0.5)',
-            theme_table_header_bg: '#f9fafb', theme_table_border: '#e5e7eb', theme_table_hover_bg: '#f9fafb'
+            theme_scrollbar_width: '8px', theme_scrollbar_track: '#fef2f4', theme_scrollbar_thumb: '#fda4af', theme_scrollbar_thumb_hover: '#fb7185',
+            theme_modal_bg: '#ffffff', theme_modal_radius: '12px', theme_modal_backdrop: 'rgba(28,25,23,0.6)',
+            theme_table_header_bg: '#fef2f4', theme_table_border: '#fecdd3', theme_table_hover_bg: '#fef2f4'
         },
 
         blue: {
@@ -1549,11 +1550,11 @@ $(document).ready(function() {
             // ===== أخضر زمردي - طبيعي وصحي =====
             // الألوان الأساسية
             theme_primary: '#059669', theme_primary_hover: '#047857', theme_primary_dark: '#065f46', theme_primary_light: '#ecfdf5',
-            theme_secondary: '#1f2937', theme_secondary_hover: '#374151', theme_secondary_light: '#4b5563',
-            theme_text_primary: '#111827', theme_text_secondary: '#374151', theme_text_muted: '#6b7280', theme_text_light: '#9ca3af',
-            theme_bg_body: '#ffffff', theme_bg_light: '#f9fafb', theme_bg_gray: '#f0fdf4', theme_bg_dark: '#064e3b',
+            theme_secondary: '#064e3b', theme_secondary_hover: '#065f46', theme_secondary_light: '#047857',
+            theme_text_primary: '#14532d', theme_text_secondary: '#166534', theme_text_muted: '#6b7280', theme_text_light: '#9ca3af',
+            theme_bg_body: '#ffffff', theme_bg_light: '#f0fdf4', theme_bg_gray: '#ecfdf5', theme_bg_dark: '#064e3b',
             theme_success: '#10b981', theme_warning: '#f59e0b', theme_danger: '#ef4444', theme_info: '#0891b2',
-            theme_border: '#d1fae5', theme_border_light: '#ecfdf5', theme_border_dark: '#a7f3d0',
+            theme_border: '#a7f3d0', theme_border_light: '#d1fae5', theme_border_dark: '#6ee7b7',
             // الخطوط والأحجام
             theme_font_primary: 'Nunito', theme_font_heading: 'Nunito',
             theme_font_size_base: '15px', theme_font_size_sm: '13px', theme_font_size_lg: '18px',
@@ -1586,11 +1587,11 @@ $(document).ready(function() {
             // ===== بنفسجي أنيق - إبداعي وفاخر =====
             // الألوان الأساسية
             theme_primary: '#7c3aed', theme_primary_hover: '#6d28d9', theme_primary_dark: '#5b21b6', theme_primary_light: '#f5f3ff',
-            theme_secondary: '#1f2937', theme_secondary_hover: '#374151', theme_secondary_light: '#4b5563',
-            theme_text_primary: '#111827', theme_text_secondary: '#374151', theme_text_muted: '#6b7280', theme_text_light: '#9ca3af',
+            theme_secondary: '#1e1b4b', theme_secondary_hover: '#312e81', theme_secondary_light: '#3730a3',
+            theme_text_primary: '#1e1b4b', theme_text_secondary: '#3730a3', theme_text_muted: '#6b7280', theme_text_light: '#a5b4fc',
             theme_bg_body: '#ffffff', theme_bg_light: '#faf8ff', theme_bg_gray: '#f5f3ff', theme_bg_dark: '#1e1b4b',
             theme_success: '#10b981', theme_warning: '#f59e0b', theme_danger: '#ef4444', theme_info: '#06b6d4',
-            theme_border: '#e9d5ff', theme_border_light: '#f5f3ff', theme_border_dark: '#d8b4fe',
+            theme_border: '#c4b5fd', theme_border_light: '#e9d5ff', theme_border_dark: '#a78bfa',
             // الخطوط والأحجام
             theme_font_primary: 'Poppins', theme_font_heading: 'Playfair Display',
             theme_font_size_base: '15px', theme_font_size_sm: '13px', theme_font_size_lg: '19px',
@@ -1623,11 +1624,11 @@ $(document).ready(function() {
             // ===== برتقالي حيوي - طاقة ونشاط =====
             // الألوان الأساسية
             theme_primary: '#ea580c', theme_primary_hover: '#c2410c', theme_primary_dark: '#9a3412', theme_primary_light: '#fff7ed',
-            theme_secondary: '#1f2937', theme_secondary_hover: '#374151', theme_secondary_light: '#4b5563',
-            theme_text_primary: '#111827', theme_text_secondary: '#374151', theme_text_muted: '#6b7280', theme_text_light: '#9ca3af',
-            theme_bg_body: '#ffffff', theme_bg_light: '#fffbf5', theme_bg_gray: '#fef3e2', theme_bg_dark: '#431407',
+            theme_secondary: '#431407', theme_secondary_hover: '#7c2d12', theme_secondary_light: '#9a3412',
+            theme_text_primary: '#431407', theme_text_secondary: '#7c2d12', theme_text_muted: '#78716c', theme_text_light: '#a8a29e',
+            theme_bg_body: '#ffffff', theme_bg_light: '#fff7ed', theme_bg_gray: '#ffedd5', theme_bg_dark: '#431407',
             theme_success: '#10b981', theme_warning: '#f59e0b', theme_danger: '#ef4444', theme_info: '#0284c7',
-            theme_border: '#fed7aa', theme_border_light: '#ffedd5', theme_border_dark: '#fdba74',
+            theme_border: '#fdba74', theme_border_light: '#fed7aa', theme_border_dark: '#fb923c',
             // الخطوط والأحجام
             theme_font_primary: 'Montserrat', theme_font_heading: 'Montserrat',
             theme_font_size_base: '15px', theme_font_size_sm: '13px', theme_font_size_lg: '18px',
@@ -1660,7 +1661,7 @@ $(document).ready(function() {
             // ===== تركوازي - هادئ واحترافي =====
             // الألوان الأساسية
             theme_primary: '#0d9488', theme_primary_hover: '#0f766e', theme_primary_dark: '#115e59', theme_primary_light: '#f0fdfa',
-            theme_secondary: '#1f2937', theme_secondary_hover: '#374151', theme_secondary_light: '#4b5563',
+            theme_secondary: '#134e4a', theme_secondary_hover: '#115e59', theme_secondary_light: '#0f766e',
             theme_text_primary: '#111827', theme_text_secondary: '#374151', theme_text_muted: '#6b7280', theme_text_light: '#9ca3af',
             theme_bg_body: '#ffffff', theme_bg_light: '#f9fafb', theme_bg_gray: '#f0fdfa', theme_bg_dark: '#134e4a',
             theme_success: '#10b981', theme_warning: '#f59e0b', theme_danger: '#ef4444', theme_info: '#38bdf8',
@@ -1697,11 +1698,11 @@ $(document).ready(function() {
             // ===== ذهبي فاخر - رفاهية وأناقة =====
             // الألوان الأساسية
             theme_primary: '#b8860b', theme_primary_hover: '#996f09', theme_primary_dark: '#7a5807', theme_primary_light: '#fef9e7',
-            theme_secondary: '#1f2937', theme_secondary_hover: '#374151', theme_secondary_light: '#4b5563',
-            theme_text_primary: '#111827', theme_text_secondary: '#374151', theme_text_muted: '#6b7280', theme_text_light: '#9ca3af',
-            theme_bg_body: '#fffef8', theme_bg_light: '#fefbf0', theme_bg_gray: '#f5f0e1', theme_bg_dark: '#1a1a2e',
+            theme_secondary: '#1c1917', theme_secondary_hover: '#292524', theme_secondary_light: '#44403c',
+            theme_text_primary: '#422006', theme_text_secondary: '#713f12', theme_text_muted: '#78716c', theme_text_light: '#a8a29e',
+            theme_bg_body: '#fffef8', theme_bg_light: '#fef9e7', theme_bg_gray: '#fef3c7', theme_bg_dark: '#1c1917',
             theme_success: '#10b981', theme_warning: '#f59e0b', theme_danger: '#ef4444', theme_info: '#3b82f6',
-            theme_border: '#fde68a', theme_border_light: '#fef3c7', theme_border_dark: '#fbbf24',
+            theme_border: '#fcd34d', theme_border_light: '#fde68a', theme_border_dark: '#fbbf24',
             // الخطوط والأحجام
             theme_font_primary: 'Lora', theme_font_heading: 'Playfair Display',
             theme_font_size_base: '16px', theme_font_size_sm: '14px', theme_font_size_lg: '20px',
@@ -1734,11 +1735,11 @@ $(document).ready(function() {
             // ===== وردي أنيق - جمال وأناقة =====
             // الألوان الأساسية
             theme_primary: '#e11d48', theme_primary_hover: '#be123c', theme_primary_dark: '#9f1239', theme_primary_light: '#fff1f2',
-            theme_secondary: '#1f2937', theme_secondary_hover: '#374151', theme_secondary_light: '#4b5563',
-            theme_text_primary: '#111827', theme_text_secondary: '#374151', theme_text_muted: '#6b7280', theme_text_light: '#9ca3af',
-            theme_bg_body: '#ffffff', theme_bg_light: '#fdf2f4', theme_bg_gray: '#fce7eb', theme_bg_dark: '#4c0519',
+            theme_secondary: '#4c0519', theme_secondary_hover: '#881337', theme_secondary_light: '#9f1239',
+            theme_text_primary: '#4c0519', theme_text_secondary: '#881337', theme_text_muted: '#78716c', theme_text_light: '#fda4af',
+            theme_bg_body: '#ffffff', theme_bg_light: '#fff1f2', theme_bg_gray: '#ffe4e6', theme_bg_dark: '#4c0519',
             theme_success: '#10b981', theme_warning: '#f59e0b', theme_danger: '#ef4444', theme_info: '#06b6d4',
-            theme_border: '#fecdd3', theme_border_light: '#ffe4e6', theme_border_dark: '#fda4af',
+            theme_border: '#fda4af', theme_border_light: '#fecdd3', theme_border_dark: '#fb7185',
             // الخطوط والأحجام
             theme_font_primary: 'Quicksand', theme_font_heading: 'Playfair Display',
             theme_font_size_base: '15px', theme_font_size_sm: '13px', theme_font_size_lg: '18px',
@@ -1771,11 +1772,11 @@ $(document).ready(function() {
             // ===== أزرق محيطي - سياحة وسفر =====
             // الألوان الأساسية
             theme_primary: '#0891b2', theme_primary_hover: '#0e7490', theme_primary_dark: '#155e75', theme_primary_light: '#ecfeff',
-            theme_secondary: '#1f2937', theme_secondary_hover: '#374151', theme_secondary_light: '#4b5563',
-            theme_text_primary: '#111827', theme_text_secondary: '#374151', theme_text_muted: '#6b7280', theme_text_light: '#9ca3af',
-            theme_bg_body: '#ffffff', theme_bg_light: '#f0fdff', theme_bg_gray: '#cffafe', theme_bg_dark: '#164e63',
+            theme_secondary: '#164e63', theme_secondary_hover: '#155e75', theme_secondary_light: '#0e7490',
+            theme_text_primary: '#164e63', theme_text_secondary: '#155e75', theme_text_muted: '#6b7280', theme_text_light: '#67e8f9',
+            theme_bg_body: '#ffffff', theme_bg_light: '#ecfeff', theme_bg_gray: '#cffafe', theme_bg_dark: '#164e63',
             theme_success: '#10b981', theme_warning: '#f59e0b', theme_danger: '#ef4444', theme_info: '#06b6d4',
-            theme_border: '#a5f3fc', theme_border_light: '#cffafe', theme_border_dark: '#67e8f9',
+            theme_border: '#67e8f9', theme_border_light: '#a5f3fc', theme_border_dark: '#22d3ee',
             // الخطوط والأحجام
             theme_font_primary: 'Open Sans', theme_font_heading: 'Raleway',
             theme_font_size_base: '15px', theme_font_size_sm: '13px', theme_font_size_lg: '18px',
@@ -1808,11 +1809,11 @@ $(document).ready(function() {
             // ===== أخضر غابات - طبيعة وبيئة =====
             // الألوان الأساسية
             theme_primary: '#16a34a', theme_primary_hover: '#15803d', theme_primary_dark: '#166534', theme_primary_light: '#f0fdf4',
-            theme_secondary: '#1f2937', theme_secondary_hover: '#374151', theme_secondary_light: '#4b5563',
-            theme_text_primary: '#111827', theme_text_secondary: '#374151', theme_text_muted: '#6b7280', theme_text_light: '#9ca3af',
-            theme_bg_body: '#ffffff', theme_bg_light: '#f7fef9', theme_bg_gray: '#dcfce7', theme_bg_dark: '#14532d',
+            theme_secondary: '#14532d', theme_secondary_hover: '#166534', theme_secondary_light: '#15803d',
+            theme_text_primary: '#14532d', theme_text_secondary: '#166534', theme_text_muted: '#6b7280', theme_text_light: '#86efac',
+            theme_bg_body: '#ffffff', theme_bg_light: '#f0fdf4', theme_bg_gray: '#dcfce7', theme_bg_dark: '#14532d',
             theme_success: '#10b981', theme_warning: '#f59e0b', theme_danger: '#ef4444', theme_info: '#0891b2',
-            theme_border: '#bbf7d0', theme_border_light: '#dcfce7', theme_border_dark: '#86efac',
+            theme_border: '#86efac', theme_border_light: '#bbf7d0', theme_border_dark: '#4ade80',
             // الخطوط والأحجام
             theme_font_primary: 'Source Sans Pro', theme_font_heading: 'Merriweather',
             theme_font_size_base: '16px', theme_font_size_sm: '14px', theme_font_size_lg: '19px',
@@ -1882,11 +1883,11 @@ $(document).ready(function() {
             // ===== أحمر قرمزي - قوة وطاقة =====
             // الألوان الأساسية
             theme_primary: '#dc2626', theme_primary_hover: '#b91c1c', theme_primary_dark: '#991b1b', theme_primary_light: '#fef2f2',
-            theme_secondary: '#1f2937', theme_secondary_hover: '#374151', theme_secondary_light: '#4b5563',
-            theme_text_primary: '#111827', theme_text_secondary: '#374151', theme_text_muted: '#6b7280', theme_text_light: '#9ca3af',
-            theme_bg_body: '#ffffff', theme_bg_light: '#fef8f8', theme_bg_gray: '#fee2e2', theme_bg_dark: '#7f1d1d',
+            theme_secondary: '#450a0a', theme_secondary_hover: '#7f1d1d', theme_secondary_light: '#991b1b',
+            theme_text_primary: '#450a0a', theme_text_secondary: '#7f1d1d', theme_text_muted: '#78716c', theme_text_light: '#fca5a5',
+            theme_bg_body: '#ffffff', theme_bg_light: '#fef2f2', theme_bg_gray: '#fee2e2', theme_bg_dark: '#450a0a',
             theme_success: '#10b981', theme_warning: '#f59e0b', theme_danger: '#ef4444', theme_info: '#3b82f6',
-            theme_border: '#fecaca', theme_border_light: '#fee2e2', theme_border_dark: '#fca5a5',
+            theme_border: '#fca5a5', theme_border_light: '#fecaca', theme_border_dark: '#f87171',
             // الخطوط والأحجام
             theme_font_primary: 'Roboto', theme_font_heading: 'Oswald',
             theme_font_size_base: '15px', theme_font_size_sm: '13px', theme_font_size_lg: '18px',
@@ -1913,6 +1914,44 @@ $(document).ready(function() {
             theme_scrollbar_width: '8px', theme_scrollbar_track: '#fee2e2', theme_scrollbar_thumb: '#fca5a5', theme_scrollbar_thumb_hover: '#f87171',
             theme_modal_bg: '#ffffff', theme_modal_radius: '10px', theme_modal_backdrop: 'rgba(127,29,29,0.6)',
             theme_table_header_bg: '#fef8f8', theme_table_border: '#fecaca', theme_table_hover_bg: '#fee2e2'
+        },
+
+        saudi: {
+            // ===== تراث سعودي - أخضر رسمي + ذهبي + بني صحراوي =====
+            // ألوان مستوحاة من: العلم السعودي، الرمال الذهبية، العمارة التراثية
+            // الألوان الأساسية
+            theme_primary: '#006c35', theme_primary_hover: '#005529', theme_primary_dark: '#004420', theme_primary_light: '#e8f5ed',
+            theme_secondary: '#1a1510', theme_secondary_hover: '#2d261e', theme_secondary_light: '#45382a',
+            theme_text_primary: '#1a1510', theme_text_secondary: '#3d3429', theme_text_muted: '#7a6f5f', theme_text_light: '#b8a992',
+            theme_bg_body: '#fdfcfa', theme_bg_light: '#faf8f5', theme_bg_gray: '#f5f2ec', theme_bg_dark: '#1a1510',
+            theme_success: '#10b981', theme_warning: '#d4af37', theme_danger: '#c53030', theme_info: '#2c7a7b',
+            theme_border: '#d4c4a8', theme_border_light: '#e8dcc8', theme_border_dark: '#c9a962',
+            // الخطوط والأحجام - رسمي واحترافي
+            theme_font_primary: 'Cairo', theme_font_heading: 'Cairo',
+            theme_font_size_base: '15px', theme_font_size_sm: '13px', theme_font_size_lg: '18px',
+            theme_radius_xs: '2px', theme_radius_sm: '4px', theme_radius: '6px', theme_radius_lg: '8px', theme_radius_xl: '10px', theme_radius_pill: '50px',
+            theme_shadow_sm: '0 1px 2px rgba(26,21,16,0.06)', theme_shadow: '0 2px 8px rgba(26,21,16,0.08)', theme_shadow_lg: '0 6px 20px rgba(26,21,16,0.12)',
+            // الأزرار - أناقة ملكية
+            theme_btn_padding_x: '22px', theme_btn_padding_y: '11px', theme_btn_font_size: '14px', theme_btn_font_weight: '600',
+            theme_btn_radius: '4px', theme_btn_shadow: '0 1px 3px rgba(0,108,53,0.2)',
+            // البطاقات - عصرية بلمسة تراثية
+            theme_card_bg: '#ffffff', theme_card_border: '#e8dcc8', theme_card_radius: '8px',
+            theme_card_shadow: '0 2px 6px rgba(26,21,16,0.06)', theme_card_hover_shadow: '0 6px 18px rgba(0,108,53,0.1)', theme_card_padding: '22px',
+            theme_product_title_size: '14px', theme_product_title_weight: '500', theme_product_price_size: '16px', theme_product_hover_scale: '1.01',
+            // النماذج
+            theme_input_height: '46px', theme_input_bg: '#ffffff', theme_input_border: '#d4c4a8',
+            theme_input_radius: '4px', theme_input_focus_border: '#006c35', theme_input_focus_shadow: '0 0 0 3px rgba(0,108,53,0.12)', theme_input_placeholder: '#9c8d7a',
+            // الرأس - نظيف واحترافي
+            theme_header_bg: '#ffffff', theme_header_height: '70px', theme_header_shadow: '0 1px 4px rgba(26,21,16,0.08)',
+            theme_nav_link_color: '#3d3429', theme_nav_link_hover: '#006c35', theme_nav_font_size: '15px', theme_nav_font_weight: '500',
+            // التذييل - غني وفخم
+            theme_footer_bg: '#1a1510', theme_footer_text: '#f5f2ec', theme_footer_text_muted: '#b8a992',
+            theme_footer_link_hover: '#c9a962', theme_footer_padding: '55px', theme_footer_link: '#d4c4a8', theme_footer_border: '#45382a',
+            // المكونات - لمسات ذهبية
+            theme_badge_radius: '3px', theme_badge_padding: '4px 10px', theme_badge_font_size: '12px', theme_badge_font_weight: '600',
+            theme_scrollbar_width: '8px', theme_scrollbar_track: '#f5f2ec', theme_scrollbar_thumb: '#d4c4a8', theme_scrollbar_thumb_hover: '#c9a962',
+            theme_modal_bg: '#ffffff', theme_modal_radius: '10px', theme_modal_backdrop: 'rgba(26,21,16,0.65)',
+            theme_table_header_bg: '#faf8f5', theme_table_border: '#e8dcc8', theme_table_hover_bg: '#f5f2ec'
         }
     };
 
