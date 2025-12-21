@@ -38,7 +38,7 @@
                                     <!-- table data row 1 start  -->
                                     <tr>
 
-                                        <td><span class="content">{{ $seller->shop_name }}</span>
+                                        <td><span class="content">{{ getLocalizedShopName($seller) }}</span>
                                         </td>
                                         <td><span class="content">{{ $seller->owner_name }}</span>
                                         </td>

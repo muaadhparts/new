@@ -4,12 +4,18 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Storage;
 
 class Brand extends Model
 {
-    protected $fillable = ['name', 'link', 'photo'];
+    protected $fillable = ['name', 'name_ar', 'link', 'photo'];
 
     public $timestamps = false;
+
+    /**
+     * Appended attributes
+     */
+    protected $appends = ['localized_name', 'photo_url'];
 
 
     public function catalogs(): HasMany
@@ -49,6 +55,36 @@ class Brand extends Model
             return $nameAr !== '' ? $nameAr : $name;
         }
         return $name !== '' ? $name : $nameAr;
+    }
+
+    /**
+     * Get brand photo URL.
+     * Checks multiple possible storage locations.
+     */
+    public function getPhotoUrlAttribute(): ?string
+    {
+        if (empty($this->photo)) {
+            return null;
+        }
+
+        // Check if it's already a full URL
+        if (filter_var($this->photo, FILTER_VALIDATE_URL)) {
+            return $this->photo;
+        }
+
+        // Check in assets/images/brand/ (legacy location)
+        $legacyPath = public_path('assets/images/brand/' . $this->photo);
+        if (file_exists($legacyPath)) {
+            return asset('assets/images/brand/' . $this->photo);
+        }
+
+        // Check in storage
+        if (Storage::disk('public')->exists('brands/' . $this->photo)) {
+            return Storage::url('brands/' . $this->photo);
+        }
+
+        // Fallback to legacy path even if not exists
+        return asset('assets/images/brand/' . $this->photo);
     }
 
 }

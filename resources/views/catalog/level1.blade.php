@@ -12,7 +12,7 @@
                 <h2 class="breadcrumb-title">{{ $catalog->shortName ?? $catalog->name ?? $catalog->code }}</h2>
                 <ul class="bread-menu">
                     <li><a href="{{ route('front.index') }}">@lang('Home')</a></li>
-                    <li><a href="{{ route('catlogs.index', $brand->name) }}">{{ $brand->name }}</a></li>
+                    <li><a href="{{ route('catlogs.index', $brand->name) }}">{{ $brand->localized_name }}</a></li>
                     <li><a href="javascript:;">{{ $catalog->shortName ?? $catalog->name ?? $catalog->code }}</a></li>
                 </ul>
             </div>

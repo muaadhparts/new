@@ -39,10 +39,11 @@
     // NOTE: All relationships MUST be eager loaded by Controller before passing to view
     $sku = $product->sku ?? null;
     $brandName = $product->brand?->localized_name;
+    $brandLogo = $product->brand?->photo_url;
     $qualityBrand = $mp?->qualityBrand;
     $qualityBrandName = $qualityBrand?->localized_name;
     $qualityBrandLogo = $qualityBrand?->logo_url;
-    $vendorName = $mp?->user?->shop_name;
+    $vendorName = $mp?->user ? getLocalizedShopName($mp->user) : null;
     $stock = $mp?->stock;
 
     // Format stock display with colors
@@ -71,8 +72,13 @@
         @endif
 
         @if($showBrand && $brandName)
-            <span class="badge bg-light text-dark">
-                <i class="fas fa-tag me-1"></i>{{ $brandName }}
+            <span class="badge bg-light text-dark d-inline-flex align-items-center">
+                @if($brandLogo)
+                    <img src="{{ $brandLogo }}" alt="{{ $brandName }}" class="brand-logo muaadh-quality-logo-sm me-1">
+                @else
+                    <i class="fas fa-tag me-1"></i>
+                @endif
+                {{ $brandName }}
             </span>
         @endif
 
@@ -110,8 +116,12 @@
         @endif
 
         @if($showBrand && $brandName)
-            <li class="small">
-                <strong>{{ __('Brand') }}:</strong> {{ $brandName }}
+            <li class="small d-flex align-items-center">
+                <strong>{{ __('Brand') }}:</strong>
+                @if($brandLogo)
+                    <img src="{{ $brandLogo }}" alt="{{ $brandName }}" class="brand-logo muaadh-quality-logo-md mx-1">
+                @endif
+                <span class="ms-1">{{ $brandName }}</span>
             </li>
         @endif
 
@@ -153,7 +163,12 @@
                 @if($showBrand && $brandName)
                     <tr>
                         <td class="text-muted"><i class="fas fa-tag me-1"></i>{{ __('Brand') }}</td>
-                        <td>{{ $brandName }}</td>
+                        <td class="d-flex align-items-center">
+                            @if($brandLogo)
+                                <img src="{{ $brandLogo }}" alt="{{ $brandName }}" class="brand-logo muaadh-quality-logo-md me-2">
+                            @endif
+                            {{ $brandName }}
+                        </td>
                     </tr>
                 @endif
 
@@ -221,8 +236,13 @@
         @endif
 
         @if($showBrand && $brandName)
-            <span class="me-2">
-                <i class="fas fa-tag me-1"></i>{{ $brandName }}
+            <span class="me-2 d-inline-flex align-items-center">
+                @if($brandLogo)
+                    <img src="{{ $brandLogo }}" alt="{{ $brandName }}" class="brand-logo muaadh-quality-logo-xs me-1">
+                @else
+                    <i class="fas fa-tag me-1"></i>
+                @endif
+                {{ $brandName }}
             </span>
         @endif
 

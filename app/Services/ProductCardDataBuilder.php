@@ -36,10 +36,10 @@ class ProductCardDataBuilder
      * Standard eager loading for MerchantProduct queries
      */
     public const MERCHANT_PRODUCT_RELATIONS = [
-        'user:id,is_vendor,name,shop_name,email',
+        'user:id,is_vendor,name,shop_name,shop_name_ar,email',
         'qualityBrand:id,name_en,name_ar,logo',
         'product' => [
-            'brand:id,name,name_ar',
+            'brand:id,name,name_ar,photo',
         ],
     ];
 
@@ -47,7 +47,7 @@ class ProductCardDataBuilder
      * Standard eager loading for Product queries
      */
     public const PRODUCT_RELATIONS = [
-        'brand:id,name,name_ar',
+        'brand:id,name,name_ar,photo',
     ];
 
     /**
@@ -72,10 +72,10 @@ class ProductCardDataBuilder
     public function applyMerchantProductEagerLoading(Builder $query): Builder
     {
         return $query->with([
-            'user:id,is_vendor,name,shop_name,email',
+            'user:id,is_vendor,name,shop_name,shop_name_ar,email',
             'qualityBrand:id,name_en,name_ar,logo',
             'product' => function ($q) {
-                $q->with('brand:id,name,name_ar')
+                $q->with('brand:id,name,name_ar,photo')
                     ->withCount('ratings')
                     ->withAvg('ratings', 'rating');
             },
@@ -88,11 +88,11 @@ class ProductCardDataBuilder
     public function applyProductEagerLoading(Builder $query): Builder
     {
         return $query->with([
-            'brand:id,name,name_ar',
+            'brand:id,name,name_ar,photo',
             'merchantProducts' => function ($q) {
                 $q->where('status', 1)
                     ->with([
-                        'user:id,is_vendor,name,shop_name,email',
+                        'user:id,is_vendor,name,shop_name,shop_name_ar,email',
                         'qualityBrand:id,name_en,name_ar,logo',
                     ])
                     ->orderBy('price');

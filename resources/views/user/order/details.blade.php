@@ -323,7 +323,7 @@
                                     @endphp
                                     <div class="shipment-item mb-3 p-3 border rounded">
                                         <div class="d-flex justify-content-between align-items-center mb-2">
-                                            <strong>{{ $vendor->shop_name ?? $vendor->name ?? 'Vendor' }}</strong>
+                                            <strong>{{ $vendor ? getLocalizedShopName($vendor) : 'Vendor' }}</strong>
                                             <span class="badge
                                                 @if($latestShipment->status == 'delivered') bg-success
                                                 @elseif($latestShipment->status == 'in_transit') bg-primary

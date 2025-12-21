@@ -51,6 +51,7 @@ class ProductCardDTO
 
     // Brand
     public ?string $brandName;
+    public ?string $brandLogo;
 
     // Quality Brand
     public ?string $qualityBrandName;
@@ -108,11 +109,12 @@ class ProductCardDTO
         $dto->wishlistUrl = route('merchant.wishlist.add', $dto->merchantId);
         $dto->compareUrl = route('merchant.compare.add', $dto->merchantId);
 
-        // Vendor (from eager-loaded relation)
-        $dto->vendorName = $merchant->user?->shop_name;
+        // Vendor (from eager-loaded relation) - localized
+        $dto->vendorName = $merchant->user ? getLocalizedShopName($merchant->user) : null;
 
         // Brand (from eager-loaded relation)
         $dto->brandName = $product->brand?->localized_name;
+        $dto->brandLogo = $product->brand?->photo_url;
 
         // Quality Brand (from eager-loaded relation)
         $dto->qualityBrandName = $merchant->qualityBrand?->localized_name;
@@ -176,6 +178,7 @@ class ProductCardDTO
         // No vendor/brand info without merchant
         $dto->vendorName = null;
         $dto->brandName = $product->brand?->localized_name;
+        $dto->brandLogo = $product->brand?->photo_url;
         $dto->qualityBrandName = null;
         $dto->qualityBrandLogo = null;
 

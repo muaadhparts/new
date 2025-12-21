@@ -59,7 +59,7 @@ class AlternativeService
             ->with([
                 'product' => fn($q) => $q->select('id', 'sku', 'slug', 'label_en', 'label_ar', 'photo', 'brand_id')
                     ->with('brand:id,name,name_ar,photo'),
-                'user:id,is_vendor,name,shop_name',
+                'user:id,is_vendor,name,shop_name,shop_name_ar',
                 'qualityBrand:id,name_en,name_ar,logo',
             ])
             ->select([
@@ -99,7 +99,7 @@ class AlternativeService
             ->with([
                 'product' => fn($q) => $q->select('id', 'sku', 'slug', 'label_en', 'label_ar', 'photo', 'brand_id')
                     ->with('brand:id,name,name_ar,photo'),
-                'user:id,is_vendor,name,shop_name',
+                'user:id,is_vendor,name,shop_name,shop_name_ar',
                 'qualityBrand:id,name_en,name_ar,logo',
             ])
             ->select([
@@ -142,7 +142,7 @@ class AlternativeService
             ->with([
                 'product' => fn($q) => $q->select('id', 'sku', 'slug', 'label_en', 'label_ar', 'photo', 'brand_id')
                     ->with('brand:id,name,name_ar,photo'),
-                'user:id,is_vendor,name,shop_name',
+                'user:id,is_vendor,name,shop_name,shop_name_ar',
                 'qualityBrand:id,name_en,name_ar,logo',
             ])
             ->select([

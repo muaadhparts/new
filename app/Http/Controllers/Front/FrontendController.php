@@ -269,7 +269,7 @@ class FrontendController extends FrontBaseController
 
         // Cache brands and services for homepage (moved from Blade)
         $data['brands'] = Cache::remember('homepage_brands', 3600, function () {
-            return DB::table('brands')->get();
+            return \App\Models\Brand::all();
         });
 
         $data['services'] = Cache::remember('homepage_services', 3600, function () {
@@ -400,7 +400,7 @@ class FrontendController extends FrontBaseController
 
         // Cache brands and services (moved from Blade)
         $data['brands'] = Cache::remember('homepage_brands', 3600, function () {
-            return DB::table('brands')->get();
+            return \App\Models\Brand::all();
         });
 
         $data['services'] = Cache::remember('homepage_services', 3600, function () {

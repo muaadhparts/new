@@ -72,11 +72,14 @@ class VendorController extends FrontBaseController
         $prods = Product::query();
 
         // ✅ Eager load merchantProducts لتجنب N+1 query
-        $prods = $prods->with(['merchantProducts' => function ($q) use ($vendor) {
-            $q->where('user_id', $vendor->id)
-              ->where('status', 1)
-              ->with(['user:id,is_vendor,shop_name,shop_name_ar', 'qualityBrand:id,name_en,name_ar']);
-        }]);
+        $prods = $prods->with([
+            'brand:id,name,name_ar,photo',
+            'merchantProducts' => function ($q) use ($vendor) {
+                $q->where('user_id', $vendor->id)
+                  ->where('status', 1)
+                  ->with(['user:id,is_vendor,shop_name,shop_name_ar', 'qualityBrand:id,name_en,name_ar,logo']);
+            }
+        ]);
 
         // فلترة بالمزوّد المحدد و Brand Quality عبر merchant_products
         $prods = $prods->whereHas('merchantProducts', function ($q) use ($vendor, $brandQualityFilter, $request) {

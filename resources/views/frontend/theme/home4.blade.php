@@ -47,9 +47,11 @@
                 @foreach ($brands as $brand)
                     <a href="{{ route('catlogs.index', $brand->name) }}" class="muaadh-brand-card">
                         <div class="muaadh-brand-img">
-                            <img src="{{ asset('assets/images/brand/' . $brand->photo) }}" alt="{{ $brand->name }}" loading="lazy">
+                            @if($brand->photo_url)
+                                <img src="{{ $brand->photo_url }}" alt="{{ $brand->localized_name }}" loading="lazy">
+                            @endif
                         </div>
-                        <span class="muaadh-brand-name">{{ $brand->name }}</span>
+                        <span class="muaadh-brand-name">{{ $brand->localized_name }}</span>
                     </a>
                 @endforeach
             </div>

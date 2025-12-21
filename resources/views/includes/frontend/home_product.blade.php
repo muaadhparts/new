@@ -29,6 +29,7 @@
         $photo = $card->photo;
         $sku = $card->sku;
         $brandName = $card->brandName;
+        $brandLogo = $card->brandLogo ?? null;
         $qualityBrandName = $card->qualityBrandName;
         $qualityBrandLogo = $card->qualityBrandLogo ?? null;
         $vendorName = $card->vendorName;
@@ -79,9 +80,10 @@
 
         $sku = $actualProduct->sku ?? null;
         $brandName = $actualProduct->brand?->localized_name;
+        $brandLogo = $actualProduct->brand?->photo_url;
         $qualityBrandName = $merchant?->qualityBrand?->localized_name;
         $qualityBrandLogo = $merchant?->qualityBrand?->logo_url;
-        $vendorName = $merchant?->user?->shop_name ?? $merchant?->user?->name;
+        $vendorName = $merchant?->user ? getLocalizedShopName($merchant->user) : null;
 
         $offPercentage = $merchant && method_exists($merchant, 'offPercentage')
             ? $merchant->offPercentage()
@@ -169,7 +171,12 @@
                     </span>
                 @endif
                 @if($brandName)
-                    <span class="badge bg-secondary">{{ $brandName }}</span>
+                    <span class="badge bg-secondary">
+                        @if($brandLogo)
+                            <img src="{{ $brandLogo }}" alt="" class="product-card__brand-logo me-1">
+                        @endif
+                        {{ $brandName }}
+                    </span>
                 @endif
                 @if($qualityBrandName)
                     <span class="badge bg-info text-dark">
@@ -297,7 +304,12 @@
                     <span class="product-card__sku">{{ $sku }}</span>
                 @endif
                 @if($brandName)
-                    <span class="product-card__brand">{{ $brandName }}</span>
+                    <span class="product-card__brand">
+                        @if($brandLogo)
+                            <img src="{{ $brandLogo }}" alt="" class="product-card__brand-logo">
+                        @endif
+                        {{ $brandName }}
+                    </span>
                 @endif
                 @if($qualityBrandName)
                     <span class="product-card__quality">

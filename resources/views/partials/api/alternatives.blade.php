@@ -52,24 +52,29 @@
                                 <td class="text-truncate" style="max-width: 200px;">{{ getLocalizedProductName($product) }}</td>
                                 <td>
                                     @if($product->brand)
-                                        <span class="catalog-badge catalog-badge-light">{{ Str::ucfirst(getLocalizedBrandName($product->brand)) }}</span>
+                                        <span class="catalog-quality-badge">
+                                            @if($product->brand->photo_url)
+                                                <img src="{{ $product->brand->photo_url }}" alt="{{ getLocalizedBrandName($product->brand) }}" class="catalog-quality-badge__logo">
+                                            @endif
+                                            {{ Str::ucfirst(getLocalizedBrandName($product->brand)) }}
+                                        </span>
                                     @else
                                         <span class="text-muted">-</span>
                                     @endif
                                 </td>
                                 <td>
                                     @if($qualityBrand)
-                                        <div class="d-flex align-items-center gap-1">
+                                        <span class="catalog-quality-badge">
                                             @if($qualityBrand->logo)
-                                                <img src="{{ $qualityBrand->logo_url }}" alt="{{ getLocalizedQualityName($qualityBrand) }}" class="catalog-quality-logo">
+                                                <img src="{{ $qualityBrand->logo_url }}" alt="{{ getLocalizedQualityName($qualityBrand) }}" class="catalog-quality-badge__logo">
                                             @endif
-                                            <span class="small">{{ getLocalizedQualityName($qualityBrand) }}</span>
-                                        </div>
+                                            {{ getLocalizedQualityName($qualityBrand) }}
+                                        </span>
                                     @else
                                         <span class="text-muted">-</span>
                                     @endif
                                 </td>
-                                <td><span class="small">{{ $mp->user ? ($mp->user->shop_name ?: $mp->user->name) : '-' }}</span></td>
+                                <td><span class="small">{{ $mp->user ? getLocalizedShopName($mp->user) : '-' }}</span></td>
                                 <td class="text-center">
                                     @if($inStock)
                                         <span class="catalog-badge catalog-badge-success">{{ $mp->stock }}</span>
@@ -151,26 +156,31 @@
                             @if($product->brand)
                                 <div class="catalog-card-detail">
                                     <span class="catalog-card-label">@lang('Brand'):</span>
-                                    <span>{{ getLocalizedBrandName($product->brand) }}</span>
+                                    <span class="catalog-quality-badge">
+                                        @if($product->brand->photo_url)
+                                            <img src="{{ $product->brand->photo_url }}" alt="{{ getLocalizedBrandName($product->brand) }}" class="catalog-quality-badge__logo">
+                                        @endif
+                                        {{ getLocalizedBrandName($product->brand) }}
+                                    </span>
                                 </div>
                             @endif
 
                             @if($qualityBrand)
                                 <div class="catalog-card-detail">
                                     <span class="catalog-card-label">@lang('Quality'):</span>
-                                    <div class="d-inline-flex align-items-center gap-1">
+                                    <span class="catalog-quality-badge">
                                         @if($qualityBrand->logo)
-                                            <img src="{{ $qualityBrand->logo_url }}" alt="{{ getLocalizedQualityName($qualityBrand) }}" class="catalog-quality-logo" style="max-height: 18px; max-width: 40px;">
+                                            <img src="{{ $qualityBrand->logo_url }}" alt="{{ getLocalizedQualityName($qualityBrand) }}" class="catalog-quality-badge__logo">
                                         @endif
-                                        <span>{{ getLocalizedQualityName($qualityBrand) }}</span>
-                                    </div>
+                                        {{ getLocalizedQualityName($qualityBrand) }}
+                                    </span>
                                 </div>
                             @endif
 
                             @if($mp->user)
                                 <div class="catalog-card-detail">
                                     <span class="catalog-card-label">@lang('Vendor'):</span>
-                                    <span>{{ $mp->user->shop_name ?: $mp->user->name }}</span>
+                                    <span>{{ getLocalizedShopName($mp->user) }}</span>
                                 </div>
                             @endif
 

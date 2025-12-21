@@ -291,6 +291,20 @@
     padding: 2px 8px;
     border-radius: 4px;
     font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    max-width: 100%;
+    overflow: hidden;
+}
+
+.product-card__brand-logo {
+    height: 16px;
+    width: auto;
+    max-width: 40px;
+    object-fit: contain;
+    flex-shrink: 0;
+    border-radius: 2px;
 }
 
 .product-card__stock {
@@ -562,7 +576,8 @@
         padding: 2px 6px;
     }
 
-    .product-card__quality-logo {
+    .product-card__quality-logo,
+    .product-card__brand-logo {
         height: 15px;
         max-width: 36px;
     }
@@ -590,7 +605,8 @@
         gap: 3px;
     }
 
-    .product-card__quality-logo {
+    .product-card__quality-logo,
+    .product-card__brand-logo {
         height: 14px;
         max-width: 32px;
     }

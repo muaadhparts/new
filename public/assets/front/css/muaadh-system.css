@@ -1334,6 +1334,62 @@
 }
 
 /* ============================================================================
+   CATALOG QUALITY BRAND STYLES
+   ============================================================================
+   Matches product-card.css styling for consistency
+   ============================================================================ */
+
+/* Quality Brand Badge - Same as product cards */
+.catalog-quality-badge {
+    background: #dbeafe !important;
+    color: #1e40af !important;
+    padding: 2px 8px !important;
+    border-radius: 4px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 4px !important;
+    font-size: 11px !important;
+    font-weight: 500 !important;
+    max-width: 100% !important;
+    overflow: hidden !important;
+}
+
+.catalog-quality-badge__logo,
+.catalog-quality-badge img {
+    height: 16px !important;
+    width: auto !important;
+    max-width: 40px !important;
+    max-height: 16px !important;
+    object-fit: contain !important;
+    flex-shrink: 0 !important;
+    border-radius: 2px !important;
+}
+
+/* Modal specific - ensure small size */
+.modal .catalog-quality-badge__logo,
+.modal .catalog-quality-badge img,
+.ill-alt .catalog-quality-badge__logo,
+.ill-alt .catalog-quality-badge img,
+.catalog-modal-content .catalog-quality-badge__logo,
+.catalog-modal-content .catalog-quality-badge img,
+.catalog-quickview .catalog-quality-badge__logo,
+.catalog-quickview .catalog-quality-badge img {
+    height: 16px !important;
+    max-height: 16px !important;
+    max-width: 40px !important;
+}
+
+/* Table specific */
+.catalog-table .catalog-quality-badge__logo,
+.catalog-table .catalog-quality-badge img,
+table .catalog-quality-badge__logo,
+table .catalog-quality-badge img {
+    height: 16px !important;
+    max-height: 16px !important;
+    max-width: 40px !important;
+}
+
+/* ============================================================================
    PAGE BACKGROUND SYSTEM - FINAL CONVENTION
    ============================================================================
 

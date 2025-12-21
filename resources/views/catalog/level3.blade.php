@@ -12,7 +12,7 @@
                 <h2 class="breadcrumb-title text-uppercase">{{ $key2 }}</h2>
                 <ul class="bread-menu">
                     <li><a href="{{ route('front.index') }}">@lang('Home')</a></li>
-                    <li><a href="{{ route('catlogs.index', $brand->name) }}">{{ $brand->name }}</a></li>
+                    <li><a href="{{ route('catlogs.index', $brand->name) }}">{{ $brand->localized_name }}</a></li>
                     <li><a href="{{ route('tree.level1', ['brand' => $brand->name, 'catalog' => $catalog->code, 'vin' => $vin]) }}">{{ $catalog->shortName ?? $catalog->name ?? $catalog->code }}</a></li>
                     <li><a href="{{ route('tree.level2', ['brand' => $brand->name, 'catalog' => $catalog->code, 'key1' => $key1, 'vin' => $vin]) }}" class="text-uppercase">{{ $key1 }}</a></li>
                     <li><a href="javascript:;" class="text-uppercase">{{ $key2 }}</a></li>

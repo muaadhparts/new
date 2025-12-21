@@ -1,6 +1,6 @@
 @extends('layouts.front')
 
-@section('title', $brand->name . ' - ' . __('Catalogs'))
+@section('title', $brand->localized_name . ' - ' . __('Catalogs'))
 
 @section('content')
 {{-- Breadcrumb Banner --}}
@@ -9,11 +9,11 @@
     <div class="container">
         <div class="row justify-content-center content-wrapper">
             <div class="col-12">
-                <h2 class="breadcrumb-title">{{ $brand->name }}</h2>
+                <h2 class="breadcrumb-title">{{ $brand->localized_name }}</h2>
                 <ul class="bread-menu">
                     <li><a href="{{ route('front.index') }}">@lang('Home')</a></li>
                     <li><a href="javascript:;">@lang('Catalogs')</a></li>
-                    <li><a href="javascript:;">{{ $brand->name }}</a></li>
+                    <li><a href="javascript:;">{{ $brand->localized_name }}</a></li>
                 </ul>
             </div>
         </div>

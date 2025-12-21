@@ -325,7 +325,7 @@
                                         <ul>
                                             <li>
                                                 <span><b>@lang('Shop Name :')</b></span>
-                                                <span>{{ $vendor->shop_name }}</span>
+                                                <span>{{ getLocalizedShopName($vendor) }}</span>
                                             </li>
                                             <li>
                                                 <span><b>@lang('Shop Phone :')</b></span>
@@ -446,7 +446,7 @@
                                         <ul>
                                             <li>
                                                 <span><b>@lang('Shop Name :')</b></span>
-                                                <span>{{ $vendor->shop_name }}</span>
+                                                <span>{{ getLocalizedShopName($vendor) }}</span>
                                             </li>
                                             <li>
                                                 <span><b>@lang('Shop Phone :')</b></span>

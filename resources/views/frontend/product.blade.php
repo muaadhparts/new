@@ -530,7 +530,7 @@
                         <!-- store & seller - STRICT: $merchant validated at top of view -->
                         <div class="store-seller-wrapper">
                             <span> <b>@lang('Sold By :')</b>
-                                {{ $merchant->user->shop_name }}
+                                {{ getLocalizedShopName($merchant->user) }}
                                 @if ($merchant->user->checkStatus())
                                     <a class="verify-link" href="javascript:;" data-original-title="">
                                         {{ __('Verified') }} <i class="fas fa-check-circle"></i>

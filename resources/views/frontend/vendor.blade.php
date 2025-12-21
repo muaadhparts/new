@@ -28,7 +28,7 @@
                                 <img src="{{ asset('assets/images/users/' . $vendor->photo) }}" alt="vendor img">
                             </div>
                             <ul>
-                                <li><span><b>@lang('Store Name:') </b>{{ app()->getLocale() === 'ar' && $vendor->shop_name_ar ? $vendor->shop_name_ar : $vendor->shop_name }}</span></li>
+                                <li><span><b>@lang('Store Name:') </b>{{ getLocalizedShopName($vendor) }}</span></li>
                                 <li><span><b>@lang('Owner Name:') </b>{{ $vendor->owner_name }}</span></li>
                                 <li><span><b>@lang('Phone:') </b> {{ $vendor->shop_number }}</span></li>
                                 <li><span><b>@lang('Email:') </b>{{ $vendor->email }}</span></li>

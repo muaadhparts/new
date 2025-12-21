@@ -217,7 +217,8 @@ class CartHelper
                 'type' => $product->type ?? 'Physical',
 
                 // معلومات التاجر
-                'vendor_name' => $mp->user->shop_name ?? $mp->user->name ?? '',
+                'vendor_name' => getLocalizedShopName($mp->user),
+                'shop_name_ar' => $mp->user->shop_name_ar ?? '',
                 'brand_name' => $mp->qualityBrand->brand->name ?? '',
                 'quality_name' => $mp->qualityBrand->name ?? '',
 

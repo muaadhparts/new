@@ -4,7 +4,7 @@
     // Handle catalog as object or string code
     if (is_object($catalog)) {
         $catalogCode = $catalog->code ?? '';
-        $brandName = $catalog->brand->name ?? '';
+        $brandName = $catalog->brand ? $catalog->brand->localized_name : '';
         $catalogObject = $catalog;
     } else {
         $catalogCode = $catalog ?? '';

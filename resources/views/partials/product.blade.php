@@ -150,14 +150,14 @@
                             <tr>
                                 <td class="catalog-info-label"><i class="fas fa-certificate"></i> @lang('Quality')</td>
                                 <td class="catalog-info-value">
-                                    <div class="catalog-quickview-quality">
+                                    <span class="catalog-quality-badge">
                                         @if($qualityBrand->logo)
                                             <img src="{{ $qualityBrand->logo_url }}"
                                                  alt="{{ getLocalizedQualityName($qualityBrand) }}"
-                                                 class="catalog-quickview-quality-logo">
+                                                 class="catalog-quality-badge__logo">
                                         @endif
-                                        <span>{{ getLocalizedQualityName($qualityBrand) }}</span>
-                                    </div>
+                                        {{ getLocalizedQualityName($qualityBrand) }}
+                                    </span>
                                 </td>
                             </tr>
                         @endif
@@ -166,7 +166,7 @@
                         @if($vendor)
                             <tr>
                                 <td class="catalog-info-label"><i class="fas fa-store"></i> @lang('Vendor')</td>
-                                <td class="catalog-info-value">{{ $vendor->shop_name ?: $vendor->name }}</td>
+                                <td class="catalog-info-value">{{ getLocalizedShopName($vendor) }}</td>
                             </tr>
                         @endif
 

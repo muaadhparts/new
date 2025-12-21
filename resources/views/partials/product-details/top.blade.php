@@ -448,7 +448,7 @@
              <div class="pro-details-sidebar-item mb-4">
                 <span>{{ __('Sold By') }}</span>
                 <h5>@if(isset($merchant) && $merchant->user)
-                    {{ $merchant->user->shop_name }}
+                    {{ getLocalizedShopName($merchant->user) }}
                   @if($merchant->user->checkStatus())
                   <br>
                   <a class="verify-link" href="javascript:;" data-bs-toggle="tooltip" data-placement="top" title=""

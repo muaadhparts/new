@@ -329,7 +329,7 @@
                             <td><h6 class="td-title">@lang('Vendor')</h6></td>
                             @foreach ($processedProducts as $mpId => $product)
                                 <td>
-                                    <span class="table-value">{{ $product['merchant_product'] && $product['merchant_product']->user ? $product['merchant_product']->user->shop_name : __('N/A') }}</span>
+                                    <span class="table-value">{{ $product['merchant_product'] && $product['merchant_product']->user ? getLocalizedShopName($product['merchant_product']->user) : __('N/A') }}</span>
                                 </td>
                             @endforeach
                         </tr>

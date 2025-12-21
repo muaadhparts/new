@@ -52,7 +52,7 @@ class SearchResultsController extends Controller
         // Query 1: Get available filters (lightweight - no eager loading needed)
         $filtersQuery = MerchantProduct::whereIn('product_id', $productIds)
             ->where('status', 1)
-            ->with(['user:id,shop_name', 'qualityBrand:id,name_en,name_ar']);
+            ->with(['user:id,shop_name,shop_name_ar', 'qualityBrand:id,name_en,name_ar']);
 
         $allForFilters = $filtersQuery->get(['id', 'user_id', 'brand_quality_id']);
         $availableStores = $allForFilters->pluck('user')->filter()->unique('id')->keyBy('id');

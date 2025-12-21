@@ -18,7 +18,7 @@
 
                     {{-- Brand --}}
                     @if($brand)
-                    <li><a href="{{ route('catlogs.index', $brand->name) }}">{{ $brand->name }}</a></li>
+                    <li><a href="{{ route('catlogs.index', $brand->name) }}">{{ $brand->localized_name }}</a></li>
                     @endif
 
                     {{-- Catalog --}}
