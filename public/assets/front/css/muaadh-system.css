@@ -2643,3 +2643,40 @@ select option {
     }
 }
 
+/* ============================================================================
+   SECTION: FILTER SCROLL BOX
+   ============================================================================
+   Scrollable container for filter lists (Vendor, Brand Quality, etc.)
+   ============================================================================ */
+
+.m-filter-scroll-box {
+    max-height: 200px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--action-primary) var(--surface-secondary);
+    padding-right: 0.5rem;
+}
+
+.m-filter-scroll-box::-webkit-scrollbar {
+    width: 6px;
+}
+
+.m-filter-scroll-box::-webkit-scrollbar-track {
+    background: var(--surface-secondary);
+    border-radius: 3px;
+}
+
+.m-filter-scroll-box::-webkit-scrollbar-thumb {
+    background: var(--action-primary);
+    border-radius: 3px;
+}
+
+.m-filter-scroll-box::-webkit-scrollbar-thumb:hover {
+    background: var(--action-primary-hover);
+}
+
+/* Fix checkbox icon color to use theme */
+.m-filter-scroll-box .gs-checkbox-wrapper .icon-label svg path {
+    stroke: var(--action-primary);
+}
+

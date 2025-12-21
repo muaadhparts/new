@@ -347,7 +347,7 @@
                         @if(isset($vendors) && $vendors->count() > 0)
                         <div class="single-product-widget">
                             <h5 class="widget-title">@lang('Vendor')</h5>
-                            <div class="warranty-type">
+                            <div class="warranty-type m-filter-scroll-box">
                                 <ul>
                                     @foreach ($vendors as $vendor)
                                         <li class="gs-checkbox-wrapper">
@@ -360,7 +360,7 @@
                                                 for="vendor_{{ $vendor->user_id }}">
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="12"
                                                     height="12" viewBox="0 0 12 12" fill="none">
-                                                    <path d="M10 3L4.5 8.5L2 6" stroke="#EE1243"
+                                                    <path d="M10 3L4.5 8.5L2 6" stroke="currentColor"
                                                         stroke-width="1.6666" stroke-linecap="round"
                                                         stroke-linejoin="round" />
                                                 </svg>
@@ -377,7 +377,7 @@
                         @if(isset($brand_qualities) && $brand_qualities->count() > 0)
                         <div class="single-product-widget">
                             <h5 class="widget-title">@lang('Brand Quality')</h5>
-                            <div class="warranty-type">
+                            <div class="warranty-type m-filter-scroll-box">
                                 <ul>
                                     @foreach ($brand_qualities as $quality)
                                         <li class="gs-checkbox-wrapper">
@@ -390,7 +390,7 @@
                                                 for="brand_quality_{{ $quality->id }}">
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="12"
                                                     height="12" viewBox="0 0 12 12" fill="none">
-                                                    <path d="M10 3L4.5 8.5L2 6" stroke="#EE1243"
+                                                    <path d="M10 3L4.5 8.5L2 6" stroke="currentColor"
                                                         stroke-width="1.6666" stroke-linecap="round"
                                                         stroke-linejoin="round" />
                                                 </svg>
