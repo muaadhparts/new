@@ -1,48 +1,58 @@
+{{-- AJAX Response for Category Products --}}
 @php
-    // Default to list-view for first visit
-    $view = Session::get('view', 'list-view');
+    $view = request()->input('view_check', session('view', 'grid-view'));
+    $products = $cards ?? $prods;
 @endphp
 
-@if (count($cards ?? $prods) > 0)
-<div class="col-lg-12">
+@if (count($products) > 0)
+{{-- Products Content --}}
+<div id="ajax-products-content">
     <div class="tab-content" id="myTabContent">
-        {{-- LIST VIEW --}}
-        <div class="tab-pane fade {{ $view == 'list-view' ? 'show active' : '' }}" id="layout-list-pane" role="tabpanel" tabindex="0">
-            <div class="row gy-4 gy-lg-5 mt-20">
-                @foreach ($cards ?? $prods as $card)
+        <!-- product list view -->
+        <div class="tab-pane fade {{ $view == 'list-view' ? 'show active' : '' }}"
+            id="layout-list-pane" role="tabpanel" tabindex="0">
+            <div class="row gy-4">
+                @foreach ($products as $card)
                     @include('includes.frontend.home_product', ['card' => $card, 'layout' => 'list'])
                 @endforeach
             </div>
         </div>
 
-        {{-- GRID VIEW --}}
-        <div class="tab-pane fade {{ $view == 'grid-view' ? 'show active' : '' }}" id="layout-grid-pane" role="tabpanel" tabindex="0">
-            <div class="row gy-4 gy-lg-5 mt-20">
-                @foreach ($cards ?? $prods as $card)
+        <!-- product grid view -->
+        <div class="tab-pane fade {{ $view == 'grid-view' ? 'show active' : '' }}"
+            id="layout-grid-pane" role="tabpanel" tabindex="0">
+            <div class="row gy-4">
+                @foreach ($products as $card)
                     @include('includes.frontend.home_product', ['card' => $card, 'layout' => 'grid', 'class' => 'col-6 col-md-4 col-lg-3'])
                 @endforeach
             </div>
         </div>
     </div>
-    {{ ($cards ?? $prods)->links('includes.frontend.pagination') }}
 </div>
+
+{{-- Pagination Data (JSON for JavaScript) --}}
+<script type="application/json" id="ajax-pagination-data">
+{
+    "currentPage": {{ $prods->currentPage() }},
+    "lastPage": {{ $prods->lastPage() }},
+    "total": {{ $prods->total() }},
+    "hasMorePages": {{ $prods->hasMorePages() ? 'true' : 'false' }},
+    "onFirstPage": {{ $prods->onFirstPage() ? 'true' : 'false' }}
+}
+</script>
 @else
-<div class="col-lg-12">
-    <div class="page-center">
-        <h4 class="text-center">{{ __('No Product Found.') }}</h4>
+<div id="ajax-products-content">
+    <div class="page-center py-5 text-center">
+        <h4>{{ __('No Product Found.') }}</h4>
     </div>
 </div>
-@endif
-
-<script>
-    $('[data-bs-toggle="tooltip"]').tooltip({});
-    $('[rel-toggle="tooltip"]').tooltip();
-
-    $('[data-bs-toggle="tooltip"]').on('click', function () {
-        $(this).tooltip('hide');
-    });
-
-    $('[rel-toggle="tooltip"]').on('click', function () {
-        $(this).tooltip('hide');
-    });
+<script type="application/json" id="ajax-pagination-data">
+{
+    "currentPage": 1,
+    "lastPage": 1,
+    "total": 0,
+    "hasMorePages": false,
+    "onFirstPage": true
+}
 </script>
+@endif

@@ -403,54 +403,6 @@
                         </div>
                         @endif
 
-                        <!-- Recent Product-->
-                        <div class="single-product-widget">
-                            <h5 class="widget-title">@lang('Recent Product')</h5>
-                            <div class="gs-recent-post-widget">
-                                @foreach ($latest_products as $product)
-                                    @php
-                                        // ✅ N+1 FIX: Use eager-loaded best_merchant_product
-                                        $recentMerchant = $product->best_merchant_product;
-
-                                        $recentProductUrl = $recentMerchant && $product['slug']
-                                            ? route('front.product', ['slug' => $product['slug'], 'vendor_id' => $recentMerchant->user_id, 'merchant_product_id' => $recentMerchant->id])
-                                            : ($product['slug'] ? route('front.product.legacy', $product['slug']) : '#');
-                                    @endphp
-                                    <a href="{{ $recentProductUrl }}">
-
-                                        <div class="gs-single-recent-product-widget">
-                                            <div class="img-wrapper">
-                                                <img class="thumb"
-                                                    src="{{ filter_var($product['photo'] ?? '', FILTER_VALIDATE_URL) ? $product['photo'] : (($product['photo'] ?? null) ? \Illuminate\Support\Facades\Storage::url($product['photo']) : asset('assets/images/noimage.png')) }}"
-                                                    alt="product img">
-                                            </div>
-                                            <div class="content-wrapper">
-                                                <h6 class="title">{{ $product->localized_name }}</h6>
-                                                <div class="price-wrapper">
-                                                    <span
-                                                        class="price">{{ PriceHelper::showPrice($product['price']) }}</span>
-                                                    <span
-                                                        class="price"><del>{{ PriceHelper::showPrice($product['previous_price']) }}</del></span>
-                                                </div>
-                                                <div class="rating-wrapper">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14"
-                                                        viewBox="0 0 14 14" fill="none">
-                                                        <path
-                                                            d="M7 0.5L8.5716 5.33688H13.6574L9.5429 8.32624L11.1145 13.1631L7 10.1738L2.8855 13.1631L4.4571 8.32624L0.342604 5.33688H5.4284L7 0.5Z"
-                                                            fill="#EEAE0B" />
-                                                    </svg>
-                                                    <span
-                                                        class="rating">{{ number_format($product->ratings_avg_rating ?? 0, 1) }}
-                                                        ({{ $product->ratings_count ?? 0 }})
-                                                    </span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </a>
-                                @endforeach
-
-                            </div>
-                        </div>
                     </div>
                 </div>
                 <div class="col-12 col-lg-8 col-xl-9 gs-main-blog-wrapper products-column">
@@ -514,29 +466,63 @@
                             <h5>@lang('No Product Found')</h5>
                         </div>
                     @else
-                        <!-- main content -->
-                        <div class="tab-content" id="myTabContent">
-                            <!-- product list view start  -->
-                            <div class="tab-pane fade {{ $view == 'list-view' ? 'show active' : '' }}"
-                                id="layout-list-pane" role="tabpanel" tabindex="0">
-                                <div class="row gy-4 gy-lg-5 mt-20 ">
-                                    @foreach ($cards as $card)
-                                        @include('includes.frontend.home_product', ['card' => $card, 'layout' => 'list'])
-                                    @endforeach
-                                </div>
-                            </div>
+                        <!-- main content inside scrollable box -->
+                        <div class="category-products-box">
+                            <div class="category-products-scroll">
+                                <div class="tab-content" id="myTabContent">
+                                    <!-- product list view start  -->
+                                    <div class="tab-pane fade {{ $view == 'list-view' ? 'show active' : '' }}"
+                                        id="layout-list-pane" role="tabpanel" tabindex="0">
+                                        <div class="row gy-4">
+                                            @foreach ($cards as $card)
+                                                @include('includes.frontend.home_product', ['card' => $card, 'layout' => 'list'])
+                                            @endforeach
+                                        </div>
+                                    </div>
 
-                            <div class="tab-pane fade {{ $view == 'grid-view' ? 'show active' : '' }}  "
-                                id="layout-grid-pane" role="tabpanel" tabindex="0">
-                                <div class="row gy-4 gy-lg-5 mt-20">
-                                    @foreach ($cards as $card)
-                                        @include('includes.frontend.home_product', ['card' => $card, 'layout' => 'grid', 'class' => 'col-6 col-md-4 col-lg-3'])
-                                    @endforeach
+                                    <div class="tab-pane fade {{ $view == 'grid-view' ? 'show active' : '' }}"
+                                        id="layout-grid-pane" role="tabpanel" tabindex="0">
+                                        <div class="row gy-4">
+                                            @foreach ($cards as $card)
+                                                @include('includes.frontend.home_product', ['card' => $card, 'layout' => 'grid', 'class' => 'col-6 col-md-4 col-lg-3'])
+                                            @endforeach
+                                        </div>
+                                    </div>
+                                    <!-- product grid view end  -->
                                 </div>
                             </div>
-                            <!-- product grid view end  -->
+                            <!-- Pagination outside scroll area -->
+                            <div class="category-products-pagination">
+                                <div class="m-pagination-simple"
+                                     data-current="{{ $prods->currentPage() }}"
+                                     data-last="{{ $prods->lastPage() }}"
+                                     data-total="{{ $prods->total() }}">
+
+                                    {{-- Previous Button --}}
+                                    <button type="button" class="m-pagination-simple__btn m-pagination-simple__prev {{ $prods->onFirstPage() ? 'm-pagination-simple__btn--disabled' : '' }}"
+                                            {{ $prods->onFirstPage() ? 'disabled' : '' }}>
+                                        <i class="fas fa-chevron-{{ app()->getLocale() === 'ar' ? 'right' : 'left' }}"></i>
+                                    </button>
+
+                                    {{-- Page Input --}}
+                                    <div class="m-pagination-simple__input-group">
+                                        <input type="number"
+                                               class="m-pagination-simple__input"
+                                               value="{{ $prods->currentPage() }}"
+                                               min="1"
+                                               max="{{ $prods->lastPage() }}">
+                                        <span class="m-pagination-simple__separator">@lang('of')</span>
+                                        <span class="m-pagination-simple__total">{{ $prods->lastPage() }}</span>
+                                    </div>
+
+                                    {{-- Next Button --}}
+                                    <button type="button" class="m-pagination-simple__btn m-pagination-simple__next {{ !$prods->hasMorePages() ? 'm-pagination-simple__btn--disabled' : '' }}"
+                                            {{ !$prods->hasMorePages() ? 'disabled' : '' }}>
+                                        <i class="fas fa-chevron-{{ app()->getLocale() === 'ar' ? 'left' : 'right' }}"></i>
+                                    </button>
+                                </div>
+                            </div>
                         </div>
-                        {{ $prods->links('includes.frontend.pagination') }}
                     @endif
 
                 </div>
@@ -553,106 +539,274 @@
 
 @section('script')
     <script>
-        $(document).on("click", "#price_filter", function() {
-            let amountString = $("#amount").val();
+        (function($) {
+            "use strict";
 
-            amountString = amountString.replace(/\$/g, '');
+            // ========================================
+            // Category Products AJAX System
+            // ========================================
+            const baseUrl = '{{ route('front.category', [Request::route('category'), Request::route('subcategory'), Request::route('childcategory')]) }}';
+            const $scrollContainer = $('.category-products-scroll');
+            const $productsContainer = $('.category-products-scroll');
+            const $paginationContainer = $('.m-pagination-simple');
+            const $totalProducts = $('.product-nav-wrapper h5').first();
 
-            // Split the string into two amounts
-            let amounts = amountString.split('-');
+            let isLoading = false;
+            let currentPage = parseInt($paginationContainer.data('current')) || 1;
+            let lastPage = parseInt($paginationContainer.data('last')) || 1;
 
-            // Trim whitespace from each amount
-            let amount1 = amounts[0].trim();
-            let amount2 = amounts[1].trim();
-
-
-            $("#update_min_price").val(amount1);
-            $("#update_max_price").val(amount2);
-
-            filter();
-
-        });
-
-
-
-        // when dynamic attribute changes
-        $(".attribute-input, #sortby, #pageby").on('change', function() {
-            $(".ajax-loader").show();
-            filter();
-        });
-
-        function filter() {
-            let filterlink =
-                '{{ route('front.category', [Request::route('category'), Request::route('subcategory'), Request::route('childcategory')]) }}';
-
-            let params = new URLSearchParams();
-
-
-            $(".attribute-input").each(function() {
-                if ($(this).is(':checked')) {
-                    params.append($(this).attr('name'), $(this).val());
-                }
-            });
-
-            if ($("#sortby").val() != '') {
-                params.append($("#sortby").attr('name'), $("#sortby").val());
-            }
-
-            if ($("#start_value").val() != '') {
-                params.append($("#start_value").attr('name'), $("#start_value").val());
-            }
-
-            let check_view = $('.check_view.active').data('shopview');
-
-            if (check_view) {
-                params.append('view_check', check_view);
-            }
-
-            if ($("#update_min_price").val() != '') {
-                params.append('min', $("#update_min_price").val());
-            }
-            if ($("#update_max_price").val() != '') {
-                params.append('max', $("#update_max_price").val());
-            }
-
-            filterlink += '?' + params.toString();
-
-            console.log(filterlink);
-            location.href = filterlink;
-        }
-
-        // append parameters to pagination links
-        function addToPagination() {
-            $('ul.pagination li a').each(function() {
-                let url = $(this).attr('href');
-                let queryString = '?' + url.split('?')[1]; // "?page=1234...."
-                let urlParams = new URLSearchParams(queryString);
-                let page = urlParams.get('page'); // value of 'page' parameter
-
-                let fullUrl =
-                    '{{ route('front.category', [Request::route('category'), Request::route('subcategory'), Request::route('childcategory')]) }}';
+            // ========================================
+            // Build URL with all current filters
+            // ========================================
+            function buildUrl(page) {
                 let params = new URLSearchParams();
 
-                $(".attribute-input").each(function() {
-                    if ($(this).is(':checked')) {
-                        params.append($(this).attr('name'), $(this).val());
-                    }
+                // Page
+                if (page && page > 1) {
+                    params.set('page', page);
+                }
+
+                // All filter checkboxes (Brand Quality, Vendor, etc.)
+                $(".attribute-input:checked").each(function() {
+                    params.append($(this).attr('name'), $(this).val());
                 });
 
-                if ($("#sortby").val() != '') {
-                    params.append('sort', $("#sortby").val());
+                // Sort
+                const sortVal = $("#sortby").val();
+                if (sortVal && sortVal !== '') {
+                    params.set('sort', sortVal);
                 }
 
-
-                if ($("#pageby").val() != '') {
-                    params.append('pageby', $("#pageby").val());
+                // Price filter
+                const minPrice = $("#update_min_price").val();
+                const maxPrice = $("#update_max_price").val();
+                if (minPrice && minPrice !== '') {
+                    params.set('min', minPrice);
+                }
+                if (maxPrice && maxPrice !== '') {
+                    params.set('max', maxPrice);
                 }
 
-                params.append('page', page);
+                // View mode
+                const viewMode = $('.check_view.active').data('shopview');
+                if (viewMode) {
+                    params.set('view_check', viewMode);
+                }
 
-                $(this).attr('href', fullUrl + '?' + params.toString());
+                const queryString = params.toString();
+                return queryString ? baseUrl + '?' + queryString : baseUrl;
+            }
+
+            // ========================================
+            // Load content via AJAX
+            // ========================================
+            function loadContent(page, updateHistory = true) {
+                if (isLoading) return;
+
+                page = page || 1;
+                isLoading = true;
+
+                // Show loading state
+                $scrollContainer.addClass('is-loading');
+                $paginationContainer.find('.m-pagination-simple__btn').prop('disabled', true);
+
+                const url = buildUrl(page);
+
+                $.ajax({
+                    url: url,
+                    type: 'GET',
+                    dataType: 'html',
+                    success: function(response) {
+                        // Parse response
+                        const $response = $('<div>').html(response);
+                        const $newContent = $response.find('#myTabContent');
+                        const $paginationData = $response.find('#ajax-pagination-data');
+
+                        // Update products content
+                        if ($newContent.length) {
+                            $productsContainer.find('#myTabContent').replaceWith($newContent);
+                        }
+
+                        // Update pagination data from JSON
+                        if ($paginationData.length) {
+                            try {
+                                const data = JSON.parse($paginationData.text());
+                                currentPage = data.currentPage;
+                                lastPage = data.lastPage;
+
+                                // Update total products count
+                                $totalProducts.html('@lang("Total Products Found:") ' + data.total);
+                            } catch(e) {
+                                currentPage = page;
+                            }
+                        } else {
+                            currentPage = page;
+                        }
+
+                        // Update pagination UI
+                        updatePaginationUI();
+
+                        // Scroll to top of container
+                        $scrollContainer.scrollTop(0);
+
+                        // Update URL without reload
+                        if (updateHistory) {
+                            history.pushState({page: currentPage, url: url}, '', url);
+                        }
+
+                        // Reinitialize tooltips
+                        $('[data-bs-toggle="tooltip"]').tooltip({});
+                        $('[rel-toggle="tooltip"]').tooltip();
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('AJAX Error:', error);
+                        // Fallback to normal navigation on error
+                        window.location.href = url;
+                    },
+                    complete: function() {
+                        isLoading = false;
+                        $scrollContainer.removeClass('is-loading');
+                        updatePaginationUI();
+                    }
+                });
+            }
+
+            // ========================================
+            // Update Pagination UI
+            // ========================================
+            function updatePaginationUI() {
+                const $input = $paginationContainer.find('.m-pagination-simple__input');
+                const $prevBtn = $paginationContainer.find('.m-pagination-simple__prev');
+                const $nextBtn = $paginationContainer.find('.m-pagination-simple__next');
+                const $total = $paginationContainer.find('.m-pagination-simple__total');
+
+                // Update input and total
+                $input.val(currentPage).attr('max', lastPage);
+                $total.text(lastPage);
+
+                // Update prev button
+                if (currentPage <= 1) {
+                    $prevBtn.addClass('m-pagination-simple__btn--disabled').prop('disabled', true);
+                } else {
+                    $prevBtn.removeClass('m-pagination-simple__btn--disabled').prop('disabled', false);
+                }
+
+                // Update next button
+                if (currentPage >= lastPage) {
+                    $nextBtn.addClass('m-pagination-simple__btn--disabled').prop('disabled', true);
+                } else {
+                    $nextBtn.removeClass('m-pagination-simple__btn--disabled').prop('disabled', false);
+                }
+            }
+
+            // ========================================
+            // Filter Events (Brand Quality, Vendor, Sort)
+            // ========================================
+            $(".attribute-input, #sortby").on('change', function() {
+                // Reset to page 1 when filter changes
+                currentPage = 1;
+                loadContent(1);
             });
-        }
+
+            // ========================================
+            // Price Filter
+            // ========================================
+            $(document).on("click", "#price_filter", function() {
+                let amountString = $("#amount").val();
+                amountString = amountString.replace(/\$/g, '');
+
+                let amounts = amountString.split('-');
+                let amount1 = amounts[0].trim();
+                let amount2 = amounts[1].trim();
+
+                $("#update_min_price").val(amount1);
+                $("#update_max_price").val(amount2);
+
+                // Reset to page 1 and load
+                currentPage = 1;
+                loadContent(1);
+            });
+
+            // ========================================
+            // Pagination Events
+            // ========================================
+            // Previous button
+            $paginationContainer.on('click', '.m-pagination-simple__prev', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                if (!$(this).prop('disabled') && !isLoading && currentPage > 1) {
+                    loadContent(currentPage - 1);
+                }
+                return false;
+            });
+
+            // Next button
+            $paginationContainer.on('click', '.m-pagination-simple__next', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                if (!$(this).prop('disabled') && !isLoading && currentPage < lastPage) {
+                    loadContent(currentPage + 1);
+                }
+                return false;
+            });
+
+            // Input - Enter key
+            $paginationContainer.on('keydown', '.m-pagination-simple__input', function(e) {
+                if (e.which === 13) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    let page = parseInt($(this).val()) || 1;
+                    page = Math.max(1, Math.min(page, lastPage));
+                    if (page !== currentPage) {
+                        loadContent(page);
+                    }
+                    $(this).blur();
+                    return false;
+                }
+            });
+
+            // Input - Blur
+            $paginationContainer.on('blur', '.m-pagination-simple__input', function() {
+                let page = parseInt($(this).val()) || currentPage;
+                page = Math.max(1, Math.min(page, lastPage));
+                if (page !== currentPage) {
+                    loadContent(page);
+                } else {
+                    $(this).val(currentPage);
+                }
+            });
+
+            // ========================================
+            // Browser History (Back/Forward)
+            // ========================================
+            $(window).on('popstate', function(e) {
+                const state = e.originalEvent.state;
+                if (state && state.page) {
+                    // Update checkboxes and sort from URL
+                    const urlParams = new URLSearchParams(window.location.search);
+
+                    // Update sort dropdown
+                    const sortVal = urlParams.get('sort') || 'date_desc';
+                    $('#sortby').val(sortVal);
+
+                    // Update filter checkboxes
+                    $('.attribute-input').prop('checked', false);
+                    urlParams.forEach(function(value, key) {
+                        if (key.endsWith('[]')) {
+                            $('input[name="' + key + '"][value="' + value + '"]').prop('checked', true);
+                        }
+                    });
+
+                    // Load content without adding to history
+                    currentPage = state.page;
+                    loadContent(state.page, false);
+                }
+            });
+
+            // Set initial state
+            history.replaceState({page: currentPage, url: window.location.href}, '', window.location.href);
+
+        })(jQuery);
     </script>
 
     <script type="text/javascript">
@@ -691,7 +845,63 @@
 
             // Load categories data from JSON
             const categoriesData = JSON.parse($('#categories-data').text() || '[]');
-            const baseUrl = '{{ route("front.category") }}';
+            const categoryBaseUrl = '{{ route("front.category") }}';
+
+            // Reference to AJAX system from main script
+            const $scrollContainer = $('.category-products-scroll');
+            const $productsContainer = $('.category-products-scroll');
+            const $paginationContainer = $('.m-pagination-simple');
+            const $totalProducts = $('.product-nav-wrapper h5').first();
+
+            // Load category content via AJAX
+            function loadCategoryContent(url) {
+                $scrollContainer.addClass('is-loading');
+
+                $.ajax({
+                    url: url,
+                    type: 'GET',
+                    dataType: 'html',
+                    success: function(response) {
+                        const $response = $('<div>').html(response);
+                        const $newContent = $response.find('#myTabContent');
+                        const $paginationData = $response.find('#ajax-pagination-data');
+                        const $newPagination = $response.find('.m-pagination-simple');
+
+                        // Update products content
+                        if ($newContent.length) {
+                            $productsContainer.find('#myTabContent').replaceWith($newContent);
+                        }
+
+                        // Update pagination
+                        if ($newPagination.length && $paginationContainer.length) {
+                            $paginationContainer.replaceWith($newPagination);
+                        }
+
+                        // Update total products count
+                        if ($paginationData.length) {
+                            try {
+                                const data = JSON.parse($paginationData.text());
+                                $totalProducts.html('@lang("Total Products Found:") ' + data.total);
+                            } catch(e) {}
+                        }
+
+                        // Scroll to top
+                        $scrollContainer.scrollTop(0);
+
+                        // Update URL
+                        history.pushState({categoryUrl: url}, '', url);
+
+                        // Reinitialize tooltips
+                        $('[data-bs-toggle="tooltip"]').tooltip({});
+                    },
+                    error: function() {
+                        window.location.href = url;
+                    },
+                    complete: function() {
+                        $scrollContainer.removeClass('is-loading');
+                    }
+                });
+            }
 
             // Main Category Change
             $('#main-category-select').on('change', function() {
@@ -708,8 +918,8 @@
                 $childcatStep.addClass('d-none');
 
                 if (!selectedSlug) {
-                    // Go to base category page
-                    window.location.href = baseUrl;
+                    // Load base category page via AJAX
+                    loadCategoryContent(categoryBaseUrl);
                     return;
                 }
 
@@ -726,8 +936,8 @@
                     $subcatStep.removeClass('d-none');
                 }
 
-                // Navigate to category page
-                window.location.href = baseUrl + '/' + selectedSlug;
+                // Load category page via AJAX
+                loadCategoryContent(categoryBaseUrl + '/' + selectedSlug);
             });
 
             // Subcategory Change
@@ -742,8 +952,8 @@
                 $childcatStep.addClass('d-none');
 
                 if (!selectedSlug) {
-                    // Go back to category page
-                    window.location.href = baseUrl + '/' + catSlug;
+                    // Load category page via AJAX
+                    loadCategoryContent(categoryBaseUrl + '/' + catSlug);
                     return;
                 }
 
@@ -761,8 +971,8 @@
                     $childcatStep.removeClass('d-none');
                 }
 
-                // Navigate to subcategory page
-                window.location.href = baseUrl + '/' + catSlug + '/' + selectedSlug;
+                // Load subcategory page via AJAX
+                loadCategoryContent(categoryBaseUrl + '/' + catSlug + '/' + selectedSlug);
             });
 
             // Child Category Change
@@ -772,13 +982,13 @@
                 const selectedSlug = $(this).val();
 
                 if (!selectedSlug) {
-                    // Go back to subcategory page
-                    window.location.href = baseUrl + '/' + catSlug + '/' + subcatSlug;
+                    // Load subcategory page via AJAX
+                    loadCategoryContent(categoryBaseUrl + '/' + catSlug + '/' + subcatSlug);
                     return;
                 }
 
-                // Navigate to child category page
-                window.location.href = baseUrl + '/' + catSlug + '/' + subcatSlug + '/' + selectedSlug;
+                // Load child category page via AJAX
+                loadCategoryContent(categoryBaseUrl + '/' + catSlug + '/' + subcatSlug + '/' + selectedSlug);
             });
 
         })(jQuery);

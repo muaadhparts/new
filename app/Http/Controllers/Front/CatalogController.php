@@ -41,19 +41,6 @@ class CatalogController extends FrontBaseController
         // Get active brand qualities for the filter
         $brand_qualities = QualityBrand::active()->orderBy('name_en', 'asc')->get();
 
-        // Retrieve latest products for sidebar (limited to 5)
-        $latest_products = Product::with('brand')
-            ->withBestMerchant()
-            ->whereLatest(1)
-            ->whereHas('merchantProducts', function ($q) {
-                $q->where('status', 1)
-                    ->whereHas('user', fn($u) => $u->where('is_vendor', 2));
-            })
-            ->withCount('ratings')
-            ->withAvg('ratings', 'rating')
-            ->take(5)
-            ->get();
-
         // Build query for merchant products with eager loading
         $query = MerchantProduct::query()
             ->where('merchant_products.status', 1)
@@ -74,7 +61,7 @@ class CatalogController extends FrontBaseController
         // Keep prods for backward compatibility
         $prods = $cards;
 
-        return view('frontend.products', compact('categories', 'latest_products', 'prods', 'cards', 'vendors', 'brand_qualities'));
+        return view('frontend.products', compact('categories', 'prods', 'cards', 'vendors', 'brand_qualities'));
     }
 
     // -------------------------------- CATEGORY SECTION ----------------------------------------
@@ -132,19 +119,6 @@ class CatalogController extends FrontBaseController
                 ->firstOrFail();
             $data['childcat'] = $childcat;
         }
-
-        // Retrieve latest products for sidebar (limited to 5)
-        $data['latest_products'] = Product::with('brand')
-            ->withBestMerchant()
-            ->whereLatest(1)
-            ->whereHas('merchantProducts', function ($q) {
-                $q->where('status', 1)
-                    ->whereHas('user', fn($u) => $u->where('is_vendor', 2));
-            })
-            ->withCount('ratings')
-            ->withAvg('ratings', 'rating')
-            ->take(5)
-            ->get();
 
         // Build query for merchant products
         $query = MerchantProduct::query()

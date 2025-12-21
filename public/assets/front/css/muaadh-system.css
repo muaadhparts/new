@@ -2571,3 +2571,75 @@ select option {
     }
 }
 
+/* ============================================================================
+   SECTION: CATEGORY PRODUCTS BOX
+   ============================================================================
+   Scrollable container for category products with fixed height
+   ============================================================================ */
+
+.category-products-box {
+    display: flex;
+    flex-direction: column;
+    background: var(--surface-card);
+    border-radius: 8px;
+    box-shadow: var(--shadow-sm, 0 2px 8px rgba(0, 0, 0, 0.08));
+    overflow: hidden;
+}
+
+.category-products-scroll {
+    height: 600px;
+    overflow-y: auto;
+    padding: 1rem;
+    scrollbar-width: thin;
+    scrollbar-color: var(--action-primary) var(--surface-secondary);
+    transition: opacity 0.2s ease;
+}
+
+.category-products-scroll.is-loading {
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+/* Webkit scrollbar styling */
+.category-products-scroll::-webkit-scrollbar {
+    width: 8px;
+}
+
+.category-products-scroll::-webkit-scrollbar-track {
+    background: var(--surface-secondary);
+    border-radius: 4px;
+}
+
+.category-products-scroll::-webkit-scrollbar-thumb {
+    background: var(--action-primary);
+    border-radius: 4px;
+}
+
+.category-products-scroll::-webkit-scrollbar-thumb:hover {
+    background: var(--action-primary-hover);
+}
+
+.category-products-pagination {
+    padding: 0.75rem 1rem;
+    border-top: 1px solid var(--border-light);
+    background: var(--surface-card);
+}
+
+/* Responsive heights for category */
+@media (max-width: 991.98px) {
+    .category-products-scroll {
+        height: 500px;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .category-products-scroll {
+        height: 450px;
+        padding: 0.75rem;
+    }
+
+    .category-products-pagination {
+        padding: 0.5rem;
+    }
+}
+

@@ -234,208 +234,234 @@
         (function($) {
             "use strict";
 
-            // عند تغيير أي فلتر
-            $(".attribute-input, #sortby, #pageby").on('change', function() {
-                filter();
-            });
-
-            function filter() {
-                let filterlink = '{{ route('front.vendor', str_replace(' ', '-', $vendor->shop_name)) }}';
-                let params = new URLSearchParams();
-
-                // جمع كل الـ checkboxes المحددة
-                $(".attribute-input").each(function() {
-                    if ($(this).is(':checked')) {
-                        params.append($(this).attr('name'), $(this).val());
-                    }
-                });
-
-                // الترتيب
-                if ($("#sortby").val() != '') {
-                    params.append('sort', $("#sortby").val());
-                }
-
-                // طريقة العرض
-                let check_view = $('.check_view.active').data('shopview');
-                if (check_view) {
-                    params.append('view_check', check_view);
-                }
-
-                filterlink += '?' + params.toString();
-                location.href = filterlink;
-            }
-
             // ========================================
-            // AJAX Pagination
+            // Vendor Products AJAX System
             // ========================================
-            const $paginationContainer = $('.m-pagination-simple');
+            const baseUrl = '{{ route('front.vendor', str_replace(' ', '-', $vendor->shop_name)) }}';
             const $scrollContainer = $('.vendor-products-scroll');
             const $productsContainer = $('.vendor-products-scroll');
+            const $paginationContainer = $('.m-pagination-simple');
+            const $totalProducts = $('.product-nav-wrapper h5').first();
+
             let isLoading = false;
+            let currentPage = parseInt($paginationContainer.data('current')) || 1;
+            let lastPage = parseInt($paginationContainer.data('last')) || 1;
 
-            if ($paginationContainer.length) {
-                const baseUrl = $paginationContainer.data('base-url');
-                let currentPage = parseInt($paginationContainer.data('current'));
-                let lastPage = parseInt($paginationContainer.data('last'));
+            // ========================================
+            // Build URL with all current filters
+            // ========================================
+            function buildUrl(page) {
+                let params = new URLSearchParams();
 
-                // Build URL with current filters
-                function buildUrl(page) {
-                    let params = new URLSearchParams(window.location.search);
+                // Page
+                if (page && page > 1) {
                     params.set('page', page);
-                    return baseUrl + '?' + params.toString();
                 }
 
-                // Load page via AJAX
-                function loadPage(page) {
-                    if (isLoading) return;
-                    if (page < 1 || page > lastPage) return;
-                    if (page === currentPage) return;
+                // Brand Quality filters
+                $(".attribute-input:checked").each(function() {
+                    params.append($(this).attr('name'), $(this).val());
+                });
 
-                    isLoading = true;
+                // Sort
+                const sortVal = $("#sortby").val();
+                if (sortVal && sortVal !== '') {
+                    params.set('sort', sortVal);
+                }
 
-                    // Show loading state
-                    $scrollContainer.addClass('is-loading');
-                    $paginationContainer.find('.m-pagination-simple__btn').prop('disabled', true);
+                // View mode
+                const viewMode = $('.check_view.active').data('shopview');
+                if (viewMode) {
+                    params.set('view_check', viewMode);
+                }
 
-                    $.ajax({
-                        url: buildUrl(page),
-                        type: 'GET',
-                        dataType: 'html',
-                        success: function(response) {
-                            // Parse response
-                            const $response = $('<div>').html(response);
-                            const $newContent = $response.find('#myTabContent');
-                            const $paginationData = $response.find('#ajax-pagination-data');
+                const queryString = params.toString();
+                return queryString ? baseUrl + '?' + queryString : baseUrl;
+            }
 
-                            // Update products content
-                            if ($newContent.length) {
-                                $productsContainer.find('#myTabContent').replaceWith($newContent);
-                            }
+            // ========================================
+            // Load content via AJAX
+            // ========================================
+            function loadContent(page, updateHistory = true) {
+                if (isLoading) return;
 
-                            // Update pagination data from JSON
-                            if ($paginationData.length) {
-                                try {
-                                    const data = JSON.parse($paginationData.text());
-                                    currentPage = data.currentPage;
-                                    lastPage = data.lastPage;
-                                } catch(e) {
-                                    currentPage = page;
-                                }
-                            } else {
+                page = page || 1;
+                isLoading = true;
+
+                // Show loading state
+                $scrollContainer.addClass('is-loading');
+                $paginationContainer.find('.m-pagination-simple__btn').prop('disabled', true);
+
+                const url = buildUrl(page);
+
+                $.ajax({
+                    url: url,
+                    type: 'GET',
+                    dataType: 'html',
+                    success: function(response) {
+                        // Parse response
+                        const $response = $('<div>').html(response);
+                        const $newContent = $response.find('#myTabContent');
+                        const $paginationData = $response.find('#ajax-pagination-data');
+
+                        // Update products content
+                        if ($newContent.length) {
+                            $productsContainer.find('#myTabContent').replaceWith($newContent);
+                        }
+
+                        // Update pagination data from JSON
+                        if ($paginationData.length) {
+                            try {
+                                const data = JSON.parse($paginationData.text());
+                                currentPage = data.currentPage;
+                                lastPage = data.lastPage;
+
+                                // Update total products count
+                                $totalProducts.html('@lang("Total Products Found:") ' + data.total);
+                            } catch(e) {
                                 currentPage = page;
                             }
-
-                            // Update UI
-                            updatePaginationUI();
-
-                            // Scroll to top of container
-                            $scrollContainer.scrollTop(0);
-
-                            // Update URL without reload
-                            history.pushState({page: currentPage}, '', buildUrl(currentPage));
-                        },
-                        error: function(xhr, status, error) {
-                            console.error('AJAX Error:', error);
-                            // Fallback to normal navigation on error
-                            window.location.href = buildUrl(page);
-                        },
-                        complete: function() {
-                            isLoading = false;
-                            $scrollContainer.removeClass('is-loading');
-                            updatePaginationUI();
+                        } else {
+                            currentPage = page;
                         }
-                    });
+
+                        // Update pagination UI
+                        updatePaginationUI();
+
+                        // Scroll to top of container
+                        $scrollContainer.scrollTop(0);
+
+                        // Update URL without reload
+                        if (updateHistory) {
+                            history.pushState({page: currentPage, url: url}, '', url);
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('AJAX Error:', error);
+                        // Fallback to normal navigation on error
+                        window.location.href = url;
+                    },
+                    complete: function() {
+                        isLoading = false;
+                        $scrollContainer.removeClass('is-loading');
+                        updatePaginationUI();
+                    }
+                });
+            }
+
+            // ========================================
+            // Update Pagination UI
+            // ========================================
+            function updatePaginationUI() {
+                const $input = $paginationContainer.find('.m-pagination-simple__input');
+                const $prevBtn = $paginationContainer.find('.m-pagination-simple__prev');
+                const $nextBtn = $paginationContainer.find('.m-pagination-simple__next');
+                const $total = $paginationContainer.find('.m-pagination-simple__total');
+
+                // Update input and total
+                $input.val(currentPage).attr('max', lastPage);
+                $total.text(lastPage);
+
+                // Update prev button
+                if (currentPage <= 1) {
+                    $prevBtn.addClass('m-pagination-simple__btn--disabled').prop('disabled', true);
+                } else {
+                    $prevBtn.removeClass('m-pagination-simple__btn--disabled').prop('disabled', false);
                 }
 
-                // Update pagination UI
-                function updatePaginationUI() {
-                    const $input = $paginationContainer.find('.m-pagination-simple__input');
-                    const $prevBtn = $paginationContainer.find('.m-pagination-simple__prev');
-                    const $nextBtn = $paginationContainer.find('.m-pagination-simple__next');
-                    const $total = $paginationContainer.find('.m-pagination-simple__total');
-
-                    // Update input and total
-                    $input.val(currentPage).attr('max', lastPage);
-                    $total.text(lastPage);
-
-                    // Update prev button
-                    if (currentPage <= 1) {
-                        $prevBtn.addClass('m-pagination-simple__btn--disabled').prop('disabled', true);
-                    } else {
-                        $prevBtn.removeClass('m-pagination-simple__btn--disabled').prop('disabled', false);
-                    }
-
-                    // Update next button
-                    if (currentPage >= lastPage) {
-                        $nextBtn.addClass('m-pagination-simple__btn--disabled').prop('disabled', true);
-                    } else {
-                        $nextBtn.removeClass('m-pagination-simple__btn--disabled').prop('disabled', false);
-                    }
+                // Update next button
+                if (currentPage >= lastPage) {
+                    $nextBtn.addClass('m-pagination-simple__btn--disabled').prop('disabled', true);
+                } else {
+                    $nextBtn.removeClass('m-pagination-simple__btn--disabled').prop('disabled', false);
                 }
+            }
 
-                // Previous button click
-                $paginationContainer.on('click', '.m-pagination-simple__prev', function(e) {
+            // ========================================
+            // Filter Events (Brand Quality & Sort)
+            // ========================================
+            $(".attribute-input, #sortby").on('change', function() {
+                // Reset to page 1 when filter changes
+                currentPage = 1;
+                loadContent(1);
+            });
+
+            // ========================================
+            // Pagination Events
+            // ========================================
+            // Previous button
+            $paginationContainer.on('click', '.m-pagination-simple__prev', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                if (!$(this).prop('disabled') && !isLoading && currentPage > 1) {
+                    loadContent(currentPage - 1);
+                }
+                return false;
+            });
+
+            // Next button
+            $paginationContainer.on('click', '.m-pagination-simple__next', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                if (!$(this).prop('disabled') && !isLoading && currentPage < lastPage) {
+                    loadContent(currentPage + 1);
+                }
+                return false;
+            });
+
+            // Input - Enter key
+            $paginationContainer.on('keydown', '.m-pagination-simple__input', function(e) {
+                if (e.which === 13) {
                     e.preventDefault();
                     e.stopPropagation();
-                    if (!$(this).prop('disabled') && !isLoading) {
-                        loadPage(currentPage - 1);
-                    }
-                    return false;
-                });
-
-                // Next button click
-                $paginationContainer.on('click', '.m-pagination-simple__next', function(e) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    if (!$(this).prop('disabled') && !isLoading) {
-                        loadPage(currentPage + 1);
-                    }
-                    return false;
-                });
-
-                // Input - Enter key
-                $paginationContainer.on('keydown', '.m-pagination-simple__input', function(e) {
-                    if (e.which === 13) { // Enter key
-                        e.preventDefault();
-                        e.stopPropagation();
-                        let page = parseInt($(this).val()) || 1;
-                        page = Math.max(1, Math.min(page, lastPage));
-                        if (page !== currentPage) {
-                            loadPage(page);
-                        }
-                        $(this).blur();
-                        return false;
-                    }
-                });
-
-                // Input - Blur
-                $paginationContainer.on('blur', '.m-pagination-simple__input', function() {
-                    let page = parseInt($(this).val()) || currentPage;
+                    let page = parseInt($(this).val()) || 1;
                     page = Math.max(1, Math.min(page, lastPage));
                     if (page !== currentPage) {
-                        loadPage(page);
-                    } else {
-                        $(this).val(currentPage);
+                        loadContent(page);
                     }
-                });
-
-                // Prevent form submission if input is inside a form
-                $paginationContainer.on('submit', function(e) {
-                    e.preventDefault();
+                    $(this).blur();
                     return false;
-                });
+                }
+            });
 
-                // Handle browser back/forward
-                $(window).on('popstate', function(e) {
-                    const state = e.originalEvent.state;
-                    if (state && state.page && state.page !== currentPage) {
-                        loadPage(state.page);
-                    }
-                });
+            // Input - Blur
+            $paginationContainer.on('blur', '.m-pagination-simple__input', function() {
+                let page = parseInt($(this).val()) || currentPage;
+                page = Math.max(1, Math.min(page, lastPage));
+                if (page !== currentPage) {
+                    loadContent(page);
+                } else {
+                    $(this).val(currentPage);
+                }
+            });
 
-                // Set initial state
-                history.replaceState({page: currentPage}, '', window.location.href);
-            }
+            // ========================================
+            // Browser History (Back/Forward)
+            // ========================================
+            $(window).on('popstate', function(e) {
+                const state = e.originalEvent.state;
+                if (state && state.page) {
+                    // Update checkboxes and sort from URL
+                    const urlParams = new URLSearchParams(window.location.search);
+
+                    // Update sort dropdown
+                    const sortVal = urlParams.get('sort') || 'date_desc';
+                    $('#sortby').val(sortVal);
+
+                    // Update Brand Quality checkboxes
+                    $('.attribute-input').prop('checked', false);
+                    urlParams.getAll('brand_quality[]').forEach(function(val) {
+                        $('input[name="brand_quality[]"][value="' + val + '"]').prop('checked', true);
+                    });
+
+                    // Load content without adding to history
+                    currentPage = state.page;
+                    loadContent(state.page, false);
+                }
+            });
+
+            // Set initial state
+            history.replaceState({page: currentPage, url: window.location.href}, '', window.location.href);
 
         })(jQuery);
     </script>
