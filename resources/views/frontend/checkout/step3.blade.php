@@ -74,8 +74,8 @@
                                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20"
                                         fill="none">
                                         <rect x="0.5" y="0.5" width="19" height="19" rx="9.5" fill="#FDFDFD" />
-                                        <rect x="0.5" y="0.5" width="19" height="19" rx="9.5" stroke="#EE1243" />
-                                        <circle cx="10" cy="10" r="4" fill="#EE1243" />
+                                        <rect x="0.5" y="0.5" width="19" height="19" rx="9.5" stroke="currentColor" />
+                                        <circle cx="10" cy="10" r="4" fill="currentColor" />
                                     </svg>
                                 </label>
                                 <label class="label-wrapper" for="pl{{ $gt->id }}">
@@ -93,8 +93,8 @@
                                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20"
                                         fill="none">
                                         <rect x="0.5" y="0.5" width="19" height="19" rx="9.5" fill="#FDFDFD" />
-                                        <rect x="0.5" y="0.5" width="19" height="19" rx="9.5" stroke="#EE1243" />
-                                        <circle cx="10" cy="10" r="4" fill="#EE1243" />
+                                        <rect x="0.5" y="0.5" width="19" height="19" rx="9.5" stroke="currentColor" />
+                                        <circle cx="10" cy="10" r="4" fill="currentColor" />
                                     </svg>
                                 </label>
                                 <label class="label-wrapper" for="pl{{ $gt->id }}">
@@ -157,7 +157,7 @@
                                     <label class="icon-label" for="shpto">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12"
                                             viewBox="0 0 12 12" fill="none">
-                                            <path d="M10 3L4.5 8.5L2 6" stroke="#EE1243" stroke-width="1.6666"
+                                            <path d="M10 3L4.5 8.5L2 6" stroke="currentColor" stroke-width="1.6666"
                                                 stroke-linecap="round" stroke-linejoin="round" />
                                         </svg>
                                     </label>

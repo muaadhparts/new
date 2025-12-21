@@ -119,56 +119,130 @@
     margin-bottom: 20px;
 }
 
-/* Color Input */
+/* Color Input - Enhanced with native picker */
 .color-input-wrapper {
     margin-bottom: 15px;
 }
 
 .color-input-wrapper label {
-    display: block;
+    display: flex;
+    align-items: center;
+    gap: 6px;
     font-size: 13px;
     font-weight: 500;
     color: #475569;
     margin-bottom: 8px;
 }
 
+.color-input-wrapper label .color-hint {
+    font-size: 11px;
+    color: #94a3b8;
+    font-weight: 400;
+}
+
 .color-input-group {
     display: flex;
     align-items: stretch;
-    border: 1px solid #ddd;
+    border: 1px solid #e2e8f0;
     border-radius: 8px;
     overflow: hidden;
     background: #fff;
+    transition: all 0.2s;
 }
 
-.color-input-group input {
+.color-input-group:hover {
+    border-color: #cbd5e1;
+}
+
+.color-input-group:focus-within {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
+}
+
+.color-input-group input.color-field {
     flex: 1;
     border: none;
     padding: 10px 12px;
     font-size: 14px;
+    font-family: 'Monaco', 'Consolas', monospace;
     color: #334155;
     background: transparent;
+    min-width: 0;
 }
 
-.color-input-group input:focus {
+.color-input-group input.color-field:focus {
     outline: none;
 }
 
+/* Native Color Picker */
+.color-input-group .native-color-picker {
+    width: 50px;
+    height: 100%;
+    min-height: 42px;
+    padding: 0;
+    border: none;
+    cursor: pointer;
+    background: transparent;
+}
+
+.color-input-group .native-color-picker::-webkit-color-swatch-wrapper {
+    padding: 6px;
+}
+
+.color-input-group .native-color-picker::-webkit-color-swatch {
+    border: 1px solid #cbd5e1;
+    border-radius: 4px;
+}
+
+.color-input-group .native-color-picker::-moz-color-swatch {
+    border: 1px solid #cbd5e1;
+    border-radius: 4px;
+}
+
+/* Color Preview Button (for colorpicker popup) */
 .color-input-group .color-preview {
     width: 45px;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: #f5f5f5;
+    background: #f8fafc;
     cursor: pointer;
-    border-left: 1px solid #ddd;
+    border-left: 1px solid #e2e8f0;
+    transition: background 0.2s;
+}
+
+.color-input-group .color-preview:hover {
+    background: #f1f5f9;
 }
 
 .color-input-group .color-preview i {
-    width: 24px;
-    height: 24px;
+    width: 26px;
+    height: 26px;
+    border-radius: 6px;
+    border: 2px solid #fff;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+}
+
+/* Color Suggestions */
+.color-suggestions {
+    display: flex;
+    gap: 4px;
+    margin-top: 6px;
+}
+
+.color-suggestion {
+    width: 20px;
+    height: 20px;
     border-radius: 4px;
-    border: 1px solid #ccc;
+    border: 2px solid transparent;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.color-suggestion:hover {
+    transform: scale(1.15);
+    border-color: #fff;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
 }
 
 /* Text/Number Input */
@@ -335,6 +409,255 @@
 .preview-text-primary { color: var(--pv-text-primary, #1f0300); }
 .preview-text-muted { color: var(--pv-text-muted, #796866); }
 
+/* Preview Navigation */
+.preview-nav {
+    background: var(--pv-header-bg, #fff);
+    padding: 12px 15px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--pv-border, #e5e7eb);
+}
+
+.preview-nav-logo {
+    font-weight: 700;
+    color: var(--pv-primary, #c3002f);
+}
+
+.preview-nav-links {
+    display: flex;
+    gap: 15px;
+}
+
+.preview-nav-link {
+    color: var(--pv-nav-link, #374151);
+    font-size: 13px;
+    text-decoration: none;
+}
+
+.preview-topbar {
+    background: var(--pv-secondary, #1f2937);
+    color: #fff;
+    padding: 8px 15px;
+    font-size: 12px;
+    display: flex;
+    justify-content: space-between;
+}
+
+/* Action Toolbar */
+.action-toolbar {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.toolbar-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    border: 1px solid #e2e8f0;
+    background: #fff;
+    color: #475569;
+    font-size: 13px;
+    font-weight: 500;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.toolbar-btn:hover {
+    background: #f8fafc;
+    border-color: #cbd5e1;
+}
+
+.toolbar-btn i {
+    font-size: 14px;
+}
+
+.toolbar-btn.toolbar-btn-primary {
+    background: #2563eb;
+    border-color: #2563eb;
+    color: #fff;
+}
+
+.toolbar-btn.toolbar-btn-primary:hover {
+    background: #1d4ed8;
+}
+
+/* Color Palette Display */
+.color-palette-display {
+    display: flex;
+    gap: 3px;
+    margin-bottom: 20px;
+    border-radius: 8px;
+    overflow: hidden;
+    height: 40px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.color-palette-display .palette-color {
+    flex: 1;
+    cursor: pointer;
+    transition: transform 0.15s;
+}
+
+.color-palette-display .palette-color:hover {
+    transform: scaleY(1.1);
+}
+
+/* Tab Badge Counter */
+.tab-badge {
+    background: #ef4444;
+    color: #fff;
+    font-size: 10px;
+    padding: 2px 6px;
+    border-radius: 10px;
+    margin-left: 5px;
+}
+
+/* Section Collapsible */
+.theme-section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    padding: 10px 0;
+    margin: -10px 0 10px 0;
+}
+
+.theme-section-header .collapse-icon {
+    transition: transform 0.2s;
+}
+
+.theme-section.collapsed .theme-section-header .collapse-icon {
+    transform: rotate(-90deg);
+}
+
+.theme-section.collapsed .theme-section-body {
+    display: none;
+}
+
+/* Quick Copy Button */
+.copy-value-btn {
+    position: absolute;
+    right: 55px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: #94a3b8;
+    cursor: pointer;
+    padding: 5px;
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+
+.color-input-group:hover .copy-value-btn {
+    opacity: 1;
+}
+
+.copy-value-btn:hover {
+    color: #2563eb;
+}
+
+/* Import/Export Modal */
+.theme-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 1050;
+    align-items: center;
+    justify-content: center;
+}
+
+.theme-modal.show {
+    display: flex;
+}
+
+.theme-modal-content {
+    background: #fff;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 600px;
+    max-height: 80vh;
+    overflow: hidden;
+    box-shadow: 0 25px 50px rgba(0,0,0,0.25);
+}
+
+.theme-modal-header {
+    padding: 20px;
+    border-bottom: 1px solid #e5e7eb;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.theme-modal-header h3 {
+    margin: 0;
+    font-size: 18px;
+}
+
+.theme-modal-close {
+    background: none;
+    border: none;
+    font-size: 24px;
+    color: #6b7280;
+    cursor: pointer;
+}
+
+.theme-modal-body {
+    padding: 20px;
+    max-height: calc(80vh - 130px);
+    overflow-y: auto;
+}
+
+.theme-modal-body textarea {
+    width: 100%;
+    min-height: 200px;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 12px;
+    font-family: 'Monaco', 'Consolas', monospace;
+    font-size: 12px;
+    resize: vertical;
+}
+
+/* CSS Variables List */
+.css-var-list {
+    background: #f8fafc;
+    border-radius: 8px;
+    padding: 15px;
+    max-height: 300px;
+    overflow-y: auto;
+    font-family: 'Monaco', 'Consolas', monospace;
+    font-size: 12px;
+}
+
+.css-var-item {
+    display: flex;
+    align-items: center;
+    padding: 5px 0;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.css-var-item:last-child {
+    border-bottom: none;
+}
+
+.css-var-name {
+    color: #7c3aed;
+    flex: 1;
+}
+
+.css-var-value {
+    color: #059669;
+}
+
 /* Presets */
 .preset-grid {
     display: grid;
@@ -419,13 +742,35 @@
         <div class="theme-builder-header">
             <div>
                 <h2><i class="fas fa-palette"></i> {{ __('Theme Builder') }}</h2>
-                <p class="subtitle">{{ __('Customize every aspect of your theme') }}</p>
+                <p class="subtitle">{{ __('Customize every aspect of your theme - Full control over colors, typography, and components') }}</p>
             </div>
-            <div>
-                <button type="button" class="btn btn-light" onclick="resetToDefaults()">
+            <div class="action-toolbar">
+                <button type="button" class="toolbar-btn" onclick="exportTheme()">
+                    <i class="fas fa-download"></i> {{ __('Export') }}
+                </button>
+                <button type="button" class="toolbar-btn" onclick="openImportModal()">
+                    <i class="fas fa-upload"></i> {{ __('Import') }}
+                </button>
+                <button type="button" class="toolbar-btn" onclick="copyCSSVariables()">
+                    <i class="fas fa-code"></i> {{ __('CSS') }}
+                </button>
+                <button type="button" class="toolbar-btn" onclick="resetToDefaults()">
                     <i class="fas fa-undo"></i> {{ __('Reset') }}
                 </button>
             </div>
+        </div>
+
+        <!-- Current Theme Palette Preview -->
+        <div class="color-palette-display" id="currentPalette">
+            <div class="palette-color" style="background: var(--pv-primary, #c3002f)" title="Primary"></div>
+            <div class="palette-color" style="background: var(--pv-primary-hover, #a00025)" title="Primary Hover"></div>
+            <div class="palette-color" style="background: var(--pv-secondary, #1f2937)" title="Secondary"></div>
+            <div class="palette-color" style="background: var(--pv-success, #10b981)" title="Success"></div>
+            <div class="palette-color" style="background: var(--pv-warning, #f59e0b)" title="Warning"></div>
+            <div class="palette-color" style="background: var(--pv-danger, #ef4444)" title="Danger"></div>
+            <div class="palette-color" style="background: var(--pv-info, #3b82f6)" title="Info"></div>
+            <div class="palette-color" style="background: var(--pv-bg-body, #ffffff)" title="Background"></div>
+            <div class="palette-color" style="background: var(--pv-text-primary, #1f2937)" title="Text"></div>
         </div>
 
         <form action="{{ route('admin-theme-colors-update') }}" method="POST" id="themeBuilderForm">
@@ -455,11 +800,20 @@
                         <button type="button" class="theme-tab" data-tab="header">
                             <i class="fas fa-window-maximize"></i> {{ __('Header') }}
                         </button>
+                        <button type="button" class="theme-tab" data-tab="topbar">
+                            <i class="fas fa-grip-horizontal"></i> {{ __('Topbar') }}
+                        </button>
                         <button type="button" class="theme-tab" data-tab="footer">
                             <i class="fas fa-window-minimize"></i> {{ __('Footer') }}
                         </button>
+                        <button type="button" class="theme-tab" data-tab="breadcrumb">
+                            <i class="fas fa-chevron-right"></i> {{ __('Breadcrumb') }}
+                        </button>
                         <button type="button" class="theme-tab" data-tab="components">
                             <i class="fas fa-puzzle-piece"></i> {{ __('Components') }}
+                        </button>
+                        <button type="button" class="theme-tab" data-tab="advanced">
+                            <i class="fas fa-cog"></i> {{ __('Advanced') }}
                         </button>
                     </div>
 
@@ -495,37 +849,37 @@
                             <div class="row">
                                 <div class="col-md-3">
                                     <div class="color-input-wrapper">
-                                        <label>{{ __('Primary') }}</label>
+                                        <label>{{ __('Primary') }} <span class="color-hint">--theme-primary</span></label>
                                         <div class="color-input-group">
                                             <input type="text" name="theme_primary" id="theme_primary" class="color-field" value="{{ $gs->theme_primary ?? '#c3002f' }}">
-                                            <span class="color-preview cp"><i></i></span>
+                                            <input type="color" class="native-color-picker" value="{{ $gs->theme_primary ?? '#c3002f' }}" data-target="theme_primary">
                                         </div>
                                     </div>
                                 </div>
                                 <div class="col-md-3">
                                     <div class="color-input-wrapper">
-                                        <label>{{ __('Hover') }}</label>
+                                        <label>{{ __('Hover') }} <span class="color-hint">--theme-primary-hover</span></label>
                                         <div class="color-input-group">
                                             <input type="text" name="theme_primary_hover" id="theme_primary_hover" class="color-field" value="{{ $gs->theme_primary_hover ?? '#a00025' }}">
-                                            <span class="color-preview cp"><i></i></span>
+                                            <input type="color" class="native-color-picker" value="{{ $gs->theme_primary_hover ?? '#a00025' }}" data-target="theme_primary_hover">
                                         </div>
                                     </div>
                                 </div>
                                 <div class="col-md-3">
                                     <div class="color-input-wrapper">
-                                        <label>{{ __('Dark') }}</label>
+                                        <label>{{ __('Dark') }} <span class="color-hint">--theme-primary-dark</span></label>
                                         <div class="color-input-group">
                                             <input type="text" name="theme_primary_dark" id="theme_primary_dark" class="color-field" value="{{ $gs->theme_primary_dark ?? '#8a0020' }}">
-                                            <span class="color-preview cp"><i></i></span>
+                                            <input type="color" class="native-color-picker" value="{{ $gs->theme_primary_dark ?? '#8a0020' }}" data-target="theme_primary_dark">
                                         </div>
                                     </div>
                                 </div>
                                 <div class="col-md-3">
                                     <div class="color-input-wrapper">
-                                        <label>{{ __('Light') }}</label>
+                                        <label>{{ __('Light') }} <span class="color-hint">--theme-primary-light</span></label>
                                         <div class="color-input-group">
                                             <input type="text" name="theme_primary_light" id="theme_primary_light" class="color-field" value="{{ $gs->theme_primary_light ?? '#fef2f4' }}">
-                                            <span class="color-preview cp"><i></i></span>
+                                            <input type="color" class="native-color-picker" value="{{ $gs->theme_primary_light ?? '#fef2f4' }}" data-target="theme_primary_light">
                                         </div>
                                     </div>
                                 </div>
@@ -1375,6 +1729,313 @@
                             </div>
                         </div>
                     </div>
+
+                    <!-- ================================ -->
+                    <!-- TAB: TOPBAR -->
+                    <!-- ================================ -->
+                    <div class="theme-tab-content" id="tab-topbar">
+                        <div class="theme-section">
+                            <h4 class="theme-section-title"><i class="fas fa-grip-horizontal"></i> {{ __('Topbar Settings') }}</h4>
+                            <p class="theme-section-desc">{{ __('Configure the top bar with contact info and quick links') }}</p>
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="color-input-wrapper">
+                                        <label>{{ __('Background') }} <span class="color-hint">--theme-topbar-bg</span></label>
+                                        <div class="color-input-group">
+                                            <input type="text" name="theme_topbar_bg" id="theme_topbar_bg" class="color-field" value="{{ $gs->theme_topbar_bg ?? $gs->theme_secondary ?? '#1f2937' }}">
+                                            <span class="color-preview cp"><i></i></span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="color-input-wrapper">
+                                        <label>{{ __('Text Color') }} <span class="color-hint">--theme-topbar-text</span></label>
+                                        <div class="color-input-group">
+                                            <input type="text" name="theme_topbar_text" id="theme_topbar_text" class="color-field" value="{{ $gs->theme_topbar_text ?? '#ffffff' }}">
+                                            <span class="color-preview cp"><i></i></span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="color-input-wrapper">
+                                        <label>{{ __('Link Hover') }} <span class="color-hint">--theme-topbar-link-hover</span></label>
+                                        <div class="color-input-group">
+                                            <input type="text" name="theme_topbar_link_hover" id="theme_topbar_link_hover" class="color-field" value="{{ $gs->theme_topbar_link_hover ?? $gs->theme_primary ?? '#c3002f' }}">
+                                            <span class="color-preview cp"><i></i></span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row mt-3">
+                                <div class="col-md-4">
+                                    <div class="text-input-wrapper">
+                                        <label>{{ __('Height') }}</label>
+                                        <input type="text" name="theme_topbar_height" value="{{ $gs->theme_topbar_height ?? '40px' }}">
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="text-input-wrapper">
+                                        <label>{{ __('Font Size') }}</label>
+                                        <input type="text" name="theme_topbar_font_size" value="{{ $gs->theme_topbar_font_size ?? '13px' }}">
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="color-input-wrapper">
+                                        <label>{{ __('Border Color') }}</label>
+                                        <div class="color-input-group">
+                                            <input type="text" name="theme_topbar_border" id="theme_topbar_border" class="color-field" value="{{ $gs->theme_topbar_border ?? 'rgba(255,255,255,0.1)' }}">
+                                            <span class="color-preview cp"><i></i></span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ================================ -->
+                    <!-- TAB: BREADCRUMB -->
+                    <!-- ================================ -->
+                    <div class="theme-tab-content" id="tab-breadcrumb">
+                        <div class="theme-section">
+                            <h4 class="theme-section-title"><i class="fas fa-chevron-right"></i> {{ __('Breadcrumb Settings') }}</h4>
+                            <p class="theme-section-desc">{{ __('Configure the breadcrumb navigation bar') }}</p>
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="color-input-wrapper">
+                                        <label>{{ __('Background') }} <span class="color-hint">--theme-breadcrumb-bg</span></label>
+                                        <div class="color-input-group">
+                                            <input type="text" name="theme_breadcrumb_bg" id="theme_breadcrumb_bg" class="color-field" value="{{ $gs->theme_breadcrumb_bg ?? $gs->theme_secondary ?? '#1f2937' }}">
+                                            <span class="color-preview cp"><i></i></span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="color-input-wrapper">
+                                        <label>{{ __('Title Color') }} <span class="color-hint">--theme-breadcrumb-title</span></label>
+                                        <div class="color-input-group">
+                                            <input type="text" name="theme_breadcrumb_title" id="theme_breadcrumb_title" class="color-field" value="{{ $gs->theme_breadcrumb_title ?? '#ffffff' }}">
+                                            <span class="color-preview cp"><i></i></span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="color-input-wrapper">
+                                        <label>{{ __('Link Color') }} <span class="color-hint">--theme-breadcrumb-link</span></label>
+                                        <div class="color-input-group">
+                                            <input type="text" name="theme_breadcrumb_link" id="theme_breadcrumb_link" class="color-field" value="{{ $gs->theme_breadcrumb_link ?? 'rgba(255,255,255,0.8)' }}">
+                                            <span class="color-preview cp"><i></i></span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row mt-3">
+                                <div class="col-md-3">
+                                    <div class="text-input-wrapper">
+                                        <label>{{ __('Height') }}</label>
+                                        <input type="text" name="theme_breadcrumb_height" value="{{ $gs->theme_breadcrumb_height ?? '200px' }}">
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="text-input-wrapper">
+                                        <label>{{ __('Title Size') }}</label>
+                                        <input type="text" name="theme_breadcrumb_title_size" value="{{ $gs->theme_breadcrumb_title_size ?? '32px' }}">
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="text-input-wrapper">
+                                        <label>{{ __('Overlay Opacity') }}</label>
+                                        <input type="text" name="theme_breadcrumb_overlay" value="{{ $gs->theme_breadcrumb_overlay ?? '0.6' }}">
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="color-input-wrapper">
+                                        <label>{{ __('Link Hover') }}</label>
+                                        <div class="color-input-group">
+                                            <input type="text" name="theme_breadcrumb_link_hover" id="theme_breadcrumb_link_hover" class="color-field" value="{{ $gs->theme_breadcrumb_link_hover ?? '#ffffff' }}">
+                                            <span class="color-preview cp"><i></i></span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ================================ -->
+                    <!-- TAB: ADVANCED -->
+                    <!-- ================================ -->
+                    <div class="theme-tab-content" id="tab-advanced">
+                        <!-- Status Colors Dark Variants -->
+                        <div class="theme-section">
+                            <h4 class="theme-section-title"><i class="fas fa-adjust"></i> {{ __('Status Colors - Dark Variants') }}</h4>
+                            <p class="theme-section-desc">{{ __('Dark variants for status colors (used in hover states and borders)') }}</p>
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <div class="color-input-wrapper">
+                                        <label><i class="fas fa-check text-success"></i> {{ __('Success Dark') }}</label>
+                                        <div class="color-input-group">
+                                            <input type="text" name="theme_success_dark" id="theme_success_dark" class="color-field" value="{{ $gs->theme_success_dark ?? '#059669' }}">
+                                            <span class="color-preview cp"><i></i></span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="color-input-wrapper">
+                                        <label><i class="fas fa-exclamation-triangle text-warning"></i> {{ __('Warning Dark') }}</label>
+                                        <div class="color-input-group">
+                                            <input type="text" name="theme_warning_dark" id="theme_warning_dark" class="color-field" value="{{ $gs->theme_warning_dark ?? '#b45309' }}">
+                                            <span class="color-preview cp"><i></i></span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="color-input-wrapper">
+                                        <label><i class="fas fa-times-circle text-danger"></i> {{ __('Danger Dark') }}</label>
+                                        <div class="color-input-group">
+                                            <input type="text" name="theme_danger_dark" id="theme_danger_dark" class="color-field" value="{{ $gs->theme_danger_dark ?? '#dc2626' }}">
+                                            <span class="color-preview cp"><i></i></span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="color-input-wrapper">
+                                        <label><i class="fas fa-info-circle text-info"></i> {{ __('Info Dark') }}</label>
+                                        <div class="color-input-group">
+                                            <input type="text" name="theme_info_dark" id="theme_info_dark" class="color-field" value="{{ $gs->theme_info_dark ?? '#0284c7' }}">
+                                            <span class="color-preview cp"><i></i></span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Link Colors -->
+                        <div class="theme-section">
+                            <h4 class="theme-section-title"><i class="fas fa-link"></i> {{ __('Link Colors') }}</h4>
+                            <p class="theme-section-desc">{{ __('Colors for hyperlinks across the site') }}</p>
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="color-input-wrapper">
+                                        <label>{{ __('Link Color') }}</label>
+                                        <div class="color-input-group">
+                                            <input type="text" name="theme_link_color" id="theme_link_color" class="color-field" value="{{ $gs->theme_link_color ?? $gs->theme_primary ?? '#c3002f' }}">
+                                            <span class="color-preview cp"><i></i></span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="color-input-wrapper">
+                                        <label>{{ __('Link Hover') }}</label>
+                                        <div class="color-input-group">
+                                            <input type="text" name="theme_link_hover" id="theme_link_hover" class="color-field" value="{{ $gs->theme_link_hover ?? $gs->theme_primary_hover ?? '#a00025' }}">
+                                            <span class="color-preview cp"><i></i></span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="color-input-wrapper">
+                                        <label>{{ __('Link Visited') }}</label>
+                                        <div class="color-input-group">
+                                            <input type="text" name="theme_link_visited" id="theme_link_visited" class="color-field" value="{{ $gs->theme_link_visited ?? $gs->theme_primary_dark ?? '#8a0020' }}">
+                                            <span class="color-preview cp"><i></i></span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Focus & Selection -->
+                        <div class="theme-section">
+                            <h4 class="theme-section-title"><i class="fas fa-bullseye"></i> {{ __('Focus & Selection') }}</h4>
+                            <p class="theme-section-desc">{{ __('Colors for focus rings and text selection') }}</p>
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="color-input-wrapper">
+                                        <label>{{ __('Focus Ring Color') }}</label>
+                                        <div class="color-input-group">
+                                            <input type="text" name="theme_focus_ring" id="theme_focus_ring" class="color-field" value="{{ $gs->theme_focus_ring ?? $gs->theme_primary ?? '#c3002f' }}">
+                                            <span class="color-preview cp"><i></i></span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="color-input-wrapper">
+                                        <label>{{ __('Selection Background') }}</label>
+                                        <div class="color-input-group">
+                                            <input type="text" name="theme_selection_bg" id="theme_selection_bg" class="color-field" value="{{ $gs->theme_selection_bg ?? $gs->theme_primary ?? '#c3002f' }}">
+                                            <span class="color-preview cp"><i></i></span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="color-input-wrapper">
+                                        <label>{{ __('Selection Text') }}</label>
+                                        <div class="color-input-group">
+                                            <input type="text" name="theme_selection_text" id="theme_selection_text" class="color-field" value="{{ $gs->theme_selection_text ?? '#ffffff' }}">
+                                            <span class="color-preview cp"><i></i></span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Transition & Animation -->
+                        <div class="theme-section">
+                            <h4 class="theme-section-title"><i class="fas fa-magic"></i> {{ __('Transitions & Animations') }}</h4>
+                            <p class="theme-section-desc">{{ __('Control transition speeds and animation curves') }}</p>
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="text-input-wrapper">
+                                        <label>{{ __('Transition Speed (Fast)') }}</label>
+                                        <input type="text" name="theme_transition_fast" value="{{ $gs->theme_transition_fast ?? '0.15s' }}">
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="text-input-wrapper">
+                                        <label>{{ __('Transition Speed (Normal)') }}</label>
+                                        <input type="text" name="theme_transition_normal" value="{{ $gs->theme_transition_normal ?? '0.25s' }}">
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="text-input-wrapper">
+                                        <label>{{ __('Transition Speed (Slow)') }}</label>
+                                        <input type="text" name="theme_transition_slow" value="{{ $gs->theme_transition_slow ?? '0.4s' }}">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Z-Index Layers -->
+                        <div class="theme-section">
+                            <h4 class="theme-section-title"><i class="fas fa-layer-group"></i> {{ __('Z-Index Layers') }}</h4>
+                            <p class="theme-section-desc">{{ __('Control stacking order of UI elements') }}</p>
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <div class="text-input-wrapper">
+                                        <label>{{ __('Dropdown') }}</label>
+                                        <input type="text" name="theme_zindex_dropdown" value="{{ $gs->theme_zindex_dropdown ?? '1000' }}">
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="text-input-wrapper">
+                                        <label>{{ __('Sticky') }}</label>
+                                        <input type="text" name="theme_zindex_sticky" value="{{ $gs->theme_zindex_sticky ?? '1020' }}">
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="text-input-wrapper">
+                                        <label>{{ __('Modal') }}</label>
+                                        <input type="text" name="theme_zindex_modal" value="{{ $gs->theme_zindex_modal ?? '1050' }}">
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="text-input-wrapper">
+                                        <label>{{ __('Tooltip') }}</label>
+                                        <input type="text" name="theme_zindex_tooltip" value="{{ $gs->theme_zindex_tooltip ?? '1080' }}">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Preview Panel -->
@@ -1425,6 +2086,45 @@
 </div>
 @endsection
 
+<!-- Import/Export Modal -->
+<div class="theme-modal" id="importModal">
+    <div class="theme-modal-content">
+        <div class="theme-modal-header">
+            <h3><i class="fas fa-upload"></i> {{ __('Import Theme') }}</h3>
+            <button type="button" class="theme-modal-close" onclick="closeImportModal()">&times;</button>
+        </div>
+        <div class="theme-modal-body">
+            <p>{{ __('Paste your theme JSON configuration below:') }}</p>
+            <textarea id="importThemeData" placeholder='{"theme_primary": "#c3002f", ...}'></textarea>
+            <div style="margin-top: 15px; text-align: right;">
+                <button type="button" class="toolbar-btn" onclick="closeImportModal()">{{ __('Cancel') }}</button>
+                <button type="button" class="toolbar-btn toolbar-btn-primary" onclick="applyImportedTheme()">
+                    <i class="fas fa-check"></i> {{ __('Apply Theme') }}
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- CSS Variables Modal -->
+<div class="theme-modal" id="cssModal">
+    <div class="theme-modal-content">
+        <div class="theme-modal-header">
+            <h3><i class="fas fa-code"></i> {{ __('CSS Variables') }}</h3>
+            <button type="button" class="theme-modal-close" onclick="closeCSSModal()">&times;</button>
+        </div>
+        <div class="theme-modal-body">
+            <p>{{ __('Copy these CSS variables to use in custom CSS:') }}</p>
+            <textarea id="cssVariablesOutput" readonly></textarea>
+            <div style="margin-top: 15px; text-align: right;">
+                <button type="button" class="toolbar-btn toolbar-btn-primary" onclick="copyCSSToClipboard()">
+                    <i class="fas fa-copy"></i> {{ __('Copy to Clipboard') }}
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 @section('scripts')
 <script>
 $(document).ready(function() {
@@ -1437,34 +2137,83 @@ $(document).ready(function() {
         $('#tab-' + tabId).addClass('active');
     });
 
-    // Initialize colorpickers
-    $('.cp').each(function() {
-        var $wrapper = $(this).closest('.color-input-group');
-        var $input = $wrapper.find('input');
-        var $preview = $(this).find('i');
+    // =====================================================================
+    // DYNAMIC NATIVE COLOR PICKER INJECTION
+    // =====================================================================
+    // Convert old color preview spans to native color pickers for better UX
+    $('.color-input-group').each(function() {
+        var $wrapper = $(this);
+        var $input = $wrapper.find('input.color-field');
+        var $oldPreview = $wrapper.find('.color-preview.cp');
 
-        // Set initial color
-        $preview.css('background-color', $input.val());
-
-        // Initialize colorpicker on wrapper
-        $wrapper.colorpicker({
-            format: 'hex',
-            component: '.color-preview'
-        }).on('changeColor', function(e) {
-            if (e.color) {
-                $preview.css('background-color', e.color.toHex());
-                updatePreview();
+        if ($input.length && $oldPreview.length) {
+            // Get the current color value
+            var colorValue = $input.val() || '#000000';
+            // Ensure valid hex format for color input
+            if (!/^#[0-9A-Fa-f]{6}$/.test(colorValue)) {
+                colorValue = '#000000';
             }
-        });
+
+            // Create native color picker
+            var $nativePicker = $('<input>', {
+                type: 'color',
+                class: 'native-color-picker',
+                value: colorValue,
+                'data-target': $input.attr('id')
+            });
+
+            // Replace old preview with native picker
+            $oldPreview.replaceWith($nativePicker);
+        }
     });
 
-    // Update preview on input change
-    $('.color-field').on('input change', function() {
-        var $wrapper = $(this).closest('.color-input-group');
-        var $preview = $wrapper.find('.color-preview i');
-        $preview.css('background-color', $(this).val());
-        updatePreview();
+    // =====================================================================
+    // NATIVE COLOR PICKER SYNCHRONIZATION
+    // =====================================================================
+    // Sync native color picker with text input
+    $(document).on('input change', '.native-color-picker', function() {
+        var targetId = $(this).data('target');
+        var $targetInput = $('#' + targetId);
+        if ($targetInput.length) {
+            $targetInput.val($(this).val());
+            updatePreview();
+            updatePaletteDisplay();
+        }
     });
+
+    // Sync text input with native color picker
+    $(document).on('input change', '.color-field', function() {
+        var $wrapper = $(this).closest('.color-input-group');
+        var $nativePicker = $wrapper.find('.native-color-picker');
+        var value = $(this).val();
+
+        // Update native picker if valid hex color
+        if ($nativePicker.length && /^#[0-9A-Fa-f]{6}$/.test(value)) {
+            $nativePicker.val(value);
+        }
+
+        updatePreview();
+        updatePaletteDisplay();
+    });
+
+    // =====================================================================
+    // PALETTE DISPLAY UPDATE
+    // =====================================================================
+    function updatePaletteDisplay() {
+        var root = document.documentElement;
+        root.style.setProperty('--pv-primary', $('#theme_primary').val() || '#c3002f');
+        root.style.setProperty('--pv-primary-hover', $('#theme_primary_hover').val() || '#a00025');
+        root.style.setProperty('--pv-secondary', $('#theme_secondary').val() || '#1f2937');
+        root.style.setProperty('--pv-success', $('#theme_success').val() || '#10b981');
+        root.style.setProperty('--pv-warning', $('#theme_warning').val() || '#f59e0b');
+        root.style.setProperty('--pv-danger', $('#theme_danger').val() || '#ef4444');
+        root.style.setProperty('--pv-info', $('#theme_info').val() || '#3b82f6');
+        root.style.setProperty('--pv-bg-body', $('#theme_bg_body').val() || '#ffffff');
+        root.style.setProperty('--pv-text-primary', $('#theme_text_primary').val() || '#1f2937');
+    }
+
+    // Initial palette update
+    updatePaletteDisplay();
 
     // =====================================================================
     // COMPLETE THEME PRESETS - ثيمات كاملة تشمل جميع الإعدادات
@@ -1967,8 +2716,11 @@ $(document).ready(function() {
                     $input.val(value);
                     var $wrapper = $input.closest('.color-input-group');
                     if ($wrapper.length) {
-                        $wrapper.find('.color-preview i').css('background-color', value);
-                        $wrapper.colorpicker('setValue', value);
+                        // Update native color picker
+                        var $nativePicker = $wrapper.find('.native-color-picker');
+                        if ($nativePicker.length && /^#[0-9A-Fa-f]{6}$/.test(value)) {
+                            $nativePicker.val(value);
+                        }
                     }
                 }
 
@@ -1979,6 +2731,7 @@ $(document).ready(function() {
                 }
             });
             updatePreview();
+            updatePaletteDisplay();
 
             // Mark active
             $('.preset-btn').removeClass('active');
@@ -2048,5 +2801,156 @@ function resetToDefaults() {
         $('.preset-btn[data-preset="nissan"]').click();
     }
 }
+
+// =====================================================================
+// EXPORT/IMPORT FUNCTIONS
+// =====================================================================
+
+// Export current theme as JSON
+function exportTheme() {
+    var themeData = {};
+
+    // Collect all color fields
+    $('input.color-field, input[type="text"][name^="theme_"]').each(function() {
+        var name = $(this).attr('name');
+        var value = $(this).val();
+        if (name && value) {
+            themeData[name] = value;
+        }
+    });
+
+    // Collect all select fields
+    $('select[name^="theme_"]').each(function() {
+        var name = $(this).attr('name');
+        var value = $(this).val();
+        if (name && value) {
+            themeData[name] = value;
+        }
+    });
+
+    // Create downloadable file
+    var dataStr = JSON.stringify(themeData, null, 2);
+    var dataBlob = new Blob([dataStr], {type: 'application/json'});
+    var url = URL.createObjectURL(dataBlob);
+
+    var link = document.createElement('a');
+    link.href = url;
+    link.download = 'theme-config-' + new Date().toISOString().slice(0,10) + '.json';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+
+    if (typeof toastr !== 'undefined') {
+        toastr.success('{{ __("Theme exported successfully!") }}');
+    }
+}
+
+// Open import modal
+function openImportModal() {
+    $('#importModal').addClass('show');
+    $('#importThemeData').val('').focus();
+}
+
+// Close import modal
+function closeImportModal() {
+    $('#importModal').removeClass('show');
+}
+
+// Apply imported theme
+function applyImportedTheme() {
+    var jsonData = $('#importThemeData').val().trim();
+
+    if (!jsonData) {
+        alert('{{ __("Please paste theme JSON data") }}');
+        return;
+    }
+
+    try {
+        var themeData = JSON.parse(jsonData);
+
+        $.each(themeData, function(key, value) {
+            // Try input first
+            var $input = $('input[name="' + key + '"]');
+            if ($input.length) {
+                $input.val(value);
+                var $wrapper = $input.closest('.color-input-group');
+                if ($wrapper.length) {
+                    var $nativePicker = $wrapper.find('.native-color-picker');
+                    if ($nativePicker.length && /^#[0-9A-Fa-f]{6}$/.test(value)) {
+                        $nativePicker.val(value);
+                    }
+                }
+            }
+
+            // Try select
+            var $select = $('select[name="' + key + '"]');
+            if ($select.length) {
+                $select.val(value);
+            }
+        });
+
+        closeImportModal();
+
+        if (typeof toastr !== 'undefined') {
+            toastr.success('{{ __("Theme imported successfully! Click Save to apply.") }}');
+        }
+
+    } catch (e) {
+        alert('{{ __("Invalid JSON format. Please check your data.") }}');
+        console.error(e);
+    }
+}
+
+// Generate CSS Variables
+function copyCSSVariables() {
+    var cssVars = ':root {\n';
+
+    $('input.color-field').each(function() {
+        var name = $(this).attr('name');
+        var value = $(this).val();
+        if (name && value) {
+            var cssVarName = '--' + name.replace(/_/g, '-');
+            cssVars += '    ' + cssVarName + ': ' + value + ';\n';
+        }
+    });
+
+    cssVars += '}';
+
+    $('#cssVariablesOutput').val(cssVars);
+    $('#cssModal').addClass('show');
+}
+
+// Close CSS modal
+function closeCSSModal() {
+    $('#cssModal').removeClass('show');
+}
+
+// Copy CSS to clipboard
+function copyCSSToClipboard() {
+    var textarea = document.getElementById('cssVariablesOutput');
+    textarea.select();
+    document.execCommand('copy');
+
+    if (typeof toastr !== 'undefined') {
+        toastr.success('{{ __("CSS variables copied to clipboard!") }}');
+    }
+
+    closeCSSModal();
+}
+
+// Close modals on outside click
+$(document).on('click', '.theme-modal', function(e) {
+    if ($(e.target).hasClass('theme-modal')) {
+        $(this).removeClass('show');
+    }
+});
+
+// Close modals on ESC key
+$(document).on('keydown', function(e) {
+    if (e.key === 'Escape') {
+        $('.theme-modal').removeClass('show');
+    }
+});
 </script>
 @endsection
