@@ -31,29 +31,6 @@
         .category-step-selector .form-select:hover {
             border-color: #bbb;
         }
-        .category-step-selector .current-selection {
-            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-            border: 1px solid #dee2e6;
-        }
-        .category-step-selector .selection-breadcrumb {
-            display: flex;
-            flex-wrap: wrap;
-            align-items: center;
-            gap: 4px;
-        }
-        .category-step-selector .selection-breadcrumb .badge {
-            font-size: 11px;
-            font-weight: 500;
-            padding: 4px 8px;
-        }
-        .category-step-selector .btn-outline-secondary {
-            font-size: 13px;
-            border-color: #dee2e6;
-        }
-        .category-step-selector .btn-outline-secondary:hover {
-            background-color: #f8f9fa;
-            border-color: #adb5bd;
-        }
         /* RTL Support */
         [dir="rtl"] .category-step-selector .form-select {
             padding: 10px 12px 10px 35px;
@@ -169,30 +146,6 @@
                                         </select>
                                     </div>
 
-                                    {{-- Current Selection Display --}}
-                                    @if($selectedCat)
-                                    <div class="current-selection mt-3 p-2 bg-light rounded">
-                                        <small class="text-muted d-block mb-1">@lang('Current Selection'):</small>
-                                        <div class="selection-breadcrumb">
-                                            <span class="badge bg-primary">{{ $selectedCat->localized_name }}</span>
-                                            @if($selectedSubcat)
-                                                <i class="fa-solid fa-chevron-{{ app()->getLocale() == 'ar' ? 'left' : 'right' }} mx-1 small"></i>
-                                                <span class="badge bg-secondary">{{ $selectedSubcat->localized_name }}</span>
-                                            @endif
-                                            @if($selectedChildcat)
-                                                <i class="fa-solid fa-chevron-{{ app()->getLocale() == 'ar' ? 'left' : 'right' }} mx-1 small"></i>
-                                                <span class="badge bg-info">{{ $selectedChildcat->localized_name }}</span>
-                                            @endif
-                                        </div>
-                                    </div>
-                                    @endif
-
-                                    {{-- Clear Filter Button --}}
-                                    @if($currentCatSlug)
-                                    <a href="{{ route('front.category') }}" class="btn btn-outline-secondary btn-sm w-100 mt-2">
-                                        <i class="fa-solid fa-times me-1"></i> @lang('Clear Selection')
-                                    </a>
-                                    @endif
                                 </div>
 
                                 {{-- Hidden data for JavaScript --}}
