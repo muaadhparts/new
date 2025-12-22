@@ -1126,32 +1126,34 @@ class CartController extends FrontBaseController
         $size = (string)($row['size'] ?? '');
         $effStock = $this->effectiveStock($mp, $size);
 
+        // minimum_qty = الخطوة (step) للزيادة/النقصان (للأطقم)
+        $minQty = max(1, (int)($mp->minimum_qty ?? 1));
         $currentQty = (int)($row['qty'] ?? 0);
-        $newQty = $currentQty + 1;
+        $newQty = $currentQty + $minQty; // الزيادة بمقدار الخطوة
 
         // التحقق من المخزون
         // effStock = المخزون بعد خصم الحجوزات السابقة
-        // نحتاج التحقق إذا كان هناك وحدة واحدة متاحة على الأقل
+        // نحتاج التحقق إذا كان هناك كمية كافية (minQty على الأقل)
         $stockCheckEnabled = (int)($mp->stock_check ?? 0) === 1;
         $preordered = (int)($mp->preordered ?? 0);
 
         if ($stockCheckEnabled && !$preordered) {
-            if ($effStock <= 0) {
-                return 0; // لا يوجد مخزون متاح
+            if ($effStock < $minQty) {
+                return 0; // لا يوجد مخزون كافٍ للخطوة
             }
         }
 
-        // حجز الوحدة الإضافية وتحديث جدول الحجوزات
+        // حجز الوحدات الإضافية وتحديث جدول الحجوزات
         $sizeVal = $row['size'] ?? '';
         $sizeStr = is_array($sizeVal) ? ($sizeVal[0] ?? '') : (string)$sizeVal;
         $colorVal = $row['color'] ?? '';
         $colorStr = is_array($colorVal) ? ($colorVal[0] ?? '') : (string)$colorVal;
         $cartKey = $this->generateCartKey($mpId, $sizeStr ?: null, $colorStr ?: null);
 
-        if (!$preordered && $effStock > 0) {
+        if (!$preordered && $effStock >= $minQty) {
             try {
-                // حجز وحدة واحدة إضافية
-                $this->reserveStock($mpId, 1, $sizeStr ?: null, null);
+                // حجز بمقدار الخطوة (minQty)
+                $this->reserveStock($mpId, $minQty, $sizeStr ?: null, null);
                 // تحديث سجل الحجز بالكمية الجديدة (أو إنشاءه إذا لم يكن موجوداً)
                 $this->updateReservationQty($cartKey, $newQty, $mpId, $sizeStr ?: null);
             } catch (\Exception $e) {
@@ -1191,9 +1193,9 @@ class CartController extends FrontBaseController
             }
         }
 
-        // الزيادة (+1)
+        // الزيادة بمقدار الخطوة (minQty للأطقم)
         $cart = new Cart($oldCart);
-        $cart->adding($prod, $itemid, $size_qty, $size_price);
+        $cart->adding($prod, $itemid, $size_qty, $size_price, $minQty);
 
         // تطبيق خصم الجملة المحسوب
         if ($bulkDiscount['has_discount']) {
@@ -1270,17 +1272,19 @@ class CartController extends FrontBaseController
         $vendorId = (int)$mp->user_id;
 
         // التحقق من الحد الأدنى للكمية قبل التنقيص
+        // minimum_qty = الخطوة (step) للزيادة/النقصان (للأطقم)
         $currentQty = (int)($row['qty'] ?? 0);
-        $minQty = (int)($mp->minimum_qty ?? 1);
-        if ($minQty < 1) $minQty = 1;
+        $minQty = max(1, (int)($mp->minimum_qty ?? 1));
 
+        // لا يمكن التنقيص إذا كنا عند الحد الأدنى
         if ($currentQty <= $minQty) {
-            return 0; // لا يمكن التنقيص - وصلنا للحد الأدنى
+            return 0;
         }
 
-        $newQty = $currentQty - 1;
+        // النقصان بمقدار الخطوة (minQty)
+        $newQty = $currentQty - $minQty;
 
-        // إرجاع وحدة واحدة للمخزون وتحديث جدول الحجوزات
+        // إرجاع الكمية للمخزون وتحديث جدول الحجوزات
         $sizeVal = $row['size'] ?? '';
         $sizeStr = is_array($sizeVal) ? ($sizeVal[0] ?? '') : (string)$sizeVal;
         $colorVal = $row['color'] ?? '';
@@ -1289,9 +1293,9 @@ class CartController extends FrontBaseController
 
         $preordered = (int)($mp->preordered ?? 0);
         if (!$preordered) {
-            // إرجاع وحدة واحدة للمخزون (بدون حذف الحجز)
-            $this->returnStock($mpId, 1, $sizeStr ?: null, null);
-            // تحديث سجل الحجز بالكمية الجديدة (أو إنشاءه إذا لم يكن موجوداً)
+            // إرجاع بمقدار الخطوة (minQty) للمخزون
+            $this->returnStock($mpId, $minQty, $sizeStr ?: null, null);
+            // تحديث سجل الحجز بالكمية الجديدة
             $this->updateReservationQty($cartKey, $newQty, $mpId, $sizeStr ?: null);
         }
 
@@ -1327,7 +1331,7 @@ class CartController extends FrontBaseController
         }
 
         $cart = new Cart($oldCart);
-        $cart->reducing($prod, $itemid, $size_qty, $size_price);
+        $cart->reducing($prod, $itemid, $size_qty, $size_price, $minQty);
 
         // تطبيق خصم الجملة المحسوب
         if ($bulkDiscount['has_discount']) {

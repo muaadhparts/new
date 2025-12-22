@@ -334,7 +334,7 @@ class Cart extends Model
 
     /* ============================ دوال دعم موجودة أصلًا ============================ */
 
-    public function adding($item, $id, $size_qty, $size_price)
+    public function adding($item, $id, $size_qty, $size_price, $step = 1)
     {
         $storedItem = [
             'user_id'      => $this->vendorIdFromItem($item),
@@ -363,9 +363,9 @@ class Cart extends Model
             $storedItem = $this->items[$id];
         }
 
-        // +1 فقط
-        $storedItem['qty']++;
-        if ($item->stock !== null && $item->stock !== '') $storedItem['stock']--;
+        // زيادة بمقدار الخطوة (step) - للأطقم minimum_qty > 1
+        $storedItem['qty'] += $step;
+        if ($item->stock !== null && $item->stock !== '') $storedItem['stock'] -= $step;
 
         // لا نضيف size_price هنا لتجنب مضاعفة السعر (الكنترولر يمرر 0)
         $item->price += (float) $size_price;
@@ -391,11 +391,11 @@ class Cart extends Model
         $storedItem['price'] = $item->price * $storedItem['qty'];
         $this->items[$id]    = $storedItem;
 
-        // زِد الإجمالي بواحد فقط
-        $this->totalQty++;
+        // زِد الإجمالي بمقدار الخطوة
+        $this->totalQty += $step;
     }
 
-    public function reducing($item, $id, $size_qty, $size_price)
+    public function reducing($item, $id, $size_qty, $size_price, $step = 1)
     {
         $storedItem = [
             'user_id'      => $this->vendorIdFromItem($item),
@@ -428,8 +428,9 @@ class Cart extends Model
         $minQty = (int)($storedItem['minimum_qty'] ?? 1);
         if ($storedItem['qty'] <= $minQty) return;
 
-        $storedItem['qty']--;
-        if ($item->stock !== null && $item->stock !== '') $storedItem['stock']++;
+        // إنقاص بمقدار الخطوة (step) - للأطقم minimum_qty > 1
+        $storedItem['qty'] -= $step;
+        if ($item->stock !== null && $item->stock !== '') $storedItem['stock'] += $step;
 
         // لا نضيف size_price هنا لتجنب تغيير سعر الوحدة
         $item->price += (float) $size_price;
@@ -462,8 +463,8 @@ class Cart extends Model
         $storedItem['price'] = $item->price * $storedItem['qty'];
         $this->items[$id] = $storedItem;
 
-        // أنقص الإجمالي بواحد
-        $this->totalQty--;
+        // أنقص الإجمالي بمقدار الخطوة
+        $this->totalQty -= $step;
     }
 
     public function MobileupdateLicense($id, $license) { $this->items[$id]['license'] = $license; }

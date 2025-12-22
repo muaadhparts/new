@@ -441,7 +441,7 @@ jQuery(document).ready(function($) {
         }, 3000));
     }
 
-    // Increase quantity - AJAX call
+    // Increase quantity - AJAX call (step = minimum_qty for bundles)
     $(document).on('click', '.quantity-up', function(e) {
         e.preventDefault();
         e.stopPropagation();
@@ -452,12 +452,13 @@ jQuery(document).ready(function($) {
         var domKey = $wrapper.find('.domkey').val();
         var stock = parseInt($wrapper.find('.stock_val').val()) || 0;
         var preordered = parseInt($wrapper.find('.preordered_val').val()) || 0;
-        var currentQty = parseInt($qtyInput.val()) || 1;
+        var minQty = parseInt($wrapper.find('.minimum_qty').val()) || 1; // Step size
+        var currentQty = parseInt($qtyInput.val()) || minQty;
 
-        // Check stock limit - show elegant message
-        if (!preordered && stock <= 0) {
-            var totalStock = currentQty; // Current qty is all we have
-            showQtyHint($wrapper, '{{ __("Available stock") }}: ' + totalStock, 'max');
+        // Check stock limit - need at least minQty available
+        if (!preordered && stock < minQty) {
+            var maxAllowed = currentQty + stock;
+            showQtyHint($wrapper, '{{ __("Available stock") }}: ' + maxAllowed, 'max');
             return;
         }
 
