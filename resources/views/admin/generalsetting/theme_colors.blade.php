@@ -826,18 +826,6 @@
                             <h4 class="theme-section-title"><i class="fas fa-magic"></i> {{ __('Quick Presets') }}</h4>
                             <p class="theme-section-desc">{{ __('Select a preset to quickly apply a complete color scheme') }}</p>
                             <div class="preset-grid">
-                                <button type="button" class="preset-btn" data-preset="nissan" style="background: linear-gradient(135deg, #c3002f 0%, #1a1a2e 100%); color: #fff; box-shadow: 0 4px 12px rgba(195,0,47,0.3);">{{ __('Nissan Red') }}</button>
-                                <button type="button" class="preset-btn" data-preset="blue" style="background: linear-gradient(135deg, #2563eb 0%, #0f172a 100%); color: #fff; box-shadow: 0 4px 12px rgba(37,99,235,0.3);">{{ __('Royal Blue') }}</button>
-                                <button type="button" class="preset-btn" data-preset="green" style="background: linear-gradient(135deg, #059669 0%, #14532d 100%); color: #fff; box-shadow: 0 4px 12px rgba(5,150,105,0.3);">{{ __('Emerald') }}</button>
-                                <button type="button" class="preset-btn" data-preset="purple" style="background: linear-gradient(135deg, #7c3aed 0%, #1e1b4b 100%); color: #fff; box-shadow: 0 4px 12px rgba(124,58,237,0.3);">{{ __('Purple') }}</button>
-                                <button type="button" class="preset-btn" data-preset="orange" style="background: linear-gradient(135deg, #ea580c 0%, #1c1917 100%); color: #fff; box-shadow: 0 4px 12px rgba(234,88,12,0.3);">{{ __('Sunset') }}</button>
-                                <button type="button" class="preset-btn" data-preset="teal" style="background: linear-gradient(135deg, #0d9488 0%, #134e4a 100%); color: #fff; box-shadow: 0 4px 12px rgba(13,148,136,0.3);">{{ __('Teal') }}</button>
-                                <button type="button" class="preset-btn" data-preset="gold" style="background: linear-gradient(135deg, #b8860b 0%, #1a1a2e 100%); color: #fff; box-shadow: 0 4px 12px rgba(184,134,11,0.3);">{{ __('Gold Luxury') }}</button>
-                                <button type="button" class="preset-btn" data-preset="rose" style="background: linear-gradient(135deg, #e11d48 0%, #18181b 100%); color: #fff; box-shadow: 0 4px 12px rgba(225,29,72,0.3);">{{ __('Rose') }}</button>
-                                <button type="button" class="preset-btn" data-preset="ocean" style="background: linear-gradient(135deg, #0891b2 0%, #164e63 100%); color: #fff; box-shadow: 0 4px 12px rgba(8,145,178,0.3);">{{ __('Ocean Blue') }}</button>
-                                <button type="button" class="preset-btn" data-preset="forest" style="background: linear-gradient(135deg, #16a34a 0%, #14532d 100%); color: #fff; box-shadow: 0 4px 12px rgba(22,163,74,0.3);">{{ __('Forest Green') }}</button>
-                                <button type="button" class="preset-btn" data-preset="midnight" style="background: linear-gradient(135deg, #4f46e5 0%, #1e1b4b 100%); color: #fff; box-shadow: 0 4px 12px rgba(79,70,229,0.3);">{{ __('Midnight') }}</button>
-                                <button type="button" class="preset-btn" data-preset="crimson" style="background: linear-gradient(135deg, #dc2626 0%, #7f1d1d 100%); color: #fff; box-shadow: 0 4px 12px rgba(220,38,38,0.3);">{{ __('Crimson') }}</button>
                                 <button type="button" class="preset-btn" data-preset="saudi" style="background: linear-gradient(135deg, #006c35 0%, #d4af37 50%, #1a1510 100%); color: #fff; box-shadow: 0 4px 12px rgba(0,108,53,0.4);">{{ __('Saudi Heritage') }}</button>
                             </div>
                         </div>
