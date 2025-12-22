@@ -136,39 +136,51 @@
     });
   });
 
-  // Product Add Qty
+  // Product Add Qty - uses minimum_qty as step (for bundles)
   $(document).on("click", ".qtplus", function () {
     var $tselector = $("#order-qty");
     var stock = $("#stock").val();
-    var total = parseInt($($tselector).val()) || 1;
+    var minQty = parseInt($("#product_minimum_qty").val()) || 1; // Step size
+    var preordered = parseInt($("#product_preordered").val()) || 0;
+    var total = parseInt($($tselector).val()) || minQty;
+
+    // إذا كان preorder، السماح بالزيادة بدون حد
+    if (preordered == 1) {
+      total += minQty;
+      $($tselector).val(total);
+      return;
+    }
 
     // التحقق من المخزون قبل الزيادة
     if (stock != "" && stock != null) {
       var stk = parseInt(stock);
-      if (total < stk) {
-        total++;
-        $($tselector).val(total);
+      var newTotal = total + minQty;
+      // التحقق من أن الكمية الجديدة لا تتجاوز المخزون
+      if (newTotal <= stk) {
+        $($tselector).val(newTotal);
       }
+      // صامت - لا رسائل
     } else {
-      // إذا لم يكن هناك مخزون محدد، السماح بالزيادة (للمنتجات الرقمية أو preorder)
-      total++;
+      // إذا لم يكن هناك مخزون محدد (منتجات رقمية)
+      total += minQty;
       $($tselector).val(total);
     }
   });
 
-  // Product Minus Qty
+  // Product Minus Qty - uses minimum_qty as step (for bundles)
   $(document).on("click", ".qtminus", function () {
     var $tselector = $("#order-qty");
     var total = parseInt($($tselector).val()) || 1;
 
-    // الحصول على الحد الأدنى للكمية
+    // الحصول على الحد الأدنى للكمية (وهو أيضاً الخطوة)
     var minQty = parseInt($("#product_minimum_qty").val()) || 1;
 
     // التحقق من الحد الأدنى للكمية قبل التنقيص
-    if (total > minQty) {
-      total--;
-      $($tselector).val(total);
+    var newTotal = total - minQty;
+    if (newTotal >= minQty) {
+      $($tselector).val(newTotal);
     }
+    // صامت - لا رسائل
   });
 
   $(".qttotal").keypress(function (e) {
@@ -409,6 +421,16 @@
   $(document).on("click", ".cart_size", function () {
     let qty = $(this).data("qty");
     $("#stock").val(qty);
+
+    // Reset quantity to minimum when size changes (new stock might be lower)
+    var minQty = parseInt($("#product_minimum_qty").val()) || 1;
+    var currentQty = parseInt($("#order-qty").val()) || minQty;
+
+    // If current qty exceeds new stock, reset to minimum
+    if (qty > 0 && currentQty > qty) {
+      $("#order-qty").val(minQty);
+    }
+
     updateProductPrice();
   });
   $(document).on("click", ".cart_color", function () {

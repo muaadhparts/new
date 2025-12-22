@@ -181,51 +181,24 @@ class CartController extends FrontBaseController
         }
 
         // ==========================================
-        // STEP 4: EXTRACT & VALIDATE QTY/SIZE/COLOR
+        // STEP 4: EXTRACT & VALIDATE SIZE/COLOR
         // ==========================================
-        $minQty = max(1, (int) ($mp->minimum_qty ?? 1));
-
-        // Use the pre-validated $qty or default to minQty
-        if ($qty === null) {
-            $qty = $minQty;
-        } else {
-            $qty = max($minQty, $qty);
-        }
-
-        // ASSERT: qty must be >= minimum_qty
-        if ($qty < $minQty) {
-            return response()->json([
-                'success' => false,
-                'status' => 'error',
-                'message' => __('Minimum quantity is :min', ['min' => $minQty]),
-                'error_code' => 'ASSERT_QTY_BELOW_MIN',
-                'minimum_qty' => $minQty,
-            ], 400);
-        }
-
         $size = trim((string) ($request->input('size') ?? ''));
         $color = trim((string) ($request->input('color') ?? ''));
-
-        // Get stock
-        $stock = (int) ($mp->stock ?? 0);
         $preordered = (bool) ($mp->preordered ?? false);
 
-        // Handle sizes
+        // Handle sizes - get size price and validate
         $sizes = $this->toArrayValues($mp->size ?? '');
-        $sizeQtys = $this->toArrayValues($mp->size_qty ?? '');
         $sizePrices = $this->toArrayValues($mp->size_price ?? '');
-
-        $effectiveStock = $stock;
         $sizePrice = 0;
 
         if (count($sizes) > 0) {
-            // If size not provided, pick first available
             if ($size === '') {
+                // Pick first size with stock (or first if preordered)
                 foreach ($sizes as $i => $sz) {
-                    $szQty = (int) ($sizeQtys[$i] ?? 0);
-                    if ($szQty > 0 || $preordered) {
-                        $size = $sz;
-                        $effectiveStock = $szQty;
+                    $szStock = $this->effectiveStock($mp, trim($sz));
+                    if ($szStock > 0 || $preordered) {
+                        $size = trim($sz);
                         $sizePrice = (float) ($sizePrices[$i] ?? 0);
                         break;
                     }
@@ -241,7 +214,6 @@ class CartController extends FrontBaseController
                         'error_code' => 'INVALID_SIZE',
                     ], 400);
                 }
-                $effectiveStock = (int) ($sizeQtys[$sizeIdx] ?? 0);
                 $sizePrice = (float) ($sizePrices[$sizeIdx] ?? 0);
             }
         }
@@ -271,28 +243,20 @@ class CartController extends FrontBaseController
         }
 
         // ==========================================
-        // STEP 5: STOCK VALIDATION
+        // STEP 5: STRICT QTY & STOCK VALIDATION (Server-side authority)
         // ==========================================
-        if ($effectiveStock <= 0 && !$preordered) {
-            return response()->json([
-                'success' => false,
-                'status' => 'error',
-                'message' => __('Out of Stock'),
-                'error_code' => 'OUT_OF_STOCK',
-            ], 422);
+        // minimum_qty = الخطوة الإلزامية (للأطقم)
+        $minQty = max(1, (int) ($mp->minimum_qty ?? 1));
+
+        // Use effectiveStock() - real-time stock from database (handles sizes)
+        $effStock = $this->effectiveStock($mp, $size);
+
+        // Default qty to minQty if not provided
+        if ($qty === null) {
+            $qty = $minQty;
         }
 
-        if (!$preordered && $qty > $effectiveStock) {
-            return response()->json([
-                'success' => false,
-                'status' => 'error',
-                'message' => __('Only') . ' ' . $effectiveStock . ' ' . __('items available'),
-                'error_code' => 'INSUFFICIENT_STOCK',
-                'available_stock' => $effectiveStock,
-            ], 422);
-        }
-
-        // Guard: qty >= minimum_qty
+        // STRICT GUARD 1: qty must be >= minimum_qty
         if ($qty < $minQty) {
             return response()->json([
                 'success' => false,
@@ -303,13 +267,58 @@ class CartController extends FrontBaseController
             ], 400);
         }
 
+        // STRICT GUARD 2: qty must be a multiple of minimum_qty (للأطقم)
+        if ($qty % $minQty !== 0) {
+            // تعديل الكمية لتكون أقرب مضاعف صحيح
+            $correctedQty = (int) floor($qty / $minQty) * $minQty;
+            if ($correctedQty < $minQty) {
+                $correctedQty = $minQty;
+            }
+            return response()->json([
+                'success' => false,
+                'status' => 'error',
+                'message' => __('Quantity must be a multiple of') . ' ' . $minQty,
+                'error_code' => 'QTY_NOT_MULTIPLE',
+                'min_qty' => $minQty,
+                'suggested_qty' => $correctedQty,
+            ], 400);
+        }
+
+        // STRICT GUARD 3: Check stock (only if not preordered)
+        if (!$preordered) {
+            // نفاد المخزون
+            if ($effStock <= 0) {
+                return response()->json([
+                    'success' => false,
+                    'status' => 'error',
+                    'message' => __('Out of Stock'),
+                    'error_code' => 'OUT_OF_STOCK',
+                ], 422);
+            }
+
+            // الكمية المطلوبة تتجاوز المخزون
+            if ($qty > $effStock) {
+                // احسب أقصى كمية ممكنة (مضاعف للـ minQty)
+                $maxValidQty = (int) floor($effStock / $minQty) * $minQty;
+                return response()->json([
+                    'success' => false,
+                    'status' => 'error',
+                    'message' => __('Only') . ' ' . $effStock . ' ' . __('items available'),
+                    'error_code' => 'INSUFFICIENT_STOCK',
+                    'available_stock' => $effStock,
+                    'max_valid_qty' => $maxValidQty > 0 ? $maxValidQty : $minQty,
+                ], 422);
+            }
+        }
+
         // ==========================================
         // STEP 6: GENERATE CART KEY & RESERVE STOCK (Atomic)
         // ==========================================
         // Generate unique cart key for this item
         $cartKey = $this->generateCartKey($mpId, $size, $color);
 
-        if (!($preordered && $effectiveStock <= 0)) {
+        // Reserve stock only if NOT (preordered with zero stock)
+        if (!($preordered && $effStock <= 0)) {
             try {
                 $this->reserveStock($mpId, $qty, $size, $cartKey);
             } catch (\Exception $e) {
@@ -329,7 +338,7 @@ class CartController extends FrontBaseController
             $prod = ProductContextHelper::createWithContext($mp);
         } catch (\Exception $e) {
             // Return stock if product creation fails
-            if (!($preordered && $effectiveStock <= 0)) {
+            if (!($preordered && $effStock <= 0)) {
                 $this->returnStock($mpId, $qty, $size, $cartKey);
             }
             return response()->json([

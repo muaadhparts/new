@@ -242,22 +242,34 @@
                         @endif
 
 
-                        @if ($productt->stock_check == 1)
-                            @if (!empty($productt->size))
-                                <!-- product size -->
+                        @php
+                            // Use merchant's stock_check and sizes (vendor-specific)
+                            $stockCheck = (int) ($merchant->stock_check ?? $productt->stock_check ?? 0);
+                            $merchantSizes = !empty($merchant->size) ? (is_array($merchant->size) ? $merchant->size : explode(',', $merchant->size)) : [];
+                            $merchantSizeQty = !empty($merchant->size_qty) ? (is_array($merchant->size_qty) ? $merchant->size_qty : explode(',', $merchant->size_qty)) : [];
+                            $merchantSizePrice = !empty($merchant->size_price) ? (is_array($merchant->size_price) ? $merchant->size_price : explode(',', $merchant->size_price)) : [];
+                        @endphp
+                        @if ($stockCheck == 1)
+                            @if (!empty($merchantSizes))
+                                <!-- product size (from merchant) -->
                                 <div class="variation-wrapper variation-sizes">
                                     <span class="varition-title">@lang('Size :')</span>
                                     <ul>
-                                        @foreach (array_unique($productt->size) as $key => $data1)
+                                        @foreach ($merchantSizes as $key => $data1)
+                                            @php
+                                                $sizeQty = (int) ($merchantSizeQty[$key] ?? 0);
+                                                $sizePrice = (float) ($merchantSizePrice[$key] ?? 0);
+                                            @endphp
                                             <li class="{{ $loop->first ? 'active' : '' }} cart_size"
-                                                data-price="{{ $productt->size_price[$key] * $curr->value }}">
+                                                data-price="{{ $sizePrice * $curr->value }}"
+                                                data-qty="{{ $sizeQty }}">
                                                 <input {{ $loop->first ? 'checked' : '' }} type="radio"
                                                     id="size_{{ $key }}" data-value="{{ $key }}"
-                                                    data-key="{{ str_replace(' ', '', $data1) }}"
-                                                    data-price="{{ $productt->size_price[$key] * $curr->value }}"
-                                                    data-qty="{{ $productt->size_qty[$key] }}" value="{{ $key }}"
+                                                    data-key="{{ str_replace(' ', '', trim($data1)) }}"
+                                                    data-price="{{ $sizePrice * $curr->value }}"
+                                                    data-qty="{{ $sizeQty }}" value="{{ $key }}"
                                                     name="size">
-                                                <label for="size_{{ $key }}">{{ $data1 }}</label>
+                                                <label for="size_{{ $key }}">{{ trim($data1) }}</label>
                                             </li>
                                         @endforeach
                                     </ul>
@@ -296,16 +308,15 @@
                             $mpPreordered = (bool) $merchant->preordered;
                             $mpMinQty = max(1, (int) $merchant->minimum_qty);
                             $mpPrice = (float) $merchant->price;
+
+                            // Initial stock: use first size's stock if sizes exist, otherwise general stock
+                            $initialStock = !empty($merchantSizeQty) ? (int) ($merchantSizeQty[0] ?? $mpStock) : $mpStock;
                         @endphp
 
                         @if ($productt->type == 'Physical')
 
-                            @if (is_array($productt->size))
-                                <input type="hidden" id="stock" value="{{ $productt->size_qty[0] }}">
-                            @else
-                                {{-- Stock from $merchant only --}}
-                                <input type="hidden" id="stock" value="{{ $mpStock }}">
-                            @endif
+                            {{-- Stock from $merchant only (size-specific or general) --}}
+                            <input type="hidden" id="stock" value="{{ $initialStock }}">
 
 
                             <!-- add-qty-wrapper -->
