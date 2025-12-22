@@ -62,7 +62,7 @@
 
             <button class="mf-btn mf-pay-now-btn" onclick="submit()" type="button" style="
                     border: none; border-radius: 8px;
-                    padding: 7px 3px; background-color: #0293cc">
+                    padding: 7px 3px; background-color: var(--theme-primary, #006c35)">
                 <span class="mf-pay-now-span">
                     {{__('myfatoorah.payNow')}}
                 </span>

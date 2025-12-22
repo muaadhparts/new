@@ -338,7 +338,7 @@
     top: 0;
     bottom: 0;
     width: 2px;
-    background: #e9ecef;
+    background: var(--theme-border, #d4c4a8);
 }
 
 .timeline-item {
@@ -358,7 +358,7 @@
     height: 12px;
     border-radius: 50%;
     border: 2px solid #fff;
-    box-shadow: 0 0 0 2px #e9ecef;
+    box-shadow: 0 0 0 2px var(--theme-border, #d4c4a8);
 }
 
 .timeline-item.active .timeline-marker {
@@ -368,7 +368,7 @@
 }
 
 .tracking-step.active .step-icon {
-    box-shadow: 0 0 0 4px rgba(25, 135, 84, 0.2);
+    box-shadow: 0 0 0 4px var(--theme-success-light, rgba(16, 185, 129, 0.2));
 }
 </style>
 

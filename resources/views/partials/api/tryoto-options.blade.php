@@ -145,15 +145,15 @@
 ======================================== */
 
 .tryoto-options-container {
-    --tryoto-primary: var(--theme-primary, #4f46e5);
-    --tryoto-success: #10b981;
-    --tryoto-info: #3b82f6;
-    --tryoto-border: #e5e7eb;
-    --tryoto-bg: #f9fafb;
-    --tryoto-bg-hover: #f3f4f6;
-    --tryoto-bg-selected: #eef2ff;
-    --tryoto-text: #374151;
-    --tryoto-text-muted: #6b7280;
+    --tryoto-primary: var(--theme-primary, #006c35);
+    --tryoto-success: var(--theme-success, #10b981);
+    --tryoto-info: var(--theme-info, #2c7a7b);
+    --tryoto-border: var(--theme-border, #d4c4a8);
+    --tryoto-bg: var(--theme-bg-light, #faf8f5);
+    --tryoto-bg-hover: var(--theme-bg-gray, #f5f2ec);
+    --tryoto-bg-selected: var(--theme-primary-light, #e8f5ed);
+    --tryoto-text: var(--theme-text-primary, #1a1510);
+    --tryoto-text-muted: var(--theme-text-muted, #7a6f5f);
     --tryoto-radius: 8px;
     font-family: inherit;
 }
@@ -169,13 +169,13 @@
 }
 
 .tryoto-free-alert--success {
-    background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
-    border: 1px solid #a7f3d0;
+    background: linear-gradient(135deg, var(--theme-success-light, #ecfdf5) 0%, var(--theme-success-light, #d1fae5) 100%);
+    border: 1px solid var(--theme-success, #10b981);
 }
 
 .tryoto-free-alert--info {
-    background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
-    border: 1px solid #bfdbfe;
+    background: linear-gradient(135deg, var(--theme-info-light, #e8f5ed) 0%, var(--theme-primary-light, #e8f5ed) 100%);
+    border: 1px solid var(--theme-info, #2c7a7b);
 }
 
 .tryoto-free-alert__icon {

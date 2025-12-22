@@ -57,7 +57,7 @@
     }
 
     .map-picker-header {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: linear-gradient(135deg, var(--theme-primary, #006c35) 0%, var(--theme-primary-dark, #004420) 100%);
         color: white;
         padding: 15px 20px;
         display: flex;
@@ -97,7 +97,7 @@
     #map-search-input {
         width: 100%;
         padding: 12px 15px;
-        border: 2px solid #667eea;
+        border: 2px solid var(--theme-primary, #006c35);
         border-radius: 8px;
         font-size: 14px;
         box-shadow: 0 2px 8px rgba(0,0,0,0.1);
@@ -106,7 +106,7 @@
 
     #map-search-input:focus {
         outline: none;
-        border-color: #764ba2;
+        border-color: var(--theme-primary-dark, #004420);
     }
 
     #map-loading-overlay {
@@ -123,8 +123,8 @@
     }
 
     #map-loading-overlay .spinner {
-        border: 3px solid #f3f3f3;
-        border-top: 3px solid #667eea;
+        border: 3px solid var(--theme-border-light, #f3f3f3);
+        border-top: 3px solid var(--theme-primary, #006c35);
         border-radius: 50%;
         width: 40px;
         height: 40px;
@@ -155,22 +155,22 @@
     }
 
     .map-controls .btn-primary {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: linear-gradient(135deg, var(--theme-primary, #006c35) 0%, var(--theme-primary-dark, #004420) 100%);
         color: white;
     }
 
     .map-controls .btn-primary:hover {
         transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        box-shadow: 0 4px 12px rgba(0, 108, 53, 0.4);
     }
 
     .map-controls .btn-secondary {
-        background: #e0e0e0;
-        color: #333;
+        background: var(--theme-bg-gray, #e0e0e0);
+        color: var(--theme-text-primary, #333);
     }
 
     .map-controls .btn-secondary:hover {
-        background: #d0d0d0;
+        background: var(--theme-border, #d0d0d0);
     }
 
     .map-controls .btn:disabled {
@@ -180,8 +180,8 @@
 
     .location-info-display {
         padding: 15px 20px;
-        background: #f8f9fa;
-        border-top: 1px solid #eee;
+        background: var(--theme-bg-light, #f8f9fa);
+        border-top: 1px solid var(--theme-border-light, #eee);
         display: none;
     }
 
@@ -193,7 +193,7 @@
         font-size: 14px;
         font-weight: 600;
         margin-bottom: 10px;
-        color: #333;
+        color: var(--theme-text-primary, #333);
     }
 
     .location-info-grid {
@@ -206,7 +206,7 @@
         background: white;
         padding: 10px;
         border-radius: 6px;
-        border-right: 3px solid #667eea;
+        border-right: 3px solid var(--theme-primary, #006c35);
     }
 
     .location-info-item label {

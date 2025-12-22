@@ -3848,3 +3848,130 @@ select option {
     stroke: var(--theme-text-secondary, #3d3429) !important;
 }
 
+/* ============================================================================
+   SIDEBAR SVG ICON THEMING
+   ============================================================================
+   Override hardcoded SVG colors with theme variables.
+   Icons use dark colors that match Saudi Heritage secondary tones.
+   ============================================================================ */
+
+/* Vendor Sidebar Icons */
+.gs-vendor-nav svg path,
+.gs-vendor-nav svg rect,
+.gs-vendor-nav svg circle {
+    stroke: var(--theme-text-secondary, #3d3429);
+    fill: none;
+}
+
+.gs-vendor-nav svg path[fill],
+.gs-vendor-nav svg rect[fill]:not([fill="none"]),
+.gs-vendor-nav svg circle[fill]:not([fill="none"]) {
+    fill: var(--theme-text-secondary, #3d3429);
+    stroke: none;
+}
+
+/* User Sidebar Icons */
+.gs-user-nav svg path,
+.gs-user-nav svg rect,
+.gs-user-nav svg circle {
+    stroke: var(--theme-text-secondary, #3d3429);
+}
+
+/* Hover states for sidebar icons */
+.gs-vendor-nav a:hover svg path,
+.gs-vendor-nav a:hover svg rect,
+.gs-vendor-nav a:hover svg circle,
+.gs-vendor-nav a.active svg path,
+.gs-vendor-nav a.active svg rect,
+.gs-vendor-nav a.active svg circle,
+.gs-user-nav a:hover svg path,
+.gs-user-nav a:hover svg rect,
+.gs-user-nav a:hover svg circle,
+.gs-user-nav a.active svg path,
+.gs-user-nav a.active svg rect,
+.gs-user-nav a.active svg circle {
+    stroke: var(--theme-primary, #006c35) !important;
+}
+
+.gs-vendor-nav a:hover svg path[fill],
+.gs-vendor-nav a.active svg path[fill],
+.gs-user-nav a:hover svg path[fill],
+.gs-user-nav a.active svg path[fill] {
+    fill: var(--theme-primary, #006c35) !important;
+}
+
+/* Rider Sidebar Icons */
+.gs-rider-nav svg path,
+.gs-rider-nav svg rect,
+.gs-rider-nav svg circle {
+    stroke: var(--theme-text-secondary, #3d3429);
+}
+
+.gs-rider-nav a:hover svg path,
+.gs-rider-nav a.active svg path {
+    stroke: var(--theme-primary, #006c35) !important;
+}
+
+/* Dashboard Card SVG Icons */
+.gs-user-content .card svg path[fill],
+.gs-rider-content .card svg path[fill] {
+    fill: var(--theme-primary, #006c35) !important;
+}
+
+/* Form Step Indicator Icons */
+.step-indicator svg path[fill="#999999"],
+.step-indicator svg circle[fill="#999999"] {
+    fill: var(--theme-text-muted, #7a6f5f) !important;
+}
+
+.step-indicator.active svg path[fill],
+.step-indicator.completed svg path[fill] {
+    fill: var(--theme-primary, #006c35) !important;
+}
+
+/* Vendor Header Icons */
+.gs-vendor-header svg path,
+.gs-vendor-header svg rect {
+    stroke: var(--theme-text-secondary, #3d3429);
+}
+
+/* Shipment Timeline Colors */
+.shipment-timeline-line {
+    background: var(--theme-border, #d4c4a8) !important;
+}
+
+.shipment-timeline-dot {
+    box-shadow: 0 0 0 2px var(--theme-border, #d4c4a8) !important;
+}
+
+.shipment-timeline-dot.active {
+    box-shadow: 0 0 0 4px var(--theme-success-light, rgba(25, 135, 84, 0.2)) !important;
+}
+
+/* ============================================================================
+   BLOG & FRONTEND SVG ICON THEMING
+   ============================================================================ */
+
+/* Blog Page Icons */
+.gs-blog-wrapper svg path[stroke="#4C3533"],
+.gs-blog-wrapper svg path[stroke="#292D32"],
+.gs-blogshow-wrapper svg path[stroke="#4C3533"],
+.gs-blogshow-wrapper svg path[stroke="#292D32"] {
+    stroke: var(--theme-text-secondary, #3d3429) !important;
+}
+
+.gs-blog-wrapper svg path[fill="#463539"],
+.gs-blog-wrapper svg path[fill="#4C3533"],
+.gs-blogshow-wrapper svg path[fill="#463539"],
+.gs-blogshow-wrapper svg path[fill="#4C3533"] {
+    fill: var(--theme-text-secondary, #3d3429) !important;
+}
+
+/* Contact Page Placeholder Icons */
+.gs-contact-wrapper svg rect[fill="#D9D9D9"] {
+    fill: var(--theme-bg-gray, #f5f2ec) !important;
+}
+
+/* Login/Register Form Step Icons - Keep Brand Colors */
+/* Social login buttons (Google, Facebook, etc.) use brand colors - intentionally not themed */
+

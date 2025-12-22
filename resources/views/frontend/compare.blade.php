@@ -26,7 +26,7 @@
         min-width: 200px;
     }
     .gs-compare-wrapper .compare-table td:first-child {
-        background: #f8f9fa;
+        background: var(--theme-bg-light, #f8f9fa);
         text-align: start;
         font-weight: 600;
         min-width: 160px;
@@ -112,7 +112,7 @@
         z-index: 10000;
     }
     .compare-img-modal .close-modal:hover {
-        color: #ff5555;
+        color: var(--theme-danger, #c53030);
     }
     .compare-img-modal .img-caption {
         position: absolute;
@@ -148,10 +148,10 @@
     }
     .gs-compare-wrapper .compare-table .table-value {
         font-size: 14px;
-        color: #555;
+        color: var(--theme-text-secondary, #555);
     }
     .gs-compare-wrapper .compare-table .btn-remove {
-        background: #dc3545;
+        background: var(--theme-danger, #c53030);
         color: #fff;
         border: none;
         padding: 10px 20px;
@@ -165,7 +165,7 @@
         text-decoration: none;
     }
     .gs-compare-wrapper .compare-table .btn-remove:hover {
-        background: #c82333;
+        background: var(--theme-danger-hover, #9b2c2c);
         color: #fff;
     }
     .gs-compare-wrapper .compare-table .btn-cart {
@@ -185,19 +185,19 @@
         color: #fff;
     }
     .gs-compare-wrapper .compare-table .btn-cart.disabled {
-        background: #6c757d;
+        background: var(--theme-text-muted, #6c757d);
         cursor: not-allowed;
     }
     .gs-compare-wrapper .compare-table .stock-available {
-        color: #28a745;
+        color: var(--theme-success, #10b981);
         font-weight: 500;
     }
     .gs-compare-wrapper .compare-table .stock-out {
-        color: #dc3545;
+        color: var(--theme-danger, #c53030);
         font-weight: 500;
     }
     .gs-compare-wrapper .compare-table .stock-unlimited {
-        color: #17a2b8;
+        color: var(--theme-info, #2c7a7b);
         font-weight: 500;
     }
     .gs-compare-wrapper .compare-empty {

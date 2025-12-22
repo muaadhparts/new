@@ -139,7 +139,7 @@
 }
 
 .product-name-component small a {
-    color: #6c757d;
+    color: var(--theme-text-muted, #6c757d);
     font-weight: 500;
 }
 
