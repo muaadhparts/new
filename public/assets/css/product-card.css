@@ -160,6 +160,38 @@
     left: 12px;
 }
 
+/* Delete Button (Wishlist Page) */
+.product-card__delete {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--pc-danger, #dc3545);
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: var(--pc-transition);
+    z-index: 2;
+    color: #fff;
+    font-size: 14px;
+    box-shadow: 0 2px 8px rgba(220, 53, 69, 0.3);
+}
+
+.product-card__delete:hover {
+    background: #bb2d3b;
+    transform: scale(1.1);
+    box-shadow: 0 4px 12px rgba(220, 53, 69, 0.4);
+}
+
+[dir="rtl"] .product-card__delete {
+    right: auto;
+    left: 12px;
+}
+
 /* Quick Actions */
 .product-card__actions {
     position: absolute;
@@ -561,7 +593,8 @@
     }
 
     .product-card__wishlist,
-    .product-card__action {
+    .product-card__action,
+    .product-card__delete {
         width: 32px;
         height: 32px;
     }

@@ -265,9 +265,18 @@
             @endif
 
             @auth
-                <button type="button" class="product-card__wishlist wishlist {{ $isInWishlist ? 'active' : '' }}" data-href="{{ $wishlistUrl }}">
-                    <i class="{{ $isInWishlist ? 'fas' : 'far' }} fa-heart"></i>
-                </button>
+                @if(isset($wishlist) && $wishlist && isset($wishlistId))
+                    {{-- Delete button for wishlist page --}}
+                    <button type="button" class="product-card__delete removewishlist"
+                        data-href="{{ route('user-wishlist-remove', $wishlistId) }}"
+                        title="@lang('Remove from Wishlist')">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                @else
+                    <button type="button" class="product-card__wishlist wishlist {{ $isInWishlist ? 'active' : '' }}" data-href="{{ $wishlistUrl }}">
+                        <i class="{{ $isInWishlist ? 'fas' : 'far' }} fa-heart"></i>
+                    </button>
+                @endif
             @else
                 <a href="{{ route('user.login') }}" class="product-card__wishlist">
                     <i class="far fa-heart"></i>

@@ -35,6 +35,7 @@
                     @include('includes.frontend.home_product', [
                     'class' => 'col-6 col-md-4 col-lg-3',
                     'wishlist' => true,
+                    'wishlistId' => $wishlistItem->id,
                     'product' => $product,
                     'mp' => $mp
                     ])

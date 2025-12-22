@@ -7,12 +7,16 @@
     "scripts": {
         "dev": "vite",
         "build": "npm run lint:theme && vite build",
+        "build:prod": "npm run lint:theme && npm run purge:css && vite build",
         "lint:theme": "node scripts/theme-linter.cjs",
-        "lint:theme:fix": "echo 'Run: php artisan view:clear after fixing violations'"
+        "purge:css": "node scripts/purge-css.cjs",
+        "purge:css:dry": "node scripts/purge-css.cjs --dry-run --analyze",
+        "analyze:css": "node scripts/purge-css.cjs --dry-run --analyze"
     },
     "devDependencies": {
         "axios": "^1.13.2",
         "laravel-vite-plugin": "^0.8.0",
+        "purgecss": "^7.0.2",
         "vite": "^4.5.14"
     },
     "dependencies": {
