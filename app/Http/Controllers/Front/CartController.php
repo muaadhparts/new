@@ -1076,10 +1076,13 @@ class CartController extends FrontBaseController
         $newQty = $currentQty + 1;
 
         // التحقق من المخزون
+        // المخزون الفعلي المتاح = المخزون الحالي + الكمية المحجوزة في السلة
+        // لأن الكمية الحالية محجوزة بالفعل لهذا المستخدم
         $stockCheckEnabled = (int)($mp->stock_check ?? 0) === 1;
+        $totalAvailable = $effStock + $currentQty; // المخزون المتاح لهذا المستخدم
 
         if ($stockCheckEnabled) {
-            if ($effStock <= 0 || $newQty > $effStock) {
+            if ($totalAvailable <= 0 || $newQty > $totalAvailable) {
                 return 0;
             }
         }
@@ -1267,7 +1270,17 @@ class CartController extends FrontBaseController
     /* ===================== remove ===================== */
     public function removecart(Request $request, $id)
     {
-        if (!Session::has('cart')) return back();
+        $isAjax = $request->ajax() || $request->wantsJson() || $request->header('X-Requested-With') === 'XMLHttpRequest';
+
+        if (!Session::has('cart')) {
+            if ($isAjax) {
+                return response()->json([
+                    'success' => false,
+                    'message' => __('Cart is empty.')
+                ]);
+            }
+            return back();
+        }
 
         $oldCart = Session::get('cart');
         $cart    = new Cart($oldCart);
@@ -1288,6 +1301,7 @@ class CartController extends FrontBaseController
             }
         }
 
+        $removed = false;
         if ($rowKey && isset($cart->items[$rowKey])) {
             // إرجاع المخزون قبل الحذف
             $rowData = $cart->items[$rowKey];
@@ -1301,6 +1315,7 @@ class CartController extends FrontBaseController
                 }
             }
             $cart->removeItem($rowKey);
+            $removed = true;
         }
 
         foreach (['already','coupon','coupon_total','coupon_total1','coupon_percentage'] as $k) {
@@ -1309,6 +1324,35 @@ class CartController extends FrontBaseController
         $this->recomputeTotals($cart);
         Session::put('cart', $cart);
         if (empty($cart->items)) { Session::forget('cart'); }
+
+        // AJAX response
+        if ($isAjax) {
+            $newTotal = $cart->totalPrice ?? 0;
+            $itemCount = count($cart->items ?? []);
+
+            // Group by vendor for updated counts
+            $vendorCounts = [];
+            $vendorTotals = [];
+            foreach ((array)($cart->items ?? []) as $item) {
+                $vid = $item['user_id'] ?? ($item['item']->user_id ?? 0);
+                if (!isset($vendorCounts[$vid])) {
+                    $vendorCounts[$vid] = 0;
+                    $vendorTotals[$vid] = 0;
+                }
+                $vendorCounts[$vid]++;
+                $vendorTotals[$vid] += ($item['price'] ?? 0);
+            }
+
+            return response()->json([
+                'success' => true,
+                'removed' => $removed,
+                'message' => $removed ? __('Item has been removed from cart.') : __('Item not found in cart.'),
+                'total' => $newTotal,
+                'itemCount' => $itemCount,
+                'vendorCounts' => $vendorCounts,
+                'vendorTotals' => $vendorTotals
+            ]);
+        }
 
         return back()->with('success', __('Item has been removed from cart.'));
     }
