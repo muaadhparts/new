@@ -79,9 +79,6 @@
                                 $itemPrice = $product['item_price'] ?? 0;
                                 $totalItemPrice = $product['price'] ?? 0;
                                 $qty = (int)($product['qty'] ?? 1);
-                                $stock = (int)($product['stock'] ?? data_get($product, 'item.stock') ?? 0);
-                                $minQty = max(1, (int)(data_get($product, 'item.minimum_qty') ?? 1));
-                                $preordered = (int)($product['preordered'] ?? 0);
                                 $discount = $product['discount'] ?? 0;
 
                                 // Brand with logo
@@ -89,16 +86,36 @@
                                 $brandName = $brand ? getLocalizedBrandName($brand) : null;
                                 $brandLogo = $brand?->photo_url ?? null;
 
-                                // Quality Brand with logo
+                                // Quality Brand with logo + Real-time stock from database
                                 $qualityBrand = null;
                                 $qualityName = null;
                                 $qualityLogo = null;
+                                $stock = 0;
+                                $minQty = 1;
+                                $preordered = 0;
+
                                 if ($itemMpId) {
                                     $mp = \App\Models\MerchantProduct::with('qualityBrand')->find($itemMpId);
-                                    if ($mp && $mp->qualityBrand) {
-                                        $qualityBrand = $mp->qualityBrand;
-                                        $qualityName = getLocalizedQualityName($qualityBrand);
-                                        $qualityLogo = $qualityBrand->logo_url ?? null;
+                                    if ($mp) {
+                                        // Real-time stock (المخزون المتبقي الفعلي)
+                                        $sizeVal = $product['size'] ?? '';
+                                        $sizeStr = is_array($sizeVal) ? ($sizeVal[0] ?? '') : (string)$sizeVal;
+                                        if ($sizeStr && !empty($mp->size) && !empty($mp->size_qty)) {
+                                            $sizes = array_map('trim', explode(',', $mp->size));
+                                            $qtys = array_map('trim', explode(',', $mp->size_qty));
+                                            $idx = array_search(trim($sizeStr), $sizes, true);
+                                            $stock = ($idx !== false && isset($qtys[$idx])) ? (int)$qtys[$idx] : 0;
+                                        } else {
+                                            $stock = (int)($mp->stock ?? 0);
+                                        }
+                                        $minQty = max(1, (int)($mp->minimum_qty ?? 1));
+                                        $preordered = (int)($mp->preordered ?? 0);
+
+                                        if ($mp->qualityBrand) {
+                                            $qualityBrand = $mp->qualityBrand;
+                                            $qualityName = getLocalizedQualityName($qualityBrand);
+                                            $qualityLogo = $qualityBrand->logo_url ?? null;
+                                        }
                                     }
                                 }
 
@@ -160,6 +177,18 @@
                                         </span>
                                     @endif
 
+                                    {{-- Reservation Timer --}}
+                                    @if (!empty($product['reservation']) && !$product['reservation']['is_expired'])
+                                        <div class="m-cart__reservation-timer"
+                                             data-expires="{{ $product['reservation']['expires_at'] }}"
+                                             data-remaining="{{ $product['reservation']['remaining_seconds'] }}">
+                                            <i class="fas fa-hourglass-half"></i>
+                                            <span class="timer-text">
+                                                @lang('Reserved for') <span class="timer-value">{{ $product['reservation']['remaining_minutes'] }}</span> @lang('min')
+                                            </span>
+                                        </div>
+                                    @endif
+
                                     {{-- Mobile Price --}}
                                     <div class="m-cart__item-price-mobile">
                                         {{ $showPrice($itemPrice) }}
@@ -175,7 +204,7 @@
                                 {{-- Quantity --}}
                                 <div class="m-cart__item-qty">
                                     @if (data_get($product, 'item.type') == 'Physical')
-                                        <div class="m-cart__qty-control">
+                                        <div class="m-cart__qty-control" data-min="{{ $minQty }}" data-stock="{{ $stock }}" data-preordered="{{ $preordered }}">
                                             <button type="button" class="m-cart__qty-btn quantity-down"
                                                 data-min-qty="{{ $minQty }}">
                                                 <i class="fas fa-minus"></i>
@@ -188,6 +217,9 @@
                                                 data-preordered="{{ $preordered }}">
                                                 <i class="fas fa-plus"></i>
                                             </button>
+
+                                            {{-- Inline limit message --}}
+                                            <div class="m-cart__qty-hint"></div>
 
                                             {{-- Hidden inputs for JS --}}
                                             <input type="hidden" class="prodid" value="{{ data_get($product, 'item.id') }}">
@@ -374,17 +406,16 @@ jQuery(document).ready(function($) {
                     }
                     // Update cart icons
                     $('.cart-total, .cart-count, .cart_total').text(resp.itemCount);
-
-                    toastr.success(resp.message || '{{ __("Item removed") }}');
+                    // صامت - بدون رسائل
                 } else {
-                    toastr.error(resp.message || '{{ __("Error removing item") }}');
+                    // صامت
                     $item.css('opacity', '1');
                     $btn.prop('disabled', false);
                 }
             },
             error: function(xhr, status, error) {
                 console.error('Cart remove error:', status, error, xhr.responseText);
-                toastr.error('{{ __("Error occurred") }}');
+                // صامت
                 $item.css('opacity', '1');
                 $btn.prop('disabled', false);
             }
@@ -395,6 +426,21 @@ jQuery(document).ready(function($) {
     // Quantity Controls
     // ========================================
 
+    // ========================================
+    // Helper: Show elegant inline hint
+    // ========================================
+    function showQtyHint($wrapper, message, type) {
+        var $hint = $wrapper.find('.m-cart__qty-hint');
+        $hint.removeClass('m-cart__qty-hint--min m-cart__qty-hint--max').addClass('m-cart__qty-hint--' + type);
+        $hint.html('<i class="fas fa-info-circle"></i> ' + message).fadeIn(200);
+
+        // Auto hide after 3 seconds
+        clearTimeout($hint.data('hideTimer'));
+        $hint.data('hideTimer', setTimeout(function() {
+            $hint.fadeOut(200);
+        }, 3000));
+    }
+
     // Increase quantity - AJAX call
     $(document).on('click', '.quantity-up', function(e) {
         e.preventDefault();
@@ -404,6 +450,16 @@ jQuery(document).ready(function($) {
         var $wrapper = $btn.closest('.m-cart__qty-control');
         var $qtyInput = $wrapper.find('.m-cart__qty-input');
         var domKey = $wrapper.find('.domkey').val();
+        var stock = parseInt($wrapper.find('.stock_val').val()) || 0;
+        var preordered = parseInt($wrapper.find('.preordered_val').val()) || 0;
+        var currentQty = parseInt($qtyInput.val()) || 1;
+
+        // Check stock limit - show elegant message
+        if (!preordered && stock <= 0) {
+            var totalStock = currentQty; // Current qty is all we have
+            showQtyHint($wrapper, '{{ __("Available stock") }}: ' + totalStock, 'max');
+            return;
+        }
 
         var prodId = $wrapper.find('.prodid').val();
         var itemId = $wrapper.find('.itemid').val();
@@ -419,15 +475,24 @@ jQuery(document).ready(function($) {
             data: { id: prodId, itemid: itemId, size_qty: sizeQty, size_price: sizePrice },
             success: function(resp) {
                 if (resp === 0 || resp === '0') {
-                    toastr.warning('{{ __("Stock limit reached") }}');
+                    // Server rejected - show stock limit message
+                    showQtyHint($wrapper, '{{ __("Available stock") }}: ' + currentQty, 'max');
                     return;
                 }
                 $qtyInput.val(resp[1]);
                 $('#prc' + domKey).html(resp[2]);
                 $wrapper.closest('.m-cart__vendor').find('.total-cart-price').html(resp[0]);
+
+                // Update stock value from server response
+                if (resp.stock !== undefined) {
+                    $wrapper.find('.stock_val').val(resp.stock);
+                }
+
+                // Hide any existing hint
+                $wrapper.find('.m-cart__qty-hint').fadeOut(200);
             },
             error: function() {
-                toastr.error('{{ __("Error occurred") }}');
+                console.log('Qty increase failed');
             },
             complete: function() {
                 $btn.prop('disabled', false);
@@ -447,9 +512,9 @@ jQuery(document).ready(function($) {
         var minQty = parseInt($wrapper.find('.minimum_qty').val()) || 1;
         var currentQty = parseInt($qtyInput.val()) || 1;
 
-        // Check minimum - frontend validation
+        // Check minimum limit - show elegant message
         if (currentQty <= minQty) {
-            toastr.warning('{{ __("Minimum quantity is") }} ' + minQty);
+            showQtyHint($wrapper, '{{ __("Minimum order") }}: ' + minQty, 'min');
             return;
         }
 
@@ -467,21 +532,72 @@ jQuery(document).ready(function($) {
             data: { id: prodId, itemid: itemId, size_qty: sizeQty, size_price: sizePrice },
             success: function(resp) {
                 if (resp === 0 || resp === '0') {
-                    toastr.warning('{{ __("Minimum quantity reached") }}');
+                    // Server rejected - show min limit message
+                    showQtyHint($wrapper, '{{ __("Minimum order") }}: ' + minQty, 'min');
                     return;
                 }
                 $qtyInput.val(resp[1]);
                 $('#prc' + domKey).html(resp[2]);
                 $wrapper.closest('.m-cart__vendor').find('.total-cart-price').html(resp[0]);
+
+                // Update stock value from server response
+                if (resp.stock !== undefined) {
+                    $wrapper.find('.stock_val').val(resp.stock);
+                }
+
+                // Hide any existing hint
+                $wrapper.find('.m-cart__qty-hint').fadeOut(200);
             },
             error: function() {
-                toastr.error('{{ __("Error occurred") }}');
+                console.log('Qty decrease failed');
             },
             complete: function() {
                 $btn.prop('disabled', false);
             }
         });
     });
+
+    // ========================================
+    // Reservation Timer Countdown
+    // ========================================
+    function updateReservationTimers() {
+        $('.m-cart__reservation-timer').each(function() {
+            var $timer = $(this);
+            var remaining = parseInt($timer.data('remaining')) || 0;
+
+            if (remaining <= 0) {
+                $timer.html('<i class="fas fa-exclamation-triangle"></i> <span class="timer-text">{{ __("Expired") }}</span>');
+                $timer.removeClass('m-cart__reservation-timer--warning').addClass('m-cart__reservation-timer--danger');
+                return;
+            }
+
+            // Decrease remaining time
+            remaining--;
+            $timer.data('remaining', remaining);
+
+            // Calculate minutes and seconds
+            var mins = Math.floor(remaining / 60);
+            var secs = remaining % 60;
+
+            // Update display
+            var display = mins > 0
+                ? '{{ __("Reserved for") }} <span class="timer-value">' + mins + '</span> {{ __("min") }}'
+                : '{{ __("Reserved for") }} <span class="timer-value">' + secs + '</span> {{ __("sec") }}';
+            $timer.find('.timer-text').html(display);
+
+            // Change color based on remaining time
+            if (remaining <= 60) {
+                $timer.removeClass('m-cart__reservation-timer--warning').addClass('m-cart__reservation-timer--danger');
+            } else if (remaining <= 300) {
+                $timer.addClass('m-cart__reservation-timer--warning');
+            }
+        });
+    }
+
+    // Update timers every second
+    if ($('.m-cart__reservation-timer').length > 0) {
+        setInterval(updateReservationTimers, 1000);
+    }
 });
 </script>
 @endpush

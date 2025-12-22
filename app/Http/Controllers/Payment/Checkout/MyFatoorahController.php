@@ -22,6 +22,7 @@ use App\Models\Order;
 use App\Models\PaymentGateway;
 use App\Models\Reward;
 use App\Models\State;
+use App\Models\StockReservation;
 use App\Traits\HandlesVendorCheckout;
 use App\Traits\SavesCustomerShippingChoice;
 use Illuminate\Http\Request;
@@ -120,6 +121,9 @@ class MyFatoorahController extends CheckoutBaseControlller {
 //       return redirect(url('myfatoorah/checkout'));
 //        dd($input);
         $order->fill($input)->save();
+
+        // Clear stock reservations after successful order (stock already sold)
+        StockReservation::clearAfterPurchase();
 
         // Order Tracks and Notifications
         $order->tracks()->create(['title' => 'Pending', 'text' => 'You have successfully placed your order.']);

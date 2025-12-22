@@ -22,6 +22,7 @@ use App\Models\Order;
 use App\Models\PaymentGateway;
 use App\Models\Reward;
 use App\Models\State;
+use App\Models\StockReservation;
 use App\Traits\HandlesVendorCheckout;
 use App\Traits\SavesCustomerShippingChoice;
 use Config;
@@ -191,6 +192,10 @@ class StripeController extends CheckoutBaseControlller
             $input['packeging'] = null;
 
             $order->fill($input)->save();
+
+            // Clear stock reservations after successful order
+            StockReservation::clearAfterPurchase();
+
             $order->tracks()->create(['title' => 'Pending', 'text' => 'You have successfully placed your order.']);
             $order->notifications()->create();
 

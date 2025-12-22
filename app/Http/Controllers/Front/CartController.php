@@ -28,6 +28,7 @@ use App\Models\Generalsetting;
 use App\Models\MerchantProduct;
 use App\Models\Product;
 use App\Models\State;
+use App\Models\StockReservation;
 use App\Services\VendorCartService;
 use App\Services\ShippingCalculatorService;
 use Illuminate\Http\Request;
@@ -303,11 +304,14 @@ class CartController extends FrontBaseController
         }
 
         // ==========================================
-        // STEP 6: RESERVE STOCK (Atomic)
+        // STEP 6: GENERATE CART KEY & RESERVE STOCK (Atomic)
         // ==========================================
+        // Generate unique cart key for this item
+        $cartKey = $this->generateCartKey($mpId, $size, $color);
+
         if (!($preordered && $effectiveStock <= 0)) {
             try {
-                $this->reserveStock($mpId, $qty, $size);
+                $this->reserveStock($mpId, $qty, $size, $cartKey);
             } catch (\Exception $e) {
                 return response()->json([
                     'success' => false,
@@ -326,7 +330,7 @@ class CartController extends FrontBaseController
         } catch (\Exception $e) {
             // Return stock if product creation fails
             if (!($preordered && $effectiveStock <= 0)) {
-                $this->returnStock($mpId, $qty, $size);
+                $this->returnStock($mpId, $qty, $size, $cartKey);
             }
             return response()->json([
                 'success' => false,
@@ -415,15 +419,15 @@ class CartController extends FrontBaseController
         ]);
     }
 
-    /* ===================== Stock Reservation (Atomic) ===================== */
+    /* ===================== Stock Reservation (Atomic + Timed) ===================== */
 
     /**
-     * Reserve stock atomically with size support
+     * Reserve stock atomically with size support + time-based reservation
      * @throws \Exception if insufficient stock
      */
-    private function reserveStock(int $merchantProductId, int $deltaQty, ?string $size = null): void
+    private function reserveStock(int $merchantProductId, int $deltaQty, ?string $size = null, ?string $cartKey = null): void
     {
-        DB::transaction(function() use ($merchantProductId, $deltaQty, $size) {
+        DB::transaction(function() use ($merchantProductId, $deltaQty, $size, $cartKey) {
             $row = DB::table('merchant_products')->where('id', $merchantProductId)->lockForUpdate()->first();
             if (!$row) {
                 throw new \Exception('Merchant product not found');
@@ -450,28 +454,40 @@ class CartController extends FrontBaseController
                     DB::table('merchant_products')
                         ->where('id', $merchantProductId)
                         ->update(['size_qty' => $newSizeQtyStr, 'updated_at' => now()]);
-                    return;
                 }
+            } else {
+                // السقوط إلى stock العام إذا لم يكن هناك مقاس
+                $newStock = (int)$row->stock - $deltaQty;
+                if ($newStock < 0) {
+                    throw new \Exception('Insufficient stock');
+                }
+
+                DB::table('merchant_products')
+                    ->where('id', $merchantProductId)
+                    ->update(['stock' => $newStock, 'updated_at' => now()]);
             }
 
-            // السقوط إلى stock العام إذا لم يكن هناك مقاس
-            $newStock = (int)$row->stock - $deltaQty;
-            if ($newStock < 0) {
-                throw new \Exception('Insufficient stock');
+            // إنشاء أو تحديث سجل الحجز المؤقت
+            if ($cartKey) {
+                StockReservation::reserve($merchantProductId, $deltaQty, $cartKey, $size);
             }
-
-            DB::table('merchant_products')
-                ->where('id', $merchantProductId)
-                ->update(['stock' => $newStock, 'updated_at' => now()]);
         });
     }
 
     /**
-     * Return stock atomically with size support
+     * Update existing reservation quantity (or create if not exists)
      */
-    private function returnStock(int $merchantProductId, int $deltaQty, ?string $size = null): void
+    private function updateReservationQty(string $cartKey, int $newQty, ?int $mpId = null, ?string $size = null): void
     {
-        DB::transaction(function() use ($merchantProductId, $deltaQty, $size) {
+        StockReservation::updateReservation($cartKey, $newQty, $mpId, $size);
+    }
+
+    /**
+     * Return stock atomically with size support + release reservation
+     */
+    private function returnStock(int $merchantProductId, int $deltaQty, ?string $size = null, ?string $cartKey = null): void
+    {
+        DB::transaction(function() use ($merchantProductId, $deltaQty, $size, $cartKey) {
             $row = DB::table('merchant_products')->where('id', $merchantProductId)->lockForUpdate()->first();
             if (!$row) return; // المنتج محذوف، تجاهل
 
@@ -488,14 +504,18 @@ class CartController extends FrontBaseController
                     DB::table('merchant_products')
                         ->where('id', $merchantProductId)
                         ->update(['size_qty' => $newSizeQtyStr, 'updated_at' => now()]);
-                    return;
                 }
+            } else {
+                // السقوط إلى stock العام
+                DB::table('merchant_products')
+                    ->where('id', $merchantProductId)
+                    ->increment('stock', $deltaQty);
             }
 
-            // السقوط إلى stock العام
-            DB::table('merchant_products')
-                ->where('id', $merchantProductId)
-                ->increment('stock', $deltaQty);
+            // حذف سجل الحجز (بدون إرجاع المخزون لأنه تم إرجاعه أعلاه)
+            if ($cartKey) {
+                StockReservation::release($cartKey, true);
+            }
         });
     }
 
@@ -679,6 +699,10 @@ class CartController extends FrontBaseController
                 ?? data_get($product, 'item.merchant_product_id')
                 ?? 0;
             $qty = (int)($product['qty'] ?? 1);
+            $sizeVal = $product['size'] ?? '';
+            $size = is_array($sizeVal) ? ($sizeVal[0] ?? '') : (string)$sizeVal;
+            $colorVal = $product['color'] ?? '';
+            $color = is_array($colorVal) ? ($colorVal[0] ?? '') : (string)$colorVal;
 
             // استخدام VendorCartService لحساب خصم الجملة
             $bulkDiscount = $mpId ? VendorCartService::calculateBulkDiscount($mpId, $qty) : null;
@@ -686,10 +710,27 @@ class CartController extends FrontBaseController
             // استخدام VendorCartService لجلب الأبعاد (بدون fallback)
             $dimensions = $mpId ? VendorCartService::getProductDimensions($mpId) : null;
 
+            // جلب بيانات الحجز المؤقت
+            $cartKey = $this->generateCartKey($mpId, $size ?: null, $color ?: null);
+            $reservation = StockReservation::where('cart_key', $cartKey)
+                ->where('session_id', session()->getId())
+                ->first();
+
+            $reservationData = null;
+            if ($reservation) {
+                $reservationData = [
+                    'expires_at' => $reservation->expires_at->toIso8601String(),
+                    'remaining_seconds' => $reservation->remainingSeconds(),
+                    'remaining_minutes' => $reservation->remainingMinutes(),
+                    'is_expired' => $reservation->isExpired(),
+                ];
+            }
+
             // إضافة البيانات المحسوبة للمنتج
             $product['bulk_discount'] = $bulkDiscount;
             $product['dimensions'] = $dimensions;
             $product['row_weight'] = $dimensions && $dimensions['weight'] ? $dimensions['weight'] * $qty : null;
+            $product['reservation'] = $reservationData;
 
             $grouped[$vendorId]['products'][$rowKey] = $product;
             $grouped[$vendorId]['total'] += (float)($product['price'] ?? 0);
@@ -790,6 +831,19 @@ class CartController extends FrontBaseController
     // REMOVED: fetchListingOrFallback - No longer needed, use unifiedAdd with explicit merchant_product_id
 
     private function normNum($v, $default = 0.0) { return is_numeric($v) ? (float)$v : (float)$default; }
+
+    /**
+     * توليد مفتاح فريد للسلة
+     * يستخدم لتتبع الحجوزات
+     */
+    private function generateCartKey(int $mpId, ?string $size = null, ?string $color = null): string
+    {
+        $sessionId = session()->getId();
+        $parts = [$sessionId, $mpId];
+        if ($size) $parts[] = 'sz_' . $size;
+        if ($color) $parts[] = 'cl_' . ltrim($color, '#');
+        return implode('_', $parts);
+    }
 
     /**
      * استخراج vendor_id من صف السلة
@@ -1076,13 +1130,32 @@ class CartController extends FrontBaseController
         $newQty = $currentQty + 1;
 
         // التحقق من المخزون
-        // المخزون الفعلي المتاح = المخزون الحالي + الكمية المحجوزة في السلة
-        // لأن الكمية الحالية محجوزة بالفعل لهذا المستخدم
+        // effStock = المخزون بعد خصم الحجوزات السابقة
+        // نحتاج التحقق إذا كان هناك وحدة واحدة متاحة على الأقل
         $stockCheckEnabled = (int)($mp->stock_check ?? 0) === 1;
-        $totalAvailable = $effStock + $currentQty; // المخزون المتاح لهذا المستخدم
+        $preordered = (int)($mp->preordered ?? 0);
 
-        if ($stockCheckEnabled) {
-            if ($totalAvailable <= 0 || $newQty > $totalAvailable) {
+        if ($stockCheckEnabled && !$preordered) {
+            if ($effStock <= 0) {
+                return 0; // لا يوجد مخزون متاح
+            }
+        }
+
+        // حجز الوحدة الإضافية وتحديث جدول الحجوزات
+        $sizeVal = $row['size'] ?? '';
+        $sizeStr = is_array($sizeVal) ? ($sizeVal[0] ?? '') : (string)$sizeVal;
+        $colorVal = $row['color'] ?? '';
+        $colorStr = is_array($colorVal) ? ($colorVal[0] ?? '') : (string)$colorVal;
+        $cartKey = $this->generateCartKey($mpId, $sizeStr ?: null, $colorStr ?: null);
+
+        if (!$preordered && $effStock > 0) {
+            try {
+                // حجز وحدة واحدة إضافية
+                $this->reserveStock($mpId, 1, $sizeStr ?: null, null);
+                // تحديث سجل الحجز بالكمية الجديدة (أو إنشاءه إذا لم يكن موجوداً)
+                $this->updateReservationQty($cartKey, $newQty, $mpId, $sizeStr ?: null);
+            } catch (\Exception $e) {
+                \Log::warning('addbyone: Stock reserve failed', ['mp_id' => $mpId, 'error' => $e->getMessage()]);
                 return 0;
             }
         }
@@ -1136,6 +1209,10 @@ class CartController extends FrontBaseController
         // جلب بيانات الأبعاد باستخدام VendorCartService
         $dimensions = VendorCartService::getProductDimensions($mp->id);
 
+        // جلب المخزون المحدث
+        $mp->refresh();
+        $updatedStock = $this->effectiveStock($mp, $sizeStr);
+
         // تجهيز الاستجابة مع بيانات إضافية
         $data = [];
         $data[0] = \PriceHelper::showCurrencyPrice($cart->totalPrice * $curr->value);
@@ -1146,6 +1223,8 @@ class CartController extends FrontBaseController
         $data['bulk_discount'] = $bulkDiscount;
         $data['dimensions'] = $dimensions;
         $data['row_weight'] = $dimensions['weight'] ? $dimensions['weight'] * $newQty : null;
+        $data['stock'] = $updatedStock; // المخزون المتبقي
+        $data['qty'] = $newQty;
 
         return response()->json($data);
     }
@@ -1201,6 +1280,21 @@ class CartController extends FrontBaseController
 
         $newQty = $currentQty - 1;
 
+        // إرجاع وحدة واحدة للمخزون وتحديث جدول الحجوزات
+        $sizeVal = $row['size'] ?? '';
+        $sizeStr = is_array($sizeVal) ? ($sizeVal[0] ?? '') : (string)$sizeVal;
+        $colorVal = $row['color'] ?? '';
+        $colorStr = is_array($colorVal) ? ($colorVal[0] ?? '') : (string)$colorVal;
+        $cartKey = $this->generateCartKey($mpId, $sizeStr ?: null, $colorStr ?: null);
+
+        $preordered = (int)($mp->preordered ?? 0);
+        if (!$preordered) {
+            // إرجاع وحدة واحدة للمخزون (بدون حذف الحجز)
+            $this->returnStock($mpId, 1, $sizeStr ?: null, null);
+            // تحديث سجل الحجز بالكمية الجديدة (أو إنشاءه إذا لم يكن موجوداً)
+            $this->updateReservationQty($cartKey, $newQty, $mpId, $sizeStr ?: null);
+        }
+
         // حساب خصم الجملة الجديد باستخدام VendorCartService
         $bulkDiscount = VendorCartService::calculateBulkDiscount($mp->id, $newQty);
 
@@ -1253,6 +1347,10 @@ class CartController extends FrontBaseController
         // جلب بيانات الأبعاد باستخدام VendorCartService
         $dimensions = VendorCartService::getProductDimensions($mp->id);
 
+        // جلب المخزون المحدث
+        $mp->refresh();
+        $updatedStock = $this->effectiveStock($mp, $sizeStr);
+
         // تجهيز الاستجابة مع بيانات إضافية
         $data = [];
         $data[0] = \PriceHelper::showCurrencyPrice($cart->totalPrice * $curr->value);
@@ -1263,6 +1361,8 @@ class CartController extends FrontBaseController
         $data['bulk_discount'] = $bulkDiscount;
         $data['dimensions'] = $dimensions;
         $data['row_weight'] = $dimensions['weight'] ? $dimensions['weight'] * $newQty : null;
+        $data['stock'] = $updatedStock; // المخزون المتبقي
+        $data['qty'] = $newQty;
 
         return response()->json($data);
     }
@@ -1308,10 +1408,14 @@ class CartController extends FrontBaseController
             $item    = $rowData['item'] ?? null;
             if ($item) {
                 $mpId = (int)($item->merchant_product_id ?? 0);
-                $size = (string)($rowData['size'] ?? '');
+                $sizeVal = $rowData['size'] ?? '';
+                $size = is_array($sizeVal) ? ($sizeVal[0] ?? '') : (string)$sizeVal;
+                $colorVal = $rowData['color'] ?? '';
+                $color = is_array($colorVal) ? ($colorVal[0] ?? '') : (string)$colorVal;
                 $qty  = (int)($rowData['qty'] ?? 0);
                 if ($mpId > 0 && $qty > 0) {
-                    $this->returnStock($mpId, $qty, $size);
+                    $cartKey = $this->generateCartKey($mpId, $size, $color);
+                    $this->returnStock($mpId, $qty, $size, $cartKey);
                 }
             }
             $cart->removeItem($rowKey);

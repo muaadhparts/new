@@ -15,6 +15,12 @@ class Kernel extends ConsoleKernel
         // يجدد التوكن
         $schedule->command('nissan:refresh-token')->everyFiveMinutes();
 
+        // ✅ Stock Reservations: تحرير الحجوزات المنتهية كل 5 دقائق
+        $schedule->command('reservations:release')
+                ->everyFiveMinutes()
+                ->withoutOverlapping()
+                ->appendOutputTo(storage_path('logs/reservations-release.log'));
+
         // تحديث كامل للتويجري (بائع واحد user_id=59): تنزيل + استيراد + تجميع + تحديث يومياً الساعة 2:00 صباحاً
         $schedule->command('stock:manage full-refresh --user_id=59 --margin=1.3 --branch=ATWJRY')
                 ->dailyAt('02:00')

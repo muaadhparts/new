@@ -168,14 +168,15 @@
         },
 
         /**
-         * Show toast message
+         * Show toast message (disabled - silent mode)
+         * To enable, uncomment the toastr line
          */
         toast(message, type = 'warning') {
-            if (typeof toastr !== 'undefined') {
-                toastr[type](message);
-            } else {
-                console.log(`[Qty ${type}]: ${message}`);
-            }
+            // Silent mode - no toast messages for qty controls
+            // if (typeof toastr !== 'undefined') {
+            //     toastr[type](message);
+            // }
+            console.log(`[Qty ${type}]: ${message}`);
         }
     };
 

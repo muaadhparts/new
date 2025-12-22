@@ -302,21 +302,27 @@
     });
   });
 
-  // زيادة الكمية (+)
+  // زيادة الكمية (+) - للسلة القديمة فقط
   $(document).on('click', '.quantity-up', function (e) {
     e.preventDefault();
 
+    // تخطي إذا كانت داخل السلة الجديدة (m-cart)
+    if ($(this).closest('.m-cart').length) {
+      return;
+    }
+
     var $box       = $(this).closest('.cart-quantity');
+    if (!$box.length) return; // ليست سلة قديمة
+
     var prodid     = $box.find('.prodid').val();
-    var itemid     = $box.find('.itemid').val();     // مفتاح السلة الحقيقي (id:u{vendor}:{size}:{color}:{values})
-    var domkey     = $box.find('.domkey').val();     // نسخة آمنة للـ DOM
+    var itemid     = $box.find('.itemid').val();
+    var domkey     = $box.find('.domkey').val();
     var size_qty   = $box.find('.size_qty').val();
     var size_price = $box.find('.size_price').val();
 
     var $qtyInput  = $('#qty' + domkey);
     var $priceCell = $('#prc' + domkey);
 
-    // نعتمد على الـ server للتحقق من المخزون - لا فحص محلي
     $.ajax({
       url: '/addbyone',
       type: 'GET',
@@ -328,33 +334,37 @@
         size_price: size_price
       },
       success: function (resp) {
+        // صامت - لا رسائل عند عدم توفر المخزون
         if (resp === 0 || resp === '0') {
-          if (typeof toastr !== 'undefined') { toastr.error('غير متوفر في المخزون'); }
-          else { alert('غير متوفر في المخزون'); }
           return;
         }
-
-        // resp[1] = qty, resp[2] = row price (formatted), resp[0] = cart total (formatted), resp[4] = خصم إن وُجد
         $qtyInput.val(resp[1]);
         $priceCell.html(resp[2] + (resp[4] || ''));
         $('.total-cart-price').html(resp[0]);
       },
       error: function () {
-        if (typeof toastr !== 'undefined') { toastr.error('حدث خطأ غير متوقع'); }
-        else { alert('حدث خطأ غير متوقع'); }
+        // صامت
+        console.log('Qty increase failed');
       }
     });
   });
 
 
-  // إنقاص الكمية (-)
+  // إنقاص الكمية (-) - للسلة القديمة فقط
   $(document).on('click', '.quantity-down', function (e) {
     e.preventDefault();
 
+    // تخطي إذا كانت داخل السلة الجديدة (m-cart)
+    if ($(this).closest('.m-cart').length) {
+      return;
+    }
+
     var $box       = $(this).closest('.cart-quantity');
+    if (!$box.length) return; // ليست سلة قديمة
+
     var prodid     = $box.find('.prodid').val();
-    var itemid     = $box.find('.itemid').val();     // مفتاح السلة الحقيقي
-    var domkey     = $box.find('.domkey').val();     // نسخة آمنة للـ DOM
+    var itemid     = $box.find('.itemid').val();
+    var domkey     = $box.find('.domkey').val();
     var size_qty   = $box.find('.size_qty').val();
     var size_price = $box.find('.size_price').val();
     var minQty     = parseInt($box.find('.minimum_qty').val() || '1', 10);
@@ -364,11 +374,9 @@
 
     var currentQty = parseInt($qtyInput.val() || '1', 10);
 
-    // فحص محلي سريع للحد الأدنى
+    // صامت - تحقق من الحد الأدنى بدون رسائل
     if (minQty < 1) minQty = 1;
     if (currentQty <= minQty) {
-      if (typeof toastr !== 'undefined') { toastr.warning('الحد الأدنى للكمية هو ' + minQty); }
-      else { alert('الحد الأدنى للكمية هو ' + minQty); }
       return;
     }
 
@@ -383,19 +391,17 @@
         size_price: size_price
       },
       success: function (resp) {
+        // صامت
         if (resp === 0 || resp === '0') {
-          if (typeof toastr !== 'undefined') { toastr.warning('وصلت للحد الأدنى للكمية'); }
-          else { alert('وصلت للحد الأدنى للكمية'); }
           return;
         }
-
         $qtyInput.val(resp[1]);
         $priceCell.html(resp[2] + (resp[4] || ''));
         $('.total-cart-price').html(resp[0]);
       },
       error: function () {
-        if (typeof toastr !== 'undefined') { toastr.error('حدث خطأ غير متوقع'); }
-        else { alert('حدث خطأ غير متوقع'); }
+        // صامت
+        console.log('Qty decrease failed');
       }
     });
   });

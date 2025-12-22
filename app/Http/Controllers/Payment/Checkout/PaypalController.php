@@ -30,6 +30,7 @@ use App\Helpers\PriceHelper;
 use App\Models\Country;
 use App\Models\Reward;
 use App\Models\State;
+use App\Models\StockReservation;
 use App\Traits\HandlesVendorCheckout;
 use App\Traits\SavesCustomerShippingChoice;
 
@@ -239,6 +240,10 @@ class PaypalController extends CheckoutBaseControlller
             }
 
             $order->fill($input)->save();
+
+            // Clear stock reservations after successful order
+            StockReservation::clearAfterPurchase();
+
             $order->tracks()->create(['title' => 'Pending', 'text' => 'You have successfully placed your order.']);
             $order->notifications()->create();
 

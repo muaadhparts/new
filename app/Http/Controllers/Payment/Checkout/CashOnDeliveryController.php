@@ -35,6 +35,7 @@ use App\Models\Country;
 use App\Models\Order;
 use App\Models\Reward;
 use App\Models\State;
+use App\Models\StockReservation;
 use App\Traits\CreatesTryotoShipments;
 use App\Traits\HandlesVendorCheckout;
 use App\Traits\SavesCustomerShippingChoice;
@@ -255,6 +256,9 @@ class CashOnDeliveryController extends CheckoutBaseControlller
         }
 
         $order->fill($input)->save();
+
+        // ⭐ Clear stock reservations after successful order (stock already sold)
+        StockReservation::clearAfterPurchase();
 
         // ⭐ Create Tryoto shipment for COD orders
         $this->createOtoShipments($order, $input);
