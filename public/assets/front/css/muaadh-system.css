@@ -3839,3 +3839,12 @@ select option {
     }
 }
 
+/* ============================================================================
+   VENDOR PANEL FIXES
+   ============================================================================ */
+
+/* Vendor Breadcrumb Home Icon - use theme color instead of hardcoded */
+.gs-vendor-breadcrumb ul li .home-icon-vendor-panel-breadcrumb {
+    stroke: var(--theme-text-secondary, #3d3429) !important;
+}
+
