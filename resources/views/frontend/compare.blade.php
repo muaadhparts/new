@@ -8,13 +8,13 @@
     .gs-compare-wrapper .compare-table {
         width: 100%;
         border-collapse: collapse;
-        background: #fff;
+        background: var(--color-surface, #fff);
         border-radius: 8px;
         overflow: hidden;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        box-shadow: var(--shadow-sm, 0 2px 10px rgba(0,0,0,0.08));
     }
     .gs-compare-wrapper .compare-table tr {
-        border-bottom: 1px solid #eee;
+        border-bottom: 1px solid var(--theme-border-light, #e8e0d0);
     }
     .gs-compare-wrapper .compare-table tr:last-child {
         border-bottom: none;
@@ -51,8 +51,8 @@
         position: absolute;
         bottom: 8px;
         right: 8px;
-        background: rgba(0,0,0,0.6);
-        color: #fff;
+        background: var(--overlay-dark, rgba(0,0,0,0.6));
+        color: var(--color-surface, #fff);
         width: 28px;
         height: 28px;
         border-radius: 50%;
@@ -68,9 +68,9 @@
         height: 100px;
         object-fit: contain;
         border-radius: 8px;
-        border: 1px solid #eee;
+        border: 1px solid var(--theme-border-light, #e8e0d0);
         padding: 8px;
-        background: #fff;
+        background: var(--color-surface, #fff);
         transition: transform 0.3s;
     }
     .gs-compare-wrapper .compare-table .product-img-wrapper:hover .product-img {
@@ -85,7 +85,7 @@
         top: 0;
         width: 100%;
         height: 100%;
-        background-color: rgba(0,0,0,0.9);
+        background-color: var(--overlay-dark-strong, rgba(0,0,0,0.9));
         cursor: zoom-out;
     }
     .compare-img-modal.active {
@@ -104,7 +104,7 @@
         position: absolute;
         top: 20px;
         right: 30px;
-        color: #fff;
+        color: var(--color-surface, #fff);
         font-size: 35px;
         font-weight: bold;
         cursor: pointer;
@@ -119,10 +119,10 @@
         bottom: 20px;
         left: 50%;
         transform: translateX(-50%);
-        color: #fff;
+        color: var(--color-surface, #fff);
         font-size: 16px;
         text-align: center;
-        background: rgba(0,0,0,0.5);
+        background: var(--overlay-dark, rgba(0,0,0,0.5));
         padding: 10px 20px;
         border-radius: 6px;
     }
@@ -152,7 +152,7 @@
     }
     .gs-compare-wrapper .compare-table .btn-remove {
         background: var(--theme-danger, #c53030);
-        color: #fff;
+        color: var(--color-surface, #fff);
         border: none;
         padding: 10px 20px;
         border-radius: 6px;
@@ -166,11 +166,11 @@
     }
     .gs-compare-wrapper .compare-table .btn-remove:hover {
         background: var(--theme-danger-hover, #9b2c2c);
-        color: #fff;
+        color: var(--color-surface, #fff);
     }
     .gs-compare-wrapper .compare-table .btn-cart {
         background: var(--theme-primary);
-        color: #fff;
+        color: var(--color-surface, #fff);
         border: none;
         padding: 10px 20px;
         border-radius: 6px;
@@ -182,7 +182,7 @@
     }
     .gs-compare-wrapper .compare-table .btn-cart:hover {
         opacity: 0.9;
-        color: #fff;
+        color: var(--color-surface, #fff);
     }
     .gs-compare-wrapper .compare-table .btn-cart.disabled {
         background: var(--theme-text-muted, #6c757d);
@@ -206,7 +206,7 @@
     }
     .gs-compare-wrapper .compare-empty i {
         font-size: 80px;
-        color: #ddd;
+        color: var(--theme-border, #d4c4a8);
         margin-bottom: 30px;
     }
     .gs-compare-wrapper .compare-empty h2 {
@@ -214,7 +214,7 @@
         margin-bottom: 15px;
     }
     .gs-compare-wrapper .compare-empty p {
-        color: #777;
+        color: var(--theme-text-muted, #7a6f5f);
         margin-bottom: 30px;
     }
     @media (max-width: 768px) {

@@ -6,7 +6,9 @@
     "type": "module",
     "scripts": {
         "dev": "vite",
-        "build": "vite build"
+        "build": "npm run lint:theme && vite build",
+        "lint:theme": "node scripts/theme-linter.cjs",
+        "lint:theme:fix": "echo 'Run: php artisan view:clear after fixing violations'"
     },
     "devDependencies": {
         "axios": "^1.13.2",

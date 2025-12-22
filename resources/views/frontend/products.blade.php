@@ -10,16 +10,16 @@
             display: block;
             font-size: 13px;
             font-weight: 600;
-            color: #333;
+            color: var(--theme-text-primary, #1a1510);
             margin-bottom: 6px;
         }
         .category-step-selector .form-select {
             width: 100%;
             padding: 10px 35px 10px 12px;
             font-size: 14px;
-            border: 1px solid #ddd;
+            border: 1px solid var(--theme-border, #d4c4a8);
             border-radius: 6px;
-            background-color: #fff;
+            background-color: var(--color-surface, #fff);
             cursor: pointer;
             transition: all 0.2s ease;
         }
@@ -29,7 +29,7 @@
             outline: none;
         }
         .category-step-selector .form-select:hover {
-            border-color: #bbb;
+            border-color: var(--theme-border-dark, #b8a88c);
         }
         /* RTL Support */
         [dir="rtl"] .category-step-selector .form-select {

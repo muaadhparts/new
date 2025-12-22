@@ -72,7 +72,7 @@
     }
 
     .map-picker-header .badge {
-        background: rgba(255,255,255,0.2);
+        background: var(--overlay-light, rgba(255,255,255,0.2));
         padding: 5px 10px;
         font-size: 12px;
     }
@@ -115,7 +115,7 @@
         left: 0;
         right: 0;
         bottom: 0;
-        background: rgba(255,255,255,0.9);
+        background: var(--overlay-light-strong, rgba(255,255,255,0.9));
         display: none;
         align-items: center;
         justify-content: center;
@@ -141,7 +141,7 @@
         display: flex;
         gap: 10px;
         flex-wrap: wrap;
-        border-top: 1px solid #eee;
+        border-top: 1px solid var(--theme-border-light, #eee);
     }
 
     .map-controls .btn {
@@ -212,14 +212,14 @@
     .location-info-item label {
         display: block;
         font-size: 11px;
-        color: #666;
+        color: var(--theme-text-muted, #666);
         margin-bottom: 3px;
         font-weight: 600;
     }
 
     .location-info-item .value {
         font-size: 13px;
-        color: #333;
+        color: var(--theme-text-primary, #333);
     }
 
     #map-alert-container {

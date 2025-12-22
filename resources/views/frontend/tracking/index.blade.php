@@ -283,7 +283,7 @@
     width: 12px;
     height: 12px;
     border-radius: 50%;
-    border: 2px solid #fff;
+    border: 2px solid var(--color-surface, #fff);
     box-shadow: 0 0 0 2px var(--theme-border, #d4c4a8);
 }
 

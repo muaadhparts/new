@@ -4084,3 +4084,864 @@ select option {
     stroke: currentColor;
 }
 
+/* ============================================================================
+   SECTION: COMPREHENSIVE DESIGN TOKENS & UTILITY CLASSES
+   ============================================================================
+   Complete color system unification layer.
+   All colors MUST go through this layer - no hardcoded values.
+   ============================================================================ */
+
+/* ============================================================================
+   1. SURFACE (BACKGROUND) UTILITY CLASSES
+   ============================================================================ */
+
+/* Primary Surfaces */
+.m-bg-page { background-color: var(--surface-page) !important; }
+.m-bg-card { background-color: var(--surface-card) !important; }
+.m-bg-elevated { background-color: var(--surface-elevated) !important; }
+.m-bg-sunken { background-color: var(--surface-sunken) !important; }
+.m-bg-inverse { background-color: var(--surface-inverse) !important; }
+.m-bg-overlay { background-color: var(--surface-overlay) !important; }
+.m-bg-transparent { background-color: transparent !important; }
+.m-bg-white { background-color: var(--theme-card-bg, #fff) !important; }
+
+/* Action Surfaces */
+.m-bg-primary { background-color: var(--action-primary) !important; }
+.m-bg-primary-light { background-color: var(--action-primary-light) !important; }
+.m-bg-primary-hover { background-color: var(--action-primary-hover) !important; }
+
+.m-bg-secondary { background-color: var(--action-secondary) !important; }
+.m-bg-secondary-light { background-color: var(--surface-secondary) !important; }
+
+.m-bg-success { background-color: var(--action-success) !important; }
+.m-bg-success-light { background-color: var(--action-success-light) !important; }
+
+.m-bg-danger { background-color: var(--action-danger) !important; }
+.m-bg-danger-light { background-color: var(--action-danger-light) !important; }
+
+.m-bg-warning { background-color: var(--action-warning) !important; }
+.m-bg-warning-light { background-color: var(--action-warning-light) !important; }
+
+.m-bg-info { background-color: var(--action-info) !important; }
+.m-bg-info-light { background-color: var(--action-info-light) !important; }
+
+/* Hover State Surfaces */
+.m-bg-hover-elevated:hover { background-color: var(--surface-elevated) !important; }
+.m-bg-hover-sunken:hover { background-color: var(--surface-sunken) !important; }
+.m-bg-hover-primary:hover { background-color: var(--action-primary) !important; }
+.m-bg-hover-primary-light:hover { background-color: var(--action-primary-light) !important; }
+
+/* ============================================================================
+   2. TEXT COLOR UTILITY CLASSES
+   ============================================================================ */
+
+/* Primary Text Colors */
+.m-text-body { color: var(--text-body) !important; }
+.m-text-primary { color: var(--text-primary) !important; }
+.m-text-secondary { color: var(--text-secondary) !important; }
+.m-text-muted { color: var(--text-muted) !important; }
+.m-text-inverse { color: var(--text-inverse) !important; }
+
+/* Link Colors */
+.m-text-link { color: var(--text-link) !important; }
+.m-text-link:hover { color: var(--text-link-hover) !important; }
+
+/* Action Text Colors */
+.m-text-action-primary { color: var(--action-primary) !important; }
+.m-text-action-success { color: var(--action-success) !important; }
+.m-text-action-danger { color: var(--action-danger) !important; }
+.m-text-action-warning { color: var(--action-warning) !important; }
+.m-text-action-info { color: var(--action-info) !important; }
+
+/* Text on Colored Backgrounds (WCAG Safe) */
+.m-text-on-primary { color: var(--text-on-primary) !important; }
+.m-text-on-secondary { color: var(--text-on-secondary) !important; }
+.m-text-on-success { color: var(--text-on-success) !important; }
+.m-text-on-danger { color: var(--text-on-danger) !important; }
+.m-text-on-warning { color: var(--text-on-warning) !important; }
+.m-text-on-info { color: var(--text-on-info) !important; }
+.m-text-on-dark { color: var(--text-on-dark) !important; }
+.m-text-on-light { color: var(--text-on-light) !important; }
+
+/* Hover State Text Colors */
+.m-text-hover-primary:hover { color: var(--action-primary) !important; }
+.m-text-hover-link:hover { color: var(--text-link-hover) !important; }
+.m-text-hover-danger:hover { color: var(--action-danger) !important; }
+
+/* ============================================================================
+   3. BORDER COLOR UTILITY CLASSES
+   ============================================================================ */
+
+/* Base Borders */
+.m-border { border: 1px solid var(--border-default) !important; }
+.m-border-light { border: 1px solid var(--border-light) !important; }
+.m-border-strong { border: 1px solid var(--border-strong) !important; }
+.m-border-none { border: none !important; }
+
+/* Colored Borders */
+.m-border-primary { border-color: var(--action-primary) !important; }
+.m-border-success { border-color: var(--action-success) !important; }
+.m-border-danger { border-color: var(--action-danger) !important; }
+.m-border-warning { border-color: var(--action-warning) !important; }
+.m-border-info { border-color: var(--action-info) !important; }
+
+/* Directional Borders */
+.m-border-t { border-top: 1px solid var(--border-default) !important; }
+.m-border-b { border-bottom: 1px solid var(--border-default) !important; }
+.m-border-l { border-left: 1px solid var(--border-default) !important; }
+.m-border-r { border-right: 1px solid var(--border-default) !important; }
+
+.m-border-t-light { border-top: 1px solid var(--border-light) !important; }
+.m-border-b-light { border-bottom: 1px solid var(--border-light) !important; }
+
+/* Left Accent Borders (for cards/alerts) */
+.m-border-l-primary { border-left: 4px solid var(--action-primary) !important; }
+.m-border-l-success { border-left: 4px solid var(--action-success) !important; }
+.m-border-l-danger { border-left: 4px solid var(--action-danger) !important; }
+.m-border-l-warning { border-left: 4px solid var(--action-warning) !important; }
+.m-border-l-info { border-left: 4px solid var(--action-info) !important; }
+
+/* RTL Support - Right Accent Borders */
+[dir="rtl"] .m-border-l-primary { border-left: none !important; border-right: 4px solid var(--action-primary) !important; }
+[dir="rtl"] .m-border-l-success { border-left: none !important; border-right: 4px solid var(--action-success) !important; }
+[dir="rtl"] .m-border-l-danger { border-left: none !important; border-right: 4px solid var(--action-danger) !important; }
+[dir="rtl"] .m-border-l-warning { border-left: none !important; border-right: 4px solid var(--action-warning) !important; }
+[dir="rtl"] .m-border-l-info { border-left: none !important; border-right: 4px solid var(--action-info) !important; }
+
+/* Hover State Borders */
+.m-border-hover-primary:hover { border-color: var(--action-primary) !important; }
+.m-border-hover-strong:hover { border-color: var(--border-strong) !important; }
+
+/* Focus State Border */
+.m-border-focus:focus { border-color: var(--border-focus) !important; }
+
+/* ============================================================================
+   4. LINK COMPONENT
+   ============================================================================ */
+
+.m-link {
+    color: var(--text-link);
+    text-decoration: none;
+    cursor: pointer;
+    transition: color var(--transition-fast);
+}
+
+.m-link:hover {
+    color: var(--text-link-hover);
+    text-decoration: underline;
+}
+
+.m-link:focus,
+.m-link:focus-visible {
+    outline: none;
+    box-shadow: var(--focus-ring);
+    border-radius: var(--radius-sm);
+}
+
+/* Link Variants */
+.m-link--primary {
+    color: var(--action-primary);
+}
+.m-link--primary:hover {
+    color: var(--action-primary-hover);
+}
+
+.m-link--danger {
+    color: var(--action-danger);
+}
+.m-link--danger:hover {
+    color: var(--action-danger-hover);
+}
+
+.m-link--muted {
+    color: var(--text-muted);
+}
+.m-link--muted:hover {
+    color: var(--text-primary);
+}
+
+.m-link--inverse {
+    color: var(--text-inverse);
+}
+.m-link--inverse:hover {
+    color: var(--text-inverse);
+    opacity: 0.8;
+}
+
+/* Link with Icon */
+.m-link--icon {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
+}
+
+/* Underline Variants */
+.m-link--underline {
+    text-decoration: underline;
+}
+
+.m-link--no-underline:hover {
+    text-decoration: none;
+}
+
+/* ============================================================================
+   5. ALERT COMPONENT
+   ============================================================================ */
+
+.m-alert {
+    position: relative;
+    padding: var(--space-4);
+    border-radius: var(--radius-md);
+    font-size: var(--text-sm);
+    line-height: 1.5;
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-3);
+}
+
+.m-alert__icon {
+    flex-shrink: 0;
+    width: 20px;
+    height: 20px;
+}
+
+.m-alert__content {
+    flex: 1;
+}
+
+.m-alert__title {
+    font-weight: 600;
+    margin-bottom: var(--space-1);
+}
+
+.m-alert__close {
+    position: absolute;
+    top: var(--space-3);
+    right: var(--space-3);
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: var(--space-1);
+    opacity: 0.6;
+    transition: opacity var(--transition-fast);
+}
+
+[dir="rtl"] .m-alert__close {
+    right: auto;
+    left: var(--space-3);
+}
+
+.m-alert__close:hover {
+    opacity: 1;
+}
+
+/* Alert Variants */
+.m-alert--success {
+    background-color: var(--action-success-light);
+    color: var(--action-success-hover);
+    border-left: 4px solid var(--action-success);
+}
+
+.m-alert--danger,
+.m-alert--error {
+    background-color: var(--action-danger-light);
+    color: var(--action-danger-hover);
+    border-left: 4px solid var(--action-danger);
+}
+
+.m-alert--warning {
+    background-color: var(--action-warning-light);
+    color: var(--action-warning-hover);
+    border-left: 4px solid var(--action-warning);
+}
+
+.m-alert--info {
+    background-color: var(--action-info-light);
+    color: var(--action-info-hover);
+    border-left: 4px solid var(--action-info);
+}
+
+.m-alert--primary {
+    background-color: var(--action-primary-light);
+    color: var(--action-primary-hover);
+    border-left: 4px solid var(--action-primary);
+}
+
+/* RTL Alert Borders */
+[dir="rtl"] .m-alert--success,
+[dir="rtl"] .m-alert--danger,
+[dir="rtl"] .m-alert--error,
+[dir="rtl"] .m-alert--warning,
+[dir="rtl"] .m-alert--info,
+[dir="rtl"] .m-alert--primary {
+    border-left: none;
+    border-right-width: 4px;
+    border-right-style: solid;
+}
+
+/* Outlined Alerts */
+.m-alert--outlined {
+    background-color: transparent;
+    border: 1px solid var(--border-default);
+}
+
+.m-alert--outlined.m-alert--success { border-color: var(--action-success); }
+.m-alert--outlined.m-alert--danger { border-color: var(--action-danger); }
+.m-alert--outlined.m-alert--warning { border-color: var(--action-warning); }
+.m-alert--outlined.m-alert--info { border-color: var(--action-info); }
+
+/* ============================================================================
+   6. FORM INPUT COMPONENT
+   ============================================================================ */
+
+.m-input {
+    display: block;
+    width: 100%;
+    padding: var(--space-3) var(--space-4);
+    font-family: inherit;
+    font-size: var(--text-sm);
+    font-weight: 400;
+    line-height: 1.5;
+    color: var(--text-body);
+    background-color: var(--surface-card);
+    background-clip: padding-box;
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-md);
+    transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+}
+
+.m-input::placeholder {
+    color: var(--text-muted);
+    opacity: 1;
+}
+
+.m-input:hover {
+    border-color: var(--border-strong);
+}
+
+.m-input:focus,
+.m-input:focus-visible {
+    border-color: var(--border-focus);
+    outline: none;
+    box-shadow: var(--focus-ring);
+}
+
+.m-input:disabled,
+.m-input.is-disabled {
+    background-color: var(--surface-sunken);
+    color: var(--text-muted);
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+.m-input:read-only {
+    background-color: var(--surface-elevated);
+}
+
+/* Input Sizes */
+.m-input--sm {
+    padding: var(--space-2) var(--space-3);
+    font-size: var(--text-xs);
+    min-height: 32px;
+}
+
+.m-input--lg {
+    padding: var(--space-4) var(--space-5);
+    font-size: var(--text-base);
+    min-height: 48px;
+}
+
+/* Input States */
+.m-input--success {
+    border-color: var(--action-success);
+}
+.m-input--success:focus {
+    box-shadow: var(--focus-ring-success);
+}
+
+.m-input--error,
+.m-input--danger {
+    border-color: var(--action-danger);
+}
+.m-input--error:focus,
+.m-input--danger:focus {
+    box-shadow: var(--focus-ring-danger);
+}
+
+/* Input with Icon */
+.m-input-wrapper {
+    position: relative;
+}
+
+.m-input-wrapper .m-input {
+    padding-left: var(--space-10);
+}
+
+[dir="rtl"] .m-input-wrapper .m-input {
+    padding-left: var(--space-4);
+    padding-right: var(--space-10);
+}
+
+.m-input-wrapper__icon {
+    position: absolute;
+    left: var(--space-3);
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-muted);
+    pointer-events: none;
+}
+
+[dir="rtl"] .m-input-wrapper__icon {
+    left: auto;
+    right: var(--space-3);
+}
+
+/* Textarea */
+.m-textarea {
+    min-height: 100px;
+    resize: vertical;
+}
+
+/* Select */
+.m-select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='none' stroke='%233d3429' stroke-linecap='round' stroke-linejoin='round' stroke-width='2'%3E%3Cpath d='m2 4 4 4 4-4'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right var(--space-3) center;
+    background-size: 12px;
+    padding-right: var(--space-8);
+}
+
+[dir="rtl"] .m-select {
+    background-position: left var(--space-3) center;
+    padding-right: var(--space-4);
+    padding-left: var(--space-8);
+}
+
+/* ============================================================================
+   7. CHECKBOX & RADIO COMPONENT
+   ============================================================================ */
+
+.m-checkbox,
+.m-radio {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    cursor: pointer;
+    user-select: none;
+}
+
+.m-checkbox__input,
+.m-radio__input {
+    position: relative;
+    width: 18px;
+    height: 18px;
+    border: 2px solid var(--border-default);
+    background-color: var(--surface-card);
+    appearance: none;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    flex-shrink: 0;
+}
+
+.m-checkbox__input {
+    border-radius: var(--radius-sm);
+}
+
+.m-radio__input {
+    border-radius: 50%;
+}
+
+.m-checkbox__input:hover,
+.m-radio__input:hover {
+    border-color: var(--action-primary);
+}
+
+.m-checkbox__input:focus,
+.m-radio__input:focus {
+    outline: none;
+    box-shadow: var(--focus-ring);
+}
+
+.m-checkbox__input:checked,
+.m-radio__input:checked {
+    background-color: var(--action-primary);
+    border-color: var(--action-primary);
+}
+
+.m-checkbox__input:checked::after {
+    content: '';
+    position: absolute;
+    left: 5px;
+    top: 2px;
+    width: 4px;
+    height: 8px;
+    border: solid var(--text-inverse);
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+}
+
+.m-radio__input:checked::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 8px;
+    height: 8px;
+    background-color: var(--text-inverse);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.m-checkbox__input:disabled,
+.m-radio__input:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.m-checkbox__label,
+.m-radio__label {
+    font-size: var(--text-sm);
+    color: var(--text-body);
+}
+
+/* ============================================================================
+   8. LIST/MENU COMPONENT
+   ============================================================================ */
+
+.m-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.m-list__item {
+    padding: var(--space-3) var(--space-4);
+    border-bottom: 1px solid var(--border-light);
+    transition: background-color var(--transition-fast);
+}
+
+.m-list__item:last-child {
+    border-bottom: none;
+}
+
+.m-list__item:hover {
+    background-color: var(--surface-elevated);
+}
+
+.m-list__item--active {
+    background-color: var(--action-primary-light);
+    color: var(--action-primary);
+}
+
+/* List Link Items */
+.m-list__link {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-3) var(--space-4);
+    color: var(--text-body);
+    text-decoration: none;
+    transition: all var(--transition-fast);
+}
+
+.m-list__link:hover {
+    background-color: var(--surface-elevated);
+    color: var(--action-primary);
+}
+
+.m-list__link--active {
+    background-color: var(--action-primary-light);
+    color: var(--action-primary);
+    font-weight: 500;
+}
+
+.m-list__link:focus {
+    outline: none;
+    box-shadow: inset var(--focus-ring);
+}
+
+/* List with Dividers */
+.m-list--divided .m-list__item {
+    border-bottom: 1px solid var(--border-default);
+}
+
+/* Compact List */
+.m-list--compact .m-list__item,
+.m-list--compact .m-list__link {
+    padding: var(--space-2) var(--space-3);
+}
+
+/* ============================================================================
+   9. MENU/DROPDOWN COMPONENT
+   ============================================================================ */
+
+.m-menu {
+    background-color: var(--surface-card);
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-lg);
+    min-width: 180px;
+    overflow: hidden;
+}
+
+.m-menu__header {
+    padding: var(--space-3) var(--space-4);
+    background-color: var(--surface-elevated);
+    border-bottom: 1px solid var(--border-light);
+    font-weight: 600;
+    font-size: var(--text-sm);
+    color: var(--text-secondary);
+}
+
+.m-menu__item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-3) var(--space-4);
+    color: var(--text-body);
+    text-decoration: none;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    border: none;
+    background: none;
+    width: 100%;
+    text-align: start;
+    font-size: var(--text-sm);
+}
+
+.m-menu__item:hover {
+    background-color: var(--surface-elevated);
+    color: var(--action-primary);
+}
+
+.m-menu__item:focus {
+    outline: none;
+    background-color: var(--action-primary-light);
+}
+
+.m-menu__item--active {
+    background-color: var(--action-primary-light);
+    color: var(--action-primary);
+}
+
+.m-menu__item--danger {
+    color: var(--action-danger);
+}
+.m-menu__item--danger:hover {
+    background-color: var(--action-danger-light);
+    color: var(--action-danger-hover);
+}
+
+.m-menu__divider {
+    height: 1px;
+    margin: var(--space-2) 0;
+    background-color: var(--border-light);
+}
+
+.m-menu__icon {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+}
+
+/* ============================================================================
+   10. TABLE STYLING
+   ============================================================================ */
+
+.m-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: var(--text-sm);
+}
+
+.m-table th,
+.m-table td {
+    padding: var(--space-3) var(--space-4);
+    text-align: start;
+    border-bottom: 1px solid var(--border-light);
+}
+
+.m-table th {
+    background-color: var(--surface-elevated);
+    font-weight: 600;
+    color: var(--text-secondary);
+    border-bottom-color: var(--border-default);
+}
+
+.m-table tbody tr:hover {
+    background-color: var(--surface-elevated);
+}
+
+.m-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+/* Striped Table */
+.m-table--striped tbody tr:nth-child(even) {
+    background-color: var(--surface-sunken);
+}
+
+/* Bordered Table */
+.m-table--bordered th,
+.m-table--bordered td {
+    border: 1px solid var(--border-default);
+}
+
+/* ============================================================================
+   11. FOCUS RING UTILITIES
+   ============================================================================ */
+
+.m-focus-ring:focus,
+.m-focus-ring:focus-visible {
+    outline: none;
+    box-shadow: var(--focus-ring);
+}
+
+.m-focus-ring-danger:focus,
+.m-focus-ring-danger:focus-visible {
+    outline: none;
+    box-shadow: var(--focus-ring-danger);
+}
+
+.m-focus-ring-success:focus,
+.m-focus-ring-success:focus-visible {
+    outline: none;
+    box-shadow: var(--focus-ring-success);
+}
+
+/* ============================================================================
+   12. STATE UTILITIES
+   ============================================================================ */
+
+/* Disabled State */
+.is-disabled,
+[disabled] {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+/* Loading State */
+.is-loading {
+    position: relative;
+    color: transparent !important;
+    pointer-events: none;
+}
+
+.is-loading::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 16px;
+    height: 16px;
+    margin: -8px 0 0 -8px;
+    border: 2px solid var(--border-light);
+    border-top-color: var(--action-primary);
+    border-radius: 50%;
+    animation: m-spin 0.6s linear infinite;
+}
+
+@keyframes m-spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Active State */
+.is-active {
+    background-color: var(--action-primary-light);
+    color: var(--action-primary);
+}
+
+/* Selected State */
+.is-selected {
+    background-color: var(--action-primary);
+    color: var(--text-on-primary);
+}
+
+/* ============================================================================
+   13. OVERLAY UTILITIES
+   ============================================================================ */
+
+.m-overlay {
+    position: fixed;
+    inset: 0;
+    background-color: var(--surface-overlay);
+    z-index: 1000;
+}
+
+.m-overlay--light {
+    background-color: rgba(255, 255, 255, 0.9);
+}
+
+.m-overlay--dark {
+    background-color: rgba(0, 0, 0, 0.7);
+}
+
+/* ============================================================================
+   14. DIVIDER UTILITIES
+   ============================================================================ */
+
+.m-divider {
+    height: 1px;
+    background-color: var(--border-default);
+    border: none;
+    margin: var(--space-4) 0;
+}
+
+.m-divider--light {
+    background-color: var(--border-light);
+}
+
+.m-divider--strong {
+    background-color: var(--border-strong);
+}
+
+.m-divider--vertical {
+    width: 1px;
+    height: auto;
+    margin: 0 var(--space-4);
+}
+
+/* ============================================================================
+   15. ICON COLOR UTILITIES
+   ============================================================================ */
+
+.m-icon-primary { color: var(--action-primary); }
+.m-icon-secondary { color: var(--text-secondary); }
+.m-icon-muted { color: var(--text-muted); }
+.m-icon-success { color: var(--action-success); }
+.m-icon-danger { color: var(--action-danger); }
+.m-icon-warning { color: var(--action-warning); }
+.m-icon-info { color: var(--action-info); }
+
+/* Icon inherits parent color */
+.m-icon-inherit { color: inherit; }
+
+/* ============================================================================
+   16. SHADOW UTILITIES
+   ============================================================================ */
+
+.m-shadow-none { box-shadow: none !important; }
+.m-shadow-sm { box-shadow: var(--shadow-sm) !important; }
+.m-shadow { box-shadow: var(--shadow-md) !important; }
+.m-shadow-lg { box-shadow: var(--shadow-lg) !important; }
+.m-shadow-xl { box-shadow: var(--shadow-xl) !important; }
+
+/* ============================================================================
+   17. RADIUS UTILITIES
+   ============================================================================ */
+
+.m-rounded-none { border-radius: 0 !important; }
+.m-rounded-sm { border-radius: var(--radius-sm) !important; }
+.m-rounded { border-radius: var(--radius-md) !important; }
+.m-rounded-lg { border-radius: var(--radius-lg) !important; }
+.m-rounded-xl { border-radius: var(--radius-xl) !important; }
+.m-rounded-full { border-radius: var(--radius-full) !important; }
+
+/* ============================================================================
+   END OF COMPREHENSIVE DESIGN TOKENS
+   ============================================================================ */
+

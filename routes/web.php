@@ -15,21 +15,6 @@ use App\Http\Controllers\Front\ProductDetailsController;
 use App\Http\Controllers\Front\SearchApiController;
 use App\Http\Controllers\Front\VehicleSearchApiController;
 
-// Google Maps Demo Route
-Route::get('/google-maps-demo', function () {
-    return view('google-maps-demo');
-});
-
-// Test Livewire
-Route::get('/test-livewire', function () {
-    return view('test-livewire');
-});
-
-// Test Location Picker Modal
-Route::get('/test-location-picker', function () {
-    return view('test.location-picker-demo');
-});
-
 // Search API Routes (AJAX-based)
 Route::prefix('api/search')->group(function () {
     Route::get('/part', [SearchApiController::class, 'searchPart'])->name('api.search.part');
@@ -1766,18 +1751,6 @@ Route::group(['middleware' => 'maintenance'], function () {
     // ************************************ RIDER SECTION ENDS**********************************************
 
     // ************************************ FRONT SECTION **********************************************
-
-
-    // Route::get('illustrated', 'TestController@illustrated')->name('illustrated');
-
-    // Route::get('tt', function () {
-    //     \App\Jobs\VerifyTokenJob::dispatchSync();
-
-    //     return Token::latest()->first()->id;
-    // });
-
-//    Route::get('brands/{link}', 'BrandController@index')->name('brands.index');
-
 
 
     Route::post('/item/report', 'Front\CatalogController@report')->name('product.report');
