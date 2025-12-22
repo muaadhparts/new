@@ -332,7 +332,7 @@
                 icon: {
                     url: 'data:image/svg+xml,' + encodeURIComponent(`
                         <svg xmlns="http://www.w3.org/2000/svg" width="40" height="50" viewBox="0 0 40 50">
-                            <path d="M20 0C8.954 0 0 8.954 0 20c0 15 20 30 20 30s20-15 20-30C40 8.954 31.046 0 20 0z" fill="var(--theme-primary, #EE1243)"/>
+                            <path d="M20 0C8.954 0 0 8.954 0 20c0 15 20 30 20 30s20-15 20-30C40 8.954 31.046 0 20 0z" fill="var(--theme-primary, #006c35)"/>
                             <circle cx="20" cy="18" r="8" fill="white"/>
                         </svg>
                     `),

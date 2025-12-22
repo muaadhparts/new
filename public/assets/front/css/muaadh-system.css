@@ -3975,3 +3975,112 @@ select option {
 /* Login/Register Form Step Icons - Keep Brand Colors */
 /* Social login buttons (Google, Facebook, etc.) use brand colors - intentionally not themed */
 
+/* ============================================
+   Frontend SVG Icon Theming - #EE1243 Override
+   ============================================ */
+
+/* Checkbox Icons (Product Filters) */
+.gs-checkbox-wrapper svg path[stroke="#EE1243"],
+.warranty-type svg path[stroke="#EE1243"],
+.single-product-widget svg path[stroke="#EE1243"] {
+    stroke: var(--theme-primary, #006c35) !important;
+}
+
+/* Radio Button Icons (Product Options) */
+.gs-product-details svg rect[stroke="#EE1243"],
+.gs-product-single svg rect[stroke="#EE1243"],
+.product-option-item svg rect[stroke="#EE1243"] {
+    stroke: var(--theme-primary, #006c35) !important;
+}
+
+.gs-product-details svg circle[fill="#EE1243"],
+.gs-product-single svg circle[fill="#EE1243"],
+.product-option-item svg circle[fill="#EE1243"] {
+    fill: var(--theme-primary, #006c35) !important;
+}
+
+/* Shipping/Packaging Modal Radio Buttons */
+.vendor-shipping-modal svg rect[stroke="#EE1243"],
+.vendor-packaging-modal svg rect[stroke="#EE1243"],
+.provider-shipping-modal svg rect[stroke="#EE1243"],
+.shipping-option-wrapper svg rect[stroke="#EE1243"] {
+    stroke: var(--theme-primary, #006c35) !important;
+}
+
+.vendor-shipping-modal svg circle[fill="#EE1243"],
+.vendor-packaging-modal svg circle[fill="#EE1243"],
+.provider-shipping-modal svg circle[fill="#EE1243"],
+.shipping-option-wrapper svg circle[fill="#EE1243"] {
+    fill: var(--theme-primary, #006c35) !important;
+}
+
+/* User Deposit Payment Radio Buttons */
+.gs-user-wrapper svg rect[stroke="#EE1243"],
+.gs-deposit-wrapper svg rect[stroke="#EE1243"],
+.payment-method-item svg rect[stroke="#EE1243"] {
+    stroke: var(--theme-primary, #006c35) !important;
+}
+
+.gs-user-wrapper svg circle[fill="#EE1243"],
+.gs-deposit-wrapper svg circle[fill="#EE1243"],
+.payment-method-item svg circle[fill="#EE1243"] {
+    fill: var(--theme-primary, #006c35) !important;
+}
+
+/* Generic #EE1243 SVG Override for Frontend */
+.gs-products-wrapper svg path[stroke="#EE1243"],
+.gs-product-wrapper svg path[stroke="#EE1243"] {
+    stroke: var(--theme-primary, #006c35) !important;
+}
+
+.gs-products-wrapper svg circle[fill="#EE1243"],
+.gs-product-wrapper svg circle[fill="#EE1243"] {
+    fill: var(--theme-primary, #006c35) !important;
+}
+
+.gs-products-wrapper svg rect[stroke="#EE1243"],
+.gs-product-wrapper svg rect[stroke="#EE1243"] {
+    stroke: var(--theme-primary, #006c35) !important;
+}
+
+/* Pagination Icons */
+.gs-pagination svg path[fill="#180207"],
+.pagination svg path[fill="#180207"] {
+    fill: var(--theme-text-secondary, #3d3429) !important;
+}
+
+/* Success Page Icons */
+.gs-success-wrapper svg path[stroke="#4C3533"] {
+    stroke: var(--theme-text-secondary, #3d3429) !important;
+}
+
+/* Checkout Radio Buttons */
+.gs-checkout-wrapper svg rect[stroke="#EE1243"],
+.checkout-section svg rect[stroke="#EE1243"] {
+    stroke: var(--theme-primary, #006c35) !important;
+}
+
+.gs-checkout-wrapper svg circle[fill="#EE1243"],
+.checkout-section svg circle[fill="#EE1243"] {
+    fill: var(--theme-primary, #006c35) !important;
+}
+
+/* Product Page Icons */
+.gs-product-single svg path[stroke="#030712"],
+.gs-product-single svg path[stroke="#1F0300"] {
+    stroke: var(--theme-text-secondary, #3d3429) !important;
+}
+
+/* Slick Slider Arrows - Inherit Theme Colors */
+.slick-arrow {
+    color: var(--theme-text-secondary, #3d3429);
+}
+
+.slick-arrow:hover {
+    color: var(--theme-primary, #006c35);
+}
+
+.slick-arrow svg path {
+    stroke: currentColor;
+}
+
