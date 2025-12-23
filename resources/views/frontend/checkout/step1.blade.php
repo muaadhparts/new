@@ -730,7 +730,10 @@
 
     // ============================================
     // استرجاع الموقع المحفوظ من localStorage
+    // مع التحقق من صلاحية البيانات (24 ساعة)
     // ============================================
+    const LOCATION_CACHE_DURATION = 24 * 60 * 60 * 1000; // 24 ساعة بالميلي ثانية
+
     function restoreSavedLocation() {
         const savedLocation = localStorage.getItem('selectedLocation');
 
@@ -741,6 +744,22 @@
 
         try {
             selectedLocationData = JSON.parse(savedLocation);
+
+            // ✅ التحقق من timestamp - البيانات صالحة لمدة 24 ساعة فقط
+            if (selectedLocationData.saved_at) {
+                const savedTime = new Date(selectedLocationData.saved_at).getTime();
+                const now = Date.now();
+                const ageInHours = (now - savedTime) / (1000 * 60 * 60);
+
+                if (now - savedTime > LOCATION_CACHE_DURATION) {
+                    console.log(`⏰ الموقع المحفوظ قديم (${Math.round(ageInHours)} ساعة) - سيتم تجاهله`);
+                    localStorage.removeItem('selectedLocation');
+                    selectedLocationData = null;
+                    return;
+                }
+
+                console.log(`📍 استرجاع موقع محفوظ منذ ${Math.round(ageInHours)} ساعة`);
+            }
 
             console.log('📍 استرجاع الموقع المحفوظ:', selectedLocationData);
 
@@ -896,11 +915,13 @@
     // Reverse geocode coordinates
     async function reverseGeocode(lat, lng) {
         showLoadingModal(true);
+        showAlertModal('جارٍ التحقق من الموقع...', 'info');
 
         try {
             const csrfToken = document.querySelector('meta[name="csrf-token"]');
             const headers = {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
             };
 
             if (csrfToken) {
@@ -918,23 +939,43 @@
 
             const result = await response.json();
 
+            console.log('📍 نتيجة Geocoding API:', result);
+
             if (result.success) {
-                selectedLocationData = result.data;
-                displayLocationInfoModal(result.data);
+                // ✅ التعامل مع البنية الجديدة: result.data أو result مباشرة
+                const locationData = result.data || result;
+                selectedLocationData = locationData;
+
+                displayLocationInfoModal(locationData);
                 document.getElementById('use-location-btn-modal').disabled = false;
 
-                // Show warning if using nearest city
-                if (result.warning) {
-                    showAlertModal(result.warning, 'warning');
+                // ✅ عرض رسالة مناسبة حسب الاستراتيجية
+                const strategy = locationData.resolution_info?.strategy || result.strategy;
+                const message = result.message || locationData.message;
+
+                if (result.warning || strategy?.includes('nearest')) {
+                    showAlertModal(result.warning || message || 'سيتم استخدام أقرب مدينة مدعومة', 'warning');
                 } else {
-                    showAlertModal('تم تحديد الموقع بنجاح', 'success');
+                    showAlertModal(message || 'تم تحديد الموقع بنجاح', 'success');
                 }
             } else {
-                showAlertModal('فشل في الحصول على معلومات الموقع: ' + (result.message || 'خطأ غير معروف'), 'error');
+                // ✅ معالجة الأخطاء
+                console.error('❌ Geocoding API Error:', result);
+
+                let errorMessage = result.message || 'فشل في الحصول على معلومات الموقع';
+
+                // إذا كانت المنطقة غير مدعومة
+                if (result.data?.original) {
+                    const original = result.data.original;
+                    errorMessage = `المنطقة "${original.city || original.state || ''}" غير مدعومة للشحن حالياً`;
+                }
+
+                showAlertModal(errorMessage, 'error');
+                document.getElementById('use-location-btn-modal').disabled = true;
             }
         } catch (error) {
-            console.error('Error:', error);
-            showAlertModal('حدث خطأ في الاتصال بالخادم', 'error');
+            console.error('❌ Fetch Error:', error);
+            showAlertModal('حدث خطأ في الاتصال بالخادم. يرجى المحاولة مرة أخرى.', 'error');
         } finally {
             showLoadingModal(false);
         }
@@ -942,17 +983,37 @@
 
     // Display location information in modal
     function displayLocationInfoModal(data) {
-        document.getElementById('country-modal').textContent = data.country?.name_ar || data.country?.name || '-';
-        document.getElementById('state-modal').textContent = data.state?.name_ar || data.state?.name || '-';
-        document.getElementById('city-modal').textContent = data.city?.name_ar || data.city?.name || '-';
+        // ✅ التعامل مع بنية البيانات الجديدة من API
+        const country = data.country || {};
+        const state = data.state || {};
+        const city = data.city || {};
+        const coordinates = data.coordinates || {};
+        const address = data.address || {};
+        const resolutionInfo = data.resolution_info || {};
 
-        const lat = data.coordinates?.latitude?.toFixed(6) || '-';
-        const lng = data.coordinates?.longitude?.toFixed(6) || '-';
+        document.getElementById('country-modal').textContent = country.name_ar || country.name || '-';
+        document.getElementById('state-modal').textContent = state.name_ar || state.name || '-';
+        document.getElementById('city-modal').textContent = city.name_ar || city.name || '-';
+
+        const lat = coordinates.latitude?.toFixed(6) || '-';
+        const lng = coordinates.longitude?.toFixed(6) || '-';
         document.getElementById('coords-modal').textContent = `${lat}, ${lng}`;
 
-        document.getElementById('full-address-modal').textContent = data.address?.ar || data.address?.en || '-';
+        document.getElementById('full-address-modal').textContent = address.ar || address.en || '-';
 
         document.getElementById('location-info-modal').style.display = 'block';
+
+        // ✅ إضافة resolution_info للبيانات المحفوظة
+        if (resolutionInfo.strategy) {
+            data.resolution_info = {
+                strategy: resolutionInfo.strategy,
+                is_nearest_city: resolutionInfo.strategy === 'nearest_city_same_country',
+                original_city: resolutionInfo.original?.cityName,
+                resolved_city: city.name,
+                distance_km: resolutionInfo.distance_km,
+                shipping_companies: resolutionInfo.shipping_companies || 0
+            };
+        }
 
         // Display Tryoto verification info
         displayTryotoInfo(data);
@@ -986,7 +1047,11 @@
         // Show Tryoto box
         tryotoBox.style.display = 'block';
 
-        if (strategy === 'exact_match' || strategy === 'name_variation') {
+        // ✅ معالجة الاستراتيجيات المختلفة
+        const exactStrategies = ['exact_match', 'name_variation', 'exact_city', 'fallback_state'];
+        const nearestStrategies = ['nearest_city', 'nearest_city_same_country', 'nearest_city_globally'];
+
+        if (exactStrategies.includes(strategy)) {
             if (verifiedBox) {
                 verifiedBox.style.display = 'block';
                 document.getElementById('tryoto-status-text').textContent = 'الموقع مدعوم للشحن ✓';
@@ -998,22 +1063,27 @@
                     `${resolutionInfo.shipping_companies} شركة شحن متاحة`;
             }
 
-        } else if (strategy === 'nearest_city' && resolutionInfo.is_nearest_city) {
+        } else if (nearestStrategies.includes(strategy) || resolutionInfo.is_nearest_city) {
             if (verifiedBox) {
                 verifiedBox.style.display = 'block';
                 document.getElementById('tryoto-status-text').textContent = 'سيتم استخدام أقرب مدينة مدعومة للشحن';
             }
 
-            if (alternativeBox) {
+            if (alternativeBox && resolutionInfo.distance_km) {
                 alternativeBox.style.display = 'block';
-                document.getElementById('tryoto-alternative-city').textContent = data.city?.name_ar || resolutionInfo.resolved_city;
-                document.getElementById('tryoto-alternative-distance').textContent = resolutionInfo.distance_km || 0;
+                document.getElementById('tryoto-alternative-city').textContent = data.city?.name_ar || resolutionInfo.resolved_city || '';
+                document.getElementById('tryoto-alternative-distance').textContent = Math.round(resolutionInfo.distance_km) || 0;
             }
 
             if (resolutionInfo.shipping_companies > 0 && companiesBox) {
                 companiesBox.style.display = 'block';
                 document.getElementById('tryoto-companies-text').textContent =
                     `${resolutionInfo.shipping_companies} شركة شحن متاحة في ${data.city?.name_ar || resolutionInfo.resolved_city}`;
+            }
+        } else if (strategy === 'no_supported_cities' || strategy === 'country_not_supported') {
+            // ✅ الموقع غير مدعوم
+            if (notSupportedBox) {
+                notSupportedBox.style.display = 'block';
             }
         }
     }
@@ -1071,7 +1141,7 @@
             }
         }
 
-        // ✅ حفظ الموقع في localStorage
+        // ✅ حفظ الموقع في localStorage مع timestamp
         try {
             localStorage.setItem('selectedLocation', JSON.stringify({
                 country: selectedLocationData.country,
@@ -1080,9 +1150,10 @@
                 coordinates: selectedLocationData.coordinates,
                 address: selectedLocationData.address,
                 resolution_info: selectedLocationData.resolution_info,
-                postal_code: selectedLocationData.postal_code
+                postal_code: selectedLocationData.postal_code,
+                saved_at: new Date().toISOString() // ✅ إضافة timestamp
             }));
-            console.log('✅ تم حفظ الموقع في localStorage');
+            console.log('✅ تم حفظ الموقع في localStorage مع timestamp');
         } catch (error) {
             console.error('❌ فشل حفظ الموقع في localStorage:', error);
         }
@@ -1138,31 +1209,191 @@
         clearAlertModal();
     }
 
-    // Get current location
+    // ============================================
+    // Get current location with HIGH ACCURACY
+    // Uses watchPosition for multiple readings
+    // ============================================
+    let watchId = null;
+    let bestPosition = null;
+    let positionCount = 0;
+    const MAX_READINGS = 3; // عدد القراءات للحصول على أفضل دقة
+    const MIN_ACCURACY = 100; // الدقة المقبولة بالأمتار
+
     function getCurrentLocationModal() {
-        if (navigator.geolocation) {
-            showLoadingModal(true);
-            navigator.geolocation.getCurrentPosition(
-                (position) => {
+        if (!navigator.geolocation) {
+            showAlertModal('المتصفح لا يدعم خدمة تحديد الموقع', 'error');
+            return;
+        }
+
+        // ✅ مسح أي watch سابق
+        if (watchId) {
+            navigator.geolocation.clearWatch(watchId);
+            watchId = null;
+        }
+
+        // ✅ إعادة تعيين المتغيرات
+        bestPosition = null;
+        positionCount = 0;
+
+        // ✅ مسح البيانات القديمة قبل الحصول على موقع جديد
+        selectedLocationData = null;
+
+        // ✅ مسح الموقع المحفوظ في localStorage لضمان الحصول على موقع جديد
+        localStorage.removeItem('selectedLocation');
+        console.log('🗑️ تم مسح الموقع المحفوظ في localStorage');
+
+        // التحقق من وجود الخريطة والـ marker قبل استخدامها
+        if (markerModal) {
+            markerModal.setVisible(false);
+        }
+
+        const useLocationBtn = document.getElementById('use-location-btn-modal');
+        if (useLocationBtn) useLocationBtn.disabled = true;
+
+        const locationInfo = document.getElementById('location-info-modal');
+        if (locationInfo) locationInfo.style.display = 'none';
+
+        // ✅ إخفاء معلومات Tryoto
+        const tryotoBox = document.getElementById('tryoto-info-modal');
+        if (tryotoBox) tryotoBox.style.display = 'none';
+
+        // ✅ مسح الـ hidden fields
+        $('#latitude').val('');
+        $('#longitude').val('');
+        $('#country_id').val('');
+        $('#state_id').val('');
+        $('#city_id').val('');
+        $('#customer_city_hidden').val('');
+        $('#customer_country_hidden').val('');
+        $('#customer_state_hidden').val('');
+
+        // ✅ إعادة تعيين زر الخريطة للحالة الأصلية
+        const mapBtn = $('[data-bs-target="#mapModal"]');
+        mapBtn.removeClass('btn-success btn-danger').addClass('btn-outline-primary');
+        mapBtn.html('<i class="fas fa-map-marker-alt"></i> @lang("Select Location from Map")');
+        $('.map-location-info').remove();
+
+        console.log('🔄 مسح جميع البيانات القديمة - الحصول على موقع جديد...');
+
+        showLoadingModal(true);
+        showAlertModal('جارٍ تحديد موقعك بدقة عالية...', 'info');
+
+        // ✅ استخدام watchPosition للحصول على قراءات متعددة
+        watchId = navigator.geolocation.watchPosition(
+            (position) => {
+                positionCount++;
+
+                console.log(`📍 قراءة ${positionCount}:`, {
+                    lat: position.coords.latitude,
+                    lng: position.coords.longitude,
+                    accuracy: position.coords.accuracy + ' متر'
+                });
+
+                // ✅ اختيار الموقع الأدق
+                if (!bestPosition || position.coords.accuracy < bestPosition.coords.accuracy) {
+                    bestPosition = position;
+                }
+
+                // ✅ إذا وصلنا للدقة المطلوبة أو عدد القراءات الكافي
+                if (position.coords.accuracy <= MIN_ACCURACY || positionCount >= MAX_READINGS) {
+                    // إيقاف المراقبة
+                    navigator.geolocation.clearWatch(watchId);
+                    watchId = null;
+
+                    // استخدام أفضل موقع
                     const pos = {
-                        lat: position.coords.latitude,
-                        lng: position.coords.longitude
+                        lat: bestPosition.coords.latitude,
+                        lng: bestPosition.coords.longitude
                     };
+
+                    const accuracy = Math.round(bestPosition.coords.accuracy);
+
+                    console.log('✅ أفضل موقع:', {
+                        lat: pos.lat,
+                        lng: pos.lng,
+                        accuracy: accuracy + ' متر',
+                        readings: positionCount
+                    });
+
+                    // تحديث الخريطة
                     mapModal.setCenter(pos);
-                    mapModal.setZoom(15);
+                    mapModal.setZoom(17); // زوم أعلى للدقة
                     markerModal.setPosition(pos);
                     markerModal.setVisible(true);
+
+                    // ✅ تحذير إذا كانت الدقة ضعيفة (أكثر من 1 كم = GPS غير مفعل)
+                    if (accuracy > 1000) {
+                        showAlertModal(`⚠️ الدقة ضعيفة (${accuracy} متر). يرجى تفعيل GPS على جهازك للحصول على موقع أدق، أو اختر الموقع يدوياً على الخريطة.`, 'warning');
+                    } else if (accuracy > 500) {
+                        showAlertModal(`تم تحديد موقعك (دقة: ${accuracy} متر). يمكنك تعديل الموقع يدوياً إذا لم يكن دقيقاً.`, 'warning');
+                    } else {
+                        showAlertModal(`تم تحديد موقعك بدقة ${accuracy} متر`, 'success');
+                    }
+
+                    // معالجة الموقع
                     handleLocationChange(pos.lat, pos.lng);
-                },
-                () => {
+                }
+            },
+            (error) => {
+                // إيقاف المراقبة عند الخطأ
+                if (watchId) {
+                    navigator.geolocation.clearWatch(watchId);
+                    watchId = null;
+                }
+
+                showLoadingModal(false);
+
+                // ✅ معالجة أنواع الأخطاء المختلفة
+                let errorMessage = 'فشل في الحصول على موقعك الحالي';
+
+                switch (error.code) {
+                    case error.PERMISSION_DENIED:
+                        errorMessage = 'تم رفض إذن الوصول للموقع. يرجى تفعيل خدمات الموقع في إعدادات المتصفح.';
+                        break;
+                    case error.POSITION_UNAVAILABLE:
+                        errorMessage = 'معلومات الموقع غير متاحة حالياً. يرجى التأكد من تفعيل GPS.';
+                        break;
+                    case error.TIMEOUT:
+                        errorMessage = 'انتهت مهلة تحديد الموقع. يرجى المحاولة مرة أخرى.';
+                        break;
+                }
+
+                console.error('❌ خطأ في تحديد الموقع:', error.code, error.message);
+                showAlertModal(errorMessage, 'error');
+            },
+            {
+                enableHighAccuracy: true,  // ✅ استخدام GPS بدلاً من الشبكة
+                timeout: 15000,            // ✅ 15 ثانية للانتظار
+                maximumAge: 0              // ✅ لا تستخدم موقع مخزن مؤقتاً
+            }
+        );
+
+        // ✅ مهلة أمان: إذا لم نحصل على موقع خلال 20 ثانية
+        setTimeout(() => {
+            if (watchId) {
+                navigator.geolocation.clearWatch(watchId);
+                watchId = null;
+
+                // إذا حصلنا على موقع واحد على الأقل، نستخدمه
+                if (bestPosition) {
+                    const pos = {
+                        lat: bestPosition.coords.latitude,
+                        lng: bestPosition.coords.longitude
+                    };
+
+                    mapModal.setCenter(pos);
+                    mapModal.setZoom(17);
+                    markerModal.setPosition(pos);
+                    markerModal.setVisible(true);
+
+                    showAlertModal(`تم تحديد موقعك (دقة: ${Math.round(bestPosition.coords.accuracy)} متر)`, 'warning');
+                    handleLocationChange(pos.lat, pos.lng);
+                } else {
                     showLoadingModal(false);
-                    showAlertModal('فشل في الحصول على موقعك الحالي', 'error');
-                },
-                { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
-            );
-        } else {
-            showAlertModal('المتصفح لا يدعم خدمة تحديد الموقع', 'error');
-        }
+                    showAlertModal('انتهت مهلة تحديد الموقع. يرجى اختيار الموقع يدوياً على الخريطة.', 'error');
+                }
+            }
+        }, 20000);
     }
 
     // Show/hide loading overlay
@@ -1176,10 +1407,28 @@
     // Show alert message
     function showAlertModal(message, type) {
         const container = document.getElementById('alert-container-modal');
-        const alertClass = type === 'success' ? 'alert-success' : (type === 'warning' ? 'alert-warning' : 'alert-danger');
+        let alertClass = 'alert-danger';
+        let icon = '<i class="fas fa-exclamation-circle me-2"></i>';
+
+        switch (type) {
+            case 'success':
+                alertClass = 'alert-success';
+                icon = '<i class="fas fa-check-circle me-2"></i>';
+                break;
+            case 'warning':
+                alertClass = 'alert-warning';
+                icon = '<i class="fas fa-exclamation-triangle me-2"></i>';
+                break;
+            case 'info':
+                alertClass = 'alert-info';
+                icon = '<i class="fas fa-spinner fa-spin me-2"></i>';
+                break;
+        }
+
         container.innerHTML = `
-            <div class="alert ${alertClass} m-2 py-2">
-                ${message}
+            <div class="alert ${alertClass} m-2 py-2 d-flex align-items-center">
+                ${icon}
+                <span>${message}</span>
             </div>
         `;
     }
