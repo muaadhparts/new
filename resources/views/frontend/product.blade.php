@@ -100,7 +100,7 @@
                                     fill="none">
                                     <path
                                         d="M12 0.5L14.6942 8.7918H23.4127L16.3593 13.9164L19.0534 22.2082L12 17.0836L4.94658 22.2082L7.64074 13.9164L0.587322 8.7918H9.30583L12 0.5Z"
-                                        fill="#EEAE0B" />
+                                        fill="var(--action-warning, #EEAE0B)" />
                                 </svg>
                                 <span class="rating">{{ number_format($productt->ratings_avg_rating ?? 0, 1) }}
                                     ({{ $productt->ratings_count ?? 0 }} @lang('Reviews'))</span>
@@ -382,7 +382,7 @@
                                         viewBox="0 0 24 24" fill="none">
                                         <path fill-rule="evenodd" clip-rule="evenodd"
                                             d="M11.9932 5.13581C9.9938 2.7984 6.65975 2.16964 4.15469 4.31001C1.64964 6.45038 1.29697 10.029 3.2642 12.5604C4.89982 14.6651 9.84977 19.1041 11.4721 20.5408C11.6536 20.7016 11.7444 20.7819 11.8502 20.8135C11.9426 20.8411 12.0437 20.8411 12.1361 20.8135C12.2419 20.7819 12.3327 20.7016 12.5142 20.5408C14.1365 19.1041 19.0865 14.6651 20.7221 12.5604C22.6893 10.029 22.3797 6.42787 19.8316 4.31001C17.2835 2.19216 13.9925 2.7984 11.9932 5.13581Z"
-                                            stroke="#030712" stroke-width="2" stroke-linecap="round"
+                                            stroke="currentColor" stroke-width="2" stroke-linecap="round"
                                             stroke-linejoin="round" />
                                     </svg>
                                     <span class="title">@lang('Add to Wishlist')</span>
@@ -393,7 +393,7 @@
                                         viewBox="0 0 24 24" fill="none">
                                         <path fill-rule="evenodd" clip-rule="evenodd"
                                             d="M11.9932 5.13581C9.9938 2.7984 6.65975 2.16964 4.15469 4.31001C1.64964 6.45038 1.29697 10.029 3.2642 12.5604C4.89982 14.6651 9.84977 19.1041 11.4721 20.5408C11.6536 20.7016 11.7444 20.7819 11.8502 20.8135C11.9426 20.8411 12.0437 20.8411 12.1361 20.8135C12.2419 20.7819 12.3327 20.7016 12.5142 20.5408C14.1365 19.1041 19.0865 14.6651 20.7221 12.5604C22.6893 10.029 22.3797 6.42787 19.8316 4.31001C17.2835 2.19216 13.9925 2.7984 11.9932 5.13581Z"
-                                            stroke="#030712" stroke-width="2" stroke-linecap="round"
+                                            stroke="currentColor" stroke-width="2" stroke-linecap="round"
                                             stroke-linejoin="round" />
                                     </svg>
                                     <span class="title">@lang('Add to Wishlist')</span>
@@ -407,7 +407,7 @@
                                         viewBox="0 0 24 24" fill="none">
                                         <path
                                             d="M18.1777 8C23.2737 8 23.2737 16 18.1777 16C13.0827 16 11.0447 8 5.43875 8C0.85375 8 0.85375 16 5.43875 16C11.0447 16 13.0828 8 18.1788 8H18.1777Z"
-                                            stroke="#1F0300" stroke-width="2" stroke-linecap="round"
+                                            stroke="currentColor" stroke-width="2" stroke-linecap="round"
                                             stroke-linejoin="round" />
                                     </svg>
                                     <span class="title">@lang('Add to Compare')</span>
@@ -422,7 +422,7 @@
                                             viewBox="0 0 24 24" fill="none">
                                             <path
                                                 d="M4 15C4 15 5 14 8 14C11 14 13 16 16 16C19 16 20 15 20 15V3C20 3 19 4 16 4C13 4 11 2 8 2C5 2 4 3 4 3L4 22"
-                                                stroke="#1F0300" stroke-width="2" stroke-linecap="round"
+                                                stroke="currentColor" stroke-width="2" stroke-linecap="round"
                                                 stroke-linejoin="round" />
                                         </svg>
                                         <span class="title">@lang('Report This Item')</span>
@@ -433,7 +433,7 @@
                                             viewBox="0 0 24 24" fill="none">
                                             <path
                                                 d="M4 15C4 15 5 14 8 14C11 14 13 16 16 16C19 16 20 15 20 15V3C20 3 19 4 16 4C13 4 11 2 8 2C5 2 4 3 4 3L4 22"
-                                                stroke="#1F0300" stroke-width="2" stroke-linecap="round"
+                                                stroke="currentColor" stroke-width="2" stroke-linecap="round"
                                                 stroke-linejoin="round" />
                                         </svg>
                                         <span class="title">@lang('Report This Item')</span>
