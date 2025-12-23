@@ -80,8 +80,6 @@ class CheckoutBaseControlller extends Controller
         // تحضير بيانات الشحن والتغليف
         if ($this->gs->multiple_shipping == 0) {
             // Single shipping
-            $input['is_shipping'] = 0;
-
             if (!isset($input['vendor_shipping_ids'])) {
                 $input['vendor_shipping_ids'] = json_encode([]);
             } elseif (is_array($input['vendor_shipping_ids'])) {
@@ -95,8 +93,6 @@ class CheckoutBaseControlller extends Controller
             }
         } else {
             // Multi shipping
-            $input['is_shipping'] = 1;
-
             // Shipping
             if (isset($input['shipping']) && is_array($input['shipping'])) {
                 $input['vendor_shipping_ids'] = json_encode($input['shipping']);

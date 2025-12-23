@@ -44,9 +44,9 @@ trait CreatesTryotoShipments
         // استخدام TryotoService الموحد
         $tryotoService = app(TryotoService::class);
 
-        // Shipment destination: Preferably shipping fields, then customer, then default
+        // Shipment destination: customer city
         // تحويل city ID إلى city name باستخدام TryotoService
-        $destinationCityValue = $order->shipping_city ?: $order->customer_city;
+        $destinationCityValue = $order->customer_city;
         $destinationCity = $tryotoService->resolveCityName($destinationCityValue);
 
         // Preparing cart items for dimension/weight calculations

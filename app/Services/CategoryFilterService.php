@@ -345,24 +345,4 @@ class CategoryFilterService
         ";
     }
 
-    // ========================================
-    // LEGACY COMPATIBILITY (will be removed)
-    // ========================================
-
-    public function loadLevel1Categories(...$args): Collection
-    {
-        return $this->loadLevel1Nodes($args[0], $args[1], $args[3] ?? null, $args[4] ?? []);
-    }
-
-    public function loadLevel2Categories(Catalog $catalog, Brand $brand, NewCategory $parent, ?string $filterDate, array $specItemIds): Collection
-    {
-        return $this->loadLevel2Nodes($catalog, $brand, $parent->full_code, $filterDate, $specItemIds);
-    }
-
-    public function loadLevel3Categories(Catalog $catalog, Brand $brand, NewCategory $parent2, ?string $filterDate, array $specItemIds): Collection
-    {
-        // نحتاج key1 من الأب الأول
-        $parent1 = DB::table('newcategories')->where('id', $parent2->parent_id)->first();
-        return $this->loadLevel3Nodes($catalog, $brand, $parent1->full_code ?? '', $parent2->full_code, $filterDate, $specItemIds);
-    }
 }

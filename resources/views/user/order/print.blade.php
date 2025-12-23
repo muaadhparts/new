@@ -128,11 +128,11 @@ html {
                                        @if($order->shipping == "shipto")
                                        <h5>{{ __('Shipping Address') }}</h5>
                                        <address>
-                                          {{ __('Name:') }} {{$order->shipping_name == null ? $order->customer_name : $order->shipping_name}}<br>
-                                          {{ __('Email:') }} {{$order->shipping_email == null ? $order->customer_email : $order->shipping_email}}<br>
-                                          {{ __('Phone:') }} {{$order->shipping_phone == null ? $order->customer_phone : $order->shipping_phone}}<br>
-                                          {{ __('Address:') }} {{$order->shipping_address == null ? $order->customer_address : $order->shipping_address}}<br>
-                                          {{$order->shipping_city == null ? $order->customer_city : $order->shipping_city}}-{{$order->shipping_zip == null ? $order->customer_zip : $order->shipping_zip}}
+                                          {{ __('Name:') }} {{$order->customer_name}}<br>
+                                          {{ __('Email:') }} {{$order->customer_email}}<br>
+                                          {{ __('Phone:') }} {{$order->customer_phone}}<br>
+                                          {{ __('Address:') }} {{$order->customer_address}}<br>
+                                          {{$order->customer_city}}-{{$order->customer_zip}}
                                        </address>
                                        @else
                                        <h5>{{ __('PickUp Location') }}</h5>

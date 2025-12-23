@@ -65,27 +65,6 @@
                     ->vendororders()
                     ->where('user_id', '=', $user->id)
                     ->sum('price');
-
-                    if ($order_v->is_shipping == 1) {
-                    $vendor_shipping = json_decode($order_v->vendor_shipping_id);
-
-                    $user_id = (int) auth()->id();
-
-                    // shipping cost
-                    $shipping_id = $vendor_shipping->$user_id;
-                    $shipping = App\Models\Shipping::findOrFail($shipping_id);
-                    if ($shipping) {
-                    $price = $price + round($shipping->price * $order_v->currency_value, 2);
-                    }
-
-                    // packaging cost
-                    $vendor_packing_id = json_decode($order_v->vendor_packing_id);
-                    $packing_id = $vendor_packing_id->$user_id;
-                    $packaging = App\Models\Package::findOrFail($packing_id);
-                    if ($packaging) {
-                    $price = $price + round($packaging->price * $order_v->currency_value, 2);
-                    }
-                    }
                     @endphp
                     <tr>
                         <!-- Order Number -->

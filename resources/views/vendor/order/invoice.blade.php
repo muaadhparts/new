@@ -69,26 +69,6 @@
                         ->vendororders()
                         ->where('user_id', '=', $user->id)
                         ->sum('price');
-
-                    if ($order->is_shipping == 1) {
-                        $vendor_shipping = json_decode($order->vendor_shipping_id);
-                        $user_id = auth()->id();
-                        // shipping cost
-                        $shipping_id = $vendor_shipping->$user_id;
-                        $shipping = App\Models\Shipping::findOrFail($shipping_id);
-                        if ($shipping) {
-                            $price = $price + round($shipping->price * $order->currency_value, 2);
-                        }
-
-                        // packaging cost
-                        $vendor_packing_id = json_decode($order->vendor_packing_id);
-                        $packing_id = $vendor_packing_id->$user_id;
-                        $packaging = App\Models\Package::findOrFail($packing_id);
-                        if ($packaging) {
-                            $price = $price + round($packaging->price * $order->currency_value, 2);
-                        }
-                    }
-
                 @endphp
 
 
@@ -107,28 +87,6 @@
                             <span class="fw-semibold">@lang('Order Date :')</span>
                             <span class="fw-normal">{{ date('d-M-Y H:i:s a', strtotime($order->created_at)) }}</span>
                         </li>
-
-                        @if (isset($shipping))
-                            <li>
-                                <span class="fw-semibold">@lang('Shipping Method :')</span>
-                                <span class="fw-normal">
-                                    {{ $shipping->title }} |
-                                    {{ \PriceHelper::showOrderCurrencyPrice($shipping->price * $order->currency_value, $order->currency_sign) }}
-                                </span>
-                            </li>
-                        @endif
-
-                        @if (isset($packaging))
-                            <li>
-                                <span class="fw-semibold">@lang('Packaging Method :')</span>
-                                <span class="fw-normal">
-                                    {{ $packaging->title }}
-                                    |
-                                    {{ \PriceHelper::showOrderCurrencyPrice($packaging->price * $order->currency_value, $order->currency_sign) }}</span>
-                            </li>
-                            </span>
-                            </li>
-                        @endif
 
                         @php
                             $invoiceVendorId = $user->id;
@@ -271,11 +229,11 @@
                                     d="M11.9999 12C14.4851 12 16.4999 9.98528 16.4999 7.5C16.4999 5.01472 14.4851 3 11.9999 3C9.51457 3 7.49985 5.01472 7.49985 7.5C7.49985 9.98528 9.51457 12 11.9999 12Z"
                                     stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
                             </svg>
-                            {{ $order->shipping_name == null ? $order->customer_name : $order->shipping_name }}
+                            {{ $order->customer_name }}
                         </li>
 
-                        @if ($order->shipping_address != null || $order->customer_address != null )
-                          
+                        @if ($order->customer_address)
+
                         <li>
                             <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
                                 xmlns="http://www.w3.org/2000/svg">
@@ -286,7 +244,7 @@
                                     d="M12 22C14 18 20 15.4183 20 10C20 5.58172 16.4183 2 12 2C7.58172 2 4 5.58172 4 10C4 15.4183 10 18 12 22Z"
                                     stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
                             </svg>
-                            {{ $order->shipping_address == null ? $order->customer_address : $order->shipping_address }}
+                            {{ $order->customer_address }}
                         </li>
                         @endif
 
@@ -299,7 +257,7 @@
                                     stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
                             </svg>
 
-                            {{ $order->shipping_phone == null ? $order->customer_phone : $order->shipping_phone }}
+                            {{ $order->customer_phone }}
                         </li>
                         <li>
                             <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
@@ -309,7 +267,7 @@
                                     stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
                             </svg>
 
-                            {{ $order->shipping_email == null ? $order->customer_email : $order->shipping_email }}
+                            {{ $order->customer_email }}
                         </li>
                         @endif
                     </ul>

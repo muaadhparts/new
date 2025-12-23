@@ -47,7 +47,7 @@
                                     <td width="10%">:</td>
                                     <td width="45%">{{$order->totalQty}}</td>
                                 </tr>
-                                @if($order->shipping_title != null && $order->is_shipping == 0)
+                                @if($order->shipping_title != null)
                                 <tr>
                                     <th width="45%">{{ __('Shipping Method') }}</th>
                                     <td width="10%">:</td>
@@ -74,7 +74,7 @@
                                 </tr>
                                 @endif
 
-                                @if($order->packing_title != null && $order->is_shipping == 0)
+                                @if($order->packing_title != null)
                                 <tr>
                                     <th width="45%">{{ __('Packaging Method') }}</th>
                                     <td width="10%">:</td>
@@ -296,40 +296,34 @@
                                 <tr>
                                     <th width="45%"><strong>{{ __('Name') }}:</strong></th>
                                     <th width="10%">:</th>
-                                    <td>{{$order->shipping_name == null ? $order->customer_name :
-                                        $order->shipping_name}}</td>
+                                    <td>{{ $order->customer_name }}</td>
                                 </tr>
                                 <tr>
                                     <th width="45%"><strong>{{ __('Email') }}:</strong></th>
                                     <th width="10%">:</th>
-                                    <td width="45%">{{$order->shipping_email == null ? $order->customer_email :
-                                        $order->shipping_email}}</td>
+                                    <td width="45%">{{ $order->customer_email }}</td>
                                 </tr>
                                 <tr>
                                     <th width="45%"><strong>{{ __('Phone') }}:</strong></th>
                                     <th width="10%">:</th>
-                                    <td width="45%">{{$order->shipping_phone == null ? $order->customer_phone :
-                                        $order->shipping_phone}}</td>
+                                    <td width="45%">{{ $order->customer_phone }}</td>
                                 </tr>
                                 <tr>
                                     <th width="45%"><strong>{{ __('Address') }}:</strong></th>
                                     <th width="10%">:</th>
-                                    <td width="45%">{{$order->shipping_address == null ? $order->customer_address :
-                                        $order->shipping_address}}</td>
+                                    <td width="45%">{{ $order->customer_address }}</td>
                                 </tr>
                                 <tr>
                                     <th width="45%"><strong>{{ __('Country') }}:</strong></th>
                                     <th width="10%">:</th>
-                                    <td width="45%">{{$order->shipping_country == null ? $order->customer_country :
-                                        $order->shipping_country}}</td>
+                                    <td width="45%">{{ $order->customer_country }}</td>
                                 </tr>
 
 
                                 <tr>
                                     <th width="45%">{{ __('State') }}</th>
                                     <th width="10%">:</th>
-                                    <td width="45%">{{$order->shipping_state == null ? $order->customer_state:
-                                        $order->shipping_state }}</td>
+                                    <td width="45%">{{ $order->customer_state }}</td>
                                 </tr>
 
 

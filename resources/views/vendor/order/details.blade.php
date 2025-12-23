@@ -67,49 +67,12 @@
                                 ->vendororders()
                                 ->where('user_id', '=', $user->id)
                                 ->sum('price');
-                            if ($order->is_shipping == 1) {
-                                $vendor_shipping = json_decode($order->vendor_shipping_id);
-                                $user_id = auth()->id();
-                                // shipping cost
-                                $shipping_id = $vendor_shipping->$user_id;
-                                $shipping = App\Models\Shipping::findOrFail($shipping_id);
-                                if ($shipping) {
-                                    $price = $price + round($shipping->price * $order->currency_value, 2);
-                                }
-
-                                // packaging cost
-                                $vendor_packing_id = json_decode($order->vendor_packing_id);
-                                $packing_id = $vendor_packing_id->$user_id;
-                                $packaging = App\Models\Package::findOrFail($packing_id);
-                                if ($packaging) {
-                                    $price = $price + round($packaging->price * $order->currency_value, 2);
-                                }
-                            }
-
                         @endphp
-
 
                         <li class="info-list-item">
                             <span class="info-type">@lang('Total Cost')</span> <span
                                 class="info">{{ \PriceHelper::showOrderCurrencyPrice($price * $order->currency_value, $order->currency_sign) }}</span>
                         </li>
-
-
-                        @if (isset($shipping))
-                            <li class="info-list-item">
-                                <span class="info-type">@lang('Shipping Method')</span> <span class="info">{{ $shipping->title }} |
-                                    {{ \PriceHelper::showOrderCurrencyPrice($shipping->price * $order->currency_value, $order->currency_sign) }}</span>
-                            </li>
-                        @endif
-
-                        @if (isset($packaging))
-                            <li class="info-list-item">
-                                <span class="info-type">@lang('Packaging Method')</span> <span class="info">{{ $packaging->title }}
-                                    |
-                                    {{ \PriceHelper::showOrderCurrencyPrice($packaging->price * $order->currency_value, $order->currency_sign) }}</span>
-                            </li>
-                        @endif
-
 
                         <li class="info-list-item">
                             <span class="info-type">@lang('Ordered Date')</span> <span
@@ -199,31 +162,31 @@
                             @else
                                 <li class="info-list-item">
                                     <span class="info-type">@lang('Name')</span> <span
-                                        class="info">{{ $order->shipping_name == null ? $order->customer_name : $order->shipping_name }}</span>
+                                        class="info">{{ $order->customer_name }}</span>
                                 </li>
                                 <li class="info-list-item">
                                     <span class="info-type">@lang('Email')</span> <span
-                                        class="info">{{ $order->shipping_email == null ? $order->customer_email : $order->shipping_email }}</span>
+                                        class="info">{{ $order->customer_email }}</span>
                                 </li>
                                 <li class="info-list-item">
                                     <span class="info-type">@lang('Phone')</span> <span
-                                        class="info">{{ $order->shipping_phone == null ? $order->customer_phone : $order->shipping_phone }}</span>
+                                        class="info">{{ $order->customer_phone }}</span>
                                 </li>
                                 <li class="info-list-item">
                                     <span class="info-type">@lang('Address')</span> <span
-                                        class="info">{{ $order->shipping_address == null ? $order->customer_address : $order->shipping_address }}</span>
+                                        class="info">{{ $order->customer_address }}</span>
                                 </li>
                                 <li class="info-list-item">
                                     <span class="info-type">@lang('Country')</span> <span
-                                        class="info">{{ $order->shipping_country == null ? $order->customer_country : $order->shipping_country }}</span>
+                                        class="info">{{ $order->customer_country }}</span>
                                 </li>
                                 <li class="info-list-item">
                                     <span class="info-type">@lang('City')</span> <span
-                                        class="info">{{ $order->shipping_city == null ? $order->customer_city : $order->shipping_city }}</span>
+                                        class="info">{{ $order->customer_city }}</span>
                                 </li>
                                 <li class="info-list-item">
                                     <span class="info-type">@lang('Postal Code')</span> <span
-                                        class="info">{{ $order->shipping_zip == null ? $order->customer_zip : $order->shipping_zip }}</span>
+                                        class="info">{{ $order->customer_zip }}</span>
                                 </li>
                             @endif
                         </ul>

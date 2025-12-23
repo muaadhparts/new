@@ -216,8 +216,6 @@ class MyFatoorahController extends CheckoutBaseControlller {
         // استخراج بيانات الشحن والتغليف من input_data
         if ($this->gs->multiple_shipping == 0) {
             // Single shipping mode
-            $input['is_shipping'] = 0;
-
             // تأكد أن القيم موجودة ولها قيم افتراضية
             if (!isset($input['shipping_title'])) $input['shipping_title'] = '';
             if (!isset($input['vendor_shipping_id'])) $input['vendor_shipping_id'] = 0;
@@ -246,8 +244,6 @@ class MyFatoorahController extends CheckoutBaseControlller {
             }
         } else {
             // Multi shipping mode
-            $input['is_shipping'] = 1;
-
             // تحويل المصفوفات إلى JSON للحفظ في قاعدة البيانات
             if (isset($input['shipping']) && is_array($input['shipping'])) {
                 $input['vendor_shipping_ids'] = json_encode($input['shipping']);

@@ -101,27 +101,6 @@
                                 // Calculate price
                                 $order = $data;
                                 $price = $order->vendororders()->where('user_id', $vendorId)->sum('price');
-
-                                if ($order->is_shipping == 1) {
-                                    $vendor_shipping = json_decode($order->vendor_shipping_id);
-                                    $vendor_packing_id = json_decode($order->vendor_packing_id);
-
-                                    $shipping_id = optional($vendor_shipping)->$vendorId ?? null;
-                                    if ($shipping_id && is_numeric($shipping_id)) {
-                                        $shipping = App\Models\Shipping::find($shipping_id);
-                                        if ($shipping) {
-                                            $price += round($shipping->price * $order->currency_value, 2);
-                                        }
-                                    }
-
-                                    $packing_id = optional($vendor_packing_id)->$vendorId ?? null;
-                                    if ($packing_id && is_numeric($packing_id)) {
-                                        $packaging = App\Models\Package::find($packing_id);
-                                        if ($packaging) {
-                                            $price += round($packaging->price * $order->currency_value, 2);
-                                        }
-                                    }
-                                }
                             @endphp
                             <tr>
                                 <!-- Order Number -->

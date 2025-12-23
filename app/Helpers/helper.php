@@ -1,27 +1,5 @@
 <?php
 
-/**
- * @deprecated Use ProductCardDTO->isInWishlist from Controller instead.
- * This helper always returns false - wishlist state should come from pre-loaded DTO.
- */
-function wishlistCheck($product_id, $merchant_product_id = null)
-{
-    // DEPRECATED: Always return false
-    // Wishlist state should be pre-computed in ProductCardDTO
-    return false;
-}
-
-/**
- * @deprecated Use ProductCardDTO->isInWishlist from Controller instead.
- * This helper always returns false - wishlist state should come from pre-loaded DTO.
- */
-function merchantWishlistCheck($merchant_product_id)
-{
-    // DEPRECATED: Always return false
-    // Wishlist state should be pre-computed in ProductCardDTO
-    return false;
-}
-
 function merchantCompareCheck($merchant_product_id)
 {
     $compare = session('compare');

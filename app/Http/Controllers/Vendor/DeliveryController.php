@@ -137,24 +137,6 @@ class DeliveryController extends VendorBaseController
                 $user = $this->user;
 
                 $price = $order->vendororders()->where('user_id', '=', $user->id)->sum('price');
-                if ($order->is_shipping == 1) {
-                    $vendor_shipping = json_decode($order->vendor_shipping_id);
-                    $user_id = auth()->id();
-                    // shipping cost
-                    $shipping_id = $vendor_shipping->$user_id;
-                    $shipping = Shipping::findOrFail($shipping_id);
-                    if ($shipping) {
-                        $price = $price + round($shipping->price * $order->currency_value, 2);
-                    }
-
-                    // packaging cost
-                    $vendor_packing_id = json_decode($order->vendor_packing_id);
-                    $packing_id = $vendor_packing_id->$user_id;
-                    $packaging = Package::findOrFail($packing_id);
-                    if ($packaging) {
-                        $price = $price + round($packaging->price * $order->currency_value, 2);
-                    }
-                }
 
 
                 return \PriceHelper::showOrderCurrencyPrice(($price), $data->currency_sign);
@@ -287,9 +269,7 @@ class DeliveryController extends VendorBaseController
             if (!$destinationCity) {
                 Log::warning('Vendor Delivery: Customer city not found in order', [
                     'order_id' => $order->id,
-                    'shipping_city' => $order->shipping_city,
                     'customer_city' => $order->customer_city,
-                    'city_id' => $order->city_id ?? null
                 ]);
                 return response()->json([
                     'success' => false,

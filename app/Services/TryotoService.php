@@ -500,8 +500,8 @@ class TryotoService
 
         $originAddress = $vendor->warehouse_address ?? $vendor->shop_address ?? $originCity;
 
-        // مدينة العميل من الطلب - بدون fallback
-        $destinationCityValue = $order->shipping_city ?: $order->customer_city;
+        // مدينة العميل من الطلب
+        $destinationCityValue = $order->customer_city;
         $destinationCity = $this->resolveCityName($destinationCityValue);
 
         if (!$destinationCity) {
@@ -568,13 +568,13 @@ class TryotoService
         $isCOD = in_array($order->method, ['cod', 'Cash On Delivery']);
         $codAmount = $isCOD ? (float)$order->pay_amount : 0.0;
 
-        // Prepare receiver info - allow null for missing data
-        $receiverName = $order->shipping_name ?: $order->customer_name;
-        $receiverPhone = $this->cleanPhoneNumber($order->shipping_phone ?: $order->customer_phone ?: '');
-        $receiverEmail = $order->shipping_email ?: $order->customer_email ?: null;
-        $receiverAddress = $order->shipping_address ?: $order->customer_address;
-        $receiverZip = $order->shipping_zip ?: $order->customer_zip ?: null;
-        $receiverDistrict = $order->shipping_state ?? $order->customer_state ?? '';
+        // Prepare receiver info
+        $receiverName = $order->customer_name;
+        $receiverPhone = $this->cleanPhoneNumber($order->customer_phone ?: '');
+        $receiverEmail = $order->customer_email ?: null;
+        $receiverAddress = $order->customer_address;
+        $receiverZip = $order->customer_zip ?: null;
+        $receiverDistrict = $order->customer_state ?? '';
 
         // Validate required receiver info
         if (!$receiverName || !$receiverPhone || !$receiverAddress) {

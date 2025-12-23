@@ -131,7 +131,6 @@ class CashOnDeliveryController extends CheckoutBaseControlller
 
         if ($isVendorCheckout) {
             // Vendor checkout
-            $input['is_shipping'] = 0;
             $input['shipping_title'] = '';
             $input['packing_title'] = '';
             $input['shipping_cost'] = 0;
@@ -142,7 +141,6 @@ class CashOnDeliveryController extends CheckoutBaseControlller
             // Regular checkout
             if ($this->gs->multiple_shipping == 0) {
                 // Single shipping
-                $input['is_shipping'] = 0;
                 $input['shipping_title'] = $input['shipping_title'] ?? '';
                 $input['packing_title'] = $input['packing_title'] ?? '';
                 $input['shipping_cost'] = (float)($input['shipping_cost'] ?? 0);
@@ -162,7 +160,6 @@ class CashOnDeliveryController extends CheckoutBaseControlller
                 }
             } else {
                 // Multi shipping
-                $input['is_shipping'] = 1;
                 $input['shipping_cost'] = (float)($input['shipping_cost'] ?? 0);
                 $input['packing_cost'] = (float)($input['packing_cost'] ?? 0);
 

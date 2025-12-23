@@ -140,7 +140,7 @@
                                             stroke="currentColor" stroke-width="2" stroke-linecap="round"
                                             stroke-linejoin="round" />
                                     </svg>
-                                    <p>{{ $order->shipping_name == null ? $order->customer_name : $order->shipping_name }}
+                                    <p>{{ $order->customer_name }}
                                     </p>
                                 </div>
                                 <div class="address d-flex gap-12">
@@ -155,8 +155,8 @@
                                             stroke="currentColor" stroke-width="2" stroke-linecap="round"
                                             stroke-linejoin="round" />
                                     </svg>
-                                    <p>{{ $order->shipping_address == null ? $order->customer_address : $order->shipping_address }}<br>
-                                        {{ $order->shipping_city == null ? $order->customer_city : $order->shipping_city }}-{{ $order->shipping_zip == null ? $order->customer_zip : $order->shipping_zip }}
+                                    <p>{{ $order->customer_address }}<br>
+                                        {{ $order->customer_city }}-{{ $order->customer_zip }}
                                     </p>
                                 </div>
                                 <div class="contact-number d-flex gap-12">
@@ -167,7 +167,7 @@
                                             stroke="currentColor" stroke-width="2" stroke-linecap="round"
                                             stroke-linejoin="round" />
                                     </svg>
-                                    <p>{{ $order->shipping_phone == null ? $order->customer_phone : $order->shipping_phone }}
+                                    <p>{{ $order->customer_phone }}
                                     </p>
                                 </div>
                                 <div class="mail d-flex gap-12">
@@ -178,7 +178,7 @@
                                             stroke="currentColor" stroke-width="2" stroke-linecap="round"
                                             stroke-linejoin="round" />
                                     </svg>
-                                    <p>{{ $order->shipping_email == null ? $order->customer_email : $order->shipping_email }}
+                                    <p>{{ $order->customer_email }}
                                     </p>
                                 </div>
                             </div>

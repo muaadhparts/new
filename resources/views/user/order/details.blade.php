@@ -125,7 +125,7 @@
                                                     stroke="#4C3533" stroke-width="2" stroke-linecap="round"
                                                     stroke-linejoin="round" />
                                             </svg>
-                                            {{ $order->shipping_name == null ? $order->customer_name : $order->shipping_name }}
+                                            {{ $order->customer_name }}
                                         </li>
                                         <li>
                                             <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
@@ -139,8 +139,8 @@
                                                     stroke="#4C3533" stroke-width="2" stroke-linecap="round"
                                                     stroke-linejoin="round" />
                                             </svg>
-                                            {{ $order->shipping_address == null ? $order->customer_address : $order->shipping_address }}<br>
-                                            {{ $order->shipping_city == null ? $order->customer_city : $order->shipping_city }}-{{ $order->shipping_zip == null ? $order->customer_zip : $order->shipping_zip }}
+                                            {{ $order->customer_address }}<br>
+                                            {{ $order->customer_city }}-{{ $order->customer_zip }}
                                         </li>
                                         <li>
                                             <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
@@ -151,7 +151,7 @@
                                                     stroke-linejoin="round" />
                                             </svg>
 
-                                            {{ $order->shipping_phone == null ? $order->customer_phone : $order->shipping_phone }}
+                                            {{ $order->customer_phone }}
                                         </li>
                                         <li>
                                             <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
@@ -162,7 +162,7 @@
                                                     stroke-linejoin="round" />
                                             </svg>
 
-                                            {{ $order->shipping_email == null ? $order->customer_email : $order->shipping_email }}
+                                            {{ $order->customer_email }}
                                         </li>
                                     </ul>
                                 </div>

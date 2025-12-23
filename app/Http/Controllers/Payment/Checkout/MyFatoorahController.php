@@ -184,7 +184,6 @@ class MyFatoorahController extends CheckoutBaseControlller {
 
             return view('myfatoorah.checkout', compact('mfSession', 'paymentMethods', 'jsDomain', 'userDefinedField'));
         } catch (Exception $ex) {
-            dd($ex ,$ex->getMessage());
             $exMessage = __('myfatoorah.' . $ex->getMessage());
             return view('myfatoorah.error', compact('exMessage'));
         }
@@ -258,11 +257,9 @@ class MyFatoorahController extends CheckoutBaseControlller {
             $paymentId = request('pmid') ?: 0;
             $sessionId = request('sid') ?: null;
 
-            dd($paymentId, $sessionId);
             $orderId  = request('oid') ?: 147;
             $curlData = $this->getPayLoadData($orderId);
 
-            dd($curlData ,request('oid'));
             $mfObj   = new MyFatoorahPayment($this->mfConfig);
             $payment = $mfObj->getInvoiceURL($curlData, $paymentId, $orderId, $sessionId);
 
@@ -372,7 +369,6 @@ class MyFatoorahController extends CheckoutBaseControlller {
 
             return view('myfatoorah.checkout', compact('mfSession', 'paymentMethods', 'jsDomain', 'userDefinedField'));
         } catch (Exception $ex) {
-            dd($ex ,$ex->getMessage());
             $exMessage = __('myfatoorah.' . $ex->getMessage());
             return view('myfatoorah.error', compact('exMessage'));
         }

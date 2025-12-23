@@ -187,34 +187,6 @@ class OrderController extends AdminBaseController
                         $uprice->update();
                     }
 
-                    if ($data->is_shipping == 1) {
-                        $vendor_ids = json_decode($data->vendor_ids, true);
-                        $shipping_ids = json_decode($data->vendor_shipping_id, true);
-                        $packaging_ids = json_decode($data->vendor_packing_id, true);
-
-                        foreach ($vendor_ids as $vendor) {
-                            $vendor = User::findOrFail($vendor);
-                            if ($vendor) {
-                                $shpping_id = $shipping_ids[$vendor->id];
-                                $packaging_id = $packaging_ids[$vendor->id];
-                                $shipping = Shipping::findOrFail($shpping_id);
-                                $packaging = Package::findOrFail($packaging_id);
-                                $extra = 0;
-                                if ($shipping) {
-                                    $extra += $shipping->price;
-                                }
-                                if ($packaging) {
-                                    $extra += $packaging->price;
-                                }
-                                $vendor->current_balance = $vendor->current_balance + $extra;
-                                if ($data->method == 'Cash On Delivery') {
-                                    $vendor->admin_commission += $extra;
-                                }
-                                $vendor->update();
-                            }
-                        }
-                    }
-
                     if (User::where('id', $data->affilate_user)->exists()) {
                         $auser = User::where('id', $data->affilate_user)->first();
                         $auser->affilate_income += $data->affilate_charge;

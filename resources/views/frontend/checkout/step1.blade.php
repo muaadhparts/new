@@ -237,97 +237,6 @@
                                     </div>
                                 </div>
 
-                                <!-- chekbox -->
-                                <div class="col-lg-12  {{ $digital == 1 ? 'd-none' : '' }}" id="ship_deff">
-                                    <div class="gs-checkbox-wrapper" data-bs-toggle="collapse"
-                                        data-bs-target="#show_shipping_address" role="region" aria-expanded="false"
-                                        aria-controls="show_shipping_address">
-                                        <input type="checkbox" id="shpto" name="is_shipping" value="1">
-                                        <label class="icon-label" for="shpto">
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12"
-                                                viewBox="0 0 12 12" fill="none">
-                                                <path d="M10 3L4.5 8.5L2 6" stroke="currentColor" stroke-width="1.6666"
-                                                    stroke-linecap="round" stroke-linejoin="round" />
-                                            </svg>
-                                        </label>
-                                        <label for="shpto">@lang('Ship to a Different Address?')</label>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Shipping Address -->
-                        <div class="collapse" id="show_shipping_address">
-                            <h4 class="form-title">@lang('Shipping Address')</h4>
-                            <div class="row g-4">
-                                <div class="col-lg-6">
-                                    <div class="input-wrapper">
-                                        <label class="label-cls" for="shipping_name">
-                                            @lang('Name')
-                                        </label>
-                                        <input class="input-cls" id="shipping_name" type="text"
-                                            placeholder="@lang('Full Name')" name="shipping_name">
-                                    </div>
-                                </div>
-
-                                <div class="col-lg-6">
-                                    <div class="input-wrapper">
-                                        <label class="label-cls" for="shipping_phone">
-                                            @lang('Phone Number')
-                                        </label>
-                                        <input class="input-cls" id="shipping_phone" name="shipping_phone"
-                                            type="tel" placeholder="@lang('Phone Number')">
-                                    </div>
-                                </div>
-                                <div class="col-lg-6">
-                                    <div class="input-wrapper">
-                                        <label class="label-cls" for="shipping_address">
-                                            @lang('Address')
-                                        </label>
-                                        <input class="input-cls" id="shipping_address" name="shipping_address"
-                                            type="text" placeholder="@lang('Address')">
-                                    </div>
-                                </div>
-                                <div class="col-lg-6">
-                                    <div class="input-wrapper">
-                                        <label class="label-cls" for="shipping_zip">
-                                            @lang('Postal Code')
-                                        </label>
-                                        <input class="input-cls" id="shipping_zip" name="shipping_zip" type="text"
-                                            placeholder="@lang('Postal Code')">
-                                    </div>
-                                </div>
-                                <div class="col-lg-6">
-                                    <div class="input-wrapper">
-                                        <label class="label-cls" for="shipping_city">@lang('City')</label>
-                                        <input class="input-cls" id="shipping_city" name="shipping_city" type="text"
-                                            placeholder="@lang('City')">
-                                    </div>
-                                </div>
-                                <div class="col-lg-6">
-                                    <div class="input-wrapper">
-                                        <label class="label-cls" for="shipping_state">@lang('State')</label>
-                                        <input class="input-cls" id="shipping_state" name="shipping_state"
-                                            type="text" placeholder="@lang('State')">
-                                    </div>
-                                </div>
-                                <div class="col-lg-6">
-                                    <div class="input-wrapper">
-                                        <label class="label-cls">@lang('Select Country')</label>
-                                        <select class="nice-select" name="shipping_country">
-                                            @include('partials.user.countries')
-                                        </select>
-                                    </div>
-                                </div>
-                                <div class="col-lg-12">
-                                    <div class="input-wrapper">
-                                        <label class="label-cls" for="Order-Note">
-                                            @lang('Order Note')
-                                        </label>
-                                        <input class="input-cls" id="Order-Note" name="order_notes" type="text"
-                                            placeholder="@lang('Order note (Optional)')">
-                                    </div>
-                                </div>
                             </div>
                         </div>
                     </div>
@@ -793,28 +702,12 @@
 
 
         $('#shipop').on('change', function() {
-
             var val = $(this).val();
             if (val == 'pickup') {
                 $('#shipshow').removeClass('d-none');
-                $('.show_shipping_address').addClass('d-none');
-
             } else {
                 $('#shipshow').addClass('d-none');
-                $('#show_shipping_address').removeClass('d-none');
             }
-
-        });
-
-
-        $("#shpto").on("change", function() {
-            if (this.checked) {
-                $('#show_shipping_address input, #show_shipping_address select').prop('required', true);
-            } else {
-                $('#show_shipping_address input, #show_shipping_address select').prop('required', false);
-            }
-            $('#show_shipping_address input[name="order_notes"]').prop('required', false);
-
         });
     </script>
 

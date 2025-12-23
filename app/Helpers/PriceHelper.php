@@ -300,7 +300,6 @@ class PriceHelper
                     'total_amount'        => $totalAmount,
                     'shipping'            => $shipping,
                     'packeing'            => $packeing,
-                    'is_shipping'         => 0,
                     'tax'                 => $tax_amount,
                     'vendor_shipping_ids' => @json_encode($vendor_shipping_ids),
                     'vendor_packing_ids'  => @json_encode($vendor_packing_ids),
@@ -384,7 +383,6 @@ class PriceHelper
                 'total_amount'        => $totalAmount,
                 'shipping'            => null, // متعدد: لا يوجد واحد محدد
                 'packeing'            => null,
-                'is_shipping'         => 1,
                 'tax'                 => $tax_amount,
                 'vendor_shipping_ids' => @json_encode($input['shipping'] ?? []),
                 'vendor_packing_ids'  => @json_encode($input['packeging'] ?? []),
@@ -394,7 +392,6 @@ class PriceHelper
                 'success'             => true,
             ];
         } catch (\Exception $e) {
-            dd($e->getMessage()); // //
             return [
                 'success' => false,
                 'message' => $e->getMessage(),
@@ -591,7 +588,6 @@ class PriceHelper
             return round($totalAmount * (float)$curr->value, 2);
 
         } catch (\Exception $e) {
-            dd($e->getMessage()); // //
             return [
                 'success' => false,
                 'message' => $e->getMessage(),

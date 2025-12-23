@@ -106,7 +106,6 @@ class StripeController extends CheckoutBaseControlller
             Session::put('input_data', $input);
             return redirect($checkout_session->url);
         } catch (Exception $e) {
-            dd($e->getMessage());
             return back()->with('unsuccess', $e->getMessage());
         }
     }

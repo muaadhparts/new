@@ -105,7 +105,8 @@ class OrderCreateController extends AdminBaseController
 
     public function orderStore(Request $request)
     {
-        dd($request->all());
+        // TODO: Implement order store logic
+        return redirect()->back()->with('error', __('Feature not implemented yet.'));
     }
 
 
