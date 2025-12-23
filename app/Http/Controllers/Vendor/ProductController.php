@@ -29,10 +29,11 @@ class ProductController extends VendorBaseController
 
         // Get Products that belong to this vendor via merchant_products
         // We return Product models with merchantProduct relationship loaded
+        // product_type is now on merchant_products, not products
         $datas = Product::whereHas('merchantProducts', function($query) use ($user) {
-                $query->where('user_id', $user->id);
+                $query->where('user_id', $user->id)
+                      ->where('product_type', 'normal');
             })
-            ->where('product_type', 'normal')
             ->with([
                 'brand', // Eager load brand
                 'merchantProducts' => function($query) use ($user) {
@@ -140,7 +141,10 @@ class ProductController extends VendorBaseController
         $user = $this->user;
 
         // المنتجات المتاحة في الكاتالوج (تعريف فقط)، ومفعلة عبر عروض نشطة
-        $datas = Product::where('product_type', 'normal')
+        // product_type is now on merchant_products, not products
+        $datas = Product::whereHas('merchantProducts', function($q) {
+                $q->where('product_type', 'normal');
+            })
             ->where('is_catalog', '=', 1)
             ->status(1) // السكوب محوّل داخليًا إلى merchant_products.status
             ->latest('id')

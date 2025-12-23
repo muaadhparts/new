@@ -1,3 +1,13 @@
+{{--
+================================================================================
+HOME PAGE - Section-Based Architecture (Theme System)
+================================================================================
+Each section is controlled by the active HomePageTheme ($theme->*)
+All product data is vendor-only (is_vendor = 2)
+Sections are rendered based on theme settings and order
+================================================================================
+--}}
+
 @extends('layouts.front')
 
 @section('content')
@@ -5,7 +15,10 @@
 {{-- Main Page Wrapper with unified background --}}
 <div class="muaadh-page-wrapper muaadh-section-gray">
 
-    <!-- Hero Search Section -->
+    {{-- ===================================================================
+         SECTION: Hero Search (if enabled: $theme->show_hero_search)
+         =================================================================== --}}
+    @if($theme->show_hero_search ?? true)
     <section class="muaadh-hero">
         <div class="container">
             <div class="muaadh-hero-content">
@@ -33,16 +46,30 @@
             </div>
         </div>
     </section>
+    @endif
 
-    <!-- Brands Section -->
+    {{-- ===================================================================
+         SECTION: Slider (if enabled: $theme->show_slider)
+         =================================================================== --}}
+    @if(($theme->show_slider ?? false) && isset($sliders) && count($sliders) > 0)
+    <section class="muaadh-section muaadh-slider-section">
+        <div class="container">
+            @include('frontend.sections.slider', ['sliders' => $sliders])
+        </div>
+    </section>
+    @endif
+
+    {{-- ===================================================================
+         SECTION: Brands (if enabled: $theme->show_brands)
+         =================================================================== --}}
+    @if(($theme->show_brands ?? false) && isset($brands) && count($brands) > 0)
     <section class="muaadh-section">
         <div class="container">
             <div class="muaadh-section-header">
                 <span class="muaadh-badge-primary">@lang('Genuine Parts Catalogues')</span>
-                <h2 class="muaadh-section-title">@lang('Explore genuine OEM parts catalogues')</h2>
+                <h2 class="muaadh-section-title">{{ $theme->title_brands ?? __('Explore genuine OEM parts catalogues') }}</h2>
             </div>
 
-            {{-- Using cached $brands from Controller --}}
             <div class="muaadh-brands-grid">
                 @foreach ($brands as $brand)
                     <a href="{{ route('catlogs.index', $brand->name) }}" class="muaadh-brand-card">
@@ -57,13 +84,17 @@
             </div>
         </div>
     </section>
+    @endif
 
-    <!-- Categories Section -->
+    {{-- ===================================================================
+         SECTION: Categories (if enabled: $theme->show_categories)
+         =================================================================== --}}
+    @if(($theme->show_categories ?? false) && isset($featured_categories) && count($featured_categories) > 0)
     <section class="muaadh-section">
         <div class="container">
             <div class="muaadh-section-header">
                 <span class="muaadh-badge-primary">@lang('Browse Categories')</span>
-                <h2 class="muaadh-section-title">@lang('Shop by Category')</h2>
+                <h2 class="muaadh-section-title">{{ $theme->title_categories ?? __('Shop by Category') }}</h2>
             </div>
 
             <div class="muaadh-categories-grid">
@@ -82,11 +113,107 @@
             </div>
         </div>
     </section>
+    @endif
 
-    <!-- Services Section -->
+    {{-- ===================================================================
+         SECTION: Featured Products (if enabled: $theme->show_featured_products)
+         Uses slider like Related Products - each card is a MerchantProduct
+         =================================================================== --}}
+    @if(($theme->show_featured_products ?? false) && isset($featured_merchants) && count($featured_merchants) > 0)
     <section class="muaadh-section">
         <div class="container">
-            {{-- Using cached $services from Controller --}}
+            <h2 class="title text-center">{{ $theme->title_featured_products ?? __('Featured Products') }}</h2>
+            @include('frontend.sections.product-slider', ['merchantProducts' => $featured_merchants])
+        </div>
+    </section>
+    @endif
+
+    {{-- ===================================================================
+         SECTION: Deal of the Day (if enabled: $theme->show_deal_of_day)
+         =================================================================== --}}
+    @if(($theme->show_deal_of_day ?? false) && isset($flash_merchant) && $flash_merchant)
+    <section class="muaadh-section muaadh-deal-section">
+        <div class="container">
+            <h2 class="title text-center">{{ $theme->title_deal_of_day ?? __('Deal of the Day') }}</h2>
+            @include('frontend.sections.deal-of-day', ['merchantProduct' => $flash_merchant])
+        </div>
+    </section>
+    @endif
+
+    {{-- ===================================================================
+         SECTION: Top Rated Products (if enabled: $theme->show_top_rated)
+         Uses slider like Related Products
+         =================================================================== --}}
+    @if(($theme->show_top_rated ?? false) && isset($top_merchants) && count($top_merchants) > 0)
+    <section class="muaadh-section">
+        <div class="container">
+            <h2 class="title text-center">{{ $theme->title_top_rated ?? __('Top Rated Products') }}</h2>
+            @include('frontend.sections.product-slider', ['merchantProducts' => $top_merchants])
+        </div>
+    </section>
+    @endif
+
+    {{-- ===================================================================
+         SECTION: Big Save Products (if enabled: $theme->show_big_save)
+         Uses slider like Related Products
+         =================================================================== --}}
+    @if(($theme->show_big_save ?? false) && isset($big_merchants) && count($big_merchants) > 0)
+    <section class="muaadh-section">
+        <div class="container">
+            <h2 class="title text-center">{{ $theme->title_big_save ?? __('Big Save Products') }}</h2>
+            @include('frontend.sections.product-slider', ['merchantProducts' => $big_merchants])
+        </div>
+    </section>
+    @endif
+
+    {{-- ===================================================================
+         SECTION: Trending Products (if enabled: $theme->show_trending)
+         Uses slider like Related Products
+         =================================================================== --}}
+    @if(($theme->show_trending ?? false) && isset($trending_merchants) && count($trending_merchants) > 0)
+    <section class="muaadh-section">
+        <div class="container">
+            <h2 class="title text-center">{{ $theme->title_trending ?? __('Trending Products') }}</h2>
+            @include('frontend.sections.product-slider', ['merchantProducts' => $trending_merchants])
+        </div>
+    </section>
+    @endif
+
+    {{-- ===================================================================
+         SECTION: Best Selling Products (if enabled: $theme->show_best_sellers)
+         Uses slider like Related Products
+         =================================================================== --}}
+    @if(($theme->show_best_sellers ?? false) && isset($best_merchants) && count($best_merchants) > 0)
+    <section class="muaadh-section">
+        <div class="container">
+            <h2 class="title text-center">{{ $theme->title_best_sellers ?? __('Best Selling Products') }}</h2>
+            @include('frontend.sections.product-slider', ['merchantProducts' => $best_merchants])
+        </div>
+    </section>
+    @endif
+
+    {{-- ===================================================================
+         SECTION: Blogs (if enabled: $theme->show_blogs)
+         =================================================================== --}}
+    @if(($theme->show_blogs ?? false) && isset($blogs) && count($blogs) > 0)
+    <section class="muaadh-section">
+        <div class="container">
+            <div class="muaadh-section-header">
+                <span class="muaadh-badge-primary">@lang('Latest News')</span>
+                <h2 class="muaadh-section-title">{{ $theme->title_blogs ?? __('From Our Blog') }}</h2>
+            </div>
+
+            @include('frontend.sections.blog-grid', ['blogs' => $blogs])
+        </div>
+    </section>
+    @endif
+
+    {{-- ===================================================================
+         SECTION: Services (if enabled: $theme->show_services)
+         =================================================================== --}}
+    @if(($theme->show_services ?? false) && isset($services) && count($services) > 0)
+    <section class="muaadh-section">
+        <div class="container">
             <div class="muaadh-services-grid">
                 @foreach ($services as $service)
                     <div class="muaadh-service-card">
@@ -102,6 +229,18 @@
             </div>
         </div>
     </section>
+    @endif
+
+    {{-- ===================================================================
+         SECTION: Newsletter (if enabled: $theme->show_newsletter)
+         =================================================================== --}}
+    @if($theme->show_newsletter ?? false)
+    <section class="muaadh-section muaadh-newsletter-section">
+        <div class="container">
+            @include('frontend.sections.newsletter')
+        </div>
+    </section>
+    @endif
 
 </div>
 {{-- End Main Page Wrapper --}}

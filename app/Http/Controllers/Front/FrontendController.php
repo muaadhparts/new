@@ -8,6 +8,8 @@ use App\Models\Blog;
 use App\Models\BlogCategory;
 use App\Models\Category;
 use App\Models\Generalsetting;
+use App\Models\HomePageTheme;
+use App\Models\MerchantProduct;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\Rating;
@@ -54,15 +56,24 @@ class FrontendController extends FrontBaseController
 
     // CURRENCY SECTION ENDS
 
-    // -------------------------------- HOME PAGE SECTION ----------------------------------------
-
-    // Home Page Display
+    // ================================================================================================
+    // HOME PAGE SECTION
+    // ================================================================================================
+    // Architecture: Section-based rendering controlled by HomePageTheme model
+    // All product data is vendor-only (is_vendor = 2)
+    // Each section loads data ONLY if enabled in the active theme
+    // ================================================================================================
 
     public function index(Request $request)
     {
-
         $gs = $this->gs;
-        $data['ps'] = $this->ps;
+        $ps = $this->ps;
+
+        // Get active home page theme
+        $theme = HomePageTheme::getActive();
+        $data['theme'] = $theme;
+        $data['ps'] = $ps; // Keep for backward compatibility
+
         if (!empty($request->reff)) {
             $affilate_user = DB::table('users')
                 ->where('affilate_code', '=', $request->reff)
@@ -80,337 +91,185 @@ class FrontendController extends FrontBaseController
             }
         }
 
-        $data['sliders'] = DB::table('sliders')
-            ->get();
+        // ============================================================================
+        // SECTION: Slider (if enabled in theme)
+        // ============================================================================
+        if ($theme->show_slider) {
+            $data['sliders'] = Cache::remember('homepage_sliders', 3600, function () {
+                return DB::table('sliders')->get();
+            });
+        }
 
-        // Cache featured categories for 1 hour (optimized from 9+ seconds to instant)
-        $data['featured_categories'] = Cache::remember('featured_categories_with_count', 3600, function () {
-            return Category::withCount('products')->where('is_featured', 1)->get();
-        });
+        // ============================================================================
+        // SECTION: Brand (if enabled in theme)
+        // ============================================================================
+        if ($theme->show_brands) {
+            $data['brands'] = Cache::remember('homepage_brands', 3600, function () {
+                return \App\Models\Brand::all();
+            });
+        }
 
-        $data['arrivals'] = ArrivalSection::get()->toArray();
+        // ============================================================================
+        // SECTION: Featured Categories (if enabled in theme)
+        // ============================================================================
+        if ($theme->show_categories) {
+            $data['featured_categories'] = Cache::remember('featured_categories_with_count', 3600, function () {
+                return Category::withCount('products')->where('is_featured', 1)->get();
+            });
+        }
 
-        // count all product
+        // ============================================================================
+        // SECTION: Featured/Popular Products (if enabled in theme)
+        // Returns MerchantProduct objects - each represents a unique listing
+        // (product + vendor + quality brand combination)
+        // ============================================================================
+        if ($theme->show_featured_products) {
+            $count = $theme->count_featured_products ?? 8;
+            $data['featured_merchants'] = Cache::remember('homepage_featured_merchants_' . $count, 1800, function () use ($count) {
+                return MerchantProduct::where('status', 1)
+                    ->where('featured', 1)
+                    ->whereHas('user', fn($u) => $u->where('is_vendor', 2))
+                    ->with([
+                        'product' => fn($q) => $q->withCount('ratings')->withAvg('ratings', 'rating'),
+                        'user:id,shop_name,shop_name_ar,is_vendor',
+                        'qualityBrand:id,name_en,name_ar,logo'
+                    ])
+                    ->take($count)
+                    ->latest()
+                    ->get();
+            });
+        }
 
-        // Cache products count for 1 hour (optimized from 5+ seconds to instant)
-        $data['products'] = Cache::remember('active_products_count', 3600, function () {
-            return Product::whereHas('merchantProducts', function($q){
-                $q->where('status', 1);
-            })->count();
-        });
+        // ============================================================================
+        // SECTION: Deal of the Day (if enabled in theme)
+        // Returns MerchantProduct with active discount
+        // ============================================================================
+        if ($theme->show_deal_of_day) {
+            $data['flash_merchant'] = Cache::remember('homepage_flash_merchant', 1800, function () {
+                return MerchantProduct::where('status', 1)
+                    ->where('is_discount', 1)
+                    ->where('discount_date', '>=', date('Y-m-d'))
+                    ->whereHas('user', fn($u) => $u->where('is_vendor', 2))
+                    ->with([
+                        'product' => fn($q) => $q->withCount('ratings')->withAvg('ratings', 'rating'),
+                        'product.brand', // Product brand (Toyota, Nissan, etc.)
+                        'user:id,shop_name,shop_name_ar,is_vendor',
+                        'qualityBrand:id,name_en,name_ar,logo'
+                    ])
+                    ->latest()
+                    ->first();
+            });
+        }
 
-        // Cache ratings count for 1 hour
-        $data['ratings'] = Cache::remember('ratings_count', 3600, function () {
-            return Rating::count();
-        });
+        // ============================================================================
+        // SECTION: Top Rated Products (if enabled in theme)
+        // Returns MerchantProduct objects with top flag
+        // ============================================================================
+        if ($theme->show_top_rated) {
+            $count = $theme->count_top_rated ?? 6;
+            $data['top_merchants'] = Cache::remember('homepage_top_merchants_' . $count, 1800, function () use ($count) {
+                return MerchantProduct::where('status', 1)
+                    ->where('top', 1)
+                    ->whereHas('user', fn($u) => $u->where('is_vendor', 2))
+                    ->with([
+                        'product' => fn($q) => $q->withCount('ratings')->withAvg('ratings', 'rating'),
+                        'user:id,shop_name,shop_name_ar,is_vendor',
+                        'qualityBrand:id,name_en,name_ar,logo'
+                    ])
+                    ->take($count)
+                    ->latest()
+                    ->get();
+            });
+        }
 
-    //    $data['hot_products'] = Product::whereHot(1)->whereStatus(1)
-    //        ->take($gs->hot_count)
+        // ============================================================================
+        // SECTION: Big Save Products (if enabled in theme)
+        // Returns MerchantProduct objects with big flag
+        // ============================================================================
+        if ($theme->show_big_save) {
+            $count = $theme->count_big_save ?? 6;
+            $data['big_merchants'] = Cache::remember('homepage_big_merchants_' . $count, 1800, function () use ($count) {
+                return MerchantProduct::where('status', 1)
+                    ->where('big', 1)
+                    ->whereHas('user', fn($u) => $u->where('is_vendor', 2))
+                    ->with([
+                        'product' => fn($q) => $q->withCount('ratings')->withAvg('ratings', 'rating'),
+                        'user:id,shop_name,shop_name_ar,is_vendor',
+                        'qualityBrand:id,name_en,name_ar,logo'
+                    ])
+                    ->take($count)
+                    ->latest()
+                    ->get();
+            });
+        }
 
-    //        ->with(['user' => function ($query) {
-    //            $query->select('id', 'is_vendor');
-    //        }])
-    //        ->when('user', function ($query) {
-    //            foreach ($query as $q) {
-    //                if ($q->is_vendor == 2) {
-    //                    return $q;
-    //                }
-    //            }
-    //        })
-    //        ->withCount('ratings')
-    //        ->withAvg('ratings', 'rating')
-    //        ->orderby('id', 'desc')
-    //        ->get();
+        // ============================================================================
+        // SECTION: Trending Products (if enabled in theme)
+        // Returns MerchantProduct objects with trending flag
+        // ============================================================================
+        if ($theme->show_trending) {
+            $count = $theme->count_trending ?? 6;
+            $data['trending_merchants'] = Cache::remember('homepage_trending_merchants_' . $count, 1800, function () use ($count) {
+                return MerchantProduct::where('status', 1)
+                    ->where('trending', 1)
+                    ->whereHas('user', fn($u) => $u->where('is_vendor', 2))
+                    ->with([
+                        'product' => fn($q) => $q->withCount('ratings')->withAvg('ratings', 'rating'),
+                        'user:id,shop_name,shop_name_ar,is_vendor',
+                        'qualityBrand:id,name_en,name_ar,logo'
+                    ])
+                    ->take($count)
+                    ->latest()
+                    ->get();
+            });
+        }
 
-    //    $data['latest_products'] = Product::whereLatest(1)->whereStatus(1)
+        // ============================================================================
+        // SECTION: Best Selling Products (if enabled in theme)
+        // Returns MerchantProduct objects with best flag
+        // ============================================================================
+        if ($theme->show_best_sellers) {
+            $count = $theme->count_best_sellers ?? 8;
+            $data['best_merchants'] = Cache::remember('homepage_best_merchants_' . $count, 1800, function () use ($count) {
+                return MerchantProduct::where('status', 1)
+                    ->where('best', 1)
+                    ->whereHas('user', fn($u) => $u->where('is_vendor', 2))
+                    ->with([
+                        'product' => fn($q) => $q->withCount('ratings')->withAvg('ratings', 'rating'),
+                        'user:id,shop_name,shop_name_ar,is_vendor',
+                        'qualityBrand:id,name_en,name_ar,logo'
+                    ])
+                    ->take($count)
+                    ->latest()
+                    ->get();
+            });
+        }
 
-    //        ->take($gs->new_count)
-    //        ->with(['user' => function ($query) {
-    //            $query->select('id', 'is_vendor');
-    //        }])
-    //        ->when('user', function ($query) {
-    //            foreach ($query as $q) {
-    //                if ($q->is_vendor == 2) {
-    //                    return $q;
-    //                }
-    //            }
-    //        })
-    //        ->withCount('ratings')
-    //        ->withAvg('ratings', 'rating')
-    //        ->orderby('id', 'desc')
-    //        ->get();
+        // ============================================================================
+        // SECTION: Blogs (if enabled in theme)
+        // ============================================================================
+        if ($theme->show_blogs) {
+            $count = $theme->count_blogs ?? 3;
+            $data['blogs'] = Cache::remember('homepage_blogs_' . $count, 3600, function () use ($count) {
+                return Blog::latest()->take($count)->get();
+            });
+        }
 
-    //    $data['sale_products'] = Product::whereSale(1)->whereStatus(1)
-
-    //        ->take($gs->sale_count)
-    //        ->with(['user' => function ($query) {
-    //            $query->select('id', 'is_vendor');
-    //        }])
-    //        ->when('user', function ($query) {
-    //            foreach ($query as $q) {
-    //                if ($q->is_vendor == 2) {
-    //                    return $q;
-    //                }
-    //            }
-    //        })
-    //        ->withCount('ratings')
-    //        ->withAvg('ratings', 'rating')
-    //        ->orderby('id', 'desc')
-    //        ->get();
-
-    //    $data['best_products'] = Product::query()->whereStatus(1)->whereBest(1)
-
-    //        ->take($gs->best_seller_count)
-    //    // get category id and created at
-    //        ->with(['user' => function ($query) {
-    //            $query->select('id', 'is_vendor');
-    //        }])
-    //        ->when('user', function ($query) {
-    //            foreach ($query as $q) {
-    //                if ($q->is_vendor == 2) {
-    //                    return $q;
-    //                }
-    //            }
-    //        })
-
-    //        ->withCount('ratings')
-    //        ->withAvg('ratings', 'rating')
-    //        ->orderby('id', 'desc')
-    //        ->get();
-
-    //    $data['popular_products'] = Product::whereStatus(1)->whereFeatured(1)
-
-    //        ->take($gs->popular_count)
-    //        ->with(['user' => function ($query) {
-    //            $query->select('id', 'is_vendor');
-    //        }])
-
-    //        ->when('user', function ($query) {
-    //            foreach ($query as $q) {
-    //                if ($q->is_vendor == 2) {
-    //                    return $q;
-    //                }
-    //            }
-    //        })
-    //        ->withCount('ratings')
-    //        ->withAvg('ratings', 'rating')
-    //        ->orderby('id', 'desc')
-    //        ->get();
-
-    //    $data['top_products'] = Product::whereStatus(1)->whereTop(1)
-
-    //        ->take($gs->top_rated_count)
-    //        ->with(['user' => function ($query) {
-    //            $query->select('id', 'is_vendor');
-    //        }])
-    //        ->when('user', function ($query) {
-    //            foreach ($query as $q) {
-    //                if ($q->is_vendor == 2) {
-    //                    return $q;
-    //                }
-    //            }
-    //        })
-    //        ->orderby('id', 'desc')
-    //        ->withCount('ratings')->withAvg('ratings', 'rating')
-    //        ->get();
-
-    //    $data['big_products'] = Product::whereStatus(1)->whereBig(1)
-
-    //        ->take($gs->big_save_count)
-    //        ->with(['user' => function ($query) {
-    //            $query->select('id', 'is_vendor');
-    //        }])
-    //        ->when('user', function ($query) {
-    //            foreach ($query as $q) {
-    //                if ($q->is_vendor == 2) {
-    //                    return $q;
-    //                }
-    //            }
-    //        })
-    //        ->orderby('id', 'desc')
-    //        ->withCount('ratings')
-    //        ->withAvg('ratings', 'rating')
-    //        ->get();
-
-    //    $data['trending_products'] = Product::whereStatus(1)->whereTrending(1)
-
-    //        ->take($gs->trending_count)
-    //        ->with(['user' => function ($query) {
-    //            $query->select('id', 'is_vendor');
-    //        }])
-    //        ->when('user', function ($query) {
-    //            foreach ($query as $q) {
-    //                if ($q->is_vendor == 2) {
-    //                    return $q;
-    //                }
-    //            }
-    //        })
-    //        ->withCount('ratings')
-    //        ->withAvg('ratings', 'rating')
-    //        ->orderby('id', 'desc')
-    //        ->get();
-
-    //    $data['flash_products'] = Product::whereStatus(1)->whereIsDiscount(1)
-    //        ->where('discount_date', '>=', date('Y-m-d'))
-
-    //        ->with(['user' => function ($query) {
-    //            $query->select('id', 'is_vendor');
-    //        }])
-    //        ->when('user', function ($query) {
-    //            foreach ($query as $q) {
-    //                if ($q->is_vendor == 2) {
-    //                    return $q;
-    //                }
-    //            }
-    //        })
-    //        ->latest()->first();
-
-        $data['blogs'] = Blog::latest()->take(2)->get();
-
-        // Cache brands and services for homepage (moved from Blade)
-        $data['brands'] = Cache::remember('homepage_brands', 3600, function () {
-            return \App\Models\Brand::all();
-        });
-
-        $data['services'] = Cache::remember('homepage_services', 3600, function () {
-            return DB::table('services')->get();
-        });
+        // ============================================================================
+        // SECTION: Services (if enabled in theme)
+        // ============================================================================
+        if ($theme->show_services) {
+            $data['services'] = Cache::remember('homepage_services', 3600, function () {
+                return DB::table('services')->get();
+            });
+        }
 
         return view('frontend.index', $data);
     }
 
-    // Home Page Ajax Display
-
-    public function extraIndex()
-    {
-        $gs = $this->gs;
-
-        // Fetch hot products by filtering products that have at least one active merchant listing from a vendor (is_vendor = 2)
-        $data['hot_products'] = Product::whereHot(1)
-            ->status(1)
-            ->whereHas('merchantProducts.user', function($query){
-                $query->where('is_vendor', 2);
-            })
-            ->take($gs->hot_count)
-            ->with(['merchantProducts' => function($q){
-                $q->where('status', 1)->with('user:id,is_vendor');
-            }])
-            ->withCount('ratings')
-            ->withAvg('ratings', 'rating')
-            ->orderby('id', 'desc')
-            ->get();
-
-        // Latest products
-        $data['latest_products'] = Product::whereLatest(1)
-            ->status(1)
-            ->whereHas('merchantProducts.user', function($query){
-                $query->where('is_vendor', 2);
-            })
-            ->take($gs->new_count)
-            ->with(['merchantProducts' => function($q){
-                $q->where('status', 1)->with('user:id,is_vendor');
-            }])
-            ->withCount('ratings')
-            ->withAvg('ratings', 'rating')
-            ->orderby('id', 'desc')
-            ->get();
-
-        // ============================================================================
-        // OPTIMIZED EAGER LOADING - Avoids N+1 queries in views
-        // Using withBestMerchant scope for consistent merchant product loading
-        // ============================================================================
-
-        // Sale products
-        $data['sale_products'] = Product::whereSale(1)
-            ->status(1)
-            ->whereHas('merchantProducts.user', fn($q) => $q->where('is_vendor', 2))
-            ->take($gs->sale_count)
-            ->withBestMerchant()
-            ->withCount('ratings')
-            ->withAvg('ratings', 'rating')
-            ->orderby('id', 'desc')
-            ->get();
-
-        // Best products
-        $data['best_products'] = Product::query()->whereBest(1)
-            ->status(1)
-            ->whereHas('merchantProducts.user', fn($q) => $q->where('is_vendor', 2))
-            ->take($gs->best_seller_count)
-            ->withBestMerchant()
-            ->withCount('ratings')
-            ->withAvg('ratings', 'rating')
-            ->orderby('id', 'desc')
-            ->get();
-
-        // Popular products (featured)
-        $data['popular_products'] = Product::whereFeatured(1)
-            ->status(1)
-            ->whereHas('merchantProducts.user', fn($q) => $q->where('is_vendor', 2))
-            ->take($gs->popular_count)
-            ->withBestMerchant()
-            ->withCount('ratings')
-            ->withAvg('ratings', 'rating')
-            ->orderby('id', 'desc')
-            ->get();
-
-        // Top products
-        $data['top_products'] = Product::whereTop(1)
-            ->status(1)
-            ->whereHas('merchantProducts.user', fn($q) => $q->where('is_vendor', 2))
-            ->take($gs->top_rated_count)
-            ->withBestMerchant()
-            ->withCount('ratings')
-            ->withAvg('ratings', 'rating')
-            ->orderby('id', 'desc')
-            ->get();
-
-        // Big products
-        $data['big_products'] = Product::whereBig(1)
-            ->status(1)
-            ->whereHas('merchantProducts.user', fn($q) => $q->where('is_vendor', 2))
-            ->take($gs->big_save_count)
-            ->withBestMerchant()
-            ->withCount('ratings')
-            ->withAvg('ratings', 'rating')
-            ->orderby('id', 'desc')
-            ->get();
-
-        // Trending products
-        $data['trending_products'] = Product::whereTrending(1)
-            ->status(1)
-            ->whereHas('merchantProducts.user', fn($q) => $q->where('is_vendor', 2))
-            ->take($gs->trending_count)
-            ->withBestMerchant()
-            ->withCount('ratings')
-            ->withAvg('ratings', 'rating')
-            ->orderby('id', 'desc')
-            ->get();
-
-        // Flash product (only one product)
-        $data['flash_products'] = Product::whereIsDiscount(1)
-            ->status(1)
-            ->where('discount_date', '>=', date('Y-m-d'))
-            ->whereHas('merchantProducts.user', fn($q) => $q->where('is_vendor', 2))
-            ->withBestMerchant()
-            ->latest()
-            ->first();
-
-        $data['blogs'] = Blog::latest()->take(2)->get();
-        $data['ps'] = $this->ps;
-
-        // Cache brands and services (moved from Blade)
-        $data['brands'] = Cache::remember('homepage_brands', 3600, function () {
-            return \App\Models\Brand::all();
-        });
-
-        $data['services'] = Cache::remember('homepage_services', 3600, function () {
-            return DB::table('services')->get();
-        });
-
-        return view('partials.theme.extraindex', $data);
-    }
-
-    // -------------------------------- HOME PAGE SECTION ENDS ----------------------------------------
+    // ================================================================================================
+    // HOME PAGE SECTION ENDS
+    // ================================================================================================
 
     // -------------------------------- BLOG SECTION ----------------------------------------
 

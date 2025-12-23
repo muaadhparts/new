@@ -29,14 +29,29 @@
 
                             <div class="alert alert-info">
                                 <i class="fas fa-info-circle me-2"></i>
-                                {{ __('The home page uses a unified modern design. Use Theme Builder to customize colors and styling.') }}
+                                {{ __('Manage your home page themes and sections. Create multiple themes and switch between them.') }}
                             </div>
 
                             <div class="row justify-content-center mt-4">
-                                <div class="col-lg-6">
-                                    <a href="{{ route('admin-gs-theme-colors') }}" class="btn btn-primary btn-lg w-100">
+                                <div class="col-lg-5 mb-3">
+                                    <a href="{{ route('admin-homethemes-index') }}" class="btn btn-primary btn-lg w-100">
+                                        <i class="fas fa-layer-group me-2"></i>
+                                        {{ __('Manage Home Themes') }}
+                                    </a>
+                                </div>
+                                <div class="col-lg-5 mb-3">
+                                    <a href="{{ route('admin-theme-colors') }}" class="btn btn-secondary btn-lg w-100">
                                         <i class="fas fa-palette me-2"></i>
-                                        {{ __('Open Theme Builder') }}
+                                        {{ __('Theme Colors') }}
+                                    </a>
+                                </div>
+                            </div>
+
+                            <div class="row justify-content-center mt-3">
+                                <div class="col-lg-5 mb-3">
+                                    <a href="{{ route('admin-ps-customize') }}" class="btn btn-outline-primary w-100">
+                                        <i class="fas fa-sliders-h me-2"></i>
+                                        {{ __('Legacy Customization') }}
                                     </a>
                                 </div>
                             </div>

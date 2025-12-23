@@ -129,6 +129,7 @@
 									</div>
 								</div>
 
+								{{-- affiliate_link is now on merchant_products --}}
 								<div class="row">
 									<div class="col-lg-12">
 										<div class="left-area">
@@ -137,7 +138,7 @@
 										</div>
 									</div>
 									<div class="col-lg-12">
-										<input type="text" class="form-control" placeholder="{{ __("Enter Product Link") }}" name="affiliate_link" required="" value="{{ $data->affiliate_link }}">
+										<input type="text" class="form-control" placeholder="{{ __("Enter Product Link") }}" name="affiliate_link" required="" value="{{ $merchantProduct->affiliate_link ?? '' }}">
 									</div>
 								</div>
 

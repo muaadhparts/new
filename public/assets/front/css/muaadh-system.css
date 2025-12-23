@@ -5629,6 +5629,232 @@ select option {
 .m-rounded-full { border-radius: var(--radius-full) !important; }
 
 /* ============================================================================
+   18. HOME PAGE SECTION COMPONENTS
+   ============================================================================ */
+
+/* --- Arrival / Best Month Offers Grid --- */
+.muaadh-arrival-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: var(--space-6);
+}
+
+.muaadh-arrival-card {
+    display: block;
+    position: relative;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    background: var(--surface-elevated);
+    box-shadow: var(--shadow-md);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    text-decoration: none;
+}
+
+.muaadh-arrival-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+}
+
+.muaadh-arrival-img {
+    position: relative;
+    aspect-ratio: 3/4;
+    overflow: hidden;
+}
+
+.muaadh-arrival-img img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.4s ease;
+}
+
+.muaadh-arrival-card:hover .muaadh-arrival-img img {
+    transform: scale(1.05);
+}
+
+.muaadh-arrival-badge {
+    position: absolute;
+    top: var(--space-4);
+    left: var(--space-4);
+    background: var(--action-danger);
+    color: var(--surface-elevated);
+    padding: var(--space-2) var(--space-4);
+    border-radius: var(--radius-full);
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+
+[dir="rtl"] .muaadh-arrival-badge {
+    left: auto;
+    right: var(--space-4);
+}
+
+.muaadh-arrival-content {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: var(--space-6);
+    background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+    color: var(--surface-elevated);
+}
+
+.muaadh-arrival-header {
+    display: block;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: var(--space-2);
+    opacity: 0.9;
+}
+
+.muaadh-arrival-title {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--surface-elevated);
+}
+
+/* --- Deal of Day Section --- */
+.muaadh-deal-section {
+    background: var(--surface-elevated);
+    padding: var(--space-10) 0;
+}
+
+.muaadh-deal-card {
+    background: var(--surface-elevated);
+    border-radius: var(--radius-lg);
+    padding: var(--space-6);
+    box-shadow: var(--shadow-md);
+}
+
+.muaadh-deal-img {
+    position: relative;
+    border-radius: var(--radius-md);
+    overflow: hidden;
+}
+
+.muaadh-deal-img img {
+    width: 100%;
+    height: auto;
+    object-fit: contain;
+    max-height: 350px;
+}
+
+.muaadh-deal-badge {
+    position: absolute;
+    top: var(--space-4);
+    left: var(--space-4);
+    background: var(--action-danger);
+    color: var(--surface-elevated);
+    padding: var(--space-2) var(--space-4);
+    border-radius: var(--radius-full);
+    font-size: 0.875rem;
+    font-weight: 700;
+}
+
+[dir="rtl"] .muaadh-deal-badge {
+    left: auto;
+    right: var(--space-4);
+}
+
+.muaadh-deal-content {
+    padding: var(--space-4) 0;
+}
+
+.muaadh-deal-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: var(--space-4);
+    color: var(--text-primary);
+}
+
+.muaadh-deal-title a {
+    color: inherit;
+    text-decoration: none;
+}
+
+.muaadh-deal-title a:hover {
+    color: var(--action-primary);
+}
+
+.muaadh-deal-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+}
+
+.muaadh-deal-price {
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+    margin-bottom: var(--space-4);
+}
+
+.muaadh-price-current {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--action-primary);
+}
+
+.muaadh-price-old {
+    font-size: 1.125rem;
+    color: var(--text-muted);
+    text-decoration: line-through;
+}
+
+/* Countdown Timer */
+.muaadh-deal-countdown {
+    display: flex;
+    gap: var(--space-4);
+    margin-bottom: var(--space-6);
+}
+
+.muaadh-countdown-item {
+    text-align: center;
+    background: var(--surface-secondary);
+    padding: var(--space-3) var(--space-4);
+    border-radius: var(--radius-md);
+    min-width: 60px;
+}
+
+.muaadh-countdown-value {
+    display: block;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.muaadh-countdown-label {
+    display: block;
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+}
+
+/* Primary Button */
+.muaadh-btn {
+    display: inline-block;
+    padding: var(--space-3) var(--space-6);
+    border-radius: var(--radius-md);
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    border: none;
+}
+
+.muaadh-btn-primary {
+    background: var(--action-primary);
+    color: var(--surface-elevated);
+}
+
+.muaadh-btn-primary:hover {
+    background: var(--action-primary-hover);
+    color: var(--surface-elevated);
+}
+
+/* ============================================================================
    END OF COMPREHENSIVE DESIGN TOKENS
    ============================================================================ */
 

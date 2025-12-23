@@ -40,7 +40,8 @@ class ArrivalsectionController extends Controller
     }
     public function index()
     {
-        return view('admin.arrival.index');
+        // Redirect to Best Sellers management page
+        return redirect()->route('admin-ps-best-sellers');
     }
     public function create()
     {

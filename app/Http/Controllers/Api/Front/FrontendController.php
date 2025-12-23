@@ -61,14 +61,16 @@ class FrontendController extends Controller
             }
 
             // Get products through merchant_products for this vendor
+            // product_type is now on merchant_products, not products
             $merchantProductsQuery = \App\Models\MerchantProduct::where('user_id', $user->id)
                 ->where('status', 1)
-                ->with(['product' => function($query) use ($request) {
+                ->with(['product' => function($query) {
                     $query->where('status', 1);
-                    if ($request->type && in_array($request->type, ['normal', 'affiliate'])) {
-                        $query->where('product_type', $request->type);
-                    }
                 }]);
+
+            if ($request->type && in_array($request->type, ['normal', 'affiliate'])) {
+                $merchantProductsQuery->where('product_type', $request->type);
+            }
 
             $merchantProducts = $merchantProductsQuery->get();
 
@@ -281,29 +283,31 @@ class FrontendController extends Controller
                     $prods = $prods->whereType($type);
                 }
 
+                // product_type is now on merchant_products, not products
                 if ($productTypeCheck) {
-                    $prods = $prods->whereProductType($productType);
+                    $prods = $prods->whereHas('merchantProducts', fn($q) => $q->where('product_type', $productType));
                 }
 
+                // All highlight flags (featured, best, top, big, trending) are on merchant_products table
                 if ($highlightCheck) {
                     if ($highlight == 'featured') {
-                        $prods = $prods->whereFeatured(1);
+                        $prods = $prods->whereHas('merchantProducts', fn($q) => $q->where('featured', 1)->where('status', 1));
                     } else if ($highlight == 'best') {
-                        $prods = $prods->whereBest(1);
+                        $prods = $prods->whereHas('merchantProducts', fn($q) => $q->where('best', 1)->where('status', 1));
                     } else if ($highlight == 'top') {
-                        $prods = $prods->whereTop(1);
+                        $prods = $prods->whereHas('merchantProducts', fn($q) => $q->where('top', 1)->where('status', 1));
                     } else if ($highlight == 'big') {
-                        $prods = $prods->whereBig(1);
+                        $prods = $prods->whereHas('merchantProducts', fn($q) => $q->where('big', 1)->where('status', 1));
                     } else if ($highlight == 'is_discount') {
-                        $prods = $prods->whereIsDiscount(1);
+                        $prods = $prods->whereHas('merchantProducts', fn($q) => $q->where('is_discount', 1)->where('discount_date', '>=', date('Y-m-d'))->where('status', 1));
                     } else if ($highlight == 'hot') {
-                        $prods = $prods->whereHot(1);
+                        $prods = $prods->whereHas('merchantProducts', fn($q) => $q->where('hot', 1)->where('status', 1));
                     } else if ($highlight == 'latest') {
-                        $prods = $prods->whereLatest(1);
+                        $prods = $prods->orderBy('id', 'desc');
                     } else if ($highlight == 'trending') {
-                        $prods = $prods->whereTrending(1);
+                        $prods = $prods->whereHas('merchantProducts', fn($q) => $q->where('trending', 1)->where('status', 1));
                     } else {
-                        $prods = $prods->whereSale(1);
+                        $prods = $prods->whereHas('merchantProducts', fn($q) => $q->where('sale', 1)->where('status', 1));
                     }
                 }
 

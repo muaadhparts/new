@@ -25,10 +25,9 @@ class ProductController extends AdminBaseController
     public function datatables(Request $request)
     {
         // الاستعلام على السجلات التجارية مباشرة - كل سجل تجاري = صف مستقل
+        // product_type is now on merchant_products, not products
         $query = \App\Models\MerchantProduct::with(['product.brand', 'product.category', 'user', 'qualityBrand'])
-            ->whereHas('product', function($q) {
-                $q->where('product_type', 'normal');
-            });
+            ->where('product_type', 'normal');
 
         if ($request->type == 'deactive') {
             $query->where('status', 0);
@@ -661,8 +660,10 @@ class ProductController extends AdminBaseController
                         $input['meta_tag'] = $line[17];
                         $input['meta_description'] = $line[18];
                         $input['tags'] = $line[14];
-                        $input['product_type'] = $line[19];
-                        $input['affiliate_link'] = $line[20];
+                        // product_type moved to merchant_products
+                        $csvProductType = $line[19] ?? 'normal';
+                        // affiliate_link moved to merchant_products
+                        $csvAffiliateLink = $line[20] ?? null;
                         $input['slug'] = Str::slug($input['name'], '-') . '-' . strtolower($input['sku']);
 
                         $image_url = $line[5];
@@ -711,9 +712,11 @@ class ProductController extends AdminBaseController
                         \App\Models\MerchantProduct::create([
                             'product_id' => $data->id,
                             'user_id' => 1, // Admin/default vendor
+                            'product_type' => $csvProductType,
                             'price' => $convertedPrice,
                             'previous_price' => $convertedPreviousPrice,
                             'stock' => (int) $csvStock,
+                            'affiliate_link' => $csvAffiliateLink,
                             'status' => 1
                         ]);
 

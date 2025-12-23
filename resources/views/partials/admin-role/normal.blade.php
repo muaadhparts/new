@@ -392,10 +392,22 @@
             <a href="{{ route('admin-sl-index') }}"><span>{{ __('Sliders') }}</span></a>
         </li>
         <li>
-            <a href="{{ route('admin-arrival-index') }}"><span>{{ __('Best Month Offer Section') }}</span></a>
+            <a href="{{ route('admin-ps-deal') }}"><span>{{ __('Deal of the day') }}</span></a>
         </li>
         <li>
-            <a href="{{ route('admin-ps-deal') }}"><span>{{ __('Deal of the day') }}</span></a>
+            <a href="{{ route('admin-ps-best-sellers') }}"><span>{{ __('Best Sellers') }}</span></a>
+        </li>
+        <li>
+            <a href="{{ route('admin-ps-top-rated') }}"><span>{{ __('Top Rated') }}</span></a>
+        </li>
+        <li>
+            <a href="{{ route('admin-ps-big-save') }}"><span>{{ __('Big Save') }}</span></a>
+        </li>
+        <li>
+            <a href="{{ route('admin-ps-trending') }}"><span>{{ __('Trending') }}</span></a>
+        </li>
+        <li>
+            <a href="{{ route('admin-ps-featured') }}"><span>{{ __('Featured Products') }}</span></a>
         </li>
 
         <li>

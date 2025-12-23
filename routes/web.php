@@ -782,6 +782,19 @@ Route::prefix('admin')->group(function () {
 
         //------------ ADMIN SLIDER SECTION ENDS ------------
 
+        //------------ ADMIN HOME PAGE THEMES SECTION ------------
+
+        Route::get('/home-themes', 'Admin\HomePageThemeController@index')->name('admin-homethemes-index');
+        Route::get('/home-themes/create', 'Admin\HomePageThemeController@create')->name('admin-homethemes-create');
+        Route::post('/home-themes/store', 'Admin\HomePageThemeController@store')->name('admin-homethemes-store');
+        Route::get('/home-themes/edit/{id}', 'Admin\HomePageThemeController@edit')->name('admin-homethemes-edit');
+        Route::put('/home-themes/update/{id}', 'Admin\HomePageThemeController@update')->name('admin-homethemes-update');
+        Route::get('/home-themes/activate/{id}', 'Admin\HomePageThemeController@activate')->name('admin-homethemes-activate');
+        Route::get('/home-themes/duplicate/{id}', 'Admin\HomePageThemeController@duplicate')->name('admin-homethemes-duplicate');
+        Route::delete('/home-themes/delete/{id}', 'Admin\HomePageThemeController@destroy')->name('admin-homethemes-delete');
+
+        //------------ ADMIN HOME PAGE THEMES SECTION ENDS ------------
+
         Route::get('/arrival/datatables', 'Admin\ArrivalsectionController@datatables')->name('admin-arrival-datatables');
         Route::get('/arrival', 'Admin\ArrivalsectionController@index')->name('admin-arrival-index');
         Route::get('/arrival/create', 'Admin\ArrivalsectionController@create')->name('admin-arrival-create');
@@ -867,6 +880,39 @@ Route::prefix('admin')->group(function () {
         Route::get('/right/banner', 'Admin\PageSettingController@right_banner')->name('admin-ps-right-banner');
         Route::get('/menu/links', 'Admin\PageSettingController@menu_links')->name('admin-ps-menu-links');
         Route::get('/deal/of/day', 'Admin\PageSettingController@deal')->name('admin-ps-deal');
+        Route::post('/deal/of/day/toggle', 'Admin\PageSettingController@toggleDeal')->name('admin-ps-deal-toggle');
+        Route::get('/deal/of/day/search', 'Admin\PageSettingController@searchDealProducts')->name('admin-ps-deal-search');
+        Route::get('/deal/of/day/merchants', 'Admin\PageSettingController@getProductMerchants')->name('admin-ps-deal-merchants');
+
+        // Best Sellers Management
+        Route::get('/best-sellers', 'Admin\PageSettingController@bestSellers')->name('admin-ps-best-sellers');
+        Route::post('/best-sellers/toggle', 'Admin\PageSettingController@toggleBestSellers')->name('admin-ps-best-sellers-toggle');
+        Route::get('/best-sellers/search', 'Admin\PageSettingController@searchBestSellersProducts')->name('admin-ps-best-sellers-search');
+        Route::get('/best-sellers/merchants', 'Admin\PageSettingController@getBestSellersMerchants')->name('admin-ps-best-sellers-merchants');
+
+        // Top Rated Management
+        Route::get('/top-rated', 'Admin\PageSettingController@topRated')->name('admin-ps-top-rated');
+        Route::post('/top-rated/toggle', 'Admin\PageSettingController@toggleTopRated')->name('admin-ps-top-rated-toggle');
+        Route::get('/top-rated/search', 'Admin\PageSettingController@searchTopRated')->name('admin-ps-top-rated-search');
+        Route::get('/top-rated/merchants', 'Admin\PageSettingController@getTopRatedMerchants')->name('admin-ps-top-rated-merchants');
+
+        // Big Save Management
+        Route::get('/big-save', 'Admin\PageSettingController@bigSave')->name('admin-ps-big-save');
+        Route::post('/big-save/toggle', 'Admin\PageSettingController@toggleBigSave')->name('admin-ps-big-save-toggle');
+        Route::get('/big-save/search', 'Admin\PageSettingController@searchBigSave')->name('admin-ps-big-save-search');
+        Route::get('/big-save/merchants', 'Admin\PageSettingController@getBigSaveMerchants')->name('admin-ps-big-save-merchants');
+
+        // Trending Management
+        Route::get('/trending', 'Admin\PageSettingController@trending')->name('admin-ps-trending');
+        Route::post('/trending/toggle', 'Admin\PageSettingController@toggleTrending')->name('admin-ps-trending-toggle');
+        Route::get('/trending/search', 'Admin\PageSettingController@searchTrending')->name('admin-ps-trending-search');
+        Route::get('/trending/merchants', 'Admin\PageSettingController@getTrendingMerchants')->name('admin-ps-trending-merchants');
+
+        // Featured Products Management
+        Route::get('/featured', 'Admin\PageSettingController@featured')->name('admin-ps-featured');
+        Route::post('/featured/toggle', 'Admin\PageSettingController@toggleFeatured')->name('admin-ps-featured-toggle');
+        Route::get('/featured/search', 'Admin\PageSettingController@searchFeatured')->name('admin-ps-featured-search');
+        Route::get('/featured/merchants', 'Admin\PageSettingController@getFeaturedMerchants')->name('admin-ps-featured-merchants');
         //------------ ADMIN PAGE SECTION ENDS------------
 
         Route::get('/page-settings/contact', 'Admin\PageSettingController@contact')->name('admin-ps-contact');
@@ -1757,7 +1803,7 @@ Route::group(['middleware' => 'maintenance'], function () {
 
     Route::get('/', 'Front\FrontendController@index')->name('front.index');
     Route::get('/view', 'Front\CartController@view_cart')->name('front.cart-view');
-    Route::get('/extras', 'Front\FrontendController@extraIndex')->name('front.extraIndex');
+    // Route removed - extraIndex merged into index() with section-based rendering
 
     Route::get('/currency/{id}', 'Front\FrontendController@currency')->name('front.currency');
     Route::get('/language/{id}', 'Front\FrontendController@language')->name('front.language');

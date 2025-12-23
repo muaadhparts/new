@@ -160,11 +160,12 @@ class ProductDetailsController extends FrontBaseController
         // STEP 10b: Related Products (same type/product_type, different product)
         // Optimized: Query MerchantProduct directly with product filters
         // ======================================================================
+        // product_type is now on merchant_products, not products
         $relatedMerchantProducts = MerchantProduct::where('status', 1)
             ->where('stock', '>', 0)
+            ->where('product_type', $merchantProduct->product_type)
             ->whereHas('product', function($q) use ($productt) {
                 $q->where('type', $productt->type)
-                  ->where('product_type', $productt->product_type)
                   ->where('id', '!=', $productt->id);
             })
             ->whereHas('user', fn($q) => $q->where('is_vendor', 2))
@@ -378,7 +379,18 @@ class ProductDetailsController extends FrontBaseController
     public function affProductRedirect($slug)
     {
         $product = Product::where('slug', '=', $slug)->first();
-        return redirect($product->affiliate_link);
+
+        // affiliate_link is now on merchant_products, not products
+        $merchantProduct = $product->merchantProducts()
+            ->whereNotNull('affiliate_link')
+            ->first();
+
+        if ($merchantProduct && $merchantProduct->affiliate_link) {
+            return redirect($merchantProduct->affiliate_link);
+        }
+
+        // Fallback to product page if no affiliate link found
+        return redirect()->route('front.product', $product->slug);
     }
 
     // -------------------------------- PRODUCT COMMENT SECTION ----------------------------------------

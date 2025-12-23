@@ -26,11 +26,9 @@ class ImportController extends AdminBaseController
     public function datatables()
     {
         // الاستعلام على السجلات التجارية مباشرة - كل سجل تجاري = صف مستقل
-        // فقط المنتجات من نوع affiliate
+        // فقط المنتجات من نوع affiliate (product_type is now on merchant_products)
         $query = MerchantProduct::with(['product.brand', 'user', 'qualityBrand'])
-            ->whereHas('product', function($q) {
-                $q->where('product_type', 'affiliate');
-            });
+            ->where('product_type', 'affiliate');
 
         $datas = $query->latest('id');
 
@@ -288,11 +286,8 @@ class ImportController extends AdminBaseController
             $input['tags'] = implode(',', (array)$request->tags);
         }
 
-        // لا نكتب price/previous_price إلى products
-        unset($input['price'], $input['previous_price'], $input['stock']);
-
-        // نوع المنتج
-        $input['product_type'] = "affiliate";
+        // لا نكتب price/previous_price/product_type إلى products
+        unset($input['price'], $input['previous_price'], $input['stock'], $input['product_type']);
 
         // Save Product (هوية فقط)
         $data->fill($input)->save();
@@ -365,6 +360,7 @@ class ImportController extends AdminBaseController
         MerchantProduct::updateOrCreate(
             ['product_id' => $prod->id, 'user_id' => $vendorId],
             [
+                'product_type'        => 'affiliate',
                 'price'               => $mpPrice,
                 'previous_price'      => $mpPreviousPrice,
                 'stock'               => (int) $request->input('stock', 0),
@@ -614,6 +610,7 @@ class ImportController extends AdminBaseController
         MerchantProduct::updateOrCreate(
             ['product_id' => $prod->id, 'user_id' => $vendorId],
             [
+                'product_type'        => 'affiliate',
                 'price'               => $mpPrice,
                 'previous_price'      => $mpPreviousPrice,
                 'stock'               => (int)$request->input('stock', 0),
@@ -627,6 +624,7 @@ class ImportController extends AdminBaseController
                 'product_condition'   => (int) ($request->input('product_condition') ?? 0),
                 'ship'                => $request->input('ship') ?: null,
                 'brand_quality_id'    => $request->input('brand_quality_id') ?: null,
+                'affiliate_link'      => $request->input('affiliate_link') ?: null,
                 'status'              => 1,
             ]
         );

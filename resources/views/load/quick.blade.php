@@ -367,7 +367,8 @@
 
                       {{-- PRODUCT QUANTITY SECTION --}}
 
-                      @if($product->product_type != "affiliate" && $product->type == 'Physical')
+                      {{-- product_type is now on merchant_products --}}
+                      @if($quickMp && $quickMp->product_type != "affiliate" && $product->type == 'Physical')
 
                           <li>
                             <div class="multiple-item-price">
@@ -389,7 +390,8 @@
 
                       {{-- PRODUCT QUANTITY SECTION ENDS --}}
 
-                      @if($product->product_type == "affiliate")
+                      {{-- product_type is now on merchant_products --}}
+                      @if($quickMp && $quickMp->product_type == "affiliate")
 
                       <li>
                         <a href="{{ route('affiliate.product', $product->slug) }}" target="_blank">

@@ -3,7 +3,11 @@
         <div
             class="row row-cols-xxl-2 row-cols-md-2 row-cols-1 g-3 product-style-1 shop-list product-list e-bg-light e-title-hover-primary e-hover-image-zoom">
             @foreach($vprods as $product)
-                @php $productUrl = $product->getProductUrl(); @endphp
+                @php
+                    $productUrl = $product->getProductUrl();
+                    // affiliate_link is now on merchant_products
+                    $productMerchant = $product->best_merchant_product ?? null;
+                @endphp
                 <div class="col">
                     <div class="product type-product">
                         <div class="product-wrapper">
@@ -12,9 +16,10 @@
                                         src="{{ filter_var($product->photo, FILTER_VALIDATE_URL) ? $product->photo : ($product->photo ? \Illuminate\Support\Facades\Storage::url($product->photo) : asset('assets/images/noimage.png')) }}"
                                         alt="Product Image"></a>
                                 <div class="hover-area">
-                                    @if($product->product_type == "affiliate")
+                                    {{-- product_type and affiliate_link are now on merchant_products --}}
+                                    @if($productMerchant && $productMerchant->product_type == "affiliate" && $productMerchant->affiliate_link)
                                         <div class="cart-button">
-                                            <a href="javascript:;" data-href="{{ $product->affiliate_link }}"
+                                            <a href="javascript:;" data-href="{{ $productMerchant->affiliate_link }}"
                                                 class="button add_to_cart_button affilate-btn" data-bs-toggle="tooltip"
                                                 data-bs-placement="right" title="" data-bs-original-title="{{ __('Add To Cart') }}"
                                                 aria-label="{{ __('Add To Cart') }}"></a>
@@ -92,7 +97,11 @@
         <div
             class="row row-cols-xl-4 row-cols-md-3 row-cols-sm-2 row-cols-1 product-style-1 e-title-hover-primary e-image-bg-light e-hover-image-zoom e-info-center">
             @foreach($vprods as $product)
-                @php $productUrl = $product->getProductUrl(); @endphp
+                @php
+                    $productUrl = $product->getProductUrl();
+                    // affiliate_link is now on merchant_products
+                    $productMerchant = $product->best_merchant_product ?? null;
+                @endphp
                 <div class="col">
                     <div class="product type-product">
                         <div class="product-wrapper">
@@ -101,9 +110,10 @@
                                         src="{{ filter_var($product->photo, FILTER_VALIDATE_URL) ? $product->photo : ($product->photo ? \Illuminate\Support\Facades\Storage::url($product->photo) : asset('assets/images/noimage.png')) }}"
                                         alt="Product Image"></a>
                                 <div class="hover-area">
-                                    @if($product->product_type == "affiliate")
+                                    {{-- product_type and affiliate_link are now on merchant_products --}}
+                                    @if($productMerchant && $productMerchant->product_type == "affiliate" && $productMerchant->affiliate_link)
                                         <div class="cart-button">
-                                            <a href="javascript:;" data-href="{{ $product->affiliate_link }}"
+                                            <a href="javascript:;" data-href="{{ $productMerchant->affiliate_link }}"
                                                 class="button add_to_cart_button affilate-btn" data-bs-toggle="tooltip"
                                                 data-bs-placement="right" title="" data-bs-original-title="{{ __('Add To Cart') }}"
                                                 aria-label="{{ __('Add To Cart') }}"></a>
@@ -188,7 +198,11 @@
     <div
         class="row row-cols-xl-4 row-cols-md-3 row-cols-sm-2 row-cols-1 product-style-1 e-title-hover-primary e-image-bg-light e-hover-image-zoom e-info-center">
         @foreach($vprods as $product)
-            @php $productUrl = $product->getProductUrl(); @endphp
+            @php
+                $productUrl = $product->getProductUrl();
+                // affiliate_link is now on merchant_products
+                $productMerchant = $product->best_merchant_product ?? null;
+            @endphp
             <div class="col">
                 <div class="product type-product">
                     <div class="product-wrapper">
@@ -197,9 +211,10 @@
                                     src="{{ filter_var($product->photo, FILTER_VALIDATE_URL) ? $product->photo : ($product->photo ? \Illuminate\Support\Facades\Storage::url($product->photo) : asset('assets/images/noimage.png')) }}"
                                     alt="Product Image"></a>
                             <div class="hover-area">
-                                @if($product->product_type == "affiliate")
+                                {{-- product_type and affiliate_link are now on merchant_products --}}
+                                @if($productMerchant && $productMerchant->product_type == "affiliate" && $productMerchant->affiliate_link)
                                     <div class="cart-button">
-                                        <a href="javascript:;" data-href="{{ $product->affiliate_link }}"
+                                        <a href="javascript:;" data-href="{{ $productMerchant->affiliate_link }}"
                                             class="button add_to_cart_button affilate-btn" data-bs-toggle="tooltip"
                                             data-bs-placement="right" title="" data-bs-original-title="{{ __('Add To Cart') }}"
                                             aria-label="{{ __('Add To Cart') }}"></a>

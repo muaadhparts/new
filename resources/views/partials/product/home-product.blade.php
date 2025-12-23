@@ -25,9 +25,10 @@
           @endif
 
           <div class="hover-area">
-            @if($prod->product_type == "affiliate")
+            {{-- product_type and affiliate_link are now on merchant_products --}}
+            @if($homeProdMerchant && $homeProdMerchant->product_type == "affiliate" && $homeProdMerchant->affiliate_link)
             <div class="cart-button">
-               <a href="javascript:;" data-href="{{ $prod->affiliate_link }}" class="button add_to_cart_button affilate-btn" data-bs-toggle="tooltip" data-bs-placement="right" title="" data-bs-original-title="{{ __('Add To Cart') }}" aria-label="{{ __('Add To Cart') }}"></a>
+               <a href="javascript:;" data-href="{{ $homeProdMerchant->affiliate_link }}" class="button add_to_cart_button affilate-btn" data-bs-toggle="tooltip" data-bs-placement="right" title="" data-bs-original-title="{{ __('Add To Cart') }}" aria-label="{{ __('Add To Cart') }}"></a>
             </div>
             @else
             @if($prod->emptyStock())

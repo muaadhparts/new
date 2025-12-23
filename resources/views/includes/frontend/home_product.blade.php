@@ -109,8 +109,9 @@
         $minQty = max(1, (int)($merchant->minimum_qty ?? 1));
         $preordered = $merchant->preordered ?? false;
         $productType = $actualProduct->type ?? 'Physical';
-        $affiliateProductType = $actualProduct->product_type ?? null;
-        $affiliateLink = $actualProduct->affiliate_link ?? null;
+        // product_type and affiliate_link are now on merchant_products, not products
+        $affiliateProductType = $merchant->product_type ?? null;
+        $affiliateLink = $merchant->affiliate_link ?? null;
         $wishlistUrl = route('user-wishlist-add', $actualProduct->id);
         $isInWishlist = isset($wishlistProductIds) ? $wishlistProductIds->contains($actualProduct->id) : false;
         $compareUrl = route('product.compare.add', $actualProduct->id);

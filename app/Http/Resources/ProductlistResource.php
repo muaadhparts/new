@@ -38,7 +38,8 @@ class ProductlistResource extends JsonResource
             'rating' =>  $this->ratings()->avg('rating') > 0 ? (string) round($this->ratings()->avg('rating'), 2) : (string) round(0.00, 2),
             'current_price' => $currentPrice,
             'previous_price' => $previousPrice,
-            'sale_end_date' => $this->when($this->is_discount == 1, $this->discount_date),
+            // is_discount and discount_date are on merchant_products, not products
+            'sale_end_date' => $this->when($mp && $mp->is_discount == 1, $mp->discount_date ?? null),
 
             // Add vendor context for API consumers
             'vendor' => $mp ? [

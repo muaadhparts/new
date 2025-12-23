@@ -6,7 +6,7 @@
     <div class="mr-breadcrumb">
         <div class="row">
             <div class="col-lg-12">
-                <h4 class="heading">{{ __('Deal Of The Day') }}</h4>
+                <h4 class="heading">{{ __('Best Sellers') }}</h4>
                 <ul class="links">
                     <li>
                         <a href="{{ route('admin.dashboard') }}">{{ __('Dashboard') }} </a>
@@ -15,14 +15,14 @@
                         <a href="javascript:;">{{ __('Home Page Settings') }}</a>
                     </li>
                     <li>
-                        <a href="{{ route('admin-ps-deal') }}">{{ __('Deal Of The Day') }}</a>
+                        <a href="{{ route('admin-ps-best-sellers') }}">{{ __('Best Sellers') }}</a>
                     </li>
                 </ul>
             </div>
         </div>
     </div>
 
-    {{-- Current Deal Products Section --}}
+    {{-- Current Best Month Products Section --}}
     <div class="add-product-content1 add-product-content2 mb-4">
         <div class="row">
             <div class="col-lg-12">
@@ -30,17 +30,17 @@
                     <div class="body-area">
                         <div class="row mb-4">
                             <div class="col-md-8">
-                                <h5 class="mb-3">{{ __('Current Deal Products') }}</h5>
+                                <h5 class="mb-3">{{ __('Current Best Sellers') }}</h5>
                             </div>
                             <div class="col-md-4">
-                                <button type="button" class="btn btn-success float-end" data-bs-toggle="modal" data-bs-target="#addDealModal">
+                                <button type="button" class="btn btn-success float-end" data-bs-toggle="modal" data-bs-target="#addBestModal">
                                     <i class="fas fa-plus"></i> {{ __('Add Product') }}
                                 </button>
                             </div>
                         </div>
 
-                        <div class="table-responsive" id="dealProductsTable">
-                            @if($dealProducts->count() > 0)
+                        <div class="table-responsive" id="bestProductsTable">
+                            @if($bestProducts->count() > 0)
                             <table class="table table-striped">
                                 <thead>
                                     <tr>
@@ -48,12 +48,12 @@
                                         <th>{{ __('Product') }}</th>
                                         <th>{{ __('Brand') }} / {{ __('Quality') }} / {{ __('Vendor') }}</th>
                                         <th>{{ __('Price') }}</th>
-                                        <th>{{ __('Discount End') }}</th>
+                                        <th>{{ __('Stock') }}</th>
                                         <th style="width: 60px;"></th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach($dealProducts as $mp)
+                                    @foreach($bestProducts as $mp)
                                     @php
                                         // Get localized name
                                         $productName = app()->getLocale() == 'ar'
@@ -80,7 +80,7 @@
                                             ? ($mp->user->shop_name_ar ?: $mp->user->shop_name)
                                             : $mp->user->shop_name;
                                     @endphp
-                                    <tr id="deal-row-{{ $mp->id }}">
+                                    <tr id="best-row-{{ $mp->id }}">
                                         <td>
                                             <img src="{{ $photo }}"
                                                  alt="{{ $productName }}"
@@ -126,12 +126,12 @@
                                             @endif
                                         </td>
                                         <td>
-                                            <span class="badge bg-warning text-dark">
-                                                {{ $mp->discount_date ? \Carbon\Carbon::parse($mp->discount_date)->format('Y-m-d') : '-' }}
+                                            <span class="badge {{ $mp->stock > 0 ? 'bg-success' : 'bg-danger' }}">
+                                                {{ $mp->stock ?? 0 }}
                                             </span>
                                         </td>
                                         <td>
-                                            <button type="button" class="btn btn-danger btn-sm remove-deal"
+                                            <button type="button" class="btn btn-danger btn-sm remove-best"
                                                     data-id="{{ $mp->id }}" title="{{ __('Remove') }}">
                                                 <i class="fas fa-trash-alt"></i>
                                             </button>
@@ -141,8 +141,8 @@
                                 </tbody>
                             </table>
                             @else
-                            <div class="alert alert-info" id="noDealsAlert">
-                                {{ __('No deal products configured. Click "Add Product" to add products to the deal of the day.') }}
+                            <div class="alert alert-info" id="noBestAlert">
+                                {{ __('No best sellers configured. Click "Add Product" to add products.') }}
                             </div>
                             @endif
                         </div>
@@ -153,12 +153,12 @@
     </div>
 </div>
 
-{{-- Add Deal Product Modal --}}
-<div class="modal fade" id="addDealModal" tabindex="-1" aria-hidden="true">
+{{-- Add Best Seller Product Modal --}}
+<div class="modal fade" id="addBestModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">{{ __('Add Product to Deal of the Day') }}</h5>
+                <h5 class="modal-title">{{ __('Add Product to Best Sellers') }}</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
@@ -166,7 +166,7 @@
                 <div id="step1-search">
                     <div class="mb-3">
                         <label class="form-label">{{ __('Search by SKU or Product Name') }}</label>
-                        <input type="text" id="dealProductSearch" class="form-control" placeholder="{{ __('Enter SKU or product name...') }}">
+                        <input type="text" id="bestProductSearch" class="form-control" placeholder="{{ __('Enter SKU or product name...') }}">
                     </div>
 
                     <div id="searchResults" class="mt-3">
@@ -187,11 +187,6 @@
                                 <small class="text-muted d-block" id="selectedProductSku"></small>
                             </div>
                         </div>
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label">{{ __('Discount End Date') }}</label>
-                        <input type="date" id="dealDiscountDate" class="form-control" value="{{ now()->addDays(7)->format('Y-m-d') }}">
                     </div>
 
                     <h6>{{ __('Select Vendor & Quality Brand') }}:</h6>
@@ -249,7 +244,7 @@ $(document).ready(function() {
     let selectedProductPhoto = '';
 
     // Step 1: Search products
-    $('#dealProductSearch').on('keyup', function() {
+    $('#bestProductSearch').on('keyup', function() {
         clearTimeout(searchTimeout);
         const query = $(this).val();
 
@@ -261,7 +256,7 @@ $(document).ready(function() {
         searchTimeout = setTimeout(function() {
             $('#searchResults').html('<div class="text-center py-3"><i class="fas fa-spinner fa-spin fa-2x"></i></div>');
 
-            $.get('{{ route("admin-ps-deal-search") }}', { q: query }, function(data) {
+            $.get('{{ route("admin-ps-best-sellers-search") }}', { q: query }, function(data) {
                 if (data.length === 0) {
                     $('#searchResults').html('<p class="text-muted">{{ __("No products found") }}</p>');
                     return;
@@ -310,7 +305,7 @@ $(document).ready(function() {
         $('#merchantsList').html('<div class="text-center py-3"><i class="fas fa-spinner fa-spin fa-2x"></i></div>');
 
         // Load merchants for this product
-        $.get('{{ route("admin-ps-deal-merchants") }}', { product_id: selectedProductId }, function(merchants) {
+        $.get('{{ route("admin-ps-best-sellers-merchants") }}', { product_id: selectedProductId }, function(merchants) {
             if (merchants.length === 0) {
                 $('#merchantsList').html('<p class="text-muted">{{ __("No vendors found for this product") }}</p>');
                 return;
@@ -318,7 +313,7 @@ $(document).ready(function() {
 
             let html = '';
             merchants.forEach(function(mp) {
-                const isAdded = mp.is_discount;
+                const isAdded = mp.best;
 
                 // Brand badge
                 const brandBadge = mp.brand_name
@@ -362,8 +357,8 @@ $(document).ready(function() {
                             <div class="text-end">
                                 <div class="mb-2">${priceHtml}</div>
                                 ${isAdded
-                                    ? '<span class="badge bg-success">{{ __("Already a Deal") }}</span>'
-                                    : `<button class="btn btn-primary btn-sm add-to-deal" data-id="${mp.id}">
+                                    ? '<span class="badge bg-success">{{ __("Already Added") }}</span>'
+                                    : `<button class="btn btn-primary btn-sm add-to-best" data-id="${mp.id}">
                                         <i class="fas fa-plus"></i> {{ __("Add") }}
                                        </button>`
                                 }
@@ -384,35 +379,33 @@ $(document).ready(function() {
     });
 
     // Reset modal on close
-    $('#addDealModal').on('hidden.bs.modal', function() {
+    $('#addBestModal').on('hidden.bs.modal', function() {
         $('#step2-merchants').hide();
         $('#step1-search').show();
-        $('#dealProductSearch').val('');
+        $('#bestProductSearch').val('');
         $('#searchResults').html('<p class="text-muted">{{ __("Start typing to search for products...") }}</p>');
         selectedProductId = null;
     });
 
-    // Add product to deal (silent)
-    $(document).on('click', '.add-to-deal', function() {
+    // Add product to best month (silent)
+    $(document).on('click', '.add-to-best', function() {
         const btn = $(this);
         const card = btn.closest('.merchant-card');
         const merchantProductId = btn.data('id');
-        const discountDate = $('#dealDiscountDate').val();
 
         btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i>');
 
         $.ajax({
-            url: '{{ route("admin-ps-deal-toggle") }}',
+            url: '{{ route("admin-ps-best-sellers-toggle") }}',
             type: 'POST',
             data: {
                 _token: '{{ csrf_token() }}',
                 merchant_product_id: merchantProductId,
-                is_discount: 1,
-                discount_date: discountDate
+                best: 1
             },
             success: function(response) {
                 if (response.success) {
-                    btn.replaceWith('<span class="badge bg-success">{{ __("Already a Deal") }}</span>');
+                    btn.replaceWith('<span class="badge bg-success">{{ __("Already Added") }}</span>');
                     card.addClass('added');
                 }
             },
@@ -422,30 +415,30 @@ $(document).ready(function() {
         });
     });
 
-    // Remove product from deal (silent)
-    $(document).on('click', '.remove-deal', function() {
+    // Remove product from best month (silent)
+    $(document).on('click', '.remove-best', function() {
         const btn = $(this);
         const productId = btn.data('id');
-        const row = $('#deal-row-' + productId);
+        const row = $('#best-row-' + productId);
 
         btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i>');
 
         $.ajax({
-            url: '{{ route("admin-ps-deal-toggle") }}',
+            url: '{{ route("admin-ps-best-sellers-toggle") }}',
             type: 'POST',
             data: {
                 _token: '{{ csrf_token() }}',
                 merchant_product_id: productId,
-                is_discount: 0
+                best: 0
             },
             success: function(response) {
                 if (response.success) {
                     row.fadeOut(300, function() {
                         $(this).remove();
-                        if ($('#dealProductsTable tbody tr').length === 0) {
-                            $('#dealProductsTable').html(`
+                        if ($('#bestProductsTable tbody tr').length === 0) {
+                            $('#bestProductsTable').html(`
                                 <div class="alert alert-info">
-                                    {{ __('No deal products configured. Click "Add Product" to add products to the deal of the day.') }}
+                                    {{ __('No best sellers configured. Click "Add Product" to add products.') }}
                                 </div>
                             `);
                         }

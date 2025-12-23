@@ -56,9 +56,10 @@
           @endif
           {{-- WISHLIST SECTION ENDS --}}
           {{-- ADD TO CART SECTION --}}
-          @if($prod->product_type == "affiliate")
+          {{-- product_type and affiliate_link are now on merchant_products --}}
+          @if($flashProdMerchant && $flashProdMerchant->product_type == "affiliate" && $flashProdMerchant->affiliate_link)
           <li>
-             <span class="cart-btn affilate-btn" data-href="{{ $prod->affiliate_link }}" data-bs-toggle="tooltip" data-placement="top" title="{{ __('Buy Now') }}">
+             <span class="cart-btn affilate-btn" data-href="{{ $flashProdMerchant->affiliate_link }}" data-bs-toggle="tooltip" data-placement="top" title="{{ __('Buy Now') }}">
              <i class="icofont-cart"></i>
              </span>
           </li>
@@ -93,8 +94,11 @@
           </li>
           {{-- ADD TO COMPARE SECTION ENDS --}}
        </ul>
+       {{-- discount_date is on merchant_products, not products --}}
+       @if($flashProdMerchant && $flashProdMerchant->discount_date)
        <div class="deal-counter">
-          <div data-countdown="{{ $prod->discount_date }}"></div>
+          <div data-countdown="{{ $flashProdMerchant->discount_date }}"></div>
        </div>
+       @endif
     </div>
  </a>

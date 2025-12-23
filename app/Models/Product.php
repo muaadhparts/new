@@ -243,7 +243,7 @@ class Product extends Model
     {
         return $query->with(['merchantProducts' => function ($q) {
             $q->where('status', 1)
-              ->with(['user:id,is_vendor,shop_name,shop_name_ar', 'qualityBrand:id,name,name_ar'])
+              ->with(['user:id,is_vendor,shop_name,shop_name_ar', 'qualityBrand:id,name_en,name_ar'])
               ->orderByRaw('CASE WHEN (stock IS NULL OR stock = 0) THEN 1 ELSE 0 END ASC')
               ->orderBy('price');
         }]);

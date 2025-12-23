@@ -44,7 +44,13 @@ class MerchantProduct extends Model
         'colors',
         'size',
         'size_qty',
-        'size_price'
+        'size_price',
+        // Homepage flags
+        'featured',
+        'top',
+        'big',
+        'trending',
+        'best',
     ];
 
     /**
@@ -64,6 +70,45 @@ class MerchantProduct extends Model
     public function qualityBrand(): BelongsTo
     {
         return $this->belongsTo(QualityBrand::class, 'brand_quality_id');
+    }
+
+    // ========================================
+    // SCOPES
+    // ========================================
+
+    /**
+     * Scope for affiliate products
+     */
+    public function scopeAffiliate($query)
+    {
+        return $query->where('product_type', 'affiliate');
+    }
+
+    /**
+     * Scope for normal products
+     */
+    public function scopeNormal($query)
+    {
+        return $query->where('product_type', 'normal');
+    }
+
+    /**
+     * Scope for active products (status = 1)
+     */
+    public function scopeActive($query)
+    {
+        return $query->where('status', 1);
+    }
+
+    /**
+     * Scope for in-stock products
+     */
+    public function scopeInStock($query)
+    {
+        return $query->where(function($q) {
+            $q->where('stock', '>', 0)
+              ->orWhere('preordered', true);
+        });
     }
 
     /**

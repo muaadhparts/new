@@ -422,13 +422,16 @@
                             <td><h6 class="td-title">@lang('Action')</h6></td>
                             @foreach ($processedProducts as $mpId => $product)
                                 <td>
-                                    @if ($product['item']->product_type == 'affiliate')
-                                        <a href="{{ $product['item']->affiliate_link }}" target="_blank" class="btn-cart">
+                                    @php
+                                        $mp = $product['merchant_product'];
+                                    @endphp
+                                    {{-- product_type and affiliate_link are now on merchant_products --}}
+                                    @if ($mp && $mp->product_type == 'affiliate' && $mp->affiliate_link)
+                                        <a href="{{ $mp->affiliate_link }}" target="_blank" class="btn-cart">
                                             @lang('Buy Now')
                                         </a>
                                     @else
                                         @php
-                                            $mp = $product['merchant_product'];
                                             $stockEmpty = $mp
                                                 ? (($mp->stock ?? 0) <= 0 && !$mp->preordered)
                                                 : $product['item']->emptyStock();

@@ -99,7 +99,8 @@
                                </li>
                                @endif
                                @if( $productt->sku != null )
-                               <li class="product-offer-item product-id{{ $productt->product_type == 'affiliate' ? 'mt-4' : '' }}"><span class="h6">{{ __('Product SKU:') }} </span> {{ $productt->sku }}
+                               {{-- product_type is now on merchant_products --}}
+                               <li class="product-offer-item product-id{{ isset($merchant) && $merchant->product_type == 'affiliate' ? 'mt-4' : '' }}"><span class="h6">{{ __('Product SKU:') }} </span> {{ $productt->sku }}
                                </li>
                                @endif
                                   {{-- PRODUCT LICENSE SECTION --}}
@@ -221,13 +222,14 @@
       @endif
     @endif
    
-    @if($productt->is_discount==1 && $productt->discount_date >= date('Y-m-d') && $productt->user->is_vendor==2)
-    <div class="time-count time-box text-center my-30 flex-between w-75" data-countdown="{{ $productt['discount_date']}}"></div>
-  
+    {{-- is_discount and discount_date are on merchant_products, not products --}}
+    @if(isset($merchant) && $merchant->is_discount == 1 && $merchant->discount_date >= date('Y-m-d') && $merchant->user && $merchant->user->is_vendor == 2)
+    <div class="time-count time-box text-center my-30 flex-between w-75" data-countdown="{{ $merchant->discount_date }}"></div>
     @endif
     {{-- PRODUCT STOCK CONDITION SECTION ENDS --}}
                          <div class="d-flex flex-wrap mt-3">
-                            @if($productt->product_type != "affiliate" && $productt->type == 'Physical')
+                            {{-- product_type is now on merchant_products --}}
+                            @if((!isset($merchant) || $merchant->product_type != "affiliate") && $productt->type == 'Physical')
                                <div class="multiple-item-price m-1 me-3">
                                   <div class="qty">
                                      <ul class="qty-buttons">
@@ -254,10 +256,11 @@
 
                           {{-- PRODUCT QUANTITY SECTION ENDS --}}
                           <ul>
-                          @if($productt->product_type == "affiliate")
+                          {{-- product_type and affiliate_link are now on merchant_products --}}
+                          @if(isset($merchant) && $merchant->product_type == "affiliate" && $merchant->affiliate_link)
 
                               <li class="addtocart m-1">
-                                <a  href="javascript:;" class="affilate-btn"  data-href="{{ $productt->affiliate_link }}" target="_blank"> {{ __('Buy Now') }}</a>
+                                <a  href="javascript:;" class="affilate-btn"  data-href="{{ $merchant->affiliate_link }}" target="_blank"> {{ __('Buy Now') }}</a>
                               </li>
                               @else
                               @if($productt->emptyStock())

@@ -80,8 +80,10 @@ class ProductCardDTO
         $dto->sku = $product->sku;
         $dto->photo = self::resolvePhoto($product->photo);
         $dto->type = $product->type ?? 'Physical';
-        $dto->productType = $product->product_type ?? '';
-        $dto->affiliateLink = $product->affiliate_link;
+        // product_type is now on merchant_products, not products
+        $dto->productType = $merchant->product_type ?? '';
+        // affiliate_link is now on merchant_products, not products
+        $dto->affiliateLink = $merchant->affiliate_link;
         $dto->ratingsAvg = (float) ($product->ratings_avg_rating ?? 0);
         $dto->ratingsCount = (int) ($product->ratings_count ?? 0);
 
@@ -148,8 +150,10 @@ class ProductCardDTO
         $dto->sku = $product->sku;
         $dto->photo = self::resolvePhoto($product->photo);
         $dto->type = $product->type ?? 'Physical';
-        $dto->productType = $product->product_type ?? '';
-        $dto->affiliateLink = $product->affiliate_link;
+        // product_type is now on merchant_products - no type without merchant
+        $dto->productType = '';
+        // affiliate_link is now on merchant_products - no link without merchant
+        $dto->affiliateLink = null;
         $dto->ratingsAvg = (float) ($product->ratings_avg_rating ?? 0);
         $dto->ratingsCount = (int) ($product->ratings_count ?? 0);
 

@@ -26,10 +26,9 @@ class ImportController extends VendorBaseController
         $user = $this->user;
 
         // عروض هذا البائع فقط + تحميل تعريف المنتج
+        // product_type is now on merchant_products, not products
         $datas = MerchantProduct::where('user_id', $user->id)
-            ->whereHas('product', function ($q) {
-                $q->where('product_type', 'affiliate');
-            })
+            ->where('product_type', 'affiliate')
             ->with('product')
             ->latest('id')
             ->get();
@@ -199,19 +198,20 @@ class ImportController extends VendorBaseController
                 $productInput['photo'] = $request->photolink;
             }
 
-            // إنشاء تعريف المنتج (product_type=affiliate)
+            // إنشاء تعريف المنتج (product_type moved to merchant_products)
             $product = new Product;
             $product->fill($productInput);
-            $product->product_type = 'affiliate';
             $product->save();
 
             // مدخلات عرض البائع (MerchantProduct) — السعر/المخزون/المقاسات
+            // product_type is now stored on merchant_products
             $merchantInput = $request->only([
                 'stock', 'is_discount', 'discount_date', 'whole_sell_qty',
                 'whole_sell_discount', 'preordered', 'minimum_qty', 'stock_check',
                 'popular', 'status', 'is_popular', 'licence_type', 'license_qty',
-                'license', 'ship', 'product_condition'
+                'license', 'ship', 'product_condition', 'affiliate_link'
             ]);
+            $merchantInput['product_type'] = 'affiliate';
 
             // المقاسات على MP
             if (!empty($request->size)) {
@@ -336,7 +336,7 @@ class ImportController extends VendorBaseController
             'stock', 'is_discount', 'discount_date', 'whole_sell_qty',
             'whole_sell_discount', 'preordered', 'minimum_qty', 'stock_check',
             'popular', 'status', 'is_popular', 'licence_type', 'license_qty',
-            'license', 'ship', 'product_condition'
+            'license', 'ship', 'product_condition', 'affiliate_link'
         ]);
 
         // المقاسات على MP
