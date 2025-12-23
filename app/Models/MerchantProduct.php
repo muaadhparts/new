@@ -16,6 +16,8 @@ class MerchantProduct extends Model
         'product_id',
         'user_id',
         'brand_quality_id',
+        'product_type',
+        'affiliate_link',
         'price',
         'previous_price',
         'stock',

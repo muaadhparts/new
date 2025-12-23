@@ -16,7 +16,7 @@ class Product extends Model
      * vendor-specific data is stored on MerchantProduct.
      */
     protected $fillable = [
-        'brand_id', 'sku', 'product_type', 'affiliate_link', 'category_id', 'subcategory_id', 'childcategory_id',
+        'brand_id', 'sku', 'category_id', 'subcategory_id', 'childcategory_id',
         'label_en', 'label_ar', 'attributes', 'name', 'slug', 'photo', 'thumbnail', 'file', 'weight',
         'length', 'width', 'height', 'status',
         'policy', 'views', 'tags', 'features', 'is_meta', 'meta_tag', 'meta_description',
