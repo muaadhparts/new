@@ -4,28 +4,27 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\City;
-use App\Models\State;
+use App\Models\Country;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Yajra\DataTables\DataTables;
 
 class CityController extends Controller
 {
-    public function managecity($state_id)
+    public function managecity($country_id)
     {
-        $state = State::findOrFail($state_id);
-        return view('admin.country.state.city.index', compact('state'));
+        $country = Country::findOrFail($country_id);
+        return view('admin.country.city.index', compact('country'));
     }
 
     //*** JSON Request
-    public function datatables($state_id)
+    public function datatables($country_id)
     {
-        $datas = City::with('state')->orderBy('id', 'desc')->where('state_id', $state_id)->get();
+        $datas = City::with('country')->orderBy('id', 'desc')->where('country_id', $country_id)->get();
 
         return DataTables::of($datas)
-            ->addColumn('action', function (City $data) use ($state_id) {
+            ->addColumn('action', function (City $data) use ($country_id) {
                 return '<div class="action-list">
-                    <a href="' . route('admin-city-index', $state_id) . '"><i class="fas fa-city"></i> Manage City</a>
                     <a data-href="' . route('admin-city-edit', $data->id) . '" class="edit" data-bs-toggle="modal" data-bs-target="#modal1">
                         <i class="fas fa-edit"></i>Edit
                     </a>
@@ -35,8 +34,8 @@ class CityController extends Controller
                 </div>';
             })
 
-            ->editColumn('state_id', function (City $data) {
-                return $data->state->state;
+            ->editColumn('country_id', function (City $data) {
+                return $data->country->country_name ?? '-';
             })
 
             ->addColumn('status', function (City $data) {
@@ -52,17 +51,17 @@ class CityController extends Controller
                 </div>';
             })
 
-            ->rawColumns(['action', 'status', 'state_id'])
+            ->rawColumns(['action', 'status', 'country_id'])
             ->toJson();
     }
 
-    public function create($state_id)
+    public function create($country_id)
     {
-        $state = State::findOrFail($state_id);
-        return view('admin.country.state.city.create', compact('state'));
+        $country = Country::findOrFail($country_id);
+        return view('admin.country.city.create', compact('country'));
     }
 
-    public function store(Request $request, $state_id)
+    public function store(Request $request, $country_id)
     {
         $rules = [
             'city_name'  => 'required|unique:cities,city_name',
@@ -74,12 +73,12 @@ class CityController extends Controller
             return response()->json(['errors' => $validator->getMessageBag()->toArray()]);
         }
 
-        $state = State::findOrFail($state_id);
+        $country = Country::findOrFail($country_id);
 
         $city = new City();
         $city->city_name = $request->city_name;
-        $city->state_id = $state_id;
-        $city->country_id = $state->country_id; // ✅ أخذ الدولة من الولاية
+        $city->city_name_ar = $request->city_name_ar ?? $request->city_name;
+        $city->country_id = $country_id;
         $city->status = 1;
         $city->save();
 
@@ -97,7 +96,7 @@ class CityController extends Controller
     public function edit($id)
     {
         $city = City::findOrFail($id);
-        return view('admin.country.state.city.edit', compact('city'));
+        return view('admin.country.city.edit', compact('city'));
     }
 
     public function update(Request $request, $id)
@@ -113,10 +112,8 @@ class CityController extends Controller
         }
 
         $city = City::findOrFail($id);
-        $state = State::findOrFail($city->state_id); // ✅ جلب الدولة التابعة للولاية
-
         $city->city_name = $request->city_name;
-        $city->country_id = $state->country_id; // ✅ تحديث الدولة أيضًا
+        $city->city_name_ar = $request->city_name_ar ?? $city->city_name_ar;
         $city->update();
 
         $mgs = __('Data Updated Successfully.');
@@ -125,7 +122,7 @@ class CityController extends Controller
 
     public function delete($id)
     {
-        $city = City::findOrFail($id); // ✅ حذف مدينة وليس ولاية
+        $city = City::findOrFail($id);
         $city->delete();
 
         $mgs = __('Data Deleted Successfully.');

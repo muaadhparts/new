@@ -51,52 +51,13 @@
                         <div class="col-lg-4">
                           <div class="left-area">
                               <h4 class="heading">{{ __('Tax') }} (%)  *</h4>
-                             
+
                           </div>
                         </div>
                         <div class="col-lg-7">
                           <input type="text" name="tax" class="form-control" placeholder="{{__('Enter Tax')}}"  value="{{$country->tax}}">
                         </div>
                       </div>
-
-                      
-                      <div class="row">
-                        <div class="col-lg-4">
-                          <div class="left-area">
-                              <h4 class="heading">{{ __('Allow State Tax') }}</h4>
-                          </div>
-                        </div>
-                        <div class="col-lg-7">
-                            <ul class="list">
-                                <li>
-                                    <input type="checkbox" name="is_state_tax" id="allow_state_tax" value="1" id="check1">
-                                    <label for="check1">{{__('Allow State Tax')}} </label>
-                                </li>
-                            </ul>
-                        </div>
-                      </div>
-
-                      <div class="show_state d-none">
-                        <hr>
-                        <u><h4 class="text-center mb-3">{{$country->country_name}} / {{__('State List')}}</h4></u>
-                        <br>
-                      @forelse ($country->states as $state)
-                        <div class="row">
-                            <div class="col-lg-4">
-                              <div class="left-area">
-                                  <h4 class="heading">{{ __($state->state) }} (%)  *</h4>
-                              </div>
-                            </div>
-                            <div class="col-lg-7">
-                              <input type="text"  class="form-control" name="state_tax[]" placeholder="Enter Tax"  value="{{$state->tax }}">
-                            </div>
-                          </div>
-                    @empty
-                    <div class="text-center">
-                        {{__('State Not Found Please')}}  <a class="btn btn-primary" href="{{route('admin-state-index',$country->id)}}">{{__('Insert State')}}</a>
-                    </div>
-                    @endforelse
-                </div>
                       
                       <br>
                         <div class="row">
@@ -123,14 +84,5 @@
 
 
 @section('scripts')
-    <script>
-        $(document).on('click','#allow_state_tax',function(){
-            if($(this).is(':checked')){
-                $('.show_state').removeClass('d-none');
-            }else{
-                $('.show_state').addClass('d-none');
-            }
-        })
-
-    </script>
+    {{-- No scripts needed - state tax removed --}}
 @endsection

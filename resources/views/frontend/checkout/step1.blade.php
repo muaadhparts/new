@@ -306,7 +306,6 @@
                 <input type="hidden" name="latitude" id="latitude">
                 <input type="hidden" name="longitude" id="longitude">
                 <input type="hidden" name="country_id" id="country_id">
-                <input type="hidden" name="state_id" id="state_id">
                 <input type="hidden" name="city_id" id="city_id">
                 {{-- Hidden fields for backend - these are the primary source --}}
                 <input type="hidden" name="customer_city" id="customer_city_hidden">
@@ -562,26 +561,6 @@
         */
 
 
-        // ⚠️ DISABLED - State dropdown change handler (no longer needed)
-        /*
-        $(document).on('change', '#show_state', function() {
-            $('#show_city').niceSelect("destroy");
-            let state_id = $(this).val();
-            let country_id = $('#select_country option:selected').attr('data');
-
-            $.get("{{ route('state.wise.city') }}", {
-                state_id: state_id
-            }, function(data) {
-                $('#show_city').parent().parent().removeClass('d-none');
-
-                $('#show_city').html(data.data);
-                $('#show_city').niceSelect();
-            });
-            tax_submit(country_id, state_id);
-        });
-        */
-
-
         function hide_state() {
             $('.select_state').addClass('d-none');
         }
@@ -767,7 +746,6 @@
             $('#latitude').val(selectedLocationData.coordinates?.latitude || '');
             $('#longitude').val(selectedLocationData.coordinates?.longitude || '');
             $('#country_id').val(selectedLocationData.country?.id || '');
-            $('#state_id').val(selectedLocationData.state?.id || '');
             $('#city_id').val(selectedLocationData.city?.id || '');
 
             // ✅ Fill customer_* hidden fields for backend validation
@@ -1112,7 +1090,6 @@
         $('#latitude').val(selectedLocationData.coordinates?.latitude || '');
         $('#longitude').val(selectedLocationData.coordinates?.longitude || '');
         $('#country_id').val(selectedLocationData.country?.id || '');
-        $('#state_id').val(selectedLocationData.state?.id || '');
         $('#city_id').val(selectedLocationData.city?.id || '');
 
         // ✅ Fill customer_* hidden fields for backend validation
@@ -1261,7 +1238,6 @@
         $('#latitude').val('');
         $('#longitude').val('');
         $('#country_id').val('');
-        $('#state_id').val('');
         $('#city_id').val('');
         $('#customer_city_hidden').val('');
         $('#customer_country_hidden').val('');

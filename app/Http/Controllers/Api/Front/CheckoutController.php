@@ -20,7 +20,6 @@ use App\Models\Pagesetting;
 use App\Models\Product;
 use App\Models\Reward;
 use App\Models\Shipping;
-use App\Models\State;
 use App\Models\User;
 use App\Models\VendorOrder;
 use Auth;
@@ -193,20 +192,13 @@ class CheckoutController extends Controller
             $input['order_number']   = Str::random(4) . time();
             $input['wallet_price']   = ($request->wallet_price ?? 0) / $curr->value;
 
-            if (@$input['tax_type'] == 'state_tax') {
-                if (@$input['tax_type'] == 'state_tax') {
-                    $input['tax_location'] = State::findOrFail($input['tax'])->state;
-                } else {
-                    $input['tax_location'] = Country::findOrFail($input['tax'])->country_name;
-                }
+            // Tax location is now just city or country name (from frontend)
+            if (!empty($input['tax_location'])) {
+                $input['tax_location'] = $input['tax_location']; // Keep as sent from frontend
             }
 
-            $state = State::where('id', $input['tax'])->first();
-            if ($state) {
-                $total = $cart->totalPrice;
-                $tax   = $total * $state->tax / 100;
-            }
-            $input['tax'] = $tax ?? 0;
+            // Tax amount from frontend calculation
+            $input['tax'] = $input['tax'] ?? 0;
 
             if (Session::has('affilate')) {
                 $val = ($request->total ?? 0) / $curr->value;
@@ -620,7 +612,7 @@ class CheckoutController extends Controller
 
     public function countries()
     {
-        $countries = Country::with('states.cities')->get();
+        $countries = Country::with('cities')->get();
         return response()->json(['status' => true, 'data' => $countries, 'error' => []]);
     }
 

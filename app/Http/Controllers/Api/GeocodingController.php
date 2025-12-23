@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\City;
 use App\Models\Country;
-use App\Models\State;
 use App\Services\TryotoLocationService;
 use App\Services\TryotoService;
 use App\Services\CountrySyncService;
@@ -233,24 +232,6 @@ class GeocodingController extends Controller
             // المرحلة 4: نجاح - جلب البيانات من DB
             // ==========================================
             $city = City::find($resolution['city_id']);
-            $state = $city && $city->state_id ? State::find($city->state_id) : null;
-
-            // إذا لم نجد state في DB، نستخدم اسم الولاية من Google Maps
-            $stateData = null;
-            if ($state) {
-                $stateData = [
-                    'id' => $state->id,
-                    'name' => $state->state,
-                    'name_ar' => $state->state_ar ?: $stateNameAr
-                ];
-            } elseif ($stateName) {
-                // Fallback: استخدام اسم الولاية من Google Maps مع id=0
-                $stateData = [
-                    'id' => 0,
-                    'name' => $stateName,
-                    'name_ar' => $stateNameAr ?: $stateName
-                ];
-            }
 
             $response = [
                 'success' => true,
@@ -263,7 +244,6 @@ class GeocodingController extends Controller
                         'name_ar' => $country->country_name_ar,
                         'code' => $country->country_code
                     ],
-                    'state' => $stateData,
                     'city' => [
                         'id' => $city->id,
                         'name' => $city->city_name,
@@ -450,7 +430,7 @@ class GeocodingController extends Controller
             ->selectRaw("cities.*, {$haversine} as distance_km", [$latitude, $longitude, $latitude])
             ->having('distance_km', '<=', $maxDistanceKm)
             ->orderBy('distance_km', 'asc')
-            ->with(['country:id,country_name,country_name_ar,country_code', 'state:id,state,state_ar'])
+            ->with(['country:id,country_name,country_name_ar,country_code'])
             ->first();
 
         if (!$city) {
@@ -517,11 +497,6 @@ class GeocodingController extends Controller
                 'name_ar' => $city->country->country_name_ar,
                 'code' => $city->country->country_code
             ],
-            'state' => $city->state ? [
-                'id' => $city->state->id,
-                'name' => $city->state->state,
-                'name_ar' => $city->state->state_ar
-            ] : null,
             'city' => [
                 'id' => $city->id,
                 'name' => $city->city_name,
@@ -569,45 +544,10 @@ class GeocodingController extends Controller
     }
 
     /**
-     * Get or create state in database (Cache)
-     */
-    protected function getOrCreateState(int $countryId, ?string $stateName, ?string $stateNameAr): ?State
-    {
-        if (!$stateName) {
-            return null;
-        }
-
-        $state = State::where('country_id', $countryId)
-            ->where(function ($query) use ($stateName, $stateNameAr) {
-                $query->where('state', $stateName)
-                    ->orWhere('state_ar', $stateNameAr);
-            })
-            ->first();
-
-        if (!$state) {
-            $state = State::create([
-                'country_id' => $countryId,
-                'state' => $stateName,
-                'state_ar' => $stateNameAr ?? $stateName,
-                'status' => 1,
-                'tax' => 0,
-                'owner_id' => 0
-            ]);
-
-            Log::debug('Geocoding: New state cached', [
-                'state' => $stateName
-            ]);
-        }
-
-        return $state;
-    }
-
-    /**
      * Get or create city in database (Cache)
      */
     protected function getOrCreateCity(
         int $countryId,
-        ?int $stateId,
         string $cityName,
         ?string $cityNameAr,
         float $latitude,
@@ -619,7 +559,6 @@ class GeocodingController extends Controller
 
         if (!$city) {
             $city = City::create([
-                'state_id' => $stateId,
                 'country_id' => $countryId,
                 'city_name' => $cityName,
                 'city_name_ar' => $cityNameAr ?? $cityName,
@@ -770,7 +709,7 @@ class GeocodingController extends Controller
                 $q->where('city_name', 'like', "%{$query}%")
                     ->orWhere('city_name_ar', 'like', "%{$query}%");
             })
-            ->with(['country:id,country_name,country_name_ar', 'state:id,state,state_ar'])
+            ->with(['country:id,country_name,country_name_ar'])
             ->limit(20)
             ->get();
 
@@ -781,11 +720,6 @@ class GeocodingController extends Controller
                     'id' => $city->id,
                     'name' => $city->city_name,
                     'name_ar' => $city->city_name_ar,
-                    'state' => $city->state ? [
-                        'id' => $city->state->id,
-                        'name' => $city->state->state,
-                        'name_ar' => $city->state->state_ar
-                    ] : null,
                     'country' => [
                         'id' => $city->country->id,
                         'name' => $city->country->country_name,

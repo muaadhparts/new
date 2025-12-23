@@ -9,7 +9,6 @@ use App\{
 };
 use App\Models\Country;
 use App\Models\Reward;
-use App\Models\State;
 use App\Traits\HandlesVendorCheckout;
 use App\Traits\SavesCustomerShippingChoice;
 use Illuminate\Http\Request;

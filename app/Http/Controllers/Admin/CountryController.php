@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Country;
 use App\Models\Currency;
-use App\Models\State;
 use Illuminate\Http\Request;
 use Yajra\DataTables\Facades\DataTables;
 
@@ -24,7 +23,7 @@ class CountryController extends Controller
         //--- Integrating This Collection Into Datatables
         return DataTables::of($datas)
             ->addColumn('action', function (Country $data) {
-                return '<div class="action-list"><a href="' . route('admin-state-index', $data->id) . '"><i class="fas fa-city"></i> Manage State</a></div>';
+                return '<div class="action-list"><a href="' . route('admin-city-index', $data->id) . '"><i class="fas fa-city"></i> Manage Cities</a></div>';
             })
 
             ->addColumn('status', function (Country $data) {
@@ -90,22 +89,9 @@ class CountryController extends Controller
 
     public function updateTax(Request $request, $id)
     {
-
-        $sign = Currency::where('is_default', '=', 1)->first();
         $country = Country::findOrFail($id);
         $country->tax = $request->tax;
         $country->update();
-
-        if ($request->is_state_tax == 1) {
-            $states = State::where('country_id', $id)->where('status', 1)->get();
-
-            foreach ($states as $key => $state) {
-                $state->update([
-                    'tax' => ($request->state_tax[$key])
-                ]);
-            }
-        }
-
 
         $mgs = __('Data Update Successfully.');
         return response()->json($mgs);

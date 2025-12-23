@@ -83,7 +83,7 @@ class SslController extends SubscriptionBaseController
         $post_data['cus_email'] = $user->email;
         $post_data['cus_add1'] = $user->address;
         $post_data['cus_city'] = $user->city;
-        $post_data['cus_state'] = $user->state;
+        $post_data['cus_state'] = ''; // State field removed
         $post_data['cus_postcode'] = $user->zip;
         $post_data['cus_country'] = $user->country;
         $post_data['cus_phone'] = $user->phone;

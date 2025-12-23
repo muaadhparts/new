@@ -3,18 +3,15 @@
 namespace App\Helpers;
 
 use App\Models\Country;
-use App\Models\State;
 use App\Models\City;
 
 /**
- * LocationHelper - مساعد موحد لعرض أسماء الدول والمناطق والمدن حسب اللغة النشطة
+ * LocationHelper - مساعد موحد لعرض أسماء الدول والمدن حسب اللغة النشطة
  *
  * يوفر دوال موحدة لجلب الأسماء من قاعدة البيانات مباشرة بناءً على اللغة النشطة
- * - إذا كانت اللغة ar: يستخدم country_name_ar, state_ar, city_name_ar
- * - إذا كانت اللغة en: يستخدم country_name, state, city_name
+ * - إذا كانت اللغة ar: يستخدم country_name_ar, city_name_ar
+ * - إذا كانت اللغة en: يستخدم country_name, city_name
  * - Fallback: إذا كان العمود العربي فارغ، يستخدم العمود الإنجليزي
- *
- * لا يستخدم دوال الترجمة __() أو ملفات الترجمة
  */
 class LocationHelper
 {
@@ -33,23 +30,6 @@ class LocationHelper
         }
 
         return $country->country_name;
-    }
-
-    /**
-     * الحصول على اسم الولاية/المنطقة حسب اللغة النشطة
-     *
-     * @param State $state
-     * @return string
-     */
-    public static function getStateName(State $state): string
-    {
-        $locale = app()->getLocale();
-
-        if ($locale == 'ar') {
-            return $state->state_ar ?: $state->state;
-        }
-
-        return $state->state;
     }
 
     /**
@@ -93,52 +73,14 @@ class LocationHelper
                 : $country->country_name;
 
             $selected = ($selectedCountryId && $country->id == $selectedCountryId) ? 'selected' : '';
-            $hasStates = $country->states->count() > 0 ? 1 : 0;
+            $hasCities = $country->cities->count() > 0 ? 1 : 0;
 
             $html .= sprintf(
                 '<option value="%s" data="%d" rel="%d" data-href="%s" %s>%s</option>',
                 $country->country_name,
                 $country->id,
-                $hasStates,
-                route('country.wise.state', $country->id),
-                $selected,
-                htmlspecialchars($displayName)
-            );
-        }
-
-        return $html;
-    }
-
-    /**
-     * إنشاء HTML options للولايات حسب اللغة النشطة
-     *
-     * @param int $countryId
-     * @param int|null $selectedStateId
-     * @param bool $includeEmptyOption
-     * @return string
-     */
-    public static function getStatesOptionsHtml(int $countryId, ?int $selectedStateId = null, bool $includeEmptyOption = true): string
-    {
-        $locale = app()->getLocale();
-        $states = State::where('country_id', $countryId)->get();
-
-        $html = '';
-
-        if ($includeEmptyOption) {
-            $html .= '<option value="">Select State</option>';
-        }
-
-        foreach ($states as $state) {
-            $displayName = ($locale == 'ar')
-                ? ($state->state_ar ?: $state->state)
-                : $state->state;
-
-            $selected = ($selectedStateId && $state->id == $selectedStateId) ? 'selected' : '';
-
-            $html .= sprintf(
-                '<option value="%d" rel="%d" %s>%s</option>',
-                $state->id,
-                $state->country_id,
+                $hasCities,
+                route('country.wise.city', $country->id),
                 $selected,
                 htmlspecialchars($displayName)
             );
@@ -150,16 +92,16 @@ class LocationHelper
     /**
      * إنشاء HTML options للمدن حسب اللغة النشطة
      *
-     * @param int $stateId
+     * @param int $countryId
      * @param string|null $selectedCity
      * @param bool $includeEmptyOption
      * @param bool $useIdAsValue - استخدام ID بدلاً من الاسم
      * @return string
      */
-    public static function getCitiesOptionsHtml(int $stateId, ?string $selectedCity = null, bool $includeEmptyOption = true, bool $useIdAsValue = false): string
+    public static function getCitiesOptionsHtml(int $countryId, ?string $selectedCity = null, bool $includeEmptyOption = true, bool $useIdAsValue = false): string
     {
         $locale = app()->getLocale();
-        $cities = City::where('state_id', $stateId)->get();
+        $cities = City::where('country_id', $countryId)->get();
 
         $html = '';
 
@@ -197,16 +139,6 @@ class LocationHelper
     }
 
     /**
-     * الحصول على اسم العمود للولاية حسب اللغة النشطة
-     *
-     * @return string
-     */
-    public static function getStateColumnName(): string
-    {
-        return app()->getLocale() == 'ar' ? 'state_ar' : 'state';
-    }
-
-    /**
      * الحصول على اسم العمود للمدينة حسب اللغة النشطة
      *
      * @return string
@@ -231,23 +163,6 @@ class LocationHelper
         }
 
         return self::getCountryName($country);
-    }
-
-    /**
-     * جلب اسم الولاية من قاعدة البيانات بالاسم
-     *
-     * @param string $stateName
-     * @return string|null
-     */
-    public static function getStateDisplayName(string $stateName): ?string
-    {
-        $state = State::where('state', $stateName)->first();
-
-        if (!$state) {
-            return $stateName;
-        }
-
-        return self::getStateName($state);
     }
 
     /**

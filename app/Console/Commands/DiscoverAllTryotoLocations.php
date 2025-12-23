@@ -207,7 +207,6 @@ class DiscoverAllTryotoLocations extends Command
     protected function extractStructuredData()
     {
         $countries = [];
-        $states = [];
         $cities = [];
 
         foreach ($this->discoveredCities as $cityName => $cityData) {
@@ -215,9 +214,6 @@ class DiscoverAllTryotoLocations extends Command
             // But we'll extract any country information from the API response if available
             $country = 'Saudi Arabia'; // Default
             $countryCode = 'SA';
-
-            // Try to infer region from city name or response data
-            $region = $this->inferRegion($cityName, $cityData);
 
             // Store country
             if (!isset($countries[$country])) {
@@ -228,130 +224,16 @@ class DiscoverAllTryotoLocations extends Command
                 ];
             }
 
-            // Store region/state
-            $stateKey = "{$country}|{$region}";
-            if (!isset($states[$stateKey])) {
-                $states[$stateKey] = [
-                    'country' => $country,
-                    'name' => $region,
-                    'name_ar' => $this->translateRegion($region),
-                ];
-            }
-
             // Store city
             $cities[$cityName] = [
                 'name' => $cityName,
                 'name_ar' => $this->translateCity($cityName),
                 'country' => $country,
-                'region' => $region,
                 'company_count' => $cityData['company_count'] ?? 0,
             ];
         }
 
-        return compact('countries', 'states', 'cities');
-    }
-
-    protected function inferRegion($cityName, $cityData)
-    {
-        // Common Saudi regions
-        $regionMappings = [
-            // Riyadh Region
-            'Riyadh' => 'Riyadh Region',
-            'Al Kharj' => 'Riyadh Region',
-            'Al Majmaah' => 'Riyadh Region',
-            'Al Dawadmi' => 'Riyadh Region',
-            'Al Zulfi' => 'Riyadh Region',
-            'Shaqra' => 'Riyadh Region',
-            'Al Aflaj' => 'Riyadh Region',
-            'Wadi Al Dawasir' => 'Riyadh Region',
-            'Al Quwayiyah' => 'Riyadh Region',
-            'Al Muzahimiyah' => 'Riyadh Region',
-            'Diriyah' => 'Riyadh Region',
-            'Rumah' => 'Riyadh Region',
-            'Dhurma' => 'Riyadh Region',
-
-            // Makkah Region
-            'Jeddah' => 'Makkah Region',
-            'Mecca' => 'Makkah Region',
-            'Taif' => 'Makkah Region',
-            'Al Qunfudhah' => 'Makkah Region',
-            'Al Lith' => 'Makkah Region',
-            'Rabigh' => 'Makkah Region',
-
-            // Madinah Region
-            'Medina' => 'Madinah Region',
-            'Yanbu' => 'Madinah Region',
-            'Al Ula' => 'Madinah Region',
-            'Badr' => 'Madinah Region',
-
-            // Eastern Region
-            'Dammam' => 'Eastern Region',
-            'Al Khobar' => 'Eastern Region',
-            'Dhahran' => 'Eastern Region',
-            'Al Qatif' => 'Eastern Region',
-            'Jubail' => 'Eastern Region',
-            'Al Ahsa' => 'Eastern Region',
-            'Hofuf' => 'Eastern Region',
-            'Al Mubarraz' => 'Eastern Region',
-            'Hafar Al Batin' => 'Eastern Region',
-            'Al Khafji' => 'Eastern Region',
-            'Ras Tanura' => 'Eastern Region',
-            'Qaisumah' => 'Eastern Region',
-
-            // Asir Region
-            'Abha' => 'Asir Region',
-            'Khamis Mushait' => 'Asir Region',
-            'Bishah' => 'Asir Region',
-            'Al Namas' => 'Asir Region',
-            'Muhayil' => 'Asir Region',
-
-            // Tabuk Region
-            'Tabuk' => 'Tabuk Region',
-            'Al Wajh' => 'Tabuk Region',
-            'Duba' => 'Tabuk Region',
-
-            // Other Regions
-            'Buraidah' => 'Al-Qassim Region',
-            'Unaizah' => 'Al-Qassim Region',
-            'Al Rass' => 'Al-Qassim Region',
-            'Al Bukayriyah' => 'Al-Qassim Region',
-            'Hail' => 'Hail Region',
-            'Najran' => 'Najran Region',
-            'Sharurah' => 'Najran Region',
-            'Jazan' => 'Jazan Region',
-            'Samtah' => 'Jazan Region',
-            'Sabya' => 'Jazan Region',
-            'Abu Arish' => 'Jazan Region',
-            'Arar' => 'Northern Borders Region',
-            'Turaif' => 'Northern Borders Region',
-            'Rafha' => 'Northern Borders Region',
-            'Sakaka' => 'Al Jouf Region',
-            'Qurayyat' => 'Al Jouf Region',
-            'Dumat Al Jandal' => 'Al Jouf Region',
-        ];
-
-        return $regionMappings[$cityName] ?? 'Riyadh Region'; // Default
-    }
-
-    protected function translateRegion($region)
-    {
-        $translations = [
-            'Riyadh Region' => 'منطقة الرياض',
-            'Makkah Region' => 'منطقة مكة المكرمة',
-            'Madinah Region' => 'منطقة المدينة المنورة',
-            'Eastern Region' => 'المنطقة الشرقية',
-            'Asir Region' => 'منطقة عسير',
-            'Tabuk Region' => 'منطقة تبوك',
-            'Al-Qassim Region' => 'منطقة القصيم',
-            'Hail Region' => 'منطقة حائل',
-            'Northern Borders Region' => 'منطقة الحدود الشمالية',
-            'Jazan Region' => 'منطقة جازان',
-            'Najran Region' => 'منطقة نجران',
-            'Al Jouf Region' => 'منطقة الجوف',
-            'Al Bahah Region' => 'منطقة الباحة',
-        ];
-
-        return $translations[$region] ?? $region;
+        return compact('countries', 'cities');
     }
 
     protected function translateCity($city)
@@ -450,7 +332,6 @@ class DiscoverAllTryotoLocations extends Command
                 ['المدن المكتشفة', $this->stats['successful']],
                 ['الفشل', $this->stats['failed']],
                 ['الدول', count($data['countries'])],
-                ['المناطق', count($data['states'])],
             ]
         );
 
@@ -458,15 +339,6 @@ class DiscoverAllTryotoLocations extends Command
         $this->info('🌍 الدول المدعومة:');
         foreach ($data['countries'] as $country) {
             $this->line("   ✅ {$country['name']} ({$country['code']}) - {$country['name_ar']}");
-        }
-
-        $this->info('');
-        $this->info('📍 المناطق المدعومة: ' . count($data['states']));
-        foreach (array_slice($data['states'], 0, 10) as $state) {
-            $this->line("   • {$state['name']} - {$state['name_ar']}");
-        }
-        if (count($data['states']) > 10) {
-            $this->line('   ... و ' . (count($data['states']) - 10) . ' منطقة أخرى');
         }
 
         $this->info('');
@@ -501,7 +373,6 @@ class DiscoverAllTryotoLocations extends Command
         $sql .= "-- TRYOTO COMPLETE LOCATION DATA IMPORT\n";
         $sql .= "-- Generated: " . now()->toDateTimeString() . "\n";
         $sql .= "-- Countries: " . count($data['countries']) . "\n";
-        $sql .= "-- States: " . count($data['states']) . "\n";
         $sql .= "-- Cities: " . count($data['cities']) . "\n";
         $sql .= "-- ═══════════════════════════════════════════════════════════════\n\n";
 
@@ -524,39 +395,20 @@ class DiscoverAllTryotoLocations extends Command
             );
         }
 
-        // 2. States
+        // 2. Cities
         $sql .= "\n-- ═══════════════════════════════════════════════════════════════\n";
-        $sql .= "-- 2. STATES / REGIONS\n";
-        $sql .= "-- ═══════════════════════════════════════════════════════════════\n\n";
-
-        foreach ($data['states'] as $state) {
-            $sql .= sprintf(
-                "INSERT INTO states (country_id, state, state_ar, tax, status, owner_id, created_at, updated_at)\n" .
-                "SELECT id, '%s', '%s', 0, 1, 0, NOW(), NOW()\n" .
-                "FROM countries WHERE country_code = 'SA'\n" .
-                "AND NOT EXISTS (SELECT 1 FROM states WHERE state = '%s');\n\n",
-                addslashes($state['name']),
-                addslashes($state['name_ar']),
-                addslashes($state['name'])
-            );
-        }
-
-        // 3. Cities
-        $sql .= "\n-- ═══════════════════════════════════════════════════════════════\n";
-        $sql .= "-- 3. CITIES\n";
+        $sql .= "-- 2. CITIES\n";
         $sql .= "-- ═══════════════════════════════════════════════════════════════\n\n";
 
         foreach ($data['cities'] as $city) {
             $sql .= sprintf(
-                "INSERT INTO cities (state_id, city_name, city_name_ar, country_id, status, created_at, updated_at)\n" .
-                "SELECT s.id, '%s', '%s', c.id, 1, NOW(), NOW()\n" .
-                "FROM states s\n" .
-                "CROSS JOIN countries c\n" .
-                "WHERE s.state = '%s' AND c.country_code = 'SA'\n" .
-                "AND NOT EXISTS (SELECT 1 FROM cities WHERE city_name = '%s');\n\n",
+                "INSERT INTO cities (city_name, city_name_ar, country_id, status, created_at, updated_at)\n" .
+                "SELECT '%s', '%s', c.id, 1, NOW(), NOW()\n" .
+                "FROM countries c\n" .
+                "WHERE c.country_code = 'SA'\n" .
+                "AND NOT EXISTS (SELECT 1 FROM cities WHERE city_name = '%s' AND country_id = c.id);\n\n",
                 addslashes($city['name']),
                 addslashes($city['name_ar']),
-                addslashes($city['region']),
                 addslashes($city['name'])
             );
         }

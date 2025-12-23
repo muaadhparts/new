@@ -289,14 +289,8 @@
     // ✅ N+1 FIX: Use pre-loaded country from CheckoutDataService
     $country = $preloadedCountry ?? null;
     $countryId = $country ? $country->id : 0;
-    $isState = isset($step1->state_id) ? $step1->state_id : (isset($step1->customer_state) ? $step1->customer_state : 0);
 @endphp
 <input type="hidden" id="select_country" name="country_id" value="{{ $countryId }}">
-<input type="hidden" id="state_id" name="state_id" value="{{ $isState }}">
-<input type="hidden" id="is_state" name="is_state" value="{{ $isState }}">
-@if($country)
-<input type="hidden" id="state_url" name="state_url" value="{{ route('country.wise.state', $countryId) }}">
-@endif
 
 
 @endsection

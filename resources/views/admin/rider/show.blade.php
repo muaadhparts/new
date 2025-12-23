@@ -84,12 +84,6 @@
                                             <td>{{$data->city->city_name}}</td>
                                         </tr>
                                         @endif
-                                        @if($data->state_id != null)
-                                        <tr>
-                                            <th>{{ __("State") }}</th>
-                                            <td>{{$data->state->state}}</td>
-                                        </tr>
-                                        @endif
                                         @if($data->fax != null)
                                         <tr>
                                             <th>{{ __("Fax") }}</th>

@@ -21,7 +21,6 @@ class ImportTryotoLocationData extends Command
     protected $baseUrl;
     protected $stats = [
         'countries' => [],
-        'states' => [],
         'cities' => [],
         'unsupported_cities' => [],
         'errors' => [],
@@ -242,31 +241,15 @@ class ImportTryotoLocationData extends Command
         return 'Saudi Arabia';
     }
 
-    protected function extractRegion($cityName, $apiData)
-    {
-        // محاولة استخراج المنطقة من اسم المدينة أو البيانات
-        // يمكن تحسينها لاحقاً إذا وفرت API معلومات إضافية
-        return $this->guessRegionFromCity($cityName);
-    }
-
-    protected function guessRegionFromCity($cityName)
-    {
-        // هذه دالة مؤقتة - يجب استبدالها ببيانات API الفعلية
-        // لكن حالياً Tryoto لا توفر معلومات المنطقة
-        return 'Riyadh Region'; // Default
-    }
-
     protected function extractLocations($cities)
     {
         $this->info('');
-        $this->info('🗂️  استخراج الدول والمناطق من البيانات...');
+        $this->info('🗂️  استخراج الدول من البيانات...');
 
         $countries = [];
-        $states = [];
 
         foreach ($cities as $cityName => $cityData) {
             $country = $cityData['country'];
-            $region = $cityData['region'];
 
             // جمع الدول
             if (!isset($countries[$country])) {
@@ -276,26 +259,12 @@ class ImportTryotoLocationData extends Command
                     'code' => $this->getCountryCode($country),
                 ];
             }
-
-            // جمع المناطق
-            if ($region) {
-                $key = $country . '|' . $region;
-                if (!isset($states[$key])) {
-                    $states[$key] = [
-                        'country' => $country,
-                        'name_en' => $region,
-                        'name_ar' => $this->translateRegion($region),
-                    ];
-                }
-            }
         }
 
         $this->stats['countries'] = $countries;
-        $this->stats['states'] = $states;
         $this->stats['cities'] = $cities;
 
         $this->info("   ✅ الدول: " . count($countries));
-        $this->info("   ✅ المناطق: " . count($states));
         $this->info("   ✅ المدن: " . count($cities));
     }
 
@@ -335,64 +304,24 @@ class ImportTryotoLocationData extends Command
                 }
             }
 
-            // 2. Insert States
-            $this->info('   📌 تعبئة جدول states...');
-            $stateIds = [];
-
-            foreach ($this->stats['states'] as $stateKey => $stateData) {
-                $countryId = $countryIds[$stateData['country']] ?? null;
-
-                if (!$countryId) {
-                    $this->warn("      ⚠️  لم يتم العثور على الدولة: {$stateData['country']}");
-                    continue;
-                }
-
-                $existing = DB::table('states')
-                    ->where('country_id', $countryId)
-                    ->where('state', $stateData['name_en'])
-                    ->first();
-
-                if ($existing) {
-                    $stateIds[$stateKey] = $existing->id;
-                    $this->line("      ↪️  {$stateData['name_en']} موجودة مسبقاً (ID: {$existing->id})");
-                } else {
-                    $id = DB::table('states')->insertGetId([
-                        'country_id' => $countryId,
-                        'state' => $stateData['name_en'],
-                        'state_ar' => $stateData['name_ar'],
-                        'tax' => 0,
-                        'status' => 1,
-                        'owner_id' => 0,
-                        'created_at' => now(),
-                        'updated_at' => now(),
-                    ]);
-
-                    $stateIds[$stateKey] = $id;
-                    $this->line("      ✅ {$stateData['name_en']} (ID: {$id})");
-                }
-            }
-
-            // 3. Insert Cities
+            // 2. Insert Cities
             $this->info('   📌 تعبئة جدول cities...');
             $insertedCount = 0;
             $skippedCount = 0;
 
             foreach ($this->stats['cities'] as $cityName => $cityData) {
                 $country = $cityData['country'];
-                $region = $cityData['region'];
-                $stateKey = $country . '|' . $region;
 
                 $countryId = $countryIds[$country] ?? null;
-                $stateId = $stateIds[$stateKey] ?? null;
 
-                if (!$countryId || !$stateId) {
-                    $this->warn("      ⚠️  تخطي {$cityName} - المنطقة غير موجودة");
+                if (!$countryId) {
+                    $this->warn("      ⚠️  تخطي {$cityName} - الدولة غير موجودة");
                     $skippedCount++;
                     continue;
                 }
 
                 $existing = DB::table('cities')
-                    ->where('state_id', $stateId)
+                    ->where('country_id', $countryId)
                     ->where('city_name', $cityName)
                     ->first();
 
@@ -400,7 +329,6 @@ class ImportTryotoLocationData extends Command
                     $skippedCount++;
                 } else {
                     DB::table('cities')->insert([
-                        'state_id' => $stateId,
                         'country_id' => $countryId,
                         'city_name' => $cityName,
                         'city_name_ar' => $this->translateCity($cityName),
@@ -436,7 +364,6 @@ class ImportTryotoLocationData extends Command
             ['المؤشر', 'العدد'],
             [
                 ['الدول المستخرجة', count($this->stats['countries'])],
-                ['المناطق المستخرجة', count($this->stats['states'])],
                 ['المدن المدعومة', count($this->stats['cities'])],
                 ['المدن غير المدعومة', count($this->stats['unsupported_cities'])],
             ]
@@ -457,7 +384,6 @@ class ImportTryotoLocationData extends Command
 
     // Helper functions
     protected function translateCountry($name) { return $name === 'Saudi Arabia' ? 'المملكة العربية السعودية' : $name; }
-    protected function translateRegion($name) { return $name; } // يجب استخراجها من API
     protected function translateCity($name) { return $name; } // يجب استخراجها من API
     protected function getCountryCode($name) { return $name === 'Saudi Arabia' ? 'SA' : 'XX'; }
 }

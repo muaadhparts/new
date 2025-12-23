@@ -10,7 +10,6 @@ use App\Models\Cart;
 use App\Models\Country;
 use App\Models\Order;
 use App\Models\Reward;
-use App\Models\State;
 use App\Traits\CreatesTryotoShipments;
 use App\Traits\HandlesVendorCheckout;
 use Illuminate\Http\Request;
@@ -304,8 +303,9 @@ class MyFatoorahController extends CheckoutBaseControlller {
         $input['method'] = "MyFatoorah";  // ✅ إضافة Payment Method Name
         $input['txnid'] = $data->InvoiceId;  // ✅ رقم المعاملة من MyFatoorah
 
+        // Tax location handling removed - states table deleted
         if ($input['tax_type'] == 'state_tax') {
-            $input['tax_location'] = State::findOrFail($input['tax'])->state;
+            $input['tax_location'] = ''; // State model removed
         } else {
             $input['tax_location'] = Country::findOrFail($input['tax'])->country_name;
         }

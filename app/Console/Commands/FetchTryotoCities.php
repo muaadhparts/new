@@ -383,7 +383,6 @@ class FetchTryotoCities extends Command
         foreach ($this->results['supported_cities'] as $city) {
             $cityName = addslashes($city['city_name']);
             $cityNameAr = addslashes($city['city_name_ar'] ?? '');
-            $region = addslashes($city['region'] ?? '');
 
             $sql .= sprintf(
                 "-- %s (%s)\n",
@@ -392,15 +391,15 @@ class FetchTryotoCities extends Command
             );
 
             $sql .= sprintf(
-                "INSERT INTO cities (city_name, city_name_ar, state_id, created_at, updated_at) \n" .
-                "SELECT '%s', '%s', states.id, NOW(), NOW()\n" .
-                "FROM states \n" .
-                "WHERE states.state = '%s' OR states.state_ar = '%s'\n" .
+                "INSERT INTO cities (city_name, city_name_ar, country_id, status, created_at, updated_at) \n" .
+                "SELECT '%s', '%s', countries.id, 1, NOW(), NOW()\n" .
+                "FROM countries \n" .
+                "WHERE countries.country_code = 'SA'\n" .
+                "AND NOT EXISTS (SELECT 1 FROM cities WHERE city_name = '%s' AND country_id = countries.id)\n" .
                 "LIMIT 1;\n\n",
                 $cityName,
                 $cityNameAr,
-                $region,
-                $region
+                $cityName
             );
         }
 

@@ -4,7 +4,6 @@ namespace App\Console\Commands;
 
 use App\Models\City;
 use App\Models\Country;
-use App\Models\State;
 use App\Services\TryotoService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Http;
@@ -138,9 +137,8 @@ class SyncTryotoCities extends Command
         foreach ($countries as $code => $data) {
             $country = Country::where('country_code', $code)->first();
             if ($country) {
-                // مسح المدن والمحافظات المرتبطة
+                // مسح المدن المرتبطة
                 City::where('country_id', $country->id)->delete();
-                State::where('country_id', $country->id)->delete();
                 $this->line("   Cleared data for {$data['name']}");
             }
         }
@@ -232,7 +230,6 @@ class SyncTryotoCities extends Command
             }
 
             // إنشاء أو تحديث المدينة
-            // نستخدم state_id = 0 لأن Tryoto لا يعطينا المحافظات
             City::updateOrCreate(
                 [
                     'country_id' => $country->id,
@@ -240,7 +237,6 @@ class SyncTryotoCities extends Command
                 ],
                 [
                     'city_name_ar' => $arabicName,
-                    'state_id' => 0, // سيتم تحديثه لاحقاً إذا توفرت بيانات المحافظة
                     'latitude' => $coordinates['lat'] ?? null,
                     'longitude' => $coordinates['lng'] ?? null,
                     'status' => 1,

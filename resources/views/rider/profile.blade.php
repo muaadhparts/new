@@ -62,51 +62,22 @@
                                             </div>
                                             <div class="single-form-wrapper flex-grow-1">
                                                 <div class="form-group">
-                                                    <label for="show_state">@lang('Select State')</label>
+                                                    <label for="city">@lang('Select City')</label>
                                                     <div class="dropdown-container">
-                                                        <select class="form-control nice-select form__control"
-                                                            name="state_id" id="show_state">
+                                                        <select
+                                                            class="form-control nice-select form__control form-control-sm"
+                                                            id="show_city" name="city_id">
                                                             @if ($user->country)
                                                                 @php
                                                                     $country = App\Models\Country::where(
                                                                         'country_name',
                                                                         $user->country,
                                                                     )->first();
-                                                                    $states = App\Models\State::whereCountryId(
-                                                                        $country->id,
-                                                                    )
-                                                                        ->whereStatus(1)
-                                                                        ->get();
+                                                                    $cities = $country ? App\Models\City::where('country_id', $country->id)
+                                                                        ->where('status', 1)
+                                                                        ->get() : collect();
                                                                 @endphp
-                                                                @foreach ($states as $state)
-                                                                    <option value="{{ $state->id }}"
-                                                                        {{ $user->state_id == $state->id ? 'selected' : '' }}>
-                                                                        {{ $state->state }}</option>
-                                                                @endforeach
-                                                            @else
-                                                                <option value="">@lang('Select State')</option>
-                                                            @endif
-                                                        </select>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="multi-form-wrapper d-flex gap-4 flex-column flex-sm-row">
-                                            <div class="single-form-wrapper flex-grow-1 w-50">
-                                                <div class="form-group">
-                                                    <label for="city">@lang('Select City')</label>
-                                                    <div class="dropdown-container">
-                                                        <select
-                                                            class="form-control nice-select form__control form-control-sm "
-                                                            id="show_city" name="city_id">
-                                                            @if ($user->state_id)
-                                                                @php
-                                                                    $cities = App\Models\City::whereStateId(
-                                                                        $user->state_id,
-                                                                    )
-                                                                        ->whereStatus(1)
-                                                                        ->get();
-                                                                @endphp
+                                                                <option value="">@lang('Select City')</option>
                                                                 @foreach ($cities as $city)
                                                                     <option value="{{ $city->id }}"
                                                                         {{ $user->city_id == $city->id ? 'selected' : '' }}>
@@ -115,11 +86,12 @@
                                                             @else
                                                                 <option value="">@lang('Select City')</option>
                                                             @endif
-                                                            <!-- Add more options here if needed -->
                                                         </select>
                                                     </div>
                                                 </div>
                                             </div>
+                                        </div>
+                                        <div class="multi-form-wrapper d-flex gap-4 flex-column flex-sm-row">
                                             <div class="single-form-wrapper flex-grow-1 w-50">
                                                 <div class="form-group">
                                                     <label for="zip">@lang('Zip')</label>
@@ -164,23 +136,12 @@
 @endsection
 @section('script')
     <script>
+        // Load cities when country changes
         $(document).on('change', '#select_country', function() {
-            let state_url = $('option:selected', this).attr('data-href');
+            let cityUrl = $('option:selected', this).attr('data-href');
 
-            $.get(state_url, function(response) {
-                $('#show_state').html(response.data);
-                $("#show_state").niceSelect("destroy");
-                $("#show_state").niceSelect();
-            });
-        });
-
-        $(document).on('change', '#show_state', function() {
-        
-            let state_id = $(this).val();
-            $.get("{{ route('state.wise.city.user') }}", {
-                state_id: state_id
-            }, function(data) {
-                $('#show_city').html(data.data);
+            $.get(cityUrl, function(response) {
+                $('#show_city').html(response.data);
                 $("#show_city").niceSelect("destroy");
                 $("#show_city").niceSelect();
             });
@@ -195,7 +156,5 @@
                 reader.readAsDataURL(this.files[0]);
             }
         });
-
-
     </script>
 @endsection

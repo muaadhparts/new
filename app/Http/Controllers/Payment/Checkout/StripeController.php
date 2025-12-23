@@ -21,7 +21,6 @@ use App\Models\Order;
 
 use App\Models\PaymentGateway;
 use App\Models\Reward;
-use App\Models\State;
 use App\Models\StockReservation;
 use App\Traits\HandlesVendorCheckout;
 use App\Traits\SavesCustomerShippingChoice;

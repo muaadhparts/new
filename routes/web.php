@@ -293,20 +293,7 @@ Route::prefix('admin')->group(function () {
     Route::get('/country/set-tax/{id}', 'Admin\CountryController@setTax')->name('admin-set-tax');
     Route::post('/country/set-tax/store/{id}', 'Admin\CountryController@updateTax')->name('admin-tax-update');
 
-    // --------------- ADMIN STATE SECTION --------------------//
-
-    Route::get('/state/datatables/{country}', 'Admin\StateController@datatables')->name('admin-state-datatables');
-    Route::get('/manage/state/{country}', 'Admin\StateController@manageState')->name('admin-state-index');
-    Route::get('/state/create/{country}', 'Admin\StateController@create')->name('admin-state-create');
-    Route::post('/state/store/{country}', 'Admin\StateController@store')->name('admin-state-store');
-    Route::get('/state/status/{id1}/{id2}', 'Admin\StateController@status')->name('admin-state-status');
-    Route::get('/state/edit/{id}', 'Admin\StateController@edit')->name('admin-state-edit');
-    Route::post('/state/update/{id}', 'Admin\StateController@update')->name('admin-state-update');
-    Route::delete('/state/delete/{id}', 'Admin\StateController@delete')->name('admin-state-delete');
-
-    // --------------- ADMIN STATE SECTION --------------------//
-
-    // --------------- ADMIN STATE SECTION --------------------//
+    // --------------- ADMIN CITY SECTION --------------------//
 
     Route::get('/city/datatables/{country}', 'Admin\CityController@datatables')->name('admin-city-datatables');
     Route::get('/manage/city/{country}', 'Admin\CityController@managecity')->name('admin-city-index');
@@ -1505,13 +1492,9 @@ Route::group(['middleware' => 'maintenance'], function () {
 
         // Display important Codes For Payment Gatweways
         Route::get('/payment/{slug1}/{slug2}', 'User\UserController@loadpayment')->name('user.load.payment');
-        Route::get('/country/wise/state/{country_id}', 'Front\CheckoutController@getState')->name('country.wise.state');
-        Route::get('/state/wise/city', 'Front\CheckoutController@getCity')->name('state.wise.city');
-        Route::get('/user/state/wise/city', 'Front\CheckoutController@getCityUser')->name('state.wise.city.user');
-
-        // Tryoto Dynamic Location Verification
-        Route::post('/tryoto/verify-city', 'Front\CheckoutController@verifyTryotoCity')->name('tryoto.verify.city');
-        Route::post('/tryoto/verify-city-id', 'Front\CheckoutController@verifyTryotoCityById')->name('tryoto.verify.city.id');
+        // Get cities by country (states removed)
+        Route::get('/country/wise/city/{country_id}', 'Front\CheckoutController@getCity')->name('country.wise.city');
+        Route::get('/user/country/wise/city', 'Front\CheckoutController@getCityUser')->name('country.wise.city.user');
 
         // User Wishlist
         Route::get('/wishlists', 'User\WishlistController@wishlists')->name('user-wishlists');

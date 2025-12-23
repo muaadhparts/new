@@ -10,7 +10,6 @@ use App\{
 use App\Helpers\PriceHelper;
 use App\Models\Country;
 use App\Models\Reward;
-use App\Models\State;
 use App\Models\StockReservation;
 use App\Traits\HandlesVendorCheckout;
 use App\Traits\SavesCustomerShippingChoice;

@@ -95,18 +95,6 @@
 												<div class="row">
 													<div class="col-lg-4">
 														<div class="left-area">
-																<h4 class="heading">{{ __("State") }} </h4>
-														</div>
-													</div>
-													<div class="col-lg-7">
-														<input type="text" class="form-control" name="state" placeholder="{{ __("State") }}" value="{{ $data->state }}">
-													</div>
-												</div>
-
-
-												<div class="row">
-													<div class="col-lg-4">
-														<div class="left-area">
 																<h4 class="heading">{{ __("Country") }} </h4>
 														</div>
 													</div>

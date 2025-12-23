@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\Country;
-use App\Models\State;
 use App\Models\City;
 use App\Services\GoogleMapsService;
 use App\Services\TryotoLocationService;
@@ -185,31 +184,15 @@ class GeocodingController extends Controller
             return $city;
         }
 
-        // Create new city (we need to find/create state first)
-        // For Saudi cities, we'll use a default region if not found
+        // Create new city directly under country
         $country = Country::find($countryId);
 
         if (!$country) {
             throw new \Exception('Country not found');
         }
 
-        // Try to find appropriate state or create a default one
-        $state = State::where('country_id', $countryId)->first();
-
-        if (!$state) {
-            $state = State::create([
-                'country_id' => $countryId,
-                'state' => 'Default Region',
-                'state_ar' => 'منطقة افتراضية',
-                'tax' => 0,
-                'status' => 1,
-                'owner_id' => 0
-            ]);
-        }
-
         // Create the city
         $city = City::create([
-            'state_id' => $state->id,
             'country_id' => $countryId,
             'city_name' => $cityName,
             'city_name_ar' => $cityNameAr,
@@ -247,10 +230,6 @@ class GeocodingController extends Controller
         $countryNameEn = $englishData['country'] ?? null;
         $countryNameAr = $arabicData['country'] ?? $countryNameEn;
 
-        // State names
-        $stateNameEn = $englishData['state'] ?? null;
-        $stateNameAr = $arabicData['state'] ?? $stateNameEn;
-
         // City names
         $cityNameEn = $englishData['city'] ?? null;
         $cityNameAr = $arabicData['city'] ?? $cityNameEn;
@@ -272,32 +251,10 @@ class GeocodingController extends Controller
             ]);
         }
 
-        // Find or create State
-        $state = null;
-        if ($stateNameEn) {
-            $state = State::where('country_id', $country->id)
-                ->where(function ($query) use ($stateNameEn, $stateNameAr) {
-                    $query->where('state', $stateNameEn)
-                        ->orWhere('state_ar', $stateNameAr);
-                })
-                ->first();
-
-            if (!$state) {
-                $state = State::create([
-                    'country_id' => $country->id,
-                    'state' => $stateNameEn,
-                    'state_ar' => $stateNameAr ?? $stateNameEn,
-                    'tax' => 0,
-                    'status' => 1,
-                    'owner_id' => 0
-                ]);
-            }
-        }
-
         // Find or create City
         $city = null;
-        if ($cityNameEn && $state) {
-            $city = City::where('state_id', $state->id)
+        if ($cityNameEn) {
+            $city = City::where('country_id', $country->id)
                 ->where(function ($query) use ($cityNameEn, $cityNameAr) {
                     $query->where('city_name', $cityNameEn)
                         ->orWhere('city_name_ar', $cityNameAr);
@@ -306,7 +263,6 @@ class GeocodingController extends Controller
 
             if (!$city) {
                 $city = City::create([
-                    'state_id' => $state->id,
                     'country_id' => $country->id,
                     'city_name' => $cityNameEn,
                     'city_name_ar' => $cityNameAr ?? $cityNameEn,
@@ -322,11 +278,6 @@ class GeocodingController extends Controller
                 'name' => $country->country_name,
                 'name_ar' => $country->country_name_ar
             ],
-            'state' => $state ? [
-                'id' => $state->id,
-                'name' => $state->state,
-                'name_ar' => $state->state_ar
-            ] : null,
             'city' => $city ? [
                 'id' => $city->id,
                 'name' => $city->city_name,
@@ -361,12 +312,12 @@ class GeocodingController extends Controller
     }
 
     /**
-     * Get states by country
+     * Get cities by country
      *
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function getStatesByCountry(Request $request)
+    public function getCitiesByCountry(Request $request)
     {
         $validator = Validator::make($request->all(), [
             'country_id' => 'required|exists:countries,id'
@@ -379,40 +330,10 @@ class GeocodingController extends Controller
             ], 422);
         }
 
-        $states = State::where('country_id', $request->country_id)
-            ->where('status', 1)
-            ->orderBy('state')
-            ->get(['id', 'state', 'state_ar', 'country_id']);
-
-        return response()->json([
-            'success' => true,
-            'data' => $states
-        ]);
-    }
-
-    /**
-     * Get cities by state
-     *
-     * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
-     */
-    public function getCitiesByState(Request $request)
-    {
-        $validator = Validator::make($request->all(), [
-            'state_id' => 'required|exists:states,id'
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
-        }
-
-        $cities = City::where('state_id', $request->state_id)
+        $cities = City::where('country_id', $request->country_id)
             ->where('status', 1)
             ->orderBy('city_name')
-            ->get(['id', 'city_name', 'city_name_ar', 'state_id', 'country_id']);
+            ->get(['id', 'city_name', 'city_name_ar', 'country_id']);
 
         return response()->json([
             'success' => true,
@@ -711,21 +632,6 @@ class GeocodingController extends Controller
         if (isset($resolution['distance_km'])) {
             $responseData['distance_km'] = $resolution['distance_km'];
             $responseData['original_coordinates'] = $resolution['original_coordinates'] ?? compact('latitude', 'longitude');
-        }
-
-        // جلب معلومات المحافظة
-        if ($resolution['city_id']) {
-            $city = City::find($resolution['city_id']);
-            if ($city && $city->state_id) {
-                $state = State::find($city->state_id);
-                if ($state) {
-                    $responseData['state'] = [
-                        'id' => $state->id,
-                        'name' => $state->state,
-                        'name_ar' => $state->state_ar
-                    ];
-                }
-            }
         }
 
         return response()->json($responseData);

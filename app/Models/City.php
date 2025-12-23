@@ -9,13 +9,8 @@ class City extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['state_id', 'city_name', 'city_name_ar', 'status', 'country_id', 'latitude', 'longitude', 'tryoto_supported'];
+    protected $fillable = ['city_name', 'city_name_ar', 'status', 'country_id', 'latitude', 'longitude', 'tryoto_supported'];
     public $timestamps = false;
-
-    public function state()
-    {
-        return $this->belongsTo(State::class, 'state_id');
-    }
 
     public function country()
     {

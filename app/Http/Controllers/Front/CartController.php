@@ -27,7 +27,6 @@ use App\Models\Country;
 use App\Models\Generalsetting;
 use App\Models\MerchantProduct;
 use App\Models\Product;
-use App\Models\State;
 use App\Models\StockReservation;
 use App\Services\VendorCartService;
 use App\Services\ShippingCalculatorService;
@@ -1480,13 +1479,12 @@ class CartController extends FrontBaseController
      *
      * السيناريو:
      * - البيانات تأتي من الجداول (Cache من Google Maps + Tryoto)
-     * - country_id و state_id و city_id محفوظة في الـ Cache
+     * - country_id و city_id محفوظة في الـ Cache
      * - الضريبة تُحسب من الـ Cache
      *
      * الأولوية:
      * 1. City tax (إذا موجود)
-     * 2. State tax (إذا موجود)
-     * 3. Country tax
+     * 2. Country tax
      *
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse
@@ -1515,39 +1513,14 @@ class CartController extends FrontBaseController
                     $tax_location = $city->city_name;
                     $tax_location_ar = $city->city_name_ar ?? $city->city_name;
                 } else {
-                    // City has no tax, fallback to state
-                    $request->merge(['state_id' => $city->state_id]);
+                    // City has no tax, fallback to country
+                    $request->merge(['country_id' => $city->country_id]);
                 }
             }
         }
 
         // ==========================================
-        // الأولوية 2: State (إذا لم يوجد city tax)
-        // ==========================================
-        if ($tax == 0 && $request->filled('state_id') && $request->state_id != 0) {
-            $state = State::find($request->state_id);
-
-            if ($state && $state->tax > 0) {
-                $tax = $state->tax;
-                $tax_type = 'state_tax';
-                $location_id = $state->id;
-                $tax_location = $state->state;
-                $tax_location_ar = $state->state_ar ?? $state->state;
-
-                // Add country name
-                $country = Country::find($state->country_id);
-                if ($country) {
-                    $tax_location .= ', ' . $country->country_name;
-                    $tax_location_ar .= ', ' . ($country->country_name_ar ?? $country->country_name);
-                }
-            } elseif ($state) {
-                // State has no tax, fallback to country
-                $request->merge(['country_id' => $state->country_id]);
-            }
-        }
-
-        // ==========================================
-        // الأولوية 3: Country (إذا لم يوجد state tax)
+        // الأولوية 2: Country (إذا لم يوجد city tax)
         // ==========================================
         if ($tax == 0 && $request->filled('country_id') && $request->country_id != 0) {
             $country = Country::find($request->country_id);

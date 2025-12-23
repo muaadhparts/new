@@ -7,7 +7,6 @@ use App\Models\Cart;
 use App\Models\Country;
 use App\Models\Order;
 use App\Models\Reward;
-use App\Models\State;
 use App\Models\StockReservation;
 use App\Traits\HandlesVendorCheckout;
 use App\Traits\SavesCustomerShippingChoice;

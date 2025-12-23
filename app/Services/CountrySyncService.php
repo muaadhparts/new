@@ -4,7 +4,6 @@ namespace App\Services;
 
 use App\Models\City;
 use App\Models\Country;
-use App\Models\State;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
@@ -17,8 +16,7 @@ use Illuminate\Support\Facades\Cache;
  * 1. عند اختيار موقع من خريطة لدولة غير موجودة أو is_synced = 0
  * 2. نجلب كل المدن المدعومة من Tryoto لهذه الدولة
  * 3. نجلب الإحداثيات والأسماء العربية من Google
- * 4. نستخرج المحافظات تلقائياً من Google
- * 5. نحدث is_synced = 1
+ * 4. نحدث is_synced = 1
  *
  * بعد المزامنة: كل شيء من DB فقط - لا API calls
  */
@@ -71,10 +69,6 @@ class CountrySyncService
 
     /**
      * مزامنة دولة كاملة
-     *
-     * السياسة الجديدة:
-     * - يستقبل الاسم العربي من Google Maps مباشرة
-     * - يحفظه في الدولة عند الإنشاء
      *
      * @param string $countryName اسم الدولة بالإنجليزية (من Google Maps)
      * @param string $countryCode كود الدولة (مثل SA, IQ)
@@ -176,11 +170,6 @@ class CountrySyncService
 
     /**
      * استيراد المدن بسرعة بدون Google geocoding
-     *
-     * هذه الطريقة سريعة جداً لأنها:
-     * 1. لا تستدعي Google API لكل مدينة
-     * 2. تستخدم firstOrCreate للتجنب التكرار
-     * 3. الأسماء العربية والإحداثيات تُضاف لاحقاً عند الحاجة
      */
     protected function quickImportCities(Country $country, array $cities): int
     {
@@ -205,7 +194,6 @@ class CountrySyncService
                 ],
                 [
                     'city_name_ar' => $cityName, // سيتم تحديثها لاحقاً من Google
-                    'state_id' => 0,
                     'tryoto_supported' => 1,
                     'status' => 1,
                     'latitude' => null,
@@ -221,10 +209,6 @@ class CountrySyncService
 
     /**
      * إنشاء أو تحديث الدولة
-     *
-     * السياسة الجديدة:
-     * - إذا الدولة غير موجودة: إنشاءها مع is_synced = 0 و synced_at = NULL
-     * - ملء country_name (EN) و country_name_ar (AR) من Google Maps
      */
     protected function createOrUpdateCountry(string $countryName, string $countryCode, ?string $countryNameAr = null): ?Country
     {
@@ -300,9 +284,6 @@ class CountrySyncService
 
     /**
      * جلب الاسم العربي للدولة من Google Maps API
-     *
-     * السياسة: نستخدم Google Maps للحصول على الأسماء العربية الرسمية
-     * إذا فشل الاتصال، نستخدم القائمة المحلية
      */
     protected function getArabicCountryNameFromGoogle(string $countryName, string $countryCode): string
     {
@@ -359,12 +340,7 @@ class CountrySyncService
     }
 
     /**
-     * جلب المدن والمناطق من Tryoto API
-     *
-     * السياسة الجديدة:
-     * - نجلب كل المدن مع المناطق (states/regions) من Tryoto
-     * - نعتمد على state الذي يعيده Tryoto دائماً
-     * - البيانات تشمل: city_name, state/region من Tryoto
+     * جلب المدن من Tryoto API
      */
     protected function fetchTryotoCities(string $countryCode): array
     {
@@ -385,11 +361,10 @@ class CountrySyncService
             $cities = $data['Cities'] ?? [];
             $totalCount = $data['totalCount'] ?? 0;
 
-            // معالجة كل مدينة وإضافة معلومات المنطقة من Tryoto
+            // معالجة كل مدينة
             foreach ($cities as $city) {
                 $cityData = [
                     'name' => $city['name'] ?? $city['city'] ?? '',
-                    'tryoto_state' => $city['state'] ?? $city['region'] ?? $city['province'] ?? null,
                     'tryoto_city_id' => $city['id'] ?? $city['cityId'] ?? null,
                 ];
 
@@ -410,406 +385,6 @@ class CountrySyncService
         ]);
 
         return $allCities;
-    }
-
-    /**
-     * مزامنة مدينة واحدة مع الإحداثيات والمحافظة
-     *
-     * السياسة الجديدة:
-     * 1. الاسم الإنجليزي: من Tryoto أولاً، ثم Google Maps
-     * 2. الاسم العربي: دائماً من Google Maps (لا hardcoded)
-     * 3. المنطقة/State: دائماً من Tryoto
-     * 4. التحقق من عدم وجود سجل مكرر قبل الإنشاء
-     *
-     * @param Country $country الدولة
-     * @param array $cityData بيانات المدينة من Tryoto ['name', 'tryoto_state', 'tryoto_city_id']
-     * @param array $statesCreated قائمة المحافظات المنشأة
-     * @return array|null
-     */
-    protected function syncCityWithGeocoding(Country $country, array $cityData, array &$statesCreated): ?array
-    {
-        try {
-            $cityNameEn = $cityData['name'] ?? '';
-            $tryotoState = $cityData['tryoto_state'] ?? null;
-
-            if (empty($cityNameEn)) {
-                return null;
-            }
-
-            // ==========================================
-            // الخطوة 1: التحقق من وجود المدينة (بالاسم EN أو AR)
-            // ==========================================
-            $existingCity = City::where('country_id', $country->id)
-                ->where(function ($q) use ($cityNameEn) {
-                    $q->where('city_name', $cityNameEn)
-                      ->orWhere('city_name_ar', $cityNameEn);
-                })
-                ->first();
-
-            // إذا موجودة ولديها كل البيانات، نتخطاها
-            if ($existingCity && $existingCity->latitude && $existingCity->longitude && $existingCity->state_id && $existingCity->city_name_ar) {
-                // تحديث tryoto_supported فقط إذا لم يكن 1
-                if (!$existingCity->tryoto_supported) {
-                    $existingCity->update(['tryoto_supported' => 1]);
-                }
-                return null;
-            }
-
-            // ==========================================
-            // الخطوة 2: جلب البيانات من Google Maps
-            // ==========================================
-            $geoData = $this->geocodeCityForSync($cityNameEn, $country->country_name);
-
-            // ==========================================
-            // الخطوة 3: معالجة المنطقة/State (دائماً من Tryoto)
-            // ==========================================
-            $state = null;
-            $stateNameEn = $tryotoState; // من Tryoto
-            $stateNameAr = $geoData['state_ar'] ?? null; // من Google Maps
-
-            if (!empty($stateNameEn)) {
-                $state = $this->findOrCreateStateWithCheck(
-                    $country->id,
-                    $stateNameEn,       // EN من Tryoto
-                    $stateNameAr        // AR من Google Maps
-                );
-
-                if ($state && !in_array($stateNameEn, $statesCreated)) {
-                    $statesCreated[] = $stateNameEn;
-                }
-            }
-
-            // ==========================================
-            // الخطوة 4: تحديد الأسماء النهائية
-            // ==========================================
-            // الاسم الإنجليزي: من Tryoto (نستخدمه كما هو)
-            $finalCityNameEn = $cityNameEn;
-
-            // الاسم العربي: من Google Maps فقط (لا hardcoded)
-            $finalCityNameAr = $geoData['city_ar'] ?? null;
-
-            // إذا لم نجد الاسم العربي، نتركه فارغاً مؤقتاً (سيتم تحديثه لاحقاً)
-            // لكن لا نستخدم الاسم الإنجليزي كبديل
-            if (empty($finalCityNameAr)) {
-                $finalCityNameAr = $cityNameEn; // fallback للاسم الإنجليزي مؤقتاً
-                Log::warning('CountrySyncService: No Arabic name from Google for city', [
-                    'city' => $cityNameEn,
-                    'country' => $country->country_name
-                ]);
-            }
-
-            // ==========================================
-            // الخطوة 5: إنشاء أو تحديث المدينة
-            // ==========================================
-            if ($existingCity) {
-                // تحديث البيانات الناقصة
-                $updates = [
-                    'tryoto_supported' => 1,
-                ];
-
-                if (empty($existingCity->city_name_ar) && $finalCityNameAr !== $cityNameEn) {
-                    $updates['city_name_ar'] = $finalCityNameAr;
-                }
-
-                if (!$existingCity->state_id && $state) {
-                    $updates['state_id'] = $state->id;
-                }
-
-                if (!$existingCity->latitude && isset($geoData['lat'])) {
-                    $updates['latitude'] = $geoData['lat'];
-                    $updates['longitude'] = $geoData['lng'];
-                }
-
-                $existingCity->update($updates);
-            } else {
-                // إنشاء مدينة جديدة
-                City::create([
-                    'country_id' => $country->id,
-                    'state_id' => $state?->id ?? 0,
-                    'city_name' => $finalCityNameEn,
-                    'city_name_ar' => $finalCityNameAr,
-                    'latitude' => $geoData['lat'] ?? null,
-                    'longitude' => $geoData['lng'] ?? null,
-                    'tryoto_supported' => 1,
-                    'status' => 1,
-                ]);
-            }
-
-            return [
-                'city_name' => $finalCityNameEn,
-                'city_name_ar' => $finalCityNameAr,
-                'state_name' => $stateNameEn,
-                'state_name_ar' => $stateNameAr,
-                'coordinates' => isset($geoData['lat']) ? true : false
-            ];
-
-        } catch (\Exception $e) {
-            Log::warning('CountrySyncService: Failed to sync city', [
-                'city' => $cityData['name'] ?? 'unknown',
-                'error' => $e->getMessage()
-            ]);
-            return null;
-        }
-    }
-
-    /**
-     * جلب بيانات المدينة من Google Geocoding
-     */
-    protected function geocodeCity(string $cityName, string $countryName): ?array
-    {
-        if (empty($this->googleApiKey)) {
-            return null;
-        }
-
-        try {
-            // طلب بالإنجليزية للإحداثيات
-            $response = Http::timeout(10)->get('https://maps.googleapis.com/maps/api/geocode/json', [
-                'address' => "{$cityName}, {$countryName}",
-                'key' => $this->googleApiKey,
-                'language' => 'en',
-            ]);
-
-            if (!$response->successful()) {
-                return null;
-            }
-
-            $data = $response->json();
-            if ($data['status'] !== 'OK' || empty($data['results'])) {
-                return null;
-            }
-
-            $result = $data['results'][0];
-            $location = $result['geometry']['location'];
-
-            // استخراج المحافظة
-            $state = null;
-            foreach ($result['address_components'] as $component) {
-                if (in_array('administrative_area_level_1', $component['types'])) {
-                    $state = $component['long_name'];
-                    break;
-                }
-            }
-
-            // طلب بالعربية للأسماء العربية
-            $arabicData = $this->getArabicNames($location['lat'], $location['lng']);
-
-            return [
-                'lat' => $location['lat'],
-                'lng' => $location['lng'],
-                'state' => $state,
-                'state_ar' => $arabicData['state'] ?? $state,
-                'city_ar' => $arabicData['city'] ?? $cityName,
-            ];
-
-        } catch (\Exception $e) {
-            return null;
-        }
-    }
-
-    /**
-     * جلب الأسماء العربية من Google
-     */
-    protected function getArabicNames(float $lat, float $lng): array
-    {
-        try {
-            $response = Http::timeout(10)->get('https://maps.googleapis.com/maps/api/geocode/json', [
-                'latlng' => "{$lat},{$lng}",
-                'key' => $this->googleApiKey,
-                'language' => 'ar',
-            ]);
-
-            if (!$response->successful()) {
-                return [];
-            }
-
-            $data = $response->json();
-            if ($data['status'] !== 'OK' || empty($data['results'])) {
-                return [];
-            }
-
-            $result = $data['results'][0];
-            $names = [];
-
-            foreach ($result['address_components'] as $component) {
-                if (in_array('locality', $component['types'])) {
-                    $names['city'] = $component['long_name'];
-                }
-                if (in_array('administrative_area_level_1', $component['types'])) {
-                    $names['state'] = $component['long_name'];
-                }
-            }
-
-            return $names;
-
-        } catch (\Exception $e) {
-            return [];
-        }
-    }
-
-    /**
-     * جلب بيانات المدينة من Google Maps للمزامنة
-     *
-     * السياسة الجديدة:
-     * - نجلب الإحداثيات من Google
-     * - نجلب الأسماء العربية من Google (للمدينة والمحافظة)
-     * - لا نستخدم أي ترجمات hardcoded
-     */
-    protected function geocodeCityForSync(string $cityName, string $countryName): ?array
-    {
-        if (empty($this->googleApiKey)) {
-            Log::warning('CountrySyncService: Google API key not configured');
-            return null;
-        }
-
-        try {
-            // طلب بالإنجليزية للإحداثيات
-            $responseEn = Http::timeout(15)->retry(2, 500)->get('https://maps.googleapis.com/maps/api/geocode/json', [
-                'address' => "{$cityName}, {$countryName}",
-                'key' => $this->googleApiKey,
-                'language' => 'en',
-            ]);
-
-            if (!$responseEn->successful()) {
-                return null;
-            }
-
-            $dataEn = $responseEn->json();
-            if ($dataEn['status'] !== 'OK' || empty($dataEn['results'])) {
-                return null;
-            }
-
-            $resultEn = $dataEn['results'][0];
-            $location = $resultEn['geometry']['location'];
-
-            // طلب بالعربية للأسماء العربية (باستخدام الإحداثيات للدقة)
-            $responseAr = Http::timeout(15)->retry(2, 500)->get('https://maps.googleapis.com/maps/api/geocode/json', [
-                'latlng' => "{$location['lat']},{$location['lng']}",
-                'key' => $this->googleApiKey,
-                'language' => 'ar',
-            ]);
-
-            $cityAr = null;
-            $stateAr = null;
-
-            if ($responseAr->successful()) {
-                $dataAr = $responseAr->json();
-                if ($dataAr['status'] === 'OK' && !empty($dataAr['results'])) {
-                    $resultAr = $dataAr['results'][0];
-
-                    foreach ($resultAr['address_components'] as $component) {
-                        // المدينة
-                        if (in_array('locality', $component['types'])) {
-                            $cityAr = $component['long_name'];
-                        }
-                        // المنطقة الإدارية (للاسم العربي فقط)
-                        if (in_array('administrative_area_level_1', $component['types'])) {
-                            $stateAr = $component['long_name'];
-                        }
-                        // fallback للمدينة
-                        if (!$cityAr && in_array('administrative_area_level_2', $component['types'])) {
-                            $cityAr = $component['long_name'];
-                        }
-                    }
-                }
-            }
-
-            return [
-                'lat' => $location['lat'],
-                'lng' => $location['lng'],
-                'city_ar' => $cityAr,
-                'state_ar' => $stateAr,
-            ];
-
-        } catch (\Exception $e) {
-            Log::warning('CountrySyncService: Geocoding failed', [
-                'city' => $cityName,
-                'error' => $e->getMessage()
-            ]);
-            return null;
-        }
-    }
-
-    /**
-     * إنشاء أو جلب محافظة مع التحقق من التكرار
-     *
-     * السياسة الجديدة:
-     * - التحقق من وجود المحافظة بالاسم EN أو AR قبل الإنشاء
-     * - الاسم الإنجليزي من Tryoto
-     * - الاسم العربي من Google Maps
-     */
-    protected function findOrCreateStateWithCheck(int $countryId, string $stateNameEn, ?string $stateNameAr = null): State
-    {
-        // البحث عن محافظة موجودة بنفس الاسم (EN أو AR)
-        $existingState = State::where('country_id', $countryId)
-            ->where(function ($q) use ($stateNameEn, $stateNameAr) {
-                $q->where('state', $stateNameEn);
-
-                if ($stateNameAr) {
-                    $q->orWhere('state_ar', $stateNameAr);
-                }
-
-                // البحث أيضاً بالاسم الإنجليزي في حقل العربي (لحالات الـ fallback)
-                $q->orWhere('state_ar', $stateNameEn);
-            })
-            ->first();
-
-        if ($existingState) {
-            // تحديث الاسم العربي إذا كان ناقصاً
-            if (empty($existingState->state_ar) && $stateNameAr) {
-                $existingState->update(['state_ar' => $stateNameAr]);
-            }
-            return $existingState;
-        }
-
-        // إنشاء محافظة جديدة
-        $state = State::create([
-            'country_id' => $countryId,
-            'state' => $stateNameEn,
-            'state_ar' => $stateNameAr ?: $stateNameEn, // fallback للاسم الإنجليزي مؤقتاً
-            'status' => 1,
-            'tax' => 0,
-            'owner_id' => 0,
-        ]);
-
-        Log::debug('CountrySyncService: Created new state', [
-            'id' => $state->id,
-            'name_en' => $stateNameEn,
-            'name_ar' => $stateNameAr,
-            'country_id' => $countryId
-        ]);
-
-        return $state;
-    }
-
-    /**
-     * إنشاء أو جلب محافظة (الدالة القديمة للتوافقية)
-     */
-    protected function findOrCreateState(int $countryId, string $stateName, string $stateNameAr): State
-    {
-        return $this->findOrCreateStateWithCheck($countryId, $stateName, $stateNameAr);
-    }
-
-    /**
-     * تحديث إحداثيات المحافظات (متوسط إحداثيات المدن)
-     */
-    protected function updateStatesCoordinates(int $countryId): void
-    {
-        $states = State::where('country_id', $countryId)->get();
-
-        foreach ($states as $state) {
-            $avgCoords = City::where('state_id', $state->id)
-                ->whereNotNull('latitude')
-                ->whereNotNull('longitude')
-                ->selectRaw('AVG(latitude) as avg_lat, AVG(longitude) as avg_lng')
-                ->first();
-
-            if ($avgCoords && $avgCoords->avg_lat && $avgCoords->avg_lng) {
-                $state->update([
-                    'latitude' => $avgCoords->avg_lat,
-                    'longitude' => $avgCoords->avg_lng,
-                ]);
-            }
-        }
     }
 
     /**

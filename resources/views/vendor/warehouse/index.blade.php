@@ -63,45 +63,24 @@
                             <small class="text-muted">@lang('Country is set in your shop profile')</small>
                         </div>
 
-                        <!-- State/Region -->
+                        <!-- State/Region (Text Field) -->
                         <div class="col-md-6 form-group">
-                            <label for="warehouse_state">@lang('State/Region') <span class="text-danger">*</span></label>
-                            <select name="warehouse_state" id="warehouse_state" class="form-control">
-                                <option value="">@lang('Select State')</option>
-                                @foreach($states as $state)
-                                    @php
-                                        $stateDisplayName = (app()->getLocale() == 'ar')
-                                            ? ($state->state_ar ?: $state->state)
-                                            : $state->state;
-                                    @endphp
-                                    <option value="{{ $state->id }}"
-                                        {{ $user->warehouse_state == $state->id ? 'selected' : '' }}>
-                                        {{ $stateDisplayName }}
-                                    </option>
-                                @endforeach
-                            </select>
+                            <label for="warehouse_state">@lang('State/Region')</label>
+                            <input type="text" name="warehouse_state" id="warehouse_state" class="form-control"
+                                placeholder="@lang('State/Region')"
+                                value="{{ old('warehouse_state', $user->warehouse_state) }}">
                             @error('warehouse_state')
                                 <span class="text-danger">{{ $message }}</span>
                             @enderror
                         </div>
 
-                        <!-- City -->
+                        <!-- City (Text Field) -->
                         <div class="col-md-6 form-group">
                             <label for="warehouse_city">@lang('City') <span class="text-danger">*</span></label>
-                            <select name="warehouse_city" id="warehouse_city" class="form-control">
-                                <option value="">@lang('Select City')</option>
-                                @foreach($cities as $city)
-                                    @php
-                                        $cityDisplayName = (app()->getLocale() == 'ar')
-                                            ? ($city->city_name_ar ?: $city->city_name)
-                                            : $city->city_name;
-                                    @endphp
-                                    <option value="{{ $city->city_name }}"
-                                        {{ $user->warehouse_city == $city->city_name ? 'selected' : '' }}>
-                                        {{ $cityDisplayName }}
-                                    </option>
-                                @endforeach
-                            </select>
+                            <input type="text" name="warehouse_city" id="warehouse_city" class="form-control"
+                                placeholder="@lang('City')"
+                                value="{{ old('warehouse_city', $user->warehouse_city) }}"
+                                required>
                             @error('warehouse_city')
                                 <span class="text-danger">{{ $message }}</span>
                             @enderror
@@ -166,45 +145,5 @@
 @endsection
 
 @section('scripts')
-<script>
-$(document).ready(function() {
-    // عند تغيير الولاية، جلب المدن
-    $('#warehouse_state').on('change', function() {
-        var stateId = $(this).val();
-        var citySelect = $('#warehouse_city');
-
-        citySelect.html('<option value="">@lang("Loading...")</option>');
-
-        if (stateId) {
-            $.ajax({
-                url: '{{ route("vendor-warehouse-get-cities") }}',
-                type: 'GET',
-                data: { state_id: stateId },
-                success: function(response) {
-                    citySelect.html('<option value="">@lang("Select City")</option>');
-
-                    if (response.cities && response.cities.length > 0) {
-                        response.cities.forEach(function(city) {
-                            // استخدام display_name من الاستجابة (معتمد على اللغة النشطة)
-                            var displayName = city.display_name || city.city_name;
-                            citySelect.append(
-                                '<option value="' + city.city_name + '">' +
-                                displayName +
-                                '</option>'
-                            );
-                        });
-                    } else {
-                        citySelect.html('<option value="">@lang("No cities found")</option>');
-                    }
-                },
-                error: function() {
-                    citySelect.html('<option value="">@lang("Error loading cities")</option>');
-                }
-            });
-        } else {
-            citySelect.html('<option value="">@lang("Select City")</option>');
-        }
-    });
-});
-</script>
+{{-- No JavaScript needed - state and city are now text fields --}}
 @endsection

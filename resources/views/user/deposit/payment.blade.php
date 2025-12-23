@@ -159,29 +159,14 @@
 
         $(document).ready(function() {
             let country_id = $('#select_country').val();
-            let state_id = $('#state_id').val();
-            let is_state = $('#is_state').val();
-            let state_url = $('#state_url').val();
-
-
-            if (is_state == 1) {
-                if (is_state == 1) {
-                    $('.select_state').removeClass('d-none');
-                    $.get(state_url, function(response) {
-                        $('#show_state').html(response.data);
-                        tax_submit(country_id, response.state);
-                    });
-
-                } else {
-                    tax_submit(country_id, state_id);
-                }
-            } else {
-                tax_submit(country_id, state_id);
+            // States removed - tax calculation based on country only
+            if (country_id) {
+                tax_submit(country_id);
             }
         });
 
 
-        function tax_submit(country_id, state_id) {
+        function tax_submit(country_id) {
 
             $('.gocover').show();
             var total = $("#tgrandtotal").val();
@@ -191,7 +176,6 @@
                 url: mainurl + "/country/tax/check",
 
                 data: {
-                    state_id: state_id,
                     country_id: country_id,
                     total: total,
                     shipping_cost: ship

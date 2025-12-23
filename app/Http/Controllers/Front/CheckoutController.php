@@ -46,7 +46,6 @@ use App\Models\City;
 use App\Models\Country;
 use App\Models\Order;
 use App\Models\PaymentGateway;
-use App\Models\State;
 use App\Services\VendorCartService;
 use App\Services\CheckoutDataService;
 use App\Services\ShippingCalculatorService;
@@ -451,10 +450,9 @@ class CheckoutController extends FrontBaseController
             'customer_zip' => 'nullable|string|max:20',
             // Location - either from map (IDs) or legacy (names)
             'country_id' => 'nullable|numeric|exists:countries,id',
-            'state_id' => 'nullable|numeric|exists:states,id',
             'city_id' => 'nullable|numeric|exists:cities,id',
             'customer_country' => 'required_without:country_id|nullable|string|max:255',
-            'customer_state' => 'required_without:state_id|nullable|string|max:255',
+            'customer_state' => 'nullable|string|max:255',
             'customer_city' => 'required_without:city_id|nullable|numeric',
             // Coordinates from Google Maps
             'latitude' => 'nullable|numeric|between:-90,90',
@@ -466,10 +464,8 @@ class CheckoutController extends FrontBaseController
             'customer_phone.required' => 'رقم الهاتف مطلوب',
             'customer_address.required' => 'العنوان مطلوب',
             'customer_country.required_without' => 'الدولة مطلوبة',
-            'customer_state.required_without' => 'الولاية مطلوبة',
             'customer_city.required_without' => 'المدينة مطلوبة',
             'country_id.exists' => 'الدولة غير صحيحة',
-            'state_id.exists' => 'الولاية غير صحيحة',
             'city_id.exists' => 'المدينة غير صحيحة',
             'latitude.between' => 'خط العرض غير صحيح',
             'longitude.between' => 'خط الطول غير صحيح',
@@ -488,7 +484,7 @@ class CheckoutController extends FrontBaseController
         }
 
         // ====================================================================
-        // CALCULATE TAX BASED ON COUNTRY/STATE
+        // CALCULATE TAX BASED ON COUNTRY/CITY
         // ====================================================================
         $taxRate = 0;
         $taxLocation = '';
@@ -507,21 +503,14 @@ class CheckoutController extends FrontBaseController
             $taxLocation = $country->country_name;
         }
 
-        // Check if state has specific tax (overrides country tax)
-        // Try by ID first (from map), then by name (legacy)
-        $state = null;
-        if (!empty($step1['state_id'])) {
-            $state = \App\Models\State::find($step1['state_id']);
-        }
-        if (!$state && !empty($step1['customer_state']) && $country) {
-            $state = \App\Models\State::where('state', $step1['customer_state'])
-                ->where('country_id', $country->id)
-                ->first();
-        }
-
-        if ($state && $state->tax > 0) {
-            $taxRate = $state->tax;
-            $taxLocation = $state->state . ', ' . ($country->country_name ?? '');
+        // Check if city has specific tax (overrides country tax)
+        $city = null;
+        if (!empty($step1['city_id'])) {
+            $city = \App\Models\City::find($step1['city_id']);
+            if ($city && $city->tax > 0) {
+                $taxRate = $city->tax;
+                $taxLocation = $city->city_name . ', ' . ($country->country_name ?? '');
+            }
         }
 
         // Calculate tax amount per vendor
@@ -876,32 +865,14 @@ class CheckoutController extends FrontBaseController
 
     public function getState($country_id)
     {
-        $states = State::where('country_id', $country_id)->get();
-
-        // ✅ CHECKOUT REQUIREMENT: Always start empty - no auto-selection
-        // User must manually select state even if logged in
-        $user_state = 0;
-
+        // States table removed - return empty states
         $html_states = '<option value="" > Select State </option>';
-        foreach ($states as $state) {
-            // ✅ Never pre-select - always empty
-            $check = '';
-
-            // تحديد اسم الولاية بناءً على اللغة النشطة باستخدام app()->getLocale()
-            $stateDisplayName = (app()->getLocale() == 'ar')
-                ? ($state->state_ar ?: $state->state)
-                : $state->state;
-
-            $html_states .= '<option value="' . $state->id . '" rel="' . $state->country->id . '" ' . $check . ' >'
-              . $stateDisplayName . '</option>';
-        }
-
-        return response()->json(["data" => $html_states, "state" => $user_state]);
+        return response()->json(["data" => $html_states, "state" => 0]);
     }
 
     public function getCity(Request $request)
     {
-        $cities = City::where('state_id', $request->state_id)->get();
+        $cities = City::where('country_id', $request->country_id)->get();
 
         // ✅ CHECKOUT REQUIREMENT: Always start empty - no auto-selection
         // User must manually select city even if logged in
@@ -927,7 +898,7 @@ class CheckoutController extends FrontBaseController
 
     public function getCityUser(Request $request)
     {
-        $cities = City::where('state_id', $request->state_id)->get();
+        $cities = City::where('country_id', $request->country_id)->get();
 
         // ✅ CHECKOUT REQUIREMENT: Always start empty - no auto-selection
         // User must manually select city even if logged in
@@ -1213,10 +1184,9 @@ class CheckoutController extends FrontBaseController
             'customer_zip' => 'nullable|string|max:20',
             // Location - either from map (IDs) or legacy (names)
             'country_id' => 'nullable|numeric|exists:countries,id',
-            'state_id' => 'nullable|numeric|exists:states,id',
             'city_id' => 'nullable|numeric|exists:cities,id',
             'customer_country' => 'required_without:country_id|nullable|string|max:255',
-            'customer_state' => 'required_without:state_id|nullable|string|max:255',
+            'customer_state' => 'nullable|string|max:255',
             'customer_city' => 'required_without:city_id|nullable|numeric',
             // Coordinates from Google Maps
             'latitude' => 'nullable|numeric|between:-90,90',
@@ -1260,15 +1230,6 @@ class CheckoutController extends FrontBaseController
             $user->country = $step1['customer_country'];
 
             // Get state_id and city_id from names
-            $country = \App\Models\Country::where('country_name', $step1['customer_country'])->first();
-            if ($country) {
-                $state = \App\Models\State::where('state', $step1['customer_state'])
-                    ->where('country_id', $country->id)
-                    ->first();
-                if ($state) {
-                    $user->state_id = $state->id;
-                }
-            }
             $user->city_id = $step1['customer_city']; // Already numeric
 
             $user->password = bcrypt($step1['password']);
@@ -1284,7 +1245,7 @@ class CheckoutController extends FrontBaseController
         }
 
         // ====================================================================
-        // CALCULATE TAX BASED ON COUNTRY/STATE
+        // CALCULATE TAX BASED ON COUNTRY/CITY
         // ====================================================================
         $taxRate = 0;
         $taxLocation = '';
@@ -1303,21 +1264,14 @@ class CheckoutController extends FrontBaseController
             $taxLocation = $country->country_name;
         }
 
-        // Check if state has specific tax (overrides country tax)
-        // Try by ID first (from map), then by name (legacy)
-        $state = null;
-        if (!empty($step1['state_id'])) {
-            $state = \App\Models\State::find($step1['state_id']);
-        }
-        if (!$state && !empty($step1['customer_state']) && $country) {
-            $state = \App\Models\State::where('state', $step1['customer_state'])
-                ->where('country_id', $country->id)
-                ->first();
-        }
-
-        if ($state && $state->tax > 0) {
-            $taxRate = $state->tax;
-            $taxLocation = $state->state . ', ' . ($country->country_name ?? '');
+        // Check if city has specific tax (overrides country tax)
+        $city = null;
+        if (!empty($step1['city_id'])) {
+            $city = \App\Models\City::find($step1['city_id']);
+            if ($city && $city->tax > 0) {
+                $taxRate = $city->tax;
+                $taxLocation = $city->city_name . ', ' . ($country->country_name ?? '');
+            }
         }
 
         // Calculate tax amount for this vendor only
@@ -1897,92 +1851,6 @@ class CheckoutController extends FrontBaseController
     }
 
     /* ===================== Tryoto Dynamic Location API ===================== */
-
-    /**
-     * Verify city with Tryoto and auto-save if supported
-     *
-     * POST /tryoto/verify-city
-     * Body: { country_id, state_id, city_name }
-     */
-    public function verifyTryotoCity(Request $request)
-    {
-        $validator = Validator::make($request->all(), [
-            'country_id' => 'required|integer|exists:countries,id',
-            'state_id' => 'required|integer|exists:states,id',
-            'city_name' => 'required|string|max:255'
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
-        }
-
-        $service = new \App\Services\TryotoLocationService();
-
-        $result = $service->verifyAndSaveLocation(
-            $request->country_id,
-            $request->state_id,
-            $request->city_name
-        );
-
-        return response()->json([
-            'success' => $result['verified'],
-            'data' => $result,
-            'message' => $result['message']
-        ]);
-    }
-
-    /**
-     * Verify city by ID (when selected from dropdown)
-     *
-     * POST /tryoto/verify-city-id
-     * Body: { city_id }
-     */
-    public function verifyTryotoCityById(Request $request)
-    {
-        $validator = Validator::make($request->all(), [
-            'city_id' => 'required|integer|exists:cities,id'
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
-        }
-
-        $city = City::with(['state', 'country'])->find($request->city_id);
-
-        if (!$city) {
-            return response()->json([
-                'success' => false,
-                'message' => 'City not found'
-            ], 404);
-        }
-
-        $service = new \App\Services\TryotoLocationService();
-
-        // Verify this city is still supported by Tryoto
-        $verification = $service->verifyCitySupport($city->city_name);
-
-        return response()->json([
-            'success' => $verification['supported'],
-            'data' => [
-                'city_id' => $city->id,
-                'city_name' => $city->city_name,
-                'city_name_ar' => $city->city_name_ar,
-                'state' => $city->state->state,
-                'country' => $city->country->country_name,
-                'verified' => $verification['supported'],
-                'companies' => $verification['company_count'] ?? 0
-            ],
-            'message' => $verification['supported']
-                ? 'City verified with Tryoto'
-                : 'City not supported by Tryoto shipping'
-        ]);
-    }
 
     /**
      * ========================================================================

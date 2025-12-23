@@ -198,9 +198,8 @@ class ImportAllTryotoCountries extends Command
         DB::beginTransaction();
 
         try {
-            // Extract unique countries, states, cities
+            // Extract unique countries and cities
             $countries = [];
-            $states = [];
             $cities = [];
 
             foreach ($this->discoveredData as $item) {
@@ -213,20 +212,8 @@ class ImportAllTryotoCountries extends Command
                     ];
                 }
 
-                if ($item['region']) {
-                    $stateKey = $countryKey . '|' . $item['region'];
-                    if (!isset($states[$stateKey])) {
-                        $states[$stateKey] = [
-                            'country' => $countryKey,
-                            'name' => $item['region'],
-                            'name_ar' => $this->translateRegion($item['region']),
-                        ];
-                    }
-                }
-
                 $cities[] = [
                     'country' => $countryKey,
-                    'region' => $item['region'],
                     'name' => $item['city'],
                     'name_ar' => $this->translateCity($item['city']),
                     'companies' => $item['companies'],
@@ -254,82 +241,20 @@ class ImportAllTryotoCountries extends Command
                 }
             }
 
-            // 2. Insert States
-            $this->info('   📌 حفظ المناطق...');
-            $stateIds = [];
-
-            // Create default states for countries without regions
-            foreach ($countryIds as $countryKey => $countryId) {
-                $defaultStateKey = $countryKey . '|DEFAULT';
-                $existing = DB::table('states')
-                    ->where('country_id', $countryId)
-                    ->where('state', 'Default')
-                    ->first();
-
-                if ($existing) {
-                    $stateIds[$defaultStateKey] = $existing->id;
-                } else {
-                    $id = DB::table('states')->insertGetId([
-                        'country_id' => $countryId,
-                        'state' => 'Default',
-                        'state_ar' => 'افتراضي',
-                        'tax' => 0,
-                        'status' => 1,
-                        'owner_id' => 0,
-                    ]);
-                    $stateIds[$defaultStateKey] = $id;
-                }
-            }
-
-            foreach ($states as $key => $state) {
-                $countryId = $countryIds[$state['country']] ?? null;
-                if (!$countryId) continue;
-
-                $existing = DB::table('states')
-                    ->where('country_id', $countryId)
-                    ->where('state', $state['name'])
-                    ->first();
-
-                if ($existing) {
-                    $stateIds[$key] = $existing->id;
-                } else {
-                    $id = DB::table('states')->insertGetId([
-                        'country_id' => $countryId,
-                        'state' => $state['name'],
-                        'state_ar' => $state['name_ar'],
-                        'tax' => 0,
-                        'status' => 1,
-                        'owner_id' => 0,
-                    ]);
-                    $stateIds[$key] = $id;
-                    $this->line("      ✅ {$state['name']}");
-                }
-            }
-
-            // 3. Insert Cities
+            // 2. Insert Cities
             $this->info('   📌 حفظ المدن...');
             $inserted = 0;
             foreach ($cities as $city) {
                 $countryId = $countryIds[$city['country']] ?? null;
                 if (!$countryId) continue;
 
-                // Use region if available, otherwise use default state
-                if ($city['region']) {
-                    $stateKey = $city['country'] . '|' . $city['region'];
-                    $stateId = $stateIds[$stateKey] ?? null;
-                    if (!$stateId) continue; // Skip if region should exist but doesn't
-                } else {
-                    // Use default state for countries without regions
-                    $defaultStateKey = $city['country'] . '|DEFAULT';
-                    $stateId = $stateIds[$defaultStateKey] ?? null;
-                    if (!$stateId) continue;
-                }
-
-                $existing = DB::table('cities')->where('city_name', $city['name'])->first();
+                $existing = DB::table('cities')
+                    ->where('country_id', $countryId)
+                    ->where('city_name', $city['name'])
+                    ->first();
 
                 if (!$existing) {
                     DB::table('cities')->insert([
-                        'state_id' => $stateId,
                         'country_id' => $countryId,
                         'city_name' => $city['name'],
                         'city_name_ar' => $city['name_ar'],
@@ -425,75 +350,59 @@ class ImportAllTryotoCountries extends Command
         return array_map(fn($city) => [
             'name' => $city,
             'country' => 'Saudi Arabia',
-            'region' => $this->inferSaudiRegion($city),
         ], $cities);
     }
 
     protected function getUAECities()
     {
         $cities = ['Dubai', 'Abu Dhabi', 'Sharjah', 'Ajman', 'Ras Al Khaimah', 'Fujairah', 'Al Ain', 'Umm Al Quwain'];
-        return array_map(fn($city) => ['name' => $city, 'country' => 'United Arab Emirates', 'region' => null], $cities);
+        return array_map(fn($city) => ['name' => $city, 'country' => 'United Arab Emirates'], $cities);
     }
 
     protected function getKuwaitCities()
     {
         $cities = ['Kuwait City', 'Hawalli', 'Salmiya', 'Jahra', 'Ahmadi', 'Farwaniya'];
-        return array_map(fn($city) => ['name' => $city, 'country' => 'Kuwait', 'region' => null], $cities);
+        return array_map(fn($city) => ['name' => $city, 'country' => 'Kuwait'], $cities);
     }
 
     protected function getBahrainCities()
     {
         $cities = ['Manama', 'Muharraq', 'Riffa', 'Hamad Town', 'Isa Town', 'Sitra'];
-        return array_map(fn($city) => ['name' => $city, 'country' => 'Bahrain', 'region' => null], $cities);
+        return array_map(fn($city) => ['name' => $city, 'country' => 'Bahrain'], $cities);
     }
 
     protected function getQatarCities()
     {
         $cities = ['Doha', 'Al Wakrah', 'Al Rayyan', 'Umm Salal', 'Al Khor', 'Dukhan'];
-        return array_map(fn($city) => ['name' => $city, 'country' => 'Qatar', 'region' => null], $cities);
+        return array_map(fn($city) => ['name' => $city, 'country' => 'Qatar'], $cities);
     }
 
     protected function getOmanCities()
     {
         $cities = ['Muscat', 'Salalah', 'Sohar', 'Nizwa', 'Sur', 'Ibri', 'Barka'];
-        return array_map(fn($city) => ['name' => $city, 'country' => 'Oman', 'region' => null], $cities);
+        return array_map(fn($city) => ['name' => $city, 'country' => 'Oman'], $cities);
     }
 
     protected function getEgyptCities()
     {
         $cities = ['Cairo', 'Alexandria', 'Giza', 'Shubra El Kheima', 'Port Said', 'Suez', 'Luxor', 'Aswan'];
-        return array_map(fn($city) => ['name' => $city, 'country' => 'Egypt', 'region' => null], $cities);
+        return array_map(fn($city) => ['name' => $city, 'country' => 'Egypt'], $cities);
     }
 
     protected function getJordanCities()
     {
         $cities = ['Amman', 'Zarqa', 'Irbid', 'Aqaba', 'Madaba', 'Jerash', 'Karak'];
-        return array_map(fn($city) => ['name' => $city, 'country' => 'Jordan', 'region' => null], $cities);
+        return array_map(fn($city) => ['name' => $city, 'country' => 'Jordan'], $cities);
     }
 
     protected function getOtherArabCities()
     {
         return [
-            ['name' => 'Beirut', 'country' => 'Lebanon', 'region' => null],
-            ['name' => 'Baghdad', 'country' => 'Iraq', 'region' => null],
-            ['name' => 'Damascus', 'country' => 'Syria', 'region' => null],
-            ['name' => 'Sanaa', 'country' => 'Yemen', 'region' => null],
+            ['name' => 'Beirut', 'country' => 'Lebanon'],
+            ['name' => 'Baghdad', 'country' => 'Iraq'],
+            ['name' => 'Damascus', 'country' => 'Syria'],
+            ['name' => 'Sanaa', 'country' => 'Yemen'],
         ];
-    }
-
-    protected function inferSaudiRegion($city)
-    {
-        $mapping = [
-            'Riyadh' => 'Riyadh Region', 'Al Kharj' => 'Riyadh Region', 'Al Majmaah' => 'Riyadh Region',
-            'Jeddah' => 'Makkah Region', 'Mecca' => 'Makkah Region', 'Taif' => 'Makkah Region',
-            'Medina' => 'Madinah Region', 'Yanbu' => 'Madinah Region',
-            'Dammam' => 'Eastern Region', 'Al Khobar' => 'Eastern Region', 'Dhahran' => 'Eastern Region',
-            'Tabuk' => 'Tabuk Region', 'Buraidah' => 'Al-Qassim Region', 'Unaizah' => 'Al-Qassim Region',
-            'Abha' => 'Asir Region', 'Khamis Mushait' => 'Asir Region',
-            'Hail' => 'Hail Region', 'Najran' => 'Najran Region', 'Jazan' => 'Jazan Region',
-            'Arar' => 'Northern Borders Region', 'Sakaka' => 'Al Jouf Region',
-        ];
-        return $mapping[$city] ?? 'Riyadh Region';
     }
 
     protected function translateCountry($name) {
@@ -503,6 +412,5 @@ class ImportAllTryotoCountries extends Command
         return $map[$name] ?? $name;
     }
 
-    protected function translateRegion($name) { return $name; }
     protected function translateCity($name) { return $name; }
 }

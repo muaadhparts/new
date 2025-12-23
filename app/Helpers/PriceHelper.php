@@ -6,7 +6,6 @@ use App\Models\Country;
 use App\Models\Currency;
 use App\Models\Package;
 use App\Models\Shipping;
-use App\Models\State;
 use DB;
 use Session;
 
@@ -259,11 +258,8 @@ class PriceHelper
             // الضريبة
             $tax_amount = 0.0;
             if (!empty($input['tax']) && !empty($input['tax_type'])) {
-                if ($input['tax_type'] === 'state_tax') {
-                    $tax = (float) State::findOrFail($input['tax'])->tax;
-                } else {
-                    $tax = (float) Country::findOrFail($input['tax'])->tax;
-                }
+                // States removed - tax only from Country now
+                $tax = (float) Country::findOrFail($input['tax'])->tax;
                 $tax_amount  = ($totalAmount * $tax) / 100.0;
                 $totalAmount += $tax_amount;
             }
@@ -511,13 +507,9 @@ class PriceHelper
 
             $totalAmount = (float) ($input['total'] ?? 0);
 
-            // الضريبة
+            // الضريبة - States removed, tax only from Country now
             if (!empty($input['tax']) && !empty($input['tax_type'])) {
-                if ($input['tax_type'] === 'state_tax') {
-                    $tax = (float) State::findOrFail($input['tax'])->tax;
-                } else {
-                    $tax = (float) Country::findOrFail($input['tax'])->tax;
-                }
+                $tax = (float) Country::findOrFail($input['tax'])->tax;
                 $tax_amount  = ($totalAmount * $tax) / 100.0;
                 $totalAmount += $tax_amount;
             }
