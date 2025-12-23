@@ -71,10 +71,8 @@ class GeneralSettingController extends AdminBaseController
     {
         return view('admin.generalsetting.popup');
     }
-    public function breadcrumb()
-    {
-        return view('admin.generalsetting.breadcrumb');
-    }
+
+    // breadcrumb() method removed - using modern minimal design
 
     public function footer()
     {
@@ -137,11 +135,7 @@ class GeneralSettingController extends AdminBaseController
                 $input['deal_background'] = $name;
             }
 
-            if ($file = $request->file('breadcrumb_banner')) {
-                $name = \PriceHelper::ImageCreateName($file);
-                $data->upload($name, $file, $data->breadcrumb_banner);
-                $input['breadcrumb_banner'] = $name;
-            }
+            // breadcrumb_banner upload removed - using modern minimal design
             if ($file = $request->file('loader')) {
                 $name = \PriceHelper::ImageCreateName($file);
                 $data->upload($name, $file, $data->loader);

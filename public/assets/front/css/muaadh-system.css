@@ -2422,28 +2422,8 @@ select option {
         opacity: 0.7;
     }
 
-    /* ----- BREADCRUMB TEXT ON IMAGE ----- */
-    /* Breadcrumb has background-image, ensure text is visible */
-    & .gs-breadcrumb-section h1,
-    & .gs-breadcrumb-section h2,
-    & .gs-breadcrumb-section h3,
-    & .gs-breadcrumb-section h4,
-    & .gs-breadcrumb-section .breadcrumb-title,
-    & .breadcrumb-section h1,
-    & .breadcrumb-section h2,
-    & .breadcrumb-section h3,
-    & .breadcrumb-section h4,
-    & .breadcrumb-section .breadcrumb-title {
-        color: var(--text-inverse) !important;
-        text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
-    }
-    & .gs-breadcrumb-section .bread-menu li,
-    & .gs-breadcrumb-section .bread-menu a,
-    & .breadcrumb-section .bread-menu li,
-    & .breadcrumb-section .bread-menu a {
-        color: var(--text-inverse) !important;
-        opacity: 0.9;
-    }
+    /* ----- BREADCRUMB ----- */
+    /* Modern minimal breadcrumb - no image, colors from theme */
 }
 
 /* ============================================================================

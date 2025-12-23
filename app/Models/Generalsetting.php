@@ -183,7 +183,7 @@ class Generalsetting extends Model
         'is_reward', 'reward_point', 'reward_dolar',
         'physical', 'digital', 'license', 'affilite',
         'header_color', 'capcha_secret_key', 'capcha_site_key',
-        'breadcrumb_banner', 'brand_title', 'brand_text',
+        'brand_title', 'brand_text',
         'deal_title', 'deal_details', 'deal_time', 'deal_background',
         'theme', 'vonage_key', 'is_otp', 'from_number', 'vonage_secret'
     ];

@@ -719,7 +719,7 @@ Route::prefix('admin')->group(function () {
         Route::get('/general-settings/affilate', 'Admin\GeneralSettingController@affilate')->name('admin-gs-affilate');
         Route::get('/general-settings/error-banner', 'Admin\GeneralSettingController@error_banner')->name('admin-gs-error-banner');
         Route::get('/general-settings/popup', 'Admin\GeneralSettingController@popup')->name('admin-gs-popup');
-        Route::get('/general-settings/breadcrumb', 'Admin\GeneralSettingController@breadcrumb')->name('admin-gs-bread');
+        // Breadcrumb banner removed - using modern minimal design
         Route::get('/general-settings/maintenance', 'Admin\GeneralSettingController@maintain')->name('admin-gs-maintenance');
 
         // Deal Of The Day

@@ -311,10 +311,7 @@
         <li>
             <a href="{{ route('admin-gs-popup') }}"><span>{{ __('Popup Banner') }}</span></a>
         </li>
-        <li>
-            <a href="{{ route('admin-gs-bread') }}"><span>{{ __('Breadcrumb Banner') }}</span></a>
-        </li>
-
+        {{-- Breadcrumb Banner removed - using modern minimal design --}}
         <li>
             <a href="{{ route('admin-gs-error-banner') }}"><span>{{ __('Error Banner') }}</span></a>
         </li>

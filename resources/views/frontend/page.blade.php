@@ -1,7 +1,7 @@
 @extends('layouts.front')
 
 @section('content')
-<section class="gs-breadcrumb-section bg-class" data-background="{{ $gs->breadcrumb_banner ? asset('assets/images/'.$gs->breadcrumb_banner):asset('assets/images/noimage.png') }}">
+<section class="gs-breadcrumb-section">
     <div class="container">
       <div class="row justify-content-center content-wrapper">
         <div class="col-12">

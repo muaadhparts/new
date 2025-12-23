@@ -5,9 +5,8 @@
 @section('title', ($category->localized_name ?? $category->full_code) . ' - ' . __('Illustrations'))
 
 @section('content')
-{{-- Breadcrumb Banner --}}
-<section class="gs-breadcrumb-section bg-class mb-4"
-    data-background="{{ $gs->breadcrumb_banner ? asset('assets/images/' . $gs->breadcrumb_banner) : asset('assets/images/noimage.png') }}">
+{{-- Breadcrumb --}}
+<section class="gs-breadcrumb-section mb-4">
     <div class="container">
         <div class="row justify-content-center content-wrapper">
             <div class="col-12">
