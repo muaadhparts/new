@@ -212,13 +212,13 @@
                                                                 {{ $loop->first ? 'checked' : '' }} class="cart_attr">
                                                             <label class="icon-label" for="w1">
                                                                 <svg xmlns="http://www.w3.org/2000/svg" width="20"
-                                                                    height="20" viewBox="0 0 20 20" fill="none">
+                                                                    height="20" viewBox="0 0 20 20" fill="none" class="radio-icon">
                                                                     <rect x="0.5" y="0.5" width="19" height="19"
-                                                                        rx="9.5" fill="#FDFDFD" />
+                                                                        rx="9.5" fill="var(--surface-primary, #fff)" />
                                                                     <rect x="0.5" y="0.5" width="19" height="19"
-                                                                        rx="9.5" stroke="#EE1243" />
+                                                                        rx="9.5" stroke="currentColor" />
                                                                     <circle cx="10" cy="10" r="4"
-                                                                        fill="#EE1243" />
+                                                                        fill="currentColor" />
                                                                 </svg>
                                                             </label>
                                                             <label for="{{ $attrKey }}{{ $optionKey }}">

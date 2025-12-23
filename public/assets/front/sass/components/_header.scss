@@ -27,7 +27,7 @@
   }
 
   a {
-    color: #fff;
+    color: var(--text-inverse, #fff);
     transition: $transition;
     &:hover {
       color: $text-color-200;
@@ -162,7 +162,7 @@
 
 /* Optional: Style the dropdown items */
 .dropdown-item {
-  color: #333;
+  color: var(--text-primary, #333);
   height: 44px;
   padding: 9px 24px;
   display: flex;
@@ -182,7 +182,7 @@
 
 /* Optional: Hover effect on dropdown items */
 .dropdown-item:hover {
-  background-color: #f8f9fa;
+  background-color: var(--surface-secondary, #f8f9fa);
 }
 
 /* Optional: Style the dropdown toggle button */

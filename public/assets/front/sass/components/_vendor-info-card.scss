@@ -4,30 +4,30 @@
     align-items: flex-start;
     gap: 24px;
     border-radius: 8px;
-    background: #fff;
+    background: var(--surface-primary, #fff);
     &.total-item-sold {
-      border-left: 4px solid #25CD7F;
+      border-left: 4px solid var(--action-success);
     }
     &.current-balance {
-      border-left: 4px solid #ffb134;
+      border-left: 4px solid var(--action-warning);
     }
     &.total-earning {
-      border-left: 4px solid #da55f0;
+      border-left: 4px solid var(--action-primary);
     }
     &.pending-commision {
-      border-left: 4px solid #5b68ff;
+      border-left: 4px solid var(--action-info);
     }
     &.total-order {
-      border-left: 4px solid #ee1243;
+      border-left: 4px solid var(--action-danger);
     }
     &.order-delivered {
-      border-left: 4px solid #27ae60;
+      border-left: 4px solid var(--action-success);
     }
     &.order-processing {
-      border-left: 4px solid #0ea5e9;
+      border-left: 4px solid var(--action-info);
     }
     &.order-pending {
-      border-left: 4px solid #fb923c;
+      border-left: 4px solid var(--action-warning);
     }
     @include screen-1920 {
       flex-direction: column;
@@ -45,7 +45,7 @@
       flex-direction: row;
       align-items: flex-start;
     }
-  
+
     .title-and-value-wrapper {
       display: flex;
       flex-direction: column;
@@ -68,7 +68,7 @@
         align-items: flex-start;
       }
     }
-  
+
     .title {
       color: $text-color-700;
       line-height: 160%;
