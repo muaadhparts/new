@@ -15,12 +15,12 @@ use Illuminate\Support\Facades\Log;
 /**
  * GeocodingController - Location Resolution via Google Maps + Tryoto API
  *
- * السياسة الجديدة (Enterprise-Level):
- * 1. عند اختيار موقع، نتحقق إذا الدولة موجودة و is_synced = 1
- * 2. إذا لم تكن مزامنة: نجلب كل المدن من Tryoto + الإحداثيات من Google
- * 3. بعد المزامنة: كل شيء من DB فقط - لا API calls
- *
- * هذه الطريقة مستخدمة في: Uber, Talabat, Amazon
+ * التوجيه المعماري:
+ * - Tryoto هو المصدر الوحيد للمدن (يتم الاستيراد يدوياً عبر CLI)
+ * - هذا الـ controller READ-ONLY - لا يُنشئ مدن جديدة
+ * - البيانات: city_name (إنجليزي فقط), latitude, longitude, country_id, tryoto_supported
+ * - لا يوجد اسم عربي للمدن (city_name_ar محذوف)
+ * - يبحث عن أقرب مدينة في DB ويستخدمها للشحن
  */
 class GeocodingController extends Controller
 {
@@ -126,63 +126,34 @@ class GeocodingController extends Controller
 
             if ($syncStatus['needs_sync']) {
                 // ==========================================
-                // السياسة الجديدة: إنشاء الدولة ومزامنة المدن تلقائياً
+                // الدولة غير متزامنة - نبحث عن أقرب مدينة مدعومة
+                // المزامنة تتم يدوياً فقط عبر: php artisan tryoto:sync-cities
                 // ==========================================
-                Log::debug('Geocoding: Country needs sync - starting auto sync', [
+                Log::debug('Geocoding: Country not synced, trying nearest city', [
                     'country' => $countryName,
                     'reason' => $syncStatus['reason']
                 ]);
 
-                // إنشاء الدولة إذا غير موجودة
-                if ($syncStatus['reason'] === 'country_not_exists') {
-                    $country = $this->createCountryFromGoogle(
-                        $countryCode,
-                        $countryName,
-                        $countryNameAr
-                    );
+                // نحاول البحث عن أقرب مدينة بالإحداثيات في أي دولة مزامنة
+                $nearestResult = $this->findNearestCityGlobally($latitude, $longitude);
 
-                    Log::debug('Geocoding: Created new country from Google Maps', [
-                        'country' => $countryName,
-                        'country_ar' => $countryNameAr,
-                        'code' => $countryCode,
-                        'country_id' => $country->id
-                    ]);
-                } else {
-                    $country = $syncStatus['country'];
-                }
-
-                // مزامنة المدن تلقائياً (سريعة بدون Google geocoding)
-                $syncResult = $this->countrySyncService->syncCountry(
-                    $countryName,
-                    $countryCode,
-                    null,
-                    $countryNameAr
-                );
-
-                Log::debug('Geocoding: Auto sync completed', [
-                    'country' => $countryName,
-                    'success' => $syncResult['success'],
-                    'cities_count' => $syncResult['cities_count'] ?? 0
-                ]);
-
-                // إذا فشلت المزامنة، نرجع خطأ
-                if (!$syncResult['success']) {
+                if ($nearestResult) {
                     return response()->json([
-                        'success' => false,
-                        'message' => $syncResult['message'] ?? 'فشل في مزامنة المدن',
-                        'country_id' => $country->id ?? null,
-                    ], 400);
+                        'success' => true,
+                        'needs_sync' => false,
+                        'message' => "تم تحديد أقرب منطقة مدعومة: {$nearestResult['city_name']}",
+                        'data' => $nearestResult,
+                        'warning' => 'هذه الدولة غير مدعومة حالياً، تم اختيار أقرب منطقة مدعومة'
+                    ]);
                 }
 
-                // تحديث الـ country من DB
-                $country = Country::find($country->id);
-
-                // الآن نكمل البحث عن المدينة
-                $syncStatus = [
-                    'needs_sync' => false,
-                    'country' => $country,
-                    'reason' => 'just_synced'
-                ];
+                // لا توجد مدن مدعومة
+                return response()->json([
+                    'success' => false,
+                    'message' => 'عذراً، هذه المنطقة غير مدعومة حالياً للتوصيل.',
+                    'country' => $countryName,
+                    'suggestion' => 'يرجى اختيار موقع في منطقة مدعومة'
+                ], 400);
             }
 
             // ==========================================
@@ -241,13 +212,11 @@ class GeocodingController extends Controller
                     'country' => [
                         'id' => $country->id,
                         'name' => $country->country_name,
-                        'name_ar' => $country->country_name_ar,
                         'code' => $country->country_code
                     ],
                     'city' => [
                         'id' => $city->id,
                         'name' => $city->city_name,
-                        'name_ar' => $city->city_name_ar,
                         'tryoto_name' => $resolution['tryoto_name']
                     ],
                     'coordinates' => $resolution['coordinates'],
@@ -292,40 +261,35 @@ class GeocodingController extends Controller
     /**
      * بدء مزامنة دولة
      *
-     * السياسة الجديدة:
-     * - يستقبل الاسم العربي من Google Maps في الـ request
-     * - يمرره إلى syncCountry لحفظه مباشرة
+     * ملاحظة: المزامنة الكاملة تتم عبر CLI:
+     * php artisan tryoto:sync-cities --country=SA
      */
     public function startCountrySync(Request $request)
     {
         $request->validate([
             'country_name' => 'required|string',
             'country_code' => 'required|string|max:2',
-            'country_name_ar' => 'nullable|string', // الاسم العربي من Google Maps
         ]);
 
         $countryName = $request->country_name;
         $countryCode = strtoupper($request->country_code);
-        $countryNameAr = $request->country_name_ar; // من Google Maps
         $sessionId = uniqid('sync_');
 
         Log::debug('GeocodingController: Starting country sync', [
             'country' => $countryName,
-            'country_ar' => $countryNameAr,
             'code' => $countryCode,
             'session' => $sessionId
         ]);
 
-        // بدء المزامنة مع الاسم العربي
-        $result = $this->countrySyncService->syncCountry($countryName, $countryCode, $sessionId, $countryNameAr);
+        // بدء المزامنة
+        $result = $this->countrySyncService->syncCountry($countryName, $countryCode, $sessionId);
 
         return response()->json([
             'success' => $result['success'],
             'session_id' => $sessionId,
             'message' => $result['message'],
             'country_id' => $result['country_id'] ?? null,
-            'cities_count' => $result['cities_count'] ?? 0,
-            'states_count' => $result['states_count'] ?? 0
+            'cities_count' => $result['cities_count'] ?? 0
         ]);
     }
 
@@ -350,54 +314,6 @@ class GeocodingController extends Controller
         return response()->json([
             'success' => true,
             'progress' => $progress
-        ]);
-    }
-
-    /**
-     * إنشاء دولة جديدة من بيانات Google Maps
-     *
-     * السياسة:
-     * - تُنشأ الدولة فوراً عند أول طلب من الخريطة
-     * - is_synced = 0 (تحتاج مزامنة المدن من Tryoto)
-     * - synced_at = NULL
-     * - الأسماء EN و AR من Google Maps
-     */
-    protected function createCountryFromGoogle(string $countryCode, string $countryName, ?string $countryNameAr): Country
-    {
-        // التحقق من وجود الدولة أولاً (بالكود أو الاسم)
-        $existingCountry = Country::where('country_code', strtoupper($countryCode))
-            ->orWhere('country_name', $countryName)
-            ->orWhere('country_name_ar', $countryNameAr)
-            ->first();
-
-        if ($existingCountry) {
-            // تحديث البيانات الناقصة فقط
-            $updates = [];
-
-            if (empty($existingCountry->country_name_ar) && $countryNameAr) {
-                $updates['country_name_ar'] = $countryNameAr;
-            }
-
-            if (empty($existingCountry->country_code) && $countryCode) {
-                $updates['country_code'] = strtoupper($countryCode);
-            }
-
-            if (!empty($updates)) {
-                $existingCountry->update($updates);
-            }
-
-            return $existingCountry;
-        }
-
-        // إنشاء دولة جديدة
-        return Country::create([
-            'country_code' => strtoupper($countryCode),
-            'country_name' => $countryName,
-            'country_name_ar' => $countryNameAr ?: $countryName,
-            'tax' => 0,
-            'status' => 1,
-            'is_synced' => 0,      // تحتاج مزامنة المدن
-            'synced_at' => null,   // لم تتم المزامنة بعد
         ]);
     }
 
@@ -459,13 +375,11 @@ class GeocodingController extends Controller
                         'country' => [
                             'id' => $syncedCountry->id,
                             'name' => $syncedCountry->country_name,
-                            'name_ar' => $syncedCountry->country_name_ar,
                             'code' => $syncedCountry->country_code
                         ],
                         'city' => [
                             'id' => $anyCity->id,
                             'name' => $anyCity->city_name,
-                            'name_ar' => $anyCity->city_name_ar,
                         ],
                         'city_name' => $anyCity->city_name,
                         'coordinates' => [
@@ -494,13 +408,11 @@ class GeocodingController extends Controller
             'country' => [
                 'id' => $city->country->id,
                 'name' => $city->country->country_name,
-                'name_ar' => $city->country->country_name_ar,
                 'code' => $city->country->country_code
             ],
             'city' => [
                 'id' => $city->id,
                 'name' => $city->city_name,
-                'name_ar' => $city->city_name_ar,
                 'tryoto_name' => $city->city_name
             ],
             'city_name' => $city->city_name,
@@ -517,67 +429,26 @@ class GeocodingController extends Controller
     }
 
     /**
-     * Get or create country in database (Cache)
+     * البحث عن دولة في قاعدة البيانات (read-only)
+     * ملاحظة: لا يتم إنشاء دول جديدة - المزامنة تتم عبر CLI فقط
      */
-    protected function getOrCreateCountry(string $countryCode, string $countryName, ?string $countryNameAr): Country
+    protected function findCountry(string $countryCode, string $countryName): ?Country
     {
-        $country = Country::where('country_code', $countryCode)
+        return Country::where('country_code', $countryCode)
             ->orWhere('country_name', $countryName)
             ->first();
-
-        if (!$country) {
-            $country = Country::create([
-                'country_code' => $countryCode,
-                'country_name' => $countryName,
-                'country_name_ar' => $countryNameAr ?? $countryName,
-                'tax' => 0,
-                'status' => 1
-            ]);
-
-            Log::debug('Geocoding: New country cached', [
-                'name' => $countryName,
-                'code' => $countryCode
-            ]);
-        }
-
-        return $country;
     }
 
     /**
-     * Get or create city in database (Cache)
+     * البحث عن مدينة في قاعدة البيانات (read-only)
+     * ملاحظة: لا يتم إنشاء مدن جديدة - المزامنة تتم عبر CLI فقط
+     * البيانات: city_name (إنجليزي فقط) - لا يوجد city_name_ar
      */
-    protected function getOrCreateCity(
-        int $countryId,
-        string $cityName,
-        ?string $cityNameAr,
-        float $latitude,
-        float $longitude
-    ): City {
-        $city = City::where('city_name', $cityName)
+    protected function findCity(int $countryId, string $cityName): ?City
+    {
+        return City::where('city_name', $cityName)
             ->where('country_id', $countryId)
             ->first();
-
-        if (!$city) {
-            $city = City::create([
-                'country_id' => $countryId,
-                'city_name' => $cityName,
-                'city_name_ar' => $cityNameAr ?? $cityName,
-                'latitude' => $latitude,
-                'longitude' => $longitude,
-                'status' => 1
-            ]);
-
-            Log::debug('Geocoding: New city cached (verified by Tryoto API)', [
-                'city' => $cityName
-            ]);
-        } elseif (!$city->latitude || !$city->longitude) {
-            $city->update([
-                'latitude' => $latitude,
-                'longitude' => $longitude
-            ]);
-        }
-
-        return $city;
     }
 
     /**
@@ -694,7 +565,8 @@ class GeocodingController extends Controller
     }
 
     /**
-     * Search for cities (from database cache)
+     * البحث عن مدن (read-only من قاعدة البيانات)
+     * ملاحظة: البحث بالاسم الإنجليزي فقط - لا يوجد city_name_ar
      */
     public function searchCities(Request $request)
     {
@@ -705,11 +577,8 @@ class GeocodingController extends Controller
         $query = $request->query;
 
         $cities = City::where('status', 1)
-            ->where(function ($q) use ($query) {
-                $q->where('city_name', 'like', "%{$query}%")
-                    ->orWhere('city_name_ar', 'like', "%{$query}%");
-            })
-            ->with(['country:id,country_name,country_name_ar'])
+            ->where('city_name', 'like', "%{$query}%")
+            ->with(['country:id,country_name,country_code'])
             ->limit(20)
             ->get();
 
@@ -719,11 +588,10 @@ class GeocodingController extends Controller
                 return [
                     'id' => $city->id,
                     'name' => $city->city_name,
-                    'name_ar' => $city->city_name_ar,
                     'country' => [
                         'id' => $city->country->id,
                         'name' => $city->country->country_name,
-                        'name_ar' => $city->country->country_name_ar
+                        'code' => $city->country->country_code
                     ],
                     'coordinates' => [
                         'lat' => $city->latitude,

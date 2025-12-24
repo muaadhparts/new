@@ -6,12 +6,11 @@ use App\Models\Country;
 use App\Models\City;
 
 /**
- * LocationHelper - مساعد موحد لعرض أسماء الدول والمدن حسب اللغة النشطة
+ * LocationHelper - مساعد موحد لعرض أسماء الدول والمدن
  *
- * يوفر دوال موحدة لجلب الأسماء من قاعدة البيانات مباشرة بناءً على اللغة النشطة
- * - إذا كانت اللغة ar: يستخدم country_name_ar, city_name_ar
- * - إذا كانت اللغة en: يستخدم country_name, city_name
- * - Fallback: إذا كان العمود العربي فارغ، يستخدم العمود الإنجليزي
+ * التوجيه المعماري:
+ * - المدن: city_name فقط (إنجليزي) - لا يوجد city_name_ar (محذوف من قاعدة البيانات)
+ * - الدول: country_name, country_name_ar
  */
 class LocationHelper
 {
@@ -33,19 +32,14 @@ class LocationHelper
     }
 
     /**
-     * الحصول على اسم المدينة حسب اللغة النشطة
+     * الحصول على اسم المدينة
+     * ملاحظة: المدن لها اسم إنجليزي فقط - لا يوجد city_name_ar
      *
      * @param City $city
      * @return string
      */
     public static function getCityName(City $city): string
     {
-        $locale = app()->getLocale();
-
-        if ($locale == 'ar') {
-            return $city->city_name_ar ?: $city->city_name;
-        }
-
         return $city->city_name;
     }
 
@@ -90,7 +84,8 @@ class LocationHelper
     }
 
     /**
-     * إنشاء HTML options للمدن حسب اللغة النشطة
+     * إنشاء HTML options للمدن
+     * ملاحظة: المدن لها اسم إنجليزي فقط - لا يوجد city_name_ar
      *
      * @param int $countryId
      * @param string|null $selectedCity
@@ -100,7 +95,6 @@ class LocationHelper
      */
     public static function getCitiesOptionsHtml(int $countryId, ?string $selectedCity = null, bool $includeEmptyOption = true, bool $useIdAsValue = false): string
     {
-        $locale = app()->getLocale();
         $cities = City::where('country_id', $countryId)->get();
 
         $html = '';
@@ -110,10 +104,7 @@ class LocationHelper
         }
 
         foreach ($cities as $city) {
-            $displayName = ($locale == 'ar')
-                ? ($city->city_name_ar ?: $city->city_name)
-                : $city->city_name;
-
+            $displayName = $city->city_name;
             $value = $useIdAsValue ? $city->id : $city->city_name;
             $selected = ($selectedCity && $value == $selectedCity) ? 'selected' : '';
 
@@ -139,13 +130,14 @@ class LocationHelper
     }
 
     /**
-     * الحصول على اسم العمود للمدينة حسب اللغة النشطة
+     * الحصول على اسم العمود للمدينة
+     * ملاحظة: المدن لها اسم إنجليزي فقط - لا يوجد city_name_ar
      *
      * @return string
      */
     public static function getCityColumnName(): string
     {
-        return app()->getLocale() == 'ar' ? 'city_name_ar' : 'city_name';
+        return 'city_name';
     }
 
     /**

@@ -1511,7 +1511,7 @@ class CartController extends FrontBaseController
                     $tax_type = 'city_tax';
                     $location_id = $city->id;
                     $tax_location = $city->city_name;
-                    $tax_location_ar = $city->city_name_ar ?? $city->city_name;
+                    $tax_location_ar = $city->city_name; // لا يوجد city_name_ar
                 } else {
                     // City has no tax, fallback to country
                     $request->merge(['country_id' => $city->country_id]);

@@ -75,9 +75,9 @@ class CityController extends Controller
 
         $country = Country::findOrFail($country_id);
 
+        // ملاحظة: المدن لها اسم إنجليزي فقط - لا يوجد city_name_ar
         $city = new City();
         $city->city_name = $request->city_name;
-        $city->city_name_ar = $request->city_name_ar ?? $request->city_name;
         $city->country_id = $country_id;
         $city->status = 1;
         $city->save();
@@ -111,9 +111,9 @@ class CityController extends Controller
             return response()->json(['errors' => $validator->getMessageBag()->toArray()]);
         }
 
+        // ملاحظة: المدن لها اسم إنجليزي فقط - لا يوجد city_name_ar
         $city = City::findOrFail($id);
         $city->city_name = $request->city_name;
-        $city->city_name_ar = $request->city_name_ar ?? $city->city_name_ar;
         $city->update();
 
         $mgs = __('Data Updated Successfully.');

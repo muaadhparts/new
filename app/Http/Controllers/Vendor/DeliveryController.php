@@ -167,10 +167,9 @@ class DeliveryController extends VendorBaseController
 
     public function findReider(Request $request)
     {
-        // البحث عن المدينة بالاسم أو بالـ ID
+        // البحث عن المدينة بالاسم أو بالـ ID (الاسم إنجليزي فقط - لا يوجد city_name_ar)
         $city = City::where('id', $request->city)
             ->orWhere('city_name', $request->city)
-            ->orWhere('city_name_ar', $request->city)
             ->first();
 
         if (!$city) {

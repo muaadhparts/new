@@ -12,36 +12,37 @@ use Illuminate\Support\Facades\Log;
 /**
  * مزامنة المدن المدعومة من Tryoto إلى قاعدة البيانات
  *
- * هذا الـ Command يجلب جميع المدن المدعومة من Tryoto API
- * ويخزنها في جداول countries, states, cities مع الإحداثيات
- *
- * يُشغّل مرة واحدة عند التثبيت، ثم أسبوعياً للتحديث
+ * التوجيه المعماري:
+ * - Tryoto هو المصدر الوحيد للمدن
+ * - البيانات: city_name (إنجليزي فقط), latitude, longitude, country_id, tryoto_supported
+ * - لا يوجد اسم عربي للمدن
+ * - يُشغّل يدوياً فقط - لا علاقة بالـ checkout
  */
 class SyncTryotoCities extends Command
 {
     protected $signature = 'tryoto:sync-cities
                             {--country= : Sync specific country code (SA, AE, IQ, etc.)}
                             {--fresh : Delete existing data and sync fresh}
-                            {--no-geocode : Skip geocoding (faster, but no coordinates)}';
+                            {--no-geocode : Skip geocoding (faster, coordinates fetched later by cities:geocode)}';
 
-    protected $description = 'Sync all Tryoto supported cities to database with coordinates';
+    protected $description = 'Sync all Tryoto supported cities to database';
 
     protected TryotoService $tryoto;
     protected string $googleApiKey;
 
     /**
-     * الدول المدعومة من Tryoto مع أكوادها
+     * الدول المدعومة من Tryoto
      */
     protected array $supportedCountries = [
-        'SA' => ['name' => 'Saudi Arabia', 'name_ar' => 'السعودية'],
-        'AE' => ['name' => 'United Arab Emirates', 'name_ar' => 'الإمارات'],
-        'IQ' => ['name' => 'Iraq', 'name_ar' => 'العراق'],
-        'JO' => ['name' => 'Jordan', 'name_ar' => 'الأردن'],
-        'KW' => ['name' => 'Kuwait', 'name_ar' => 'الكويت'],
-        'BH' => ['name' => 'Bahrain', 'name_ar' => 'البحرين'],
-        'OM' => ['name' => 'Oman', 'name_ar' => 'عُمان'],
-        'QA' => ['name' => 'Qatar', 'name_ar' => 'قطر'],
-        'EG' => ['name' => 'Egypt', 'name_ar' => 'مصر'],
+        'SA' => 'Saudi Arabia',
+        'AE' => 'United Arab Emirates',
+        'IQ' => 'Iraq',
+        'JO' => 'Jordan',
+        'KW' => 'Kuwait',
+        'BH' => 'Bahrain',
+        'OM' => 'Oman',
+        'QA' => 'Qatar',
+        'EG' => 'Egypt',
     ];
 
     public function handle(): int
@@ -49,31 +50,31 @@ class SyncTryotoCities extends Command
         $this->tryoto = app(TryotoService::class);
         $this->googleApiKey = config('services.google_maps.api_key', '');
 
-        $this->info('🚀 Starting Tryoto Cities Sync...');
+        $this->info('Starting Tryoto Cities Sync...');
         $this->newLine();
 
         // تحديد الدول للمزامنة
         $countryCode = $this->option('country');
         $countries = $countryCode
-            ? [$countryCode => $this->supportedCountries[$countryCode] ?? ['name' => $countryCode, 'name_ar' => $countryCode]]
+            ? [$countryCode => $this->supportedCountries[$countryCode] ?? $countryCode]
             : $this->supportedCountries;
 
         // مسح البيانات القديمة إذا طُلب
         if ($this->option('fresh')) {
-            $this->warn('⚠️  Fresh sync requested - clearing existing Tryoto data...');
+            $this->warn('Fresh sync requested - clearing existing data...');
             $this->clearExistingData($countries);
         }
 
         $totalCities = 0;
         $totalGeocoded = 0;
 
-        foreach ($countries as $code => $countryData) {
-            $this->info("📍 Processing {$countryData['name']} ({$code})...");
+        foreach ($countries as $code => $countryName) {
+            $this->info("Processing {$countryName} ({$code})...");
 
             // 1. إنشاء/تحديث الدولة
-            $country = $this->syncCountry($code, $countryData);
+            $country = $this->syncCountry($code, $countryName);
             if (!$country) {
-                $this->error("   Failed to create country: {$countryData['name']}");
+                $this->error("   Failed to create country: {$countryName}");
                 continue;
             }
 
@@ -86,7 +87,7 @@ class SyncTryotoCities extends Command
 
             $this->info("   Found " . count($cities) . " cities from Tryoto API");
 
-            // 3. مزامنة المدن مع DB
+            // 3. مزامنة المدن
             $bar = $this->output->createProgressBar(count($cities));
             $bar->start();
 
@@ -95,14 +96,13 @@ class SyncTryotoCities extends Command
                 $cityName = $cityData['name'] ?? '';
                 if (empty($cityName)) continue;
 
-                // تخزين المدينة مع الإحداثيات
                 $geocoded = $this->syncCity($country, $cityName);
                 if ($geocoded) $geocodedCount++;
 
                 $bar->advance();
 
-                // تأخير صغير لتجنب rate limiting من Google
-                if (!$this->option('no-geocode')) {
+                // تأخير صغير لتجنب rate limiting
+                if (!$this->option('no-geocode') && $this->googleApiKey) {
                     usleep(50000); // 50ms
                 }
             }
@@ -113,14 +113,18 @@ class SyncTryotoCities extends Command
             $totalCities += count($cities);
             $totalGeocoded += $geocodedCount;
 
-            $this->info("   ✓ Synced " . count($cities) . " cities, geocoded {$geocodedCount}");
+            $this->info("   Synced " . count($cities) . " cities, geocoded {$geocodedCount}");
             $this->newLine();
         }
 
         $this->newLine();
-        $this->info("🎉 Sync completed!");
+        $this->info("Sync completed!");
         $this->info("   Total cities: {$totalCities}");
         $this->info("   Geocoded: {$totalGeocoded}");
+
+        if ($totalGeocoded < $totalCities) {
+            $this->warn("   Run 'php artisan cities:geocode' to fetch remaining coordinates");
+        }
 
         // مسح الـ cache
         \Illuminate\Support\Facades\Cache::flush();
@@ -134,12 +138,11 @@ class SyncTryotoCities extends Command
      */
     protected function clearExistingData(array $countries): void
     {
-        foreach ($countries as $code => $data) {
+        foreach ($countries as $code => $name) {
             $country = Country::where('country_code', $code)->first();
             if ($country) {
-                // مسح المدن المرتبطة
                 City::where('country_id', $country->id)->delete();
-                $this->line("   Cleared data for {$data['name']}");
+                $this->line("   Cleared data for {$name}");
             }
         }
     }
@@ -147,16 +150,17 @@ class SyncTryotoCities extends Command
     /**
      * مزامنة الدولة
      */
-    protected function syncCountry(string $code, array $data): ?Country
+    protected function syncCountry(string $code, string $name): ?Country
     {
         try {
             return Country::updateOrCreate(
                 ['country_code' => $code],
                 [
-                    'country_name' => $data['name'],
-                    'country_name_ar' => $data['name_ar'],
+                    'country_name' => $name,
                     'status' => 1,
                     'tax' => 0,
+                    'is_synced' => 1,
+                    'synced_at' => now(),
                 ]
             );
         } catch (\Exception $e) {
@@ -169,13 +173,12 @@ class SyncTryotoCities extends Command
     }
 
     /**
-     * جلب المدن من Tryoto API (مع pagination)
+     * جلب المدن من Tryoto API
      */
     protected function fetchTryotoCities(string $countryCode): array
     {
         $allCities = [];
         $page = 1;
-        $perPage = 100;
 
         do {
             $result = $this->tryoto->makeApiRequest('POST', '/rest/v2/getCities', [
@@ -192,17 +195,16 @@ class SyncTryotoCities extends Command
             $totalCount = $data['totalCount'] ?? 0;
 
             $allCities = array_merge($allCities, $cities);
-
             $page++;
 
-            // التحقق من وصولنا لنهاية الصفحات
         } while (count($allCities) < $totalCount && !empty($cities));
 
         return $allCities;
     }
 
     /**
-     * مزامنة مدينة واحدة مع الإحداثيات
+     * مزامنة مدينة واحدة
+     * البيانات: city_name فقط (إنجليزي) + tryoto_supported + coordinates
      */
     protected function syncCity(Country $country, string $cityName): bool
     {
@@ -217,16 +219,10 @@ class SyncTryotoCities extends Command
                 return false;
             }
 
-            // جلب الإحداثيات من Google
+            // جلب الإحداثيات من Google (اختياري)
             $coordinates = null;
-            $arabicName = $cityName;
-
             if (!$this->option('no-geocode') && $this->googleApiKey) {
-                $geoData = $this->geocodeCity($cityName, $country->country_name);
-                if ($geoData) {
-                    $coordinates = $geoData['coordinates'];
-                    $arabicName = $geoData['arabic_name'] ?? $cityName;
-                }
+                $coordinates = $this->geocodeCity($cityName, $country->country_name);
             }
 
             // إنشاء أو تحديث المدينة
@@ -236,15 +232,15 @@ class SyncTryotoCities extends Command
                     'city_name' => $cityName,
                 ],
                 [
-                    'city_name_ar' => $arabicName,
                     'latitude' => $coordinates['lat'] ?? null,
                     'longitude' => $coordinates['lng'] ?? null,
                     'status' => 1,
-                    'tryoto_supported' => 1, // علامة أن المدينة مدعومة من Tryoto
+                    'tryoto_supported' => 1,
                 ]
             );
 
             return $coordinates !== null;
+
         } catch (\Exception $e) {
             Log::warning('SyncTryotoCities: Failed to sync city', [
                 'city' => $cityName,
@@ -257,11 +253,11 @@ class SyncTryotoCities extends Command
 
     /**
      * جلب الإحداثيات من Google Geocoding API
+     * يرجع الإحداثيات فقط - لا أسماء عربية
      */
     protected function geocodeCity(string $cityName, string $countryName): ?array
     {
         try {
-            // طلب بالإنجليزية للإحداثيات
             $response = Http::timeout(5)->get('https://maps.googleapis.com/maps/api/geocode/json', [
                 'address' => "{$cityName}, {$countryName}",
                 'key' => $this->googleApiKey,
@@ -277,36 +273,8 @@ class SyncTryotoCities extends Command
                 return null;
             }
 
-            $location = $data['results'][0]['geometry']['location'];
+            return $data['results'][0]['geometry']['location'];
 
-            // طلب بالعربية للاسم العربي
-            $arabicName = $cityName;
-            try {
-                $arResponse = Http::timeout(5)->get('https://maps.googleapis.com/maps/api/geocode/json', [
-                    'latlng' => "{$location['lat']},{$location['lng']}",
-                    'key' => $this->googleApiKey,
-                    'language' => 'ar',
-                ]);
-
-                if ($arResponse->successful()) {
-                    $arData = $arResponse->json();
-                    if ($arData['status'] === 'OK' && !empty($arData['results'])) {
-                        foreach ($arData['results'][0]['address_components'] as $component) {
-                            if (in_array('locality', $component['types'])) {
-                                $arabicName = $component['long_name'];
-                                break;
-                            }
-                        }
-                    }
-                }
-            } catch (\Exception $e) {
-                // تجاهل أخطاء الترجمة
-            }
-
-            return [
-                'coordinates' => $location,
-                'arabic_name' => $arabicName,
-            ];
         } catch (\Exception $e) {
             return null;
         }

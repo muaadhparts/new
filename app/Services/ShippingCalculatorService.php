@@ -9,7 +9,8 @@ use Illuminate\Support\Facades\Log;
 /**
  * خدمة موحدة لحساب الشحن
  *
- * المبدأ الأساسي:
+ * التوجيه المعماري:
+ * - البيانات: city_name (إنجليزي فقط) - لا يوجد city_name_ar
  * - لا قيم ثابتة (hardcoded)
  * - لا fallback لأي بيانات
  * - كل تاجر يُحسب شحنه مستقلاً
@@ -81,7 +82,6 @@ class ShippingCalculatorService
         return [
             'city_id' => $city->id,
             'city_name' => $city->city_name ?? $city->name ?? null,
-            'city_name_ar' => $city->city_name_ar ?? $city->name_ar ?? $city->city_name ?? null,
             'country_id' => $city->country_id ?? null,
         ];
     }
@@ -89,6 +89,7 @@ class ShippingCalculatorService
     /**
      * جلب مدينة العميل من العنوان
      * من الخريطة/العنوان فقط - بدون fallback
+     * ملاحظة: city_name فقط (إنجليزي) - لا يوجد city_name_ar
      */
     public static function getCustomerCity(?int $cityId, ?string $addressData = null): ?array
     {
@@ -98,7 +99,6 @@ class ShippingCalculatorService
                 return [
                     'city_id' => $city->id,
                     'city_name' => $city->city_name ?? $city->name ?? null,
-                    'city_name_ar' => $city->city_name_ar ?? $city->name_ar ?? $city->city_name ?? null,
                     'source' => 'city_id',
                 ];
             }
@@ -111,15 +111,12 @@ class ShippingCalculatorService
                 $cityName = $decoded['city'] ?? $decoded['locality'] ?? $decoded['administrative_area_level_2'] ?? null;
 
                 if ($cityName) {
-                    $city = City::where('name', $cityName)
-                        ->orWhere('name_ar', $cityName)
-                        ->first();
+                    $city = City::where('city_name', $cityName)->first();
 
                     if ($city) {
                         return [
                             'city_id' => $city->id,
-                            'city_name' => $city->name,
-                            'city_name_ar' => $city->name_ar ?? $city->name,
+                            'city_name' => $city->city_name,
                             'source' => 'address_data',
                         ];
                     }
@@ -127,7 +124,6 @@ class ShippingCalculatorService
                     return [
                         'city_id' => null,
                         'city_name' => $cityName,
-                        'city_name_ar' => $cityName,
                         'source' => 'address_raw',
                         'warning' => 'city_not_in_system',
                     ];

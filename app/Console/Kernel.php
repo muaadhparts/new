@@ -52,6 +52,13 @@ class Kernel extends ConsoleKernel
         $schedule->command('telescope:prune --hours=720')
                 ->daily()
                 ->withoutOverlapping();
+
+        // ✅ Cities: تحديث إحداثيات المدن في الخلفية (كل ساعة)
+        // يشيك على المدن بدون latitude/longitude ويجلبها من Google Maps
+        $schedule->command('cities:geocode --limit=50 --quiet-log')
+                ->hourly()
+                ->withoutOverlapping()
+                ->appendOutputTo(storage_path('logs/cities-geocode.log'));
     }
 
 

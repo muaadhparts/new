@@ -883,10 +883,8 @@ class CheckoutController extends FrontBaseController
             // ✅ Never pre-select - always empty
             $check = '';
 
-            // تحديد اسم المدينة بناءً على اللغة النشطة باستخدام app()->getLocale()
-            $cityDisplayName = (app()->getLocale() == 'ar')
-                ? ($city->city_name_ar ?: $city->city_name)
-                : $city->city_name;
+            // اسم المدينة (إنجليزي فقط - لا يوجد city_name_ar)
+            $cityDisplayName = $city->city_name;
 
             // تغيير value من city_name إلى city->id
             $html_cities .= '<option value="' . $city->id . '" ' . $check . ' >'
@@ -909,10 +907,8 @@ class CheckoutController extends FrontBaseController
             // ✅ Never pre-select - always empty
             $check = '';
 
-            // تحديد اسم المدينة بناءً على اللغة النشطة باستخدام app()->getLocale()
-            $cityDisplayName = (app()->getLocale() == 'ar')
-                ? ($city->city_name_ar ?: $city->city_name)
-                : $city->city_name;
+            // اسم المدينة (إنجليزي فقط - لا يوجد city_name_ar)
+            $cityDisplayName = $city->city_name;
 
             $html_cities .= '<option value="' . $city->id . '" ' . $check . ' >'
               . $cityDisplayName . '</option>';

@@ -74,12 +74,9 @@ class WarehouseController extends VendorBaseController
 
         $cities = City::where('country_id', $country->id)->get();
 
-        // تطبيق منطق اللغة على المدن
-        $locale = app()->getLocale();
-        $citiesWithLocale = $cities->map(function($city) use ($locale) {
-            $city->display_name = ($locale == 'ar')
-                ? ($city->city_name_ar ?: $city->city_name)
-                : $city->city_name;
+        // اسم المدينة (إنجليزي فقط - لا يوجد city_name_ar)
+        $citiesWithLocale = $cities->map(function($city) {
+            $city->display_name = $city->city_name;
             return $city;
         });
 

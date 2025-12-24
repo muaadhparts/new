@@ -10,11 +10,16 @@ use Illuminate\Support\Facades\DB;
 /**
  * TryotoLocationService - Location Resolution from Database
  *
- * السيناريو الصحيح 100%:
+ * التوجيه المعماري:
+ * - Tryoto هو المصدر الوحيد للمدن (يتم الاستيراد يدوياً عبر CLI)
+ * - هذا الـ service READ-ONLY - لا يُنشئ مدن جديدة
+ * - البيانات: city_name (إنجليزي فقط), latitude, longitude, country_id, tryoto_supported
+ * - لا يوجد اسم عربي للمدن (city_name_ar محذوف)
+ *
+ * السيناريو:
  * 1. البيانات تأتي من Google Maps (الدولة، المنطقة، المدينة، الإحداثيات)
  * 2. البحث يكون في DB فقط (المدن المُزامنة من Tryoto API)
  * 3. لا يوجد API calls في وقت الـ request = سريع جداً
- * 4. الإحداثيات محفوظة مسبقاً = دقة 100%
  *
  * التسلسل:
  * City → State → أقرب مدينة مدعومة في نفس الدولة (من DB) → رفض
@@ -96,7 +101,6 @@ class TryotoLocationService
                 'success' => true,
                 'strategy' => 'exact_city',
                 'resolved_name' => $city->city_name,
-                'resolved_name_ar' => $city->city_name_ar,
                 'tryoto_name' => $city->city_name,
                 'resolved_type' => 'city',
                 'city_id' => $city->id,
@@ -139,7 +143,6 @@ class TryotoLocationService
                     'success' => true,
                     'strategy' => 'fallback_state',
                     'resolved_name' => $stateCity->city_name,
-                    'resolved_name_ar' => $stateCity->city_name_ar,
                     'tryoto_name' => $stateCity->city_name,
                     'resolved_type' => 'state',
                     'city_id' => $stateCity->id,
@@ -170,7 +173,6 @@ class TryotoLocationService
                 'success' => true,
                 'strategy' => 'nearest_city_same_country',
                 'resolved_name' => $nearestCity->city_name,
-                'resolved_name_ar' => $nearestCity->city_name_ar,
                 'tryoto_name' => $nearestCity->city_name,
                 'resolved_type' => 'city',
                 'city_id' => $nearestCity->id,
@@ -217,16 +219,14 @@ class TryotoLocationService
 
     /**
      * البحث عن مدينة بالاسم (مع مطابقة مرنة)
+     * ملاحظة: البحث بـ city_name الإنجليزي فقط - لا يوجد city_name_ar
      */
     protected function findCityByName(string $name, int $countryId): ?City
     {
         // مطابقة تامة أولاً
         $city = City::where('country_id', $countryId)
             ->where('tryoto_supported', 1)
-            ->where(function ($q) use ($name) {
-                $q->where('city_name', $name)
-                    ->orWhere('city_name_ar', $name);
-            })
+            ->where('city_name', $name)
             ->first();
 
         if ($city) return $city;
@@ -234,10 +234,7 @@ class TryotoLocationService
         // مطابقة جزئية (LIKE)
         $city = City::where('country_id', $countryId)
             ->where('tryoto_supported', 1)
-            ->where(function ($q) use ($name) {
-                $q->where('city_name', 'LIKE', "%{$name}%")
-                    ->orWhere('city_name_ar', 'LIKE', "%{$name}%");
-            })
+            ->where('city_name', 'LIKE', "%{$name}%")
             ->first();
 
         if ($city) return $city;
@@ -256,10 +253,7 @@ class TryotoLocationService
         if ($mainName && $mainName !== $name) {
             return City::where('country_id', $countryId)
                 ->where('tryoto_supported', 1)
-                ->where(function ($q) use ($mainName) {
-                    $q->where('city_name', 'LIKE', "%{$mainName}%")
-                        ->orWhere('city_name_ar', 'LIKE', "%{$mainName}%");
-                })
+                ->where('city_name', 'LIKE', "%{$mainName}%")
                 ->first();
         }
 
@@ -366,13 +360,13 @@ class TryotoLocationService
 
     /**
      * Verify if a city is supported (from DB)
+     * ملاحظة: البحث بـ city_name الإنجليزي فقط - لا يوجد city_name_ar
      */
     public function verifyCitySupport(string $cityName, ?string $countryName = null): array
     {
         $query = City::where('tryoto_supported', 1)
             ->where(function ($q) use ($cityName) {
                 $q->where('city_name', $cityName)
-                    ->orWhere('city_name_ar', $cityName)
                     ->orWhere('city_name', 'LIKE', "%{$cityName}%");
             });
 
@@ -390,7 +384,6 @@ class TryotoLocationService
                 'supported' => true,
                 'city_id' => $city->id,
                 'city_name' => $city->city_name,
-                'city_name_ar' => $city->city_name_ar,
                 'country_id' => $city->country_id,
                 'latitude' => $city->latitude,
                 'longitude' => $city->longitude
@@ -428,40 +421,39 @@ class TryotoLocationService
         return Country::whereHas('cities', function ($q) {
             $q->where('tryoto_supported', 1);
         })
-            ->get(['id', 'country_code', 'country_name', 'country_name_ar'])
+            ->get(['id', 'country_code', 'country_name'])
             ->toArray();
     }
 
     /**
      * Get all supported cities for a country
+     * ملاحظة: city_name فقط - لا يوجد city_name_ar
      */
     public function getSupportedCities(int $countryId): array
     {
         return City::where('country_id', $countryId)
             ->where('tryoto_supported', 1)
             ->orderBy('city_name')
-            ->get(['id', 'city_name', 'city_name_ar', 'latitude', 'longitude'])
+            ->get(['id', 'city_name', 'latitude', 'longitude'])
             ->toArray();
     }
 
     /**
      * Search cities by name (for autocomplete)
+     * ملاحظة: البحث بـ city_name الإنجليزي فقط - لا يوجد city_name_ar
      */
     public function searchCities(string $query, ?int $countryId = null, int $limit = 10): array
     {
         $q = City::where('tryoto_supported', 1)
-            ->where(function ($qb) use ($query) {
-                $qb->where('city_name', 'LIKE', "%{$query}%")
-                    ->orWhere('city_name_ar', 'LIKE', "%{$query}%");
-            });
+            ->where('city_name', 'LIKE', "%{$query}%");
 
         if ($countryId) {
             $q->where('country_id', $countryId);
         }
 
-        return $q->with('country:id,country_name,country_name_ar,country_code')
+        return $q->with('country:id,country_name,country_code')
             ->limit($limit)
-            ->get(['id', 'city_name', 'city_name_ar', 'country_id', 'latitude', 'longitude'])
+            ->get(['id', 'city_name', 'country_id', 'latitude', 'longitude'])
             ->toArray();
     }
 }
