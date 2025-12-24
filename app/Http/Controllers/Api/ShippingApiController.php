@@ -121,8 +121,32 @@ class ShippingApiController extends Controller
 
             Log::debug('ShippingApiController: Got delivery options', [
                 'vendor_id' => $vendorId,
-                'options_count' => count($deliveryCompany)
+                'options_count' => count($deliveryCompany),
+                'origin' => $originCity,
+                'destination' => $destinationCity,
+                'weight' => $weight
             ]);
+
+            // ✅ إذا لم تكن هناك خيارات شحن، نرجع رسالة خطأ واضحة
+            if (empty($deliveryCompany)) {
+                Log::warning('ShippingApiController: No delivery options returned from Tryoto', [
+                    'vendor_id' => $vendorId,
+                    'origin' => $originCity,
+                    'destination' => $destinationCity,
+                    'weight' => $weight,
+                    'raw_response' => $result['raw'] ?? null
+                ]);
+
+                return response()->json([
+                    'success' => false,
+                    'error' => "عذراً، لا تتوفر خيارات شحن من ({$originCity}) إلى ({$destinationCity}). يرجى التواصل مع التاجر.",
+                    'debug' => [
+                        'origin' => $originCity,
+                        'destination' => $destinationCity,
+                        'weight' => $weight
+                    ]
+                ]);
+            }
 
             return response()->json([
                 'success' => true,
@@ -212,25 +236,39 @@ class ShippingApiController extends Controller
     }
 
     /**
-     * Get destination city from session
+     * Get customer destination city from session (comes from Google Maps)
+     *
+     * مدينة المستلم تأتي من الخريطة فقط - لا fallback
+     * customer_city = city_id من جدول cities
      */
     protected function getDestinationCity(int $vendorId): ?string
     {
-        $sessionKey = 'vendor_step1_' . $vendorId;
+        // Try vendor-specific session first, then regular session
+        $step1 = Session::get('vendor_step1_' . $vendorId) ?? Session::get('step1');
 
-        if (!Session::has($sessionKey)) {
+        if (!$step1) {
+            Log::warning('ShippingApiController: No step1 session found', [
+                'vendor_id' => $vendorId
+            ]);
             return null;
         }
 
-        $step1 = Session::get($sessionKey);
+        // customer_city must be city_id (numeric) from map selection
+        $cityId = $step1['customer_city'] ?? null;
 
-        if (empty($step1['customer_city']) || !is_numeric($step1['customer_city'])) {
+        if (!$cityId || !is_numeric($cityId)) {
+            Log::warning('ShippingApiController: customer_city must be a valid city_id from map', [
+                'vendor_id' => $vendorId,
+                'customer_city' => $cityId
+            ]);
             return null;
         }
 
-        $city = City::find($step1['customer_city']);
+        // Fetch city name from DB
+        $city = City::find($cityId);
 
-        if (!$city || empty($city->city_name)) {
+        if (!$city) {
+            Log::warning('ShippingApiController: City not found', ['city_id' => $cityId]);
             return null;
         }
 

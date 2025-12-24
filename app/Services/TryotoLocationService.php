@@ -298,14 +298,20 @@ class TryotoLocationService
     }
 
     /**
+     * الحد الأقصى للمسافة بالكيلومتر لاختيار أقرب مدينة
+     * إذا كانت أقرب مدينة أبعد من هذا الحد، يتم الرفض
+     */
+    private const MAX_DISTANCE_KM = 150;
+
+    /**
      * البحث عن أقرب مدينة مدعومة باستخدام الإحداثيات
      *
      * هذا هو الحل الصحيح: نستخدم صيغة Haversine مباشرة في SQL
-     * مع fallback إذا لم تكن هناك مدن بإحداثيات
+     * مع حد أقصى للمسافة (150 كم) لمنع اختيار مدينة بعيدة جداً
      */
     protected function findNearestSupportedCity(int $countryId, float $lat, float $lng): ?City
     {
-        // أولاً: نحاول إيجاد أقرب مدينة لها إحداثيات
+        // صيغة Haversine لحساب المسافة بالكيلومتر
         $haversine = "(6371 * acos(
             cos(radians(?)) *
             cos(radians(latitude)) *
@@ -314,48 +320,50 @@ class TryotoLocationService
             sin(radians(latitude))
         ))";
 
+        // البحث عن أقرب مدينة ضمن الحد الأقصى للمسافة
         $city = City::where('country_id', $countryId)
             ->where('tryoto_supported', 1)
             ->whereNotNull('latitude')
             ->whereNotNull('longitude')
             ->selectRaw("*, {$haversine} as distance_km", [$lat, $lng, $lat])
+            ->havingRaw('distance_km <= ?', [self::MAX_DISTANCE_KM])
             ->orderBy('distance_km', 'asc')
             ->first();
 
         if ($city) {
+            Log::debug('TryotoLocation: Found nearest city within limit', [
+                'city' => $city->city_name,
+                'distance_km' => round($city->distance_km, 2),
+                'max_allowed' => self::MAX_DISTANCE_KM
+            ]);
             return $city;
         }
 
-        // Fallback: إذا لم توجد مدن بإحداثيات، نختار أي مدينة مدعومة
-        // ونحدث إحداثياتها بإحداثيات المستخدم الحالية
-        Log::debug('TryotoLocation: No cities with coordinates, using fallback', [
-            'country_id' => $countryId,
-            'user_lat' => $lat,
-            'user_lng' => $lng
-        ]);
-
-        $fallbackCity = City::where('country_id', $countryId)
+        // تحقق إذا كانت هناك مدن لكن بعيدة جداً
+        $nearestAnyDistance = City::where('country_id', $countryId)
             ->where('tryoto_supported', 1)
+            ->whereNotNull('latitude')
+            ->whereNotNull('longitude')
+            ->selectRaw("city_name, {$haversine} as distance_km", [$lat, $lng, $lat])
+            ->orderBy('distance_km', 'asc')
             ->first();
 
-        if ($fallbackCity) {
-            // تحديث إحداثيات المدينة بإحداثيات المستخدم
-            $fallbackCity->update([
-                'latitude' => $lat,
-                'longitude' => $lng
+        if ($nearestAnyDistance) {
+            Log::warning('TryotoLocation: Nearest city is too far', [
+                'nearest_city' => $nearestAnyDistance->city_name,
+                'distance_km' => round($nearestAnyDistance->distance_km, 2),
+                'max_allowed' => self::MAX_DISTANCE_KM,
+                'user_coordinates' => compact('lat', 'lng')
             ]);
-
-            // إضافة distance_km = 0 لأنها الأقرب (الوحيدة المتاحة)
-            $fallbackCity->distance_km = 0;
-
-            Log::debug('TryotoLocation: Fallback city selected and coordinates updated', [
-                'city' => $fallbackCity->city_name,
-                'latitude' => $lat,
-                'longitude' => $lng
-            ]);
+            return null;
         }
 
-        return $fallbackCity;
+        // لا توجد مدن بإحداثيات في هذه الدولة
+        Log::warning('TryotoLocation: No cities with coordinates in country', [
+            'country_id' => $countryId
+        ]);
+
+        return null;
     }
 
     /**

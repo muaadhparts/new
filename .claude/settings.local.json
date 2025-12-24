@@ -21,7 +21,8 @@
       "Bash(sort:*)",
       "Bash(grep:*)",
       "Bash(node:*)",
-      "Bash(NODE_OPTIONS=\"--max-old-space-size=1024\" node:*)"
+      "Bash(NODE_OPTIONS=\"--max-old-space-size=1024\" node:*)",
+      "Bash(php check_city.php:*)"
     ]
   }
 }
