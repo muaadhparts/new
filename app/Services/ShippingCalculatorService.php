@@ -53,37 +53,66 @@ class ShippingCalculatorService
 
     /**
      * جلب مدينة التاجر
-     * من قاعدة البيانات فقط - بدون fallback
+     * الأولوية: city_id (معرف المدينة) → fallback إلى city (اسم المدينة)
      */
     public static function getVendorCity(int $vendorId): ?array
     {
         $vendor = User::find($vendorId);
 
-        if (!$vendor || !$vendor->city_id) {
-            Log::warning('ShippingCalculator: Vendor city missing', [
+        if (!$vendor) {
+            Log::warning('ShippingCalculator: Vendor not found', [
                 'vendor_id' => $vendorId,
-                'has_city_id' => !empty($vendor->city_id),
             ]);
-
             return null;
         }
 
-        $city = City::find($vendor->city_id);
-
-        if (!$city) {
-            Log::warning('ShippingCalculator: City not found', [
+        // 1. محاولة city_id أولاً (معرف المدينة)
+        if ($vendor->city_id) {
+            $city = City::find($vendor->city_id);
+            if ($city) {
+                return [
+                    'city_id' => $city->id,
+                    'city_name' => $city->city_name,
+                    'country_id' => $city->country_id,
+                    'source' => 'city_id',
+                ];
+            }
+            Log::warning('ShippingCalculator: City ID not found in DB', [
                 'vendor_id' => $vendorId,
                 'city_id' => $vendor->city_id,
             ]);
-
-            return null;
         }
 
-        return [
-            'city_id' => $city->id,
-            'city_name' => $city->city_name ?? $city->name ?? null,
-            'country_id' => $city->country_id ?? null,
-        ];
+        // 2. Fallback إلى عمود city (اسم المدينة بالإنجليزي)
+        if ($vendor->city) {
+            $city = City::where('city_name', $vendor->city)->first();
+            if ($city) {
+                return [
+                    'city_id' => $city->id,
+                    'city_name' => $city->city_name,
+                    'country_id' => $city->country_id,
+                    'source' => 'city_name_fallback',
+                ];
+            }
+
+            // المدينة موجودة كاسم لكن غير موجودة في DB
+            Log::info('ShippingCalculator: Vendor city name not in DB, returning raw', [
+                'vendor_id' => $vendorId,
+                'city_name' => $vendor->city,
+            ]);
+            return [
+                'city_id' => null,
+                'city_name' => $vendor->city,
+                'country_id' => null,
+                'source' => 'city_name_raw',
+                'warning' => 'city_not_in_db',
+            ];
+        }
+
+        Log::warning('ShippingCalculator: Vendor has no city_id or city', [
+            'vendor_id' => $vendorId,
+        ]);
+        return null;
     }
 
     /**
