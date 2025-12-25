@@ -499,33 +499,20 @@ class GeocodingController extends Controller
 
         if ($syncStatus['needs_sync']) {
             // ==========================================
-            // الدولة غير متزامنة - نبحث عن أقرب مدينة مدعومة
-            // المزامنة تتم يدوياً فقط عبر: php artisan tryoto:sync-cities
+            // الدولة غير متزامنة - نرفض مباشرة
+            // لا نبحث عن أقرب مدينة في الخطوة 1 (الخريطة)
+            // البحث عن أقرب مدينة يتم في الخطوة 2 (حساب الشحن) فقط
             // ==========================================
-            Log::debug('Geocoding: Country not synced, trying nearest city', [
+            Log::debug('Geocoding: Country not synced - rejecting', [
                 'country' => $countryName,
                 'reason' => $syncStatus['reason']
             ]);
 
-            // نحاول البحث عن أقرب مدينة بالإحداثيات في أي دولة مزامنة
-            $nearestResult = $this->findNearestCityGlobally($latitude, $longitude);
-
-            if ($nearestResult) {
-                return response()->json([
-                    'success' => true,
-                    'needs_sync' => false,
-                    'message' => "تم تحديد أقرب منطقة مدعومة: {$nearestResult['city_name']}",
-                    'data' => $nearestResult,
-                    'warning' => 'هذه الدولة غير مدعومة حالياً، تم اختيار أقرب منطقة مدعومة'
-                ]);
-            }
-
-            // لا توجد مدن مدعومة
             return response()->json([
                 'success' => false,
-                'message' => 'عذراً، هذه المنطقة غير مدعومة حالياً للتوصيل.',
+                'message' => "عذراً، دولة '{$countryName}' غير مدعومة حالياً للتوصيل.",
                 'country' => $countryName,
-                'suggestion' => 'يرجى اختيار موقع في منطقة مدعومة'
+                'suggestion' => 'يرجى اختيار موقع في دولة مدعومة (السعودية، الإمارات، الكويت، البحرين، عمان، قطر)'
             ], 400);
         }
 
