@@ -484,40 +484,46 @@ class GeocodingController extends Controller
             'ar' => $arabicData
         ]);
 
-        $countryName = $englishData['country'] ?? null;
-        $countryCode = $englishData['country_code'] ?? null;
+        // ==========================================
+        // Step 1: CAPTURE ONLY - لا تحقق، لا nearest، لا DB
+        // نمرر البيانات الخام من Google كما هي
+        // التحقق يتم في Step 2 فقط (عند جلب أسعار الشحن)
+        // ==========================================
 
-        if (!$countryName) {
-            return response()->json([
-                'success' => false,
-                'error' => 'لم يتم التعرف على الدولة'
-            ], 400);
-        }
+        Log::debug('Geocoding: Step 1 - Capture Only (no validation)', [
+            'latitude' => $latitude,
+            'longitude' => $longitude,
+            'google_city' => $englishData['city'] ?? null,
+            'google_country' => $englishData['country'] ?? null
+        ]);
 
-        // التحقق من حالة مزامنة الدولة
-        $syncStatus = $this->countrySyncService->needsSyncByName($countryName);
-
-        if ($syncStatus['needs_sync']) {
-            // ==========================================
-            // الدولة غير متزامنة - نرفض مباشرة
-            // لا نبحث عن أقرب مدينة في الخطوة 1 (الخريطة)
-            // البحث عن أقرب مدينة يتم في الخطوة 2 (حساب الشحن) فقط
-            // ==========================================
-            Log::debug('Geocoding: Country not synced - rejecting', [
-                'country' => $countryName,
-                'reason' => $syncStatus['reason']
-            ]);
-
-            return response()->json([
-                'success' => false,
-                'message' => "عذراً، دولة '{$countryName}' غير مدعومة حالياً للتوصيل.",
-                'country' => $countryName,
-                'suggestion' => 'يرجى اختيار موقع في دولة مدعومة (السعودية، الإمارات، الكويت، البحرين، عمان، قطر)'
-            ], 400);
-        }
-
-        // الدولة مزامنة - استخدم DB فقط
-        return $this->resolveLocationFromDB($englishData, $arabicData, $latitude, $longitude, $syncStatus['country']);
+        // نرجع البيانات الخام بدون أي معالجة
+        return response()->json([
+            'success' => true,
+            'capture_only' => true, // إشارة أن هذا capture فقط
+            'coordinates' => [
+                'latitude' => $latitude,
+                'longitude' => $longitude
+            ],
+            'address_payload' => [
+                'en' => $englishData,
+                'ar' => $arabicData,
+            ],
+            // بنية متوافقة مع Frontend (للعرض فقط)
+            'country' => [
+                'name' => $englishData['country'] ?? null,
+                'name_ar' => $arabicData['country'] ?? null,
+            ],
+            'state' => [
+                'name' => $englishData['state'] ?? null,
+                'name_ar' => $arabicData['state'] ?? null,
+            ],
+            'city' => [
+                'name' => $englishData['city'] ?? null,
+                'name_ar' => $arabicData['city'] ?? null,
+            ],
+            'message' => 'تم تحديد الموقع بنجاح'
+        ]);
     }
 
     /**

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\City;
 use App\Services\TryotoService;
+use App\Services\TryotoLocationService;
 use App\Services\VendorCartService;
 use App\Services\ShippingCalculatorService;
 use Illuminate\Http\Request;
@@ -236,43 +237,87 @@ class ShippingApiController extends Controller
     }
 
     /**
-     * Get customer destination city from session (comes from Google Maps)
+     * Step 2: Resolve & Price - تحديد مدينة الشحن من الإحداثيات
      *
-     * مدينة المستلم تأتي من الخريطة فقط - لا fallback
-     * customer_city = city_id من جدول cities
+     * المنطق:
+     * 1. Resolve بالاسم: مطابقة اسم المدينة مع المدن المدعومة في نفس الدولة
+     * 2. Fallback nearest: استخدام الإحداثيات لأقرب مدينة مدعومة
+     * 3. القيود: نفس الدولة إن أمكن، حد أقصى للمسافة
      */
     protected function getDestinationCity(int $vendorId): ?string
     {
-        // Try vendor-specific session first, then regular session
+        // جلب بيانات Step 1 من الـ session
         $step1 = Session::get('vendor_step1_' . $vendorId) ?? Session::get('step1');
 
         if (!$step1) {
-            Log::warning('ShippingApiController: No step1 session found', [
+            Log::warning('ShippingApiController Step2: No step1 session found', [
                 'vendor_id' => $vendorId
             ]);
             return null;
         }
 
-        // customer_city must be city_id (numeric) from map selection
-        $cityId = $step1['customer_city'] ?? null;
+        // استخراج الإحداثيات و address_payload
+        $latitude = $step1['latitude']
+            ?? $step1['coordinates']['latitude']
+            ?? null;
+        $longitude = $step1['longitude']
+            ?? $step1['coordinates']['longitude']
+            ?? null;
 
-        if (!$cityId || !is_numeric($cityId)) {
-            Log::warning('ShippingApiController: customer_city must be a valid city_id from map', [
-                'vendor_id' => $vendorId,
-                'customer_city' => $cityId
+        // استخراج بيانات العنوان من Google
+        $addressPayload = $step1['address_payload'] ?? $step1['google_data'] ?? [];
+        $cityName = $addressPayload['en']['city'] ?? $step1['city_name'] ?? null;
+        $stateName = $addressPayload['en']['state'] ?? null;
+        $countryName = $addressPayload['en']['country']
+            ?? $step1['country']['name']
+            ?? $step1['country']
+            ?? null;
+
+        Log::debug('ShippingApiController Step2: Starting city resolution', [
+            'vendor_id' => $vendorId,
+            'latitude' => $latitude,
+            'longitude' => $longitude,
+            'google_city' => $cityName,
+            'google_country' => $countryName
+        ]);
+
+        // التحقق من وجود الإحداثيات
+        if (!$latitude || !$longitude) {
+            Log::warning('ShippingApiController Step2: No coordinates in session', [
+                'vendor_id' => $vendorId
             ]);
             return null;
         }
 
-        // Fetch city name from DB
-        $city = City::find($cityId);
+        // استخدام TryotoLocationService للـ Resolve
+        $locationService = app(TryotoLocationService::class);
 
-        if (!$city) {
-            Log::warning('ShippingApiController: City not found', ['city_id' => $cityId]);
+        $resolution = $locationService->resolveMapCity(
+            $cityName ?? '',
+            $stateName,
+            $countryName,
+            (float) $latitude,
+            (float) $longitude
+        );
+
+        if (!$resolution['success']) {
+            Log::warning('ShippingApiController Step2: City resolution failed', [
+                'vendor_id' => $vendorId,
+                'strategy' => $resolution['strategy'] ?? 'unknown',
+                'message' => $resolution['message'] ?? 'Unknown error'
+            ]);
             return null;
         }
 
-        return $this->normalizeCityName($city->city_name);
+        Log::info('ShippingApiController Step2: City resolved successfully', [
+            'vendor_id' => $vendorId,
+            'original_city' => $cityName,
+            'resolved_city' => $resolution['resolved_name'],
+            'strategy' => $resolution['strategy'],
+            'distance_km' => $resolution['distance_km'] ?? 0
+        ]);
+
+        return $this->normalizeCityName($resolution['resolved_name']);
     }
 
     /**
