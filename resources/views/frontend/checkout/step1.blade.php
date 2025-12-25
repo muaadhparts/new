@@ -950,53 +950,47 @@
             return;
         }
 
-        // Fill hidden fields
-        $('#latitude').val(selectedLat);
-        $('#longitude').val(selectedLng);
+        const confirmBtn = document.getElementById('confirm-location-btn');
+        const originalBtnText = confirmBtn.innerHTML;
 
-        // Update button
-        $('#open-map-btn').removeClass('btn-outline-primary').addClass('btn-success');
-        $('#open-map-btn').html('<i class="fas fa-check-circle"></i> @lang("Location Selected")');
+        // Show loading state (keep modal open)
+        confirmBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> @lang("Loading...")';
+        confirmBtn.disabled = true;
 
-        // Show location info with full address
-        $('#selected-location-info').removeClass('d-none');
-
-        let locationDisplayText = '';
-        if (selectedAddress) {
-            locationDisplayText = selectedAddress + ' <small class="text-muted">(' + selectedLat.toFixed(6) + ', ' + selectedLng.toFixed(6) + ')</small>';
-        } else {
-            locationDisplayText = selectedLat.toFixed(6) + ', ' + selectedLng.toFixed(6);
-        }
-        $('#location-text').html(locationDisplayText);
-
-        // Close modal
-        $('#mapModal').modal('hide');
-
-        // Fetch tax info from backend
-        fetchTaxFromCoordinates(selectedLat, selectedLng);
-    }
-
-    function fetchTaxFromCoordinates(lat, lng) {
+        // Fetch tax info FIRST, then close modal
         $.ajax({
             url: '/geocoding/tax-from-coordinates',
             method: 'POST',
             data: {
-                latitude: lat,
-                longitude: lng,
+                latitude: selectedLat,
+                longitude: selectedLng,
                 vendor_id: checkoutVendorId,
                 _token: $('meta[name="csrf-token"]').attr('content')
             },
             success: function(response) {
-                // Update hidden fields
+                // Fill hidden fields
+                $('#latitude').val(selectedLat);
+                $('#longitude').val(selectedLng);
                 if (response.country_id) $('#country_id').val(response.country_id);
                 if (response.formatted_address) $('#address').val(response.formatted_address);
                 if (response.postal_code) $('#zip').val(response.postal_code);
 
-                // Update location display with full address from geocoding
+                // Get display address
+                let displayAddress = selectedAddress;
                 if (response.geocoding_success && response.formatted_address) {
-                    let fullAddress = response.formatted_address;
-                    $('#location-text').html(fullAddress + ' <small class="text-muted">(' + lat.toFixed(6) + ', ' + lng.toFixed(6) + ')</small>');
+                    displayAddress = response.formatted_address;
                 }
+
+                // Update main page button
+                $('#open-map-btn').removeClass('btn-outline-primary').addClass('btn-success');
+                $('#open-map-btn').html('<i class="fas fa-check-circle"></i> @lang("Location Selected")');
+
+                // Show location info
+                $('#selected-location-info').removeClass('d-none');
+                let locationDisplayText = displayAddress
+                    ? displayAddress + ' <small class="text-muted">(' + selectedLat.toFixed(6) + ', ' + selectedLng.toFixed(6) + ')</small>'
+                    : selectedLat.toFixed(6) + ', ' + selectedLng.toFixed(6);
+                $('#location-text').html(locationDisplayText);
 
                 // Update tax display
                 if (response.tax_rate > 0) {
@@ -1022,9 +1016,22 @@
                     $('.tax-display-wrapper').addClass('d-none');
                     $('.tax-location-wrapper').addClass('d-none');
                 }
+
+                // NOW close modal (after everything is ready)
+                $('#mapModal').modal('hide');
+
+                // Reset button for next time
+                confirmBtn.innerHTML = originalBtnText;
+                confirmBtn.disabled = false;
             },
             error: function(xhr) {
-                // Keep showing coordinates if geocoding fails
+                // Show error, keep modal open
+                confirmBtn.innerHTML = originalBtnText;
+                confirmBtn.disabled = false;
+
+                let errorMsg = '@lang("Failed to get location details. Please try again.")';
+                document.getElementById('coords-display').innerHTML =
+                    '<span class="text-danger"><i class="fas fa-exclamation-circle"></i> ' + errorMsg + '</span>';
             }
         });
     }
