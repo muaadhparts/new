@@ -150,6 +150,7 @@ class TryotoService
         }
 
         $response = Http::timeout(self::REQUEST_TIMEOUT)
+            ->withOptions(['curl' => [CURLOPT_IPRESOLVE => CURL_IPRESOLVE_V4]])
             ->post($this->baseUrl . '/rest/v2/refreshToken', [
                 'refresh_token' => $refreshToken
             ]);
@@ -212,6 +213,7 @@ class TryotoService
             $url = $this->baseUrl . $endpoint;
 
             $request = Http::timeout(self::REQUEST_TIMEOUT)
+                ->withOptions(['curl' => [CURLOPT_IPRESOLVE => CURL_IPRESOLVE_V4]])
                 ->withToken($token)
                 ->withHeaders(['Accept' => 'application/json']);
 
