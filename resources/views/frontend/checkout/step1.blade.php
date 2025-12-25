@@ -599,12 +599,11 @@
                         $('.total-cost-dum #total-cost').html(ttotal + '{{ $curr->sign }}');
                     }
 
-                    // ✅ تحديث PriceSummary الموحد
+                    // Update PriceSummary component
                     if (typeof PriceSummary !== 'undefined') {
                         var taxRate = parseFloat(data[1]) || 0;
                         var taxAmount = parseFloat(data[2]) || 0;
                         PriceSummary.updateTax(taxRate, taxAmount);
-                        console.log('💰 Step1 Tax updated via PriceSummary:', { rate: taxRate + '%', amount: taxAmount });
                     }
 
                     $('.gocover').hide();
@@ -744,20 +743,12 @@
 
     function confirmLocation() {
         if (!selectedLat || !selectedLng) {
-            console.error('❌ No location selected');
             return;
         }
-
-        console.log('✅ Confirming location:', selectedLat, selectedLng);
 
         // Fill hidden fields
         $('#latitude').val(selectedLat);
         $('#longitude').val(selectedLng);
-
-        console.log('✅ Hidden fields filled:', {
-            lat: $('#latitude').val(),
-            lng: $('#longitude').val()
-        });
 
         // Update UI
         $('#open-map-btn').removeClass('btn-outline-primary').addClass('btn-success');
@@ -783,26 +774,22 @@
                 _token: $('meta[name="csrf-token"]').attr('content')
             },
             success: function(response) {
-                console.log('📍 Tax endpoint response:', response);
-
-                // Update hidden fields with country info (if available)
+                // Update hidden fields with country info
                 if (response.country_id) {
                     $('#country_id').val(response.country_id);
                 }
 
-                // ✅ Fill Address field with formatted address from Google Maps
+                // Fill Address field with formatted address from Google Maps
                 if (response.formatted_address) {
                     $('#address').val(response.formatted_address);
-                    console.log('📍 Address filled:', response.formatted_address);
                 }
 
-                // ✅ Fill Postal Code field
+                // Fill Postal Code field
                 if (response.postal_code) {
                     $('#zip').val(response.postal_code);
-                    console.log('📮 Postal code filled:', response.postal_code);
                 }
 
-                // Update location display with country/city (if geocoding worked)
+                // Update location display with country/city
                 if (response.geocoding_success) {
                     let locationText = '';
                     if (response.city_name) locationText += response.city_name;
@@ -812,8 +799,6 @@
                         $('#location-text').text(locationText);
                     }
                 } else {
-                    // Geocoding failed - show coordinates only
-                    console.log('⚠️ Geocoding failed, showing coordinates only');
                     $('#location-text').text(lat.toFixed(6) + ', ' + lng.toFixed(6) + ' (@lang("Tax will be calculated on next step"))');
                 }
 
@@ -838,18 +823,12 @@
                     if (typeof PriceSummary !== 'undefined' && PriceSummary.updateTax) {
                         PriceSummary.updateTax(response.tax_rate, taxAmount);
                     }
-
-                    console.log('💰 Tax updated:', { rate: response.tax_rate + '%', amount: taxAmount });
                 } else {
-                    // No tax or geocoding failed
                     $('.tax-display-wrapper').addClass('d-none');
                     $('.tax-location-wrapper').addClass('d-none');
                 }
             },
             error: function(xhr) {
-                // Don't block the flow - just log the error
-                console.warn('⚠️ Failed to fetch tax info (non-blocking):', xhr.responseText);
-                // Keep the location display showing coordinates
                 $('#location-text').text(lat.toFixed(6) + ', ' + lng.toFixed(6));
             }
         });
@@ -860,11 +839,8 @@
         const lat = $('#latitude').val();
         const lng = $('#longitude').val();
 
-        console.log('📝 Form submit - checking coordinates:', { lat, lng });
-
         if (!lat || !lng) {
             e.preventDefault();
-            console.error('❌ Form blocked - no coordinates');
 
             if (typeof toastr !== 'undefined') {
                 toastr.error('@lang("Please select your location from the map")');
@@ -879,8 +855,6 @@
 
             return false;
         }
-
-        console.log('✅ Form submitting with coordinates');
     });
     </script>
 @endsection

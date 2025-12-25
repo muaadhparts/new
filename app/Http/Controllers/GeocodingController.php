@@ -13,14 +13,8 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 
 /**
- * GeocodingController - Location Resolution
- *
- * التوجيه المعماري:
- * - Tryoto هو المصدر الوحيد للمدن (يتم الاستيراد يدوياً عبر CLI)
- * - هذا الـ controller READ-ONLY - لا يُنشئ مدن جديدة
- * - البيانات: city_name (إنجليزي فقط), latitude, longitude, country_id, tryoto_supported
- * - لا يوجد اسم عربي للمدن (city_name_ar محذوف)
- * - يبحث عن أقرب مدينة في DB ويستخدمها للشحن
+ * GeocodingController - Location Resolution (READ-ONLY)
+ * Tryoto cities are imported via CLI command.
  */
 class GeocodingController extends Controller
 {
@@ -139,7 +133,6 @@ class GeocodingController extends Controller
 
         // If alternative city was found
         if ($resolution['strategy'] === 'nearest_city') {
-            // البحث عن المدينة البديلة في قاعدة البيانات (read-only)
             $alternativeCity = $this->findAlternativeCity($resolution, $countryId);
 
             if (!$alternativeCity) {
@@ -181,12 +174,7 @@ class GeocodingController extends Controller
     }
 
     /**
-     * البحث عن مدينة بديلة في قاعدة البيانات (read-only)
-     * ملاحظة: لا يتم إنشاء مدن جديدة - المزامنة تتم عبر CLI فقط
-     *
-     * @param array $resolution
-     * @param int $countryId
-     * @return City|null
+     * Find alternative city in database (read-only lookup).
      */
     protected function findAlternativeCity($resolution, $countryId): ?City
     {
@@ -198,14 +186,7 @@ class GeocodingController extends Controller
     }
 
     /**
-     * معالجة بيانات الموقع (read-only)
-     * ملاحظة: لا يتم إنشاء دول أو مدن جديدة - المزامنة تتم عبر CLI فقط
-     *
-     * @param array $arabicData
-     * @param array $englishData
-     * @param float $latitude
-     * @param float $longitude
-     * @return array
+     * Process location data (read-only lookup).
      */
     protected function processLocationData($arabicData, $englishData, $latitude, $longitude)
     {
@@ -219,21 +200,16 @@ class GeocodingController extends Controller
         // Country names
         $countryNameEn = $englishData['country'] ?? null;
 
-        // City name (English only - no Arabic)
         $cityNameEn = $englishData['city'] ?? null;
-
-        // Address for display
         $addressEn = $englishData['address'] ?? null;
         $addressAr = $arabicData['address'] ?? $addressEn;
 
-        // البحث عن الدولة (read-only)
         $country = Country::where('country_code', $countryCode)->first();
 
         if (!$country) {
-            throw new \Exception("الدولة غير موجودة في قاعدة البيانات: {$countryCode}. يرجى تشغيل: php artisan tryoto:sync-cities");
+            throw new \Exception("Country not found: {$countryCode}. Run: php artisan tryoto:sync-cities");
         }
 
-        // البحث عن المدينة (read-only)
         $city = null;
         if ($cityNameEn) {
             $city = City::where('country_id', $country->id)
@@ -280,11 +256,7 @@ class GeocodingController extends Controller
     }
 
     /**
-     * Get cities by country
-     * ملاحظة: city_name فقط - لا يوجد city_name_ar
-     *
-     * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
+     * Get cities by country.
      */
     public function getCitiesByCountry(Request $request)
     {
@@ -311,10 +283,7 @@ class GeocodingController extends Controller
     }
 
     /**
-     * التحقق إذا كانت الدولة تحتاج مزامنة
-     *
-     * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
+     * Check if country needs sync.
      */
     public function checkCountrySync(Request $request)
     {
@@ -484,23 +453,10 @@ class GeocodingController extends Controller
             'ar' => $arabicData
         ]);
 
-        // ==========================================
-        // Step 1: CAPTURE ONLY - لا تحقق، لا nearest، لا DB
-        // نمرر البيانات الخام من Google كما هي
-        // التحقق يتم في Step 2 فقط (عند جلب أسعار الشحن)
-        // ==========================================
-
-        Log::debug('Geocoding: Step 1 - Capture Only (no validation)', [
-            'latitude' => $latitude,
-            'longitude' => $longitude,
-            'google_city' => $englishData['city'] ?? null,
-            'google_country' => $englishData['country'] ?? null
-        ]);
-
-        // نرجع البيانات الخام بدون أي معالجة
+        // Return raw Google data (validation happens in Step 2)
         return response()->json([
             'success' => true,
-            'capture_only' => true, // إشارة أن هذا capture فقط
+            'capture_only' => true,
             'coordinates' => [
                 'latitude' => $latitude,
                 'longitude' => $longitude
@@ -613,13 +569,8 @@ class GeocodingController extends Controller
     }
 
     /**
-     * ========================================================================
-     * Get Tax Info from Coordinates
-     * ========================================================================
-     * يستخدم في Step 1 لعرض الضريبة بعد تأكيد الموقع من الخريطة
-     *
-     * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
+     * Get tax info and formatted address from coordinates.
+     * Used in Step 1 to calculate tax after map location selection.
      */
     public function getTaxFromCoordinates(Request $request)
     {

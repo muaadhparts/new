@@ -419,66 +419,23 @@ class CheckoutController extends FrontBaseController
 
 
 
-
-
-
-
-
     /**
-     * ========================================================================
-     * CHECKOUT STEP 1 - PROCESS AND SAVE CUSTOMER DATA
-     * ========================================================================
-     * NO CONFLICTS - NO DUPLICATION - SINGLE SOURCE OF TRUTH
-     *
-     * منطق معالجة البيانات:
-     * 1. يستقبل جميع البيانات من النموذج (يدوية أو من الخريطة)
-     * 2. يتحقق من صحة البيانات
-     * 3. ينظف Session من خطوات سابقة
-     * 4. يحفظ البيانات كمصدر وحيد للحقيقة
-     * ========================================================================
-     */
-    /**
-     * ========================================================================
-     * CHECKOUT STEP 1 - INPUT + NORMALIZATION ONLY
-     * ========================================================================
-     *
-     * مسؤوليات Step 1:
-     * ✅ جمع بيانات العميل الأساسية
-     * ✅ استقبال lat/lng من الخريطة
-     * ✅ عمل Backend Reverse Geocoding
-     * ✅ التحقق من الضريبة من جداول countries/cities
-     * ✅ تخزين كل شيء في Session
-     *
-     * ممنوع على Step 1:
-     * ❌ استدعاء Tryoto
-     * ❌ حساب أسعار شحن
-     * ❌ التحقق من دعم المدينة
-     * ❌ تقرير أقرب مدينة
-     *
-     * Session Contract (ما يضمنه Step 1 لـ Step 2):
-     * - latitude, longitude (من الخريطة)
-     * - city_name, state_name, country_name (من Geocoding)
-     * - country_id, tax_rate, tax_amount (للضريبة)
-     * ========================================================================
+     * GENERAL CHECKOUT STEP 1 (Legacy - Vendor checkout preferred)
+     * Collects customer data, coordinates from map, calculates tax.
+     * Step 2 handles city resolution and shipping.
      */
     public function checkoutStep1(Request $request)
     {
         $step1 = $request->all();
 
-        // ====================================================================
-        // VALIDATION - بيانات خام فقط (لا قرارات تجارية)
-        // ====================================================================
         $validator = Validator::make($step1, [
-            // بيانات العميل الأساسية
             'customer_name' => 'required|string|max:255',
             'customer_email' => 'required|email|max:255',
             'customer_phone' => 'required|numeric',
             'customer_address' => 'required|string|max:255',
             'customer_zip' => 'nullable|string|max:20',
-            // الإحداثيات مطلوبة (من الخريطة)
             'latitude' => 'required|numeric|between:-90,90',
             'longitude' => 'required|numeric|between:-180,180',
-            // country_id يأتي من AJAX endpoint (للضريبة فقط)
             'country_id' => 'nullable|numeric|exists:countries,id',
         ], [
             'customer_name.required' => __('Name is required'),
@@ -494,37 +451,21 @@ class CheckoutController extends FrontBaseController
             return back()->withErrors($validator->errors())->withInput();
         }
 
-        // ====================================================================
-        // RAW DATA ONLY - لا Geocoding هنا
-        // ====================================================================
-        // Step 1 يجمع البيانات الخام فقط
-        // Step 2 هو مصدر الحقيقة لتحديد المدينة والشحن
-        // ====================================================================
+        // Build step1 data (raw data only - geocoding happens in Step 2)
         $step1Data = [
-            // بيانات العميل
             'customer_name' => $step1['customer_name'],
             'customer_email' => $step1['customer_email'],
             'customer_phone' => $step1['customer_phone'],
             'customer_address' => $step1['customer_address'],
             'customer_zip' => $step1['customer_zip'] ?? null,
-
-            // الإحداثيات (المصدر الرئيسي للموقع)
             'latitude' => (float) $step1['latitude'],
             'longitude' => (float) $step1['longitude'],
-
-            // country_id من AJAX (للضريبة فقط - ليس للشحن)
             'country_id' => $step1['country_id'] ?? null,
-
-            // بيانات الشحن
             'shipping' => $step1['shipping'] ?? 'shipto',
             'pickup_location' => $step1['pickup_location'] ?? null,
-
-            // إنشاء حساب (للزوار)
             'create_account' => $step1['create_account'] ?? null,
             'password' => $step1['password'] ?? null,
             'password_confirmation' => $step1['password_confirmation'] ?? null,
-
-            // بيانات أخرى
             'dp' => $step1['dp'] ?? 0,
             'totalQty' => $step1['totalQty'] ?? 0,
             'vendor_shipping_id' => $step1['vendor_shipping_id'] ?? 0,
@@ -538,15 +479,7 @@ class CheckoutController extends FrontBaseController
             'user_id' => $step1['user_id'] ?? null,
         ];
 
-        \Log::info('CheckoutStep1: Storing raw data only', [
-            'lat' => $step1Data['latitude'],
-            'lng' => $step1Data['longitude'],
-            'country_id' => $step1Data['country_id'],
-        ]);
-
-        // ====================================================================
-        // CALCULATE TAX (من country_id الذي جاء من AJAX)
-        // ====================================================================
+        // Calculate tax from country_id
         $taxRate = 0;
         $taxLocation = '';
         $country = null;
@@ -598,23 +531,15 @@ class CheckoutController extends FrontBaseController
         $step1Data['tax_amount'] = $totalTaxAmount;
         $step1Data['total_with_tax'] = $productsTotal + $totalTaxAmount;
 
-        // ====================================================================
-        // CLEAN SESSION - Prevent any data duplication
-        // ====================================================================
         Session::forget(['step2', 'step3']);
-
-        // ====================================================================
-        // SAVE TO SESSION
-        // ====================================================================
         Session::put('step1', $step1Data);
 
         return redirect()->route('front.checkout.step2');
     }
 
-/**
-     * تم إزالة saveShippingSelection - الحفظ الآن يتم فقط عند Submit
+    /**
+     * GENERAL CHECKOUT STEP 2 SUBMIT (Legacy)
      */
-
     public function checkoutStep2Submit(Request $request)
     {
         $step2  = $request->all();
@@ -1195,45 +1120,26 @@ class CheckoutController extends FrontBaseController
     }
 
     /**
-     * Step 1 Submit - Save customer data for specific vendor
-     *
-     * MULTI-VENDOR LOGIC:
-     * - Data saved to vendor_step1_{vendor_id} session (NOT global step1)
-     * - Each vendor has independent customer data storage
-     *
-     * @param Request $request
-     * @param int $vendorId
-     * @return \Illuminate\Http\RedirectResponse
-     */
-    /**
-     * ========================================================================
-     * VENDOR CHECKOUT STEP 1 - INPUT + NORMALIZATION ONLY
-     * ========================================================================
-     * نفس منطق checkoutStep1 لكن لتاجر محدد
-     * ========================================================================
+     * VENDOR CHECKOUT STEP 1 SUBMIT
+     * Collects customer data, coordinates from map, calculates tax.
+     * Data saved to vendor_step1_{vendor_id} session.
      */
     public function checkoutVendorStep1(Request $request, $vendorId)
     {
         $step1 = $request->all();
 
-        // ====================================================================
-        // VALIDATION - بيانات خام فقط (لا قرارات تجارية)
-        // ====================================================================
         $rules = [
-            // بيانات العميل الأساسية
             'customer_name' => 'required|string|max:255',
             'customer_email' => 'required|email|max:255',
             'customer_phone' => 'required|numeric',
             'customer_address' => 'required|string|max:255',
             'customer_zip' => 'nullable|string|max:20',
-            // الإحداثيات مطلوبة (من الخريطة)
             'latitude' => 'required|numeric|between:-90,90',
             'longitude' => 'required|numeric|between:-180,180',
-            // country_id يأتي من AJAX endpoint (للضريبة فقط)
             'country_id' => 'nullable|numeric|exists:countries,id',
         ];
 
-        // ✅ IF USER WANTS TO CREATE ACCOUNT - ADD PASSWORD VALIDATION
+        // Add password validation if creating account
         if (isset($step1['create_account']) && $step1['create_account'] == 1) {
             $rules['password'] = 'required|string|min:6|confirmed';
             $rules['password_confirmation'] = 'required|string|min:6';
@@ -1255,9 +1161,7 @@ class CheckoutController extends FrontBaseController
             return back()->withErrors($validator->errors())->withInput();
         }
 
-        // ====================================================================
-        // ✅ CREATE ACCOUNT DURING CHECKOUT (IF REQUESTED)
-        // ====================================================================
+        // Create account if requested
         if (isset($step1['create_account']) && $step1['create_account'] == 1 && !Auth::check()) {
             $existingUser = \App\Models\User::where('email', $step1['customer_email'])->first();
 
@@ -1280,35 +1184,19 @@ class CheckoutController extends FrontBaseController
             Auth::login($user, true);
         }
 
-        // ====================================================================
-        // RAW DATA ONLY - لا Geocoding هنا
-        // ====================================================================
-        // Step 1 يجمع البيانات الخام فقط
-        // Step 2 هو مصدر الحقيقة لتحديد المدينة والشحن
-        // ====================================================================
+        // Build step1 data (raw data only - geocoding happens in Step 2)
         $step1Data = [
-            // بيانات العميل
             'customer_name' => $step1['customer_name'],
             'customer_email' => $step1['customer_email'],
             'customer_phone' => $step1['customer_phone'],
             'customer_address' => $step1['customer_address'],
             'customer_zip' => $step1['customer_zip'] ?? null,
-
-            // الإحداثيات (المصدر الرئيسي للموقع)
             'latitude' => (float) $step1['latitude'],
             'longitude' => (float) $step1['longitude'],
-
-            // country_id من AJAX (للضريبة فقط - ليس للشحن)
             'country_id' => $step1['country_id'] ?? null,
-
-            // بيانات الشحن
             'shipping' => $step1['shipping'] ?? 'shipto',
             'pickup_location' => $step1['pickup_location'] ?? null,
-
-            // إنشاء حساب (للزوار)
             'create_account' => $step1['create_account'] ?? null,
-
-            // بيانات أخرى
             'dp' => $step1['dp'] ?? 0,
             'totalQty' => $step1['totalQty'] ?? 0,
             'vendor_shipping_id' => $step1['vendor_shipping_id'] ?? 0,
@@ -1322,16 +1210,7 @@ class CheckoutController extends FrontBaseController
             'user_id' => $step1['user_id'] ?? null,
         ];
 
-        \Log::info('VendorCheckoutStep1: Storing raw data only', [
-            'vendor_id' => $vendorId,
-            'lat' => $step1Data['latitude'],
-            'lng' => $step1Data['longitude'],
-            'country_id' => $step1Data['country_id'],
-        ]);
-
-        // ====================================================================
-        // CALCULATE TAX (من country_id الذي جاء من AJAX)
-        // ====================================================================
+        // Calculate tax from country_id
         $taxRate = 0;
         $taxLocation = '';
         $country = null;
@@ -1382,17 +1261,7 @@ class CheckoutController extends FrontBaseController
     }
 
     /**
-     * Step 2 - عرض صفحة اختيار الشحن للتاجر المحدد
-     *
-     * VENDOR-ONLY LOGIC:
-     * 1. Loads vendor_step1 data from session (vendor-specific)
-     * 2. Filters cart to vendor products only (getVendorCartData)
-     * 3. Gets vendor-specific shipping & packaging methods only
-     * 4. Does NOT use general cart shipping/packaging logic
-     * 5. Preserves auth state - no modifications
-     *
-     * @param int $vendorId
-     * @return \Illuminate\View\View|\Illuminate\Http\RedirectResponse
+     * VENDOR CHECKOUT STEP 2 - Shipping selection page.
      */
     public function checkoutVendorStep2($vendorId)
     {
@@ -1406,22 +1275,17 @@ class CheckoutController extends FrontBaseController
 
         $step1 = (object) Session::get('vendor_step1_' . $vendorId);
 
-        // ✅ Retrieve step2 data if exists (for refresh or back from step3)
         $step2 = Session::has('vendor_step2_' . $vendorId)
             ? (object) Session::get('vendor_step2_' . $vendorId)
             : null;
 
-        // Get vendor cart data using helper method (avoids code duplication)
         $cartData = $this->getVendorCartData($vendorId);
         $vendorProducts = $cartData['vendorProducts'];
         $totalPrice = $cartData['totalPrice'];
         $totalQty = $cartData['totalQty'];
         $dp = $cartData['digital'];
 
-        // جلب طرق الشحن الخاصة بهذا التاجر فقط
         $shipping_data = \App\Models\Shipping::forVendor($vendorId)->get();
-
-        // جلب طرق التغليف الخاصة بهذا التاجر فقط
         $package_data = DB::table('packages')->where('user_id', $vendorId)->get();
         // No fallback to user 0 - if vendor has no packages, collection will be empty
 
@@ -1910,18 +1774,10 @@ class CheckoutController extends FrontBaseController
         Session::forget('checkout_vendor_id');
     }
 
-    /* ===================== Tryoto Dynamic Location API ===================== */
-
     /**
-     * ========================================================================
-     * N+1 OPTIMIZATION: Prepare vendor data for step2 view
-     * ========================================================================
+     * N+1 OPTIMIZATION: Prepare vendor data for step2 view.
      * Pre-loads all vendor data (shipping, packaging, vendor info) in bulk
      * to avoid N+1 queries inside Blade template.
-     *
-     * @param array $products Cart products
-     * @param object|null $step1 Step1 session data
-     * @return array [vendorData, country]
      */
     protected function prepareStep2VendorData(array $products, $step1 = null): array
     {
@@ -1935,53 +1791,5 @@ class CheckoutController extends FrontBaseController
             'vendorData' => $vendorData,
             'country' => $country,
         ];
-    }
-
-    /**
-     * ========================================================================
-     * BACKEND REVERSE GEOCODING
-     * ========================================================================
-     * Resolves city/state/country names from coordinates using Google Maps API.
-     * Called during Step 1 submission to extract location data for shipping.
-     *
-     * @param float $latitude
-     * @param float $longitude
-     * @return array|null ['city_name', 'state_name', 'country_name', 'country_code']
-     */
-    protected function resolveLocationFromCoordinates(float $latitude, float $longitude): ?array
-    {
-        try {
-            $googleMapsService = app(GoogleMapsService::class);
-
-            // Get English names (for Tryoto API compatibility)
-            $result = $googleMapsService->reverseGeocode($latitude, $longitude, 'en');
-
-            if (!$result['success'] || empty($result['data'])) {
-                \Log::warning('Geocoding failed for coordinates', [
-                    'lat' => $latitude,
-                    'lng' => $longitude,
-                    'error' => $result['error'] ?? 'Unknown error'
-                ]);
-                return null;
-            }
-
-            $data = $result['data'];
-
-            return [
-                'city_name' => $data['city'] ?? null,
-                'state_name' => $data['state'] ?? null,
-                'country_name' => $data['country'] ?? null,
-                'country_code' => $data['country_code'] ?? null,
-                'address' => $data['address'] ?? null,
-            ];
-
-        } catch (\Exception $e) {
-            \Log::error('Geocoding exception', [
-                'lat' => $latitude,
-                'lng' => $longitude,
-                'error' => $e->getMessage()
-            ]);
-            return null;
-        }
     }
 }

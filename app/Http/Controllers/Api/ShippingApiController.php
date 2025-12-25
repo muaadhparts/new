@@ -128,7 +128,6 @@ class ShippingApiController extends Controller
                 'weight' => $weight
             ]);
 
-            // ✅ إذا لم تكن هناك خيارات شحن، نرجع رسالة خطأ واضحة
             if (empty($deliveryCompany)) {
                 Log::warning('ShippingApiController: No delivery options returned from Tryoto', [
                     'vendor_id' => $vendorId,
@@ -184,14 +183,14 @@ class ShippingApiController extends Controller
             $curr = \App\Models\Currency::where('is_default', '=', 1)->first();
         }
 
-        // ✅ Get free_above from vendor's Tryoto shipping entry
+        // Get free shipping threshold from vendor's Tryoto config
         $vendorTryotoShipping = \App\Models\Shipping::where('user_id', $vendorId)
             ->where('provider', 'tryoto')
             ->first();
         $freeAbove = $vendorTryotoShipping ? (float)$vendorTryotoShipping->free_above : 0;
         $freeAboveConverted = round($freeAbove * $curr->value, 2);
 
-        // ✅ Calculate vendor's products total from cart
+        // Calculate vendor's products total from cart
         $cart = Session::get('cart');
         $vendorProductsTotal = 0;
         if ($cart && !empty($cart->items)) {
@@ -237,30 +236,12 @@ class ShippingApiController extends Controller
     }
 
     /**
-     * ========================================================================
-     * Step 2: Resolve Destination City - SINGLE SOURCE OF TRUTH
-     * ========================================================================
-     *
-     * هذه الدالة هي المصدر الوحيد لتحديد مدينة الشحن.
-     * Step 1 يمرر بيانات خام فقط (lat/lng).
-     * كل منطق تحديد المدينة يتم هنا.
-     *
-     * مسؤوليات Step 2:
-     * ✅ Geocoding (تحويل الإحداثيات إلى أسماء)
-     * ✅ تحديد مدينة الشحن بالأسماء
-     * ✅ Fallback لأقرب مدينة مدعومة بالإحداثيات
-     * ✅ معالجة جميع حالات الفشل
-     *
-     * Session Contract (من Step 1):
-     * - latitude, longitude (مطلوبين دائماً)
-     * - country_id (للضريبة فقط - ليس للشحن)
-     * ========================================================================
+     * Resolve destination city from session coordinates.
+     * This is the SINGLE SOURCE OF TRUTH for city resolution.
+     * Does geocoding here (not in Step 1), with fallback to nearest supported city.
      */
     protected function getDestinationCity(int $vendorId): ?string
     {
-        // ====================================================================
-        // 1. قراءة Session (READ-ONLY)
-        // ====================================================================
         $step1 = Session::get('vendor_step1_' . $vendorId) ?? Session::get('step1');
 
         if (!$step1) {
@@ -270,9 +251,6 @@ class ShippingApiController extends Controller
             return null;
         }
 
-        // ====================================================================
-        // 2. استخراج الإحداثيات (المصدر الرئيسي للموقع)
-        // ====================================================================
         $latitude = $step1['latitude'] ?? null;
         $longitude = $step1['longitude'] ?? null;
 
@@ -283,17 +261,9 @@ class ShippingApiController extends Controller
             return null;
         }
 
-        Log::debug('ShippingApiController: Starting city resolution (Step 2 is source of truth)', [
-            'vendor_id' => $vendorId,
-            'latitude' => $latitude,
-            'longitude' => $longitude,
-        ]);
-
         $locationService = app(TryotoLocationService::class);
 
-        // ====================================================================
-        // 3. GEOCODING - تحويل الإحداثيات إلى أسماء (يتم هنا وليس في Step 1)
-        // ====================================================================
+        // Geocode coordinates to get city/country names
         $cityName = null;
         $stateName = null;
         $countryName = null;
@@ -328,9 +298,7 @@ class ShippingApiController extends Controller
             ]);
         }
 
-        // ====================================================================
-        // 4. محاولة Resolve بالأسماء (إذا نجح الـ Geocoding)
-        // ====================================================================
+        // Try resolve by name first
         if ($geocodingSuccess && $countryName) {
             $resolution = $locationService->resolveMapCity(
                 $cityName ?? '',
@@ -349,44 +317,19 @@ class ShippingApiController extends Controller
                 return $this->normalizeCityName($resolution['resolved_name']);
             }
 
-            Log::warning('ShippingApiController: Name resolution failed, trying fallback', [
-                'vendor_id' => $vendorId,
-                'city' => $cityName,
-                'country' => $countryName,
-                'message' => $resolution['message'] ?? 'Unknown'
-            ]);
         }
 
-        // ====================================================================
-        // 5. FALLBACK: Resolve بالإحداثيات فقط
-        // ====================================================================
-        // يستخدم عندما:
-        // - فشل الـ Geocoding
-        // - أو المدينة/الدولة غير مدعومة من Tryoto
-        // ====================================================================
-        Log::info('ShippingApiController: Using coordinates-only fallback', [
-            'vendor_id' => $vendorId,
-            'reason' => $geocodingSuccess ? 'name_resolution_failed' : 'geocoding_failed'
-        ]);
-
+        // Fallback: resolve by coordinates (finds nearest supported city)
         $fallbackResolution = $locationService->resolveByCoordinatesOnly(
             (float) $latitude,
             (float) $longitude
         );
 
         if ($fallbackResolution['success']) {
-            Log::info('ShippingApiController: City resolved by coordinates fallback', [
-                'vendor_id' => $vendorId,
-                'resolved_city' => $fallbackResolution['resolved_name'],
-                'distance_km' => $fallbackResolution['distance_km'] ?? 0
-            ]);
             return $this->normalizeCityName($fallbackResolution['resolved_name']);
         }
 
-        // ====================================================================
-        // 6. فشل كامل - لا توجد مدن مدعومة
-        // ====================================================================
-        Log::warning('ShippingApiController: All resolution strategies failed', [
+        Log::warning('ShippingApiController: City resolution failed', [
             'vendor_id' => $vendorId,
             'latitude' => $latitude,
             'longitude' => $longitude
