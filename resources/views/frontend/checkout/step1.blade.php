@@ -625,10 +625,10 @@
     {{-- Simple Google Maps Script --}}
     <script src="https://maps.googleapis.com/maps/api/js?key={{ config('services.google_maps.api_key') }}&language=ar"></script>
     <script>
-    // Simple Map Variables
+    // Map Variables
     let map, marker;
     let selectedLat = null, selectedLng = null;
-    const DEFAULT_CENTER = { lat: 24.7136, lng: 46.6753 }; // Riyadh
+    let mapInitialized = false;
 
     // Initialize map when modal opens
     $('#mapModal').on('shown.bs.modal', function() {
@@ -636,13 +636,18 @@
             initMap();
         } else {
             google.maps.event.trigger(map, 'resize');
+            // Try to get location again if not already set
+            if (!selectedLat && !mapInitialized) {
+                autoDetectLocation();
+            }
         }
     });
 
     function initMap() {
+        // Start with a wide view (will zoom to user location)
         map = new google.maps.Map(document.getElementById('map'), {
-            center: DEFAULT_CENTER,
-            zoom: 12,
+            center: { lat: 25, lng: 45 },
+            zoom: 5,
             mapTypeControl: false,
             streetViewControl: false,
             fullscreenControl: true
@@ -670,6 +675,43 @@
 
         // Confirm button
         document.getElementById('confirm-location-btn').addEventListener('click', confirmLocation);
+
+        // Auto-detect location when map first opens
+        autoDetectLocation();
+    }
+
+    function autoDetectLocation() {
+        if (!navigator.geolocation) {
+            return;
+        }
+
+        mapInitialized = true;
+
+        // Show loading indicator
+        document.getElementById('coords-display').textContent = '@lang("Detecting your location...")';
+
+        navigator.geolocation.getCurrentPosition(
+            function(position) {
+                const lat = position.coords.latitude;
+                const lng = position.coords.longitude;
+
+                // Center map on user location
+                map.setCenter({ lat: lat, lng: lng });
+                map.setZoom(14);
+
+                // Set marker at user location
+                setLocation(lat, lng);
+            },
+            function(error) {
+                // Geolocation failed - show message
+                document.getElementById('coords-display').textContent = '@lang("Click on map to select location")';
+            },
+            {
+                enableHighAccuracy: true,
+                timeout: 10000,
+                maximumAge: 300000
+            }
+        );
     }
 
     function setLocation(lat, lng) {

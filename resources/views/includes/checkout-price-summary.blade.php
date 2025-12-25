@@ -31,6 +31,7 @@
     $currentStep = $step ?? 1;
     $isDigital = $digital ?? false;
     $currencySign = $curr->sign ?? 'SAR';
+    $currencyValue = $curr->value ?? 1;
     $currencyFormat = $gs->currency_format ?? 0;
     $vendorId = $vendor_id ?? Session::get('checkout_vendor_id');
 
@@ -165,9 +166,10 @@
         $subtotalBeforeCoupon = $step2->subtotal_before_coupon ?? ($productsTotal + $taxAmount + $shippingCost + $packingCost);
     }
 
-    // Helper function for price formatting
-    $formatPrice = function($amount) use ($currencySign, $currencyFormat) {
-        $formatted = number_format((float)$amount, 2);
+    // Helper function for price formatting (with currency conversion)
+    $formatPrice = function($amount) use ($currencySign, $currencyValue, $currencyFormat) {
+        $converted = round((float)$amount * $currencyValue, 2);
+        $formatted = number_format($converted, 2);
         return $currencyFormat == 0 ? $currencySign . $formatted : $formatted . $currencySign;
     };
 @endphp
@@ -367,6 +369,7 @@
 <input type="hidden" id="price-grand-total" value="{{ $grandTotal }}">
 <input type="hidden" id="price-subtotal-before-coupon" value="{{ $subtotalBeforeCoupon }}">
 <input type="hidden" id="price-currency-sign" value="{{ $currencySign }}">
+<input type="hidden" id="price-currency-value" value="{{ $currencyValue }}">
 <input type="hidden" id="price-currency-format" value="{{ $currencyFormat }}">
 <input type="hidden" id="price-vendor-id" value="{{ $vendorId ?? '' }}">
 <input type="hidden" id="price-current-step" value="{{ $currentStep }}">
@@ -433,19 +436,14 @@
     $(function() {
         // Get currency settings from hidden fields
         var currencySign = $('#price-currency-sign').val() || 'SAR';
+        var currencyValue = parseFloat($('#price-currency-value').val()) || 1;
         var currencyFormat = parseInt($('#price-currency-format').val()) || 0;
         var currentStep = parseInt($('#price-current-step').val()) || 1;
 
-        console.log('🎯 PriceSummary initialized:', {
-            currencySign: currencySign,
-            currencyFormat: currencyFormat,
-            currentStep: currentStep,
-            productsTotal: $('#price-products-total').val()
-        });
-
-        // Format price with currency
+        // Format price with currency conversion
         function formatPrice(amount) {
-            var formatted = parseFloat(amount || 0).toFixed(2);
+            var converted = Math.round(parseFloat(amount || 0) * currencyValue * 100) / 100;
+            var formatted = converted.toFixed(2);
             return currencyFormat == 0 ? currencySign + formatted : formatted + currencySign;
         }
 
