@@ -413,19 +413,21 @@
     <script src="https://www.2checkout.com/checkout/api/2co.min.js"></script>
     <script src="https://js.stripe.com/v3/"></script>
     <script type="text/javascript">
-        $('a.payment:first').addClass('active');
+        // Only run payment-related code if payment elements exist (Step 3)
+        if ($('a.payment').length > 0) {
+            $('a.payment:first').addClass('active');
 
-        $('.checkoutform').attr('action', $('a.payment:first').attr('data-form'));
-        $($('a.payment:first').attr('href')).load($('a.payment:first').data('href'));
+            $('.checkoutform').attr('action', $('a.payment:first').attr('data-form'));
+            $($('a.payment:first').attr('href')).load($('a.payment:first').data('href'));
 
-
-        var show = $('a.payment:first').data('show');
-        if (show != 'no') {
-            $('.pay-area').removeClass('d-none');
-        } else {
-            $('.pay-area').addClass('d-none');
+            var show = $('a.payment:first').data('show');
+            if (show != 'no') {
+                $('.pay-area').removeClass('d-none');
+            } else {
+                $('.pay-area').addClass('d-none');
+            }
+            $($('a.payment:first').attr('href')).addClass('active').addClass('show');
         }
-        $($('a.payment:first').attr('href')).addClass('active').addClass('show');
     </script>
     <script type="text/javascript">
         var coup = 0;
@@ -781,13 +783,27 @@
                 _token: $('meta[name="csrf-token"]').attr('content')
             },
             success: function(response) {
-                if (response.success) {
-                    // Update hidden fields with country info
-                    if (response.country_id) {
-                        $('#country_id').val(response.country_id);
-                    }
+                console.log('📍 Tax endpoint response:', response);
 
-                    // Update location display with country/city
+                // Update hidden fields with country info (if available)
+                if (response.country_id) {
+                    $('#country_id').val(response.country_id);
+                }
+
+                // ✅ Fill Address field with formatted address from Google Maps
+                if (response.formatted_address) {
+                    $('#address').val(response.formatted_address);
+                    console.log('📍 Address filled:', response.formatted_address);
+                }
+
+                // ✅ Fill Postal Code field
+                if (response.postal_code) {
+                    $('#zip').val(response.postal_code);
+                    console.log('📮 Postal code filled:', response.postal_code);
+                }
+
+                // Update location display with country/city (if geocoding worked)
+                if (response.geocoding_success) {
                     let locationText = '';
                     if (response.city_name) locationText += response.city_name;
                     if (response.state_name) locationText += ', ' + response.state_name;
@@ -795,38 +811,46 @@
                     if (locationText) {
                         $('#location-text').text(locationText);
                     }
+                } else {
+                    // Geocoding failed - show coordinates only
+                    console.log('⚠️ Geocoding failed, showing coordinates only');
+                    $('#location-text').text(lat.toFixed(6) + ', ' + lng.toFixed(6) + ' (@lang("Tax will be calculated on next step"))');
+                }
 
-                    // Update tax display
-                    if (response.tax_rate > 0) {
-                        $('.tax-display-wrapper').removeClass('d-none');
-                        $('.tax-rate-text').html('(' + response.tax_rate + '%)');
+                // Update tax display (only if we have tax data)
+                if (response.tax_rate > 0) {
+                    $('.tax-display-wrapper').removeClass('d-none');
+                    $('.tax-rate-text').html('(' + response.tax_rate + '%)');
 
-                        var taxAmount = parseFloat(response.tax_amount || 0);
-                        @if($curr->type == 0)
-                            $('.tax-amount-value').html('{{ $curr->sign }}' + taxAmount.toFixed(2));
-                        @else
-                            $('.tax-amount-value').html(taxAmount.toFixed(2) + '{{ $curr->sign }}');
-                        @endif
+                    var taxAmount = parseFloat(response.tax_amount || 0);
+                    @if($curr->type == 0)
+                        $('.tax-amount-value').html('{{ $curr->sign }}' + taxAmount.toFixed(2));
+                    @else
+                        $('.tax-amount-value').html(taxAmount.toFixed(2) + '{{ $curr->sign }}');
+                    @endif
 
-                        if (response.tax_location) {
-                            $('.tax-location-wrapper').removeClass('d-none');
-                            $('.tax-location-text').html(response.tax_location);
-                        }
-
-                        // Update PriceSummary if available
-                        if (typeof PriceSummary !== 'undefined' && PriceSummary.updateTax) {
-                            PriceSummary.updateTax(response.tax_rate, taxAmount);
-                        }
-
-                        console.log('💰 Tax updated:', { rate: response.tax_rate + '%', amount: taxAmount });
-                    } else {
-                        $('.tax-display-wrapper').addClass('d-none');
-                        $('.tax-location-wrapper').addClass('d-none');
+                    if (response.tax_location) {
+                        $('.tax-location-wrapper').removeClass('d-none');
+                        $('.tax-location-text').html(response.tax_location);
                     }
+
+                    // Update PriceSummary if available
+                    if (typeof PriceSummary !== 'undefined' && PriceSummary.updateTax) {
+                        PriceSummary.updateTax(response.tax_rate, taxAmount);
+                    }
+
+                    console.log('💰 Tax updated:', { rate: response.tax_rate + '%', amount: taxAmount });
+                } else {
+                    // No tax or geocoding failed
+                    $('.tax-display-wrapper').addClass('d-none');
+                    $('.tax-location-wrapper').addClass('d-none');
                 }
             },
             error: function(xhr) {
-                console.error('Failed to fetch tax info:', xhr.responseText);
+                // Don't block the flow - just log the error
+                console.warn('⚠️ Failed to fetch tax info (non-blocking):', xhr.responseText);
+                // Keep the location display showing coordinates
+                $('#location-text').text(lat.toFixed(6) + ', ' + lng.toFixed(6));
             }
         });
     }

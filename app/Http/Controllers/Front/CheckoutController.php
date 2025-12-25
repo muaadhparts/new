@@ -466,7 +466,7 @@ class CheckoutController extends FrontBaseController
         $step1 = $request->all();
 
         // ====================================================================
-        // VALIDATION - الخريطة ترسل lat/lng فقط، الباقي من Geocoding
+        // VALIDATION - بيانات خام فقط (لا قرارات تجارية)
         // ====================================================================
         $validator = Validator::make($step1, [
             // بيانات العميل الأساسية
@@ -478,12 +478,8 @@ class CheckoutController extends FrontBaseController
             // الإحداثيات مطلوبة (من الخريطة)
             'latitude' => 'required|numeric|between:-90,90',
             'longitude' => 'required|numeric|between:-180,180',
-            // البيانات التالية اختيارية - ستأتي من Geocoding
+            // country_id يأتي من AJAX endpoint (للضريبة فقط)
             'country_id' => 'nullable|numeric|exists:countries,id',
-            'city_id' => 'nullable|numeric|exists:cities,id',
-            'customer_country' => 'nullable|string|max:255',
-            'customer_state' => 'nullable|string|max:255',
-            'customer_city' => 'nullable|numeric',
         ], [
             'customer_name.required' => __('Name is required'),
             'customer_email.required' => __('Email is required'),
@@ -499,82 +495,67 @@ class CheckoutController extends FrontBaseController
         }
 
         // ====================================================================
-        // BACKEND REVERSE GEOCODING
+        // RAW DATA ONLY - لا Geocoding هنا
         // ====================================================================
-        // تحويل الإحداثيات إلى أسماء (city, state, country)
-        // إذا فشل: لا نكسر Step 1، نخزن lat/lng فقط، Step 2 يتعامل مع الفشل
+        // Step 1 يجمع البيانات الخام فقط
+        // Step 2 هو مصدر الحقيقة لتحديد المدينة والشحن
         // ====================================================================
-        $geocodeResult = $this->resolveLocationFromCoordinates(
-            (float) $request->latitude,
-            (float) $request->longitude
-        );
+        $step1Data = [
+            // بيانات العميل
+            'customer_name' => $step1['customer_name'],
+            'customer_email' => $step1['customer_email'],
+            'customer_phone' => $step1['customer_phone'],
+            'customer_address' => $step1['customer_address'],
+            'customer_zip' => $step1['customer_zip'] ?? null,
 
-        if ($geocodeResult) {
-            // ✅ حفظ أسماء الموقع للـ Step 2
-            $step1['city_name'] = $geocodeResult['city_name'];
-            $step1['state_name'] = $geocodeResult['state_name'];
-            $step1['country_name'] = $geocodeResult['country_name'];
-            $step1['geocoding_success'] = true;
+            // الإحداثيات (المصدر الرئيسي للموقع)
+            'latitude' => (float) $step1['latitude'],
+            'longitude' => (float) $step1['longitude'],
 
-            // ✅ مطابقة الدولة من قاعدة البيانات (للضريبة)
-            if (!empty($geocodeResult['country_name'])) {
-                $matchedCountry = Country::where('country_name', 'LIKE', '%' . $geocodeResult['country_name'] . '%')
-                    ->orWhere('country_code', $geocodeResult['country_code'] ?? '')
-                    ->first();
-                if ($matchedCountry) {
-                    $step1['country_id'] = $matchedCountry->id;
-                    $step1['customer_country'] = $matchedCountry->country_name;
-                }
-            }
+            // country_id من AJAX (للضريبة فقط - ليس للشحن)
+            'country_id' => $step1['country_id'] ?? null,
 
-            \Log::info('CheckoutStep1: Geocoding successful', [
-                'lat' => $request->latitude,
-                'lng' => $request->longitude,
-                'city' => $geocodeResult['city_name'],
-                'state' => $geocodeResult['state_name'],
-                'country' => $geocodeResult['country_name'],
-            ]);
-        } else {
-            // ⚠️ فشل Geocoding - نخزن lat/lng فقط
-            // Step 2 سيستخدم lat/lng للـ fallback
-            $step1['city_name'] = null;
-            $step1['state_name'] = null;
-            $step1['country_name'] = null;
-            $step1['geocoding_success'] = false;
+            // بيانات الشحن
+            'shipping' => $step1['shipping'] ?? 'shipto',
+            'pickup_location' => $step1['pickup_location'] ?? null,
 
-            \Log::warning('CheckoutStep1: Geocoding failed, storing coordinates only', [
-                'lat' => $request->latitude,
-                'lng' => $request->longitude,
-            ]);
-        }
+            // إنشاء حساب (للزوار)
+            'create_account' => $step1['create_account'] ?? null,
+            'password' => $step1['password'] ?? null,
+            'password_confirmation' => $step1['password_confirmation'] ?? null,
+
+            // بيانات أخرى
+            'dp' => $step1['dp'] ?? 0,
+            'totalQty' => $step1['totalQty'] ?? 0,
+            'vendor_shipping_id' => $step1['vendor_shipping_id'] ?? 0,
+            'vendor_packing_id' => $step1['vendor_packing_id'] ?? 0,
+            'currency_sign' => $step1['currency_sign'] ?? null,
+            'currency_name' => $step1['currency_name'] ?? null,
+            'currency_value' => $step1['currency_value'] ?? 1,
+            'coupon_code' => $step1['coupon_code'] ?? null,
+            'coupon_discount' => $step1['coupon_discount'] ?? null,
+            'coupon_id' => $step1['coupon_id'] ?? null,
+            'user_id' => $step1['user_id'] ?? null,
+        ];
+
+        \Log::info('CheckoutStep1: Storing raw data only', [
+            'lat' => $step1Data['latitude'],
+            'lng' => $step1Data['longitude'],
+            'country_id' => $step1Data['country_id'],
+        ]);
 
         // ====================================================================
-        // CALCULATE TAX BASED ON COUNTRY/CITY
+        // CALCULATE TAX (من country_id الذي جاء من AJAX)
         // ====================================================================
         $taxRate = 0;
         $taxLocation = '';
-
-        // Get country - try by ID first (from map), then by name (legacy)
         $country = null;
-        if (!empty($step1['country_id'])) {
-            $country = \App\Models\Country::find($step1['country_id']);
-        }
-        if (!$country && !empty($step1['customer_country'])) {
-            $country = \App\Models\Country::where('country_name', $step1['customer_country'])->first();
-        }
 
-        if ($country && $country->tax > 0) {
-            $taxRate = $country->tax;
-            $taxLocation = $country->country_name;
-        }
-
-        // Check if city has specific tax (overrides country tax)
-        $city = null;
-        if (!empty($step1['city_id'])) {
-            $city = \App\Models\City::find($step1['city_id']);
-            if ($city && $city->tax > 0) {
-                $taxRate = $city->tax;
-                $taxLocation = $city->city_name . ', ' . ($country->country_name ?? '');
+        if (!empty($step1Data['country_id'])) {
+            $country = \App\Models\Country::find($step1Data['country_id']);
+            if ($country && $country->tax > 0) {
+                $taxRate = $country->tax;
+                $taxLocation = $country->country_name;
             }
         }
 
@@ -602,26 +583,20 @@ class CheckoutController extends FrontBaseController
             $taxData['tax_amount'] = ($taxData['subtotal'] * $taxData['tax_rate']) / 100;
         }
 
-        // Save tax data to step1
-        $step1['tax_rate'] = $taxRate;
-        $step1['tax_location'] = $taxLocation;
-        $step1['vendor_tax_data'] = $vendorTaxData;
+        // Save tax data
+        $step1Data['tax_rate'] = $taxRate;
+        $step1Data['tax_location'] = $taxLocation;
+        $step1Data['vendor_tax_data'] = $vendorTaxData;
 
         // Calculate total tax amount
         $totalTaxAmount = array_sum(array_column($vendorTaxData, 'tax_amount'));
-        $step1['total_tax_amount'] = $totalTaxAmount;
+        $step1Data['total_tax_amount'] = $totalTaxAmount;
 
-        // ✅ Calculate products_total and total_with_tax for unified price display
-        // IMPORTANT: products_total = السعر الأصلي بدون خصم الكوبون
-        // الكوبون يُطرح في الحساب النهائي فقط
-        $oldCart = Session::get('cart');
-        $cart = new Cart($oldCart);
-        $productsTotal = $cart->totalPrice; // السعر الأصلي - لا نطرح الكوبون هنا!
-
-        // Save for price summary component
-        $step1['products_total'] = $productsTotal;          // السعر الأصلي
-        $step1['tax_amount'] = $totalTaxAmount;
-        $step1['total_with_tax'] = $productsTotal + $totalTaxAmount;  // قبل الكوبون
+        // Products total for price summary
+        $productsTotal = $cart->totalPrice;
+        $step1Data['products_total'] = $productsTotal;
+        $step1Data['tax_amount'] = $totalTaxAmount;
+        $step1Data['total_with_tax'] = $productsTotal + $totalTaxAmount;
 
         // ====================================================================
         // CLEAN SESSION - Prevent any data duplication
@@ -629,11 +604,9 @@ class CheckoutController extends FrontBaseController
         Session::forget(['step2', 'step3']);
 
         // ====================================================================
-        // SAVE TO SESSION - Single Source of Truth
+        // SAVE TO SESSION
         // ====================================================================
-        // All data (manual or from maps) saved here
-        // Step 2 and Step 3 will ONLY use this data
-        Session::put('step1', $step1);
+        Session::put('step1', $step1Data);
 
         return redirect()->route('front.checkout.step2');
     }
@@ -1244,7 +1217,7 @@ class CheckoutController extends FrontBaseController
         $step1 = $request->all();
 
         // ====================================================================
-        // VALIDATION - الخريطة ترسل lat/lng فقط، الباقي من Geocoding
+        // VALIDATION - بيانات خام فقط (لا قرارات تجارية)
         // ====================================================================
         $rules = [
             // بيانات العميل الأساسية
@@ -1256,12 +1229,8 @@ class CheckoutController extends FrontBaseController
             // الإحداثيات مطلوبة (من الخريطة)
             'latitude' => 'required|numeric|between:-90,90',
             'longitude' => 'required|numeric|between:-180,180',
-            // البيانات التالية اختيارية - ستأتي من Geocoding
+            // country_id يأتي من AJAX endpoint (للضريبة فقط)
             'country_id' => 'nullable|numeric|exists:countries,id',
-            'city_id' => 'nullable|numeric|exists:cities,id',
-            'customer_country' => 'nullable|string|max:255',
-            'customer_state' => 'nullable|string|max:255',
-            'customer_city' => 'nullable|numeric',
         ];
 
         // ✅ IF USER WANTS TO CREATE ACCOUNT - ADD PASSWORD VALIDATION
@@ -1312,78 +1281,66 @@ class CheckoutController extends FrontBaseController
         }
 
         // ====================================================================
-        // BACKEND REVERSE GEOCODING
+        // RAW DATA ONLY - لا Geocoding هنا
         // ====================================================================
-        $geocodeResult = $this->resolveLocationFromCoordinates(
-            (float) $request->latitude,
-            (float) $request->longitude
-        );
+        // Step 1 يجمع البيانات الخام فقط
+        // Step 2 هو مصدر الحقيقة لتحديد المدينة والشحن
+        // ====================================================================
+        $step1Data = [
+            // بيانات العميل
+            'customer_name' => $step1['customer_name'],
+            'customer_email' => $step1['customer_email'],
+            'customer_phone' => $step1['customer_phone'],
+            'customer_address' => $step1['customer_address'],
+            'customer_zip' => $step1['customer_zip'] ?? null,
 
-        if ($geocodeResult) {
-            // ✅ حفظ أسماء الموقع للـ Step 2
-            $step1['city_name'] = $geocodeResult['city_name'];
-            $step1['state_name'] = $geocodeResult['state_name'];
-            $step1['country_name'] = $geocodeResult['country_name'];
-            $step1['geocoding_success'] = true;
+            // الإحداثيات (المصدر الرئيسي للموقع)
+            'latitude' => (float) $step1['latitude'],
+            'longitude' => (float) $step1['longitude'],
 
-            // ✅ مطابقة الدولة من قاعدة البيانات (للضريبة)
-            if (!empty($geocodeResult['country_name'])) {
-                $matchedCountry = Country::where('country_name', 'LIKE', '%' . $geocodeResult['country_name'] . '%')
-                    ->orWhere('country_code', $geocodeResult['country_code'] ?? '')
-                    ->first();
-                if ($matchedCountry) {
-                    $step1['country_id'] = $matchedCountry->id;
-                    $step1['customer_country'] = $matchedCountry->country_name;
-                }
-            }
+            // country_id من AJAX (للضريبة فقط - ليس للشحن)
+            'country_id' => $step1['country_id'] ?? null,
 
-            \Log::info('VendorCheckoutStep1: Geocoding successful', [
-                'vendor_id' => $vendorId,
-                'lat' => $request->latitude,
-                'lng' => $request->longitude,
-                'city' => $geocodeResult['city_name'],
-            ]);
-        } else {
-            // ⚠️ فشل Geocoding - نخزن lat/lng فقط
-            $step1['city_name'] = null;
-            $step1['state_name'] = null;
-            $step1['country_name'] = null;
-            $step1['geocoding_success'] = false;
+            // بيانات الشحن
+            'shipping' => $step1['shipping'] ?? 'shipto',
+            'pickup_location' => $step1['pickup_location'] ?? null,
 
-            \Log::warning('VendorCheckoutStep1: Geocoding failed', [
-                'vendor_id' => $vendorId,
-                'lat' => $request->latitude,
-                'lng' => $request->longitude,
-            ]);
-        }
+            // إنشاء حساب (للزوار)
+            'create_account' => $step1['create_account'] ?? null,
+
+            // بيانات أخرى
+            'dp' => $step1['dp'] ?? 0,
+            'totalQty' => $step1['totalQty'] ?? 0,
+            'vendor_shipping_id' => $step1['vendor_shipping_id'] ?? 0,
+            'vendor_packing_id' => $step1['vendor_packing_id'] ?? 0,
+            'currency_sign' => $step1['currency_sign'] ?? null,
+            'currency_name' => $step1['currency_name'] ?? null,
+            'currency_value' => $step1['currency_value'] ?? 1,
+            'coupon_code' => $step1['coupon_code'] ?? null,
+            'coupon_discount' => $step1['coupon_discount'] ?? null,
+            'coupon_id' => $step1['coupon_id'] ?? null,
+            'user_id' => $step1['user_id'] ?? null,
+        ];
+
+        \Log::info('VendorCheckoutStep1: Storing raw data only', [
+            'vendor_id' => $vendorId,
+            'lat' => $step1Data['latitude'],
+            'lng' => $step1Data['longitude'],
+            'country_id' => $step1Data['country_id'],
+        ]);
 
         // ====================================================================
-        // CALCULATE TAX BASED ON COUNTRY/CITY
+        // CALCULATE TAX (من country_id الذي جاء من AJAX)
         // ====================================================================
         $taxRate = 0;
         $taxLocation = '';
-
-        // Get country - try by ID first (from map), then by name (legacy)
         $country = null;
-        if (!empty($step1['country_id'])) {
-            $country = \App\Models\Country::find($step1['country_id']);
-        }
-        if (!$country && !empty($step1['customer_country'])) {
-            $country = \App\Models\Country::where('country_name', $step1['customer_country'])->first();
-        }
 
-        if ($country && $country->tax > 0) {
-            $taxRate = $country->tax;
-            $taxLocation = $country->country_name;
-        }
-
-        // Check if city has specific tax (overrides country tax)
-        $city = null;
-        if (!empty($step1['city_id'])) {
-            $city = \App\Models\City::find($step1['city_id']);
-            if ($city && $city->tax > 0) {
-                $taxRate = $city->tax;
-                $taxLocation = $city->city_name . ', ' . ($country->country_name ?? '');
+        if (!empty($step1Data['country_id'])) {
+            $country = \App\Models\Country::find($step1Data['country_id']);
+            if ($country && $country->tax > 0) {
+                $taxRate = $country->tax;
+                $taxLocation = $country->country_name;
             }
         }
 
@@ -1394,9 +1351,7 @@ class CheckoutController extends FrontBaseController
         $vendorSubtotal = 0;
 
         // Calculate subtotal for this vendor's products only
-        // Cart stores 'user_id' at root level AND item can be object or array
         foreach ($cart->items as $product) {
-            // First check direct user_id (Cart model stores this at root level)
             $productVendorId = 0;
             if (isset($product['user_id'])) {
                 $productVendorId = (int)$product['user_id'];
@@ -1413,24 +1368,16 @@ class CheckoutController extends FrontBaseController
 
         $taxAmount = ($vendorSubtotal * $taxRate) / 100;
 
-        // ========================================================================
-        // ✅ UNIFIED PRICE CALCULATION - DO NOT SUBTRACT COUPON HERE!
-        // ========================================================================
-        // products_total = RAW sum of products (NEVER changes)
-        // Coupon is handled separately and displayed as discount line
+        // Save tax data
+        $step1Data['tax_rate'] = $taxRate;
+        $step1Data['tax_location'] = $taxLocation;
+        $step1Data['tax_amount'] = $taxAmount;
+        $step1Data['vendor_subtotal'] = $vendorSubtotal;
+        $step1Data['products_total'] = $vendorSubtotal;
+        $step1Data['total_with_tax'] = $vendorSubtotal + $taxAmount;
 
-        // Save tax data to step1
-        $step1['tax_rate'] = $taxRate;
-        $step1['tax_location'] = $taxLocation;
-        $step1['tax_amount'] = $taxAmount;
-        $step1['vendor_subtotal'] = $vendorSubtotal;
-
-        // ✅ products_total = Original price WITHOUT coupon deduction
-        $step1['products_total'] = $vendorSubtotal;
-        $step1['total_with_tax'] = $vendorSubtotal + $taxAmount;
-
-        Session::put('vendor_step1_' . $vendorId, $step1);
-        Session::save(); // Ensure session is saved before redirect
+        Session::put('vendor_step1_' . $vendorId, $step1Data);
+        Session::save();
         return redirect()->route('front.checkout.vendor.step2', $vendorId);
     }
 

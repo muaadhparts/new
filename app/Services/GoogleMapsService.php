@@ -84,6 +84,9 @@ class GoogleMapsService
             'country_code' => null,
             'state' => null,
             'city' => null,
+            'district' => null,
+            'street' => null,
+            'postal_code' => null,
             'address' => $result['formatted_address'] ?? null,
             'latitude' => $result['geometry']['location']['lat'] ?? null,
             'longitude' => $result['geometry']['location']['lng'] ?? null
@@ -110,6 +113,21 @@ class GoogleMapsService
                 $components['city'] = $longName;
             } elseif (in_array('administrative_area_level_2', $types) && empty($components['city'])) {
                 $components['city'] = $longName;
+            }
+
+            // District / Neighborhood
+            if (in_array('sublocality_level_1', $types) || in_array('neighborhood', $types)) {
+                $components['district'] = $longName;
+            }
+
+            // Street
+            if (in_array('route', $types)) {
+                $components['street'] = $longName;
+            }
+
+            // Postal Code
+            if (in_array('postal_code', $types)) {
+                $components['postal_code'] = $longName;
             }
         }
 

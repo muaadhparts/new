@@ -638,25 +638,54 @@ class GeocodingController extends Controller
         $latitude = (float) $request->latitude;
         $longitude = (float) $request->longitude;
 
-        // 1. Geocoding للحصول على اسم الدولة
-        $geocodeResult = $this->googleMapsService->reverseGeocode($latitude, $longitude, 'en');
+        $countryName = null;
+        $countryCode = null;
+        $cityName = null;
+        $stateName = null;
+        $formattedAddress = null;
+        $postalCode = null;
+        $geocodingSuccess = false;
 
-        if (!$geocodeResult['success']) {
-            return response()->json([
-                'success' => false,
-                'tax_rate' => 0,
-                'tax_amount' => 0,
-                'country_name' => null,
-                'message' => 'فشل تحديد الموقع'
+        // 1. Geocoding بالعربية للحصول على العنوان المنسق
+        try {
+            $geocodeResultAr = $this->googleMapsService->reverseGeocode($latitude, $longitude, 'ar');
+
+            if ($geocodeResultAr['success'] && !empty($geocodeResultAr['data'])) {
+                $formattedAddress = $geocodeResultAr['data']['address'] ?? null;
+                $postalCode = $geocodeResultAr['data']['postal_code'] ?? null;
+            }
+        } catch (\Exception $e) {
+            Log::warning('getTaxFromCoordinates: Arabic geocoding failed', [
+                'lat' => $latitude,
+                'lng' => $longitude,
+                'error' => $e->getMessage()
             ]);
         }
 
-        $countryName = $geocodeResult['data']['country'] ?? null;
-        $countryCode = $geocodeResult['data']['country_code'] ?? null;
-        $cityName = $geocodeResult['data']['city'] ?? null;
-        $stateName = $geocodeResult['data']['state'] ?? null;
+        // 2. Geocoding بالإنجليزية للحصول على أسماء المدن (للمطابقة مع DB)
+        try {
+            $geocodeResult = $this->googleMapsService->reverseGeocode($latitude, $longitude, 'en');
 
-        // 2. البحث عن الدولة في قاعدة البيانات
+            if ($geocodeResult['success'] && !empty($geocodeResult['data'])) {
+                $countryName = $geocodeResult['data']['country'] ?? null;
+                $countryCode = $geocodeResult['data']['country_code'] ?? null;
+                $cityName = $geocodeResult['data']['city'] ?? null;
+                $stateName = $geocodeResult['data']['state'] ?? null;
+                // Use English postal code if Arabic didn't have it
+                if (!$postalCode) {
+                    $postalCode = $geocodeResult['data']['postal_code'] ?? null;
+                }
+                $geocodingSuccess = true;
+            }
+        } catch (\Exception $e) {
+            Log::warning('getTaxFromCoordinates: English geocoding failed', [
+                'lat' => $latitude,
+                'lng' => $longitude,
+                'error' => $e->getMessage()
+            ]);
+        }
+
+        // 3. البحث عن الدولة في قاعدة البيانات
         $country = null;
         if ($countryName) {
             $country = Country::where('country_name', 'LIKE', '%' . $countryName . '%')
@@ -672,7 +701,7 @@ class GeocodingController extends Controller
             $taxLocation = $country->country_name;
         }
 
-        // 3. حساب مبلغ الضريبة من السلة
+        // 4. حساب مبلغ الضريبة من السلة
         $cart = \Session::get('cart');
         $cartTotal = 0;
         if ($cart) {
@@ -684,15 +713,20 @@ class GeocodingController extends Controller
 
         return response()->json([
             'success' => true,
+            'geocoding_success' => $geocodingSuccess,
             'country_id' => $country->id ?? null,
             'country_name' => $country->country_name ?? $countryName,
             'city_name' => $cityName,
             'state_name' => $stateName,
+            'formatted_address' => $formattedAddress,
+            'postal_code' => $postalCode,
             'tax_rate' => $taxRate,
             'tax_amount' => round($taxAmount, 2),
             'tax_location' => $taxLocation,
             'cart_total' => $cartTotal,
-            'message' => $taxRate > 0 ? "الضريبة {$taxRate}%" : 'لا توجد ضريبة'
+            'message' => $geocodingSuccess
+                ? ($taxRate > 0 ? "الضريبة {$taxRate}%" : 'لا توجد ضريبة')
+                : 'تم تحديد الموقع (الضريبة ستُحسب عند الإرسال)'
         ]);
     }
 

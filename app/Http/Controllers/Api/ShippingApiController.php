@@ -238,19 +238,22 @@ class ShippingApiController extends Controller
 
     /**
      * ========================================================================
-     * Step 2: Resolve Destination City - Business Logic
+     * Step 2: Resolve Destination City - SINGLE SOURCE OF TRUTH
      * ========================================================================
      *
-     * مسؤوليات Step 2:
-     * ✅ قراءة Session فقط (لا يعدل Session)
-     * ✅ تحديد مدينة الشحن
-     * ✅ Fallback لأقرب مدينة إذا فشل الـ geocoding
-     * ✅ معالجة أخطاء الشحن
+     * هذه الدالة هي المصدر الوحيد لتحديد مدينة الشحن.
+     * Step 1 يمرر بيانات خام فقط (lat/lng).
+     * كل منطق تحديد المدينة يتم هنا.
      *
-     * Session Contract (ما يتوقعه من Step 1):
+     * مسؤوليات Step 2:
+     * ✅ Geocoding (تحويل الإحداثيات إلى أسماء)
+     * ✅ تحديد مدينة الشحن بالأسماء
+     * ✅ Fallback لأقرب مدينة مدعومة بالإحداثيات
+     * ✅ معالجة جميع حالات الفشل
+     *
+     * Session Contract (من Step 1):
      * - latitude, longitude (مطلوبين دائماً)
-     * - city_name, state_name, country_name (قد تكون null إذا فشل geocoding)
-     * - geocoding_success (للتحقق من حالة الـ geocoding)
+     * - country_id (للضريبة فقط - ليس للشحن)
      * ========================================================================
      */
     protected function getDestinationCity(int $vendorId): ?string
@@ -268,7 +271,7 @@ class ShippingApiController extends Controller
         }
 
         // ====================================================================
-        // 2. استخراج الإحداثيات (مطلوبة دائماً)
+        // 2. استخراج الإحداثيات (المصدر الرئيسي للموقع)
         // ====================================================================
         $latitude = $step1['latitude'] ?? null;
         $longitude = $step1['longitude'] ?? null;
@@ -280,27 +283,53 @@ class ShippingApiController extends Controller
             return null;
         }
 
-        // ====================================================================
-        // 3. استخراج بيانات الـ Geocoding (قد تكون null)
-        // ====================================================================
-        $cityName = $step1['city_name'] ?? null;
-        $stateName = $step1['state_name'] ?? null;
-        $countryName = $step1['country_name'] ?? null;
-        $geocodingSuccess = $step1['geocoding_success'] ?? false;
-
-        Log::debug('ShippingApiController: Starting city resolution', [
+        Log::debug('ShippingApiController: Starting city resolution (Step 2 is source of truth)', [
             'vendor_id' => $vendorId,
             'latitude' => $latitude,
             'longitude' => $longitude,
-            'city_name' => $cityName,
-            'country_name' => $countryName,
-            'geocoding_success' => $geocodingSuccess
         ]);
 
         $locationService = app(TryotoLocationService::class);
 
         // ====================================================================
-        // 4. محاولة Resolve بالأسماء أولاً (إذا نجح الـ geocoding)
+        // 3. GEOCODING - تحويل الإحداثيات إلى أسماء (يتم هنا وليس في Step 1)
+        // ====================================================================
+        $cityName = null;
+        $stateName = null;
+        $countryName = null;
+        $geocodingSuccess = false;
+
+        try {
+            $googleMapsService = app(\App\Services\GoogleMapsService::class);
+            $geocodeResult = $googleMapsService->reverseGeocode((float)$latitude, (float)$longitude, 'en');
+
+            if ($geocodeResult['success'] && !empty($geocodeResult['data'])) {
+                $cityName = $geocodeResult['data']['city'] ?? null;
+                $stateName = $geocodeResult['data']['state'] ?? null;
+                $countryName = $geocodeResult['data']['country'] ?? null;
+                $geocodingSuccess = true;
+
+                Log::info('ShippingApiController: Geocoding successful', [
+                    'vendor_id' => $vendorId,
+                    'city' => $cityName,
+                    'state' => $stateName,
+                    'country' => $countryName,
+                ]);
+            } else {
+                Log::warning('ShippingApiController: Geocoding failed', [
+                    'vendor_id' => $vendorId,
+                    'error' => $geocodeResult['error'] ?? 'Unknown error'
+                ]);
+            }
+        } catch (\Exception $e) {
+            Log::error('ShippingApiController: Geocoding exception', [
+                'vendor_id' => $vendorId,
+                'error' => $e->getMessage()
+            ]);
+        }
+
+        // ====================================================================
+        // 4. محاولة Resolve بالأسماء (إذا نجح الـ Geocoding)
         // ====================================================================
         if ($geocodingSuccess && $countryName) {
             $resolution = $locationService->resolveMapCity(
@@ -319,16 +348,23 @@ class ShippingApiController extends Controller
                 ]);
                 return $this->normalizeCityName($resolution['resolved_name']);
             }
+
+            Log::warning('ShippingApiController: Name resolution failed, trying fallback', [
+                'vendor_id' => $vendorId,
+                'city' => $cityName,
+                'country' => $countryName,
+                'message' => $resolution['message'] ?? 'Unknown'
+            ]);
         }
 
         // ====================================================================
         // 5. FALLBACK: Resolve بالإحداثيات فقط
         // ====================================================================
         // يستخدم عندما:
-        // - فشل الـ geocoding في Step 1
-        // - أو المدينة/الدولة غير مدعومة
+        // - فشل الـ Geocoding
+        // - أو المدينة/الدولة غير مدعومة من Tryoto
         // ====================================================================
-        Log::info('ShippingApiController: Falling back to coordinates-only resolution', [
+        Log::info('ShippingApiController: Using coordinates-only fallback', [
             'vendor_id' => $vendorId,
             'reason' => $geocodingSuccess ? 'name_resolution_failed' : 'geocoding_failed'
         ]);
