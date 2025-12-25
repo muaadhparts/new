@@ -830,7 +830,6 @@ Route::prefix('admin')->group(function () {
         //------------ ADMIN PAGE SETTINGS SECTION ------------
 
         Route::get('/page-settings/customize', 'Admin\PageSettingController@customize')->name('admin-ps-customize');
-        Route::get('/page-settings/big-save', 'Admin\PageSettingController@big_save')->name('admin-ps-big-save');
         Route::get('/page-settings/best-seller', 'Admin\PageSettingController@best_seller')->name('admin-ps-best-seller');
     });
 
