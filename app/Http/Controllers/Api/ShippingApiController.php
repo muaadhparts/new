@@ -8,6 +8,7 @@ use App\Services\TryotoService;
 use App\Services\TryotoLocationService;
 use App\Services\VendorCartService;
 use App\Services\ShippingCalculatorService;
+use App\Services\CheckoutPriceService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Session;
@@ -15,10 +16,12 @@ use Illuminate\Support\Facades\Session;
 class ShippingApiController extends Controller
 {
     protected TryotoService $tryotoService;
+    protected CheckoutPriceService $priceService;
 
-    public function __construct(TryotoService $tryotoService)
+    public function __construct(TryotoService $tryotoService, CheckoutPriceService $priceService)
     {
         $this->tryotoService = $tryotoService;
+        $this->priceService = $priceService;
     }
 
     /**
@@ -148,11 +151,14 @@ class ShippingApiController extends Controller
                 ]);
             }
 
+            // Convert prices to selected currency before returning
+            $convertedOptions = $this->convertDeliveryOptionsPrices($deliveryCompany);
+
             return response()->json([
                 'success' => true,
                 'vendor_id' => $vendorId,
-                'delivery_options' => $deliveryCompany,
-                'count' => count($deliveryCompany),
+                'delivery_options' => $convertedOptions,
+                'count' => count($convertedOptions),
                 'weight' => $weight,
             ]);
 
@@ -176,21 +182,17 @@ class ShippingApiController extends Controller
     {
         $vendorId = $request->input('vendor_id');
 
-        // Get currency - same logic as AppServiceProvider
-        if (Session::has('currency')) {
-            $curr = \App\Models\Currency::find(Session::get('currency'));
-        } else {
-            $curr = \App\Models\Currency::where('is_default', '=', 1)->first();
-        }
+        // Get currency from CheckoutPriceService (single source of truth)
+        $curr = $this->priceService->getCurrency();
 
         // Get free shipping threshold from vendor's Tryoto config
         $vendorTryotoShipping = \App\Models\Shipping::where('user_id', $vendorId)
             ->where('provider', 'tryoto')
             ->first();
         $freeAbove = $vendorTryotoShipping ? (float)$vendorTryotoShipping->free_above : 0;
-        $freeAboveConverted = round($freeAbove * $curr->value, 2);
+        $freeAboveConverted = $this->priceService->convert($freeAbove);
 
-        // Calculate vendor's products total from cart
+        // Calculate vendor's products total from cart (converted)
         $cart = Session::get('cart');
         $vendorProductsTotal = 0;
         if ($cart && !empty($cart->items)) {
@@ -201,9 +203,9 @@ class ShippingApiController extends Controller
                 }
             }
         }
-        $vendorProductsTotalConverted = round($vendorProductsTotal * $curr->value, 2);
+        $vendorProductsTotalConverted = $this->priceService->convert($vendorProductsTotal);
 
-        // Get the API response (uses session cart internally)
+        // Get the API response (already has converted prices)
         $apiResponse = $this->getTryotoOptions($request);
         $data = json_decode($apiResponse->getContent(), true);
 
@@ -233,6 +235,24 @@ class ShippingApiController extends Controller
             'success' => true,
             'html' => $html,
         ]);
+    }
+
+    /**
+     * Convert delivery options prices to selected currency
+     */
+    protected function convertDeliveryOptionsPrices(array $options): array
+    {
+        return array_map(function ($option) {
+            // Convert price field (Tryoto returns 'price' in SAR)
+            if (isset($option['price'])) {
+                $option['price'] = $this->priceService->convert((float)$option['price']);
+            }
+            // Also convert any other price-related fields if they exist
+            if (isset($option['originalPrice'])) {
+                $option['originalPrice'] = $this->priceService->convert((float)$option['originalPrice']);
+            }
+            return $option;
+        }, $options);
     }
 
     /**

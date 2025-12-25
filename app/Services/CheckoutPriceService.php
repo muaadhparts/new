@@ -4,8 +4,10 @@ namespace App\Services;
 
 use App\Models\Cart;
 use App\Models\Coupon;
+use App\Models\Currency;
 use App\Models\Shipping;
 use App\Models\Package;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
 
 /**
@@ -26,6 +28,12 @@ use Illuminate\Support\Facades\Session;
  * packing_cost        = Selected packaging price
  * grand_total         = subtotal + tax_amount + shipping_cost + packing_cost
  *
+ * Currency Conversion:
+ * ====================
+ * All prices stored/calculated in SAR (base currency)
+ * Conversion happens ONCE here before passing to views
+ * Views only format (number_format + sign), never convert
+ *
  * Data Flow:
  * ==========
  * Step1: products_total, tax_rate, tax_amount
@@ -36,13 +44,108 @@ use Illuminate\Support\Facades\Session;
  */
 class CheckoutPriceService
 {
-    protected $curr;
+    protected $currency;
+    protected $currencyValue;
+    protected $currencySign;
+    protected $currencyFormat;
     protected $vendorId;
     protected $isVendorCheckout;
 
     public function __construct()
     {
-        $this->curr = session('currency');
+        $this->loadCurrency();
+        $this->loadSettings();
+    }
+
+    /**
+     * Load currency from session or default
+     */
+    protected function loadCurrency(): void
+    {
+        if (Session::has('currency')) {
+            $this->currency = Currency::find(Session::get('currency'));
+        }
+
+        if (!$this->currency) {
+            $this->currency = Currency::where('is_default', 1)->first();
+        }
+
+        $this->currencyValue = $this->currency->value ?? 1;
+        $this->currencySign = $this->currency->sign ?? 'SAR';
+    }
+
+    /**
+     * Load general settings for currency format
+     */
+    protected function loadSettings(): void
+    {
+        $gs = cache()->remember('generalsettings', now()->addDay(), function () {
+            return DB::table('generalsettings')->first();
+        });
+        $this->currencyFormat = $gs->currency_format ?? 0;
+    }
+
+    // ========================================================================
+    // CURRENCY CONVERSION METHODS
+    // ========================================================================
+
+    /**
+     * Get current currency object
+     */
+    public function getCurrency(): ?Currency
+    {
+        return $this->currency;
+    }
+
+    /**
+     * Get currency value (conversion rate)
+     */
+    public function getCurrencyValue(): float
+    {
+        return (float) $this->currencyValue;
+    }
+
+    /**
+     * Get currency sign
+     */
+    public function getCurrencySign(): string
+    {
+        return $this->currencySign;
+    }
+
+    /**
+     * Get currency format (0 = sign before, 1 = sign after)
+     */
+    public function getCurrencyFormat(): int
+    {
+        return (int) $this->currencyFormat;
+    }
+
+    /**
+     * Convert price from SAR to selected currency
+     */
+    public function convert(float $amount): float
+    {
+        return round($amount * $this->currencyValue, 2);
+    }
+
+    /**
+     * Format price with currency sign (no conversion - expects already converted value)
+     */
+    public function formatPrice(float $amount): string
+    {
+        $formatted = number_format($amount, 2);
+        return $this->currencyFormat == 0
+            ? $this->currencySign . $formatted
+            : $formatted . $this->currencySign;
+    }
+
+    /**
+     * Convert AND format price in one call
+     */
+    public function convertAndFormat(float $amount): string
+    {
+        return $this->formatPrice($this->convert($amount));
     }
 
     /**
@@ -463,6 +566,74 @@ class CheckoutPriceService
             'packing_company' => $packingCompany,
             'grand_total' => round($grandTotal, 2),
             'subtotal_before_coupon' => round($subtotalBeforeCoupon, 2),
+        ];
+    }
+
+    /**
+     * ========================================================================
+     * GET CONVERTED PRICE BREAKDOWN - FOR VIEWS
+     * ========================================================================
+     *
+     * Returns price breakdown with ALL monetary values converted to selected currency.
+     * This is the SINGLE POINT of currency conversion for checkout views.
+     *
+     * Views should ONLY format (number_format + sign), NEVER convert.
+     */
+    public function getConvertedPriceBreakdown($step, $step1Data = null, $step2Data = null, $vendorId = null): array
+    {
+        // Get raw SAR values
+        $raw = $this->getPriceBreakdown($step, $step1Data, $step2Data, $vendorId);
+
+        // Convert all monetary values
+        return [
+            // Converted values (for display)
+            'products_total' => $this->convert($raw['products_total']),
+            'coupon_discount' => $this->convert($raw['coupon_discount']),
+            'tax_amount' => $this->convert($raw['tax_amount']),
+            'shipping_cost' => $this->convert($raw['shipping_cost']),
+            'original_shipping_cost' => $this->convert($raw['original_shipping_cost']),
+            'free_shipping_discount' => $this->convert($raw['free_shipping_discount']),
+            'packing_cost' => $this->convert($raw['packing_cost']),
+            'grand_total' => $this->convert($raw['grand_total']),
+            'subtotal_before_coupon' => $this->convert($raw['subtotal_before_coupon']),
+
+            // Non-monetary values (pass through)
+            'coupon_code' => $raw['coupon_code'],
+            'coupon_percentage' => $raw['coupon_percentage'],
+            'has_coupon' => $raw['has_coupon'],
+            'tax_rate' => $raw['tax_rate'],
+            'tax_location' => $raw['tax_location'],
+            'is_free_shipping' => $raw['is_free_shipping'],
+            'shipping_company' => $raw['shipping_company'],
+            'packing_company' => $raw['packing_company'],
+
+            // Currency info (for JS formatting)
+            'currency_sign' => $this->currencySign,
+            'currency_format' => $this->currencyFormat,
+            'currency_value' => $this->currencyValue,
+        ];
+    }
+
+    /**
+     * Get formatted prices ready for display (converted + formatted)
+     */
+    public function getFormattedPriceBreakdown($step, $step1Data = null, $step2Data = null, $vendorId = null): array
+    {
+        $converted = $this->getConvertedPriceBreakdown($step, $step1Data, $step2Data, $vendorId);
+
+        return [
+            // Formatted strings (ready for display)
+            'products_total_formatted' => $this->formatPrice($converted['products_total']),
+            'coupon_discount_formatted' => $this->formatPrice($converted['coupon_discount']),
+            'tax_amount_formatted' => $this->formatPrice($converted['tax_amount']),
+            'shipping_cost_formatted' => $this->formatPrice($converted['shipping_cost']),
+            'original_shipping_cost_formatted' => $this->formatPrice($converted['original_shipping_cost']),
+            'free_shipping_discount_formatted' => $this->formatPrice($converted['free_shipping_discount']),
+            'packing_cost_formatted' => $this->formatPrice($converted['packing_cost']),
+            'grand_total_formatted' => $this->formatPrice($converted['grand_total']),
+
+            // Include raw converted values for JS calculations
+            ...$converted,
         ];
     }
 }

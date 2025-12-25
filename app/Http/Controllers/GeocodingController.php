@@ -662,6 +662,29 @@ class GeocodingController extends Controller
 
         $taxAmount = ($cartTotal * $taxRate) / 100;
 
+        // Store location data in location_draft session (not step1)
+        // Will be merged into step1 on form submit
+        $vendorId = $request->input('vendor_id');
+        $locationDraft = [
+            'latitude' => $latitude,
+            'longitude' => $longitude,
+            'country_id' => $country->id ?? null,
+            'country_name' => $country->country_name ?? $countryName,
+            'city_name' => $cityName,
+            'state_name' => $stateName,
+            'formatted_address' => $formattedAddress,
+            'postal_code' => $postalCode,
+            'tax_rate' => $taxRate,
+            'tax_amount' => round($taxAmount, 2),
+            'tax_location' => $taxLocation,
+        ];
+
+        if ($vendorId) {
+            \Session::put('location_draft_vendor_' . $vendorId, $locationDraft);
+        } else {
+            \Session::put('location_draft', $locationDraft);
+        }
+
         return response()->json([
             'success' => true,
             'geocoding_success' => $geocodingSuccess,

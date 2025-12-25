@@ -367,7 +367,7 @@
     </div>
     <!--  checkout wrapper end-->
 
-    {{-- Simple Google Maps Modal --}}
+    {{-- Google Maps Modal with Search --}}
     <div class="modal fade" id="mapModal" tabindex="-1">
         <div class="modal-dialog modal-lg modal-dialog-centered">
             <div class="modal-content">
@@ -379,17 +379,30 @@
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body p-0">
-                    {{-- Map Container --}}
-                    <div id="map" style="height: 400px; width: 100%;"></div>
+                    {{-- Search Box --}}
+                    <div class="p-3 border-bottom">
+                        <div class="input-group">
+                            <span class="input-group-text bg-white">
+                                <i class="fas fa-search text-muted"></i>
+                            </span>
+                            <input type="text" id="map-search-input" class="form-control"
+                                   placeholder="@lang('Search for a location...')" autocomplete="off">
+                        </div>
+                    </div>
 
-                    {{-- Coordinates Display --}}
+                    {{-- Map Container --}}
+                    <div id="map" style="height: 350px; width: 100%;"></div>
+
+                    {{-- Location Display --}}
                     <div class="p-3 bg-light border-top">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <small class="text-muted">@lang('Coordinates'):</small>
-                                <span id="coords-display" class="fw-bold">@lang('Click on map to select')</span>
+                        <div class="d-flex justify-content-between align-items-start gap-2">
+                            <div class="flex-grow-1">
+                                <small class="text-muted d-block mb-1">@lang('Selected Location'):</small>
+                                <div id="coords-display" class="fw-bold" style="word-break: break-word;">
+                                    @lang('Click on map or search to select location')
+                                </div>
                             </div>
-                            <button type="button" class="btn btn-outline-secondary btn-sm" id="my-location-btn">
+                            <button type="button" class="btn btn-outline-secondary btn-sm flex-shrink-0" id="my-location-btn">
                                 <i class="fas fa-crosshairs"></i> @lang('My Location')
                             </button>
                         </div>
@@ -622,29 +635,83 @@
         });
     </script>
 
-    {{-- Simple Google Maps Script --}}
-    <script src="https://maps.googleapis.com/maps/api/js?key={{ config('services.google_maps.api_key') }}&language=ar"></script>
+    {{-- Google Maps Script with Places Library --}}
+    <script src="https://maps.googleapis.com/maps/api/js?key={{ config('services.google_maps.api_key') }}&libraries=places&language=ar"></script>
     <script>
     // Map Variables
-    let map, marker;
+    let map, marker, searchBox, geocoder;
     let selectedLat = null, selectedLng = null;
-    let mapInitialized = false;
+    let selectedAddress = '';
 
-    // Initialize map when modal opens
+    // Checkout type detection
+    const isVendorCheckout = {{ isset($is_vendor_checkout) && $is_vendor_checkout ? 'true' : 'false' }};
+    const checkoutVendorId = {{ isset($vendor_id) ? $vendor_id : 'null' }};
+
+    // Clear previous session and reset when modal opens
+    $('#mapModal').on('show.bs.modal', function() {
+        // Clear location_draft in backend (doesn't affect step1/step2/step3)
+        $.ajax({
+            url: '{{ route("front.checkout.location.reset") }}',
+            method: 'POST',
+            data: {
+                vendor_id: checkoutVendorId,
+                _token: $('meta[name="csrf-token"]').attr('content')
+            }
+        });
+
+        // Clear previous location data (client-side)
+        selectedLat = null;
+        selectedLng = null;
+        selectedAddress = '';
+
+        // Clear hidden fields
+        $('#latitude').val('');
+        $('#longitude').val('');
+        $('#country_id').val('');
+        $('#city_id').val('');
+        $('#customer_city_hidden').val('');
+        $('#customer_country_hidden').val('');
+        $('#customer_state_hidden').val('');
+        $('#city_name_hidden').val('');
+        $('#country_name_hidden').val('');
+        $('#state_name_hidden').val('');
+
+        // Reset UI
+        $('#open-map-btn').removeClass('btn-success').addClass('btn-outline-primary');
+        $('#open-map-btn').html('<i class="fas fa-map-marker-alt"></i> @lang("Select Location from Map")');
+        $('#selected-location-info').addClass('d-none');
+        $('#location-text').text('');
+
+        // Reset confirm button
+        document.getElementById('confirm-location-btn').disabled = true;
+
+        // Reset display
+        document.getElementById('coords-display').innerHTML = '@lang("Click on map or search to select location")';
+
+        // Clear search input
+        $('#map-search-input').val('');
+    });
+
+    // Initialize map when modal is shown
     $('#mapModal').on('shown.bs.modal', function() {
         if (!map) {
             initMap();
         } else {
             google.maps.event.trigger(map, 'resize');
-            // Try to get location again if not already set
-            if (!selectedLat && !mapInitialized) {
-                autoDetectLocation();
+            // Reset marker
+            if (marker) {
+                marker.setVisible(false);
             }
+            // Try to auto-detect location
+            autoDetectLocation();
         }
     });
 
     function initMap() {
-        // Start with a wide view (will zoom to user location)
+        // Initialize geocoder
+        geocoder = new google.maps.Geocoder();
+
+        // Create map
         map = new google.maps.Map(document.getElementById('map'), {
             center: { lat: 25, lng: 45 },
             zoom: 5,
@@ -653,21 +720,53 @@
             fullscreenControl: true
         });
 
+        // Create marker
         marker = new google.maps.Marker({
             map: map,
             draggable: true,
             visible: false
         });
 
+        // Initialize Places Autocomplete
+        const input = document.getElementById('map-search-input');
+        searchBox = new google.maps.places.Autocomplete(input, {
+            types: ['geocode', 'establishment']
+        });
+
+        // Bias search results to map viewport
+        map.addListener('bounds_changed', function() {
+            searchBox.setBounds(map.getBounds());
+        });
+
+        // Handle place selection from search
+        searchBox.addListener('place_changed', function() {
+            const place = searchBox.getPlace();
+
+            if (!place.geometry || !place.geometry.location) {
+                return;
+            }
+
+            // Move map to selected place
+            map.setCenter(place.geometry.location);
+            map.setZoom(15);
+
+            // Set location with address
+            setLocation(
+                place.geometry.location.lat(),
+                place.geometry.location.lng(),
+                place.formatted_address
+            );
+        });
+
         // Click on map = set location
         map.addListener('click', function(e) {
-            setLocation(e.latLng.lat(), e.latLng.lng());
+            setLocationWithGeocode(e.latLng.lat(), e.latLng.lng());
         });
 
         // Drag marker = update location
         marker.addListener('dragend', function() {
             const pos = marker.getPosition();
-            setLocation(pos.lat(), pos.lng());
+            setLocationWithGeocode(pos.lat(), pos.lng());
         });
 
         // My Location button
@@ -685,26 +784,20 @@
             return;
         }
 
-        mapInitialized = true;
-
-        // Show loading indicator
-        document.getElementById('coords-display').textContent = '@lang("Detecting your location...")';
+        document.getElementById('coords-display').innerHTML = '<i class="fas fa-spinner fa-spin"></i> @lang("Detecting your location...")';
 
         navigator.geolocation.getCurrentPosition(
             function(position) {
                 const lat = position.coords.latitude;
                 const lng = position.coords.longitude;
 
-                // Center map on user location
                 map.setCenter({ lat: lat, lng: lng });
                 map.setZoom(14);
 
-                // Set marker at user location
-                setLocation(lat, lng);
+                setLocationWithGeocode(lat, lng);
             },
             function(error) {
-                // Geolocation failed - show message
-                document.getElementById('coords-display').textContent = '@lang("Click on map to select location")';
+                document.getElementById('coords-display').innerHTML = '@lang("Click on map or search to select location")';
             },
             {
                 enableHighAccuracy: true,
@@ -714,16 +807,38 @@
         );
     }
 
-    function setLocation(lat, lng) {
+    function setLocationWithGeocode(lat, lng) {
+        // Show loading
+        document.getElementById('coords-display').innerHTML = '<i class="fas fa-spinner fa-spin"></i> @lang("Loading address...")';
+
+        // Reverse geocode to get address
+        geocoder.geocode({ location: { lat: lat, lng: lng } }, function(results, status) {
+            if (status === 'OK' && results[0]) {
+                setLocation(lat, lng, results[0].formatted_address);
+            } else {
+                setLocation(lat, lng, null);
+            }
+        });
+    }
+
+    function setLocation(lat, lng, address) {
         selectedLat = lat;
         selectedLng = lng;
+        selectedAddress = address || '';
 
         // Update marker
         marker.setPosition({ lat: lat, lng: lng });
         marker.setVisible(true);
 
-        // Update display
-        document.getElementById('coords-display').textContent = lat.toFixed(6) + ', ' + lng.toFixed(6);
+        // Update display with full address
+        let displayText = '';
+        if (address) {
+            displayText = '<div class="mb-1">' + address + '</div>';
+            displayText += '<small class="text-muted">(' + lat.toFixed(6) + ', ' + lng.toFixed(6) + ')</small>';
+        } else {
+            displayText = lat.toFixed(6) + ', ' + lng.toFixed(6);
+        }
+        document.getElementById('coords-display').innerHTML = displayText;
 
         // Enable confirm button
         document.getElementById('confirm-location-btn').disabled = false;
@@ -735,10 +850,9 @@
             return;
         }
 
-        // Show loading state
         const btn = document.getElementById('my-location-btn');
         const originalText = btn.innerHTML;
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> @lang("Getting location...")';
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
         btn.disabled = true;
 
         navigator.geolocation.getCurrentPosition(
@@ -748,9 +862,8 @@
 
                 map.setCenter({ lat: lat, lng: lng });
                 map.setZoom(15);
-                setLocation(lat, lng);
+                setLocationWithGeocode(lat, lng);
 
-                // Reset button
                 btn.innerHTML = originalText;
                 btn.disabled = false;
             },
@@ -759,21 +872,18 @@
                 btn.disabled = false;
 
                 let errorMessage = '@lang("Could not get your location")';
-
                 switch(error.code) {
                     case error.PERMISSION_DENIED:
-                        errorMessage = '@lang("Location permission denied. Please enable location access in browser settings.")';
+                        errorMessage = '@lang("Location permission denied")';
                         break;
                     case error.POSITION_UNAVAILABLE:
-                        errorMessage = '@lang("Location unavailable. Please select location manually on the map.")';
+                        errorMessage = '@lang("Location unavailable")';
                         break;
                     case error.TIMEOUT:
-                        errorMessage = '@lang("Location request timed out. Please try again.")';
+                        errorMessage = '@lang("Location request timed out")';
                         break;
                 }
-
                 alert(errorMessage);
-                console.error('Geolocation error:', error.code, error.message);
             },
             {
                 enableHighAccuracy: true,
@@ -792,12 +902,20 @@
         $('#latitude').val(selectedLat);
         $('#longitude').val(selectedLng);
 
-        // Update UI
+        // Update button
         $('#open-map-btn').removeClass('btn-outline-primary').addClass('btn-success');
         $('#open-map-btn').html('<i class="fas fa-check-circle"></i> @lang("Location Selected")');
 
+        // Show location info with full address
         $('#selected-location-info').removeClass('d-none');
-        $('#location-text').text(selectedLat.toFixed(6) + ', ' + selectedLng.toFixed(6));
+
+        let locationDisplayText = '';
+        if (selectedAddress) {
+            locationDisplayText = selectedAddress + ' <small class="text-muted">(' + selectedLat.toFixed(6) + ', ' + selectedLng.toFixed(6) + ')</small>';
+        } else {
+            locationDisplayText = selectedLat.toFixed(6) + ', ' + selectedLng.toFixed(6);
+        }
+        $('#location-text').html(locationDisplayText);
 
         // Close modal
         $('#mapModal').modal('hide');
@@ -813,44 +931,28 @@
             data: {
                 latitude: lat,
                 longitude: lng,
+                vendor_id: checkoutVendorId,
                 _token: $('meta[name="csrf-token"]').attr('content')
             },
             success: function(response) {
-                // Update hidden fields with country info
-                if (response.country_id) {
-                    $('#country_id').val(response.country_id);
+                // Update hidden fields
+                if (response.country_id) $('#country_id').val(response.country_id);
+                if (response.formatted_address) $('#address').val(response.formatted_address);
+                if (response.postal_code) $('#zip').val(response.postal_code);
+
+                // Update location display with full address from geocoding
+                if (response.geocoding_success && response.formatted_address) {
+                    let fullAddress = response.formatted_address;
+                    $('#location-text').html(fullAddress + ' <small class="text-muted">(' + lat.toFixed(6) + ', ' + lng.toFixed(6) + ')</small>');
                 }
 
-                // Fill Address field with formatted address from Google Maps
-                if (response.formatted_address) {
-                    $('#address').val(response.formatted_address);
-                }
-
-                // Fill Postal Code field
-                if (response.postal_code) {
-                    $('#zip').val(response.postal_code);
-                }
-
-                // Update location display with country/city
-                if (response.geocoding_success) {
-                    let locationText = '';
-                    if (response.city_name) locationText += response.city_name;
-                    if (response.state_name) locationText += ', ' + response.state_name;
-                    if (response.country_name) locationText += ', ' + response.country_name;
-                    if (locationText) {
-                        $('#location-text').text(locationText);
-                    }
-                } else {
-                    $('#location-text').text(lat.toFixed(6) + ', ' + lng.toFixed(6) + ' (@lang("Tax will be calculated on next step"))');
-                }
-
-                // Update tax display (only if we have tax data)
+                // Update tax display
                 if (response.tax_rate > 0) {
                     $('.tax-display-wrapper').removeClass('d-none');
                     $('.tax-rate-text').html('(' + response.tax_rate + '%)');
 
                     var taxAmount = parseFloat(response.tax_amount || 0);
-                    @if($curr->type == 0)
+                    @if($gs->currency_format == 0)
                         $('.tax-amount-value').html('{{ $curr->sign }}' + taxAmount.toFixed(2));
                     @else
                         $('.tax-amount-value').html(taxAmount.toFixed(2) + '{{ $curr->sign }}');
@@ -861,7 +963,6 @@
                         $('.tax-location-text').html(response.tax_location);
                     }
 
-                    // Update PriceSummary if available
                     if (typeof PriceSummary !== 'undefined' && PriceSummary.updateTax) {
                         PriceSummary.updateTax(response.tax_rate, taxAmount);
                     }
@@ -871,7 +972,7 @@
                 }
             },
             error: function(xhr) {
-                $('#location-text').text(lat.toFixed(6) + ', ' + lng.toFixed(6));
+                // Keep showing coordinates if geocoding fails
             }
         });
     }
@@ -890,7 +991,7 @@
                 alert('@lang("Please select your location from the map")');
             }
 
-            $('#open-map-btn').addClass('btn-danger').removeClass('btn-outline-primary');
+            $('#open-map-btn').addClass('btn-danger').removeClass('btn-outline-primary btn-success');
             setTimeout(function() {
                 $('#open-map-btn').removeClass('btn-danger').addClass('btn-outline-primary');
             }, 3000);

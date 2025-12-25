@@ -10,166 +10,62 @@
     - $curr: Currency object
     - $gs: General settings
 
-    Data Sources:
-    - Step 1: $productsTotal from controller
-    - Step 2: $step1 session + dynamic shipping/packing via JS
-    - Step 3: $step2 session (read-only)
-
-    Price Structure:
-    ================
-    products_total      = Sum of all product prices (NEVER changes)
-    coupon_discount     = Discount from coupon
-    tax_amount          = Tax on (products - coupon)
-    shipping_cost       = Selected shipping
-    packing_cost        = Selected packaging
-    grand_total         = products - coupon + tax + shipping + packing
+    Currency Conversion:
+    ====================
+    All values are converted from SAR to selected currency via CheckoutPriceService.
+    This blade file ONLY formats (number_format + sign), NEVER converts.
 
     ============================================================================
 --}}
 
 @php
+    use App\Services\CheckoutPriceService;
+
     $currentStep = $step ?? 1;
     $isDigital = $digital ?? false;
-    $currencySign = $curr->sign ?? 'SAR';
-    $currencyValue = $curr->value ?? 1;
-    $currencyFormat = $gs->currency_format ?? 0;
     $vendorId = $vendor_id ?? Session::get('checkout_vendor_id');
 
     // ========================================================================
-    // INITIALIZE ALL PRICE VARIABLES
-    // Use existing passed values if available, otherwise default to 0
+    // USE CHECKOUT PRICE SERVICE FOR CURRENCY CONVERSION
+    // Single source of truth for all price calculations and conversions
     // ========================================================================
-    $passedProductsTotal = $productsTotal ?? $totalPrice ?? 0;
-    $productsTotal = 0;
-    $couponDiscount = 0;
-    $couponCode = '';
-    $couponPercentage = '';
-    $hasCoupon = false;
-    $taxRate = 0;
-    $taxAmount = 0;
-    $taxLocation = '';
-    $shippingCost = 0;
-    $originalShippingCost = 0;
-    $isFreeShipping = false;
-    $freeShippingDiscount = 0;
-    $shippingCompany = '';
-    $packingCost = 0;
-    $packingCompany = '';
-    $grandTotal = 0;
-    $subtotalBeforeCoupon = 0;
+    $priceService = app(CheckoutPriceService::class);
 
-    // ========================================================================
-    // STEP 1: Products Total from Controller (Tax calculated via JS)
-    // ========================================================================
-    if ($currentStep == 1) {
-        $productsTotal = $passedProductsTotal;
+    // Get converted price breakdown (all values in selected currency)
+    $prices = $priceService->getConvertedPriceBreakdown(
+        $currentStep,
+        $step1 ?? null,
+        $step2 ?? null,
+        $vendorId
+    );
 
-        // Check for existing coupon in session
-        if ($vendorId) {
-            $couponDiscount = Session::get('coupon_vendor_' . $vendorId, 0);
-            $couponCode = Session::get('coupon_code_vendor_' . $vendorId, '');
-            $couponPercentage = Session::get('coupon_percentage_vendor_' . $vendorId, '');
-        } else {
-            $couponDiscount = Session::get('coupon', 0);
-            $couponCode = Session::get('coupon_code', '');
-            $couponPercentage = Session::get('coupon_percentage', '');
-        }
-        $hasCoupon = $couponDiscount > 0;
+    // Extract values from service response
+    $productsTotal = $prices['products_total'];
+    $couponDiscount = $prices['coupon_discount'];
+    $couponCode = $prices['coupon_code'];
+    $couponPercentage = $prices['coupon_percentage'];
+    $hasCoupon = $prices['has_coupon'];
+    $taxRate = $prices['tax_rate'];
+    $taxAmount = $prices['tax_amount'];
+    $taxLocation = $prices['tax_location'];
+    $shippingCost = $prices['shipping_cost'];
+    $originalShippingCost = $prices['original_shipping_cost'];
+    $isFreeShipping = $prices['is_free_shipping'];
+    $freeShippingDiscount = $prices['free_shipping_discount'];
+    $shippingCompany = $prices['shipping_company'];
+    $packingCost = $prices['packing_cost'];
+    $packingCompany = $prices['packing_company'];
+    $grandTotal = $prices['grand_total'];
+    $subtotalBeforeCoupon = $prices['subtotal_before_coupon'];
 
-        // Grand total for step 1 (tax added via JS)
-        $grandTotal = $productsTotal - $couponDiscount;
-        $subtotalBeforeCoupon = $productsTotal;
-    }
+    // Currency info from service
+    $currencySign = $prices['currency_sign'];
+    $currencyFormat = $prices['currency_format'];
+    $currencyValue = $prices['currency_value'];
 
-    // ========================================================================
-    // STEP 2: Products + Tax from Step1, Shipping/Packing via JS
-    // ========================================================================
-    elseif ($currentStep == 2) {
-        // Get products total from step1
-        if (isset($step1)) {
-            $productsTotal = $step1->products_total ?? $passedProductsTotal;
-            $taxRate = $step1->tax_rate ?? 0;
-            $taxAmount = $step1->tax_amount ?? 0;
-            $taxLocation = $step1->tax_location ?? '';
-
-            // DEBUG
-            \Log::info('checkout-price-summary Step2: Tax from step1', [
-                'step1_tax_rate' => $step1->tax_rate ?? 'NOT SET',
-                'step1_tax_amount' => $step1->tax_amount ?? 'NOT SET',
-                'step1_products_total' => $step1->products_total ?? 'NOT SET',
-                'taxRate_used' => $taxRate,
-                'taxAmount_used' => $taxAmount
-            ]);
-        } else {
-            $productsTotal = $passedProductsTotal;
-            \Log::warning('checkout-price-summary Step2: step1 NOT SET!');
-        }
-
-        // Check for coupon
-        if ($vendorId) {
-            $couponDiscount = Session::get('coupon_vendor_' . $vendorId, 0);
-            $couponCode = Session::get('coupon_code_vendor_' . $vendorId, '');
-            $couponPercentage = Session::get('coupon_percentage_vendor_' . $vendorId, '');
-        } else {
-            $couponDiscount = Session::get('coupon', 0);
-            $couponCode = Session::get('coupon_code', '');
-            $couponPercentage = Session::get('coupon_percentage', '');
-        }
-        $hasCoupon = $couponDiscount > 0;
-
-        // Grand total for step 2 (shipping/packing added via JS)
-        $subtotal = $productsTotal - $couponDiscount;
-        $grandTotal = $subtotal + $taxAmount;
-        $subtotalBeforeCoupon = $productsTotal + $taxAmount; // + shipping/packing via JS
-    }
-
-    // ========================================================================
-    // STEP 3: ALL DATA FROM STEP2 SESSION (Read-Only)
-    // ========================================================================
-    elseif ($currentStep == 3 && isset($step2)) {
-        // DEBUG
-        \Log::info('checkout-price-summary Step3: Reading from step2', [
-            'step2_products_total' => $step2->products_total ?? 'NOT SET',
-            'step2_shipping_cost' => $step2->shipping_cost ?? 'NOT SET',
-            'step2_packing_cost' => $step2->packing_cost ?? 'NOT SET',
-            'step2_tax_amount' => $step2->tax_amount ?? 'NOT SET',
-            'step2_grand_total' => $step2->grand_total ?? 'NOT SET'
-        ]);
-
-        // Products
-        $productsTotal = $step2->products_total ?? ($step1->products_total ?? $passedProductsTotal);
-
-        // Coupon
-        $couponDiscount = $step2->coupon_discount ?? 0;
-        $couponCode = $step2->coupon_code ?? '';
-        $couponPercentage = $step2->coupon_percentage ?? '';
-        $hasCoupon = $couponDiscount > 0;
-
-        // Tax
-        $taxRate = $step2->tax_rate ?? 0;
-        $taxAmount = $step2->tax_amount ?? 0;
-        $taxLocation = $step2->tax_location ?? '';
-
-        // Shipping
-        $shippingCost = $step2->shipping_cost ?? 0;
-        $originalShippingCost = $step2->original_shipping_cost ?? $shippingCost;
-        $isFreeShipping = $step2->is_free_shipping ?? false;
-        $freeShippingDiscount = $step2->free_shipping_discount ?? 0;
-        $shippingCompany = $step2->shipping_company ?? '';
-
-        // Packing
-        $packingCost = $step2->packing_cost ?? 0;
-        $packingCompany = $step2->packing_company ?? '';
-
-        // Totals
-        $grandTotal = $step2->grand_total ?? $step2->total ?? $step2->final_total ?? 0;
-        $subtotalBeforeCoupon = $step2->subtotal_before_coupon ?? ($productsTotal + $taxAmount + $shippingCost + $packingCost);
-    }
-
-    // Helper function for price formatting (with currency conversion)
-    $formatPrice = function($amount) use ($currencySign, $currencyValue, $currencyFormat) {
-        $converted = round((float)$amount * $currencyValue, 2);
-        $formatted = number_format($converted, 2);
+    // Helper function for price formatting ONLY (values are already converted)
+    $formatPrice = function($amount) use ($currencySign, $currencyFormat) {
+        $formatted = number_format((float)$amount, 2);
         return $currencyFormat == 0 ? $currencySign . $formatted : $formatted . $currencySign;
     };
 @endphp
@@ -369,7 +265,6 @@
 <input type="hidden" id="price-grand-total" value="{{ $grandTotal }}">
 <input type="hidden" id="price-subtotal-before-coupon" value="{{ $subtotalBeforeCoupon }}">
 <input type="hidden" id="price-currency-sign" value="{{ $currencySign }}">
-<input type="hidden" id="price-currency-value" value="{{ $currencyValue }}">
 <input type="hidden" id="price-currency-format" value="{{ $currencyFormat }}">
 <input type="hidden" id="price-vendor-id" value="{{ $vendorId ?? '' }}">
 <input type="hidden" id="price-current-step" value="{{ $currentStep }}">
@@ -436,14 +331,12 @@
     $(function() {
         // Get currency settings from hidden fields
         var currencySign = $('#price-currency-sign').val() || 'SAR';
-        var currencyValue = parseFloat($('#price-currency-value').val()) || 1;
         var currencyFormat = parseInt($('#price-currency-format').val()) || 0;
         var currentStep = parseInt($('#price-current-step').val()) || 1;
 
-        // Format price with currency conversion
+        // Format price ONLY (values must arrive pre-converted from API)
         function formatPrice(amount) {
-            var converted = Math.round(parseFloat(amount || 0) * currencyValue * 100) / 100;
-            var formatted = converted.toFixed(2);
+            var formatted = parseFloat(amount || 0).toFixed(2);
             return currencyFormat == 0 ? currencySign + formatted : formatted + currencySign;
         }
 
@@ -489,16 +382,14 @@
     }
 
     var PriceSummary = {
-        // Format price helper
+        // Format helper only (no conversion - values must be pre-converted)
         formatPrice: formatPrice,
 
         // Get current values
         getValues: getValues,
 
-        // Update tax display
+        // Update tax display (amount must be pre-converted by API)
         updateTax: function(rate, amount) {
-            console.log('💰 PriceSummary.updateTax called:', { rate: rate, amount: amount });
-
             $('#price-tax-rate').val(rate);
             $('#price-tax-amount').val(amount);
 
@@ -513,22 +404,17 @@
             recalculateTotal();
         },
 
-        // Update shipping display
+        // Update shipping display (costs must be pre-converted by API)
         updateShipping: function(cost, originalCost, isFree) {
-            console.log('📦 PriceSummary.updateShipping called:', { cost: cost, originalCost: originalCost, isFree: isFree });
-
             originalCost = originalCost || cost;
             isFree = isFree || false;
 
             $('#price-shipping-cost').val(cost);
 
             if (isFree && originalCost > 0) {
-                // Show original price crossed out + Free badge
                 var html = '<span class="text-decoration-line-through text-muted">' + formatPrice(originalCost) + '</span> ' +
                            '<span class="badge bg-success"><i class="fas fa-gift"></i> @lang("Free!")</span>';
                 $('#shipping-cost-display, .shipping-cost-display').html(html);
-
-                // Show free shipping discount row
                 $('#free-shipping-row, .free-shipping-row').removeClass('d-none');
                 $('#free-shipping-discount-display, .free-shipping-discount-display').html('-' + formatPrice(originalCost));
             } else {
@@ -539,16 +425,14 @@
             recalculateTotal();
         },
 
-        // Update packing display
+        // Update packing display (cost must be pre-converted by API)
         updatePacking: function(cost) {
-            console.log('🎁 PriceSummary.updatePacking called:', { cost: cost });
-
             $('#price-packing-cost').val(cost);
             $('#packing-cost-display, .packing-cost-display').html(formatPrice(cost));
             recalculateTotal();
         },
 
-        // Update coupon display
+        // Update coupon display (discount must be pre-converted by API)
         updateCoupon: function(discount, code, percentage) {
             $('#price-coupon-discount').val(discount);
             $('#price-coupon-code').val(code);

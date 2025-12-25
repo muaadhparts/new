@@ -2011,6 +2011,8 @@ Route::group(['middleware' => 'maintenance'], function () {
     });
     Route::get('/checkout/step3', 'Front\CheckoutController@checkoutstep3')->name('front.checkout.step3');
 
+    // Location reset endpoint (clears session before new location selection)
+    Route::post('/checkout/location/reset', 'Front\CheckoutController@resetLocation')->name('front.checkout.location.reset');
 
     Route::get('/carts/coupon/check', 'Front\CouponController@couponcheck')->name('front.coupon.check');
     Route::post('/carts/coupon/remove', 'Front\CouponController@removeCoupon')->name('front.coupon.remove');

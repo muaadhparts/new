@@ -416,8 +416,26 @@ class CheckoutController extends FrontBaseController
         }
     }
 
+    /**
+     * Reset location draft session (called when map modal opens)
+     * Only clears location_draft, preserves step1/step2/step3
+     */
+    public function resetLocation(Request $request)
+    {
+        $vendorId = $request->input('vendor_id');
 
+        // Clear location draft only (not step1/step2/step3)
+        if ($vendorId) {
+            Session::forget('location_draft_vendor_' . $vendorId);
+        } else {
+            Session::forget('location_draft');
+        }
 
+        return response()->json([
+            'success' => true,
+            'message' => 'Location draft cleared'
+        ]);
+    }
 
     /**
      * GENERAL CHECKOUT STEP 1 (Legacy - Vendor checkout preferred)
@@ -479,7 +497,23 @@ class CheckoutController extends FrontBaseController
             'user_id' => $step1['user_id'] ?? null,
         ];
 
-        // Calculate tax from country_id
+        // Merge location_draft into step1Data (if available)
+        $locationDraft = Session::get('location_draft');
+        if ($locationDraft) {
+            $step1Data = array_merge($step1Data, [
+                'country_id' => $locationDraft['country_id'] ?? $step1Data['country_id'],
+                'country_name' => $locationDraft['country_name'] ?? null,
+                'city_name' => $locationDraft['city_name'] ?? null,
+                'state_name' => $locationDraft['state_name'] ?? null,
+                'tax_rate' => $locationDraft['tax_rate'] ?? 0,
+                'tax_amount' => $locationDraft['tax_amount'] ?? 0,
+                'tax_location' => $locationDraft['tax_location'] ?? '',
+            ]);
+            // Clear location_draft after merging
+            Session::forget('location_draft');
+        }
+
+        // Calculate tax from country_id (fallback if no location_draft)
         $taxRate = 0;
         $taxLocation = '';
         $country = null;
@@ -1209,6 +1243,22 @@ class CheckoutController extends FrontBaseController
             'coupon_id' => $step1['coupon_id'] ?? null,
             'user_id' => $step1['user_id'] ?? null,
         ];
+
+        // Merge location_draft_vendor_{id} into step1Data (if available)
+        $locationDraft = Session::get('location_draft_vendor_' . $vendorId);
+        if ($locationDraft) {
+            $step1Data = array_merge($step1Data, [
+                'country_id' => $locationDraft['country_id'] ?? $step1Data['country_id'],
+                'country_name' => $locationDraft['country_name'] ?? null,
+                'city_name' => $locationDraft['city_name'] ?? null,
+                'state_name' => $locationDraft['state_name'] ?? null,
+                'tax_rate' => $locationDraft['tax_rate'] ?? 0,
+                'tax_amount' => $locationDraft['tax_amount'] ?? 0,
+                'tax_location' => $locationDraft['tax_location'] ?? '',
+            ]);
+            // Clear location_draft after merging
+            Session::forget('location_draft_vendor_' . $vendorId);
+        }
 
         // Calculate tax from country_id
         $taxRate = 0;

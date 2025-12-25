@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Front;
 use App\Models\Cart;
 use App\Models\Coupon;
 use App\Models\Product;
+use App\Services\CheckoutPriceService;
 use Illuminate\Http\Request;
 use Session;
 
@@ -29,6 +30,13 @@ use Session;
  */
 class CouponController extends FrontBaseController
 {
+    protected CheckoutPriceService $priceService;
+
+    public function __construct()
+    {
+        parent::__construct();
+        $this->priceService = app(CheckoutPriceService::class);
+    }
     /**
      * Apply coupon (AJAX endpoint)
      * Route: GET /carts/coupon/check
@@ -99,7 +107,7 @@ class CouponController extends FrontBaseController
         // Calculate new total
         $newTotal = $requestTotal - $discountData['amount'];
 
-        // Save to session
+        // Save to session (SAR values for internal use)
         $this->saveCouponToSession(
             $code,
             $coupon,
@@ -109,15 +117,19 @@ class CouponController extends FrontBaseController
             $checkoutVendorId
         );
 
-        // Return response
+        // Convert prices before returning (single source of truth)
+        $convertedDiscount = $this->priceService->convert($discountData['amount']);
+        $convertedNewTotal = $this->priceService->convert($newTotal);
+
+        // Return response with converted values
         return response()->json([
-            0 => \PriceHelper::showCurrencyPrice($newTotal),
+            0 => $this->priceService->formatPrice($convertedNewTotal),
             1 => $code,
-            2 => round($discountData['amount'], 2),
+            2 => $convertedDiscount,
             3 => $coupon->id,
             4 => $discountData['percentage'],
             5 => 1,
-            6 => round($newTotal, 2)
+            6 => $convertedNewTotal
         ]);
     }
 
@@ -172,10 +184,13 @@ class CouponController extends FrontBaseController
             Session::put('step2', $step2);
         }
 
+        // Convert before returning (single source of truth)
+        $convertedSubtotal = $this->priceService->convert($subtotalBeforeCoupon);
+
         return response()->json([
             'success' => true,
             'message' => __('Coupon removed successfully'),
-            'subtotal_before_coupon' => $subtotalBeforeCoupon
+            'subtotal_before_coupon' => $convertedSubtotal
         ]);
     }
 
