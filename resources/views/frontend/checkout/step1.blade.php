@@ -635,6 +635,13 @@
         });
     </script>
 
+    {{-- Google Places Autocomplete z-index fix (must appear above modal) --}}
+    <style>
+        .pac-container {
+            z-index: 10000 !important;
+        }
+    </style>
+
     {{-- Google Maps Script with Places Library --}}
     <script src="https://maps.googleapis.com/maps/api/js?key={{ config('services.google_maps.api_key') }}&libraries=places&language=ar"></script>
     <script>
@@ -729,9 +736,21 @@
 
         // Initialize Places Autocomplete
         const input = document.getElementById('map-search-input');
-        searchBox = new google.maps.places.Autocomplete(input, {
-            types: ['geocode', 'establishment']
-        });
+        if (!input) {
+            console.error('Search input not found!');
+            return;
+        }
+
+        try {
+            searchBox = new google.maps.places.Autocomplete(input, {
+                types: ['geocode', 'establishment'],
+                fields: ['geometry', 'formatted_address', 'name']
+            });
+            console.log('Places Autocomplete initialized successfully');
+        } catch (e) {
+            console.error('Failed to initialize Places Autocomplete:', e);
+            return;
+        }
 
         // Bias search results to map viewport
         map.addListener('bounds_changed', function() {
@@ -741,8 +760,10 @@
         // Handle place selection from search
         searchBox.addListener('place_changed', function() {
             const place = searchBox.getPlace();
+            console.log('Place selected:', place);
 
             if (!place.geometry || !place.geometry.location) {
+                console.warn('No geometry for selected place');
                 return;
             }
 
