@@ -2869,7 +2869,23 @@ select option {
    VIN SEARCH MODAL FIX
    ============================================================================= */
 
-/* Fix transparent modal - ensure solid background */
+/* Fix transparent modal - ensure solid background for ALL modals */
+.modal-content {
+    background: var(--bg-primary, #ffffff) !important;
+    opacity: 1 !important;
+}
+
+.modal-header,
+.modal-body,
+.modal-footer {
+    opacity: 1 !important;
+}
+
+.modal-backdrop.show {
+    opacity: 0.7 !important;
+    background: #000 !important;
+}
+
 .muaadh-modal {
     background: var(--theme-modal-bg, #ffffff) !important;
 }
@@ -3590,11 +3606,119 @@ select option {
     flex-wrap: wrap;
 }
 
-/* Items List */
+/* Items List - Scrollable container */
 .m-cart__items {
     flex: 1;
     min-width: 0;
     padding: 16px;
+    max-height: 500px;
+    overflow-y: auto;
+}
+
+/* Custom scrollbar for items list */
+.m-cart__items::-webkit-scrollbar {
+    width: 12px;
+}
+
+.m-cart__items::-webkit-scrollbar-track {
+    background: var(--bg-secondary, #f3f4f6);
+    border-radius: 6px;
+}
+
+.m-cart__items::-webkit-scrollbar-thumb {
+    background: var(--action-primary, #6366f1);
+    border-radius: 6px;
+    border: 2px solid var(--bg-secondary, #f3f4f6);
+}
+
+.m-cart__items::-webkit-scrollbar-thumb:hover {
+    background: var(--action-primary-hover, #4f46e5);
+}
+
+/* =============================================================================
+   SCROLLABLE LIST - Generic reusable scroll container
+   ============================================================================= */
+
+.m-scroll-list {
+    max-height: 400px;
+    overflow-y: auto;
+    padding-right: 8px;
+}
+
+.m-scroll-list::-webkit-scrollbar {
+    width: 12px;
+}
+
+.m-scroll-list::-webkit-scrollbar-track {
+    background: var(--bg-secondary, #f3f4f6);
+    border-radius: 6px;
+}
+
+.m-scroll-list::-webkit-scrollbar-thumb {
+    background: var(--action-primary, #6366f1);
+    border-radius: 6px;
+    border: 2px solid var(--bg-secondary, #f3f4f6);
+}
+
+.m-scroll-list::-webkit-scrollbar-thumb:hover {
+    background: var(--action-primary-hover, #4f46e5);
+}
+
+/* Checkout Step2 Product List */
+.product-infos-wrapper .product-list {
+    max-height: 350px;
+    overflow-y: auto;
+    padding-right: 8px;
+}
+
+.product-infos-wrapper .product-list::-webkit-scrollbar {
+    width: 12px;
+}
+
+.product-infos-wrapper .product-list::-webkit-scrollbar-track {
+    background: var(--bg-secondary, #f3f4f6);
+    border-radius: 6px;
+}
+
+.product-infos-wrapper .product-list::-webkit-scrollbar-thumb {
+    background: var(--action-primary, #6366f1);
+    border-radius: 6px;
+    border: 2px solid var(--bg-secondary, #f3f4f6);
+}
+
+.product-infos-wrapper .product-list::-webkit-scrollbar-thumb:hover {
+    background: var(--action-primary-hover, #4f46e5);
+}
+
+/* Tryoto & Shipping Options Container - Scrollable */
+.tryoto-options-container,
+.provider-methods-wrapper {
+    max-height: 450px;
+    overflow-y: auto;
+    padding-right: 4px;
+}
+
+.tryoto-options-container::-webkit-scrollbar,
+.provider-methods-wrapper::-webkit-scrollbar {
+    width: 12px;
+}
+
+.tryoto-options-container::-webkit-scrollbar-track,
+.provider-methods-wrapper::-webkit-scrollbar-track {
+    background: var(--bg-secondary, #f3f4f6);
+    border-radius: 6px;
+}
+
+.tryoto-options-container::-webkit-scrollbar-thumb,
+.provider-methods-wrapper::-webkit-scrollbar-thumb {
+    background: var(--action-primary, #6366f1);
+    border-radius: 6px;
+    border: 2px solid var(--bg-secondary, #f3f4f6);
+}
+
+.tryoto-options-container::-webkit-scrollbar-thumb:hover,
+.provider-methods-wrapper::-webkit-scrollbar-thumb:hover {
+    background: var(--action-primary-hover, #4f46e5);
 }
 
 /* Single Item */

@@ -224,14 +224,14 @@
 
                                 <!-- Google Maps Location Picker - Simple Version -->
                                 <div class="col-lg-12">
-                                    <div class="alert alert-info d-flex align-items-center" role="alert">
+                                    <div class="m-alert m-alert--info d-flex align-items-center" role="alert">
                                         <i class="fas fa-map-marker-alt me-2"></i>
                                         <strong>@lang('Please select your delivery location from the map')</strong>
                                     </div>
-                                    <button type="button" class="btn btn-outline-primary w-100 mb-3" id="open-map-btn" data-bs-toggle="modal" data-bs-target="#mapModal">
+                                    <button type="button" class="m-btn m-btn--primary m-btn--outline w-100 mb-3" id="open-map-btn" data-bs-toggle="modal" data-bs-target="#mapModal">
                                         <i class="fas fa-map-marker-alt"></i> @lang('Select Location from Map')
                                     </button>
-                                    <div id="selected-location-info" class="alert alert-success d-none">
+                                    <div id="selected-location-info" class="m-alert m-alert--success d-none">
                                         <i class="fas fa-check-circle"></i> <span id="location-text"></span>
                                     </div>
                                 </div>
@@ -370,8 +370,8 @@
     {{-- Google Maps Modal with Search --}}
     <div class="modal fade" id="mapModal" tabindex="-1">
         <div class="modal-dialog modal-lg modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header bg-primary text-white">
+            <div class="modal-content" style="border: none; border-radius: var(--radius-lg, 12px); overflow: hidden;">
+                <div class="modal-header" style="background: var(--action-primary); color: #fff; border: none;">
                     <h5 class="modal-title">
                         <i class="fas fa-map-marker-alt me-2"></i>
                         @lang('Select your location')
@@ -380,12 +380,13 @@
                 </div>
                 <div class="modal-body p-0">
                     {{-- Search Box --}}
-                    <div class="p-3 border-bottom">
+                    <div class="p-3" style="background: var(--bg-secondary); border-bottom: 1px solid var(--border-default);">
                         <div class="input-group">
-                            <span class="input-group-text bg-white">
-                                <i class="fas fa-search text-muted"></i>
+                            <span class="input-group-text" style="background: var(--bg-primary); border-color: var(--border-default);">
+                                <i class="fas fa-search" style="color: var(--text-muted);"></i>
                             </span>
                             <input type="text" id="map-search-input" class="form-control"
+                                   style="border-color: var(--border-default);"
                                    placeholder="@lang('Search for a location...')" autocomplete="off">
                         </div>
                     </div>
@@ -394,23 +395,23 @@
                     <div id="map" style="height: 350px; width: 100%;"></div>
 
                     {{-- Location Display --}}
-                    <div class="p-3 bg-light border-top">
+                    <div class="p-3" style="background: var(--bg-secondary); border-top: 1px solid var(--border-default);">
                         <div class="d-flex justify-content-between align-items-start gap-2">
                             <div class="flex-grow-1">
-                                <small class="text-muted d-block mb-1">@lang('Selected Location'):</small>
-                                <div id="coords-display" class="fw-bold" style="word-break: break-word;">
+                                <small class="d-block mb-1" style="color: var(--text-muted);">@lang('Selected Location'):</small>
+                                <div id="coords-display" class="fw-bold" style="word-break: break-word; color: var(--text-primary);">
                                     @lang('Click on map or search to select location')
                                 </div>
                             </div>
-                            <button type="button" class="btn btn-outline-secondary btn-sm flex-shrink-0" id="my-location-btn">
+                            <button type="button" class="m-btn m-btn--secondary m-btn--sm flex-shrink-0" id="my-location-btn">
                                 <i class="fas fa-crosshairs"></i> @lang('My Location')
                             </button>
                         </div>
                     </div>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">@lang('Close')</button>
-                    <button type="button" class="btn btn-primary" id="confirm-location-btn" disabled>
+                <div class="modal-footer" style="background: var(--bg-primary); border-top: 1px solid var(--border-default);">
+                    <button type="button" class="m-btn m-btn--secondary" data-bs-dismiss="modal">@lang('Close')</button>
+                    <button type="button" class="m-btn m-btn--primary" id="confirm-location-btn" disabled>
                         <i class="fas fa-check me-1"></i> @lang('Confirm Location')
                     </button>
                 </div>
@@ -635,10 +636,38 @@
         });
     </script>
 
-    {{-- Google Places Autocomplete z-index fix (must appear above modal) --}}
+    {{-- Modal & Google Places fixes --}}
     <style>
+        /* Google Places Autocomplete z-index fix */
         .pac-container {
             z-index: 10000 !important;
+        }
+
+        /* Modal - No transparency */
+        #mapModal .modal-content {
+            background: var(--bg-primary, #fff) !important;
+            opacity: 1 !important;
+        }
+
+        #mapModal .modal-header {
+            background: var(--action-primary) !important;
+            opacity: 1 !important;
+        }
+
+        #mapModal .modal-body {
+            background: var(--bg-primary, #fff) !important;
+            opacity: 1 !important;
+        }
+
+        #mapModal .modal-footer {
+            background: var(--bg-primary, #fff) !important;
+            opacity: 1 !important;
+        }
+
+        /* Dark backdrop */
+        .modal-backdrop.show {
+            opacity: 0.7 !important;
+            background: #000 !important;
         }
     </style>
 
@@ -684,7 +713,7 @@
         $('#state_name_hidden').val('');
 
         // Reset UI
-        $('#open-map-btn').removeClass('btn-success').addClass('btn-outline-primary');
+        $('#open-map-btn').removeClass('m-btn--success').addClass('m-btn--primary m-btn--outline');
         $('#open-map-btn').html('<i class="fas fa-map-marker-alt"></i> @lang("Select Location from Map")');
         $('#selected-location-info').addClass('d-none');
         $('#location-text').text('');
@@ -982,7 +1011,7 @@
                 }
 
                 // Update main page button
-                $('#open-map-btn').removeClass('btn-outline-primary').addClass('btn-success');
+                $('#open-map-btn').removeClass('m-btn--primary m-btn--outline').addClass('m-btn--success');
                 $('#open-map-btn').html('<i class="fas fa-check-circle"></i> @lang("Location Selected")');
 
                 // Show location info
@@ -1050,9 +1079,9 @@
                 alert('@lang("Please select your location from the map")');
             }
 
-            $('#open-map-btn').addClass('btn-danger').removeClass('btn-outline-primary btn-success');
+            $('#open-map-btn').addClass('m-btn--danger').removeClass('m-btn--primary m-btn--outline m-btn--success');
             setTimeout(function() {
-                $('#open-map-btn').removeClass('btn-danger').addClass('btn-outline-primary');
+                $('#open-map-btn').removeClass('m-btn--danger').addClass('m-btn--primary m-btn--outline');
             }, 3000);
 
             return false;

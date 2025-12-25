@@ -120,7 +120,10 @@
                                 }
 
                                 $size = $product['size'] ?? '';
+                                $size = is_array($size) ? implode(', ', $size) : (string)$size;
+
                                 $color = $product['color'] ?? '';
+                                $color = is_array($color) ? ($color[0] ?? '') : (string)$color;
                             @endphp
 
                             <div class="m-cart__item" id="cart-row-{{ $domKey }}" data-row-key="{{ $rowKey }}">
