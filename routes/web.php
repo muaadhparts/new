@@ -2223,7 +2223,8 @@ Route::group(['prefix' => 'tryoto'], function () {
         $output = ['step1_authorize' => []];
 
         // Step 1: Get access token
-        $response = Http::post($url . '/rest/v2/refreshToken', ['refresh_token' => $refreshToken]);
+        $response = Http::withOptions(['curl' => [CURLOPT_IPRESOLVE => CURL_IPRESOLVE_V4]])
+            ->post($url . '/rest/v2/refreshToken', ['refresh_token' => $refreshToken]);
         $output['step1_authorize']['status'] = $response->status();
         $output['step1_authorize']['body'] = $response->json();
 
@@ -2235,7 +2236,8 @@ Route::group(['prefix' => 'tryoto'], function () {
 
         // Step 2: Test checkOTODeliveryFee
         $output['step2_check_fee'] = [];
-        $feeResponse = Http::withToken($token)->post($url . '/rest/v2/checkOTODeliveryFee', [
+        $feeResponse = Http::withOptions(['curl' => [CURLOPT_IPRESOLVE => CURL_IPRESOLVE_V4]])
+            ->withToken($token)->post($url . '/rest/v2/checkOTODeliveryFee', [
             'originCity' => 'Riyadh',
             'destinationCity' => 'Riyadh',
             'weight' => 100,
