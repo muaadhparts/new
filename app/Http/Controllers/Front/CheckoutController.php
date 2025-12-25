@@ -505,6 +505,10 @@ class CheckoutController extends FrontBaseController
                 'country_name' => $locationDraft['country_name'] ?? null,
                 'city_name' => $locationDraft['city_name'] ?? null,
                 'state_name' => $locationDraft['state_name'] ?? null,
+                // Order table fields
+                'customer_country' => $locationDraft['country_name'] ?? null,
+                'customer_city' => $locationDraft['city_name'] ?? null,
+                'customer_state' => $locationDraft['state_name'] ?? null,
                 'tax_rate' => $locationDraft['tax_rate'] ?? 0,
                 'tax_amount' => $locationDraft['tax_amount'] ?? 0,
                 'tax_location' => $locationDraft['tax_location'] ?? '',
@@ -514,15 +518,22 @@ class CheckoutController extends FrontBaseController
         }
 
         // Calculate tax from country_id (fallback if no location_draft)
-        $taxRate = 0;
-        $taxLocation = '';
+        $taxRate = $step1Data['tax_rate'] ?? 0;
+        $taxLocation = $step1Data['tax_location'] ?? '';
         $country = null;
 
         if (!empty($step1Data['country_id'])) {
             $country = \App\Models\Country::find($step1Data['country_id']);
-            if ($country && $country->tax > 0) {
-                $taxRate = $country->tax;
-                $taxLocation = $country->country_name;
+            if ($country) {
+                // Set customer_country fallback if not set from location_draft
+                if (empty($step1Data['customer_country'])) {
+                    $step1Data['customer_country'] = $country->country_name;
+                }
+                // Set tax if not already set from location_draft
+                if ($taxRate == 0 && $country->tax > 0) {
+                    $taxRate = $country->tax;
+                    $taxLocation = $country->country_name;
+                }
             }
         }
 
@@ -1252,6 +1263,10 @@ class CheckoutController extends FrontBaseController
                 'country_name' => $locationDraft['country_name'] ?? null,
                 'city_name' => $locationDraft['city_name'] ?? null,
                 'state_name' => $locationDraft['state_name'] ?? null,
+                // Order table fields
+                'customer_country' => $locationDraft['country_name'] ?? null,
+                'customer_city' => $locationDraft['city_name'] ?? null,
+                'customer_state' => $locationDraft['state_name'] ?? null,
                 'tax_rate' => $locationDraft['tax_rate'] ?? 0,
                 'tax_amount' => $locationDraft['tax_amount'] ?? 0,
                 'tax_location' => $locationDraft['tax_location'] ?? '',
@@ -1260,16 +1275,23 @@ class CheckoutController extends FrontBaseController
             Session::forget('location_draft_vendor_' . $vendorId);
         }
 
-        // Calculate tax from country_id
-        $taxRate = 0;
-        $taxLocation = '';
+        // Calculate tax from country_id (fallback if no location_draft)
+        $taxRate = $step1Data['tax_rate'] ?? 0;
+        $taxLocation = $step1Data['tax_location'] ?? '';
         $country = null;
 
         if (!empty($step1Data['country_id'])) {
             $country = \App\Models\Country::find($step1Data['country_id']);
-            if ($country && $country->tax > 0) {
-                $taxRate = $country->tax;
-                $taxLocation = $country->country_name;
+            if ($country) {
+                // Set customer_country fallback if not set from location_draft
+                if (empty($step1Data['customer_country'])) {
+                    $step1Data['customer_country'] = $country->country_name;
+                }
+                // Set tax if not already set from location_draft
+                if ($taxRate == 0 && $country->tax > 0) {
+                    $taxRate = $country->tax;
+                    $taxLocation = $country->country_name;
+                }
             }
         }
 

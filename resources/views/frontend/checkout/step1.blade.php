@@ -699,37 +699,59 @@
         $('#map-search-input').val('');
     });
 
+    // Default center (Saudi Arabia)
+    const defaultCenter = { lat: 24.7136, lng: 46.6753 };
+    const defaultZoom = 6;
+
     // Initialize map when modal is shown
     $('#mapModal').on('shown.bs.modal', function() {
         if (!map) {
             initMap();
         } else {
             google.maps.event.trigger(map, 'resize');
-            // Reset marker
-            if (marker) {
-                marker.setVisible(false);
-            }
-            // Try to auto-detect location
-            autoDetectLocation();
+            resetMapState();
         }
     });
+
+    // Reset map to clean state (no auto-detect)
+    function resetMapState() {
+        // Hide and reset marker
+        if (marker) {
+            marker.setVisible(false);
+            marker.setPosition(defaultCenter);
+        }
+
+        // Reset map view
+        map.setCenter(defaultCenter);
+        map.setZoom(defaultZoom);
+
+        // Clear selected location
+        selectedLat = null;
+        selectedLng = null;
+        selectedAddress = '';
+
+        // Reset UI
+        document.getElementById('confirm-location-btn').disabled = true;
+        document.getElementById('coords-display').innerHTML = '@lang("Search for your address or click Use My Location")';
+    }
 
     function initMap() {
         // Initialize geocoder
         geocoder = new google.maps.Geocoder();
 
-        // Create map
+        // Create map centered on Saudi Arabia
         map = new google.maps.Map(document.getElementById('map'), {
-            center: { lat: 25, lng: 45 },
-            zoom: 5,
+            center: defaultCenter,
+            zoom: defaultZoom,
             mapTypeControl: false,
             streetViewControl: false,
             fullscreenControl: true
         });
 
-        // Create marker
+        // Create marker (hidden by default, positioned at center)
         marker = new google.maps.Marker({
             map: map,
+            position: defaultCenter,
             draggable: true,
             visible: false
         });
@@ -796,12 +818,14 @@
         // Confirm button
         document.getElementById('confirm-location-btn').addEventListener('click', confirmLocation);
 
-        // Auto-detect location when map first opens
-        autoDetectLocation();
+        // Show initial message (no auto-detect - professional UX)
+        document.getElementById('coords-display').innerHTML = '@lang("Search for your address or click Use My Location")';
     }
 
     function autoDetectLocation() {
         if (!navigator.geolocation) {
+            console.log('Geolocation not supported');
+            document.getElementById('coords-display').innerHTML = '@lang("Click on map or search to select location")';
             return;
         }
 
@@ -809,6 +833,7 @@
 
         navigator.geolocation.getCurrentPosition(
             function(position) {
+                console.log('Got fresh GPS position:', position.coords.latitude, position.coords.longitude);
                 const lat = position.coords.latitude;
                 const lng = position.coords.longitude;
 
@@ -818,12 +843,18 @@
                 setLocationWithGeocode(lat, lng);
             },
             function(error) {
-                document.getElementById('coords-display').innerHTML = '@lang("Click on map or search to select location")';
+                console.log('Geolocation error:', error.code, error.message);
+                // Show message based on error type
+                let msg = '@lang("Click on map or search to select location")';
+                if (error.code === error.PERMISSION_DENIED) {
+                    msg = '<span class="text-warning"><i class="fas fa-exclamation-triangle"></i> @lang("Location permission denied - please select manually")</span>';
+                }
+                document.getElementById('coords-display').innerHTML = msg;
             },
             {
                 enableHighAccuracy: true,
                 timeout: 10000,
-                maximumAge: 300000
+                maximumAge: 0  // Always get fresh location, never use cached
             }
         );
     }
