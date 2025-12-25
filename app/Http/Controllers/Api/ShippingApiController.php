@@ -237,87 +237,126 @@ class ShippingApiController extends Controller
     }
 
     /**
-     * Step 2: Resolve & Price - تحديد مدينة الشحن من الإحداثيات
+     * ========================================================================
+     * Step 2: Resolve Destination City - Business Logic
+     * ========================================================================
      *
-     * المنطق:
-     * 1. Resolve بالاسم: مطابقة اسم المدينة مع المدن المدعومة في نفس الدولة
-     * 2. Fallback nearest: استخدام الإحداثيات لأقرب مدينة مدعومة
-     * 3. القيود: نفس الدولة إن أمكن، حد أقصى للمسافة
+     * مسؤوليات Step 2:
+     * ✅ قراءة Session فقط (لا يعدل Session)
+     * ✅ تحديد مدينة الشحن
+     * ✅ Fallback لأقرب مدينة إذا فشل الـ geocoding
+     * ✅ معالجة أخطاء الشحن
+     *
+     * Session Contract (ما يتوقعه من Step 1):
+     * - latitude, longitude (مطلوبين دائماً)
+     * - city_name, state_name, country_name (قد تكون null إذا فشل geocoding)
+     * - geocoding_success (للتحقق من حالة الـ geocoding)
+     * ========================================================================
      */
     protected function getDestinationCity(int $vendorId): ?string
     {
-        // جلب بيانات Step 1 من الـ session
+        // ====================================================================
+        // 1. قراءة Session (READ-ONLY)
+        // ====================================================================
         $step1 = Session::get('vendor_step1_' . $vendorId) ?? Session::get('step1');
 
         if (!$step1) {
-            Log::warning('ShippingApiController Step2: No step1 session found', [
+            Log::warning('ShippingApiController: No step1 session found', [
                 'vendor_id' => $vendorId
             ]);
             return null;
         }
 
-        // استخراج الإحداثيات و address_payload
-        $latitude = $step1['latitude']
-            ?? $step1['coordinates']['latitude']
-            ?? null;
-        $longitude = $step1['longitude']
-            ?? $step1['coordinates']['longitude']
-            ?? null;
+        // ====================================================================
+        // 2. استخراج الإحداثيات (مطلوبة دائماً)
+        // ====================================================================
+        $latitude = $step1['latitude'] ?? null;
+        $longitude = $step1['longitude'] ?? null;
 
-        // استخراج بيانات العنوان من Google
-        $addressPayload = $step1['address_payload'] ?? $step1['google_data'] ?? [];
-        $cityName = $addressPayload['en']['city'] ?? $step1['city_name'] ?? null;
-        $stateName = $addressPayload['en']['state'] ?? null;
-        $countryName = $addressPayload['en']['country']
-            ?? $step1['country']['name']
-            ?? $step1['country']
-            ?? null;
+        if (!$latitude || !$longitude) {
+            Log::warning('ShippingApiController: No coordinates in session', [
+                'vendor_id' => $vendorId
+            ]);
+            return null;
+        }
 
-        Log::debug('ShippingApiController Step2: Starting city resolution', [
+        // ====================================================================
+        // 3. استخراج بيانات الـ Geocoding (قد تكون null)
+        // ====================================================================
+        $cityName = $step1['city_name'] ?? null;
+        $stateName = $step1['state_name'] ?? null;
+        $countryName = $step1['country_name'] ?? null;
+        $geocodingSuccess = $step1['geocoding_success'] ?? false;
+
+        Log::debug('ShippingApiController: Starting city resolution', [
             'vendor_id' => $vendorId,
             'latitude' => $latitude,
             'longitude' => $longitude,
-            'google_city' => $cityName,
-            'google_country' => $countryName
+            'city_name' => $cityName,
+            'country_name' => $countryName,
+            'geocoding_success' => $geocodingSuccess
         ]);
 
-        // التحقق من وجود الإحداثيات
-        if (!$latitude || !$longitude) {
-            Log::warning('ShippingApiController Step2: No coordinates in session', [
-                'vendor_id' => $vendorId
-            ]);
-            return null;
-        }
-
-        // استخدام TryotoLocationService للـ Resolve
         $locationService = app(TryotoLocationService::class);
 
-        $resolution = $locationService->resolveMapCity(
-            $cityName ?? '',
-            $stateName,
-            $countryName,
+        // ====================================================================
+        // 4. محاولة Resolve بالأسماء أولاً (إذا نجح الـ geocoding)
+        // ====================================================================
+        if ($geocodingSuccess && $countryName) {
+            $resolution = $locationService->resolveMapCity(
+                $cityName ?? '',
+                $stateName,
+                $countryName,
+                (float) $latitude,
+                (float) $longitude
+            );
+
+            if ($resolution['success']) {
+                Log::info('ShippingApiController: City resolved by name', [
+                    'vendor_id' => $vendorId,
+                    'resolved_city' => $resolution['resolved_name'],
+                    'strategy' => $resolution['strategy']
+                ]);
+                return $this->normalizeCityName($resolution['resolved_name']);
+            }
+        }
+
+        // ====================================================================
+        // 5. FALLBACK: Resolve بالإحداثيات فقط
+        // ====================================================================
+        // يستخدم عندما:
+        // - فشل الـ geocoding في Step 1
+        // - أو المدينة/الدولة غير مدعومة
+        // ====================================================================
+        Log::info('ShippingApiController: Falling back to coordinates-only resolution', [
+            'vendor_id' => $vendorId,
+            'reason' => $geocodingSuccess ? 'name_resolution_failed' : 'geocoding_failed'
+        ]);
+
+        $fallbackResolution = $locationService->resolveByCoordinatesOnly(
             (float) $latitude,
             (float) $longitude
         );
 
-        if (!$resolution['success']) {
-            Log::warning('ShippingApiController Step2: City resolution failed', [
+        if ($fallbackResolution['success']) {
+            Log::info('ShippingApiController: City resolved by coordinates fallback', [
                 'vendor_id' => $vendorId,
-                'strategy' => $resolution['strategy'] ?? 'unknown',
-                'message' => $resolution['message'] ?? 'Unknown error'
+                'resolved_city' => $fallbackResolution['resolved_name'],
+                'distance_km' => $fallbackResolution['distance_km'] ?? 0
             ]);
-            return null;
+            return $this->normalizeCityName($fallbackResolution['resolved_name']);
         }
 
-        Log::info('ShippingApiController Step2: City resolved successfully', [
+        // ====================================================================
+        // 6. فشل كامل - لا توجد مدن مدعومة
+        // ====================================================================
+        Log::warning('ShippingApiController: All resolution strategies failed', [
             'vendor_id' => $vendorId,
-            'original_city' => $cityName,
-            'resolved_city' => $resolution['resolved_name'],
-            'strategy' => $resolution['strategy'],
-            'distance_km' => $resolution['distance_km'] ?? 0
+            'latitude' => $latitude,
+            'longitude' => $longitude
         ]);
 
-        return $this->normalizeCityName($resolution['resolved_name']);
+        return null;
     }
 
     /**

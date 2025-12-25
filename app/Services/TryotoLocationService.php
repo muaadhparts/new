@@ -464,4 +464,82 @@ class TryotoLocationService
             ->get(['id', 'city_name', 'country_id', 'latitude', 'longitude'])
             ->toArray();
     }
+
+    /**
+     * ========================================================================
+     * FALLBACK: Resolve by Coordinates Only
+     * ========================================================================
+     * عندما يفشل الـ Geocoding ولا تتوفر أسماء المدينة/الدولة
+     * نبحث عن أقرب مدينة مدعومة في أي دولة (بحث عالمي)
+     *
+     * @param float $latitude
+     * @param float $longitude
+     * @return array
+     */
+    public function resolveByCoordinatesOnly(float $latitude, float $longitude): array
+    {
+        Log::info('TryotoLocation: Fallback - resolving by coordinates only', [
+            'latitude' => $latitude,
+            'longitude' => $longitude
+        ]);
+
+        // صيغة Haversine لحساب المسافة بالكيلومتر
+        $haversine = "(6371 * acos(
+            cos(radians(?)) *
+            cos(radians(latitude)) *
+            cos(radians(longitude) - radians(?)) +
+            sin(radians(?)) *
+            sin(radians(latitude))
+        ))";
+
+        // البحث عن أقرب مدينة مدعومة (بدون قيد الدولة)
+        $city = City::where('tryoto_supported', 1)
+            ->whereNotNull('latitude')
+            ->whereNotNull('longitude')
+            ->selectRaw("*, {$haversine} as distance_km", [$latitude, $longitude, $latitude])
+            ->havingRaw('distance_km <= ?', [self::MAX_DISTANCE_KM])
+            ->orderBy('distance_km', 'asc')
+            ->with('country:id,country_name,country_code')
+            ->first();
+
+        if ($city) {
+            Log::info('TryotoLocation: Found nearest city globally', [
+                'city' => $city->city_name,
+                'country' => $city->country->country_name ?? 'Unknown',
+                'distance_km' => round($city->distance_km, 2)
+            ]);
+
+            return [
+                'success' => true,
+                'strategy' => 'coordinates_fallback',
+                'resolved_name' => $city->city_name,
+                'tryoto_name' => $city->city_name,
+                'resolved_type' => 'city',
+                'city_id' => $city->id,
+                'country_id' => $city->country_id,
+                'country_name' => $city->country->country_name ?? null,
+                'coordinates' => [
+                    'latitude' => $city->latitude,
+                    'longitude' => $city->longitude
+                ],
+                'original_coordinates' => compact('latitude', 'longitude'),
+                'distance_km' => round($city->distance_km, 2),
+                'message' => "تم تحديد أقرب مدينة للشحن: '{$city->city_name}' (" . ($city->country->country_name ?? '') . ")"
+            ];
+        }
+
+        // لا توجد مدن قريبة
+        Log::warning('TryotoLocation: No supported cities within range', [
+            'latitude' => $latitude,
+            'longitude' => $longitude,
+            'max_distance_km' => self::MAX_DISTANCE_KM
+        ]);
+
+        return [
+            'success' => false,
+            'strategy' => 'no_nearby_cities',
+            'coordinates' => compact('latitude', 'longitude'),
+            'message' => "لا توجد مدن مدعومة للشحن بالقرب من موقعك"
+        ];
+    }
 }

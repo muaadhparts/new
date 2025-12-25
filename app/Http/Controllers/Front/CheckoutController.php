@@ -49,6 +49,7 @@ use App\Models\PaymentGateway;
 use App\Services\VendorCartService;
 use App\Services\CheckoutDataService;
 use App\Services\ShippingCalculatorService;
+use App\Services\GoogleMapsService;
 use Auth;
 use DB;
 use Illuminate\Http\Request;
@@ -436,51 +437,115 @@ class CheckoutController extends FrontBaseController
      * 4. يحفظ البيانات كمصدر وحيد للحقيقة
      * ========================================================================
      */
+    /**
+     * ========================================================================
+     * CHECKOUT STEP 1 - INPUT + NORMALIZATION ONLY
+     * ========================================================================
+     *
+     * مسؤوليات Step 1:
+     * ✅ جمع بيانات العميل الأساسية
+     * ✅ استقبال lat/lng من الخريطة
+     * ✅ عمل Backend Reverse Geocoding
+     * ✅ التحقق من الضريبة من جداول countries/cities
+     * ✅ تخزين كل شيء في Session
+     *
+     * ممنوع على Step 1:
+     * ❌ استدعاء Tryoto
+     * ❌ حساب أسعار شحن
+     * ❌ التحقق من دعم المدينة
+     * ❌ تقرير أقرب مدينة
+     *
+     * Session Contract (ما يضمنه Step 1 لـ Step 2):
+     * - latitude, longitude (من الخريطة)
+     * - city_name, state_name, country_name (من Geocoding)
+     * - country_id, tax_rate, tax_amount (للضريبة)
+     * ========================================================================
+     */
     public function checkoutStep1(Request $request)
     {
-        // Get all submitted data (manual OR from Google Maps - no conflict)
         $step1 = $request->all();
 
-        // Validation rules - Support both map selection (IDs) and legacy (names)
+        // ====================================================================
+        // VALIDATION - الخريطة ترسل lat/lng فقط، الباقي من Geocoding
+        // ====================================================================
         $validator = Validator::make($step1, [
+            // بيانات العميل الأساسية
             'customer_name' => 'required|string|max:255',
             'customer_email' => 'required|email|max:255',
             'customer_phone' => 'required|numeric',
             'customer_address' => 'required|string|max:255',
             'customer_zip' => 'nullable|string|max:20',
-            // Location - either from map (IDs) or legacy (names)
+            // الإحداثيات مطلوبة (من الخريطة)
+            'latitude' => 'required|numeric|between:-90,90',
+            'longitude' => 'required|numeric|between:-180,180',
+            // البيانات التالية اختيارية - ستأتي من Geocoding
             'country_id' => 'nullable|numeric|exists:countries,id',
             'city_id' => 'nullable|numeric|exists:cities,id',
-            'customer_country' => 'required_without:country_id|nullable|string|max:255',
+            'customer_country' => 'nullable|string|max:255',
             'customer_state' => 'nullable|string|max:255',
-            'customer_city' => 'required_without:city_id|nullable|numeric',
-            // Coordinates from Google Maps
-            'latitude' => 'nullable|numeric|between:-90,90',
-            'longitude' => 'nullable|numeric|between:-180,180',
+            'customer_city' => 'nullable|numeric',
         ], [
-            'customer_name.required' => 'الاسم مطلوب',
-            'customer_email.required' => 'البريد الإلكتروني مطلوب',
-            'customer_email.email' => 'البريد الإلكتروني غير صحيح',
-            'customer_phone.required' => 'رقم الهاتف مطلوب',
-            'customer_address.required' => 'العنوان مطلوب',
-            'customer_country.required_without' => 'الدولة مطلوبة',
-            'customer_city.required_without' => 'المدينة مطلوبة',
-            'country_id.exists' => 'الدولة غير صحيحة',
-            'city_id.exists' => 'المدينة غير صحيحة',
-            'latitude.between' => 'خط العرض غير صحيح',
-            'longitude.between' => 'خط الطول غير صحيح',
+            'customer_name.required' => __('Name is required'),
+            'customer_email.required' => __('Email is required'),
+            'customer_email.email' => __('Invalid email format'),
+            'customer_phone.required' => __('Phone is required'),
+            'customer_address.required' => __('Address is required'),
+            'latitude.required' => __('Please select your location from the map'),
+            'longitude.required' => __('Please select your location from the map'),
         ]);
 
         if ($validator->fails()) {
             return back()->withErrors($validator->errors())->withInput();
         }
 
-        // Validate coordinates consistency
-        if (($request->filled('latitude') && !$request->filled('longitude')) ||
-            (!$request->filled('latitude') && $request->filled('longitude'))) {
-            return back()->withErrors([
-                'coordinates' => 'يجب إدخال كلا الإحداثيتين معاً'
-            ])->withInput();
+        // ====================================================================
+        // BACKEND REVERSE GEOCODING
+        // ====================================================================
+        // تحويل الإحداثيات إلى أسماء (city, state, country)
+        // إذا فشل: لا نكسر Step 1، نخزن lat/lng فقط، Step 2 يتعامل مع الفشل
+        // ====================================================================
+        $geocodeResult = $this->resolveLocationFromCoordinates(
+            (float) $request->latitude,
+            (float) $request->longitude
+        );
+
+        if ($geocodeResult) {
+            // ✅ حفظ أسماء الموقع للـ Step 2
+            $step1['city_name'] = $geocodeResult['city_name'];
+            $step1['state_name'] = $geocodeResult['state_name'];
+            $step1['country_name'] = $geocodeResult['country_name'];
+            $step1['geocoding_success'] = true;
+
+            // ✅ مطابقة الدولة من قاعدة البيانات (للضريبة)
+            if (!empty($geocodeResult['country_name'])) {
+                $matchedCountry = Country::where('country_name', 'LIKE', '%' . $geocodeResult['country_name'] . '%')
+                    ->orWhere('country_code', $geocodeResult['country_code'] ?? '')
+                    ->first();
+                if ($matchedCountry) {
+                    $step1['country_id'] = $matchedCountry->id;
+                    $step1['customer_country'] = $matchedCountry->country_name;
+                }
+            }
+
+            \Log::info('CheckoutStep1: Geocoding successful', [
+                'lat' => $request->latitude,
+                'lng' => $request->longitude,
+                'city' => $geocodeResult['city_name'],
+                'state' => $geocodeResult['state_name'],
+                'country' => $geocodeResult['country_name'],
+            ]);
+        } else {
+            // ⚠️ فشل Geocoding - نخزن lat/lng فقط
+            // Step 2 سيستخدم lat/lng للـ fallback
+            $step1['city_name'] = null;
+            $step1['state_name'] = null;
+            $step1['country_name'] = null;
+            $step1['geocoding_success'] = false;
+
+            \Log::warning('CheckoutStep1: Geocoding failed, storing coordinates only', [
+                'lat' => $request->latitude,
+                'lng' => $request->longitude,
+            ]);
         }
 
         // ====================================================================
@@ -1167,26 +1232,36 @@ class CheckoutController extends FrontBaseController
      * @param int $vendorId
      * @return \Illuminate\Http\RedirectResponse
      */
+    /**
+     * ========================================================================
+     * VENDOR CHECKOUT STEP 1 - INPUT + NORMALIZATION ONLY
+     * ========================================================================
+     * نفس منطق checkoutStep1 لكن لتاجر محدد
+     * ========================================================================
+     */
     public function checkoutVendorStep1(Request $request, $vendorId)
     {
         $step1 = $request->all();
 
-        // BASE VALIDATION - Support both map selection (IDs) and legacy (names)
+        // ====================================================================
+        // VALIDATION - الخريطة ترسل lat/lng فقط، الباقي من Geocoding
+        // ====================================================================
         $rules = [
+            // بيانات العميل الأساسية
             'customer_name' => 'required|string|max:255',
             'customer_email' => 'required|email|max:255',
             'customer_phone' => 'required|numeric',
             'customer_address' => 'required|string|max:255',
             'customer_zip' => 'nullable|string|max:20',
-            // Location - either from map (IDs) or legacy (names)
+            // الإحداثيات مطلوبة (من الخريطة)
+            'latitude' => 'required|numeric|between:-90,90',
+            'longitude' => 'required|numeric|between:-180,180',
+            // البيانات التالية اختيارية - ستأتي من Geocoding
             'country_id' => 'nullable|numeric|exists:countries,id',
             'city_id' => 'nullable|numeric|exists:cities,id',
-            'customer_country' => 'required_without:country_id|nullable|string|max:255',
+            'customer_country' => 'nullable|string|max:255',
             'customer_state' => 'nullable|string|max:255',
-            'customer_city' => 'required_without:city_id|nullable|numeric',
-            // Coordinates from Google Maps
-            'latitude' => 'nullable|numeric|between:-90,90',
-            'longitude' => 'nullable|numeric|between:-180,180',
+            'customer_city' => 'nullable|numeric',
         ];
 
         // ✅ IF USER WANTS TO CREATE ACCOUNT - ADD PASSWORD VALIDATION
@@ -1196,6 +1271,12 @@ class CheckoutController extends FrontBaseController
         }
 
         $validator = Validator::make($step1, $rules, [
+            'customer_name.required' => __('Name is required'),
+            'customer_email.required' => __('Email is required'),
+            'customer_phone.required' => __('Phone is required'),
+            'customer_address.required' => __('Address is required'),
+            'latitude.required' => __('Please select your location from the map'),
+            'longitude.required' => __('Please select your location from the map'),
             'password.required' => __('Password is required when creating an account'),
             'password.min' => __('Password must be at least 6 characters'),
             'password.confirmed' => __('Password confirmation does not match'),
@@ -1209,35 +1290,71 @@ class CheckoutController extends FrontBaseController
         // ✅ CREATE ACCOUNT DURING CHECKOUT (IF REQUESTED)
         // ====================================================================
         if (isset($step1['create_account']) && $step1['create_account'] == 1 && !Auth::check()) {
-            // Check if email already exists
             $existingUser = \App\Models\User::where('email', $step1['customer_email'])->first();
 
             if ($existingUser) {
                 return back()->with('unsuccess', __('An account with this email already exists. Please login.'))->withInput();
             }
 
-            // Create new user account
             $user = new \App\Models\User();
             $user->name = $step1['customer_name'];
             $user->email = $step1['customer_email'];
             $user->phone = $step1['customer_phone'];
             $user->address = $step1['customer_address'];
-            $user->zip = $step1['customer_zip'];
-            $user->country = $step1['customer_country'];
-
-            // Get state_id and city_id from names
-            $user->city_id = $step1['customer_city']; // Already numeric
-
+            $user->zip = $step1['customer_zip'] ?? null;
             $user->password = bcrypt($step1['password']);
-            $user->email_verified = 'Yes'; // Auto-verify during checkout
+            $user->email_verified = 'Yes';
             $user->affilate_code = null;
             $user->is_provider = 0;
             $user->save();
 
-            // LOGIN THE USER IMMEDIATELY WITHOUT SESSION REGENERATION
-            // Using 'false' as second parameter to prevent session regeneration
-            // This prevents CSRF token mismatch during checkout
             Auth::login($user, true);
+        }
+
+        // ====================================================================
+        // BACKEND REVERSE GEOCODING
+        // ====================================================================
+        $geocodeResult = $this->resolveLocationFromCoordinates(
+            (float) $request->latitude,
+            (float) $request->longitude
+        );
+
+        if ($geocodeResult) {
+            // ✅ حفظ أسماء الموقع للـ Step 2
+            $step1['city_name'] = $geocodeResult['city_name'];
+            $step1['state_name'] = $geocodeResult['state_name'];
+            $step1['country_name'] = $geocodeResult['country_name'];
+            $step1['geocoding_success'] = true;
+
+            // ✅ مطابقة الدولة من قاعدة البيانات (للضريبة)
+            if (!empty($geocodeResult['country_name'])) {
+                $matchedCountry = Country::where('country_name', 'LIKE', '%' . $geocodeResult['country_name'] . '%')
+                    ->orWhere('country_code', $geocodeResult['country_code'] ?? '')
+                    ->first();
+                if ($matchedCountry) {
+                    $step1['country_id'] = $matchedCountry->id;
+                    $step1['customer_country'] = $matchedCountry->country_name;
+                }
+            }
+
+            \Log::info('VendorCheckoutStep1: Geocoding successful', [
+                'vendor_id' => $vendorId,
+                'lat' => $request->latitude,
+                'lng' => $request->longitude,
+                'city' => $geocodeResult['city_name'],
+            ]);
+        } else {
+            // ⚠️ فشل Geocoding - نخزن lat/lng فقط
+            $step1['city_name'] = null;
+            $step1['state_name'] = null;
+            $step1['country_name'] = null;
+            $step1['geocoding_success'] = false;
+
+            \Log::warning('VendorCheckoutStep1: Geocoding failed', [
+                'vendor_id' => $vendorId,
+                'lat' => $request->latitude,
+                'lng' => $request->longitude,
+            ]);
         }
 
         // ====================================================================
@@ -1871,5 +1988,53 @@ class CheckoutController extends FrontBaseController
             'vendorData' => $vendorData,
             'country' => $country,
         ];
+    }
+
+    /**
+     * ========================================================================
+     * BACKEND REVERSE GEOCODING
+     * ========================================================================
+     * Resolves city/state/country names from coordinates using Google Maps API.
+     * Called during Step 1 submission to extract location data for shipping.
+     *
+     * @param float $latitude
+     * @param float $longitude
+     * @return array|null ['city_name', 'state_name', 'country_name', 'country_code']
+     */
+    protected function resolveLocationFromCoordinates(float $latitude, float $longitude): ?array
+    {
+        try {
+            $googleMapsService = app(GoogleMapsService::class);
+
+            // Get English names (for Tryoto API compatibility)
+            $result = $googleMapsService->reverseGeocode($latitude, $longitude, 'en');
+
+            if (!$result['success'] || empty($result['data'])) {
+                \Log::warning('Geocoding failed for coordinates', [
+                    'lat' => $latitude,
+                    'lng' => $longitude,
+                    'error' => $result['error'] ?? 'Unknown error'
+                ]);
+                return null;
+            }
+
+            $data = $result['data'];
+
+            return [
+                'city_name' => $data['city'] ?? null,
+                'state_name' => $data['state'] ?? null,
+                'country_name' => $data['country'] ?? null,
+                'country_code' => $data['country_code'] ?? null,
+                'address' => $data['address'] ?? null,
+            ];
+
+        } catch (\Exception $e) {
+            \Log::error('Geocoding exception', [
+                'lat' => $latitude,
+                'lng' => $longitude,
+                'error' => $e->getMessage()
+            ]);
+            return null;
+        }
     }
 }

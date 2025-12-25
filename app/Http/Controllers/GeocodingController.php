@@ -522,6 +522,12 @@ class GeocodingController extends Controller
                 'name' => $englishData['city'] ?? null,
                 'name_ar' => $arabicData['city'] ?? null,
             ],
+            // العنوان الكامل للعرض
+            'address' => [
+                'en' => $englishData['address'] ?? null,
+                'ar' => $arabicData['address'] ?? null,
+            ],
+            'postal_code' => $englishData['postal_code'] ?? $arabicData['postal_code'] ?? null,
             'message' => 'تم تحديد الموقع بنجاح'
         ]);
     }
@@ -604,6 +610,90 @@ class GeocodingController extends Controller
         }
 
         return response()->json($responseData);
+    }
+
+    /**
+     * ========================================================================
+     * Get Tax Info from Coordinates
+     * ========================================================================
+     * يستخدم في Step 1 لعرض الضريبة بعد تأكيد الموقع من الخريطة
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getTaxFromCoordinates(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'latitude' => 'required|numeric|between:-90,90',
+            'longitude' => 'required|numeric|between:-180,180',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        $latitude = (float) $request->latitude;
+        $longitude = (float) $request->longitude;
+
+        // 1. Geocoding للحصول على اسم الدولة
+        $geocodeResult = $this->googleMapsService->reverseGeocode($latitude, $longitude, 'en');
+
+        if (!$geocodeResult['success']) {
+            return response()->json([
+                'success' => false,
+                'tax_rate' => 0,
+                'tax_amount' => 0,
+                'country_name' => null,
+                'message' => 'فشل تحديد الموقع'
+            ]);
+        }
+
+        $countryName = $geocodeResult['data']['country'] ?? null;
+        $countryCode = $geocodeResult['data']['country_code'] ?? null;
+        $cityName = $geocodeResult['data']['city'] ?? null;
+        $stateName = $geocodeResult['data']['state'] ?? null;
+
+        // 2. البحث عن الدولة في قاعدة البيانات
+        $country = null;
+        if ($countryName) {
+            $country = Country::where('country_name', 'LIKE', '%' . $countryName . '%')
+                ->orWhere('country_code', $countryCode ?? '')
+                ->first();
+        }
+
+        $taxRate = 0;
+        $taxLocation = '';
+
+        if ($country && $country->tax > 0) {
+            $taxRate = $country->tax;
+            $taxLocation = $country->country_name;
+        }
+
+        // 3. حساب مبلغ الضريبة من السلة
+        $cart = \Session::get('cart');
+        $cartTotal = 0;
+        if ($cart) {
+            $cartObj = new \App\Models\Cart($cart);
+            $cartTotal = $cartObj->totalPrice;
+        }
+
+        $taxAmount = ($cartTotal * $taxRate) / 100;
+
+        return response()->json([
+            'success' => true,
+            'country_id' => $country->id ?? null,
+            'country_name' => $country->country_name ?? $countryName,
+            'city_name' => $cityName,
+            'state_name' => $stateName,
+            'tax_rate' => $taxRate,
+            'tax_amount' => round($taxAmount, 2),
+            'tax_location' => $taxLocation,
+            'cart_total' => $cartTotal,
+            'message' => $taxRate > 0 ? "الضريبة {$taxRate}%" : 'لا توجد ضريبة'
+        ]);
     }
 
     /**

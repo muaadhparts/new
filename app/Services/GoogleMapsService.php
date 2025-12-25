@@ -12,7 +12,7 @@ class GoogleMapsService
 
     public function __construct()
     {
-        $this->apiKey = config('services.google_maps.key');
+        $this->apiKey = config('services.google_maps.api_key');
     }
 
     /**

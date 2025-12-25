@@ -644,6 +644,12 @@ class CartController extends FrontBaseController
 
     public function cart(Request $request)
     {
+        // ====================================================================
+        // مسح جميع جلسات الـ Checkout عند زيارة السلة
+        // لتجنب خلط الجلسات بين التجار المختلفين
+        // ====================================================================
+        $this->clearCheckoutSessions();
+
         if (!Session::has('cart')) {
             return view('frontend.cart');
         }
@@ -783,6 +789,35 @@ class CartController extends FrontBaseController
     }
 
     /* ===================== Utilities ===================== */
+
+    /**
+     * مسح جميع جلسات الـ Checkout
+     * يتم استدعاؤها عند زيارة صفحة السلة لضمان بداية نظيفة
+     */
+    private function clearCheckoutSessions(): void
+    {
+        // مسح الجلسات الأساسية
+        Session::forget(['step1', 'step2', 'step3']);
+
+        // مسح جلسات التجار المحددين (vendor_step1_*, vendor_step2_*)
+        $allSessionKeys = array_keys(Session::all());
+        foreach ($allSessionKeys as $key) {
+            if (str_starts_with($key, 'vendor_step1_') ||
+                str_starts_with($key, 'vendor_step2_') ||
+                str_starts_with($key, 'coupon_vendor_')) {
+                Session::forget($key);
+            }
+        }
+
+        // مسح الجلسات الأخرى المتعلقة بالـ checkout
+        Session::forget([
+            'checkout_vendor_id',
+            'selectedLocation',
+            'shipping_selection',
+        ]);
+
+        \Log::debug('CartController: Cleared all checkout sessions');
+    }
 
     private function toArrayValues($v): array
     {
