@@ -198,6 +198,17 @@ Route::prefix('admin')->group(function () {
         Route::get('/performance/api/summary', 'Admin\PerformanceController@apiSummary')->name('admin-performance-api-summary');
         Route::post('/performance/prune', 'Admin\PerformanceController@pruneOldEntries')->name('admin-performance-prune');
         //------------ ADMIN PERFORMANCE MONITORING SECTION ENDS ------------
+
+        //------------ ADMIN API CREDENTIALS SECTION ------------
+        Route::get('/credentials', 'Admin\ApiCredentialController@index')->name('admin.credentials.index');
+        Route::get('/credentials/create', 'Admin\ApiCredentialController@create')->name('admin.credentials.create');
+        Route::post('/credentials', 'Admin\ApiCredentialController@store')->name('admin.credentials.store');
+        Route::get('/credentials/{id}/edit', 'Admin\ApiCredentialController@edit')->name('admin.credentials.edit');
+        Route::put('/credentials/{id}', 'Admin\ApiCredentialController@update')->name('admin.credentials.update');
+        Route::delete('/credentials/{id}', 'Admin\ApiCredentialController@destroy')->name('admin.credentials.destroy');
+        Route::post('/credentials/{id}/toggle', 'Admin\ApiCredentialController@toggle')->name('admin.credentials.toggle');
+        Route::post('/credentials/{id}/test', 'Admin\ApiCredentialController@test')->name('admin.credentials.test');
+        //------------ ADMIN API CREDENTIALS SECTION ENDS ------------
     });
 
     //------------ ADMIN ORDER SECTION ------------
