@@ -100,14 +100,16 @@ class ShippingApiController extends Controller
                 'dimensions' => $dimensions
             ]);
 
-            // 6. Call Tryoto API
-            $result = $this->tryotoService->getDeliveryOptions(
-                $originCity,
-                $destinationCity,
-                $weight,
-                0,
-                $dimensions
-            );
+            // 6. Call Tryoto API with vendor-specific credentials
+            $result = $this->tryotoService
+                ->forVendor($vendorId)
+                ->getDeliveryOptions(
+                    $originCity,
+                    $destinationCity,
+                    $weight,
+                    0,
+                    $dimensions
+                );
 
             if (!$result['success']) {
                 Log::error('ShippingApiController: Failed to get delivery options', [
@@ -166,11 +168,22 @@ class ShippingApiController extends Controller
             Log::error('ShippingApiController: Exception', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
+                'vendor_id' => $vendorId ?? null,
             ]);
+
+            // Check if this is a credentials missing error
+            $errorMessage = $e->getMessage();
+            if (str_contains($errorMessage, 'credentials not configured')) {
+                return response()->json([
+                    'success' => false,
+                    'error' => 'عذراً، لم يتم إعداد خدمة الشحن لهذا التاجر بعد. يرجى التواصل مع التاجر.',
+                    'error_code' => 'VENDOR_SHIPPING_NOT_CONFIGURED',
+                ]);
+            }
 
             return response()->json([
                 'success' => false,
-                'error' => 'Shipping service is currently unavailable',
+                'error' => $this->translateTryotoError($errorMessage),
             ], 500);
         }
     }

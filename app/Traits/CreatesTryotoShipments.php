@@ -41,13 +41,13 @@ trait CreatesTryotoShipments
 
         $selections = is_array($shippingInput) ? $shippingInput : [0 => $shippingInput];
 
-        // استخدام TryotoService الموحد
-        $tryotoService = app(TryotoService::class);
+        // System-level TryotoService for city resolution (no vendor credentials needed)
+        $systemTryotoService = app(TryotoService::class);
 
         // Shipment destination: customer city
         // تحويل city ID إلى city name باستخدام TryotoService
         $destinationCityValue = $order->customer_city;
-        $destinationCity = $tryotoService->resolveCityName($destinationCityValue);
+        $destinationCity = $systemTryotoService->resolveCityName($destinationCityValue);
 
         // Preparing cart items for dimension/weight calculations
         $cartRaw = $order->cart;
@@ -96,10 +96,11 @@ trait CreatesTryotoShipments
 
             // تحويل city ID إلى city name باستخدام TryotoService
             $originCityValue = $vendor->city_id ?? $vendor->warehouse_city ?? $vendor->shop_city;
-            $originCity = $tryotoService->resolveCityName($originCityValue);
+            $originCity = $systemTryotoService->resolveCityName($originCityValue);
 
-            // استخدام createShipment من TryotoService بدلاً من الاتصال المباشر
-            $result = $tryotoService->createShipment(
+            // ✅ Use vendor-specific credentials for shipment creation
+            $vendorTryotoService = app(TryotoService::class)->forVendor((int)$vendorId);
+            $result = $vendorTryotoService->createShipment(
                 $order,
                 (int)$vendorId,
                 $deliveryOptionId,

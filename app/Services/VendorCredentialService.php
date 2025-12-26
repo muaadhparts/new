@@ -90,7 +90,9 @@ class VendorCredentialService
     }
 
     /**
-     * Get vendor's MyFatoorah key
+     * Get vendor's MyFatoorah key (with fallback to system - LEGACY)
+     *
+     * @deprecated Use getMyFatoorahKeyStrict() for marketplace operations
      */
     public function getMyFatoorahKey(int $userId): ?string
     {
@@ -98,11 +100,143 @@ class VendorCredentialService
     }
 
     /**
-     * Get vendor's Tryoto refresh token
+     * Get vendor's MyFatoorah key - STRICT MODE (NO FALLBACK)
+     *
+     * MARKETPLACE POLICY:
+     * - Vendor MUST have their own payment credentials
+     * - NO FALLBACK to system credentials for financial operations
+     *
+     * Search order:
+     * 1. vendor_credentials table (new encrypted storage)
+     * 2. payment_gateways.information JSON (legacy storage)
+     *
+     * @param int $userId Vendor user ID
+     * @return string|null API key or null if not configured
+     */
+    public function getMyFatoorahKeyStrict(int $userId): ?string
+    {
+        // 1. Try new vendor_credentials table first
+        $key = $this->getVendorOnly($userId, 'myfatoorah', 'api_key');
+
+        if (!empty($key)) {
+            return $key;
+        }
+
+        // 2. Fallback to legacy payment_gateways.information
+        return $this->getFromPaymentGateway($userId, 'myfatoorah', 'api_key');
+    }
+
+    /**
+     * Get credential from legacy payment_gateways table
+     *
+     * @param int $userId Vendor user ID
+     * @param string $keyword Gateway keyword (e.g., 'myfatoorah', 'stripe')
+     * @param string $keyName Key name in JSON (e.g., 'api_key', 'secret')
+     * @return string|null
+     */
+    protected function getFromPaymentGateway(int $userId, string $keyword, string $keyName): ?string
+    {
+        $cacheKey = "payment_gateway_cred:{$userId}:{$keyword}:{$keyName}";
+
+        return Cache::remember($cacheKey, $this->cacheTtl, function () use ($userId, $keyword, $keyName) {
+            $gateway = \DB::table('payment_gateways')
+                ->where('user_id', $userId)
+                ->where('keyword', $keyword)
+                ->first();
+
+            if (!$gateway || empty($gateway->information)) {
+                return null;
+            }
+
+            $info = json_decode($gateway->information, true);
+
+            if (!is_array($info) || empty($info[$keyName])) {
+                return null;
+            }
+
+            // Skip placeholder values
+            $value = $info[$keyName];
+            if ($value === '<YOUR_API_KEY>' || $value === 'YOUR_API_KEY' || empty(trim($value))) {
+                return null;
+            }
+
+            return $value;
+        });
+    }
+
+    /**
+     * Get vendor's Tryoto refresh token (with fallback to system - LEGACY)
+     *
+     * @deprecated Use getTryotoRefreshTokenStrict() for marketplace operations
      */
     public function getTryotoRefreshToken(int $userId): ?string
     {
-        return $this->get($userId, 'tryoto', 'refresh_token');
+        return $this->getVendorOnly($userId, 'tryoto', 'refresh_token');
+    }
+
+    /**
+     * Get vendor's Tryoto refresh token - STRICT MODE (NO FALLBACK)
+     *
+     * MARKETPLACE POLICY:
+     * - Vendor MUST have their own shipping credentials
+     * - NO FALLBACK to system credentials for shipping operations
+     *
+     * @param int $userId Vendor user ID
+     * @return string|null Refresh token or null if not configured
+     */
+    public function getTryotoRefreshTokenStrict(int $userId): ?string
+    {
+        return $this->getVendorOnly($userId, 'tryoto', 'refresh_token');
+    }
+
+    /**
+     * Check if vendor has payment credentials configured
+     * Checks both vendor_credentials and legacy payment_gateways
+     *
+     * @param int $userId Vendor user ID
+     * @return bool
+     */
+    public function hasPaymentCredentials(int $userId): bool
+    {
+        // Check new vendor_credentials table
+        if ($this->hasOwnCredential($userId, 'myfatoorah', 'api_key')) {
+            return true;
+        }
+
+        // Check legacy payment_gateways table
+        $key = $this->getFromPaymentGateway($userId, 'myfatoorah', 'api_key');
+        return !empty($key);
+    }
+
+    /**
+     * Check if vendor has shipping credentials configured
+     *
+     * @param int $userId Vendor user ID
+     * @return bool
+     */
+    public function hasShippingCredentials(int $userId): bool
+    {
+        return $this->hasOwnCredential($userId, 'tryoto', 'refresh_token');
+    }
+
+    /**
+     * Get vendor configuration status for marketplace operations
+     *
+     * @param int $userId Vendor user ID
+     * @return array
+     */
+    public function getVendorMarketplaceStatus(int $userId): array
+    {
+        return [
+            'vendor_id' => $userId,
+            'has_payment_credentials' => $this->hasPaymentCredentials($userId),
+            'has_shipping_credentials' => $this->hasShippingCredentials($userId),
+            'can_accept_orders' => $this->hasPaymentCredentials($userId) && $this->hasShippingCredentials($userId),
+            'missing' => array_filter([
+                !$this->hasPaymentCredentials($userId) ? 'payment (MyFatoorah)' : null,
+                !$this->hasShippingCredentials($userId) ? 'shipping (Tryoto)' : null,
+            ]),
+        ];
     }
 
     /**

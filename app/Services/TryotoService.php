@@ -164,38 +164,44 @@ class TryotoService
 
     /**
      * تنفيذ تجديد التوكن الفعلي
-     * يستخدم vendor credentials إذا كان vendor_id محدداً، وإلا يستخدم system credentials
+     *
+     * MARKETPLACE RULE:
+     * - If vendorId is set → MUST use vendor credentials, NO FALLBACK
+     * - If vendorId is NOT set → system-level operations only (getCities, etc.)
      *
      * @return string|null
      * @throws \Exception
      */
     private function doRefreshToken(): ?string
     {
-        // Get refresh token - vendor-specific first, then fallback to system
         $refreshToken = null;
 
         if ($this->vendorId) {
-            // Try vendor-specific credential first
+            // Vendor operation - MUST use vendor credentials, NO FALLBACK to system
             $refreshToken = $this->vendorCredentialService->getTryotoRefreshToken($this->vendorId);
 
-            if ($refreshToken) {
-                Log::debug('Tryoto: Using vendor-specific refresh token', ['vendor_id' => $this->vendorId]);
+            if (empty($refreshToken)) {
+                // NO FALLBACK - vendor MUST have their own shipping credentials
+                throw new \Exception(
+                    "Tryoto shipping credentials not configured for vendor #{$this->vendorId}. " .
+                    "Each vendor must have their own shipping credentials. " .
+                    "Configure via Admin Panel > Vendor Credentials or Vendor Dashboard."
+                );
             }
-        }
 
-        // Fallback to system credential
-        if (empty($refreshToken)) {
+            Log::debug('Tryoto: Using vendor-specific refresh token', ['vendor_id' => $this->vendorId]);
+        } else {
+            // System-level operation (getCities, verifyCitySupport, etc.)
             $refreshToken = $this->credentialService->getTryotoRefreshToken();
-            if ($refreshToken) {
-                Log::debug('Tryoto: Using system refresh token');
-            }
-        }
 
-        if (empty($refreshToken)) {
-            $message = $this->vendorId
-                ? "Tryoto refresh token not configured for vendor {$this->vendorId}. Add it via Vendor Dashboard > API Credentials or Admin Panel."
-                : 'Tryoto refresh token is not configured. Add it via Admin Panel > API Credentials.';
-            throw new \Exception($message);
+            if (empty($refreshToken)) {
+                throw new \Exception(
+                    'Tryoto system credentials not configured. ' .
+                    'Add refresh token via Admin Panel > System Credentials.'
+                );
+            }
+
+            Log::debug('Tryoto: Using system refresh token for system-level operation');
         }
 
         $response = Http::timeout(self::REQUEST_TIMEOUT)
@@ -1539,7 +1545,11 @@ class TryotoService
     /**
      * Check if Tryoto service is properly configured
      *
-     * @param int|null $vendorId Optional vendor ID to check vendor-specific configuration
+     * MARKETPLACE POLICY:
+     * - Vendor operations (shipping) REQUIRE vendor credentials - NO FALLBACK
+     * - System operations (getCities) use system credentials
+     *
+     * @param int|null $vendorId Vendor ID to check vendor-specific configuration
      * @return array
      */
     public function checkConfiguration(?int $vendorId = null): array
@@ -1548,22 +1558,26 @@ class TryotoService
         $hasVendorCredential = false;
         $hasSystemCredential = false;
 
-        // Check vendor-specific credential first
+        // Check vendor-specific credential
         if ($vendorId) {
             $this->vendorId = $vendorId;
             $vendorToken = $this->vendorCredentialService->getTryotoRefreshToken($vendorId);
             $hasVendorCredential = !empty($vendorToken);
+
+            // MARKETPLACE RULE: Vendor MUST have their own credentials
+            if (!$hasVendorCredential) {
+                $issues[] = "REQUIRED: Vendor #{$vendorId} must have their own Tryoto credentials configured. " .
+                           "Add via Admin Panel > Vendor Credentials.";
+            }
         }
 
-        // Check system credential
+        // Check system credential (for system-level operations)
         $systemToken = $this->credentialService->getTryotoRefreshToken();
         $hasSystemCredential = !empty($systemToken);
 
-        // Determine issues
-        if ($vendorId && !$hasVendorCredential && !$hasSystemCredential) {
-            $issues[] = "Refresh token not configured for vendor {$vendorId} or system. Add via Vendor Dashboard or Admin Panel.";
-        } elseif (!$vendorId && !$hasSystemCredential) {
-            $issues[] = 'System refresh token is not configured. Add it via Admin Panel > System Credentials.';
+        if (!$hasSystemCredential) {
+            $issues[] = 'System Tryoto credentials not configured (needed for city lookup). ' .
+                       'Add via Admin Panel > System Credentials.';
         }
 
         if (empty($this->baseUrl)) {
@@ -1577,7 +1591,7 @@ class TryotoService
             'vendor_id' => $vendorId,
             'has_vendor_credential' => $hasVendorCredential,
             'has_system_credential' => $hasSystemCredential,
-            'using_credential' => $hasVendorCredential ? 'vendor' : ($hasSystemCredential ? 'system' : 'none'),
+            'policy' => 'MARKETPLACE: Vendor credentials required for shipping - NO FALLBACK to system',
             'issues' => $issues,
             'cache_key' => $this->getCacheKey(),
             'has_cached_token' => Cache::has($this->getCacheKey())

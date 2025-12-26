@@ -14,6 +14,7 @@ use Illuminate\{Support\Facades\DB,
 
 use App\Models\Font;
 use App\View\Composers\HeaderComposer;
+use App\Services\ApiCredentialService;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Cache;
@@ -96,6 +97,15 @@ class AppServiceProvider extends ServiceProvider
 
             $settings->with('socialLinks', cache()->remember('footer_social_links', 3600, function () {
                 return DB::table('social_links')->where('user_id', 0)->where('status', 1)->get();
+            }));
+
+            // Google Maps API Key - loaded from encrypted database
+            $settings->with('googleMapsApiKey', cache()->remember('google_maps_api_key', 3600, function () {
+                try {
+                    return app(ApiCredentialService::class)->getGoogleMapsKey();
+                } catch (\Exception $e) {
+                    return config('services.google_maps.api_key');
+                }
             }));
         });
 

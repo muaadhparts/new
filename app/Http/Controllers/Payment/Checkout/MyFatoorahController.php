@@ -74,22 +74,46 @@ class MyFatoorahController extends CheckoutBaseControlller {
 
     /**
      * Get MyFatoorah config for specific vendor
-     * Uses vendor-specific credential if available, otherwise falls back to system
+     *
+     * MARKETPLACE POLICY:
+     * - Vendor MUST have their own payment credentials
+     * - NO FALLBACK to system credentials for payment
+     * - Each vendor is financially responsible for their own transactions
+     * - Uses vendor's own test_mode and country settings
+     *
+     * @param int $vendorId
+     * @return array
+     * @throws \Exception If vendor doesn't have payment credentials configured
      */
     protected function getVendorMfConfig(int $vendorId): array
     {
-        // Try vendor-specific API key first
-        $apiKey = $this->vendorCredentialService->getMyFatoorahKey($vendorId);
+        // Get vendor-specific API key - NO FALLBACK
+        $apiKey = $this->vendorCredentialService->getMyFatoorahKeyStrict($vendorId);
 
-        // Fallback to system API key
         if (empty($apiKey)) {
-            $apiKey = $this->credentialService->getMyFatoorahKey();
+            throw new \Exception(
+                "MyFatoorah payment credentials not configured for vendor #{$vendorId}. " .
+                "Each vendor must have their own payment credentials. " .
+                "Configure via Admin Panel > Vendor Credentials or Vendor Dashboard."
+            );
         }
+
+        // Get vendor's gateway settings (test_mode, country)
+        $gateway = \DB::table('payment_gateways')
+            ->where('user_id', $vendorId)
+            ->where('keyword', 'myfatoorah')
+            ->first();
+
+        $gatewayInfo = $gateway ? json_decode($gateway->information, true) : [];
+
+        // Use vendor settings, fallback to system config
+        $isTest = isset($gatewayInfo['sandbox_check']) ? (bool)$gatewayInfo['sandbox_check'] : config('myfatoorah.test_mode');
+        $countryCode = $gatewayInfo['country'] ?? config('myfatoorah.country_iso');
 
         return [
             'apiKey'      => $apiKey,
-            'isTest'      => config('myfatoorah.test_mode'),
-            'countryCode' => config('myfatoorah.country_iso'),
+            'isTest'      => $isTest,
+            'countryCode' => $countryCode,
         ];
     }
 
@@ -105,7 +129,15 @@ class MyFatoorahController extends CheckoutBaseControlller {
 
         // Set vendor-specific MyFatoorah config
         if ($vendorId) {
-            $this->mfConfig = $this->getVendorMfConfig($vendorId);
+            try {
+                $this->mfConfig = $this->getVendorMfConfig($vendorId);
+            } catch (\Exception $e) {
+                \Log::error('MyFatoorah store: Vendor credentials not configured', [
+                    'vendor_id' => $vendorId,
+                    'error' => $e->getMessage()
+                ]);
+                return redirect()->route('front.cart')->with('unsuccess', __('عذراً، لم يتم إعداد بوابة الدفع لهذا التاجر بعد. يرجى التواصل مع التاجر.'));
+            }
         }
 
         // Get steps from vendor sessions ONLY

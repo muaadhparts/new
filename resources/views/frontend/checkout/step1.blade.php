@@ -672,7 +672,7 @@
     </style>
 
     {{-- Google Maps Script with Places Library --}}
-    <script src="https://maps.googleapis.com/maps/api/js?key={{ config('services.google_maps.api_key') }}&libraries=places&language=ar"></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key={{ $googleMapsApiKey ?? config('services.google_maps.api_key') }}&libraries=places&language=ar"></script>
     <script>
     // Map Variables
     let map, marker, searchBox, geocoder;

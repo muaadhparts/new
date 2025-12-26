@@ -96,7 +96,7 @@
 @push('scripts')
 @if(!isset($googleMapsLoaded))
     @php $googleMapsLoaded = true; @endphp
-    <script src="https://maps.googleapis.com/maps/api/js?key={{ config('services.google_maps.api_key') }}&libraries=places&language={{ app()->getLocale() }}" async defer></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key={{ $googleMapsApiKey ?? config('services.google_maps.api_key') }}&libraries=places&language={{ app()->getLocale() }}" async defer></script>
 @endif
 
 <script>

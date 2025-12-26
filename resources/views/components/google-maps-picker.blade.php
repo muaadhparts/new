@@ -10,7 +10,7 @@
 @endphp
 
 @push('meta')
-    <meta name="google-maps-key" content="{{ config('services.google_maps.key') }}">
+    <meta name="google-maps-key" content="{{ $googleMapsApiKey ?? config('services.google_maps.api_key') }}">
 @endpush
 
 @if($showAsModal)

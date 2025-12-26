@@ -292,12 +292,13 @@ class DeliveryController extends VendorBaseController
                 'weight' => $weight
             ]);
 
-            $tryotoService = new TryotoService();
+            // ✅ Use vendor-specific credentials
+            $tryotoService = (new TryotoService())->forVendor($vendor->id);
 
-            // ✅ التحقق من إعدادات Tryoto أولاً
-            $config = $tryotoService->checkConfiguration();
+            // ✅ التحقق من إعدادات Tryoto للتاجر
+            $config = $tryotoService->checkConfiguration($vendor->id);
             if (!$config['configured']) {
-                Log::error('Vendor Delivery: Tryoto not configured', $config);
+                Log::error('Vendor Delivery: Tryoto not configured for vendor', $config);
                 return response()->json([
                     'success' => false,
                     'error' => __('Smart Shipping is temporarily unavailable'),
@@ -562,7 +563,8 @@ class DeliveryController extends VendorBaseController
             return redirect()->back()->with('error', __('A shipment already exists for this order. Tracking: ') . $existingShipment->tracking_number);
         }
 
-        $tryotoService = new TryotoService();
+        // ✅ Use vendor-specific credentials
+        $tryotoService = (new TryotoService())->forVendor($vendorId);
         $result = $tryotoService->createShipment(
             $order,
             $vendorId,

@@ -720,9 +720,6 @@ class CheckoutController extends Controller
         }
         $selections = is_array($shippingInput) ? $shippingInput : [0 => $shippingInput];
 
-        // استخدام TryotoService الموحد
-        $tryotoService = app(\App\Services\TryotoService::class);
-
         $otoPayloads = [];
         foreach ($selections as $vendorId => $value) {
             // OTO option is in the form: deliveryOptionId#Company#price
@@ -731,7 +728,8 @@ class CheckoutController extends Controller
             }
             [$deliveryOptionId, $company, $price] = explode('#', $value);
 
-            // استخدام createShipment من TryotoService
+            // ✅ Use vendor-specific credentials for each vendor
+            $tryotoService = app(\App\Services\TryotoService::class)->forVendor((int)$vendorId);
             $result = $tryotoService->createShipment(
                 $order,
                 (int)$vendorId ?: 0,
