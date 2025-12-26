@@ -371,7 +371,7 @@
     <div class="modal fade" id="mapModal" tabindex="-1">
         <div class="modal-dialog modal-lg modal-dialog-centered">
             <div class="modal-content" style="border: none; border-radius: var(--radius-lg, 12px); overflow: hidden;">
-                <div class="modal-header" style="background: var(--action-primary); color: #fff; border: none;">
+                <div class="modal-header" style="background: var(--action-primary); color: var(--text-on-primary, #fff); border: none;">
                     <h5 class="modal-title">
                         <i class="fas fa-map-marker-alt me-2"></i>
                         @lang('Select your location')
@@ -667,7 +667,7 @@
         /* Dark backdrop */
         .modal-backdrop.show {
             opacity: 0.7 !important;
-            background: #000 !important;
+            background: var(--overlay-backdrop, #000) !important;
         }
     </style>
 
