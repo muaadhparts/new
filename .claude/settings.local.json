@@ -25,7 +25,9 @@
       "Bash(php check_city.php:*)",
       "Bash(php test_tryoto_api.php:*)",
       "Bash(powershell -Command \"Get-Content storage/logs/laravel.log -Tail 50 | Select-String -Pattern ''error|exception|CheckoutStep1|validation'' -AllMatches\")",
-      "Bash(powershell -Command \"Get-Content storage/logs/laravel.log -Tail 100 | Select-String -Pattern ''CheckoutStep1|step1|error|exception'' -AllMatches\")"
+      "Bash(powershell -Command \"Get-Content storage/logs/laravel.log -Tail 100 | Select-String -Pattern ''CheckoutStep1|step1|error|exception'' -AllMatches\")",
+      "Bash(git push:*)",
+      "Bash(xargs -I {} git push origin --delete {})"
     ]
   }
 }
