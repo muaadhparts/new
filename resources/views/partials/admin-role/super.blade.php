@@ -294,6 +294,9 @@
             <a href="{{ route('admin-theme-colors') }}"><span>{{ __('Theme Colors') }}</span></a>
         </li>
         <li>
+            <a href="{{ route('admin.credentials.index') }}"><span><i class="fas fa-key me-1"></i>{{ __('API Credentials') }}</span></a>
+        </li>
+        <li>
             <a href="{{ route('admin-shipping-index') }}"><span>{{ __('Shipping Methods') }}</span></a>
         </li>
         <li>
