@@ -9,10 +9,12 @@ class GoogleMapsService
 {
     protected $apiKey;
     protected $baseUrl = 'https://maps.googleapis.com/maps/api/geocode/json';
+    protected ApiCredentialService $credentialService;
 
-    public function __construct()
+    public function __construct(?ApiCredentialService $credentialService = null)
     {
-        $this->apiKey = config('services.google_maps.api_key');
+        $this->credentialService = $credentialService ?? app(ApiCredentialService::class);
+        $this->apiKey = $this->credentialService->getGoogleMapsKey();
     }
 
     /**

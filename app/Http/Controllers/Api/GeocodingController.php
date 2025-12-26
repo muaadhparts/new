@@ -8,6 +8,7 @@ use App\Models\Country;
 use App\Services\TryotoLocationService;
 use App\Services\TryotoService;
 use App\Services\CountrySyncService;
+use App\Services\ApiCredentialService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -27,15 +28,18 @@ class GeocodingController extends Controller
     protected TryotoLocationService $tryotoLocationService;
     protected TryotoService $tryotoService;
     protected CountrySyncService $countrySyncService;
+    protected ApiCredentialService $credentialService;
 
     public function __construct(
         TryotoLocationService $tryotoLocationService,
         TryotoService $tryotoService,
-        CountrySyncService $countrySyncService
+        CountrySyncService $countrySyncService,
+        ApiCredentialService $credentialService
     ) {
         $this->tryotoLocationService = $tryotoLocationService;
         $this->tryotoService = $tryotoService;
         $this->countrySyncService = $countrySyncService;
+        $this->credentialService = $credentialService;
     }
 
     /**
@@ -457,12 +461,12 @@ class GeocodingController extends Controller
     protected function getGoogleGeocode($latitude, $longitude)
     {
         try {
-            $apiKey = config('services.google_maps.api_key');
+            $apiKey = $this->credentialService->getGoogleMapsKey();
 
             if (!$apiKey) {
                 return [
                     'success' => false,
-                    'message' => 'Google Maps API key not configured'
+                    'message' => 'Google Maps API key not configured. Add it via Admin Panel > API Credentials.'
                 ];
             }
 

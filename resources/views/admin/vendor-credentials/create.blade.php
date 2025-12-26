@@ -5,13 +5,13 @@
     <div class="mr-breadcrumb">
         <div class="row">
             <div class="col-lg-12">
-                <h4 class="heading">{{ __('Add System Credential') }} <i class="fas fa-plus-circle"></i></h4>
+                <h4 class="heading">{{ __('Add Vendor Credential') }} <i class="fas fa-plus-circle"></i></h4>
                 <ul class="links">
                     <li>
                         <a href="{{ route('admin.dashboard') }}">{{ __('Dashboard') }}</a>
                     </li>
                     <li>
-                        <a href="{{ route('admin.credentials.index') }}">{{ __('System Credentials') }}</a>
+                        <a href="{{ route('admin.vendor-credentials.index') }}">{{ __('Vendor Credentials') }}</a>
                     </li>
                     <li>
                         <a href="javascript:;">{{ __('Add New') }}</a>
@@ -30,26 +30,50 @@
 
                         @include('alerts.admin.form-both')
 
-                        <form action="{{ route('admin.credentials.store') }}" method="POST" id="credentialForm">
+                        <form action="{{ route('admin.vendor-credentials.store') }}" method="POST" id="credentialForm">
                             @csrf
 
+                            {{-- Vendor Selection --}}
                             <div class="row justify-content-center">
                                 <div class="col-lg-4">
                                     <div class="left-area">
+                                        <h4 class="heading">{{ __('Vendor') }} *</h4>
+                                        <p class="sub-heading">{{ __('Select the vendor/merchant') }}</p>
+                                    </div>
+                                </div>
+                                <div class="col-lg-7">
+                                    <select name="user_id" id="user_id" class="form-control" required>
+                                        <option value="">{{ __('Select Vendor') }}</option>
+                                        @foreach($vendors as $vendor)
+                                            <option value="{{ $vendor->id }}" {{ old('user_id') == $vendor->id ? 'selected' : '' }}>
+                                                {{ $vendor->shop_name ?: $vendor->name }} (ID: {{ $vendor->id }})
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                            </div>
+
+                            {{-- Service Selection --}}
+                            <div class="row justify-content-center mt-3">
+                                <div class="col-lg-4">
+                                    <div class="left-area">
                                         <h4 class="heading">{{ __('Service') }} *</h4>
-                                        <p class="sub-heading">{{ __('Select the service provider') }}</p>
+                                        <p class="sub-heading">{{ __('Payment or Shipping service') }}</p>
                                     </div>
                                 </div>
                                 <div class="col-lg-7">
                                     <select name="service_name" id="service_name" class="form-control" required>
                                         <option value="">{{ __('Select Service') }}</option>
                                         @foreach($services as $key => $name)
-                                            <option value="{{ $key }}">{{ $name }}</option>
+                                            <option value="{{ $key }}" {{ old('service_name') == $key ? 'selected' : '' }}>
+                                                {{ $name }}
+                                            </option>
                                         @endforeach
                                     </select>
                                 </div>
                             </div>
 
+                            {{-- Custom Service Name --}}
                             <div class="row justify-content-center mt-3" id="customServiceRow" style="display: none;">
                                 <div class="col-lg-4">
                                     <div class="left-area">
@@ -58,10 +82,11 @@
                                 </div>
                                 <div class="col-lg-7">
                                     <input type="text" name="custom_service_name" class="form-control"
-                                           placeholder="{{ __('e.g., my_custom_service') }}">
+                                           placeholder="{{ __('e.g., my_payment_gateway') }}" value="{{ old('custom_service_name') }}">
                                 </div>
                             </div>
 
+                            {{-- Key Type --}}
                             <div class="row justify-content-center mt-3">
                                 <div class="col-lg-4">
                                     <div class="left-area">
@@ -73,12 +98,15 @@
                                     <select name="key_name" id="key_name" class="form-control" required>
                                         <option value="">{{ __('Select Key Type') }}</option>
                                         @foreach($keyTypes as $key => $name)
-                                            <option value="{{ $key }}">{{ $name }}</option>
+                                            <option value="{{ $key }}" {{ old('key_name') == $key ? 'selected' : '' }}>
+                                                {{ $name }}
+                                            </option>
                                         @endforeach
                                     </select>
                                 </div>
                             </div>
 
+                            {{-- Custom Key Name --}}
                             <div class="row justify-content-center mt-3" id="customKeyRow" style="display: none;">
                                 <div class="col-lg-4">
                                     <div class="left-area">
@@ -87,10 +115,34 @@
                                 </div>
                                 <div class="col-lg-7">
                                     <input type="text" name="custom_key_name" class="form-control"
-                                           placeholder="{{ __('e.g., my_secret_key') }}">
+                                           placeholder="{{ __('e.g., merchant_id') }}" value="{{ old('custom_key_name') }}">
                                 </div>
                             </div>
 
+                            {{-- Environment --}}
+                            <div class="row justify-content-center mt-3">
+                                <div class="col-lg-4">
+                                    <div class="left-area">
+                                        <h4 class="heading">{{ __('Environment') }} *</h4>
+                                        <p class="sub-heading">{{ __('Live or Sandbox mode') }}</p>
+                                    </div>
+                                </div>
+                                <div class="col-lg-7">
+                                    <select name="environment" id="environment" class="form-control" required>
+                                        @foreach($environments as $key => $name)
+                                            <option value="{{ $key }}" {{ old('environment', 'live') == $key ? 'selected' : '' }}>
+                                                {{ $name }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                    <small class="text-muted">
+                                        <i class="fas fa-info-circle me-1"></i>
+                                        {{ __('Use Sandbox for testing, Live for production') }}
+                                    </small>
+                                </div>
+                            </div>
+
+                            {{-- Credential Value --}}
                             <div class="row justify-content-center mt-3">
                                 <div class="col-lg-4">
                                     <div class="left-area">
@@ -102,31 +154,33 @@
                                     <div class="input-group">
                                         <input type="password" name="credential_value" id="credential_value"
                                                class="form-control" required
-                                               placeholder="{{ __('Enter your API key or token') }}">
+                                               placeholder="{{ __('Enter API key or token') }}">
                                         <button type="button" class="btn btn-outline-secondary" id="togglePassword">
                                             <i class="fas fa-eye"></i>
                                         </button>
                                     </div>
                                     <small class="text-muted">
                                         <i class="fas fa-lock me-1"></i>
-                                        {{ __('This value will be encrypted before storage') }}
+                                        {{ __('This value will be encrypted with AES-256 before storage') }}
                                     </small>
                                 </div>
                             </div>
 
+                            {{-- Description --}}
                             <div class="row justify-content-center mt-3">
                                 <div class="col-lg-4">
                                     <div class="left-area">
                                         <h4 class="heading">{{ __('Description') }}</h4>
-                                        <p class="sub-heading">{{ __('Optional description') }}</p>
+                                        <p class="sub-heading">{{ __('Optional note') }}</p>
                                     </div>
                                 </div>
                                 <div class="col-lg-7">
                                     <textarea name="description" class="form-control" rows="2"
-                                              placeholder="{{ __('e.g., Production API key for payment gateway') }}"></textarea>
+                                              placeholder="{{ __('e.g., MyFatoorah live API key for vendor') }}">{{ old('description') }}</textarea>
                                 </div>
                             </div>
 
+                            {{-- Submit --}}
                             <div class="row justify-content-center mt-4">
                                 <div class="col-lg-4">
                                     <div class="left-area"></div>
@@ -135,7 +189,7 @@
                                     <button class="btn btn-primary" type="submit">
                                         <i class="fas fa-save me-1"></i> {{ __('Save Credential') }}
                                     </button>
-                                    <a href="{{ route('admin.credentials.index') }}" class="btn btn-secondary">
+                                    <a href="{{ route('admin.vendor-credentials.index') }}" class="btn btn-secondary">
                                         <i class="fas fa-arrow-left me-1"></i> {{ __('Cancel') }}
                                     </a>
                                 </div>

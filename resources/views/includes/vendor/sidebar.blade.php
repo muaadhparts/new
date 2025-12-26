@@ -174,9 +174,9 @@
         </li>
 
         <li
-            class="has-sub-menu {{ request()->is('vendor/shipping') || request()->is('vendor/shipping/*') || request()->is('vendor/package') || request()->is('vendor/package/*') || request()->is('vendor/pickup-point') || request()->is('vendor/pickup-point/*') || request()->is('vendor/social-link') || request()->is('vendor/social-link/*') ? 'active' : '' }}">
+            class="has-sub-menu {{ request()->is('vendor/shipping') || request()->is('vendor/shipping/*') || request()->is('vendor/package') || request()->is('vendor/package/*') || request()->is('vendor/pickup-point') || request()->is('vendor/pickup-point/*') || request()->is('vendor/social-link') || request()->is('vendor/social-link/*') || request()->is('vendor/credentials') || request()->is('vendor/credentials/*') ? 'active' : '' }}">
             <a href="#vendor-collapsed-settings"
-                class="{{ request()->is('vendor/shipping') || request()->is('vendor/shipping/*') || request()->is('vendor/package') || request()->is('vendor/package/*') || request()->is('vendor/pickup-point') || request()->is('vendor/pickup-point/*') || request()->is('vendor/social-link') || request()->is('vendor/social-link/*') ? '' : 'collapsed' }}"
+                class="{{ request()->is('vendor/shipping') || request()->is('vendor/shipping/*') || request()->is('vendor/package') || request()->is('vendor/package/*') || request()->is('vendor/pickup-point') || request()->is('vendor/pickup-point/*') || request()->is('vendor/social-link') || request()->is('vendor/social-link/*') || request()->is('vendor/credentials') || request()->is('vendor/credentials/*') ? '' : 'collapsed' }}"
                 data-bs-toggle="collapse" aria-expanded="false" aria-controls="vendor-collapsed-settings">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
                     fill="none">
@@ -190,7 +190,7 @@
                 <span class="label">@lang('Settings')</span>
                 <i class="ms-auto fa-solid fa-angle-down angle-down"></i>
             </a>
-            <ul class="sidebar-sub-menu collapse {{ request()->is('vendor/shipping') || request()->is('vendor/shipping/*') || request()->is('vendor/package') || request()->is('vendor/package/*') || request()->is('vendor/pickup-point') || request()->is('vendor/pickup-point/*') || request()->is('vendor/social-link') || request()->is('vendor/social-link/*') ? 'show' : '' }}"
+            <ul class="sidebar-sub-menu collapse {{ request()->is('vendor/shipping') || request()->is('vendor/shipping/*') || request()->is('vendor/package') || request()->is('vendor/package/*') || request()->is('vendor/pickup-point') || request()->is('vendor/pickup-point/*') || request()->is('vendor/social-link') || request()->is('vendor/social-link/*') || request()->is('vendor/credentials') || request()->is('vendor/credentials/*') ? 'show' : '' }}"
                 id="vendor-collapsed-settings">
                 @if ($gs->vendor_ship_info == 1)
                     <li class=""><a
@@ -207,7 +207,10 @@
                         class="sidebar-sub-menu-item {{ request()->is('vendor/social-link') || request()->is('vendor/social-link/*') ? 'active' : '' }}"
                         href="{{ route('vendor-sociallink-index') }}">@lang('Social Links')</a>
                 </li>
-
+                <li class=""><a
+                        class="sidebar-sub-menu-item {{ request()->is('vendor/credentials') || request()->is('vendor/credentials/*') ? 'active' : '' }}"
+                        href="{{ route('vendor-credentials-index') }}">@lang('API Credentials')</a>
+                </li>
             </ul>
         </li>
 

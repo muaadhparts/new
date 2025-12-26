@@ -39,23 +39,25 @@ return [
 
         's3' => [
             'driver' => 's3',
-            'key' => env('AWS_ACCESS_KEY_ID'),
-            'secret' => env('AWS_SECRET_ACCESS_KEY'),
-            'region' => env('AWS_DEFAULT_REGION'),
-            'bucket' => env('AWS_BUCKET'),
+            // Key and Secret loaded from encrypted database via DigitalOceanServiceProvider
+            'key' => env('AWS_ACCESS_KEY_ID', ''),
+            'secret' => env('AWS_SECRET_ACCESS_KEY', ''),
+            'region' => env('AWS_DEFAULT_REGION', 'blr1'),
+            'bucket' => env('AWS_BUCKET', 'cdn.part.sa'),
             'url' => env('AWS_URL'),
-            'endpoint' => env('AWS_ENDPOINT'),
-            'use_path_style_endpoint' => env('AWS_USE_PATH_STYLE_ENDPOINT', false),
+            'endpoint' => env('AWS_ENDPOINT', 'https://blr1.digitaloceanspaces.com'),
+            'use_path_style_endpoint' => env('AWS_USE_PATH_STYLE_ENDPOINT', true),
         ],
 
         'do' => [
             'driver' => 's3',
-            'key' => env('DO_ACCESS_KEY_ID'),
-            'secret' => env('DO_SECRET_ACCESS_KEY'),
-            'endpoint' => env('SPACES_ENDPOINT'),
-            'region' => env('DO_DEFAULT_REGION'),
-            'bucket' => env('DO_BUCKET'),
-            'url' => env('DO_ENDPOINT'),
+            // Key and Secret loaded from encrypted database via DigitalOceanServiceProvider
+            'key' => env('DO_ACCESS_KEY_ID', ''),
+            'secret' => env('DO_SECRET_ACCESS_KEY', ''),
+            'endpoint' => env('SPACES_ENDPOINT', 'https://blr1.digitaloceanspaces.com'),
+            'region' => env('DO_DEFAULT_REGION', 'blr1'),
+            'bucket' => env('DO_BUCKET', 'cdn.part.sa'),
+            'url' => env('DO_ENDPOINT', 'https://blr1.digitaloceanspaces.com/cdn.part.sa'),
             'visibility' => 'public',
             'throw' => false,
             'use_path_style_endpoint' => true,

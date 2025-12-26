@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use App\Models\City;
 use App\Models\Country;
+use App\Services\ApiCredentialService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -31,10 +32,11 @@ class GeocodeCities extends Command
 
     public function handle(): int
     {
-        $this->googleApiKey = config('services.google_maps.api_key', config('services.google_maps.key', ''));
+        $credentialService = app(ApiCredentialService::class);
+        $this->googleApiKey = $credentialService->getGoogleMapsKey() ?? '';
 
         if (empty($this->googleApiKey)) {
-            $this->error('Google Maps API key not configured!');
+            $this->error('Google Maps API key not configured! Add it via Admin Panel > API Credentials.');
             Log::error('GeocodeCities: Google Maps API key not configured');
             return 1;
         }

@@ -27,7 +27,9 @@
       "Bash(powershell -Command \"Get-Content storage/logs/laravel.log -Tail 50 | Select-String -Pattern ''error|exception|CheckoutStep1|validation'' -AllMatches\")",
       "Bash(powershell -Command \"Get-Content storage/logs/laravel.log -Tail 100 | Select-String -Pattern ''CheckoutStep1|step1|error|exception'' -AllMatches\")",
       "Bash(git push:*)",
-      "Bash(xargs -I {} git push origin --delete {})"
+      "Bash(xargs -I {} git push origin --delete {})",
+      "Bash(php populate_vendor_credentials.php:*)",
+      "Bash(php:*)"
     ]
   }
 }

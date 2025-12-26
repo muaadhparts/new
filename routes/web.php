@@ -209,6 +209,17 @@ Route::prefix('admin')->group(function () {
         Route::post('/credentials/{id}/toggle', 'Admin\ApiCredentialController@toggle')->name('admin.credentials.toggle');
         Route::post('/credentials/{id}/test', 'Admin\ApiCredentialController@test')->name('admin.credentials.test');
         //------------ ADMIN API CREDENTIALS SECTION ENDS ------------
+
+        //------------ ADMIN VENDOR CREDENTIALS SECTION ------------
+        Route::get('/vendor-credentials', 'Admin\VendorCredentialController@index')->name('admin.vendor-credentials.index');
+        Route::get('/vendor-credentials/create', 'Admin\VendorCredentialController@create')->name('admin.vendor-credentials.create');
+        Route::post('/vendor-credentials', 'Admin\VendorCredentialController@store')->name('admin.vendor-credentials.store');
+        Route::get('/vendor-credentials/{id}/edit', 'Admin\VendorCredentialController@edit')->name('admin.vendor-credentials.edit');
+        Route::put('/vendor-credentials/{id}', 'Admin\VendorCredentialController@update')->name('admin.vendor-credentials.update');
+        Route::delete('/vendor-credentials/{id}', 'Admin\VendorCredentialController@destroy')->name('admin.vendor-credentials.destroy');
+        Route::post('/vendor-credentials/{id}/toggle', 'Admin\VendorCredentialController@toggle')->name('admin.vendor-credentials.toggle');
+        Route::post('/vendor-credentials/{id}/test', 'Admin\VendorCredentialController@test')->name('admin.vendor-credentials.test');
+        //------------ ADMIN VENDOR CREDENTIALS SECTION ENDS ------------
     });
 
     //------------ ADMIN ORDER SECTION ------------
@@ -1414,6 +1425,16 @@ Route::group(['middleware' => 'maintenance'], function () {
             Route::get('/coupon/get-categories', 'Vendor\CouponController@getCategories')->name('vendor-coupon-get-categories');
 
             //------------ VENDOR COUPON SECTION ENDS------------
+
+            //------------ VENDOR CREDENTIALS SECTION ------------
+            Route::get('/credentials', 'Vendor\CredentialController@index')->name('vendor-credentials-index');
+            Route::get('/credentials/create', 'Vendor\CredentialController@create')->name('vendor-credentials-create');
+            Route::post('/credentials/store', 'Vendor\CredentialController@store')->name('vendor-credentials-store');
+            Route::get('/credentials/edit/{id}', 'Vendor\CredentialController@edit')->name('vendor-credentials-edit');
+            Route::put('/credentials/update/{id}', 'Vendor\CredentialController@update')->name('vendor-credentials-update');
+            Route::post('/credentials/toggle/{id}', 'Vendor\CredentialController@toggle')->name('vendor-credentials-toggle');
+            Route::delete('/credentials/delete/{id}', 'Vendor\CredentialController@destroy')->name('vendor-credentials-destroy');
+            //------------ VENDOR CREDENTIALS SECTION ENDS------------
 
             // -------------------------- Vendor Income ------------------------------------//
             Route::get('earning/datatables', "Vendor\IncomeController@datatables")->name('vendor.income.datatables');

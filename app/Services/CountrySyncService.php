@@ -22,6 +22,7 @@ use Illuminate\Support\Facades\Cache;
 class CountrySyncService
 {
     protected TryotoService $tryoto;
+    protected ApiCredentialService $credentialService;
     protected string $googleApiKey;
 
     protected int $totalSteps = 0;
@@ -32,7 +33,8 @@ class CountrySyncService
     public function __construct()
     {
         $this->tryoto = app(TryotoService::class);
-        $this->googleApiKey = config('services.google_maps.api_key', config('services.google_maps.key', ''));
+        $this->credentialService = app(ApiCredentialService::class);
+        $this->googleApiKey = $this->credentialService->getGoogleMapsKey() ?? '';
     }
 
     /**

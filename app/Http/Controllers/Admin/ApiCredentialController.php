@@ -38,17 +38,16 @@ class ApiCredentialController extends AdminBaseController
 
     /**
      * Show create form
+     * System-level services only (not vendor-specific)
      */
     public function create()
     {
+        // System-level services only
+        // Payment/Shipping services are in Vendor Credentials section
         $services = [
             'google_maps' => 'Google Maps',
-            'myfatoorah' => 'MyFatoorah',
-            'tryoto' => 'Tryoto',
             'digitalocean' => 'DigitalOcean',
             'aws' => 'AWS',
-            'stripe' => 'Stripe',
-            'paypal' => 'PayPal',
             'other' => 'Other',
         ];
 

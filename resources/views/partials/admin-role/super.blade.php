@@ -294,7 +294,10 @@
             <a href="{{ route('admin-theme-colors') }}"><span>{{ __('Theme Colors') }}</span></a>
         </li>
         <li>
-            <a href="{{ route('admin.credentials.index') }}"><span><i class="fas fa-key me-1"></i>{{ __('API Credentials') }}</span></a>
+            <a href="{{ route('admin.credentials.index') }}"><span><i class="fas fa-cog me-1"></i>{{ __('System Credentials') }}</span></a>
+        </li>
+        <li>
+            <a href="{{ route('admin.vendor-credentials.index') }}"><span><i class="fas fa-store me-1"></i>{{ __('Vendor Credentials') }}</span></a>
         </li>
         <li>
             <a href="{{ route('admin-shipping-index') }}"><span>{{ __('Shipping Methods') }}</span></a>

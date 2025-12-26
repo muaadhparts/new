@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use App\Models\City;
 use App\Models\Country;
 use App\Services\TryotoService;
+use App\Services\ApiCredentialService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -28,6 +29,7 @@ class SyncTryotoCities extends Command
     protected $description = 'Sync all Tryoto supported cities to database';
 
     protected TryotoService $tryoto;
+    protected ApiCredentialService $credentialService;
     protected string $googleApiKey;
 
     /**
@@ -48,7 +50,8 @@ class SyncTryotoCities extends Command
     public function handle(): int
     {
         $this->tryoto = app(TryotoService::class);
-        $this->googleApiKey = config('services.google_maps.api_key', '');
+        $this->credentialService = app(ApiCredentialService::class);
+        $this->googleApiKey = $this->credentialService->getGoogleMapsKey() ?? '';
 
         $this->info('Starting Tryoto Cities Sync...');
         $this->newLine();

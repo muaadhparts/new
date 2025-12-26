@@ -10,6 +10,7 @@ use App\Models\UserNotification;
 use App\Helpers\PriceHelper;
 use App\Services\ShippingCalculatorService;
 use App\Services\VendorCartService;
+use App\Services\VendorCredentialService;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -23,6 +24,7 @@ use Illuminate\Support\Facades\DB;
  *
  * الميزات:
  * - إدارة التوكن موحدة (تجديد تلقائي + retry)
+ * - دعم credentials لكل تاجر (vendor_credentials)
  * - إنشاء الشحنات
  * - تتبع الشحنات
  * - إلغاء الشحنات
@@ -55,9 +57,23 @@ class TryotoService
     private string $baseUrl;
     private bool $isSandbox;
     private ?string $token = null;
+    private ApiCredentialService $credentialService;
+    private VendorCredentialService $vendorCredentialService;
+    private ?int $vendorId = null;
 
-    public function __construct()
-    {
+    /**
+     * @param ApiCredentialService|null $credentialService For system-wide credentials
+     * @param VendorCredentialService|null $vendorCredentialService For vendor-specific credentials
+     * @param int|null $vendorId Vendor ID to use vendor-specific credentials
+     */
+    public function __construct(
+        ?ApiCredentialService $credentialService = null,
+        ?VendorCredentialService $vendorCredentialService = null,
+        ?int $vendorId = null
+    ) {
+        $this->credentialService = $credentialService ?? app(ApiCredentialService::class);
+        $this->vendorCredentialService = $vendorCredentialService ?? app(VendorCredentialService::class);
+        $this->vendorId = $vendorId;
         $this->isSandbox = (bool) config('services.tryoto.sandbox', false);
         $this->baseUrl = $this->isSandbox
             ? config('services.tryoto.test.url', 'https://staging-api.tryoto.com')
@@ -65,12 +81,25 @@ class TryotoService
     }
 
     /**
+     * Set vendor ID for vendor-specific credentials
+     */
+    public function forVendor(int $vendorId): self
+    {
+        $this->vendorId = $vendorId;
+        return $this;
+    }
+
+    /**
      * الحصول على مفتاح الـ Cache الموحد
-     * هذا هو المفتاح الوحيد المستخدم في المشروع
+     * يشمل vendor_id إذا كان موجوداً لفصل tokens التجار
      */
     public function getCacheKey(): string
     {
-        return self::CACHE_KEY_PREFIX . ($this->isSandbox ? 'sandbox' : 'live');
+        $env = $this->isSandbox ? 'sandbox' : 'live';
+        if ($this->vendorId) {
+            return self::CACHE_KEY_PREFIX . "vendor-{$this->vendorId}-{$env}";
+        }
+        return self::CACHE_KEY_PREFIX . $env;
     }
 
     /**
@@ -135,18 +164,38 @@ class TryotoService
 
     /**
      * تنفيذ تجديد التوكن الفعلي
+     * يستخدم vendor credentials إذا كان vendor_id محدداً، وإلا يستخدم system credentials
      *
      * @return string|null
      * @throws \Exception
      */
     private function doRefreshToken(): ?string
     {
-        $refreshToken = $this->isSandbox
-            ? config('services.tryoto.test.token')
-            : config('services.tryoto.live.token');
+        // Get refresh token - vendor-specific first, then fallback to system
+        $refreshToken = null;
+
+        if ($this->vendorId) {
+            // Try vendor-specific credential first
+            $refreshToken = $this->vendorCredentialService->getTryotoRefreshToken($this->vendorId);
+
+            if ($refreshToken) {
+                Log::debug('Tryoto: Using vendor-specific refresh token', ['vendor_id' => $this->vendorId]);
+            }
+        }
+
+        // Fallback to system credential
+        if (empty($refreshToken)) {
+            $refreshToken = $this->credentialService->getTryotoRefreshToken();
+            if ($refreshToken) {
+                Log::debug('Tryoto: Using system refresh token');
+            }
+        }
 
         if (empty($refreshToken)) {
-            throw new \Exception('Tryoto refresh token is not configured. Check .env file.');
+            $message = $this->vendorId
+                ? "Tryoto refresh token not configured for vendor {$this->vendorId}. Add it via Vendor Dashboard > API Credentials or Admin Panel."
+                : 'Tryoto refresh token is not configured. Add it via Admin Panel > API Credentials.';
+            throw new \Exception($message);
         }
 
         $response = Http::timeout(self::REQUEST_TIMEOUT)
@@ -476,6 +525,9 @@ class TryotoService
      */
     public function createShipment(Order $order, int $vendorId, string $deliveryOptionId, string $company, float $price, string $serviceType = '', ?array $vendorShippingData = null): array
     {
+        // Set vendor ID for vendor-specific credentials
+        $this->vendorId = $vendorId;
+
         // Get vendor info using ShippingCalculatorService
         $vendorCityData = ShippingCalculatorService::getVendorCity($vendorId);
         $vendor = User::find($vendorId);
@@ -1487,18 +1539,31 @@ class TryotoService
     /**
      * Check if Tryoto service is properly configured
      *
+     * @param int|null $vendorId Optional vendor ID to check vendor-specific configuration
      * @return array
      */
-    public function checkConfiguration(): array
+    public function checkConfiguration(?int $vendorId = null): array
     {
         $issues = [];
+        $hasVendorCredential = false;
+        $hasSystemCredential = false;
 
-        $refreshToken = $this->isSandbox
-            ? config('services.tryoto.test.token')
-            : config('services.tryoto.live.token');
+        // Check vendor-specific credential first
+        if ($vendorId) {
+            $this->vendorId = $vendorId;
+            $vendorToken = $this->vendorCredentialService->getTryotoRefreshToken($vendorId);
+            $hasVendorCredential = !empty($vendorToken);
+        }
 
-        if (empty($refreshToken)) {
-            $issues[] = 'Refresh token is not configured in .env';
+        // Check system credential
+        $systemToken = $this->credentialService->getTryotoRefreshToken();
+        $hasSystemCredential = !empty($systemToken);
+
+        // Determine issues
+        if ($vendorId && !$hasVendorCredential && !$hasSystemCredential) {
+            $issues[] = "Refresh token not configured for vendor {$vendorId} or system. Add via Vendor Dashboard or Admin Panel.";
+        } elseif (!$vendorId && !$hasSystemCredential) {
+            $issues[] = 'System refresh token is not configured. Add it via Admin Panel > System Credentials.';
         }
 
         if (empty($this->baseUrl)) {
@@ -1509,6 +1574,10 @@ class TryotoService
             'configured' => empty($issues),
             'sandbox' => $this->isSandbox,
             'base_url' => $this->baseUrl,
+            'vendor_id' => $vendorId,
+            'has_vendor_credential' => $hasVendorCredential,
+            'has_system_credential' => $hasSystemCredential,
+            'using_credential' => $hasVendorCredential ? 'vendor' : ($hasSystemCredential ? 'system' : 'none'),
             'issues' => $issues,
             'cache_key' => $this->getCacheKey(),
             'has_cached_token' => Cache::has($this->getCacheKey())

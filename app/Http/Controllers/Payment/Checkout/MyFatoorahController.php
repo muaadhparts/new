@@ -35,6 +35,8 @@ use MyFatoorah\Library\MyFatoorah;
 use MyFatoorah\Library\API\Payment\MyFatoorahPayment;
 use MyFatoorah\Library\API\Payment\MyFatoorahPaymentEmbedded;
 use MyFatoorah\Library\API\Payment\MyFatoorahPaymentStatus;
+use App\Services\ApiCredentialService;
+use App\Services\VendorCredentialService;
 use Exception;
 
 class MyFatoorahController extends CheckoutBaseControlller {
@@ -45,15 +47,47 @@ class MyFatoorahController extends CheckoutBaseControlller {
      */
     public $mfConfig = [];
 
+    protected ApiCredentialService $credentialService;
+    protected VendorCredentialService $vendorCredentialService;
+
 //-----------------------------------------------------------------------------------------------------------------------------------------
 
     /**
      * Initiate MyFatoorah Configuration
+     * Note: mfConfig is set dynamically per-vendor in store() method
      */
-    public function __construct() {
+    public function __construct(
+        ApiCredentialService $credentialService,
+        VendorCredentialService $vendorCredentialService
+    ) {
         parent::__construct();
+        $this->credentialService = $credentialService;
+        $this->vendorCredentialService = $vendorCredentialService;
+
+        // Default config - will be overridden per-vendor in store()
         $this->mfConfig = [
-            'apiKey'      => config('myfatoorah.api_key'),
+            'apiKey'      => $this->credentialService->getMyFatoorahKey(),
+            'isTest'      => config('myfatoorah.test_mode'),
+            'countryCode' => config('myfatoorah.country_iso'),
+        ];
+    }
+
+    /**
+     * Get MyFatoorah config for specific vendor
+     * Uses vendor-specific credential if available, otherwise falls back to system
+     */
+    protected function getVendorMfConfig(int $vendorId): array
+    {
+        // Try vendor-specific API key first
+        $apiKey = $this->vendorCredentialService->getMyFatoorahKey($vendorId);
+
+        // Fallback to system API key
+        if (empty($apiKey)) {
+            $apiKey = $this->credentialService->getMyFatoorahKey();
+        }
+
+        return [
+            'apiKey'      => $apiKey,
             'isTest'      => config('myfatoorah.test_mode'),
             'countryCode' => config('myfatoorah.country_iso'),
         ];
@@ -68,6 +102,11 @@ class MyFatoorahController extends CheckoutBaseControlller {
         // Get vendor checkout data
         $vendorData = $this->getVendorCheckoutData();
         $vendorId = $vendorData['vendor_id'];
+
+        // Set vendor-specific MyFatoorah config
+        if ($vendorId) {
+            $this->mfConfig = $this->getVendorMfConfig($vendorId);
+        }
 
         // Get steps from vendor sessions ONLY
         $steps = $this->getCheckoutSteps($vendorId, $vendorData['is_vendor_checkout']);

@@ -5,7 +5,7 @@
     <div class="mr-breadcrumb">
         <div class="row">
             <div class="col-lg-12">
-                <h4 class="heading">{{ __('API Credentials') }} <i class="fas fa-key"></i></h4>
+                <h4 class="heading">{{ __('System Credentials') }} <i class="fas fa-cog"></i></h4>
                 <ul class="links">
                     <li>
                         <a href="{{ route('admin.dashboard') }}">{{ __('Dashboard') }}</a>
@@ -14,7 +14,7 @@
                         <a href="javascript:;">{{ __('Settings') }}</a>
                     </li>
                     <li>
-                        <a href="{{ route('admin.credentials.index') }}">{{ __('API Credentials') }}</a>
+                        <a href="{{ route('admin.credentials.index') }}">{{ __('System Credentials') }}</a>
                     </li>
                 </ul>
             </div>
@@ -32,15 +32,16 @@
                         {{-- Header with Add Button --}}
                         <div class="row mb-4">
                             <div class="col-lg-8">
-                                <div class="alert alert-warning">
-                                    <i class="fas fa-shield-alt me-2"></i>
-                                    <strong>{{ __('Security Notice:') }}</strong>
-                                    {{ __('All credentials are encrypted using AES-256-CBC encryption. Never share these values.') }}
+                                <div class="alert alert-info">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    <strong>{{ __('System-Level Credentials') }}</strong>
+                                    <br>
+                                    <small>{{ __('Google Maps, DigitalOcean, and other system-wide API keys. For vendor payment/shipping credentials, use Vendor Credentials section.') }}</small>
                                 </div>
                             </div>
                             <div class="col-lg-4 text-end">
                                 <a href="{{ route('admin.credentials.create') }}" class="btn btn-primary">
-                                    <i class="fas fa-plus me-1"></i> {{ __('Add New Credential') }}
+                                    <i class="fas fa-plus me-1"></i> {{ __('Add System Credential') }}
                                 </a>
                             </div>
                         </div>
