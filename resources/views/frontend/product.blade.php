@@ -373,6 +373,17 @@
                             </div>
                         </div>
 
+                        {{-- Shipping Quote Button --}}
+                        @if($productt->type == 'Physical')
+                            <div class="mt-3">
+                                <x-shipping-quote-button
+                                    :vendor-id="$merchant->user_id"
+                                    :product-name="$productt->localized_name"
+                                    class="m-btn--block"
+                                />
+                            </div>
+                        @endif
+
                         <!-- wish-compare-report-wrapper -->
                         <div class="wish-compare-report-wrapper">
                             @if (Auth::check())

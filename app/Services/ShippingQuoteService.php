@@ -3,7 +3,6 @@
 namespace App\Services;
 
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Cache;
 
 /**
@@ -119,21 +118,27 @@ class ShippingQuoteService
                 return ['success' => false];
             }
 
-            $options = $result['raw']['deliveryCompany'] ?? [];
+            // Use raw deliveryCompany data with proper field names
+            $rawOptions = $result['raw']['deliveryCompany'] ?? [];
 
-            if (empty($options)) {
+            if (empty($rawOptions)) {
                 return ['success' => false];
             }
 
-            // Format options
+            // Format options with correct Tryoto field names
             $formattedOptions = [];
-            foreach ($options as $opt) {
+            foreach ($rawOptions as $opt) {
+                // Company name: prefer deliveryOptionName, fallback to deliveryCompanyName
+                $companyName = $opt['deliveryOptionName'] ?? $opt['deliveryCompanyName'] ?? null;
+
                 $formattedOptions[] = [
-                    'id' => $opt['id'] ?? $opt['companyId'] ?? null,
-                    'name' => $opt['name'] ?? $opt['companyName'] ?? __('شحن'),
-                    'price' => (float) ($opt['price'] ?? $opt['totalPrice'] ?? 0),
+                    'id' => $opt['deliveryOptionId'] ?? $opt['id'] ?? null,
+                    'name' => $companyName ?: __('شحن'),
+                    'company_code' => $opt['deliveryCompanyName'] ?? null,
+                    'price' => (float) ($opt['price'] ?? 0),
                     'currency' => 'SAR',
-                    'estimated_days' => $opt['estimatedDays'] ?? $opt['deliveryDays'] ?? null,
+                    'estimated_days' => $this->parseDeliveryTime($opt['avgDeliveryTime'] ?? ''),
+                    'avg_delivery_time' => $opt['avgDeliveryTime'] ?? null,
                 ];
             }
 
@@ -150,12 +155,6 @@ class ShippingQuoteService
             return $response;
 
         } catch (\Exception $e) {
-            Log::warning('ShippingQuoteService: Error', [
-                'vendor_id' => $vendorId,
-                'route' => "$originCity → $destinationCity",
-                'error' => $e->getMessage(),
-            ]);
-
             if (str_contains($e->getMessage(), 'credentials')) {
                 return [
                     'success' => false,
@@ -209,13 +208,6 @@ class ShippingQuoteService
                 $result['destination'] = $item['city']->city_name;
                 $result['destination_id'] = $item['city']->id;
                 $result['distance_km'] = round($item['distance'], 1);
-
-                Log::info('ShippingQuoteService: Found alternative city', [
-                    'original_city_id' => $excludeCityId,
-                    'alternative' => $item['city']->city_name,
-                    'distance_km' => $result['distance_km'],
-                ]);
-
                 return $result;
             }
         }
@@ -280,5 +272,37 @@ class ShippingQuoteService
     {
         $city = DB::table('cities')->where('id', $cityId)->first();
         return $city->city_name ?? null;
+    }
+
+    /**
+     * Parse delivery time string to readable format
+     */
+    protected function parseDeliveryTime(string $time): ?string
+    {
+        if (empty($time)) {
+            return null;
+        }
+
+        // Same day
+        if (stripos($time, 'same') !== false) {
+            return '0';
+        }
+
+        // Next day
+        if (stripos($time, 'next') !== false) {
+            return '1';
+        }
+
+        // Range like "2to3" or "2-3"
+        if (preg_match('/(\d+)\s*(?:to|-)\s*(\d+)/i', $time, $matches)) {
+            return $matches[1] . '-' . $matches[2];
+        }
+
+        // Single number
+        if (preg_match('/(\d+)/', $time, $matches)) {
+            return $matches[1];
+        }
+
+        return null;
     }
 }

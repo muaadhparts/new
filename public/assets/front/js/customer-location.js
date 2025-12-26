@@ -51,7 +51,6 @@ const CustomerLocation = (function() {
             isInitialized = true;
             return currentCity;
         } catch (error) {
-            console.error('CustomerLocation: Failed to initialize', error);
             isInitialized = true;
             return null;
         }
@@ -61,41 +60,32 @@ const CustomerLocation = (function() {
      * Request location - tries geolocation first, falls back to manual
      */
     async function requestLocation(forceManual = false) {
-        console.log('CustomerLocation: requestLocation called, forceManual:', forceManual);
-
         // If forced manual or no geolocation support, show selector
         if (forceManual || !navigator.geolocation) {
-            console.log('CustomerLocation: Showing city selector (manual/no geo)');
             return showCitySelector();
         }
 
         // Try geolocation with short timeout
         return new Promise((resolve) => {
-            console.log('CustomerLocation: Requesting geolocation...');
-
             navigator.geolocation.getCurrentPosition(
                 async (position) => {
-                    console.log('CustomerLocation: Got coordinates', position.coords.latitude, position.coords.longitude);
                     try {
                         const city = await setFromGeolocation(
                             position.coords.latitude,
                             position.coords.longitude
                         );
-                        console.log('CustomerLocation: City resolved:', city);
                         resolve(city);
                     } catch (error) {
-                        console.warn('CustomerLocation: Could not resolve city from coords', error);
                         resolve(await showCitySelector());
                     }
                 },
                 async (error) => {
-                    console.log('CustomerLocation: Geolocation denied/failed:', error.message);
                     resolve(await showCitySelector());
                 },
                 {
                     enableHighAccuracy: false,
-                    timeout: 5000,  // 5 seconds max
-                    maximumAge: 300000  // Cache for 5 minutes
+                    timeout: 5000,
+                    maximumAge: 300000
                 }
             );
         });
@@ -160,19 +150,15 @@ const CustomerLocation = (function() {
      * Show manual city selector modal
      */
     async function showCitySelector() {
-        console.log('CustomerLocation: showCitySelector called');
         return new Promise(async (resolve) => {
             if (!citiesCache) {
-                console.log('CustomerLocation: Loading cities from API...');
                 try {
                     const response = await fetch(config.apiBase + '/cities', {
                         headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': getCSRFToken() }
                     });
                     const data = await response.json();
                     citiesCache = data.cities || [];
-                    console.log('CustomerLocation: Loaded', citiesCache.length, 'cities');
                 } catch (error) {
-                    console.error('CustomerLocation: Failed to load cities', error);
                     resolve(null);
                     return;
                 }
@@ -183,7 +169,6 @@ const CustomerLocation = (function() {
                     try {
                         resolve(await setManually(cityId));
                     } catch (error) {
-                        console.error('CustomerLocation: Failed to set city', error);
                         resolve(null);
                     }
                 } else {
@@ -191,12 +176,8 @@ const CustomerLocation = (function() {
                 }
             });
 
-            console.log('CustomerLocation: Appending modal to body');
             document.body.appendChild(modal);
-            setTimeout(() => {
-                modal.classList.add('show');
-                console.log('CustomerLocation: Modal show class added');
-            }, 10);
+            setTimeout(() => modal.classList.add('show'), 10);
         });
     }
 
@@ -315,7 +296,7 @@ const CustomerLocation = (function() {
 
     function triggerCallbacks() {
         onChangeCallbacks.forEach(cb => {
-            try { cb(currentCity); } catch (e) { console.error(e); }
+            try { cb(currentCity); } catch (e) { /* ignore */ }
         });
     }
 

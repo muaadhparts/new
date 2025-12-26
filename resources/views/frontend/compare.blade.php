@@ -455,6 +455,23 @@
                             @endforeach
                         </tr>
 
+                        {{-- Shipping Quote Row --}}
+                        <tr>
+                            <td><h6 class="td-title">@lang('Shipping')</h6></td>
+                            @foreach ($processedProducts as $mpId => $product)
+                                <td>
+                                    @if ($product['item']->type == 'Physical' && $product['merchant_product'])
+                                        <x-shipping-quote-button
+                                            :vendor-id="$product['merchant_product']->user_id"
+                                            :product-name="getLocalizedProductName($product['item'])"
+                                        />
+                                    @else
+                                        <span class="table-value">-</span>
+                                    @endif
+                                </td>
+                            @endforeach
+                        </tr>
+
                         {{-- Remove Row --}}
                         <tr>
                             <td><h6 class="td-title">@lang('Remove')</h6></td>

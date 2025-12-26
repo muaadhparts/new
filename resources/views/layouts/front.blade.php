@@ -47,6 +47,9 @@
     {{-- Product Card - Unified styles for all product cards --}}
     <link rel="stylesheet" href="{{ asset('assets/css/product-card.css') }}?v={{ filemtime(public_path('assets/css/product-card.css')) }}">
 
+    {{-- Shipping Quote & Customer Location Modal --}}
+    <link rel="stylesheet" href="{{ asset('assets/front/css/shipping-quote.css') }}?v={{ filemtime(public_path('assets/front/css/shipping-quote.css')) }}">
+
     @if($langg && $langg->rtl == 1)
         <link rel="stylesheet" href="{{ asset('assets/front/css/rtl.css') }}">
     @endif
@@ -133,6 +136,9 @@
     <script src="{{ asset('assets/front/js/qty-control.js') }}?v={{ time() }}"></script>
     {{-- Unified Cart System --}}
     <script src="{{ asset('assets/front/js/cart-unified.js') }}?v={{ time() }}"></script>
+    {{-- Customer Location & Shipping Quote --}}
+    <script src="{{ asset('assets/front/js/customer-location.js') }}?v={{ time() }}"></script>
+    <script src="{{ asset('assets/front/js/shipping-quote.js') }}?v={{ time() }}"></script>
     <script src="{{ asset('assets/front/js/jquery.magnific-popup.js') }}"></script>
 
     {{-- Magnific Popup Init --}}

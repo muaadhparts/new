@@ -80,6 +80,14 @@
                 </div>
              </div>
           </div>
+          {{-- Shipping Quote Button --}}
+          @if(($prod->type ?? 'Physical') == 'Physical' && $homeProdMerchant)
+              <x-shipping-quote-button
+                  :vendor-id="$homeProdMerchant->user_id"
+                  :product-name="$prod->showName()"
+                  class="mt-2"
+              />
+          @endif
        </div>
     </div>
  </div>

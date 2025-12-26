@@ -167,6 +167,15 @@ OR legacy: $product (Product model with bestMerchant loaded)
                         @lang('View Details')
                     </a>
                 @endif
+
+                {{-- Shipping Quote Button --}}
+                @if($productType == 'Physical')
+                    <x-shipping-quote-button
+                        :vendor-id="$mp->user_id"
+                        :product-name="$actualProduct->showName()"
+                        class="mt-2"
+                    />
+                @endif
             </div>
         </div>
     </div>

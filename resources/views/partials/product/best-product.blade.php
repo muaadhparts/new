@@ -32,6 +32,14 @@
                         </div>
                     </div>
                 </div>
+                {{-- Shipping Quote Button --}}
+                @if(($prod->type ?? 'Physical') == 'Physical' && $bestProdMerchant)
+                    <x-shipping-quote-button
+                        :vendor-id="$bestProdMerchant->user_id"
+                        :product-name="$prod->showName()"
+                        class="mt-2"
+                    />
+                @endif
             </div>
         </div>
     </div>

@@ -257,6 +257,17 @@
                     </a>
                 @endif
             </div>
+
+            {{-- Shipping Quote Button --}}
+            @if(($product->type ?? 'Physical') == 'Physical' && $mp)
+                <div class="mt-3">
+                    <x-shipping-quote-button
+                        :vendor-id="$vendorId"
+                        :product-name="$product->name ?? $product->sku"
+                        class="w-100"
+                    />
+                </div>
+            @endif
         </div>
     </div>
 </div>

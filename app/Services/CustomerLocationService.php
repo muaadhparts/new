@@ -4,7 +4,6 @@ namespace App\Services;
 
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 
 /**
  * CustomerLocationService - Single Source for Customer Location
@@ -65,8 +64,6 @@ class CustomerLocationService
 
         Session::put(self::SESSION_KEY, $data);
 
-        Log::info('CustomerLocation: Set manually', $data);
-
         return $data;
     }
 
@@ -89,8 +86,6 @@ class CustomerLocationService
         ];
 
         Session::put(self::SESSION_KEY, $data);
-
-        Log::info('CustomerLocation: Set from geolocation', $data);
 
         return $data;
     }
@@ -147,10 +142,6 @@ class CustomerLocationService
 
             // If found a supported city within 300km, use it
             if ($nearest && $minDistance <= 300) {
-                Log::info('CustomerLocation: Found Tryoto-supported city', [
-                    'city' => $nearest->city_name,
-                    'distance_km' => round($minDistance, 1),
-                ]);
                 return $nearest;
             }
         }

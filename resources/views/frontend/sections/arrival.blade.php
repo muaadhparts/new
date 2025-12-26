@@ -156,6 +156,15 @@ Receives: $merchantProducts (Collection of MerchantProduct models)
                         <span>@lang('Buy Now')</span>
                     </a>
                 @endif
+
+                {{-- Shipping Quote Button --}}
+                @if($productType == 'Physical')
+                    <x-shipping-quote-button
+                        :vendor-id="$vendorId"
+                        :product-name="$productName"
+                        class="mt-2"
+                    />
+                @endif
             </div>
         </div>
     </div>

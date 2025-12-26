@@ -31,7 +31,8 @@
       "Bash(php populate_vendor_credentials.php:*)",
       "Bash(php:*)",
       "Bash(powershell:*)",
-      "WebFetch(domain:new.test)"
+      "WebFetch(domain:new.test)",
+      "Bash(del:*)"
     ]
   }
 }

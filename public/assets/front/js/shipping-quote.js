@@ -54,7 +54,6 @@ const ShippingQuote = (function() {
 
             return data;
         } catch (error) {
-            console.error('ShippingQuote: API error', error);
             return { success: false, message: 'حدث خطأ في الاتصال' };
         }
     }
@@ -81,7 +80,6 @@ const ShippingQuote = (function() {
 
             return await response.json();
         } catch (error) {
-            console.error('ShippingQuote: API error', error);
             return { success: false, message: 'حدث خطأ في الاتصال' };
         }
     }
@@ -229,27 +227,21 @@ const ShippingQuote = (function() {
      */
     function initButtons() {
         const buttons = document.querySelectorAll('[data-shipping-quote]');
-        console.log('ShippingQuote: Found', buttons.length, 'buttons');
 
         buttons.forEach(button => {
             if (button.dataset.shippingQuoteInit) return;
             button.dataset.shippingQuoteInit = 'true';
-            console.log('ShippingQuote: Initialized button for vendor', button.dataset.vendorId);
 
             button.addEventListener('click', async function(e) {
                 e.preventDefault();
                 e.stopPropagation();
-                console.log('ShippingQuote: Button clicked');
 
                 const vendorId = parseInt(this.dataset.vendorId);
                 const weight = parseFloat(this.dataset.weight || 0.5);
                 const productName = this.dataset.productName || '';
                 const isRtl = document.documentElement.dir === 'rtl' || document.documentElement.lang === 'ar';
 
-                if (!vendorId) {
-                    console.error('ShippingQuote: Missing vendor_id');
-                    return;
-                }
+                if (!vendorId) return;
 
                 // Show loading state
                 const originalContent = this.innerHTML;
@@ -258,21 +250,16 @@ const ShippingQuote = (function() {
 
                 // Check location first
                 if (!CustomerLocation.hasCity()) {
-                    console.log('ShippingQuote: No city set, requesting location...');
                     const city = await CustomerLocation.requestLocation();
                     if (!city) {
-                        console.log('ShippingQuote: No city selected, aborting');
                         this.classList.remove('m-shipping-quote-btn--loading');
                         this.innerHTML = originalContent;
                         return;
                     }
-                    console.log('ShippingQuote: City set to', city.city_name);
                 }
 
                 // Get quick estimate
-                console.log('ShippingQuote: Fetching quote for vendor', vendorId);
                 const result = await getQuickEstimate(vendorId, weight);
-                console.log('ShippingQuote: Quote result', result);
 
                 this.classList.remove('m-shipping-quote-btn--loading');
 
