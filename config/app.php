@@ -172,6 +172,7 @@ return [
         // App\Providers\TelescopeServiceProvider::class, // Disabled - Telescope is dev-only dependency
         App\Providers\BladeQueryGuardServiceProvider::class, // N+1 Query Guard (local only)
         App\Providers\DigitalOceanServiceProvider::class, // Load DO credentials from encrypted DB
+        App\Providers\ShippingQuoteServiceProvider::class, // Shipping Quote API routes
     ])->toArray(),
 
     /*

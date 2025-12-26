@@ -29,7 +29,9 @@
       "Bash(git push:*)",
       "Bash(xargs -I {} git push origin --delete {})",
       "Bash(php populate_vendor_credentials.php:*)",
-      "Bash(php:*)"
+      "Bash(php:*)",
+      "Bash(powershell:*)",
+      "WebFetch(domain:new.test)"
     ]
   }
 }

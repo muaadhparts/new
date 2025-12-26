@@ -215,6 +215,11 @@
                 @endif
             </div>
 
+            {{-- Shipping Quote Button --}}
+            @if($productType === 'Physical' && $vendorId)
+                <x-shipping-quote-button :vendor-id="$vendorId" :product-name="$productName" class="mt-2" />
+            @endif
+
             {{-- Add to Cart --}}
             @if($productType !== 'Listing' && $affiliateProductType !== 'affiliate')
                 @if($inStock && $hasVendor && $merchantId)
@@ -353,6 +358,11 @@
                 <span>{{ number_format($ratingsAvg, 1) }}</span>
                 <span class="product-card__rating-count">({{ $ratingsCount }})</span>
             </div>
+
+            {{-- Shipping Quote Button --}}
+            @if($productType === 'Physical' && $vendorId)
+                <x-shipping-quote-button :vendor-id="$vendorId" :product-name="$productName" class="mt-2" />
+            @endif
 
             {{-- Add to Cart --}}
             @if ($productType !== 'Listing' && $affiliateProductType !== 'affiliate')

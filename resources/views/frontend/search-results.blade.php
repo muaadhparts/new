@@ -1,5 +1,14 @@
 @extends('layouts.front')
 
+@section('css')
+<link rel="stylesheet" href="{{ asset('assets/front/css/shipping-quote.css') }}">
+@endsection
+
+@push('scripts')
+<script src="{{ asset('assets/front/js/customer-location.js') }}"></script>
+<script src="{{ asset('assets/front/js/shipping-quote.js') }}"></script>
+@endpush
+
 @section('content')
 {{-- Breadcrumb --}}
 <section class="gs-breadcrumb-section">
