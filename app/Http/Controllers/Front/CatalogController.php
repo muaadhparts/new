@@ -98,10 +98,15 @@ class CatalogController extends FrontBaseController
         
         $request->validate($rules, $customs);
 
-
         $data = new Report;
-        $input = $request->all();
-        $data->fill($input)->save();
+        // Security: Only allow specific fields, set user_id from authenticated user
+        $data->product_id = $request->input('product_id');
+        $data->merchant_product_id = $request->input('merchant_product_id');
+        $data->title = $request->input('title');
+        $data->note = $request->input('note');
+        $data->user_id = auth()->id(); // Set from authenticated user, not from request
+        $data->save();
+
         return back()->with('success', 'Report has been sent successfully.');
 
     }

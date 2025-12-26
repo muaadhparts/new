@@ -28,13 +28,26 @@ class OrderController extends VendorBaseController
     {
         $user = $this->user;
         $order = Order::where('order_number', '=', $slug)->first();
+
+        // Security: Verify vendor has items in this order
+        if (!$order || !$order->vendororders()->where('user_id', $user->id)->exists()) {
+            abort(403, 'Unauthorized access to order');
+        }
+
         $cart = json_decode($order->cart, true);
         return view('vendor.order.details', compact('user', 'order', 'cart'));
     }
 
     public function license(Request $request, $slug)
     {
+        $user = $this->user;
         $order = Order::where('order_number', '=', $slug)->first();
+
+        // Security: Verify vendor has items in this order
+        if (!$order || !$order->vendororders()->where('user_id', $user->id)->exists()) {
+            abort(403, 'Unauthorized access to order');
+        }
+
         $cart = json_decode($order->cart, true);
         $cart['items'][$request->license_key]['license'] = $request->license;
         $new_cart = json_encode($cart);
@@ -48,6 +61,12 @@ class OrderController extends VendorBaseController
     {
         $user = $this->user;
         $order = Order::where('order_number', '=', $slug)->first();
+
+        // Security: Verify vendor has items in this order
+        if (!$order || !$order->vendororders()->where('user_id', $user->id)->exists()) {
+            abort(403, 'Unauthorized access to order');
+        }
+
         $cart = json_decode($order->cart, true);
         return view('vendor.order.invoice', compact('user', 'order', 'cart'));
     }
@@ -56,6 +75,12 @@ class OrderController extends VendorBaseController
     {
         $user = $this->user;
         $order = Order::where('order_number', '=', $slug)->first();
+
+        // Security: Verify vendor has items in this order
+        if (!$order || !$order->vendororders()->where('user_id', $user->id)->exists()) {
+            abort(403, 'Unauthorized access to order');
+        }
+
         $cart = json_decode($order->cart, true);
         return view('vendor.order.print', compact('user', 'order', 'cart'));
     }

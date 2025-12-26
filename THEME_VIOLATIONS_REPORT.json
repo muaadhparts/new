@@ -1,5 +1,5 @@
 {
-  "date": "2025-12-22",
+  "date": "2025-12-26",
   "mode": "STRICT",
   "allowedExceptions": [
     "PDF/Print paths (resources/views/pdf/, resources/views/print/)",

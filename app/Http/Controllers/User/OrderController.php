@@ -56,20 +56,30 @@ class OrderController extends UserBaseController
     public function orderprint($id)
     {
         $user = $this->user;
-        $order = Order::findOrfail($id);
+        // Security: Only allow printing own orders
+        $order = $user->orders()->whereId($id)->firstOrFail();
         $cart = json_decode($order->cart, true);
         return view('user.order.print',compact('user','order','cart'));
     }
 
     public function trans()
     {
-        $id = $_GET['id'];
-        $trans = $_GET['tin'];
-        $order = Order::findOrFail($id);
+        $user = $this->user;
+        $id = request()->input('id');
+        $trans = request()->input('tin');
+
+        // Security: Only allow updating own orders
+        $order = $user->orders()->whereId($id)->firstOrFail();
+
+        // Validate transaction ID
+        if (empty($trans) || strlen($trans) > 255) {
+            return response()->json(['error' => 'Invalid transaction ID'], 400);
+        }
+
         $order->txnid = $trans;
         $order->update();
         $data = $order->txnid;
-        return response()->json($data);            
+        return response()->json($data);
     }  
 
 }

@@ -3,7 +3,7 @@
 /node_modules
 /public/build
 /public/uploads/
-/public/assets/images
+# /public/assets/images
 /public/hot
 /public/database-backup/
 /public/storage

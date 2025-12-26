@@ -1,535 +1,0 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Address System Test Report</title>
-    <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            max-width: 1200px;
-            margin: 20px auto;
-            padding: 20px;
-            background: #f5f5f5;
-        }
-        .test-section {
-            background: white;
-            padding: 20px;
-            margin: 20px 0;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        h1 {
-            color: #2c3e50;
-            border-bottom: 3px solid #3498db;
-            padding-bottom: 10px;
-        }
-        h2 {
-            color: #34495e;
-            margin-top: 0;
-        }
-        .step {
-            margin: 15px 0;
-            padding: 15px;
-            background: #ecf0f1;
-            border-left: 4px solid #3498db;
-        }
-        .step-title {
-            font-weight: bold;
-            color: #2980b9;
-            margin-bottom: 10px;
-        }
-        .checklist {
-            list-style: none;
-            padding: 0;
-        }
-        .checklist li {
-            padding: 8px 0;
-            border-bottom: 1px solid #ddd;
-        }
-        .checklist li:before {
-            content: "□ ";
-            color: #3498db;
-            font-weight: bold;
-            margin-right: 10px;
-        }
-        .status-pass { color: #27ae60; font-weight: bold; }
-        .status-fail { color: #e74c3c; font-weight: bold; }
-        .status-pending { color: #f39c12; font-weight: bold; }
-        code {
-            background: #2c3e50;
-            color: #ecf0f1;
-            padding: 2px 6px;
-            border-radius: 3px;
-            font-family: 'Courier New', monospace;
-        }
-        .sql-box {
-            background: #2c3e50;
-            color: #ecf0f1;
-            padding: 15px;
-            border-radius: 5px;
-            margin: 10px 0;
-            font-family: 'Courier New', monospace;
-            overflow-x: auto;
-        }
-        .note {
-            background: #fff3cd;
-            border: 1px solid #ffc107;
-            padding: 10px;
-            border-radius: 5px;
-            margin: 10px 0;
-        }
-        .success-box {
-            background: #d4edda;
-            border: 1px solid #28a745;
-            padding: 15px;
-            border-radius: 5px;
-            margin: 10px 0;
-        }
-    </style>
-</head>
-<body>
-    <h1>🧪 دليل اختبار شامل لنظام العناوين في user/profile</h1>
-
-    <div class="test-section">
-        <h2>📋 نظرة عامة</h2>
-        <p>هذا الدليل يوفر خطوات اختبار شاملة للتأكد من أن نظام العناوين يعمل بشكل كامل من البداية إلى النهاية.</p>
-        <div class="note">
-            <strong>⚠️ متطلبات الاختبار:</strong>
-            <ul>
-                <li>متصفح حديث مع Developer Tools (F12)</li>
-                <li>حساب مستخدم مسجل في النظام</li>
-                <li>Google Maps API مفعل ويعمل</li>
-            </ul>
-        </div>
-    </div>
-
-    <!-- Test 1: Map Selection -->
-    <div class="test-section">
-        <h2>🗺️ الاختبار 1: اختيار الموقع من الخريطة</h2>
-
-        <div class="step">
-            <div class="step-title">الخطوة 1: فتح الصفحة والاستعداد</div>
-            <ul class="checklist">
-                <li>افتح الصفحة <code>/user/profile</code></li>
-                <li>افتح Developer Console (اضغط F12)</li>
-                <li>انتقل إلى تبويب Console</li>
-                <li>تحقق من ظهور: <code>🔧 Initializing NiceSelect for saved values...</code></li>
-            </ul>
-        </div>
-
-        <div class="step">
-            <div class="step-title">الخطوة 2: فتح الخريطة</div>
-            <ul class="checklist">
-                <li>اضغط على زر "Select Location from Map"</li>
-                <li>تحقق من فتح modal الخريطة</li>
-                <li>تحقق من تحميل Google Maps بشكل صحيح</li>
-            </ul>
-        </div>
-
-        <div class="step">
-            <div class="step-title">الخطوة 3: اختيار موقع</div>
-            <ul class="checklist">
-                <li>اختر أي موقع على الخريطة (مثل: الرياض، السعودية)</li>
-                <li>راقب Console للتحقق من ظهور:
-                    <div class="sql-box">
-🚀 useLocation called with data: {...}
-📍 Coordinates filled: {lat: XX.XX, lng: XX.XX}
-📝 Address filled: "..."
-🌐 Location IDs: {countryId: X, stateId: X, cityId: X}
-                    </div>
-                </li>
-            </ul>
-        </div>
-
-        <div class="step">
-            <div class="step-title">الخطوة 4: التحقق من تعبئة الحقول</div>
-            <ul class="checklist">
-                <li>راقب Console للتحقق من:
-                    <div class="sql-box">
-🌍 selectCountryById called: {countryId: X, stateId: X, cityId: X}
-✓ Country found and selected: {selectId: "select_country", countryName: "..."}
-🔄 Triggering country change to load states...
-📡 Country changed, loading states from: ...
-📥 States loaded, count: XX
-🎯 Calling onStatesLoaded callback...
-📍 States loaded callback triggered
-🏙️ selectStateById called: {stateId: X, cityId: X}
-✓ State found and selected: {selectId: "show_state", stateName: "..."}
-🔄 Triggering state change to load cities...
-📡 State changed, loading cities for state_id: X
-📥 Cities loaded, count: XX
-🎯 Calling onCitiesLoaded callback...
-🏘️ Cities loaded callback triggered
-🏢 selectCityById called: {cityId: X}
-✓ City found and selected: {selectId: "show_city", cityDisplayName: "..."}
-✅ All fields filled successfully!
-                    </div>
-                </li>
-            </ul>
-        </div>
-
-        <div class="step">
-            <div class="step-title">الخطوة 5: التحقق البصري من الحقول</div>
-            <ul class="checklist">
-                <li>تحقق من أن dropdown الدولة يظهر الدولة المختارة</li>
-                <li>تحقق من أن dropdown الولاية يظهر الولاية المختارة</li>
-                <li>تحقق من أن dropdown المدينة يظهر المدينة المختارة</li>
-                <li>تحقق من أن حقل العنوان يحتوي على العنوان الكامل</li>
-            </ul>
-        </div>
-
-        <div class="success-box">
-            <strong>✅ النتيجة المتوقعة:</strong><br>
-            جميع الحقول (الدولة، الولاية، المدينة، العنوان) تُعبأ تلقائياً وتظهر بشكل صحيح في NiceSelect dropdowns والحقول النصية.
-        </div>
-    </div>
-
-    <!-- Test 2: Saving Data -->
-    <div class="test-section">
-        <h2>💾 الاختبار 2: حفظ البيانات</h2>
-
-        <div class="step">
-            <div class="step-title">الخطوة 1: إرسال النموذج</div>
-            <ul class="checklist">
-                <li>اضغط على زر "Update Profile Information"</li>
-                <li>راقب Console للتحقق من:
-                    <div class="sql-box">
-📤 Form submission - Values being sent:
-  Country: ... ( ... )
-  State ID: X ( ... )
-  City ID: X ( ... )
-  Address: ...
-  Latitude: XX.XXXXXXX
-  Longitude: XX.XXXXXXX
-📋 Complete form data:
-  name: ...
-  email: ...
-  country: ...
-  state_id: X
-  city_id: X
-  address: ...
-  latitude: XX.XXXXXXX
-  longitude: XX.XXXXXXX
-                    </div>
-                </li>
-            </ul>
-        </div>
-
-        <div class="step">
-            <div class="step-title">الخطوة 2: التحقق من رسالة النجاح</div>
-            <ul class="checklist">
-                <li>انتظر إعادة تحميل الصفحة</li>
-                <li>تحقق من ظهور رسالة "Profile Updated Successfully!"</li>
-            </ul>
-        </div>
-
-        <div class="step">
-            <div class="step-title">الخطوة 3: فحص Laravel Logs</div>
-            <ul class="checklist">
-                <li>افتح <code>storage/logs/laravel.log</code></li>
-                <li>ابحث عن:
-                    <div class="sql-box">
-[YYYY-MM-DD HH:MM:SS] local.INFO: User Profile Update - Received Data: {
-    "country": "...",
-    "state_id": X,
-    "city_id": X,
-    "address": "...",
-    "latitude": XX.XXXXXXX,
-    "longitude": XX.XXXXXXX
-}
-
-[YYYY-MM-DD HH:MM:SS] local.INFO: User Profile Update - Data Saved Successfully: {
-    "user_id": X,
-    "country": "...",
-    "state_id": X,
-    "city_id": X,
-    "address": "...",
-    "latitude": XX.XXXXXXX,
-    "longitude": XX.XXXXXXX
-}
-                    </div>
-                </li>
-            </ul>
-        </div>
-
-        <div class="step">
-            <div class="step-title">الخطوة 4: التحقق من قاعدة البيانات</div>
-            <ul class="checklist">
-                <li>افتح MySQL/phpMyAdmin</li>
-                <li>نفّذ الاستعلام:
-                    <div class="sql-box">
-SELECT id, name, country, state_id, city_id, address, latitude, longitude
-FROM users
-WHERE id = [USER_ID];
-                    </div>
-                </li>
-                <li>تحقق من أن جميع القيم محفوظة بشكل صحيح</li>
-            </ul>
-        </div>
-
-        <div class="success-box">
-            <strong>✅ النتيجة المتوقعة:</strong><br>
-            جميع القيم (country, state_id, city_id, address, latitude, longitude) محفوظة في قاعدة البيانات بشكل صحيح.
-        </div>
-    </div>
-
-    <!-- Test 3: Loading Saved Data -->
-    <div class="test-section">
-        <h2>📥 الاختبار 3: تحميل البيانات المحفوظة</h2>
-
-        <div class="step">
-            <div class="step-title">الخطوة 1: إعادة تحميل الصفحة</div>
-            <ul class="checklist">
-                <li>اضغط F5 أو أعد تحميل الصفحة</li>
-                <li>افتح Developer Console (F12)</li>
-            </ul>
-        </div>
-
-        <div class="step">
-            <div class="step-title">الخطوة 2: فحص Laravel Logs</div>
-            <ul class="checklist">
-                <li>افتح <code>storage/logs/laravel.log</code></li>
-                <li>ابحث عن:
-                    <div class="sql-box">
-[YYYY-MM-DD HH:MM:SS] local.INFO: User Profile Page Loaded: {
-    "user_id": X,
-    "country": "...",
-    "state_id": X,
-    "city_id": X,
-    "address": "...",
-    "latitude": XX.XXXXXXX,
-    "longitude": XX.XXXXXXX
-}
-                    </div>
-                </li>
-                <li>تأكد من أن القيم المعروضة مطابقة للقيم المحفوظة</li>
-            </ul>
-        </div>
-
-        <div class="step">
-            <div class="step-title">الخطوة 3: فحص Console Logs</div>
-            <ul class="checklist">
-                <li>راقب Console للتحقق من:
-                    <div class="sql-box">
-🔧 Initializing NiceSelect for saved values...
-  Country initialized: ...
-  State initialized: X
-  City initialized: X
-✅ NiceSelect initialization complete
-
-📊 Saved values from database:
-  Country: ...
-  State ID: X
-  City ID: X
-  Address: ...
-  Latitude: XX.XXXXXXX
-  Longitude: XX.XXXXXXX
-                    </div>
-                </li>
-            </ul>
-        </div>
-
-        <div class="step">
-            <div class="step-title">الخطوة 4: التحقق البصري</div>
-            <ul class="checklist">
-                <li>تحقق من أن dropdown الدولة يظهر الدولة المحفوظة</li>
-                <li>تحقق من أن dropdown الولاية يظهر الولاية المحفوظة</li>
-                <li>تحقق من أن dropdown المدينة يظهر المدينة المحفوظة</li>
-                <li>تحقق من أن حقل العنوان يحتوي على العنوان المحفوظ</li>
-            </ul>
-        </div>
-
-        <div class="step">
-            <div class="step-title">الخطوة 5: فحص HTML Source</div>
-            <ul class="checklist">
-                <li>في Developer Tools، انتقل إلى Elements/Inspector</li>
-                <li>ابحث عن <code>&lt;select id="select_country"&gt;</code></li>
-                <li>تحقق من وجود <code>selected</code> على option الدولة الصحيحة</li>
-                <li>كرر نفس الشيء لـ <code>#show_state</code> و <code>#show_city</code></li>
-            </ul>
-        </div>
-
-        <div class="success-box">
-            <strong>✅ النتيجة المتوقعة:</strong><br>
-            جميع القيم المحفوظة تظهر بشكل صحيح في الحقول والـ dropdowns بعد إعادة تحميل الصفحة.
-        </div>
-    </div>
-
-    <!-- Test 4: NiceSelect Visual Display -->
-    <div class="test-section">
-        <h2>👁️ الاختبار 4: التحقق من العرض البصري لـ NiceSelect</h2>
-
-        <div class="step">
-            <div class="step-title">الخطوة 1: فحص dropdown الدولة</div>
-            <ul class="checklist">
-                <li>انظر إلى dropdown الدولة</li>
-                <li>تحقق من أن النص المعروض يطابق الدولة المحفوظة</li>
-                <li>اضغط على dropdown وتحقق من أن الدولة المحفوظة محددة بعلامة ✓</li>
-            </ul>
-        </div>
-
-        <div class="step">
-            <div class="step-title">الخطوة 2: فحص dropdown الولاية</div>
-            <ul class="checklist">
-                <li>انظر إلى dropdown الولاية</li>
-                <li>تحقق من أن النص المعروض يطابق الولاية المحفوظة</li>
-                <li>اضغط على dropdown وتحقق من أن الولاية المحفوظة محددة بعلامة ✓</li>
-            </ul>
-        </div>
-
-        <div class="step">
-            <div class="step-title">الخطوة 3: فحص dropdown المدينة</div>
-            <ul class="checklist">
-                <li>انظر إلى dropdown المدينة</li>
-                <li>تحقق من أن النص المعروض يطابق المدينة المحفوظة</li>
-                <li>اضغط على dropdown وتحقق من أن المدينة المحفوظة محددة بعلامة ✓</li>
-            </ul>
-        </div>
-
-        <div class="step">
-            <div class="step-title">الخطوة 4: فحص NiceSelect Wrapper في DOM</div>
-            <ul class="checklist">
-                <li>في Developer Tools → Elements</li>
-                <li>ابحث عن <code>&lt;div class="nice-select"&gt;</code> بجانب select الدولة</li>
-                <li>تحقق من أن <code>&lt;span class="current"&gt;</code> يحتوي على اسم الدولة الصحيح</li>
-                <li>كرر لـ dropdowns الولاية والمدينة</li>
-            </ul>
-        </div>
-
-        <div class="success-box">
-            <strong>✅ النتيجة المتوقعة:</strong><br>
-            جميع NiceSelect dropdowns تعرض القيم المحفوظة بشكل صحيح في العرض البصري.
-        </div>
-    </div>
-
-    <!-- Test 5: Bilingual Testing -->
-    <div class="test-section">
-        <h2>🌍 الاختبار 5: اختبار اللغتين (عربي/إنجليزي)</h2>
-
-        <div class="step">
-            <div class="step-title">اختبار اللغة الإنجليزية</div>
-            <ul class="checklist">
-                <li>تأكد من أن اللغة الحالية هي الإنجليزية</li>
-                <li>نفّذ الاختبارات 1-4 أعلاه</li>
-                <li>تحقق من أن أسماء الدول/الولايات/المدن تظهر بالإنجليزية</li>
-                <li>احفظ البيانات</li>
-            </ul>
-        </div>
-
-        <div class="step">
-            <div class="step-title">التبديل إلى اللغة العربية</div>
-            <ul class="checklist">
-                <li>غيّر اللغة إلى العربية (إذا كان خيار التبديل متاح)</li>
-                <li>أو افتح الصفحة بـ <code>/ar/user/profile</code></li>
-            </ul>
-        </div>
-
-        <div class="step">
-            <div class="step-title">اختبار اللغة العربية</div>
-            <ul class="checklist">
-                <li>نفّذ الاختبارات 1-4 أعلاه مرة أخرى</li>
-                <li>تحقق من أن أسماء الدول/الولايات/المدن تظهر بالعربية</li>
-                <li>تحقق من أن القيم المحفوظة سابقاً لا تزال تظهر بشكل صحيح</li>
-                <li>احفظ البيانات مرة أخرى</li>
-            </ul>
-        </div>
-
-        <div class="step">
-            <div class="step-title">التحقق من عدم فقدان البيانات</div>
-            <ul class="checklist">
-                <li>بدّل بين اللغتين عدة مرات</li>
-                <li>تأكد من أن البيانات لا تتغير</li>
-                <li>تأكد من أن العرض يتغير فقط (اللغة) وليس القيم</li>
-            </ul>
-        </div>
-
-        <div class="success-box">
-            <strong>✅ النتيجة المتوقعة:</strong><br>
-            النظام يعمل بشكل صحيح في كلا اللغتين، والقيم المحفوظة تظهر بشكل صحيح بغض النظر عن اللغة.
-        </div>
-    </div>
-
-    <!-- Test 6: Edge Cases -->
-    <div class="test-section">
-        <h2>⚠️ الاختبار 6: حالات الحافة (Edge Cases)</h2>
-
-        <div class="step">
-            <div class="step-title">اختبار 1: تغيير العنوان عدة مرات</div>
-            <ul class="checklist">
-                <li>اختر موقعاً من الخريطة</li>
-                <li>احفظ</li>
-                <li>اختر موقعاً مختلفاً</li>
-                <li>احفظ مرة أخرى</li>
-                <li>تحقق من أن العنوان الجديد يحل محل القديم</li>
-            </ul>
-        </div>
-
-        <div class="step">
-            <div class="step-title">اختبار 2: دولة بدون ولايات</div>
-            <ul class="checklist">
-                <li>اختر موقعاً في دولة لا تحتوي على ولايات في النظام</li>
-                <li>تحقق من أن الدولة تُحفظ</li>
-                <li>تحقق من أن النظام لا يتعطل</li>
-            </ul>
-        </div>
-
-        <div class="step">
-            <div class="step-title">اختبار 3: ولاية بدون مدن</div>
-            <ul class="checklist">
-                <li>اختر موقعاً في ولاية لا تحتوي على مدن في النظام</li>
-                <li>تحقق من أن الدولة والولاية تُحفظان</li>
-                <li>تحقق من أن النظام لا يتعطل</li>
-            </ul>
-        </div>
-
-        <div class="step">
-            <div class="step-title">اختبار 4: مسح البيانات يدوياً</div>
-            <ul class="checklist">
-                <li>بعد اختيار عنوان من الخريطة، امسح حقل العنوان يدوياً</li>
-                <li>احفظ</li>
-                <li>تحقق من أن العنوان يُحفظ فارغاً (أو كما تم إدخاله)</li>
-                <li>تحقق من أن الدولة/الولاية/المدينة لا تزال محفوظة</li>
-            </ul>
-        </div>
-
-        <div class="success-box">
-            <strong>✅ النتيجة المتوقعة:</strong><br>
-            النظام يتعامل مع جميع الحالات الخاصة بشكل صحيح دون أخطاء أو فقدان بيانات.
-        </div>
-    </div>
-
-    <!-- Summary Checklist -->
-    <div class="test-section">
-        <h2>✅ قائمة التحقق النهائية</h2>
-        <ul class="checklist">
-            <li><strong>اختيار من الخريطة:</strong> جميع الحقول تُعبأ تلقائياً</li>
-            <li><strong>حفظ البيانات:</strong> جميع القيم تُحفظ في قاعدة البيانات</li>
-            <li><strong>تحميل البيانات:</strong> القيم المحفوظة تُعرض بعد إعادة التحميل</li>
-            <li><strong>العرض البصري:</strong> NiceSelect يعكس القيم بشكل صحيح</li>
-            <li><strong>اللغة الإنجليزية:</strong> يعمل بشكل صحيح</li>
-            <li><strong>اللغة العربية:</strong> يعمل بشكل صحيح</li>
-            <li><strong>Console Logs:</strong> جميع الرسائل تظهر بشكل صحيح</li>
-            <li><strong>Laravel Logs:</strong> جميع البيانات مسجلة بشكل صحيح</li>
-            <li><strong>قاعدة البيانات:</strong> جميع الأعمدة محدثة</li>
-            <li><strong>حالات الحافة:</strong> لا أخطاء أو مشاكل</li>
-        </ul>
-    </div>
-
-    <div class="test-section">
-        <h2>📞 الدعم</h2>
-        <p>إذا واجهت أي مشاكل أثناء الاختبار:</p>
-        <ol>
-            <li>تحقق من Developer Console للأخطاء</li>
-            <li>تحقق من <code>storage/logs/laravel.log</code></li>
-            <li>تحقق من قاعدة البيانات مباشرة</li>
-            <li>تأكد من أن Google Maps API يعمل</li>
-        </ol>
-    </div>
-
-    <footer style="text-align: center; margin-top: 40px; padding: 20px; background: #2c3e50; color: white; border-radius: 8px;">
-        <p>تم إنشاء هذا الدليل بواسطة Claude Code</p>
-        <p>التاريخ: 2025-10-31</p>
-    </footer>
-</body>
-</html>

@@ -398,7 +398,12 @@ class ProductDetailsController extends FrontBaseController
     public function comment(Request $request)
     {
         $comment = new Comment;
-        $comment->fill($request->all())->save();
+        // Security: Only allow specific fields, set user_id from authenticated user
+        $comment->product_id = $request->input('product_id');
+        $comment->merchant_product_id = $request->input('merchant_product_id');
+        $comment->text = $request->input('text');
+        $comment->user_id = auth()->id(); // Set from authenticated user, not from request
+        $comment->save();
 
         $data[0] = $comment->user->photo ? url('assets/images/users/' . $comment->user->photo) : url('assets/images/' . $this->gs->user_image);
         $data[1] = $comment->user->name;

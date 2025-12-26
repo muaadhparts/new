@@ -7,9 +7,13 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class MajorAttributes extends Model
 {
+    // Security: Define fillable fields instead of empty guarded
+    protected $fillable = [
+        'catalog_id',
+        'name',
+        'items',
+    ];
 
-
-    public $guarded =[];
     protected $casts = [
         'items' => 'array',
     ];
