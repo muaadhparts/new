@@ -1,10 +1,41 @@
 <?php
 header("Content-type: text/css; charset: UTF-8");
+
+// Whitelist of allowed fonts to prevent XSS
+$allowed_fonts = [
+    'Open Sans',
+    'Roboto',
+    'Lato',
+    'Montserrat',
+    'Poppins',
+    'Raleway',
+    'Ubuntu',
+    'Nunito',
+    'Cairo',
+    'Tajawal',
+    'Almarai',
+    'IBM Plex Sans Arabic',
+    'Noto Sans Arabic',
+    'Arial',
+    'Helvetica',
+    'Georgia',
+    'Times New Roman',
+    'Verdana',
+    'Tahoma',
+];
+
+$font_familly = 'Open Sans'; // Default font
+
 if (isset($_GET['font_familly'])) {
-    $font_familly = $_GET['font_familly'];
-} else {
-    $font_familly = 'Open Sans';
+    $requested_font = $_GET['font_familly'];
+    // Only allow whitelisted fonts
+    if (in_array($requested_font, $allowed_fonts, true)) {
+        $font_familly = $requested_font;
+    }
 }
+
+// Escape for extra safety
+$font_familly = htmlspecialchars($font_familly, ENT_QUOTES, 'UTF-8');
 ?>
 
 body {

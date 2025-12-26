@@ -166,51 +166,39 @@ Route::prefix('admin')->group(function () {
 
     //------------ ADMIN FORGOT SECTION ENDS ------------
 
-    //------------ ADMIN NOTIFICATION SECTION ------------
+    //------------ PROTECTED ADMIN ROUTES (Require Authentication) ------------
+    Route::middleware(['auth:admin'])->group(function () {
 
-    // Notification Count
-    Route::get('/all/notf/count', 'Admin\NotificationController@all_notf_count')->name('all-notf-count');
-    // Notification Count Ends
+        //------------ ADMIN NOTIFICATION SECTION ------------
+        Route::get('/all/notf/count', 'Admin\NotificationController@all_notf_count')->name('all-notf-count');
+        Route::get('/user/notf/show', 'Admin\NotificationController@user_notf_show')->name('user-notf-show');
+        Route::get('/user/notf/clear', 'Admin\NotificationController@user_notf_clear')->name('user-notf-clear');
+        Route::get('/order/notf/show', 'Admin\NotificationController@order_notf_show')->name('order-notf-show');
+        Route::get('/order/notf/clear', 'Admin\NotificationController@order_notf_clear')->name('order-notf-clear');
+        Route::get('/product/notf/show', 'Admin\NotificationController@product_notf_show')->name('product-notf-show');
+        Route::get('/product/notf/clear', 'Admin\NotificationController@product_notf_clear')->name('product-notf-clear');
+        Route::get('/conv/notf/show', 'Admin\NotificationController@conv_notf_show')->name('conv-notf-show');
+        Route::get('/conv/notf/clear', 'Admin\NotificationController@conv_notf_clear')->name('conv-notf-clear');
+        //------------ ADMIN NOTIFICATION SECTION ENDS ------------
 
-    // User Notification
-    Route::get('/user/notf/show', 'Admin\NotificationController@user_notf_show')->name('user-notf-show');
-    Route::get('/user/notf/clear', 'Admin\NotificationController@user_notf_clear')->name('user-notf-clear');
-    // User Notification Ends
+        //------------ ADMIN DASHBOARD & PROFILE SECTION ------------
+        Route::get('/', 'Admin\DashboardController@index')->name('admin.dashboard');
+        Route::get('/profile', 'Admin\DashboardController@profile')->name('admin.profile');
+        Route::post('/profile/update', 'Admin\DashboardController@profileupdate')->name('admin.profile.update');
+        Route::get('/password', 'Admin\DashboardController@passwordreset')->name('admin.password');
+        Route::post('/password/update', 'Admin\DashboardController@changepass')->name('admin.password.update');
+        //------------ ADMIN DASHBOARD & PROFILE SECTION ENDS ------------
 
-    // Order Notification
-    Route::get('/order/notf/show', 'Admin\NotificationController@order_notf_show')->name('order-notf-show');
-    Route::get('/order/notf/clear', 'Admin\NotificationController@order_notf_clear')->name('order-notf-clear');
-    // Order Notification Ends
-
-    // Product Notification
-    Route::get('/product/notf/show', 'Admin\NotificationController@product_notf_show')->name('product-notf-show');
-    Route::get('/product/notf/clear', 'Admin\NotificationController@product_notf_clear')->name('product-notf-clear');
-    // Product Notification Ends
-
-    // Product Notification
-    Route::get('/conv/notf/show', 'Admin\NotificationController@conv_notf_show')->name('conv-notf-show');
-    Route::get('/conv/notf/clear', 'Admin\NotificationController@conv_notf_clear')->name('conv-notf-clear');
-    // Product Notification Ends
-
-    //------------ ADMIN NOTIFICATION SECTION ENDS ------------
-
-    //------------ ADMIN DASHBOARD & PROFILE SECTION ------------
-    Route::get('/', 'Admin\DashboardController@index')->name('admin.dashboard');
-    Route::get('/profile', 'Admin\DashboardController@profile')->name('admin.profile');
-    Route::post('/profile/update', 'Admin\DashboardController@profileupdate')->name('admin.profile.update');
-    Route::get('/password', 'Admin\DashboardController@passwordreset')->name('admin.password');
-    Route::post('/password/update', 'Admin\DashboardController@changepass')->name('admin.password.update');
-    //------------ ADMIN DASHBOARD & PROFILE SECTION ENDS ------------
-
-    //------------ ADMIN PERFORMANCE MONITORING SECTION ------------
-    Route::get('/performance', 'Admin\PerformanceController@index')->name('admin-performance');
-    Route::get('/performance/slow-queries', 'Admin\PerformanceController@slowQueries')->name('admin-performance-slow-queries');
-    Route::get('/performance/slow-requests', 'Admin\PerformanceController@slowRequests')->name('admin-performance-slow-requests');
-    Route::get('/performance/repeated-queries', 'Admin\PerformanceController@repeatedQueries')->name('admin-performance-repeated-queries');
-    Route::get('/performance/report', 'Admin\PerformanceController@downloadReport')->name('admin-performance-report');
-    Route::get('/performance/api/summary', 'Admin\PerformanceController@apiSummary')->name('admin-performance-api-summary');
-    Route::post('/performance/prune', 'Admin\PerformanceController@pruneOldEntries')->name('admin-performance-prune');
-    //------------ ADMIN PERFORMANCE MONITORING SECTION ENDS ------------
+        //------------ ADMIN PERFORMANCE MONITORING SECTION ------------
+        Route::get('/performance', 'Admin\PerformanceController@index')->name('admin-performance');
+        Route::get('/performance/slow-queries', 'Admin\PerformanceController@slowQueries')->name('admin-performance-slow-queries');
+        Route::get('/performance/slow-requests', 'Admin\PerformanceController@slowRequests')->name('admin-performance-slow-requests');
+        Route::get('/performance/repeated-queries', 'Admin\PerformanceController@repeatedQueries')->name('admin-performance-repeated-queries');
+        Route::get('/performance/report', 'Admin\PerformanceController@downloadReport')->name('admin-performance-report');
+        Route::get('/performance/api/summary', 'Admin\PerformanceController@apiSummary')->name('admin-performance-api-summary');
+        Route::post('/performance/prune', 'Admin\PerformanceController@pruneOldEntries')->name('admin-performance-prune');
+        //------------ ADMIN PERFORMANCE MONITORING SECTION ENDS ------------
+    });
 
     //------------ ADMIN ORDER SECTION ------------
 
@@ -279,32 +267,27 @@ Route::prefix('admin')->group(function () {
 
     /////////////////////////////// ////////////////////////////////////////////
 
-    // --------------- ADMIN COUNRTY SECTION ---------------//
-    Route::get('/country/datatables', 'Admin\CountryController@datatables')->name('admin-country-datatables');
-    Route::get('/manage/country', 'Admin\CountryController@manageCountry')->name('admin-country-index');
-    Route::get('/manage/country/status/{id1}/{id2}', 'Admin\CountryController@status')->name('admin-country-status');
-    Route::get('/country/delete/{id}', 'Admin\CountryController@delete')->name('admin-country-delete');
-    Route::get('/country/tax/datatables', 'Admin\CountryController@taxDatatables')->name('admin-country-tax-datatables');
-    Route::get('/manage/country/tax', 'Admin\CountryController@country_tax')->name('admin-country-tax');
+    // --------------- ADMIN COUNTRY & CITY SECTION (Protected) ---------------//
+    Route::middleware(['auth:admin'])->group(function () {
+        Route::get('/country/datatables', 'Admin\CountryController@datatables')->name('admin-country-datatables');
+        Route::get('/manage/country', 'Admin\CountryController@manageCountry')->name('admin-country-index');
+        Route::get('/manage/country/status/{id1}/{id2}', 'Admin\CountryController@status')->name('admin-country-status');
+        Route::get('/country/delete/{id}', 'Admin\CountryController@delete')->name('admin-country-delete');
+        Route::get('/country/tax/datatables', 'Admin\CountryController@taxDatatables')->name('admin-country-tax-datatables');
+        Route::get('/manage/country/tax', 'Admin\CountryController@country_tax')->name('admin-country-tax');
+        Route::get('/country/set-tax/{id}', 'Admin\CountryController@setTax')->name('admin-set-tax');
+        Route::post('/country/set-tax/store/{id}', 'Admin\CountryController@updateTax')->name('admin-tax-update');
 
-    // --------------- ADMIN COUNRTY SECTION END -----------//
-
-    // tax
-    Route::get('/country/set-tax/{id}', 'Admin\CountryController@setTax')->name('admin-set-tax');
-    Route::post('/country/set-tax/store/{id}', 'Admin\CountryController@updateTax')->name('admin-tax-update');
-
-    // --------------- ADMIN CITY SECTION --------------------//
-
-    Route::get('/city/datatables/{country}', 'Admin\CityController@datatables')->name('admin-city-datatables');
-    Route::get('/manage/city/{country}', 'Admin\CityController@managecity')->name('admin-city-index');
-    Route::get('/city/create/{country}', 'Admin\CityController@create')->name('admin-city-create');
-    Route::post('/city/store/{country}', 'Admin\CityController@store')->name('admin-city-store');
-    Route::get('/city/status/{id1}/{id2}', 'Admin\CityController@status')->name('admin-city-status');
-    Route::get('/city/edit/{id}', 'Admin\CityController@edit')->name('admin-city-edit');
-    Route::post('/city/update/{id}', 'Admin\CityController@update')->name('admin-city-update');
-    Route::delete('/city/delete/{id}', 'Admin\CityController@delete')->name('admin-city-delete');
-
-    // --------------- ADMIN STATE SECTION --------------------//
+        Route::get('/city/datatables/{country}', 'Admin\CityController@datatables')->name('admin-city-datatables');
+        Route::get('/manage/city/{country}', 'Admin\CityController@managecity')->name('admin-city-index');
+        Route::get('/city/create/{country}', 'Admin\CityController@create')->name('admin-city-create');
+        Route::post('/city/store/{country}', 'Admin\CityController@store')->name('admin-city-store');
+        Route::get('/city/status/{id1}/{id2}', 'Admin\CityController@status')->name('admin-city-status');
+        Route::get('/city/edit/{id}', 'Admin\CityController@edit')->name('admin-city-edit');
+        Route::post('/city/update/{id}', 'Admin\CityController@update')->name('admin-city-update');
+        Route::delete('/city/delete/{id}', 'Admin\CityController@delete')->name('admin-city-delete');
+    });
+    // --------------- ADMIN COUNTRY & CITY SECTION ENDS ---------------//
 
     //------------ ADMIN CATEGORY SECTION ENDS------------
 
