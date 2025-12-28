@@ -693,14 +693,15 @@
     // Clear previous session and reset when modal opens
     $('#mapModal').on('show.bs.modal', function() {
         // Clear location_draft in backend (doesn't affect step1/step2/step3)
+        @if(isset($vendor_id) && $vendor_id)
         $.ajax({
-            url: '{{ route("front.checkout.location.reset") }}',
+            url: '{{ route("front.checkout.vendor.location.reset", ["vendorId" => $vendor_id]) }}',
             method: 'POST',
             data: {
-                vendor_id: checkoutVendorId,
                 _token: $('meta[name="csrf-token"]').attr('content')
             }
         });
+        @endif
 
         // Clear previous location data (client-side)
         selectedLat = null;

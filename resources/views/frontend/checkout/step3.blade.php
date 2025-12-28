@@ -474,11 +474,9 @@
 
         $.ajax({
             type: "POST",
-            url: "{{ route('front.coupon.remove') }}",
+            url: "{{ isset($vendor_id) && $vendor_id ? route('front.checkout.vendor.coupon.remove', ['vendorId' => $vendor_id]) : route('front.coupon.remove') }}",
             data: {
-                _token: '{{ csrf_token() }}',
-                vendor_id: vendorId,
-                is_vendor_checkout: isVendorCheckout ? 1 : 0
+                _token: '{{ csrf_token() }}'
             },
             success: function (response) {
                 console.log('Remove coupon response:', response);

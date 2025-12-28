@@ -47,7 +47,11 @@ class CouponController extends FrontBaseController
      * - 3: Discount exceeds eligible amount
      * - Array: Success [newTotal, code, discountAmount, couponId, percentage, 1, rawTotal]
      */
-    public function couponcheck(Request $request)
+    /**
+     * POLICY: vendorId comes from route when using vendor checkout
+     * Route: /checkout/vendor/{vendorId}/coupon/check OR /carts/coupon/check
+     */
+    public function couponcheck(Request $request, $vendorId = null)
     {
         $code = trim($request->code ?? '');
         $requestTotal = (float)($request->total ?? 0);
@@ -69,8 +73,8 @@ class CouponController extends FrontBaseController
             return response()->json(0);
         }
 
-        // Determine checkout type
-        $checkoutVendorId = Session::get('checkout_vendor_id');
+        // Determine checkout type - vendorId from route (policy: no session fallback)
+        $checkoutVendorId = $vendorId ? (int)$vendorId : null;
         $isVendorCheckout = !empty($checkoutVendorId);
 
         // Validate coupon ownership for vendor checkout
@@ -137,9 +141,13 @@ class CouponController extends FrontBaseController
      * Remove coupon (AJAX endpoint)
      * Route: POST /carts/coupon/remove
      */
-    public function removeCoupon(Request $request)
+    /**
+     * POLICY: vendorId comes from route when using vendor checkout
+     * Route: /checkout/vendor/{vendorId}/coupon/remove OR /carts/coupon/remove
+     */
+    public function removeCoupon(Request $request, $vendorId = null)
     {
-        $vendorId = $request->vendor_id ?? Session::get('checkout_vendor_id');
+        // vendorId from route (policy: no session fallback)
         $isVendorCheckout = !empty($vendorId);
 
         // Get current coupon amount before removing

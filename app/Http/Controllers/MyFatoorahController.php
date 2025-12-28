@@ -119,6 +119,13 @@ class MyFatoorahController extends CheckoutBaseControlller {
         // STRICT POLICY: vendor_id FROM ROUTE ONLY
         // No session, no POST, no fallback - fail immediately if missing
         // ====================================================================
+        Log::info('MyFatoorah index() called', [
+            'vendorId_raw' => $vendorId,
+            'request_path' => request()->path(),
+            'request_method' => request()->method(),
+            'user_id' => Auth::id()
+        ]);
+
         $vendorId = (int)$vendorId;
 
         if (!$vendorId) {
@@ -147,7 +154,19 @@ class MyFatoorahController extends CheckoutBaseControlller {
         $step1 = Session::get('vendor_step1_' . $vendorId);
         $step2 = Session::get('vendor_step2_' . $vendorId);
 
+        Log::info('MyFatoorah: Checking sessions', [
+            'vendorId' => $vendorId,
+            'step1_exists' => !empty($step1),
+            'step2_exists' => !empty($step2),
+            'all_session_keys' => array_keys(Session::all())
+        ]);
+
         if (!$step1 || !$step2) {
+            Log::warning('MyFatoorah: Session expired', [
+                'vendorId' => $vendorId,
+                'step1' => $step1,
+                'step2' => $step2
+            ]);
             return redirect()->route('front.cart')->with('unsuccess', __('Checkout session expired.'));
         }
 

@@ -32,7 +32,8 @@
       "Bash(php:*)",
       "Bash(powershell:*)",
       "WebFetch(domain:new.test)",
-      "Bash(del:*)"
+      "Bash(del:*)",
+      "Bash(mysql:*)"
     ]
   }
 }
