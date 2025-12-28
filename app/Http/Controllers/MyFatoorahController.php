@@ -105,48 +105,32 @@ class MyFatoorahController extends CheckoutBaseControlller {
 
     /**
      * Redirect to MyFatoorah Invoice URL
-     * Provide the index method with the order id and (payment method id or session id)
      *
-     * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Foundation\Application|\Illuminate\Http\RedirectResponse|Response|\Illuminate\Routing\Redirector
+     * POLICY (STRICT):
+     * - vendor_id MUST come from Route parameter
+     * - NO session fallback, NO POST fallback
+     * - Fail immediately if vendor_id not in route
+     *
+     * @param int $vendorId From route: /checkout/vendor/{vendorId}/payment/myfatoorah
+     * @return \Illuminate\Http\RedirectResponse
      */
-    public function index() {
-        $cancel_url = route('front.cart');
-
+    public function index($vendorId) {
         // ====================================================================
-        // VENDOR ID RESOLUTION (Priority: POST > Session)
-        // FIX: Read vendor_id from form POST first, then fall back to session
-        // This prevents vendor_id loss when session expires or user navigates
+        // STRICT POLICY: vendor_id FROM ROUTE ONLY
+        // No session, no POST, no fallback - fail immediately if missing
         // ====================================================================
-        $vendorIdFromPost = request('checkout_vendor_id');
-        $isVendorCheckoutFromPost = request('is_vendor_checkout') === '1';
+        $vendorId = (int)$vendorId;
 
-        // Get from session as fallback
-        $vendorData = $this->getVendorCheckoutData();
-        $vendorIdFromSession = $vendorData['vendor_id'];
-
-        // Use POST value first, then session
-        $vendorId = !empty($vendorIdFromPost) ? (int)$vendorIdFromPost : $vendorIdFromSession;
-        $isVendorCheckout = $isVendorCheckoutFromPost || $vendorData['is_vendor_checkout'];
-
-        // If we got vendor_id from POST but not in session, restore it to session for later use
-        if ($vendorId && !$vendorIdFromSession) {
-            Session::put('checkout_vendor_id', $vendorId);
-            Log::info('MyFatoorah: Restored vendor_id to session from POST', [
-                'vendor_id' => $vendorId
-            ]);
-        }
-
-        // POLICY: Vendor ID is REQUIRED for all payment operations
-        // MyFatoorah credentials are ONLY in vendor_credentials table
         if (!$vendorId) {
-            Log::error('MyFatoorah: No vendor_id found in POST or session', [
+            Log::error('MyFatoorah: vendor_id missing from route', [
                 'user_id' => Auth::id(),
-                'post_vendor_id' => $vendorIdFromPost,
-                'session_vendor_id' => $vendorIdFromSession,
-                'session_data' => $vendorData
+                'route' => request()->path()
             ]);
-            return redirect($cancel_url)->with('unsuccess', __('خطأ في جلسة الدفع. يرجى إعادة المحاولة من السلة.'));
+            return redirect()->route('front.cart')
+                ->with('unsuccess', __('خطأ: لم يتم تحديد التاجر في مسار الدفع.'));
         }
+
+        $cancel_url = route('front.cart');
 
         // Get vendor-specific MyFatoorah config - NO FALLBACK
         try {
@@ -159,10 +143,9 @@ class MyFatoorahController extends CheckoutBaseControlller {
             return redirect($cancel_url)->with('unsuccess', __('عذراً، لم يتم إعداد بوابة الدفع لهذا التاجر بعد. يرجى التواصل مع التاجر.'));
         }
 
-        // Get steps from vendor sessions ONLY
-        $steps = $this->getCheckoutSteps($vendorId, $isVendorCheckout);
-        $step1 = $steps['step1'];
-        $step2 = $steps['step2'];
+        // Get checkout steps from vendor-specific sessions
+        $step1 = Session::get('vendor_step1_' . $vendorId);
+        $step2 = Session::get('vendor_step2_' . $vendorId);
 
         if (!$step1 || !$step2) {
             return redirect()->route('front.cart')->with('unsuccess', __('Checkout session expired.'));

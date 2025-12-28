@@ -61,19 +61,36 @@ class CashOnDeliveryController extends CheckoutBaseControlller
      * @param Request $request
      * @return \Illuminate\Http\RedirectResponse
      */
-    public function store(Request $request)
+    /**
+     * POLICY: vendor_id comes from ROUTE only
+     * Route: /checkout/vendor/{vendorId}/payment/cod
+     */
+    public function store(Request $request, $vendorId)
     {
+        // ====================================================================
+        // STRICT POLICY: vendor_id FROM ROUTE ONLY
+        // No session, no POST, no fallback - fail immediately if missing
+        // ====================================================================
+        $vendorId = (int)$vendorId;
+
+        if (!$vendorId) {
+            return redirect()->route('front.cart')
+                ->with('unsuccess', __('خطأ: لم يتم تحديد التاجر في مسار الدفع.'));
+        }
+
         $input = $request->all();
 
-        // Detect if this is a vendor-specific checkout
-        // Uses HandlesVendorCheckout trait methods
-        $vendorData = $this->getVendorCheckoutData();
-        $vendorId = $vendorData['vendor_id'];
-        $isVendorCheckout = $vendorData['is_vendor_checkout'];
+        // Load step data from vendor-specific session
+        $steps = $this->getCheckoutSteps($vendorId);
+        $step1 = $steps['step1'];
+        $step2 = $steps['step2'];
 
-        // Load step data from vendor-specific or global session
-        $steps = $this->getCheckoutSteps($vendorId, $isVendorCheckout);
-        $input = array_merge($steps['step1'], $steps['step2'], $input);
+        if (!$step1 || !$step2) {
+            return redirect()->route('front.cart')
+                ->with('unsuccess', __('انتهت صلاحية جلسة الدفع. يرجى إعادة المحاولة.'));
+        }
+
+        $input = array_merge($step1, $step2, $input);
 
         if ($request->pass_check) {
             $auth = OrderHelper::auth_check($input); // For Authentication Checking
@@ -87,13 +104,11 @@ class CashOnDeliveryController extends CheckoutBaseControlller
         }
 
         $oldCart = Session::get('cart');
-        $cart = new Cart($oldCart);
+        $originalCart = new Cart($oldCart);
 
         // CRITICAL: Filter cart to include ONLY this vendor's products
-        // This ensures order contains only vendor's items
-        if ($isVendorCheckout) {
-            $cart = $this->filterCartForVendor($cart, $vendorId);
-        }
+        // vendor_id comes from route, so we ALWAYS filter
+        $cart = $this->filterCartForVendor($originalCart, $vendorId);
 
         OrderHelper::license_check($cart); // For License Checking
         $t_cart = $cart;
@@ -128,18 +143,18 @@ class CashOnDeliveryController extends CheckoutBaseControlller
             $originalShippingMethod = $input['shipping'];
         }
 
-        if ($isVendorCheckout) {
-            // Vendor checkout
-            $input['shipping_title'] = '';
-            $input['packing_title'] = '';
-            $input['shipping_cost'] = 0;
-            $input['packing_cost'] = 0;
-            $input['vendor_shipping_ids'] = json_encode([$vendorId => (int)($input['vendor_shipping_id'] ?? 0)]);
-            $input['vendor_packing_ids'] = json_encode([$vendorId => (int)($input['vendor_packing_id'] ?? 0)]);
-        } else {
-            // Regular checkout
-            if ($this->gs->multiple_shipping == 0) {
-                // Single shipping
+        // VENDOR CHECKOUT ONLY (regular checkout is disabled)
+        // vendor_id comes from route, so this is ALWAYS vendor checkout
+        $input['shipping_title'] = '';
+        $input['packing_title'] = '';
+        $input['shipping_cost'] = 0;
+        $input['packing_cost'] = 0;
+        $input['vendor_shipping_ids'] = json_encode([$vendorId => (int)($input['vendor_shipping_id'] ?? 0)]);
+        $input['vendor_packing_ids'] = json_encode([$vendorId => (int)($input['vendor_packing_id'] ?? 0)]);
+
+        /* DISABLED: Regular checkout logic (kept for reference)
+        if ($this->gs->multiple_shipping == 0) {
+            // Single shipping
                 $input['shipping_title'] = $input['shipping_title'] ?? '';
                 $input['packing_title'] = $input['packing_title'] ?? '';
                 $input['shipping_cost'] = (float)($input['shipping_cost'] ?? 0);
@@ -198,6 +213,7 @@ class CashOnDeliveryController extends CheckoutBaseControlller
                 }
             }
         }
+        END OF DISABLED REGULAR CHECKOUT LOGIC */
 
         // تأكد من إزالة أي مصفوفات متبقية
         unset($input['packeging']);
@@ -206,7 +222,7 @@ class CashOnDeliveryController extends CheckoutBaseControlller
         $input['shipping'] = $originalShippingMethod;
 
         // ✅ حفظ بيانات شركة الشحن المختارة من العميل
-        $input['customer_shipping_choice'] = $this->extractCustomerShippingChoice($steps['step2'], $vendorId, $isVendorCheckout);
+        $input['customer_shipping_choice'] = $this->extractCustomerShippingChoice($step2, $vendorId);
 
         $order = new Order;
 
@@ -221,13 +237,7 @@ class CashOnDeliveryController extends CheckoutBaseControlller
         $input['order_number'] = Str::random(4) . time();
         $input['wallet_price'] = $request->wallet_price / $this->curr->value;
 
-        // Get tax data from step2 (already calculated and saved)
-        if ($isVendorCheckout) {
-            $step2 = Session::get('vendor_step2_' . $vendorId);
-        } else {
-            $step2 = Session::get('step2');
-        }
-
+        // Get tax data from step2 (already retrieved at method start)
         $input['tax'] = $step2['tax_amount'] ?? 0;
         $input['tax_location'] = $step2['tax_location'] ?? '';
 

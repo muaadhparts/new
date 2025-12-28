@@ -5,47 +5,71 @@ namespace App\Traits;
 use App\Models\Cart;
 use Illuminate\Support\Facades\Session;
 
+/**
+ * ====================================================================
+ * VENDOR CHECKOUT TRAIT
+ * ====================================================================
+ *
+ * STRICT POLICY (2025-12):
+ * - vendor_id MUST come from Route parameter
+ * - NO session-based vendor tracking (checkout_vendor_id is DEPRECATED)
+ * - Step data stored as: vendor_step1_{vendor_id}, vendor_step2_{vendor_id}
+ *
+ * Usage in Payment Controllers:
+ *   public function store($vendorId) {
+ *       $steps = $this->getCheckoutSteps($vendorId);
+ *       $cart = $this->filterCartForVendor($originalCart, $vendorId);
+ *   }
+ * ====================================================================
+ */
 trait HandlesVendorCheckout
 {
     /**
-     * Get vendor checkout session data
+     * DEPRECATED: Do not use this method
+     * vendor_id must come from route parameter, not session
+     *
+     * @deprecated Use route parameter $vendorId instead
      */
     protected function getVendorCheckoutData()
     {
-        $vendorId = Session::get('checkout_vendor_id');
-        $isVendorCheckout = !empty($vendorId);
+        \Log::warning('HandlesVendorCheckout::getVendorCheckoutData() is DEPRECATED. Use route parameter for vendor_id.');
 
+        // Return empty - vendor_id must come from route
         return [
-            'vendor_id' => $vendorId,
-            'is_vendor_checkout' => $isVendorCheckout
+            'vendor_id' => null,
+            'is_vendor_checkout' => false
         ];
     }
 
     /**
-     * Get step1 and step2 data based on checkout type
+     * Get step1 and step2 data for vendor checkout
+     *
+     * @param int $vendorId The vendor ID from route
+     * @return array
      */
-    protected function getCheckoutSteps($vendorId = null, $isVendorCheckout = false)
+    protected function getCheckoutSteps($vendorId)
     {
-        if ($isVendorCheckout && $vendorId) {
-            return [
-                'step1' => Session::get('vendor_step1_' . $vendorId),
-                'step2' => Session::get('vendor_step2_' . $vendorId)
-            ];
+        if (!$vendorId) {
+            throw new \InvalidArgumentException('vendor_id is required for getCheckoutSteps()');
         }
 
         return [
-            'step1' => Session::get('step1'),
-            'step2' => Session::get('step2')
+            'step1' => Session::get('vendor_step1_' . $vendorId),
+            'step2' => Session::get('vendor_step2_' . $vendorId)
         ];
     }
 
     /**
      * Filter cart for vendor-specific checkout
+     *
+     * @param mixed $cart Original cart
+     * @param int $vendorId The vendor ID from route
+     * @return object Filtered cart with only this vendor's products
      */
     protected function filterCartForVendor($cart, $vendorId)
     {
         if (!$vendorId) {
-            return $cart;
+            throw new \InvalidArgumentException('vendor_id is required for filterCartForVendor()');
         }
 
         $vendorCart = new \stdClass();
@@ -66,12 +90,15 @@ trait HandlesVendorCheckout
     }
 
     /**
-     * Remove vendor products from cart after order
+     * Remove vendor products from cart after successful order
+     *
+     * @param int $vendorId The vendor ID from route
+     * @param mixed $originalCart Original cart before filtering
      */
     protected function removeVendorProductsFromCart($vendorId, $originalCart)
     {
         if (!$vendorId) {
-            // Normal checkout - clear all cart data
+            // No vendor context - clear entire cart
             Session::forget('cart');
             Session::forget('already');
             Session::forget('coupon');
@@ -104,15 +131,19 @@ trait HandlesVendorCheckout
             Session::forget('cart');
         }
 
-        // Clear vendor-specific session data
+        // Clear vendor-specific session data (checkout steps, coupons)
+        // NOTE: checkout_vendor_id is NO LONGER used - vendor context is in route
         Session::forget('vendor_step1_' . $vendorId);
         Session::forget('vendor_step2_' . $vendorId);
-        Session::forget('checkout_vendor_id');
         Session::forget('coupon_vendor_' . $vendorId);
     }
 
     /**
      * Determine success URL based on remaining cart items
+     *
+     * @param int $vendorId The vendor ID from route
+     * @param mixed $originalCart Original cart before filtering
+     * @return string Success URL
      */
     protected function getSuccessUrl($vendorId, $originalCart)
     {

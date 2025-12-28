@@ -35,10 +35,49 @@ class PaymentGateway extends Model
         return $data;
     }
 
-    public function showCheckoutLink(){
-        $link = '';
+    /**
+     * Get checkout link for vendor-specific payment route
+     *
+     * POLICY: ALL payment routes require vendor_id in the route.
+     * This method returns vendor-specific routes when vendor_id is provided.
+     *
+     * @param int|null $vendorId The vendor ID for vendor-specific routes
+     * @return string The route URL
+     */
+    public function showCheckoutLink($vendorId = null){
         $data = $this->keyword == null ? 'other' : $this->keyword;
-//        dd($data);
+
+        // ====================================================================
+        // VENDOR-SPECIFIC ROUTES (New Policy)
+        // ====================================================================
+        if ($vendorId) {
+            $routeMap = [
+                'myfatoorah'    => 'front.checkout.vendor.myfatoorah.submit',
+                'paypal'        => 'front.checkout.vendor.paypal.submit',
+                'stripe'        => 'front.checkout.vendor.stripe.submit',
+                'instamojo'     => 'front.checkout.vendor.instamojo.submit',
+                'paystack'      => 'front.checkout.vendor.paystack.submit',
+                'paytm'         => 'front.checkout.vendor.paytm.submit',
+                'mollie'        => 'front.checkout.vendor.mollie.submit',
+                'razorpay'      => 'front.checkout.vendor.razorpay.submit',
+                'authorize.net' => 'front.checkout.vendor.authorize.submit',
+                'mercadopago'   => 'front.checkout.vendor.mercadopago.submit',
+                'flutterwave'   => 'front.checkout.vendor.flutterwave.submit',
+                'sslcommerz'    => 'front.checkout.vendor.ssl.submit',
+                'voguepay'      => 'front.checkout.vendor.voguepay.submit',
+                'cod'           => 'front.checkout.vendor.cod.submit',
+                'wallet'        => 'front.checkout.vendor.wallet.submit',
+            ];
+
+            $routeName = $routeMap[$data] ?? 'front.checkout.vendor.manual.submit';
+            return route($routeName, ['vendorId' => $vendorId]);
+        }
+
+        // ====================================================================
+        // LEGACY ROUTES (Will redirect to cart with error)
+        // These are kept for backward compatibility but will fail
+        // ====================================================================
+        $link = '';
         if($data == 'myfatoorah'){
             $link = route('front.myfatoorah.submit');
         }else if($data == 'paypal'){
@@ -72,9 +111,6 @@ class PaymentGateway extends Model
         }else{
             $link = route('front.manual.submit');
         }
-
-
-
 
         return $link;
     }

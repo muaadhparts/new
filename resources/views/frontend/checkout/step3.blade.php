@@ -66,7 +66,7 @@
                             @if ($digital == 0)
                             <!-- single payment input -->
                             <div class="gs-radio-wrapper payment" data-show="{{ $gt->showForm() }}"
-                                data-form="{{ $gt->showCheckoutLink() }}"
+                                data-form="{{ $gt->showCheckoutLink($vendor_id ?? null) }}"
                                 data-href="{{ route('front.load.payment', ['slug1' => $gt->showKeyword(), 'slug2' => $gt->id]) }}">
                                 <input type="radio" id="pl{{ $gt->id }}" name="payment_1">
                                 <label class="icon-label" for="pl{{ $gt->id }}">
@@ -85,7 +85,7 @@
                             @endif
                             @else
                             <div class="gs-radio-wrapper payment" data-val="{{ $gt->keyword }}"
-                                data-show="{{ $gt->showForm() }}" data-form="{{ $gt->showCheckoutLink() }}"
+                                data-show="{{ $gt->showForm() }}" data-form="{{ $gt->showCheckoutLink($vendor_id ?? null) }}"
                                 data-href="{{ route('front.load.payment', ['slug1' => $gt->showKeyword(), 'slug2' => $gt->id]) }}">
                                 <input type="radio" id="pl{{ $gt->id }}" name="payment_1">
                                 <label class="icon-label" for="pl{{ $gt->id }}">
@@ -237,9 +237,11 @@
 
 
 
-            {{-- ✅ Vendor Checkout Information --}}
-            <input type="hidden" id="checkout-vendor-id" name="checkout_vendor_id" value="{{ $vendor_id ?? '' }}">
-            <input type="hidden" id="is-vendor-checkout" name="is_vendor_checkout" value="{{ ($is_vendor_checkout ?? false) ? '1' : '0' }}">
+            {{-- ✅ Vendor Info (for JavaScript only - NOT for form submission)
+                 POLICY: vendor_id comes from ROUTE, not from hidden inputs
+                 These are kept for coupon JS functionality only --}}
+            <input type="hidden" id="checkout-vendor-id" value="{{ $vendor_id ?? '' }}">
+            <input type="hidden" id="is-vendor-checkout" value="{{ ($is_vendor_checkout ?? false) ? '1' : '0' }}">
 
             {{-- ✅ Basic Order Information --}}
             <input type="hidden" name="dp" value="{{ $digital }}">

@@ -5,15 +5,19 @@
  * MULTI-VENDOR CHECKOUT CONTROLLER
  * ====================================================================
  *
- * This controller handles checkout operations in a multi-vendor system:
+ * STRICT POLICY (2025-12):
+ * - ALL checkout operations MUST have vendor_id in ROUTE
+ * - NO session-based vendor tracking (no checkout_vendor_id in session)
+ * - NO POST/hidden inputs for vendor context
+ * - Payment routes: /checkout/vendor/{vendorId}/payment/{gateway}
  *
  * Key Features:
- * 1. VENDOR-SPECIFIC CHECKOUT ROUTES:
- *    - checkoutVendor($vendorId): Step 1 - Customer info for specific vendor
- *    - checkoutVendorStep1(): Save customer data to vendor_step1_{vendor_id}
- *    - checkoutVendorStep2($vendorId): Step 2 - Show shipping for this vendor ONLY
- *    - checkoutVendorStep2Submit(): Save shipping to vendor_step2_{vendor_id}
- *    - checkoutVendorStep3($vendorId): Step 3 - Show payment gateways for this vendor ONLY
+ * 1. VENDOR-SPECIFIC CHECKOUT ROUTES (all include vendorId):
+ *    - checkoutVendor($vendorId): Step 1 - Customer info
+ *    - checkoutVendorStep1($vendorId): Save customer data
+ *    - checkoutVendorStep2($vendorId): Step 2 - Shipping
+ *    - checkoutVendorStep2Submit($vendorId): Save shipping
+ *    - checkoutVendorStep3($vendorId): Step 3 - Payment
  *
  * 2. VENDOR ISOLATION:
  *    - Filters cart items to show only products from specified vendor
@@ -21,19 +25,19 @@
  *    - Shows ONLY payment gateways where user_id = vendor_id
  *    - NO FALLBACK to global/admin shipping or payment methods
  *
- * 3. SESSION MANAGEMENT:
- *    - checkout_vendor_id: Current vendor being processed
+ * 3. SESSION MANAGEMENT (vendor_id NOT stored in session):
  *    - vendor_step1_{vendor_id}: Customer data per vendor
  *    - vendor_step2_{vendor_id}: Shipping data per vendor
  *
  * 4. ERROR HANDLING:
+ *    - If vendor_id missing from route: Immediate fail (no fallback)
  *    - If no payment methods exist for vendor: Show error message
  *    - If no products for vendor: Redirect to cart
  *
  * Flow:
- * Cart → /checkout/vendor/{id} → Step1 → Step2 → Step3 → Payment Controller → Order
+ * Cart → /checkout/vendor/{id} → Step1 → Step2 → Step3 → Payment → Order
  *
- * Modified: 2025-01-XX for Multi-Vendor Checkout System
+ * Modified: 2025-12-28 for Route-Based Vendor Context
  * ====================================================================
  */
 
@@ -1080,38 +1084,36 @@ class CheckoutController extends FrontBaseController
      * @param int $vendorId The vendor's user_id
      * @return \Illuminate\View\View|\Illuminate\Http\RedirectResponse
      */
+    /**
+     * POLICY: vendor_id comes from ROUTE only - NOT from session
+     */
     public function checkoutVendor($vendorId)
     {
+        // ====================================================================
+        // STRICT POLICY: vendor_id FROM ROUTE ONLY
+        // No session storage for vendor context
+        // ====================================================================
+        $vendorId = (int)$vendorId;
+
+        if (!$vendorId) {
+            return redirect()->route('front.cart')->with('unsuccess', __('خطأ: لم يتم تحديد التاجر.'));
+        }
+
         if (!Session::has('cart')) {
             return redirect()->route('front.cart')->with('success', __("You don't have any product to checkout."));
         }
 
         // ====================================================================
-        // ✅ مسح بيانات التاجر السابق عند بدء checkout لتاجر جديد
+        // مسح بيانات temp عند بدء checkout جديد
         // ====================================================================
-        $previousVendorId = Session::get('checkout_vendor_id');
-        if ($previousVendorId && $previousVendorId != $vendorId) {
-            // مسح tempcart و temporder من التاجر السابق
-            Session::forget(['tempcart', 'temporder']);
-            // مسح بيانات steps التاجر السابق
-            Session::forget([
-                'vendor_step1_' . $previousVendorId,
-                'vendor_step2_' . $previousVendorId,
-                'coupon_vendor_' . $previousVendorId,
-                'coupon_total_vendor_' . $previousVendorId,
-            ]);
-        }
-
-        // ====================================================================
-        // ✅ FIXED: Save vendor_id FIRST - then check auth
-        // ====================================================================
-        // This prevents losing vendor_id when redirecting to login
-        Session::put('checkout_vendor_id', $vendorId);
-        Session::save(); // Force save immediately
+        Session::forget(['tempcart', 'temporder']);
 
         // Check if user is authenticated OR guest checkout is enabled
         if (!Auth::check() && $this->gs->guest_checkout != 1) {
-            return redirect()->route('user.login')->with('unsuccess', __('Please login to continue.'));
+            // Redirect to login with return URL that includes vendor_id
+            return redirect()->route('user.login')
+                ->with('unsuccess', __('Please login to continue.'))
+                ->with('return_to', route('front.checkout.vendor', $vendorId));
         }
 
         // Clean old step data for THIS vendor to allow form refresh

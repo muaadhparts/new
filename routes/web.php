@@ -1972,63 +1972,198 @@ Route::group(['middleware' => 'maintenance'], function () {
     Route::get('/buy-now/{id}', 'Front\CheckoutController@buynow')->name('front.buynow');
 
     // ====================================================================
-    // VENDOR CHECKOUT ONLY - Regular checkout disabled
+    // VENDOR CHECKOUT POLICY (STRICT)
     // ====================================================================
-    // All checkout flows now use vendor-specific routes
-    // This ensures proper vendor attribution and commission tracking
+    // ALL checkout operations MUST have explicit vendor_id in Route.
+    // NO session, NO POST, NO hidden inputs for vendor context.
+    // Cart is multi-vendor; Checkout is single-vendor per transaction.
+    // ====================================================================
 
     // Vendor-specific checkout routes (with session preservation middleware)
-    Route::middleware(['preserve.session'])->group(function () {
-        Route::get('/checkout/vendor/{vendorId}', 'Front\CheckoutController@checkoutVendor')->name('front.checkout.vendor');
-        Route::post('/checkout/vendor/{vendorId}/step1/submit', 'Front\CheckoutController@checkoutVendorStep1')->name('front.checkout.vendor.step1.submit');
-        // Redirect GET requests to step1/submit back to step1 (handles refresh/back button)
-        Route::get('/checkout/vendor/{vendorId}/step1/submit', function($vendorId) {
+    Route::middleware(['preserve.session'])->prefix('checkout/vendor/{vendorId}')->group(function () {
+        // Step 1: Address
+        Route::get('/', 'Front\CheckoutController@checkoutVendor')->name('front.checkout.vendor');
+        Route::post('/step1/submit', 'Front\CheckoutController@checkoutVendorStep1')->name('front.checkout.vendor.step1.submit');
+        Route::get('/step1/submit', function($vendorId) {
             return redirect()->route('front.checkout.vendor', $vendorId)->with('info', __('Please fill out the form and submit again.'));
         });
-        Route::get('/checkout/vendor/{vendorId}/step2', 'Front\CheckoutController@checkoutVendorStep2')->name('front.checkout.vendor.step2');
-        Route::post('/checkout/vendor/{vendorId}/step2/submit', 'Front\CheckoutController@checkoutVendorStep2Submit')->name('front.checkout.vendor.step2.submit');
-        // Redirect GET requests to step2/submit back to step2
-        Route::get('/checkout/vendor/{vendorId}/step2/submit', function($vendorId) {
+
+        // Step 2: Shipping
+        Route::get('/step2', 'Front\CheckoutController@checkoutVendorStep2')->name('front.checkout.vendor.step2');
+        Route::post('/step2/submit', 'Front\CheckoutController@checkoutVendorStep2Submit')->name('front.checkout.vendor.step2.submit');
+        Route::get('/step2/submit', function($vendorId) {
             return redirect()->route('front.checkout.vendor.step2', $vendorId)->with('info', __('Please fill out the form and submit again.'));
         });
-        Route::get('/checkout/vendor/{vendorId}/step3', 'Front\CheckoutController@checkoutVendorStep3')->name('front.checkout.vendor.step3');
 
-        // ====================================================================
-        // GEOCODING ROUTES - Inside session middleware to share session with checkout
-        // ====================================================================
-        Route::prefix('geocoding')->group(function () {
-            Route::post('/reverse', [\App\Http\Controllers\Api\GeocodingController::class, 'reverseGeocode'])->name('geocoding.reverse');
-            // ✅ Step 1 Capture-Only: لا تحقق، فقط إرجاع بيانات Google
-            Route::post('/reverse-with-sync', [\App\Http\Controllers\GeocodingController::class, 'reverseGeocodeWithSync'])->name('geocoding.reverse-with-sync');
-            // ✅ Step 1 Tax: للحصول على الضريبة من الإحداثيات
-            Route::post('/tax-from-coordinates', [\App\Http\Controllers\GeocodingController::class, 'getTaxFromCoordinates'])->name('geocoding.tax');
-            Route::get('/search-cities', [\App\Http\Controllers\Api\GeocodingController::class, 'searchCities'])->name('geocoding.search');
-            Route::post('/sync-country', [\App\Http\Controllers\Api\GeocodingController::class, 'startCountrySync'])->name('geocoding.sync');
-            Route::get('/sync-progress', [\App\Http\Controllers\Api\GeocodingController::class, 'getSyncProgress'])->name('geocoding.progress');
-        });
+        // Step 3: Payment
+        Route::get('/step3', 'Front\CheckoutController@checkoutVendorStep3')->name('front.checkout.vendor.step3');
+
+        // ================================================================
+        // PAYMENT ROUTES - All inside vendor context
+        // ================================================================
+
+        // MyFatoorah
+        Route::post('/payment/myfatoorah', 'App\Http\Controllers\MyFatoorahController@index')->name('front.checkout.vendor.myfatoorah.submit');
+
+        // Cash On Delivery
+        Route::post('/payment/cod', 'Payment\Checkout\CashOnDeliveryController@store')->name('front.checkout.vendor.cod.submit');
+
+        // Paypal
+        Route::post('/payment/paypal', 'Payment\Checkout\PaypalController@store')->name('front.checkout.vendor.paypal.submit');
+
+        // Stripe
+        Route::post('/payment/stripe', 'Payment\Checkout\StripeController@store')->name('front.checkout.vendor.stripe.submit');
+
+        // Wallet
+        Route::post('/payment/wallet', 'Payment\Checkout\WalletPaymentController@store')->name('front.checkout.vendor.wallet.submit');
+
+        // Manual
+        Route::post('/payment/manual', 'Payment\Checkout\ManualPaymentController@store')->name('front.checkout.vendor.manual.submit');
+
+        // Instamojo
+        Route::post('/payment/instamojo', 'Payment\Checkout\InstamojoController@store')->name('front.checkout.vendor.instamojo.submit');
+
+        // Paystack
+        Route::post('/payment/paystack', 'Payment\Checkout\PaystackController@store')->name('front.checkout.vendor.paystack.submit');
+
+        // PayTM
+        Route::post('/payment/paytm', 'Payment\Checkout\PaytmController@store')->name('front.checkout.vendor.paytm.submit');
+
+        // Mollie
+        Route::post('/payment/mollie', 'Payment\Checkout\MollieController@store')->name('front.checkout.vendor.mollie.submit');
+
+        // RazorPay
+        Route::post('/payment/razorpay', 'Payment\Checkout\RazorpayController@store')->name('front.checkout.vendor.razorpay.submit');
+
+        // Authorize.Net
+        Route::post('/payment/authorize', 'Payment\Checkout\AuthorizeController@store')->name('front.checkout.vendor.authorize.submit');
+
+        // Mercadopago
+        Route::post('/payment/mercadopago', 'Payment\Checkout\MercadopagoController@store')->name('front.checkout.vendor.mercadopago.submit');
+
+        // Flutter Wave
+        Route::post('/payment/flutterwave', 'Payment\Checkout\FlutterwaveController@store')->name('front.checkout.vendor.flutterwave.submit');
+
+        // SSLCommerz
+        Route::post('/payment/ssl', 'Payment\Checkout\SslController@store')->name('front.checkout.vendor.ssl.submit');
+
+        // Voguepay
+        Route::post('/payment/voguepay', 'Payment\Checkout\VoguepayController@store')->name('front.checkout.vendor.voguepay.submit');
+
+        // Location reset
+        Route::post('/location/reset', 'Front\CheckoutController@resetLocation')->name('front.checkout.vendor.location.reset');
+
+        // Coupon (vendor-specific)
+        Route::get('/coupon/check', 'Front\CouponController@couponcheck')->name('front.checkout.vendor.coupon.check');
+        Route::post('/coupon/remove', 'Front\CouponController@removeCoupon')->name('front.checkout.vendor.coupon.remove');
+
+        // Wallet check
+        Route::get('/wallet-check', 'Front\CheckoutController@walletcheck')->name('front.checkout.vendor.wallet.check');
     });
 
     // ====================================================================
-    // REGULAR CHECKOUT - DISABLED (Now using vendor checkout only)
+    // GEOCODING ROUTES (Inside session middleware)
     // ====================================================================
-    // Regular checkout routes (non-vendor specific)
-    Route::get('/checkout', 'Front\CheckoutController@checkout')->name('front.checkout');
-    Route::post('/checkout/step1/submit', 'Front\CheckoutController@checkoutStep1')->name('front.checkout.step1.submit');
-    // Redirect GET requests to step1/submit back to step1
-    Route::get('/checkout/step1/submit', function() {
-        return redirect()->route('front.checkout')->with('info', __('Please fill out the form and submit again.'));
+    Route::middleware(['preserve.session'])->prefix('geocoding')->group(function () {
+        Route::post('/reverse', [\App\Http\Controllers\Api\GeocodingController::class, 'reverseGeocode'])->name('geocoding.reverse');
+        Route::post('/reverse-with-sync', [\App\Http\Controllers\GeocodingController::class, 'reverseGeocodeWithSync'])->name('geocoding.reverse-with-sync');
+        Route::post('/tax-from-coordinates', [\App\Http\Controllers\GeocodingController::class, 'getTaxFromCoordinates'])->name('geocoding.tax');
+        Route::get('/search-cities', [\App\Http\Controllers\Api\GeocodingController::class, 'searchCities'])->name('geocoding.search');
+        Route::post('/sync-country', [\App\Http\Controllers\Api\GeocodingController::class, 'startCountrySync'])->name('geocoding.sync');
+        Route::get('/sync-progress', [\App\Http\Controllers\Api\GeocodingController::class, 'getSyncProgress'])->name('geocoding.progress');
     });
-    Route::get('/checkout/step2', 'Front\CheckoutController@checkoutstep2')->name('front.checkout.step2');
-    Route::post('/checkout/step2/submit', 'Front\CheckoutController@checkoutStep2Submit')->name('front.checkout.step2.submit');
-    // Redirect GET requests to step2/submit back to step2
-    Route::get('/checkout/step2/submit', function() {
-        return redirect()->route('front.checkout.step2')->with('info', __('Please fill out the form and submit again.'));
-    });
-    Route::get('/checkout/step3', 'Front\CheckoutController@checkoutstep3')->name('front.checkout.step3');
 
-    // Location reset endpoint (clears session before new location selection)
-    Route::post('/checkout/location/reset', 'Front\CheckoutController@resetLocation')->name('front.checkout.location.reset');
+    // ====================================================================
+    // PAYMENT NOTIFY/CALLBACK ROUTES (External - no vendor_id)
+    // These are called by payment gateways, not by our app
+    // ====================================================================
+    Route::get('/checkout/payment/myfatoorah/notify', 'App\Http\Controllers\MyFatoorahController@notify')->name('front.myfatoorah.notify');
+    Route::get('/checkout/payment/paypal-notify', 'Payment\Checkout\PaypalController@notify')->name('front.paypal.notify');
+    Route::get('/payment/stripe/notify', 'Payment\Checkout\StripeController@notify')->name('front.stripe.notify');
+    Route::get('/checkout/payment/instamojo-notify', 'Payment\Checkout\InstamojoController@notify')->name('front.instamojo.notify');
+    Route::post('/checkout/payment/paytm-notify', 'Payment\Checkout\PaytmController@notify')->name('front.paytm.notify');
+    Route::get('/checkout/payment/molly-notify', 'Payment\Checkout\MollieController@notify')->name('front.molly.notify');
+    Route::post('/checkout/payment/razorpay-notify', 'Payment\Checkout\RazorpayController@notify')->name('front.razorpay.notify');
+    Route::post('/checkout/payment/ssl-notify', 'Payment\Checkout\SslController@notify')->name('front.ssl.notify');
 
+    // Payment return/cancel (after external redirect)
+    Route::get('/checkout/payment/return', 'Front\CheckoutController@payreturn')->name('front.payment.return');
+    Route::get('/checkout/payment/cancle', 'Front\CheckoutController@paycancle')->name('front.payment.cancle');
+
+    // ====================================================================
+    // REGULAR CHECKOUT - COMPLETELY DISABLED
+    // Redirect ALL non-vendor checkout to cart with error
+    // ====================================================================
+    Route::get('/checkout', function() {
+        return redirect()->route('front.cart')->with('unsuccess', __('يرجى اختيار تاجر للمتابعة مع الدفع.'));
+    })->name('front.checkout');
+    Route::any('/checkout/step1/submit', function() {
+        return redirect()->route('front.cart')->with('unsuccess', __('يرجى اختيار تاجر للمتابعة.'));
+    })->name('front.checkout.step1.submit');
+    Route::get('/checkout/step2', function() {
+        return redirect()->route('front.cart')->with('unsuccess', __('يرجى اختيار تاجر للمتابعة.'));
+    })->name('front.checkout.step2');
+    Route::any('/checkout/step2/submit', function() {
+        return redirect()->route('front.cart')->with('unsuccess', __('يرجى اختيار تاجر للمتابعة.'));
+    })->name('front.checkout.step2.submit');
+    Route::get('/checkout/step3', function() {
+        return redirect()->route('front.cart')->with('unsuccess', __('يرجى اختيار تاجر للمتابعة.'));
+    })->name('front.checkout.step3');
+
+    // ====================================================================
+    // OLD PAYMENT ROUTES - DISABLED (Redirect to cart)
+    // Payment without vendor context is not allowed
+    // ====================================================================
+    Route::post('/checkout/payment/myfatoorah/submit', function() {
+        return redirect()->route('front.cart')->with('unsuccess', __('خطأ: لم يتم تحديد التاجر.'));
+    })->name('front.myfatoorah.submit');
+    Route::post('/checkout/payment/cod-submit', function() {
+        return redirect()->route('front.cart')->with('unsuccess', __('خطأ: لم يتم تحديد التاجر.'));
+    })->name('front.cod.submit');
+    Route::post('/checkout/payment/paypal/submit', function() {
+        return redirect()->route('front.cart')->with('unsuccess', __('خطأ: لم يتم تحديد التاجر.'));
+    })->name('front.paypal.submit');
+    Route::post('/checkout/payment/stripe-submit', function() {
+        return redirect()->route('front.cart')->with('unsuccess', __('خطأ: لم يتم تحديد التاجر.'));
+    })->name('front.stripe.submit');
+    Route::post('/checkout/payment/wallet-submit', function() {
+        return redirect()->route('front.cart')->with('unsuccess', __('خطأ: لم يتم تحديد التاجر.'));
+    })->name('front.wallet.submit');
+    Route::post('/checkout/payment/manual-submit', function() {
+        return redirect()->route('front.cart')->with('unsuccess', __('خطأ: لم يتم تحديد التاجر.'));
+    })->name('front.manual.submit');
+    Route::post('/checkout/payment/instamojo-submit', function() {
+        return redirect()->route('front.cart')->with('unsuccess', __('خطأ: لم يتم تحديد التاجر.'));
+    })->name('front.instamojo.submit');
+    Route::post('/checkout/payment/paystack-submit', function() {
+        return redirect()->route('front.cart')->with('unsuccess', __('خطأ: لم يتم تحديد التاجر.'));
+    })->name('front.paystack.submit');
+    Route::post('/checkout/payment/paytm-submit', function() {
+        return redirect()->route('front.cart')->with('unsuccess', __('خطأ: لم يتم تحديد التاجر.'));
+    })->name('front.paytm.submit');
+    Route::post('/checkout/payment/molly-submit', function() {
+        return redirect()->route('front.cart')->with('unsuccess', __('خطأ: لم يتم تحديد التاجر.'));
+    })->name('front.molly.submit');
+    Route::post('/checkout/payment/razorpay-submit', function() {
+        return redirect()->route('front.cart')->with('unsuccess', __('خطأ: لم يتم تحديد التاجر.'));
+    })->name('front.razorpay.submit');
+    Route::post('/checkout/payment/authorize-submit', function() {
+        return redirect()->route('front.cart')->with('unsuccess', __('خطأ: لم يتم تحديد التاجر.'));
+    })->name('front.authorize.submit');
+    Route::post('/checkout/payment/mercadopago-submit', function() {
+        return redirect()->route('front.cart')->with('unsuccess', __('خطأ: لم يتم تحديد التاجر.'));
+    })->name('front.mercadopago.submit');
+    Route::post('/checkout/payment/flutter-submit', function() {
+        return redirect()->route('front.cart')->with('unsuccess', __('خطأ: لم يتم تحديد التاجر.'));
+    })->name('front.flutter.submit');
+    Route::post('/checkout/payment/ssl-submit', function() {
+        return redirect()->route('front.cart')->with('unsuccess', __('خطأ: لم يتم تحديد التاجر.'));
+    })->name('front.ssl.submit');
+    Route::post('/checkout/payment/voguepay-submit', function() {
+        return redirect()->route('front.cart')->with('unsuccess', __('خطأ: لم يتم تحديد التاجر.'));
+    })->name('front.voguepay.submit');
+
+    // Coupon routes (global - for cart page)
     Route::get('/carts/coupon/check', 'Front\CouponController@couponcheck')->name('front.coupon.check');
     Route::post('/carts/coupon/remove', 'Front\CouponController@removeCoupon')->name('front.coupon.remove');
 
@@ -2037,77 +2172,9 @@ Route::group(['middleware' => 'maintenance'], function () {
         return response()->json(['token' => csrf_token()]);
     })->name('csrf.token');
 
-//    Route::get('/checkout/payment/{slug1}/{slug2}', 'Front\CheckoutController@loadpayment')->name('front.load.payment');
-    Route::get('/checkout/payment/return', 'Front\CheckoutController@payreturn')->name('front.payment.return');
-    Route::get('/checkout/payment/cancle', 'Front\CheckoutController@paycancle')->name('front.payment.cancle');
-    Route::get('/checkout/payment/wallet-check', 'Front\CheckoutController@walletcheck')->name('front.wallet.check');
-
-
-
-    // My Fatoorah
-    Route::post('/checkout/payment/myfatoorah/submit', 'App\Http\Controllers\MyFatoorahController@index')->name('front.myfatoorah.submit');
-    Route::get('/checkout/payment/myfatoorah/myfatoorah-notify', 'App\Http\Controllers\MyFatoorahController@notify')->name('front.myfatoorah.notify');
-//    Route::post('/checkout/payment/myfatoorah/submit', 'Payment\Checkout\MyFatoorahController@store')->name('front.myfatoorah.submit');
-
-    // Tryoto Webhook (يجب أن يكون بدون middleware auth)
+    // Tryoto Webhook (external - no auth)
     Route::post('/webhooks/tryoto', 'App\Http\Controllers\TryotoWebhookController@handle')->name('webhooks.tryoto');
     Route::get('/webhooks/tryoto/test', 'App\Http\Controllers\TryotoWebhookController@test')->name('webhooks.tryoto.test');
-
-//    Route::get('/checkout/payment/paypal-notify', 'Payment\Checkout\PaypalController@notify')->name('front.paypal.notify');
-
-
-
-    // Paypal
-    Route::post('/checkout/payment/paypal/submit', 'Payment\Checkout\PaypalController@store')->name('front.paypal.submit');
-    Route::get('/checkout/payment/paypal-notify', 'Payment\Checkout\PaypalController@notify')->name('front.paypal.notify');
-
-    // Stripe
-    Route::post('/checkout/payment/stripe-submit', 'Payment\Checkout\StripeController@store')->name('front.stripe.submit');
-    Route::get('/payment/stripe/notify', 'Payment\Checkout\StripeController@notify')->name('front.stripe.notify');
-
-    // Instamojo
-    Route::post('/checkout/payment/instamojo-submit', 'Payment\Checkout\InstamojoController@store')->name('front.instamojo.submit');
-    Route::get('/checkout/payment/instamojo-notify', 'Payment\Checkout\InstamojoController@notify')->name('front.instamojo.notify');
-
-    // Paystack
-    Route::post('/checkout/payment/paystack-submit', 'Payment\Checkout\PaystackController@store')->name('front.paystack.submit');
-
-    // PayTM
-    Route::post('/checkout/payment/paytm-submit', 'Payment\Checkout\PaytmController@store')->name('front.paytm.submit');;
-    Route::post('/checkout/payment/paytm-notify', 'Payment\Checkout\PaytmController@notify')->name('front.paytm.notify');
-
-    // Molly
-    Route::post('/checkout/payment/molly-submit', 'Payment\Checkout\MollieController@store')->name('front.molly.submit');
-    Route::get('/checkout/payment/molly-notify', 'Payment\Checkout\MollieController@notify')->name('front.molly.notify');
-
-    // RazorPay
-    Route::post('/checkout/payment/razorpay-submit', 'Payment\Checkout\RazorpayController@store')->name('front.razorpay.submit');
-    Route::post('/checkout/payment/razorpay-notify', 'Payment\Checkout\RazorpayController@notify')->name('front.razorpay.notify');
-
-    // Authorize.Net
-    Route::post('/checkout/payment/authorize-submit', 'Payment\Checkout\AuthorizeController@store')->name('front.authorize.submit');
-
-    // Mercadopago
-    Route::post('/checkout/payment/mercadopago-submit', 'Payment\Checkout\MercadopagoController@store')->name('front.mercadopago.submit');
-
-    // Flutter Wave
-    Route::post('/checkout/payment/flutter-submit', 'Payment\Checkout\FlutterwaveController@store')->name('front.flutter.submit');
-
-    // SSLCommerz
-    Route::post('/checkout/payment/ssl-submit', 'Payment\Checkout\SslController@store')->name('front.ssl.submit');
-    Route::post('/checkout/payment/ssl-notify', 'Payment\Checkout\SslController@notify')->name('front.ssl.notify');
-
-    // Voguepay
-    Route::post('/checkout/payment/voguepay-submit', 'Payment\Checkout\VoguepayController@store')->name('front.voguepay.submit');
-
-    // Wallet
-    Route::post('/checkout/payment/wallet-submit', 'Payment\Checkout\WalletPaymentController@store')->name('front.wallet.submit');
-
-    // Manual
-    Route::post('/checkout/payment/manual-submit', 'Payment\Checkout\ManualPaymentController@store')->name('front.manual.submit');
-
-    // Cash On Delivery
-    Route::post('/checkout/payment/cod-submit', 'Payment\Checkout\CashOnDeliveryController@store')->name('front.cod.submit');
 
     // Flutterwave Notify Routes
 
