@@ -237,6 +237,10 @@
 
 
 
+            {{-- ✅ Vendor Checkout Information --}}
+            <input type="hidden" id="checkout-vendor-id" name="checkout_vendor_id" value="{{ $vendor_id ?? '' }}">
+            <input type="hidden" id="is-vendor-checkout" name="is_vendor_checkout" value="{{ ($is_vendor_checkout ?? false) ? '1' : '0' }}">
+
             {{-- ✅ Basic Order Information --}}
             <input type="hidden" name="dp" value="{{ $digital }}">
             <input type="hidden" name="totalQty" value="{{ $totalQty }}">

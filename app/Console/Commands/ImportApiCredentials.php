@@ -5,23 +5,33 @@ namespace App\Console\Commands;
 use App\Services\ApiCredentialService;
 use Illuminate\Console\Command;
 
+/**
+ * Import SYSTEM-LEVEL API credentials from .env to encrypted database storage
+ *
+ * POLICY:
+ * - api_credentials: ONLY for Google Maps and DigitalOcean (system-level)
+ * - vendor_credentials: For Tryoto (shipping) and MyFatoorah (payment) per vendor
+ * - This command does NOT import payment or shipping credentials
+ */
 class ImportApiCredentials extends Command
 {
     protected $signature = 'credentials:import {--force : Force import without confirmation}';
-    protected $description = 'Import API credentials from .env to encrypted database storage';
+    protected $description = 'Import SYSTEM-LEVEL API credentials (Google Maps, DigitalOcean) from .env to encrypted database';
 
     public function handle(): int
     {
         $this->info('===========================================');
-        $this->info('  API Credentials Import Tool');
+        $this->info('  System API Credentials Import Tool');
         $this->info('===========================================');
         $this->newLine();
 
-        if (!$this->option('force')) {
-            $this->warn('This command will import API credentials from .env to the database.');
-            $this->warn('Make sure the api_credentials table exists before running this command.');
-            $this->newLine();
+        $this->warn('POLICY NOTICE:');
+        $this->line('  • This imports SYSTEM-LEVEL credentials only');
+        $this->line('  • Google Maps, DigitalOcean → api_credentials table');
+        $this->line('  • Tryoto, MyFatoorah → vendor_credentials table (per vendor)');
+        $this->newLine();
 
+        if (!$this->option('force')) {
             if (!$this->confirm('Do you want to continue?')) {
                 $this->info('Operation cancelled.');
                 return 0;
@@ -30,14 +40,11 @@ class ImportApiCredentials extends Command
 
         $service = new ApiCredentialService();
 
+        // ONLY system-level credentials - NO payment or shipping credentials
         $credentials = [
             ['google_maps', 'api_key', env('GOOGLE_MAPS_API_KEY'), 'Google Maps API Key'],
-            ['myfatoorah', 'api_key', env('FATOORAH_API_KEY'), 'MyFatoorah API Key'],
-            ['tryoto', 'refresh_token', env('TRYOTO_REFRESH_TOKEN'), 'Tryoto Refresh Token'],
             ['digitalocean', 'access_key', env('DO_ACCESS_KEY_ID'), 'DigitalOcean Spaces Access Key'],
             ['digitalocean', 'secret_key', env('DO_SECRET_ACCESS_KEY'), 'DigitalOcean Spaces Secret Key'],
-            ['aws', 'access_key', env('AWS_ACCESS_KEY_ID'), 'AWS Access Key'],
-            ['aws', 'secret_key', env('AWS_SECRET_ACCESS_KEY'), 'AWS Secret Key'],
         ];
 
         $imported = 0;
@@ -66,14 +73,14 @@ class ImportApiCredentials extends Command
         $this->warn('===========================================');
         $this->warn('  IMPORTANT: Next Steps');
         $this->warn('===========================================');
-        $this->line('1. Remove the following from .env after verification:');
+        $this->line('1. Remove these from .env after verification:');
         $this->line('   - GOOGLE_MAPS_API_KEY');
-        $this->line('   - FATOORAH_API_KEY');
-        $this->line('   - TRYOTO_REFRESH_TOKEN');
         $this->line('   - DO_ACCESS_KEY_ID / DO_SECRET_ACCESS_KEY');
-        $this->line('   - AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY');
         $this->newLine();
-        $this->line('2. Update your code to use ApiCredentialService instead of env()');
+        $this->line('2. For VENDOR credentials (Tryoto, MyFatoorah):');
+        $this->line('   - Use Admin Panel > Vendor Credentials');
+        $this->line('   - Or Vendor Dashboard > Settings');
+        $this->line('   - Each vendor MUST have their own credentials');
         $this->newLine();
 
         return 0;

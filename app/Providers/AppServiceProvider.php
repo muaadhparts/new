@@ -100,12 +100,21 @@ class AppServiceProvider extends ServiceProvider
                 return DB::table('social_links')->where('user_id', 0)->where('status', 1)->get();
             }));
 
-            // Google Maps API Key - loaded from encrypted database
+            // Google Maps API Key - ONLY from api_credentials table, NO fallback to .env
+            // POLICY: If key missing, Google Maps will NOT load (no empty key passed)
             $settings->with('googleMapsApiKey', cache()->remember('google_maps_api_key', 3600, function () {
                 try {
-                    return app(ApiCredentialService::class)->getGoogleMapsKey();
+                    $key = app(ApiCredentialService::class)->getGoogleMapsKey();
+                    if (empty($key)) {
+                        \Log::warning('Google Maps: API key not found in api_credentials table. Maps will be disabled.');
+                        return null; // Return null, not empty string - Blade will check with !empty()
+                    }
+                    return $key;
                 } catch (\Exception $e) {
-                    return config('services.google_maps.api_key');
+                    \Log::error('Google Maps: Failed to retrieve API key from api_credentials', [
+                        'error' => $e->getMessage()
+                    ]);
+                    return null;
                 }
             }));
         });

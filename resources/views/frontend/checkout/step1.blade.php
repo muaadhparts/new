@@ -671,9 +671,16 @@
         }
     </style>
 
-    {{-- Google Maps Script with Places Library --}}
-    <script src="https://maps.googleapis.com/maps/api/js?key={{ $googleMapsApiKey ?? config('services.google_maps.api_key') }}&libraries=places&language=ar"></script>
+    {{-- POLICY: Google Maps loads ONLY if API key exists in api_credentials table --}}
+    @if(!empty($googleMapsApiKey))
+    <script src="https://maps.googleapis.com/maps/api/js?key={{ $googleMapsApiKey }}&libraries=places&language=ar"></script>
+    @else
+        @php \Log::warning('Google Maps: API key not configured in api_credentials table - Checkout map disabled'); @endphp
+    @endif
     <script>
+    // Check if Google Maps is available
+    const googleMapsAvailable = typeof google !== 'undefined' && typeof google.maps !== 'undefined';
+
     // Map Variables
     let map, marker, searchBox, geocoder;
     let selectedLat = null, selectedLng = null;
@@ -734,6 +741,11 @@
 
     // Initialize map when modal is shown
     $('#mapModal').on('shown.bs.modal', function() {
+        if (!googleMapsAvailable) {
+            document.getElementById('coords-display').innerHTML = '<span class="text-danger">@lang("Map service unavailable. Please enter address manually.")</span>';
+            console.error('Google Maps API not loaded - API key may be missing from api_credentials table');
+            return;
+        }
         if (!map) {
             initMap();
         } else {
@@ -765,6 +777,12 @@
     }
 
     function initMap() {
+        // Check if Google Maps is available
+        if (!googleMapsAvailable) {
+            console.error('initMap called but Google Maps is not available');
+            return;
+        }
+
         // Initialize geocoder
         geocoder = new google.maps.Geocoder();
 

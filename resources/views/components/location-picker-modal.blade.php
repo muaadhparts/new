@@ -165,10 +165,12 @@
 </div>
 
 @push('scripts')
-{{-- Google Maps API --}}
-@if(!isset($googleMapsLoaded))
+{{-- POLICY: Google Maps loads ONLY if API key exists in api_credentials table --}}
+@if(!empty($googleMapsApiKey) && !isset($googleMapsLoaded))
     @php $googleMapsLoaded = true; @endphp
-    <script src="https://maps.googleapis.com/maps/api/js?key={{ $googleMapsApiKey ?? config('services.google_maps.api_key') }}&libraries=places&language={{ app()->getLocale() }}" async defer></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key={{ $googleMapsApiKey }}&libraries=places&language={{ app()->getLocale() }}" async defer></script>
+@elseif(empty($googleMapsApiKey))
+    @php \Log::warning('Google Maps: API key not configured in api_credentials table - Location picker disabled'); @endphp
 @endif
 
 <script>

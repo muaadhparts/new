@@ -57,21 +57,21 @@ class TryotoService
     private string $baseUrl;
     private bool $isSandbox;
     private ?string $token = null;
-    private ApiCredentialService $credentialService;
     private VendorCredentialService $vendorCredentialService;
     private ?int $vendorId = null;
 
     /**
-     * @param ApiCredentialService|null $credentialService For system-wide credentials
+     * POLICY: All Tryoto operations REQUIRE explicit vendor context.
+     * Credentials are ONLY from vendor_credentials table.
+     * NO fallback to api_credentials or .env
+     *
      * @param VendorCredentialService|null $vendorCredentialService For vendor-specific credentials
-     * @param int|null $vendorId Vendor ID to use vendor-specific credentials
+     * @param int|null $vendorId Vendor ID (REQUIRED for shipping operations)
      */
     public function __construct(
-        ?ApiCredentialService $credentialService = null,
         ?VendorCredentialService $vendorCredentialService = null,
         ?int $vendorId = null
     ) {
-        $this->credentialService = $credentialService ?? app(ApiCredentialService::class);
         $this->vendorCredentialService = $vendorCredentialService ?? app(VendorCredentialService::class);
         $this->vendorId = $vendorId;
         $this->isSandbox = (bool) config('services.tryoto.sandbox', false);
@@ -165,44 +165,35 @@ class TryotoService
     /**
      * تنفيذ تجديد التوكن الفعلي
      *
-     * MARKETPLACE RULE:
-     * - If vendorId is set → MUST use vendor credentials, NO FALLBACK
-     * - If vendorId is NOT set → system-level operations only (getCities, etc.)
+     * POLICY: ALL Tryoto operations REQUIRE explicit vendor context.
+     * Credentials are ONLY from vendor_credentials table.
+     * NO fallback to api_credentials or .env
      *
      * @return string|null
      * @throws \Exception
      */
     private function doRefreshToken(): ?string
     {
-        $refreshToken = null;
-
-        if ($this->vendorId) {
-            // Vendor operation - MUST use vendor credentials, NO FALLBACK to system
-            $refreshToken = $this->vendorCredentialService->getTryotoRefreshToken($this->vendorId);
-
-            if (empty($refreshToken)) {
-                // NO FALLBACK - vendor MUST have their own shipping credentials
-                throw new \Exception(
-                    "Tryoto shipping credentials not configured for vendor #{$this->vendorId}. " .
-                    "Each vendor must have their own shipping credentials. " .
-                    "Configure via Admin Panel > Vendor Credentials or Vendor Dashboard."
-                );
-            }
-
-            Log::debug('Tryoto: Using vendor-specific refresh token', ['vendor_id' => $this->vendorId]);
-        } else {
-            // System-level operation (getCities, verifyCitySupport, etc.)
-            $refreshToken = $this->credentialService->getTryotoRefreshToken();
-
-            if (empty($refreshToken)) {
-                throw new \Exception(
-                    'Tryoto system credentials not configured. ' .
-                    'Add refresh token via Admin Panel > System Credentials.'
-                );
-            }
-
-            Log::debug('Tryoto: Using system refresh token for system-level operation');
+        // POLICY: Vendor ID is REQUIRED - no system-level Tryoto operations
+        if (!$this->vendorId) {
+            throw new \Exception(
+                "Tryoto operations require explicit vendor context. " .
+                "Use ->forVendor(\$vendorId) before making API calls."
+            );
         }
+
+        // Get vendor credentials - NO FALLBACK
+        $refreshToken = $this->vendorCredentialService->getTryotoRefreshToken($this->vendorId);
+
+        if (empty($refreshToken)) {
+            throw new \Exception(
+                "Tryoto shipping credentials not configured for vendor #{$this->vendorId}. " .
+                "Each vendor must have their own shipping credentials in vendor_credentials table. " .
+                "Configure via Admin Panel > Vendor Credentials or Vendor Dashboard."
+            );
+        }
+
+        Log::debug('Tryoto: Using vendor-specific refresh token', ['vendor_id' => $this->vendorId]);
 
         $response = Http::timeout(self::REQUEST_TIMEOUT)
             ->withOptions(['curl' => [CURLOPT_IPRESOLVE => CURL_IPRESOLVE_V4]])
@@ -1543,45 +1534,29 @@ class TryotoService
     }
 
     /**
-     * Check if Tryoto service is properly configured
+     * Check if Tryoto service is properly configured for a vendor
      *
-     * MARKETPLACE POLICY:
-     * - Vendor operations (shipping) REQUIRE vendor credentials - NO FALLBACK
-     * - System operations (getCities) use system credentials
+     * POLICY: Vendor ID is REQUIRED - all Tryoto operations need vendor context
+     * Credentials are ONLY from vendor_credentials table - NO fallback
      *
-     * @param int|null $vendorId Vendor ID to check vendor-specific configuration
+     * @param int $vendorId Vendor ID (REQUIRED)
      * @return array
      */
-    public function checkConfiguration(?int $vendorId = null): array
+    public function checkConfiguration(int $vendorId): array
     {
         $issues = [];
-        $hasVendorCredential = false;
-        $hasSystemCredential = false;
 
-        // Check vendor-specific credential
-        if ($vendorId) {
-            $this->vendorId = $vendorId;
-            $vendorToken = $this->vendorCredentialService->getTryotoRefreshToken($vendorId);
-            $hasVendorCredential = !empty($vendorToken);
+        $this->vendorId = $vendorId;
+        $vendorToken = $this->vendorCredentialService->getTryotoRefreshToken($vendorId);
+        $hasVendorCredential = !empty($vendorToken);
 
-            // MARKETPLACE RULE: Vendor MUST have their own credentials
-            if (!$hasVendorCredential) {
-                $issues[] = "REQUIRED: Vendor #{$vendorId} must have their own Tryoto credentials configured. " .
-                           "Add via Admin Panel > Vendor Credentials.";
-            }
-        }
-
-        // Check system credential (for system-level operations)
-        $systemToken = $this->credentialService->getTryotoRefreshToken();
-        $hasSystemCredential = !empty($systemToken);
-
-        if (!$hasSystemCredential) {
-            $issues[] = 'System Tryoto credentials not configured (needed for city lookup). ' .
-                       'Add via Admin Panel > System Credentials.';
+        if (!$hasVendorCredential) {
+            $issues[] = "REQUIRED: Vendor #{$vendorId} must have Tryoto credentials in vendor_credentials table. " .
+                       "Configure via Admin Panel > Vendor Credentials or Vendor Dashboard.";
         }
 
         if (empty($this->baseUrl)) {
-            $issues[] = 'API URL is not configured';
+            $issues[] = 'API URL is not configured in config/services.php';
         }
 
         return [
@@ -1590,8 +1565,7 @@ class TryotoService
             'base_url' => $this->baseUrl,
             'vendor_id' => $vendorId,
             'has_vendor_credential' => $hasVendorCredential,
-            'has_system_credential' => $hasSystemCredential,
-            'policy' => 'MARKETPLACE: Vendor credentials required for shipping - NO FALLBACK to system',
+            'policy' => 'ALL Tryoto operations require vendor_credentials - NO system fallback',
             'issues' => $issues,
             'cache_key' => $this->getCacheKey(),
             'has_cached_token' => Cache::has($this->getCacheKey())

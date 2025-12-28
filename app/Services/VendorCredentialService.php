@@ -3,7 +3,6 @@
 namespace App\Services;
 
 use App\Models\VendorCredential;
-use App\Models\ApiCredential;
 use Illuminate\Support\Facades\Cache;
 
 class VendorCredentialService
@@ -11,7 +10,11 @@ class VendorCredentialService
     protected int $cacheTtl = 3600;
 
     /**
-     * Get a vendor credential with fallback to system credential
+     * Get a vendor credential - NO FALLBACK to system credentials
+     *
+     * MARKETPLACE POLICY:
+     * - Each vendor MUST have their own payment/shipping credentials
+     * - NO FALLBACK to system credentials for financial/shipping operations
      */
     public function get(
         int $userId,
@@ -22,15 +25,8 @@ class VendorCredentialService
         $cacheKey = "vendor_credential:{$userId}:{$serviceName}:{$keyName}:{$environment}";
 
         return Cache::remember($cacheKey, $this->cacheTtl, function () use ($userId, $serviceName, $keyName, $environment) {
-            // First try vendor-specific credential
-            $vendorCredential = VendorCredential::getCredential($userId, $serviceName, $keyName, $environment);
-
-            if ($vendorCredential) {
-                return $vendorCredential;
-            }
-
-            // Fallback to system credential
-            return ApiCredential::getCredential($serviceName, $keyName);
+            // Vendor-specific credential ONLY - NO FALLBACK
+            return VendorCredential::getCredential($userId, $serviceName, $keyName, $environment);
         });
     }
 
@@ -90,17 +86,7 @@ class VendorCredentialService
     }
 
     /**
-     * Get vendor's MyFatoorah key (with fallback to system - LEGACY)
-     *
-     * @deprecated Use getMyFatoorahKeyStrict() for marketplace operations
-     */
-    public function getMyFatoorahKey(int $userId): ?string
-    {
-        return $this->get($userId, 'myfatoorah', 'api_key');
-    }
-
-    /**
-     * Get vendor's MyFatoorah key - STRICT MODE (NO FALLBACK)
+     * Get vendor's MyFatoorah key - NO FALLBACK
      *
      * MARKETPLACE POLICY:
      * - Vendor MUST have their own payment credentials
@@ -113,7 +99,7 @@ class VendorCredentialService
      * @param int $userId Vendor user ID
      * @return string|null API key or null if not configured
      */
-    public function getMyFatoorahKeyStrict(int $userId): ?string
+    public function getMyFatoorahKey(int $userId): ?string
     {
         // 1. Try new vendor_credentials table first
         $key = $this->getVendorOnly($userId, 'myfatoorah', 'api_key');
@@ -124,6 +110,15 @@ class VendorCredentialService
 
         // 2. Fallback to legacy payment_gateways.information
         return $this->getFromPaymentGateway($userId, 'myfatoorah', 'api_key');
+    }
+
+    /**
+     * Alias for backward compatibility
+     * @deprecated Use getMyFatoorahKey() instead
+     */
+    public function getMyFatoorahKeyStrict(int $userId): ?string
+    {
+        return $this->getMyFatoorahKey($userId);
     }
 
     /**
@@ -165,17 +160,7 @@ class VendorCredentialService
     }
 
     /**
-     * Get vendor's Tryoto refresh token (with fallback to system - LEGACY)
-     *
-     * @deprecated Use getTryotoRefreshTokenStrict() for marketplace operations
-     */
-    public function getTryotoRefreshToken(int $userId): ?string
-    {
-        return $this->getVendorOnly($userId, 'tryoto', 'refresh_token');
-    }
-
-    /**
-     * Get vendor's Tryoto refresh token - STRICT MODE (NO FALLBACK)
+     * Get vendor's Tryoto refresh token - NO FALLBACK
      *
      * MARKETPLACE POLICY:
      * - Vendor MUST have their own shipping credentials
@@ -184,9 +169,18 @@ class VendorCredentialService
      * @param int $userId Vendor user ID
      * @return string|null Refresh token or null if not configured
      */
-    public function getTryotoRefreshTokenStrict(int $userId): ?string
+    public function getTryotoRefreshToken(int $userId): ?string
     {
         return $this->getVendorOnly($userId, 'tryoto', 'refresh_token');
+    }
+
+    /**
+     * Alias for backward compatibility
+     * @deprecated Use getTryotoRefreshToken() instead
+     */
+    public function getTryotoRefreshTokenStrict(int $userId): ?string
+    {
+        return $this->getTryotoRefreshToken($userId);
     }
 
     /**

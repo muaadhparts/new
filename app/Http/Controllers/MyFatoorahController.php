@@ -25,7 +25,6 @@ use MyFatoorah\Library\MyFatoorah;
 use MyFatoorah\Library\API\Payment\MyFatoorahPayment;
 use MyFatoorah\Library\API\Payment\MyFatoorahPaymentEmbedded;
 use MyFatoorah\Library\API\Payment\MyFatoorahPaymentStatus;
-use App\Services\ApiCredentialService;
 use App\Services\VendorCredentialService;
 use Exception;
 
@@ -37,27 +36,24 @@ class MyFatoorahController extends CheckoutBaseControlller {
      */
     public $mfConfig = [];
 
-    protected ApiCredentialService $credentialService;
     protected VendorCredentialService $vendorCredentialService;
 
 //-----------------------------------------------------------------------------------------------------------------------------------------
 
     /**
      * Initiate MyFatoorah Configuration
+     *
+     * MARKETPLACE POLICY: No default system credentials.
+     * Each vendor MUST have their own MyFatoorah credentials.
      */
     public function __construct(
-        ApiCredentialService $credentialService,
         VendorCredentialService $vendorCredentialService
     ) {
         parent::__construct();
-        $this->credentialService = $credentialService;
         $this->vendorCredentialService = $vendorCredentialService;
-        // Default config (system-wide)
-        $this->mfConfig = [
-            'apiKey'      => $this->credentialService->getMyFatoorahKey(),
-            'isTest'      => config('myfatoorah.test_mode'),
-            'countryCode' => config('myfatoorah.country_iso'),
-        ];
+
+        // No default config - MUST use getVendorMfConfig() per vendor
+        $this->mfConfig = [];
     }
 
     /**
@@ -114,27 +110,57 @@ class MyFatoorahController extends CheckoutBaseControlller {
      * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Foundation\Application|\Illuminate\Http\RedirectResponse|Response|\Illuminate\Routing\Redirector
      */
     public function index() {
-        // Get vendor checkout data
-        $vendorData = $this->getVendorCheckoutData();
-        $vendorId = $vendorData['vendor_id'];
-
         $cancel_url = route('front.cart');
 
-        // Use vendor-specific MyFatoorah config if vendor checkout
-        if ($vendorId) {
-            try {
-                $this->mfConfig = $this->getVendorMfConfig($vendorId);
-            } catch (\Exception $e) {
-                Log::error('MyFatoorah: Vendor credentials not configured', [
-                    'vendor_id' => $vendorId,
-                    'error' => $e->getMessage()
-                ]);
-                return redirect($cancel_url)->with('unsuccess', __('عذراً، لم يتم إعداد بوابة الدفع لهذا التاجر بعد. يرجى التواصل مع التاجر.'));
-            }
+        // ====================================================================
+        // VENDOR ID RESOLUTION (Priority: POST > Session)
+        // FIX: Read vendor_id from form POST first, then fall back to session
+        // This prevents vendor_id loss when session expires or user navigates
+        // ====================================================================
+        $vendorIdFromPost = request('checkout_vendor_id');
+        $isVendorCheckoutFromPost = request('is_vendor_checkout') === '1';
+
+        // Get from session as fallback
+        $vendorData = $this->getVendorCheckoutData();
+        $vendorIdFromSession = $vendorData['vendor_id'];
+
+        // Use POST value first, then session
+        $vendorId = !empty($vendorIdFromPost) ? (int)$vendorIdFromPost : $vendorIdFromSession;
+        $isVendorCheckout = $isVendorCheckoutFromPost || $vendorData['is_vendor_checkout'];
+
+        // If we got vendor_id from POST but not in session, restore it to session for later use
+        if ($vendorId && !$vendorIdFromSession) {
+            Session::put('checkout_vendor_id', $vendorId);
+            Log::info('MyFatoorah: Restored vendor_id to session from POST', [
+                'vendor_id' => $vendorId
+            ]);
+        }
+
+        // POLICY: Vendor ID is REQUIRED for all payment operations
+        // MyFatoorah credentials are ONLY in vendor_credentials table
+        if (!$vendorId) {
+            Log::error('MyFatoorah: No vendor_id found in POST or session', [
+                'user_id' => Auth::id(),
+                'post_vendor_id' => $vendorIdFromPost,
+                'session_vendor_id' => $vendorIdFromSession,
+                'session_data' => $vendorData
+            ]);
+            return redirect($cancel_url)->with('unsuccess', __('خطأ في جلسة الدفع. يرجى إعادة المحاولة من السلة.'));
+        }
+
+        // Get vendor-specific MyFatoorah config - NO FALLBACK
+        try {
+            $this->mfConfig = $this->getVendorMfConfig($vendorId);
+        } catch (\Exception $e) {
+            Log::error('MyFatoorah: Vendor credentials not configured', [
+                'vendor_id' => $vendorId,
+                'error' => $e->getMessage()
+            ]);
+            return redirect($cancel_url)->with('unsuccess', __('عذراً، لم يتم إعداد بوابة الدفع لهذا التاجر بعد. يرجى التواصل مع التاجر.'));
         }
 
         // Get steps from vendor sessions ONLY
-        $steps = $this->getCheckoutSteps($vendorId, $vendorData['is_vendor_checkout']);
+        $steps = $this->getCheckoutSteps($vendorId, $isVendorCheckout);
         $step1 = $steps['step1'];
         $step2 = $steps['step2'];
 
@@ -210,17 +236,24 @@ class MyFatoorahController extends CheckoutBaseControlller {
 
         $cancel_url = route('front.cart');
 
-        // Use vendor-specific MyFatoorah config if vendor checkout
-        if ($vendorId) {
-            try {
-                $this->mfConfig = $this->getVendorMfConfig($vendorId);
-            } catch (\Exception $e) {
-                Log::error('MyFatoorah notify: Vendor credentials not configured', [
-                    'vendor_id' => $vendorId,
-                    'error' => $e->getMessage()
-                ]);
-                return redirect($cancel_url)->with('unsuccess', __('عذراً، لم يتم إعداد بوابة الدفع لهذا التاجر بعد.'));
-            }
+        // POLICY: Vendor ID is REQUIRED for all payment operations
+        if (!$vendorId) {
+            Log::error('MyFatoorah notify: No vendor_id in checkout session', [
+                'user_id' => Auth::id(),
+                'session_data' => $vendorData
+            ]);
+            return redirect($cancel_url)->with('unsuccess', __('خطأ في جلسة الدفع. يرجى إعادة المحاولة من السلة.'));
+        }
+
+        // Get vendor-specific MyFatoorah config - NO FALLBACK
+        try {
+            $this->mfConfig = $this->getVendorMfConfig($vendorId);
+        } catch (\Exception $e) {
+            Log::error('MyFatoorah notify: Vendor credentials not configured', [
+                'vendor_id' => $vendorId,
+                'error' => $e->getMessage()
+            ]);
+            return redirect($cancel_url)->with('unsuccess', __('عذراً، لم يتم إعداد بوابة الدفع لهذا التاجر بعد.'));
         }
 
         $steps = $this->getCheckoutSteps($vendorId, $vendorData['is_vendor_checkout']);

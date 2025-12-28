@@ -58,39 +58,25 @@ class ApiCredentialService
 
     /**
      * Get Google Maps API Key
+     * NO FALLBACK - must be configured in api_credentials table
      */
     public function getGoogleMapsKey(): ?string
     {
-        return $this->get('google_maps', 'api_key') ?? config('services.google_maps.api_key');
-    }
-
-    /**
-     * Get MyFatoorah credentials
-     */
-    public function getMyFatoorahKey(): ?string
-    {
-        return $this->get('myfatoorah', 'api_key') ?? config('myfatoorah.api_key');
-    }
-
-    /**
-     * Get Tryoto refresh token
-     */
-    public function getTryotoRefreshToken(): ?string
-    {
-        return $this->get('tryoto', 'refresh_token') ?? config('tryoto.refresh_token');
+        return $this->get('google_maps', 'api_key');
     }
 
     /**
      * Get DigitalOcean Spaces credentials
+     * NO FALLBACK - must be configured in api_credentials table
      */
     public function getDigitalOceanKey(): ?string
     {
-        return $this->get('digitalocean', 'access_key') ?? config('filesystems.disks.do.key');
+        return $this->get('digitalocean', 'access_key');
     }
 
     public function getDigitalOceanSecret(): ?string
     {
-        return $this->get('digitalocean', 'secret_key') ?? config('filesystems.disks.do.secret');
+        return $this->get('digitalocean', 'secret_key');
     }
 
     /**
@@ -135,21 +121,22 @@ class ApiCredentialService
     }
 
     /**
-     * Import credentials from .env (one-time migration helper)
+     * Import SYSTEM-LEVEL credentials from .env (one-time migration helper)
+     *
+     * POLICY:
+     * - api_credentials: ONLY for Google Maps and DigitalOcean (system-level)
+     * - vendor_credentials: For Tryoto (shipping) and MyFatoorah (payment) per vendor
+     * - NO Tryoto or payment credentials here!
      */
     public function importFromEnv(): array
     {
         $imported = [];
 
+        // ONLY system-level credentials - Google Maps & DigitalOcean
         $mappings = [
             ['google_maps', 'api_key', env('GOOGLE_MAPS_API_KEY'), 'Google Maps API Key'],
-            ['myfatoorah', 'api_key', env('MYFATOORAH_API_KEY'), 'MyFatoorah API Key'],
-            ['myfatoorah', 'secret_key', env('MYFATOORAH_SECRET_KEY'), 'MyFatoorah Secret Key'],
-            ['tryoto', 'refresh_token', env('TRYOTO_REFRESH_TOKEN'), 'Tryoto Refresh Token'],
             ['digitalocean', 'access_key', env('DO_ACCESS_KEY_ID'), 'DigitalOcean Spaces Access Key'],
             ['digitalocean', 'secret_key', env('DO_SECRET_ACCESS_KEY'), 'DigitalOcean Spaces Secret Key'],
-            ['stripe', 'public_key', env('STRIPE_KEY'), 'Stripe Public Key'],
-            ['stripe', 'secret_key', env('STRIPE_SECRET'), 'Stripe Secret Key'],
         ];
 
         foreach ($mappings as [$service, $key, $value, $description]) {

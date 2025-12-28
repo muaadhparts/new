@@ -9,9 +9,14 @@
     $mapHeight = $mapHeight ?? '400px';
 @endphp
 
+{{-- POLICY: Google Maps meta tag ONLY if API key exists in api_credentials table --}}
+@if(!empty($googleMapsApiKey))
 @push('meta')
-    <meta name="google-maps-key" content="{{ $googleMapsApiKey ?? config('services.google_maps.api_key') }}">
+    <meta name="google-maps-key" content="{{ $googleMapsApiKey }}">
 @endpush
+@else
+    @php \Log::warning('Google Maps: API key not configured in api_credentials table - Maps picker disabled'); @endphp
+@endif
 
 @if($showAsModal)
     {{-- Modal Version --}}
