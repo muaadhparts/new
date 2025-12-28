@@ -216,10 +216,17 @@
 
 
                                                     @if (!empty($product['color']))
+                                                        @php
+                                                            // Handle color as string or array
+                                                            $colorValue = $product['color'];
+                                                            if (is_array($colorValue)) {
+                                                                $colorValue = reset($colorValue) ?: ''; // Get first element
+                                                            }
+                                                        @endphp
                                                         <li>
                                                             <span class="specification-name">@lang('Color :') </span>
                                                             <span class="specification muaadh-color-swatch"
-                                                                style="--swatch-color: {{ $product['color'] == '' ? 'white' : '#' . $product['color'] }};"></span>
+                                                                style="--swatch-color: {{ $colorValue == '' ? 'white' : '#' . $colorValue }};"></span>
                                                         </li>
                                                     @endif
 
