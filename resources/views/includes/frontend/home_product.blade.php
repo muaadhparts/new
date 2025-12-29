@@ -5,7 +5,7 @@
 
     Data sources:
     1. ProductCardDTO: $card (from category, search-results, products)
-    2. Product + MerchantProduct: $product, $mp (from wishlist, vendor, related)
+    2. Product + MerchantProduct: $product, $mp (from favorites, vendor, related)
 
     Layout: $layout = 'grid' (default) | 'list'
 
@@ -48,8 +48,8 @@
         $productType = $card->type;
         $affiliateProductType = $card->productType ?? null;
         $affiliateLink = $card->affiliateLink ?? null;
-        $wishlistUrl = $card->wishlistUrl;
-        $isInWishlist = $card->isInWishlist;
+        $favoriteUrl = $card->favoriteUrl ?? null;
+        $isInFavorites = $card->isInFavorites ?? false;
         $compareUrl = $card->compareUrl;
     } else {
         // === Source: Product + MerchantProduct ===
@@ -112,8 +112,8 @@
         // product_type and affiliate_link are now on merchant_products, not products
         $affiliateProductType = $merchant->product_type ?? null;
         $affiliateLink = $merchant->affiliate_link ?? null;
-        $wishlistUrl = route('user-wishlist-add', $actualProduct->id);
-        $isInWishlist = isset($wishlistProductIds) ? $wishlistProductIds->contains($actualProduct->id) : false;
+        $favoriteUrl = route('user-favorite-add', $actualProduct->id);
+        $isInFavorites = isset($favoriteProductIds) && $favoriteProductIds->contains($actualProduct->id);
         $compareUrl = route('product.compare.add', $actualProduct->id);
     }
 
@@ -143,11 +143,11 @@
             @endif
 
             @auth
-                <a href="javascript:;" class="product-card__wishlist wishlist {{ $isInWishlist ? 'active' : '' }}" data-href="{{ $wishlistUrl }}">
-                    <i class="{{ $isInWishlist ? 'fas' : 'far' }} fa-heart"></i>
+                <a href="javascript:;" class="product-card__favorite favorite {{ $isInFavorites ? 'active' : '' }}" data-href="{{ $favoriteUrl }}">
+                    <i class="{{ $isInFavorites ? 'fas' : 'far' }} fa-heart"></i>
                 </a>
             @else
-                <a href="{{ route('user.login') }}" class="product-card__wishlist">
+                <a href="{{ route('user.login') }}" class="product-card__favorite">
                     <i class="far fa-heart"></i>
                 </a>
             @endauth
@@ -271,20 +271,20 @@
             @endif
 
             @auth
-                @if(isset($wishlist) && $wishlist && isset($wishlistId))
-                    {{-- Delete button for wishlist page --}}
-                    <button type="button" class="product-card__delete removewishlist"
-                        data-href="{{ route('user-wishlist-remove', $wishlistId) }}"
-                        title="@lang('Remove from Wishlist')">
+                @if(isset($favorite) && $favorite && isset($favoriteId))
+                    {{-- Delete button for favorites page --}}
+                    <button type="button" class="product-card__delete removefavorite"
+                        data-href="{{ route('user-favorite-remove', $favoriteId) }}"
+                        title="@lang('Remove from Favorites')">
                         <i class="fas fa-trash-alt"></i>
                     </button>
                 @else
-                    <button type="button" class="product-card__wishlist wishlist {{ $isInWishlist ? 'active' : '' }}" data-href="{{ $wishlistUrl }}">
-                        <i class="{{ $isInWishlist ? 'fas' : 'far' }} fa-heart"></i>
+                    <button type="button" class="product-card__favorite favorite {{ $isInFavorites ? 'active' : '' }}" data-href="{{ $favoriteUrl }}">
+                        <i class="{{ $isInFavorites ? 'fas' : 'far' }} fa-heart"></i>
                     </button>
                 @endif
             @else
-                <a href="{{ route('user.login') }}" class="product-card__wishlist">
+                <a href="{{ route('user.login') }}" class="product-card__favorite">
                     <i class="far fa-heart"></i>
                 </a>
             @endauth

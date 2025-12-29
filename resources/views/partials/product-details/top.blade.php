@@ -334,14 +334,14 @@
                             </ul>
                          @endif
                    </div>
-                      <div class="yith-wcwl-add-to-wishlist wishlist-fragment mt-3">
+                      <div class="yith-wcwl-add-to-favorite favorite-fragment mt-3">
                           @if(Auth::check())
-                          <div class="wishlist-button">
-                              <a class="add_to_wishlist new" id="add-to-wish" href="javascript:;" data-href="{{ route('user-wishlist-add',$productt->id) }}"data-bs-toggle="tooltip" data-bs-placement="top" title="" data-bs-original-title="Add to Wishlist" aria-label="Add to Wishlist">{{ __('Wishlist') }}</a>
+                          <div class="favorite-button">
+                              <a class="add_to_favorite new" id="add-to-favorite" href="javascript:;" data-href="{{ route('user-favorite-add',$productt->id) }}"data-bs-toggle="tooltip" data-bs-placement="top" title="" data-bs-original-title="Add to Favorites" aria-label="Add to Favorites">{{ __('Favorites') }}</a>
                           </div>
                           @else
-                          <div class="wishlist-button">
-                              <a class="add_to_wishlist" href="{{ route('user.login') }}" data-bs-toggle="tooltip" data-bs-placement="top" title="" data-bs-original-title="Add to Wishlist" aria-label="Add to Wishlist">{{ __('Wishlist') }}</a>
+                          <div class="favorite-button">
+                              <a class="add_to_favorite" href="{{ route('user.login') }}" data-bs-toggle="tooltip" data-bs-placement="top" title="" data-bs-original-title="Add to Favorites" aria-label="Add to Favorites">{{ __('Favorites') }}</a>
                           </div>
                           @endif
 

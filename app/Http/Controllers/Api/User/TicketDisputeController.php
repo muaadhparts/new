@@ -6,8 +6,8 @@ use App\Classes\MuaadhMailer;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\TicketDisputeMessageResource;
 use App\Http\Resources\TicketDisputeResource;
-use App\Models\AdminUserConversation;
-use App\Models\AdminUserMessage;
+use App\Models\SupportThread;
+use App\Models\SupportMessage;
 use App\Models\Generalsetting;
 use App\Models\Notification;
 use App\Models\Order;
@@ -20,7 +20,7 @@ class TicketDisputeController extends Controller
     public function tickets()
     {
         try {
-            return response()->json(['status' => true, 'data' => TicketDisputeResource::collection(AdminUserConversation::where('user_id', auth()->user()->id)->where('type', 'Ticket')->get()), 'error' => []]);
+            return response()->json(['status' => true, 'data' => TicketDisputeResource::collection(SupportThread::where('user_id', auth()->user()->id)->where('type', 'Ticket')->get()), 'error' => []]);
         } catch (\Exception $e) {
             return response()->json(['status' => true, 'data' => [], 'error' => ['message' => $e->getMessage()]]);
         }
@@ -29,7 +29,7 @@ class TicketDisputeController extends Controller
     public function disputes()
     {
         try {
-            return response()->json(['status' => true, 'data' => TicketDisputeResource::collection(AdminUserConversation::where('user_id', auth()->user()->id)->where('type', 'Dispute')->get()), 'error' => []]);
+            return response()->json(['status' => true, 'data' => TicketDisputeResource::collection(SupportThread::where('user_id', auth()->user()->id)->where('type', 'Dispute')->get()), 'error' => []]);
         } catch (\Exception $e) {
             return response()->json(['status' => true, 'data' => [], 'error' => ['message' => $e->getMessage()]]);
         }
@@ -93,38 +93,38 @@ class TicketDisputeController extends Controller
             }
 
             if ($request->type == 'Ticket') {
-                $conv = AdminUserConversation::where('type', '=', 'Ticket')->where('user_id', '=', $user->id)->where('subject', '=', $subject)->first();
+                $thread = SupportThread::where('type', '=', 'Ticket')->where('user_id', '=', $user->id)->where('subject', '=', $subject)->first();
             } else {
-                $conv = AdminUserConversation::where('type', '=', 'Dispute')->where('user_id', '=', $user->id)->where('subject', '=', $subject)->first();
+                $thread = SupportThread::where('type', '=', 'Dispute')->where('user_id', '=', $user->id)->where('subject', '=', $subject)->first();
             }
 
-            if (isset($conv)) {
+            if (isset($thread)) {
 
-                $msg = new AdminUserMessage();
-                $msg->conversation_id = $conv->id;
+                $msg = new SupportMessage();
+                $msg->thread_id = $thread->id;
                 $msg->message = $request->message;
                 $msg->user_id = $user->id;
                 $msg->save();
                 return response()->json(['status' => true, 'data' => new TicketDisputeMessageResource($msg), 'error' => []]);
             } else {
-                $message = new AdminUserConversation();
-                $message->subject = $subject;
-                $message->user_id = $user->id;
-                $message->message = $request->message;
-                $message->order_number = $request->order_number;
-                $message->type = $request->type;
-                $message->save();
+                $thread = new SupportThread();
+                $thread->subject = $subject;
+                $thread->user_id = $user->id;
+                $thread->message = $request->message;
+                $thread->order_number = $request->order_number;
+                $thread->type = $request->type;
+                $thread->save();
 
                 $notification = new Notification;
-                $notification->conversation_id = $message->id;
+                $notification->conversation_id = $thread->id;
                 $notification->save();
 
-                $msg = new AdminUserMessage();
-                $msg->conversation_id = $message->id;
+                $msg = new SupportMessage();
+                $msg->thread_id = $thread->id;
                 $msg->message = $request->message;
                 $msg->user_id = $user->id;
                 $msg->save();
-                return response()->json(['status' => true, 'data' => new TicketDisputeResource($message), 'error' => []]);
+                return response()->json(['status' => true, 'data' => new TicketDisputeResource($thread), 'error' => []]);
             }
         } catch (\Exception $e) {
             return response()->json(['status' => true, 'data' => [], 'error' => ['message' => $e->getMessage()]]);
@@ -134,18 +134,18 @@ class TicketDisputeController extends Controller
     public function delete($id)
     {
         try {
-            $conv = AdminUserConversation::find($id);
+            $thread = SupportThread::find($id);
 
-            if (!$conv) {
+            if (!$thread) {
                 return response()->json(['status' => false, 'data' => [], 'error' => ["message" => "Not found."]]);
             }
 
-            if ($conv->messages->count() > 0) {
-                foreach ($conv->messages as $key) {
+            if ($thread->messages->count() > 0) {
+                foreach ($thread->messages as $key) {
                     $key->delete();
                 }
             }
-            $conv->delete();
+            $thread->delete();
             return response()->json(['status' => true, 'data' => ['message' => 'Message Deleted Successfully!'], 'error' => []]);
         } catch (\Exception $e) {
             return response()->json(['status' => true, 'data' => [], 'error' => ['message' => $e->getMessage()]]);
@@ -159,7 +159,7 @@ class TicketDisputeController extends Controller
                 [
                     'user_id' => 'required',
                     'message' => 'required',
-                    'conversation_id' => 'required',
+                    'thread_id' => 'required',
                 ];
 
             $validator = Validator::make($request->all(), $rules);
@@ -167,12 +167,12 @@ class TicketDisputeController extends Controller
                 return response()->json(['status' => false, 'data' => [], 'error' => $validator->errors()]);
             }
 
-            $msg = new AdminUserMessage();
+            $msg = new SupportMessage();
             $input = $request->all();
             $input['user_id'] = auth()->user()->id;
             $msg->fill($input)->save();
             $notification = new Notification;
-            $notification->conversation_id = $msg->conversation->id;
+            $notification->conversation_id = $msg->thread->id;
             $notification->save();
             //--- Redirect Section
 

@@ -171,12 +171,12 @@
                     <div class="summary-box">
                         <h4 class="form-title">@lang('Summery')</h4>
 
-                        <!-- Apply Coupon Code -->
+                        <!-- Apply Discount Code -->
                         <div class="summary-inner-box">
-                            <h6 class="summary-title">@lang('Apply Coupon Code')</h6>
-                            <div class="coupon-wrapper">
-                                <input type="text" id="code" name="coupon_code_input" placeholder="@lang('Coupon Code')">
-                                <button type="button" id="check_coupon">@lang('Apply')</button>
+                            <h6 class="summary-title">@lang('Apply Discount Code')</h6>
+                            <div class="discount-code-wrapper">
+                                <input type="text" id="code" name="discount_code_input" placeholder="@lang('Discount Code')">
+                                <button type="button" id="check_discount_code">@lang('Apply')</button>
                             </div>
                         </div>
 
@@ -239,7 +239,7 @@
 
             {{-- ✅ Vendor Info (for JavaScript only - NOT for form submission)
                  POLICY: vendor_id comes from ROUTE, not from hidden inputs
-                 These are kept for coupon JS functionality only --}}
+                 These are kept for discount code JS functionality only --}}
             <input type="hidden" id="checkout-vendor-id" value="{{ $vendor_id ?? '' }}">
             <input type="hidden" id="is-vendor-checkout" value="{{ ($is_vendor_checkout ?? false) ? '1' : '0' }}">
 
@@ -259,27 +259,27 @@
             <input type="hidden" id="input_tax_type" name="tax_type" value="">
             <input type="hidden" id="original_tax" value="{{ $step1->tax_rate ?? 0 }}">
 
-            {{-- ✅ UNIFIED: Final Total (from Step2 Session - includes coupon) --}}
+            {{-- ✅ UNIFIED: Final Total (from Step2 Session - includes discount) --}}
             @php
-                // final_total already has coupon deducted (calculated in CheckoutController)
+                // final_total already has discount deducted (calculated in CheckoutController)
                 $finalTotal = $step2->final_total ?? $step2->total ?? 0;
-                // subtotal_before_coupon = total without coupon deduction
-                $subtotalBeforeCoupon = $step2->subtotal_before_coupon ?? $finalTotal;
-                // Coupon data from step2
-                $couponAmount = $step2->coupon_amount ?? 0;
-                $couponCode = $step2->coupon_code ?? '';
-                $couponId = $step2->coupon_id ?? '';
+                // subtotal_before_discount = total without discount deduction
+                $subtotalBeforeDiscount = $step2->subtotal_before_discount ?? $finalTotal;
+                // Discount code data from step2
+                $discountAmount = $step2->discount_amount ?? 0;
+                $discountCode = $step2->discount_code ?? '';
+                $discountCodeId = $step2->discount_code_id ?? '';
             @endphp
             <input type="hidden" name="total" id="grandtotal" value="{{ round($finalTotal * $curr->value, 2) }}">
             <input type="hidden" id="tgrandtotal" value="{{ round($finalTotal, 2) }}">
             <input type="hidden" id="ttotal" value="{{ round($finalTotal, 2) }}">
-            {{-- ✅ السعر قبل الكوبون - يستخدم لإعادة الحساب عند تغيير الكوبون --}}
-            <input type="hidden" id="subtotal-before-coupon-form" value="{{ round($subtotalBeforeCoupon, 2) }}">
+            {{-- ✅ السعر قبل الخصم - يستخدم لإعادة الحساب عند تغيير كود الخصم --}}
+            <input type="hidden" id="subtotal-before-discount-form" value="{{ round($subtotalBeforeDiscount, 2) }}">
 
-            {{-- ✅ Coupon Information (from Step2 Session) --}}
-            <input type="hidden" name="coupon_code" id="coupon_code" value="{{ $couponCode }}">
-            <input type="hidden" name="coupon_discount" id="coupon_discount" value="{{ $couponAmount }}">
-            <input type="hidden" name="coupon_id" id="coupon_id" value="{{ $couponId }}">
+            {{-- ✅ Discount Code Information (from Step2 Session) --}}
+            <input type="hidden" name="discount_code" id="discount_code" value="{{ $discountCode }}">
+            <input type="hidden" name="discount_amount" id="discount_amount" value="{{ $discountAmount }}">
+            <input type="hidden" name="discount_code_id" id="discount_code_id" value="{{ $discountCodeId }}">
 
             {{-- ✅ User Information --}}
             <input type="hidden" name="user_id" id="user_id"
@@ -332,15 +332,15 @@
 <script type="text/javascript">
     /**
      * ============================================================================
-     * STEP 3: COUPON MANAGEMENT
+     * STEP 3: DISCOUNT CODE MANAGEMENT
      * ============================================================================
      *
      * Data Flow:
-     * - subtotal_before_coupon: Total BEFORE any coupon (products + tax + shipping + packing)
-     * - final_total: Total AFTER coupon deduction
+     * - subtotal_before_discount: Total BEFORE any discount (products + tax + shipping + packing)
+     * - final_total: Total AFTER discount deduction
      *
-     * When applying coupon: newTotal = subtotalBeforeCoupon - discountAmount
-     * When removing coupon: newTotal = subtotalBeforeCoupon
+     * When applying discount: newTotal = subtotalBeforeDiscount - discountAmount
+     * When removing discount: newTotal = subtotalBeforeDiscount
      *
      * ============================================================================
      */
@@ -348,15 +348,15 @@
     var pos = {{ $gs->currency_format }};
     var currencySign = '{{ $curr->sign }}';
 
-    // ✅ FIXED: subtotal_before_coupon is the base for ALL coupon calculations
-    var SUBTOTAL_BEFORE_COUPON = parseFloat($('#subtotal-before-coupon').val()) ||
-                                  parseFloat($('#subtotal-before-coupon-form').val()) ||
+    // ✅ FIXED: subtotal_before_discount is the base for ALL discount calculations
+    var SUBTOTAL_BEFORE_DISCOUNT = parseFloat($('#subtotal-before-discount').val()) ||
+                                  parseFloat($('#subtotal-before-discount-form').val()) ||
                                   parseFloat($('#ttotal').val()) || 0;
 
     console.log('📍 Step3 Initialized:', {
-        subtotalBeforeCoupon: SUBTOTAL_BEFORE_COUPON,
+        subtotalBeforeDiscount: SUBTOTAL_BEFORE_DISCOUNT,
         currentTotal: $('#ttotal').val(),
-        hasCoupon: $('#has-coupon').val() === '1'
+        hasDiscount: $('#has-discount').val() === '1'
     });
 
     // Helper: Format price with currency
@@ -383,77 +383,77 @@
     });
 
     // ============================================================================
-    // APPLY COUPON
+    // APPLY DISCOUNT CODE
     // ============================================================================
-    $(document).on("click", "#check_coupon", function (e) {
+    $(document).on("click", "#check_discount_code", function (e) {
         e.preventDefault();
 
         var code = $("#code").val();
 
         // Validate: code not empty
         if (!code || code.trim() === '') {
-            toastr.error('{{ __('Please enter a coupon code') }}');
+            toastr.error('{{ __('Please enter a discount code') }}');
             return false;
         }
 
-        // Validate: no existing coupon
-        var existingCoupon = $('#coupon_code').val();
-        if (existingCoupon && existingCoupon.trim() !== '') {
-            toastr.warning('{{ __('Please remove the current coupon first') }}');
+        // Validate: no existing discount code
+        var existingCode = $('#discount_code').val();
+        if (existingCode && existingCode.trim() !== '') {
+            toastr.warning('{{ __('Please remove the current discount code first') }}');
             return false;
         }
 
-        console.log('Applying coupon:', { code: code, subtotalBeforeCoupon: SUBTOTAL_BEFORE_COUPON });
+        console.log('Applying discount code:', { code: code, subtotalBeforeDiscount: SUBTOTAL_BEFORE_DISCOUNT });
 
         $.ajax({
             type: "GET",
-            url: mainurl + "/carts/coupon/check",
+            url: mainurl + "/carts/discount-code/check",
             data: {
                 code: code.trim(),
-                total: SUBTOTAL_BEFORE_COUPON // Always use subtotal before coupon
+                total: SUBTOTAL_BEFORE_DISCOUNT // Always use subtotal before discount
             },
             success: function (response) {
-                console.log('Coupon response:', response);
+                console.log('Discount code response:', response);
 
                 if (response == 0) {
-                    toastr.error('{{ __('Coupon not found') }}');
+                    toastr.error('{{ __('Discount code not found') }}');
                 } else if (response == 2) {
-                    toastr.error('{{ __('Coupon already have been taken') }}');
+                    toastr.error('{{ __('Discount code already used') }}');
                 } else if (response == 3) {
                     toastr.error('{{ __('Discount amount exceeds eligible total') }}');
                 } else {
-                    // Success - response is array [formattedTotal, code, discountAmount, couponId, percentage, 1, rawTotal]
+                    // Success - response is array [formattedTotal, code, discountAmount, discountCodeId, percentage, 1, rawTotal]
                     var discountAmount = parseFloat(response[2]);
-                    var newTotal = SUBTOTAL_BEFORE_COUPON - discountAmount;
-                    var couponCode = response[1];
-                    var couponId = response[3];
+                    var newTotal = SUBTOTAL_BEFORE_DISCOUNT - discountAmount;
+                    var discountCode = response[1];
+                    var discountCodeId = response[3];
                     var percentage = response[4];
 
-                    // Update coupon display
-                    $('#coupon-row').removeClass('d-none');
-                    $('#coupon-code-display').text(couponCode);
-                    $('#coupon-amount-display').html('-' + formatPrice(discountAmount));
-                    $('#coupon-percentage-display').html(percentage ? '(' + percentage + ')' : '');
+                    // Update discount display
+                    $('#discount-row').removeClass('d-none');
+                    $('#discount-code-display').text(discountCode);
+                    $('#discount-amount-display').html('-' + formatPrice(discountAmount));
+                    $('#discount-percentage-display').html(percentage ? '(' + percentage + ')' : '');
 
                     // Update hidden fields
-                    $('#coupon_code').val(couponCode);
-                    $('#coupon_discount').val(discountAmount);
-                    $('#coupon_id').val(couponId);
-                    $('#current-coupon-amount').val(discountAmount);
-                    $('#current-coupon-code').val(couponCode);
-                    $('#has-coupon').val('1');
+                    $('#discount_code').val(discountCode);
+                    $('#discount_amount').val(discountAmount);
+                    $('#discount_code_id').val(discountCodeId);
+                    $('#current-discount-amount').val(discountAmount);
+                    $('#current-discount-code').val(discountCode);
+                    $('#has-discount').val('1');
 
                     // Update total display
                     updateTotalDisplay(newTotal);
 
-                    toastr.success(lang.coupon_found);
+                    toastr.success(lang.discount_code_found);
                 }
 
                 $("#code").val("");
             },
             error: function (xhr) {
-                console.error('Coupon error:', xhr);
-                toastr.error('{{ __('Error applying coupon') }}');
+                console.error('Discount code error:', xhr);
+                toastr.error('{{ __('Error applying discount code') }}');
                 $("#code").val("");
             }
         });
@@ -462,48 +462,48 @@
     });
 
     // ============================================================================
-    // REMOVE COUPON
+    // REMOVE DISCOUNT CODE
     // ============================================================================
-    $(document).on("click", ".remove-coupon-btn", function (e) {
+    $(document).on("click", ".remove-discount-btn", function (e) {
         e.preventDefault();
 
         var vendorId = $('#checkout-vendor-id').val();
         var isVendorCheckout = $('#is-vendor-checkout').val() === '1';
 
-        console.log('Removing coupon:', { vendorId: vendorId, isVendorCheckout: isVendorCheckout });
+        console.log('Removing discount code:', { vendorId: vendorId, isVendorCheckout: isVendorCheckout });
 
         $.ajax({
             type: "POST",
-            url: "{{ isset($vendor_id) && $vendor_id ? route('front.checkout.vendor.coupon.remove', ['vendorId' => $vendor_id]) : route('front.coupon.remove') }}",
+            url: "{{ isset($vendor_id) && $vendor_id ? route('front.checkout.vendor.discount-code.remove', ['vendorId' => $vendor_id]) : route('front.discount-code.remove') }}",
             data: {
                 _token: '{{ csrf_token() }}'
             },
             success: function (response) {
-                console.log('Remove coupon response:', response);
+                console.log('Remove discount code response:', response);
 
                 if (response.success) {
-                    // Hide coupon row
-                    $('#coupon-row').addClass('d-none');
+                    // Hide discount row
+                    $('#discount-row').addClass('d-none');
 
                     // Clear hidden fields
-                    $('#coupon_code').val('');
-                    $('#coupon_discount').val('');
-                    $('#coupon_id').val('');
-                    $('#current-coupon-amount').val('0');
-                    $('#current-coupon-code').val('');
-                    $('#has-coupon').val('0');
+                    $('#discount_code').val('');
+                    $('#discount_amount').val('');
+                    $('#discount_code_id').val('');
+                    $('#current-discount-amount').val('0');
+                    $('#current-discount-code').val('');
+                    $('#has-discount').val('0');
 
-                    // Restore original total (subtotal before coupon)
-                    updateTotalDisplay(SUBTOTAL_BEFORE_COUPON);
+                    // Restore original total (subtotal before discount)
+                    updateTotalDisplay(SUBTOTAL_BEFORE_DISCOUNT);
 
                     toastr.success(response.message);
                 } else {
-                    toastr.error(response.message || '{{ __("Error removing coupon") }}');
+                    toastr.error(response.message || '{{ __("Error removing discount code") }}');
                 }
             },
             error: function (xhr) {
-                console.error('Remove coupon error:', xhr);
-                toastr.error('{{ __("Error removing coupon") }}');
+                console.error('Remove discount code error:', xhr);
+                toastr.error('{{ __("Error removing discount code") }}');
             }
         });
     });

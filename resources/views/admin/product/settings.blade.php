@@ -366,7 +366,7 @@
 
                             <hr>
 
-                            <h4 class="text-center">{{ __('WISHLIST PAGE SECTION') }}</h4>
+                            <h4 class="text-center">{{ __('FAVORITES PAGE SECTION') }}</h4>
       
                             <hr>
 
@@ -380,20 +380,20 @@
                                     </div>
                                     <div class="col-lg-6">
                                         <input type="number" class="form-control"
-                                            placeholder="{{ __('Display Products Per Page') }}" name="wishlist_count"
-                                            value="{{ $gs->wishlist_count }}" required="" min="0">
+                                            placeholder="{{ __('Display Products Per Page') }}" name="favorite_count"
+                                            value="{{ $gs->favorite_count }}" required="" min="0">
                                     </div>
                                 </div>
                                 <div class="row justify-content-center">
                                     <div class="col-lg-3">
                                         <div class="left-area">
-                                            <h4 class="heading">{{ __('View Wishlist Product Per Page') }} *
+                                            <h4 class="heading">{{ __('View Favorites Product Per Page') }} *
                                             </h4>
                                         </div>
                                     </div>
                                     <div class="col-lg-6">
-                                        <ul id="wishlist_page" class="myTags">
-                                            @foreach (explode(',',$gs->wishlist_page) as $element)
+                                        <ul id="favorite_page" class="myTags">
+                                            @foreach (explode(',',$gs->favorite_page) as $element)
                                               <li>{{  $element }}</li>
                                             @endforeach
                                         </ul>
@@ -488,8 +488,8 @@
             fieldName: "product_page[]",
             allowSpaces: true 
           });
-          $("#wishlist_page").tagit({
-            fieldName: "wishlist_page[]",
+          $("#favorite_page").tagit({
+            fieldName: "favorite_page[]",
             allowSpaces: true 
           });
 

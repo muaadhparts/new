@@ -42,8 +42,8 @@ class ProductCardDTO
     public bool $hasVendor;
     public int $offPercentage;
     public string $detailsUrl;
-    public bool $isInWishlist;
-    public string $wishlistUrl;
+    public bool $isInFavorites;
+    public string $favoriteUrl;
     public string $compareUrl;
 
     // Vendor
@@ -67,8 +67,8 @@ class ProductCardDTO
      */
     public static function fromMerchantProduct(
         MerchantProduct $merchant,
-        Collection $wishlistProductIds,
-        Collection $wishlistMerchantIds
+        Collection $favoriteProductIds,
+        Collection $favoriteMerchantIds
     ): self {
         $dto = new self();
         $product = $merchant->product;
@@ -106,9 +106,9 @@ class ProductCardDTO
         $dto->offPercentage = self::calculateOffPercentage($dto->previousPrice, $dto->price);
         $dto->detailsUrl = self::buildDetailsUrl($dto->productSlug, $dto->vendorId, $dto->merchantId);
 
-        // Wishlist
-        $dto->isInWishlist = $wishlistMerchantIds->contains($dto->merchantId);
-        $dto->wishlistUrl = route('merchant.wishlist.add', $dto->merchantId);
+        // Favorites
+        $dto->isInFavorites = $favoriteMerchantIds->contains($dto->merchantId);
+        $dto->favoriteUrl = route('merchant.favorite.add', $dto->merchantId);
         $dto->compareUrl = route('merchant.compare.add', $dto->merchantId);
 
         // Vendor (from eager-loaded relation) - localized
@@ -134,11 +134,11 @@ class ProductCardDTO
     public static function fromProduct(
         Product $product,
         ?MerchantProduct $merchant,
-        Collection $wishlistProductIds,
-        Collection $wishlistMerchantIds
+        Collection $favoriteProductIds,
+        Collection $favoriteMerchantIds
     ): self {
         if ($merchant) {
-            return self::fromMerchantProduct($merchant, $wishlistProductIds, $wishlistMerchantIds);
+            return self::fromMerchantProduct($merchant, $favoriteProductIds, $favoriteMerchantIds);
         }
 
         $dto = new self();
@@ -174,9 +174,9 @@ class ProductCardDTO
         $dto->offPercentage = 0;
         $dto->detailsUrl = route('front.product.legacy', $dto->productSlug);
 
-        // Wishlist (product-level)
-        $dto->isInWishlist = $wishlistProductIds->contains($dto->productId);
-        $dto->wishlistUrl = route('user-wishlist-add', $dto->productId);
+        // Favorites (product-level)
+        $dto->isInFavorites = $favoriteProductIds->contains($dto->productId);
+        $dto->favoriteUrl = route('user-favorite-add', $dto->productId);
         $dto->compareUrl = route('product.compare.add', $dto->productId);
 
         // No vendor/brand info without merchant

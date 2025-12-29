@@ -654,7 +654,7 @@ class CartController extends FrontBaseController
             return view('frontend.cart');
         }
 
-        foreach (['already','coupon','coupon_total','coupon_total1','coupon_percentage'] as $k) {
+        foreach (['already','discount_code','discount_total','discount_total1','discount_percentage'] as $k) {
             if (Session::has($k)) Session::forget($k);
         }
 
@@ -772,7 +772,7 @@ class CartController extends FrontBaseController
     public function view_cart()
     {
         if (!Session::has('cart')) { return view('frontend.cart'); }
-        foreach (['already','coupon','coupon_code','coupon_total','coupon_total1','coupon_percentage'] as $k) {
+        foreach (['already','discount_code','discount_code_value','discount_total','discount_total1','discount_percentage'] as $k) {
             if (Session::has($k)) Session::forget($k);
         }
         $oldCart    = Session::get('cart');
@@ -804,7 +804,7 @@ class CartController extends FrontBaseController
         foreach ($allSessionKeys as $key) {
             if (str_starts_with($key, 'vendor_step1_') ||
                 str_starts_with($key, 'vendor_step2_') ||
-                str_starts_with($key, 'coupon_vendor_')) {
+                str_starts_with($key, 'discount_code_vendor_')) {
                 Session::forget($key);
             }
         }
@@ -1123,8 +1123,8 @@ class CartController extends FrontBaseController
 
     public function addbyone()
     {
-        if (\Session::has('coupon')) {
-            \Session::forget('coupon');
+        if (\Session::has('discount_code')) {
+            \Session::forget('discount_code');
         }
 
         $curr       = $this->curr;
@@ -1277,8 +1277,8 @@ class CartController extends FrontBaseController
 
     public function reducebyone()
     {
-        if (\Session::has('coupon')) {
-            \Session::forget('coupon');
+        if (\Session::has('discount_code')) {
+            \Session::forget('discount_code');
         }
 
         $curr       = $this->curr;
@@ -1469,7 +1469,7 @@ class CartController extends FrontBaseController
             $removed = true;
         }
 
-        foreach (['already','coupon','coupon_total','coupon_total1','coupon_percentage'] as $k) {
+        foreach (['already','discount_code','discount_total','discount_total1','discount_percentage'] as $k) {
             Session::forget($k);
         }
         $this->recomputeTotals($cart);
@@ -1577,12 +1577,12 @@ class CartController extends FrontBaseController
         $total = max(0, (float) $request->input('total', 0));
         $shipping_cost = max(0, (float) $request->input('shipping_cost', 0));
 
-        // Apply coupon discount before tax calculation
-        $coupon_discount = Session::has('coupon') ? (float) Session::get('coupon') : 0;
-        $subtotal_after_coupon = max(0, $total - $coupon_discount);
+        // Apply discount before tax calculation
+        $discount_amount = Session::has('discount_code') ? (float) Session::get('discount_code') : 0;
+        $subtotal_after_discount = max(0, $total - $discount_amount);
 
-        // Calculate tax on (subtotal after coupon + shipping)
-        $taxable_amount = $subtotal_after_coupon + $shipping_cost;
+        // Calculate tax on (subtotal after discount + shipping)
+        $taxable_amount = $subtotal_after_discount + $shipping_cost;
         $tax_amount = ($taxable_amount * $tax) / 100;
         $converted_tax = $tax_amount * $this->curr->value;
 
@@ -1826,8 +1826,8 @@ class CartController extends FrontBaseController
             return view('frontend.cart');
         }
 
-        // مسح بيانات الكوبون القديمة
-        foreach (['already', 'coupon', 'coupon_total', 'coupon_total1', 'coupon_percentage'] as $k) {
+        // مسح بيانات كود الخصم القديمة
+        foreach (['already', 'discount_code', 'discount_total', 'discount_total1', 'discount_percentage'] as $k) {
             if (Session::has($k)) Session::forget($k);
         }
 

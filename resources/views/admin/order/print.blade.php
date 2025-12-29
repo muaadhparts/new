@@ -250,11 +250,11 @@ html {
                                             <td>{{ \PriceHelper::showOrderCurrencyPrice((($order->tax) / $order->currency_value),$order->currency_sign) }}</td>
                                         </tr>
                                         @endif
-                                        @if($order->coupon_discount != null)
+                                        @if($order->discount_amount != null)
                                         <tr class="no-border">
                                             <td colspan="1"></td>
-                                            <td><strong>{{ __('Coupon Discount') }}({{$order->currency_sign}})</strong></td>
-                                            <td>{{ \PriceHelper::showOrderCurrencyPrice($order->coupon_discount,$order->currency_sign) }}</td>
+                                            <td><strong>{{ __('Discount Amount') }}({{$order->currency_sign}})</strong></td>
+                                            <td>{{ \PriceHelper::showOrderCurrencyPrice($order->discount_amount,$order->currency_sign) }}</td>
                                         </tr>
                                         @endif
 

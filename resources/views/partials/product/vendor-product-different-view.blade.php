@@ -45,19 +45,19 @@
                                         @endif
                                     @endif
                                     @if(Auth::check())
-                                        <div class="wishlist-button">
-                                            <a class="add_to_wishlist  new button add_to_cart_button" id="add-to-wish"
-                                                href="javascript:;" data-href="{{ route('user-wishlist-add', $product->id) }}"
-                                                data-bs-toggle="tooltip" data-bs-placement="right" title="{{ __('Wishlist') }}"
-                                                data-bs-original-title="Add to Wishlist"
-                                                aria-label="Add to Wishlist">{{ __('Wishlist') }}</a>
+                                        <div class="favorite-button">
+                                            <a class="add_to_favorite  new button add_to_cart_button" id="add-to-wish"
+                                                href="javascript:;" data-href="{{ route('user-favorite-add', $product->id) }}"
+                                                data-bs-toggle="tooltip" data-bs-placement="right" title="{{ __('Favorites') }}"
+                                                data-bs-original-title="Add to Favorites"
+                                                aria-label="Add to Favorites">{{ __('Favorites') }}</a>
                                         </div>
                                     @else
-                                        <div class="wishlist-button">
-                                            <a class="add_to_wishlist button add_to_cart_button" href="{{ route('user.login') }}"
-                                                data-bs-toggle="tooltip" data-bs-placement="right" title="{{ __('Wishlist') }}"
-                                                data-bs-original-title="Add to Wishlist"
-                                                aria-label="Add to Wishlist">{{ __('Wishlist') }}</a>
+                                        <div class="favorite-button">
+                                            <a class="add_to_favorite button add_to_cart_button" href="{{ route('user.login') }}"
+                                                data-bs-toggle="tooltip" data-bs-placement="right" title="{{ __('Favorites') }}"
+                                                data-bs-original-title="Add to Favorites"
+                                                aria-label="Add to Favorites">{{ __('Favorites') }}</a>
                                         </div>
                                     @endif
                                     <div class="compare-button">
@@ -142,19 +142,19 @@
                                         @endif
                                     @endif
                                     @if(Auth::check())
-                                        <div class="wishlist-button">
-                                            <a class="add_to_wishlist  new button add_to_cart_button" id="add-to-wish"
-                                                href="javascript:;" data-href="{{ route('user-wishlist-add', $product->id) }}"
-                                                data-bs-toggle="tooltip" data-bs-placement="right" title="{{ __('Wishlist') }}"
-                                                data-bs-original-title="Add to Wishlist"
-                                                aria-label="Add to Wishlist">{{ __('Wishlist') }}</a>
+                                        <div class="favorite-button">
+                                            <a class="add_to_favorite  new button add_to_cart_button" id="add-to-wish"
+                                                href="javascript:;" data-href="{{ route('user-favorite-add', $product->id) }}"
+                                                data-bs-toggle="tooltip" data-bs-placement="right" title="{{ __('Favorites') }}"
+                                                data-bs-original-title="Add to Favorites"
+                                                aria-label="Add to Favorites">{{ __('Favorites') }}</a>
                                         </div>
                                     @else
-                                        <div class="wishlist-button">
-                                            <a class="add_to_wishlist button add_to_cart_button" href="{{ route('user.login') }}"
-                                                data-bs-toggle="tooltip" data-bs-placement="right" title="{{ __('Wishlist') }}"
-                                                data-bs-original-title="Add to Wishlist"
-                                                aria-label="Add to Wishlist">{{ __('Wishlist') }}</a>
+                                        <div class="favorite-button">
+                                            <a class="add_to_favorite button add_to_cart_button" href="{{ route('user.login') }}"
+                                                data-bs-toggle="tooltip" data-bs-placement="right" title="{{ __('Favorites') }}"
+                                                data-bs-original-title="Add to Favorites"
+                                                aria-label="Add to Favorites">{{ __('Favorites') }}</a>
                                         </div>
                                     @endif
 
@@ -243,19 +243,19 @@
                                     @endif
                                 @endif
                                 @if(Auth::check())
-                                    <div class="wishlist-button">
-                                        <a class="add_to_wishlist  new button add_to_cart_button" id="add-to-wish"
-                                            href="javascript:;" data-href="{{ route('user-wishlist-add', $product->id) }}"
-                                            data-bs-toggle="tooltip" data-bs-placement="right" title="{{ __('Wishlist') }}"
-                                            data-bs-original-title="Add to Wishlist"
-                                            aria-label="Add to Wishlist">{{ __('Wishlist') }}</a>
+                                    <div class="favorite-button">
+                                        <a class="add_to_favorite  new button add_to_cart_button" id="add-to-wish"
+                                            href="javascript:;" data-href="{{ route('user-favorite-add', $product->id) }}"
+                                            data-bs-toggle="tooltip" data-bs-placement="right" title="{{ __('Favorites') }}"
+                                            data-bs-original-title="Add to Favorites"
+                                            aria-label="Add to Favorites">{{ __('Favorites') }}</a>
                                     </div>
                                 @else
-                                    <div class="wishlist-button">
-                                        <a class="add_to_wishlist button add_to_cart_button" href="{{ route('user.login') }}"
-                                            data-bs-toggle="tooltip" data-bs-placement="right" title="{{ __('Wishlist') }}"
-                                            data-bs-original-title="Add to Wishlist"
-                                            aria-label="Add to Wishlist">{{ __('Wishlist') }}</a>
+                                    <div class="favorite-button">
+                                        <a class="add_to_favorite button add_to_cart_button" href="{{ route('user.login') }}"
+                                            data-bs-toggle="tooltip" data-bs-placement="right" title="{{ __('Favorites') }}"
+                                            data-bs-original-title="Add to Favorites"
+                                            aria-label="Add to Favorites">{{ __('Favorites') }}</a>
                                     </div>
                                 @endif
 

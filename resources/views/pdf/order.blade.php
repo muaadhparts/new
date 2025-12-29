@@ -872,8 +872,8 @@ table.dataTable thead .sorting_desc_disabled::after {
 .single-comments-area,
 .profile-notifi-title,
 .single-notifi-area,
-.profile-wishlist-title,
-.single-wishlist-area {
+.profile-favorite-title,
+.single-favorite-area {
     display: flex;
     justify-content: space-between;
 }
@@ -889,7 +889,7 @@ table.dataTable thead .sorting_desc_disabled::after {
 .profile-content,
 .profile-comments-content,
 .profile-notifi-content,
-.profile-wishlist-content {
+.profile-favorite-content {
     background: #ffffff;
     box-shadow: 0 0 5px #cccccc;
     padding: 20px 0;
@@ -917,7 +917,7 @@ table.dataTable thead .sorting_desc_disabled::after {
 .single-comments-area {margin-bottom: 10px;}
 .profile-comments,
 .profile-notifi,
-.profile-wishlist {
+.profile-favorite {
     padding: 0 30px;
     position: relative;
     cursor: pointer;
@@ -925,7 +925,7 @@ table.dataTable thead .sorting_desc_disabled::after {
 .profile-notifi {padding: 0;}
 .profile-comments span,
 .profile-notifi span,
-.profile-wishlist span {
+.profile-favorite span {
     position: absolute;
     right: -5px;
     top: -10px;
@@ -942,33 +942,33 @@ table.dataTable thead .sorting_desc_disabled::after {
     right: 0px;
     background: #009432;
 }
-.profile-wishlist span {
+.profile-favorite span {
     background: #EE5A24;
 }
 .profile-comments-content,
 .profile-notifi-content,
-.profile-wishlist-content {
+.profile-favorite-content {
     width: 350px;
     padding: 20px;
     max-height: 300px;
 }
 .comments-img,
 .notifi-img,
-.wishlist-img {width: 20%;}
+.favorite-img {width: 20%;}
 .single-comments-text,
 .single-notifi-text,
-.single-wishlist-text {width: 80%}
+.single-favorite-text {width: 80%}
 .single-comments-text h5,
 .single-notifi-text h5,
-.single-wishlist-text h5 {margin-bottom: 5px;}
+.single-favorite-text h5 {margin-bottom: 5px;}
 .single-comments-text p,
 .single-notifi-text p,
-.single-wishlist-text p {
+.single-favorite-text p {
     font-size: 12px;
     color: #888888;
 }
 .notifi-img,
-.wishlist-img {
+.favorite-img {
     background: #0652DD;
     height: 30px;
     width: 30px;
@@ -976,9 +976,9 @@ table.dataTable thead .sorting_desc_disabled::after {
     line-height: 30px;
     border-radius: 100%;
 }
-.wishlist-img {background: #6F1E51;}
+.favorite-img {background: #6F1E51;}
 .notifi-img i,
-.wishlist-img i {
+.favorite-img i {
     font-size: 12px;
     color: #ffffff;
 }
@@ -1306,7 +1306,7 @@ table.dataTable thead .sorting_desc_disabled::after {
     border-radius: 100%;
     cursor: pointer;
 }
-.profile-wishlist a, .profile-notifi a, .profile-comments a {position: relative;}
+.profile-favorite a, .profile-notifi a, .profile-comments a {position: relative;}
 
 .profile-comments:first-child {
     padding-left: 0;
@@ -1501,11 +1501,11 @@ table.dataTable thead .sorting_desc_disabled::after {
                                         </tr>
 
                                         @endif
-                                        @if($order->coupon_discount != null)
+                                        @if($order->discount_amount != null)
                                         <tr class="no-border">
                                             <td colspan="1"></td>
-                                            <td><strong>{{ __('Coupon Discount') }}({{$order->currency_sign}})</strong></td>
-                                            <td>{{ \PriceHelper::showOrderCurrencyPrice($order->coupon_discount,$order->currency_sign) }}</td>
+                                            <td><strong>{{ __('Discount Amount') }}({{$order->currency_sign}})</strong></td>
+                                            <td>{{ \PriceHelper::showOrderCurrencyPrice($order->discount_amount,$order->currency_sign) }}</td>
                                         </tr>
                                         @endif
                                         <tr class="final-border">

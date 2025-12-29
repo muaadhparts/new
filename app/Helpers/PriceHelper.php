@@ -147,8 +147,8 @@ class PriceHelper
 
 //                 $totalAmount = $totalAmount+@$shipping->price+@$packeing->price;
 
-//                 if (isset($input['coupon_id']) && !empty($input['coupon_id'])) {
-//                     $totalAmount = $totalAmount - $input['coupon_discount'];
+//                 if (isset($input['discount_code_id']) && !empty($input['discount_code_id'])) {
+//                     $totalAmount = $totalAmount - $input['discount_amount'];
 //                 }
 
 
@@ -214,8 +214,8 @@ class PriceHelper
 //                 }
 
 //                 $totalAmount = $totalAmount + $shipping_cost + $packaging_cost;
-//                 if (isset($input['coupon_id']) && !empty($input['coupon_id'])) {
-//                     $totalAmount = $totalAmount - $input['coupon_discount'];
+//                 if (isset($input['discount_code_id']) && !empty($input['discount_code_id'])) {
+//                     $totalAmount = $totalAmount - $input['discount_amount'];
 //                 }
 
 //                 return [
@@ -285,9 +285,9 @@ class PriceHelper
 
                 $totalAmount += $shipping_cost + $packaging_cost;
 
-                // كوبون
-                if (!empty($input['coupon_id'])) {
-                    $totalAmount -= (float)($input['coupon_discount'] ?? 0);
+                // كود الخصم
+                if (!empty($input['discount_code_id'])) {
+                    $totalAmount -= (float)($input['discount_amount'] ?? 0);
                 }
 
                 // // dd('single', $input, $shipping_cost, $packaging_cost, $tax_amount, $totalAmount);
@@ -368,9 +368,9 @@ class PriceHelper
             // إجمالي
             $totalAmount += $shipping_cost + $packaging_cost;
 
-            // كوبون
-            if (!empty($input['coupon_id'])) {
-                $totalAmount -= (float)($input['coupon_discount'] ?? 0);
+            // كود الخصم
+            if (!empty($input['discount_code_id'])) {
+                $totalAmount -= (float)($input['discount_amount'] ?? 0);
             }
 
             // // dd('multi', $input, $shipping_cost, $packaging_cost, $tax_amount, $totalAmount);

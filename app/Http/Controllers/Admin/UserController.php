@@ -215,9 +215,9 @@ class UserController extends AdminBaseController
             }
         }
 
-        if($user->wishlists->count() > 0)
+        if($user->favorites->count() > 0)
         {
-            foreach ($user->wishlists as $gal) {
+            foreach ($user->favorites as $gal) {
                 $gal->delete();
             }
         }
@@ -229,9 +229,9 @@ class UserController extends AdminBaseController
             }
         }
 
-        if($user->socialProviders->count() > 0)
+        if($user->oauthAccounts->count() > 0)
         {
-            foreach ($user->socialProviders as $gal) {
+            foreach ($user->oauthAccounts as $gal) {
                 $gal->delete();
             }
         }
@@ -325,9 +325,9 @@ class UserController extends AdminBaseController
                         $gal->delete();
                     }
                 }
-                if($prod->wishlists->count() > 0)
+                if($prod->favorites->count() > 0)
                 {
-                    foreach ($prod->wishlists as $gal) {
+                    foreach ($prod->favorites as $gal) {
                         $gal->delete();
                     }
                 }

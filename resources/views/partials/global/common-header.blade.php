@@ -223,16 +223,16 @@
                         </div>
                         <div class="header-cart-1">
                             @if (Auth::guard('web')->check())
-                            <a href="{{ route('user-wishlists') }}" class="cart " title="View Wishlist">
+                            <a href="{{ route('user-favorites') }}" class="cart " title="View Favorites">
                                 <div class="cart-icon"><i class="flaticon-like flat-mini mx-auto text-dark"></i> <span
-                                        class="header-cart-count " id="wishlist-count">{{
-                                        Auth::guard('web')->user()->wishlistCount()
+                                        class="header-cart-count " id="favorite-count">{{
+                                        Auth::guard('web')->user()->favoriteCount()
                                         }}</span></div>
                             </a>
                             @else
-                            <a href="{{ route('user.login') }}" class="cart " title="View Wishlist">
+                            <a href="{{ route('user.login') }}" class="cart " title="View Favorites">
                                 <div class="cart-icon"><i class="flaticon-like flat-mini mx-auto text-dark"></i> <span
-                                        class="header-cart-count" id="wishlist-count">{{ 0 }}</span></div>
+                                        class="header-cart-count" id="favorite-count">{{ 0 }}</span></div>
                             </a>
                             @endif
                         </div>
@@ -397,14 +397,14 @@
 
 
                         @if (Auth::check())
-                        <div class="wishlist-view">
-                            <a href="{{route('user-wishlists')}}"
+                        <div class="favorite-view">
+                            <a href="{{route('user-favorites')}}"
                                 class="position-relative top-quantity d-flex align-items-center text-white text-decoration-none">
                                 <i class="flaticon-like flat-mini text-dark mx-auto"></i>
                             </a>
                         </div>
                         @else
-                        <div class="wishlist-view">
+                        <div class="favorite-view">
                             <a href="{{route('user.login')}}"
                                 class="position-relative top-quantity d-flex align-items-center text-white text-decoration-none">
                                 <i class="flaticon-like flat-mini text-dark mx-auto"></i>

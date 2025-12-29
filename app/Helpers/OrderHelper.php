@@ -5,7 +5,7 @@ namespace App\Helpers;
 use App\{
     Models\Cart,
     Models\User,
-    Models\Coupon,
+    Models\DiscountCode,
     Models\Product,
     Models\Transaction,
     Models\VendorOrder,
@@ -139,17 +139,17 @@ class OrderHelper
         }
     }
 
-    public static function coupon_check($id)
+    public static function discount_code_check($id)
     {
         try {
-            $coupon = Coupon::find($id);
-            $coupon->used++;
-            if ($coupon->times != null) {
-                $i = (int)$coupon->times;
+            $discountCode = DiscountCode::find($id);
+            $discountCode->used++;
+            if ($discountCode->times != null) {
+                $i = (int)$discountCode->times;
                 $i--;
-                $coupon->times = (string)$i;
+                $discountCode->times = (string)$i;
             }
-            $coupon->update();
+            $discountCode->update();
         } catch (\Exception $e) {
         }
     }

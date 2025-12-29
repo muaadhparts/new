@@ -3,7 +3,7 @@
 namespace App\Services;
 
 use App\Models\Cart;
-use App\Models\Coupon;
+use App\Models\DiscountCode;
 use App\Models\MerchantProduct;
 use App\Models\Product;
 use App\Models\User;
@@ -254,77 +254,77 @@ class VendorCartService
 
     /**
      * ======================================
-     * التحقق من صلاحية الكوبون للتاجر
-     * الكوبون يعمل فقط على منتجات تاجره
+     * التحقق من صلاحية كود الخصم للتاجر
+     * كود الخصم يعمل فقط على منتجات تاجره
      * ======================================
      */
-    public static function validateCouponForVendor(string $couponCode, int $vendorId, float $subtotal): array
+    public static function validateDiscountCodeForVendor(string $code, int $vendorId, float $subtotal): array
     {
-        $coupon = Coupon::where('code', $couponCode)
+        $discountCode = DiscountCode::where('code', $code)
             ->where('status', 1)
             ->first();
 
-        if (!$coupon) {
+        if (!$discountCode) {
             return [
                 'valid' => false,
                 'error' => 'invalid_code',
-                'message' => __('Invalid coupon code'),
+                'message' => __('Invalid discount code'),
             ];
         }
 
-        // التحقق من أن الكوبون للتاجر المحدد
-        if ($coupon->user_id && (int) $coupon->user_id !== $vendorId) {
+        // التحقق من أن كود الخصم للتاجر المحدد
+        if ($discountCode->user_id && (int) $discountCode->user_id !== $vendorId) {
             return [
                 'valid' => false,
                 'error' => 'wrong_vendor',
-                'message' => __('This coupon is not valid for this vendor'),
+                'message' => __('This discount code is not valid for this vendor'),
             ];
         }
 
         // التحقق من الصلاحية الزمنية
         $now = now();
-        if ($coupon->start_date && $now->lt($coupon->start_date)) {
+        if ($discountCode->start_date && $now->lt($discountCode->start_date)) {
             return [
                 'valid' => false,
                 'error' => 'not_started',
-                'message' => __('This coupon is not active yet'),
+                'message' => __('This discount code is not active yet'),
             ];
         }
 
-        if ($coupon->end_date && $now->gt($coupon->end_date)) {
+        if ($discountCode->end_date && $now->gt($discountCode->end_date)) {
             return [
                 'valid' => false,
                 'error' => 'expired',
-                'message' => __('This coupon has expired'),
+                'message' => __('This discount code has expired'),
             ];
         }
 
         // التحقق من الحد الأدنى للطلب
-        if ($coupon->min_order && $subtotal < (float) $coupon->min_order) {
+        if ($discountCode->min_order && $subtotal < (float) $discountCode->min_order) {
             return [
                 'valid' => false,
                 'error' => 'min_order',
-                'message' => __('Minimum order amount is') . ' ' . $coupon->min_order,
+                'message' => __('Minimum order amount is') . ' ' . $discountCode->min_order,
             ];
         }
 
         // التحقق من عدد الاستخدامات
-        if ($coupon->used >= $coupon->times) {
+        if ($discountCode->used >= $discountCode->times) {
             return [
                 'valid' => false,
                 'error' => 'max_uses',
-                'message' => __('This coupon has reached its usage limit'),
+                'message' => __('This discount code has reached its usage limit'),
             ];
         }
 
         // حساب قيمة الخصم
         $discountAmount = 0;
-        if ($coupon->type == 0) {
+        if ($discountCode->type == 0) {
             // خصم بالنسبة المئوية
-            $discountAmount = ($subtotal * (float) $coupon->price) / 100;
+            $discountAmount = ($subtotal * (float) $discountCode->price) / 100;
         } else {
             // خصم مبلغ ثابت
-            $discountAmount = (float) $coupon->price;
+            $discountAmount = (float) $discountCode->price;
         }
 
         // التأكد أن الخصم لا يتجاوز المجموع
@@ -332,11 +332,11 @@ class VendorCartService
 
         return [
             'valid' => true,
-            'coupon_id' => $coupon->id,
-            'coupon_code' => $coupon->code,
-            'vendor_id' => $coupon->user_id,
-            'discount_type' => $coupon->type == 0 ? 'percentage' : 'fixed',
-            'discount_value' => (float) $coupon->price,
+            'discount_code_id' => $discountCode->id,
+            'discount_code' => $discountCode->code,
+            'vendor_id' => $discountCode->user_id,
+            'discount_type' => $discountCode->type == 0 ? 'percentage' : 'fixed',
+            'discount_value' => (float) $discountCode->price,
             'discount_amount' => round($discountAmount, 2),
             'final_subtotal' => round($subtotal - $discountAmount, 2),
         ];
@@ -347,7 +347,7 @@ class VendorCartService
      * بناء ملخص سلة التاجر الكامل
      * ======================================
      */
-    public static function buildVendorCartSummary(int $vendorId, array $cartItems, ?string $couponCode = null): array
+    public static function buildVendorCartSummary(int $vendorId, array $cartItems, ?string $discountCodeValue = null): array
     {
         $vendorItems = [];
         $itemsDetails = [];
@@ -387,14 +387,14 @@ class VendorCartService
             $subtotal += $detail['bulk_discount']['total_price'];
         }
 
-        // تطبيق الكوبون إن وجد
-        $couponData = null;
+        // تطبيق كود الخصم إن وجد
+        $discountData = null;
         $finalSubtotal = $subtotal;
 
-        if ($couponCode) {
-            $couponData = self::validateCouponForVendor($couponCode, $vendorId, $subtotal);
-            if ($couponData['valid']) {
-                $finalSubtotal = $couponData['final_subtotal'];
+        if ($discountCodeValue) {
+            $discountData = self::validateDiscountCodeForVendor($discountCodeValue, $vendorId, $subtotal);
+            if ($discountData['valid']) {
+                $finalSubtotal = $discountData['final_subtotal'];
             }
         }
 
@@ -408,8 +408,8 @@ class VendorCartService
             'items_count' => count($vendorItems),
             'total_qty' => $shippingData['total_qty'],
 
-            'subtotal_before_coupon' => round($subtotal, 2),
-            'coupon' => $couponData,
+            'subtotal_before_discount' => round($subtotal, 2),
+            'discount_data' => $discountData,
             'subtotal' => round($finalSubtotal, 2),
 
             'shipping' => $shippingData,

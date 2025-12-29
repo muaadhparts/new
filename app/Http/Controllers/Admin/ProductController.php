@@ -1082,8 +1082,8 @@ class ProductController extends AdminBaseController
                 $gal->delete();
             }
         }
-        if ($data->wishlists->count() > 0) {
-            foreach ($data->wishlists as $gal) {
+        if ($data->favorites->count() > 0) {
+            foreach ($data->favorites as $gal) {
                 $gal->delete();
             }
         }
@@ -1154,10 +1154,10 @@ class ProductController extends AdminBaseController
             $input['product_page'] = null;
         }
 
-        if (!empty($request->wishlist_page)) {
-            $input['wishlist_page'] = implode(',', $request->wishlist_page);
+        if (!empty($request->favorite_page)) {
+            $input['favorite_page'] = implode(',', $request->favorite_page);
         } else {
-            $input['wishlist_page'] = null;
+            $input['favorite_page'] = null;
         }
 
         cache()->forget('generalsettings');

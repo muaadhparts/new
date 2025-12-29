@@ -137,9 +137,9 @@
                       <div class="row justify-content-center">
 
                         <div class="col-lg-4 d-flex justify-content-between">
-                          <label class="control-label">{{ __('Set Coupons') }} *</label>
+                          <label class="control-label">{{ __('Set Discount Codes') }} *</label>
                           <label class="switch">
-                            <input type="checkbox" name="section[]" value="set_coupons">
+                            <input type="checkbox" name="section[]" value="set_discount_codes">
                             <span class="slider round"></span>
                           </label>
                         </div>

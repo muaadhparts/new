@@ -10,7 +10,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\OrderDetailsResource;
 use App\Models\Cart;
 use App\Models\Country;
-use App\Models\Coupon;
+use App\Models\DiscountCode;
 use App\Models\Currency;
 use App\Models\Generalsetting;
 use App\Models\Order;
@@ -573,23 +573,23 @@ class CheckoutController extends Controller
         }
     }
 
-    public function getCoupon(Request $request)
+    public function getDiscountCode(Request $request)
     {
-        $code = $request->coupon;
-        $coupon = Coupon::where('code', '=', $code)->where('status', 1)->first();
+        $code = $request->code ?? $request->discount_code;
+        $discountCode = DiscountCode::where('code', '=', $code)->where('status', 1)->first();
 
-        if ($coupon) {
+        if ($discountCode) {
             $today = date('Y-m-d');
-            $from  = date('Y-m-d', strtotime($coupon->start_date));
-            $to    = date('Y-m-d', strtotime($coupon->end_date));
+            $from  = date('Y-m-d', strtotime($discountCode->start_date));
+            $to    = date('Y-m-d', strtotime($discountCode->end_date));
 
             if ($from <= $today && $to >= $today) {
-                return response()->json(['status' => true, 'data' => $coupon, 'error' => []]);
+                return response()->json(['status' => true, 'data' => $discountCode, 'error' => []]);
             } else {
-                return response()->json(['status' => false, 'data' => [], 'error' => 'Invalid Coupon']);
+                return response()->json(['status' => false, 'data' => [], 'error' => 'Invalid Discount Code']);
             }
         } else {
-            return response()->json(['status' => false, 'data' => [], 'error' => 'Coupon Not Found']);
+            return response()->json(['status' => false, 'data' => [], 'error' => 'Discount Code Not Found']);
         }
     }
 

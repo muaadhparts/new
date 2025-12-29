@@ -225,21 +225,21 @@
                                     <th width="10%">:</th>
                                     <td width="45%">{{$order->customer_zip}}</td>
                                 </tr>
-                                @if($order->coupon_code != null)
+                                @if($order->discount_code != null)
                                 <tr>
-                                    <th width="45%">{{ __('Coupon Code') }}</th>
+                                    <th width="45%">{{ __('Discount Code') }}</th>
                                     <th width="10%">:</th>
-                                    <td width="45%">{{$order->coupon_code}}</td>
+                                    <td width="45%">{{$order->discount_code}}</td>
                                 </tr>
                                 @endif
-                                @if($order->coupon_discount != null)
+                                @if($order->discount_amount != null)
                                 <tr>
-                                    <th width="45%">{{ __('Coupon Discount') }}</th>
+                                    <th width="45%">{{ __('Discount Amount') }}</th>
                                     <th width="10%">:</th>
                                     @if($gs->currency_format == 0)
-                                    <td width="45%">{{ $order->currency_sign }}{{ $order->coupon_discount }}</td>
+                                    <td width="45%">{{ $order->currency_sign }}{{ $order->discount_amount }}</td>
                                     @else
-                                    <td width="45%">{{ $order->coupon_discount }}{{ $order->currency_sign }}</td>
+                                    <td width="45%">{{ $order->discount_amount }}{{ $order->currency_sign }}</td>
                                     @endif
                                 </tr>
                                 @endif

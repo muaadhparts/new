@@ -33,7 +33,10 @@
       "Bash(powershell:*)",
       "WebFetch(domain:new.test)",
       "Bash(del:*)",
-      "Bash(mysql:*)"
+      "Bash(mysql:*)",
+      "Bash(git mv:*)",
+      "Bash(git rm:*)",
+      "Bash(copy:*)"
     ]
   }
 }

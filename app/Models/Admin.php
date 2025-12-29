@@ -18,7 +18,7 @@ class Admin extends Authenticatable
 
     public function role()
     {
-    	return $this->belongsTo('App\Models\Role')->withDefault();
+    	return $this->belongsTo(AdminRole::class, 'role_id')->withDefault();
     }
 
     public function IsSuper(){

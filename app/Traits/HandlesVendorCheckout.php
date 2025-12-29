@@ -101,10 +101,10 @@ trait HandlesVendorCheckout
             // No vendor context - clear entire cart
             Session::forget('cart');
             Session::forget('already');
-            Session::forget('coupon');
-            Session::forget('coupon_total');
-            Session::forget('coupon_total1');
-            Session::forget('coupon_percentage');
+            Session::forget('discount_code');
+            Session::forget('discount_code_total');
+            Session::forget('discount_code_total1');
+            Session::forget('discount_code_percentage');
             return;
         }
 
@@ -131,11 +131,11 @@ trait HandlesVendorCheckout
             Session::forget('cart');
         }
 
-        // Clear vendor-specific session data (checkout steps, coupons)
+        // Clear vendor-specific session data (checkout steps, discount codes)
         // NOTE: checkout_vendor_id is NO LONGER used - vendor context is in route
         Session::forget('vendor_step1_' . $vendorId);
         Session::forget('vendor_step2_' . $vendorId);
-        Session::forget('coupon_vendor_' . $vendorId);
+        Session::forget('discount_code_vendor_' . $vendorId);
     }
 
     /**

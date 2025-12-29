@@ -982,8 +982,8 @@
     right: 12px;
 }
 
-/* Wishlist Button */
-.m-product-card__wishlist {
+/* Favorite Button */
+.m-product-card__favorite {
     position: absolute;
     top: 12px;
     right: 12px;
@@ -1003,22 +1003,22 @@
     text-decoration: none;
 }
 
-.m-product-card__wishlist:hover {
+.m-product-card__favorite:hover {
     background: var(--action-danger, #dc3545);
     color: var(--text-inverse, #fff);
     transform: scale(1.1);
 }
 
-.m-product-card__wishlist .fas.fa-heart {
+.m-product-card__favorite .fas.fa-heart {
     color: var(--action-danger, #dc3545);
 }
 
-.m-product-card__wishlist:hover .fas.fa-heart {
+.m-product-card__favorite:hover .fas.fa-heart {
     color: var(--text-inverse, #fff);
 }
 
-/* RTL Wishlist */
-[dir="rtl"] .m-product-card__wishlist {
+/* RTL Favorite */
+[dir="rtl"] .m-product-card__favorite {
     right: auto;
     left: 12px;
 }
@@ -1218,7 +1218,7 @@
         padding: 3px 8px;
     }
 
-    .m-product-card__wishlist,
+    .m-product-card__favorite,
     .m-product-card__action {
         width: 32px;
         height: 32px;
@@ -1263,7 +1263,7 @@
     right: 16px;
 }
 
-[dir="rtl"] .single-product .img-wrapper .add-to-wishlist-btn {
+[dir="rtl"] .single-product .img-wrapper .add-to-favorite-btn {
     right: auto;
     left: 16px;
 }
@@ -2850,7 +2850,7 @@ select option {
 /* ============================================================================
    SECTION: HEADER CART BUTTON FIX
    ============================================================================
-   Make cart button same style as wishlist/compare buttons
+   Make cart button same style as favorite/compare buttons
    Remove the special primary background styling
    ============================================================================ */
 

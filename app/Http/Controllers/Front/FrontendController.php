@@ -40,14 +40,14 @@ class FrontendController extends FrontBaseController
     public function currency($id)
     {
 
-        if (Session::has('coupon')) {
-            Session::forget('coupon');
-            Session::forget('coupon_code');
-            Session::forget('coupon_id');
-            Session::forget('coupon_total');
-            Session::forget('coupon_total1');
+        if (Session::has('discount_code')) {
+            Session::forget('discount_code');
+            Session::forget('discount_code_value');
+            Session::forget('discount_code_id');
+            Session::forget('discount_total');
+            Session::forget('discount_total1');
             Session::forget('already');
-            Session::forget('coupon_percentage');
+            Session::forget('discount_percentage');
         }
         Session::put('currency', $id);
         cache()->forget('session_currency');

@@ -6,7 +6,7 @@ use App\{
     Models\Rider,
     Models\Notification,
     Models\Socialsetting,
-    Models\SocialProvider,
+    Models\OauthAccount,
     Http\Controllers\Controller
 };
 use Auth;
@@ -45,8 +45,8 @@ class SocialRegisterController extends Controller
             return redirect('/');
         }
 
-        $socialProvider = SocialProvider::where('provider_id',$socialUser->getId())->first();
-        if(!$socialProvider)
+        $oauthAccount = OauthAccount::where('provider_id',$socialUser->getId())->first();
+        if(!$oauthAccount)
         {
             $ck = User::where('email','=',$socialUser->email)->count();
             if($ck > 0)
@@ -64,7 +64,7 @@ class SocialRegisterController extends Controller
             $user->affilate_code = $socialUser->name.$socialUser->email;
             $user->affilate_code = md5($user->affilate_code);
             $user->save();
-            $user->socialProviders()->create(
+            $user->oauthAccounts()->create(
                 ['provider_id' => $socialUser->getId(), 'provider' => $provider]
             );
             $notification = new Notification;
@@ -73,8 +73,8 @@ class SocialRegisterController extends Controller
         }
         else
         {
-            
-            $user = $socialProvider->user;
+
+            $user = $oauthAccount->user;
         }
 
         Auth::login($user); 

@@ -10,4 +10,4 @@ CREATE TABLE `stock_all` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `stock_all_part_unique` (`part_number`),
   UNIQUE KEY `uq_stock_all_sku_bq` (`sku`,`brand_quality_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=33717 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=34009 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

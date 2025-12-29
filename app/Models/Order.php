@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Order extends Model
 {
-	protected $fillable = ['user_id', 'cart', 'method', 'shipping', 'pickup_location', 'totalQty', 'pay_amount', 'txnid', 'charge_id', 'order_number', 'payment_status', 'customer_name', 'customer_email', 'customer_phone', 'customer_address', 'customer_city', 'customer_zip', 'customer_state', 'customer_country', 'order_note', 'coupon_code', 'coupon_discount', 'status', 'affilate_user', 'affilate_charge', 'currency_sign', 'currency_name', 'currency_value', 'shipping_cost', 'packing_cost', 'tax', 'tax_location', 'dp', 'pay_id', 'vendor_shipping_id', 'vendor_packing_id', 'wallet_price', 'shipping_title', 'packing_title', 'affilate_users', 'commission', 'vendor_ids', 'customer_shipping_choice', 'shipping_status'];
+	protected $fillable = ['user_id', 'cart', 'method', 'shipping', 'pickup_location', 'totalQty', 'pay_amount', 'txnid', 'charge_id', 'order_number', 'payment_status', 'customer_name', 'customer_email', 'customer_phone', 'customer_address', 'customer_city', 'customer_zip', 'customer_state', 'customer_country', 'order_note', 'discount_code', 'discount_amount', 'status', 'affilate_user', 'affilate_charge', 'currency_sign', 'currency_name', 'currency_value', 'shipping_cost', 'packing_cost', 'tax', 'tax_location', 'dp', 'pay_id', 'vendor_shipping_id', 'vendor_packing_id', 'wallet_price', 'shipping_title', 'packing_title', 'affilate_users', 'commission', 'vendor_ids', 'customer_shipping_choice', 'shipping_status'];
 
 
     protected $casts = [

@@ -5,4 +5,4 @@ CREATE TABLE `product_clicks` (
   `date` date DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `product_clicks_merchant_product_id_index` (`merchant_product_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=32830 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=33055 DEFAULT CHARSET=latin1;

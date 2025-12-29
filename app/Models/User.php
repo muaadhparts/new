@@ -6,6 +6,8 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Tymon\JWTAuth\Contracts\JWTSubject;
 // Import MerchantProduct model to expose vendor listings via a relationship
 use App\Models\MerchantProduct;
+use App\Models\SupportThread;
+use App\Models\Favorite;
 
 class User extends Authenticatable implements JWTSubject
 {
@@ -44,14 +46,14 @@ class User extends Authenticatable implements JWTSubject
         return $this->hasMany('App\Models\Rating');
     }
 
-    public function wishlists()
+    public function favorites()
     {
-        return $this->hasMany('App\Models\Wishlist');
+        return $this->hasMany(Favorite::class);
     }
 
-    public function socialProviders()
+    public function oauthAccounts()
     {
-        return $this->hasMany('App\Models\SocialProvider');
+        return $this->hasMany(OauthAccount::class);
     }
 
     public function withdraws()
@@ -59,9 +61,20 @@ class User extends Authenticatable implements JWTSubject
         return $this->hasMany('App\Models\Withdraw');
     }
 
+    /**
+     * Get all support threads for this user.
+     */
+    public function supportThreads()
+    {
+        return $this->hasMany(SupportThread::class);
+    }
+
+    /**
+     * @deprecated Use supportThreads() instead
+     */
     public function conversations()
     {
-        return $this->hasMany('App\Models\AdminUserConversation');
+        return $this->supportThreads();
     }
 
     public function notifications()
@@ -139,7 +152,7 @@ class User extends Authenticatable implements JWTSubject
         return $this->hasMany('App\Models\UserSubscription');
     }
 
-    public function favorites()
+    public function favoriteSellers()
     {
         return $this->hasMany('App\Models\FavoriteSeller');
     }
@@ -198,12 +211,10 @@ class User extends Authenticatable implements JWTSubject
         return $this->belongsTo('App\Models\Country', 'country', 'country_name');
     }
 
-    public function wishlistCount()
+    public function favoriteCount()
     {
-        // Count wishlist items where the underlying product has at least one active merchant listing.
-        return \App\Models\Wishlist::where('user_id', '=', $this->id)
+        return Favorite::where('user_id', '=', $this->id)
             ->whereHas('product', function ($productQuery) {
-                // Only include products that have at least one merchant_product entry with status = 1
                 $productQuery->whereIn('id', function($subQuery) {
                     $subQuery->select('product_id')
                         ->from('merchant_products')

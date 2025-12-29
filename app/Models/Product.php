@@ -98,9 +98,9 @@ class Product extends Model
         return $this->hasMany(ProductFitment::class, 'product_id');
     }
 
-    public function wishlist()
+    public function favorite()
     {
-        return $this->belongsTo('App\Models\Wishlist')->withDefault();
+        return $this->belongsTo('App\Models\Favorite')->withDefault();
     }
 
     public function galleries()
@@ -133,9 +133,9 @@ class Product extends Model
         return $this->hasMany('App\Models\Rating');
     }
 
-    public function wishlists()
+    public function favorites()
     {
-        return $this->hasMany('App\Models\Wishlist');
+        return $this->hasMany('App\Models\Favorite');
     }
 
     public function comments()

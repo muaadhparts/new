@@ -181,10 +181,10 @@
             'cart_out': '{{ __('Out Of Stock') }}',
             'cart_success': '{{ __('Successfully Added To Cart.') }}',
             'cart_empty': '{{ __('Cart is empty.') }}',
-            'coupon_found': '{{ __('Coupon Found.') }}',
-            'no_coupon': '{{ __('No Coupon Found.') }}',
-            'already_coupon': '{{ __('Coupon Already Applied.') }}',
-            'enter_coupon': '{{ __('Enter Coupon First') }}',
+            'discount_code_found': '{{ __('Discount Code Found.') }}',
+            'no_discount_code': '{{ __('No Discount Code Found.') }}',
+            'already_discount_code': '{{ __('Discount Code Already Applied.') }}',
+            'enter_discount_code': '{{ __('Enter Discount Code First') }}',
             'minimum_qty_error': '{{ __('Minimum Quantity is:') }}',
             'affiliate_link_copy': '{{ __('Affiliate Link Copied Successfully') }}'
         };

@@ -326,15 +326,15 @@
                 <input type="hidden" name="currency_value" value="{{ $curr->value }}">
                 @php
                 @endphp
-                @if (Session::has('coupon_total'))
+                @if (Session::has('discount_total'))
                     <input type="hidden" name="total" id="grandtotal"
                         value="{{ round($totalPrice * $curr->value, 2) }}">
                     <input type="hidden" id="tgrandtotal" value="{{ $totalPrice }}">
-                @elseif(Session::has('coupon_total1'))
+                @elseif(Session::has('discount_total1'))
                     <input type="hidden" name="total" id="grandtotal"
-                        value="{{ preg_replace(' /[^0-9,.]/', '', Session::get('coupon_total1')) }}">
+                        value="{{ preg_replace(' /[^0-9,.]/', '', Session::get('discount_total1')) }}">
                     <input type="hidden" id="tgrandtotal"
-                        value="{{ preg_replace(' /[^0-9,.]/', '', Session::get('coupon_total1')) }}">
+                        value="{{ preg_replace(' /[^0-9,.]/', '', Session::get('discount_total1')) }}">
                 @else
                     <input type="hidden" name="total" id="grandtotal"
                         value="{{ round($totalPrice * $curr->value, 2) }}">
@@ -345,12 +345,12 @@
                 {{-- ttotal must be numeric (no currency sign) for tax calculations --}}
                 <input type="hidden" id="ttotal"
                     value="{{ round($totalPrice * $curr->value, 2) }}">
-                <input type="hidden" name="coupon_code" id="coupon_code"
-                    value="{{ Session::has('coupon_code') ? Session::get('coupon_code') : '' }}">
-                <input type="hidden" name="coupon_discount" id="coupon_discount"
-                    value="{{ Session::has('coupon') ? Session::get('coupon') : '' }}">
-                <input type="hidden" name="coupon_id" id="coupon_id"
-                    value="{{ Session::has('coupon') ? Session::get('coupon_id') : '' }}">
+                <input type="hidden" name="discount_code" id="discount_code"
+                    value="{{ Session::has('discount_code_value') ? Session::get('discount_code_value') : '' }}">
+                <input type="hidden" name="discount_amount" id="discount_amount"
+                    value="{{ Session::has('discount_code') ? Session::get('discount_code') : '' }}">
+                <input type="hidden" name="discount_code_id" id="discount_code_id"
+                    value="{{ Session::has('discount_code') ? Session::get('discount_code_id') : '' }}">
                 <input type="hidden" name="user_id" id="user_id"
                     value="{{ Auth::guard('web')->check() ? Auth::guard('web')->user()->id : '' }}">
 

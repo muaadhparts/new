@@ -39,7 +39,7 @@ class GeneratePagesJson extends Command
         // User dashboard pages
         '/user/dashboard' => 'User Dashboard',
         '/user/orders' => 'User Orders',
-        '/user/wishlist' => 'User Wishlist',
+        '/user/favorites' => 'User Favorites',
         '/user/profile' => 'User Profile',
     ];
 

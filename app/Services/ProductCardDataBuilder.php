@@ -5,7 +5,7 @@ namespace App\Services;
 use App\DataTransferObjects\ProductCardDTO;
 use App\Models\MerchantProduct;
 use App\Models\Product;
-use App\Models\Wishlist;
+use App\Models\Favorite;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
@@ -17,7 +17,7 @@ use Illuminate\Support\Facades\DB;
  *
  * Centralized service for building product card data with:
  * - Consistent eager loading for all product views (list/home/search)
- * - Pre-loaded wishlist data (one query, cached)
+ * - Pre-loaded favorite data (one query, cached)
  * - DTOs with all pre-computed values (Blade only prints)
  *
  * Usage in Controller:
@@ -27,8 +27,8 @@ use Illuminate\Support\Facades\DB;
  */
 class ProductCardDataBuilder
 {
-    private ?Collection $userWishlistProductIds = null;
-    private ?Collection $userWishlistMerchantIds = null;
+    private ?Collection $userFavoriteProductIds = null;
+    private ?Collection $userFavoriteMerchantIds = null;
     private ?object $generalSettings = null;
     private bool $initialized = false;
 
@@ -51,7 +51,7 @@ class ProductCardDataBuilder
     ];
 
     /**
-     * Initialize the builder - loads wishlist and settings
+     * Initialize the builder - loads favorites and settings
      */
     public function initialize(): self
     {
@@ -59,7 +59,7 @@ class ProductCardDataBuilder
             return $this;
         }
 
-        $this->loadWishlistData();
+        $this->loadFavoriteData();
         $this->loadGeneralSettings();
         $this->initialized = true;
 
@@ -111,46 +111,46 @@ class ProductCardDataBuilder
         $this->initialize();
 
         return array_merge([
-            'wishlistProductIds' => $this->userWishlistProductIds,
-            'wishlistMerchantIds' => $this->userWishlistMerchantIds,
-            'wishlistCount' => $this->userWishlistProductIds->count(),
+            'favoriteProductIds' => $this->userFavoriteProductIds,
+            'favoriteMerchantIds' => $this->userFavoriteMerchantIds,
+            'favoriteCount' => $this->userFavoriteProductIds->count(),
         ], $additionalData);
     }
 
     /**
-     * Check if a product is in wishlist (use in Blade)
+     * Check if a product is in favorites (use in Blade)
      */
-    public function isInWishlist(int $productId): bool
+    public function isInFavorites(int $productId): bool
     {
         $this->initialize();
-        return $this->userWishlistProductIds->contains($productId);
+        return $this->userFavoriteProductIds->contains($productId);
     }
 
     /**
-     * Check if a merchant product is in wishlist (use in Blade)
+     * Check if a merchant product is in favorites (use in Blade)
      */
-    public function isMerchantInWishlist(int $merchantProductId): bool
+    public function isMerchantInFavorites(int $merchantProductId): bool
     {
         $this->initialize();
-        return $this->userWishlistMerchantIds->contains($merchantProductId);
+        return $this->userFavoriteMerchantIds->contains($merchantProductId);
     }
 
     /**
-     * Get wishlist product IDs
+     * Get favorite product IDs
      */
-    public function getWishlistProductIds(): Collection
+    public function getFavoriteProductIds(): Collection
     {
         $this->initialize();
-        return $this->userWishlistProductIds;
+        return $this->userFavoriteProductIds;
     }
 
     /**
-     * Get wishlist merchant product IDs
+     * Get favorite merchant product IDs
      */
-    public function getWishlistMerchantIds(): Collection
+    public function getFavoriteMerchantIds(): Collection
     {
         $this->initialize();
-        return $this->userWishlistMerchantIds;
+        return $this->userFavoriteMerchantIds;
     }
 
     /**
@@ -163,28 +163,28 @@ class ProductCardDataBuilder
     }
 
     /**
-     * Load user wishlist data (one query, cached 5 minutes)
+     * Load user favorite data (one query, cached 5 minutes)
      */
-    private function loadWishlistData(): void
+    private function loadFavoriteData(): void
     {
         if (!Auth::check()) {
-            $this->userWishlistProductIds = collect();
-            $this->userWishlistMerchantIds = collect();
+            $this->userFavoriteProductIds = collect();
+            $this->userFavoriteMerchantIds = collect();
             return;
         }
 
         $userId = Auth::id();
 
-        $wishlists = Cache::remember(
-            "user_wishlists_{$userId}",
+        $favorites = Cache::remember(
+            "user_favorites_{$userId}",
             300,
-            fn() => Wishlist::where('user_id', $userId)
+            fn() => Favorite::where('user_id', $userId)
                 ->select(['product_id', 'merchant_product_id'])
                 ->get()
         );
 
-        $this->userWishlistProductIds = $wishlists->pluck('product_id')->filter()->unique();
-        $this->userWishlistMerchantIds = $wishlists->pluck('merchant_product_id')->filter()->unique();
+        $this->userFavoriteProductIds = $favorites->pluck('product_id')->filter()->unique();
+        $this->userFavoriteMerchantIds = $favorites->pluck('merchant_product_id')->filter()->unique();
     }
 
     /**
@@ -212,8 +212,8 @@ class ProductCardDataBuilder
         return collect($merchants)->map(
             fn($merchant) => ProductCardDTO::fromMerchantProduct(
                 $merchant,
-                $this->userWishlistProductIds,
-                $this->userWishlistMerchantIds
+                $this->userFavoriteProductIds,
+                $this->userFavoriteMerchantIds
             )
         );
     }
@@ -229,16 +229,14 @@ class ProductCardDataBuilder
     {
         $this->initialize();
 
-        // Build DTOs only for the current page items (12 or less)
         $dtos = $paginator->getCollection()->map(
             fn($merchant) => ProductCardDTO::fromMerchantProduct(
                 $merchant,
-                $this->userWishlistProductIds,
-                $this->userWishlistMerchantIds
+                $this->userFavoriteProductIds,
+                $this->userFavoriteMerchantIds
             )
         );
 
-        // Return new paginator with DTOs, preserving pagination metadata
         return $paginator->setCollection($dtos);
     }
 
@@ -257,8 +255,8 @@ class ProductCardDataBuilder
             return ProductCardDTO::fromProduct(
                 $product,
                 $merchant,
-                $this->userWishlistProductIds,
-                $this->userWishlistMerchantIds
+                $this->userFavoriteProductIds,
+                $this->userFavoriteMerchantIds
             );
         });
     }
@@ -272,16 +270,16 @@ class ProductCardDataBuilder
 
         return ProductCardDTO::fromMerchantProduct(
             $merchant,
-            $this->userWishlistProductIds,
-            $this->userWishlistMerchantIds
+            $this->userFavoriteProductIds,
+            $this->userFavoriteMerchantIds
         );
     }
 
     /**
-     * Invalidate wishlist cache for a user
+     * Invalidate favorite cache for a user
      */
-    public static function invalidateWishlistCache(int $userId): void
+    public static function invalidateFavoriteCache(int $userId): void
     {
-        Cache::forget("user_wishlists_{$userId}");
+        Cache::forget("user_favorites_{$userId}");
     }
 }

@@ -50,7 +50,7 @@ $(document).ready(function () {
         $muaadhOverlay.addClass('active');
         $('body').css('overflow', 'hidden');
       } else if (hasLegacyMenu) {
-        // Fallback: Open legacy mobile menu (for user pages like wishlist)
+        // Fallback: Open legacy mobile menu (for user pages like favorites)
         $legacyMenu.addClass('active');
         $legacyOverlay.addClass('active');
         $('body').css('overflow', 'hidden');

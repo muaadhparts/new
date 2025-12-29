@@ -41,10 +41,10 @@
 
     // Extract values from service response
     $productsTotal = $prices['products_total'];
-    $couponDiscount = $prices['coupon_discount'];
-    $couponCode = $prices['coupon_code'];
-    $couponPercentage = $prices['coupon_percentage'];
-    $hasCoupon = $prices['has_coupon'];
+    $discountAmount = $prices['discount_amount'];
+    $discountCode = $prices['discount_code'];
+    $discountPercentage = $prices['discount_percentage'];
+    $hasDiscount = $prices['has_discount'];
     $taxRate = $prices['tax_rate'];
     $taxAmount = $prices['tax_amount'];
     $taxLocation = $prices['tax_location'];
@@ -56,7 +56,7 @@
     $packingCost = $prices['packing_cost'];
     $packingCompany = $prices['packing_company'];
     $grandTotal = $prices['grand_total'];
-    $subtotalBeforeCoupon = $prices['subtotal_before_coupon'];
+    $subtotalBeforeDiscount = $prices['subtotal_before_discount'];
 
     // Currency info from service
     $currencySign = $prices['currency_sign'];
@@ -88,26 +88,26 @@
         </div>
 
         {{-- ================================================================
-            ROW 2: Coupon Discount (if applied)
+            ROW 2: Discount Code (if applied)
         ================================================================= --}}
-        <div class="price-details coupon-row {{ $hasCoupon ? '' : 'd-none' }}" id="coupon-row">
+        <div class="price-details discount-row {{ $hasDiscount ? '' : 'd-none' }}" id="discount-row">
             <span class="d-flex align-items-center gap-2">
                 <i class="fas fa-tag text-success"></i>
-                @lang('Coupon Discount')
-                <span class="coupon-percentage-display text-success" id="coupon-percentage-display">
-                    {{ $couponPercentage ? '(' . $couponPercentage . ')' : '' }}
+                @lang('Discount')
+                <span class="discount-percentage-display text-success" id="discount-percentage-display">
+                    {{ $discountPercentage ? '(' . $discountPercentage . ')' : '' }}
                 </span>
-                <span class="badge bg-success coupon-code-badge coupon-code-display" id="coupon-code-display">
-                    {{ $couponCode }}
+                <span class="badge bg-success discount-code-badge discount-code-display" id="discount-code-display">
+                    {{ $discountCode }}
                 </span>
             </span>
             <span class="right-side d-flex align-items-center gap-2">
-                <span class="text-success coupon-amount-display" id="coupon-amount-display">
-                    -{{ $formatPrice($couponDiscount) }}
+                <span class="text-success discount-amount-display" id="discount-amount-display">
+                    -{{ $formatPrice($discountAmount) }}
                 </span>
                 @if($currentStep == 3)
-                <button type="button" class="btn btn-link btn-sm text-danger p-0 remove-coupon-btn"
-                        title="@lang('Remove Coupon')">
+                <button type="button" class="btn btn-link btn-sm text-danger p-0 remove-discount-btn"
+                        title="@lang('Remove Discount')">
                     <i class="fas fa-times-circle"></i>
                 </button>
                 @endif
@@ -256,37 +256,37 @@
     HIDDEN FIELDS FOR JAVASCRIPT
 ================================================================= --}}
 <input type="hidden" id="price-products-total" value="{{ $productsTotal }}">
-<input type="hidden" id="price-coupon-discount" value="{{ $couponDiscount }}">
-<input type="hidden" id="price-coupon-code" value="{{ $couponCode }}">
+<input type="hidden" id="price-discount-amount" value="{{ $discountAmount }}">
+<input type="hidden" id="price-discount-code" value="{{ $discountCode }}">
 <input type="hidden" id="price-tax-rate" value="{{ $taxRate }}">
 <input type="hidden" id="price-tax-amount" value="{{ $taxAmount }}">
 <input type="hidden" id="price-shipping-cost" value="{{ $shippingCost }}">
 <input type="hidden" id="price-packing-cost" value="{{ $packingCost }}">
 <input type="hidden" id="price-grand-total" value="{{ $grandTotal }}">
-<input type="hidden" id="price-subtotal-before-coupon" value="{{ $subtotalBeforeCoupon }}">
+<input type="hidden" id="price-subtotal-before-discount" value="{{ $subtotalBeforeDiscount }}">
 <input type="hidden" id="price-currency-sign" value="{{ $currencySign }}">
 <input type="hidden" id="price-currency-format" value="{{ $currencyFormat }}">
 <input type="hidden" id="price-vendor-id" value="{{ $vendorId ?? '' }}">
 <input type="hidden" id="price-current-step" value="{{ $currentStep }}">
 
 <style>
-.coupon-row {
+.discount-row {
     background: rgba(25, 135, 84, 0.1);
     padding: 8px 10px;
     border-radius: 6px;
     margin: 5px 0;
 }
-.coupon-code-badge {
+.discount-code-badge {
     font-size: 11px;
     padding: 2px 6px;
 }
-.remove-coupon-btn {
+.remove-discount-btn {
     opacity: 0.7;
     transition: opacity 0.2s;
     font-size: 14px;
     line-height: 1;
 }
-.remove-coupon-btn:hover {
+.remove-discount-btn:hover {
     opacity: 1;
 }
 .price-details {
@@ -313,8 +313,8 @@
  * - PriceSummary.updateTax(rate, amount)
  * - PriceSummary.updateShipping(cost, originalCost, isFree)
  * - PriceSummary.updatePacking(cost)
- * - PriceSummary.updateCoupon(discount, code, percentage)
- * - PriceSummary.removeCoupon()
+ * - PriceSummary.updateDiscount(discount, code, percentage)
+ * - PriceSummary.removeDiscount()
  * - PriceSummary.recalculateTotal()
  *
  * ============================================================================
@@ -344,19 +344,19 @@
     function getValues() {
         return {
             productsTotal: parseFloat($('#price-products-total').val()) || 0,
-            couponDiscount: parseFloat($('#price-coupon-discount').val()) || 0,
+            discountAmount: parseFloat($('#price-discount-amount').val()) || 0,
             taxRate: parseFloat($('#price-tax-rate').val()) || 0,
             taxAmount: parseFloat($('#price-tax-amount').val()) || 0,
             shippingCost: parseFloat($('#price-shipping-cost').val()) || 0,
             packingCost: parseFloat($('#price-packing-cost').val()) || 0,
-            subtotalBeforeCoupon: parseFloat($('#price-subtotal-before-coupon').val()) || 0
+            subtotalBeforeDiscount: parseFloat($('#price-subtotal-before-discount').val()) || 0
         };
     }
 
     // Calculate and update grand total
     function recalculateTotal() {
         var v = getValues();
-        var subtotal = v.productsTotal - v.couponDiscount;
+        var subtotal = v.productsTotal - v.discountAmount;
         var grandTotal = subtotal + v.taxAmount + v.shippingCost + v.packingCost;
 
         // Update hidden field
@@ -371,7 +371,7 @@
 
         console.log('PriceSummary: Total updated', {
             products: v.productsTotal,
-            coupon: v.couponDiscount,
+            discount: v.discountAmount,
             tax: v.taxAmount,
             shipping: v.shippingCost,
             packing: v.packingCost,
@@ -432,36 +432,36 @@
             recalculateTotal();
         },
 
-        // Update coupon display (discount must be pre-converted by API)
-        updateCoupon: function(discount, code, percentage) {
-            $('#price-coupon-discount').val(discount);
-            $('#price-coupon-code').val(code);
+        // Update discount display (discount must be pre-converted by API)
+        updateDiscount: function(discount, code, percentage) {
+            $('#price-discount-amount').val(discount);
+            $('#price-discount-code').val(code);
 
             if (discount > 0) {
-                $('#coupon-row').removeClass('d-none');
-                $('#coupon-code-display, .coupon-code-display').text(code);
-                $('#coupon-amount-display, .coupon-amount-display').html('-' + formatPrice(discount));
-                $('#coupon-percentage-display, .coupon-percentage-display').html(percentage ? '(' + percentage + ')' : '');
+                $('#discount-row').removeClass('d-none');
+                $('#discount-code-display, .discount-code-display').text(code);
+                $('#discount-amount-display, .discount-amount-display').html('-' + formatPrice(discount));
+                $('#discount-percentage-display, .discount-percentage-display').html(percentage ? '(' + percentage + ')' : '');
             } else {
-                $('#coupon-row').addClass('d-none');
+                $('#discount-row').addClass('d-none');
             }
 
             recalculateTotal();
         },
 
-        // Remove coupon
-        removeCoupon: function() {
-            $('#price-coupon-discount').val(0);
-            $('#price-coupon-code').val('');
-            $('#coupon-row').addClass('d-none');
+        // Remove discount
+        removeDiscount: function() {
+            $('#price-discount-amount').val(0);
+            $('#price-discount-code').val('');
+            $('#discount-row').addClass('d-none');
             recalculateTotal();
         },
 
         // Manual recalculation
         recalculateTotal: recalculateTotal,
 
-        // Get subtotal before coupon (for coupon calculations)
-        getSubtotalBeforeCoupon: function() {
+        // Get subtotal before discount (for discount calculations)
+        getSubtotalBeforeDiscount: function() {
             var v = getValues();
             return v.productsTotal + v.taxAmount + v.shippingCost + v.packingCost;
         }

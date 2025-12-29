@@ -189,8 +189,8 @@ class AuthorizeController extends CheckoutBaseControlller
                         $order->tracks()->create(['title' => 'Pending', 'text' => 'You have successfully placed your order.']);
                         $order->notifications()->create();
 
-                        if ($input['coupon_id'] != "") {
-                            OrderHelper::coupon_check($input['coupon_id']); // For Coupon Checking
+                        if ($input['discount_code_id'] != "") {
+                            OrderHelper::discount_code_check($input['discount_code_id']); // For Discount Code Checking
                         }
 
                         if (Auth::check()) {

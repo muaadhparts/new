@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Models\Role;
+use App\Models\AdminRole;
 use Illuminate\Http\Request;
 use Validator;
 use Datatables;
@@ -12,17 +12,17 @@ class RoleController extends AdminBaseController
     //*** JSON Request
     public function datatables()
     {
-         $datas = Role::latest('id')->get();
+         $datas = AdminRole::latest('id')->get();
          //--- Integrating This Collection Into Datatables
          return Datatables::of($datas)
-                            ->addColumn('section', function(Role $data) {
+                            ->addColumn('section', function(AdminRole $data) {
                                 $details =  str_replace('_',' ',$data->section);
                                 $details =  ucwords($details);
                                 return  '<div>'.$details.'</div>';
                             })
-                            ->addColumn('action', function(Role $data) {
+                            ->addColumn('action', function(AdminRole $data) {
                                 return '<div class="action-list"><a href="' . route('admin-role-edit',$data->id) . '"> <i class="fas fa-edit"></i>'.__('Edit').'</a><a href="javascript:;" data-href="' . route('admin-role-delete',$data->id) . '" data-bs-toggle="modal" data-bs-target="#confirm-delete" class="delete"><i class="fas fa-trash-alt"></i></a></div>';
-                            }) 
+                            })
                             ->rawColumns(['section','action'])
                             ->toJson(); //--- Returning Json Data To Client Side
     }
@@ -48,14 +48,14 @@ class RoleController extends AdminBaseController
                 ];
 
         $validator = Validator::make($request->all(), $rules);
-        
+
         if ($validator->fails()) {
           return response()->json(array('errors' => $validator->getMessageBag()->toArray()));
         }
         //--- Validation Section Ends
 
         //--- Logic Section
-        $data = new Role();
+        $data = new AdminRole();
         $input = $request->all();
         if(!empty($request->section))
         {
@@ -67,11 +67,11 @@ class RoleController extends AdminBaseController
 
         $data->fill($input)->save();
         //--- Logic Section Ends
-      
+
         //--- Redirect Section
-        $msg = __('New Data Added Successfully.').'<a href="'.route('admin-role-index').'">'.__('View Role Lists.').'</a>';
+        $msg = __('New Data Added Successfully.').'<a href="'.route('admin-role-index').'">'.__('View Admin Role Lists.').'</a>';
         return response()->json($msg);
-        //--- Redirect Section Ends    
+        //--- Redirect Section Ends
 
 
     }
@@ -79,7 +79,7 @@ class RoleController extends AdminBaseController
     //*** GET Request
     public function edit($id)
     {
-        $data = Role::findOrFail($id);
+        $data = AdminRole::findOrFail($id);
         return view('admin.role.edit',compact('data'));
     }
 
@@ -92,14 +92,14 @@ class RoleController extends AdminBaseController
                 ];
 
         $validator = Validator::make($request->all(), $rules);
-        
+
         if ($validator->fails()) {
           return response()->json(array('errors' => $validator->getMessageBag()->toArray()));
         }
         //--- Validation Section Ends
 
         //--- Logic Section
-        $data = Role::findOrFail($id);
+        $data = AdminRole::findOrFail($id);
         $input = $request->all();
         if(!empty($request->section))
         {
@@ -112,19 +112,19 @@ class RoleController extends AdminBaseController
         //--- Logic Section Ends
 
         //--- Redirect Section
-        $msg = __('Data Updated Successfully.').'<a href="'.route('admin-role-index').'">'.__('View Role Lists.').'</a>';
+        $msg = __('Data Updated Successfully.').'<a href="'.route('admin-role-index').'">'.__('View Admin Role Lists.').'</a>';
         return response()->json($msg);
-        //--- Redirect Section Ends    
+        //--- Redirect Section Ends
 
     }
     //*** GET Request Delete
     public function destroy($id)
     {
-        $data = Role::findOrFail($id);
+        $data = AdminRole::findOrFail($id);
         $data->delete();
-        //--- Redirect Section     
+        //--- Redirect Section
         $msg = __('Data Deleted Successfully.');
-        return response()->json($msg);      
-        //--- Redirect Section Ends     
+        return response()->json($msg);
+        //--- Redirect Section Ends
     }
 }

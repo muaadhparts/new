@@ -133,9 +133,9 @@
                             <span class="muaadh-mobile-quick-badge">{{ count($cart) }}</span>
                         @endif
                     </a>
-                    <a href="{{ auth()->check() ? route('user-wishlists') : route('user.login') }}" class="muaadh-mobile-quick-item">
+                    <a href="{{ auth()->check() ? route('user-favorites') : route('user.login') }}" class="muaadh-mobile-quick-item">
                         <i class="fas fa-heart"></i>
-                        <span>@lang('Wishlist')</span>
+                        <span>@lang('Favorites')</span>
                     </a>
                     <a href="{{ route('product.compare') }}" class="muaadh-mobile-quick-item">
                         <i class="fas fa-exchange-alt"></i>
@@ -283,9 +283,9 @@
                         <i class="fas fa-shopping-bag"></i>
                         <span>@lang('My Orders')</span>
                     </a>
-                    <a href="{{ route('user-wishlists') }}" class="muaadh-mobile-nav-item">
+                    <a href="{{ route('user-favorites') }}" class="muaadh-mobile-nav-item">
                         <i class="fas fa-heart"></i>
-                        <span>@lang('Wishlist')</span>
+                        <span>@lang('Favorites')</span>
                     </a>
                     <a href="{{ route('user-profile') }}" class="muaadh-mobile-nav-item">
                         <i class="fas fa-user-edit"></i>
@@ -317,7 +317,7 @@
                         <i class="fas fa-user-circle"></i>
                     </div>
                     <h5>@lang('Welcome Guest')</h5>
-                    <p>@lang('Login or create an account to access your orders, wishlist and more.')</p>
+                    <p>@lang('Login or create an account to access your orders, favorites and more.')</p>
                     <div class="muaadh-mobile-guest-buttons">
                         <a href="{{ route('user.login') }}" class="muaadh-btn-primary">
                             <i class="fas fa-sign-in-alt"></i>

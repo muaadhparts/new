@@ -3,7 +3,7 @@
 namespace App\Services;
 
 use App\Models\Cart;
-use App\Models\Coupon;
+use App\Models\DiscountCode;
 use App\Models\Currency;
 use App\Models\Shipping;
 use App\Models\Package;
@@ -21,8 +21,8 @@ use Illuminate\Support\Facades\Session;
  * Price Structure:
  * ================
  * products_total      = Sum of all product prices (NEVER changes)
- * coupon_discount     = Discount amount from coupon
- * subtotal            = products_total - coupon_discount
+ * discount_amount     = Discount amount from discount code
+ * subtotal            = products_total - discount_amount
  * tax_amount          = subtotal * tax_rate / 100
  * shipping_cost       = Selected shipping price (after free_above check)
  * packing_cost        = Selected packaging price
@@ -185,40 +185,40 @@ class CheckoutPriceService
     }
 
     /**
-     * Get coupon discount amount
+     * Get discount code amount
      */
-    public function getCouponDiscount($vendorId = null)
+    public function getDiscountAmount($vendorId = null)
     {
         if ($vendorId) {
-            return (float)Session::get('coupon_vendor_' . $vendorId, 0);
+            return (float)Session::get('discount_code_vendor_' . $vendorId, 0);
         }
-        return (float)Session::get('coupon', 0);
+        return (float)Session::get('discount_code', 0);
     }
 
     /**
-     * Get coupon data
+     * Get discount code data
      */
-    public function getCouponData($vendorId = null)
+    public function getDiscountCodeData($vendorId = null)
     {
         if ($vendorId) {
             return [
-                'amount' => (float)Session::get('coupon_vendor_' . $vendorId, 0),
-                'code' => Session::get('coupon_code_vendor_' . $vendorId, ''),
-                'id' => Session::get('coupon_id_vendor_' . $vendorId),
-                'percentage' => Session::get('coupon_percentage_vendor_' . $vendorId, ''),
+                'amount' => (float)Session::get('discount_code_vendor_' . $vendorId, 0),
+                'code' => Session::get('discount_code_value_vendor_' . $vendorId, ''),
+                'id' => Session::get('discount_code_id_vendor_' . $vendorId),
+                'percentage' => Session::get('discount_percentage_vendor_' . $vendorId, ''),
             ];
         }
         return [
-            'amount' => (float)Session::get('coupon', 0),
-            'code' => Session::get('coupon_code', ''),
-            'id' => Session::get('coupon_id'),
-            'percentage' => Session::get('coupon_percentage', ''),
+            'amount' => (float)Session::get('discount_code', 0),
+            'code' => Session::get('discount_code_value', ''),
+            'id' => Session::get('discount_code_id'),
+            'percentage' => Session::get('discount_percentage', ''),
         ];
     }
 
     /**
      * Calculate tax amount
-     * Tax is calculated on subtotal (products - coupon)
+     * Tax is calculated on subtotal (products - discount)
      */
     public function calculateTax($subtotal, $taxRate)
     {
@@ -304,12 +304,12 @@ class CheckoutPriceService
         // 1. Products Total (RAW - never changes)
         $productsTotal = $this->calculateProductsTotal($vendorId);
 
-        // 2. Coupon
-        $couponData = $this->getCouponData($vendorId);
-        $couponDiscount = $couponData['amount'];
+        // 2. Discount Code
+        $discountData = $this->getDiscountCodeData($vendorId);
+        $discountAmount = $discountData['amount'];
 
-        // 3. Subtotal (products - coupon)
-        $subtotal = $productsTotal - $couponDiscount;
+        // 3. Subtotal (products - discount)
+        $subtotal = $productsTotal - $discountAmount;
 
         // 4. Tax (on subtotal)
         $taxAmount = $this->calculateTax($subtotal, $taxRate);
@@ -320,11 +320,11 @@ class CheckoutPriceService
         return [
             // Core values
             'products_total' => $productsTotal,        // RAW products total
-            'coupon_discount' => $couponDiscount,      // Coupon amount
-            'coupon_code' => $couponData['code'],
-            'coupon_id' => $couponData['id'],
-            'coupon_percentage' => $couponData['percentage'],
-            'subtotal' => $subtotal,                   // After coupon
+            'discount_amount' => $discountAmount,      // Discount code amount
+            'discount_code' => $discountData['code'],
+            'discount_code_id' => $discountData['id'],
+            'discount_percentage' => $discountData['percentage'],
+            'subtotal' => $subtotal,                   // After discount
             'tax_rate' => $taxRate,
             'tax_amount' => $taxAmount,
             'tax_location' => $taxLocation,
@@ -345,8 +345,8 @@ class CheckoutPriceService
     {
         // Get step1 values
         $productsTotal = $step1Data['products_total'] ?? 0;
-        $couponDiscount = $step1Data['coupon_discount'] ?? 0;
-        $subtotal = $step1Data['subtotal'] ?? ($productsTotal - $couponDiscount);
+        $discountAmount = $step1Data['discount_amount'] ?? 0;
+        $subtotal = $step1Data['subtotal'] ?? ($productsTotal - $discountAmount);
         $taxRate = $step1Data['tax_rate'] ?? 0;
         $taxAmount = $step1Data['tax_amount'] ?? 0;
         $taxLocation = $step1Data['tax_location'] ?? '';
@@ -360,16 +360,16 @@ class CheckoutPriceService
         // Grand Total = subtotal + tax + shipping + packing
         $grandTotal = $subtotal + $taxAmount + $shippingResult['cost'] + $packingResult['cost'];
 
-        // Subtotal before coupon (for coupon operations in step3)
-        $subtotalBeforeCoupon = $productsTotal + $taxAmount + $shippingResult['cost'] + $packingResult['cost'];
+        // Subtotal before discount (for discount code operations in step3)
+        $subtotalBeforeDiscount = $productsTotal + $taxAmount + $shippingResult['cost'] + $packingResult['cost'];
 
         return [
             // From Step 1
             'products_total' => $productsTotal,
-            'coupon_discount' => $couponDiscount,
-            'coupon_code' => $step1Data['coupon_code'] ?? '',
-            'coupon_id' => $step1Data['coupon_id'] ?? null,
-            'coupon_percentage' => $step1Data['coupon_percentage'] ?? '',
+            'discount_amount' => $discountAmount,
+            'discount_code' => $step1Data['discount_code'] ?? '',
+            'discount_code_id' => $step1Data['discount_code_id'] ?? null,
+            'discount_percentage' => $step1Data['discount_percentage'] ?? '',
             'subtotal' => $subtotal,
             'tax_rate' => $taxRate,
             'tax_amount' => $taxAmount,
@@ -387,10 +387,10 @@ class CheckoutPriceService
             'packing_company' => $packingResult['company'],
 
             // Totals
-            'subtotal_before_coupon' => $subtotalBeforeCoupon,  // For coupon recalculation
-            'grand_total' => $grandTotal,                       // Final amount
-            'total' => $grandTotal,                             // Backward compatibility
-            'final_total' => $grandTotal,                       // Alias
+            'subtotal_before_discount' => $subtotalBeforeDiscount,  // For discount recalculation
+            'grand_total' => $grandTotal,                           // Final amount
+            'total' => $grandTotal,                                 // Backward compatibility
+            'final_total' => $grandTotal,                           // Alias
         ];
     }
 
@@ -483,9 +483,9 @@ class CheckoutPriceService
     public function getPriceBreakdown($step, $step1Data = null, $step2Data = null, $vendorId = null)
     {
         $productsTotal = 0;
-        $couponDiscount = 0;
-        $couponCode = '';
-        $couponPercentage = '';
+        $discountAmount = 0;
+        $discountCode = '';
+        $discountPercentage = '';
         $taxRate = 0;
         $taxAmount = 0;
         $taxLocation = '';
@@ -497,17 +497,17 @@ class CheckoutPriceService
         $packingCost = 0;
         $packingCompany = '';
         $grandTotal = 0;
-        $subtotalBeforeCoupon = 0;
+        $subtotalBeforeDiscount = 0;
 
         if ($step == 1) {
             // Step 1: Only products and tax (calculated dynamically)
             $productsTotal = $this->calculateProductsTotal($vendorId);
-            $couponData = $this->getCouponData($vendorId);
-            $couponDiscount = $couponData['amount'];
-            $couponCode = $couponData['code'];
-            $couponPercentage = $couponData['percentage'];
-            $grandTotal = $productsTotal - $couponDiscount;
-            $subtotalBeforeCoupon = $productsTotal;
+            $discountData = $this->getDiscountCodeData($vendorId);
+            $discountAmount = $discountData['amount'];
+            $discountCode = $discountData['code'];
+            $discountPercentage = $discountData['percentage'];
+            $grandTotal = $productsTotal - $discountAmount;
+            $subtotalBeforeDiscount = $productsTotal;
 
         } elseif ($step == 2) {
             // Step 2: Products + Tax from step1, shipping/packing dynamic
@@ -517,22 +517,22 @@ class CheckoutPriceService
                 $taxAmount = $step1Data->tax_amount ?? 0;
                 $taxLocation = $step1Data->tax_location ?? '';
             }
-            $couponData = $this->getCouponData($vendorId);
-            $couponDiscount = $couponData['amount'];
-            $couponCode = $couponData['code'];
-            $couponPercentage = $couponData['percentage'];
+            $discountData = $this->getDiscountCodeData($vendorId);
+            $discountAmount = $discountData['amount'];
+            $discountCode = $discountData['code'];
+            $discountPercentage = $discountData['percentage'];
 
-            $subtotal = $productsTotal - $couponDiscount;
+            $subtotal = $productsTotal - $discountAmount;
             $grandTotal = $subtotal + $taxAmount; // Shipping/packing added via JS
-            $subtotalBeforeCoupon = $productsTotal + $taxAmount;
+            $subtotalBeforeDiscount = $productsTotal + $taxAmount;
 
         } elseif ($step == 3) {
             // Step 3: Everything from step2 session (read-only)
             if ($step2Data) {
                 $productsTotal = $step2Data->products_total ?? ($step1Data->products_total ?? 0);
-                $couponDiscount = $step2Data->coupon_discount ?? 0;
-                $couponCode = $step2Data->coupon_code ?? '';
-                $couponPercentage = $step2Data->coupon_percentage ?? '';
+                $discountAmount = $step2Data->discount_amount ?? 0;
+                $discountCode = $step2Data->discount_code ?? '';
+                $discountPercentage = $step2Data->discount_percentage ?? '';
                 $taxRate = $step2Data->tax_rate ?? 0;
                 $taxAmount = $step2Data->tax_amount ?? 0;
                 $taxLocation = $step2Data->tax_location ?? '';
@@ -544,16 +544,16 @@ class CheckoutPriceService
                 $packingCost = $step2Data->packing_cost ?? 0;
                 $packingCompany = $step2Data->packing_company ?? '';
                 $grandTotal = $step2Data->grand_total ?? $step2Data->total ?? 0;
-                $subtotalBeforeCoupon = $step2Data->subtotal_before_coupon ?? 0;
+                $subtotalBeforeDiscount = $step2Data->subtotal_before_discount ?? 0;
             }
         }
 
         return [
             'products_total' => round($productsTotal, 2),
-            'coupon_discount' => round($couponDiscount, 2),
-            'coupon_code' => $couponCode,
-            'coupon_percentage' => $couponPercentage,
-            'has_coupon' => $couponDiscount > 0,
+            'discount_amount' => round($discountAmount, 2),
+            'discount_code' => $discountCode,
+            'discount_percentage' => $discountPercentage,
+            'has_discount' => $discountAmount > 0,
             'tax_rate' => $taxRate,
             'tax_amount' => round($taxAmount, 2),
             'tax_location' => $taxLocation,
@@ -565,7 +565,7 @@ class CheckoutPriceService
             'packing_cost' => round($packingCost, 2),
             'packing_company' => $packingCompany,
             'grand_total' => round($grandTotal, 2),
-            'subtotal_before_coupon' => round($subtotalBeforeCoupon, 2),
+            'subtotal_before_discount' => round($subtotalBeforeDiscount, 2),
         ];
     }
 
@@ -588,19 +588,19 @@ class CheckoutPriceService
         return [
             // Converted values (for display)
             'products_total' => $this->convert($raw['products_total']),
-            'coupon_discount' => $this->convert($raw['coupon_discount']),
+            'discount_amount' => $this->convert($raw['discount_amount']),
             'tax_amount' => $this->convert($raw['tax_amount']),
             'shipping_cost' => $this->convert($raw['shipping_cost']),
             'original_shipping_cost' => $this->convert($raw['original_shipping_cost']),
             'free_shipping_discount' => $this->convert($raw['free_shipping_discount']),
             'packing_cost' => $this->convert($raw['packing_cost']),
             'grand_total' => $this->convert($raw['grand_total']),
-            'subtotal_before_coupon' => $this->convert($raw['subtotal_before_coupon']),
+            'subtotal_before_discount' => $this->convert($raw['subtotal_before_discount']),
 
             // Non-monetary values (pass through)
-            'coupon_code' => $raw['coupon_code'],
-            'coupon_percentage' => $raw['coupon_percentage'],
-            'has_coupon' => $raw['has_coupon'],
+            'discount_code' => $raw['discount_code'],
+            'discount_percentage' => $raw['discount_percentage'],
+            'has_discount' => $raw['has_discount'],
             'tax_rate' => $raw['tax_rate'],
             'tax_location' => $raw['tax_location'],
             'is_free_shipping' => $raw['is_free_shipping'],
@@ -624,7 +624,7 @@ class CheckoutPriceService
         return [
             // Formatted strings (ready for display)
             'products_total_formatted' => $this->formatPrice($converted['products_total']),
-            'coupon_discount_formatted' => $this->formatPrice($converted['coupon_discount']),
+            'discount_amount_formatted' => $this->formatPrice($converted['discount_amount']),
             'tax_amount_formatted' => $this->formatPrice($converted['tax_amount']),
             'shipping_cost_formatted' => $this->formatPrice($converted['shipping_cost']),
             'original_shipping_cost_formatted' => $this->formatPrice($converted['original_shipping_cost']),

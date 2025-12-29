@@ -206,13 +206,13 @@
 
 
 
-        $(document).on("click", "#check_coupon", function() {
+        $(document).on("click", "#check_discount_code", function() {
             var val = $("#code").val();
             var total = $("#ttotal").val();
             var ship = 0;
             $.ajax({
                 type: "GET",
-                url: mainurl + "/carts/coupon/check",
+                url: mainurl + "/carts/discount-code/check",
                 data: {
                     code: val,
                     total: total,
@@ -220,13 +220,13 @@
                 },
                 success: function(data) {
                     if (data == 0) {
-                        toastr.error('{{ __('Coupon not found') }}');
+                        toastr.error('{{ __('Discount Code not found') }}');
                         $("#code").val("");
                     } else if (data == 2) {
-                        toastr.error('{{ __('Coupon already have been taken') }}');
+                        toastr.error('{{ __('Discount Code already have been taken') }}');
                         $("#code").val("");
                     } else {
-                        $("#check-coupon-form").toggle();
+                        $("#check-discount-code-form").toggle();
                         $(".discount-bar").removeClass('d-none');
 
                         if (pos == 0) {
@@ -236,11 +236,11 @@
                             $('.total-cost-dum #total-cost').html(data[0]);
                             $('#discount').html(data[2] + '{{ $curr->sign }}');
                         }
-                        $("#coupon_id").val(data[3]);
+                        $("#discount_code_id").val(data[3]);
                         $('#grandtotal').val(data[0]);
                         $('#tgrandtotal').val(data[0]);
-                        $('#coupon_code').val(data[1]);
-                        $('#coupon_discount').val(data[2]);
+                        $('#discount_code').val(data[1]);
+                        $('#discount_amount').val(data[2]);
                         if (data[4] != 0) {
                             $('.dpercent').html('(' + data[4] + ')');
                         } else {
@@ -259,7 +259,7 @@
                         } else {
                             $('.total-amount').html(ttotal + '{{ $curr->sign }}')
                         }
-                        toastr.success(lang.coupon_found);
+                        toastr.success(lang.discount_code_found);
                         $("#code").val("");
                     }
                 }

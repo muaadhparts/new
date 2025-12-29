@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\User;
 
 use App\Models\Notification;
-use App\Models\SocialProvider;
+use App\Models\OauthAccount;
 use App\Models\Socialsetting;
 use App\Models\User;
 use App\Http\Controllers\Controller;
@@ -45,8 +45,8 @@ class SocialRegisterController extends Controller
             return redirect('/');
         }
         //check if we have logged provider
-        $socialProvider = SocialProvider::where('provider_id',$socialUser->getId())->first();
-        if(!$socialProvider)
+        $oauthAccount = OauthAccount::where('provider_id',$socialUser->getId())->first();
+        if(!$oauthAccount)
         {
             if(User::where('email',$socialUser->email)->exists())
             {
@@ -66,7 +66,7 @@ class SocialRegisterController extends Controller
             $user->affilate_code = md5($user->affilate_code);
             $user->save();
 
-            $user->socialProviders()->create(
+            $user->oauthAccounts()->create(
                 ['provider_id' => $socialUser->getId(), 'provider' => $provider]
             );
             $notification = new Notification;
@@ -77,7 +77,7 @@ class SocialRegisterController extends Controller
         else
         {
 
-            $user = $socialProvider->user;
+            $user = $oauthAccount->user;
         }
 
         Auth::guard('web')->login($user); 

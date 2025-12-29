@@ -152,8 +152,8 @@
             </a>
         </li>
 
-        <li class="{{ request()->is('vendor/coupon') || request()->is('vendor/coupon/*') ? 'active' : '' }}">
-            <a href="{{ route('vendor-coupon-index') }}">
+        <li class="{{ request()->is('vendor/discount-code') || request()->is('vendor/discount-code/*') ? 'active' : '' }}">
+            <a href="{{ route('vendor-discount-code-index') }}">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
                     fill="none">
                     <path
@@ -169,7 +169,7 @@
                     <path d="M18.0002 8V16" stroke="#1F0300" stroke-width="1.5" stroke-miterlimit="10"
                         stroke-linecap="round" stroke-linejoin="round" />
                 </svg>
-                <span class="label">@lang('Coupons')</span>
+                <span class="label">@lang('Discount Codes')</span>
             </a>
         </li>
 

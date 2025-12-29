@@ -13,4 +13,4 @@ CREATE TABLE `stocks` (
   UNIQUE KEY `stocks_part_location_unique` (`part_number`,`location`),
   KEY `stocks_part_index` (`part_number`),
   KEY `stocks_branch_index` (`branch_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=715257 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=875676 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

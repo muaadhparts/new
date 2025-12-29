@@ -186,7 +186,7 @@
                                                         class="woocommerce-LoopProduct-link"><img
                                                             src="{{ filter_var($prod['photo'] ?? '', FILTER_VALIDATE_URL) ? $prod['photo'] : (($prod['photo'] ?? null) ? \Illuminate\Support\Facades\Storage::url($prod['photo']) : asset('assets/images/noimage.png')) }}"
                                                             alt="Product Image"></a>
-                                                    <div class="wishlist-view">
+                                                    <div class="favorite-view">
                                                         <div class="quickview-button">
                                                             <a class="quickview-btn"
                                                                 href="{{ $catalogProdUrl }}"
@@ -194,11 +194,11 @@
                                                                 data-bs-original-title="Quick View"
                                                                 aria-label="Quick View">{{ __('Quick View') }}</a>
                                                         </div>
-                                                        <div class="whishlist-button">
-                                                            <a class="add_to_wishlist" href="#" data-bs-toggle="tooltip"
-                                                                data-bs-placement="top" title="{{ __('Wishlist') }}"
-                                                                data-bs-original-title="Add to Wishlist"
-                                                                aria-label="Add to Wishlist">{{ __('Wishlist') }}</a>
+                                                        <div class="favorite-button">
+                                                            <a class="add_to_favorite" href="#" data-bs-toggle="tooltip"
+                                                                data-bs-placement="top" title="{{ __('Favorites') }}"
+                                                                data-bs-original-title="Add to Favorites"
+                                                                aria-label="Add to Favorites">{{ __('Favorites') }}</a>
                                                         </div>
                                                     </div>
                                                 </div>

@@ -85,7 +85,7 @@
                                 <form id="messageform" action="{{route('admin-message-store')}}" data-href="{{ route('admin-message-load',$conv->id) }}" method="POST">
                                     {{csrf_field()}}
                                     <div class="form-group">
-                                        <input type="hidden" name="conversation_id" value="{{$conv->id}}">
+                                        <input type="hidden" name="thread_id" value="{{$conv->id}}">
                                         <textarea class="form-control" name="message" id="wrong-invoice" rows="5" required="" placeholder="{{ __('Message') }}"></textarea>
                                     </div>
                                     <div class="form-group">

@@ -224,9 +224,9 @@ class MyFatoorahController extends CheckoutBaseControlller {
         $order->tracks()->create(['title' => 'Pending', 'text' => 'You have successfully placed your order.']);
         $order->notifications()->create();
 
-        // Coupon validation
-        if (!empty($input['coupon_id'])) {
-            OrderHelper::coupon_check($input['coupon_id']);
+        // Discount Code validation
+        if (!empty($input['discount_code_id'])) {
+            OrderHelper::discount_code_check($input['discount_code_id']);
         }
 
         // Rewards for authenticated user

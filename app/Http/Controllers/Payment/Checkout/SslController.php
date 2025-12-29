@@ -129,8 +129,8 @@ class SslController extends CheckoutBaseControlller
 
         $order->fill($input)->save();
 
-        if ($input['coupon_id'] != "") {
-            OrderHelper::coupon_check($input['coupon_id']); // For Coupon Checking
+        if ($input['discount_code_id'] != "") {
+            OrderHelper::discount_code_check($input['discount_code_id']); // For Discount Code Checking
         }
 
         $post_data = array();

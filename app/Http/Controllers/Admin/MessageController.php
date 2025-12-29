@@ -3,8 +3,9 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Classes\MuaadhMailer;
-use App\Models\AdminUserConversation;
-use App\Models\AdminUserMessage;use App\Models\Order;
+use App\Models\SupportThread;
+use App\Models\SupportMessage;
+use App\Models\Order;
 use App\Models\Rider;
 use App\Models\User;
 use Auth;
@@ -16,18 +17,18 @@ class MessageController extends AdminBaseController
     //*** JSON Request
     public function datatables($type)
     {
-        $datas = AdminUserConversation::where('type', '=', $type)->get();
+        $datas = SupportThread::where('type', '=', $type)->get();
         //--- Integrating This Collection Into Datatables
         return Datatables::of($datas)
-            ->editColumn('created_at', function (AdminUserConversation $data) {
+            ->editColumn('created_at', function (SupportThread $data) {
                 $date = $data->created_at->diffForHumans();
                 return $date;
             })
-            ->addColumn('name', function (AdminUserConversation $data) {
+            ->addColumn('name', function (SupportThread $data) {
                 $name = $data->user->name;
                 return $name;
             })
-            ->addColumn('action', function (AdminUserConversation $data) {
+            ->addColumn('action', function (SupportThread $data) {
                 return '<div class="action-list"><a href="' . route('admin-message-show', $data->id) . '"> <i class="fas fa-eye"></i> ' . __('Details') . '</a><a href="javascript:;" data-href="' . route('admin-message-delete', $data->id) . '" data-bs-toggle="modal" data-bs-target="#confirm-delete" class="delete"><i class="fas fa-trash-alt"></i></a></div>';
             })
             ->rawColumns(['action'])
@@ -47,21 +48,21 @@ class MessageController extends AdminBaseController
     //*** GET Request
     public function message($id)
     {
-        $conv = AdminUserConversation::findOrfail($id);
+        $conv = SupportThread::findOrfail($id);
         return view('admin.message.create', compact('conv'));
     }
 
     //*** GET Request
     public function messageshow($id)
     {
-        $conv = AdminUserConversation::findOrfail($id);
+        $conv = SupportThread::findOrfail($id);
         return view('load.message', compact('conv'));
     }
 
     //*** GET Request
     public function messagedelete($id)
     {
-        $conv = AdminUserConversation::findOrfail($id);
+        $conv = SupportThread::findOrfail($id);
         if ($conv->messages->count() > 0) {
             foreach ($conv->messages as $key) {
                 $key->delete();
@@ -77,7 +78,7 @@ class MessageController extends AdminBaseController
     //*** POST Request
     public function postmessage(Request $request)
     {
-        $msg = new AdminUserMessage();
+        $msg = new SupportMessage();
         $input = $request->all();
         $msg->fill($input)->save();
         //--- Redirect Section
@@ -135,26 +136,26 @@ class MessageController extends AdminBaseController
         $mailer->sendCustomMail($datas);
 
         if ($request->type == 'Ticket') {
-            $conv = AdminUserConversation::where('type', '=', 'Ticket')->where('user_id', '=', $user->id)->where('subject', '=', $subject)->first();
+            $thread = SupportThread::where('type', '=', 'Ticket')->where('user_id', '=', $user->id)->where('subject', '=', $subject)->first();
         } else {
-            $conv = AdminUserConversation::where('type', '=', 'Dispute')->where('user_id', '=', $user->id)->where('subject', '=', $subject)->first();
+            $thread = SupportThread::where('type', '=', 'Dispute')->where('user_id', '=', $user->id)->where('subject', '=', $subject)->first();
         }
-        if (isset($conv)) {
-            $msg = new AdminUserMessage();
-            $msg->conversation_id = $conv->id;
+        if (isset($thread)) {
+            $msg = new SupportMessage();
+            $msg->thread_id = $thread->id;
             $msg->message = $request->message;
             $msg->save();
             return response()->json($data);
         } else {
-            $message = new AdminUserConversation();
-            $message->subject = $subject;
-            $message->user_id = $user->id;
-            $message->message = $request->message;
-            $message->order_number = $request->order;
-            $message->type = $request->type;
-            $message->save();
-            $msg = new AdminUserMessage();
-            $msg->conversation_id = $message->id;
+            $thread = new SupportThread();
+            $thread->subject = $subject;
+            $thread->user_id = $user->id;
+            $thread->message = $request->message;
+            $thread->order_number = $request->order;
+            $thread->type = $request->type;
+            $thread->save();
+            $msg = new SupportMessage();
+            $msg->thread_id = $thread->id;
             $msg->message = $request->message;
             $msg->save();
             return response()->json($data);

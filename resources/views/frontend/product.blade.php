@@ -387,8 +387,8 @@
                         <!-- wish-compare-report-wrapper -->
                         <div class="wish-compare-report-wrapper">
                             @if (Auth::check())
-                                <a href="javascript:;" data-href="{{ route('user-wishlist-add', $productt->id) }}"
-                                    class="link wishlist">
+                                <a href="javascript:;" data-href="{{ route('user-favorite-add', $productt->id) }}"
+                                    class="link favorite">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
                                         viewBox="0 0 24 24" fill="none">
                                         <path fill-rule="evenodd" clip-rule="evenodd"
@@ -396,7 +396,7 @@
                                             stroke="currentColor" stroke-width="2" stroke-linecap="round"
                                             stroke-linejoin="round" />
                                     </svg>
-                                    <span class="title">@lang('Add to Wishlist')</span>
+                                    <span class="title">@lang('Add to Favorites')</span>
                                 </a>
                             @else
                                 <a href="{{ route('user.login') }}" class="link">
@@ -407,7 +407,7 @@
                                             stroke="currentColor" stroke-width="2" stroke-linecap="round"
                                             stroke-linejoin="round" />
                                     </svg>
-                                    <span class="title">@lang('Add to Wishlist')</span>
+                                    <span class="title">@lang('Add to Favorites')</span>
                                 </a>
                             @endif
 

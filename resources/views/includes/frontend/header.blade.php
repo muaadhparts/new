@@ -116,10 +116,10 @@
                         </div>
                     </div>
 
-                    {{-- Wishlist - Using cached $wishlistCount from HeaderComposer --}}
-                    <a href="{{ $authUser ? route('user-wishlists') : route('user.login') }}" class="muaadh-action-btn">
+                    {{-- Favorites --}}
+                    <a href="{{ $authUser ? route('user-favorites') : route('user.login') }}" class="muaadh-action-btn">
                         <i class="fas fa-heart"></i>
-                        <span class="muaadh-badge" id="wishlist-count">{{ $wishlistCount }}</span>
+                        <span class="muaadh-badge" id="favorite-count">{{ $favoriteCount }}</span>
                     </a>
 
                     {{-- Compare --}}

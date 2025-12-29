@@ -3,12 +3,12 @@
 namespace App\Http\Controllers\User;
 
 use App\Classes\MuaadhMailer;
-use App\Models\AdminUserConversation;
-use App\Models\AdminUserMessage;
+use App\Models\SupportThread;
+use App\Models\SupportMessage;
 use App\Models\Conversation;
 use App\Models\Message;
-use App\Models\Notification;use App\Models\Order;
-
+use App\Models\Notification;
+use App\Models\Order;
 use App\Models\User;
 use Illuminate\Http\Request;
 
@@ -115,32 +115,32 @@ class MessageController extends UserBaseController
     public function adminmessages()
     {
         $user = $this->user;
-        $convs = AdminUserConversation::where('type', '=', 'Ticket')->where('user_id', '=', $user->id)->paginate(12);
+        $convs = SupportThread::where('type', '=', 'Ticket')->where('user_id', '=', $user->id)->paginate(12);
         return view('user.ticket.index', compact('convs'));
     }
 
     public function adminDiscordmessages()
     {
         $user = $this->user;
-        $convs = AdminUserConversation::where('type', '=', 'Dispute')->where('user_id', '=', $user->id)->paginate(12);
+        $convs = SupportThread::where('type', '=', 'Dispute')->where('user_id', '=', $user->id)->paginate(12);
         return view('user.dispute.index', compact('convs'));
     }
 
     public function messageload($id)
     {
-        $conv = AdminUserConversation::findOrfail($id);
+        $conv = SupportThread::findOrfail($id);
         return view('load.usermessage', compact('conv'));
     }
 
     public function adminmessage($id)
     {
-        $conv = AdminUserConversation::findOrfail($id);
+        $conv = SupportThread::findOrfail($id);
         return view('user.ticket.create', compact('conv'));
     }
 
     public function adminmessagedelete($id)
     {
-        $conv = AdminUserConversation::findOrfail($id);
+        $conv = SupportThread::findOrfail($id);
         if ($conv->messages->count() > 0) {
             foreach ($conv->messages as $key) {
                 $key->delete();
@@ -152,18 +152,18 @@ class MessageController extends UserBaseController
 
     public function adminpostmessage(Request $request)
     {
-        $msg = new AdminUserMessage();
+        $msg = new SupportMessage();
         $input = $request->all();
         $msg->fill($input)->save();
         $notification = new Notification;
-        $notification->conversation_id = $msg->conversation->id;
+        $notification->conversation_id = $msg->thread->id;
         $notification->save();
         return back()->with('success', __('Message Sent Successfully'));
     }
 
     public function adminusercontact(Request $request)
     {
-      
+
         if ($request->type == 'Dispute') {
             $order = Order::where('order_number', $request->order)->exists();
             if (!$order) {
@@ -188,31 +188,31 @@ class MessageController extends UserBaseController
         $mailer->sendCustomMail($data);
 
         if ($request->type == 'Ticket') {
-            $conv = AdminUserConversation::whereType('Ticket')->whereUserId($user->id)->whereSubject($subject)->first();
+            $thread = SupportThread::whereType('Ticket')->whereUserId($user->id)->whereSubject($subject)->first();
         } else {
-            $conv = AdminUserConversation::whereType('Dispute')->whereUserId($user->id)->whereSubject($subject)->first();
+            $thread = SupportThread::whereType('Dispute')->whereUserId($user->id)->whereSubject($subject)->first();
         }
 
-        if (isset($conv)) {
-            $msg = new AdminUserMessage();
-            $msg->conversation_id = $conv->id;
+        if (isset($thread)) {
+            $msg = new SupportMessage();
+            $msg->thread_id = $thread->id;
             $msg->message = $request->message;
             $msg->user_id = $user->id;
             $msg->save();
             return back()->with('success', 'Message sent successfully');
         } else {
-            $message = new AdminUserConversation();
-            $message->subject = $subject;
-            $message->user_id = $user->id;
-            $message->message = $request->message;
-            $message->order_number = $request->order;
-            $message->type = $request->type;
-            $message->save();
+            $thread = new SupportThread();
+            $thread->subject = $subject;
+            $thread->user_id = $user->id;
+            $thread->message = $request->message;
+            $thread->order_number = $request->order;
+            $thread->type = $request->type;
+            $thread->save();
             $notification = new Notification;
-            $notification->conversation_id = $message->id;
+            $notification->conversation_id = $thread->id;
             $notification->save();
-            $msg = new AdminUserMessage();
-            $msg->conversation_id = $message->id;
+            $msg = new SupportMessage();
+            $msg->thread_id = $thread->id;
             $msg->message = $request->message;
             $msg->user_id = $user->id;
             $msg->save();

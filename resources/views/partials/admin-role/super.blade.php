@@ -143,9 +143,9 @@
 </li>
 
 <li>
-    <a href="{{ route('admin-coupon-index') }}" class=" wave-effect"><i
+    <a href="{{ route('admin-discount-code-index') }}" class=" wave-effect"><i
             class="fas fa-percentage"></i>{{ __('Set
-                                Coupons') }}</a>
+                                Discount Codes') }}</a>
 </li>
 
 <li>

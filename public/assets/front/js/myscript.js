@@ -96,15 +96,15 @@
 
 
 
-  //   wishlist
-  $(document).on("click", ".wishlist", function (e) {
+  //   favorites
+  $(document).on("click", ".favorite, .add_to_favorite", function (e) {
     e.preventDefault();
     const $this = $(this);
     if ($(this).data("href")) {
       $.get($(this).data("href"), function (data) {
         if (data[0] == 1) {
           toastr.success(data["success"]);
-          $("#wishlist-count").html(data[1]);
+          $("#favorite-count").html(data[1]);
           $this.children().addClass("active");
         } else {
           toastr.error(data["error"]);
@@ -113,11 +113,11 @@
     }
   });
 
-  $(document).on("click", ".removewishlist", function (e) {
+  $(document).on("click", ".removefavorite", function (e) {
     e.preventDefault();
     let $this = $(this);
     $.get($(this).attr("data-href"), function (data) {
-      $("#wishlist-count").html(data[1]);
+      $("#favorite-count").html(data[1]);
       $this.parent().parent().parent().remove();
     });
   });

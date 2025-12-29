@@ -490,21 +490,21 @@ Route::prefix('admin')->group(function () {
 
     //------------ ADMIN PRODUCT DISCUSSION SECTION ENDS ------------
 
-    //------------ ADMIN COUPON SECTION ------------
+    //------------ ADMIN DISCOUNT CODE SECTION ------------
 
-    Route::group(['middleware' => 'permissions:set_coupons'], function () {
+    Route::group(['middleware' => 'permissions:set_discount_codes'], function () {
 
-        Route::get('/coupon/datatables', 'Admin\CouponController@datatables')->name('admin-coupon-datatables'); //JSON REQUEST
-        Route::get('/coupon', 'Admin\CouponController@index')->name('admin-coupon-index');
-        Route::get('/coupon/create', 'Admin\CouponController@create')->name('admin-coupon-create');
-        Route::post('/coupon/create', 'Admin\CouponController@store')->name('admin-coupon-store');
-        Route::get('/coupon/edit/{id}', 'Admin\CouponController@edit')->name('admin-coupon-edit');
-        Route::post('/coupon/edit/{id}', 'Admin\CouponController@update')->name('admin-coupon-update');
-        Route::delete('/coupon/delete/{id}', 'Admin\CouponController@destroy')->name('admin-coupon-delete');
-        Route::get('/coupon/status/{id1}/{id2}', 'Admin\CouponController@status')->name('admin-coupon-status');
+        Route::get('/discount-code/datatables', 'Admin\DiscountCodeController@datatables')->name('admin-discount-code-datatables'); //JSON REQUEST
+        Route::get('/discount-code', 'Admin\DiscountCodeController@index')->name('admin-discount-code-index');
+        Route::get('/discount-code/create', 'Admin\DiscountCodeController@create')->name('admin-discount-code-create');
+        Route::post('/discount-code/create', 'Admin\DiscountCodeController@store')->name('admin-discount-code-store');
+        Route::get('/discount-code/edit/{id}', 'Admin\DiscountCodeController@edit')->name('admin-discount-code-edit');
+        Route::post('/discount-code/edit/{id}', 'Admin\DiscountCodeController@update')->name('admin-discount-code-update');
+        Route::delete('/discount-code/delete/{id}', 'Admin\DiscountCodeController@destroy')->name('admin-discount-code-delete');
+        Route::get('/discount-code/status/{id1}/{id2}', 'Admin\DiscountCodeController@status')->name('admin-discount-code-status');
     });
 
-    //------------ ADMIN COUPON SECTION ENDS------------
+    //------------ ADMIN DISCOUNT CODE SECTION ENDS------------
 
     //------------ ADMIN USER SECTION ------------
 
@@ -1144,17 +1144,17 @@ Route::prefix('admin')->group(function () {
         Route::post('/activation', 'Admin\LicenseController@activateWithKey')->name('admin-activate-purchase');
         // ------------ LICENSE SECTION ENDS ----------------------
 
-        // ------------ ROLE SECTION ----------------------
+        // ------------ ADMIN ROLE SECTION ----------------------
 
-        Route::get('/role/datatables', 'Admin\RoleController@datatables')->name('admin-role-datatables');
-        Route::get('/role', 'Admin\RoleController@index')->name('admin-role-index');
-        Route::get('/role/create', 'Admin\RoleController@create')->name('admin-role-create');
-        Route::post('/role/create', 'Admin\RoleController@store')->name('admin-role-store');
-        Route::get('/role/edit/{id}', 'Admin\RoleController@edit')->name('admin-role-edit');
-        Route::post('/role/edit/{id}', 'Admin\RoleController@update')->name('admin-role-update');
-        Route::delete('/role/delete/{id}', 'Admin\RoleController@destroy')->name('admin-role-delete');
+        Route::get('/admin-role/datatables', 'Admin\RoleController@datatables')->name('admin-role-datatables');
+        Route::get('/admin-role', 'Admin\RoleController@index')->name('admin-role-index');
+        Route::get('/admin-role/create', 'Admin\RoleController@create')->name('admin-role-create');
+        Route::post('/admin-role/create', 'Admin\RoleController@store')->name('admin-role-store');
+        Route::get('/admin-role/edit/{id}', 'Admin\RoleController@edit')->name('admin-role-edit');
+        Route::post('/admin-role/edit/{id}', 'Admin\RoleController@update')->name('admin-role-update');
+        Route::delete('/admin-role/delete/{id}', 'Admin\RoleController@destroy')->name('admin-role-delete');
 
-        // ------------ ROLE SECTION ENDS ----------------------
+        // ------------ ADMIN ROLE SECTION ENDS ----------------------
 
         // ------------ ADDON SECTION ----------------------
 
@@ -1412,19 +1412,19 @@ Route::group(['middleware' => 'maintenance'], function () {
 
             //------------ VENDOR SHIPMENTS SECTION ENDS------------
 
-            //------------ VENDOR COUPON SECTION ------------
+            //------------ VENDOR DISCOUNT CODE SECTION ------------
 
-            Route::get('/coupon/datatables', 'Vendor\CouponController@datatables')->name('vendor-coupon-datatables');
-            Route::get('/coupon', 'Vendor\CouponController@index')->name('vendor-coupon-index');
-            Route::get('/coupon/create', 'Vendor\CouponController@create')->name('vendor-coupon-create');
-            Route::post('/coupon/create', 'Vendor\CouponController@store')->name('vendor-coupon-store');
-            Route::get('/coupon/edit/{id}', 'Vendor\CouponController@edit')->name('vendor-coupon-edit');
-            Route::post('/coupon/edit/{id}', 'Vendor\CouponController@update')->name('vendor-coupon-update');
-            Route::delete('/coupon/delete/{id}', 'Vendor\CouponController@destroy')->name('vendor-coupon-delete');
-            Route::get('/coupon/status/{id1}/{id2}', 'Vendor\CouponController@status')->name('vendor-coupon-status');
-            Route::get('/coupon/get-categories', 'Vendor\CouponController@getCategories')->name('vendor-coupon-get-categories');
+            Route::get('/discount-code/datatables', 'Vendor\DiscountCodeController@datatables')->name('vendor-discount-code-datatables');
+            Route::get('/discount-code', 'Vendor\DiscountCodeController@index')->name('vendor-discount-code-index');
+            Route::get('/discount-code/create', 'Vendor\DiscountCodeController@create')->name('vendor-discount-code-create');
+            Route::post('/discount-code/create', 'Vendor\DiscountCodeController@store')->name('vendor-discount-code-store');
+            Route::get('/discount-code/edit/{id}', 'Vendor\DiscountCodeController@edit')->name('vendor-discount-code-edit');
+            Route::post('/discount-code/edit/{id}', 'Vendor\DiscountCodeController@update')->name('vendor-discount-code-update');
+            Route::delete('/discount-code/delete/{id}', 'Vendor\DiscountCodeController@destroy')->name('vendor-discount-code-delete');
+            Route::get('/discount-code/status/{id1}/{id2}', 'Vendor\DiscountCodeController@status')->name('vendor-discount-code-status');
+            Route::get('/discount-code/get-categories', 'Vendor\DiscountCodeController@getCategories')->name('vendor-discount-code-get-categories');
 
-            //------------ VENDOR COUPON SECTION ENDS------------
+            //------------ VENDOR DISCOUNT CODE SECTION ENDS------------
 
             //------------ VENDOR CREDENTIALS SECTION ------------
             Route::get('/credentials', 'Vendor\CredentialController@index')->name('vendor-credentials-index');
@@ -1510,16 +1510,14 @@ Route::group(['middleware' => 'maintenance'], function () {
         Route::get('/country/wise/city/{country_id}', 'Front\CheckoutController@getCity')->name('country.wise.city');
         Route::get('/user/country/wise/city', 'Front\CheckoutController@getCityUser')->name('country.wise.city.user');
 
-        // User Wishlist
-        Route::get('/wishlists', 'User\WishlistController@wishlists')->name('user-wishlists');
+        // User Favorites
+        Route::get('/favorites', 'User\FavoriteController@favorites')->name('user-favorites');
 
-        // Legacy wishlist routes (within user prefix)
-        Route::get('/wishlist/add/merchant/{merchantProductId}', 'User\WishlistController@addwish')->name('user-wishlist-add-merchant');
+        Route::get('/favorite/add/merchant/{merchantProductId}', 'User\FavoriteController@add')->name('user-favorite-add-merchant');
 
-        // Legacy and current routes
-        Route::get('/wishlist/add/{id}', 'User\WishlistController@addwishLegacy')->name('user-wishlist-add');
-        Route::get('/wishlist/remove/{id}', 'User\WishlistController@removewish')->name('user-wishlist-remove');
-        // User Wishlist Ends
+        Route::get('/favorite/add/{id}', 'User\FavoriteController@addLegacy')->name('user-favorite-add');
+        Route::get('/favorite/remove/{id}', 'User\FavoriteController@remove')->name('user-favorite-remove');
+        // User Favorites Ends
 
         // User Review
         Route::post('/review/submit', 'User\UserController@reviewsubmit')->name('front.review.submit');
@@ -1957,16 +1955,15 @@ Route::group(['middleware' => 'maintenance'], function () {
     // ============ END CART ROUTES ============
     Route::get('/upcolor', 'Front\CartController@upcolor');
     Route::get('/removecart/{id}', 'Front\CartController@removecart')->name('product.cart.remove');
-    Route::get('/carts/coupon', 'Front\CouponController@coupon');
+    Route::get('/carts/discount-code', 'Front\DiscountCodeController@discountCodeCheck');
     // CART SECTION ENDS
 
-    // WISHLIST SECTION
-    // Merchant-product-based wishlist routes (require authentication)
+    // FAVORITE SECTION
     Route::middleware('auth')->group(function () {
-        Route::get('/wishlist/add/merchant/{merchantProductId}', 'User\WishlistController@addMerchantWishlist')->name('merchant.wishlist.add');
-        Route::get('/wishlist/remove/merchant/{merchantProductId}', 'User\WishlistController@removeMerchantWishlist')->name('merchant.wishlist.remove');
+        Route::get('/favorite/add/merchant/{merchantProductId}', 'User\FavoriteController@addMerchantFavorite')->name('merchant.favorite.add');
+        Route::get('/favorite/remove/merchant/{merchantProductId}', 'User\FavoriteController@removeMerchantFavorite')->name('merchant.favorite.remove');
     });
-    // WISHLIST SECTION ENDS
+    // FAVORITE SECTION ENDS
 
     // CHECKOUT SECTION
     Route::get('/buy-now/{id}', 'Front\CheckoutController@buynow')->name('front.buynow');
@@ -2053,9 +2050,9 @@ Route::group(['middleware' => 'maintenance'], function () {
         // Location reset
         Route::post('/location/reset', 'Front\CheckoutController@resetLocation')->name('front.checkout.vendor.location.reset');
 
-        // Coupon (vendor-specific)
-        Route::get('/coupon/check', 'Front\CouponController@couponcheck')->name('front.checkout.vendor.coupon.check');
-        Route::post('/coupon/remove', 'Front\CouponController@removeCoupon')->name('front.checkout.vendor.coupon.remove');
+        // Discount Code (vendor-specific)
+        Route::get('/discount-code/check', 'Front\DiscountCodeController@discountCodeCheck')->name('front.checkout.vendor.discount-code.check');
+        Route::post('/discount-code/remove', 'Front\DiscountCodeController@removeDiscountCode')->name('front.checkout.vendor.discount-code.remove');
 
         // Wallet check
         Route::get('/wallet-check', 'Front\CheckoutController@walletcheck')->name('front.checkout.vendor.wallet.check');
@@ -2163,9 +2160,9 @@ Route::group(['middleware' => 'maintenance'], function () {
         return redirect()->route('front.cart')->with('unsuccess', __('خطأ: لم يتم تحديد التاجر.'));
     })->name('front.voguepay.submit');
 
-    // Coupon routes (global - for cart page)
-    Route::get('/carts/coupon/check', 'Front\CouponController@couponcheck')->name('front.coupon.check');
-    Route::post('/carts/coupon/remove', 'Front\CouponController@removeCoupon')->name('front.coupon.remove');
+    // Discount Code routes (global - for cart page)
+    Route::get('/carts/discount-code/check', 'Front\DiscountCodeController@discountCodeCheck')->name('front.discount-code.check');
+    Route::post('/carts/discount-code/remove', 'Front\DiscountCodeController@removeDiscountCode')->name('front.discount-code.remove');
 
     // CSRF Token refresh endpoint
     Route::get('/csrf-token', function() {

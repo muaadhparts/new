@@ -40,21 +40,21 @@
           <small class="old-price"><del>{{ $prod->showPreviousPrice() }}</del></small>
        </div>
        <ul class="action-meta">
-          {{-- WISHLIST SECTION --}}
+          {{-- FAVORITES SECTION --}}
           @if(Auth::check())
           <li>
-             <span class="wish add-to-wish" data-href="{{ route('user-wishlist-add',$prod->id) }}" data-bs-toggle="tooltip" data-placement="top" title="{{ __('Wish') }}">
+             <span class="wish add-to-wish" data-href="{{ route('user-favorite-add',$prod->id) }}" data-bs-toggle="tooltip" data-placement="top" title="{{ __('Favorites') }}">
              <i class="far fa-heart"></i>
              </span>
           </li>
           @else
           <li>
-             <span rel-toggle="tooltip" title="{{ __('Wish') }}" data-placement="top" class="wish add-to-wish" data-bs-toggle="modal" data-bs-target="#user-login">
+             <span rel-toggle="tooltip" title="{{ __('Favorites') }}" data-placement="top" class="wish add-to-wish" data-bs-toggle="modal" data-bs-target="#user-login">
              <i class="far fa-heart"></i>
              </span>
           </li>
           @endif
-          {{-- WISHLIST SECTION ENDS --}}
+          {{-- FAVORITES SECTION ENDS --}}
           {{-- ADD TO CART SECTION --}}
           {{-- product_type and affiliate_link are now on merchant_products --}}
           @if($flashProdMerchant && $flashProdMerchant->product_type == "affiliate" && $flashProdMerchant->affiliate_link)

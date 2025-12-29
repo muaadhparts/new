@@ -143,13 +143,13 @@ Route::group(['prefix' => 'user'], function () {
         // ---------------------WITHDRAW CONTROLLER ENDS ---------------------
         
         
-        // ---------------------WISHLIST CONTROLLER ---------------------
+        // ---------------------FAVORITE CONTROLLER ---------------------
 
-        Route::get('/wishlists','Api\User\WishlistController@wishlists');
-        Route::post('/wishlist/add','Api\User\WishlistController@addwish');
-        Route::get('/wishlist/remove/{id}','Api\User\WishlistController@removewish');
+        Route::get('/favorites','Api\User\FavoriteController@favorites');
+        Route::post('/favorite/add','Api\User\FavoriteController@add');
+        Route::get('/favorite/remove/{id}','Api\User\FavoriteController@remove');
 
-        // ---------------------WISHLIST CONTROLLER ---------------------        
+        // ---------------------FAVORITE CONTROLLER ENDS ---------------------        
         
         
          // ---------------------REWORD CONTROLLER ---------------------  
@@ -245,7 +245,7 @@ Route::group(['prefix' => 'front'], function () {
     Route::get('/get-shipping-packaging','Api\Front\CheckoutController@getShippingPackaging');
     Route::get('/vendor/wise/shipping-packaging','Api\Front\CheckoutController@VendorWisegetShippingPackaging');
     Route::get('/order/details','Api\Front\CheckoutController@orderDetails');
-    Route::get('/get/coupon-code','Api\Front\CheckoutController@getCoupon');
+    Route::get('/get/discount-code','Api\Front\CheckoutController@getDiscountCode');
     Route::post('/checkout/update/{id}','Api\Front\CheckoutController@update');
     Route::get('/checkout/delete/{id}','Api\Front\CheckoutController@delete');
     Route::get('/get/countries','Api\Front\CheckoutController@countries');

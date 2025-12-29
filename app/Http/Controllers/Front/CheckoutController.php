@@ -152,13 +152,13 @@ class CheckoutController extends FrontBaseController
                 }
             }
             $total = $cart->totalPrice;
-            $coupon = Session::has('coupon') ? Session::get('coupon') : 0;
+            $discountAmount = Session::has('discount_code') ? Session::get('discount_code') : 0;
 
-            if (!Session::has('coupon_total')) {
-                $total = $total - $coupon;
+            if (!Session::has('discount_code_total')) {
+                $total = $total - $discountAmount;
                 $total = $total + 0;
             } else {
-                $total = Session::get('coupon_total');
+                $total = Session::get('discount_code_total');
                 $total = str_replace(',', '', str_replace($curr->sign, '', $total));
             }
 
@@ -194,13 +194,13 @@ class CheckoutController extends FrontBaseController
                     }
                 }
                 $total = $cart->totalPrice;
-                $coupon = Session::has('coupon') ? Session::get('coupon') : 0;
+                $discountAmount = Session::has('discount_code') ? Session::get('discount_code') : 0;
 
-                if (!Session::has('coupon_total')) {
-                    $total = $total - $coupon;
+                if (!Session::has('discount_code_total')) {
+                    $total = $total - $discountAmount;
                     $total = $total + 0;
                 } else {
-                    $total = Session::get('coupon_total');
+                    $total = Session::get('discount_code_total');
                     $total = str_replace($curr->sign, '', $total) + round(0 * $curr->value, 2);
                 }
                 foreach ($products as $prod) {
@@ -239,13 +239,13 @@ class CheckoutController extends FrontBaseController
                 }
 
                 $total = $cart->totalPrice;
-                $coupon = Session::has('coupon') ? Session::get('coupon') : 0;
+                $discountAmount = Session::has('discount_code') ? Session::get('discount_code') : 0;
 
-                if (!Session::has('coupon_total')) {
-                    $total = $total - $coupon;
+                if (!Session::has('discount_code_total')) {
+                    $total = $total - $discountAmount;
                     $total = $total + 0;
                 } else {
-                    $total = Session::get('coupon_total');
+                    $total = Session::get('discount_code_total');
                     $total = $total;
                 }
                 $ck = 1;
@@ -308,13 +308,13 @@ class CheckoutController extends FrontBaseController
                 }
             }
             $total = $cart->totalPrice;
-            $coupon = Session::has('coupon') ? Session::get('coupon') : 0;
+            $discountAmount = Session::has('discount_code') ? Session::get('discount_code') : 0;
 
-            if (!Session::has('coupon_total')) {
-                $total = $total - $coupon;
+            if (!Session::has('discount_code_total')) {
+                $total = $total - $discountAmount;
                 $total = $total + 0;
             } else {
-                $total = Session::get('coupon_total');
+                $total = Session::get('discount_code_total');
                 $total = str_replace(',', '', str_replace($curr->sign, '', $total));
             }
 //            dd($cart->items);
@@ -352,13 +352,13 @@ class CheckoutController extends FrontBaseController
                     }
                 }
                 $total = $cart->totalPrice;
-                $coupon = Session::has('coupon') ? Session::get('coupon') : 0;
+                $discountAmount = Session::has('discount_code') ? Session::get('discount_code') : 0;
 
-                if (!Session::has('coupon_total')) {
-                    $total = $total - $coupon;
+                if (!Session::has('discount_code_total')) {
+                    $total = $total - $discountAmount;
                     $total = $total + 0;
                 } else {
-                    $total = Session::get('coupon_total');
+                    $total = Session::get('discount_code_total');
                     $total = str_replace($curr->sign, '', $total) + round(0 * $curr->value, 2);
                 }
                 // N+1 FIX: Pre-load all vendor data
@@ -401,13 +401,13 @@ class CheckoutController extends FrontBaseController
                 }
 
                 $total = $cart->totalPrice;
-                $coupon = Session::has('coupon') ? Session::get('coupon') : 0;
+                $discountAmount = Session::has('discount_code') ? Session::get('discount_code') : 0;
 
-                if (!Session::has('coupon_total')) {
-                    $total = $total - $coupon;
+                if (!Session::has('discount_code_total')) {
+                    $total = $total - $discountAmount;
                     $total = $total + 0;
                 } else {
-                    $total = Session::get('coupon_total');
+                    $total = Session::get('discount_code_total');
                     $total = $total;
                 }
                 $ck = 1;
@@ -495,9 +495,9 @@ class CheckoutController extends FrontBaseController
             'currency_sign' => $step1['currency_sign'] ?? null,
             'currency_name' => $step1['currency_name'] ?? null,
             'currency_value' => $step1['currency_value'] ?? 1,
-            'coupon_code' => $step1['coupon_code'] ?? null,
-            'coupon_discount' => $step1['coupon_discount'] ?? null,
-            'coupon_id' => $step1['coupon_id'] ?? null,
+            'discount_code' => $step1['discount_code'] ?? null,
+            'discount_amount' => $step1['discount_amount'] ?? null,
+            'discount_code_id' => $step1['discount_code_id'] ?? null,
             'user_id' => $step1['user_id'] ?? null,
         ];
 
@@ -598,8 +598,8 @@ class CheckoutController extends FrontBaseController
         // حساب المبلغ الأساسي (قبل الضريبة والشحن) لتطبيق free_above
         $cart = new Cart($oldCart);
         $baseAmount = $cart->totalPrice;
-        $coupon = Session::has('coupon') ? Session::get('coupon') : 0;
-        $baseAmount = $baseAmount - $coupon;
+        $discountAmount = Session::has('discount_code') ? Session::get('discount_code') : 0;
+        $baseAmount = $baseAmount - $discountAmount;
 
         // إجمالي تكلفة الشحن + أسماء الشركات (قد يكون متعدد البائعين)
         $shipping_cost_total = 0.0;
@@ -738,26 +738,26 @@ class CheckoutController extends FrontBaseController
         $taxRate = $step1['tax_rate'] ?? 0;
         $taxLocation = $step1['tax_location'] ?? '';
 
-        // ✅ Get coupon data (supports both regular and vendor checkout)
+        // ✅ Get discount code data (supports both regular and vendor checkout)
         $checkoutVendorId = Session::get('checkout_vendor_id');
         if ($checkoutVendorId) {
-            $couponAmount = Session::get('coupon_vendor_' . $checkoutVendorId, 0);
-            $couponCode = Session::get('coupon_code_vendor_' . $checkoutVendorId, '');
-            $couponId = Session::get('coupon_id_vendor_' . $checkoutVendorId, null);
-            $couponPercentage = Session::get('coupon_percentage_vendor_' . $checkoutVendorId, '');
+            $discountAmount = Session::get('discount_code_vendor_' . $checkoutVendorId, 0);
+            $discountCode = Session::get('discount_code_value_vendor_' . $checkoutVendorId, '');
+            $discountCodeId = Session::get('discount_code_id_vendor_' . $checkoutVendorId, null);
+            $discountPercentage = Session::get('discount_percentage_vendor_' . $checkoutVendorId, '');
         } else {
-            $couponAmount = Session::get('coupon', 0);
-            $couponCode = Session::get('coupon_code', '');
-            $couponId = Session::get('coupon_id', null);
-            $couponPercentage = Session::get('coupon_percentage', '');
+            $discountAmount = Session::get('discount_code', 0);
+            $discountCode = Session::get('discount_code_value', '');
+            $discountCodeId = Session::get('discount_code_id', null);
+            $discountPercentage = Session::get('discount_percentage', '');
         }
 
         // ✅ Calculate totals
-        // subtotal_before_coupon = products + tax + shipping + packing
-        $subtotalBeforeCoupon = $baseAmount + $taxAmount + $shipping_cost_total + $packing_cost_total;
+        // subtotal_before_discount = products + tax + shipping + packing
+        $subtotalBeforeDiscount = $baseAmount + $taxAmount + $shipping_cost_total + $packing_cost_total;
 
-        // final_total = subtotal - coupon
-        $finalTotal = $subtotalBeforeCoupon - $couponAmount;
+        // final_total = subtotal - discount
+        $finalTotal = $subtotalBeforeDiscount - $discountAmount;
 
         // ✅ حفظ ملخص الشحن والتغليف والضريبة في step2 لاستخدامه في step3
         $step2['shipping_company'] = $shipping_name;
@@ -771,15 +771,15 @@ class CheckoutController extends FrontBaseController
         $step2['tax_amount']       = $taxAmount;
         $step2['tax_location']     = $taxLocation;
 
-        // ✅ Coupon data saved in step2 for step3 display
-        $step2['coupon_amount']    = $couponAmount;
-        $step2['coupon_code']      = $couponCode;
-        $step2['coupon_id']        = $couponId;
-        $step2['coupon_percentage'] = $couponPercentage;
-        $step2['coupon_applied']   = $couponAmount > 0;  // Flag to prevent double subtraction
+        // ✅ Discount code data saved in step2 for step3 display
+        $step2['discount_amount']    = $discountAmount;
+        $step2['discount_code']      = $discountCode;
+        $step2['discount_code_id']   = $discountCodeId;
+        $step2['discount_percentage'] = $discountPercentage;
+        $step2['discount_applied']   = $discountAmount > 0;  // Flag to prevent double subtraction
 
         // ✅ Totals
-        $step2['subtotal_before_coupon'] = $subtotalBeforeCoupon;  // قبل طرح الكوبون
+        $step2['subtotal_before_discount'] = $subtotalBeforeDiscount;  // قبل طرح الخصم
         $step2['total']            = $finalTotal;  // Backward compatibility
         $step2['final_total']      = $finalTotal;  // الإجمالي النهائي بعد كل شيء
 
@@ -844,11 +844,11 @@ class CheckoutController extends FrontBaseController
 
         // الإجمالي مع الكوبون
         $total = $cart->totalPrice;
-        $coupon = Session::has('coupon') ? Session::get('coupon') : 0;
-        if (!Session::has('coupon_total')) {
-            $total = $total - $coupon;
+        $discountAmount = Session::has('discount_code') ? Session::get('discount_code') : 0;
+        if (!Session::has('discount_code_total')) {
+            $total = $total - $discountAmount;
         } else {
-            $total = Session::get('coupon_total');
+            $total = Session::get('discount_code_total');
         }
 
         // أعرض صفحة وسائل الدفع (Step 3)
@@ -1077,7 +1077,7 @@ class CheckoutController extends FrontBaseController
      * 3. Filters cart to show ONLY this vendor's products (getVendorCartData)
      * 4. Gets ONLY vendor-specific shipping methods (no general cart shipping)
      * 5. Gets ONLY vendor-specific packaging methods (no general cart packaging)
-     * 6. Calculates total for THIS vendor only (with vendor-specific coupon)
+     * 6. Calculates total for THIS vendor only (with vendor-specific discount)
      * 7. Does NOT call Order::getShipData or Order::getPackingData (avoids cart-wide logic)
      * 8. Does NOT modify auth state - only reads Auth::check()
      *
@@ -1138,7 +1138,7 @@ class CheckoutController extends FrontBaseController
         $package_data = DB::table('packages')->where('user_id', $vendorId)->get();
         // No fallback to user 0 - if vendor has no packages, collection will be empty
 
-        // productsTotal = RAW price (no coupon deduction)
+        // productsTotal = RAW price (no discount deduction)
         $productsTotal = $totalPrice;
 
         $pickups = DB::table('pickups')->get();
@@ -1146,7 +1146,7 @@ class CheckoutController extends FrontBaseController
 
         return view('frontend.checkout.step1', [
             'products' => $vendorProducts,
-            'productsTotal' => $productsTotal, // ✅ RAW products total (no coupon)
+            'productsTotal' => $productsTotal, // ✅ RAW products total (no discount)
             'totalPrice' => $productsTotal, // Backward compatibility
             'pickups' => $pickups,
             'totalQty' => $totalQty,
@@ -1251,9 +1251,9 @@ class CheckoutController extends FrontBaseController
             'currency_sign' => $step1['currency_sign'] ?? null,
             'currency_name' => $step1['currency_name'] ?? null,
             'currency_value' => $step1['currency_value'] ?? 1,
-            'coupon_code' => $step1['coupon_code'] ?? null,
-            'coupon_discount' => $step1['coupon_discount'] ?? null,
-            'coupon_id' => $step1['coupon_id'] ?? null,
+            'discount_code' => $step1['discount_code'] ?? null,
+            'discount_amount' => $step1['discount_amount'] ?? null,
+            'discount_code_id' => $step1['discount_code_id'] ?? null,
             'user_id' => $step1['user_id'] ?? null,
         ];
 
@@ -1473,29 +1473,29 @@ class CheckoutController extends FrontBaseController
         }
 
         // ========================================================================
-        // ✅ UNIFIED: products_total is the RAW total (no coupon subtracted)
+        // ✅ UNIFIED: products_total is the RAW total (no discount subtracted)
         // ========================================================================
         $productsTotal = $vendorTotal;
 
-        // Get coupon data (but DON'T subtract from productsTotal!)
-        $couponDiscount = 0;
-        $couponCode = '';
-        $couponPercentage = '';
-        $couponId = null;
+        // Get discount code data (but DON'T subtract from productsTotal!)
+        $discountAmount = 0;
+        $discountCode = '';
+        $discountPercentage = '';
+        $discountCodeId = null;
 
-        if (Session::has('coupon_vendor_' . $vendorId)) {
-            $couponDiscount = (float)Session::get('coupon_vendor_' . $vendorId, 0);
-            $couponCode = Session::get('coupon_code_vendor_' . $vendorId, '');
-            $couponPercentage = Session::get('coupon_percentage_vendor_' . $vendorId, '');
-            $couponId = Session::get('coupon_id_vendor_' . $vendorId);
-        } elseif (Session::has('coupon')) {
-            $couponDiscount = (float)Session::get('coupon', 0);
-            $couponCode = Session::get('coupon_code', '');
-            $couponPercentage = Session::get('coupon_percentage', '');
-            $couponId = Session::get('coupon_id');
+        if (Session::has('discount_code_vendor_' . $vendorId)) {
+            $discountAmount = (float)Session::get('discount_code_vendor_' . $vendorId, 0);
+            $discountCode = Session::get('discount_code_value_vendor_' . $vendorId, '');
+            $discountPercentage = Session::get('discount_percentage_vendor_' . $vendorId, '');
+            $discountCodeId = Session::get('discount_code_id_vendor_' . $vendorId);
+        } elseif (Session::has('discount_code')) {
+            $discountAmount = (float)Session::get('discount_code', 0);
+            $discountCode = Session::get('discount_code_value', '');
+            $discountPercentage = Session::get('discount_percentage', '');
+            $discountCodeId = Session::get('discount_code_id');
         }
 
-        // For free_above calculation, use products total (before coupon)
+        // For free_above calculation, use products total (before discount)
         $baseAmount = $productsTotal;
 
         $shipping_cost_total = 0.0;
@@ -1607,21 +1607,21 @@ class CheckoutController extends FrontBaseController
         // ========================================================================
         // ✅ UNIFIED PRICE CALCULATION
         // ========================================================================
-        // products_total = RAW products (no coupon)
-        // subtotal = products_total - coupon_discount
+        // products_total = RAW products (no discount)
+        // subtotal = products_total - discount_amount
         // grand_total = subtotal + tax + shipping + packing
-        // subtotal_before_coupon = products_total + tax + shipping + packing (for coupon recalculation)
+        // subtotal_before_discount = products_total + tax + shipping + packing (for discount recalculation)
 
-        $subtotal = $productsTotal - $couponDiscount;
+        $subtotal = $productsTotal - $discountAmount;
         $grandTotal = $subtotal + $taxAmount + $shipping_cost_total + $packing_cost_total;
-        $subtotalBeforeCoupon = $productsTotal + $taxAmount + $shipping_cost_total + $packing_cost_total;
+        $subtotalBeforeDiscount = $productsTotal + $taxAmount + $shipping_cost_total + $packing_cost_total;
 
         // Save all data to step2
         $step2['products_total'] = $productsTotal;                   // ✅ RAW products total
-        $step2['coupon_discount'] = $couponDiscount;                 // ✅ Coupon amount
-        $step2['coupon_code'] = $couponCode;                         // ✅ Coupon code
-        $step2['coupon_percentage'] = $couponPercentage;             // ✅ Coupon percentage
-        $step2['coupon_id'] = $couponId;                             // ✅ Coupon ID
+        $step2['discount_amount'] = $discountAmount;                 // ✅ Discount amount
+        $step2['discount_code'] = $discountCode;                     // ✅ Discount code
+        $step2['discount_percentage'] = $discountPercentage;         // ✅ Discount percentage
+        $step2['discount_code_id'] = $discountCodeId;                // ✅ Discount Code ID
         $step2['shipping_company'] = $shipping_name;
         $step2['shipping_cost'] = $shipping_cost_total;
         $step2['original_shipping_cost'] = $original_shipping_cost;  // ✅ السعر قبل الخصم
@@ -1632,7 +1632,7 @@ class CheckoutController extends FrontBaseController
         $step2['tax_rate'] = $taxRate;
         $step2['tax_amount'] = $taxAmount;
         $step2['tax_location'] = $taxLocation;
-        $step2['subtotal_before_coupon'] = $subtotalBeforeCoupon;    // ✅ For coupon recalculation
+        $step2['subtotal_before_discount'] = $subtotalBeforeDiscount;    // ✅ For discount recalculation
         $step2['grand_total'] = $grandTotal;                         // ✅ Final amount
         $step2['total'] = $grandTotal;                               // Backward compatibility
         $step2['final_total'] = $grandTotal;                         // ✅ Alias
@@ -1844,7 +1844,7 @@ class CheckoutController extends FrontBaseController
         // حذف بيانات الخطوات الخاصة بهذا التاجر
         Session::forget('vendor_step1_' . $vendorId);
         Session::forget('vendor_step2_' . $vendorId);
-        Session::forget('coupon_vendor_' . $vendorId);
+        Session::forget('discount_code_vendor_' . $vendorId);
         Session::forget('checkout_vendor_id');
     }
 

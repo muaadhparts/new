@@ -87,7 +87,7 @@
                         data-wow-delay=".1s">
                         @csrf
 
-                        <input type="hidden" name="conversation_id" value="{{ $conv->id }}">
+                        <input type="hidden" name="thread_id" value="{{ $conv->id }}">
                         <input type="hidden" name="user_id" value="{{ $conv->user->id }}">
                         <textarea placeholder="@lang('Message')" class="message-input" name="message" id="reply-name" rows="10"></textarea>
                         <button type="submit" class="template-btn conversation-reply-btn">@lang('Add Reply')</button>

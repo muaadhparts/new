@@ -83,7 +83,7 @@ body[dir="rtl"] {
     right: 12px;
 }
 
-[dir="rtl"] .m-product-card__wishlist {
+[dir="rtl"] .m-product-card__favorite {
     right: auto;
     left: 12px;
 }

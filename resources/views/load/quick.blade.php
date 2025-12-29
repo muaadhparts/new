@@ -91,19 +91,19 @@
 
                   {{-- PRODUCT CONDITION SECTION ENDS --}}
 
-                  {{-- PRODUCT WISHLIST SECTION  --}}
+                  {{-- PRODUCT FAVORITE SECTION  --}}
 
                     <div class="wish">
 
                       @if(Auth::check())
 
-                      <a class="add-to-wish" href="javascript:;" data-href="{{ route('user-wishlist-add',$product->id) }}" data-bs-toggle="tooltip" data-bs-placement="top" title="{{ __('Wish') }}">
+                      <a class="add-to-favorite" href="javascript:;" data-href="{{ route('user-favorite-add',$product->id) }}" data-bs-toggle="tooltip" data-bs-placement="top" title="{{ __('Favorites') }}">
                         <i class="far fa-heart"></i>
                       </a>
 
                       @else
 
-                      <a rel-toggle="tooltip" href="javascript:;" title="{{ __('Wish') }}" data-bs-placement="top" class="add-to-wish" data-bs-toggle="modal" data-bs-target="#user-login">
+                      <a rel-toggle="tooltip" href="javascript:;" title="{{ __('Favorites') }}" data-bs-placement="top" class="add-to-favorite" data-bs-toggle="modal" data-bs-target="#user-login">
                         <i class="far fa-heart"></i>
                       </a>
 
@@ -111,7 +111,7 @@
 
                     </div>
 
-                  {{-- PRODUCT WISHLIST SECTION ENDS --}}
+                  {{-- PRODUCT FAVORITE SECTION ENDS --}}
 
                   {{-- PRODUCT COMPARE SECTION  --}}
 

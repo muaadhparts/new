@@ -119,9 +119,9 @@ class AppServiceProvider extends ServiceProvider
             }));
         });
 
-        // HeaderComposer: provides $authUser, $riderUser, $wishlistCount
+        // HeaderComposer: provides $authUser, $riderUser, $favoriteCount
         // Scoped to header-related views only (not all views)
-        // Expected: 1 user query + 1 wishlist query (cached) - NOT an error in Telescope
+        // Expected: 1 user query + 1 favorite query (cached) - NOT an error in Telescope
         View::composer([
             'includes.frontend.header',
             'includes.frontend.topbar',
