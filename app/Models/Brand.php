@@ -17,6 +17,35 @@ class Brand extends Model
      */
     protected $appends = ['localized_name', 'photo_url'];
 
+    // =========================================================
+    // COMPATIBILITY ACCESSORS - للتوافق مع views القديمة
+    // التي كانت تستخدم Category model
+    // =========================================================
+
+    /**
+     * Alias for catalogs() - للتوافق مع $category->subs
+     */
+    public function getSubsAttribute()
+    {
+        return $this->catalogs;
+    }
+
+    /**
+     * Slug accessor - يستخدم name كـ slug
+     */
+    public function getSlugAttribute(): string
+    {
+        return str_replace(' ', '-', strtolower($this->name ?? ''));
+    }
+
+    /**
+     * Status accessor - دائماً active
+     */
+    public function getStatusAttribute(): int
+    {
+        return 1;
+    }
+
 
     public function catalogs(): HasMany
     {

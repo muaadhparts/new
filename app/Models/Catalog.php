@@ -21,6 +21,73 @@ class Catalog extends Model
 
     public $timestamps = true;
 
+    // =========================================================
+    // COMPATIBILITY ACCESSORS - للتوافق مع views القديمة
+    // التي كانت تستخدم Subcategory model
+    // =========================================================
+
+    /**
+     * Slug accessor - يولد slug من الاسم للتوافق مع Subcategory slugs
+     * مثال: "SAFARI PATROL ( 1997 - )" → "safari-patrol-1997"
+     */
+    public function getSlugAttribute(): string
+    {
+        // إذا كان هناك subcategory بنفس الـ ID، نستخدم slug-ها
+        // لأن Catalog IDs = Subcategory IDs
+        static $subcategorySlugs = null;
+
+        if ($subcategorySlugs === null) {
+            $subcategorySlugs = \App\Models\Subcategory::pluck('slug', 'id')->toArray();
+        }
+
+        if (isset($subcategorySlugs[$this->id])) {
+            return $subcategorySlugs[$this->id];
+        }
+
+        // Fallback: generate slug from name
+        $name = $this->name ?? '';
+        // Remove parentheses and their content, clean up
+        $name = preg_replace('/\s*\([^)]*\)/', '', $name);
+        $name = trim($name);
+        $slug = strtolower(str_replace(' ', '-', $name));
+        $slug = preg_replace('/[^a-z0-9\-]/', '', $slug);
+        $slug = preg_replace('/-+/', '-', $slug);
+        return trim($slug, '-');
+    }
+
+    /**
+     * Childs accessor - يُرجع collection فارغة
+     * للتوافق مع $subcategory->childs
+     * (Catalog ليس له مستوى ثالث في الهيكل الجديد)
+     */
+    public function getChildsAttribute()
+    {
+        return collect([]);
+    }
+
+    /**
+     * Status accessor - دائماً active
+     */
+    public function getStatusAttribute(): int
+    {
+        return 1;
+    }
+
+    /**
+     * Localized name accessor
+     */
+    public function getLocalizedNameAttribute(): string
+    {
+        $isAr = app()->getLocale() === 'ar';
+        $nameAr = trim((string)($this->name_ar ?? ''));
+        $name = trim((string)($this->name ?? ''));
+
+        if ($isAr) {
+            return $nameAr !== '' ? $nameAr : $name;
+        }
+        return $name !== '' ? $name : $nameAr;
+    }
+
     protected static function boot()
     {
         parent::boot();
