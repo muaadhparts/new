@@ -40,7 +40,7 @@ class ProductFitmentFilterTest extends TestCase
         ]);
 
         // Create vendor user
-        $vendor = User::factory()->create(['is_vendor' => 2]);
+        $vendor = User::factory()->create(['is_merchant' => 2]);
 
         // Create products
         $productWithFitment = Product::factory()->create([
@@ -94,8 +94,8 @@ class ProductFitmentFilterTest extends TestCase
     public function test_store_by_vendor_filter()
     {
         $category = Category::factory()->create(['slug' => 'test-category-2', 'status' => 1]);
-        $vendor1 = User::factory()->create(['is_vendor' => 2]);
-        $vendor2 = User::factory()->create(['is_vendor' => 2]);
+        $vendor1 = User::factory()->create(['is_merchant' => 2]);
+        $vendor2 = User::factory()->create(['is_merchant' => 2]);
 
         $product = Product::factory()->create(['category_id' => $category->id]);
 
@@ -138,7 +138,7 @@ class ProductFitmentFilterTest extends TestCase
     public function test_sort_by_beginyear()
     {
         $category = Category::factory()->create(['slug' => 'test-category-3', 'status' => 1]);
-        $vendor = User::factory()->create(['is_vendor' => 2]);
+        $vendor = User::factory()->create(['is_merchant' => 2]);
 
         $oldProduct = Product::factory()->create(['category_id' => $category->id]);
         $newProduct = Product::factory()->create(['category_id' => $category->id]);

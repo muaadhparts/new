@@ -34,14 +34,22 @@ class Shipping extends Model
     ];
 
     /**
-     * يعيد شحنات البائع + الشحنات العامة (user_id = 0)
-     * ويقدّم شحنات البائع في الترتيب.
+     * يعيد شحنات التاجر + الشحنات العامة (user_id = 0)
+     * ويقدّم شحنات التاجر في الترتيب.
      */
-    public function scopeForVendor(Builder $query, int $vendorId): Builder
+    public function scopeForMerchant(Builder $query, int $merchantId): Builder
     {
         return $query
-            ->whereIn('user_id', [0, $vendorId])
-            ->orderByRaw('CASE WHEN user_id = ? THEN 0 ELSE 1 END', [$vendorId]);
+            ->whereIn('user_id', [0, $merchantId])
+            ->orderByRaw('CASE WHEN user_id = ? THEN 0 ELSE 1 END', [$merchantId]);
+    }
+
+    /**
+     * @deprecated Use scopeForMerchant() instead
+     */
+    public function scopeForVendor(Builder $query, int $merchantId): Builder
+    {
+        return $this->scopeForMerchant($query, $merchantId);
     }
 
     /**

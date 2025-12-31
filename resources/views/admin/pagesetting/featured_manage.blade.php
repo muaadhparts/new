@@ -70,7 +70,7 @@
                                                 <span class="badge bg-secondary d-inline-flex align-items-center gap-1"><i class="fas fa-store"></i> {{ $vendorName }}</span>
                                             </div>
                                         </td>
-                                        <td><strong>{{ \App\Models\Product::convertPrice($mp->price) }}</strong>@if($mp->previous_price && $mp->previous_price > $mp->price)<br><small class="text-muted text-decoration-line-through">{{ \App\Models\Product::convertPrice($mp->previous_price) }}</small>@endif</td>
+                                        <td><strong>{{ \App\Models\CatalogItem::convertPrice($mp->price) }}</strong>@if($mp->previous_price && $mp->previous_price > $mp->price)<br><small class="text-muted text-decoration-line-through">{{ \App\Models\CatalogItem::convertPrice($mp->previous_price) }}</small>@endif</td>
                                         <td><span class="badge {{ $mp->stock > 0 ? 'bg-success' : 'bg-danger' }}">{{ $mp->stock ?? 0 }}</span></td>
                                         <td><button type="button" class="btn btn-danger btn-sm remove-item" data-id="{{ $mp->id }}"><i class="fas fa-trash-alt"></i></button></td>
                                     </tr>
@@ -185,7 +185,7 @@ $(document).ready(function() {
     $(document).on('click', '.add-item', function() {
         const btn = $(this), card = btn.closest('.merchant-card');
         btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i>');
-        $.ajax({ url: '{{ route("admin-ps-featured-toggle") }}', type: 'POST', data: { _token: '{{ csrf_token() }}', merchant_product_id: btn.data('id'), flag: 1 },
+        $.ajax({ url: '{{ route("admin-ps-featured-toggle") }}', type: 'POST', data: { _token: '{{ csrf_token() }}', merchant_item_id: btn.data('id'), flag: 1 },
             success: function(r) { if (r.success) { btn.replaceWith('<span class="badge bg-success">{{ __("Already Added") }}</span>'); card.addClass('added'); } },
             error: function() { btn.prop('disabled', false).html('<i class="fas fa-plus"></i> {{ __("Add") }}'); }
         });
@@ -194,7 +194,7 @@ $(document).ready(function() {
     $(document).on('click', '.remove-item', function() {
         const btn = $(this), row = $('#row-' + btn.data('id'));
         btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i>');
-        $.ajax({ url: '{{ route("admin-ps-featured-toggle") }}', type: 'POST', data: { _token: '{{ csrf_token() }}', merchant_product_id: btn.data('id'), flag: 0 },
+        $.ajax({ url: '{{ route("admin-ps-featured-toggle") }}', type: 'POST', data: { _token: '{{ csrf_token() }}', merchant_item_id: btn.data('id'), flag: 0 },
             success: function(r) { if (r.success) { row.fadeOut(300, function() { $(this).remove(); if ($('#productsTable tbody tr').length === 0) { $('#productsTable').html('<div class="alert alert-info">{{ __("No products configured.") }}</div>'); } }); } },
             error: function() { btn.prop('disabled', false).html('<i class="fas fa-trash-alt"></i>'); }
         });

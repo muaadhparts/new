@@ -98,7 +98,7 @@
                         </button>
                         <div class="muaadh-accordion-content">
                             @foreach ($pages->where('header', '=', 1) as $page)
-                                <a href="{{ route('front.vendor', $page->slug) }}" class="muaadh-mobile-nav-subitem">
+                                <a href="{{ route('front.merchant', $page->slug) }}" class="muaadh-mobile-nav-subitem">
                                     {{ $page->title }}
                                 </a>
                             @endforeach
@@ -137,7 +137,7 @@
                         <i class="fas fa-heart"></i>
                         <span>@lang('Favorites')</span>
                     </a>
-                    <a href="{{ route('product.compare') }}" class="muaadh-mobile-quick-item">
+                    <a href="{{ route('catalog-item.compare') }}" class="muaadh-mobile-quick-item">
                         <i class="fas fa-exchange-alt"></i>
                         <span>@lang('Compare')</span>
                     </a>
@@ -279,7 +279,7 @@
                         <i class="fas fa-tachometer-alt"></i>
                         <span>@lang('Dashboard')</span>
                     </a>
-                    <a href="{{ route('user-orders') }}" class="muaadh-mobile-nav-item">
+                    <a href="{{ route('user-purchases') }}" class="muaadh-mobile-nav-item">
                         <i class="fas fa-shopping-bag"></i>
                         <span>@lang('My Orders')</span>
                     </a>
@@ -333,7 +333,7 @@
                 {{-- Other Login Options --}}
                 <div class="muaadh-mobile-other-logins">
                     <h6 class="muaadh-mobile-section-title">@lang('Other Accounts')</h6>
-                    <a href="{{ route('vendor.login') }}" class="muaadh-mobile-nav-item">
+                    <a href="{{ route('merchant.login') }}" class="muaadh-mobile-nav-item">
                         <i class="fas fa-store"></i>
                         <span>@lang('Vendor Login')</span>
                     </a>

@@ -13,8 +13,16 @@ class FavoriteSeller extends Model
         return $this->belongsTo('App\Models\User');
     }
 
-    public function vendor()
+    public function merchant()
     {
         return $this->belongsTo('App\Models\User','user_id');
+    }
+
+    /**
+     * @deprecated Use merchant() instead
+     */
+    public function vendor()
+    {
+        return $this->merchant();
     }
 }

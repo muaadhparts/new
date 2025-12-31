@@ -3,12 +3,12 @@
 namespace App\Http\Controllers\Admin;
 
 use App\{
-    Models\Product,
+    Models\CatalogItem,
     Models\Category,
     Models\Currency,
     Models\Gallery
 };
-use App\Models\MerchantProduct;
+use App\Models\MerchantItem;
 
 use Illuminate\{
     Http\Request,
@@ -26,38 +26,38 @@ class ImportController extends AdminBaseController
     public function datatables()
     {
         // الاستعلام على السجلات التجارية مباشرة - كل سجل تجاري = صف مستقل
-        // فقط المنتجات من نوع affiliate (product_type is now on merchant_products)
-        $query = MerchantProduct::with(['product.brand', 'user', 'qualityBrand'])
+        // فقط العناصر من نوع affiliate (product_type is now on merchant_items)
+        $query = MerchantItem::with(['catalogItem.brand', 'user', 'qualityBrand'])
             ->where('product_type', 'affiliate');
 
         $datas = $query->latest('id');
 
         return \Datatables::of($datas)
             ->filterColumn('name', function ($query, $keyword) {
-                $query->whereHas('product', function($q) use ($keyword) {
+                $query->whereHas('catalogItem', function($q) use ($keyword) {
                     $q->where('name', 'like', "%{$keyword}%")
                       ->orWhere('sku', 'like', "%{$keyword}%")
                       ->orWhere('label_ar', 'like', "%{$keyword}%")
                       ->orWhere('label_en', 'like', "%{$keyword}%");
                 });
             })
-            ->addColumn('photo', function (MerchantProduct $mp) {
-                $product = $mp->product;
-                if (!$product) return '<img src="' . asset('assets/images/noimage.png') . '" class="img-thumbnail" style="width:80px">';
+            ->addColumn('photo', function (MerchantItem $mp) {
+                $catalogItem = $mp->catalogItem;
+                if (!$catalogItem) return '<img src="' . asset('assets/images/noimage.png') . '" class="img-thumbnail" style="width:80px">';
 
-                $photo = filter_var($product->photo, FILTER_VALIDATE_URL)
-                    ? $product->photo
-                    : ($product->photo ? \Illuminate\Support\Facades\Storage::url($product->photo) : asset('assets/images/noimage.png'));
+                $photo = filter_var($catalogItem->photo, FILTER_VALIDATE_URL)
+                    ? $catalogItem->photo
+                    : ($catalogItem->photo ? \Illuminate\Support\Facades\Storage::url($catalogItem->photo) : asset('assets/images/noimage.png'));
                 return '<img src="' . $photo . '" alt="Image" class="img-thumbnail" style="width:80px">';
             })
-            ->addColumn('name', function (MerchantProduct $mp) {
+            ->addColumn('name', function (MerchantItem $mp) {
                 $product = $mp->product;
                 if (!$product) return __('N/A');
 
-                $prodLink = route('front.product', [
+                $prodLink = route('front.catalog-item', [
                     'slug' => $product->slug,
                     'vendor_id' => $mp->user_id,
-                    'merchant_product_id' => $mp->id
+                    'merchant_item_id' => $mp->id
                 ]);
 
                 $displayName = getLocalizedProductName($product);
@@ -66,32 +66,32 @@ class ImportController extends AdminBaseController
 
                 return '<a href="' . $prodLink . '" target="_blank">' . $displayName . '</a>' . $sku . ' ' . $condition;
             })
-            ->addColumn('brand', function (MerchantProduct $mp) {
+            ->addColumn('brand', function (MerchantItem $mp) {
                 $product = $mp->product;
                 return $product && $product->brand ? getLocalizedBrandName($product->brand) : __('N/A');
             })
-            ->addColumn('quality_brand', function (MerchantProduct $mp) {
+            ->addColumn('quality_brand', function (MerchantItem $mp) {
                 return $mp->qualityBrand ? getLocalizedQualityName($mp->qualityBrand) : __('N/A');
             })
-            ->addColumn('vendor', function (MerchantProduct $mp) {
+            ->addColumn('vendor', function (MerchantItem $mp) {
                 if (!$mp->user) return __('N/A');
                 $shopName = $mp->user->shop_name ?: $mp->user->name;
                 return '<a href="' . route('admin-vendor-show', $mp->user_id) . '" target="_blank">' . $shopName . '</a>';
             })
-            ->addColumn('price', function (MerchantProduct $mp) {
-                $gs = cache()->remember('generalsettings', now()->addDay(), fn () => DB::table('generalsettings')->first());
+            ->addColumn('price', function (MerchantItem $mp) {
+                $gs = cache()->remember('muaadhsettings', now()->addDay(), fn () => DB::table('muaadhsettings')->first());
 
                 $price = (float) $mp->price;
                 $base = $price + (float) $gs->fixed_commission + ($price * (float) $gs->percentage_commission / 100);
 
                 return \PriceHelper::showAdminCurrencyPrice($base * $this->curr->value);
             })
-            ->addColumn('stock', function (MerchantProduct $mp) {
+            ->addColumn('stock', function (MerchantItem $mp) {
                 if ($mp->stock === null) return __('Unlimited');
                 if ((int) $mp->stock === 0) return '<span class="text-danger">' . __('Out Of Stock') . '</span>';
                 return $mp->stock;
             })
-            ->addColumn('status', function (MerchantProduct $mp) {
+            ->addColumn('status', function (MerchantItem $mp) {
                 $class = $mp->status == 1 ? 'drop-success' : 'drop-danger';
                 $s = $mp->status == 1 ? 'selected' : '';
                 $ns = $mp->status == 0 ? 'selected' : '';
@@ -103,7 +103,7 @@ class ImportController extends AdminBaseController
                     </select>
                 </div>';
             })
-            ->addColumn('action', function (MerchantProduct $mp) {
+            ->addColumn('action', function (MerchantItem $mp) {
                 $product = $mp->product;
                 if (!$product) return '';
 
@@ -151,7 +151,7 @@ class ImportController extends AdminBaseController
           return response()->json(array('errors' => $validator->getMessageBag()->toArray()));
         }
 
-        $data = Product::findOrFail($id);
+        $data = CatalogItem::findOrFail($id);
 
         //--- Validation Section Ends
         $image = $request->image;
@@ -195,7 +195,7 @@ class ImportController extends AdminBaseController
         }
 
         //--- Logic Section
-        $data = new Product;
+        $data = new CatalogItem;
         $sign = $this->curr;
         $input = $request->all();
 
@@ -250,7 +250,7 @@ class ImportController extends AdminBaseController
                 $input['size_all'] = implode(',', (array)$request->size_all);
             }
 
-            // القياسات/الخصومات بالجملة ستذهب إلى MerchantProduct لاحقًا
+            // القياسات/الخصومات بالجملة ستذهب إلى MerchantItem لاحقًا
         }
 
         // Check Seo
@@ -293,7 +293,7 @@ class ImportController extends AdminBaseController
         $data->fill($input)->save();
 
         // Set SLug
-        $prod = Product::find($data->id);
+        $catalogItem = CatalogItem::find($data->id);
         if($prod->type != 'Physical'){
             $prod->slug = Str::slug($data->name,'-').'-'.strtolower(Str::random(3).$data->id.Str::random(3));
         }
@@ -324,7 +324,7 @@ class ImportController extends AdminBaseController
         }
         $prod->update();
 
-        // إنشاء/تحديث عرض البائع (MerchantProduct)
+        // إنشاء/تحديث عرض البائع (MerchantItem)
         $vendorId = (int) ($request->input('user_id') ?? $request->input('vendor_id') ?? 0);
         // // dd(['vendorId' => $vendorId, 'product_id' => $prod->id]); // اختباري
         if ($vendorId <= 0) {
@@ -357,7 +357,7 @@ class ImportController extends AdminBaseController
             }
         }
 
-        MerchantProduct::updateOrCreate(
+        MerchantItem::updateOrCreate(
             ['product_id' => $prod->id, 'user_id' => $vendorId],
             [
                 'product_type'        => 'affiliate',
@@ -407,7 +407,7 @@ class ImportController extends AdminBaseController
     public function edit($id)
     {
         $cats = Category::all();
-        $data = Product::findOrFail($id);
+        $data = CatalogItem::findOrFail($id);
         $sign = $this->curr;
         return view('admin.productimport.editone',compact('cats','data','sign'));
     }
@@ -415,7 +415,7 @@ class ImportController extends AdminBaseController
     //*** POST Request
     public function update(Request $request, $id)
     {
-        $prod = Product::find($id);
+        $catalogItem = CatalogItem::find($id);
 
         //--- Validation Section
         $rules = [
@@ -428,7 +428,7 @@ class ImportController extends AdminBaseController
         //--- Validation Section Ends
 
         //-- Logic Section
-        $data = Product::findOrFail($id);
+        $data = CatalogItem::findOrFail($id);
         $sign = $this->curr;
         $input = $request->all();
 
@@ -578,7 +578,7 @@ class ImportController extends AdminBaseController
         }
         $prod->update();
 
-        // تحديث/إنشاء سجل MerchantProduct
+        // تحديث/إنشاء سجل MerchantItem
         $vendorId = (int) ($request->input('user_id') ?? $request->input('vendor_id') ?? 0);
         if ($vendorId <= 0) {
             return response()->json(['errors' => ['vendor' => 'Vendor (user) is required']], 422);
@@ -607,7 +607,7 @@ class ImportController extends AdminBaseController
             }
         }
 
-        MerchantProduct::updateOrCreate(
+        MerchantItem::updateOrCreate(
             ['product_id' => $prod->id, 'user_id' => $vendorId],
             [
                 'product_type'        => 'affiliate',

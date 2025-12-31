@@ -1,26 +1,26 @@
 <?php
 
-function merchantCompareCheck($merchant_product_id)
+function merchantCompareCheck($merchant_item_id)
 {
     $compare = session('compare');
     if (!$compare || !isset($compare->items)) {
         return false;
     }
-    return isset($compare->items[$merchant_product_id]);
+    return isset($compare->items[$merchant_item_id]);
 }
 
-function getMerchantDisplayName($merchantProduct)
+function getMerchantDisplayName($merchantItem)
 {
-    if (!$merchantProduct || !$merchantProduct->user) {
+    if (!$merchantItem || !$merchantItem->user) {
         return '';
     }
 
-    $vendor = $merchantProduct->user;
+    $vendor = $merchantItem->user;
     $displayName = $vendor->shop_name ?: $vendor->name;
 
     // Add brand quality if available
-    if ($merchantProduct->qualityBrand) {
-        $displayName .= ' (' . $merchantProduct->qualityBrand->display_name . ')';
+    if ($merchantItem->qualityBrand) {
+        $displayName .= ' (' . $merchantItem->qualityBrand->display_name . ')';
     }
 
     return $displayName;
@@ -197,7 +197,7 @@ if (! function_exists('getLocalizedShopName')) {
 }
 
 /**
- * Get vendor/store name from cart product or MerchantProduct
+ * Get vendor/store name from cart product or MerchantItem
  * Now with localization support
  */
 if (! function_exists('getVendorName')) {
@@ -215,7 +215,7 @@ if (! function_exists('getVendorName')) {
             return $product['vendor_name'] ?? $product['shop_name'] ?? '';
         }
 
-        // From MerchantProduct or similar object
+        // From MerchantItem or similar object
         if (is_object($product)) {
             if (isset($product->user) && $product->user) {
                 if ($isAr && !empty($product->user->shop_name_ar)) {

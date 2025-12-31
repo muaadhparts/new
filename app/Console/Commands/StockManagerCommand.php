@@ -245,10 +245,10 @@ class StockManagerCommand extends Command
 
     protected function doFullRefresh(bool $all, int $userId, float $margin, ?string $remote, ?string $local): int
     {
-        // إنشاء سجل في vendor_stock_updates
+        // إنشاء سجل في merchant_stock_updates
         $stockUpdate = null;
         if (!$all && $userId > 0) {
-            $stockUpdate = DB::table('vendor_stock_updates')->insertGetId([
+            $stockUpdate = DB::table('merchant_stock_updates')->insertGetId([
                 'user_id' => $userId,
                 'update_type' => 'automatic',
                 'status' => 'processing',
@@ -277,10 +277,10 @@ class StockManagerCommand extends Command
                 $this->line("Updating ALL vendors price from stock_all.cost_price * {$margin}...");
                 $this->updatePriceForAll($margin);
             } else {
-                $this->line("Updating merchant_products stock for user_id={$userId}...");
+                $this->line("Updating merchant_items stock for user_id={$userId}...");
                 $this->updateStockForOne($userId);
 
-                $this->line("Updating merchant_products price for user_id={$userId} with margin={$margin}...");
+                $this->line("Updating merchant_items price for user_id={$userId} with margin={$margin}...");
                 $this->updatePriceForOne($userId, $margin);
             }
 
@@ -288,7 +288,7 @@ class StockManagerCommand extends Command
 
             // تحديث السجل كـ مكتمل
             if ($stockUpdate) {
-                DB::table('vendor_stock_updates')
+                DB::table('merchant_stock_updates')
                     ->where('id', $stockUpdate)
                     ->update([
                         'status' => 'completed',
@@ -302,7 +302,7 @@ class StockManagerCommand extends Command
         } catch (\Throwable $e) {
             // تحديث السجل كـ فاشل
             if ($stockUpdate) {
-                DB::table('vendor_stock_updates')
+                DB::table('merchant_stock_updates')
                     ->where('id', $stockUpdate)
                     ->update([
                         'status' => 'failed',
@@ -319,9 +319,9 @@ class StockManagerCommand extends Command
     protected function doCheck(bool $all, int $userId, float $margin): int
     {
         if ($all) {
-            $vendorIds = DB::table('merchant_products')->distinct()->pluck('user_id')->filter()->values();
+            $vendorIds = DB::table('merchant_items')->distinct()->pluck('user_id')->filter()->values();
             if ($vendorIds->isEmpty()) {
-                $this->warn('No vendors found in merchant_products.');
+                $this->warn('No vendors found in merchant_items.');
                 return self::SUCCESS;
             }
             foreach ($vendorIds as $uid) {
@@ -345,19 +345,19 @@ class StockManagerCommand extends Command
     {
         // 0) إدراج الصفوف الناقصة أولًا
         $insertMissingSql = "
-            INSERT INTO merchant_products (
-                product_id, user_id, brand_quality_id, stock, created_at, updated_at
+            INSERT INTO merchant_items (
+                catalog_item_id, user_id, brand_quality_id, stock, created_at, updated_at
             )
-            SELECT 
-                p.id AS product_id,
+            SELECT
+                p.id AS catalog_item_id,
                 ?   AS user_id,
                 s.brand_quality_id,
                 COALESCE(s.qty, 0) AS stock,
                 NOW(), NOW()
-            FROM products p
+            FROM catalog_items p
             JOIN stock_all s  ON s.sku = p.sku
-            LEFT JOIN merchant_products mp
-                ON mp.product_id = p.id
+            LEFT JOIN merchant_items mp
+                ON mp.catalog_item_id = p.id
                 AND mp.user_id = ?
                 AND mp.brand_quality_id = s.brand_quality_id
             WHERE mp.id IS NULL
@@ -371,12 +371,12 @@ class StockManagerCommand extends Command
                 COUNT(*) AS matches,
                 SUM(CASE WHEN s_qty IS NULL THEN 1 ELSE 0 END) AS missing_in_stock_all
             FROM (
-                SELECT 
+                SELECT
                     mp.id,
                     mp.stock AS stock,
                     COALESCE(se.qty, sf.qty) AS s_qty
-                FROM merchant_products mp
-                JOIN products p ON mp.product_id = p.id
+                FROM merchant_items mp
+                JOIN catalog_items p ON mp.catalog_item_id = p.id
                 LEFT JOIN stock_all se ON se.sku = p.sku AND se.brand_quality_id = mp.brand_quality_id   -- exact
                 LEFT JOIN stock_all sf ON sf.sku = p.sku AND sf.brand_quality_id = 1                      -- fallback
                 WHERE mp.user_id = ?
@@ -389,8 +389,8 @@ class StockManagerCommand extends Command
 
         // 2) التحديث الفعلي للكميات (COALESCE بين exact و fallback)
         $affected = DB::update("
-            UPDATE merchant_products mp
-            JOIN products p ON mp.product_id = p.id
+            UPDATE merchant_items mp
+            JOIN catalog_items p ON mp.catalog_item_id = p.id
             LEFT JOIN stock_all se ON se.sku = p.sku AND se.brand_quality_id = mp.brand_quality_id
             LEFT JOIN stock_all sf ON sf.sku = p.sku AND sf.brand_quality_id = 1
             SET mp.stock = COALESCE(se.qty, sf.qty, 0)
@@ -399,17 +399,17 @@ class StockManagerCommand extends Command
         ", [$userId]);
 
         if ($affected > 0) {
-            $this->info("✔ Updated stock for {$affected} merchant products.");
+            $this->info("✔ Updated stock for {$affected} merchant items.");
         } else {
-            $this->warn("ℹ No merchant products updated. Maybe stock is already up-to-date.");
+            $this->warn("ℹ No merchant items updated. Maybe stock is already up-to-date.");
         }
 
         // 3) المتبقّي (بعد التحديث)
         $remaining = DB::selectOne("
             SELECT
                 SUM(CASE WHEN COALESCE(se.qty, sf.qty, 0) <> COALESCE(mp.stock, 0) THEN 1 ELSE 0 END) AS remaining
-            FROM merchant_products mp
-            JOIN products p ON mp.product_id = p.id
+            FROM merchant_items mp
+            JOIN catalog_items p ON mp.catalog_item_id = p.id
             LEFT JOIN stock_all se ON se.sku = p.sku AND se.brand_quality_id = mp.brand_quality_id
             LEFT JOIN stock_all sf ON sf.sku = p.sku AND sf.brand_quality_id = 1
             WHERE mp.user_id = ?
@@ -422,9 +422,9 @@ class StockManagerCommand extends Command
 
     protected function updateStockForAll(): int
     {
-        $vendorIds = DB::table('merchant_products')->distinct()->pluck('user_id')->filter()->values();
+        $vendorIds = DB::table('merchant_items')->distinct()->pluck('user_id')->filter()->values();
         if ($vendorIds->isEmpty()) {
-            $this->warn('No vendors found in merchant_products.');
+            $this->warn('No vendors found in merchant_items.');
             return self::SUCCESS;
         }
 
@@ -436,21 +436,21 @@ class StockManagerCommand extends Command
         foreach ($vendorIds as $uid) {
             // 0) إدراج الصفوف الناقصة لهذا التاجر
             $insertMissingSql = "
-                INSERT INTO merchant_products (
-                    product_id, user_id, brand_quality_id, stock, created_at, updated_at
+                INSERT INTO merchant_items (
+                    catalog_item_id, user_id, brand_quality_id, stock, created_at, updated_at
                 )
-                SELECT 
-                    p.id AS product_id,
+                SELECT
+                    p.id AS catalog_item_id,
                     ?   AS user_id,
                     s.brand_quality_id,
                     COALESCE(s.qty, 0) AS stock,
                     NOW() AS created_at,
                     NOW() AS updated_at
-                FROM products p
-                JOIN stock_all s 
+                FROM catalog_items p
+                JOIN stock_all s
                     ON s.sku = p.sku
-                LEFT JOIN merchant_products mp 
-                    ON mp.product_id = p.id
+                LEFT JOIN merchant_items mp
+                    ON mp.catalog_item_id = p.id
                     AND mp.user_id = ?
                     AND mp.brand_quality_id = s.brand_quality_id
                 WHERE mp.id IS NULL
@@ -463,9 +463,9 @@ class StockManagerCommand extends Command
                     SUM(CASE WHEN s.sku IS NOT NULL THEN 1 ELSE 0 END) AS matches,
                     SUM(CASE WHEN s.sku IS NOT NULL AND COALESCE(s.qty,0) <> COALESCE(mp.stock,0) THEN 1 ELSE 0 END) AS needs_update,
                     SUM(CASE WHEN s.sku IS NULL THEN 1 ELSE 0 END) AS missing_in_stock_all
-                FROM merchant_products mp
-                JOIN products p ON mp.product_id = p.id
-                LEFT JOIN stock_all s 
+                FROM merchant_items mp
+                JOIN catalog_items p ON mp.catalog_item_id = p.id
+                LEFT JOIN stock_all s
                     ON s.sku = p.sku
                 AND (s.brand_quality_id = mp.brand_quality_id OR s.brand_quality_id = 1)
                 WHERE mp.user_id = ?
@@ -479,9 +479,9 @@ class StockManagerCommand extends Command
 
             // تحديث الكميات
             $affected = DB::update("
-                UPDATE merchant_products mp
-                JOIN products p ON mp.product_id = p.id
-                LEFT JOIN stock_all s 
+                UPDATE merchant_items mp
+                JOIN catalog_items p ON mp.catalog_item_id = p.id
+                LEFT JOIN stock_all s
                     ON s.sku = p.sku
                 AND (s.brand_quality_id = mp.brand_quality_id OR s.brand_quality_id = 1)
                 SET mp.stock = COALESCE(s.qty, 0)
@@ -507,17 +507,17 @@ class StockManagerCommand extends Command
     {
         // إحصائيات: عدّ الصفوف التي سعرها NULL أو مختلف
         $stats = DB::selectOne("
-            SELECT 
+            SELECT
                 COUNT(*) AS matches,
                 SUM(
-                    CASE 
+                    CASE
                         WHEN mp.price IS NULL THEN 1
                         WHEN ROUND(COALESCE(se.cost_price, sf.cost_price, 0) * ?, 2) <> mp.price THEN 1
                         ELSE 0
                     END
                 ) AS needs_update
-            FROM merchant_products mp
-            JOIN products p ON mp.product_id = p.id
+            FROM merchant_items mp
+            JOIN catalog_items p ON mp.catalog_item_id = p.id
             LEFT JOIN stock_all se ON se.sku = p.sku AND se.brand_quality_id = mp.brand_quality_id
             LEFT JOIN stock_all sf ON sf.sku = p.sku AND sf.brand_quality_id = 1
             WHERE mp.user_id = ?
@@ -528,8 +528,8 @@ class StockManagerCommand extends Command
 
         // التحديث: حدّث كل ما هو NULL أو مختلف
         $affected = DB::update("
-            UPDATE merchant_products mp
-            JOIN products p ON mp.product_id = p.id
+            UPDATE merchant_items mp
+            JOIN catalog_items p ON mp.catalog_item_id = p.id
             LEFT JOIN stock_all se ON se.sku = p.sku AND se.brand_quality_id = mp.brand_quality_id
             LEFT JOIN stock_all sf ON sf.sku = p.sku AND sf.brand_quality_id = 1
             SET mp.price = ROUND(COALESCE(se.cost_price, sf.cost_price, 0) * ?, 2)
@@ -541,9 +541,9 @@ class StockManagerCommand extends Command
         ", [$margin, $userId, $margin]);
 
         if ($affected > 0) {
-            $this->info("✔ Updated prices for {$affected} merchant products.");
+            $this->info("✔ Updated prices for {$affected} merchant items.");
         } else {
-            $this->warn("ℹ No merchant products updated. Maybe data is already up-to-date.");
+            $this->warn("ℹ No merchant items updated. Maybe data is already up-to-date.");
         }
 
         return self::SUCCESS;
@@ -552,9 +552,9 @@ class StockManagerCommand extends Command
 
     protected function updatePriceForAll(float $margin): int
     {
-        $vendorIds = DB::table('merchant_products')->distinct()->pluck('user_id')->filter()->values();
+        $vendorIds = DB::table('merchant_items')->distinct()->pluck('user_id')->filter()->values();
         if ($vendorIds->isEmpty()) {
-            $this->warn('No vendors found in merchant_products.');
+            $this->warn('No vendors found in merchant_items.');
             return self::SUCCESS;
         }
 
@@ -564,12 +564,12 @@ class StockManagerCommand extends Command
 
         foreach ($vendorIds as $uid) {
             $stats = DB::selectOne("
-                SELECT 
+                SELECT
                     COUNT(*) AS matches,
                     SUM(CASE WHEN ROUND(s.cost_price * ?, 2) <> mp.price THEN 1 ELSE 0 END) AS needs_update
-                FROM merchant_products mp
-                JOIN products p ON mp.product_id = p.id
-                JOIN stock_all s 
+                FROM merchant_items mp
+                JOIN catalog_items p ON mp.catalog_item_id = p.id
+                JOIN stock_all s
                     ON s.sku = p.sku
                 AND s.brand_quality_id = mp.brand_quality_id
                 WHERE mp.user_id = ?
@@ -581,9 +581,9 @@ class StockManagerCommand extends Command
             $this->info("User {$uid}: matches={$matches}, needs_update={$needs}");
 
             $affected = DB::update("
-                UPDATE merchant_products mp
-                JOIN products p ON mp.product_id = p.id
-                JOIN stock_all s 
+                UPDATE merchant_items mp
+                JOIN catalog_items p ON mp.catalog_item_id = p.id
+                JOIN stock_all s
                     ON s.sku = p.sku
                 AND s.brand_quality_id = mp.brand_quality_id
                 SET mp.price = ROUND(s.cost_price * ?, 2)
@@ -610,8 +610,8 @@ class StockManagerCommand extends Command
                 COUNT(*) AS matches,
                 SUM(CASE WHEN COALESCE(se.qty, sf.qty) IS NULL THEN 1 ELSE 0 END) AS missing_in_stock_all,
                 SUM(CASE WHEN COALESCE(se.qty, sf.qty, 0) <> COALESCE(mp.stock, 0) THEN 1 ELSE 0 END) AS needs_update
-            FROM merchant_products mp
-            JOIN products p ON mp.product_id = p.id
+            FROM merchant_items mp
+            JOIN catalog_items p ON mp.catalog_item_id = p.id
             LEFT JOIN stock_all se ON se.sku = p.sku AND se.brand_quality_id = mp.brand_quality_id
             LEFT JOIN stock_all sf ON sf.sku = p.sku AND sf.brand_quality_id = 1
             WHERE mp.user_id = ?
@@ -624,17 +624,17 @@ class StockManagerCommand extends Command
     protected function printPriceDiff(int $userId, float $margin): void
     {
         $diff = DB::selectOne("
-            SELECT 
+            SELECT
                 COUNT(*) AS matches,
                 SUM(
-                    CASE 
+                    CASE
                         WHEN mp.price IS NULL THEN 1
                         WHEN ROUND(COALESCE(se.cost_price, sf.cost_price, 0) * ?, 2) <> mp.price THEN 1
                         ELSE 0
                     END
                 ) AS needs_update
-            FROM merchant_products mp
-            JOIN products p ON mp.product_id = p.id
+            FROM merchant_items mp
+            JOIN catalog_items p ON mp.catalog_item_id = p.id
             LEFT JOIN stock_all se ON se.sku = p.sku AND se.brand_quality_id = mp.brand_quality_id
             LEFT JOIN stock_all sf ON sf.sku = p.sku AND sf.brand_quality_id = 1
             WHERE mp.user_id = ?

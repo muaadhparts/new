@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\{
     Classes\MuaadhMailer,
     Models\EmailTemplate,
-    Models\Generalsetting,
+    Models\Muaadhsetting,
     Models\User
 };
 use Illuminate\Http\Request;
@@ -42,13 +42,13 @@ class EmailController extends AdminBaseController
 
     public function groupemail()
     {
-        $config = Generalsetting::findOrFail(1);
+        $config = Muaadhsetting::findOrFail(1);
         return view('admin.email.group',compact('config'));
     }
 
     public function groupemailpost(Request $request)
     {
-        $config = Generalsetting::findOrFail(1);
+        $config = Muaadhsetting::findOrFail(1);
         if($request->type == 0)
         {
         $users = User::all();
@@ -83,7 +83,7 @@ class EmailController extends AdminBaseController
 
         else if($request->type == 1)
         {
-        $users = User::where('is_vendor','=','2')->get();
+        $users = User::where('is_merchant','=','2')->get();
         //Sending Email To Vendors        
         foreach($users as $user)
         {

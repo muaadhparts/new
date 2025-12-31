@@ -66,7 +66,7 @@
                         @endif
                         {{-- Using cached $footerPages from AppServiceProvider --}}
                         @foreach ($footerPages as $page)
-                            <li><a href="{{ route('front.vendor', $page->slug) }}">{{ $page->title }}</a></li>
+                            <li><a href="{{ route('front.merchant', $page->slug) }}">{{ $page->title }}</a></li>
                         @endforeach
                     </ul>
                 </div>

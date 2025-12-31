@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Api\User\Payment;
 use App\Http\Controllers\Controller;
 use App\Models\Currency;
 use App\Models\Deposit;
-use App\Models\Generalsetting;
+use App\Models\Muaadhsetting;
 use App\Models\PaymentGateway;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -41,7 +41,7 @@ class RazorpayController extends Controller
 
         $notify_url = action('Api\User\Payment\RazorpayController@razorCallback');
 
-        $settings = Generalsetting::findOrFail(1);
+        $settings = Muaadhsetting::findOrFail(1);
 
         $item_amount = $order->amount * $curr->value;
 
@@ -90,7 +90,7 @@ class RazorpayController extends Controller
             ],
             "notes" => [
                 "address" => $request->address,
-                "merchant_order_id" => $order->order_number,
+                "merchant_deposit_id" => $order->deposit_number,
             ],
             "theme" => [
                 "color" => "{{$settings->colors}}",

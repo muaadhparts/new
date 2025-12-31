@@ -3,31 +3,31 @@
     =============================
     Single source of truth for all cart operations.
 
-    REQUIRED: merchant_product_id (everything else derived from MerchantProduct)
+    REQUIRED: merchant_item_id (everything else derived from MerchantItem)
 
     Usage:
-    <x-cart-button :mp="$merchantProduct" />
-    <x-cart-button :mp="$merchantProduct" mode="compact" />
-    <x-cart-button :mp="$merchantProduct" mode="full" :show-qty="true" />
+    <x-cart-button :mp="$merchantItem" />
+    <x-cart-button :mp="$merchantItem" mode="compact" />
+    <x-cart-button :mp="$merchantItem" mode="full" :show-qty="true" />
 --}}
 
 @props([
-    'mp' => null,              // MerchantProduct instance (REQUIRED)
+    'mp' => null,              // MerchantItem instance (REQUIRED)
     'mode' => 'full',          // 'full' | 'compact' | 'icon-only'
     'showQty' => true,         // Show quantity selector
     'class' => '',             // Additional CSS classes
 ])
 
 @php
-    // STRICT: MerchantProduct is REQUIRED - fail if not provided
+    // STRICT: MerchantItem is REQUIRED - fail if not provided
     if (!$mp) {
-        throw new \LogicException('cart-button component requires $mp (MerchantProduct) to be provided');
+        throw new \LogicException('cart-button component requires $mp (MerchantItem) to be provided');
     }
 
-    // Extract all data from MerchantProduct - NO FALLBACK
+    // Extract all data from MerchantItem - NO FALLBACK
     $mpId = $mp->id;
     $vendorId = $mp->user_id;
-    $productId = $mp->product_id;
+    $catalogItemId = $mp->catalog_item_id;
 
     // Pricing
     $price = (float) $mp->price;
@@ -42,7 +42,7 @@
     $minQty = max(1, (int) ($mp->minimum_qty ?? 1));
     $maxQty = $preordered ? 9999 : max($minQty, $stock);
 
-    // Sizes (from MerchantProduct)
+    // Sizes (from MerchantItem)
     $sizes = [];
     $sizeQtys = [];
     $sizePrices = [];
@@ -61,7 +61,7 @@
     }
     $hasSizes = count($sizes) > 0;
 
-    // Colors (from MerchantProduct)
+    // Colors (from MerchantItem)
     $colors = [];
     $colorPrices = [];
     if (!empty($mp->color_all)) {
@@ -84,10 +84,10 @@
     $width = (float) ($mp->width ?? 0);
     $height = (float) ($mp->height ?? 0);
 
-    // Product info (for display only)
-    $product = $mp->product;
-    $productName = $product ? $product->showName() : '';
-    $productType = $product ? $product->type : 'Physical';
+    // CatalogItem info (for display only)
+    $catalogItem = $mp->catalogItem;
+    $productName = $catalogItem ? $catalogItem->showName() : '';
+    $productType = $catalogItem ? $catalogItem->type : 'Physical';
 
     // Unique ID for this instance
     $uniqueId = 'cart_' . $mpId . '_' . uniqid();
@@ -112,7 +112,7 @@
      id="{{ $uniqueId }}"
      data-mp-id="{{ $mpId }}"
      data-vendor-id="{{ $vendorId }}"
-     data-product-id="{{ $productId }}"
+     data-catalog-item-id="{{ $catalogItemId }}"
      data-price="{{ $price }}"
      data-stock="{{ $stock }}"
      data-preordered="{{ $preordered ? '1' : '0' }}"

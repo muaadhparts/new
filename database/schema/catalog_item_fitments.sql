@@ -1,0 +1,20 @@
+CREATE TABLE `catalog_item_fitments` (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `catalog_item_id` int unsigned NOT NULL,
+  `category_id` int NOT NULL,
+  `subcategory_id` int NOT NULL,
+  `childcategory_id` int NOT NULL,
+  `rol` tinyint unsigned DEFAULT NULL,
+  `beginYear` int NOT NULL,
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uq_catalog_item_cat_sub_child` (`catalog_item_id`,`category_id`,`subcategory_id`,`childcategory_id`),
+  KEY `idx_cat` (`category_id`),
+  KEY `idx_sub` (`subcategory_id`),
+  KEY `idx_child` (`childcategory_id`),
+  CONSTRAINT `fk_cif_catalog_item` FOREIGN KEY (`catalog_item_id`) REFERENCES `catalog_items` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_cif_category` FOREIGN KEY (`category_id`) REFERENCES `categories` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_cif_child` FOREIGN KEY (`childcategory_id`) REFERENCES `childcategories` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_cif_sub` FOREIGN KEY (`subcategory_id`) REFERENCES `subcategories` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

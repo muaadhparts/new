@@ -113,12 +113,12 @@
                                                                     <tbody>
                                                                         @foreach($data->orders as $order)
                                                                         <tr>
-            <td><a href="{{ route('admin-order-invoice',$order->id) }}">{{sprintf("%'.08d", $order->id)}}</a></td>
+            <td><a href="{{ route('admin-purchase-invoice',$order->id) }}">{{sprintf("%'.08d", $order->id)}}</a></td>
                                                                             <td>{{ date('Y-m-d h:i:s a',strtotime($order->created_at)) }}</td>
                                                                             <td>{{ \PriceHelper::showOrderCurrencyPrice(($order->pay_amount * $order->currency_value),$order->currency_sign) }}</td>
                                                                             <td>{{ $order->status }}</td>
                                                                             <td>
-                                                                                <a href=" {{ route('admin-order-show',$order->id) }}" class="view-details">
+                                                                                <a href=" {{ route('admin-purchase-show',$order->id) }}" class="view-details">
                                                                                     <i class="fas fa-check"></i>{{ __("Details") }}
                                                                                 </a>
                                                                             </td>

@@ -3,7 +3,7 @@
     {{-- معلومات الطلب --}}
     <div class="track-order-info mb-4">
         <h4>@lang('Order Information')</h4>
-        <p><strong>@lang('Order Number'):</strong> {{ $order->order_number }}</p>
+        <p><strong>@lang('Order Number'):</strong> {{ $order->purchase_number }}</p>
         <p><strong>@lang('Status'):</strong> <span class="badge bg-primary">{{ ucwords($order->status) }}</span></p>
         <p><strong>@lang('Date'):</strong> {{ date('d M Y', strtotime($order->created_at)) }}</p>
     </div>
@@ -77,7 +77,7 @@
         <h4 class="track-section-title mb-4">@lang('Order Timeline')</h4>
         <div class="wrapper">
             <ul class="stepprogress">
-                @foreach ($order->tracks as $track)
+                @foreach ($order->timelines as $track)
                     <li class="stepprogress-item is-done mb-3">
                         <strong class="fs-5 mb-2">{{ ucwords($track->title) }}</strong>
                         <div class="track-date">{{ date('d M Y', strtotime($track->created_at)) }}</div>

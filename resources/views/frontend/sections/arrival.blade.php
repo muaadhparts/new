@@ -2,15 +2,15 @@
 ================================================================================
 SECTION PARTIAL: Best Month Offers (Arrival Section)
 ================================================================================
-Receives: $merchantProducts (Collection of MerchantProduct models)
+Receives: $merchantItems (Collection of MerchantItem models)
 ================================================================================
 --}}
 
-@if(isset($merchantProducts) && $merchantProducts->count() > 0)
+@if(isset($merchantItems) && $merchantItems->count() > 0)
 <div class="row">
-    @foreach($merchantProducts as $mp)
+    @foreach($merchantItems as $mp)
     @php
-        $actualProduct = $mp->product;
+        $actualProduct = $mp->catalogItem;
         if (!$actualProduct) continue;
 
         $defaultImage = asset('assets/images/noimage.png');
@@ -22,10 +22,10 @@ Receives: $merchantProducts (Collection of MerchantProduct models)
         $productName = $actualProduct->showName();
 
         // URL
-        $productUrl = route('front.product', [
+        $productUrl = route('front.catalog-item', [
             'slug' => $actualProduct->slug,
             'vendor_id' => $mp->user_id,
-            'merchant_product_id' => $mp->id
+            'merchant_item_id' => $mp->id
         ]);
 
         // Photo
@@ -51,8 +51,8 @@ Receives: $merchantProducts (Collection of MerchantProduct models)
         $offPercentage = ($previousPrice > 0 && $previousPrice > $price)
             ? round((($previousPrice - $price) / $previousPrice) * 100)
             : 0;
-        $priceFormatted = \App\Models\Product::convertPrice($price);
-        $previousPriceFormatted = $previousPrice > 0 ? \App\Models\Product::convertPrice($previousPrice) : '';
+        $priceFormatted = \App\Models\CatalogItem::convertPrice($price);
+        $previousPriceFormatted = $previousPrice > 0 ? \App\Models\CatalogItem::convertPrice($previousPrice) : '';
 
         // Stock
         $stockQty = (int)($mp->stock ?? 0);
@@ -135,9 +135,9 @@ Receives: $merchantProducts (Collection of MerchantProduct models)
                 @if ($productType !== 'Listing' && $affiliateProductType !== 'affiliate')
                     @if ($inStock)
                         <button type="button" class="product-card__cart-btn m-cart-add"
-                            data-merchant-product-id="{{ $merchantId }}"
+                            data-merchant-item-id="{{ $merchantId }}"
                             data-vendor-id="{{ $vendorId }}"
-                            data-product-id="{{ $productId }}"
+                            data-catalog-item-id="{{ $productId }}"
                             data-min-qty="{{ $minQty }}"
                             data-stock="{{ $stockQty }}"
                             data-preordered="{{ $preordered ? '1' : '0' }}">

@@ -3,9 +3,9 @@
 namespace App\Classes;
 
 use App\{
-    Models\Order,
+    Models\Purchase,
     Models\EmailTemplate,
-    Models\Generalsetting
+    Models\Muaadhsetting
 };
 use Barryvdh\DomPDF\Facade\Pdf;
 use PHPMailer\PHPMailer\PHPMailer;
@@ -20,7 +20,7 @@ class MuaadhMailer
 
     public function __construct()
     {
-        $this->gs = Generalsetting::findOrFail(1);
+        $this->gs = Muaadhsetting::findOrFail(1);
 
         $this->mail = new PHPMailer(true);
 
@@ -37,12 +37,12 @@ class MuaadhMailer
     }
 
 
-    public function sendAutoOrderMail(array $mailData, $id)
+    public function sendAutoPurchaseMail(array $mailData, $id)
     {
 //        dd($mailData);
         $temp = EmailTemplate::where('email_type', '=', $mailData['type'])->first();
-        $order = Order::findOrFail($id);
-        $cart = json_decode($order->cart, true);
+        $purchase = Purchase::findOrFail($id);
+        $cart = json_decode($purchase->cart, true);
         try {
 
             $body = preg_replace("/{customer_name}/", $mailData['cname'], $temp->email_body);
@@ -60,7 +60,7 @@ class MuaadhMailer
             // dd(['__fn__' => __FUNCTION__, 'dirExists' => is_dir($dir), 'dir' => $dir]); // فحص سريع
             $fileName = $dir . DIRECTORY_SEPARATOR . Str::random(4) . time() . '.pdf';
 
-            $pdf = PDF::loadView('pdf.order', compact('order', 'cart'))->save($fileName);
+            $pdf = PDF::loadView('pdf.purchase', compact('purchase', 'cart'))->save($fileName);
 
             //Recipients
             $this->mail->setFrom($this->gs->from_email, $this->gs->from_name);

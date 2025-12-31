@@ -4,8 +4,8 @@ namespace App\Http\Controllers\User;
 
 use App\Classes\MuaadhMailer;
 use App\Http\Controllers\Front\FrontBaseController;
-use App\Models\Generalsetting;
-use App\Models\Notification;
+use App\Models\Muaadhsetting;
+use App\Models\CatalogEvent;
 use App\Models\User;
 use Auth;
 use Illuminate\Http\Request;
@@ -21,7 +21,7 @@ class RegisterController extends FrontBaseController
     }
     public function showVendorRegisterForm()
     {
-        $gs = Generalsetting::findOrFail(1);
+        $gs = Muaadhsetting::findOrFail(1);
         if ($gs->reg_vendor == 1) {
             return view('frontend.vendor-register');
         } else {
@@ -70,7 +70,7 @@ class RegisterController extends FrontBaseController
             if ($validator->fails()) {
                 return response()->json(array('errors' => $validator->getMessageBag()->toArray()));
             }
-            $input['is_vendor'] = 1;
+            $input['is_merchant'] = 1;
 
         }
 
@@ -98,7 +98,7 @@ class RegisterController extends FrontBaseController
 
             $user->email_verified = 'Yes';
             $user->update();
-            $notification = new Notification;
+            $notification = new CatalogEvent;
             $notification->user_id = $user->id;
             $notification->save();
             Auth::guard('web')->login($user);
@@ -109,14 +109,14 @@ class RegisterController extends FrontBaseController
 
     public function token($token)
     {
-        $gs = Generalsetting::findOrFail(1);
+        $gs = Muaadhsetting::findOrFail(1);
 
         if ($gs->is_verification_email == 1) {
             $user = User::where('verification_link', '=', $token)->first();
             if (isset($user)) {
                 $user->email_verified = 'Yes';
                 $user->update();
-                $notification = new Notification;
+                $notification = new CatalogEvent;
                 $notification->user_id = $user->id;
                 $notification->save();
                 Auth::guard('web')->login($user);

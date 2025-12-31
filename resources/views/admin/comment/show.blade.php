@@ -44,14 +44,14 @@
                                                                 <th>{{ __('Brand') }}</th>
                                                                 <td>{{ $data->product && $data->product->brand ? getLocalizedBrandName($data->product->brand) : __('N/A') }}</td>
                                                             </tr>
-                                                            @if($data->merchantProduct && $data->merchantProduct->id)
+                                                            @if($data->merchantItem && $data->merchantItem->id)
                                                             <tr>
                                                                 <th>{{ __('Vendor') }}</th>
-                                                                <td>{{ $data->merchantProduct->user->shop_name ?? $data->merchantProduct->user->name ?? __('N/A') }}</td>
+                                                                <td>{{ $data->merchantItem->user->shop_name ?? $data->merchantItem->user->name ?? __('N/A') }}</td>
                                                             </tr>
                                                             <tr>
                                                                 <th>{{ __('Quality Brand') }}</th>
-                                                                <td>{{ $data->merchantProduct->qualityBrand ? getLocalizedQualityName($data->merchantProduct->qualityBrand) : __('N/A') }}</td>
+                                                                <td>{{ $data->merchantItem->qualityBrand ? getLocalizedQualityName($data->merchantItem->qualityBrand) : __('N/A') }}</td>
                                                             </tr>
                                                             @endif
                                                         </table>

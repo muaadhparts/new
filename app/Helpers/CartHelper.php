@@ -2,8 +2,8 @@
 
 namespace App\Helpers;
 
-use App\Models\MerchantProduct;
-use App\Models\Product;
+use App\Models\MerchantItem;
+use App\Models\CatalogItem;
 use Illuminate\Support\Facades\Session;
 
 /**
@@ -123,7 +123,7 @@ class CartHelper
     public static function addItem(int $mpId, int $qty = 1, string $size = '', string $color = '', string $values = '', array $keys = []): array
     {
         // جلب بيانات عرض التاجر
-        $mp = MerchantProduct::with(['product', 'user', 'qualityBrand'])->find($mpId);
+        $mp = MerchantItem::with(['catalogItem', 'user', 'qualityBrand'])->find($mpId);
 
         if (!$mp || $mp->status !== 1) {
             return ['success' => false, 'message' => __('Product not available'), 'cart' => null];
@@ -285,7 +285,7 @@ class CartHelper
         $size = $item['size'] ?? '';
 
         // جلب بيانات التاجر الحالية
-        $mp = MerchantProduct::find($mpId);
+        $mp = MerchantItem::find($mpId);
         if (!$mp || $mp->status !== 1) {
             return ['success' => false, 'message' => __('Product no longer available'), 'item' => null, 'cart' => null];
         }
@@ -441,7 +441,7 @@ class CartHelper
     /**
      * حساب المخزون الفعلي (مع دعم المقاسات)
      */
-    public static function getEffectiveStock(MerchantProduct $mp, string $size = ''): int
+    public static function getEffectiveStock(MerchantItem $mp, string $size = ''): int
     {
         if ($size !== '' && !empty($mp->size) && !empty($mp->size_qty)) {
             $sizes = self::toArray($mp->size);
@@ -459,7 +459,7 @@ class CartHelper
     /**
      * جلب كمية المقاس
      */
-    private static function getSizeQty(MerchantProduct $mp, string $size): ?int
+    private static function getSizeQty(MerchantItem $mp, string $size): ?int
     {
         if ($size === '' || empty($mp->size) || empty($mp->size_qty)) return null;
 
@@ -477,7 +477,7 @@ class CartHelper
     /**
      * جلب سعر المقاس الإضافي
      */
-    private static function getSizePrice(MerchantProduct $mp, string $size): float
+    private static function getSizePrice(MerchantItem $mp, string $size): float
     {
         if ($size === '' || empty($mp->size) || empty($mp->size_price)) return 0.0;
 
@@ -495,7 +495,7 @@ class CartHelper
     /**
      * حساب سعر الوحدة مع المقاس واللون
      */
-    private static function calculateUnitPrice(MerchantProduct $mp, string $size = '', string $color = ''): float
+    private static function calculateUnitPrice(MerchantItem $mp, string $size = '', string $color = ''): float
     {
         // السعر الأساسي (مع العمولة)
         $basePrice = method_exists($mp, 'vendorSizePrice') ? $mp->vendorSizePrice() : (float)$mp->price;

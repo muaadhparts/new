@@ -24,11 +24,11 @@ class RiderController extends AdminBaseController
     //*** JSON Request
     public function datatables()
     {
-        $datas = Rider::with('orders')->latest('id')->get();
+        $datas = Rider::with('purchases')->latest('id')->get();
         //--- Integrating This Collection Into Datatables
         return Datatables::of($datas)
             ->addColumn('total_delivery', function (Rider $data) {
-                return $data->orders->count();
+                return $data->purchases->count();
             })
             ->addColumn('action', function (Rider $data) {
                 $class = $data->status == 0 ? 'drop-success' : 'drop-danger';

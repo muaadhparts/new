@@ -39,7 +39,7 @@ class BladeQueryGuardServiceProvider extends ServiceProvider
     protected static array $allowedPatterns = [
         'select * from `currencies` where `is_default`',  // Global currency
         'select * from `languages` where `is_default`',   // Global language
-        'select * from `generalsettings`',                // Global settings
+        'select * from `muaadhsettings`',                // Global settings
         'convertPrice',                                    // Price helper (static)
     ];
 

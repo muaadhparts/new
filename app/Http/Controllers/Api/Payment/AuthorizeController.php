@@ -4,8 +4,8 @@ namespace App\Http\Controllers\Api\Payment;
 
 use App\Http\Controllers\Controller;
 use App\Models\Currency;
-use App\Models\Generalsetting;
-use App\Models\Order;
+use App\Models\Muaadhsetting;
+use App\Models\Purchase;
 use App\Models\PaymentGateway;
 use Illuminate\Http\Request;
 use net\authorize\api\contract\v1 as AnetAPI;
@@ -18,18 +18,18 @@ class AuthorizeController extends Controller
     public function store(Request $request)
     {
 
-        if (!$request->has('order_number')) {
+        if (!$request->has('purchase_number')) {
             return response()->json(['status' => false, 'data' => [], 'error' => 'Invalid Request']);
         }
 
-        $settings = Generalsetting::findOrFail(1);
-        $item_name = $settings->title . " Order";
-        $order_number = $request->order_number;
-        $order = Order::where('order_number', $order_number)->firstOrFail();
+        $settings = Muaadhsetting::findOrFail(1);
+        $item_name = $settings->title . " Purchase";
+        $purchase_number = $request->purchase_number;
+        $purchase = Purchase::where('purchase_number', $purchase_number)->firstOrFail();
 
 
-        $curr = Currency::where('sign', '=', $order->currency_sign)->firstOrFail();
-        $item_amount = $order->pay_amount;
+        $curr = Currency::where('sign', '=', $purchase->currency_sign)->firstOrFail();
+        $item_amount = $purchase->pay_amount;
         //dd($request->all());
         $validator = Validator::make($request->all(), [
             'cardNumber' => 'required',
@@ -63,9 +63,9 @@ class AuthorizeController extends Controller
             $paymentOne = new AnetAPI\PaymentType();
             $paymentOne->setCreditCard($creditCard);
 
-            // Create order information
+            // Create purchase information
             $orders = new AnetAPI\OrderType();
-            $orders->setInvoiceNumber($order_number);
+            $orders->setInvoiceNumber($purchase_number);
             $orders->setDescription($item_name);
 
             // Create a TransactionRequestType object and add the previous objects to it
@@ -98,11 +98,11 @@ class AuthorizeController extends Controller
 
                     if ($tresponse != null && $tresponse->getMessages() != null) {
 
-                        $order['method'] = $request->method;
-                        $order['pay_amount'] = round($item_amount / $curr->value, 2);
-                        $order['txnid'] = $tresponse->getTransId();
-                        $order['payment_status'] = "Completed";
-                        $order->update();
+                        $purchase['method'] = $request->method;
+                        $purchase['pay_amount'] = round($item_amount / $curr->value, 2);
+                        $purchase['txnid'] = $tresponse->getTransId();
+                        $purchase['payment_status'] = "Completed";
+                        $purchase->update();
                         return redirect(route('front.payment.success', 1));
                     } else {
                         return back()->with('unsuccess', 'Payment Failed.');

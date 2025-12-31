@@ -63,7 +63,7 @@ class ShipmentStatusUpdated extends Notification implements ShouldQueue
         return [
             'type' => 'shipment_status_updated',
             'tracking_number' => $this->shipmentLog->tracking_number,
-            'order_id' => $this->shipmentLog->order_id,
+            'purchase_id' => $this->shipmentLog->purchase_id,
             'old_status' => $this->oldStatus,
             'new_status' => $this->shipmentLog->status,
             'status_ar' => $this->shipmentLog->status_ar,

@@ -3,16 +3,16 @@
 namespace App\Http\Controllers\Api\Front;
 
 use App\Classes\MuaadhMailer;
-use App\Helpers\ProductContextHelper;
+use App\Helpers\CatalogItemContextHelper;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\BannerResource;
 use App\Http\Resources\BlogResource;use App\Http\Resources\FaqResource;
 use App\Http\Resources\FeaturedBannerResource;
 use App\Http\Resources\FeaturedLinkResource;
-use App\Http\Resources\OrderTrackResource;
+use App\Http\Resources\PurchaseTrackResource;
 use App\Http\Resources\PageResource;
 use App\Http\Resources\BrandResource;
-use App\Http\Resources\ProductlistResource;
+use App\Http\Resources\CatalogItemListResource;
 use App\Http\Resources\ServiceResource;
 use App\Http\Resources\SliderResource;use App\Models\ArrivalSection;
 use App\Models\Banner;
@@ -21,13 +21,13 @@ use App\Models\Currency;
 use App\Models\Faq;
 use App\Models\FeaturedBanner;
 use App\Models\FeaturedLink;
-use App\Models\Generalsetting;
+use App\Models\Muaadhsetting;
 use App\Models\Language;
-use App\Models\Order;
+use App\Models\Purchase;
 use App\Models\Page;
 use App\Models\Pagesetting;
 use App\Models\Brand;
-use App\Models\Product;
+use App\Models\CatalogItem;
 use App\Models\Service;
 use App\Models\Slider;
 use App\Models\User;
@@ -60,31 +60,31 @@ class FrontendController extends Controller
                 return response()->json(['status' => false, 'data' => [], 'error' => ['message' => 'Vendor not found']]);
             }
 
-            // Get products through merchant_products for this vendor
-            // product_type is now on merchant_products, not products
-            $merchantProductsQuery = \App\Models\MerchantProduct::where('user_id', $user->id)
+            // Get products through merchant_items for this vendor
+            // product_type is now on merchant_items, not products
+            $merchantItemsQuery = \App\Models\MerchantItem::where('user_id', $user->id)
                 ->where('status', 1)
                 ->with(['product' => function($query) {
                     $query->where('status', 1);
                 }]);
 
             if ($request->type && in_array($request->type, ['normal', 'affiliate'])) {
-                $merchantProductsQuery->where('product_type', $request->type);
+                $merchantItemsQuery->where('product_type', $request->type);
             }
 
-            $merchantProducts = $merchantProductsQuery->get();
+            $merchantItems = $merchantItemsQuery->get();
 
-            // Extract products and inject vendor context using ProductContextHelper
-            $prods = $merchantProducts->map(function($mp) use ($user) {
+            // Extract catalog items and inject vendor context using CatalogItemContextHelper
+            $prods = $merchantItems->map(function($mp) use ($user) {
                 if (!$mp->product) return null;
 
                 $product = $mp->product;
-                // Use ProductContextHelper for consistency
-                ProductContextHelper::apply($product, $mp);
+                // Use CatalogItemContextHelper for consistency
+                CatalogItemContextHelper::apply($product, $mp);
                 return $product;
             })->filter()->values();
 
-            return response()->json(['status' => true, 'data' => ProductlistResource::collection($prods), 'error' => []]);
+            return response()->json(['status' => true, 'data' => CatalogItemListResource::collection($prods), 'error' => []]);
         } catch (\Exception $e) {
             return response()->json(['status' => true, 'data' => [], 'error' => ['message' => $e->getMessage()]]);
         }
@@ -277,37 +277,37 @@ class FrontendController extends Controller
                 $limit = isset($input['limit']) ? (int) $input['limit'] : 0;
                 $paginate = isset($input['paginate']) ? (int) $input['paginate'] : 0;
 
-                $prods = Product::whereStatus(1);
+                $prods = CatalogItem::whereStatus(1);
 
                 if ($typeCheck) {
                     $prods = $prods->whereType($type);
                 }
 
-                // product_type is now on merchant_products, not products
+                // product_type is now on merchant_items, not catalog_items
                 if ($productTypeCheck) {
-                    $prods = $prods->whereHas('merchantProducts', fn($q) => $q->where('product_type', $productType));
+                    $prods = $prods->whereHas('merchantItems', fn($q) => $q->where('product_type', $productType));
                 }
 
-                // All highlight flags (featured, best, top, big, trending) are on merchant_products table
+                // All highlight flags (featured, best, top, big, trending) are on merchant_items table
                 if ($highlightCheck) {
                     if ($highlight == 'featured') {
-                        $prods = $prods->whereHas('merchantProducts', fn($q) => $q->where('featured', 1)->where('status', 1));
+                        $prods = $prods->whereHas('merchantItems', fn($q) => $q->where('featured', 1)->where('status', 1));
                     } else if ($highlight == 'best') {
-                        $prods = $prods->whereHas('merchantProducts', fn($q) => $q->where('best', 1)->where('status', 1));
+                        $prods = $prods->whereHas('merchantItems', fn($q) => $q->where('best', 1)->where('status', 1));
                     } else if ($highlight == 'top') {
-                        $prods = $prods->whereHas('merchantProducts', fn($q) => $q->where('top', 1)->where('status', 1));
+                        $prods = $prods->whereHas('merchantItems', fn($q) => $q->where('top', 1)->where('status', 1));
                     } else if ($highlight == 'big') {
-                        $prods = $prods->whereHas('merchantProducts', fn($q) => $q->where('big', 1)->where('status', 1));
+                        $prods = $prods->whereHas('merchantItems', fn($q) => $q->where('big', 1)->where('status', 1));
                     } else if ($highlight == 'is_discount') {
-                        $prods = $prods->whereHas('merchantProducts', fn($q) => $q->where('is_discount', 1)->where('discount_date', '>=', date('Y-m-d'))->where('status', 1));
+                        $prods = $prods->whereHas('merchantItems', fn($q) => $q->where('is_discount', 1)->where('discount_date', '>=', date('Y-m-d'))->where('status', 1));
                     } else if ($highlight == 'hot') {
-                        $prods = $prods->whereHas('merchantProducts', fn($q) => $q->where('hot', 1)->where('status', 1));
+                        $prods = $prods->whereHas('merchantItems', fn($q) => $q->where('hot', 1)->where('status', 1));
                     } else if ($highlight == 'latest') {
                         $prods = $prods->orderBy('id', 'desc');
                     } else if ($highlight == 'trending') {
-                        $prods = $prods->whereHas('merchantProducts', fn($q) => $q->where('trending', 1)->where('status', 1));
+                        $prods = $prods->whereHas('merchantItems', fn($q) => $q->where('trending', 1)->where('status', 1));
                     } else {
-                        $prods = $prods->whereHas('merchantProducts', fn($q) => $q->where('sale', 1)->where('status', 1));
+                        $prods = $prods->whereHas('merchantItems', fn($q) => $q->where('sale', 1)->where('status', 1));
                     }
                 }
 
@@ -321,15 +321,15 @@ class FrontendController extends Controller
                     $prods = $prods->where('status', 1)->paginate($paginate);
                 }
 
-                // Note: General product listing shows products from all vendors
-                // For vendor-specific data, ProductlistResource will use the first available merchant_product
-                return response()->json(['status' => true, 'data' => ProductlistResource::collection($prods)->response()->getData(true), 'error' => []]);
+                // Note: General listing shows catalog items from all vendors
+                // For vendor-specific data, CatalogItemListResource will use the first available merchant_item
+                return response()->json(['status' => true, 'data' => CatalogItemListResource::collection($prods)->response()->getData(true), 'error' => []]);
             } else {
 
-                $prods = Product::status(1)->get();
-                // Note: General product listing shows products from all vendors
-                // For vendor-specific data, ProductlistResource will use the first available merchant_product
-                return response()->json(['status' => true, 'data' => ProductlistResource::collection($prods), 'error' => []]);
+                $prods = CatalogItem::status(1)->get();
+                // Note: General listing shows catalog items from all vendors
+                // For vendor-specific data, CatalogItemListResource will use the first available merchant_item
+                return response()->json(['status' => true, 'data' => CatalogItemListResource::collection($prods), 'error' => []]);
             }
         } catch (\Exception $e) {
             return response()->json(['status' => true, 'data' => [], 'error' => ['message' => $e->getMessage()]]);
@@ -394,7 +394,7 @@ class FrontendController extends Controller
             }
 
             $name = $request->name;
-            $checkSettings = in_array($name, ['generalsettings', 'pagesettings', 'socialsettings']);
+            $checkSettings = in_array($name, ['muaadhsettings', 'pagesettings', 'socialsettings']);
             if (!$checkSettings) {
                 return response()->json(['status' => false, 'data' => [], 'error' => ["message" => "This setting doesn't exists."]]);
             }
@@ -410,13 +410,13 @@ class FrontendController extends Controller
 
     // Display All Settings Ends
 
-    // Display Order Tracks
+    // Display Purchase Tracks
 
     public function ordertrack(Request $request)
     {
         try {
             $rules = [
-                'order_number' => 'required',
+                'purchase_number' => 'required',
             ];
 
             $validator = Validator::make($request->all(), $rules);
@@ -424,20 +424,20 @@ class FrontendController extends Controller
                 return response()->json(['status' => false, 'data' => [], 'error' => $validator->errors()]);
             }
 
-            $order_number = $request->order_number;
+            $purchase_number = $request->purchase_number;
 
-            $order = Order::where('order_number', $order_number)->first();
-            if (!$order) {
-                return response()->json(['status' => false, 'data' => [], 'error' => ["message" => "Order not found."]]);
+            $purchase = Purchase::where('purchase_number', $purchase_number)->first();
+            if (!$purchase) {
+                return response()->json(['status' => false, 'data' => [], 'error' => ["message" => "Purchase not found."]]);
             }
 
-            return response()->json(['status' => true, 'data' => OrderTrackResource::collection($order->tracks), 'error' => []]);
+            return response()->json(['status' => true, 'data' => PurchaseTrackResource::collection($purchase->tracks), 'error' => []]);
         } catch (\Exception $e) {
             return response()->json(['status' => true, 'data' => [], 'error' => ['message' => $e->getMessage()]]);
         }
     }
 
-    // Display Order Tracks Ends
+    // Display Purchase Tracks Ends
 
     // Send Email To Admin
 
@@ -460,7 +460,7 @@ class FrontendController extends Controller
                 return response()->json(['status' => false, 'data' => [], 'error' => $validator->errors()]);
             }
 
-            $gs = Generalsetting::find(1);
+            $gs = Muaadhsetting::find(1);
 
             // Login Section
             $ps = DB::table('pagesettings')->where('id', '=', 1)->first();
@@ -496,7 +496,7 @@ class FrontendController extends Controller
 
     public function deal()
     {
-        $gs = Generalsetting::findOrFail(1);
+        $gs = Muaadhsetting::findOrFail(1);
         $data['title'] = $gs->deal_title;
         $data['deal_details'] = $gs->deal_details;
         $data['time'] = $gs->deal_time;

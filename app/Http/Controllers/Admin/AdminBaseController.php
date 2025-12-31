@@ -15,7 +15,7 @@ class AdminBaseController extends Controller
     public function __construct()
     {
         $this->middleware('auth:admin');
-        $this->gs = DB::table('generalsettings')->find(1);
+        $this->gs = DB::table('muaadhsettings')->find(1);
         $this->language = DB::table('languages')->where('is_default', '=', 1)->first();
         view()->share('langg', $this->language);
         if ($this->language) {

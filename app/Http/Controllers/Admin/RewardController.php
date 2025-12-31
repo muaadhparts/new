@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Currency;
-use App\Models\Generalsetting;
+use App\Models\Muaadhsetting;
 use App\Models\Reward;
 use Illuminate\Http\Request;
 use Datatables;
@@ -46,11 +46,11 @@ class RewardController extends Controller
           return response()->json(array('errors' => $validator->getMessageBag()->toArray()));
         }
 
-        $data = Generalsetting::findOrFail(1);
+        $data = Muaadhsetting::findOrFail(1);
         $data->reward_dolar = $request->reward_dolar;
         $data->reward_point = $request->reward_point;
         $data->update();
-        cache()->forget('generalsettings');
+        cache()->forget('muaadhsettings');
         $mgs = __('Data Update Successfully');
         return response()->json($mgs);
 

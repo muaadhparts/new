@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Models\Order;
+use App\Models\Purchase;
 use App\Models\User;
 use App\Models\ShipmentStatusLog;
 use App\Services\TryotoService;
@@ -34,7 +34,7 @@ class ShipmentController extends AdminBaseController
         $stats = $this->tryotoService->getAdminStatistics();
 
         // Get all vendors for filter dropdown
-        $vendors = User::where('is_vendor', 2)
+        $vendors = User::where('is_merchant', 2)
             ->select('id', 'shop_name', 'name')
             ->orderBy('shop_name')
             ->get();
@@ -58,14 +58,14 @@ class ShipmentController extends AdminBaseController
                     ->when($search, function ($q) use ($search) {
                         $q->where(function ($sq) use ($search) {
                             $sq->where('tracking_number', 'LIKE', "%{$search}%")
-                               ->orWhereHas('order', function ($oq) use ($search) {
-                                   $oq->where('order_number', 'LIKE', "%{$search}%");
+                               ->orWhereHas('purchase', function ($pq) use ($search) {
+                                   $pq->where('purchase_number', 'LIKE', "%{$search}%");
                                });
                         });
                     })
                     ->groupBy('tracking_number');
             })
-            ->with(['order:id,order_number,customer_name,pay_amount,currency_sign', 'vendor:id,shop_name,name'])
+            ->with(['purchase:id,purchase_number,customer_name,pay_amount,currency_sign', 'vendor:id,shop_name,name'])
             ->orderBy('status_date', 'desc')
             ->paginate(25);
 
@@ -85,13 +85,13 @@ class ShipmentController extends AdminBaseController
             ->orderBy('status_date', 'desc')
             ->get();
 
-        $order = Order::with('user')->find($shipment->order_id);
+        $purchase = Purchase::with('user')->find($shipment->purchase_id);
         $vendor = User::find($shipment->vendor_id);
 
         // Try to get live status
         $liveStatus = $this->tryotoService->trackShipment($trackingNumber);
 
-        return view('admin.shipments.show', compact('shipment', 'history', 'order', 'vendor', 'liveStatus'));
+        return view('admin.shipments.show', compact('shipment', 'history', 'purchase', 'vendor', 'liveStatus'));
     }
 
     /**
@@ -152,7 +152,7 @@ class ShipmentController extends AdminBaseController
         $dateFrom = $request->get('date_from');
         $dateTo = $request->get('date_to');
 
-        $query = ShipmentStatusLog::with(['order:id,order_number,customer_name,pay_amount', 'vendor:id,shop_name'])
+        $query = ShipmentStatusLog::with(['purchase:id,purchase_number,customer_name,pay_amount', 'vendor:id,shop_name'])
             ->when($status, function ($q) use ($status) {
                 $q->where('status', $status);
             })
@@ -196,8 +196,8 @@ class ShipmentController extends AdminBaseController
             foreach ($query as $shipment) {
                 fputcsv($file, [
                     $shipment->tracking_number,
-                    $shipment->order->order_number ?? 'N/A',
-                    $shipment->order->customer_name ?? 'N/A',
+                    $shipment->purchase->purchase_number ?? 'N/A',
+                    $shipment->purchase->customer_name ?? 'N/A',
                     $shipment->vendor->shop_name ?? 'N/A',
                     $shipment->company_name,
                     $shipment->status,
@@ -324,7 +324,7 @@ class ShipmentController extends AdminBaseController
             ->groupBy('company_name');
 
         // Get vendors for filter
-        $vendors = User::where('is_vendor', 2)
+        $vendors = User::where('is_merchant', 2)
             ->select('id', 'shop_name', 'name')
             ->orderBy('shop_name')
             ->get();
@@ -382,7 +382,7 @@ class ShipmentController extends AdminBaseController
 
         // Create new log entry
         $newLog = ShipmentStatusLog::create([
-            'order_id' => $existingLog->order_id,
+            'purchase_id' => $existingLog->purchase_id,
             'vendor_id' => $existingLog->vendor_id,
             'tracking_number' => $trackingNumber,
             'shipment_id' => $payload['shipmentId'] ?? $existingLog->shipment_id,

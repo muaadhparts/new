@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\User;
 use App\Models\Currency;
-use App\Models\Generalsetting;
+use App\Models\Muaadhsetting;
 use App\Models\Transaction;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -29,7 +29,7 @@ class RewardController extends UserBaseController
     public function convertSubmit(Request $request)
     {
         $user = Auth::user();
-        $gs = Generalsetting::find(1);
+        $gs = Muaadhsetting::find(1);
 
         $rules =
         [

@@ -32,11 +32,20 @@ class Brand extends Model
     }
 
     /**
-     * Get products for this brand.
+     * Get catalog items for this brand.
+     * @deprecated Use catalogItems() instead
      */
     public function products(): HasMany
     {
-        return $this->hasMany(Product::class, 'brand_id');
+        return $this->hasMany(CatalogItem::class, 'brand_id');
+    }
+
+    /**
+     * Get catalog items for this brand.
+     */
+    public function catalogItems(): HasMany
+    {
+        return $this->hasMany(CatalogItem::class, 'brand_id');
     }
 
 

@@ -7,12 +7,12 @@ use App\Models\ArrivalSection;
 use App\Models\Blog;
 use App\Models\BlogCategory;
 use App\Models\Category;
-use App\Models\Generalsetting;
+use App\Models\Muaadhsetting;
 use App\Models\HomePageTheme;
-use App\Models\MerchantProduct;
-use App\Models\Order;
-use App\Models\Product;
-use App\Models\Rating;
+use App\Models\MerchantItem;
+use App\Models\Purchase;
+use App\Models\CatalogItem;
+use App\Models\CatalogReview;
 use App\Models\Subscriber;
 use Artisan;
 use Carbon\Carbon;
@@ -60,7 +60,7 @@ class FrontendController extends FrontBaseController
     // HOME PAGE SECTION
     // ================================================================================================
     // Architecture: Section-based rendering controlled by HomePageTheme model
-    // All product data is vendor-only (is_vendor = 2)
+    // All product data is vendor-only (is_merchant = 2)
     // Each section loads data ONLY if enabled in the active theme
     // ================================================================================================
 
@@ -120,18 +120,18 @@ class FrontendController extends FrontBaseController
 
         // ============================================================================
         // SECTION: Featured/Popular Products (if enabled in theme)
-        // Returns MerchantProduct objects - each represents a unique listing
-        // (product + vendor + quality brand combination)
+        // Returns MerchantItem objects - each represents a unique listing
+        // (catalog item + vendor + quality brand combination)
         // ============================================================================
         if ($theme->show_featured_products) {
             $count = $theme->count_featured_products ?? 8;
             $data['featured_merchants'] = Cache::remember('homepage_featured_merchants_' . $count, 1800, function () use ($count) {
-                return MerchantProduct::where('status', 1)
+                return MerchantItem::where('status', 1)
                     ->where('featured', 1)
-                    ->whereHas('user', fn($u) => $u->where('is_vendor', 2))
+                    ->whereHas('user', fn($u) => $u->where('is_merchant', 2))
                     ->with([
-                        'product' => fn($q) => $q->withCount('ratings')->withAvg('ratings', 'rating'),
-                        'user:id,shop_name,shop_name_ar,is_vendor',
+                        'catalogItem' => fn($q) => $q->withCount('catalogReviews')->withAvg('catalogReviews', 'rating'),
+                        'user:id,shop_name,shop_name_ar,is_merchant',
                         'qualityBrand:id,name_en,name_ar,logo'
                     ])
                     ->take($count)
@@ -142,18 +142,18 @@ class FrontendController extends FrontBaseController
 
         // ============================================================================
         // SECTION: Deal of the Day (if enabled in theme)
-        // Returns MerchantProduct with active discount
+        // Returns MerchantItem with active discount
         // ============================================================================
         if ($theme->show_deal_of_day) {
             $data['flash_merchant'] = Cache::remember('homepage_flash_merchant', 1800, function () {
-                return MerchantProduct::where('status', 1)
+                return MerchantItem::where('status', 1)
                     ->where('is_discount', 1)
                     ->where('discount_date', '>=', date('Y-m-d'))
-                    ->whereHas('user', fn($u) => $u->where('is_vendor', 2))
+                    ->whereHas('user', fn($u) => $u->where('is_merchant', 2))
                     ->with([
-                        'product' => fn($q) => $q->withCount('ratings')->withAvg('ratings', 'rating'),
-                        'product.brand', // Product brand (Toyota, Nissan, etc.)
-                        'user:id,shop_name,shop_name_ar,is_vendor',
+                        'catalogItem' => fn($q) => $q->withCount('catalogReviews')->withAvg('catalogReviews', 'rating'),
+                        'catalogItem.brand', // CatalogItem brand (Toyota, Nissan, etc.)
+                        'user:id,shop_name,shop_name_ar,is_merchant',
                         'qualityBrand:id,name_en,name_ar,logo'
                     ])
                     ->latest()
@@ -163,17 +163,17 @@ class FrontendController extends FrontBaseController
 
         // ============================================================================
         // SECTION: Top Rated Products (if enabled in theme)
-        // Returns MerchantProduct objects with top flag
+        // Returns MerchantItem objects with top flag
         // ============================================================================
         if ($theme->show_top_rated) {
             $count = $theme->count_top_rated ?? 6;
             $data['top_merchants'] = Cache::remember('homepage_top_merchants_' . $count, 1800, function () use ($count) {
-                return MerchantProduct::where('status', 1)
+                return MerchantItem::where('status', 1)
                     ->where('top', 1)
-                    ->whereHas('user', fn($u) => $u->where('is_vendor', 2))
+                    ->whereHas('user', fn($u) => $u->where('is_merchant', 2))
                     ->with([
-                        'product' => fn($q) => $q->withCount('ratings')->withAvg('ratings', 'rating'),
-                        'user:id,shop_name,shop_name_ar,is_vendor',
+                        'catalogItem' => fn($q) => $q->withCount('catalogReviews')->withAvg('catalogReviews', 'rating'),
+                        'user:id,shop_name,shop_name_ar,is_merchant',
                         'qualityBrand:id,name_en,name_ar,logo'
                     ])
                     ->take($count)
@@ -184,17 +184,17 @@ class FrontendController extends FrontBaseController
 
         // ============================================================================
         // SECTION: Big Save Products (if enabled in theme)
-        // Returns MerchantProduct objects with big flag
+        // Returns MerchantItem objects with big flag
         // ============================================================================
         if ($theme->show_big_save) {
             $count = $theme->count_big_save ?? 6;
             $data['big_merchants'] = Cache::remember('homepage_big_merchants_' . $count, 1800, function () use ($count) {
-                return MerchantProduct::where('status', 1)
+                return MerchantItem::where('status', 1)
                     ->where('big', 1)
-                    ->whereHas('user', fn($u) => $u->where('is_vendor', 2))
+                    ->whereHas('user', fn($u) => $u->where('is_merchant', 2))
                     ->with([
-                        'product' => fn($q) => $q->withCount('ratings')->withAvg('ratings', 'rating'),
-                        'user:id,shop_name,shop_name_ar,is_vendor',
+                        'catalogItem' => fn($q) => $q->withCount('catalogReviews')->withAvg('catalogReviews', 'rating'),
+                        'user:id,shop_name,shop_name_ar,is_merchant',
                         'qualityBrand:id,name_en,name_ar,logo'
                     ])
                     ->take($count)
@@ -205,17 +205,17 @@ class FrontendController extends FrontBaseController
 
         // ============================================================================
         // SECTION: Trending Products (if enabled in theme)
-        // Returns MerchantProduct objects with trending flag
+        // Returns MerchantItem objects with trending flag
         // ============================================================================
         if ($theme->show_trending) {
             $count = $theme->count_trending ?? 6;
             $data['trending_merchants'] = Cache::remember('homepage_trending_merchants_' . $count, 1800, function () use ($count) {
-                return MerchantProduct::where('status', 1)
+                return MerchantItem::where('status', 1)
                     ->where('trending', 1)
-                    ->whereHas('user', fn($u) => $u->where('is_vendor', 2))
+                    ->whereHas('user', fn($u) => $u->where('is_merchant', 2))
                     ->with([
-                        'product' => fn($q) => $q->withCount('ratings')->withAvg('ratings', 'rating'),
-                        'user:id,shop_name,shop_name_ar,is_vendor',
+                        'catalogItem' => fn($q) => $q->withCount('catalogReviews')->withAvg('catalogReviews', 'rating'),
+                        'user:id,shop_name,shop_name_ar,is_merchant',
                         'qualityBrand:id,name_en,name_ar,logo'
                     ])
                     ->take($count)
@@ -226,17 +226,17 @@ class FrontendController extends FrontBaseController
 
         // ============================================================================
         // SECTION: Best Selling Products (if enabled in theme)
-        // Returns MerchantProduct objects with best flag
+        // Returns MerchantItem objects with best flag
         // ============================================================================
         if ($theme->show_best_sellers) {
             $count = $theme->count_best_sellers ?? 8;
             $data['best_merchants'] = Cache::remember('homepage_best_merchants_' . $count, 1800, function () use ($count) {
-                return MerchantProduct::where('status', 1)
+                return MerchantItem::where('status', 1)
                     ->where('best', 1)
-                    ->whereHas('user', fn($u) => $u->where('is_vendor', 2))
+                    ->whereHas('user', fn($u) => $u->where('is_merchant', 2))
                     ->with([
-                        'product' => fn($q) => $q->withCount('ratings')->withAvg('ratings', 'rating'),
-                        'user:id,shop_name,shop_name_ar,is_vendor',
+                        'catalogItem' => fn($q) => $q->withCount('catalogReviews')->withAvg('catalogReviews', 'rating'),
+                        'user:id,shop_name,shop_name_ar,is_merchant',
                         'qualityBrand:id,name_en,name_ar,logo'
                     ])
                     ->take($count)
@@ -414,11 +414,11 @@ class FrontendController extends FrontBaseController
         if (mb_strlen($slug, 'UTF-8') > 1) {
             $search = ' ' . $slug;
             // Only return products that have at least one active merchant listing
-            $prods = Product::where(function($query) use ($search, $slug) {
+            $prods = CatalogItem::where(function($query) use ($search, $slug) {
                     $query->where('name', 'like', '%' . $search . '%')
                           ->orWhere('name', 'like', $slug . '%');
                 })
-                ->whereHas('merchantProducts', function($q){
+                ->whereHas('merchantItems', function($q){
                     $q->where('status', 1);
                 })
                 ->orderby('id', 'desc')
@@ -538,7 +538,7 @@ class FrontendController extends FrontBaseController
         $settings = $this->gs;
         $today = Carbon::now()->format('Y-m-d');
         $newday = strtotime($today);
-        foreach (DB::table('users')->where('is_vendor', '=', 2)->get() as $user) {
+        foreach (DB::table('users')->where('is_merchant', '=', 2)->get() as $user) {
             $lastday = $user->date;
             $secs = strtotime($lastday) - $newday;
             $days = $secs / 86400;
@@ -564,7 +564,7 @@ class FrontendController extends FrontBaseController
                 }
             }
             if ($today > $lastday) {
-                DB::table('users')->where('id', $user->id)->update(['is_vendor' => 1]);
+                DB::table('users')->where('id', $user->id)->update(['is_merchant' => 1]);
             }
         }
     }
@@ -575,30 +575,30 @@ class FrontendController extends FrontBaseController
 
     public function trackload($id)
     {
-        // يمكن أن يكون $id هو order_number أو tracking_number
-        $order = Order::where('order_number', '=', $id)->first();
+        // يمكن أن يكون $id هو purchase_number أو tracking_number
+        $purchase = Purchase::where('purchase_number', '=', $id)->first();
 
-        // إذا لم نجد Order، نبحث في tracking numbers
+        // إذا لم نجد Purchase، نبحث في tracking numbers
         $shipmentLogs = [];
-        if (!$order) {
+        if (!$purchase) {
             $shipmentLogs = \App\Models\ShipmentStatusLog::where('tracking_number', $id)
                            ->orderBy('status_date', 'desc')
                            ->orderBy('created_at', 'desc')
                            ->get();
 
             if ($shipmentLogs->isNotEmpty()) {
-                $order = Order::find($shipmentLogs->first()->order_id);
+                $purchase = Purchase::find($shipmentLogs->first()->purchase_id);
             }
         } else {
-            // إذا وجدنا Order، نجلب جميع shipment logs له
-            $shipmentLogs = \App\Models\ShipmentStatusLog::where('order_id', $order->id)
+            // إذا وجدنا Purchase، نجلب جميع shipment logs له
+            $shipmentLogs = \App\Models\ShipmentStatusLog::where('purchase_id', $purchase->id)
                            ->orderBy('status_date', 'desc')
                            ->orderBy('created_at', 'desc')
                            ->get();
         }
 
         $datas = array('Pending', 'Processing', 'On Delivery', 'Completed');
-        return view('load.track-load', compact('order', 'datas', 'shipmentLogs'));
+        return view('load.track-load', compact('purchase', 'datas', 'shipmentLogs'));
     }
 
     // -------------------------------- ORDER TRACK SECTION ENDS ----------------------------------------
@@ -635,7 +635,7 @@ class FrontendController extends FrontBaseController
     {
 
         if ($request->has('version')) {
-            Generalsetting::first()->update([
+            Muaadhsetting::first()->update([
                 'version' => $request->version,
             ]);
             Artisan::call('cache:clear');

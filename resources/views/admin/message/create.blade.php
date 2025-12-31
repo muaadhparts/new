@@ -6,8 +6,8 @@
 <div class="mr-breadcrumb">
     <div class="row">
         <div class="col-lg-12">
-            @if($conv->order_number != null)
-            <h4 class="heading">{{ __('Order Number') }}: {{$conv->order_number}}</h4>
+            @if($conv->purchase_number != null)
+            <h4 class="heading">{{ __('Order Number') }}: {{$conv->purchase_number}}</h4>
             @endif
             <h4 class="heading">{{ __('Conversation with') }} {{$conv->user->name}} <a class="add-btn" href="{{ url()->previous() }}"><i class="fas fa-arrow-left"></i> {{ __('Back') }}</a></h4>
                 <ul class="links">

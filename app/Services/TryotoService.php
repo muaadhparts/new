@@ -2,15 +2,15 @@
 
 namespace App\Services;
 
-use App\Models\Order;
+use App\Models\Purchase;
 use App\Models\ShipmentStatusLog;
 use App\Models\User;
 use App\Models\City;
-use App\Models\UserNotification;
+use App\Models\UserCatalogEvent;
 use App\Helpers\PriceHelper;
 use App\Services\ShippingCalculatorService;
-use App\Services\VendorCartService;
-use App\Services\VendorCredentialService;
+use App\Services\MerchantCartService;
+use App\Services\MerchantCredentialService;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -57,23 +57,23 @@ class TryotoService
     private string $baseUrl;
     private bool $isSandbox;
     private ?string $token = null;
-    private VendorCredentialService $vendorCredentialService;
-    private ?int $vendorId = null;
+    private MerchantCredentialService $merchantCredentialService;
+    private ?int $merchantId = null;
 
     /**
-     * POLICY: All Tryoto operations REQUIRE explicit vendor context.
-     * Credentials are ONLY from vendor_credentials table.
+     * POLICY: All Tryoto operations REQUIRE explicit merchant context.
+     * Credentials are ONLY from merchant_credentials table.
      * NO fallback to api_credentials or .env
      *
-     * @param VendorCredentialService|null $vendorCredentialService For vendor-specific credentials
-     * @param int|null $vendorId Vendor ID (REQUIRED for shipping operations)
+     * @param MerchantCredentialService|null $merchantCredentialService For merchant-specific credentials
+     * @param int|null $merchantId Merchant ID (REQUIRED for shipping operations)
      */
     public function __construct(
-        ?VendorCredentialService $vendorCredentialService = null,
-        ?int $vendorId = null
+        ?MerchantCredentialService $merchantCredentialService = null,
+        ?int $merchantId = null
     ) {
-        $this->vendorCredentialService = $vendorCredentialService ?? app(VendorCredentialService::class);
-        $this->vendorId = $vendorId;
+        $this->merchantCredentialService = $merchantCredentialService ?? app(MerchantCredentialService::class);
+        $this->merchantId = $merchantId;
         $this->isSandbox = (bool) config('services.tryoto.sandbox', false);
         $this->baseUrl = $this->isSandbox
             ? config('services.tryoto.test.url', 'https://staging-api.tryoto.com')
@@ -81,23 +81,31 @@ class TryotoService
     }
 
     /**
-     * Set vendor ID for vendor-specific credentials
+     * Set merchant ID for merchant-specific credentials
      */
-    public function forVendor(int $vendorId): self
+    public function forMerchant(int $merchantId): self
     {
-        $this->vendorId = $vendorId;
+        $this->merchantId = $merchantId;
         return $this;
     }
 
     /**
+     * @deprecated Use forMerchant() instead
+     */
+    public function forVendor(int $vendorId): self
+    {
+        return $this->forMerchant($vendorId);
+    }
+
+    /**
      * الحصول على مفتاح الـ Cache الموحد
-     * يشمل vendor_id إذا كان موجوداً لفصل tokens التجار
+     * يشمل merchant_id إذا كان موجوداً لفصل tokens التجار
      */
     public function getCacheKey(): string
     {
         $env = $this->isSandbox ? 'sandbox' : 'live';
-        if ($this->vendorId) {
-            return self::CACHE_KEY_PREFIX . "vendor-{$this->vendorId}-{$env}";
+        if ($this->merchantId) {
+            return self::CACHE_KEY_PREFIX . "merchant-{$this->merchantId}-{$env}";
         }
         return self::CACHE_KEY_PREFIX . $env;
     }
@@ -165,8 +173,8 @@ class TryotoService
     /**
      * تنفيذ تجديد التوكن الفعلي
      *
-     * POLICY: ALL Tryoto operations REQUIRE explicit vendor context.
-     * Credentials are ONLY from vendor_credentials table.
+     * POLICY: ALL Tryoto operations REQUIRE explicit merchant context.
+     * Credentials are ONLY from merchant_credentials table.
      * NO fallback to api_credentials or .env
      *
      * @return string|null
@@ -174,26 +182,26 @@ class TryotoService
      */
     private function doRefreshToken(): ?string
     {
-        // POLICY: Vendor ID is REQUIRED - no system-level Tryoto operations
-        if (!$this->vendorId) {
+        // POLICY: Merchant ID is REQUIRED - no system-level Tryoto operations
+        if (!$this->merchantId) {
             throw new \Exception(
-                "Tryoto operations require explicit vendor context. " .
-                "Use ->forVendor(\$vendorId) before making API calls."
+                "Tryoto operations require explicit merchant context. " .
+                "Use ->forMerchant(\$merchantId) before making API calls."
             );
         }
 
-        // Get vendor credentials - NO FALLBACK
-        $refreshToken = $this->vendorCredentialService->getTryotoRefreshToken($this->vendorId);
+        // Get merchant credentials - NO FALLBACK
+        $refreshToken = $this->merchantCredentialService->getTryotoRefreshToken($this->merchantId);
 
         if (empty($refreshToken)) {
             throw new \Exception(
-                "Tryoto shipping credentials not configured for vendor #{$this->vendorId}. " .
-                "Each vendor must have their own shipping credentials in vendor_credentials table. " .
-                "Configure via Admin Panel > Vendor Credentials or Vendor Dashboard."
+                "Tryoto shipping credentials not configured for merchant #{$this->merchantId}. " .
+                "Each merchant must have their own shipping credentials in merchant_credentials table. " .
+                "Configure via Admin Panel > Merchant Credentials or Merchant Dashboard."
             );
         }
 
-        Log::debug('Tryoto: Using vendor-specific refresh token', ['vendor_id' => $this->vendorId]);
+        Log::debug('Tryoto: Using merchant-specific refresh token', ['merchant_id' => $this->merchantId]);
 
         $response = Http::timeout(self::REQUEST_TIMEOUT)
             ->withOptions(['curl' => [CURLOPT_IPRESOLVE => CURL_IPRESOLVE_V4]])
@@ -511,52 +519,52 @@ class TryotoService
      * - مدينة العميل من الطلب فقط
      * - الأبعاد من ShippingCalculatorService
      *
-     * @param Order $order
-     * @param int $vendorId
+     * @param Purchase $purchase
+     * @param int $merchantId
      * @param string $deliveryOptionId
      * @param string $company
      * @param float $price
      * @param string $serviceType
-     * @param array|null $vendorShippingData بيانات الشحن المحسوبة مسبقاً (من VendorCartService)
+     * @param array|null $merchantShippingData بيانات الشحن المحسوبة مسبقاً (من MerchantCartService)
      * @return array
      */
-    public function createShipment(Order $order, int $vendorId, string $deliveryOptionId, string $company, float $price, string $serviceType = '', ?array $vendorShippingData = null): array
+    public function createShipment(Purchase $purchase, int $merchantId, string $deliveryOptionId, string $company, float $price, string $serviceType = '', ?array $merchantShippingData = null): array
     {
-        // Set vendor ID for vendor-specific credentials
-        $this->vendorId = $vendorId;
+        // Set merchant ID for merchant-specific credentials
+        $this->merchantId = $merchantId;
 
-        // Get vendor info using ShippingCalculatorService
-        $vendorCityData = ShippingCalculatorService::getVendorCity($vendorId);
-        $vendor = User::find($vendorId);
+        // Get merchant info using ShippingCalculatorService
+        $merchantCityData = ShippingCalculatorService::getMerchantCity($merchantId);
+        $merchant = User::find($merchantId);
 
-        if (!$vendor) {
+        if (!$merchant) {
             return [
                 'success' => false,
-                'error' => 'Vendor not found',
-                'error_code' => 'VENDOR_NOT_FOUND'
+                'error' => 'Merchant not found',
+                'error_code' => 'MERCHANT_NOT_FOUND'
             ];
         }
 
         // استخدام مدينة التاجر من ShippingCalculatorService - بدون fallback
-        $originCity = $vendorCityData['city_name'] ?? null;
+        $originCity = $merchantCityData['city_name'] ?? null;
 
         if (!$originCity) {
-            Log::error('Tryoto: createShipment - vendor city missing', ['vendor_id' => $vendorId]);
+            Log::error('Tryoto: createShipment - merchant city missing', ['merchant_id' => $merchantId]);
             return [
                 'success' => false,
-                'error' => 'Vendor city is not configured',
-                'error_code' => 'VENDOR_CITY_MISSING'
+                'error' => 'Merchant city is not configured',
+                'error_code' => 'MERCHANT_CITY_MISSING'
             ];
         }
 
-        $originAddress = $vendor->warehouse_address ?? $vendor->shop_address ?? $originCity;
+        $originAddress = $merchant->warehouse_address ?? $merchant->shop_address ?? $originCity;
 
         // مدينة العميل من الطلب
-        $destinationCityValue = $order->customer_city;
+        $destinationCityValue = $purchase->customer_city;
         $destinationCity = $this->resolveCityName($destinationCityValue);
 
         if (!$destinationCity) {
-            Log::error('Tryoto: createShipment - customer city missing', ['order_id' => $order->id]);
+            Log::error('Tryoto: createShipment - customer city missing', ['purchase_id' => $purchase->id]);
             return [
                 'success' => false,
                 'error' => 'Customer city is not configured',
@@ -564,19 +572,19 @@ class TryotoService
             ];
         }
 
-        // Calculate dimensions from vendor shipping data or order cart
-        $dims = $vendorShippingData ? [
-            'weight' => $vendorShippingData['chargeable_weight'] ?? $vendorShippingData['actual_weight'] ?? null,
-            'length' => $vendorShippingData['dimensions']['length'] ?? null,
-            'width' => $vendorShippingData['dimensions']['width'] ?? null,
-            'height' => $vendorShippingData['dimensions']['height'] ?? null,
-        ] : $this->calculateDimensionsFromOrder($order, $vendorId);
+        // Calculate dimensions from merchant shipping data or purchase cart
+        $dims = $merchantShippingData ? [
+            'weight' => $merchantShippingData['chargeable_weight'] ?? $merchantShippingData['actual_weight'] ?? null,
+            'length' => $merchantShippingData['dimensions']['length'] ?? null,
+            'width' => $merchantShippingData['dimensions']['width'] ?? null,
+            'height' => $merchantShippingData['dimensions']['height'] ?? null,
+        ] : $this->calculateDimensionsFromPurchase($purchase, $merchantId);
 
         // ✅ التحقق من الوزن فقط - المقاسات اختيارية
         if (!$dims['weight'] || $dims['weight'] <= 0) {
             Log::error('Tryoto: createShipment - weight is required', [
-                'order_id' => $order->id,
-                'vendor_id' => $vendorId,
+                'purchase_id' => $purchase->id,
+                'merchant_id' => $merchantId,
                 'dims' => $dims
             ]);
             return [
@@ -604,7 +612,7 @@ class TryotoService
             $height = $height && $height > 0 ? $height : $sideCm;
 
             Log::debug('Tryoto: createShipment - calculated dimensions from weight', [
-                'order_id' => $order->id,
+                'purchase_id' => $purchase->id,
                 'weight' => $weight,
                 'calculated_side' => $sideCm
             ]);
@@ -616,21 +624,21 @@ class TryotoService
         }
 
         // Determine COD amount
-        $isCOD = in_array($order->method, ['cod', 'Cash On Delivery']);
-        $codAmount = $isCOD ? (float)$order->pay_amount : 0.0;
+        $isCOD = in_array($purchase->method, ['cod', 'Cash On Delivery']);
+        $codAmount = $isCOD ? (float)$purchase->pay_amount : 0.0;
 
         // Prepare receiver info
-        $receiverName = $order->customer_name;
-        $receiverPhone = $this->cleanPhoneNumber($order->customer_phone ?: '');
-        $receiverEmail = $order->customer_email ?: null;
-        $receiverAddress = $order->customer_address;
-        $receiverZip = $order->customer_zip ?: null;
-        $receiverDistrict = $order->customer_state ?? '';
+        $receiverName = $purchase->customer_name;
+        $receiverPhone = $this->cleanPhoneNumber($purchase->customer_phone ?: '');
+        $receiverEmail = $purchase->customer_email ?: null;
+        $receiverAddress = $purchase->customer_address;
+        $receiverZip = $purchase->customer_zip ?: null;
+        $receiverDistrict = $purchase->customer_state ?? '';
 
         // Validate required receiver info
         if (!$receiverName || !$receiverPhone || !$receiverAddress) {
             Log::error('Tryoto: createShipment - incomplete receiver info', [
-                'order_id' => $order->id,
+                'purchase_id' => $purchase->id,
                 'has_name' => !empty($receiverName),
                 'has_phone' => !empty($receiverPhone),
                 'has_address' => !empty($receiverAddress)
@@ -643,19 +651,19 @@ class TryotoService
         }
 
         // Prepare sender phone - allow null
-        $senderPhone = $this->cleanPhoneNumber($vendor->phone ?? '');
+        $senderPhone = $this->cleanPhoneNumber($merchant->phone ?? '');
 
         // Prepare cart items
-        $cart = is_string($order->cart) ? json_decode($order->cart, true) : $order->cart;
+        $cart = is_string($purchase->cart) ? json_decode($purchase->cart, true) : $purchase->cart;
         $items = $cart['items'] ?? $cart ?? [];
-        $orderItems = [];
+        $purchaseItems = [];
         $itemCount = 0;
 
         foreach ($items as $item) {
             $itemData = $item['item'] ?? $item;
             $qty = (int)($item['qty'] ?? 1);
             $itemCount += $qty;
-            $orderItems[] = [
+            $purchaseItems[] = [
                 'productId' => (string)($itemData['id'] ?? '0'),
                 'name' => $itemData['name'] ?? null,
                 'price' => (float)($itemData['price'] ?? 0),
@@ -669,23 +677,23 @@ class TryotoService
         }
 
         // Generate unique order ID for Tryoto
-        $tryotoOrderId = $order->order_number . '-V' . $vendorId . '-' . time();
+        $tryotoOrderId = $purchase->purchase_number . '-M' . $merchantId . '-' . time();
 
         // Build createOrder payload - using real data only
         $payload = [
             'orderId' => $tryotoOrderId,
-            'ref1' => 'REF-' . $order->id . '-' . $vendorId,
+            'ref1' => 'REF-' . $purchase->id . '-' . $merchantId,
             'deliveryOptionId' => $deliveryOptionId,
             'serviceType' => $serviceType,
             'createShipment' => true,
-            'storeName' => $vendor->shop_name ?? $vendor->name ?? null,
+            'storeName' => $merchant->shop_name ?? $merchant->name ?? null,
             'payment_method' => $isCOD ? 'cod' : 'paid',
-            'amount' => (float)$order->pay_amount,
-            'amount_due' => $isCOD ? (float)$order->pay_amount : 0,
+            'amount' => (float)$purchase->pay_amount,
+            'amount_due' => $isCOD ? (float)$purchase->pay_amount : 0,
             'shippingAmount' => $price,
-            'subtotal' => (float)$order->pay_amount,
+            'subtotal' => (float)$purchase->pay_amount,
             'currency' => 'SAR',
-            'shippingNotes' => 'Order #' . $order->order_number,
+            'shippingNotes' => 'Purchase #' . $purchase->purchase_number,
             'packageSize' => 'medium',
             'packageCount' => max(1, $itemCount),
             'packageWeight' => $dims['weight'],
@@ -696,7 +704,7 @@ class TryotoService
             'deliverySlotDate' => date('d/m/Y', strtotime('+2 days')),
             'deliverySlotTo' => '6:00pm',
             'deliverySlotFrom' => '9:00am',
-            'senderName' => $vendor->shop_name ?? $vendor->name,
+            'senderName' => $merchant->shop_name ?? $merchant->name,
             'senderPhone' => $senderPhone ?: null,
             'senderCity' => $originCity,
             'senderAddress' => $originAddress,
@@ -714,11 +722,11 @@ class TryotoService
                 'refID' => '',
                 'W3WAddress' => ''
             ],
-            'items' => $orderItems
+            'items' => $purchaseItems
         ];
 
-        Log::debug('Tryoto: Creating order with shipment', [
-            'order_id' => $order->id,
+        Log::debug('Tryoto: Creating shipment', [
+            'purchase_id' => $purchase->id,
             'tryoto_order_id' => $tryotoOrderId,
             'origin' => $originCity,
             'destination' => $destinationCity,
@@ -737,13 +745,13 @@ class TryotoService
             $trackingRef = $trackingNumber ?? ('OTO-' . $otoId);
 
             // Save to shipment_status_logs
-            $this->createInitialLog($order, $vendorId, $trackingRef, (string)$otoId, $company, $originCity, $data);
+            $this->createInitialLog($purchase, $merchantId, $trackingRef, (string)$otoId, $company, $originCity, $data);
 
-            // Send notification to vendor
-            $this->notifyVendor($vendorId, $order, 'shipment_created', $trackingRef);
+            // Send notification to merchant
+            $this->notifyMerchant($merchantId, $purchase, 'shipment_created', $trackingRef);
 
-            Log::debug('Tryoto: Order created successfully', [
-                'order_id' => $order->id,
+            Log::debug('Tryoto: Shipment created successfully', [
+                'purchase_id' => $purchase->id,
                 'oto_id' => $otoId,
                 'tracking_number' => $trackingNumber,
             ]);
@@ -759,8 +767,8 @@ class TryotoService
             ];
         }
 
-        Log::error('Tryoto: createOrder failed', [
-            'order_id' => $order->id,
+        Log::error('Tryoto: createShipment failed', [
+            'purchase_id' => $purchase->id,
             'error' => $result['error'],
             'error_code' => $result['error_code'] ?? null
         ]);
@@ -856,8 +864,8 @@ class TryotoService
             $log = ShipmentStatusLog::where('tracking_number', $trackingNumber)->latest()->first();
             if ($log) {
                 ShipmentStatusLog::create([
-                    'order_id' => $log->order_id,
-                    'vendor_id' => $log->vendor_id,
+                    'purchase_id' => $log->purchase_id,
+                    'merchant_id' => $log->merchant_id,
                     'tracking_number' => $trackingNumber,
                     'shipment_id' => $log->shipment_id,
                     'company_name' => $log->company_name,
@@ -868,8 +876,8 @@ class TryotoService
                     'status_date' => now(),
                 ]);
 
-                // Notify vendor
-                $this->notifyVendor($log->vendor_id, $log->order, 'shipment_cancelled', $trackingNumber);
+                // Notify merchant
+                $this->notifyMerchant($log->merchant_id, $log->order, 'shipment_cancelled', $trackingNumber);
             }
 
             return ['success' => true, 'message' => 'Shipment cancelled successfully'];
@@ -961,8 +969,8 @@ class TryotoService
         $newTrackingNumber = $details['tracking_number'];
         if ($newTrackingNumber && $newTrackingNumber !== $trackingNumber && !str_starts_with($newTrackingNumber, 'OTO-')) {
             ShipmentStatusLog::create([
-                'order_id' => $shipment->order_id,
-                'vendor_id' => $shipment->vendor_id,
+                'purchase_id' => $shipment->purchase_id,
+                'merchant_id' => $shipment->merchant_id,
                 'tracking_number' => $newTrackingNumber,
                 'shipment_id' => $details['oto_id'],
                 'company_name' => $details['company_name'] ?? $shipment->company_name,
@@ -974,7 +982,7 @@ class TryotoService
                 'raw_data' => $details['raw'],
             ]);
 
-            $this->notifyVendor($shipment->vendor_id, $shipment->order, 'tracking_assigned', $newTrackingNumber);
+            $this->notifyMerchant($shipment->merchant_id, $shipment->order, 'tracking_assigned', $newTrackingNumber);
 
             $details['tracking_updated'] = true;
             $details['old_tracking'] = $trackingNumber;
@@ -1196,31 +1204,31 @@ class TryotoService
     }
 
     /**
-     * Get shipment history for an order
+     * Get shipment history for a purchase
      *
-     * @param int $orderId
+     * @param int $purchaseId
      * @return \Illuminate\Database\Eloquent\Collection
      */
-    public function getShipmentHistory(int $orderId)
+    public function getShipmentHistory(int $purchaseId)
     {
-        return ShipmentStatusLog::where('order_id', $orderId)
+        return ShipmentStatusLog::where('purchase_id', $purchaseId)
             ->orderBy('status_date', 'desc')
             ->orderBy('created_at', 'desc')
             ->get();
     }
 
     /**
-     * Get vendor shipments
+     * Get merchant shipments
      *
-     * @param int $vendorId
+     * @param int $merchantId
      * @param string|null $status
      * @param int $limit
      * @return \Illuminate\Database\Eloquent\Collection
      */
-    public function getVendorShipments(int $vendorId, ?string $status = null, int $limit = 50)
+    public function getMerchantShipments(int $merchantId, ?string $status = null, int $limit = 50)
     {
-        $query = ShipmentStatusLog::where('vendor_id', $vendorId)
-            ->select('tracking_number', 'order_id', 'company_name', 'status', 'status_ar', 'status_date')
+        $query = ShipmentStatusLog::where('merchant_id', $merchantId)
+            ->select('tracking_number', 'purchase_id', 'company_name', 'status', 'status_ar', 'status_date')
             ->groupBy('tracking_number')
             ->orderBy('created_at', 'desc');
 
@@ -1232,14 +1240,22 @@ class TryotoService
     }
 
     /**
-     * Get shipping statistics for vendor
+     * @deprecated Use getMerchantShipments() instead
+     */
+    public function getVendorShipments(int $vendorId, ?string $status = null, int $limit = 50)
+    {
+        return $this->getMerchantShipments($vendorId, $status, $limit);
+    }
+
+    /**
+     * Get shipping statistics for merchant
      *
-     * @param int $vendorId
+     * @param int $merchantId
      * @return array
      */
-    public function getVendorStatistics(int $vendorId): array
+    public function getMerchantStatistics(int $merchantId): array
     {
-        $stats = ShipmentStatusLog::where('vendor_id', $vendorId)
+        $stats = ShipmentStatusLog::where('merchant_id', $merchantId)
             ->selectRaw('
                 COUNT(DISTINCT tracking_number) as total_shipments,
                 SUM(CASE WHEN status = "delivered" THEN 1 ELSE 0 END) as delivered,
@@ -1261,6 +1277,14 @@ class TryotoService
                 ? round(($stats->delivered / $stats->total_shipments) * 100, 1)
                 : 0
         ];
+    }
+
+    /**
+     * @deprecated Use getMerchantStatistics() instead
+     */
+    public function getVendorStatistics(int $vendorId): array
+    {
+        return $this->getMerchantStatistics($vendorId);
     }
 
     /**
@@ -1305,16 +1329,16 @@ class TryotoService
     // ========================
 
     /**
-     * Calculate shipping dimensions from order cart using VendorCartService
+     * Calculate shipping dimensions from purchase cart using MerchantCartService
      * بدون قيم ثابتة - يرجع null للقيم الناقصة
      *
-     * @param Order $order
-     * @param int|null $vendorId Filter items by vendor (optional)
+     * @param Purchase $purchase
+     * @param int|null $merchantId Filter items by merchant (optional)
      * @return array
      */
-    private function calculateDimensionsFromOrder(Order $order, ?int $vendorId = null): array
+    private function calculateDimensionsFromPurchase(Purchase $purchase, ?int $merchantId = null): array
     {
-        $cartRaw = $order->cart;
+        $cartRaw = $purchase->cart;
         $cartArr = is_string($cartRaw) ? (json_decode($cartRaw, true) ?: []) : (is_array($cartRaw) ? $cartRaw : []);
 
         $items = $cartArr['items'] ?? $cartArr;
@@ -1323,10 +1347,10 @@ class TryotoService
         foreach ($items as $ci) {
             $item = $ci['item'] ?? $ci;
 
-            // Filter by vendor if specified
-            if ($vendorId !== null) {
-                $itemVendorId = (int)($ci['user_id'] ?? $item['user_id'] ?? $item['vendor_user_id'] ?? 0);
-                if ($itemVendorId !== $vendorId) {
+            // Filter by merchant if specified
+            if ($merchantId !== null) {
+                $itemMerchantId = (int)($ci['user_id'] ?? $item['user_id'] ?? $item['merchant_user_id'] ?? 0);
+                if ($itemMerchantId !== $merchantId) {
                     continue;
                 }
             }
@@ -1335,8 +1359,8 @@ class TryotoService
             $mpId = (int)($ci['merchant_product_id'] ?? $item['merchant_product_id'] ?? 0);
 
             if ($mpId > 0) {
-                // استخدام VendorCartService للحصول على الأبعاد الحقيقية
-                $dimensions = VendorCartService::getProductDimensions($mpId);
+                // استخدام MerchantCartService للحصول على الأبعاد الحقيقية
+                $dimensions = MerchantCartService::getProductDimensions($mpId);
                 $itemsForCalculation[] = [
                     'qty' => max(1, $qty),
                     'weight' => $dimensions['weight'],
@@ -1377,18 +1401,18 @@ class TryotoService
     }
 
     /**
-     * Calculate shipping dimensions from order cart (legacy support)
-     * @deprecated Use calculateDimensionsFromOrder instead
+     * Calculate shipping dimensions from purchase cart (legacy support)
+     * @deprecated Use calculateDimensionsFromPurchase instead
      */
-    private function calculateDimensions(Order $order): array
+    private function calculateDimensions(Purchase $purchase): array
     {
-        $result = $this->calculateDimensionsFromOrder($order);
+        $result = $this->calculateDimensionsFromPurchase($purchase);
 
         // للتوافق مع الكود القديم، نرجع قيم افتراضية فقط إذا كانت كل القيم null
         // هذا سيتم إزالته لاحقاً
         if ($result['weight'] === null && $result['length'] === null) {
             Log::warning('Tryoto: calculateDimensions - all values null, using legacy fallback', [
-                'order_id' => $order->id
+                'purchase_id' => $purchase->id
             ]);
             return PriceHelper::calculateShippingDimensions([]);
         }
@@ -1399,14 +1423,14 @@ class TryotoService
     /**
      * Create initial shipment log
      */
-    private function createInitialLog(Order $order, int $vendorId, ?string $trackingNumber, ?string $shipmentId, string $company, string $originCity, array $rawData): void
+    private function createInitialLog(Purchase $purchase, int $merchantId, ?string $trackingNumber, ?string $shipmentId, string $company, string $originCity, array $rawData): void
     {
         if (!$trackingNumber) return;
 
         try {
             DB::table('shipment_status_logs')->insert([
-                'order_id' => $order->id,
-                'vendor_id' => $vendorId,
+                'purchase_id' => $purchase->id,
+                'merchant_id' => $merchantId,
                 'tracking_number' => $trackingNumber,
                 'shipment_id' => $shipmentId,
                 'company_name' => $company,
@@ -1438,8 +1462,8 @@ class TryotoService
 
         if ($currentStatus && $currentStatus !== $existingLog->status) {
             ShipmentStatusLog::create([
-                'order_id' => $existingLog->order_id,
-                'vendor_id' => $existingLog->vendor_id,
+                'purchase_id' => $existingLog->purchase_id,
+                'merchant_id' => $existingLog->merchant_id,
                 'tracking_number' => $trackingNumber,
                 'shipment_id' => $existingLog->shipment_id,
                 'company_name' => $existingLog->company_name,
@@ -1452,40 +1476,40 @@ class TryotoService
                 'raw_data' => $data,
             ]);
 
-            // Update order status if delivered
+            // Update purchase status if delivered
             if ($currentStatus === 'delivered') {
-                $order = Order::find($existingLog->order_id);
-                if ($order && $order->status !== 'completed') {
-                    $order->status = 'completed';
-                    $order->save();
-                    $order->tracks()->create([
+                $purchase = Purchase::find($existingLog->purchase_id);
+                if ($purchase && $purchase->status !== 'completed') {
+                    $purchase->status = 'completed';
+                    $purchase->save();
+                    $purchase->tracks()->create([
                         'title' => 'Completed',
-                        'text' => 'Order delivered - Tracking: ' . $trackingNumber,
+                        'text' => 'Purchase delivered - Tracking: ' . $trackingNumber,
                     ]);
                 }
             }
 
-            // Notify vendor on important status changes
+            // Notify merchant on important status changes
             if (in_array($currentStatus, ['picked_up', 'delivered', 'failed', 'returned'])) {
-                $this->notifyVendor($existingLog->vendor_id, $existingLog->order, 'status_' . $currentStatus, $trackingNumber);
+                $this->notifyMerchant($existingLog->merchant_id, $existingLog->purchase, 'status_' . $currentStatus, $trackingNumber);
             }
         }
     }
 
     /**
-     * Send notification to vendor
+     * Send notification to merchant
      */
-    private function notifyVendor(int $vendorId, $order, string $type, ?string $trackingNumber): void
+    private function notifyMerchant(int $merchantId, $purchase, string $type, ?string $trackingNumber): void
     {
-        if (!$vendorId) return;
+        if (!$merchantId) return;
 
         try {
-            $notification = new UserNotification();
-            $notification->user_id = $vendorId;
-            $notification->order_number = $order->order_number ?? ($order->order_number ?? 'N/A');
+            $notification = new UserCatalogEvent();
+            $notification->user_id = $merchantId;
+            $notification->purchase_number = $purchase->purchase_number ?? ($purchase->purchase_number ?? 'N/A');
 
-            if (\Schema::hasColumn('user_notifications', 'order_id')) {
-                $notification->order_id = $order->id ?? ($order->id ?? null);
+            if (\Schema::hasColumn('user_catalog_events', 'purchase_id')) {
+                $notification->purchase_id = $purchase->id ?? ($purchase->id ?? null);
             }
 
             $notification->is_read = 0;
@@ -1534,25 +1558,25 @@ class TryotoService
     }
 
     /**
-     * Check if Tryoto service is properly configured for a vendor
+     * Check if Tryoto service is properly configured for a merchant
      *
-     * POLICY: Vendor ID is REQUIRED - all Tryoto operations need vendor context
-     * Credentials are ONLY from vendor_credentials table - NO fallback
+     * POLICY: Merchant ID is REQUIRED - all Tryoto operations need merchant context
+     * Credentials are ONLY from merchant_credentials table - NO fallback
      *
-     * @param int $vendorId Vendor ID (REQUIRED)
+     * @param int $merchantId Merchant ID (REQUIRED)
      * @return array
      */
-    public function checkConfiguration(int $vendorId): array
+    public function checkConfiguration(int $merchantId): array
     {
         $issues = [];
 
-        $this->vendorId = $vendorId;
-        $vendorToken = $this->vendorCredentialService->getTryotoRefreshToken($vendorId);
-        $hasVendorCredential = !empty($vendorToken);
+        $this->merchantId = $merchantId;
+        $merchantToken = $this->merchantCredentialService->getTryotoRefreshToken($merchantId);
+        $hasMerchantCredential = !empty($merchantToken);
 
-        if (!$hasVendorCredential) {
-            $issues[] = "REQUIRED: Vendor #{$vendorId} must have Tryoto credentials in vendor_credentials table. " .
-                       "Configure via Admin Panel > Vendor Credentials or Vendor Dashboard.";
+        if (!$hasMerchantCredential) {
+            $issues[] = "REQUIRED: Merchant #{$merchantId} must have Tryoto credentials in merchant_credentials table. " .
+                       "Configure via Admin Panel > Merchant Credentials or Merchant Dashboard.";
         }
 
         if (empty($this->baseUrl)) {
@@ -1563,9 +1587,9 @@ class TryotoService
             'configured' => empty($issues),
             'sandbox' => $this->isSandbox,
             'base_url' => $this->baseUrl,
-            'vendor_id' => $vendorId,
-            'has_vendor_credential' => $hasVendorCredential,
-            'policy' => 'ALL Tryoto operations require vendor_credentials - NO system fallback',
+            'merchant_id' => $merchantId,
+            'has_merchant_credential' => $hasMerchantCredential,
+            'policy' => 'ALL Tryoto operations require merchant_credentials - NO system fallback',
             'issues' => $issues,
             'cache_key' => $this->getCacheKey(),
             'has_cached_token' => Cache::has($this->getCacheKey())

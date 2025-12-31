@@ -4,8 +4,8 @@ namespace App\Http\Controllers\Api\Payment;
 
 use App\Http\Controllers\Controller;
 use App\Models\Currency;
-use App\Models\Generalsetting;
-use App\Models\Order;
+use App\Models\Muaadhsetting;
+use App\Models\Purchase;
 use App\Models\Package;
 use App\Models\PaymentGateway;
 use App\Models\Shipping;
@@ -23,24 +23,24 @@ class PaytmController extends Controller
     public function store(Request $request)
     {
 
-        if (!$request->has('order_number')) {
+        if (!$request->has('purchase_number')) {
             return response()->json(['status' => false, 'data' => [], 'error' => 'Invalid Request']);
         }
 
-        $order_number = $request->order_number;
-        $order = Order::where('order_number', $order_number)->firstOrFail();
-        $curr = Currency::where('sign', '=', $order->currency_sign)->firstOrFail();
+        $purchase_number = $request->purchase_number;
+        $purchase = Purchase::where('purchase_number', $purchase_number)->firstOrFail();
+        $curr = Currency::where('sign', '=', $purchase->currency_sign)->firstOrFail();
         if ($curr->name != "INR") {
             return redirect()->back()->with('unsuccess', 'Please Select INR Currency For Paytm.');
         }
         $input = $request->all();
 
 
-        $settings = Generalsetting::findOrFail(1);
+        $settings = Muaadhsetting::findOrFail(1);
 
-        $item_amount = round($order->pay_amount * $order->currency_value, 2);
+        $item_amount = round($purchase->pay_amount * $purchase->currency_value, 2);
 
-        $data_for_request = $this->handlePaytmRequest($order->order_number, $item_amount);
+        $data_for_request = $this->handlePaytmRequest($purchase->purchase_number, $item_amount);
         $paytm_txn_url = 'https://securegw-stage.paytm.in/theia/processTransaction';
         $paramList = $data_for_request['paramList'];
         $checkSum = $data_for_request['checkSum'];
@@ -380,16 +380,16 @@ class PaytmController extends Controller
     public function paytmCallback(Request $request)
     {
 
-        $order_id = $request['ORDERID'];
-        $order = Order::where('order_number', $order_id)->first();
-        $cancel_url = route('payment.checkout') . "?order_number=" . $order->order_number;
+        $purchase_id = $request['ORDERID'];
+        $purchase = Purchase::where('purchase_number', $purchase_id)->first();
+        $cancel_url = route('payment.checkout') . "?purchase_number=" . $purchase->purchase_number;
         if ('TXN_SUCCESS' === $request['STATUS']) {
             $transaction_id = $request['TXNID'];
-            if (isset($order)) {
+            if (isset($purchase)) {
                 $data['txnid'] = $transaction_id;
                 $data['payment_status'] = 'Completed';
                 $data['method'] = 'Paytm';
-                $order->update($data);
+                $purchase->update($data);
             }
             return redirect(route('front.payment.success', 1));
         } else if ('TXN_FAILURE' === $request['STATUS']) {

@@ -3,15 +3,15 @@
 namespace App\Http\Controllers;
 
 use App\Classes\MuaadhMailer;
-use App\Helpers\OrderHelper;
+use App\Helpers\PurchaseHelper;
 use App\Helpers\PriceHelper;
 use App\Http\Controllers\Payment\Checkout\CheckoutBaseControlller;
 use App\Models\Cart;
 use App\Models\Country;
-use App\Models\Order;
+use App\Models\Purchase;
 use App\Models\Reward;
 use App\Traits\CreatesTryotoShipments;
-use App\Traits\HandlesVendorCheckout;
+use App\Traits\HandlesMerchantCheckout;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Contracts\View\View;
@@ -25,18 +25,18 @@ use MyFatoorah\Library\MyFatoorah;
 use MyFatoorah\Library\API\Payment\MyFatoorahPayment;
 use MyFatoorah\Library\API\Payment\MyFatoorahPaymentEmbedded;
 use MyFatoorah\Library\API\Payment\MyFatoorahPaymentStatus;
-use App\Services\VendorCredentialService;
+use App\Services\MerchantCredentialService;
 use Exception;
 
 class MyFatoorahController extends CheckoutBaseControlller {
-    use CreatesTryotoShipments, HandlesVendorCheckout;
+    use CreatesTryotoShipments, HandlesMerchantCheckout;
 
     /**
      * @var array
      */
     public $mfConfig = [];
 
-    protected VendorCredentialService $vendorCredentialService;
+    protected MerchantCredentialService $merchantCredentialService;
 
 //-----------------------------------------------------------------------------------------------------------------------------------------
 
@@ -47,10 +47,10 @@ class MyFatoorahController extends CheckoutBaseControlller {
      * Each vendor MUST have their own MyFatoorah credentials.
      */
     public function __construct(
-        VendorCredentialService $vendorCredentialService
+        MerchantCredentialService $merchantCredentialService
     ) {
         parent::__construct();
-        $this->vendorCredentialService = $vendorCredentialService;
+        $this->merchantCredentialService = $merchantCredentialService;
 
         // No default config - MUST use getVendorMfConfig() per vendor
         $this->mfConfig = [];
@@ -72,7 +72,7 @@ class MyFatoorahController extends CheckoutBaseControlller {
     protected function getVendorMfConfig(int $vendorId): array
     {
         // Get vendor-specific API key - NO FALLBACK
-        $apiKey = $this->vendorCredentialService->getMyFatoorahKeyStrict($vendorId);
+        $apiKey = $this->merchantCredentialService->getMyFatoorahKeyStrict($vendorId);
 
         if (empty($apiKey)) {
             throw new \Exception(
@@ -258,7 +258,7 @@ class MyFatoorahController extends CheckoutBaseControlller {
             return redirect($cancel_url)->with('unsuccess', __('عذراً، لم يتم إعداد بوابة الدفع لهذا التاجر بعد.'));
         }
 
-        $steps = $this->getCheckoutSteps($vendorId, $vendorData['is_vendor_checkout']);
+        $steps = $this->getCheckoutSteps($vendorId, $vendorData['is_merchant_checkout']);
         $step1 = $steps['step1'];
         $step2 = $steps['step2'];
 
@@ -315,7 +315,7 @@ class MyFatoorahController extends CheckoutBaseControlller {
         $oldCart = Session::get('cart');
         $originalCart = new Cart($oldCart);
         $cart = $this->filterCartForVendor($originalCart, $vendorId);
-        // OrderHelper::license_check($cart); // For License Checking
+        // PurchaseHelper::license_check($cart); // For License Checking
         $t_oldCart = Session::get('cart');
         $t_cart = new Cart($t_oldCart);
         $new_cart = [];
@@ -323,7 +323,7 @@ class MyFatoorahController extends CheckoutBaseControlller {
         $new_cart['totalPrice'] = $t_cart->totalPrice;
         $new_cart['items'] = $t_cart->items;
         $new_cart = json_encode($new_cart);
-        $temp_affilate_users = OrderHelper::product_affilate_check($cart); // For Product Based Affilate Checking
+        $temp_affilate_users = PurchaseHelper::product_affilate_check($cart); // For Product Based Affilate Checking
         $affilate_users = $temp_affilate_users == null ? null : json_encode($temp_affilate_users);
 
         // ✅ استخدام المبلغ المحفوظ من input_data بدلاً من إعادة الحساب
@@ -409,16 +409,16 @@ class MyFatoorahController extends CheckoutBaseControlller {
         }
 
 
-        $order = new Order;
+        $purchase = new Purchase;
         $input['cart'] = $new_cart;
         $input['user_id'] = Auth::check() ? Auth::user()->id : NULL;
         $input['affilate_users'] = $affilate_users;
         $input['pay_amount'] = $orderTotal;
-        $input['order_number'] = Str::random(4) . time();
+        $input['purchase_number'] = Str::random(4) . time();
         $input['wallet_price'] = $input['wallet_price'] / $this->curr->value;
         $input['payment_status'] = "Completed";
-        $input['method'] = "MyFatoorah";  // ✅ إضافة Payment Method Name
-        $input['txnid'] = $data->InvoiceId;  // ✅ رقم المعاملة من MyFatoorah
+        $input['method'] = "MyFatoorah";  // Payment Method Name
+        $input['txnid'] = $data->InvoiceId;  // Transaction ID from MyFatoorah
 
         // Tax location handling removed - states table deleted
         if ($input['tax_type'] == 'state_tax') {
@@ -443,41 +443,41 @@ class MyFatoorahController extends CheckoutBaseControlller {
                 $sub = $sub - $t_sub;
             }
             if ($sub > 0) {
-                OrderHelper::affilate_check(Session::get('affilate'), $sub, $input['dp']); // For Affiliate Checking
+                PurchaseHelper::affilate_check(Session::get('affilate'), $sub, $input['dp']); // For Affiliate Checking
                 $input['affilate_user'] = Session::get('affilate');
                 $input['affilate_charge'] = $sub;
             }
         }
 
-        $order->fill($input)->save();
+        $purchase->fill($input)->save();
 
-        // Create an OTO shipment (doesn't break the order on failure)
-        $this->createOtoShipments($order, $input);
+        // Create an OTO shipment (doesn't break the purchase on failure)
+        $this->createOtoShipments($purchase, $input);
 
-        $order->tracks()->create(['title' => 'Pending', 'text' => 'You have successfully placed your order.']);
-        $order->notifications()->create();
+        $purchase->tracks()->create(['title' => 'Pending', 'text' => 'You have successfully placed your purchase.']);
+        $purchase->notifications()->create();
 
         if ($input['discount_code_id'] != "") {
-            OrderHelper::discount_code_check($input['discount_code_id']); // For Discount Code Checking
+            PurchaseHelper::discount_code_check($input['discount_code_id']); // For Discount Code Checking
         }
 
-        OrderHelper::size_qty_check($cart); // For Size Quantiy Checking
-        OrderHelper::stock_check($cart); // For Stock Checking
-        OrderHelper::vendor_order_check($cart, $order); // For Vendor Order Checking
+        PurchaseHelper::size_qty_check($cart); // For Size Quantiy Checking
+        PurchaseHelper::stock_check($cart); // For Stock Checking
+        PurchaseHelper::vendor_purchase_check($cart, $purchase); // For Vendor Purchase Checking
 
-        Session::put('temporder', $order);
+        Session::put('temporder', $purchase);
         Session::put('tempcart', $cart);
 
         // Remove only vendor's products from cart
         $this->removeVendorProductsFromCart($vendorId, $originalCart);
 
-        if ($order->user_id != 0 && $order->wallet_price != 0) {
-            OrderHelper::add_to_transaction($order, $order->wallet_price); // Store To Transactions
+        if ($purchase->user_id != 0 && $purchase->wallet_price != 0) {
+            PurchaseHelper::add_to_transaction($purchase, $purchase->wallet_price); // Store To Transactions
         }
 
         if (Auth::check()) {
             if ($this->gs->is_reward == 1) {
-                $num = $order->pay_amount;
+                $num = $purchase->pay_amount;
                 $rewards = Reward::get();
                 foreach ($rewards as $i) {
                     $smallest[$i->order_amount] = abs($i->order_amount - $num);
@@ -493,23 +493,23 @@ class MyFatoorahController extends CheckoutBaseControlller {
 
         //Sending Email To Buyer
         $data = [
-            'to' => $order->customer_email,
+            'to' => $purchase->customer_email,
             'type' => "new_order",
-            'cname' => $order->customer_name,
+            'cname' => $purchase->customer_name,
             'oamount' => "",
             'aname' => "",
             'aemail' => "",
             'wtitle' => "",
-            'onumber' => $order->order_number,
+            'onumber' => $purchase->purchase_number,
         ];
         $mailer = new MuaadhMailer();
-        $mailer->sendAutoOrderMail($data, $order->id);
+        $mailer->sendAutoOrderMail($data, $purchase->id);
 
         //Sending Email To Admin
         $data = [
             'to' => $this->ps->contact_email,
-            'subject' => "New Order Recieved!!",
-            'body' => "Hello Admin!<br>Your store has received a new order.<br>Order Number is " . $order->order_number . ".Please login to your panel to check. <br>Thank you.",
+            'subject' => "New Purchase Recieved!!",
+            'body' => "Hello Admin!<br>Your store has received a new purchase.<br>Purchase Number is " . $purchase->purchase_number . ".Please login to your panel to check. <br>Thank you.",
         ];
         $mailer = new MuaadhMailer();
         $mailer->sendCustomMail($data);

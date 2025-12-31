@@ -4,8 +4,8 @@ namespace App\Http\Controllers\Api\Payment;
 
 use App\Http\Controllers\Controller;
 use App\Models\Currency;
-use App\Models\Generalsetting;
-use App\Models\Order;
+use App\Models\Muaadhsetting;
+use App\Models\Purchase;
 use App\Models\PaymentGateway;
 use Exception;
 use Illuminate\Http\Request;
@@ -27,16 +27,16 @@ class StripeController extends Controller
     public function store(Request $request)
     {
 
-        if ($request->has('order_number')) {
-            $order_number = $request->order_number;
-            $order = Order::where('order_number', $order_number)->firstOrFail();
-            $curr = Currency::where('sign', '=', $order->currency_sign)->firstOrFail();
+        if ($request->has('purchase_number')) {
+            $purchase_number = $request->purchase_number;
+            $purchase = Purchase::where('purchase_number', $purchase_number)->firstOrFail();
+            $curr = Currency::where('sign', '=', $purchase->currency_sign)->firstOrFail();
             if ($curr->name != "USD") {
                 return redirect()->back()->with('unsuccess', 'Please Select USD Currency For Stripe.');
             }
 
-            $item_amount = $order->pay_amount * $order->currency_value;
-            $gs = Generalsetting::findOrFail(1);
+            $item_amount = $purchase->pay_amount * $purchase->currency_value;
+            $gs = Muaadhsetting::findOrFail(1);
 
             try {
                 $stripe_secret_key = Config::get('services.stripe.secret');
@@ -50,7 +50,7 @@ class StripeController extends Controller
                         [
                             "quantity" => 1,
                             "price_data" => [
-                                "currency" => $order->currency_name,
+                                "currency" => $purchase->currency_name,
                                 "unit_amount" => $item_amount * 100,
                                 "product_data" => [
                                     "name" => $gs->title . 'Payment'
@@ -60,7 +60,7 @@ class StripeController extends Controller
                     ]
                 ]);
 
-                Session::put('order_number', $order_number);
+                Session::put('purchase_number', $purchase_number);
                 return redirect($checkout_session->url);
             } catch (Exception $e) {
                 return back()->with('unsuccess', $e->getMessage());
@@ -72,16 +72,16 @@ class StripeController extends Controller
 
     public function notify(Request $request)
     {
-        $order_number = Session::get('order_number');
+        $purchase_number = Session::get('purchase_number');
         $stripe = new \Stripe\StripeClient(Config::get('services.stripe.secret'));
         $response = $stripe->checkout->sessions->retrieve($request->session_id);
-        $order = Order::where('order_number', $order_number)->firstOrFail();
+        $purchase = Purchase::where('purchase_number', $purchase_number)->firstOrFail();
 
         if ($response->status == 'complete') {
-            $order->method = "Stripe";
-            $order->txnid = $response->payment_intent;
-            $order->payment_status = 'Completed';
-            $order->save();
+            $purchase->method = "Stripe";
+            $purchase->txnid = $response->payment_intent;
+            $purchase->payment_status = 'Completed';
+            $purchase->save();
             return redirect(route('front.payment.success', 1));
         } else {
             return redirect(route('front.payment.cancle'));

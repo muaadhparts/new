@@ -120,9 +120,9 @@
                                             </div>
                                         </td>
                                         <td>
-                                            <strong>{{ \App\Models\Product::convertPrice($mp->price) }}</strong>
+                                            <strong>{{ \App\Models\CatalogItem::convertPrice($mp->price) }}</strong>
                                             @if($mp->previous_price && $mp->previous_price > $mp->price)
-                                                <br><small class="text-muted text-decoration-line-through">{{ \App\Models\Product::convertPrice($mp->previous_price) }}</small>
+                                                <br><small class="text-muted text-decoration-line-through">{{ \App\Models\CatalogItem::convertPrice($mp->previous_price) }}</small>
                                             @endif
                                         </td>
                                         <td>
@@ -400,7 +400,7 @@ $(document).ready(function() {
             type: 'POST',
             data: {
                 _token: '{{ csrf_token() }}',
-                merchant_product_id: merchantProductId,
+                merchant_item_id: merchantProductId,
                 best: 1
             },
             success: function(response) {
@@ -428,7 +428,7 @@ $(document).ready(function() {
             type: 'POST',
             data: {
                 _token: '{{ csrf_token() }}',
-                merchant_product_id: productId,
+                merchant_item_id: productId,
                 best: 0
             },
             success: function(response) {

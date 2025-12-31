@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Api\User\Payment;
 use App\Http\Controllers\Controller;
 use App\Models\Currency;
 use App\Models\Deposit;
-use App\Models\Generalsetting;
+use App\Models\Muaadhsetting;
 use App\Models\PaymentGateway;
 use App\Models\Transaction;
 use Exception;
@@ -32,7 +32,7 @@ class StripeController extends Controller
         $deposit = Deposit::where('deposit_number', $request->deposit_number)->first();
         $item_amount = $deposit->amount * $deposit->currency_value;
         $curr = Currency::where('name', '=', $deposit->currency_code)->first();
-        $gs = Generalsetting::findOrFail(1);
+        $gs = Muaadhsetting::findOrFail(1);
 
         try {
             $stripe_secret_key = Config::get('services.stripe.secret');

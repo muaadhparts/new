@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-use App\Models\MerchantProduct;
+use App\Models\MerchantItem;
 use App\Models\SkuAlternative;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -23,7 +23,7 @@ class AlternativeService
     public function getAlternatives(string $sku, bool $includeSelf = false): Collection
     {
         // ✅ استعلام واحد لجلب المنتج و group_id
-        $baseData = DB::table('products as p')
+        $baseData = DB::table('catalog_items as p')
             ->leftJoin('sku_alternatives as sa', 'sa.sku', '=', 'p.sku')
             ->where('p.sku', $sku)
             ->select('p.id as product_id', 'sa.group_id')
@@ -42,7 +42,7 @@ class AlternativeService
         if ($groupId) {
             // جلب product_ids للبدائل
             $alternativeProductIds = DB::table('sku_alternatives as sa')
-                ->join('products as p', 'p.sku', '=', 'sa.sku')
+                ->join('catalog_items as p', 'p.sku', '=', 'sa.sku')
                 ->where('sa.group_id', $groupId)
                 ->when(!$includeSelf, fn($q) => $q->where('sa.sku', '<>', $sku))
                 ->pluck('p.id');
@@ -50,35 +50,35 @@ class AlternativeService
             $productIds = $productIds->merge($alternativeProductIds)->unique();
         }
 
-        // ✅ استعلام واحد لجميع merchant_products باستخدام JOIN
-        $listings = MerchantProduct::query()
-            ->join('users as u', 'u.id', '=', 'merchant_products.user_id')
-            ->where('u.is_vendor', 2)
-            ->whereIn('merchant_products.product_id', $productIds->toArray())
-            ->where('merchant_products.status', 1)
+        // ✅ استعلام واحد لجميع merchant_items باستخدام JOIN
+        $listings = MerchantItem::query()
+            ->join('users as u', 'u.id', '=', 'merchant_items.user_id')
+            ->where('u.is_merchant', 2)
+            ->whereIn('merchant_items.catalog_item_id', $productIds->toArray())
+            ->where('merchant_items.status', 1)
             ->with([
-                'product' => fn($q) => $q->select('id', 'sku', 'slug', 'label_en', 'label_ar', 'photo', 'brand_id')
+                'catalogItem' => fn($q) => $q->select('id', 'sku', 'slug', 'label_en', 'label_ar', 'photo', 'brand_id')
                     ->with('brand:id,name,name_ar,photo'),
-                'user:id,is_vendor,name,shop_name,shop_name_ar',
+                'user:id,is_merchant,name,shop_name,shop_name_ar',
                 'qualityBrand:id,name_en,name_ar,logo',
             ])
             ->select([
-                'merchant_products.id',
-                'merchant_products.product_id',
-                'merchant_products.user_id',
-                'merchant_products.brand_quality_id',
-                'merchant_products.price',
-                'merchant_products.previous_price',
-                'merchant_products.stock',
-                'merchant_products.preordered',
-                'merchant_products.minimum_qty',
-                'merchant_products.status'
+                'merchant_items.id',
+                'merchant_items.catalog_item_id',
+                'merchant_items.user_id',
+                'merchant_items.brand_quality_id',
+                'merchant_items.price',
+                'merchant_items.previous_price',
+                'merchant_items.stock',
+                'merchant_items.preordered',
+                'merchant_items.minimum_qty',
+                'merchant_items.status'
             ])
             ->get();
 
         // إزالة المنتج الأصلي إذا لم يكن includeSelf
         if (!$includeSelf) {
-            $listings = $listings->filter(fn($mp) => $mp->product_id != $productId);
+            $listings = $listings->filter(fn($mp) => $mp->catalog_item_id != $productId);
         }
 
         return $this->sortByPriority($listings);
@@ -91,28 +91,28 @@ class AlternativeService
      */
     protected function fetchSameProductVariants(int $productId, bool $includeSelf): Collection
     {
-        return MerchantProduct::query()
-            ->join('users as u', 'u.id', '=', 'merchant_products.user_id')
-            ->where('u.is_vendor', 2)
-            ->where('merchant_products.status', 1)
-            ->where('merchant_products.product_id', $productId)
+        return MerchantItem::query()
+            ->join('users as u', 'u.id', '=', 'merchant_items.user_id')
+            ->where('u.is_merchant', 2)
+            ->where('merchant_items.status', 1)
+            ->where('merchant_items.catalog_item_id', $productId)
             ->with([
-                'product' => fn($q) => $q->select('id', 'sku', 'slug', 'label_en', 'label_ar', 'photo', 'brand_id')
+                'catalogItem' => fn($q) => $q->select('id', 'sku', 'slug', 'label_en', 'label_ar', 'photo', 'brand_id')
                     ->with('brand:id,name,name_ar,photo'),
-                'user:id,is_vendor,name,shop_name,shop_name_ar',
+                'user:id,is_merchant,name,shop_name,shop_name_ar',
                 'qualityBrand:id,name_en,name_ar,logo',
             ])
             ->select([
-                'merchant_products.id',
-                'merchant_products.product_id',
-                'merchant_products.user_id',
-                'merchant_products.brand_quality_id',
-                'merchant_products.price',
-                'merchant_products.previous_price',
-                'merchant_products.stock',
-                'merchant_products.preordered',
-                'merchant_products.minimum_qty',
-                'merchant_products.status'
+                'merchant_items.id',
+                'merchant_items.catalog_item_id',
+                'merchant_items.user_id',
+                'merchant_items.brand_quality_id',
+                'merchant_items.price',
+                'merchant_items.previous_price',
+                'merchant_items.stock',
+                'merchant_items.preordered',
+                'merchant_items.minimum_qty',
+                'merchant_items.status'
             ])
             ->get();
     }
@@ -122,40 +122,40 @@ class AlternativeService
      *
      * ✅ محسّن: استخدام JOIN بدلاً من whereHas المتعددة
      */
-    protected function fetchMerchantProducts(array $skus): Collection
+    protected function fetchMerchantItems(array $skus): Collection
     {
         if (empty($skus)) return collect();
 
-        // ✅ جلب product_ids أولاً
-        $productIds = DB::table('products')
+        // ✅ جلب catalog_item_ids أولاً
+        $catalogItemIds = DB::table('catalog_items')
             ->whereIn('sku', $skus)
             ->pluck('id')
             ->toArray();
 
-        if (empty($productIds)) return collect();
+        if (empty($catalogItemIds)) return collect();
 
-        $listings = MerchantProduct::query()
-            ->join('users as u', 'u.id', '=', 'merchant_products.user_id')
-            ->where('u.is_vendor', 2)
-            ->whereIn('merchant_products.product_id', $productIds)
-            ->where('merchant_products.status', 1)
+        $listings = MerchantItem::query()
+            ->join('users as u', 'u.id', '=', 'merchant_items.user_id')
+            ->where('u.is_merchant', 2)
+            ->whereIn('merchant_items.catalog_item_id', $catalogItemIds)
+            ->where('merchant_items.status', 1)
             ->with([
-                'product' => fn($q) => $q->select('id', 'sku', 'slug', 'label_en', 'label_ar', 'photo', 'brand_id')
+                'catalogItem' => fn($q) => $q->select('id', 'sku', 'slug', 'label_en', 'label_ar', 'photo', 'brand_id')
                     ->with('brand:id,name,name_ar,photo'),
-                'user:id,is_vendor,name,shop_name,shop_name_ar',
+                'user:id,is_merchant,name,shop_name,shop_name_ar',
                 'qualityBrand:id,name_en,name_ar,logo',
             ])
             ->select([
-                'merchant_products.id',
-                'merchant_products.product_id',
-                'merchant_products.user_id',
-                'merchant_products.brand_quality_id',
-                'merchant_products.price',
-                'merchant_products.previous_price',
-                'merchant_products.stock',
-                'merchant_products.preordered',
-                'merchant_products.minimum_qty',
-                'merchant_products.status'
+                'merchant_items.id',
+                'merchant_items.catalog_item_id',
+                'merchant_items.user_id',
+                'merchant_items.brand_quality_id',
+                'merchant_items.price',
+                'merchant_items.previous_price',
+                'merchant_items.stock',
+                'merchant_items.preordered',
+                'merchant_items.minimum_qty',
+                'merchant_items.status'
             ])
             ->get();
 

@@ -44,8 +44,8 @@
     {{-- Design System - New components with m- prefix --}}
     <link rel="stylesheet" href="{{ asset('assets/front/css/muaadh-system.css') }}?v={{ filemtime(public_path('assets/front/css/muaadh-system.css')) }}">
 
-    {{-- Product Card - Unified styles for all product cards --}}
-    <link rel="stylesheet" href="{{ asset('assets/css/product-card.css') }}?v={{ filemtime(public_path('assets/css/product-card.css')) }}">
+    {{-- Catalog Item Card - Unified styles for all catalog item cards --}}
+    <link rel="stylesheet" href="{{ asset('assets/css/catalog-item-card.css') }}?v={{ filemtime(public_path('assets/css/catalog-item-card.css')) }}">
 
     {{-- Shipping Quote & Customer Location Modal --}}
     <link rel="stylesheet" href="{{ asset('assets/front/css/shipping-quote.css') }}?v={{ filemtime(public_path('assets/front/css/shipping-quote.css')) }}">

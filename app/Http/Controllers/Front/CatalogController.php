@@ -5,14 +5,14 @@ namespace App\Http\Controllers\Front;
 use App\Models\Category;
 use App\Models\Report;
 use App\Models\Subcategory;
-use App\Services\ProductFilterService;
+use App\Services\CatalogItemFilterService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Session;
 
 class CatalogController extends FrontBaseController
 {
     public function __construct(
-        private ProductFilterService $filterService
+        private CatalogItemFilterService $filterService
     ) {
         parent::__construct();
     }
@@ -29,8 +29,8 @@ class CatalogController extends FrontBaseController
         $perPage = $this->gs->page_count ?? 12;
         $currValue = $this->curr->value ?? 1;
 
-        // Use service to get all data (no category selected = ALL products)
-        $data = $this->filterService->getProductResults(
+        // Use service to get all data (no category selected = ALL catalog items)
+        $data = $this->filterService->getCatalogItemResults(
             $request,
             null,  // no category
             null,  // no subcategory
@@ -44,7 +44,7 @@ class CatalogController extends FrontBaseController
             return view('frontend.ajax.category', $data);
         }
 
-        return view('frontend.products', $data);
+        return view('frontend.catalog-items', $data);
     }
 
     // -------------------------------- CATEGORY SECTION ----------------------------------------
@@ -62,7 +62,7 @@ class CatalogController extends FrontBaseController
         $currValue = $this->curr->value ?? 1;
 
         // Use service to get all data with filters applied
-        $data = $this->filterService->getProductResults(
+        $data = $this->filterService->getCatalogItemResults(
             $request,
             $slug,       // category slug
             $slug1,      // subcategory slug
@@ -76,7 +76,7 @@ class CatalogController extends FrontBaseController
             return view('frontend.ajax.category', $data);
         }
 
-        return view('frontend.products', $data);
+        return view('frontend.catalog-items', $data);
     }
 
     public function getsubs(Request $request)

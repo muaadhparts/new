@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 
 use App\Http\Resources\UserResource;
 use App\Models\FavoriteSeller;
-use App\Models\Product;
+use App\Models\CatalogItem;
 use App\Models\User;use Auth;
 use Hash;
 use Illuminate\Http\Request;
@@ -19,8 +19,8 @@ class ProfileController extends Controller
         try {
             $user = Auth::guard('api')->user();
             $data['user'] = $user;
-            $data['affilate_income'] = Product::vendorConvertPrice($user->affilate_income);
-            $data['current_balance'] = Product::vendorConvertPrice($user->current_balance);
+            $data['affilate_income'] = CatalogItem::vendorConvertPrice($user->affilate_income);
+            $data['current_balance'] = CatalogItem::vendorConvertPrice($user->current_balance);
             $data['completed_orders'] = (string) Auth::user()->orders()->where('status', 'completed')->count();
             $data['pending_orders'] = (string) Auth::user()->orders()->where('status', 'pending')->count();
             $data['recent_orders'] = (string) Auth::user()->orders()->latest()->take(5)->get();
@@ -76,6 +76,11 @@ class ProfileController extends Controller
                 unset($input['balance']);
             }
 
+            if ($request->is_merchant) {
+                unset($input['is_merchant']);
+            }
+
+            // Backward compatibility
             if ($request->is_vendor) {
                 unset($input['is_vendor']);
             }

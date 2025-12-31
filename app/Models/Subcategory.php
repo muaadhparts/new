@@ -19,9 +19,20 @@ class Subcategory extends Model
     	return $this->belongsTo('App\Models\Category')->withDefault();
     }
 
+    /**
+     * @deprecated Use catalogItems() instead
+     */
     public function products()
     {
-        return $this->hasMany('App\Models\Product');
+        return $this->hasMany('App\Models\CatalogItem');
+    }
+
+    /**
+     * Catalog items for this subcategory
+     */
+    public function catalogItems()
+    {
+        return $this->hasMany('App\Models\CatalogItem');
     }
 
     public function setSlugAttribute($value)

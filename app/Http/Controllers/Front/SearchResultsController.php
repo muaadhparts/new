@@ -3,10 +3,10 @@
 namespace App\Http\Controllers\Front;
 
 use App\Http\Controllers\Controller;
-use App\Models\MerchantProduct;
-use App\Models\Product;
+use App\Models\MerchantItem;
+use App\Models\CatalogItem;
 use App\Models\SkuAlternative;
-use App\Services\ProductCardDataBuilder;
+use App\Services\CatalogItemCardDataBuilder;
 use Illuminate\Http\Request;
 
 class SearchResultsController extends Controller
@@ -14,7 +14,7 @@ class SearchResultsController extends Controller
     private const PER_PAGE = 12;
 
     public function __construct(
-        private ProductCardDataBuilder $cardBuilder
+        private CatalogItemCardDataBuilder $cardBuilder
     ) {}
 
     public function show(Request $request, $sku)
@@ -25,13 +25,13 @@ class SearchResultsController extends Controller
         $sortBy = $request->get('sort', 'default');
         $page = $request->get('page', 1);
 
-        // Get main products and alternatives
-        $prods = Product::where('sku', $sku)->get();
+        // Get main catalog items and alternatives
+        $prods = CatalogItem::where('sku', $sku)->get();
         $alternatives = $this->getAlternatives($sku);
 
-        // Merge all products
-        $allProducts = $prods->merge($alternatives);
-        $productIds = $allProducts->pluck('id')->toArray();
+        // Merge all catalog items
+        $allCatalogItems = $prods->merge($alternatives);
+        $productIds = $allCatalogItems->pluck('id')->toArray();
 
         if (empty($productIds)) {
             return view('frontend.search-results', [
@@ -50,7 +50,7 @@ class SearchResultsController extends Controller
         $altIds = $alternatives->pluck('id')->toArray();
 
         // Query 1: Get available filters (lightweight - no eager loading needed)
-        $filtersQuery = MerchantProduct::whereIn('product_id', $productIds)
+        $filtersQuery = MerchantItem::whereIn('catalog_item_id', $productIds)
             ->where('status', 1)
             ->with(['user:id,shop_name,shop_name_ar', 'qualityBrand:id,name_en,name_ar']);
 
@@ -59,7 +59,7 @@ class SearchResultsController extends Controller
         $availableQualities = $allForFilters->pluck('qualityBrand')->filter()->unique('id')->keyBy('id');
 
         // Query 2: Main products - PAGINATED (only 12 DTOs built)
-        $mainPaginator = $this->loadMerchantProductsPaginated(
+        $mainPaginator = $this->loadMerchantItemsPaginated(
             $prodIds,
             $storeFilter,
             $qualityFilter,
@@ -73,7 +73,7 @@ class SearchResultsController extends Controller
         // Query 3: Alternative products - Limited to 12 (no pagination, just limit)
         $alternativeCards = collect();
         if (!empty($altIds)) {
-            $altMerchants = $this->loadMerchantProductsLimited($altIds, $storeFilter, $qualityFilter, $sortBy, 12);
+            $altMerchants = $this->loadMerchantItemsLimited($altIds, $storeFilter, $qualityFilter, $sortBy, 12);
             $alternativeCards = $this->cardBuilder->buildCardsFromMerchants($altMerchants);
         }
 
@@ -109,25 +109,25 @@ class SearchResultsController extends Controller
             return collect();
         }
 
-        return Product::whereIn('sku', $alternativeSkus)->get();
+        return CatalogItem::whereIn('sku', $alternativeSkus)->get();
     }
 
     /**
      * Load merchant products with PAGINATION at query level
      * Sorting is done in the query, not after
      */
-    private function loadMerchantProductsPaginated(
+    private function loadMerchantItemsPaginated(
         array $productIds,
         string $storeFilter,
         string $qualityFilter,
         string $sortBy,
         int $perPage
     ) {
-        $query = MerchantProduct::whereIn('product_id', $productIds)
+        $query = MerchantItem::whereIn('catalog_item_id', $productIds)
             ->where('status', 1);
 
         // Apply eager loading
-        $this->cardBuilder->applyMerchantProductEagerLoading($query);
+        $this->cardBuilder->applyMerchantItemEagerLoading($query);
 
         // Apply filters
         if ($storeFilter !== 'all') {
@@ -146,20 +146,20 @@ class SearchResultsController extends Controller
     }
 
     /**
-     * Load merchant products with LIMIT (for alternatives)
+     * Load merchant items with LIMIT (for alternatives)
      */
-    private function loadMerchantProductsLimited(
+    private function loadMerchantItemsLimited(
         array $productIds,
         string $storeFilter,
         string $qualityFilter,
         string $sortBy,
         int $limit
     ) {
-        $query = MerchantProduct::whereIn('product_id', $productIds)
+        $query = MerchantItem::whereIn('catalog_item_id', $productIds)
             ->where('status', 1);
 
         // Apply eager loading
-        $this->cardBuilder->applyMerchantProductEagerLoading($query);
+        $this->cardBuilder->applyMerchantItemEagerLoading($query);
 
         // Apply filters
         if ($storeFilter !== 'all') {
@@ -182,12 +182,12 @@ class SearchResultsController extends Controller
     private function applySortingToQuery($query, string $sortBy): void
     {
         match ($sortBy) {
-            'sku_asc' => $query->join('products', 'merchant_products.product_id', '=', 'products.id')
-                               ->orderBy('products.sku', 'asc')
-                               ->select('merchant_products.*'),
-            'sku_desc' => $query->join('products', 'merchant_products.product_id', '=', 'products.id')
-                                ->orderBy('products.sku', 'desc')
-                                ->select('merchant_products.*'),
+            'sku_asc' => $query->join('catalog_items', 'merchant_items.catalog_item_id', '=', 'catalog_items.id')
+                               ->orderBy('catalog_items.sku', 'asc')
+                               ->select('merchant_items.*'),
+            'sku_desc' => $query->join('catalog_items', 'merchant_items.catalog_item_id', '=', 'catalog_items.id')
+                                ->orderBy('catalog_items.sku', 'desc')
+                                ->select('merchant_items.*'),
             'price_asc' => $query->orderBy('price', 'asc'),
             'price_desc' => $query->orderBy('price', 'desc'),
             'stock_desc' => $query->orderBy('stock', 'desc'),

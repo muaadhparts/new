@@ -14,7 +14,7 @@
             id="layout-list-pane" role="tabpanel" tabindex="0">
             <div class="row gy-4">
                 @foreach ($products as $card)
-                    @include('includes.frontend.home_product', ['card' => $card, 'layout' => 'list'])
+                    @include('includes.frontend.home_catalog_item', ['card' => $card, 'layout' => 'list'])
                 @endforeach
             </div>
         </div>
@@ -24,7 +24,7 @@
             id="layout-grid-pane" role="tabpanel" tabindex="0">
             <div class="row gy-4">
                 @foreach ($products as $card)
-                    @include('includes.frontend.home_product', ['card' => $card, 'layout' => 'grid', 'class' => 'col-6 col-md-4 col-lg-3'])
+                    @include('includes.frontend.home_catalog_item', ['card' => $card, 'layout' => 'grid', 'class' => 'col-6 col-md-4 col-lg-3'])
                 @endforeach
             </div>
         </div>

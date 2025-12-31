@@ -2,7 +2,7 @@
 
 namespace App\Console\Commands;
 
-use App\Models\Generalsetting;
+use App\Models\Muaadhsetting;
 use Illuminate\Console\Command;
 
 class ThemeGenerateCss extends Command
@@ -14,7 +14,7 @@ class ThemeGenerateCss extends Command
     {
         $this->info('Regenerating theme-colors.css...');
 
-        $gs = Generalsetting::findOrFail(1);
+        $gs = Muaadhsetting::findOrFail(1);
         $cssPath = public_path('assets/front/css/theme-colors.css');
 
         // ==================================

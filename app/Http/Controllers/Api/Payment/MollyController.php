@@ -5,8 +5,8 @@ namespace App\Http\Controllers\Api\Payment;
 use Mollie\Laravel\Facades\Mollie;
 use App\Http\Controllers\Controller;
 use App\Models\Currency;
-use App\Models\Generalsetting;
-use App\Models\Order;
+use App\Models\Muaadhsetting;
+use App\Models\Purchase;
 use App\Models\Shipping;
 use App\Models\Package;
 use Illuminate\Http\Request;
@@ -18,13 +18,13 @@ class MollyController extends Controller
 
 public function store(Request $request){
 
-     if(!$request->has('order_number')){
+     if(!$request->has('purchase_number')){
          return response()->json(['status' => false, 'data' => [], 'error' => 'Invalid Request']);
      }
 
-    $order_number = $request->order_number;
-    $order = Order::where('order_number',$order_number)->firstOrFail();
-    $curr = Currency::where('sign','=',$order->currency_sign)->firstOrFail();
+    $purchase_number = $request->purchase_number;
+    $purchase = Purchase::where('purchase_number',$purchase_number)->firstOrFail();
+    $curr = Currency::where('sign','=',$purchase->currency_sign)->firstOrFail();
     
     $available_currency = array(
         'AED',
@@ -65,38 +65,38 @@ public function store(Request $request){
 
 
         $input = $request->all();
-        
 
-        $settings = Generalsetting::findOrFail(1);
-        $shipping = Shipping::findOrFail($request->shipping)->price * $order->currency_value;
-        $packeging = Package::findOrFail($request->packeging)->price * $order->currency_value;
+
+        $settings = Muaadhsetting::findOrFail(1);
+        $shipping = Shipping::findOrFail($request->shipping)->price * $purchase->currency_value;
+        $packeging = Package::findOrFail($request->packeging)->price * $purchase->currency_value;
         $input['shipping'] = $shipping;
         $input['packeging'] = $packeging;
         $charge = $shipping + $packeging;
-        $settings = Generalsetting::findOrFail(1);
-       
-        $item_amount = round($order->pay_amount / $curr->value, 2);
+        $settings = Muaadhsetting::findOrFail(1);
+
+        $item_amount = round($purchase->pay_amount / $curr->value, 2);
         $item_amount += $charge;
-        
-        
-        $order['item_name'] = $settings->title." Order";
-        $order['item_amount'] = $item_amount;
-        
-        
-        $data['return_url'] = route('payment.checkout')."?order_number=".$order->order_number;
-        $data['cancel_url'] = route('payment.checkout')."?order_number=".$order->order_number;
+
+
+        $purchase['item_name'] = $settings->title." Purchase";
+        $purchase['item_amount'] = $item_amount;
+
+
+        $data['return_url'] = route('payment.checkout')."?purchase_number=".$purchase->purchase_number;
+        $data['cancel_url'] = route('payment.checkout')."?purchase_number=".$purchase->purchase_number;
 
         $payment = Mollie::api()->payments()->create([
             'amount' => [
                 'currency' => $curr->name,
-                'value' => ''.sprintf('%0.2f', $order['item_amount']).'', // You must send the correct number of decimals, thus we enforce the use of strings
+                'value' => ''.sprintf('%0.2f', $purchase['item_amount']).'', // You must send the correct number of decimals, thus we enforce the use of strings
             ],
-            'description' => $settings->title." Order" ,
+            'description' => $settings->title." Purchase" ,
             'redirectUrl' => route('api.molly.notify'),
             ]);
 
         Session::put('payment_id',$payment->id);
-        Session::put('molly_data',$order->id);
+        Session::put('molly_data',$purchase->id);
         Session::put('paypal_data',$input);
         $payment = Mollie::api()->payments()->get($payment->id);
 
@@ -106,18 +106,18 @@ public function store(Request $request){
 
 
 public function notify(Request $request){
-        
+
         $paypal_data = Session::get('paypal_data');
-        $order = Order::findOrFail(Session::get('molly_data'));
-        $cancel_url = route('payment.checkout')."?order_number=".$order->order_number;
+        $purchase = Purchase::findOrFail(Session::get('molly_data'));
+        $cancel_url = route('payment.checkout')."?purchase_number=".$purchase->purchase_number;
         $payment = Mollie::api()->payments()->get(Session::get('payment_id'));
         if($payment->status == 'paid'){
-        $order['txnid'] = $payment->id;
-        $order['method'] = 'Molly';
-        $order->packing_cost = $paypal_data['packeging'];
-        $order->shipping_cost = $paypal_data['shipping'];
-        $order['payment_status'] = 'Completed';
-        $order->update();
+        $purchase['txnid'] = $payment->id;
+        $purchase['method'] = 'Molly';
+        $purchase->packing_cost = $paypal_data['packeging'];
+        $purchase->shipping_cost = $paypal_data['shipping'];
+        $purchase['payment_status'] = 'Completed';
+        $purchase->update();
          return redirect(route('front.payment.success',1));
         }
         else {

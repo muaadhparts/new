@@ -8,7 +8,7 @@
     - $ps (PageSettings)
     - $languges (Languages collection)
     - $currencies (Currencies collection)
-    - $gs (GeneralSettings)
+    - $gs (MuaadhSettings)
     - $authUser, $riderUser (from HeaderComposer)
 
     Usage:
@@ -93,15 +93,15 @@
 
                 {{-- Quick Auth Links --}}
                 <div class="muaadh-topbar-auth d-none d-lg-flex">
-                    @if ($authUser && $authUser->is_vendor == 2)
-                        <a href="{{ route('vendor.dashboard') }}" class="muaadh-topbar-link">
+                    @if ($authUser && $authUser->is_merchant == 2)
+                        <a href="{{ route('merchant.dashboard') }}" class="muaadh-topbar-link">
                             <i class="fas fa-store"></i>
-                            <span>@lang('Vendor Panel')</span>
+                            <span>@lang('Merchant Panel')</span>
                         </a>
                     @else
-                        <a href="{{ route('vendor.login') }}" class="muaadh-topbar-link">
+                        <a href="{{ route('merchant.login') }}" class="muaadh-topbar-link">
                             <i class="fas fa-store"></i>
-                            <span>@lang('Become Vendor')</span>
+                            <span>@lang('Become Merchant')</span>
                         </a>
                     @endif
 

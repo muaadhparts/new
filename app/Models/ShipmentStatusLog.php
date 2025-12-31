@@ -7,8 +7,8 @@ use Illuminate\Database\Eloquent\Model;
 class ShipmentStatusLog extends Model
 {
     protected $fillable = [
-        'order_id',
-        'vendor_id',
+        'purchase_id',
+        'merchant_id',
         'tracking_number',
         'shipment_id',
         'company_name',
@@ -31,19 +31,27 @@ class ShipmentStatusLog extends Model
     ];
 
     /**
-     * العلاقة مع Order
+     * العلاقة مع Purchase
      */
-    public function order()
+    public function purchase()
     {
-        return $this->belongsTo(Order::class);
+        return $this->belongsTo(Purchase::class, 'purchase_id');
     }
 
     /**
-     * العلاقة مع Vendor (User)
+     * العلاقة مع Merchant (User)
+     */
+    public function merchant()
+    {
+        return $this->belongsTo(User::class, 'merchant_id');
+    }
+
+    /**
+     * @deprecated Use merchant() instead
      */
     public function vendor()
     {
-        return $this->belongsTo(User::class, 'vendor_id');
+        return $this->merchant();
     }
 
     /**
@@ -90,18 +98,26 @@ class ShipmentStatusLog extends Model
     }
 
     /**
-     * Scope: By order
+     * Scope: By purchase
      */
-    public function scopeByOrder($query, $orderId)
+    public function scopeByPurchase($query, $purchaseId)
     {
-        return $query->where('order_id', $orderId);
+        return $query->where('purchase_id', $purchaseId);
     }
 
     /**
-     * Scope: By vendor
+     * Scope: By merchant
      */
-    public function scopeByVendor($query, $vendorId)
+    public function scopeByMerchant($query, $merchantId)
     {
-        return $query->where('vendor_id', $vendorId);
+        return $query->where('merchant_id', $merchantId);
+    }
+
+    /**
+     * @deprecated Use scopeByMerchant() instead
+     */
+    public function scopeByVendor($query, $merchantId)
+    {
+        return $this->scopeByMerchant($query, $merchantId);
     }
 }

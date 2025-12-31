@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Api\User;
 
 use App\Classes\MuaadhMailer;
 use App\Http\Controllers\Controller;
-use App\Models\Generalsetting;
+use App\Models\Muaadhsetting;
 use App\Models\Subscription;
 use App\Models\UserSubscription;
 use Auth;use Carbon\Carbon;
@@ -57,7 +57,7 @@ class PackageController extends Controller
 
             //--- Validation Section Ends
 
-            $gs = Generalsetting::findOrfail(1);
+            $gs = Muaadhsetting::findOrfail(1);
             if ($gs->reg_vendor != 1) {
                 return response()->json(['status' => false, 'data' => [], 'error' => []]);
             }
@@ -105,7 +105,7 @@ class PackageController extends Controller
             $user = Auth::guard('api')->user();
             $package = $user->subscribes()->where('status', 1)->orderBy('id', 'desc')->first();
             $subs = Subscription::findOrFail($request->subscription_id);
-            $settings = Generalsetting::findOrFail(1);
+            $settings = Muaadhsetting::findOrFail(1);
             $today = Carbon::now()->format('Y-m-d');
             $input = $request->all();
 
@@ -124,7 +124,7 @@ class PackageController extends Controller
                 $user->date = date('Y-m-d', strtotime($today . ' + ' . $subs->days . ' days'));
             }
 
-            if ($user->is_vendor == 0) {
+            if ($user->is_merchant == 0) {
 
                 //--- Validation Section
 
@@ -150,7 +150,7 @@ class PackageController extends Controller
                 //--- Validation Section Ends
 
             }
-            $user->is_vendor = 2;
+            $user->is_merchant = 2;
             $user->mail_sent = 1;
             $user->update($input);
 

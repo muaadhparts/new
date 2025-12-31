@@ -50,9 +50,9 @@
                         <div class="row justify-content-center">
 
                           <div class="col-lg-4 d-flex justify-content-between">
-                            <label class="control-label">{{ __('Orders') }} *</label>
+                            <label class="control-label">{{ __('Purchases') }} *</label>
                             <label class="switch">
-                              <input type="checkbox" name="section[]" value="orders" {{ $data->sectionCheck('orders') ? 'checked' : '' }}>
+                              <input type="checkbox" name="section[]" value="purchases" {{ $data->sectionCheck('purchases') ? 'checked' : '' }}>
                               <span class="slider round"></span>
                             </label>
                           </div>
@@ -228,7 +228,7 @@
                       <div class="col-lg-4 d-flex justify-content-between">
                         <label class="control-label">{{ __('General Settings') }} *</label>
                         <label class="switch">
-                          <input type="checkbox" name="section[]" value="general_settings" {{ $data->sectionCheck('general_settings') ? 'checked' : '' }}>
+                          <input type="checkbox" name="section[]" value="muaadh_settings" {{ $data->sectionCheck('muaadh_settings') ? 'checked' : '' }}>
                           <span class="slider round"></span>
                         </label>
                       </div>

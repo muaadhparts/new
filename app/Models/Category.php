@@ -16,9 +16,20 @@ class Category extends Model
     }
     
 
+    /**
+     * @deprecated Use catalogItems() instead
+     */
     public function products()
     {
-        return $this->hasMany('App\Models\Product');
+        return $this->hasMany('App\Models\CatalogItem');
+    }
+
+    /**
+     * Catalog items for this category
+     */
+    public function catalogItems()
+    {
+        return $this->hasMany('App\Models\CatalogItem');
     }
 
     public function setSlugAttribute($value)

@@ -64,8 +64,8 @@
 										 <tr>
 											<td>{{$key+1}}</td>
 											<td>
-											   <a  href="{{route('admin-order-invoice',$order->id)}}">
-											   {{$order->order_number}}
+											   <a  href="{{route('admin-purchase-invoice',$order->id)}}">
+											   {{$order->purchase_number}}
 											   </a>
 											</td>
 											<td>

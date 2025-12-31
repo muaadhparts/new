@@ -14,7 +14,7 @@ class Rider extends Authenticatable
     ];
 
 
-    public function orders()
+    public function purchases()
     {
         return $this->hasMany('App\Models\DeliveryRider');
     }

@@ -182,7 +182,7 @@
                             </tr>
                             @foreach (Auth::user()->orders()->latest()->take(6)->get() as $order)
                                 <tr>
-                                    <td><span class="content">{{ $order->order_number }}</span></td>
+                                    <td><span class="content">{{ $order->purchase_number }}</span></td>
                                     <td><span class="content">{{ date('d M Y', strtotime($order->created_at)) }}</span>
                                     </td>
                                     <td><span
@@ -207,7 +207,7 @@
                                         </button>
                                     </td>
                                     <td class="view-btn-wrapper">
-                                        <a href="{{route('user-order',$order->id)}}" class="view-btn">
+                                        <a href="{{route('user-purchase',$order->id)}}" class="view-btn">
                                             <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
                                                 xmlns="http://www.w3.org/2000/svg">
                                                 <g clip-path="url(#clip0_548_16589)">

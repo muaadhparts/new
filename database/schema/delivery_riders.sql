@@ -1,7 +1,7 @@
 CREATE TABLE `delivery_riders` (
   `id` bigint NOT NULL AUTO_INCREMENT,
   `order_id` int DEFAULT NULL,
-  `vendor_id` int DEFAULT NULL,
+  `merchant_id` int DEFAULT NULL,
   `rider_id` int DEFAULT NULL,
   `pickup_point_id` int DEFAULT NULL,
   `service_area_id` int DEFAULT NULL,

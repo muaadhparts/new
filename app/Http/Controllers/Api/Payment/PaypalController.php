@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Api\Payment;
 
 use App\Http\Controllers\Payment\Checkout\CheckoutBaseControlller;
 use App\Models\Currency;
-use App\Models\Order;
+use App\Models\Purchase;
 use App\Models\PaymentGateway;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Session;
@@ -30,13 +30,13 @@ class PaypalController extends CheckoutBaseControlller
     public function store(Request $request)
     {
         // dd($request->all(),1);
-        $order_number = $request->order_number;
-        $order = Order::where('order_number', $order_number)->firstOrFail();
-        $curr = Currency::where('sign', '=', $order->currency_sign)->firstOrFail();
+        $purchase_number = $request->purchase_number;
+        $purchase = Purchase::where('purchase_number', $purchase_number)->firstOrFail();
+        $curr = Currency::where('sign', '=', $purchase->currency_sign)->firstOrFail();
         if ($curr->name != "USD") {
             return redirect()->back()->with('unsuccess', 'Please Select USD Currency For Paypal.');
         }
-        $item_amount = round($order->pay_amount * $order->currency_value, 2);
+        $item_amount = round($purchase->pay_amount * $purchase->currency_value, 2);
 
         $cancel_url = route('api.paypal.cancle');
         $notify_url = route('api.paypal.notify');
@@ -51,7 +51,7 @@ class PaypalController extends CheckoutBaseControlller
             ))->send();
 
             if ($response->isRedirect()) {
-                Session::put('order_number', $order_number);
+                Session::put('purchase_number', $purchase_number);
                 if ($response->redirect()) {
                     return redirect($response->redirect());
                 }
@@ -70,10 +70,10 @@ class PaypalController extends CheckoutBaseControlller
     {
 
         $responseData = $request->all();
-        $order_number = Session::get('order_number');
+        $purchase_number = Session::get('purchase_number');
 
         $success_url = route('front.payment.success', 1);
-        $cancel_url = route('payment.checkout') . "?order_number=" . $order_number;
+        $cancel_url = route('payment.checkout') . "?purchase_number=" . $purchase_number;
 
         if (empty($responseData['PayerID']) || empty($responseData['token'])) {
             return [
@@ -90,11 +90,11 @@ class PaypalController extends CheckoutBaseControlller
         $response = $transaction->send();
 
         if ($response->isSuccessful()) {
-            $order = Order::where('order_number', $order_number)->firstOrFail();
+            $purchase = Purchase::where('purchase_number', $purchase_number)->firstOrFail();
             $data['payment_status'] = 'Completed';
-            $order->method = "Paypal";
+            $purchase->method = "Paypal";
             $data['txnid'] = $response->getData()['transactions'][0]['related_resources'][0]['sale']['id'];
-            $order->update($data);
+            $purchase->update($data);
             return redirect($success_url);
         }
         return redirect($cancel_url);

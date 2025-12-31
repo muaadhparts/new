@@ -1,17 +1,17 @@
 <tbody class="favorite-items-wrapper">
     @foreach($favorites as $favorite)
     @php
-        $favoriteMerchant = $favorite->effective_merchant_product
-            ?? $favorite->getEffectiveMerchantProduct();
+        $favoriteMerchant = $favorite->effective_merchant_item
+            ?? $favorite->getEffectiveMerchantItem();
 
-        $productSlug = $favorite->product->slug ?? $favorite->slug ?? null;
+        $productSlug = $favorite->catalogItem->slug ?? $favorite->slug ?? null;
         $favoriteProductUrl = $favoriteMerchant && $productSlug
-            ? route('front.product', ['slug' => $productSlug, 'vendor_id' => $favoriteMerchant->user_id, 'merchant_product_id' => $favoriteMerchant->id])
-            : ($productSlug ? route('front.product.legacy', $productSlug) : '#');
+            ? route('front.catalog-item', ['slug' => $productSlug, 'vendor_id' => $favoriteMerchant->user_id, 'merchant_item_id' => $favoriteMerchant->id])
+            : ($productSlug ? route('front.catalog-item.legacy', $productSlug) : '#');
     @endphp
 
     @php
-        $favoriteProduct = $favorite->product;
+        $favoriteProduct = $favorite->catalogItem;
     @endphp
     @if($favoriteProduct)
     <tr id="favorite-row-{{ $favorite->id }}" data-row-id="{{ $favorite->id }}">

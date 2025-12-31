@@ -20,8 +20,8 @@ class UserBaseController extends Controller
     {
         $this->middleware('auth');
 
-        // Set Global GeneralSettings
-        $this->gs = DB::table('generalsettings')->find(1);
+        // Set Global MuaadhSettings
+        $this->gs = DB::table('muaadhsettings')->find(1);
 
         $this->middleware(function ($request, $next) {
 

@@ -1,25 +1,25 @@
 @if(Auth::guard('admin')->user()->role_id != 0)
 
-@if(Auth::guard('admin')->user()->sectionCheck('orders'))
+@if(Auth::guard('admin')->user()->sectionCheck('purchases'))
 
 <li>
-    <a href="#order" class="accordion-toggle wave-effect" data-bs-toggle="collapse" aria-expanded="false"><i
-            class="fas fa-hand-holding-usd"></i>{{ __('Orders') }}</a>
-    <ul class="collapse list-unstyled" id="order" data-bs-parent="#accordion">
+    <a href="#purchase" class="accordion-toggle wave-effect" data-bs-toggle="collapse" aria-expanded="false"><i
+            class="fas fa-hand-holding-usd"></i>{{ __('Purchases') }}</a>
+    <ul class="collapse list-unstyled" id="purchase" data-bs-parent="#accordion">
         <li>
-            <a href="{{ route('admin-orders-all') }}"> {{ __('All Orders') }}</a>
+            <a href="{{ route('admin-orders-all') }}"> {{ __('All Purchases') }}</a>
         </li>
         <li>
-            <a href="{{ route('admin-orders-all') }}?status=pending"> {{ __('Pending Orders') }}</a>
+            <a href="{{ route('admin-orders-all') }}?status=pending"> {{ __('Pending Purchases') }}</a>
         </li>
         <li>
-            <a href="{{ route('admin-orders-all') }}?status=processing"> {{ __('Processing Orders') }}</a>
+            <a href="{{ route('admin-orders-all') }}?status=processing"> {{ __('Processing Purchases') }}</a>
         </li>
         <li>
-            <a href="{{ route('admin-orders-all') }}?status=completed"> {{ __('Completed Orders') }}</a>
+            <a href="{{ route('admin-orders-all') }}?status=completed"> {{ __('Completed Purchases') }}</a>
         </li>
         <li>
-            <a href="{{ route('admin-orders-all') }}?status=declined"> {{ __('Declined Orders') }}</a>
+            <a href="{{ route('admin-orders-all') }}?status=declined"> {{ __('Declined Purchases') }}</a>
         </li>
 
     </ul>
@@ -237,10 +237,10 @@
     </a>
     <ul class="collapse list-unstyled" id="vendor" data-bs-parent="#accordion">
         <li>
-            <a href="{{ route('admin-vendor-index') }}"><span>{{ __('Vendors List') }}</span></a>
+            <a href="{{ route('admin-merchant-index') }}"><span>{{ __('Vendors List') }}</span></a>
         </li>
         <li>
-            <a href="{{ route('admin-vendor-withdraw-index') }}"><span>{{ __('Withdraws') }}</span></a>
+            <a href="{{ route('admin-merchant-withdraw-index') }}"><span>{{ __('Withdraws') }}</span></a>
         </li>
 
 
@@ -258,11 +258,11 @@
     </a>
     <ul class="collapse list-unstyled" id="vendorSubs" data-bs-parent="#accordion">
         <li>
-            <a href="{{ route('admin-vendor-subs','completed') }}"><span>{{ __('Completed Subscriptions') }}</span></a>
+            <a href="{{ route('admin-merchant-subs','completed') }}"><span>{{ __('Completed Subscriptions') }}</span></a>
         </li>
         <li>
-            <a href="{{ route('admin-vendor-pendings','pending') }}"><span>{{ __('Pending Subscriptions') }}</span></a>
-            {{-- <a href="{{ route('admin-vendor-subs','pending') }}"><span>{{ __('Pending Subscriptions') }}</span></a> --}}
+            <a href="{{ route('admin-merchant-pendings','pending') }}"><span>{{ __('Pending Subscriptions') }}</span></a>
+            {{-- <a href="{{ route('admin-merchant-subs','pending') }}"><span>{{ __('Pending Subscriptions') }}</span></a> --}}
         </li>
     </ul>
 </li>
@@ -336,7 +336,7 @@
 
 @endif
 
-@if(Auth::guard('admin')->user()->sectionCheck('general_settings'))
+@if(Auth::guard('admin')->user()->sectionCheck('muaadh_settings'))
 
 <li>
     <a href="#general" class="accordion-toggle wave-effect" data-bs-toggle="collapse" aria-expanded="false">

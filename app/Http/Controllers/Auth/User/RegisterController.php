@@ -4,8 +4,8 @@ namespace App\Http\Controllers\Auth\User;
 
 use App\Classes\MuaadhMailer;
 use App\Http\Controllers\Controller;
-use App\Models\Generalsetting;
-use App\Models\Notification;
+use App\Models\Muaadhsetting;
+use App\Models\CatalogEvent;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -20,7 +20,7 @@ class RegisterController extends Controller
        
     
 
-        $gs = Generalsetting::findOrFail(1);
+        $gs = Muaadhsetting::findOrFail(1);
 
         if ($gs->is_capcha == 1) {
             $request->validate(
@@ -61,7 +61,7 @@ class RegisterController extends Controller
 
             ]);
 
-            $input['is_vendor'] = 1;
+            $input['is_merchant'] = 1;
 
         }
 
@@ -88,9 +88,9 @@ class RegisterController extends Controller
 
             $user->email_verified = 'Yes';
             $user->update();
-            $notification = new Notification;
-            $notification->user_id = $user->id;
-            $notification->save();
+            $catalogEvent = new CatalogEvent;
+            $catalogEvent->user_id = $user->id;
+            $catalogEvent->save();
 
             // Welcome Email For User
 
@@ -114,16 +114,16 @@ class RegisterController extends Controller
 
     public function token($token)
     {
-        $gs = Generalsetting::findOrFail(1);
+        $gs = Muaadhsetting::findOrFail(1);
 
         if ($gs->is_verification_email == 1) {
             $user = User::where('verification_link', '=', $token)->first();
             if (isset($user)) {
                 $user->email_verified = 'Yes';
                 $user->update();
-                $notification = new Notification;
-                $notification->user_id = $user->id;
-                $notification->save();
+                $catalogEvent = new CatalogEvent;
+                $catalogEvent->user_id = $user->id;
+                $catalogEvent->save();
 
                 $data = [
                     'to' => $user->email,

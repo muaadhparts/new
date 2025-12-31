@@ -37,18 +37,18 @@ class Compare extends Model
 
     /**
      * Legacy method for backward compatibility
-     * Converts product_id to merchant_product_id
+     * Converts catalog_item_id to merchant_item_id
      */
-    public function addLegacy($product, $productId)
+    public function addLegacy($catalogItem, $catalogItemId)
     {
-        // Find the first active merchant product for this product
-        $merchantProduct = \App\Models\MerchantProduct::where('product_id', $productId)
+        // Find the first active merchant item for this catalog item
+        $merchantItem = \App\Models\MerchantItem::where('catalog_item_id', $catalogItemId)
             ->where('status', 1)
             ->orderBy('price')
             ->first();
 
-        if ($merchantProduct) {
-            $this->add($merchantProduct, $merchantProduct->id);
+        if ($merchantItem) {
+            $this->add($merchantItem, $merchantItem->id);
         }
     }
 

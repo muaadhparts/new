@@ -4,9 +4,8 @@ namespace App\Http\Controllers\Auth\Rider;
 
 use App\{
 	Models\Rider,
-	Models\Notification,
 	Classes\MuaadhMailer,
-	Models\Generalsetting,
+	Models\Muaadhsetting,
 	Http\Controllers\Controller
 };
 use Illuminate\Http\Request;
@@ -20,7 +19,7 @@ class RegisterController extends Controller
 	{
 
 
-		$gs = Generalsetting::findOrFail(1);
+		$gs = Muaadhsetting::findOrFail(1);
 
 
 		// if ($gs->is_capcha == 1) {
@@ -90,7 +89,7 @@ class RegisterController extends Controller
 
 	public function token($token)
 	{
-		$gs = Generalsetting::findOrFail(1);
+		$gs = Muaadhsetting::findOrFail(1);
 
 		if ($gs->is_verification_email == 1) {
 			$rider = Rider::where('email_token', '=', $token)->first();

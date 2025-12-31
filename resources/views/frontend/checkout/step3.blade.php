@@ -211,7 +211,7 @@
                                         </defs>
                                     </svg>
                                 </button>
-                                <a href="{{ isset($is_vendor_checkout) && $is_vendor_checkout ? route('front.checkout.vendor.step2', $vendor_id) : route('front.checkout.step2') }}" class="template-btn dark-outline w-100">
+                                <a href="{{ isset($is_merchant_checkout) && $is_merchant_checkout ? route('front.checkout.vendor.step2', $vendor_id) : route('front.checkout.step2') }}" class="template-btn dark-outline w-100">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="25" height="24" viewBox="0 0 25 24"
                                         fill="none">
                                         <g clip-path="url(#clip0_489_34179)">
@@ -241,7 +241,7 @@
                  POLICY: vendor_id comes from ROUTE, not from hidden inputs
                  These are kept for discount code JS functionality only --}}
             <input type="hidden" id="checkout-vendor-id" value="{{ $vendor_id ?? '' }}">
-            <input type="hidden" id="is-vendor-checkout" value="{{ ($is_vendor_checkout ?? false) ? '1' : '0' }}">
+            <input type="hidden" id="is-merchant-checkout" value="{{ ($is_merchant_checkout ?? false) ? '1' : '0' }}">
 
             {{-- ✅ Basic Order Information --}}
             <input type="hidden" name="dp" value="{{ $digital }}">
@@ -468,9 +468,9 @@
         e.preventDefault();
 
         var vendorId = $('#checkout-vendor-id').val();
-        var isVendorCheckout = $('#is-vendor-checkout').val() === '1';
+        var isMerchantCheckout = $('#is-merchant-checkout').val() === '1';
 
-        console.log('Removing discount code:', { vendorId: vendorId, isVendorCheckout: isVendorCheckout });
+        console.log('Removing discount code:', { vendorId: vendorId, isMerchantCheckout: isMerchantCheckout });
 
         $.ajax({
             type: "POST",

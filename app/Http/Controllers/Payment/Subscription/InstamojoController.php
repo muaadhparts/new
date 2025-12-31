@@ -132,7 +132,7 @@ public function notify(Request $request){
 
         $today = Carbon::now()->format('Y-m-d');
 
-        $input['is_vendor'] = 2;
+        $input['is_merchant'] = 2;
 
         if(!empty($package))
         {

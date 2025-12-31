@@ -2,27 +2,27 @@
 
 /**
  * ====================================================================
- * MYFATOORAH PAYMENT CONTROLLER - VENDOR CHECKOUT ONLY
+ * MYFATOORAH PAYMENT CONTROLLER - MERCHANT CHECKOUT ONLY
  * ====================================================================
- * Modified: 2025-01-19 for Vendor Checkout System
- * - Uses HandlesVendorCheckout trait
- * - Reads from vendor_step1/step2 ONLY
+ * Modified: 2025-01-19 for Merchant Checkout System
+ * - Uses HandlesMerchantCheckout trait
+ * - Reads from merchant_step1/step2 ONLY
  * ====================================================================
  */
 
 namespace App\Http\Controllers\Payment\Checkout;
 
 use App\Classes\MuaadhMailer;
-use App\Helpers\OrderHelper;
+use App\Helpers\PurchaseHelper;
 use App\Helpers\PriceHelper;
 use App\Http\Controllers\Controller;
 use App\Models\Cart;
 use App\Models\Country;
-use App\Models\Order;
+use App\Models\Purchase;
 use App\Models\PaymentGateway;
 use App\Models\Reward;
 use App\Models\StockReservation;
-use App\Traits\HandlesVendorCheckout;
+use App\Traits\HandlesMerchantCheckout;
 use App\Traits\SavesCustomerShippingChoice;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -35,18 +35,18 @@ use MyFatoorah\Library\MyFatoorah;
 use MyFatoorah\Library\API\Payment\MyFatoorahPayment;
 use MyFatoorah\Library\API\Payment\MyFatoorahPaymentEmbedded;
 use MyFatoorah\Library\API\Payment\MyFatoorahPaymentStatus;
-use App\Services\VendorCredentialService;
+use App\Services\MerchantCredentialService;
 use Exception;
 
 class MyFatoorahController extends CheckoutBaseControlller {
-    use HandlesVendorCheckout, SavesCustomerShippingChoice;
+    use HandlesMerchantCheckout, SavesCustomerShippingChoice;
 
     /**
      * @var array
      */
     public $mfConfig = [];
 
-    protected VendorCredentialService $vendorCredentialService;
+    protected MerchantCredentialService $merchantCredentialService;
 
 //-----------------------------------------------------------------------------------------------------------------------------------------
 
@@ -58,10 +58,10 @@ class MyFatoorahController extends CheckoutBaseControlller {
      * Each vendor MUST have their own MyFatoorah credentials.
      */
     public function __construct(
-        VendorCredentialService $vendorCredentialService
+        MerchantCredentialService $merchantCredentialService
     ) {
         parent::__construct();
-        $this->vendorCredentialService = $vendorCredentialService;
+        $this->merchantCredentialService = $merchantCredentialService;
 
         // No default config - MUST use getVendorMfConfig() per vendor
         $this->mfConfig = [];
@@ -83,7 +83,7 @@ class MyFatoorahController extends CheckoutBaseControlller {
     protected function getVendorMfConfig(int $vendorId): array
     {
         // Get vendor-specific API key - NO FALLBACK
-        $apiKey = $this->vendorCredentialService->getMyFatoorahKeyStrict($vendorId);
+        $apiKey = $this->merchantCredentialService->getMyFatoorahKeyStrict($vendorId);
 
         if (empty($apiKey)) {
             throw new \Exception(
@@ -124,7 +124,7 @@ class MyFatoorahController extends CheckoutBaseControlller {
         // This prevents vendor_id loss when session expires or user navigates
         // ====================================================================
         $vendorIdFromPost = $request->input('checkout_vendor_id');
-        $isVendorCheckoutFromPost = $request->input('is_vendor_checkout') === '1';
+        $isMerchantCheckoutFromPost = $request->input('is_merchant_checkout') === '1';
 
         // Get from session as fallback
         $vendorData = $this->getVendorCheckoutData();
@@ -132,7 +132,7 @@ class MyFatoorahController extends CheckoutBaseControlller {
 
         // Use POST value first, then session
         $vendorId = !empty($vendorIdFromPost) ? (int)$vendorIdFromPost : $vendorIdFromSession;
-        $isVendorCheckout = $isVendorCheckoutFromPost || $vendorData['is_vendor_checkout'];
+        $isMerchantCheckout = $isMerchantCheckoutFromPost || $vendorData['is_merchant_checkout'];
 
         // If we got vendor_id from POST but not in session, restore it to session for later use
         if ($vendorId && !$vendorIdFromSession) {
@@ -166,7 +166,7 @@ class MyFatoorahController extends CheckoutBaseControlller {
         }
 
         // Get steps from vendor sessions ONLY
-        $steps = $this->getCheckoutSteps($vendorId, $isVendorCheckout);
+        $steps = $this->getCheckoutSteps($vendorId, $isMerchantCheckout);
         $step1 = $steps['step1'];
         $step2 = $steps['step2'];
 
@@ -183,7 +183,7 @@ class MyFatoorahController extends CheckoutBaseControlller {
         $oldCart = Session::get('cart');
         $originalCart = new Cart($oldCart);
         $cart = $this->filterCartForVendor($originalCart, $vendorId);
-        OrderHelper::license_check($cart);
+        PurchaseHelper::license_check($cart);
 
         $cartData = [
             'totalQty' => $cart->totalQty,
@@ -192,7 +192,7 @@ class MyFatoorahController extends CheckoutBaseControlller {
         ];
         $input['cart'] = json_encode($cartData);
 
-        $affilateUsers = OrderHelper::product_affilate_check($cart);
+        $affilateUsers = PurchaseHelper::product_affilate_check($cart);
         $input['affilate_users'] = $affilateUsers ? json_encode($affilateUsers) : null;
 
         // ✅ استخدام الدالة الموحدة من CheckoutBaseControlller
@@ -201,7 +201,7 @@ class MyFatoorahController extends CheckoutBaseControlller {
         $orderTotal = $prepared['order_total'];
 
         $input['pay_amount'] = $orderTotal;
-        $input['order_number'] = Str::random(4) . time();
+        $input['purchase_number'] = Str::random(4) . time();
 
         // Get tax data from vendor step2 (already fetched at method start)
         $input['tax'] = $step2['tax_amount'] ?? 0;
@@ -209,48 +209,48 @@ class MyFatoorahController extends CheckoutBaseControlller {
         $input['user_id'] = Auth::id();
 
 
-        // Create Order
-        $order = new Order();
-//        $order->fill($input);
+        // Create Purchase
+        $purchase = new Purchase();
+//        $purchase->fill($input);
 
 //       return redirect(url('myfatoorah/checkout'));
 //        dd($input);
-        $order->fill($input)->save();
+        $purchase->fill($input)->save();
 
-        // Clear stock reservations after successful order (stock already sold)
+        // Clear stock reservations after successful purchase (stock already sold)
         StockReservation::clearAfterPurchase();
 
-        // Order Tracks and Notifications
-        $order->tracks()->create(['title' => 'Pending', 'text' => 'You have successfully placed your order.']);
-        $order->notifications()->create();
+        // Purchase Tracks and Notifications
+        $purchase->tracks()->create(['title' => 'Pending', 'text' => 'You have successfully placed your purchase.']);
+        $purchase->notifications()->create();
 
         // Discount Code validation
         if (!empty($input['discount_code_id'])) {
-            OrderHelper::discount_code_check($input['discount_code_id']);
+            PurchaseHelper::discount_code_check($input['discount_code_id']);
         }
 
         // Rewards for authenticated user
         if (Auth::check() && $this->gs->is_reward) {
-            $this->applyRewards($order);
+            $this->applyRewards($purchase);
         }
 
-        // Update Order Details
-        OrderHelper::size_qty_check($cart);
-        OrderHelper::stock_check($cart);
-        OrderHelper::vendor_order_check($cart, $order);
+        // Update Purchase Details
+        PurchaseHelper::size_qty_check($cart);
+        PurchaseHelper::stock_check($cart);
+        PurchaseHelper::vendor_purchase_check($cart, $purchase);
 
-        // Clear Session and Prepare for Next Order
-        $this->clearOrderSession($order, $cart, $vendorId, $originalCart);
+        // Clear Session and Prepare for Next Purchase
+        $this->clearPurchaseSession($purchase, $cart, $vendorId, $originalCart);
 
         // Send Emails
-        $this->sendOrderEmails($order);
-//        $this->checkout($order);
+        $this->sendPurchaseEmails($purchase);
+//        $this->checkout($purchase);
         try {
 
-//        dd($order);
-            //You can get the data using the order object in your system
-            $orderId = $order->order_number ?: 147;
-            $order2   = $this->getOrderData($order);
+//        dd($purchase);
+            //You can get the data using the purchase object in your system
+            $orderId = $purchase->purchase_number ?: 147;
+            $order2   = $this->getOrderData($purchase);
 //            dd($order ,$order2);
             //You can replace this variable with customer Id in your system
             $customerId = request('customerId');
@@ -287,9 +287,9 @@ class MyFatoorahController extends CheckoutBaseControlller {
 //        return redirect()->route('front.payment.return');
     }
 
-    private function applyRewards(Order $order)
+    private function applyRewards(Purchase $purchase)
     {
-        $num = $order->pay_amount;
+        $num = $purchase->pay_amount;
         $rewards = Reward::all();
         $closestReward = $rewards->sortBy(fn($reward) => abs($reward->order_amount - $num))->first();
 
@@ -298,27 +298,27 @@ class MyFatoorahController extends CheckoutBaseControlller {
         }
     }
 
-    private function clearOrderSession(Order $order, Cart $cart, $vendorId, $originalCart)
+    private function clearPurchaseSession(Purchase $purchase, Cart $cart, $vendorId, $originalCart)
     {
-        Session::put('temporder', $order);
+        Session::put('temporder', $purchase);
         Session::put('tempcart', $cart);
 
         // Remove only vendor's products from cart
         $this->removeVendorProductsFromCart($vendorId, $originalCart);
 
-        if ($order->user_id && $order->wallet_price) {
-            OrderHelper::add_to_transaction($order, $order->wallet_price);
+        if ($purchase->user_id && $purchase->wallet_price) {
+            PurchaseHelper::add_to_transaction($purchase, $purchase->wallet_price);
         }
     }
 
-    private function sendOrderEmails(Order $order)
+    private function sendPurchaseEmails(Purchase $purchase)
     {
         // Email to Customer
         $customerData = [
-            'to' => $order->customer_email,
+            'to' => $purchase->customer_email,
             'type' => "new_order",
-            'cname' => $order->customer_name,
-            'onumber' => $order->order_number,
+            'cname' => $purchase->customer_name,
+            'onumber' => $purchase->purchase_number,
             'oamount' => "",
             'aname' => "",
             'aemail' => "",
@@ -326,13 +326,13 @@ class MyFatoorahController extends CheckoutBaseControlller {
         ];
 
 
-        (new MuaadhMailer())->sendAutoOrderMail($customerData, $order->id);
+        (new MuaadhMailer())->sendAutoOrderMail($customerData, $purchase->id);
 
         // Email to Admin
         $adminData = [
             'to' => $this->ps->contact_email,
-            'subject' => "New Order Received!!",
-            'body' => "Hello Admin!<br>Your store has received a new order.<br>Order Number is {$order->order_number}. Please login to your panel to check.<br>Thank you.",
+            'subject' => "New Purchase Received!!",
+            'body' => "Hello Admin!<br>Your store has received a new purchase.<br>Purchase Number is {$purchase->purchase_number}. Please login to your panel to check.<br>Thank you.",
         ];
         (new MuaadhMailer())->sendCustomMail($adminData);
     }
@@ -425,18 +425,18 @@ class MyFatoorahController extends CheckoutBaseControlller {
 
     /**
      * Example on how to Display the enabled gateways at your MyFatoorah account to be displayed on the checkout page
-     * Provide the checkout method with the order id to display its total amount and currency
-     * 
+     * Provide the checkout method with the purchase id to display its total amount and currency
+     *
      * @return View
      */
-    public function checkout($order) {
+    public function checkout($purchase) {
         try {
 
-//        dd($order);
-            //You can get the data using the order object in your system
-            $orderId = $order->order_number ?: 147;
-            $order2   = $this->getOrderData($order);
-//            dd($order ,$order2);
+//        dd($purchase);
+            //You can get the data using the purchase object in your system
+            $orderId = $purchase->purchase_number ?: 147;
+            $order2   = $this->getOrderData($purchase);
+//            dd($purchase ,$order2);
             //You can replace this variable with customer Id in your system
             $customerId = request('customerId');
 //            dd($order ,'checkout');
@@ -545,16 +545,16 @@ class MyFatoorahController extends CheckoutBaseControlller {
         ];
     }
 
-    private function getOrderData($order) {
-//        dd($order ,'getOrderData');
+    private function getOrderData($purchase) {
+//        dd($purchase ,'getOrderData');
         return [
-            "CustomerName"  => $order->customer_name,
+            "CustomerName"  => $purchase->customer_name,
         "NotificationOption" =>  "ALL",
           "Language" =>  "ar",
         "DisplayCurrencyIso" =>  "SAR",
             "MobileCountryCode" =>  "966",
          "CustomerMobile" =>  "506552294",
-        "total" =>  $order->pay_amount,
+        "total" =>  $purchase->pay_amount,
 //
 //            'total'    => 1,
             'currency' => 'SAR'

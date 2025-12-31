@@ -10,7 +10,7 @@ use App\{
 };
 
 use Session;
-use OrderHelper;
+use PurchaseHelper;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 

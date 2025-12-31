@@ -26,14 +26,14 @@
                 <div class="row gy-4 mt-20">
                     @foreach ($favorites as $favoriteItem)
                     @php
-                        $product = $favoriteItem->product;
-                        $mp = $favoriteItem->effective_merchant_product ?? $favoriteItem->merchantProduct;
+                        $catalogItem = $favoriteItem->catalogItem;
+                        $mp = $favoriteItem->effective_merchant_item ?? $favoriteItem->merchantItem;
                     @endphp
-                    @include('includes.frontend.home_product', [
+                    @include('includes.frontend.home_catalog_item', [
                     'class' => 'col-6 col-md-4 col-lg-3',
                     'favorite' => true,
                     'favoriteId' => $favoriteItem->id,
-                    'product' => $product,
+                    'catalogItem' => $catalogItem,
                     'mp' => $mp
                     ])
                     @endforeach

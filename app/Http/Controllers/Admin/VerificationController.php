@@ -86,8 +86,8 @@ class VerificationController extends AdminBaseController
 
     public function edit($id)
     {
-        $data = Order::find($id);
-        return view('admin.order.delivery',compact('data'));
+        $data = \App\Models\Purchase::find($id);
+        return view('admin.purchase.delivery',compact('data'));
     }
 
 
@@ -95,7 +95,7 @@ class VerificationController extends AdminBaseController
     public function update(Request $request, $id)
     {
         //--- Logic Section
-        $data = Order::findOrFail($id);
+        $data = \App\Models\Purchase::findOrFail($id);
 
         $input = $request->all();
 
@@ -104,11 +104,11 @@ class VerificationController extends AdminBaseController
             $input['status'] = "completed";
             $data->update($input);
             //--- Logic Section Ends
-    
-        //--- Redirect Section          
+
+        //--- Redirect Section
         $msg = __('Status Updated Successfully.');
-        return response()->json($msg);    
-        //--- Redirect Section Ends     
+        return response()->json($msg);
+        //--- Redirect Section Ends
 
     }
 

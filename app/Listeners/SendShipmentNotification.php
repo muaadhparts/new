@@ -3,7 +3,7 @@
 namespace App\Listeners;
 
 use App\Events\ShipmentStatusChanged;
-use App\Models\Order;
+use App\Models\Purchase;
 use App\Models\User;
 use App\Notifications\ShipmentStatusUpdated;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -38,8 +38,8 @@ class SendShipmentNotification implements ShouldQueue
         // Notify customer
         $this->notifyCustomer($shipmentLog, $oldStatus);
 
-        // Notify vendor
-        $this->notifyVendor($shipmentLog, $oldStatus);
+        // Notify merchant
+        $this->notifyMerchant($shipmentLog, $oldStatus);
 
         // For critical statuses (delivered, failed, returned), also notify admin
         if (in_array($shipmentLog->status, ['delivered', 'failed', 'returned'])) {
@@ -52,46 +52,46 @@ class SendShipmentNotification implements ShouldQueue
      */
     protected function notifyCustomer($shipmentLog, $oldStatus): void
     {
-        $order = Order::find($shipmentLog->order_id);
+        $purchase = Purchase::find($shipmentLog->purchase_id);
 
-        if (!$order) {
+        if (!$purchase) {
             return;
         }
 
-        // If order has registered user
-        if ($order->user_id) {
-            $user = User::find($order->user_id);
+        // If purchase has registered user
+        if ($purchase->user_id) {
+            $user = User::find($purchase->user_id);
             if ($user) {
                 $user->notify(new ShipmentStatusUpdated($shipmentLog, $oldStatus));
             }
         } else {
             // Guest user - send email directly
-            if ($order->customer_email) {
-                Notification::route('mail', $order->customer_email)
+            if ($purchase->customer_email) {
+                Notification::route('mail', $purchase->customer_email)
                     ->notify(new ShipmentStatusUpdated($shipmentLog, $oldStatus));
             }
         }
     }
 
     /**
-     * Notify vendor about shipment update
+     * Notify merchant about shipment update
      */
-    protected function notifyVendor($shipmentLog, $oldStatus): void
+    protected function notifyMerchant($shipmentLog, $oldStatus): void
     {
-        if (!$shipmentLog->vendor_id) {
+        if (!$shipmentLog->merchant_id) {
             return;
         }
 
-        $vendor = User::find($shipmentLog->vendor_id);
-        if ($vendor) {
-            // Store database notification for vendor
-            $vendor->notifications()->create([
+        $merchant = User::find($shipmentLog->merchant_id);
+        if ($merchant) {
+            // Store database notification for merchant
+            $merchant->notifications()->create([
                 'id' => \Illuminate\Support\Str::uuid(),
                 'type' => ShipmentStatusUpdated::class,
                 'data' => [
                     'type' => 'shipment_status_updated',
                     'tracking_number' => $shipmentLog->tracking_number,
-                    'order_id' => $shipmentLog->order_id,
+                    'purchase_id' => $shipmentLog->purchase_id,
                     'old_status' => $oldStatus,
                     'new_status' => $shipmentLog->status,
                     'status_ar' => $shipmentLog->status_ar,
@@ -112,8 +112,8 @@ class SendShipmentNotification implements ShouldQueue
             'tracking' => $shipmentLog->tracking_number,
             'old_status' => $oldStatus,
             'new_status' => $shipmentLog->status,
-            'order_id' => $shipmentLog->order_id,
-            'vendor_id' => $shipmentLog->vendor_id,
+            'purchase_id' => $shipmentLog->purchase_id,
+            'merchant_id' => $shipmentLog->merchant_id,
         ]);
     }
 }

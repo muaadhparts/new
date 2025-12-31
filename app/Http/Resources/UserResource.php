@@ -3,7 +3,7 @@
 namespace App\Http\Resources;
 
 use Illuminate\Http\Resources\Json\JsonResource;
-use App\Models\Generalsetting;
+use App\Models\Muaadhsetting;
 
 class UserResource extends JsonResource
 {
@@ -15,7 +15,7 @@ class UserResource extends JsonResource
      */
     public function toArray($request)
     {
-      $gs = Generalsetting::first();
+      $gs = Muaadhsetting::first();
 
       return [
         'id' => $this->id,

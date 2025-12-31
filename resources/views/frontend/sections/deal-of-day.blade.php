@@ -2,19 +2,19 @@
 ================================================================================
 SECTION PARTIAL: Deal of the Day
 ================================================================================
-Receives: $merchantProduct (MerchantProduct model with product loaded)
-OR legacy: $product (Product model with bestMerchant loaded)
+Receives: $merchantItem (MerchantItem model with catalogItem loaded)
+OR legacy: $catalogItem (CatalogItem model with bestMerchant loaded)
 ================================================================================
 --}}
 
 @php
-    // Support both new (merchantProduct) and legacy (product) approaches
-    if (isset($merchantProduct) && $merchantProduct instanceof \App\Models\MerchantProduct) {
-        $mp = $merchantProduct;
-        $actualProduct = $merchantProduct->product;
+    // Support both new (merchantItem) and legacy (catalogItem) approaches
+    if (isset($merchantItem) && $merchantItem instanceof \App\Models\MerchantItem) {
+        $mp = $merchantItem;
+        $actualProduct = $merchantItem->catalogItem;
     } else {
-        $actualProduct = $product ?? null;
-        $mp = $actualProduct->bestMerchant ?? $actualProduct->merchantProducts->first() ?? null;
+        $actualProduct = $catalogItem ?? null;
+        $mp = $actualProduct->bestMerchant ?? $actualProduct->merchantItems->first() ?? null;
     }
 
     if (!$actualProduct || !$mp) {
@@ -36,10 +36,10 @@ OR legacy: $product (Product model with bestMerchant loaded)
     $discountDate = $mp->discount_date ?? null;
 
     // Build product URL with vendor context
-    $productUrl = route('front.product', [
+    $productUrl = route('front.catalog-item', [
         'slug' => $actualProduct->slug,
         'vendor_id' => $mp->user_id,
-        'merchant_product_id' => $mp->id
+        'merchant_item_id' => $mp->id
     ]);
 
     // Brand info (from product)
@@ -111,9 +111,9 @@ OR legacy: $product (Product model with bestMerchant loaded)
                 </div>
 
                 <div class="muaadh-deal-price">
-                    <span class="muaadh-price-current">{{ \App\Models\Product::convertPrice($price) }}</span>
+                    <span class="muaadh-price-current">{{ \App\Models\CatalogItem::convertPrice($price) }}</span>
                     @if($previousPrice && $previousPrice > $price)
-                        <span class="muaadh-price-old">{{ \App\Models\Product::convertPrice($previousPrice) }}</span>
+                        <span class="muaadh-price-old">{{ \App\Models\CatalogItem::convertPrice($previousPrice) }}</span>
                     @endif
                 </div>
 
@@ -142,9 +142,9 @@ OR legacy: $product (Product model with bestMerchant loaded)
                 @if ($productType !== 'Listing' && $affiliateProductType !== 'affiliate')
                     @if ($inStock)
                         <button type="button" class="muaadh-btn muaadh-btn-primary m-cart-add"
-                            data-merchant-product-id="{{ $mp->id }}"
+                            data-merchant-item-id="{{ $mp->id }}"
                             data-vendor-id="{{ $mp->user_id }}"
-                            data-product-id="{{ $actualProduct->id }}"
+                            data-catalog-item-id="{{ $actualProduct->id }}"
                             data-min-qty="{{ $minQty }}"
                             data-stock="{{ $stockQty }}"
                             data-preordered="{{ $preordered ? '1' : '0' }}">

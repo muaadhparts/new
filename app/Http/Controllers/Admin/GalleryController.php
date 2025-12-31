@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\{
     Http\Controllers\Controller,
     Models\Gallery,
-    Models\Product
+    Models\CatalogItem
 };
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -18,11 +18,11 @@ class GalleryController extends Controller
     {
         $data[0] = 0;
         $id = $_GET['id'];
-        $prod = Product::findOrFail($id);
-        if(count($prod->galleries))
+        $catalogItem = CatalogItem::findOrFail($id);
+        if(count($catalogItem->galleries))
         {
             $data[0] = 1;
-            $data[1] = $prod->galleries;
+            $data[1] = $catalogItem->galleries;
         }
         return response()->json($data);              
     }  
@@ -30,7 +30,7 @@ class GalleryController extends Controller
     public function store(Request $request)
     { 
         $data = null;
-        $lastid = $request->product_id;
+        $lastid = $request->catalog_item_id ?? $request->product_id;
         if ($files = $request->file('gallery')){
             foreach ($files as  $key => $file){
                 $val = $file->getClientOriginalExtension();
@@ -44,7 +44,7 @@ class GalleryController extends Controller
         $img->save('assets/images/galleries/'.$thumbnail);
 
                     $gallery['photo'] = $thumbnail;
-                    $gallery['product_id'] = $lastid;
+                    $gallery['catalog_item_id'] = $lastid;
                     $gallery->save();
                     $data[] = $gallery;                        
                   }

@@ -10,7 +10,7 @@
 
 @php
     use Illuminate\Support\Facades\Storage;
-    use App\Models\Product;
+    use App\Models\CatalogItem;
 
     // Use variables passed from CartController::cart()
     // $productsByVendor, $products, $totalPrice are already available
@@ -69,11 +69,11 @@
                                 $photoUrl = $itemPhoto ? Storage::url($itemPhoto) : asset('assets/images/noimage.png');
 
                                 $itemVendorId = $product['user_id'] ?? data_get($product, 'item.user_id') ?? 0;
-                                $itemMpId = $product['merchant_product_id'] ?? data_get($product, 'item.merchant_product_id') ?? 0;
+                                $itemMpId = $product['merchant_item_id'] ?? data_get($product, 'item.merchant_item_id') ?? 0;
                                 $hasAllParams = $itemSlug && $itemVendorId && $itemMpId;
 
                                 $productUrl = $hasAllParams
-                                    ? route('front.product', ['slug' => $itemSlug, 'vendor_id' => $itemVendorId, 'merchant_product_id' => $itemMpId])
+                                    ? route('front.catalog-item', ['slug' => $itemSlug, 'vendor_id' => $itemVendorId, 'merchant_item_id' => $itemMpId])
                                     : '#';
 
                                 $itemPrice = $product['item_price'] ?? 0;
@@ -95,7 +95,7 @@
                                 $preordered = 0;
 
                                 if ($itemMpId) {
-                                    $mp = \App\Models\MerchantProduct::with('qualityBrand')->find($itemMpId);
+                                    $mp = \App\Models\MerchantItem::with('qualityBrand')->find($itemMpId);
                                     if ($mp) {
                                         // Real-time stock (المخزون المتبقي الفعلي)
                                         $sizeVal = $product['size'] ?? '';

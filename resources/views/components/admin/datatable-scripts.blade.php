@@ -19,7 +19,7 @@
 @php
     $tableId = $tableId ?? 'muaadhtable';
     $modalId = $modalId ?? 'modal1';
-    $gs = $gs ?? \App\Models\Generalsetting::first();
+    $gs = $gs ?? \App\Models\Muaadhsetting::first();
 @endphp
 
 <script type="text/javascript">

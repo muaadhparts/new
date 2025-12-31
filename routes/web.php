@@ -11,7 +11,7 @@ use Siberfx\LaravelTryoto\app\Http\Controllers\Api\TryOtoController;
 
 
 use App\Http\Controllers\Api\CalloutController;
-use App\Http\Controllers\Front\ProductDetailsController;
+use App\Http\Controllers\Front\CatalogItemDetailsController;
 use App\Http\Controllers\Front\SearchApiController;
 use App\Http\Controllers\Front\VehicleSearchApiController;
 
@@ -127,12 +127,12 @@ Route::get('/refresh-stock/{token}', function ($token) {
 Route::get('/checkout/quick', 'Front\QuickCheckoutController@quick')->name('front.checkout.quick');
 
 Route::prefix('modal')->name('modal.')->group(function () {
-    Route::get('/product/id/{product}',   [ProductDetailsController::class, 'productFragment'])->name('product.id');
-    Route::get('/product/sku/{sku}',      [ProductDetailsController::class, 'productFragment'])->name('product.sku');
-    Route::get('/compatibility/{key}',    [ProductDetailsController::class, 'compatibilityFragment'])->name('compatibility');
-    Route::get('/alternative/{key}',      [ProductDetailsController::class, 'alternativeFragment'])->name('alternative');
-    Route::get('/quickview/{id}',         [ProductDetailsController::class, 'quickFragment'])->name('quickview');
-    Route::get('/product/{key}',          [ProductDetailsController::class, 'productFragment'])->name('product');
+    Route::get('/catalog-item/id/{catalogItem}',   [CatalogItemDetailsController::class, 'catalogItemFragment'])->name('catalog-item.id');
+    Route::get('/catalog-item/sku/{sku}',      [CatalogItemDetailsController::class, 'catalogItemFragment'])->name('catalog-item.sku');
+    Route::get('/compatibility/{key}',    [CatalogItemDetailsController::class, 'compatibilityFragment'])->name('compatibility');
+    Route::get('/alternative/{key}',      [CatalogItemDetailsController::class, 'alternativeFragment'])->name('alternative');
+    Route::get('/quickview/{id}',         [CatalogItemDetailsController::class, 'quickFragment'])->name('quickview');
+    Route::get('/catalog-item/{key}',          [CatalogItemDetailsController::class, 'catalogItemFragment'])->name('catalog-item');
 });
 
 // ✅ API Routes with Rate Limiting
@@ -173,10 +173,10 @@ Route::prefix('admin')->group(function () {
         Route::get('/all/notf/count', 'Admin\NotificationController@all_notf_count')->name('all-notf-count');
         Route::get('/user/notf/show', 'Admin\NotificationController@user_notf_show')->name('user-notf-show');
         Route::get('/user/notf/clear', 'Admin\NotificationController@user_notf_clear')->name('user-notf-clear');
-        Route::get('/order/notf/show', 'Admin\NotificationController@order_notf_show')->name('order-notf-show');
-        Route::get('/order/notf/clear', 'Admin\NotificationController@order_notf_clear')->name('order-notf-clear');
-        Route::get('/product/notf/show', 'Admin\NotificationController@product_notf_show')->name('product-notf-show');
-        Route::get('/product/notf/clear', 'Admin\NotificationController@product_notf_clear')->name('product-notf-clear');
+        Route::get('/purchase/notf/show', 'Admin\NotificationController@purchase_notf_show')->name('purchase-notf-show');
+        Route::get('/purchase/notf/clear', 'Admin\NotificationController@purchase_notf_clear')->name('purchase-notf-clear');
+        Route::get('/catalog-item/notf/show', 'Admin\NotificationController@catalog_item_notf_show')->name('catalog-item-notf-show');
+        Route::get('/catalog-item/notf/clear', 'Admin\NotificationController@catalog_item_notf_clear')->name('catalog-item-notf-clear');
         Route::get('/conv/notf/show', 'Admin\NotificationController@conv_notf_show')->name('conv-notf-show');
         Route::get('/conv/notf/clear', 'Admin\NotificationController@conv_notf_clear')->name('conv-notf-clear');
         //------------ ADMIN NOTIFICATION SECTION ENDS ------------
@@ -210,68 +210,68 @@ Route::prefix('admin')->group(function () {
         Route::post('/credentials/{id}/test', 'Admin\ApiCredentialController@test')->name('admin.credentials.test');
         //------------ ADMIN API CREDENTIALS SECTION ENDS ------------
 
-        //------------ ADMIN VENDOR CREDENTIALS SECTION ------------
-        Route::get('/vendor-credentials', 'Admin\VendorCredentialController@index')->name('admin.vendor-credentials.index');
-        Route::get('/vendor-credentials/create', 'Admin\VendorCredentialController@create')->name('admin.vendor-credentials.create');
-        Route::post('/vendor-credentials', 'Admin\VendorCredentialController@store')->name('admin.vendor-credentials.store');
-        Route::get('/vendor-credentials/{id}/edit', 'Admin\VendorCredentialController@edit')->name('admin.vendor-credentials.edit');
-        Route::put('/vendor-credentials/{id}', 'Admin\VendorCredentialController@update')->name('admin.vendor-credentials.update');
-        Route::delete('/vendor-credentials/{id}', 'Admin\VendorCredentialController@destroy')->name('admin.vendor-credentials.destroy');
-        Route::post('/vendor-credentials/{id}/toggle', 'Admin\VendorCredentialController@toggle')->name('admin.vendor-credentials.toggle');
-        Route::post('/vendor-credentials/{id}/test', 'Admin\VendorCredentialController@test')->name('admin.vendor-credentials.test');
-        //------------ ADMIN VENDOR CREDENTIALS SECTION ENDS ------------
+        //------------ ADMIN MERCHANT CREDENTIALS SECTION ------------
+        Route::get('/merchant-credentials', 'Admin\MerchantCredentialController@index')->name('admin.merchant-credentials.index');
+        Route::get('/merchant-credentials/create', 'Admin\MerchantCredentialController@create')->name('admin.merchant-credentials.create');
+        Route::post('/merchant-credentials', 'Admin\MerchantCredentialController@store')->name('admin.merchant-credentials.store');
+        Route::get('/merchant-credentials/{id}/edit', 'Admin\MerchantCredentialController@edit')->name('admin.merchant-credentials.edit');
+        Route::put('/merchant-credentials/{id}', 'Admin\MerchantCredentialController@update')->name('admin.merchant-credentials.update');
+        Route::delete('/merchant-credentials/{id}', 'Admin\MerchantCredentialController@destroy')->name('admin.merchant-credentials.destroy');
+        Route::post('/merchant-credentials/{id}/toggle', 'Admin\MerchantCredentialController@toggle')->name('admin.merchant-credentials.toggle');
+        Route::post('/merchant-credentials/{id}/test', 'Admin\MerchantCredentialController@test')->name('admin.merchant-credentials.test');
+        //------------ ADMIN MERCHANT CREDENTIALS SECTION ENDS ------------
     });
 
-    //------------ ADMIN ORDER SECTION ------------
+    //------------ ADMIN PURCHASE SECTION ------------
 
     Route::group(['middleware' => 'permissions:orders'], function () {
 
-        Route::get('/orders/datatables/{slug}', 'Admin\OrderController@datatables')->name('admin-order-datatables'); //JSON REQUEST
-        Route::get('/orders', 'Admin\OrderController@orders')->name('admin-orders-all');
-        Route::get('/order/edit/{id}', 'Admin\OrderController@edit')->name('admin-order-edit');
-        Route::post('/order/update/{id}', 'Admin\OrderController@update')->name('admin-order-update');
-        Route::get('/order/{id}/show', 'Admin\OrderController@show')->name('admin-order-show');
-        Route::get('/order/{id}/invoice', 'Admin\OrderController@invoice')->name('admin-order-invoice');
-        Route::get('/order/{id}/print', 'Admin\OrderController@printpage')->name('admin-order-print');
-        Route::get('/order/{id1}/status/{status}', 'Admin\OrderController@status')->name('admin-order-status');
-        Route::post('/order/email/', 'Admin\OrderController@emailsub')->name('admin-order-emailsub');
-        Route::post('/order/{id}/license', 'Admin\OrderController@license')->name('admin-order-license');
-        Route::post('/order/product-submit', 'Admin\OrderController@product_submit')->name('admin-order-product-submit');
-        Route::get('/order/product-show/{id}', 'Admin\OrderController@product_show');
-        Route::get('/order/addcart/{id}', 'Admin\OrderController@addcart');
-        Route::get('/ordercart/product-edit/{id}/{itemid}/{orderid}', 'Admin\OrderController@product_edit')->name('admin-order-product-edit');
-        Route::get('/order/updatecart/{id}', 'Admin\OrderController@updatecart');
-        Route::get('/ordercart/product-delete/{id}/{orderid}', 'Admin\OrderController@product_delete')->name('admin-order-product-delete');
-        // Order Tracking
+        Route::get('/purchases/datatables/{slug}', 'Admin\PurchaseController@datatables')->name('admin-purchase-datatables'); //JSON REQUEST
+        Route::get('/purchases', 'Admin\PurchaseController@purchases')->name('admin-purchases-all');
+        Route::get('/purchase/edit/{id}', 'Admin\PurchaseController@edit')->name('admin-purchase-edit');
+        Route::post('/purchase/update/{id}', 'Admin\PurchaseController@update')->name('admin-purchase-update');
+        Route::get('/purchase/{id}/show', 'Admin\PurchaseController@show')->name('admin-purchase-show');
+        Route::get('/purchase/{id}/invoice', 'Admin\PurchaseController@invoice')->name('admin-purchase-invoice');
+        Route::get('/purchase/{id}/print', 'Admin\PurchaseController@printpage')->name('admin-purchase-print');
+        Route::get('/purchase/{id1}/status/{status}', 'Admin\PurchaseController@status')->name('admin-purchase-status');
+        Route::post('/purchase/email/', 'Admin\PurchaseController@emailsub')->name('admin-purchase-emailsub');
+        Route::post('/purchase/{id}/license', 'Admin\PurchaseController@license')->name('admin-purchase-license');
+        Route::post('/purchase/product-submit', 'Admin\PurchaseController@product_submit')->name('admin-purchase-product-submit');
+        Route::get('/purchase/product-show/{id}', 'Admin\PurchaseController@product_show');
+        Route::get('/purchase/addcart/{id}', 'Admin\PurchaseController@addcart');
+        Route::get('/purchasecart/product-edit/{id}/{itemid}/{purchaseid}', 'Admin\PurchaseController@product_edit')->name('admin-purchase-product-edit');
+        Route::get('/purchase/updatecart/{id}', 'Admin\PurchaseController@updatecart');
+        Route::get('/purchasecart/product-delete/{id}/{purchaseid}', 'Admin\PurchaseController@product_delete')->name('admin-purchase-product-delete');
+        // Purchase Tracking
 
-        // CREATE ORDER
+        // CREATE PURCHASE
 
-        Route::get('/order/product/datatables', 'Admin\OrderCreateController@datatables')->name('admin-order-product-datatables'); //JSON REQUEST
-        Route::get('/order/create', 'Admin\OrderCreateController@create')->name('admin-order-create');
-        Route::get('/order/product/add/{product_id}', 'Admin\OrderCreateController@addProduct')->name('admin-order-product-add');
-        Route::get('/order/product/add', 'Admin\OrderCreateController@orderStore')->name('admin.order.store.new');
-        Route::get('/order/product/remove/{product_id}', 'Admin\OrderCreateController@removeOrderProduct')->name('admin.order.product.remove');
-        Route::get('/order/create/product-show/{id}', 'Admin\OrderCreateController@product_show');
-        Route::get('/order/create/addcart/{id}', 'Admin\OrderCreateController@addcart');
-        Route::get('/order/remove/addcart/{id}', 'Admin\OrderCreateController@removeCart')->name('admin.order.remove.cart');
-        Route::get('/order/create/user-address', 'Admin\OrderCreateController@userAddress');
-        Route::post('/order/create/user-address', 'Admin\OrderCreateController@userAddressSubmit')->name('admin.order.create.user.address');
-        Route::post('/order/create/order/view', 'Admin\OrderCreateController@viewCreateOrder')->name('admin.order.create.view');
-        Route::get('/order/create/order/submit', 'Admin\OrderCreateController@CreateOrderSubmit')->name('admin-order-create-submit');
+        Route::get('/purchase/catalog-item/datatables', 'Admin\PurchaseCreateController@datatables')->name('admin-purchase-catalog-item-datatables');
+        Route::get('/purchase/create', 'Admin\PurchaseCreateController@create')->name('admin-purchase-create');
+        Route::get('/purchase/catalog-item/add/{catalog_item_id}', 'Admin\PurchaseCreateController@addProduct')->name('admin-purchase-catalog-item-add');
+        Route::get('/purchase/catalog-item/add', 'Admin\PurchaseCreateController@purchaseStore')->name('admin.purchase.store.new');
+        Route::get('/purchase/catalog-item/remove/{catalog_item_id}', 'Admin\PurchaseCreateController@removePurchaseProduct')->name('admin.purchase.catalog-item.remove');
+        Route::get('/purchase/create/catalog-item-show/{id}', 'Admin\PurchaseCreateController@catalog_item_show');
+        Route::get('/purchase/create/addcart/{id}', 'Admin\PurchaseCreateController@addcart');
+        Route::get('/purchase/remove/addcart/{id}', 'Admin\PurchaseCreateController@removeCart')->name('admin.purchase.remove.cart');
+        Route::get('/purchase/create/user-address', 'Admin\PurchaseCreateController@userAddress');
+        Route::post('/purchase/create/user-address', 'Admin\PurchaseCreateController@userAddressSubmit')->name('admin.purchase.create.user.address');
+        Route::post('/purchase/create/purchase/view', 'Admin\PurchaseCreateController@viewCreatePurchase')->name('admin.purchase.create.view');
+        Route::get('/purchase/create/purchase/submit', 'Admin\PurchaseCreateController@CreatePurchaseSubmit')->name('admin-purchase-create-submit');
 
-        Route::get('/order/{id}/track', 'Admin\OrderTrackController@index')->name('admin-order-track');
-        Route::get('/order/{id}/trackload', 'Admin\OrderTrackController@load')->name('admin-order-track-load');
-        Route::post('/order/track/store', 'Admin\OrderTrackController@store')->name('admin-order-track-store');
-        Route::get('/order/track/add', 'Admin\OrderTrackController@add')->name('admin-order-track-add');
-        Route::get('/order/track/edit/{id}', 'Admin\OrderTrackController@edit')->name('admin-order-track-edit');
-        Route::post('/order/track/update/{id}', 'Admin\OrderTrackController@update')->name('admin-order-track-update');
-        Route::delete('/order/track/delete/{id}', 'Admin\OrderTrackController@delete')->name('admin-order-track-delete');
+        Route::get('/purchase/{id}/timeline', 'Admin\PurchaseTimelineController@index')->name('admin-purchase-timeline');
+        Route::get('/purchase/{id}/timelineload', 'Admin\PurchaseTimelineController@load')->name('admin-purchase-timeline-load');
+        Route::post('/purchase/timeline/store', 'Admin\PurchaseTimelineController@store')->name('admin-purchase-timeline-store');
+        Route::get('/purchase/timeline/add', 'Admin\PurchaseTimelineController@add')->name('admin-purchase-timeline-add');
+        Route::get('/purchase/timeline/edit/{id}', 'Admin\PurchaseTimelineController@edit')->name('admin-purchase-timeline-edit');
+        Route::post('/purchase/timeline/update/{id}', 'Admin\PurchaseTimelineController@update')->name('admin-purchase-timeline-update');
+        Route::delete('/purchase/timeline/delete/{id}', 'Admin\PurchaseTimelineController@delete')->name('admin-purchase-timeline-delete');
 
-        // Order Tracking Ends
+        // Purchase Tracking Ends
 
     });
 
-    //------------ ADMIN ORDER SECTION ENDS------------
+    //------------ ADMIN PURCHASE SECTION ENDS------------
 
     //------------ ADMIN SHIPMENTS SECTION ------------
 
@@ -385,72 +385,60 @@ Route::prefix('admin')->group(function () {
 
     //------------ ADMIN MANAGE CATEGORY SECTION ENDS------------
 
-    //------------ ADMIN PRODUCT SECTION ------------
+    //------------ ADMIN CATALOG ITEM SECTION ------------
 
-    Route::group(['middleware' => 'permissions:products'], function () {
-
-        Route::get('/products/datatables', 'Admin\ProductController@datatables')->name('admin-prod-datatables'); //JSON REQUEST
-        Route::get('/products', 'Admin\ProductController@index')->name('admin-prod-index');
-
-        Route::post('/products/upload/update/{id}', 'Admin\ProductController@uploadUpdate')->name('admin-prod-upload-update');
-
-        Route::get('/products/deactive', 'Admin\ProductController@deactive')->name('admin-prod-deactive');
-
-        Route::get('/products/catalogs/datatables', 'Admin\ProductController@catalogdatatables')->name('admin-prod-catalog-datatables'); //JSON REQUEST
-        Route::get('/products/catalogs/', 'Admin\ProductController@productscatalog')->name('admin-prod-catalog-index');
+    Route::group(['middleware' => 'permissions:catalog_items'], function () {
+        Route::get('/catalog-items/datatables', 'Admin\CatalogItemController@datatables')->name('admin-catalog-item-datatables');
+        Route::get('/catalog-items', 'Admin\CatalogItemController@index')->name('admin-catalog-item-index');
+        Route::post('/catalog-items/upload/update/{id}', 'Admin\CatalogItemController@uploadUpdate')->name('admin-catalog-item-upload-update');
+        Route::get('/catalog-items/deactive', 'Admin\CatalogItemController@deactive')->name('admin-catalog-item-deactive');
+        Route::get('/catalog-items/catalogs/datatables', 'Admin\CatalogItemController@catalogdatatables')->name('admin-catalog-item-catalog-datatables');
+        Route::get('/catalog-items/catalogs/', 'Admin\CatalogItemController@catalogItemsCatalog')->name('admin-catalog-item-catalog-index');
 
         // CREATE SECTION
-        Route::get('/products/types', 'Admin\ProductController@types')->name('admin-prod-types');
-        Route::get('/products/{slug}/create', 'Admin\ProductController@create')->name('admin-prod-create');
-        Route::post('/products/store', 'Admin\ProductController@store')->name('admin-prod-store');
-        Route::get('/getattributes', 'Admin\ProductController@getAttributes')->name('admin-prod-getattributes');
-        Route::get('/get/crossproduct/{catid}', 'Admin\ProductController@getCrossProduct');
-        // CREATE SECTION
+        Route::get('/catalog-items/types', 'Admin\CatalogItemController@types')->name('admin-catalog-item-types');
+        Route::get('/catalog-items/{slug}/create', 'Admin\CatalogItemController@create')->name('admin-catalog-item-create');
+        Route::post('/catalog-items/store', 'Admin\CatalogItemController@store')->name('admin-catalog-item-store');
+        Route::get('/getattributes', 'Admin\CatalogItemController@getAttributes')->name('admin-catalog-item-getattributes');
+        Route::get('/get/crosscatalogitem/{catid}', 'Admin\CatalogItemController@getCrossCatalogItem');
 
         // EDIT SECTION
-        Route::get('/products/edit/{merchantProductId}', 'Admin\ProductController@edit')->name('admin-prod-edit');
-        Route::post('/products/edit/{merchantProductId}', 'Admin\ProductController@update')->name('admin-prod-update');
-        // EDIT SECTION ENDS
+        Route::get('/catalog-items/edit/{merchantItemId}', 'Admin\CatalogItemController@edit')->name('admin-catalog-item-edit');
+        Route::post('/catalog-items/edit/{merchantItemId}', 'Admin\CatalogItemController@update')->name('admin-catalog-item-update');
 
         // DELETE SECTION
-        Route::delete('/products/delete/{id}', 'Admin\ProductController@destroy')->name('admin-prod-delete');
-        // DELETE SECTION ENDS
+        Route::delete('/catalog-items/delete/{id}', 'Admin\CatalogItemController@destroy')->name('admin-catalog-item-delete');
 
-        Route::get('/products/catalog/{id1}/{id2}', 'Admin\ProductController@catalog')->name('admin-prod-catalog');
-
-        Route::get('/products/product-settings', 'Admin\ProductController@productsettings')->name('admin-gs-prod-settings');
-        Route::post('/products/product-settings/update', 'Admin\ProductController@settingUpdate')->name('admin-gs-prod-settings-update');
+        Route::get('/catalog-items/catalog/{id1}/{id2}', 'Admin\CatalogItemController@catalog')->name('admin-catalog-item-catalog');
+        Route::get('/catalog-items/feature/{id}', 'Admin\CatalogItemController@feature')->name('admin-catalog-item-feature');
+        Route::post('/catalog-items/feature/{id}', 'Admin\CatalogItemController@featuresubmit')->name('admin-catalog-item-feature.store');
+        Route::get('/catalog-items/status/{id1}/{id2}', 'Admin\CatalogItemController@status')->name('admin-catalog-item-status');
+        Route::get('/merchant-items/status/{id}/{status}', 'Admin\CatalogItemController@merchantItemStatus')->name('admin-merchant-item-status');
+        Route::get('/catalog-items/settings', 'Admin\CatalogItemController@catalogItemSettings')->name('admin-gs-catalog-item-settings');
+        Route::post('/catalog-items/settings/update', 'Admin\CatalogItemController@settingUpdate')->name('admin-gs-catalog-item-settings-update');
     });
 
-    //------------ ADMIN PRODUCT SECTION ENDS------------
+    //------------ ADMIN CATALOG ITEM SECTION ENDS------------
 
-    //------------ ADMIN AFFILIATE PRODUCT SECTION ------------
+    //------------ ADMIN AFFILIATE CATALOG ITEM SECTION ------------
 
-    Route::group(['middleware' => 'permissions:affilate_products'], function () {
-
-        Route::get('/products/import/create-product', 'Admin\ImportController@createImport')->name('admin-import-create');
-        Route::get('/products/import/edit/{id}', 'Admin\ImportController@edit')->name('admin-import-edit');
-
-        Route::get('/products/import/datatables', 'Admin\ImportController@datatables')->name('admin-import-datatables'); //JSON REQUEST
-        Route::get('/products/import/index', 'Admin\ImportController@index')->name('admin-import-index');
-
-        Route::post('/products/import/store', 'Admin\ImportController@store')->name('admin-import-store');
-        Route::post('/products/import/update/{id}', 'Admin\ImportController@update')->name('admin-import-update');
-
-        // DELETE SECTION
-        Route::delete('/affiliate/products/delete/{id}', 'Admin\ProductController@destroy')->name('admin-affiliate-prod-delete');
-        // DELETE SECTION ENDS
-
+    Route::group(['middleware' => 'permissions:affilate_catalog_items'], function () {
+        Route::get('/catalog-items/import/create', 'Admin\ImportController@createImport')->name('admin-import-create');
+        Route::get('/catalog-items/import/edit/{id}', 'Admin\ImportController@edit')->name('admin-import-edit');
+        Route::get('/catalog-items/import/datatables', 'Admin\ImportController@datatables')->name('admin-import-datatables');
+        Route::get('/catalog-items/import/index', 'Admin\ImportController@index')->name('admin-import-index');
+        Route::post('/catalog-items/import/store', 'Admin\ImportController@store')->name('admin-import-store');
+        Route::post('/catalog-items/import/update/{id}', 'Admin\ImportController@update')->name('admin-import-update');
+        Route::delete('/affiliate/catalog-items/delete/{id}', 'Admin\CatalogItemController@destroy')->name('admin-affiliate-catalog-item-delete');
     });
 
-    //------------ ADMIN AFFILIATE PRODUCT SECTION ENDS ------------
+    //------------ ADMIN AFFILIATE CATALOG ITEM SECTION ENDS ------------
 
     //------------ ADMIN CSV IMPORT SECTION ------------
 
-    Route::group(['middleware' => 'permissions:bulk_product_upload'], function () {
-
-        Route::get('/products/import', 'Admin\ProductController@import')->name('admin-prod-import');
-        Route::post('/products/import-submit', 'Admin\ProductController@importSubmit')->name('admin-prod-importsubmit');
+    Route::group(['middleware' => 'permissions:bulk_catalog_item_upload'], function () {
+        Route::get('/catalog-items/import', 'Admin\CatalogItemController@import')->name('admin-catalog-item-import');
+        Route::post('/catalog-items/import-submit', 'Admin\CatalogItemController@importSubmit')->name('admin-catalog-item-importsubmit');
     });
 
     //------------ ADMIN CSV IMPORT SECTION ENDS ------------
@@ -459,14 +447,14 @@ Route::prefix('admin')->group(function () {
 
     Route::group(['middleware' => 'permissions:product_discussion'], function () {
 
-        // RATING SECTION ENDS------------
+        // CATALOG REVIEW SECTION ------------
 
-        Route::get('/ratings/datatables', 'Admin\RatingController@datatables')->name('admin-rating-datatables'); //JSON REQUEST
-        Route::get('/ratings', 'Admin\RatingController@index')->name('admin-rating-index');
-        Route::delete('/ratings/delete/{id}', 'Admin\RatingController@destroy')->name('admin-rating-delete');
-        Route::get('/ratings/show/{id}', 'Admin\RatingController@show')->name('admin-rating-show');
+        Route::get('/catalog-reviews/datatables', 'Admin\CatalogReviewController@datatables')->name('admin-catalog-review-datatables'); //JSON REQUEST
+        Route::get('/catalog-reviews', 'Admin\CatalogReviewController@index')->name('admin-catalog-review-index');
+        Route::delete('/catalog-reviews/delete/{id}', 'Admin\CatalogReviewController@destroy')->name('admin-catalog-review-delete');
+        Route::get('/catalog-reviews/show/{id}', 'Admin\CatalogReviewController@show')->name('admin-catalog-review-show');
 
-        // RATING SECTION ENDS------------
+        // CATALOG REVIEW SECTION ENDS------------
 
         // COMMENT SECTION ------------
 
@@ -519,7 +507,7 @@ Route::prefix('admin')->group(function () {
         Route::delete('/users/delete/{id}', 'Admin\UserController@destroy')->name('admin-user-delete');
         Route::get('/user/{id}/show', 'Admin\UserController@show')->name('admin-user-show');
         Route::get('/users/ban/{id1}/{id2}', 'Admin\UserController@ban')->name('admin-user-ban');
-        Route::get('/user/default/image', 'Admin\GeneralSettingController@user_image')->name('admin-user-image');
+        Route::get('/user/default/image', 'Admin\MuaadhSettingController@user_image')->name('admin-user-image');
         Route::get('/users/deposit/{id}', 'Admin\UserController@deposit')->name('admin-user-deposit');
         Route::post('/user/deposit/{id}', 'Admin\UserController@depositUpdate')->name('admin-user-deposit-update');
         Route::get('/users/vendor/{id}', 'Admin\UserController@vendor')->name('admin-user-vendor');
@@ -555,7 +543,7 @@ Route::prefix('admin')->group(function () {
         Route::delete('/riders/delete/{id}', 'Admin\RiderController@destroy')->name('admin-rider-delete');
         Route::get('/rider/{id}/show', 'Admin\RiderController@show')->name('admin-rider-show');
         Route::get('/riders/ban/{id1}/{id2}', 'Admin\RiderController@ban')->name('admin-rider-ban');
-        Route::get('/rider/default/image', 'Admin\GeneralSettingController@rider_image')->name('admin-rider-image');
+        Route::get('/rider/default/image', 'Admin\MuaadhSettingController@rider_image')->name('admin-rider-image');
 
         // WITHDRAW SECTION
 
@@ -583,37 +571,37 @@ Route::prefix('admin')->group(function () {
 
     //------------ ADMIN USER DEPOSIT & TRANSACTION SECTION ------------
 
-    //------------ ADMIN VENDOR SECTION ------------
+    //------------ ADMIN MERCHANT SECTION ------------
 
     Route::group(['middleware' => 'permissions:vendors'], function () {
 
-        Route::get('/vendors/datatables', 'Admin\VendorController@datatables')->name('admin-vendor-datatables');
-        Route::get('/vendors', 'Admin\VendorController@index')->name('admin-vendor-index');
+        Route::get('/merchants/datatables', 'Admin\MerchantController@datatables')->name('admin-merchant-datatables');
+        Route::get('/merchants', 'Admin\MerchantController@index')->name('admin-merchant-index');
 
-        Route::get('/vendors/{id}/show', 'Admin\VendorController@show')->name('admin-vendor-show');
-        Route::get('/vendors/secret/login/{id}', 'Admin\VendorController@secret')->name('admin-vendor-secret');
-        Route::get('/vendor/edit/{id}', 'Admin\VendorController@edit')->name('admin-vendor-edit');
-        Route::post('/vendor/edit/{id}', 'Admin\VendorController@update')->name('admin-vendor-update');
+        Route::get('/merchants/{id}/show', 'Admin\MerchantController@show')->name('admin-merchant-show');
+        Route::get('/merchants/secret/login/{id}', 'Admin\MerchantController@secret')->name('admin-merchant-secret');
+        Route::get('/merchant/edit/{id}', 'Admin\MerchantController@edit')->name('admin-merchant-edit');
+        Route::post('/merchant/edit/{id}', 'Admin\MerchantController@update')->name('admin-merchant-update');
 
-        Route::get('/vendor/verify/{id}', 'Admin\VendorController@verify')->name('admin-vendor-verify');
-        Route::post('/vendor/verify/{id}', 'Admin\VendorController@verifySubmit')->name('admin-vendor-verify-submit');
+        Route::get('/merchant/verify/{id}', 'Admin\MerchantController@verify')->name('admin-merchant-verify');
+        Route::post('/merchant/verify/{id}', 'Admin\MerchantController@verifySubmit')->name('admin-merchant-verify-submit');
 
-        Route::get('/add/subscription/{id}', 'Admin\VendorController@addSubs')->name('admin-vendor-add-subs');
-        Route::post('/add/subscription/{id}', 'Admin\VendorController@addSubsStore')->name('admin-vendor-subs-store');
+        Route::get('/add/subscription/{id}', 'Admin\MerchantController@addSubs')->name('admin-merchant-add-subs');
+        Route::post('/add/subscription/{id}', 'Admin\MerchantController@addSubsStore')->name('admin-merchant-subs-store');
 
-        Route::get('/vendor/color', 'Admin\GeneralSettingController@vendor_color')->name('admin-vendor-color');
-        Route::get('/vendors/status/{id1}/{id2}', 'Admin\VendorController@status')->name('admin-vendor-st');
-        Route::delete('/vendors/delete/{id}', 'Admin\VendorController@destroy')->name('admin-vendor-delete');
-        Route::get('/vendor/commission/collect/{id}', 'Admin\VendorController@commissionCollect')->name('admin-vendor-commission-collect');
+        Route::get('/merchant/color', 'Admin\MuaadhSettingController@merchant_color')->name('admin-merchant-color');
+        Route::get('/merchants/status/{id1}/{id2}', 'Admin\MerchantController@status')->name('admin-merchant-st');
+        Route::delete('/merchants/delete/{id}', 'Admin\MerchantController@destroy')->name('admin-merchant-delete');
+        Route::get('/merchant/commission/collect/{id}', 'Admin\MerchantController@commissionCollect')->name('admin-merchant-commission-collect');
 
-        Route::get('/vendors/withdraws/datatables', 'Admin\VendorController@withdrawdatatables')->name('admin-vendor-withdraw-datatables'); //JSON REQUEST
-        Route::get('/vendors/withdraws', 'Admin\VendorController@withdraws')->name('admin-vendor-withdraw-index');
-        Route::get('/vendors/withdraw/{id}/show', 'Admin\VendorController@withdrawdetails')->name('admin-vendor-withdraw-show');
-        Route::get('/vendors/withdraws/accept/{id}', 'Admin\VendorController@accept')->name('admin-vendor-withdraw-accept');
-        Route::get('/vendors/withdraws/reject/{id}', 'Admin\VendorController@reject')->name('admin-vendor-withdraw-reject');
+        Route::get('/merchants/withdraws/datatables', 'Admin\MerchantController@withdrawdatatables')->name('admin-merchant-withdraw-datatables'); //JSON REQUEST
+        Route::get('/merchants/withdraws', 'Admin\MerchantController@withdraws')->name('admin-merchant-withdraw-index');
+        Route::get('/merchants/withdraw/{id}/show', 'Admin\MerchantController@withdrawdetails')->name('admin-merchant-withdraw-show');
+        Route::get('/merchants/withdraws/accept/{id}', 'Admin\MerchantController@accept')->name('admin-merchant-withdraw-accept');
+        Route::get('/merchants/withdraws/reject/{id}', 'Admin\MerchantController@reject')->name('admin-merchant-withdraw-reject');
     });
 
-    //------------ ADMIN VENDOR SECTION ENDS ------------
+    //------------ ADMIN MERCHANT SECTION ENDS ------------
 
     //------------ ADMIN SUBSCRIPTION SECTION ------------
 
@@ -645,17 +633,17 @@ Route::prefix('admin')->group(function () {
 
     //------------ ADMIN VENDOR VERIFICATION SECTION ENDS ------------
 
-    //------------ ADMIN VENDOR SUBSCRIPTION PLAN SECTION ------------
+    //------------ ADMIN MERCHANT SUBSCRIPTION PLAN SECTION ------------
 
     Route::group(['middleware' => 'permissions:vendor_subscription_plans'], function () {
 
-        Route::get('/vendors/subs/datatables/{status}', 'Admin\VendorSubscriptionController@subsdatatables')->name('admin-vendor-subs-datatables');
-        Route::get('/vendors/subs/{slug}', 'Admin\VendorSubscriptionController@subs')->name('admin-vendor-subs');
-        Route::get('/vendors/subs/status/{id1}/{id2}', 'Admin\VendorSubscriptionController@status')->name('admin-user-sub-status');
-        Route::get('/vendors/sub/{id}', 'Admin\VendorSubscriptionController@sub')->name('admin-vendor-sub');
+        Route::get('/merchants/subs/datatables/{status}', 'Admin\MerchantSubscriptionController@subsdatatables')->name('admin-merchant-subs-datatables');
+        Route::get('/merchants/subs/{slug}', 'Admin\MerchantSubscriptionController@subs')->name('admin-merchant-subs');
+        Route::get('/merchants/subs/status/{id1}/{id2}', 'Admin\MerchantSubscriptionController@status')->name('admin-user-sub-status');
+        Route::get('/merchants/sub/{id}', 'Admin\MerchantSubscriptionController@sub')->name('admin-merchant-sub');
     });
 
-    //------------ ADMIN VENDOR SUBSCRIPTION PLAN SECTION ------------
+    //------------ ADMIN MERCHANT SUBSCRIPTION PLAN SECTION ------------
 
     //------------ ADMIN USER MESSAGE SECTION ------------
 
@@ -700,19 +688,19 @@ Route::prefix('admin')->group(function () {
 
     //------------ ADMIN GENERAL SETTINGS SECTION ------------
 
-    Route::group(['middleware' => 'permissions:general_settings'], function () {
+    Route::group(['middleware' => 'permissions:muaadh_settings'], function () {
 
-        Route::get('/general-settings/logo', 'Admin\GeneralSettingController@logo')->name('admin-gs-logo');
-        Route::get('/general-settings/favicon', 'Admin\GeneralSettingController@favicon')->name('admin-gs-fav');
-        Route::get('/general-settings/loader', 'Admin\GeneralSettingController@loader')->name('admin-gs-load');
-        Route::get('/general-settings/contents', 'Admin\GeneralSettingController@websitecontent')->name('admin-gs-contents');
-        Route::get('/general-settings/theme-colors', 'Admin\GeneralSettingController@themeColors')->name('admin-theme-colors');
-        Route::post('/general-settings/theme-colors/update', 'Admin\GeneralSettingController@updateThemeColors')->name('admin-theme-colors-update');
-        Route::get('/general-settings/affilate', 'Admin\GeneralSettingController@affilate')->name('admin-gs-affilate');
-        Route::get('/general-settings/error-banner', 'Admin\GeneralSettingController@error_banner')->name('admin-gs-error-banner');
-        Route::get('/general-settings/popup', 'Admin\GeneralSettingController@popup')->name('admin-gs-popup');
+        Route::get('/general-settings/logo', 'Admin\MuaadhSettingController@logo')->name('admin-gs-logo');
+        Route::get('/general-settings/favicon', 'Admin\MuaadhSettingController@favicon')->name('admin-gs-fav');
+        Route::get('/general-settings/loader', 'Admin\MuaadhSettingController@loader')->name('admin-gs-load');
+        Route::get('/general-settings/contents', 'Admin\MuaadhSettingController@websitecontent')->name('admin-gs-contents');
+        Route::get('/general-settings/theme-colors', 'Admin\MuaadhSettingController@themeColors')->name('admin-theme-colors');
+        Route::post('/general-settings/theme-colors/update', 'Admin\MuaadhSettingController@updateThemeColors')->name('admin-theme-colors-update');
+        Route::get('/general-settings/affilate', 'Admin\MuaadhSettingController@affilate')->name('admin-gs-affilate');
+        Route::get('/general-settings/error-banner', 'Admin\MuaadhSettingController@error_banner')->name('admin-gs-error-banner');
+        Route::get('/general-settings/popup', 'Admin\MuaadhSettingController@popup')->name('admin-gs-popup');
         // Breadcrumb banner removed - using modern minimal design
-        Route::get('/general-settings/maintenance', 'Admin\GeneralSettingController@maintain')->name('admin-gs-maintenance');
+        Route::get('/general-settings/maintenance', 'Admin\MuaadhSettingController@maintain')->name('admin-gs-maintenance');
 
         // Deal Of The Day
 
@@ -760,7 +748,7 @@ Route::prefix('admin')->group(function () {
 
     Route::group(['middleware' => 'permissions:home_page_settings'], function () {
 
-        Route::get('/home-page-settings', 'Admin\GeneralSettingController@homepage')->name('admin-home-page-index');
+        Route::get('/home-page-settings', 'Admin\MuaadhSettingController@homepage')->name('admin-home-page-index');
 
         //------------ ADMIN SLIDER SECTION ------------
 
@@ -928,7 +916,7 @@ Route::prefix('admin')->group(function () {
     if(addon("otp")){
         
     Route::group(['middleware' => 'permissions:otp_setting'], function () {
-        Route::get('/opt/config', 'Admin\GeneralSettingController@otpConfig')->name('admin-otp-config');
+        Route::get('/opt/config', 'Admin\MuaadhSettingController@otpConfig')->name('admin-otp-config');
     });
 
     }
@@ -941,7 +929,7 @@ Route::prefix('admin')->group(function () {
 
         // Payment Informations
 
-        Route::get('/payment-informations', 'Admin\GeneralSettingController@paymentsinfo')->name('admin-gs-payments');
+        Route::get('/payment-informations', 'Admin\MuaadhSettingController@paymentsinfo')->name('admin-gs-payments');
 
         // Payment Gateways
 
@@ -970,7 +958,7 @@ Route::prefix('admin')->group(function () {
         // -------------------- Reward Section Route ---------------------//
         Route::get('rewards/datatables', 'Admin\RewardController@datatables')->name('admin-reward-datatables');
         Route::get('rewards', 'Admin\RewardController@index')->name('admin-reward-index');
-        Route::get('/general-settings/reward/{status}', 'Admin\GeneralSettingController@isreward')->name('admin-gs-is_reward');
+        Route::get('/general-settings/reward/{status}', 'Admin\MuaadhSettingController@isreward')->name('admin-gs-is_reward');
         Route::post('reward/update/', 'Admin\RewardController@update')->name('admin-reward-update');
         Route::post('reward/information/update', 'Admin\RewardController@infoUpdate')->name('admin-reward-info-update');
 
@@ -1050,7 +1038,7 @@ Route::prefix('admin')->group(function () {
         Route::post('/seotools/analytics/update', 'Admin\SeoToolController@analyticsupdate')->name('admin-seotool-analytics-update');
         Route::get('/seotools/keywords', 'Admin\SeoToolController@keywords')->name('admin-seotool-keywords');
         Route::post('/seotools/keywords/update', 'Admin\SeoToolController@keywordsupdate')->name('admin-seotool-keywords-update');
-        Route::get('/products/popular/{id}', 'Admin\SeoToolController@popular')->name('admin-prod-popular');
+        Route::get('/catalog-items/popular/{id}', 'Admin\SeoToolController@popular')->name('admin-catalog-item-popular');
     });
 
     //------------ ADMIN SEOTOOL SETTINGS SECTION ------------
@@ -1083,23 +1071,13 @@ Route::prefix('admin')->group(function () {
     //------------ ADMIN SUBSCRIBERS ENDS ------------
 
     // ------------ GLOBAL ----------------------
-    Route::post('/general-settings/update/all', 'Admin\GeneralSettingController@generalupdate')->name('admin-gs-update');
-    Route::post('/general-settings/update/te=heme', 'Admin\GeneralSettingController@updateTheme')->name('admin-gs-update-theme');
-    Route::post('/general-settings/update/payment', 'Admin\GeneralSettingController@generalupdatepayment')->name('admin-gs-update-payment');
-    Route::post('/general-settings/update/mail', 'Admin\GeneralSettingController@generalMailUpdate')->name('admin-gs-update-mail');
-    Route::get('/general-settings/status/{field}/{status}', 'Admin\GeneralSettingController@status')->name('admin-gs-status');
+    Route::post('/general-settings/update/all', 'Admin\MuaadhSettingController@generalupdate')->name('admin-gs-update');
+    Route::post('/general-settings/update/te=heme', 'Admin\MuaadhSettingController@updateTheme')->name('admin-gs-update-theme');
+    Route::post('/general-settings/update/payment', 'Admin\MuaadhSettingController@generalupdatepayment')->name('admin-gs-update-payment');
+    Route::post('/general-settings/update/mail', 'Admin\MuaadhSettingController@generalMailUpdate')->name('admin-gs-update-mail');
+    Route::get('/general-settings/status/{field}/{status}', 'Admin\MuaadhSettingController@status')->name('admin-gs-status');
 
-    // STATUS SECTION
-    Route::get('/products/status/{id1}/{id2}', 'Admin\ProductController@status')->name('admin-prod-status');
-    Route::get('/merchant-products/status/{id}/{status}', 'Admin\ProductController@merchantProductStatus')->name('admin-merchant-product-status');
-    // STATUS SECTION ENDS
-
-    // FEATURE SECTION
-    Route::get('/products/feature/{id}', 'Admin\ProductController@feature')->name('admin-prod-feature');
-    // Route::post('/products/feature/{id}', 'Admin\ProductController@featuresubmit')->name('admin-prod-feature');
-    Route::post('/products/feature/{id}', 'Admin\ProductController@featuresubmit')->name('admin-prod-feature.store'); // اسم فريد
-
-    // FEATURE SECTION ENDS
+    // Note: Status and Feature routes are now in the ADMIN CATALOG ITEM SECTION above
 
     // GALLERY SECTION ------------
 
@@ -1174,279 +1152,263 @@ Route::prefix('admin')->group(function () {
 
 Route::group(['middleware' => 'maintenance'], function () {
 
-    // ************************************ VENDOR SECTION **********************************************
+    // ************************************ MERCHANT SECTION **********************************************
 
-    Route::prefix('vendor')->group(function () {
+    Route::prefix('merchant')->group(function () {
 
-        Route::group(['middleware' => 'vendor'], function () {
+        Route::group(['middleware' => 'merchant'], function () {
 
-            // VENDOR DASHBOARD
+            // MERCHANT DASHBOARD
 
-            Route::get('/dashboard', 'Vendor\VendorController@index')->name('vendor.dashboard');
+            Route::get('/dashboard', 'Merchant\MerchantController@index')->name('merchant.dashboard');
 
-            //------------ ORDER SECTION ------------
+            //------------ PURCHASE SECTION ------------
 
-            Route::get('/orders/datatables', 'Vendor\OrderController@datatables')->name('vendor-order-datatables');
-            Route::get('/orders', 'Vendor\OrderController@index')->name('vendor-order-index');
-            Route::get('/order/{id}/show', 'Vendor\OrderController@show')->name('vendor-order-show');
-            Route::get('/order/{id}/invoice', 'Vendor\OrderController@invoice')->name('vendor-order-invoice');
-            Route::get('/order/{id}/print', 'Vendor\OrderController@printpage')->name('vendor-order-print');
-            Route::get('/order/{id1}/status/{status}', 'Vendor\OrderController@status')->name('vendor-order-status');
-            Route::post('/order/email/', 'Vendor\OrderController@emailsub')->name('vendor-order-emailsub');
-            Route::post('/order/{slug}/license', 'Vendor\OrderController@license')->name('vendor-order-license');
+            Route::get('/purchases/datatables', 'Merchant\PurchaseController@datatables')->name('merchant-purchase-datatables');
+            Route::get('/purchases', 'Merchant\PurchaseController@index')->name('merchant-purchase-index');
+            Route::get('/purchase/{id}/show', 'Merchant\PurchaseController@show')->name('merchant-purchase-show');
+            Route::get('/purchase/{id}/invoice', 'Merchant\PurchaseController@invoice')->name('merchant-purchase-invoice');
+            Route::get('/purchase/{id}/print', 'Merchant\PurchaseController@printpage')->name('merchant-purchase-print');
+            Route::get('/purchase/{id1}/status/{status}', 'Merchant\PurchaseController@status')->name('merchant-purchase-status');
+            Route::post('/purchase/email/', 'Merchant\PurchaseController@emailsub')->name('merchant-purchase-emailsub');
+            Route::post('/purchase/{slug}/license', 'Merchant\PurchaseController@license')->name('merchant-purchase-license');
 
-            //------------ ORDER SECTION ENDS------------
+            //------------ PURCHASE SECTION ENDS------------
 
-            Route::get('delivery/datatables', 'Vendor\DeliveryController@datatables')->name('vendor-delivery-order-datatables');
-            Route::get('delivery', 'Vendor\DeliveryController@index')->name('vendor.delivery.index');
-            Route::get('delivery/boy/find', 'Vendor\DeliveryController@findReider')->name('vendor.find.rider');
-            Route::post('rider/search/submit', 'Vendor\DeliveryController@findReiderSubmit')->name('vendor-rider-search-submit');
+            Route::get('delivery/datatables', 'Merchant\DeliveryController@datatables')->name('merchant-delivery-purchase-datatables');
+            Route::get('delivery', 'Merchant\DeliveryController@index')->name('merchant.delivery.index');
+            Route::get('delivery/boy/find', 'Merchant\DeliveryController@findReider')->name('merchant.find.rider');
+            Route::post('rider/search/submit', 'Merchant\DeliveryController@findReiderSubmit')->name('merchant-rider-search-submit');
 
             // Tryoto Shipping Routes
-            Route::get('delivery/shipping-options', 'Vendor\DeliveryController@getShippingOptions')->name('vendor.shipping.options');
-            Route::post('delivery/send-to-tryoto', 'Vendor\DeliveryController@sendToTryoto')->name('vendor.send.tryoto');
-            Route::get('delivery/track-shipment', 'Vendor\DeliveryController@trackShipment')->name('vendor.track.shipment');
-            Route::get('delivery/shipment-history/{orderId}', 'Vendor\DeliveryController@shipmentHistory')->name('vendor.shipment.history');
-            Route::post('delivery/cancel-shipment', 'Vendor\DeliveryController@cancelShipment')->name('vendor.cancel.shipment');
-            Route::post('delivery/ready-for-pickup', 'Vendor\DeliveryController@markReadyForPickup')->name('vendor.ready.pickup');
-            Route::get('delivery/stats', 'Vendor\DeliveryController@shippingStats')->name('vendor.shipping.stats');
-            Route::get('delivery/order-status/{orderId}', 'Vendor\DeliveryController@getOrderShipmentStatus')->name('vendor.order.shipment.status');
+            Route::get('delivery/shipping-options', 'Merchant\DeliveryController@getShippingOptions')->name('merchant.shipping.options');
+            Route::post('delivery/send-to-tryoto', 'Merchant\DeliveryController@sendToTryoto')->name('merchant.send.tryoto');
+            Route::get('delivery/track-shipment', 'Merchant\DeliveryController@trackShipment')->name('merchant.track.shipment');
+            Route::get('delivery/shipment-history/{purchaseId}', 'Merchant\DeliveryController@shipmentHistory')->name('merchant.shipment.history');
+            Route::post('delivery/cancel-shipment', 'Merchant\DeliveryController@cancelShipment')->name('merchant.cancel.shipment');
+            Route::post('delivery/ready-for-pickup', 'Merchant\DeliveryController@markReadyForPickup')->name('merchant.ready.pickup');
+            Route::get('delivery/stats', 'Merchant\DeliveryController@shippingStats')->name('merchant.shipping.stats');
+            Route::get('delivery/purchase-status/{purchaseId}', 'Merchant\DeliveryController@getPurchaseShipmentStatus')->name('merchant.purchase.shipment.status');
 
             //------------ SUBCATEGORY SECTION ------------
 
-            Route::get('/load/subcategories/{id}/', 'Vendor\VendorController@subcatload')->name('vendor-subcat-load'); //JSON REQUEST
+            Route::get('/load/subcategories/{id}/', 'Merchant\MerchantController@subcatload')->name('merchant-subcat-load'); //JSON REQUEST
 
             //------------ SUBCATEGORY SECTION ENDS------------
 
             //------------ CHILDCATEGORY SECTION ------------
 
-            Route::get('/load/childcategories/{id}/', 'Vendor\VendorController@childcatload')->name('vendor-childcat-load'); //JSON REQUEST
+            Route::get('/load/childcategories/{id}/', 'Merchant\MerchantController@childcatload')->name('merchant-childcat-load'); //JSON REQUEST
 
             //------------ CHILDCATEGORY SECTION ENDS------------
 
-            //------------ PRODUCT SECTION ------------
+            //------------ MERCHANT CATALOG ITEM SECTION ------------
 
-            Route::get('/products/datatables', 'Vendor\ProductController@datatables')->name('vendor-prod-datatables'); //JSON REQUEST
-            Route::get('/products', 'Vendor\ProductController@index')->name('vendor-prod-index');
-
-            Route::post('/products/upload/update/{id}', 'Vendor\ProductController@uploadUpdate')->name('vendor-prod-upload-update');
-
-            // CREATE SECTION - NEW SIMPLIFIED SYSTEM
-            Route::get('/products/add', 'Vendor\ProductController@add')->name('vendor-prod-add');
-            Route::get('/products/search-sku', 'Vendor\ProductController@searchSku')->name('vendor-prod-search-sku');
-            Route::post('/products/store-offer', 'Vendor\ProductController@storeOffer')->name('vendor-prod-store-offer');
-            Route::put('/products/update-offer/{merchantProductId}', 'Vendor\ProductController@updateOffer')->name('vendor-prod-update-offer');
-
-            // LEGACY CREATE ROUTES (kept for compatibility)
-            Route::get('/products/types', 'Vendor\ProductController@types')->name('vendor-prod-types');
-            Route::get('/products/{slug}/create', 'Vendor\ProductController@create')->name('vendor-prod-create');
-            Route::post('/products/store', 'Vendor\ProductController@store')->name('vendor-prod-store');
-            Route::get('/getattributes', 'Vendor\ProductController@getAttributes')->name('vendor-prod-getattributes');
-            Route::get('/products/import', 'Vendor\ProductController@import')->name('vendor-prod-import');
-            Route::post('/products/import-submit', 'Vendor\ProductController@importSubmit')->name('vendor-prod-importsubmit');
-
-            Route::get('/products/catalog/datatables', 'Vendor\ProductController@catalogdatatables')->name('admin-vendor-catalog-datatables');
-            Route::get('/products/catalogs', 'Vendor\ProductController@catalogs')->name('vendor-prod-catalogs');
-
-            // CATALOG OFFER ROUTES
-            Route::get('/products/create-offer/{product_id}', 'Vendor\ProductController@createOffer')->name('vendor-prod-create-offer');
+            Route::get('/catalog-items/datatables', 'Merchant\CatalogItemController@datatables')->name('merchant-catalog-item-datatables');
+            Route::get('/catalog-items', 'Merchant\CatalogItemController@index')->name('merchant-catalog-item-index');
+            Route::post('/catalog-items/upload/update/{id}', 'Merchant\CatalogItemController@uploadUpdate')->name('merchant-catalog-item-upload-update');
 
             // CREATE SECTION
+            Route::get('/catalog-items/add', 'Merchant\CatalogItemController@add')->name('merchant-catalog-item-add');
+            Route::get('/catalog-items/search-sku', 'Merchant\CatalogItemController@searchSku')->name('merchant-catalog-item-search-sku');
+            Route::post('/catalog-items/store-offer', 'Merchant\CatalogItemController@storeOffer')->name('merchant-catalog-item-store-offer');
+            Route::put('/catalog-items/update-offer/{merchantItemId}', 'Merchant\CatalogItemController@updateOffer')->name('merchant-catalog-item-update-offer');
+            Route::get('/catalog-items/types', 'Merchant\CatalogItemController@types')->name('merchant-catalog-item-types');
+            Route::get('/catalog-items/{slug}/create', 'Merchant\CatalogItemController@create')->name('merchant-catalog-item-create');
+            Route::post('/catalog-items/store', 'Merchant\CatalogItemController@store')->name('merchant-catalog-item-store');
+            Route::get('/getattributes', 'Merchant\CatalogItemController@getAttributes')->name('merchant-catalog-item-getattributes');
+            Route::get('/catalog-items/import', 'Merchant\CatalogItemController@import')->name('merchant-catalog-item-import');
+            Route::post('/catalog-items/import-submit', 'Merchant\CatalogItemController@importSubmit')->name('merchant-catalog-item-importsubmit');
+            Route::get('/catalog-items/catalog/datatables', 'Merchant\CatalogItemController@catalogdatatables')->name('merchant-catalog-item-catalog-datatables');
+            Route::get('/catalog-items/catalogs', 'Merchant\CatalogItemController@catalogs')->name('merchant-catalog-item-catalogs');
+            Route::get('/catalog-items/create-offer/{catalog_item_id}', 'Merchant\CatalogItemController@createOffer')->name('merchant-catalog-item-create-offer');
 
             // EDIT SECTION
-            Route::get('/products/edit/{merchantProductId}', 'Vendor\ProductController@edit')->name('vendor-prod-edit');
-            Route::post('/products/edit/{merchantProductId}', 'Vendor\ProductController@update')->name('vendor-prod-update');
-
-            Route::get('/products/catalog/{id}', 'Vendor\ProductController@catalogedit')->name('vendor-prod-catalog-edit');
-            Route::post('/products/catalog/{id}', 'Vendor\ProductController@catalogupdate')->name('vendor-prod-catalog-update');
-
-            // EDIT SECTION ENDS
+            Route::get('/catalog-items/edit/{merchantItemId}', 'Merchant\CatalogItemController@edit')->name('merchant-catalog-item-edit');
+            Route::post('/catalog-items/edit/{merchantItemId}', 'Merchant\CatalogItemController@update')->name('merchant-catalog-item-update');
+            Route::get('/catalog-items/catalog/{id}', 'Merchant\CatalogItemController@catalogedit')->name('merchant-catalog-item-catalog-edit');
+            Route::post('/catalog-items/catalog/{id}', 'Merchant\CatalogItemController@catalogupdate')->name('merchant-catalog-item-catalog-update');
 
             // IMPORT SECTION
-
-            Route::get('/products/import/create-product', 'Vendor\ImportController@createImport')->name('vendor-import-create');
-            Route::get('/products/import/edit/{id}', 'Vendor\ImportController@edit')->name('vendor-import-edit');
-            Route::get('/products/import/csv', 'Vendor\ImportController@importCSV')->name('vendor-import-csv');
-            Route::get('/products/import/datatables', 'Vendor\ImportController@datatables')->name('vendor-import-datatables');
-            Route::get('/products/import/index', 'Vendor\ImportController@index')->name('vendor-import-index');
-            Route::post('/products/import/store', 'Vendor\ImportController@store')->name('vendor-import-store');
-            Route::post('/products/import/update/{id}', 'Vendor\ImportController@update')->name('vendor-import-update');
-            Route::post('/products/import/csv/store', 'Vendor\ImportController@importStore')->name('vendor-import-csv-store');
-
-            // IMPORT SECTION
+            Route::get('/catalog-items/import/create', 'Merchant\ImportController@createImport')->name('merchant-import-create');
+            Route::get('/catalog-items/import/edit/{id}', 'Merchant\ImportController@edit')->name('merchant-import-edit');
+            Route::get('/catalog-items/import/csv', 'Merchant\ImportController@importCSV')->name('merchant-import-csv');
+            Route::get('/catalog-items/import/datatables', 'Merchant\ImportController@datatables')->name('merchant-import-datatables');
+            Route::get('/catalog-items/import/index', 'Merchant\ImportController@index')->name('merchant-import-index');
+            Route::post('/catalog-items/import/store', 'Merchant\ImportController@store')->name('merchant-import-store');
+            Route::post('/catalog-items/import/update/{id}', 'Merchant\ImportController@update')->name('merchant-import-update');
+            Route::post('/catalog-items/import/csv/store', 'Merchant\ImportController@importStore')->name('merchant-import-csv-store');
 
             // STATUS SECTION
-            Route::get('/products/status/{id1}/{id2}', 'Vendor\ProductController@status')->name('vendor-prod-status');
-            // STATUS SECTION ENDS
+            Route::get('/catalog-items/status/{id1}/{id2}', 'Merchant\CatalogItemController@status')->name('merchant-catalog-item-status');
 
             // DELETE SECTION
-            Route::delete('/products/delete/{id}', 'Vendor\ProductController@destroy')->name('vendor-prod-delete');
-            // DELETE SECTION ENDS
+            Route::delete('/catalog-items/delete/{id}', 'Merchant\CatalogItemController@destroy')->name('merchant-catalog-item-delete');
 
-            //------------ VENDOR PRODUCT SECTION ENDS------------
+            //------------ MERCHANT CATALOG ITEM SECTION ENDS------------
 
             //------------ STOCK MANAGEMENT SECTION ------------
-            Route::get('/stock/management', 'Vendor\StockManagementController@index')->name('vendor-stock-management');
-            Route::get('/stock/datatables', 'Vendor\StockManagementController@datatables')->name('vendor-stock-datatables');
-            Route::get('/stock/export', 'Vendor\StockManagementController@export')->name('vendor-stock-export');
-            Route::get('/stock/upload-form', 'Vendor\StockManagementController@uploadForm')->name('vendor-stock-upload-form');
-            Route::post('/stock/upload', 'Vendor\StockManagementController@upload')->name('vendor-stock-upload');
-            Route::get('/stock/download/{id}', 'Vendor\StockManagementController@download')->name('vendor-stock-download');
-            Route::post('/stock/auto-update', 'Vendor\StockManagementController@triggerAutoUpdate')->name('vendor-stock-auto-update');
-            Route::post('/stock/full-refresh', 'Vendor\StockManagementController@triggerFullRefresh')->name('vendor-stock-full-refresh');
-            Route::post('/stock/process-full-refresh', 'Vendor\StockManagementController@processFullRefresh')->name('vendor-stock-process-full-refresh');
-            Route::get('/stock/progress/{id}', 'Vendor\StockManagementController@getUpdateProgress')->name('vendor-stock-progress');
-            Route::get('/stock/template', 'Vendor\StockManagementController@downloadTemplate')->name('vendor-stock-template');
+            Route::get('/stock/management', 'Merchant\StockManagementController@index')->name('merchant-stock-management');
+            Route::get('/stock/datatables', 'Merchant\StockManagementController@datatables')->name('merchant-stock-datatables');
+            Route::get('/stock/export', 'Merchant\StockManagementController@export')->name('merchant-stock-export');
+            Route::get('/stock/upload-form', 'Merchant\StockManagementController@uploadForm')->name('merchant-stock-upload-form');
+            Route::post('/stock/upload', 'Merchant\StockManagementController@upload')->name('merchant-stock-upload');
+            Route::get('/stock/download/{id}', 'Merchant\StockManagementController@download')->name('merchant-stock-download');
+            Route::post('/stock/auto-update', 'Merchant\StockManagementController@triggerAutoUpdate')->name('merchant-stock-auto-update');
+            Route::post('/stock/full-refresh', 'Merchant\StockManagementController@triggerFullRefresh')->name('merchant-stock-full-refresh');
+            Route::post('/stock/process-full-refresh', 'Merchant\StockManagementController@processFullRefresh')->name('merchant-stock-process-full-refresh');
+            Route::get('/stock/progress/{id}', 'Merchant\StockManagementController@getUpdateProgress')->name('merchant-stock-progress');
+            Route::get('/stock/template', 'Merchant\StockManagementController@downloadTemplate')->name('merchant-stock-template');
             //------------ STOCK MANAGEMENT SECTION ENDS ------------
 
-            //------------ VENDOR GALLERY SECTION ------------
+            //------------ MERCHANT GALLERY SECTION ------------
 
-            Route::get('/gallery/show', 'Vendor\GalleryController@show')->name('vendor-gallery-show');
-            Route::post('/gallery/store', 'Vendor\GalleryController@store')->name('vendor-gallery-store');
-            Route::get('/gallery/delete', 'Vendor\GalleryController@destroy')->name('vendor-gallery-delete');
+            Route::get('/gallery/show', 'Merchant\GalleryController@show')->name('merchant-gallery-show');
+            Route::post('/gallery/store', 'Merchant\GalleryController@store')->name('merchant-gallery-store');
+            Route::get('/gallery/delete', 'Merchant\GalleryController@destroy')->name('merchant-gallery-delete');
 
-            //------------ VENDOR GALLERY SECTION ENDS------------
+            //------------ MERCHANT GALLERY SECTION ENDS------------
 
-            //------------ ADMIN SHIPPING ------------
+            //------------ MERCHANT SHIPPING ------------
 
-            Route::get('/shipping/datatables', 'Vendor\ShippingController@datatables')->name('vendor-shipping-datatables');
-            Route::get('/shipping', 'Vendor\ShippingController@index')->name('vendor-shipping-index');
-            Route::get('/shipping/create', 'Vendor\ShippingController@create')->name('vendor-shipping-create');
-            Route::post('/shipping/create', 'Vendor\ShippingController@store')->name('vendor-shipping-store');
-            Route::get('/shipping/edit/{id}', 'Vendor\ShippingController@edit')->name('vendor-shipping-edit');
-            Route::post('/shipping/edit/{id}', 'Vendor\ShippingController@update')->name('vendor-shipping-update');
-            Route::delete('/shipping/delete/{id}', 'Vendor\ShippingController@destroy')->name('vendor-shipping-delete');
+            Route::get('/shipping/datatables', 'Merchant\ShippingController@datatables')->name('merchant-shipping-datatables');
+            Route::get('/shipping', 'Merchant\ShippingController@index')->name('merchant-shipping-index');
+            Route::get('/shipping/create', 'Merchant\ShippingController@create')->name('merchant-shipping-create');
+            Route::post('/shipping/create', 'Merchant\ShippingController@store')->name('merchant-shipping-store');
+            Route::get('/shipping/edit/{id}', 'Merchant\ShippingController@edit')->name('merchant-shipping-edit');
+            Route::post('/shipping/edit/{id}', 'Merchant\ShippingController@update')->name('merchant-shipping-update');
+            Route::delete('/shipping/delete/{id}', 'Merchant\ShippingController@destroy')->name('merchant-shipping-delete');
 
-            //------------ ADMIN SHIPPING ENDS ------------
+            //------------ MERCHANT SHIPPING ENDS ------------
 
-            //------------ VENDOR WAREHOUSE SETTINGS ------------
+            //------------ MERCHANT WAREHOUSE SETTINGS ------------
 
-            Route::get('/warehouse', 'Vendor\WarehouseController@index')->name('vendor-warehouse-index');
-            Route::post('/warehouse/update', 'Vendor\WarehouseController@update')->name('vendor-warehouse-update');
-            Route::get('/warehouse/get-cities', 'Vendor\WarehouseController@getCities')->name('vendor-warehouse-get-cities');
+            Route::get('/warehouse', 'Merchant\WarehouseController@index')->name('merchant-warehouse-index');
+            Route::post('/warehouse/update', 'Merchant\WarehouseController@update')->name('merchant-warehouse-update');
+            Route::get('/warehouse/get-cities', 'Merchant\WarehouseController@getCities')->name('merchant-warehouse-get-cities');
 
-            //------------ VENDOR WAREHOUSE ENDS ------------
+            //------------ MERCHANT WAREHOUSE ENDS ------------
 
-            //------------ ADMIN PACKAGE ------------
+            //------------ MERCHANT PACKAGE ------------
 
-            Route::get('/package/datatables', 'Vendor\PackageController@datatables')->name('vendor-package-datatables');
-            Route::get('/package', 'Vendor\PackageController@index')->name('vendor-package-index');
-            Route::get('/package/create', 'Vendor\PackageController@create')->name('vendor-package-create');
-            Route::post('/package/create', 'Vendor\PackageController@store')->name('vendor-package-store');
-            Route::get('/package/edit/{id}', 'Vendor\PackageController@edit')->name('vendor-package-edit');
-            Route::post('/package/edit/{id}', 'Vendor\PackageController@update')->name('vendor-package-update');
-            Route::delete('/package/delete/{id}', 'Vendor\PackageController@destroy')->name('vendor-package-delete');
+            Route::get('/package/datatables', 'Merchant\PackageController@datatables')->name('merchant-package-datatables');
+            Route::get('/package', 'Merchant\PackageController@index')->name('merchant-package-index');
+            Route::get('/package/create', 'Merchant\PackageController@create')->name('merchant-package-create');
+            Route::post('/package/create', 'Merchant\PackageController@store')->name('merchant-package-store');
+            Route::get('/package/edit/{id}', 'Merchant\PackageController@edit')->name('merchant-package-edit');
+            Route::post('/package/edit/{id}', 'Merchant\PackageController@update')->name('merchant-package-update');
+            Route::delete('/package/delete/{id}', 'Merchant\PackageController@destroy')->name('merchant-package-delete');
 
-            //------------ ADMIN PACKAGE ENDS------------
+            //------------ MERCHANT PACKAGE ENDS------------
 
-            //------------ VENDOR NOTIFICATION SECTION ------------
+            //------------ MERCHANT NOTIFICATION SECTION ------------
 
-            Route::get('/order/notf/show/{id}', 'Vendor\NotificationController@order_notf_show')->name('vendor-order-notf-show');
-            Route::get('/order/notf/count/{id}', 'Vendor\NotificationController@order_notf_count')->name('vendor-order-notf-count');
-            Route::get('/order/notf/clear/{id}', 'Vendor\NotificationController@order_notf_clear')->name('vendor-order-notf-clear');
+            Route::get('/purchase/notf/show/{id}', 'Merchant\NotificationController@purchase_notf_show')->name('merchant-purchase-notf-show');
+            Route::get('/purchase/notf/count/{id}', 'Merchant\NotificationController@purchase_notf_count')->name('merchant-purchase-notf-count');
+            Route::get('/purchase/notf/clear/{id}', 'Merchant\NotificationController@purchase_notf_clear')->name('merchant-purchase-notf-clear');
 
-            //------------ VENDOR NOTIFICATION SECTION ENDS ------------
+            //------------ MERCHANT NOTIFICATION SECTION ENDS ------------
 
-            // Vendor Profile
-            Route::get('/profile', 'Vendor\VendorController@profile')->name('vendor-profile');
-            Route::post('/profile', 'Vendor\VendorController@profileupdate')->name('vendor-profile-update');
-            // Vendor Profile Ends
+            // Merchant Profile
+            Route::get('/profile', 'Merchant\MerchantController@profile')->name('merchant-profile');
+            Route::post('/profile', 'Merchant\MerchantController@profileupdate')->name('merchant-profile-update');
+            // Merchant Profile Ends
 
-            // Vendor Shipping Cost
-            Route::get('/banner', 'Vendor\VendorController@banner')->name('vendor-banner');
+            // Merchant Shipping Cost
+            Route::get('/banner', 'Merchant\MerchantController@banner')->name('merchant-banner');
 
-            // Vendor Social
-            Route::get('/social', 'Vendor\VendorController@social')->name('vendor-social-index');
-            Route::post('/social/update', 'Vendor\VendorController@socialupdate')->name('vendor-social-update');
+            // Merchant Social
+            Route::get('/social', 'Merchant\MerchantController@social')->name('merchant-social-index');
+            Route::post('/social/update', 'Merchant\MerchantController@socialupdate')->name('merchant-social-update');
 
-            Route::get('/withdraw/datatables', 'Vendor\WithdrawController@datatables')->name('vendor-wt-datatables');
-            Route::get('/withdraw', 'Vendor\WithdrawController@index')->name('vendor-wt-index');
-            Route::get('/withdraw/create', 'Vendor\WithdrawController@create')->name('vendor-wt-create');
-            Route::post('/withdraw/create', 'Vendor\WithdrawController@store')->name('vendor-wt-store');
+            Route::get('/withdraw/datatables', 'Merchant\WithdrawController@datatables')->name('merchant-wt-datatables');
+            Route::get('/withdraw', 'Merchant\WithdrawController@index')->name('merchant-wt-index');
+            Route::get('/withdraw/create', 'Merchant\WithdrawController@create')->name('merchant-wt-create');
+            Route::post('/withdraw/create', 'Merchant\WithdrawController@store')->name('merchant-wt-store');
 
-            //------------ VENDOR SERVICE ------------
+            //------------ MERCHANT SERVICE ------------
 
-            Route::get('/service/datatables', 'Vendor\ServiceController@datatables')->name('vendor-service-datatables');
-            Route::get('/service', 'Vendor\ServiceController@index')->name('vendor-service-index');
-            Route::get('/service/create', 'Vendor\ServiceController@create')->name('vendor-service-create');
-            Route::post('/service/create', 'Vendor\ServiceController@store')->name('vendor-service-store');
-            Route::get('/service/edit/{id}', 'Vendor\ServiceController@edit')->name('vendor-service-edit');
-            Route::post('/service/edit/{id}', 'Vendor\ServiceController@update')->name('vendor-service-update');
-            Route::delete('/service/delete/{id}', 'Vendor\ServiceController@destroy')->name('vendor-service-delete');
+            Route::get('/service/datatables', 'Merchant\ServiceController@datatables')->name('merchant-service-datatables');
+            Route::get('/service', 'Merchant\ServiceController@index')->name('merchant-service-index');
+            Route::get('/service/create', 'Merchant\ServiceController@create')->name('merchant-service-create');
+            Route::post('/service/create', 'Merchant\ServiceController@store')->name('merchant-service-store');
+            Route::get('/service/edit/{id}', 'Merchant\ServiceController@edit')->name('merchant-service-edit');
+            Route::post('/service/edit/{id}', 'Merchant\ServiceController@update')->name('merchant-service-update');
+            Route::delete('/service/delete/{id}', 'Merchant\ServiceController@destroy')->name('merchant-service-delete');
 
-            //------------ VENDOR SERVICE ENDS ------------
+            //------------ MERCHANT SERVICE ENDS ------------
 
-            //------------ VENDOR PICKUP POINT ------------
-            Route::get('/pickup-point/datatables', 'Vendor\PickupPointController@datatables')->name('vendor-pickup-point-datatables');
-            Route::get('/pickup-point', 'Vendor\PickupPointController@index')->name('vendor-pickup-point-index');
-            Route::get('/pickup-point/create', 'Vendor\PickupPointController@create')->name('vendor-pickup-point-create');
-            Route::post('/pickup-point/create', 'Vendor\PickupPointController@store')->name('vendor-pickup-point-store');
-            Route::get('/pickup-point/edit/{id}', 'Vendor\PickupPointController@edit')->name('vendor-pickup-point-edit');
-            Route::post('/pickup-point/edit/{id}', 'Vendor\PickupPointController@update')->name('vendor-pickup-point-update');
-            Route::delete('/pickup-point/delete/{id}', 'Vendor\PickupPointController@destroy')->name('vendor-pickup-point-delete');
-            Route::get('/pickup-point/status/{id}/{status}', 'Vendor\PickupPointController@status')->name('vendor-pickup-point-status');
+            //------------ MERCHANT PICKUP POINT ------------
+            Route::get('/pickup-point/datatables', 'Merchant\PickupPointController@datatables')->name('merchant-pickup-point-datatables');
+            Route::get('/pickup-point', 'Merchant\PickupPointController@index')->name('merchant-pickup-point-index');
+            Route::get('/pickup-point/create', 'Merchant\PickupPointController@create')->name('merchant-pickup-point-create');
+            Route::post('/pickup-point/create', 'Merchant\PickupPointController@store')->name('merchant-pickup-point-store');
+            Route::get('/pickup-point/edit/{id}', 'Merchant\PickupPointController@edit')->name('merchant-pickup-point-edit');
+            Route::post('/pickup-point/edit/{id}', 'Merchant\PickupPointController@update')->name('merchant-pickup-point-update');
+            Route::delete('/pickup-point/delete/{id}', 'Merchant\PickupPointController@destroy')->name('merchant-pickup-point-delete');
+            Route::get('/pickup-point/status/{id}/{status}', 'Merchant\PickupPointController@status')->name('merchant-pickup-point-status');
 
-            //------------ VENDOR PICKUP POINT END ------------
+            //------------ MERCHANT PICKUP POINT END ------------
 
-            //------------ VENDOR SOCIAL LINK ------------
+            //------------ MERCHANT SOCIAL LINK ------------
 
-            Route::get('/social-link/datatables', 'Vendor\SocialLinkController@datatables')->name('vendor-sociallink-datatables'); //JSON REQUEST
-            Route::get('/social-link', 'Vendor\SocialLinkController@index')->name('vendor-sociallink-index');
-            Route::get('/social-link/create', 'Vendor\SocialLinkController@create')->name('vendor-sociallink-create');
-            Route::post('/social-link/create', 'Vendor\SocialLinkController@store')->name('vendor-sociallink-store');
-            Route::get('/social-link/edit/{id}', 'Vendor\SocialLinkController@edit')->name('vendor-sociallink-edit');
-            Route::post('/social-link/edit/{id}', 'Vendor\SocialLinkController@update')->name('vendor-sociallink-update');
-            Route::delete('/social-link/delete/{id}', 'Vendor\SocialLinkController@destroy')->name('vendor-sociallink-delete');
-            Route::get('/social-link/status/{id1}/{id2}', 'Vendor\SocialLinkController@status')->name('vendor-sociallink-status');
+            Route::get('/social-link/datatables', 'Merchant\SocialLinkController@datatables')->name('merchant-sociallink-datatables'); //JSON REQUEST
+            Route::get('/social-link', 'Merchant\SocialLinkController@index')->name('merchant-sociallink-index');
+            Route::get('/social-link/create', 'Merchant\SocialLinkController@create')->name('merchant-sociallink-create');
+            Route::post('/social-link/create', 'Merchant\SocialLinkController@store')->name('merchant-sociallink-store');
+            Route::get('/social-link/edit/{id}', 'Merchant\SocialLinkController@edit')->name('merchant-sociallink-edit');
+            Route::post('/social-link/edit/{id}', 'Merchant\SocialLinkController@update')->name('merchant-sociallink-update');
+            Route::delete('/social-link/delete/{id}', 'Merchant\SocialLinkController@destroy')->name('merchant-sociallink-delete');
+            Route::get('/social-link/status/{id1}/{id2}', 'Merchant\SocialLinkController@status')->name('merchant-sociallink-status');
 
-            //------------ VENDOR SOCIAL LINK ENDS ------------
+            //------------ MERCHANT SOCIAL LINK ENDS ------------
 
-            //------------ VENDOR SHIPMENTS SECTION ------------
+            //------------ MERCHANT SHIPMENTS SECTION ------------
 
-            Route::get('/shipments', 'Vendor\ShipmentController@index')->name('vendor.shipments.index');
-            Route::get('/shipments/show/{tracking}', 'Vendor\ShipmentController@show')->name('vendor.shipments.show');
-            Route::get('/shipments/refresh/{tracking}', 'Vendor\ShipmentController@refresh')->name('vendor.shipments.refresh');
-            Route::post('/shipments/cancel/{tracking}', 'Vendor\ShipmentController@cancel')->name('vendor.shipments.cancel');
-            Route::get('/shipments/export', 'Vendor\ShipmentController@export')->name('vendor.shipments.export');
-            Route::post('/shipments/bulk-refresh', 'Vendor\ShipmentController@bulkRefresh')->name('vendor.shipments.bulk-refresh');
+            Route::get('/shipments', 'Merchant\ShipmentController@index')->name('merchant.shipments.index');
+            Route::get('/shipments/show/{tracking}', 'Merchant\ShipmentController@show')->name('merchant.shipments.show');
+            Route::get('/shipments/refresh/{tracking}', 'Merchant\ShipmentController@refresh')->name('merchant.shipments.refresh');
+            Route::post('/shipments/cancel/{tracking}', 'Merchant\ShipmentController@cancel')->name('merchant.shipments.cancel');
+            Route::get('/shipments/export', 'Merchant\ShipmentController@export')->name('merchant.shipments.export');
+            Route::post('/shipments/bulk-refresh', 'Merchant\ShipmentController@bulkRefresh')->name('merchant.shipments.bulk-refresh');
 
-            //------------ VENDOR SHIPMENTS SECTION ENDS------------
+            //------------ MERCHANT SHIPMENTS SECTION ENDS------------
 
-            //------------ VENDOR DISCOUNT CODE SECTION ------------
+            //------------ MERCHANT DISCOUNT CODE SECTION ------------
 
-            Route::get('/discount-code/datatables', 'Vendor\DiscountCodeController@datatables')->name('vendor-discount-code-datatables');
-            Route::get('/discount-code', 'Vendor\DiscountCodeController@index')->name('vendor-discount-code-index');
-            Route::get('/discount-code/create', 'Vendor\DiscountCodeController@create')->name('vendor-discount-code-create');
-            Route::post('/discount-code/create', 'Vendor\DiscountCodeController@store')->name('vendor-discount-code-store');
-            Route::get('/discount-code/edit/{id}', 'Vendor\DiscountCodeController@edit')->name('vendor-discount-code-edit');
-            Route::post('/discount-code/edit/{id}', 'Vendor\DiscountCodeController@update')->name('vendor-discount-code-update');
-            Route::delete('/discount-code/delete/{id}', 'Vendor\DiscountCodeController@destroy')->name('vendor-discount-code-delete');
-            Route::get('/discount-code/status/{id1}/{id2}', 'Vendor\DiscountCodeController@status')->name('vendor-discount-code-status');
-            Route::get('/discount-code/get-categories', 'Vendor\DiscountCodeController@getCategories')->name('vendor-discount-code-get-categories');
+            Route::get('/discount-code/datatables', 'Merchant\DiscountCodeController@datatables')->name('merchant-discount-code-datatables');
+            Route::get('/discount-code', 'Merchant\DiscountCodeController@index')->name('merchant-discount-code-index');
+            Route::get('/discount-code/create', 'Merchant\DiscountCodeController@create')->name('merchant-discount-code-create');
+            Route::post('/discount-code/create', 'Merchant\DiscountCodeController@store')->name('merchant-discount-code-store');
+            Route::get('/discount-code/edit/{id}', 'Merchant\DiscountCodeController@edit')->name('merchant-discount-code-edit');
+            Route::post('/discount-code/edit/{id}', 'Merchant\DiscountCodeController@update')->name('merchant-discount-code-update');
+            Route::delete('/discount-code/delete/{id}', 'Merchant\DiscountCodeController@destroy')->name('merchant-discount-code-delete');
+            Route::get('/discount-code/status/{id1}/{id2}', 'Merchant\DiscountCodeController@status')->name('merchant-discount-code-status');
+            Route::get('/discount-code/get-categories', 'Merchant\DiscountCodeController@getCategories')->name('merchant-discount-code-get-categories');
 
-            //------------ VENDOR DISCOUNT CODE SECTION ENDS------------
+            //------------ MERCHANT DISCOUNT CODE SECTION ENDS------------
 
-            //------------ VENDOR CREDENTIALS SECTION ------------
-            Route::get('/credentials', 'Vendor\CredentialController@index')->name('vendor-credentials-index');
-            Route::get('/credentials/create', 'Vendor\CredentialController@create')->name('vendor-credentials-create');
-            Route::post('/credentials/store', 'Vendor\CredentialController@store')->name('vendor-credentials-store');
-            Route::get('/credentials/edit/{id}', 'Vendor\CredentialController@edit')->name('vendor-credentials-edit');
-            Route::put('/credentials/update/{id}', 'Vendor\CredentialController@update')->name('vendor-credentials-update');
-            Route::post('/credentials/toggle/{id}', 'Vendor\CredentialController@toggle')->name('vendor-credentials-toggle');
-            Route::delete('/credentials/delete/{id}', 'Vendor\CredentialController@destroy')->name('vendor-credentials-destroy');
-            //------------ VENDOR CREDENTIALS SECTION ENDS------------
+            //------------ MERCHANT CREDENTIALS SECTION ------------
+            Route::get('/credentials', 'Merchant\CredentialController@index')->name('merchant-credentials-index');
+            Route::get('/credentials/create', 'Merchant\CredentialController@create')->name('merchant-credentials-create');
+            Route::post('/credentials/store', 'Merchant\CredentialController@store')->name('merchant-credentials-store');
+            Route::get('/credentials/edit/{id}', 'Merchant\CredentialController@edit')->name('merchant-credentials-edit');
+            Route::put('/credentials/update/{id}', 'Merchant\CredentialController@update')->name('merchant-credentials-update');
+            Route::post('/credentials/toggle/{id}', 'Merchant\CredentialController@toggle')->name('merchant-credentials-toggle');
+            Route::delete('/credentials/delete/{id}', 'Merchant\CredentialController@destroy')->name('merchant-credentials-destroy');
+            //------------ MERCHANT CREDENTIALS SECTION ENDS------------
 
-            // -------------------------- Vendor Income ------------------------------------//
-            Route::get('earning/datatables', "Vendor\IncomeController@datatables")->name('vendor.income.datatables');
-            Route::get('total/earning', "Vendor\IncomeController@index")->name('vendor.income');
+            // -------------------------- Merchant Income ------------------------------------//
+            Route::get('earning/datatables', "Merchant\IncomeController@datatables")->name('merchant.income.datatables');
+            Route::get('total/earning', "Merchant\IncomeController@index")->name('merchant.income');
 
-            Route::get('/verify', 'Vendor\VendorController@verify')->name('vendor-verify');
-            Route::get('/warning/verify/{id}', 'Vendor\VendorController@warningVerify')->name('vendor-warning');
-            Route::post('/verify', 'Vendor\VendorController@verifysubmit')->name('vendor-verify-submit');
+            Route::get('/verify', 'Merchant\MerchantController@verify')->name('merchant-verify');
+            Route::get('/warning/verify/{id}', 'Merchant\MerchantController@warningVerify')->name('merchant-warning');
+            Route::post('/verify', 'Merchant\MerchantController@verifysubmit')->name('merchant-verify-submit');
         });
     });
 
-    // ************************************ VENDOR SECTION ENDS**********************************************
+    // ************************************ MERCHANT SECTION ENDS**********************************************
 
     // ************************************ USER SECTION **********************************************
 
@@ -1464,10 +1426,10 @@ Route::group(['middleware' => 'maintenance'], function () {
         Route::post('/login/with/otp/submit', 'User\LoginController@showOtpLoginFormSubmit')->name('user.opt.login.submit');
         Route::get('/login/with/otp/view', 'User\LoginController@showOtpLoginFormView')->name('user.opt.login.view');
         Route::post('/login/with/otp/view/submit', 'User\LoginController@showOtpLoginFormViewSubmit')->name('user.opt.login.view.submit');
-        Route::get('/vendor-login', 'User\LoginController@showVendorLoginForm')->name('vendor.login');
+        Route::get('/merchant-login', 'User\LoginController@showMerchantLoginForm')->name('merchant.login');
 
         Route::get('/register', 'User\RegisterController@showRegisterForm')->name('user.register');
-        Route::get('/vendor-register', 'User\RegisterController@showVendorRegisterForm')->name('vendor.register');
+        Route::get('/merchant-register', 'User\RegisterController@showMerchantRegisterForm')->name('merchant.register');
         // User Login
         Route::post('/login', 'Auth\User\LoginController@login')->name('user.login.submit');
         // User Login End
@@ -1513,7 +1475,7 @@ Route::group(['middleware' => 'maintenance'], function () {
         // User Favorites
         Route::get('/favorites', 'User\FavoriteController@favorites')->name('user-favorites');
 
-        Route::get('/favorite/add/merchant/{merchantProductId}', 'User\FavoriteController@add')->name('user-favorite-add-merchant');
+        Route::get('/favorite/add/merchant/{merchantItemId}', 'User\FavoriteController@add')->name('user-favorite-add-merchant');
 
         Route::get('/favorite/add/{id}', 'User\FavoriteController@addLegacy')->name('user-favorite-add');
         Route::get('/favorite/remove/{id}', 'User\FavoriteController@remove')->name('user-favorite-remove');
@@ -1523,17 +1485,17 @@ Route::group(['middleware' => 'maintenance'], function () {
         Route::post('/review/submit', 'User\UserController@reviewsubmit')->name('front.review.submit');
         // User Review Ends
 
-        // User Orders
+        // User Purchases
 
-        Route::get('/orders', 'User\OrderController@orders')->name('user-orders');
-        Route::get('/order/tracking', 'User\OrderController@ordertrack')->name('user-order-track');
-        Route::get('/order/trackings/{id}', 'User\OrderController@trackload')->name('user-order-track-search');
-        Route::get('/order/{id}', 'User\OrderController@order')->name('user-order');
-        Route::get('/download/order/{slug}/{id}', 'User\OrderController@orderdownload')->name('user-order-download');
-        Route::get('print/order/print/{id}', 'User\OrderController@orderprint')->name('user-order-print');
-        Route::get('/json/trans', 'User\OrderController@trans');
+        Route::get('/purchases', 'User\PurchaseController@purchases')->name('user-purchases');
+        Route::get('/purchase/tracking', 'User\PurchaseController@purchasetrack')->name('user-purchase-track');
+        Route::get('/purchase/trackings/{id}', 'User\PurchaseController@trackload')->name('user-purchase-track-search');
+        Route::get('/purchase/{id}', 'User\PurchaseController@purchase')->name('user-purchase');
+        Route::get('/download/purchase/{slug}/{id}', 'User\PurchaseController@purchasedownload')->name('user-purchase-download');
+        Route::get('print/purchase/print/{id}', 'User\PurchaseController@purchaseprint')->name('user-purchase-print');
+        Route::get('/json/trans', 'User\PurchaseController@trans');
 
-        // User Orders Ends
+        // User Purchases Ends
 
         // USER SUBSCRIPTION
 
@@ -1779,11 +1741,11 @@ Route::group(['middleware' => 'maintenance'], function () {
         Route::get('/withdraw/create', 'Rider\WithdrawController@create')->name('rider-wwt-create');
         Route::post('/withdraw/create', 'Rider\WithdrawController@store')->name('rider-wwt-store');
 
-        Route::get('my/orders', 'Rider\RiderController@orders')->name('rider-orders');
-        Route::get('order/details/{id}', 'Rider\RiderController@orderDetails')->name('rider-order-details');
-        Route::get('order/delivery/accept/{id}', 'Rider\RiderController@orderAccept')->name('rider-order-delivery-accept');
-        Route::get('order/delivery/reject/{id}', 'Rider\RiderController@orderReject')->name('rider-order-delivery-reject');
-        Route::get('order/delivery/complete/{id}', 'Rider\RiderController@orderComplete')->name('rider-order-delivery-complete');
+        Route::get('my/purchases', 'Rider\RiderController@purchases')->name('rider-purchases');
+        Route::get('purchase/details/{id}', 'Rider\RiderController@purchaseDetails')->name('rider-purchase-details');
+        Route::get('purchase/delivery/accept/{id}', 'Rider\RiderController@purchaseAccept')->name('rider-purchase-delivery-accept');
+        Route::get('purchase/delivery/reject/{id}', 'Rider\RiderController@purchaseReject')->name('rider-purchase-delivery-reject');
+        Route::get('purchase/delivery/complete/{id}', 'Rider\RiderController@purchaseComplete')->name('rider-purchase-delivery-complete');
 
         Route::get('/reset', 'Rider\RiderController@resetform')->name('rider-reset');
         Route::post('/reset', 'Rider\RiderController@reset')->name('rider-reset-submit');
@@ -1794,7 +1756,7 @@ Route::group(['middleware' => 'maintenance'], function () {
     // ************************************ FRONT SECTION **********************************************
 
 
-    Route::post('/item/report', 'Front\CatalogController@report')->name('product.report');
+    Route::post('/item/report', 'Front\CatalogController@report')->name('catalog-item.report');
 
     Route::get('/', 'Front\FrontendController@index')->name('front.index');
     Route::get('/view', 'Front\CartController@view_cart')->name('front.cart-view');
@@ -1831,9 +1793,9 @@ Route::group(['middleware' => 'maintenance'], function () {
     // CONTACT SECTION  ENDS
 
  
-    // PRODCT AUTO SEARCH SECTION
-    Route::get('/autosearch/product/{slug}', 'Front\FrontendController@autosearch');
-    // PRODCT AUTO SEARCH SECTION ENDS
+    // CATALOG ITEM AUTO SEARCH SECTION
+    Route::get('/autosearch/catalog-item/{slug}', 'Front\FrontendController@autosearch');
+    // CATALOG ITEM AUTO SEARCH SECTION ENDS
 
     // CATEGORY SECTION
     Route::get('/categories', 'Front\CatalogController@categories')->name('front.categories');
@@ -1848,77 +1810,59 @@ Route::group(['middleware' => 'maintenance'], function () {
     Route::get('/search', 'Front\CatalogController@search')->name('front.search');
     // TAG SECTION ENDS
 
-    // COMPARE SECTION (moved before product routes to prevent route conflicts)
-    Route::get('/item/compare/view', 'Front\CompareController@compare')->name('product.compare');
-
-    // New merchant-product based routes
-    // Merchant-product-based compare routes
-    Route::get('/compare/add/merchant/{merchantProductId}', 'Front\CompareController@addMerchantCompare')->name('merchant.compare.add');
-    Route::get('/compare/remove/merchant/{merchantProductId}', 'Front\CompareController@removeMerchantCompare')->name('merchant.compare.remove');
-
-    // Legacy compare routes
-    Route::get('/item/compare/add/merchant/{merchantProductId}', 'Front\CompareController@addcompare')->name('product.compare.add.merchant');
-    Route::get('/item/compare/remove/{merchantProductId}', 'Front\CompareController@removecompare')->name('product.compare.remove');
-
-    // Legacy product-based routes for backward compatibility
-    Route::get('/item/compare/add/{id}', 'Front\CompareController@addcompareLegacy')->name('product.compare.add');
+    // COMPARE SECTION
+    Route::get('/item/compare/view', 'Front\CompareController@compare')->name('catalog-item.compare');
+    Route::get('/compare/add/merchant/{merchantItemId}', 'Front\CompareController@addMerchantCompare')->name('merchant.compare.add');
+    Route::get('/compare/remove/merchant/{merchantItemId}', 'Front\CompareController@removeMerchantCompare')->name('merchant.compare.remove');
+    Route::get('/item/compare/add/merchant/{merchantItemId}', 'Front\CompareController@addcompare')->name('catalog-item.compare.add.merchant');
+    Route::get('/item/compare/remove/{merchantItemId}', 'Front\CompareController@removecompare')->name('catalog-item.compare.remove');
+    Route::get('/item/compare/add/{id}', 'Front\CompareController@addcompareLegacy')->name('catalog-item.compare.add');
     // COMPARE SECTION ENDS
 
-    // PRODCT SECTION
-
-    // Legacy routes for backward compatibility
-
-    // المسار الجديد (الأساسي)
+    // CATALOG ITEM SECTION
     Route::get(
-    '/item/{slug}/store/{vendor_id}/merchant_products/{merchant_product_id}',
-    'Front\ProductDetailsController@showByMerchantProduct'
-    )->whereNumber('vendor_id')->whereNumber('merchant_product_id')
-    ->name('front.product');
+        '/item/{slug}/store/{vendor_id}/merchant_items/{merchant_item_id}',
+        'Front\CatalogItemDetailsController@showByMerchantItem'
+    )->whereNumber('vendor_id')->whereNumber('merchant_item_id')
+    ->name('front.catalog-item');
 
-    // القديم مع {user} → يعيد توجيه للنمط الجديد
-    Route::get('/item/{slug}/{user}', 'Front\ProductDetailsController@showByUser')
-    ->name('front.product.user');
+    Route::get('/item/{slug}/{user}', 'Front\CatalogItemDetailsController@showByUser')
+        ->name('front.catalog-item.user');
 
-    // الأقدم بدون {user} → يعيد توجيه للنمط الجديد
-    Route::get('/item/{slug}', 'Front\ProductDetailsController@show')
-    ->name('front.product.legacy');
+    Route::get('/item/{slug}', 'Front\CatalogItemDetailsController@show')
+        ->name('front.catalog-item.legacy');
 
-    // Alternative shorter route (legacy compatibility)
-    Route::get('/item/{slug}/{merchant_product_id}', 'Front\ProductDetailsController@showByMerchantProduct')
-         ->whereNumber('merchant_product_id')
-         ->name('front.product.mp.short');
+    Route::get('/item/{slug}/{merchant_item_id}', 'Front\CatalogItemDetailsController@showByMerchantItem')
+         ->whereNumber('merchant_item_id')
+         ->name('front.catalog-item.short');
 
-    // Optional alternative with user and brand quality
-    Route::get('/item/{slug}/{user}/{brand_quality_id}', 'Front\ProductDetailsController@showByUserQuality')
+    Route::get('/item/{slug}/{user}/{brand_quality_id}', 'Front\CatalogItemDetailsController@showByUserQuality')
          ->whereNumber('user')->whereNumber('brand_quality_id')
-         ->name('front.product.user_quality');
+         ->name('front.catalog-item.user_quality');
 
-    Route::get('/item/show/cross/products/{id}', 'Front\ProductDetailsController@showCrossProduct')->name('front.show.cross.product');
-    Route::get('/afbuy/{slug}', 'Front\ProductDetailsController@affProductRedirect')->name('affiliate.product');
-    Route::get('/item/quick/view/{id}/', 'Front\ProductDetailsController@quick')->name('product.quick');
-    // Route::post('/item/review', 'Front\ProductDetailsController@reviewsubmit')->name('front.review.submit');
-    Route::post('/item/review', 'Front\ProductDetailsController@reviewsubmit')->name('front.item.review.submit'); // اسم فريد
-
-    Route::get('/item/view/review/{id}', 'Front\ProductDetailsController@reviews')->name('front.reviews');
-    Route::get('/item/view/side/review/{id}', 'Front\ProductDetailsController@sideReviews')->name('front.side.reviews');
-    // PRODCT SECTION ENDS
+    Route::get('/item/show/cross/{id}', 'Front\CatalogItemDetailsController@showCrossCatalogItem')->name('front.show.cross.catalog-item');
+    Route::get('/afbuy/{slug}', 'Front\CatalogItemDetailsController@affCatalogItemRedirect')->name('affiliate.catalog-item');
+    Route::get('/item/quick/view/{id}/', 'Front\CatalogItemDetailsController@quick')->name('catalog-item.quick');
+    Route::post('/item/review', 'Front\CatalogItemDetailsController@reviewsubmit')->name('front.catalog-item.review.submit');
+    Route::get('/item/view/review/{id}', 'Front\CatalogItemDetailsController@reviews')->name('front.catalog-item.reviews');
+    Route::get('/item/view/side/review/{id}', 'Front\CatalogItemDetailsController@sideReviews')->name('front.catalog-item.side.reviews');
+    // CATALOG ITEM SECTION ENDS
 
     // COMMENT SECTION
-    Route::post('/item/comment/store', 'Front\ProductDetailsController@comment')->name('product.comment');
-    Route::post('/item/comment/edit/{id}', 'Front\ProductDetailsController@commentedit')->name('product.comment.edit');
-    Route::get('/item/comment/delete/{id}', 'Front\ProductDetailsController@commentdelete')->name('product.comment.delete');
+    Route::post('/item/comment/store', 'Front\CatalogItemDetailsController@comment')->name('catalog-item.comment');
+    Route::post('/item/comment/edit/{id}', 'Front\CatalogItemDetailsController@commentedit')->name('catalog-item.comment.edit');
+    Route::get('/item/comment/delete/{id}', 'Front\CatalogItemDetailsController@commentdelete')->name('catalog-item.comment.delete');
     // COMMENT SECTION ENDS
 
-
     // REPLY SECTION
-    Route::post('/item/reply/{id}', 'Front\ProductDetailsController@reply')->name('product.reply');
-    Route::post('/item/reply/edit/{id}', 'Front\ProductDetailsController@replyedit')->name('product.reply.edit');
-    Route::get('/item/reply/delete/{id}', 'Front\ProductDetailsController@replydelete')->name('product.reply.delete');
+    Route::post('/item/reply/{id}', 'Front\CatalogItemDetailsController@reply')->name('catalog-item.reply');
+    Route::post('/item/reply/edit/{id}', 'Front\CatalogItemDetailsController@replyedit')->name('catalog-item.reply.edit');
+    Route::get('/item/reply/delete/{id}', 'Front\CatalogItemDetailsController@replydelete')->name('catalog-item.reply.delete');
     // REPLY SECTION ENDS
 
     // ============ UNIFIED CART SYSTEM (v3) ============
     // Single endpoint for ALL cart add operations
-    // Uses merchant_product_id EXCLUSIVELY - NO fallbacks
+    // Uses merchant_item_id EXCLUSIVELY - NO fallbacks
     Route::post('/cart/unified', 'Front\CartController@unifiedAdd')->name('cart.unified.add');
     Route::get('/cart/unified', 'Front\CartController@unifiedAdd')->name('cart.unified.add.get'); // For legacy GET requests
 
@@ -1936,16 +1880,16 @@ Route::group(['middleware' => 'maintenance'], function () {
     Route::get('/cart/decrease', 'Front\CartController@decreaseItem')->name('cart.decrease.get');
 
     // Remove item
-    Route::get('/removecart/{id}', 'Front\CartController@removecart')->name('product.cart.remove');
+    Route::get('/removecart/{id}', 'Front\CartController@removecart')->name('cart.remove');
 
     // ============ CART ADD ROUTES ============
-    // PRIMARY: Use POST /cart/unified with merchant_product_id for all cart additions
-    Route::get('/cart/add/merchant/{merchantProductId}', 'Front\CartController@addMerchantCart')->name('merchant.cart.add');
+    // PRIMARY: Use POST /cart/unified with merchant_item_id for all cart additions
+    Route::get('/cart/add/merchant/{merchantItemId}', 'Front\CartController@addMerchantCart')->name('merchant.cart.add');
 
     // DEPRECATED (return 410 Gone): These routes should NOT be used
-    // All cart add functionality should use POST /cart/unified with merchant_product_id
-    Route::get('/addcart/{id}', 'Front\CartController@addcart')->name('product.cart.add');          // DEPRECATED
-    Route::get('/addtocart/{id}', 'Front\CartController@addtocart')->name('product.cart.quickadd'); // DEPRECATED
+    // All cart add functionality should use POST /cart/unified with merchant_item_id
+    Route::get('/addcart/{id}', 'Front\CartController@addcart')->name('catalog-item.cart.add');          // DEPRECATED
+    Route::get('/addtocart/{id}', 'Front\CartController@addtocart')->name('catalog-item.cart.quickadd'); // DEPRECATED
     Route::get('/addnumcart', 'Front\CartController@addnumcart')->name('details.cart');             // DEPRECATED
     Route::get('/addtonumcart', 'Front\CartController@addtonumcart');                               // DEPRECATED
 
@@ -1954,14 +1898,13 @@ Route::group(['middleware' => 'maintenance'], function () {
     Route::get('/reducebyone', 'Front\CartController@reducebyone');
     // ============ END CART ROUTES ============
     Route::get('/upcolor', 'Front\CartController@upcolor');
-    Route::get('/removecart/{id}', 'Front\CartController@removecart')->name('product.cart.remove');
     Route::get('/carts/discount-code', 'Front\DiscountCodeController@discountCodeCheck');
     // CART SECTION ENDS
 
     // FAVORITE SECTION
     Route::middleware('auth')->group(function () {
-        Route::get('/favorite/add/merchant/{merchantProductId}', 'User\FavoriteController@addMerchantFavorite')->name('merchant.favorite.add');
-        Route::get('/favorite/remove/merchant/{merchantProductId}', 'User\FavoriteController@removeMerchantFavorite')->name('merchant.favorite.remove');
+        Route::get('/favorite/add/merchant/{merchantItemId}', 'User\FavoriteController@addMerchantFavorite')->name('merchant.favorite.add');
+        Route::get('/favorite/remove/merchant/{merchantItemId}', 'User\FavoriteController@removeMerchantFavorite')->name('merchant.favorite.remove');
     });
     // FAVORITE SECTION ENDS
 
@@ -2251,11 +2194,11 @@ Route::group(['middleware' => 'maintenance'], function () {
     Route::post('/api/checkout/mercadopago/notify', 'Api\Payment\MercadopagoController@notify')->name('api.mercadopago.notify');
     Route::post('/api/checkout/mercadopago/submit', 'Api\Payment\MercadopagoController@store')->name('api.mercadopago.submit');
 
-    // VENDOR SECTION
+    // MERCHANT SECTION
 
-    Route::post('/vendor/contact', 'Front\VendorController@vendorcontact')->name('front.vendor.contact');
+    Route::post('/merchant/contact', 'Front\MerchantController@merchantcontact')->name('front.merchant.contact');
 
-    // VENDOR SECTION ENDS
+    // MERCHANT SECTION ENDS
 
     // SUBSCRIBE SECTION
 
@@ -2278,11 +2221,11 @@ Route::group(['middleware' => 'maintenance'], function () {
     Route::get('finalize', 'Front\FrontendController@finalize');
     Route::get('update-finalize', 'Front\FrontendController@updateFinalize');
 
-    // VENDOR AND PAGE SECTION
+    // MERCHANT AND PAGE SECTION
     Route::get('/country/tax/check', 'Front\CartController@country_tax');
-    Route::get('/{slug}', 'Front\VendorController@index')->name('front.vendor');
+    Route::get('/{slug}', 'Front\MerchantController@index')->name('front.merchant');
 
-    // VENDOR AND PAGE SECTION ENDS
+    // MERCHANT AND PAGE SECTION ENDS
 
     // ************************************ FRONT SECTION ENDS**********************************************
 

@@ -38,8 +38,8 @@ class AppServiceProvider extends ServiceProvider
 
 
         view()->composer('*', function ($settings) {
-            $settings->with('gs', cache()->remember('generalsettings', 3600, function () {
-                return DB::table('generalsettings')->first();
+            $settings->with('gs', cache()->remember('muaadhsettings', 3600, function () {
+                return DB::table('muaadhsettings')->first();
             }));
 
             $settings->with('ps', cache()->remember('pagesettings', 3600, function () {
@@ -134,7 +134,7 @@ class AppServiceProvider extends ServiceProvider
 //
 //        view()->composer('*', function ($settings) {
 //
-//            $settings->with('gs', DB::table('generalsettings')->first());
+//            $settings->with('gs', DB::table('muaadhsettings')->first());
 //
 //            $settings->with('ps', DB::table('pagesettings')->first());
 //

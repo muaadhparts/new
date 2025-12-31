@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Classes\MuaadhMailer;
 use App\Models\SupportThread;
 use App\Models\SupportMessage;
-use App\Models\Order;
+use App\Models\Purchase;
 use App\Models\Rider;
 use App\Models\User;
 use Auth;
@@ -151,7 +151,7 @@ class MessageController extends AdminBaseController
             $thread->subject = $subject;
             $thread->user_id = $user->id;
             $thread->message = $request->message;
-            $thread->order_number = $request->order;
+            $thread->purchase_number = $request->order;
             $thread->type = $request->type;
             $thread->save();
             $msg = new SupportMessage();

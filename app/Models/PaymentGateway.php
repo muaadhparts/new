@@ -36,41 +36,41 @@ class PaymentGateway extends Model
     }
 
     /**
-     * Get checkout link for vendor-specific payment route
+     * Get checkout link for merchant-specific payment route
      *
-     * POLICY: ALL payment routes require vendor_id in the route.
-     * This method returns vendor-specific routes when vendor_id is provided.
+     * POLICY: ALL payment routes require merchant_id in the route.
+     * This method returns merchant-specific routes when merchant_id is provided.
      *
-     * @param int|null $vendorId The vendor ID for vendor-specific routes
+     * @param int|null $merchantId The merchant ID for merchant-specific routes
      * @return string The route URL
      */
-    public function showCheckoutLink($vendorId = null){
+    public function showCheckoutLink($merchantId = null){
         $data = $this->keyword == null ? 'other' : $this->keyword;
 
         // ====================================================================
-        // VENDOR-SPECIFIC ROUTES (New Policy)
+        // MERCHANT-SPECIFIC ROUTES (New Policy)
         // ====================================================================
-        if ($vendorId) {
+        if ($merchantId) {
             $routeMap = [
-                'myfatoorah'    => 'front.checkout.vendor.myfatoorah.submit',
-                'paypal'        => 'front.checkout.vendor.paypal.submit',
-                'stripe'        => 'front.checkout.vendor.stripe.submit',
-                'instamojo'     => 'front.checkout.vendor.instamojo.submit',
-                'paystack'      => 'front.checkout.vendor.paystack.submit',
-                'paytm'         => 'front.checkout.vendor.paytm.submit',
-                'mollie'        => 'front.checkout.vendor.mollie.submit',
-                'razorpay'      => 'front.checkout.vendor.razorpay.submit',
-                'authorize.net' => 'front.checkout.vendor.authorize.submit',
-                'mercadopago'   => 'front.checkout.vendor.mercadopago.submit',
-                'flutterwave'   => 'front.checkout.vendor.flutterwave.submit',
-                'sslcommerz'    => 'front.checkout.vendor.ssl.submit',
-                'voguepay'      => 'front.checkout.vendor.voguepay.submit',
-                'cod'           => 'front.checkout.vendor.cod.submit',
-                'wallet'        => 'front.checkout.vendor.wallet.submit',
+                'myfatoorah'    => 'front.checkout.merchant.myfatoorah.submit',
+                'paypal'        => 'front.checkout.merchant.paypal.submit',
+                'stripe'        => 'front.checkout.merchant.stripe.submit',
+                'instamojo'     => 'front.checkout.merchant.instamojo.submit',
+                'paystack'      => 'front.checkout.merchant.paystack.submit',
+                'paytm'         => 'front.checkout.merchant.paytm.submit',
+                'mollie'        => 'front.checkout.merchant.mollie.submit',
+                'razorpay'      => 'front.checkout.merchant.razorpay.submit',
+                'authorize.net' => 'front.checkout.merchant.authorize.submit',
+                'mercadopago'   => 'front.checkout.merchant.mercadopago.submit',
+                'flutterwave'   => 'front.checkout.merchant.flutterwave.submit',
+                'sslcommerz'    => 'front.checkout.merchant.ssl.submit',
+                'voguepay'      => 'front.checkout.merchant.voguepay.submit',
+                'cod'           => 'front.checkout.merchant.cod.submit',
+                'wallet'        => 'front.checkout.merchant.wallet.submit',
             ];
 
-            $routeName = $routeMap[$data] ?? 'front.checkout.vendor.manual.submit';
-            return route($routeName, ['vendorId' => $vendorId]);
+            $routeName = $routeMap[$data] ?? 'front.checkout.merchant.manual.submit';
+            return route($routeName, ['merchantId' => $merchantId]);
         }
 
         // ====================================================================

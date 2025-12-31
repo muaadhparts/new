@@ -147,7 +147,7 @@ class GeneratePagesJson extends Command
 
         // Vendors
         $vendors = DB::table('users')
-            ->where('is_vendor', 1)
+            ->where('is_merchant', 1)
             ->where('status', 1)
             ->limit(2)
             ->pluck('id');

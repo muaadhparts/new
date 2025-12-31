@@ -5,8 +5,8 @@ namespace App\Http\Controllers\Api\Payment;
 use App\Classes\Instamojo;
 use App\Http\Controllers\Controller;
 use App\Models\Currency;
-use App\Models\Generalsetting;
-use App\Models\Order;
+use App\Models\Muaadhsetting;
+use App\Models\Purchase;
 use App\Models\Package;
 use App\Models\PaymentGateway;
 use App\Models\Shipping;
@@ -18,27 +18,27 @@ class InstamojoController extends Controller
     public function store(Request $request)
     {
 
-        if (!$request->has('order_number')) {
+        if (!$request->has('purchase_number')) {
             return response()->json(['status' => false, 'data' => [], 'error' => 'Invalid Request']);
         }
 
-        $order_number = $request->order_number;
-        $order = Order::where('order_number', $order_number)->firstOrFail();
-        $curr = Currency::where('sign', '=', $order->currency_sign)->firstOrFail();
+        $purchase_number = $request->purchase_number;
+        $purchase = Purchase::where('purchase_number', $purchase_number)->firstOrFail();
+        $curr = Currency::where('sign', '=', $purchase->currency_sign)->firstOrFail();
 
         if ($curr->name != "INR") {
             return redirect()->back()->with('unsuccess', 'Please Select INR Currency For Instamojo.');
         }
 
-        $settings = Generalsetting::findOrFail(1);
-        $item_name = $settings->title . " Order";
-        $user_email = $order->customer_email;
+        $settings = Muaadhsetting::findOrFail(1);
+        $item_name = $settings->title . " Purchase";
+        $user_email = $purchase->customer_email;
 
-        $item_amount = round($order->pay_amount * $order->currency_value, 2);
- 
+        $item_amount = round($purchase->pay_amount * $purchase->currency_value, 2);
+
         $notify_url = action('Api\Payment\InstamojoController@notify');
         $data = PaymentGateway::whereKeyword('instamojo')->first();
- 
+
         $paydata = $data->convertAutoData();
         if($paydata['sandbox_check'] == 1){
             $api = new Instamojo($paydata['key'], $paydata['token'], 'https://test.instamojo.com/api/1.1/');
@@ -57,10 +57,10 @@ class InstamojoController extends Controller
             ));
 
             $redirect_url = $response['longurl'];
-            $order->pay_id = $order['pay_id'] = $response['id'];
-            $order['pay_amount'] = round($item_amount / $order->currency_value, 2);
-            $order['method'] = $request->method;
-            $order->update();
+            $purchase->pay_id = $purchase['pay_id'] = $response['id'];
+            $purchase['pay_amount'] = round($item_amount / $purchase->currency_value, 2);
+            $purchase['method'] = $request->method;
+            $purchase->update();
             return redirect($redirect_url);
         } catch (Exception $e) {
             print('Error: ' . $e->getMessage());
@@ -73,13 +73,13 @@ class InstamojoController extends Controller
 
         $data = $request->all();
 
-        $order = Order::where('pay_id', '=', $data['payment_request_id'])->first();
-        $cancel_url = route('payment.checkout') . "?order_number=" . $order->order_number;
+        $purchase = Purchase::where('pay_id', '=', $data['payment_request_id'])->first();
+        $cancel_url = route('payment.checkout') . "?purchase_number=" . $purchase->purchase_number;
 
-        if (isset($order)) {
+        if (isset($purchase)) {
             $data['txnid'] = $data['payment_id'];
             $data['payment_status'] = 'Completed';
-            $order->update($data);
+            $purchase->update($data);
             return redirect(route('front.payment.success', 1));
         }
         return $cancel_url;

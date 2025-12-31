@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
+use App\Models\MerchantItem;
 
 /**
  * Stock Reservation Model
@@ -14,7 +15,7 @@ use Carbon\Carbon;
  * @property int $id
  * @property string $session_id
  * @property int|null $user_id
- * @property int $merchant_product_id
+ * @property int $merchant_item_id
  * @property string|null $size
  * @property int $qty
  * @property string $cart_key
@@ -26,7 +27,7 @@ class StockReservation extends Model
     protected $fillable = [
         'session_id',
         'user_id',
-        'merchant_product_id',
+        'merchant_item_id',
         'size',
         'qty',
         'cart_key',
@@ -48,11 +49,11 @@ class StockReservation extends Model
     }
 
     /**
-     * العلاقة مع MerchantProduct
+     * Relation with MerchantItem
      */
-    public function merchantProduct()
+    public function merchantItem()
     {
-        return $this->belongsTo(MerchantProduct::class);
+        return $this->belongsTo(MerchantItem::class, 'merchant_item_id');
     }
 
     /**
@@ -91,7 +92,7 @@ class StockReservation extends Model
      * إنشاء أو تحديث حجز
      */
     public static function reserve(
-        int $merchantProductId,
+        int $merchantItemId,
         int $qty,
         string $cartKey,
         ?string $size = null,
@@ -103,7 +104,7 @@ class StockReservation extends Model
         return self::updateOrCreate(
             [
                 'session_id' => $sessionId,
-                'merchant_product_id' => $merchantProductId,
+                'merchant_item_id' => $merchantItemId,
                 'cart_key' => $cartKey,
             ],
             [
@@ -119,7 +120,7 @@ class StockReservation extends Model
     /**
      * تحديث كمية الحجز (أو إنشاءه إذا لم يكن موجوداً)
      */
-    public static function updateReservation(string $cartKey, int $newQty, ?int $merchantProductId = null, ?string $size = null): bool
+    public static function updateReservation(string $cartKey, int $newQty, ?int $merchantItemId = null, ?string $size = null): bool
     {
         $sessionId = session()->getId();
 
@@ -135,12 +136,12 @@ class StockReservation extends Model
             return true;
         }
 
-        // إنشاء حجز جديد إذا لم يكن موجوداً وتم تمرير merchant_product_id
-        if ($merchantProductId) {
+        // إنشاء حجز جديد إذا لم يكن موجوداً وتم تمرير merchant_item_id
+        if ($merchantItemId) {
             self::create([
                 'session_id' => $sessionId,
                 'user_id' => auth()->id(),
-                'merchant_product_id' => $merchantProductId,
+                'merchant_item_id' => $merchantItemId,
                 'size' => $size,
                 'qty' => $newQty,
                 'cart_key' => $cartKey,
@@ -231,23 +232,23 @@ class StockReservation extends Model
     protected static function returnStockToProduct(self $reservation): void
     {
         DB::transaction(function () use ($reservation) {
-            $mp = DB::table('merchant_products')
-                ->where('id', $reservation->merchant_product_id)
+            $mi = DB::table('merchant_items')
+                ->where('id', $reservation->merchant_item_id)
                 ->lockForUpdate()
                 ->first();
 
-            if (!$mp) return;
+            if (!$mi) return;
 
             // إذا كان له size
-            if ($reservation->size && !empty($mp->size) && !empty($mp->size_qty)) {
-                $sizes = array_map('trim', explode(',', $mp->size));
-                $qtys = array_map('trim', explode(',', $mp->size_qty));
+            if ($reservation->size && !empty($mi->size) && !empty($mi->size_qty)) {
+                $sizes = array_map('trim', explode(',', $mi->size));
+                $qtys = array_map('trim', explode(',', $mi->size_qty));
                 $idx = array_search(trim($reservation->size), $sizes, true);
 
                 if ($idx !== false && isset($qtys[$idx])) {
                     $qtys[$idx] = (int)$qtys[$idx] + $reservation->qty;
-                    DB::table('merchant_products')
-                        ->where('id', $reservation->merchant_product_id)
+                    DB::table('merchant_items')
+                        ->where('id', $reservation->merchant_item_id)
                         ->update([
                             'size_qty' => implode(',', $qtys),
                             'updated_at' => now(),
@@ -257,8 +258,8 @@ class StockReservation extends Model
             }
 
             // إرجاع للـ stock العام
-            DB::table('merchant_products')
-                ->where('id', $reservation->merchant_product_id)
+            DB::table('merchant_items')
+                ->where('id', $reservation->merchant_item_id)
                 ->increment('stock', $reservation->qty, ['updated_at' => now()]);
         });
     }

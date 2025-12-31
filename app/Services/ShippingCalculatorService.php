@@ -58,18 +58,18 @@ class ShippingCalculatorService
      * - city_id = معرف المدينة في جدول cities
      * - city = اسم المدينة بالإنجليزي (يستخدم مباشرة إذا لم يوجد city_id)
      */
-    public static function getVendorCity(int $vendorId): ?array
+    public static function getMerchantCity(int $merchantId): ?array
     {
-        $vendor = User::find($vendorId);
+        $merchant = User::find($merchantId);
 
-        if (!$vendor) {
-            Log::warning('ShippingCalculator: Vendor not found', ['vendor_id' => $vendorId]);
+        if (!$merchant) {
+            Log::warning('ShippingCalculator: Merchant not found', ['merchant_id' => $merchantId]);
             return null;
         }
 
         // 1. city_id موجود - جلب الاسم من جدول cities
-        if ($vendor->city_id) {
-            $city = City::find($vendor->city_id);
+        if ($merchant->city_id) {
+            $city = City::find($merchant->city_id);
             if ($city) {
                 return [
                     'city_id' => $city->id,
@@ -79,23 +79,31 @@ class ShippingCalculatorService
                 ];
             }
             Log::warning('ShippingCalculator: City ID not found in DB', [
-                'vendor_id' => $vendorId,
-                'city_id' => $vendor->city_id,
+                'merchant_id' => $merchantId,
+                'city_id' => $merchant->city_id,
             ]);
         }
 
         // 2. city موجود - استخدم الاسم مباشرة
-        if ($vendor->city) {
+        if ($merchant->city) {
             return [
                 'city_id' => null,
-                'city_name' => $vendor->city,
+                'city_name' => $merchant->city,
                 'country_id' => null,
                 'source' => 'city_column',
             ];
         }
 
-        Log::warning('ShippingCalculator: Vendor has no city configured', ['vendor_id' => $vendorId]);
+        Log::warning('ShippingCalculator: Merchant has no city configured', ['merchant_id' => $merchantId]);
         return null;
+    }
+
+    /**
+     * @deprecated Use getMerchantCity() instead
+     */
+    public static function getVendorCity(int $vendorId): ?array
+    {
+        return self::getMerchantCity($vendorId);
     }
 
     /**

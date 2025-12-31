@@ -27,9 +27,9 @@
         <div class="col-md-12 col-lg-6 col-xl-4">
             <div class="mycard bg1">
                 <div class="left">
-                    <h5 class="title">{{ __('Orders Pending!') }} </h5>
+                    <h5 class="title">{{ __('Purchases Pending!') }} </h5>
                     <span class="number">{{count($pending)}}</span>
-                    <a href="{{ route('admin-orders-all') }}?status=pending" class="link">{{ __('View All') }}</a>
+                    <a href="{{ route('admin-purchases-all') }}?status=pending" class="link">{{ __('View All') }}</a>
                 </div>
                 <div class="right d-flex align-self-center">
                     <div class="icon">
@@ -41,9 +41,9 @@
         <div class="col-md-12 col-lg-6 col-xl-4">
             <div class="mycard bg2">
                 <div class="left">
-                    <h5 class="title">{{ __('Orders Procsessing!') }}</h5>
+                    <h5 class="title">{{ __('Purchases Processing!') }}</h5>
                     <span class="number">{{count($processing)}}</span>
-                    <a href="{{ route('admin-orders-all') }}?status=processing" class="link">{{ __('View All') }}</a>
+                    <a href="{{ route('admin-purchases-all') }}?status=processing" class="link">{{ __('View All') }}</a>
                 </div>
                 <div class="right d-flex align-self-center">
                     <div class="icon">
@@ -55,9 +55,9 @@
         <div class="col-md-12 col-lg-6 col-xl-4">
             <div class="mycard bg3">
                 <div class="left">
-                    <h5 class="title">{{ __('Orders Completed!') }}</h5>
+                    <h5 class="title">{{ __('Purchases Completed!') }}</h5>
                     <span class="number">{{count($completed)}}</span>
-                    <a href="{{ route('admin-orders-all') }}?status=completed" class="link">{{ __('View All') }}</a>
+                    <a href="{{ route('admin-purchases-all') }}?status=completed" class="link">{{ __('View All') }}</a>
                 </div>
                 <div class="right d-flex align-self-center">
                     <div class="icon">
@@ -162,7 +162,7 @@
 
         <div class="col-md-12 col-lg-6 col-sm-12 col-xl-6">
             <div class="card">
-                <h5 class="card-header">{{ __('Recent Order(s)') }}</h5>
+                <h5 class="card-header">{{ __('Recent Purchase(s)') }}</h5>
                 <div class="card-body">
 
                 <div class="table-responsive  dashboard-home-table">
@@ -170,15 +170,15 @@
                             <thead>
                                 <tr>
 
-                                    <th>{{ __('Order Number') }}</th>
-                                    <th>{{ __('Order Date') }}</th>
+                                    <th>{{ __('Purchase Number') }}</th>
+                                    <th>{{ __('Purchase Date') }}</th>
                                 </tr>
                                 @foreach($rorders as $data)
                                 <tr>
-                                    <td>{{ $data->order_number }}</td>
+                                    <td>{{ $data->purchase_number }}</td>
                                     <td>{{ date('Y-m-d',strtotime($data->created_at)) }}</td>
                                     <td>
-                                        <div class="action-list"><a href="{{ route('admin-order-show',$data->id) }}"><i
+                                        <div class="action-list"><a href="{{ route('admin-purchase-show',$data->id) }}"><i
                                                     class="fas fa-eye"></i> {{ __('Details') }}</a>
                                         </div>
                                     </td>

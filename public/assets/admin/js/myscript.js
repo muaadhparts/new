@@ -287,7 +287,7 @@
       $("#t-title").val(data);
     });
 
-    $(document).on("change", ".vendor-droplinks", function (e) {
+    $(document).on("change", ".merchant-droplinks", function (e) {
       bootstrap.Modal.getOrCreateInstance(document.getElementById('status-modal')).show();
       $("#status-modal").find(".btn-ok").attr("href", $(this).val());
       $("#muaadhtable").DataTable().ajax.reload();

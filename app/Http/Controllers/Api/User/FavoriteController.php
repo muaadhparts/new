@@ -3,10 +3,10 @@
 namespace App\Http\Controllers\Api\User;
 
 use App\{
-    Models\Product,
+    Models\CatalogItem,
     Models\Favorite,
     Http\Controllers\Controller,
-    Http\Resources\ProductlistResource,
+    Http\Resources\CatalogItemListResource,
     View\Composers\HeaderComposer
 };
 
@@ -21,9 +21,9 @@ class FavoriteController extends Controller
 
             $sort = '';
             $user = Auth::guard('api')->user();
-            $productIds = Favorite::where('user_id','=',$user->id)->pluck('product_id');
+            $catalogItemIds = Favorite::where('user_id','=',$user->id)->pluck('catalog_item_id');
 
-            $productsQuery = Product::status(1)->whereIn('id', $productIds);
+            $productsQuery = CatalogItem::status(1)->whereIn('id', $catalogItemIds);
 
             if(!empty($request->sort))
             {
@@ -49,7 +49,7 @@ class FavoriteController extends Controller
 
             $prods = $productsQuery->get();
 
-            return response()->json(['status' => true, 'data' => ProductlistResource::collection($prods), 'error' => []]);
+            return response()->json(['status' => true, 'data' => CatalogItemListResource::collection($prods), 'error' => []]);
 
         }
         catch(\Exception $e){
@@ -64,11 +64,12 @@ class FavoriteController extends Controller
         try{
             $input = $request->all();
             $user = Auth::guard('api')->user();
-            $ck = Favorite::where('user_id',$user->id)->where('product_id',$input['product_id'])->exists();
+            $catalogItemId = $input['catalog_item_id'] ?? $input['product_id'];
+            $ck = Favorite::where('user_id',$user->id)->where('catalog_item_id',$catalogItemId)->exists();
             if(!$ck){
                 $favorite = new Favorite();
                 $favorite->user_id = $user->id;
-                $favorite->product_id = $input['product_id'];
+                $favorite->catalog_item_id = $catalogItemId;
                 $favorite->save();
                 HeaderComposer::invalidateFavoriteCache($user->id);
                 return response()->json(['status' => true, 'data' => ['message' => 'Successfully Added To Favorites.'], 'error' => []]);
@@ -85,7 +86,7 @@ class FavoriteController extends Controller
     {
         try{
             $user = Auth::user();
-            $favorite = Favorite::where('product_id',$id)->where('user_id',$user->id)->first();
+            $favorite = Favorite::where('catalog_item_id',$id)->where('user_id',$user->id)->first();
             $favorite->delete();
             HeaderComposer::invalidateFavoriteCache($user->id);
             return response()->json(['status' => true, 'data' => ['message' => 'Successfully Removed From Favorites.'], 'error' => []]);

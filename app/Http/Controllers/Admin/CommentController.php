@@ -11,23 +11,23 @@ class CommentController extends AdminBaseController
 	//*** JSON Request
 	public function datatables()
 	{
-		$datas = Comment::with(['product.brand', 'merchantProduct.user', 'merchantProduct.qualityBrand', 'user'])
+		$datas = Comment::with(['catalogItem.brand', 'merchantItem.user', 'merchantItem.qualityBrand', 'user'])
 			->latest('id')
 			->get();
 
 		return Datatables::of($datas)
 			->addColumn('product', function (Comment $data) {
-				$name = $data->product ? getLocalizedProductName($data->product, 50) : __('N/A');
+				$name = $data->catalogItem ? getLocalizedProductName($data->catalogItem, 50) : __('N/A');
 
 				// الرابط للمنتج
-				if ($data->merchantProduct && $data->merchantProduct->id && $data->product) {
-					$prodLink = route('front.product', [
-						'slug' => $data->product->slug,
-						'vendor_id' => $data->merchantProduct->user_id,
-						'merchant_product_id' => $data->merchantProduct->id
+				if ($data->merchantItem && $data->merchantItem->id && $data->catalogItem) {
+					$prodLink = route('front.catalog-item', [
+						'slug' => $data->catalogItem->slug,
+						'vendor_id' => $data->merchantItem->user_id,
+						'merchant_item_id' => $data->merchantItem->id
 					]);
-				} elseif ($data->product && $data->product->sku) {
-					$prodLink = route('search.result', $data->product->sku);
+				} elseif ($data->catalogItem && $data->catalogItem->sku) {
+					$prodLink = route('search.result', $data->catalogItem->sku);
 				} else {
 					$prodLink = '#';
 				}
@@ -36,17 +36,17 @@ class CommentController extends AdminBaseController
 				return $product;
 			})
 			->addColumn('brand', function (Comment $data) {
-				return $data->product && $data->product->brand ? getLocalizedBrandName($data->product->brand) : __('N/A');
+				return $data->catalogItem && $data->catalogItem->brand ? getLocalizedBrandName($data->catalogItem->brand) : __('N/A');
 			})
 			->addColumn('quality_brand', function (Comment $data) {
-				return $data->merchantProduct && $data->merchantProduct->qualityBrand
-					? getLocalizedQualityName($data->merchantProduct->qualityBrand)
+				return $data->merchantItem && $data->merchantItem->qualityBrand
+					? getLocalizedQualityName($data->merchantItem->qualityBrand)
 					: __('N/A');
 			})
 			->addColumn('vendor', function (Comment $data) {
-				if ($data->merchantProduct && $data->merchantProduct->user) {
-					$shopName = $data->merchantProduct->user->shop_name ?: $data->merchantProduct->user->name;
-					return '<a href="' . route('admin-vendor-show', $data->merchantProduct->user_id) . '" target="_blank">' . $shopName . '</a>';
+				if ($data->merchantItem && $data->merchantItem->user) {
+					$shopName = $data->merchantItem->user->shop_name ?: $data->merchantItem->user->name;
+					return '<a href="' . route('admin-vendor-show', $data->merchantItem->user_id) . '" target="_blank">' . $shopName . '</a>';
 				}
 				return __('N/A');
 			})
@@ -72,7 +72,7 @@ class CommentController extends AdminBaseController
 	//*** GET Request
 	public function show($id)
 	{
-		$data = Comment::with(['product.brand', 'merchantProduct.user', 'merchantProduct.qualityBrand'])->findOrFail($id);
+		$data = Comment::with(['catalogItem.brand', 'merchantItem.user', 'merchantItem.qualityBrand'])->findOrFail($id);
 		return view('admin.comment.show', compact('data'));
 	}
 

@@ -202,8 +202,8 @@
                         <tr>
                             <td class="text-muted">{{ __('Order Number') }}</td>
                             <td class="text-right font-weight-bold">
-                                <a href="{{ route('admin-order-show', $order->id) }}">
-                                    {{ $order->order_number }}
+                                <a href="{{ route('admin-purchase-show', $order->id) }}">
+                                    {{ $order->purchase_number }}
                                 </a>
                             </td>
                         </tr>
@@ -231,7 +231,7 @@
                         </tr>
                     </table>
                     <hr>
-                    <a href="{{ route('admin-order-show', $order->id) }}" class="btn btn-outline-primary btn-sm btn-block">
+                    <a href="{{ route('admin-purchase-show', $order->id) }}" class="btn btn-outline-primary btn-sm btn-block">
                         <i class="fas fa-eye mr-1"></i> {{ __('View Order') }}
                     </a>
                 </div>

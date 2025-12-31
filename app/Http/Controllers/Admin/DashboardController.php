@@ -5,8 +5,8 @@ namespace App\Http\Controllers\Admin;
 use App\Models\Blog;
 use App\Models\Counter;
 use App\Models\License;
-use App\Models\Order;
-use App\Models\Product;
+use App\Models\Purchase;
+use App\Models\CatalogItem;
 use App\Models\User;
 use Auth;
 use Illuminate\Http\Request;
@@ -20,42 +20,42 @@ class DashboardController extends AdminBaseController
     public function index()
     {
 
-        $data['pending'] = Order::where('status', '=', 'pending')->get();
-        $data['processing'] = Order::where('status', '=', 'processing')->get();
-        $data['completed'] = Order::where('status', '=', 'completed')->get();
+        $data['pending'] = Purchase::where('status', '=', 'pending')->get();
+        $data['processing'] = Purchase::where('status', '=', 'processing')->get();
+        $data['completed'] = Purchase::where('status', '=', 'completed')->get();
         $data['days'] = "";
         $data['sales'] = "";
         for ($i = 0; $i < 30; $i++) {
             $data['days'] .= "'" . date("d M", strtotime('-' . $i . ' days')) . "',";
 
-            $data['sales'] .= "'" . Order::where('status', '=', 'completed')->whereDate('created_at', '=', date("Y-m-d", strtotime('-' . $i . ' days')))->count() . "',";
+            $data['sales'] .= "'" . Purchase::where('status', '=', 'completed')->whereDate('created_at', '=', date("Y-m-d", strtotime('-' . $i . ' days')))->count() . "',";
         }
         $data['users'] = User::count();
-        $data['products'] = Product::count();
+        $data['products'] = CatalogItem::count();
         $data['blogs'] = Blog::count();
 
-        // جلب أحدث المنتجات من merchant_products (المنتجات النشطة فقط)
-        $data['pproducts'] = \App\Models\MerchantProduct::with(['product.brand', 'product.category', 'product.subcategory', 'product.childcategory', 'user', 'qualityBrand'])
+        // جلب أحدث العناصر من merchant_items (العناصر النشطة فقط)
+        $data['pproducts'] = \App\Models\MerchantItem::with(['catalogItem.brand', 'catalogItem.category', 'catalogItem.subcategory', 'catalogItem.childcategory', 'user', 'qualityBrand'])
             ->where('status', 1)
-            ->whereHas('product', function($q) {
+            ->whereHas('catalogItem', function($q) {
                 $q->where('status', 1);
             })
             ->latest('id')
             ->take(5)
             ->get();
 
-        $data['rorders'] = Order::latest('id')->take(5)->get();
+        $data['rpurchases'] = Purchase::latest('id')->take(5)->get();
 
-        // جلب المنتجات الشائعة من merchant_products (حسب views من products)
-        $data['poproducts'] = \App\Models\MerchantProduct::with(['product.brand', 'product.category', 'product.subcategory', 'product.childcategory', 'user', 'qualityBrand'])
+        // جلب العناصر الشائعة من merchant_items (حسب views من catalog_items)
+        $data['poproducts'] = \App\Models\MerchantItem::with(['catalogItem.brand', 'catalogItem.category', 'catalogItem.subcategory', 'catalogItem.childcategory', 'user', 'qualityBrand'])
             ->where('status', 1)
-            ->whereHas('product', function($q) {
+            ->whereHas('catalogItem', function($q) {
                 $q->where('status', 1)->orderBy('views', 'desc');
             })
             ->take(5)
             ->get()
             ->sortByDesc(function($mp) {
-                return $mp->product->views ?? 0;
+                return $mp->catalogItem->views ?? 0;
             });
 
         $data['rusers'] = User::latest('id')->take(5)->get();

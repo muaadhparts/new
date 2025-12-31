@@ -7,8 +7,8 @@ use App\Models\SupportThread;
 use App\Models\SupportMessage;
 use App\Models\Conversation;
 use App\Models\Message;
-use App\Models\Notification;
-use App\Models\Order;
+use App\Models\CatalogEvent;
+use App\Models\Purchase;
 use App\Models\User;
 use Illuminate\Http\Request;
 
@@ -155,7 +155,7 @@ class MessageController extends UserBaseController
         $msg = new SupportMessage();
         $input = $request->all();
         $msg->fill($input)->save();
-        $notification = new Notification;
+        $notification = new CatalogEvent;
         $notification->conversation_id = $msg->thread->id;
         $notification->save();
         return back()->with('success', __('Message Sent Successfully'));
@@ -165,9 +165,9 @@ class MessageController extends UserBaseController
     {
 
         if ($request->type == 'Dispute') {
-            $order = Order::where('order_number', $request->order)->exists();
-            if (!$order) {
-                return back()->with('unsuccess', 'Order Number Not Found');
+            $purchase = Purchase::where('purchase_number', $request->order)->exists();
+            if (!$purchase) {
+                return back()->with('unsuccess', 'Purchase Number Not Found');
             }
         }
 
@@ -205,10 +205,10 @@ class MessageController extends UserBaseController
             $thread->subject = $subject;
             $thread->user_id = $user->id;
             $thread->message = $request->message;
-            $thread->order_number = $request->order;
+            $thread->purchase_number = $request->order;
             $thread->type = $request->type;
             $thread->save();
-            $notification = new Notification;
+            $notification = new CatalogEvent;
             $notification->conversation_id = $thread->id;
             $notification->save();
             $msg = new SupportMessage();

@@ -14,6 +14,6 @@ CREATE TABLE `withdraws` (
   `created_at` datetime DEFAULT NULL,
   `updated_at` datetime DEFAULT NULL,
   `status` enum('pending','completed','rejected') NOT NULL DEFAULT 'pending',
-  `type` enum('user','vendor','rider') NOT NULL,
+  `type` enum('user','merchant','rider') NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=16 DEFAULT CHARSET=latin1;

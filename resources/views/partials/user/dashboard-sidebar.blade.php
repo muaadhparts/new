@@ -8,11 +8,11 @@
     <ul>
       <li class=""><a class="{{ Request::url() == route('user-dashboard') ? 'active' : '' }}"
           href="{{ route('user-dashboard') }}">@lang('Dashboard')</a></li>
-      @if(Auth::user()->IsVendor())
-      <li class=""><a class="" href="{{ route('vendor.dashboard') }}">{{ __('Vendor Dashboard') }}</a></li>
+      @if(Auth::user()->IsMerchant())
+      <li class=""><a class="" href="{{ route('merchant.dashboard') }}">{{ __('Merchant Dashboard') }}</a></li>
     @endif
-      <li class=""><a class="{{ Request::url() == route('user-orders') ? 'active' : '' }}"
-          href="{{ route('user-orders') }}">{{ __('Purchased Items') }}</a></li>
+      <li class=""><a class="{{ Request::url() == route('user-purchases') ? 'active' : '' }}"
+          href="{{ route('user-purchases') }}">{{ __('Purchased Items') }}</a></li>
       <li class=""><a class="{{ Request::url() == route('user-deposit-index') ? 'active' : '' }}"
           href="{{route('user-deposit-index')}}">{{ __('Deposit') }}</a></li>
       <li class=""><a class="{{ Request::url() == route('user-transactions-index') ? 'active' : '' }}"
@@ -23,8 +23,8 @@
           href="{{ route('user-affilate-program') }}">{{ __('Affiliate Program') }}</a></li>
       <li class=""><a class="{{ Request::url() == route('user-wwt-index') ? 'active' : '' }}"
           href="{{route('user-wwt-index')}}">{{ __('Withdraw') }}</a></li>
-      <li class=""><a class="{{ Request::url() == route('user-order-track') ? 'active' : '' }}"
-          href="{{route('user-order-track')}}">{{ __('Order Tracking') }}</a></li>
+      <li class=""><a class="{{ Request::url() == route('user-purchase-track') ? 'active' : '' }}"
+          href="{{route('user-purchase-track')}}">{{ __('Order Tracking') }}</a></li>
       <li class=""><a class="{{ Request::url() == route('user-favorites') ? 'active' : '' }}"
           href="{{route('user-favorites')}}">{{ __('Favourite Sellers') }}</a></li>
       <li class=""><a class="{{ Request::url() == route('user-messages') ? 'active' : '' }}"
@@ -40,12 +40,12 @@
       <li class=""><a class="" href="{{ route('user-logout') }}">{{ __('Logout') }}</a></li>
     </ul>
   </div>
-  @if($gs->reg_vendor == 1)
+  @if($gs->reg_merchant == 1)
     <div class="row mt-4">
     <div class="col-lg-12 text-center">
       <a href="{{ route('user-package') }}" class="btn btn-primary lg">
       <i class="fas fa-dollar-sign"></i>
-      {{ Auth::user()->is_vendor == 1 ? __('Start Selling') : (Auth::user()->is_vendor == 0 ? __('Start Selling') : __('Pricing Plans')) }}
+      {{ Auth::user()->is_merchant == 1 ? __('Start Selling') : (Auth::user()->is_merchant == 0 ? __('Start Selling') : __('Pricing Plans')) }}
       </a>
     </div>
     </div>

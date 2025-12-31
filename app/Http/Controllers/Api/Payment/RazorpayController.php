@@ -4,8 +4,8 @@ namespace App\Http\Controllers\Api\Payment;
 
 use App\Http\Controllers\Controller;
 use App\Models\Currency;
-use App\Models\Generalsetting;
-use App\Models\Order;
+use App\Models\Muaadhsetting;
+use App\Models\Purchase;
 use App\Models\Package;
 use App\Models\PaymentGateway;
 use App\Models\Shipping;
@@ -34,13 +34,13 @@ class RazorpayController extends Controller
     public function store(Request $request)
     {
 
-        if (!$request->has('order_number')) {
+        if (!$request->has('purchase_number')) {
             return response()->json(['status' => false, 'data' => [], 'error' => 'Invalid Request']);
         }
 
-        $order_number = $request->order_number;
-        $order = Order::where('order_number', $order_number)->firstOrFail();
-        $curr = Currency::where('sign', '=', $order->currency_sign)->firstOrFail();
+        $purchase_number = $request->purchase_number;
+        $purchase = Purchase::where('purchase_number', $purchase_number)->firstOrFail();
+        $curr = Currency::where('sign', '=', $purchase->currency_sign)->firstOrFail();
         if ($curr->name != "INR") {
             return redirect()->back()->with('unsuccess', 'Please Select INR Currency For Razorpay.');
         }
@@ -48,14 +48,14 @@ class RazorpayController extends Controller
 
         $notify_url = action('Api\Payment\RazorpayController@razorCallback');
 
-        $settings = Generalsetting::findOrFail(1);
+        $settings = Muaadhsetting::findOrFail(1);
 
-        $item_amount = $order->pay_amount * $order->currency_value;
+        $item_amount = $purchase->pay_amount * $purchase->currency_value;
 
-        $item_name = $settings->title . " Order";
+        $item_name = $settings->title . " Purchase";
 
         $orderData = [
-            'receipt' => $order->order_number,
+            'receipt' => $purchase->purchase_number,
             'amount' => round($item_amount) * 100, // 2000 rupees in paise
             'currency' => 'INR',
             'payment_capture' => 1, // auto capture
@@ -67,9 +67,9 @@ class RazorpayController extends Controller
 
         session(['razorpay_order_id' => $razorpayOrderId]);
 
-        $order['method'] = "Razorpay";
-        $order['pay_amount'] = round($item_amount / $curr->value, 2);
-        $order->update();
+        $purchase['method'] = "Razorpay";
+        $purchase['pay_amount'] = round($item_amount / $curr->value, 2);
+        $purchase->update();
 
         $displayAmount = $amount = $orderData['amount'];
 
@@ -98,7 +98,7 @@ class RazorpayController extends Controller
             ],
             "notes" => [
                 "address" => $request->address,
-                "merchant_order_id" => $order->order_number,
+                "merchant_purchase_id" => $purchase->purchase_number,
             ],
             "theme" => [
                 "color" => "{{$settings->colors}}",
@@ -122,8 +122,8 @@ class RazorpayController extends Controller
 
         $success = true;
         $razorpayOrder = $this->api->order->fetch(session('razorpay_order_id'));
-        $order_id = $razorpayOrder['receipt'];
-        $order = Order::where('order_number', $order_id)->first();
+        $purchase_id = $razorpayOrder['receipt'];
+        $purchase = Purchase::where('purchase_number', $purchase_id)->first();
 
         if (empty($_POST['razorpay_payment_id']) === false) {
             try {
@@ -144,17 +144,17 @@ class RazorpayController extends Controller
 
             $razorpayOrder = $this->api->order->fetch(session('razorpay_order_id'));
 
-            $order_id = $razorpayOrder['receipt'];
+            $purchase_id = $razorpayOrder['receipt'];
             $transaction_id = $_POST['razorpay_payment_id'];
-            $order = Order::where('order_number', $order_id)->first();
+            $purchase = Purchase::where('purchase_number', $purchase_id)->first();
 
-            if (isset($order)) {
+            if (isset($purchase)) {
                 $data['txnid'] = $transaction_id;
                 $data['payment_status'] = 'Completed';
-                if ($order->dp == 1) {
+                if ($purchase->dp == 1) {
                     $data['status'] = 'completed';
                 }
-                $order->update($data);
+                $purchase->update($data);
             }
             return redirect(route('front.payment.success', 1));
         } else {

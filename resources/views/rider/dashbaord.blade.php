@@ -86,14 +86,14 @@
                                 <th><span class="header-title">{{ __('Order Status') }}</span></th>
                                 <th><span class="header-title">{{ __('View') }}</span></th>
                             </tr>
-                            @forelse ($orders as $order)
+                            @forelse ($purchases as $order)
                                 <tr>
                                     <td data-label="{{ __('#Order') }}">
-                                        {{ $order->order->order_number }}
+                                        {{ $order->purchase->purchase_number }}
                                     </td>
                                     <td data-label="{{ __('Service Area') }}">
                                         <p>
-                                            {{ $order->order->customer_city }}
+                                            {{ $order->purchase->customer_city }}
                                         </p>
                                     </td>
 
@@ -107,30 +107,30 @@
 
                                         @php
 
-                                             $order_shipping = json_decode($order->order->vendor_shipping_id, true) ?? [];
-                                            $order_package = json_decode($order->order->vendor_packing_id, true) ?? [];
-                                            
+                                             $order_shipping = json_decode($order->purchase->vendor_shipping_id, true) ?? [];
+                                            $order_package = json_decode($order->purchase->vendor_packing_id, true) ?? [];
+
                                             // Retrieve vendor-specific shipping and packing IDs
                                             $vendor_shipping_id = $order_shipping[$order->vendor_id] ?? null;
                                             $vendor_package_id = $order_package[$order->vendor_id] ?? null;
-                                            
+
                                             // Retrieve Shipping model or set to null if not found
                                             $shipping = $vendor_shipping_id ? App\Models\Shipping::find($vendor_shipping_id) : null;
-                                            
+
                                             // Retrieve Package model or set to null if not found
                                             $package = $vendor_package_id ? App\Models\Package::find($vendor_package_id) : null;
-                                            
+
                                             // Calculate costs if models are found, default to 0 if null
                                             $shipping_cost = $shipping ? $shipping->price : 0;
                                             $packing_cost = $package ? $package->price : 0;
-                                            
+
                                             // Total extra cost
                                             $extra_price = $shipping_cost + $packing_cost;
                                         @endphp
 
                                         {{ \PriceHelper::showAdminCurrencyPrice(
-                                            ($order->order->vendororders->where('user_id', $order->vendor_id)->sum('price') + $extra_price) *
-                                                $order->order->currency_value,
+                                            ($order->purchase->merchantPurchases->where('user_id', $order->vendor_id)->sum('price') + $extra_price) *
+                                                $order->purchase->currency_value,
                                             $order->currency_sign,
                                         ) }}
                                     </td>

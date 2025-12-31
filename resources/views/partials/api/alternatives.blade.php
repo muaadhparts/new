@@ -97,7 +97,7 @@
                                 </td>
                                 <td class="text-end">
                                     <span class="fw-bold {{ $hasPrice ? 'text-success' : 'text-muted' }}">
-                                        {{ $hasPrice ? \App\Models\Product::convertPrice($vp) : '-' }}
+                                        {{ $hasPrice ? \App\Models\CatalogItem::convertPrice($vp) : '-' }}
                                     </span>
                                 </td>
                                 <td class="text-center">
@@ -199,7 +199,7 @@
 
                     <div class="catalog-card-footer">
                         <div class="catalog-card-price {{ $hasPrice ? 'text-success' : 'text-muted' }}">
-                            {{ $hasPrice ? \App\Models\Product::convertPrice($vp) : __('Price not available') }}
+                            {{ $hasPrice ? \App\Models\CatalogItem::convertPrice($vp) : __('Price not available') }}
                         </div>
                         <div class="catalog-card-actions">
                             <button type="button" class="catalog-btn catalog-btn-outline quick-view" data-id="{{ $product->id }}" data-url="{{ route('modal.quickview', ['id' => $product->id]) }}?user={{ $mp->user_id }}">

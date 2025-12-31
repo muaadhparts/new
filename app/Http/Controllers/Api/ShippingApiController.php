@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\City;
 use App\Services\TryotoService;
 use App\Services\TryotoLocationService;
-use App\Services\VendorCartService;
+use App\Services\MerchantCartService;
 use App\Services\ShippingCalculatorService;
 use App\Services\CheckoutPriceService;
 use Illuminate\Http\Request;
@@ -49,7 +49,7 @@ class ShippingApiController extends Controller
             }
 
             // 2. Calculate shipping data using cart items
-            $shippingData = VendorCartService::calculateVendorShipping($vendorId, $cart->items);
+            $shippingData = MerchantCartService::calculateVendorShipping($vendorId, $cart->items);
 
             Log::debug('ShippingApiController: Shipping data calculated', [
                 'vendor_id' => $vendorId,

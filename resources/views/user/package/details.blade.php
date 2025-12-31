@@ -62,7 +62,7 @@
 
                                     <input type="hidden" name="subs_id" value="{{ $subs->id }}">
 
-                                    @if ($user->is_vendor == 0)
+                                    @if ($user->is_merchant == 0)
                                         <div class="form-group mb-4">
                                             <label for="shop_name">@lang('Shop Name')</label>
                                             <input type="text" class="form-control" id="shop_name" name="shop_name"

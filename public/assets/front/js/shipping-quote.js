@@ -3,6 +3,7 @@
  *
  * Shows shipping cost quotes without creating shipments.
  * Works with CustomerLocation.js for location context.
+ * Uses catalog_item_id (new naming convention) instead of product_id.
  *
  * Usage:
  * - ShippingQuote.showQuoteModal(vendorId, weight) - Show modal with options
@@ -40,7 +41,7 @@ const ShippingQuote = (function() {
                     'X-CSRF-TOKEN': getCSRFToken()
                 },
                 body: JSON.stringify({
-                    vendor_id: vendorId,
+                    merchant_id: vendorId,
                     weight: weight,
                     city_id: cityId  // Always send city_id
                 })
@@ -60,8 +61,9 @@ const ShippingQuote = (function() {
 
     /**
      * Get full product quote with all options
+     * Uses catalog_item_id (new naming convention)
      */
-    async function getProductQuote(vendorId, weight = 0.5, productId = null) {
+    async function getProductQuote(vendorId, weight = 0.5, catalogItemId = null) {
         try {
             const response = await fetch(config.apiBase + '/quote', {
                 method: 'POST',
@@ -71,9 +73,9 @@ const ShippingQuote = (function() {
                     'X-CSRF-TOKEN': getCSRFToken()
                 },
                 body: JSON.stringify({
-                    vendor_id: vendorId,
+                    merchant_id: vendorId,
                     weight,
-                    product_id: productId,
+                    catalog_item_id: catalogItemId,
                     city_id: CustomerLocation.getCityId()  // Always send city_id
                 })
             });

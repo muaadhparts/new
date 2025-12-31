@@ -2,22 +2,22 @@
 @foreach($prods as $prod)
 	@if ($langg->id == $prod->language_id)
 	@php
-		// Check if $prod is a MerchantProduct or Product model
-		$isMerchantProduct = $prod instanceof \App\Models\MerchantProduct;
+		// Check if $prod is a MerchantItem or CatalogItem model
+		$isMerchantItem = $prod instanceof \App\Models\MerchantItem;
 
-		if ($isMerchantProduct) {
-			$merchantProductId = $prod->id;
+		if ($isMerchantItem) {
+			$merchantItemId = $prod->id;
 			$vendorId = $prod->user_id;
-			$productSlug = $prod->product->slug ?? $prod->slug;
+			$productSlug = $prod->catalogItem->slug ?? $prod->slug;
 		} else {
-			$mp = $prod->merchantProducts()->where('status', 1)->orderBy('price')->first();
-			$merchantProductId = $mp->id ?? null;
+			$mp = $prod->merchantItems()->where('status', 1)->orderBy('price')->first();
+			$merchantItemId = $mp->id ?? null;
 			$vendorId = $mp->user_id ?? null;
 			$productSlug = $prod->slug;
 		}
 
-		$productUrl = ($merchantProductId && $vendorId)
-			? route('front.product', ['slug' => $productSlug, 'vendor_id' => $vendorId, 'merchant_product_id' => $merchantProductId])
+		$productUrl = ($merchantItemId && $vendorId)
+			? route('front.catalog-item', ['slug' => $productSlug, 'vendor_id' => $vendorId, 'merchant_item_id' => $merchantItemId])
 			: 'javascript:;';
 	@endphp
 	<div class="docname">

@@ -4,24 +4,24 @@ namespace App\Http\Controllers\Payment\Checkout;
 
 use App\{
     Models\Cart,
-    Models\Order,
+    Models\Purchase,
     Classes\MuaadhMailer,
     Models\PaymentGateway
 };
 use App\Helpers\PriceHelper;
 use App\Models\Country;
 use App\Models\Reward;
-use App\Traits\HandlesVendorCheckout;
+use App\Traits\HandlesMerchantCheckout;
 use App\Traits\SavesCustomerShippingChoice;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Session;
-use OrderHelper;
+use PurchaseHelper;
 use Illuminate\Support\Str;
 
 class SslController extends CheckoutBaseControlller
 {
-    use HandlesVendorCheckout, SavesCustomerShippingChoice;
+    use HandlesMerchantCheckout, SavesCustomerShippingChoice;
     public function store(Request $request)
     {
         $input = $request->all();
@@ -29,10 +29,10 @@ class SslController extends CheckoutBaseControlller
         // Get vendor checkout data
         $vendorData = $this->getVendorCheckoutData();
         $vendorId = $vendorData['vendor_id'];
-        $isVendorCheckout = $vendorData['is_vendor_checkout'];
+        $isMerchantCheckout = $vendorData['is_merchant_checkout'];
 
         // Get steps from vendor sessions
-        $steps = $this->getCheckoutSteps($vendorId, $isVendorCheckout);
+        $steps = $this->getCheckoutSteps($vendorId, $isMerchantCheckout);
         $step1 = $steps['step1'];
         $step2 = $steps['step2'];
 
@@ -49,7 +49,7 @@ class SslController extends CheckoutBaseControlller
 
 
         if ($request->pass_check) {
-            $auth = OrderHelper::auth_check($input); // For Authentication Checking
+            $auth = PurchaseHelper::auth_check($input); // For Authentication Checking
             if (!$auth['auth_success']) {
                 return redirect()->back()->with('unsuccess', $auth['error_message']);
             }
@@ -72,13 +72,13 @@ class SslController extends CheckoutBaseControlller
         $originalCart = new Cart($oldCart);
         $cart = $this->filterCartForVendor($originalCart, $vendorId);
 
-        OrderHelper::license_check($cart); // For License Checking
+        PurchaseHelper::license_check($cart); // For License Checking
         $new_cart = [];
         $new_cart['totalQty'] = $cart->totalQty;
         $new_cart['totalPrice'] = $cart->totalPrice;
         $new_cart['items'] = $cart->items;
         $new_cart = json_encode($new_cart);
-        $temp_affilate_users = OrderHelper::product_affilate_check($cart); // For Product Based Affilate Checking
+        $temp_affilate_users = PurchaseHelper::product_affilate_check($cart); // For Product Based Affilate Checking
         $affilate_users = $temp_affilate_users == null ? null : json_encode($temp_affilate_users);
 
         // ✅ استخدام الدالة الموحدة من CheckoutBaseControlller
@@ -86,12 +86,12 @@ class SslController extends CheckoutBaseControlller
         $input = $prepared['input'];
         $orderTotal = $prepared['order_total'];
 
-        $order = new Order;
+        $purchase = new Purchase;
         $input['cart'] = $new_cart;
         $input['user_id'] = Auth::check() ? Auth::user()->id : NULL;
         $input['affilate_users'] = $affilate_users;
         $input['pay_amount'] = $orderTotal;
-        $input['order_number'] = $data['item_number'];
+        $input['purchase_number'] = $data['item_number'];
         $input['wallet_price'] = $input['wallet_price'] / $this->curr->value;
         $input['payment_status'] = "Pending";
         $input['txnid'] = $data['txnid'];
@@ -119,7 +119,7 @@ class SslController extends CheckoutBaseControlller
                 $sub = $sub - $t_sub;
             }
             if ($sub > 0) {
-                $user = OrderHelper::affilate_check(Session::get('affilate'), $sub, $input['dp']); // For Affiliate Checking
+                $user = PurchaseHelper::affilate_check(Session::get('affilate'), $sub, $input['dp']); // For Affiliate Checking
                 $input['affilate_user'] = Session::get('affilate');
                 $input['affilate_charge'] = $sub;
             }
@@ -127,10 +127,10 @@ class SslController extends CheckoutBaseControlller
 
 
 
-        $order->fill($input)->save();
+        $purchase->fill($input)->save();
 
         if ($input['discount_code_id'] != "") {
-            OrderHelper::discount_code_check($input['discount_code_id']); // For Discount Code Checking
+            PurchaseHelper::discount_code_check($input['discount_code_id']); // For Discount Code Checking
         }
 
         $post_data = array();
@@ -228,18 +228,18 @@ class SslController extends CheckoutBaseControlller
 
         if ($input_data['status'] == 'VALID') {
 
-            $order = Order::where('txnid', $request->tran_id)->first();
-            $order->payment_status = 'Completed';
-            $order->update();
+            $purchase = Purchase::where('txnid', $request->tran_id)->first();
+            $purchase->payment_status = 'Completed';
+            $purchase->update();
 
-            $order->tracks()->create(['title' => 'Pending', 'text' => 'You have successfully placed your order.']);
-            $order->notifications()->create();
+            $purchase->tracks()->create(['title' => 'Pending', 'text' => 'You have successfully placed your purchase.']);
+            $purchase->notifications()->create();
 
 
 
             if (Auth::check()) {
                 if ($this->gs->is_reward == 1) {
-                    $num = $order->pay_amount;
+                    $num = $purchase->pay_amount;
                     $rewards = Reward::get();
                     foreach ($rewards as $i) {
                         $smallest[$i->order_amount] = abs($i->order_amount - $num);
@@ -253,40 +253,40 @@ class SslController extends CheckoutBaseControlller
                 }
             }
 
-            OrderHelper::size_qty_check($cart); // For Size Quantiy Checking
-            OrderHelper::stock_check($cart); // For Stock Checking
-            OrderHelper::vendor_order_check($cart, $order); // For Vendor Order Checking
+            PurchaseHelper::size_qty_check($cart); // For Size Quantiy Checking
+            PurchaseHelper::stock_check($cart); // For Stock Checking
+            PurchaseHelper::vendor_purchase_check($cart, $purchase); // For Vendor Purchase Checking
 
-            Session::put('temporder', $order);
+            Session::put('temporder', $purchase);
             Session::put('tempcart', $cart);
 
             // Remove only vendor's products from cart
             $this->removeVendorProductsFromCart($vendorId, $originalCart);
 
-            if ($order->user_id != 0 && $order->wallet_price != 0) {
-                OrderHelper::add_to_transaction($order, $order->wallet_price); // Store To Transactions
+            if ($purchase->user_id != 0 && $purchase->wallet_price != 0) {
+                PurchaseHelper::add_to_transaction($purchase, $purchase->wallet_price); // Store To Transactions
             }
 
             //Sending Email To Buyer
             $data = [
-                'to' => $order->customer_email,
+                'to' => $purchase->customer_email,
                 'type' => "new_order",
-                'cname' => $order->customer_name,
+                'cname' => $purchase->customer_name,
                 'oamount' => "",
                 'aname' => "",
                 'aemail' => "",
                 'wtitle' => "",
-                'onumber' => $order->order_number,
+                'onumber' => $purchase->purchase_number,
             ];
 
             $mailer = new MuaadhMailer();
-            $mailer->sendAutoOrderMail($data, $order->id);
+            $mailer->sendAutoOrderMail($data, $purchase->id);
 
             //Sending Email To Admin
             $data = [
                 'to' => $this->ps->contact_email,
-                'subject' => "New Order Recieved!!",
-                'body' => "Hello Admin!<br>Your store has received a new order.<br>Order Number is " . $order->order_number . ".Please login to your panel to check. <br>Thank you.",
+                'subject' => "New Purchase Recieved!!",
+                'body' => "Hello Admin!<br>Your store has received a new purchase.<br>Purchase Number is " . $purchase->purchase_number . ".Please login to your panel to check. <br>Thank you.",
             ];
             $mailer = new MuaadhMailer();
             $mailer->sendCustomMail($data);

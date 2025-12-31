@@ -4,7 +4,7 @@ namespace App\Http\Controllers\User;
 
 use App\Classes\MuaadhMailer;
 use App\Http\Controllers\Controller;
-use App\Models\Generalsetting;
+use App\Models\Muaadhsetting;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -30,7 +30,7 @@ class ForgotController extends Controller
 
     public function forgot(Request $request)
     {
-        $gs = Generalsetting::findOrFail(1);
+        $gs = Muaadhsetting::findOrFail(1);
         $input = $request->all();
         if (User::where('email', '=', $request->email)->count() > 0) {
             // user found

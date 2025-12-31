@@ -192,8 +192,8 @@
                                         </td>
                                         <td>
                                             @if($shipment->order)
-                                                <a href="{{ route('admin-order-show', $shipment->order->id) }}">
-                                                    {{ $shipment->order->order_number }}
+                                                <a href="{{ route('admin-purchase-show', $shipment->order->id) }}">
+                                                    {{ $shipment->order->purchase_number }}
                                                 </a>
                                             @else
                                                 N/A

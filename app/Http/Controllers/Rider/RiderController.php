@@ -14,11 +14,11 @@ class RiderController extends RiderBaseController
     public function index()
     {
         $user = $this->rider;
-        $orders = DeliveryRider::where('rider_id', $this->rider->id)
-            ->whereNotNull('order_id')
-            ->with(['order', 'pickup'])
+        $purchases = DeliveryRider::where('rider_id', $this->rider->id)
+            ->whereNotNull('purchase_id')
+            ->with(['purchase', 'pickup'])
             ->orderby('id', 'desc')->take(8)->get();
-        return view('rider.dashbaord', compact('orders', 'user'));
+        return view('rider.dashbaord', compact('purchases', 'user'));
     }
 
     public function profile()
@@ -158,26 +158,26 @@ class RiderController extends RiderBaseController
     public function orders(Request $request)
     {
         if ($request->type == 'complete') {
-            $orders = DeliveryRider::where('rider_id', $this->rider->id)
-                ->whereNotNull('order_id')
-                ->with(['order', 'pickup'])
+            $purchases = DeliveryRider::where('rider_id', $this->rider->id)
+                ->whereNotNull('purchase_id')
+                ->with(['purchase', 'pickup'])
                 ->where('status', 'delivered')->orderby('id', 'desc')->paginate(10);
-            return view('rider.orders', compact('orders'));
+            return view('rider.orders', compact('purchases'));
         } else {
-            $orders = DeliveryRider::where('rider_id', $this->rider->id)
-                ->whereNotNull('order_id')
-                ->with(['order', 'pickup'])
+            $purchases = DeliveryRider::where('rider_id', $this->rider->id)
+                ->whereNotNull('purchase_id')
+                ->with(['purchase', 'pickup'])
                 ->where('status', '!=', 'delivered')->orderby('id', 'desc')->paginate(10);
-            return view('rider.orders', compact('orders'));
+            return view('rider.orders', compact('purchases'));
         }
     }
 
     public function orderDetails($id)
     {
-        $data = DeliveryRider::with(['order', 'pickup', 'vendor'])
+        $data = DeliveryRider::with(['purchase', 'pickup', 'vendor'])
             ->where('rider_id', $this->rider->id)
             ->where('id', $id)
-            ->whereNotNull('order_id')
+            ->whereNotNull('purchase_id')
             ->first();
 
         if (!$data) {

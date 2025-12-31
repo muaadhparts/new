@@ -182,7 +182,7 @@ class RazorpayController extends SubscriptionBaseController
 
             $today = Carbon::now()->format('Y-m-d');
             $input = $request->all();
-            $user->is_vendor = 2;
+            $user->is_merchant = 2;
             if (!empty($package)) {
                 if ($package->subscription_id == $request->subs_id) {
                     $newday = strtotime($today);

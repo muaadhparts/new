@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Api\Front;
 
 use App\{
-    Models\Product,
+    Models\CatalogItem,
     Models\Category,
     Models\Attribute,
     Models\Subcategory,
@@ -15,7 +15,7 @@ use App\{
     Http\Controllers\Controller,
     Http\Resources\CategoryResource,
     Http\Resources\AttributeResource,
-    Http\Resources\ProductlistResource,
+    Http\Resources\CatalogItemListResource,
     Http\Resources\SubcategoryResource,
     Http\Resources\ChildcategoryResource,
     Http\Resources\AttributeOptionResource
@@ -143,7 +143,7 @@ class SearchController extends Controller
           $childcat = NULL;
         }
   
-        $prods = Product::when($cat,function ($query, $cat) {
+        $prods = CatalogItem::when($cat,function ($query, $cat) {
                                         return $query->where('category_id', $cat->id);
                                     })
                                     ->when($subcat, function ($query, $subcat) {
@@ -243,11 +243,11 @@ class SearchController extends Controller
   
                                     $prods = $prods->where('status', 1)->get();
 
-                                    $prods = (new Collection(Product::filterProducts($prods)));
+                                    $prods = (new Collection(CatalogItem::filterProducts($prods)));
 
-                                    // Note: Search results show products from all vendors
-                                    // ProductlistResource will use the first available merchant_product for pricing
-                                    return response()->json(['status' => true, 'data' => ProductlistResource::collection($prods->flatten(1)), 'error' => []]);
+                                    // Note: Search results show catalog items from all vendors
+                                    // CatalogItemListResource will use the first available merchant_item for pricing
+                                    return response()->json(['status' => true, 'data' => CatalogItemListResource::collection($prods->flatten(1)), 'error' => []]);
           }
           catch(\Exception $e){
             return response()->json(['status' => false, 'data' => [], 'error' => ['message' => $e->getMessage()]]);

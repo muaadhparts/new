@@ -60,7 +60,7 @@ class DiscountCodeController extends AdminBaseController
         $categories = Category::where('status', 1)->get();
         $sub_categories = Subcategory::where('status', 1)->get();
         $child_categories = Childcategory::where('status', 1)->get();
-        $vendors = User::where('is_vendor', 2)->get();
+        $vendors = User::where('is_merchant', 2)->get();
         return view('admin.discount-code.create', compact('categories', 'sub_categories', 'child_categories', 'vendors'));
     }
 
@@ -107,7 +107,7 @@ class DiscountCodeController extends AdminBaseController
         $categories = Category::where('status', 1)->get();
         $sub_categories = Subcategory::where('status', 1)->get();
         $child_categories = Childcategory::where('status', 1)->get();
-        $vendors = User::where('is_vendor', 2)->get();
+        $vendors = User::where('is_merchant', 2)->get();
         $data = DiscountCode::findOrFail($id);
         return view('admin.discount-code.edit', compact('data', 'categories', 'sub_categories', 'child_categories', 'vendors'));
     }

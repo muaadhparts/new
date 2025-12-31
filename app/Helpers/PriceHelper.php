@@ -14,8 +14,8 @@ class PriceHelper
 
     public static function showPrice($price)
     {
-        $gs = cache()->remember('generalsettings', now()->addDay(), function () {
-            return DB::table('generalsettings')->first();
+        $gs = cache()->remember('muaadhsettings', now()->addDay(), function () {
+            return DB::table('muaadhsettings')->first();
         });
         if (is_numeric($price) && floor($price) != $price) {
             return number_format($price, 2, $gs->decimal_separator, $gs->thousand_separator);
@@ -26,8 +26,8 @@ class PriceHelper
 
     public static function apishowPrice($price)
     {
-        $gs = cache()->remember('generalsettings', now()->addDay(), function () {
-            return DB::table('generalsettings')->first();
+        $gs = cache()->remember('muaadhsettings', now()->addDay(), function () {
+            return DB::table('muaadhsettings')->first();
         });
         if (is_numeric($price) && floor($price) != $price) {
             return round($price, 2);
@@ -38,8 +38,8 @@ class PriceHelper
 
     public static function showCurrencyPrice($price)
     {
-        $gs = cache()->remember('generalsettings', now()->addDay(), function () {
-            return DB::table('generalsettings')->first();
+        $gs = cache()->remember('muaadhsettings', now()->addDay(), function () {
+            return DB::table('muaadhsettings')->first();
         });
         $new_price = 0;
         if (is_numeric($price) && floor($price) != $price) {
@@ -62,8 +62,8 @@ class PriceHelper
 
     public static function showAdminCurrencyPrice($price)
     {
-        $gs = cache()->remember('generalsettings', now()->addDay(), function () {
-            return DB::table('generalsettings')->first();
+        $gs = cache()->remember('muaadhsettings', now()->addDay(), function () {
+            return DB::table('muaadhsettings')->first();
         });
         $new_price = 0;
         if (is_numeric($price) && floor($price) != $price) {
@@ -83,8 +83,8 @@ class PriceHelper
 
     public static function showOrderCurrencyPrice($price, $currency)
     {
-        $gs = cache()->remember('generalsettings', now()->addDay(), function () {
-            return DB::table('generalsettings')->first();
+        $gs = cache()->remember('muaadhsettings', now()->addDay(), function () {
+            return DB::table('muaadhsettings')->first();
         });
         $new_price = 0;
         if (is_numeric($price) && floor($price) != $price) {
@@ -116,7 +116,7 @@ class PriceHelper
 //                 }
 //             }
 
-//             $gs = DB::table('generalsettings')->first();
+//             $gs = DB::table('muaadhsettings')->first();
 
 //             $totalAmount = $cart->totalPrice;
 //             $tax_amount = 0;
@@ -251,7 +251,7 @@ class PriceHelper
                 }
             }
 
-            $gs = DB::table('generalsettings')->first();
+            $gs = DB::table('muaadhsettings')->first();
 
             $totalAmount = (float) $cart->totalPrice;
 
@@ -416,8 +416,8 @@ class PriceHelper
     //             }
     //         }
 
-    //         $gs = cache()->remember('generalsettings', now()->addDay(), function () {
-    //             return DB::table('generalsettings')->first();
+    //         $gs = cache()->remember('muaadhsettings', now()->addDay(), function () {
+    //             return DB::table('muaadhsettings')->first();
     //         });
     //         $totalAmount = $input['total'];
 
@@ -501,8 +501,8 @@ class PriceHelper
                 }
             }
 
-            $gs = cache()->remember('generalsettings', now()->addDay(), function () {
-                return DB::table('generalsettings')->first();
+            $gs = cache()->remember('muaadhsettings', now()->addDay(), function () {
+                return DB::table('muaadhsettings')->first();
             });
 
             $totalAmount = (float) ($input['total'] ?? 0);

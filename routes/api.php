@@ -4,7 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\GeocodingController;
 use App\Http\Controllers\Api\SpecificationApiController;
-use App\Http\Controllers\Api\ProductApiController;
+use App\Http\Controllers\Api\CatalogItemApiController;
 use App\Http\Controllers\Api\ShippingApiController;
 
 /*
@@ -26,18 +26,18 @@ Route::prefix('specs')->middleware(['web'])->group(function () {
 });
 // --------------------- SPECIFICATION API ROUTES END ---------------------
 
-// --------------------- PRODUCT API ROUTES ---------------------
-Route::prefix('product')->middleware(['web'])->group(function () {
+// --------------------- CATALOG ITEM API ROUTES ---------------------
+Route::prefix('catalog-item')->middleware(['web'])->group(function () {
     // Alternatives
-    Route::get('/alternatives/{sku}', [ProductApiController::class, 'getAlternatives'])->name('api.product.alternatives');
-    Route::get('/alternatives/{sku}/related', [ProductApiController::class, 'getAlternativeRelatedProducts'])->name('api.product.alternatives.related');
-    Route::get('/alternatives/{sku}/html', [ProductApiController::class, 'getAlternativesHtml'])->name('api.product.alternatives.html');
+    Route::get('/alternatives/{sku}', [CatalogItemApiController::class, 'getAlternatives'])->name('api.catalog-item.alternatives');
+    Route::get('/alternatives/{sku}/related', [CatalogItemApiController::class, 'getAlternativeRelatedProducts'])->name('api.catalog-item.alternatives.related');
+    Route::get('/alternatives/{sku}/html', [CatalogItemApiController::class, 'getAlternativesHtml'])->name('api.catalog-item.alternatives.html');
 
     // Compatibility
-    Route::get('/compatibility/{sku}', [ProductApiController::class, 'getCompatibility'])->name('api.product.compatibility');
-    Route::get('/compatibility/{sku}/html', [ProductApiController::class, 'getCompatibilityHtml'])->name('api.product.compatibility.html');
+    Route::get('/compatibility/{sku}', [CatalogItemApiController::class, 'getCompatibility'])->name('api.catalog-item.compatibility');
+    Route::get('/compatibility/{sku}/html', [CatalogItemApiController::class, 'getCompatibilityHtml'])->name('api.catalog-item.compatibility.html');
 });
-// --------------------- PRODUCT API ROUTES END ---------------------
+// --------------------- CATALOG ITEM API ROUTES END ---------------------
 
 // --------------------- SHIPPING API ROUTES ---------------------
 Route::prefix('shipping')->middleware(['web'])->group(function () {
@@ -113,26 +113,26 @@ Route::group(['prefix' => 'user'], function () {
         // ---------------------MESSAGE CONTROLLER ENDS ---------------------
 
 
-        // ---------------------PRODUCT CONTROLLER ---------------------
+        // ---------------------CATALOG ITEM CONTROLLER ---------------------
 
-        Route::post('/reviewsubmit', 'Api\User\ProductController@reviewsubmit');
-        Route::post('/commentstore', 'Api\User\ProductController@commentstore');
-        Route::post('/commentupdate', 'Api\User\ProductController@commentupdate');
-        Route::post('/replystore', 'Api\User\ProductController@replystore');
-        Route::post('/replyupdate', 'Api\User\ProductController@replyupdate');
-        Route::post('/reportstore', 'Api\User\ProductController@reportstore');
-        Route::get('/comment/{id}/delete', 'Api\User\ProductController@commentdelete');
-        Route::get('/reply/{id}/delete', 'Api\User\ProductController@replydelete');
+        Route::post('/reviewsubmit', 'Api\User\CatalogItemController@reviewsubmit');
+        Route::post('/commentstore', 'Api\User\CatalogItemController@commentstore');
+        Route::post('/commentupdate', 'Api\User\CatalogItemController@commentupdate');
+        Route::post('/replystore', 'Api\User\CatalogItemController@replystore');
+        Route::post('/replyupdate', 'Api\User\CatalogItemController@replyupdate');
+        Route::post('/reportstore', 'Api\User\CatalogItemController@reportstore');
+        Route::get('/comment/{id}/delete', 'Api\User\CatalogItemController@commentdelete');
+        Route::get('/reply/{id}/delete', 'Api\User\CatalogItemController@replydelete');
 
-        // ---------------------PRODUCT CONTROLLER ENDS ---------------------
+        // ---------------------CATALOG ITEM CONTROLLER ENDS ---------------------
 
-        // ---------------------ORDER CONTROLLER ---------------------
+        // ---------------------PURCHASE CONTROLLER ---------------------
 
-        Route::get('/orders', 'Api\User\OrderController@orders')->name('orders');
-        Route::get('/order/{id}/details', 'Api\User\OrderController@order')->name('order');
-        Route::post('/update/transactionid', 'Api\User\OrderController@updateTransaction');
+        Route::get('/purchases', 'Api\User\PurchaseController@purchases')->name('purchases');
+        Route::get('/purchase/{id}/details', 'Api\User\PurchaseController@purchase')->name('purchase');
+        Route::post('/update/transactionid', 'Api\User\PurchaseController@updateTransaction');
 
-        // ---------------------ORDER CONTROLLER ENDS ---------------------
+        // ---------------------PURCHASE CONTROLLER ENDS ---------------------
 
         // ---------------------WITHDRAW CONTROLLER ---------------------
 
@@ -198,8 +198,8 @@ Route::group(['prefix' => 'front'], function () {
     Route::get('/services', 'Api\Front\FrontendController@services');
     Route::get('/banners', 'Api\Front\FrontendController@banners');
     Route::get('/brands', 'Api\Front\FrontendController@brands');
-    Route::get('/products', 'Api\Front\FrontendController@products');
-    Route::get('/vendor/products/{id}', 'Api\Front\FrontendController@vendor_products');
+    Route::get('/catalog-items', 'Api\Front\FrontendController@catalogItems');
+    Route::get('/vendor/catalog-items/{id}', 'Api\Front\FrontendController@vendor_catalog_items');
     Route::get('/settings', 'Api\Front\FrontendController@settings');
     Route::get('/faqs', 'Api\Front\FrontendController@faqs');
     Route::get('/blogs', 'Api\Front\FrontendController@blogs');
@@ -213,7 +213,7 @@ Route::group(['prefix' => 'front'], function () {
 
     Route::get('/search','Api\Front\SearchController@search');
     Route::get('/categories', 'Api\Front\SearchController@categories');
-    Route::get('/category/product/search', 'Api\Front\SearchController@categoriesSearch');
+    Route::get('/category/catalog-item/search', 'Api\Front\SearchController@categoriesSearch');
     Route::get('{id}/category', 'Api\Front\SearchController@category');
     Route::get('/{id}/subcategories', 'Api\Front\SearchController@subcategories')->name('subcategories');
     Route::get('/{id}/childcategories', 'Api\Front\SearchController@childcategories')->name('childcategories');
@@ -222,21 +222,21 @@ Route::group(['prefix' => 'front'], function () {
 
     //------------ Search Controller Ends ------------
 
-    //------------ Product Controller ------------
+    //------------ Catalog Item Controller ------------
 
-    Route::get('/product/{id}/details', 'Api\Front\ProductController@productDetails');
-    Route::get('/product/{id}/ratings', 'Api\Front\ProductController@ratings');
-    Route::get('/product/{id}/comments', 'Api\Front\ProductController@comments');
-    Route::get('/product/{id}/replies', 'Api\Front\ProductController@replies');
+    Route::get('/catalog-item/{id}/details', 'Api\Front\CatalogItemController@catalogItemDetails');
+    Route::get('/catalog-item/{id}/catalog-reviews', 'Api\Front\CatalogItemController@catalogReviews');
+    Route::get('/catalog-item/{id}/comments', 'Api\Front\CatalogItemController@comments');
+    Route::get('/catalog-item/{id}/replies', 'Api\Front\CatalogItemController@replies');
 
-    //------------ Product Controller Ends ------------
+    //------------ Catalog Item Controller Ends ------------
 
-    //------------ Vendor Controller ------------
+    //------------ Merchant Controller ------------
 
-    Route::get('/store/{shop_name}','Api\Front\VendorController@index')->name('api.front.vendor');
-    Route::post('/store/contact','Api\Front\VendorController@vendorcontact');
+    Route::get('/store/{shop_name}','Api\Front\MerchantController@index')->name('api.front.merchant');
+    Route::post('/store/contact','Api\Front\MerchantController@merchantcontact');
 
-    //------------ Vendor Controller ------------
+    //------------ Merchant Controller ------------
 
     //------------ Checkout Controller ------------
 

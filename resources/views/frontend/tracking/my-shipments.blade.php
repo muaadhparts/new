@@ -73,11 +73,11 @@
                                         </p>
                                     </div>
                                     <div class="col-6">
-                                        <small class="text-muted">@lang('Order Number')</small>
+                                        <small class="text-muted">@lang('Purchase Number')</small>
                                         <p class="fw-bold mb-0">
-                                            <a href="{{ route('user-order', $shipment['order_id']) }}"
+                                            <a href="{{ route('user-purchase', $shipment['purchase_id']) }}"
                                                class="text-decoration-none">
-                                                {{ $shipment['order_number'] }}
+                                                {{ $shipment['purchase_number'] }}
                                             </a>
                                         </p>
                                     </div>
@@ -107,9 +107,9 @@
                                        class="btn btn-sm btn-outline-{{ $color }}">
                                         <i class="fas fa-eye me-1"></i> @lang('Track Details')
                                     </a>
-                                    <a href="{{ route('user-order', $shipment['order_id']) }}"
+                                    <a href="{{ route('user-purchase', $shipment['purchase_id']) }}"
                                        class="btn btn-sm btn-outline-secondary">
-                                        <i class="fas fa-receipt me-1"></i> @lang('View Order')
+                                        <i class="fas fa-receipt me-1"></i> @lang('View Purchase')
                                     </a>
                                 </div>
                             </div>
@@ -124,7 +124,7 @@
                         <i class="fas fa-box-open fa-4x text-muted mb-4"></i>
                         <h4>@lang('No Shipments Yet')</h4>
                         <p class="text-muted mb-4">
-                            @lang('You don\'t have any shipments to track yet. Once your orders are shipped, they will appear here.')
+                            @lang('You don\'t have any shipments to track yet. Once your purchases are shipped, they will appear here.')
                         </p>
                         <div class="d-flex gap-3 justify-content-center">
                             <a href="{{ route('front.tracking') }}" class="btn btn-primary">

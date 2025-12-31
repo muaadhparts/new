@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Classes\MuaadhMailer;
-use App\Models\Generalsetting;
+use App\Models\Muaadhsetting;
 use App\Models\Admin;
 use Illuminate\Support\Facades\Hash;
 
@@ -58,7 +58,7 @@ class LoginController extends Controller
 
     public function forgot(Request $request)
     {
-      $gs = Generalsetting::findOrFail(1);
+      $gs = Muaadhsetting::findOrFail(1);
       $input =  $request->all();
       if (Admin::where('email', '=', $request->email)->count() > 0) {
       // user found

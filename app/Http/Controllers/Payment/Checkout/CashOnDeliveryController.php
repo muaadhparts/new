@@ -2,41 +2,41 @@
 
 /**
  * ====================================================================
- * MULTI-VENDOR CASH ON DELIVERY PAYMENT CONTROLLER
+ * MULTI-MERCHANT CASH ON DELIVERY PAYMENT CONTROLLER
  * ====================================================================
  *
- * This controller handles COD payment in a multi-vendor system:
+ * This controller handles COD payment in a multi-merchant system:
  *
  * Key Features:
- * 1. Uses HandlesVendorCheckout trait for vendor isolation
- * 2. Detects if checkout is vendor-specific via checkout_vendor_id session
- * 3. Filters cart to process ONLY vendor's products
- * 4. Creates order with ONLY vendor's products
- * 5. Removes ONLY vendor's products from cart after order
- * 6. Redirects to /carts if other vendors remain, else to success page
+ * 1. Uses HandlesMerchantCheckout trait for merchant isolation
+ * 2. Detects if checkout is merchant-specific via checkout_merchant_id session
+ * 3. Filters cart to process ONLY merchant's products
+ * 4. Creates order with ONLY merchant's products
+ * 5. Removes ONLY merchant's products from cart after order
+ * 6. Redirects to /carts if other merchants remain, else to success page
  *
- * Multi-Vendor Logic Flow:
- * 1. getVendorCheckoutData() - Checks if vendor checkout
- * 2. getCheckoutSteps() - Gets vendor_step1_{id} and vendor_step2_{id}
- * 3. filterCartForVendor() - Filters cart items
+ * Multi-Merchant Logic Flow:
+ * 1. getMerchantCheckoutData() - Checks if merchant checkout
+ * 2. getCheckoutSteps() - Gets merchant_step1_{id} and merchant_step2_{id}
+ * 3. filterCartForMerchant() - Filters cart items
  * 4. Order creation - Uses only filtered products
- * 5. removeVendorProductsFromCart() - Removes vendor products only
+ * 5. removeMerchantProductsFromCart() - Removes merchant products only
  * 6. getSuccessUrl() - Determines redirect based on remaining items
  *
- * Modified: 2025-01-XX for Multi-Vendor Checkout System
+ * Modified: 2025-01-XX for Multi-Merchant Checkout System
  * ====================================================================
  */
 
 namespace App\Http\Controllers\Payment\Checkout;
 
-use App\Classes\MuaadhMailer;use App\Helpers\OrderHelper;use App\Helpers\PriceHelper;
+use App\Classes\MuaadhMailer;use App\Helpers\PurchaseHelper;use App\Helpers\PriceHelper;
 use App\Models\Cart;
 use App\Models\Country;
-use App\Models\Order;
+use App\Models\Purchase;
 use App\Models\Reward;
 use App\Models\StockReservation;
 use App\Traits\CreatesTryotoShipments;
-use App\Traits\HandlesVendorCheckout;
+use App\Traits\HandlesMerchantCheckout;
 use App\Traits\SavesCustomerShippingChoice;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -45,7 +45,7 @@ use Illuminate\Support\Str;
 
 class CashOnDeliveryController extends CheckoutBaseControlller
 {
-    use CreatesTryotoShipments, HandlesVendorCheckout, SavesCustomerShippingChoice;
+    use CreatesTryotoShipments, HandlesMerchantCheckout, SavesCustomerShippingChoice;
 
     /**
      * Process COD payment for single vendor or complete cart
@@ -93,7 +93,7 @@ class CashOnDeliveryController extends CheckoutBaseControlller
         $input = array_merge($step1, $step2, $input);
 
         if ($request->pass_check) {
-            $auth = OrderHelper::auth_check($input); // For Authentication Checking
+            $auth = PurchaseHelper::auth_check($input); // For Authentication Checking
             if (!$auth['auth_success']) {
                 return redirect()->back()->with('unsuccess', $auth['error_message']);
             }
@@ -110,14 +110,14 @@ class CashOnDeliveryController extends CheckoutBaseControlller
         // vendor_id comes from route, so we ALWAYS filter
         $cart = $this->filterCartForVendor($originalCart, $vendorId);
 
-        OrderHelper::license_check($cart); // For License Checking
+        PurchaseHelper::license_check($cart); // For License Checking
         $t_cart = $cart;
         $new_cart = [];
         $new_cart['totalQty'] = $t_cart->totalQty;
         $new_cart['totalPrice'] = $t_cart->totalPrice;
         $new_cart['items'] = $t_cart->items;
         $new_cart = json_encode($new_cart);
-        $temp_affilate_users = OrderHelper::product_affilate_check($cart); // For Product Based Affilate Checking
+        $temp_affilate_users = PurchaseHelper::product_affilate_check($cart); // For Product Based Affilate Checking
         $affilate_users = $temp_affilate_users == null ? null : json_encode($temp_affilate_users);
 
         // ✅ استخدام المبلغ القادم من step3 مباشرة (المبلغ الصحيح المحسوب مسبقاً)
@@ -224,7 +224,7 @@ class CashOnDeliveryController extends CheckoutBaseControlller
         // ✅ حفظ بيانات شركة الشحن المختارة من العميل
         $input['customer_shipping_choice'] = $this->extractCustomerShippingChoice($step2, $vendorId);
 
-        $order = new Order;
+        $purchase = new Purchase;
 
         // Determine redirect URL:
         // - If other vendors remain in cart: Redirect to /carts
@@ -234,7 +234,7 @@ class CashOnDeliveryController extends CheckoutBaseControlller
         $input['cart'] = $new_cart;
         $input['affilate_users'] = $affilate_users;
         $input['pay_amount'] = $orderTotal;
-        $input['order_number'] = Str::random(4) . time();
+        $input['purchase_number'] = Str::random(4) . time();
         $input['wallet_price'] = $request->wallet_price / $this->curr->value;
 
         // Get tax data from step2 (already retrieved at method start)
@@ -255,30 +255,30 @@ class CashOnDeliveryController extends CheckoutBaseControlller
                 $sub = $sub - $t_sub;
             }
             if ($sub > 0) {
-                OrderHelper::affilate_check(Session::get('affilate'), $sub, $input['dp']); // For Affiliate Checking
+                PurchaseHelper::affilate_check(Session::get('affilate'), $sub, $input['dp']); // For Affiliate Checking
                 $input['affilate_user'] = Session::get('affilate');
                 $input['affilate_charge'] = $sub;
             }
         }
 
-        $order->fill($input)->save();
+        $purchase->fill($input)->save();
 
-        // ⭐ Clear stock reservations after successful order (stock already sold)
+        // Clear stock reservations after successful purchase (stock already sold)
         StockReservation::clearAfterPurchase();
 
-        // ⭐ Create Tryoto shipment for COD orders
-        $this->createOtoShipments($order, $input);
+        // Create Tryoto shipment for COD purchases
+        $this->createOtoShipments($purchase, $input);
 
-        $order->tracks()->create(['title' => 'Pending', 'text' => 'You have successfully placed your order.']);
-        $order->notifications()->create();
+        $purchase->tracks()->create(['title' => 'Pending', 'text' => 'You have successfully placed your purchase.']);
+        $purchase->notifications()->create();
 
         if ($input['discount_code_id'] != "") {
-            OrderHelper::discount_code_check($input['discount_code_id']); // For Discount Code Checking
+            PurchaseHelper::discount_code_check($input['discount_code_id']); // For Discount Code Checking
         }
 
         if (Auth::check()) {
             if ($this->gs->is_reward == 1) {
-                $num = $order->pay_amount;
+                $num = $purchase->pay_amount;
                 $rewards = Reward::get();
                 foreach ($rewards as $i) {
                     $smallest[$i->order_amount] = abs($i->order_amount - $num);
@@ -293,42 +293,42 @@ class CashOnDeliveryController extends CheckoutBaseControlller
             }
         }
 
-        OrderHelper::size_qty_check($cart); // For Size Quantiy Checking
-        OrderHelper::stock_check($cart); // For Stock Checking
-        OrderHelper::vendor_order_check($cart, $order); // For Vendor Order Checking
+        PurchaseHelper::size_qty_check($cart); // For Size Quantiy Checking
+        PurchaseHelper::stock_check($cart); // For Stock Checking
+        PurchaseHelper::vendor_purchase_check($cart, $purchase); // For Vendor Purchase Checking
 
-        Session::put('temporder', $order);
+        Session::put('temporder', $purchase);
         Session::put('tempcart', $cart);
 
-        // CRITICAL: Remove ONLY this vendor's products from cart
-        // Other vendors' products remain for separate checkout
-        // Uses HandlesVendorCheckout trait method
-        $this->removeVendorProductsFromCart($vendorId, $oldCart);
+        // CRITICAL: Remove ONLY this merchant's products from cart
+        // Other merchants' products remain for separate checkout
+        // Uses HandlesMerchantCheckout trait method
+        $this->removeMerchantProductsFromCart($vendorId, $oldCart);
 
-        if ($order->user_id != 0 && $order->wallet_price != 0) {
-            OrderHelper::add_to_transaction($order, $order->wallet_price); // Store To Transactions
+        if ($purchase->user_id != 0 && $purchase->wallet_price != 0) {
+            PurchaseHelper::add_to_transaction($purchase, $purchase->wallet_price); // Store To Transactions
         }
 
         //Sending Email To Buyer
         $data = [
-            'to' => $order->customer_email,
+            'to' => $purchase->customer_email,
             'type' => "new_order",
-            'cname' => $order->customer_name,
+            'cname' => $purchase->customer_name,
             'oamount' => "",
             'aname' => "",
             'aemail' => "",
             'wtitle' => "",
-            'onumber' => $order->order_number,
+            'onumber' => $purchase->purchase_number,
         ];
 
         $mailer = new MuaadhMailer();
-        $mailer->sendAutoOrderMail($data, $order->id);
+        $mailer->sendAutoOrderMail($data, $purchase->id);
 
         //Sending Email To Admin
         $data = [
             'to' => $this->ps->contact_email,
-            'subject' => "New Order Recieved!!",
-            'body' => "Hello Admin!<br>Your store has received a new order.<br>Order Number is " . $order->order_number . ".Please login to your panel to check. <br>Thank you.",
+            'subject' => "New Purchase Recieved!!",
+            'body' => "Hello Admin!<br>Your store has received a new purchase.<br>Purchase Number is " . $purchase->purchase_number . ".Please login to your panel to check. <br>Thank you.",
         ];
         $mailer = new MuaadhMailer();
         $mailer->sendCustomMail($data);

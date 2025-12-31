@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Api\User\Payment;
 
-use App\Models\Generalsetting;
+use App\Models\Muaadhsetting;
 use App\Models\Deposit;
 use App\Http\Controllers\Controller;
 use App\Models\PaymentGateway;
@@ -23,7 +23,7 @@ class AuthorizeController extends Controller
             return response()->json(['status' => false, 'data' => [], 'error' => 'Invalid Request']);
         }
 
-        $settings = Generalsetting::findOrFail(1);
+        $settings = Muaadhsetting::findOrFail(1);
         $item_name = $settings->title . " Deposit";
         $deposit_number = $request->deposit_number;
         $order = Deposit::where('deposit_number', $deposit_number)->first();

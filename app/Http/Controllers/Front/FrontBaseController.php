@@ -23,9 +23,9 @@ class FrontBaseController extends Controller
     public function __construct()
     {
         //$this->auth_guests();
-        // Set Global GeneralSettings
+        // Set Global MuaadhSettings
 
-        $this->gs = DB::table('generalsettings')->first();
+        $this->gs = DB::table('muaadhsettings')->first();
 //
 //        // Set Global PageSettings
 //

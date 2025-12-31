@@ -1,7 +1,7 @@
 @extends('layouts.admin')
 
 @section('styles')
-	<link href="{{asset('assets/admin/css/product.css')}}" rel="stylesheet"/>
+	<link href="{{asset('assets/admin/css/catalog-item.css')}}" rel="stylesheet"/>
 	<link href="{{asset('assets/admin/css/jquery.Jcrop.css')}}" rel="stylesheet"/>
 	<link href="{{asset('assets/admin/css/Jcrop-style.css')}}" rel="stylesheet"/>
 	<link href="{{asset('assets/admin/css/select2.css')}}" rel="stylesheet"/>
@@ -44,19 +44,19 @@
 						<div class="product-description">
 							<div class="body-area">
 
-								{{-- Vendor Selection --}}
+								{{-- Merchant Selection --}}
 								<div class="row">
 									<div class="col-lg-12">
 										<div class="left-area">
-											<h4 class="heading">{{ __('Vendor') }}*</h4>
+											<h4 class="heading">{{ __('Merchant') }}*</h4>
 										</div>
 									</div>
 									<div class="col-lg-12">
-										<select id="vendor_id" name="user_id" required="" class="select2">
-											<option value="">{{ __('Select Vendor') }}</option>
-											@foreach (\App\Models\User::where('is_vendor', 2)->where('ban', 0)->orderBy('shop_name')->get() as $vendor)
-												<option value="{{ $vendor->id }}">
-													{{ $vendor->shop_name ?: $vendor->name }} ({{ $vendor->email }})
+										<select id="merchant_id" name="user_id" required="" class="select2">
+											<option value="">{{ __('Select Merchant') }}</option>
+											@foreach (\App\Models\User::where('is_merchant', 2)->where('ban', 0)->orderBy('shop_name')->get() as $merchant)
+												<option value="{{ $merchant->id }}">
+													{{ $merchant->shop_name ?: $merchant->name }} ({{ $merchant->email }})
 												</option>
 											@endforeach
 										</select>

@@ -9,8 +9,8 @@
 📋 الملفات المضافة:
 
 1️⃣ قاعدة البيانات:
-   ✓ database/migrations/2025_11_18_125132_create_vendor_stock_updates_table.php
-   ✓ app/Models/VendorStockUpdate.php
+   ✓ database/migrations/2025_11_18_125132_create_merchant_stock_updates_table.php
+   ✓ app/Models/MerchantStockUpdate.php
 
 2️⃣ Controller:
    ✓ app/Http/Controllers/Vendor/StockManagementController.php
@@ -190,7 +190,7 @@ Dashboard → Stock Management → إدارة المخزون
    php artisan products:update-stock --user_id=59
 
 جدول قاعدة البيانات:
-   vendor_stock_updates
+   merchant_stock_updates
 
 مجلدات التخزين:
    storage/app/stock_uploads/

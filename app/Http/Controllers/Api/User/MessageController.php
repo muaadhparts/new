@@ -7,7 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\ConversationMessageResource;
 use App\Http\Resources\ConversationResource;
 use App\Models\Conversation;
-use App\Models\Generalsetting;
+use App\Models\Muaadhsetting;
 use App\Models\Message;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -52,7 +52,7 @@ class MessageController extends Controller
                 return response()->json(['status' => false, 'data' => [], 'error' => ["message" => "Email not found."]]);
             }
 
-            $gs = Generalsetting::find(1);
+            $gs = Muaadhsetting::find(1);
             $subject = $request->subject;
             $to = $vendor->email;
             $name = $user->name;

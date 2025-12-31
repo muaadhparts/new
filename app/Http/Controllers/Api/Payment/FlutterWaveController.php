@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Api\Payment;
 
 use App\Http\Controllers\Payment\Checkout\CheckoutBaseControlller;
 use App\Models\Currency;
-use App\Models\Order;
+use App\Models\Purchase;
 use App\Models\PaymentGateway;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Session;
@@ -25,21 +25,21 @@ class FlutterWaveController extends CheckoutBaseControlller
 
     public function store(Request $request)
     {
-        $order_number = $request->order_number;
-        $order = Order::where('order_number', $order_number)->firstOrFail();
+        $purchase_number = $request->purchase_number;
+        $purchase = Purchase::where('purchase_number', $purchase_number)->firstOrFail();
 
-        $curr = Currency::where('sign', '=', $order->currency_sign)->firstOrFail();
+        $curr = Currency::where('sign', '=', $purchase->currency_sign)->firstOrFail();
         if ($curr->name != "USD") {
             return redirect()->back()->with('unsuccess', 'Please Select USD Currency For Flutterwave.');
         }
 
-        $item_amount = $order->pay_amount * $order->currency_value;
+        $item_amount = $purchase->pay_amount * $purchase->currency_value;
 
-        $cancel_url = route('payment.checkout') . "?order_number=" . $order->order_number;
+        $cancel_url = route('payment.checkout') . "?purchase_number=" . $purchase->purchase_number;
         $notify_url = route('api.flutter.notify');
 
-        Session::put('order_data', $order);
-        Session::put('order_payment_id', $order['order_number']);
+        Session::put('purchase_data', $purchase);
+        Session::put('purchase_payment_id', $purchase['purchase_number']);
 
         // SET CURL
 
@@ -47,7 +47,7 @@ class FlutterWaveController extends CheckoutBaseControlller
 
         $amount = $item_amount;
         $currency = $curr->name;
-        $txref = $order['order_number']; // ensure you generate unique references per transaction.
+        $txref = $purchase['purchase_number']; // ensure you generate unique references per transaction.
         $PBFPubKey = $this->public_key; // get your public key from the dashboard.
         $redirect_url = $notify_url;
         $payment_plan = ""; // this is only required for recurring payments.
@@ -58,7 +58,7 @@ class FlutterWaveController extends CheckoutBaseControlller
             CURLOPT_CUSTOMREQUEST => "POST",
             CURLOPT_POSTFIELDS => json_encode([
                 'amount' => $amount,
-                'customer_email' => $order->customer_email,
+                'customer_email' => $purchase->customer_email,
                 'currency' => $currency,
                 'txref' => $txref,
                 'PBFPubKey' => $PBFPubKey,
@@ -102,7 +102,7 @@ class FlutterWaveController extends CheckoutBaseControlller
         $cancel_url = route('front.payment.success', 0);
 
         /** Get the payment ID before session clear **/
-        $payment_id = Session::get('order_payment_id');
+        $payment_id = Session::get('purchase_payment_id');
 
         if (isset($input_data['txref'])) {
 
@@ -135,10 +135,10 @@ class FlutterWaveController extends CheckoutBaseControlller
                     $chargeResponsecode = $resp['data']['chargecode'];
 
                     if (($chargeResponsecode == "00" || $chargeResponsecode == "0") && ($paymentStatus == "successful")) {
-                        $order = Order::where('order_number', $payment_id)->firstOrFail();
+                        $purchase = Purchase::where('purchase_number', $payment_id)->firstOrFail();
                         $data['payment_status'] = 'Completed';
                         $data['method'] = 'Flutterwave';
-                        $order->update($data);
+                        $purchase->update($data);
                         return redirect($success_url);
                     }
                 }

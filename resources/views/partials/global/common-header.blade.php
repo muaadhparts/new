@@ -9,11 +9,11 @@
                 </div>
                 <div class="col-lg-8 d-flex">
                     <ul class="top-links d-flex ms-auto align-items-center">
-                        @if (Auth::guard('web')->check() && Auth::guard('web')->user()->is_vendor == 2)
-                        <li><a class="border px-3 py-1" href="{{route('vendor.dashboard')}}">{{__('Vendor Panel')}}</a>
+                        @if (Auth::guard('web')->check() && Auth::guard('web')->user()->is_merchant == 2)
+                        <li><a class="border px-3 py-1" href="{{route('merchant.dashboard')}}">{{__('Merchant Panel')}}</a>
                         </li>
                         @else
-                        <li><a class="border px-3 py-1" href="{{route('vendor.register')}}">{{__('Sell')}}</a></li>
+                        <li><a class="border px-3 py-1" href="{{route('merchant.register')}}">{{__('Sell')}}</a></li>
                         @endif
 
                         @if (!Auth::guard('rider')->check())
@@ -63,8 +63,8 @@
                                 @if (Auth::guard('web')->check())
                                 <li><a href="{{ route('user-dashboard') }}"><span class="menu-item-text">{{ ('User
                                             Panel') }}</span></a></li>
-                                @if (Auth::guard('web')->user()->IsVendor())
-                                <li><a href="{{ route('vendor.dashboard') }}"><span class="menu-item-text">{{ __('Vendor Panel') }}</span></a></li>
+                                @if (Auth::guard('web')->user()->IsMerchant())
+                                <li><a href="{{ route('merchant.dashboard') }}"><span class="menu-item-text">{{ __('Merchant Panel') }}</span></a></li>
                                 @endif
                                 <li><a href="{{ route('user-profile') }}"><span class="menu-item-text">{{ __('Edit Profile') }}</span></a></li>
                                 <li><a href="{{ route('user-logout') }}"><span class="menu-item-text">{{ __('Logout')
@@ -151,7 +151,7 @@
                                     <a class="nav-link dropdown-toggle" href="#">{{ __('Pages') }}</a>
                                     <ul class="dropdown-menu">
                                         @foreach($pages->where('header','=',1) as $data)
-                                        <li><a class="dropdown-item" href="{{ route('front.vendor',$data->slug) }}">{{
+                                        <li><a class="dropdown-item" href="{{ route('front.merchant',$data->slug) }}">{{
                                                 $data->title }}</a></li>
                                         @endforeach
                                     </ul>
@@ -238,7 +238,7 @@
                         </div>
 
                         <div class="header-cart-1">
-                            <a href="{{ route('product.compare') }}" class="cart " title="Compare">
+                            <a href="{{ route('catalog-item.compare') }}" class="cart " title="Compare">
                                 <div class="cart-icon"><i class="flaticon-shuffle flat-mini mx-auto text-dark"></i>
                                     <span class="header-cart-count " id="compare-count">{{ Session::has('compare') ?
                                         count(Session::get('compare')->items) : '0' }}</span>
@@ -318,7 +318,7 @@
                                                             <ul class="dropdown-menu">
                                                                 @foreach($pages->where('header','=',1) as $data)
                                                                 <li><a class="dropdown-item"
-                                                                        href="{{ route('front.vendor',$data->slug) }}">{{
+                                                                        href="{{ route('front.merchant',$data->slug) }}">{{
                                                                         $data->title }}</a></li>
                                                                 @endforeach
                                                             </ul>
@@ -372,8 +372,8 @@
                                 @if (Auth::guard('web')->check())
                                 <li><a href="{{ route('user-dashboard') }}"><span class="menu-item-text">{{ ('User
                                             Panel') }}</span></a></li>
-                                @if (Auth::guard('web')->user()->IsVendor())
-                                <li><a href="{{ route('vendor.dashboard') }}"><span class="menu-item-text">{{ __('Vendor Panel') }}</span></a></li>
+                                @if (Auth::guard('web')->user()->IsMerchant())
+                                <li><a href="{{ route('merchant.dashboard') }}"><span class="menu-item-text">{{ __('Merchant Panel') }}</span></a></li>
                                 @endif
                                 <li><a href="{{ route('user-profile') }}"><span class="menu-item-text">{{ __('Edit Profile') }}</span></a></li>
                                 <li><a href="{{ route('user-logout') }}"><span class="menu-item-text">{{ __('Logout')
@@ -413,7 +413,7 @@
                         @endif
 
                         <div class="refresh-view">
-                            <a href="{{ route('product.compare') }}"
+                            <a href="{{ route('catalog-item.compare') }}"
                                 class="position-relative top-quantity d-flex align-items-center text-dark text-decoration-none">
                                 <i class="flaticon-shuffle flat-mini text-dark mx-auto"></i>
                             </a>

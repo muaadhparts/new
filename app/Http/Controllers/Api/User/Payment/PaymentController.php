@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Api\User\Payment;
 
-use App\Models\Generalsetting;
+use App\Models\Muaadhsetting;
 use Illuminate\Http\Request;
 use App\Models\Deposit;
 use App\Models\Currency;

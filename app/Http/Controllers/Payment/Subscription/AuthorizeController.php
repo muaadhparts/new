@@ -43,8 +43,8 @@ class AuthorizeController extends SubscriptionBaseController
         $item_name = $subs->title." Plan";
         $item_number = Str::random(4).time();
 
-        $input = $request->all();  
-        $user->is_vendor = 2;
+        $input = $request->all();
+        $user->is_merchant = 2;
 
 
         $validator = \Validator::make($request->all(),[
@@ -111,7 +111,7 @@ class AuthorizeController extends SubscriptionBaseController
                     $tresponse = $response->getTransactionResponse();
                 
                     
-                        $user->is_vendor = 2;
+                        $user->is_merchant = 2;
                         if(!empty($package))
                         {
                             if($package->subscription_id == $request->subs_id)

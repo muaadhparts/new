@@ -167,15 +167,15 @@
 
                                 @foreach ($item as $prod)
                                     @php
-                                        // ✅ N+1 FIX: Load product with eager-loaded merchantProducts
-                                        $catalogProdObj = \App\Models\Product::with(['merchantProducts' => fn($q) => $q->where('status', 1)->with('user')->orderBy('price')])->find($prod['id']);
+                                        // ✅ N+1 FIX: Load catalog item with eager-loaded merchantItems
+                                        $catalogProdObj = \App\Models\CatalogItem::with(['merchantItems' => fn($q) => $q->where('status', 1)->with('user')->orderBy('price')])->find($prod['id']);
 
-                                        // Use best_merchant_product from eager-loaded data
-                                        $catalogMerchant = $catalogProdObj?->best_merchant_product;
+                                        // Use best_merchant_item from eager-loaded data
+                                        $catalogMerchant = $catalogProdObj?->best_merchant_item;
 
                                         $catalogProdUrl = $catalogMerchant && isset($prod['slug'])
-                                            ? route('front.product', ['slug' => $prod['slug'], 'vendor_id' => $catalogMerchant->user_id, 'merchant_product_id' => $catalogMerchant->id])
-                                            : (isset($prod['slug']) ? route('front.product.legacy', $prod['slug']) : '#');
+                                            ? route('front.catalog-item', ['slug' => $prod['slug'], 'vendor_id' => $catalogMerchant->user_id, 'merchant_item_id' => $catalogMerchant->id])
+                                            : (isset($prod['slug']) ? route('front.catalog-item.legacy', $prod['slug']) : '#');
                                     @endphp
 
                                     <div class="col mb-1">
@@ -219,11 +219,11 @@
                                                         <div class="star-rating">
                                                             <div class="rating-wrap">
                                                                 <p><i class="fas fa-star"></i><span>
-                                                                        {{ number_format($prod->ratings_avg_rating, 1) }}</span>
+                                                                        {{ number_format($prod->catalog_reviews_avg_rating, 1) }}</span>
                                                                 </p>
                                                             </div>
                                                             <div class="rating-counts-wrap">
-                                                                <p>({{ $prod->ratings_count }})</p>
+                                                                <p>({{ $prod->catalog_reviews_count }})</p>
                                                             </div>
                                                         </div>
                                                     </div>

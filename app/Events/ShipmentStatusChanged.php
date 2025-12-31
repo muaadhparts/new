@@ -34,14 +34,14 @@ class ShipmentStatusChanged implements ShouldBroadcast
     {
         $channels = [];
 
-        // Channel for the customer (if order has user_id)
-        if ($this->shipmentLog->order && $this->shipmentLog->order->user_id) {
-            $channels[] = new PrivateChannel('user.' . $this->shipmentLog->order->user_id);
+        // Channel for the customer (if purchase has user_id)
+        if ($this->shipmentLog->purchase && $this->shipmentLog->purchase->user_id) {
+            $channels[] = new PrivateChannel('user.' . $this->shipmentLog->purchase->user_id);
         }
 
-        // Channel for the vendor
-        if ($this->shipmentLog->vendor_id) {
-            $channels[] = new PrivateChannel('vendor.' . $this->shipmentLog->vendor_id);
+        // Channel for the merchant
+        if ($this->shipmentLog->merchant_id) {
+            $channels[] = new PrivateChannel('merchant.' . $this->shipmentLog->merchant_id);
         }
 
         // Admin channel
@@ -57,8 +57,8 @@ class ShipmentStatusChanged implements ShouldBroadcast
     {
         return [
             'tracking_number' => $this->shipmentLog->tracking_number,
-            'order_id' => $this->shipmentLog->order_id,
-            'order_number' => $this->shipmentLog->order?->order_number,
+            'purchase_id' => $this->shipmentLog->purchase_id,
+            'purchase_number' => $this->shipmentLog->purchase?->purchase_number,
             'old_status' => $this->oldStatus,
             'new_status' => $this->shipmentLog->status,
             'status_ar' => $this->shipmentLog->status_ar,

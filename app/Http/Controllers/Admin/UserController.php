@@ -37,7 +37,7 @@ class UserController extends AdminBaseController
                 '<option data-val="0" value="'. route('admin-user-ban',['id1' => $data->id, 'id2' => 1]).'" '.$s.'>'.__("Block").'</option>'.
                 '<option data-val="1" value="'. route('admin-user-ban',['id1' => $data->id, 'id2' => 0]).'" '.$ns.'>'.__("UnBlock").'</option></select>';
 
-                                    $vendor = $data->is_vendor != 2 ? '<a href="javascript:;" data-bs-toggle="modal" data-bs-target="#modal1" class="make-vendor" data-href="' . route('admin-user-vendor',$data->id) . '" >
+                                    $vendor = $data->is_merchant != 2 ? '<a href="javascript:;" data-bs-toggle="modal" data-bs-target="#modal1" class="make-vendor" data-href="' . route('admin-user-vendor',$data->id) . '" >
                                     <i class="fas fa-users"></i> '.__("Make Vendor").'
                                     </a>' : '<a href="javascript:;">
                                     <i class="fas fa-users"></i> '.__("Vendor").'
@@ -201,9 +201,9 @@ class UserController extends AdminBaseController
             }
         }
 
-        if($user->ratings->count() > 0)
+        if($user->catalogReviews->count() > 0)
         {
-            foreach ($user->ratings as $gal) {
+            foreach ($user->catalogReviews as $gal) {
                 $gal->delete();
             }
         }
@@ -319,9 +319,9 @@ class UserController extends AdminBaseController
                         $gal->delete();
                     }
                 }
-                if($prod->ratings->count() > 0)
+                if($prod->catalogReviews->count() > 0)
                 {
-                    foreach ($prod->ratings as $gal) {
+                    foreach ($prod->catalogReviews as $gal) {
                         $gal->delete();
                     }
                 }
@@ -400,9 +400,9 @@ class UserController extends AdminBaseController
             }
         }
 
-        if($user->vendororders->count() > 0)
+        if($user->merchantPurchases->count() > 0)
         {
-            foreach ($user->vendororders as $gal) {
+            foreach ($user->merchantPurchases as $gal) {
                 $gal->delete();
             }
         }
@@ -574,7 +574,7 @@ class UserController extends AdminBaseController
         public function vendor($id)
         {
             $data = User::findOrFail($id);
-            if($data->is_vendor != 2){
+            if($data->is_merchant != 2){
                 return view('admin.user.setvendor',compact('data'));
             }
 
@@ -602,8 +602,8 @@ class UserController extends AdminBaseController
             $user = User::findOrFail($id);    
             $subs = Subscription::findOrFail($request->subs_id);
             $today = Carbon::now()->format('Y-m-d');
-            $input = $request->all();  
-            $user->is_vendor = 2;
+            $input = $request->all();
+            $user->is_merchant = 2;
             $user->date = date('Y-m-d', strtotime($today.' + '.$subs->days.' days'));
             $user->mail_sent = 1;    
             $user->update($input);

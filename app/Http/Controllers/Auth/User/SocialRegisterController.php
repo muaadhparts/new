@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Auth\User;
 
 use App\{
     Models\User,
-    Models\Notification,
+    Models\CatalogEvent,
     Models\Socialsetting,
     Models\OauthAccount,
     Http\Controllers\Controller
@@ -67,9 +67,9 @@ class SocialRegisterController extends Controller
             $user->oauthAccounts()->create(
                 ['provider_id' => $socialUser->getId(), 'provider' => $provider]
             );
-            $notification = new Notification;
-            $notification->user_id = $user->id;
-            $notification->save();
+            $catalogEvent = new CatalogEvent;
+            $catalogEvent->user_id = $user->id;
+            $catalogEvent->save();
         }
         else
         {

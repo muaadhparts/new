@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Front;
 
 use App\Http\Controllers\Controller;
-use App\Models\Product;
+use App\Models\CatalogItem;
 use App\Services\CatalogSessionManager;
 use App\Traits\NormalizesInput;
 use Illuminate\Http\Request;
@@ -129,7 +129,7 @@ class SearchApiController extends Controller
         $sku = $this->cleanInput($query);
 
         // البحث بالرقم (prefix-only)
-        $results = Product::where('sku', 'like', "{$sku}%")
+        $results = CatalogItem::where('sku', 'like', "{$sku}%")
             ->select('id', 'sku', 'label_en', 'label_ar')
             ->limit(50)
             ->get();
@@ -157,7 +157,7 @@ class SearchApiController extends Controller
         for ($i = count($words); $i > 0; $i--) {
             $subset = array_slice($words, 0, $i);
 
-            $results = Product::query()
+            $results = CatalogItem::query()
                 ->where(function ($q) use ($subset) {
                     foreach ($subset as $word) {
                         $word = trim($word);

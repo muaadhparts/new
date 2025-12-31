@@ -4,7 +4,7 @@ namespace App\Http\Controllers\User;
 
 use App\Models\AffliateBonus;
 use App\Models\FavoriteSeller;
-use App\Models\Order;
+use App\Models\Purchase;
 use App\Models\PaymentGateway;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;

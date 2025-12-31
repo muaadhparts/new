@@ -8,9 +8,9 @@ use App\Http\Resources\TicketDisputeMessageResource;
 use App\Http\Resources\TicketDisputeResource;
 use App\Models\SupportThread;
 use App\Models\SupportMessage;
-use App\Models\Generalsetting;
-use App\Models\Notification;
-use App\Models\Order;
+use App\Models\Muaadhsetting;
+use App\Models\CatalogEvent;
+use App\Models\Purchase;
 use App\Models\Pagesetting;
 use Illuminate\Http\Request;
 use Validator;
@@ -42,11 +42,11 @@ class TicketDisputeController extends Controller
                 'subject' => 'required',
                 'message' => 'required',
                 'type' => 'required',
-                'order_number' => [
+                'purchase_number' => [
                     function ($attribute, $value, $fail) use ($request) {
                         if ($request->type == 'Dispute') {
-                            if (empty($request->order_number)) {
-                                $fail('The order number field is required');
+                            if (empty($request->purchase_number)) {
+                                $fail('The purchase number field is required');
                             }
                         }
                     },
@@ -60,9 +60,9 @@ class TicketDisputeController extends Controller
 
 
             if ($request->type ==  'Dispute') {
-                $order = Order::where('order_number', $request->order_number)->exists();
-                if (!$order) {
-                    return response()->json(['status' => false, 'data' => [], 'error' => ["order_number" => ["Order Number Not Found"]]]);
+                $purchase = Purchase::where('purchase_number', $request->purchase_number)->exists();
+                if (!$purchase) {
+                    return response()->json(['status' => false, 'data' => [], 'error' => ["purchase_number" => ["Purchase Number Not Found"]]]);
                 }
             }
 
@@ -73,7 +73,7 @@ class TicketDisputeController extends Controller
             }
 
             $user = auth()->user();
-            $gs = Generalsetting::find(1);
+            $gs = Muaadhsetting::find(1);
             $subject = $request->subject;
             $to = Pagesetting::find(1)->contact_email;
             $from = $user->email;
@@ -111,11 +111,11 @@ class TicketDisputeController extends Controller
                 $thread->subject = $subject;
                 $thread->user_id = $user->id;
                 $thread->message = $request->message;
-                $thread->order_number = $request->order_number;
+                $thread->purchase_number = $request->purchase_number;
                 $thread->type = $request->type;
                 $thread->save();
 
-                $notification = new Notification;
+                $notification = new CatalogEvent;
                 $notification->conversation_id = $thread->id;
                 $notification->save();
 
@@ -171,7 +171,7 @@ class TicketDisputeController extends Controller
             $input = $request->all();
             $input['user_id'] = auth()->user()->id;
             $msg->fill($input)->save();
-            $notification = new Notification;
+            $notification = new CatalogEvent;
             $notification->conversation_id = $msg->thread->id;
             $notification->save();
             //--- Redirect Section

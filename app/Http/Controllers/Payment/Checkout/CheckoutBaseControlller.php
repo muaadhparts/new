@@ -17,7 +17,7 @@ class CheckoutBaseControlller extends Controller
     public function __construct()
     {
 
-        $this->gs = DB::table('generalsettings')->find(1);
+        $this->gs = DB::table('muaadhsettings')->find(1);
 
         $this->ps = DB::table('pagesettings')->find(1);
 
@@ -146,10 +146,10 @@ class CheckoutBaseControlller extends Controller
      *
      * @param array $step2Data Step2 session data
      * @param int|null $vendorId Vendor ID for vendor-specific checkout
-     * @param bool $isVendorCheckout Whether this is vendor-specific checkout
+     * @param bool $isMerchantCheckout Whether this is vendor-specific checkout
      * @return string JSON encoded shipping choices per vendor
      */
-    protected function extractCustomerShippingChoice($step2Data, $vendorId = null, $isVendorCheckout = false)
+    protected function extractCustomerShippingChoice($step2Data, $vendorId = null, $isMerchantCheckout = false)
     {
         $choices = [];
 
@@ -162,7 +162,7 @@ class CheckoutBaseControlller extends Controller
         $freeShippingDiscount = $step2Data['free_shipping_discount'] ?? 0;
 
         // For vendor checkout, the shipping might be stored directly
-        if ($isVendorCheckout && $vendorId) {
+        if ($isMerchantCheckout && $vendorId) {
             // Check if shipping is stored as vendor_id => value
             if (isset($shippingSelections[$vendorId])) {
                 $shippingValue = $shippingSelections[$vendorId];

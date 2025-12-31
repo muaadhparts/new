@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Api\Payment;
 
 use App\Http\Controllers\Controller;
-use App\Models\Order;
+use App\Models\Purchase;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -16,12 +16,12 @@ class WalletController extends Controller
     {
 
 
-        if ($request->has('order_number')) {
-            $order_number = $request->order_number;
-            $order = Order::where('order_number', $order_number)->firstOrFail();
-            $item_amount = $order->pay_amount * $order->currency_value;
-            $user = User::findOrFail($order->user_id);
-            if ($order->user_id == 0) {
+        if ($request->has('purchase_number')) {
+            $purchase_number = $request->purchase_number;
+            $purchase = Purchase::where('purchase_number', $purchase_number)->firstOrFail();
+            $item_amount = $purchase->pay_amount * $purchase->currency_value;
+            $user = User::findOrFail($purchase->user_id);
+            if ($purchase->user_id == 0) {
                 return redirect()->back()->with('unsuccess', 'Please login to continue');
             } else {
                 if ($user->balance < $item_amount) {
@@ -29,11 +29,11 @@ class WalletController extends Controller
                 }
             }
 
-            $order->pay_amount = round($item_amount / $order->currency_value, 2);
-            $order->method = 'Wallet';
-            $order->txnid = Str::random(12);
-            $order->payment_status = 'Completed';
-            $order->save();
+            $purchase->pay_amount = round($item_amount / $purchase->currency_value, 2);
+            $purchase->method = 'Wallet';
+            $purchase->txnid = Str::random(12);
+            $purchase->payment_status = 'Completed';
+            $purchase->save();
 
             $user->balance = $user->balance - $item_amount;
             $user->save();

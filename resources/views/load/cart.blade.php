@@ -10,12 +10,12 @@
 
                     $slug     = data_get($product, 'item.slug');
                     $vendorId = data_get($product, 'item.user_id');
-                    $merchantProductId = data_get($product, 'item.id');
+                    $merchantItemId = data_get($product, 'item.id');
                     $name     = data_get($product, 'item.name');
                     $photo    = data_get($product, 'item.photo');
 
-                    $productUrl = ($vendorId && $merchantProductId)
-                        ? route('front.product', ['slug' => $slug, 'vendor_id' => $vendorId, 'merchant_product_id' => $merchantProductId])
+                    $productUrl = ($vendorId && $merchantItemId)
+                        ? route('front.catalog-item', ['slug' => $slug, 'vendor_id' => $vendorId, 'merchant_item_id' => $merchantItemId])
                         : 'javascript:;';
                 @endphp
 
@@ -34,14 +34,14 @@
                             alt="Cart product">
                     </a>
 
-                    <x-product-name :item="$product['item']" :vendor-id="$vendorId" :merchantProductId="$merchantProductId" target="_self" :useSearchRoute="false" class="product-name" />
+                    <x-catalog-item-name :item="$product['item']" :vendor-id="$vendorId" :merchantItemId="$merchantItemId" target="_self" :useSearchRoute="false" class="catalog-item-name" />
 
                     <div class="cart-item-quantity">
                         <span class="cart-product-qty" id="cqt{{ $domKey }}">{{ $product['qty'] }}</span>
                         <span>{{ data_get($product, 'item.measure') }}</span>
                         x
                         <span id="prct{{ $domKey }}">
-                            {{ App\Models\Product::convertPrice($product['item_price']) }}
+                            {{ App\Models\CatalogItem::convertPrice($product['item_price']) }}
                             {{ $product['discount'] == 0 ? '' : '(' . $product['discount'] . '% ' . __('Off') . ')' }}
                         </span>
                     </div>
@@ -60,7 +60,7 @@
         <div class="title">@lang('Total:')</div>
         <div class="price">
             <span class="cart-total">
-                {{ Session::has('cart') ? App\Models\Product::convertPrice(Session::get('cart')->totalPrice) : '0.00' }}
+                {{ Session::has('cart') ? App\Models\CatalogItem::convertPrice(Session::get('cart')->totalPrice) : '0.00' }}
             </span>
         </div>
     </div>

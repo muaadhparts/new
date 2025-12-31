@@ -10,7 +10,7 @@ use App\{
     Models\UserSubscription
 };
 use Session;
-use OrderHelper;
+use PurchaseHelper;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -54,7 +54,7 @@ class FlutterwaveController extends SubscriptionBaseController
 
             $item_currency = $curr->name;
 
-            $available_currency = OrderHelper::flutter_currencies();
+            $available_currency = PurchaseHelper::flutter_currencies();
 
             if(!in_array($item_currency,$available_currency))
             {
@@ -195,7 +195,7 @@ class FlutterwaveController extends SubscriptionBaseController
 
                 $today = Carbon::now()->format('Y-m-d');
                 $input = $request->all();  
-                $user->is_vendor = 2;
+                $user->is_merchant = 2;
                 if(!empty($package))
                 {
                     if($package->subscription_id == $request->subs_id)

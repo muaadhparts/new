@@ -81,7 +81,7 @@
                                     <i class="fas fa-tachometer-alt"></i>
                                     <span>@lang('Dashboard')</span>
                                 </a>
-                                <a href="{{ route('user-orders') }}" class="muaadh-action-menu-item">
+                                <a href="{{ route('user-purchases') }}" class="muaadh-action-menu-item">
                                     <i class="fas fa-shopping-bag"></i>
                                     <span>@lang('My Orders')</span>
                                 </a>
@@ -123,7 +123,7 @@
                     </a>
 
                     {{-- Compare --}}
-                    <a href="{{ route('product.compare') }}" class="muaadh-action-btn d-none d-sm-flex">
+                    <a href="{{ route('catalog-item.compare') }}" class="muaadh-action-btn d-none d-sm-flex">
                         <i class="fas fa-exchange-alt"></i>
                         <span class="muaadh-badge" id="compare-count">
                             {{ Session::has('compare') ? count(Session::get('compare')->items) : '0' }}
@@ -229,7 +229,7 @@
                             <ul class="muaadh-nav-submenu">
                                 @foreach ($pages->where('header', '=', 1) as $page)
                                     <li>
-                                        <a href="{{ route('front.vendor', $page->slug) }}">{{ $page->title }}</a>
+                                        <a href="{{ route('front.merchant', $page->slug) }}">{{ $page->title }}</a>
                                     </li>
                                 @endforeach
                             </ul>

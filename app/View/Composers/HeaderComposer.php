@@ -13,9 +13,9 @@ use Illuminate\View\View;
  * Provides pre-loaded user data for header-related views.
  * Uses lightweight cached favorite COUNT query (not full IDs).
  *
- * NOTE: This is separate from ProductCardDataBuilder.
+ * NOTE: This is separate from CatalogItemCardDataBuilder.
  * - HeaderComposer: loads favorite COUNT only (for header badge)
- * - ProductCardDataBuilder: loads favorite IDs (for product pages)
+ * - CatalogItemCardDataBuilder: loads favorite IDs (for catalog item pages)
  */
 class HeaderComposer
 {

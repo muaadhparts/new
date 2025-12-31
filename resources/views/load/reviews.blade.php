@@ -3,12 +3,12 @@
       {{ __('Ratings & Reviews') }}
     </h4>
     <div class="reating-area">
-      <div class="stars"><span id="star-rating">{{ App\Models\Rating::normalRating($productt->id) }}</span> <i class="fas fa-star"></i></div>
+      <div class="stars"><span id="star-rating">{{ App\Models\CatalogReview::averageScore($productt->id) }}</span> <i class="fas fa-star"></i></div>
     </div>
   </div>
 
   <ul class="all-comments">
-    @foreach($productt->ratings as $review)
+    @foreach($productt->catalogReviews as $review)
       <li>
         <div class="single-comment">
           <div class="left-area">
@@ -20,7 +20,7 @@
             <div class="header-area">
               <div class="stars-area">
                 <ul class="stars">
-                  <div class="ratings">
+                  <div class="review-stars">
                     <div class="empty-stars"></div>
                     <div class="full-stars" style="width:{{$review->rating*20}}%"></div>
                   </div>

@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Api\User\Payment;
 use App\Http\Controllers\Controller;
 use App\Models\Currency;
 use App\Models\Deposit;
-use App\Models\Generalsetting;
+use App\Models\Muaadhsetting;
 use App\Models\Transaction;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -65,7 +65,7 @@ class MollyController extends Controller
 
         $input = $request->all();
 
-        $settings = Generalsetting::findOrFail(1);
+        $settings = Muaadhsetting::findOrFail(1);
 
         $item_amount = round($order->pay_amount / $curr->value, 2);
 

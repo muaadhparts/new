@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Api\User\Payment;
 use App\Http\Controllers\Controller;
 use App\Models\Currency;
 use App\Models\Deposit;
-use App\Models\Generalsetting;
+use App\Models\Muaadhsetting;
 use App\Models\PaymentGateway;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -27,7 +27,7 @@ class PaytmController extends Controller
             return redirect()->back()->with('unsuccess', 'Please Select INR Currency For Paytm.');
         }
         $input = $request->all();
-        $settings = Generalsetting::findOrFail(1);
+        $settings = Muaadhsetting::findOrFail(1);
         $item_amount = round($order->amount * $order->currency_value,2);
 
         $data_for_request = $this->handlePaytmRequest($order->deposit_number, $item_amount);

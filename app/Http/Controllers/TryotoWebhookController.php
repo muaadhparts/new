@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Order;
+use App\Models\Purchase;
 use App\Models\ShipmentStatusLog;
-use App\Models\UserNotification;
+use App\Models\UserCatalogEvent;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
@@ -75,8 +75,8 @@ class TryotoWebhookController extends Controller
 
             // حفظ الحالة الجديدة
             $newLog = ShipmentStatusLog::create([
-                'order_id' => $existingLog->order_id,
-                'vendor_id' => $existingLog->vendor_id,
+                'purchase_id' => $existingLog->purchase_id,
+                'merchant_id' => $existingLog->merchant_id,
                 'tracking_number' => $trackingNumber,
                 'shipment_id' => $shipmentId ?: $existingLog->shipment_id,
                 'company_name' => $existingLog->company_name,
@@ -91,31 +91,31 @@ class TryotoWebhookController extends Controller
                 'raw_data' => $request->all(),
             ]);
 
-            // تحديث حالة Order إذا تم التسليم
+            // Update Purchase status when delivered
             if ($status === 'delivered') {
-                $order = Order::find($existingLog->order_id);
-                if ($order && $order->status !== 'completed') {
-                    $order->status = 'completed';
-                    $order->save();
+                $purchase = Purchase::find($existingLog->purchase_id);
+                if ($purchase && $purchase->status !== 'completed') {
+                    $purchase->status = 'completed';
+                    $purchase->save();
 
-                    // إضافة Track
-                    $order->tracks()->create([
+                    // Add Track
+                    $purchase->tracks()->create([
                         'title' => 'Completed',
-                        'text' => 'Order delivered successfully - Tracking: ' . $trackingNumber,
+                        'text' => 'Purchase delivered successfully - Tracking: ' . $trackingNumber,
                     ]);
                 }
             }
 
             // إرسال Notification للتاجر عند التغييرات المهمة
             if (in_array($status, ['picked_up', 'delivered', 'failed', 'returned'])) {
-                if ($existingLog->vendor_id) {
+                if ($existingLog->merchant_id) {
                     try {
-                        $notification = new UserNotification();
-                        $notification->user_id = $existingLog->vendor_id;
-                        $notification->order_number = $existingLog->order->order_number ?? 'N/A';
-                        // فقط إضافة order_id إذا كان العمود موجوداً
-                        if (\Schema::hasColumn('user_notifications', 'order_id')) {
-                            $notification->order_id = $existingLog->order_id;
+                        $notification = new UserCatalogEvent();
+                        $notification->user_id = $existingLog->merchant_id;
+                        $notification->purchase_number = $existingLog->purchase->purchase_number ?? 'N/A';
+                        // فقط إضافة purchase_id إذا كان العمود موجوداً
+                        if (\Schema::hasColumn('user_catalog_events', 'purchase_id')) {
+                            $notification->purchase_id = $existingLog->purchase_id;
                         }
                         $notification->is_read = 0;
                         $notification->save();
@@ -123,7 +123,7 @@ class TryotoWebhookController extends Controller
                         // تجاهل أخطاء الـ notification - ليست حرجة
                         Log::warning('Tryoto Webhook: Notification failed', [
                             'error' => $notifError->getMessage(),
-                            'vendor_id' => $existingLog->vendor_id,
+                            'merchant_id' => $existingLog->merchant_id,
                         ]);
                     }
                 }
@@ -132,7 +132,7 @@ class TryotoWebhookController extends Controller
             Log::debug('Tryoto Webhook Processed Successfully', [
                 'tracking' => $trackingNumber,
                 'status' => $status,
-                'order_id' => $existingLog->order_id,
+                'purchase_id' => $existingLog->purchase_id,
             ]);
 
             return response()->json([

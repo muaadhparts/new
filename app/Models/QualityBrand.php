@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Models\MerchantItem;
 
 class QualityBrand extends Model
 {
@@ -21,9 +22,20 @@ class QualityBrand extends Model
         return $q->where('is_active', 1);
     }
 
+    /**
+     * Merchant items for this quality brand
+     */
+    public function merchantItems()
+    {
+        return $this->hasMany(MerchantItem::class, 'brand_quality_id');
+    }
+
+    /**
+     * @deprecated Use merchantItems() instead
+     */
     public function merchantProducts()
     {
-        return $this->hasMany(MerchantProduct::class, 'brand_quality_id');
+        return $this->merchantItems();
     }
 
     /**

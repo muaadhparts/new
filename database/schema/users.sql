@@ -33,7 +33,7 @@ CREATE TABLE `users` (
   `g_url` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
   `t_url` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
   `l_url` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
-  `is_vendor` tinyint(1) NOT NULL DEFAULT '0',
+  `is_merchant` tinyint(1) NOT NULL DEFAULT '0',
   `f_check` tinyint(1) NOT NULL DEFAULT '0',
   `g_check` tinyint(1) NOT NULL DEFAULT '0',
   `t_check` tinyint(1) NOT NULL DEFAULT '0',

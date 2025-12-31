@@ -48,9 +48,9 @@ use App\Http\Controllers\MyFatoorahController;
 use App\Models\Cart;
 use App\Models\City;
 use App\Models\Country;
-use App\Models\Order;
+use App\Models\Purchase;
 use App\Models\PaymentGateway;
-use App\Services\VendorCartService;
+use App\Services\MerchantCartService;
 use App\Services\CheckoutDataService;
 use App\Services\ShippingCalculatorService;
 use App\Services\GoogleMapsService;
@@ -128,7 +128,7 @@ class CheckoutController extends FrontBaseController
             // Shipping Method
 
             if ($this->gs->multiple_shipping == 1) {
-                $ship_data = Order::getShipData($cart);
+                $ship_data = Purchase::getShipData($cart);
                 $shipping_data = $ship_data['shipping_data'];
                 $vendor_shipping_id = $ship_data['vendor_shipping_id'];
             } else {
@@ -138,7 +138,7 @@ class CheckoutController extends FrontBaseController
             // Packaging
 
             if ($this->gs->multiple_shipping == 1) {
-                $pack_data = Order::getPackingData($cart);
+                $pack_data = Purchase::getPackingData($cart);
                 $package_data = $pack_data['package_data'];
                 $vendor_packing_id = $pack_data['vendor_packing_id'];
             } else {
@@ -169,7 +169,7 @@ class CheckoutController extends FrontBaseController
 
             if ($this->gs->guest_checkout == 1) {
                 if ($this->gs->multiple_shipping == 1) {
-                    $ship_data = Order::getShipData($cart);
+                    $ship_data = Purchase::getShipData($cart);
                     $shipping_data = $ship_data['shipping_data'];
                     $vendor_shipping_id = $ship_data['vendor_shipping_id'];
                 } else {
@@ -179,7 +179,7 @@ class CheckoutController extends FrontBaseController
                 // Packaging
 
                 if ($this->gs->multiple_shipping == 1) {
-                    $pack_data = Order::getPackingData($cart);
+                    $pack_data = Purchase::getPackingData($cart);
                     $package_data = $pack_data['package_data'];
                     $vendor_packing_id = $pack_data['vendor_packing_id'];
                 } else {
@@ -221,7 +221,7 @@ class CheckoutController extends FrontBaseController
                 // Shipping Method
 
                 if ($this->gs->multiple_shipping == 1) {
-                    $ship_data = Order::getShipData($cart);
+                    $ship_data = Purchase::getShipData($cart);
                     $shipping_data = $ship_data['shipping_data'];
                     $vendor_shipping_id = $ship_data['vendor_shipping_id'];
                 } else {
@@ -231,7 +231,7 @@ class CheckoutController extends FrontBaseController
                 // Packaging
 
                 if ($this->gs->multiple_packaging == 1) {
-                    $pack_data = Order::getPackingData($cart);
+                    $pack_data = Purchase::getPackingData($cart);
                     $package_data = $pack_data['package_data'];
                     $vendor_packing_id = $pack_data['vendor_packing_id'];
                 } else {
@@ -284,7 +284,7 @@ class CheckoutController extends FrontBaseController
             // Shipping Method
 
             if ($this->gs->multiple_shipping == 1) {
-                $ship_data = Order::getShipData($cart);
+                $ship_data = Purchase::getShipData($cart);
                 $shipping_data = $ship_data['shipping_data'];
                 $vendor_shipping_id = $ship_data['vendor_shipping_id'];
             } else {
@@ -294,7 +294,7 @@ class CheckoutController extends FrontBaseController
             // Packaging
 
             if ($this->gs->multiple_shipping == 1) {
-                $pack_data = Order::getPackingData($cart);
+                $pack_data = Purchase::getPackingData($cart);
                 $package_data = $pack_data['package_data'];
                 $vendor_packing_id = $pack_data['vendor_packing_id'];
             } else {
@@ -327,7 +327,7 @@ class CheckoutController extends FrontBaseController
 
             if ($this->gs->guest_checkout == 1) {
                 if ($this->gs->multiple_shipping == 1) {
-                    $ship_data = Order::getShipData($cart);
+                    $ship_data = Purchase::getShipData($cart);
                     $shipping_data = $ship_data['shipping_data'];
                     $vendor_shipping_id = $ship_data['vendor_shipping_id'];
                 } else {
@@ -337,7 +337,7 @@ class CheckoutController extends FrontBaseController
                 // Packaging
 
                 if ($this->gs->multiple_shipping == 1) {
-                    $pack_data = Order::getPackingData($cart);
+                    $pack_data = Purchase::getPackingData($cart);
                     $package_data = $pack_data['package_data'];
                     $vendor_packing_id = $pack_data['vendor_packing_id'];
                 } else {
@@ -383,7 +383,7 @@ class CheckoutController extends FrontBaseController
                 // Shipping Method
 
                 if ($this->gs->multiple_shipping == 1) {
-                    $ship_data = Order::getShipData($cart);
+                    $ship_data = Purchase::getShipData($cart);
                     $shipping_data = $ship_data['shipping_data'];
                     $vendor_shipping_id = $ship_data['vendor_shipping_id'];
                 } else {
@@ -393,7 +393,7 @@ class CheckoutController extends FrontBaseController
                 // Packaging
 
                 if ($this->gs->multiple_packaging == 1) {
-                    $pack_data = Order::getPackingData($cart);
+                    $pack_data = Purchase::getPackingData($cart);
                     $package_data = $pack_data['package_data'];
                     $vendor_packing_id = $pack_data['vendor_packing_id'];
                 } else {
@@ -827,7 +827,7 @@ class CheckoutController extends FrontBaseController
 
         // شحن وتغليف
         if ($this->gs->multiple_shipping == 1) {
-            $ship_data = Order::getShipData($cart);
+            $ship_data = Purchase::getShipData($cart);
             $shipping_data = $ship_data['shipping_data'];
             $vendor_shipping_id = $ship_data['vendor_shipping_id'];
         } else {
@@ -835,7 +835,7 @@ class CheckoutController extends FrontBaseController
         }
 
         if ($this->gs->multiple_shipping == 1) {
-            $pack_data = Order::getPackingData($cart);
+            $pack_data = Purchase::getPackingData($cart);
             $package_data = $pack_data['package_data'];
             $vendor_packing_id = $pack_data['vendor_packing_id'];
         } else {
@@ -945,13 +945,13 @@ class CheckoutController extends FrontBaseController
         if (Session::has('tempcart')) {
             $oldCart = Session::get('tempcart');
             $tempcart = new Cart($oldCart);
-            $order = Session::get('temporder');
+            $purchase = Session::get('temporder');
         } else {
             $tempcart = '';
             return redirect()->back();
         }
 
-        return view('frontend.success', compact('tempcart', 'order'));
+        return view('frontend.success', compact('tempcart', 'purchase'));
     }
 
     /* ===================== Vendor-Specific Checkout ===================== */
@@ -1015,7 +1015,7 @@ class CheckoutController extends FrontBaseController
             }
 
             if ($productVendorId === $vendorId) {
-                // إضافة بيانات الخصم والأبعاد باستخدام VendorCartService
+                // إضافة بيانات الخصم والأبعاد باستخدام MerchantCartService
                 $mpId = data_get($product, 'item.merchant_product_id')
                     ?? data_get($product, 'merchant_product_id')
                     ?? 0;
@@ -1023,11 +1023,11 @@ class CheckoutController extends FrontBaseController
 
                 if ($mpId) {
                     // حساب خصم الجملة
-                    $bulkDiscount = VendorCartService::calculateBulkDiscount($mpId, $qty);
+                    $bulkDiscount = MerchantCartService::calculateBulkDiscount($mpId, $qty);
                     $product['bulk_discount'] = $bulkDiscount;
 
                     // جلب الأبعاد (بدون fallback)
-                    $dimensions = VendorCartService::getProductDimensions($mpId);
+                    $dimensions = MerchantCartService::getProductDimensions($mpId);
                     $product['dimensions'] = $dimensions;
                     $product['row_weight'] = $dimensions['weight'] ? $dimensions['weight'] * $qty : null;
                 }
@@ -1053,8 +1053,8 @@ class CheckoutController extends FrontBaseController
             }
         }
 
-        // حساب بيانات الشحن للتاجر باستخدام VendorCartService
-        $shippingData = VendorCartService::calculateVendorShipping($vendorId, $cart->items);
+        // حساب بيانات الشحن للتاجر باستخدام MerchantCartService
+        $shippingData = MerchantCartService::calculateVendorShipping($vendorId, $cart->items);
 
         // Return filtered data (Cart instance is discarded - no session modification)
         return [
@@ -1078,7 +1078,7 @@ class CheckoutController extends FrontBaseController
      * 4. Gets ONLY vendor-specific shipping methods (no general cart shipping)
      * 5. Gets ONLY vendor-specific packaging methods (no general cart packaging)
      * 6. Calculates total for THIS vendor only (with vendor-specific discount)
-     * 7. Does NOT call Order::getShipData or Order::getPackingData (avoids cart-wide logic)
+     * 7. Does NOT call Purchase::getShipData or Purchase::getPackingData (avoids cart-wide logic)
      * 8. Does NOT modify auth state - only reads Auth::check()
      *
      * @param int $vendorId The vendor's user_id
@@ -1157,9 +1157,9 @@ class CheckoutController extends FrontBaseController
             'package_data' => $package_data,
             'vendor_shipping_id' => $vendorId,
             'vendor_packing_id' => $vendorId,
-            'is_vendor_checkout' => true,
+            'is_merchant_checkout' => true,
             'vendor_id' => $vendorId,
-            // بيانات الشحن الموحدة من VendorCartService
+            // بيانات الشحن الموحدة من MerchantCartService
             'vendor_shipping_data' => $vendorShippingData,
             'has_complete_shipping_data' => $cartData['has_complete_shipping_data'],
             'missing_shipping_data' => $cartData['missing_shipping_data'],
@@ -1394,7 +1394,7 @@ class CheckoutController extends FrontBaseController
             'country' => $country, // For tax calculation (N+1 FIX)
             'preloadedCountry' => $country, // Alias for Blade
             'isState' => $isState, // For tax calculation
-            'is_vendor_checkout' => true,
+            'is_merchant_checkout' => true,
             'vendor_id' => $vendorId,
             'vendorData' => $step2VendorData['vendorData'], // N+1 FIX
         ]);
@@ -1738,7 +1738,7 @@ class CheckoutController extends FrontBaseController
             'paystack' => $paystackData,
             'step2' => $step2, // CRITICAL: Contains pre-calculated total (products + tax + shipping)
             'step1' => $step1,
-            'is_vendor_checkout' => true,
+            'is_merchant_checkout' => true,
             'vendor_id' => $vendorId,
             'preloadedCountry' => $preloadedCountry,
         ]);

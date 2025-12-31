@@ -4,11 +4,11 @@ namespace App\Http\Controllers\Rider;
 
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
-use App\Models\Generalsetting;
+use App\Models\Muaadhsetting;
 use App\Models\User;
 use App\Classes\MuaadhMailer;
 use App\Http\Controllers\Front\FrontBaseController;
-use App\Models\Notification;
+use App\Models\CatalogEvent;
 use Auth;
 
 use Validator;
@@ -26,14 +26,14 @@ class RegisterController extends FrontBaseController
 
 	public function token($token)
 	{
-		$gs = Generalsetting::findOrFail(1);
+		$gs = Muaadhsetting::findOrFail(1);
 
 		if ($gs->is_verification_email == 1) {
 			$user = User::where('verification_link', '=', $token)->first();
 			if (isset($user)) {
 				$user->email_verified = 'Yes';
 				$user->update();
-				$notification = new Notification;
+				$notification = new CatalogEvent;
 				$notification->user_id = $user->id;
 				$notification->save();
 				Auth::guard('web')->login($user);

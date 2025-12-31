@@ -422,10 +422,10 @@ $(document).ready(function () {
     );
   });
 
-  //******  14. TOGGLE VENDOR DASHBOARD SIDEBAR ******//
-  $(".gs-vendor-toggle-btn").on("click", function () {
-    $(".gs-vendor-sidebar-wrapper").toggleClass("collapsed");
-    $(".gs-vendor-header-outlet-wrapper").toggleClass("increased-width");
+  //******  14. TOGGLE MERCHANT DASHBOARD SIDEBAR ******//
+  $(".gs-merchant-toggle-btn").on("click", function () {
+    $(".gs-merchant-sidebar-wrapper").toggleClass("collapsed");
+    $(".gs-merchant-header-outlet-wrapper").toggleClass("increased-width");
   });
 
   //******  15. DATA TABLE ******//
@@ -685,15 +685,15 @@ $(document).ready(function () {
     $(".collapse").not($(this).next(".collapse")).collapse("hide");
   });
 
-  // vendor notification
-  $("#toggle-vendor-noti").on("click", function () {
-    $(".gs-vendor-header-noti").toggleClass("active");
+  // merchant notification
+  $("#toggle-merchant-noti").on("click", function () {
+    $(".gs-merchant-header-noti").toggleClass("active");
 
   });
 
   $(document).on("click", function (event) {
-    if (!$(event.target).closest(".gs-vendor-header-noti, #toggle-vendor-noti").length) {
-      $(".gs-vendor-header-noti").removeClass("active");
+    if (!$(event.target).closest(".gs-merchant-header-noti, #toggle-merchant-noti").length) {
+      $(".gs-merchant-header-noti").removeClass("active");
     }
   });
 

@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class Report extends Model
 {
 
-    protected $fillable = ['product_id', 'merchant_product_id', 'user_id', 'title', 'note'];
+    protected $fillable = ['catalog_item_id', 'merchant_item_id', 'user_id', 'title', 'note'];
 
     public function user()
     {
@@ -18,21 +18,18 @@ class Report extends Model
 		});
     }
 
-    public function product()
+    public function catalogItem()
     {
-    	return $this->belongsTo('App\Models\Product')->withDefault(function ($data) {
+        return $this->belongsTo('App\Models\CatalogItem', 'catalog_item_id')->withDefault(function ($data) {
 			foreach($data->getFillable() as $dt){
 				$data[$dt] = __('Deleted');
 			}
 		});
     }
 
-    /**
-     * السجل التجاري المرتبط بالبلاغ
-     */
-    public function merchantProduct()
+    public function merchantItem()
     {
-        return $this->belongsTo('App\Models\MerchantProduct')->withDefault();
+        return $this->belongsTo('App\Models\MerchantItem', 'merchant_item_id')->withDefault();
     }
 
 }

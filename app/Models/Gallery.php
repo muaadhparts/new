@@ -6,15 +6,15 @@ use Illuminate\Database\Eloquent\Model;
 
 class Gallery extends Model
 {
-    protected $fillable = ['product_id', 'user_id', 'photo'];
+    protected $fillable = ['catalog_item_id', 'user_id', 'photo'];
     public $timestamps = false;
 
     /**
-     * Get the product that owns this gallery image
+     * Get the catalog item that owns this gallery image
      */
-    public function product()
+    public function catalogItem()
     {
-        return $this->belongsTo(Product::class);
+        return $this->belongsTo(CatalogItem::class, 'catalog_item_id');
     }
 
     /**
@@ -26,18 +26,26 @@ class Gallery extends Model
     }
 
     /**
-     * Scope: Filter by vendor
+     * Scope: Filter by merchant
      */
-    public function scopeForVendor($query, $userId)
+    public function scopeForMerchant($query, $userId)
     {
         return $query->where('user_id', $userId);
     }
 
     /**
-     * Scope: Filter by product
+     * @deprecated Use scopeForMerchant() instead
      */
-    public function scopeForProduct($query, $productId)
+    public function scopeForVendor($query, $userId)
     {
-        return $query->where('product_id', $productId);
+        return $this->scopeForMerchant($query, $userId);
+    }
+
+    /**
+     * Scope: Filter by catalog item
+     */
+    public function scopeForCatalogItem($query, $catalogItemId)
+    {
+        return $query->where('catalog_item_id', $catalogItemId);
     }
 }

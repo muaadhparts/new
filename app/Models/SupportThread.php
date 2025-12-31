@@ -18,7 +18,7 @@ class SupportThread extends Model
         'user_id',
         'message',
         'type',
-        'order_number',
+        'purchase_number',
     ];
 
     /**
@@ -50,7 +50,7 @@ class SupportThread extends Model
      */
     public function notifications()
     {
-        return $this->hasMany(UserNotification::class, 'conversation1_id');
+        return $this->hasMany(UserCatalogEvent::class, 'conversation1_id');
     }
 
     /**

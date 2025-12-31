@@ -2,7 +2,7 @@
 
 namespace App\Http\Middleware;
 
-use App\Models\Generalsetting;
+use App\Models\Muaadhsetting;
 use Closure;
 use Illuminate\Support\Facades\DB;
 
@@ -12,8 +12,8 @@ class MaintenanceMode
 
     {
 
-        $gs = cache()->remember('generalsettings', now()->addDay(), function () {
-            return DB::table('generalsettings')->first();
+        $gs = cache()->remember('muaadhsettings', now()->addDay(), function () {
+            return DB::table('muaadhsettings')->first();
         });
 
 

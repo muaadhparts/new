@@ -1026,7 +1026,7 @@ table.dataTable thead .sorting_desc_disabled::after {
 }
 /*Star Rating End*/
 
-.ratings {
+.review-stars {
     position: relative;
     vertical-align: middle;
     display: inline-block;

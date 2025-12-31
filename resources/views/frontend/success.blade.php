@@ -64,7 +64,7 @@
                     @endif
                 </div>
                 <div class=" success-invoice-body wow-replaced" data-wow-delay=".1s">
-                    <h4>@lang('Order#') {{ $order->order_number }}</h4>
+                    <h4>@lang('Order#') {{ $order->purchase_number }}</h4>
                     <p>@lang('Order Date') {{ date('d-M-Y', strtotime($order->created_at)) }}</p>
                 </div>
                 <div class="row order-details-area wow-replaced" data-wow-delay=".1s">

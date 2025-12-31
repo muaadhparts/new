@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\{
     Models\Seotool,
-    Models\ProductClick
+    Models\CatalogItemClick
 };
 use Illuminate\Http\Request;
 use Carbon\Carbon;
@@ -47,13 +47,13 @@ class SeoToolController extends AdminBaseController
     {
         $expDate = Carbon::now()->subDays($id);
 
-        // Group by merchant_product_id for vendor-specific tracking
-        $productss = ProductClick::with(['product.brand', 'product.category', 'merchantProduct.user', 'merchantProduct.qualityBrand'])
+        // Group by merchant_item_id for vendor-specific tracking
+        $productss = CatalogItemClick::with(['catalogItem.brand', 'catalogItem.category', 'merchantItem.user', 'merchantItem.qualityBrand'])
             ->whereDate('date', '>', $expDate)
             ->get()
             ->groupBy(function ($item) {
-                // Group by merchant_product_id if available, otherwise by product_id
-                return $item->merchant_product_id ?? 'product_' . $item->product_id;
+                // Group by merchant_item_id if available, otherwise by catalog_item_id
+                return $item->merchant_item_id ?? 'catalog_item_' . $item->catalog_item_id;
             });
 
         $val = $id;

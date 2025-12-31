@@ -15,7 +15,7 @@ use Mollie\Laravel\Facades\Mollie;
 use Illuminate\Support\Str;
 
 use Session;
-use OrderHelper;
+use PurchaseHelper;
 use Carbon\Carbon;
 
 class MollieController extends SubscriptionBaseController
@@ -116,7 +116,7 @@ public function notify(Request $request){
             $subs = Subscription::findOrFail($order->subscription_id);
 
             $today = Carbon::now()->format('Y-m-d');
-            $user->is_vendor = 2;
+            $user->is_merchant = 2;
             if(!empty($package))
             {
                 if($package->subscription_id == $order->subscription_id)

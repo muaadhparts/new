@@ -14,9 +14,20 @@ class Childcategory extends Model
     	return $this->belongsTo('App\Models\Subcategory')->withDefault();
     }
 
+    /**
+     * @deprecated Use catalogItems() instead
+     */
     public function products()
     {
-        return $this->hasMany('App\Models\Product');
+        return $this->hasMany('App\Models\CatalogItem');
+    }
+
+    /**
+     * Catalog items for this childcategory
+     */
+    public function catalogItems()
+    {
+        return $this->hasMany('App\Models\CatalogItem');
     }
  
 

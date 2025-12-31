@@ -1,27 +1,27 @@
 <?php
 namespace App\Http\Controllers\Api\Front;
 
-use App\Models\MerchantProduct;
-// // dd('use MerchantProduct injected'); // اختباري
+use App\Models\MerchantItem;
+// // dd('use MerchantItem injected'); // اختباري
 use App\Classes\MuaadhMailer;
-use App\Helpers\OrderHelper;
+use App\Helpers\PurchaseHelper;
 use App\Helpers\PriceHelper;
 use App\Http\Controllers\Controller;
-use App\Http\Resources\OrderDetailsResource;
+use App\Http\Resources\PurchaseDetailsResource;
 use App\Models\Cart;
 use App\Models\Country;
 use App\Models\DiscountCode;
 use App\Models\Currency;
-use App\Models\Generalsetting;
-use App\Models\Order;
-use App\Models\OrderTrack;
+use App\Models\Muaadhsetting;
+use App\Models\Purchase;
+use App\Models\PurchaseTimeline;
 use App\Models\Package;
 use App\Models\Pagesetting;
-use App\Models\Product;
+use App\Models\CatalogItem;
 use App\Models\Reward;
 use App\Models\Shipping;
 use App\Models\User;
-use App\Models\VendorOrder;
+use App\Models\MerchantPurchase;
 use Auth;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -69,7 +69,7 @@ class CheckoutController extends Controller
 
             $cart = new Cart($new_cart);
 
-            $gs = Generalsetting::find(1);
+            $gs = Muaadhsetting::find(1);
 
             $currency_code = $input['currency_code'] ?? null;
             if (!empty($currency_code)) {
@@ -82,7 +82,7 @@ class CheckoutController extends Controller
             }
 
             // تحقق رخص (لا تُنقص هنا)
-            OrderHelper::license_check($cart);
+            PurchaseHelper::license_check($cart);
 
             // حفظ نسخة خفيفة من السلة داخل الطلب
             $t_cart = new Cart($cart);
@@ -94,7 +94,7 @@ class CheckoutController extends Controller
             $new_cart_json = json_encode($cart_payload);
 
             // أفلييت
-            $temp_affilate_users = OrderHelper::product_affilate_check($cart);
+            $temp_affilate_users = PurchaseHelper::product_affilate_check($cart);
             $affilate_users = $temp_affilate_users == null ? null : json_encode($temp_affilate_users);
 
             // إنقاص رخص MP (بدل products) وتعيين الترخيص بالسلة
@@ -105,7 +105,7 @@ class CheckoutController extends Controller
                         continue;
                     }
 
-                    $mp = MerchantProduct::where('product_id', $prod['item']['id'])
+                    $mp = MerchantItem::where('catalog_item_id', $prod['item']['id'])
                         ->where('user_id', $vendorId)
                         ->first();
 
@@ -179,8 +179,8 @@ class CheckoutController extends Controller
                 unset($input['shipping'], $input['packeging']);
             }
 
-            // إنشاء الطلب
-            $order = new Order;
+            // إنشاء الطلب (Purchase)
+            $purchase = new Purchase;
 
             $input['user_id']        = $request->user_id ? $request->user_id : null;
             $input['cart']           = $new_cart_json;
@@ -189,7 +189,7 @@ class CheckoutController extends Controller
             $input['currency_sign']  = $curr->sign;
             $input['currency_value'] = $curr->value;
             $input['pay_amount']     = $orderTotal / $curr->value;
-            $input['order_number']   = Str::random(4) . time();
+            $input['purchase_number']   = Str::random(4) . time();
             $input['wallet_price']   = ($request->wallet_price ?? 0) / $curr->value;
 
             // Tax location is now just city or country name (from frontend)
@@ -212,23 +212,23 @@ class CheckoutController extends Controller
                     $sub = $sub - $t_sub;
                 }
                 if ($sub > 0) {
-                    $user = OrderHelper::affilate_check(Session::get('affilate'), $sub, $input['dp']);
+                    $user = PurchaseHelper::affilate_check(Session::get('affilate'), $sub, $input['dp']);
                     $input['affilate_user']   = Session::get('affilate');
                     $input['affilate_charge'] = $sub;
                 }
             }
 
-            $order->fill($input)->save();
+            $purchase->fill($input)->save();
 
-            // Create an OTO shipment (doesn't break the order on failure)
-            $this->createOtoShipments($order, $input);
+            // Create an OTO shipment (doesn't break the purchase on failure)
+            $this->createOtoShipments($purchase, $input);
 
-            $order->tracks()->create(['title' => 'Pending', 'text' => 'You have successfully placed your order.']);
-            $order->notifications()->create();
+            $purchase->tracks()->create(['title' => 'Pending', 'text' => 'You have successfully placed your purchase.']);
+            $purchase->notifications()->create();
 
             if (Auth::guard('api')->check()) {
                 if ($gs->is_reward == 1) {
-                    $num = $order->pay_amount;
+                    $num = $purchase->pay_amount;
                     $rewards = Reward::get();
                     foreach ($rewards as $i) {
                         $smallest[$i->order_amount] = abs($i->order_amount - $num);
@@ -245,50 +245,50 @@ class CheckoutController extends Controller
 
             if (Auth::guard('api')->check()) {
                 Auth::guard('api')->user()->update([
-                    'balance' => (Auth::guard('api')->user()->balance - $order->wallet_price)
+                    'balance' => (Auth::guard('api')->user()->balance - $purchase->wallet_price)
                 ]);
             }
 
-            // بدّل منطق الخصم: خصم من merchant_products بدل OrderHelper على products
-            // OrderHelper::size_qty_check($cart);
-            // OrderHelper::stock_check($cart);
+            // بدّل منطق الخصم: خصم من merchant_products بدل PurchaseHelper على products
+            // PurchaseHelper::size_qty_check($cart);
+            // PurchaseHelper::stock_check($cart);
             $this->decrementMerchantStockAndSizes($cart);
             // // dd('mp-stock decremented'); // اختباري
 
-            OrderHelper::vendor_order_check($cart, $order);
+            PurchaseHelper::vendor_purchase_check($cart, $purchase);
 
-            if ($order->user_id != 0 && $order->wallet_price != 0) {
-                OrderHelper::add_to_transaction($order, $order->wallet_price); // Store To Transactions
+            if ($purchase->user_id != 0 && $purchase->wallet_price != 0) {
+                PurchaseHelper::add_to_transaction($purchase, $purchase->wallet_price); // Store To Transactions
             }
 
             // Email للمشتري
             $data = [
-                'to'      => $order->customer_email,
+                'to'      => $purchase->customer_email,
                 'type'    => "new_order",
-                'cname'   => $order->customer_name,
+                'cname'   => $purchase->customer_name,
                 'oamount' => "",
                 'aname'   => "",
                 'aemail'  => "",
                 'wtitle'  => "",
-                'onumber' => $order->order_number,
+                'onumber' => $purchase->purchase_number,
             ];
             $mailer = new MuaadhMailer();
-            $mailer->sendAutoOrderMail($data, $order->id);
+            $mailer->sendAutoOrderMail($data, $purchase->id);
 
             // Email للأدمن
             $ps = Pagesetting::find(1);
             $data = [
                 'to'      => $ps->contact_email,
-                'subject' => "New Order Recieved!!",
-                'body'    => "Hello Admin!<br>Your store has received a new order.<br>Order Number is " . $order->order_number . ".Please login to your panel to check. <br>Thank you.",
+                'subject' => "New Purchase Recieved!!",
+                'body'    => "Hello Admin!<br>Your store has received a new purchase.<br>Purchase Number is " . $purchase->purchase_number . ".Please login to your panel to check. <br>Thank you.",
             ];
             $mailer = new MuaadhMailer();
             $mailer->sendCustomMail($data);
 
-            unset($order['cart']);
+            unset($purchase['cart']);
             return response()->json([
                 'status' => true,
-                'data'   => route('payment.checkout') . '?order_number=' . $order->order_number,
+                'data'   => route('payment.checkout') . '?purchase_number=' . $purchase->purchase_number,
                 'error'  => []
             ]);
         } catch (\Exception $e) {
@@ -305,42 +305,42 @@ class CheckoutController extends Controller
     {
         try {
             //--- Logic Section
-            $data = Order::find($id);
+            $purchase = Purchase::find($id);
             $input = $request->all();
 
-            if ($data->status == "completed") {
+            if ($purchase->status == "completed") {
                 // Then Save Without Changing it.
                 $input['status'] = "completed";
-                $data->update($input);
-                return response()->json(['status' => true, 'data' => $data, 'error' => []]);
+                $purchase->update($input);
+                return response()->json(['status' => true, 'data' => $purchase, 'error' => []]);
             } else {
                 if ($input['status'] == "completed") {
 
-                    foreach ($data->vendororders as $vorder) {
+                    foreach ($purchase->vendororders as $vorder) {
                         $uprice = User::find($vorder->user_id);
                         $uprice->current_balance = $uprice->current_balance + $vorder->price;
                         $uprice->update();
                     }
 
-                    if (User::where('id', $data->affilate_user)->exists()) {
-                        $auser = User::where('id', $data->affilate_user)->first();
-                        $auser->affilate_income += $data->affilate_charge;
+                    if (User::where('id', $purchase->affilate_user)->exists()) {
+                        $auser = User::where('id', $purchase->affilate_user)->first();
+                        $auser->affilate_income += $purchase->affilate_charge;
                         $auser->update();
                     }
 
-                    $gs = Generalsetting::find(1);
+                    $gs = Muaadhsetting::find(1);
                     if ($gs->is_smtp == 1) {
                         $maildata = [
-                            'to'      => $data->customer_email,
-                            'subject' => 'Your order ' . $data->order_number . ' is Confirmed!',
-                            'body'    => "Hello " . $data->customer_name . "," . "\n Thank you for shopping with us. We are looking forward to your next visit.",
+                            'to'      => $purchase->customer_email,
+                            'subject' => 'Your purchase ' . $purchase->purchase_number . ' is Confirmed!',
+                            'body'    => "Hello " . $purchase->customer_name . "," . "\n Thank you for shopping with us. We are looking forward to your next visit.",
                         ];
                         $mailer = new MuaadhMailer();
                         $mailer->sendCustomMail($maildata);
                     } else {
-                        $to = $data->customer_email;
-                        $subject = 'Your order ' . $data->order_number . ' is Confirmed!';
-                        $msg = "Hello " . $data->customer_name . "," . "\n Thank you for shopping with us. We are looking forward to your next visit.";
+                        $to = $purchase->customer_email;
+                        $subject = 'Your purchase ' . $purchase->purchase_number . ' is Confirmed!';
+                        $msg = "Hello " . $purchase->customer_name . "," . "\n Thank you for shopping with us. We are looking forward to your next visit.";
                         $headers = "From: " . $gs->from_name . "<" . $gs->from_email . ">";
                         mail($to, $subject, $msg, $headers);
                     }
@@ -348,60 +348,60 @@ class CheckoutController extends Controller
 
                 if ($input['status'] == "declined") {
 
-                    if ($data->user_id != 0) {
-                        if ($data->wallet_price != 0) {
-                            $user = User::find($data->user_id);
+                    if ($purchase->user_id != 0) {
+                        if ($purchase->wallet_price != 0) {
+                            $user = User::find($purchase->user_id);
                             if ($user) {
-                                $user->balance = $user->balance + $data->wallet_price;
+                                $user->balance = $user->balance + $purchase->wallet_price;
                                 $user->save();
                             }
                         }
                     }
 
-                    // استرجاع مخزون/مقاسات MerchantProduct بدل products
-                    $this->restoreMerchantStockAndSizesFromOrder($data);
+                    // استرجاع مخزون/مقاسات MerchantItem بدل products
+                    $this->restoreMerchantStockAndSizesFromPurchase($purchase);
                     // // dd('mp stock restored'); // اختباري
 
-                    $gs = Generalsetting::find(1);
+                    $gs = Muaadhsetting::find(1);
                     if ($gs->is_smtp == 1) {
                         $maildata = [
-                            'to'      => $data->customer_email,
-                            'subject' => 'Your order ' . $data->order_number . ' is Declined!',
-                            'body'    => "Hello " . $data->customer_name . "," . "\n We are sorry for the inconvenience caused. We are looking forward to your next visit.",
+                            'to'      => $purchase->customer_email,
+                            'subject' => 'Your purchase ' . $purchase->purchase_number . ' is Declined!',
+                            'body'    => "Hello " . $purchase->customer_name . "," . "\n We are sorry for the inconvenience caused. We are looking forward to your next visit.",
                         ];
                         $mailer = new MuaadhMailer();
                         $mailer->sendCustomMail($maildata);
                     } else {
-                        $to = $data->customer_email;
-                        $subject = 'Your order ' . $data->order_number . ' is Declined!';
-                        $msg = "Hello " . $data->customer_name . "," . "\n We are sorry for the inconvenience caused. We are looking forward to your next visit.";
+                        $to = $purchase->customer_email;
+                        $subject = 'Your purchase ' . $purchase->purchase_number . ' is Declined!';
+                        $msg = "Hello " . $purchase->customer_name . "," . "\n We are sorry for the inconvenience caused. We are looking forward to your next visit.";
                         $headers = "From: " . $gs->from_name . "<" . $gs->from_email . ">";
                         mail($to, $subject, $msg, $headers);
                     }
                 }
 
-                $data->update($input);
+                $purchase->update($input);
 
                 if ($request->track_text) {
                     $title = ucwords($request->status);
-                    $ck = OrderTrack::where('order_id', '=', $id)->where('title', '=', $title)->first();
+                    $ck = PurchaseTimeline::where('purchase_id', '=', $id)->where('title', '=', $title)->first();
                     if ($ck) {
-                        $ck->order_id = $id;
+                        $ck->purchase_id = $id;
                         $ck->title    = $title;
                         $ck->text     = $request->track_text;
                         $ck->update();
                     } else {
-                        $ot = new OrderTrack;
-                        $ot->order_id = $id;
+                        $ot = new PurchaseTimeline;
+                        $ot->purchase_id = $id;
                         $ot->title    = $title;
                         $ot->text     = $request->track_text;
                         $ot->save();
                     }
                 }
 
-                VendorOrder::where('order_id', '=', $id)->update(['status' => $input['status']]);
+                MerchantPurchase::where('purchase_id', '=', $id)->update(['status' => $input['status']]);
 
-                return response()->json(['status' => true, 'data' => $data, 'error' => []]);
+                return response()->json(['status' => true, 'data' => $purchase, 'error' => []]);
             }
         } catch (\Exception $e) {
             return response()->json(['status' => true, 'data' => [], 'error' => ['message' => $e->getMessage()]]);
@@ -412,12 +412,12 @@ class CheckoutController extends Controller
     public function delete($id)
     {
         try {
-            $data = Order::find($id);
-            if ($data) {
-                $data->delete();
-                return response()->json(['status' => true, 'data' => 'Order Deleted Successfully', 'error' => []]);
+            $purchase = Purchase::find($id);
+            if ($purchase) {
+                $purchase->delete();
+                return response()->json(['status' => true, 'data' => 'Purchase Deleted Successfully', 'error' => []]);
             } else {
-                return response()->json(['status' => false, 'data' => [], 'error' => ['message' => 'Order Not Found']]);
+                return response()->json(['status' => false, 'data' => [], 'error' => ['message' => 'Purchase Not Found']]);
             }
         } catch (\Exception $e) {
             return response()->json(['status' => false, 'data' => [], 'error' => ['message' => $e->getMessage()]]);
@@ -428,10 +428,10 @@ class CheckoutController extends Controller
     public function orderDetails(Request $request)
     {
         try {
-            if ($request->has('order_number')) {
-                $order_number = $request->order_number;
-                $order = Order::where('order_number', $order_number)->firstOrFail();
-                return response()->json(['status' => true, 'data' => new OrderDetailsResource($order), 'error' => []]);
+            if ($request->has('purchase_number')) {
+                $purchase_number = $request->purchase_number;
+                $purchase = Purchase::where('purchase_number', $purchase_number)->firstOrFail();
+                return response()->json(['status' => true, 'data' => new PurchaseDetailsResource($purchase), 'error' => []]);
             }
         } catch (\Exception $e) {
             return response()->json(['status' => false, 'data' => [], 'error' => ['message' => $e->getMessage()]]);
@@ -439,7 +439,7 @@ class CheckoutController extends Controller
     }
 
     /**
-     * إضافة للسلة — Vendor-aware: يعتمد على MerchantProduct فقط
+     * إضافة للسلة — Vendor-aware: يعتمد على MerchantItem فقط
      */
     protected function addtocart($cart, $currency_code, $p_id, $p_qty, $p_size, $p_color, $p_size_qty, $p_size_price, $p_size_key, $p_keys, $p_values, $p_prices, $affilate_user, $vendorId)
     {
@@ -478,8 +478,8 @@ class CheckoutController extends Controller
 
             $size_price = ($size_price / $curr->value);
 
-            // هوية المنتج فقط
-            $prod = Product::where('id', '=', $id)->first([
+            // هوية العنصر فقط
+            $prod = CatalogItem::where('id', '=', $id)->first([
                 'id','slug','name','photo','color','sku','weight','type','file','link','measure','attributes','color_all','color_price'
             ]);
             if (!$prod) {
@@ -492,7 +492,7 @@ class CheckoutController extends Controller
                 return false;
             }
 
-            $mp = MerchantProduct::where('product_id', $prod->id)
+            $mp = MerchantItem::where('catalog_item_id', $prod->id)
                 ->where('user_id', $vendorId)
                 ->where('status', 1)
                 ->first();
@@ -506,7 +506,7 @@ class CheckoutController extends Controller
             $prod->merchant_product_id  = $mp->id;
 
             // سعر أساسي + عمولة + سعر مقاس إن وجد
-            $gs  = Generalsetting::find(1);
+            $gs  = Muaadhsetting::find(1);
             $basePrice = (float)$mp->price;
             $withCommission = $basePrice + (float)$gs->fixed_commission + ($basePrice * (float)$gs->percentage_commission / 100);
 
@@ -617,7 +617,7 @@ class CheckoutController extends Controller
     }
 
     /**
-     * خصم المخزون/المقاس من MerchantProduct بدل Product
+     * خصم المخزون/المقاس من MerchantItem بدل Product
      */
     protected function decrementMerchantStockAndSizes(\App\Models\Cart $cart): void
     {
@@ -634,7 +634,7 @@ class CheckoutController extends Controller
                 continue;
             }
 
-            $mp = MerchantProduct::where('product_id', $productId)
+            $mp = MerchantItem::where('catalog_item_id', $productId)
                 ->where('user_id', $vendorId)
                 ->first();
 
@@ -660,11 +660,11 @@ class CheckoutController extends Controller
     }
 
     /**
-     * استرجاع مخزون/مقاسات MerchantProduct عند رفض الطلب
+     * استرجاع مخزون/مقاسات MerchantItem عند رفض الطلب
      */
-    protected function restoreMerchantStockAndSizesFromOrder(\App\Models\Order $data): void
+    protected function restoreMerchantStockAndSizesFromPurchase(\App\Models\Purchase $purchase): void
     {
-        $cart = unserialize(bzdecompress(utf8_decode($data->cart)));
+        $cart = unserialize(bzdecompress(utf8_decode($purchase->cart)));
         if (!$cart || empty($cart->items)) {
             return;
         }
@@ -680,7 +680,7 @@ class CheckoutController extends Controller
                 continue;
             }
 
-            $mp = MerchantProduct::where('product_id', $productId)
+            $mp = MerchantItem::where('catalog_item_id', $productId)
                 ->where('user_id', $vendorId)
                 ->first();
 
@@ -706,12 +706,12 @@ class CheckoutController extends Controller
     }
 
     /**
-     * Create an OTO shipment(s) after the order is successfully created.
+     * Create an OTO shipment(s) after the purchase is successfully created.
      * Store the results in vendor_shipping_id as JSON, and update the shipping/shipping_title for the view.
      *
      * يستخدم TryotoService الموحد لإدارة التوكن وإنشاء الشحنات
      */
-    private function createOtoShipments(\App\Models\Order $order, array $input): void
+    private function createOtoShipments(\App\Models\Purchase $purchase, array $input): void
     {
         // Check shipping selection — supports array (multi-vendor) or single-value scenarios
         $shippingInput = $input['shipping'] ?? null;
@@ -728,10 +728,10 @@ class CheckoutController extends Controller
             }
             [$deliveryOptionId, $company, $price] = explode('#', $value);
 
-            // ✅ Use vendor-specific credentials for each vendor
+            // Use vendor-specific credentials for each vendor
             $tryotoService = app(\App\Services\TryotoService::class)->forVendor((int)$vendorId);
             $result = $tryotoService->createShipment(
-                $order,
+                $purchase,
                 (int)$vendorId ?: 0,
                 $deliveryOptionId,
                 $company,
@@ -750,7 +750,7 @@ class CheckoutController extends Controller
                 ];
             } else {
                 Log::error('Tryoto createShipment failed via TryotoService', [
-                    'order_id' => $order->id,
+                    'purchase_id' => $purchase->id,
                     'vendor_id' => $vendorId,
                     'error' => $result['error'] ?? 'Unknown error'
                 ]);
@@ -759,18 +759,18 @@ class CheckoutController extends Controller
 
         if ($otoPayloads) {
             // 1) Store the details in vendor_shipping_id as JSON text (no migration required)
-            $order->vendor_shipping_id = json_encode(['oto' => $otoPayloads], JSON_UNESCAPED_UNICODE);
+            $purchase->vendor_shipping_id = json_encode(['oto' => $otoPayloads], JSON_UNESCAPED_UNICODE);
 
             // 2) Quick display and explanation
             $first = $otoPayloads[0];
-            $order->shipping_title = 'Tryoto - ' . ($first['company'] ?? 'N/A') . ' (Tracking: ' . ($first['trackingNumber'] ?? 'N/A') . ')';
+            $purchase->shipping_title = 'Tryoto - ' . ($first['company'] ?? 'N/A') . ' (Tracking: ' . ($first['trackingNumber'] ?? 'N/A') . ')';
 
             // إذا كانت shipping فارغة أو غير محددة، نضع 'shipto' كقيمة افتراضية
-            if (empty($order->shipping) || !in_array($order->shipping, ['shipto', 'pickup'])) {
-                $order->shipping = 'shipto';
+            if (empty($purchase->shipping) || !in_array($purchase->shipping, ['shipto', 'pickup'])) {
+                $purchase->shipping = 'shipto';
             }
 
-            $order->save();
+            $purchase->save();
         }
     }
 }

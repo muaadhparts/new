@@ -34,8 +34,8 @@ class FullRefreshStockCommand extends Command
             Artisan::call('stock:aggregate');
             $this->line(Artisan::output());
 
-            $this->info("🛠 Updating products from stock_all...");
-            Artisan::call('products:update-stock');
+            $this->info("🛠 Updating catalog items from stock_all...");
+            Artisan::call('catalog-items:update-stock');
             $this->line(Artisan::output());
 
             $this->info("🎉 Full refresh + product update completed successfully.");

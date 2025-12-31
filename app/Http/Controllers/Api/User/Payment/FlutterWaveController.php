@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Api\User\Payment;
 
 use App\Models\Deposit;
 use App\Models\Currency;
-use App\Models\Generalsetting;
+use App\Models\Muaadhsetting;
 use App\Models\User;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
@@ -38,7 +38,7 @@ class FlutterWaveController extends Controller
         $deposit_number = $request->deposit_number;
         $order = Deposit::where('deposit_number',$deposit_number)->first();
         $curr = Currency::where('name','=',$order->currency_code)->first();
-        $settings = Generalsetting::findOrFail(1);
+        $settings = Muaadhsetting::findOrFail(1);
         $item_amount = $order->amount * $order->currency_value;
 
    

@@ -19,14 +19,22 @@ class DeliveryRider extends Model
         return $this->belongsTo(Rider::class);
     }
 
-    public function order()
+    public function purchase()
     {
-        return $this->belongsTo(Order::class);
+        return $this->belongsTo(Purchase::class, 'purchase_id');
     }
 
-    public function vendor()
+    public function merchant()
     {
         return $this->belongsTo(User::class);
+    }
+
+    /**
+     * @deprecated Use merchant() instead
+     */
+    public function vendor()
+    {
+        return $this->merchant();
     }
 
     public function pickup()

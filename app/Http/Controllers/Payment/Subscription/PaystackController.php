@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Payment\Subscription;
 use App\{
     Models\Subscription,
     Classes\MuaadhMailer,
-    Models\Generalsetting,
+    Models\Muaadhsetting,
     Models\UserSubscription
 };
 
@@ -26,10 +26,10 @@ class PaystackController extends SubscriptionBaseController
         $user = $this->user;
         $package = $user->subscribes()->where('status', 1)->orderBy('id', 'desc')->first();
         $subs = Subscription::findOrFail($request->subs_id);
-        $settings = Generalsetting::findOrFail(1);
+        $settings = Muaadhsetting::findOrFail(1);
         $today = Carbon::now()->format('Y-m-d');
         $input = $request->all();
-        $user->is_vendor = 2;
+        $user->is_merchant = 2;
         if (!empty($package)) {
             if ($package->subscription_id == $request->subs_id) {
                 $newday = strtotime($today);

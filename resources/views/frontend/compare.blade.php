@@ -242,7 +242,7 @@
                     <h2 class="breadcrumb-title">@lang('Compare')</h2>
                     <ul class="bread-menu">
                         <li><a href="{{ route('front.index') }}">@lang('Home')</a></li>
-                        <li><a href="{{ route('product.compare') }}">@lang('Compare')</a></li>
+                        <li><a href="{{ route('catalog-item.compare') }}">@lang('Compare')</a></li>
                     </ul>
                 </div>
             </div>
@@ -255,22 +255,22 @@
                 @php
                     $processedProducts = [];
                     foreach ($products as $mpId => $product) {
-                        $merchantProduct = $product['merchant_product'] ?? null;
+                        $merchantItem = $product['merchant_item'] ?? $product['merchant_product'] ?? null;
                         $productItem = $product['item'];
 
-                        if ($merchantProduct) {
+                        if ($merchantItem) {
                             $compareProductUrl = $productItem->slug
-                                ? route('front.product', ['slug' => $productItem->slug, 'vendor_id' => $merchantProduct->user_id, 'merchant_product_id' => $merchantProduct->id])
+                                ? route('front.catalog-item', ['slug' => $productItem->slug, 'vendor_id' => $merchantItem->user_id, 'merchant_item_id' => $merchantItem->id])
                                 : '#';
                         } else {
-                            $compareProductUrl = $productItem->slug ? route('front.product.legacy', $productItem->slug) : '#';
+                            $compareProductUrl = $productItem->slug ? route('front.catalog-item.legacy', $productItem->slug) : '#';
                         }
 
                         $processedProducts[$mpId] = [
                             'item' => $productItem,
-                            'merchant_product' => $merchantProduct,
+                            'merchant_item' => $merchantItem,
                             'url' => $compareProductUrl,
-                            'merchant_product_id' => $mpId,
+                            'merchant_item_id' => $mpId,
                         ];
                     }
                 @endphp
@@ -313,8 +313,8 @@
                             @foreach ($processedProducts as $mpId => $product)
                                 <td>
                                     <span class="product-price">
-                                        @if ($product['merchant_product'])
-                                            {{ PriceHelper::showPrice($product['merchant_product']->price) }}
+                                        @if ($product['merchant_item'])
+                                            {{ PriceHelper::showPrice($product['merchant_item']->price) }}
                                         @else
                                             {{ $product['item']->showPrice() }}
                                         @endif
@@ -328,7 +328,7 @@
                             <td><h6 class="td-title">@lang('Vendor')</h6></td>
                             @foreach ($processedProducts as $mpId => $product)
                                 <td>
-                                    <span class="table-value">{{ $product['merchant_product'] && $product['merchant_product']->user ? getLocalizedShopName($product['merchant_product']->user) : __('N/A') }}</span>
+                                    <span class="table-value">{{ $product['merchant_item'] && $product['merchant_item']->user ? getLocalizedShopName($product['merchant_item']->user) : __('N/A') }}</span>
                                 </td>
                             @endforeach
                         </tr>
@@ -348,7 +348,7 @@
                             <td><h6 class="td-title">@lang('Quality Brand')</h6></td>
                             @foreach ($processedProducts as $mpId => $product)
                                 <td>
-                                    <span class="table-value">{{ $product['merchant_product'] && $product['merchant_product']->qualityBrand ? $product['merchant_product']->qualityBrand->display_name : __('N/A') }}</span>
+                                    <span class="table-value">{{ $product['merchant_item'] && $product['merchant_item']->qualityBrand ? $product['merchant_item']->qualityBrand->display_name : __('N/A') }}</span>
                                 </td>
                             @endforeach
                         </tr>
@@ -368,7 +368,7 @@
                             <td><h6 class="td-title">@lang('Stock')</h6></td>
                             @foreach ($processedProducts as $mpId => $product)
                                 @php
-                                    $compareStock = $product['merchant_product'] ? $product['merchant_product']->stock : null;
+                                    $compareStock = $product['merchant_item'] ? $product['merchant_item']->stock : null;
                                     if ($compareStock === null || $compareStock === '') {
                                         $stockText = __('Unlimited');
                                         $stockClass = 'stock-unlimited';
@@ -389,11 +389,11 @@
                             <td><h6 class="td-title">@lang('Rating')</h6></td>
                             @foreach ($processedProducts as $mpId => $product)
                                 @php
-                                    $productWithRatings = App\Models\Product::withCount('ratings')
-                                        ->withAvg('ratings', 'rating')
+                                    $productWithRatings = App\Models\CatalogItem::withCount('catalogReviews')
+                                        ->withAvg('catalogReviews', 'rating')
                                         ->find($product['item']->id);
-                                    $avgRating = $productWithRatings->ratings_avg_rating ?? 0;
-                                    $ratingCount = $productWithRatings->ratings_count ?? 0;
+                                    $avgRating = $productWithRatings->catalog_reviews_avg_rating ?? 0;
+                                    $ratingCount = $productWithRatings->catalog_reviews_count ?? 0;
                                 @endphp
                                 <td>
                                     <span class="table-value">
@@ -423,9 +423,9 @@
                             @foreach ($processedProducts as $mpId => $product)
                                 <td>
                                     @php
-                                        $mp = $product['merchant_product'];
+                                        $mp = $product['merchant_item'];
                                     @endphp
-                                    {{-- product_type and affiliate_link are now on merchant_products --}}
+                                    {{-- product_type and affiliate_link are now on merchant_items --}}
                                     @if ($mp && $mp->product_type == 'affiliate' && $mp->affiliate_link)
                                         <a href="{{ $mp->affiliate_link }}" target="_blank" class="btn-cart">
                                             @lang('Buy Now')
@@ -440,10 +440,10 @@
                                             <span class="btn-cart disabled">@lang('Out Of Stock')</span>
                                         @else
                                             @if ($product['item']->type != 'Listing' && $mp)
-                                                {{-- UNIFIED: Use m-cart-add with merchant_product_id --}}
+                                                {{-- UNIFIED: Use m-cart-add with merchant_item_id --}}
                                                 <button type="button"
                                                     class="m-cart-add btn-cart"
-                                                    data-merchant-product-id="{{ $mp->id }}"
+                                                    data-merchant-item-id="{{ $mp->id }}"
                                                     data-vendor-id="{{ $mp->user_id }}"
                                                     data-min-qty="{{ max(1, (int)($mp->minimum_qty ?? 1)) }}">
                                                     <i class="fas fa-shopping-cart"></i> @lang('Add To Cart')
@@ -460,9 +460,9 @@
                             <td><h6 class="td-title">@lang('Shipping')</h6></td>
                             @foreach ($processedProducts as $mpId => $product)
                                 <td>
-                                    @if ($product['item']->type == 'Physical' && $product['merchant_product'])
+                                    @if ($product['item']->type == 'Physical' && $product['merchant_item'])
                                         <x-shipping-quote-button
-                                            :vendor-id="$product['merchant_product']->user_id"
+                                            :vendor-id="$product['merchant_item']->user_id"
                                             :product-name="getLocalizedProductName($product['item'])"
                                         />
                                     @else
@@ -477,7 +477,7 @@
                             <td><h6 class="td-title">@lang('Remove')</h6></td>
                             @foreach ($processedProducts as $mpId => $product)
                                 <td>
-                                    <a href="{{ route('product.compare.remove', $mpId) }}" class="btn-remove">
+                                    <a href="{{ route('catalog-item.compare.remove', $mpId) }}" class="btn-remove">
                                         <i class="fas fa-trash-alt"></i> @lang('Remove')
                                     </a>
                                 </td>

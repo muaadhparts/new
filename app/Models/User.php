@@ -4,31 +4,40 @@ namespace App\Models;
 
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Tymon\JWTAuth\Contracts\JWTSubject;
-// Import MerchantProduct model to expose vendor listings via a relationship
-use App\Models\MerchantProduct;
+// Import MerchantItem model to expose vendor listings via a relationship
+use App\Models\MerchantItem;
+use App\Models\CatalogItem;
 use App\Models\SupportThread;
 use App\Models\Favorite;
 
 class User extends Authenticatable implements JWTSubject
 {
 
-    protected $fillable = ['name', 'photo', 'zip', 'city_id', 'country', 'address', 'latitude', 'longitude', 'phone', 'fax', 'email', 'password', 'affilate_code', 'verification_link', 'shop_name', 'owner_name', 'shop_number', 'shop_address', 'reg_number', 'shop_message', 'is_vendor', 'shop_details', 'shop_image', 'shipping_cost', 'date', 'mail_sent', 'email_verified', 'email_token', 'reward', 'warehouse_city', 'warehouse_address', 'warehouse_lat', 'warehouse_lng', 'current_balance'];
+    protected $fillable = ['name', 'photo', 'zip', 'city_id', 'country', 'address', 'latitude', 'longitude', 'phone', 'fax', 'email', 'password', 'affilate_code', 'verification_link', 'shop_name', 'owner_name', 'shop_number', 'shop_address', 'reg_number', 'shop_message', 'is_merchant', 'shop_details', 'shop_image', 'shipping_cost', 'date', 'mail_sent', 'email_verified', 'email_token', 'reward', 'warehouse_city', 'warehouse_address', 'warehouse_lat', 'warehouse_lng', 'current_balance'];
 
     protected $hidden = [
         'password', 'remember_token'
     ];
 
-    public function IsVendor()
+    public function IsMerchant()
     {
-        if ($this->is_vendor == 2) {
+        if ($this->is_merchant == 2) {
             return true;
         }
         return false;
     }
 
-    public function orders()
+    /**
+     * @deprecated Use IsMerchant() instead
+     */
+    public function IsVendor()
     {
-        return $this->hasMany('App\Models\Order');
+        return $this->IsMerchant();
+    }
+
+    public function purchases()
+    {
+        return $this->hasMany('App\Models\Purchase');
     }
 
     public function comments()
@@ -41,9 +50,9 @@ class User extends Authenticatable implements JWTSubject
         return $this->hasMany('App\Models\Reply');
     }
 
-    public function ratings()
+    public function catalogReviews()
     {
-        return $this->hasMany('App\Models\Rating');
+        return $this->hasMany('App\Models\CatalogReview');
     }
 
     public function favorites()
@@ -77,9 +86,9 @@ class User extends Authenticatable implements JWTSubject
         return $this->supportThreads();
     }
 
-    public function notifications()
+    public function catalogEvents()
     {
-        return $this->hasMany('App\Models\Notification');
+        return $this->hasMany('App\Models\CatalogEvent');
     }
 
     public function deposits()
@@ -96,34 +105,35 @@ class User extends Authenticatable implements JWTSubject
 
     /**
      * Legacy relationship - DEPRECATED
-     * Note: products table no longer has user_id column
-     * Use merchantProducts() or vendorProducts() instead
+     * Note: catalog_items table no longer has user_id column
+     * Use merchantItems() or catalogItems() instead
      *
-     * @deprecated Use merchantProducts() for direct merchant listings
+     * @deprecated Use merchantItems() for direct merchant listings
      * @return \Illuminate\Database\Eloquent\Relations\HasMany
      */
     public function products()
     {
         // Return empty collection to prevent errors
         // This method is kept for backward compatibility only
-        return $this->hasMany('App\Models\Product')->whereRaw('1 = 0');
+        return $this->hasMany('App\Models\CatalogItem')->whereRaw('1 = 0');
     }
 
     /**
-     * Get all unique products that this vendor sells via merchantProducts
-     * This returns Product models, not MerchantProduct models
+     * Get all unique catalog items that this vendor sells via merchantItems
+     * This returns CatalogItem models, not MerchantItem models
      *
+     * @deprecated Use catalogItems() instead
      * @return \Illuminate\Database\Eloquent\Relations\HasManyThrough
      */
     public function vendorProducts()
     {
         return $this->hasManyThrough(
-            'App\Models\Product',
-            'App\Models\MerchantProduct',
-            'user_id',        // Foreign key on merchant_products table
-            'id',             // Foreign key on products table
-            'id',             // Local key on users table
-            'product_id'      // Local key on merchant_products table
+            'App\Models\CatalogItem',
+            'App\Models\MerchantItem',
+            'user_id',            // Foreign key on merchant_items table
+            'id',                 // Foreign key on catalog_items table
+            'id',                 // Local key on users table
+            'catalog_item_id'     // Local key on merchant_items table
         );
     }
 
@@ -144,7 +154,7 @@ class User extends Authenticatable implements JWTSubject
 
     public function notivications()
     {
-        return $this->hasMany('App\Models\UserNotification', 'user_id');
+        return $this->hasMany('App\Models\UserCatalogEvent', 'user_id');
     }
 
     public function subscribes()
@@ -157,9 +167,9 @@ class User extends Authenticatable implements JWTSubject
         return $this->hasMany('App\Models\FavoriteSeller');
     }
 
-    public function vendororders()
+    public function merchantPurchases()
     {
-        return $this->hasMany('App\Models\VendorOrder', 'user_id');
+        return $this->hasMany('App\Models\MerchantPurchase', 'user_id');
     }
 
     public function shippings()
@@ -214,10 +224,10 @@ class User extends Authenticatable implements JWTSubject
     public function favoriteCount()
     {
         return Favorite::where('user_id', '=', $this->id)
-            ->whereHas('product', function ($productQuery) {
-                $productQuery->whereIn('id', function($subQuery) {
-                    $subQuery->select('product_id')
-                        ->from('merchant_products')
+            ->whereHas('catalogItem', function ($catalogItemQuery) {
+                $catalogItemQuery->whereIn('id', function($subQuery) {
+                    $subQuery->select('catalog_item_id')
+                        ->from('merchant_items')
                         ->where('status', '=', 1);
                 });
             })
@@ -225,13 +235,39 @@ class User extends Authenticatable implements JWTSubject
     }
 
     /**
-     * Get all merchant product entries belonging to this user (vendor).
+     * Get all merchant item entries belonging to this user (vendor).
      *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function merchantItems()
+    {
+        return $this->hasMany(MerchantItem::class, 'user_id');
+    }
+
+    /**
+     * @deprecated Use merchantItems() instead
      * @return \Illuminate\Database\Eloquent\Relations\HasMany
      */
     public function merchantProducts()
     {
-        return $this->hasMany(MerchantProduct::class, 'user_id');
+        return $this->merchantItems();
+    }
+
+    /**
+     * Get all unique catalog items that this vendor sells via merchantItems
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasManyThrough
+     */
+    public function catalogItems()
+    {
+        return $this->hasManyThrough(
+            CatalogItem::class,
+            MerchantItem::class,
+            'user_id',            // Foreign key on merchant_items table
+            'id',                 // Foreign key on catalog_items table
+            'id',                 // Local key on users table
+            'catalog_item_id'     // Local key on merchant_items table
+        );
     }
 
     public function checkVerification()

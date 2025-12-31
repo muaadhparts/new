@@ -97,7 +97,7 @@
                         @endif
                         {{-- Using cached $footerPages from AppServiceProvider --}}
                         @foreach($footerPages as $data)
-                            <li><a href="{{ route('front.vendor', $data->slug) }}">{{ $data->title }}</a></li>
+                            <li><a href="{{ route('front.merchant', $data->slug) }}">{{ $data->title }}</a></li>
                         @endforeach
                         @if($ps->contact == 1)
                             <li>

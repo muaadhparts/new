@@ -111,7 +111,7 @@
 								<li class="bell-area">
 									<a id="notf_conv" class="dropdown-toggle-1" href="javascript:;">
 										<i class="far fa-envelope"></i>
-										<span id="conv-notf-count">{{ App\Models\Notification::countConversation()
+										<span id="conv-notf-count">{{ App\Models\CatalogEvent::countConversation()
 											}}</span>
 									</a>
 									<div class="dropdown-menu">
@@ -124,7 +124,7 @@
 								<li class="bell-area">
 									<a id="notf_product" class="dropdown-toggle-1" href="javascript:;">
 										<i class="icofont-cart"></i>
-										<span id="product-notf-count">{{ App\Models\Notification::countProduct()
+										<span id="product-notf-count">{{ App\Models\CatalogEvent::countCatalogItem()
 											}}</span>
 									</a>
 									<div class="dropdown-menu">
@@ -137,7 +137,7 @@
 								<li class="bell-area">
 									<a id="notf_user" class="dropdown-toggle-1" href="javascript:;">
 										<i class="far fa-user"></i>
-										<span id="user-notf-count">{{ App\Models\Notification::countRegistration()
+										<span id="user-notf-count">{{ App\Models\CatalogEvent::countRegistration()
 											}}</span>
 									</a>
 									<div class="dropdown-menu">
@@ -150,7 +150,7 @@
 								<li class="bell-area">
 									<a id="notf_order" class="dropdown-toggle-1" href="javascript:;">
 										<i class="far fa-newspaper"></i>
-										<span id="order-notf-count">{{ App\Models\Notification::countOrder() }}</span>
+										<span id="order-notf-count">{{ App\Models\CatalogEvent::countPurchase() }}</span>
 									</a>
 									<div class="dropdown-menu">
 										<div class="dropdownmenu-wrapper" data-href="{{ route('order-notf-show') }}"

@@ -1,6 +1,6 @@
 CREATE TABLE `galleries` (
   `id` int unsigned NOT NULL AUTO_INCREMENT,
-  `product_id` int unsigned NOT NULL,
+  `catalog_item_id` int unsigned NOT NULL,
   `user_id` int unsigned NOT NULL,
   `photo` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   PRIMARY KEY (`id`)

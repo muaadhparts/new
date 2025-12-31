@@ -143,12 +143,12 @@ class PageSettingController extends AdminBaseController
         $data = Pagesetting::findOrFail(1);
 
         // Get current deal products (is_discount = 1 and valid discount_date)
-        $dealProducts = \App\Models\MerchantProduct::where('is_discount', 1)
+        $dealProducts = \App\Models\MerchantItem::where('is_discount', 1)
             ->where('discount_date', '>=', date('Y-m-d'))
-            ->whereHas('user', fn($q) => $q->where('is_vendor', 2))
+            ->whereHas('user', fn($q) => $q->where('is_merchant', 2))
             ->with([
-                'product:id,name,label_en,label_ar,slug,photo,sku,brand_id',
-                'product.brand', // Product brand (Toyota, Nissan, etc.)
+                'catalogItem:id,name,label_en,label_ar,slug,photo,sku,brand_id',
+                'catalogItem.brand', // CatalogItem brand (Toyota, Nissan, etc.)
                 'user:id,shop_name,shop_name_ar',
                 'qualityBrand' // Quality brand (OEM, Aftermarket, etc.)
             ])
@@ -165,14 +165,14 @@ class PageSettingController extends AdminBaseController
     {
         try {
             $request->validate([
-                'merchant_product_id' => 'required|exists:merchant_products,id',
+                'merchant_item_id' => 'required|exists:merchant_items,id',
                 'is_discount' => 'required',
                 'discount_date' => 'nullable|date',
             ]);
 
             $isDiscount = filter_var($request->is_discount, FILTER_VALIDATE_BOOLEAN);
 
-            $mp = \App\Models\MerchantProduct::findOrFail($request->merchant_product_id);
+            $mp = \App\Models\MerchantItem::findOrFail($request->merchant_item_id);
             $mp->is_discount = $isDiscount ? 1 : 0;
             $mp->discount_date = $isDiscount ? ($request->discount_date ?? now()->addDays(7)->format('Y-m-d')) : null;
             $mp->save();
@@ -200,71 +200,71 @@ class PageSettingController extends AdminBaseController
         $search = $request->get('q', '');
 
         // Search products first
-        $products = \App\Models\Product::where(function($q) use ($search) {
+        $catalogItems = \App\Models\CatalogItem::where(function($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
                   ->orWhere('label_en', 'like', "%{$search}%")
                   ->orWhere('label_ar', 'like', "%{$search}%")
                   ->orWhere('sku', 'like', "%{$search}%");
             })
-            ->whereHas('merchantProducts', function($q) {
+            ->whereHas('merchantItems', function($q) {
                 $q->where('status', 1)
-                  ->whereHas('user', fn($u) => $u->where('is_vendor', 2));
+                  ->whereHas('user', fn($u) => $u->where('is_merchant', 2));
             })
-            ->withCount(['merchantProducts' => function($q) {
+            ->withCount(['merchantItems' => function($q) {
                 $q->where('status', 1)
-                  ->whereHas('user', fn($u) => $u->where('is_vendor', 2));
+                  ->whereHas('user', fn($u) => $u->where('is_merchant', 2));
             }])
             ->limit(20)
             ->get()
-            ->map(function($product) {
+            ->map(function($catalogItem) {
                 // Get localized name
                 $name = app()->getLocale() == 'ar'
-                    ? ($product->label_ar ?: $product->label_en ?: $product->name)
-                    : ($product->label_en ?: $product->name);
+                    ? ($catalogItem->label_ar ?: $catalogItem->label_en ?: $catalogItem->name)
+                    : ($catalogItem->label_en ?: $catalogItem->name);
 
                 // Get photo URL like homepage
-                $photo = $product->photo
-                    ? (filter_var($product->photo, FILTER_VALIDATE_URL)
-                        ? $product->photo
-                        : \Illuminate\Support\Facades\Storage::url($product->photo))
+                $photo = $catalogItem->photo
+                    ? (filter_var($catalogItem->photo, FILTER_VALIDATE_URL)
+                        ? $catalogItem->photo
+                        : \Illuminate\Support\Facades\Storage::url($catalogItem->photo))
                     : asset('assets/images/noimage.png');
 
                 return [
-                    'product_id' => $product->id,
+                    'catalog_item_id' => $catalogItem->id,
                     'name' => $name,
-                    'sku' => $product->sku,
+                    'sku' => $catalogItem->sku,
                     'photo' => $photo,
-                    'merchants_count' => $product->merchant_products_count,
+                    'merchants_count' => $catalogItem->merchant_items_count,
                 ];
             });
 
-        return response()->json($products);
+        return response()->json($catalogItems);
     }
 
     /**
-     * Get merchants for a specific product (Step 2: Choose merchant + quality brand)
+     * Get merchants for a specific catalog item (Step 2: Choose merchant + quality brand)
      */
     public function getProductMerchants(\Illuminate\Http\Request $request)
     {
-        $productId = $request->get('product_id');
+        $catalogItemId = $request->get('product_id') ?? $request->get('catalog_item_id');
 
-        // Get product with brand
-        $product = \App\Models\Product::with('brand')->find($productId);
+        // Get catalog item with brand
+        $catalogItem = \App\Models\CatalogItem::with('brand')->find($catalogItemId);
 
-        $merchants = \App\Models\MerchantProduct::where('product_id', $productId)
+        $merchants = \App\Models\MerchantItem::where('catalog_item_id', $catalogItemId)
             ->where('status', 1)
-            ->whereHas('user', fn($q) => $q->where('is_vendor', 2))
+            ->whereHas('user', fn($q) => $q->where('is_merchant', 2))
             ->with([
                 'user:id,shop_name,shop_name_ar',
                 'qualityBrand'
             ])
             ->get()
-            ->map(function($mp) use ($product) {
+            ->map(function($mp) use ($catalogItem) {
                 return [
                     'id' => $mp->id,
-                    // Product Brand (Toyota, Nissan, etc.)
-                    'brand_name' => $product->brand?->localized_name,
-                    'brand_logo' => $product->brand?->photo_url,
+                    // CatalogItem Brand (Toyota, Nissan, etc.)
+                    'brand_name' => $catalogItem->brand?->localized_name,
+                    'brand_logo' => $catalogItem->brand?->photo_url,
                     // Quality Brand (OEM, Aftermarket, etc.)
                     'quality_brand_id' => $mp->quality_brand_id,
                     'quality_brand' => $mp->qualityBrand?->localized_name,
@@ -362,11 +362,11 @@ class PageSettingController extends AdminBaseController
     public function bestSellers()
     {
         // Get current best sellers (best = 1)
-        $bestProducts = \App\Models\MerchantProduct::where('best', 1)
-            ->whereHas('user', fn($q) => $q->where('is_vendor', 2))
+        $bestProducts = \App\Models\MerchantItem::where('best', 1)
+            ->whereHas('user', fn($q) => $q->where('is_merchant', 2))
             ->with([
-                'product:id,name,label_en,label_ar,slug,photo,sku,brand_id',
-                'product.brand',
+                'catalogItem:id,name,label_en,label_ar,slug,photo,sku,brand_id',
+                'catalogItem.brand',
                 'user:id,shop_name,shop_name_ar',
                 'qualityBrand'
             ])
@@ -383,13 +383,13 @@ class PageSettingController extends AdminBaseController
     {
         try {
             $request->validate([
-                'merchant_product_id' => 'required|exists:merchant_products,id',
+                'merchant_item_id' => 'required|exists:merchant_items,id',
                 'best' => 'required',
             ]);
 
             $isBest = filter_var($request->best, FILTER_VALIDATE_BOOLEAN);
 
-            $mp = \App\Models\MerchantProduct::findOrFail($request->merchant_product_id);
+            $mp = \App\Models\MerchantItem::findOrFail($request->merchant_item_id);
             $mp->best = $isBest ? 1 : 0;
             $mp->save();
 
@@ -415,66 +415,66 @@ class PageSettingController extends AdminBaseController
     {
         $search = $request->get('q', '');
 
-        $products = \App\Models\Product::where(function($q) use ($search) {
+        $catalogItems = \App\Models\CatalogItem::where(function($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
                   ->orWhere('label_en', 'like', "%{$search}%")
                   ->orWhere('label_ar', 'like', "%{$search}%")
                   ->orWhere('sku', 'like', "%{$search}%");
             })
-            ->whereHas('merchantProducts', function($q) {
+            ->whereHas('merchantItems', function($q) {
                 $q->where('status', 1)
-                  ->whereHas('user', fn($u) => $u->where('is_vendor', 2));
+                  ->whereHas('user', fn($u) => $u->where('is_merchant', 2));
             })
-            ->withCount(['merchantProducts' => function($q) {
+            ->withCount(['merchantItems' => function($q) {
                 $q->where('status', 1)
-                  ->whereHas('user', fn($u) => $u->where('is_vendor', 2));
+                  ->whereHas('user', fn($u) => $u->where('is_merchant', 2));
             }])
             ->limit(20)
             ->get()
-            ->map(function($product) {
+            ->map(function($catalogItem) {
                 $name = app()->getLocale() == 'ar'
-                    ? ($product->label_ar ?: $product->label_en ?: $product->name)
-                    : ($product->label_en ?: $product->name);
+                    ? ($catalogItem->label_ar ?: $catalogItem->label_en ?: $catalogItem->name)
+                    : ($catalogItem->label_en ?: $catalogItem->name);
 
-                $photo = $product->photo
-                    ? (filter_var($product->photo, FILTER_VALIDATE_URL)
-                        ? $product->photo
-                        : \Illuminate\Support\Facades\Storage::url($product->photo))
+                $photo = $catalogItem->photo
+                    ? (filter_var($catalogItem->photo, FILTER_VALIDATE_URL)
+                        ? $catalogItem->photo
+                        : \Illuminate\Support\Facades\Storage::url($catalogItem->photo))
                     : asset('assets/images/noimage.png');
 
                 return [
-                    'product_id' => $product->id,
+                    'catalog_item_id' => $catalogItem->id,
                     'name' => $name,
-                    'sku' => $product->sku,
+                    'sku' => $catalogItem->sku,
                     'photo' => $photo,
-                    'merchants_count' => $product->merchant_products_count,
+                    'merchants_count' => $catalogItem->merchant_items_count,
                 ];
             });
 
-        return response()->json($products);
+        return response()->json($catalogItems);
     }
 
     /**
-     * Get merchants for a specific product (best sellers)
+     * Get merchants for a specific catalog item (best sellers)
      */
     public function getBestSellersMerchants(\Illuminate\Http\Request $request)
     {
-        $productId = $request->get('product_id');
-        $product = \App\Models\Product::with('brand')->find($productId);
+        $catalogItemId = $request->get('product_id') ?? $request->get('catalog_item_id');
+        $catalogItem = \App\Models\CatalogItem::with('brand')->find($catalogItemId);
 
-        $merchants = \App\Models\MerchantProduct::where('product_id', $productId)
+        $merchants = \App\Models\MerchantItem::where('catalog_item_id', $catalogItemId)
             ->where('status', 1)
-            ->whereHas('user', fn($q) => $q->where('is_vendor', 2))
+            ->whereHas('user', fn($q) => $q->where('is_merchant', 2))
             ->with([
                 'user:id,shop_name,shop_name_ar',
                 'qualityBrand'
             ])
             ->get()
-            ->map(function($mp) use ($product) {
+            ->map(function($mp) use ($catalogItem) {
                 return [
                     'id' => $mp->id,
-                    'brand_name' => $product->brand?->localized_name,
-                    'brand_logo' => $product->brand?->photo_url,
+                    'brand_name' => $catalogItem->brand?->localized_name,
+                    'brand_logo' => $catalogItem->brand?->photo_url,
                     'quality_brand_id' => $mp->quality_brand_id,
                     'quality_brand' => $mp->qualityBrand?->localized_name,
                     'quality_brand_logo' => $mp->qualityBrand?->logo_url,
@@ -497,15 +497,15 @@ class PageSettingController extends AdminBaseController
     // =========================================================================
 
     /**
-     * Generic method to get products by flag
+     * Generic method to get catalog items by flag
      */
     private function getProductsByFlag($flag)
     {
-        return \App\Models\MerchantProduct::where($flag, 1)
-            ->whereHas('user', fn($q) => $q->where('is_vendor', 2))
+        return \App\Models\MerchantItem::where($flag, 1)
+            ->whereHas('user', fn($q) => $q->where('is_merchant', 2))
             ->with([
-                'product:id,name,label_en,label_ar,slug,photo,sku,brand_id',
-                'product.brand',
+                'catalogItem:id,name,label_en,label_ar,slug,photo,sku,brand_id',
+                'catalogItem.brand',
                 'user:id,shop_name,shop_name_ar',
                 'qualityBrand'
             ])
@@ -520,12 +520,12 @@ class PageSettingController extends AdminBaseController
     {
         try {
             $request->validate([
-                'merchant_product_id' => 'required|exists:merchant_products,id',
+                'merchant_item_id' => 'required|exists:merchant_items,id',
                 'flag' => 'required',
             ]);
 
             $isEnabled = filter_var($request->flag, FILTER_VALIDATE_BOOLEAN);
-            $mp = \App\Models\MerchantProduct::findOrFail($request->merchant_product_id);
+            $mp = \App\Models\MerchantItem::findOrFail($request->merchant_item_id);
             $mp->$flag = $isEnabled ? 1 : 0;
             $mp->save();
 
@@ -538,43 +538,43 @@ class PageSettingController extends AdminBaseController
     }
 
     /**
-     * Generic search products
+     * Generic search catalog items
      */
     private function searchProducts($search)
     {
-        return \App\Models\Product::where(function($q) use ($search) {
+        return \App\Models\CatalogItem::where(function($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
                   ->orWhere('label_en', 'like', "%{$search}%")
                   ->orWhere('label_ar', 'like', "%{$search}%")
                   ->orWhere('sku', 'like', "%{$search}%");
             })
-            ->whereHas('merchantProducts', fn($q) => $q->where('status', 1)->whereHas('user', fn($u) => $u->where('is_vendor', 2)))
-            ->withCount(['merchantProducts' => fn($q) => $q->where('status', 1)->whereHas('user', fn($u) => $u->where('is_vendor', 2))])
+            ->whereHas('merchantItems', fn($q) => $q->where('status', 1)->whereHas('user', fn($u) => $u->where('is_merchant', 2)))
+            ->withCount(['merchantItems' => fn($q) => $q->where('status', 1)->whereHas('user', fn($u) => $u->where('is_merchant', 2))])
             ->limit(20)
             ->get()
-            ->map(function($product) {
-                $name = app()->getLocale() == 'ar' ? ($product->label_ar ?: $product->label_en ?: $product->name) : ($product->label_en ?: $product->name);
-                $photo = $product->photo ? (filter_var($product->photo, FILTER_VALIDATE_URL) ? $product->photo : \Illuminate\Support\Facades\Storage::url($product->photo)) : asset('assets/images/noimage.png');
-                return ['product_id' => $product->id, 'name' => $name, 'sku' => $product->sku, 'photo' => $photo, 'merchants_count' => $product->merchant_products_count];
+            ->map(function($catalogItem) {
+                $name = app()->getLocale() == 'ar' ? ($catalogItem->label_ar ?: $catalogItem->label_en ?: $catalogItem->name) : ($catalogItem->label_en ?: $catalogItem->name);
+                $photo = $catalogItem->photo ? (filter_var($catalogItem->photo, FILTER_VALIDATE_URL) ? $catalogItem->photo : \Illuminate\Support\Facades\Storage::url($catalogItem->photo)) : asset('assets/images/noimage.png');
+                return ['catalog_item_id' => $catalogItem->id, 'name' => $name, 'sku' => $catalogItem->sku, 'photo' => $photo, 'merchants_count' => $catalogItem->merchant_items_count];
             });
     }
 
     /**
-     * Generic get merchants for product
+     * Generic get merchants for catalog item
      */
-    private function getMerchants($productId, $flag)
+    private function getMerchants($catalogItemId, $flag)
     {
-        $product = \App\Models\Product::with('brand')->find($productId);
-        return \App\Models\MerchantProduct::where('product_id', $productId)
+        $catalogItem = \App\Models\CatalogItem::with('brand')->find($catalogItemId);
+        return \App\Models\MerchantItem::where('catalog_item_id', $catalogItemId)
             ->where('status', 1)
-            ->whereHas('user', fn($q) => $q->where('is_vendor', 2))
+            ->whereHas('user', fn($q) => $q->where('is_merchant', 2))
             ->with(['user:id,shop_name,shop_name_ar', 'qualityBrand'])
             ->get()
-            ->map(function($mp) use ($product, $flag) {
+            ->map(function($mp) use ($catalogItem, $flag) {
                 return [
                     'id' => $mp->id,
-                    'brand_name' => $product->brand?->localized_name,
-                    'brand_logo' => $product->brand?->photo_url,
+                    'brand_name' => $catalogItem->brand?->localized_name,
+                    'brand_logo' => $catalogItem->brand?->photo_url,
                     'quality_brand' => $mp->qualityBrand?->localized_name,
                     'quality_brand_logo' => $mp->qualityBrand?->logo_url,
                     'vendor_name' => app()->getLocale() == 'ar' ? ($mp->user->shop_name_ar ?: $mp->user->shop_name) : $mp->user->shop_name,

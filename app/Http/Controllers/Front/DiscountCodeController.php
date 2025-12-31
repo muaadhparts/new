@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Front;
 
 use App\Models\Cart;
 use App\Models\DiscountCode;
-use App\Models\Product;
+use App\Models\CatalogItem;
 use App\Services\CheckoutPriceService;
 use Illuminate\Http\Request;
 use Session;
@@ -249,7 +249,7 @@ class DiscountCodeController extends FrontBaseController
             }
 
             // Get product for category check
-            $product = Product::find($productId);
+            $catalogItem = CatalogItem::find($productId);
             if (!$product) {
                 continue;
             }

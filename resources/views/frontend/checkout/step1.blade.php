@@ -42,7 +42,7 @@
             </div>
 
             <!-- address-->
-            <form class="address-wrapper" action="{{ isset($is_vendor_checkout) && $is_vendor_checkout ? route('front.checkout.vendor.step1.submit', $vendor_id) : route('front.checkout.step1.submit') }}" method="POST">
+            <form class="address-wrapper" action="{{ isset($is_merchant_checkout) && $is_merchant_checkout ? route('front.checkout.vendor.step1.submit', $vendor_id) : route('front.checkout.step1.submit') }}" method="POST">
                 @csrf
                 <div class="row gy-4">
                     <div class="col-lg-7 col-xl-8 wow fadeInUp" data-wow-delay=".2s">
@@ -687,7 +687,7 @@
     let selectedAddress = '';
 
     // Checkout type detection
-    const isVendorCheckout = {{ isset($is_vendor_checkout) && $is_vendor_checkout ? 'true' : 'false' }};
+    const isMerchantCheckout = {{ isset($is_merchant_checkout) && $is_merchant_checkout ? 'true' : 'false' }};
     const checkoutVendorId = {{ isset($vendor_id) ? $vendor_id : 'null' }};
 
     // Clear previous session and reset when modal opens

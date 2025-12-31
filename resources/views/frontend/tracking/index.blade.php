@@ -114,9 +114,9 @@
                                 @if($order)
                                 <div class="col-md-4 text-md-end mt-3 mt-md-0">
                                     <small class="text-muted d-block">@lang('Order Number')</small>
-                                    <p class="fw-bold mb-2">{{ $order->order_number }}</p>
+                                    <p class="fw-bold mb-2">{{ $order->purchase_number }}</p>
                                     @if(Auth::check() && Auth::id() == $order->user_id)
-                                        <a href="{{ route('user-order', $order->id) }}" class="btn btn-outline-primary btn-sm">
+                                        <a href="{{ route('user-purchase', $order->id) }}" class="btn btn-outline-primary btn-sm">
                                             <i class="fas fa-eye me-1"></i> @lang('View Order')
                                         </a>
                                     @endif

@@ -1335,7 +1335,7 @@ table.dataTable thead .sorting_desc_disabled::after {
                         <p><strong>{{ __('Order Details') }} </strong></p>
                         <span><strong>{{ __('Invoice Number') }} :</strong> {{ sprintf("%'.08d", $order->id) }}</span><br>
                         <span><strong>{{ __('Order Date') }} :</strong> {{ date('d-M-Y',strtotime($order->created_at)) }}</span><br>
-                        <span><strong>{{  __('Order ID')}} :</strong> {{ $order->order_number }}</span><br>
+                        <span><strong>{{  __('Order ID')}} :</strong> {{ $order->purchase_number }}</span><br>
                         @if($order->dp == 0)
                         <span> <strong>{{ __('Shipping Method') }} :</strong>
                             @if($order->shipping == "pickup")
@@ -1405,13 +1405,13 @@ table.dataTable thead .sorting_desc_disabled::after {
                                                 $user = App\Models\User::find($product['item']['user_id']);
                                                 @endphp
                                                 @if(isset($user))
-                                                <x-product-name :item="$product" :vendor-id="$product['item']['user_id']" />
+                                                <x-catalog-item-name :item="$product" :vendor-id="$product['item']['user_id']" />
                                                 @else
-                                                <x-product-name :item="$product" :vendor-id="$product['item']['user_id']" />
+                                                <x-catalog-item-name :item="$product" :vendor-id="$product['item']['user_id']" />
                                                 @endif
 
                                                 @else
-                                                <x-product-name :item="$product" :vendor-id="$product['item']['user_id']" />
+                                                <x-catalog-item-name :item="$product" :vendor-id="$product['item']['user_id']" />
                                                 @endif
                                             </td>
 

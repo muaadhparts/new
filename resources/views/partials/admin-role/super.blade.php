@@ -18,7 +18,7 @@
             <a href="{{ route('admin-orders-all') }}?status=declined"> {{ __('Declined Orders') }}</a>
         </li>
         <li>
-            <a href="{{ route('admin-order-create') }}"> {{ __('Pos') }}</a>
+            <a href="{{ route('admin-purchase-create') }}"> {{ __('Pos') }}</a>
         </li>
 
     </ul>
@@ -205,10 +205,10 @@
     </a>
     <ul class="collapse list-unstyled" id="vendor" data-bs-parent="#accordion">
         <li>
-            <a href="{{ route('admin-vendor-index') }}"><span>{{ __('Vendors List') }}</span></a>
+            <a href="{{ route('admin-merchant-index') }}"><span>{{ __('Vendors List') }}</span></a>
         </li>
         <li>
-            <a href="{{ route('admin-vendor-withdraw-index') }}"><span>{{ __('Withdraws') }}</span></a>
+            <a href="{{ route('admin-merchant-withdraw-index') }}"><span>{{ __('Withdraws') }}</span></a>
         </li>
 
     </ul>
@@ -221,10 +221,10 @@
     <ul class="collapse list-unstyled" id="vendorSubs" data-bs-parent="#accordion">
         <li>
             <a
-                href="{{ route('admin-vendor-subs', 'completed') }}"><span>{{ __('Completed Subscriptions') }}</span></a>
+                href="{{ route('admin-merchant-subs', 'completed') }}"><span>{{ __('Completed Subscriptions') }}</span></a>
         </li>
         <li>
-            <a href="{{ route('admin-vendor-subs', 'pending') }}"><span>{{ __('Pending Subscriptions') }}</span></a>
+            <a href="{{ route('admin-merchant-subs', 'pending') }}"><span>{{ __('Pending Subscriptions') }}</span></a>
         </li>
     </ul>
 </li>

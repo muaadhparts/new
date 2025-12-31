@@ -51,11 +51,11 @@
                                                             {{ $prod->product && $prod->product->brand ? getLocalizedBrandName($prod->product->brand) : __('N/A') }}
                                                         </td>
                                                         <td>
-                                                            {{ $prod->merchantProduct && $prod->merchantProduct->qualityBrand ? getLocalizedQualityName($prod->merchantProduct->qualityBrand) : __('N/A') }}
+                                                            {{ $prod->merchantItem && $prod->merchantItem->qualityBrand ? getLocalizedQualityName($prod->merchantItem->qualityBrand) : __('N/A') }}
                                                         </td>
                                                         <td>
-                                                            @if($prod->merchantProduct && $prod->merchantProduct->user)
-                                                                {{ $prod->merchantProduct->user->shop_name ?: $prod->merchantProduct->user->name }}
+                                                            @if($prod->merchantItem && $prod->merchantItem->user)
+                                                                {{ $prod->merchantItem->user->shop_name ?: $prod->merchantItem->user->name }}
                                                             @else
                                                                 {{ __('N/A') }}
                                                             @endif

@@ -9,10 +9,10 @@
 				$product = $data->product;
 				$productName = $product ? getLocalizedProductName($product, 30) : __('N/A');
 
-				// المخزون من merchant_products
+				// المخزون من merchant_items
 				$totalStock = 0;
 				if ($product) {
-					$totalStock = $product->merchantProducts()->where('status', 1)->sum('stock');
+					$totalStock = $product->merchantItems()->where('status', 1)->sum('stock');
 				}
 			@endphp
 			<li>

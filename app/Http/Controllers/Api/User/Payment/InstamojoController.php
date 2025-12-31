@@ -6,7 +6,7 @@ use App\Classes\Instamojo;
 use App\Http\Controllers\Controller;
 use App\Models\Currency;
 use App\Models\Deposit;
-use App\Models\Generalsetting;
+use App\Models\Muaadhsetting;
 use App\Models\PaymentGateway;
 use App\Models\Transaction;
 use App\Models\User;
@@ -31,7 +31,7 @@ class InstamojoController extends Controller
         }
 
     
-        $settings = Generalsetting::findOrFail(1);
+        $settings = Muaadhsetting::findOrFail(1);
         $item_name = $settings->title . " Order";
         $user_email = User::findOrFail($order->user_id)->email;
 
@@ -94,7 +94,7 @@ class InstamojoController extends Controller
 
         $order = Deposit::where('flutter_id', '=', $data['payment_request_id'])->first();
 
-        $cancel_url = route('user.deposit.send', $order->order_number);
+        $cancel_url = route('user.deposit.send', $order->deposit_number);
         $user = \App\Models\User::findOrFail($order->user_id);
         $user->balance = $user->balance + ($order->amount);
         $user->save();

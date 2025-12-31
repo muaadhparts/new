@@ -44,7 +44,7 @@
 -- - favorite_sellers
 -- - fonts
 -- - galleries
--- - generalsettings
+-- - muaadhsettings
 -- - home_page_themes
 -- - illustrations
 -- - languages
@@ -55,9 +55,9 @@
 -- - newcategories
 -- - nissan_credentials
 -- - notifications
--- - order_tracks
--- - orders
--- - orders_clone
+-- - purchase_timelines
+-- - purchases
+-- - purchases_clone
 -- - packages
 -- - pages
 -- - pagesettings
@@ -69,7 +69,7 @@
 -- - product_clicks
 -- - product_fitments
 -- - products
--- - ratings
+-- - catalog_reviews
 -- - replies
 -- - reports
 -- - reviews
@@ -110,9 +110,9 @@
 -- - user_subscriptions
 -- - users
 -- - vehicles
--- - vendor_credentials
--- - vendor_orders
--- - vendor_stock_updates
+-- - merchant_credentials
+-- - merchant_purchases
+-- - merchant_stock_updates
 -- - verifications
 -- - vin_catalog_log
 -- - vin_decoded_cache

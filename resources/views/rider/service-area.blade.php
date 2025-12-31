@@ -32,11 +32,6 @@
                                 </tr>
 
                             </thead>
-                            @php
-                                $orders = App\Models\Order::where('user_id', Auth::user()->id)
-                                    ->latest()
-                                    ->paginate(12);
-                            @endphp
                             <tbody>
 
                                 @forelse($service_area as $area)
@@ -91,13 +86,13 @@
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="6" class="text-center">{{ __('No Orders Found.') }}</td>
+                                        <td colspan="6" class="text-center">{{ __('No Service Areas Found.') }}</td>
                                     </tr>
                                 @endforelse
                             </tbody>
                         </table>
                     </div>
-                    {{ $orders->links('includes.frontend.pagination') }}
+                    {{ $service_area->links('includes.frontend.pagination') }}
                 </div>
             </div>
         </div>

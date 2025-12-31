@@ -2,7 +2,7 @@
 
 namespace App\Console\Commands;
 
-use App\Models\Generalsetting;
+use App\Models\Muaadhsetting;
 use Illuminate\Console\Command;
 
 class ThemeApply extends Command
@@ -175,7 +175,7 @@ class ThemeApply extends Command
         $this->info("Applying theme preset: {$presetName}");
 
         // Get current settings
-        $gs = Generalsetting::findOrFail(1);
+        $gs = Muaadhsetting::findOrFail(1);
 
         // Apply preset values
         $preset = $this->presets[$presetName];
@@ -184,7 +184,7 @@ class ThemeApply extends Command
         }
 
         $gs->save();
-        cache()->forget('generalsettings');
+        cache()->forget('muaadhsettings');
 
         $this->info("Preset applied to database.");
 

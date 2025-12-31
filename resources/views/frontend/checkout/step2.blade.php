@@ -46,7 +46,7 @@
             </div>
 
             <!-- address-->
-            <form class="address-wrapper" action="{{ isset($is_vendor_checkout) && $is_vendor_checkout ? route('front.checkout.vendor.step2.submit', $vendor_id) : route('front.checkout.step2.submit') }}" method="POST">
+            <form class="address-wrapper" action="{{ isset($is_merchant_checkout) && $is_merchant_checkout ? route('front.checkout.vendor.step2.submit', $vendor_id) : route('front.checkout.step2.submit') }}" method="POST">
                 @csrf
                 <div class="row gy-4">
                     <div class="col-lg-7 col-xl-8 wow-replaced" data-wow-delay=".2s">
@@ -55,7 +55,7 @@
                             <div class="single-addres">
                                 <div class="title-wrapper d-flex justify-content-between">
                                     <h5>@lang('Billing Address')</h5>
-                                    <a class="edit-btn" href="{{ isset($is_vendor_checkout) && $is_vendor_checkout ? route('front.checkout.vendor', $vendor_id) : route('front.cart') }}">@lang('Edit')</a>
+                                    <a class="edit-btn" href="{{ isset($is_merchant_checkout) && $is_merchant_checkout ? route('front.checkout.vendor', $vendor_id) : route('front.cart') }}">@lang('Edit')</a>
                                 </div>
 
                                 <ul>
@@ -178,14 +178,14 @@
                                             <div class="content-wrapper">
                                                 @php
                                                     $checkoutProductUrl = '#';
-                                                    if (isset($product['item']['slug']) && isset($product['user_id']) && isset($product['merchant_product_id'])) {
-                                                        $checkoutProductUrl = route('front.product', [
+                                                    if (isset($product['item']['slug']) && isset($product['user_id']) && isset($product['merchant_item_id'])) {
+                                                        $checkoutProductUrl = route('front.catalog-item', [
                                                             'slug' => $product['item']['slug'],
                                                             'vendor_id' => $product['user_id'],
-                                                            'merchant_product_id' => $product['merchant_product_id']
+                                                            'merchant_item_id' => $product['merchant_item_id']
                                                         ]);
                                                     } elseif (isset($product['item']['slug'])) {
-                                                        $checkoutProductUrl = route('front.product.legacy', $product['item']['slug']);
+                                                        $checkoutProductUrl = route('front.catalog-item.legacy', $product['item']['slug']);
                                                     }
                                                 @endphp
                                                 <h6>
@@ -200,7 +200,7 @@
                                                     <li>
                                                         <span class="specification-name">@lang('Price :')</span>
                                                         <span class="specification">
-                                                            {{ App\Models\Product::convertPrice($product['item_price']) }}</span>
+                                                            {{ App\Models\CatalogItem::convertPrice($product['item_price']) }}</span>
                                                     </li>
                                                     <li>
                                                         <span class="specification-name">@lang('Quantity :')</span>
@@ -244,7 +244,7 @@
                                                     <li>
                                                         <span class="specification-name">@lang('Total Price :') </span>
                                                         <span
-                                                            class="specification">{{ App\Models\Product::convertPrice($product['price']) }}
+                                                            class="specification">{{ App\Models\CatalogItem::convertPrice($product['price']) }}
                                                             {{ $product['discount'] == 0 ? '' : '(' . $product['discount'] . '%' . __('Off') . ')' }}</span>
                                                     </li>
                                                 </ul>
@@ -289,7 +289,7 @@
                                                     <b>{{ __('Tax') }} ({{ $vendorTaxRate }}%):</b>
                                                 </span>
                                                 <span class="fw-bold text-success">
-                                                    {{ App\Models\Product::convertPrice($vendorTaxAmount) }}
+                                                    {{ App\Models\CatalogItem::convertPrice($vendorTaxAmount) }}
                                                 </span>
                                                 @if(isset($step1->tax_location))
                                                 <small class="text-muted ms-2">({{ $step1->tax_location }})</small>
@@ -520,7 +520,7 @@
                                             </defs>
                                         </svg>
                                     </button>
-                                    <a href="{{ isset($is_vendor_checkout) && $is_vendor_checkout ? route('front.checkout.vendor', $vendor_id) : route('front.cart') }}" class="template-btn dark-outline w-100">
+                                    <a href="{{ isset($is_merchant_checkout) && $is_merchant_checkout ? route('front.checkout.vendor', $vendor_id) : route('front.cart') }}" class="template-btn dark-outline w-100">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="25" height="24"
                                             viewBox="0 0 25 24" fill="none">
                                             <g clip-path="url(#clip0_489_34179)">

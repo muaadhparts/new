@@ -6,29 +6,31 @@
  * ====================================================================
  *
  * Single entry point for all cart operations.
- * Uses merchant_product_id EXCLUSIVELY - NO fallbacks.
+ * Uses merchant_item_id EXCLUSIVELY - NO fallbacks.
+ * Maintains backward compatibility with merchant_product_id.
  *
  * Key Features:
  * 1. Unified endpoint: POST /cart/unified
  * 2. Strict validation - fails on missing required fields
- * 3. All data from MerchantProduct - no Product fallback
+ * 3. All data from MerchantItem - no CatalogItem fallback
  * 4. Groups cart products by vendor_id
+ * 5. Backward compatible: accepts both merchant_item_id and merchant_product_id
  *
- * @version 3.0 - Unified System
+ * @version 3.1 - Unified System with merchant_item_id naming
  * ====================================================================
  */
 
 namespace App\Http\Controllers\Front;
 
-use App\Helpers\ProductContextHelper;
+use App\Helpers\CatalogItemContextHelper;
 use App\Helpers\CartHelper;
 use App\Models\Cart;
 use App\Models\Country;
-use App\Models\Generalsetting;
-use App\Models\MerchantProduct;
-use App\Models\Product;
+use App\Models\Muaadhsetting;
+use App\Models\MerchantItem;
+use App\Models\CatalogItem;
 use App\Models\StockReservation;
-use App\Services\VendorCartService;
+use App\Services\MerchantCartService;
 use App\Services\ShippingCalculatorService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -38,10 +40,10 @@ use Illuminate\Support\Facades\Validator;
 class CartController extends FrontBaseController
 {
     /* =====================================================================
-     * UNIFIED CART ENDPOINT (v3)
+     * UNIFIED CART ENDPOINT (v3.1)
      * =====================================================================
      * Single entry point for ALL cart add operations.
-     * REQUIRED: merchant_product_id
+     * REQUIRED: merchant_item_id (also accepts merchant_product_id for backward compatibility)
      * STRICT: Fails immediately on missing/invalid data - NO fallbacks
      * ===================================================================== */
 
@@ -50,7 +52,7 @@ class CartController extends FrontBaseController
      * POST /cart/unified
      *
      * Required payload:
-     * - merchant_product_id: int (REQUIRED)
+     * - merchant_item_id: int (REQUIRED) - also accepts merchant_product_id for backward compatibility
      * - qty: int (default: from minimum_qty)
      * - size: string (optional)
      * - color: string (optional)
@@ -64,9 +66,11 @@ class CartController extends FrontBaseController
     {
         // ==========================================
         // STEP 1: STRICT VALIDATION
+        // Accepts both merchant_item_id (new) and merchant_product_id (legacy) for backward compatibility
         // ==========================================
         $validator = Validator::make($request->all(), [
-            'merchant_product_id' => 'required|integer|min:1',
+            'merchant_item_id' => 'nullable|integer|min:1',
+            'merchant_product_id' => 'nullable|integer|min:1', // Legacy support
             'qty' => 'nullable|integer|min:1',
             'size' => 'nullable|string|max:100',
             'color' => 'nullable|string|max:50',
@@ -86,12 +90,13 @@ class CartController extends FrontBaseController
 
         // ==========================================
         // STRICT ASSERTIONS - Fail fast on missing required fields
+        // Backward compatibility: Accept both merchant_item_id and merchant_product_id
         // ==========================================
-        $mpId = $request->input('merchant_product_id');
+        $mpId = $request->input('merchant_item_id') ?? $request->input('merchant_product_id');
 
-        // ASSERT: merchant_product_id is REQUIRED and must be a positive integer
+        // ASSERT: merchant_item_id is REQUIRED and must be a positive integer
         if (!$mpId || !is_numeric($mpId) || (int)$mpId < 1) {
-            \Log::error('unifiedAdd: ASSERTION FAILED - merchant_product_id missing or invalid', [
+            \Log::error('unifiedAdd: ASSERTION FAILED - merchant_item_id missing or invalid', [
                 'received' => $mpId,
                 'request' => $request->all(),
                 'ip' => $request->ip(),
@@ -100,8 +105,8 @@ class CartController extends FrontBaseController
             return response()->json([
                 'success' => false,
                 'status' => 'error',
-                'message' => 'merchant_product_id is required and must be a positive integer',
-                'error_code' => 'ASSERT_MP_ID_REQUIRED',
+                'message' => 'merchant_item_id is required and must be a positive integer',
+                'error_code' => 'ASSERT_MI_ID_REQUIRED',
             ], 400);
         }
 
@@ -120,12 +125,12 @@ class CartController extends FrontBaseController
                 ], 400);
             }
         }
-        // qty will be validated against minimum_qty after loading MerchantProduct
+        // qty will be validated against minimum_qty after loading MerchantItem
 
         // ==========================================
         // STEP 2: LOAD MERCHANT PRODUCT (NO FALLBACK)
         // ==========================================
-        $mp = MerchantProduct::with(['product', 'user', 'qualityBrand'])->find($mpId);
+        $mp = MerchantItem::with(['catalogItem', 'user', 'qualityBrand'])->find($mpId);
 
         if (!$mp) {
             return response()->json([
@@ -140,7 +145,7 @@ class CartController extends FrontBaseController
         // STEP 3: STRICT GUARDS
         // ==========================================
 
-        // Guard: MerchantProduct must be active
+        // Guard: MerchantItem must be active
         if ((int) $mp->status !== 1) {
             return response()->json([
                 'success' => false,
@@ -150,8 +155,8 @@ class CartController extends FrontBaseController
             ], 400);
         }
 
-        // Guard: Vendor must be active (is_vendor = 2)
-        if (!$mp->user || (int) $mp->user->is_vendor !== 2) {
+        // Guard: Vendor must be active (is_merchant = 2)
+        if (!$mp->user || (int) $mp->user->is_merchant !== 2) {
             return response()->json([
                 'success' => false,
                 'status' => 'error',
@@ -334,7 +339,7 @@ class CartController extends FrontBaseController
         // STEP 7: BUILD PRODUCT WITH CONTEXT
         // ==========================================
         try {
-            $prod = ProductContextHelper::createWithContext($mp);
+            $prod = CatalogItemContextHelper::createWithContext($mp);
         } catch (\Exception $e) {
             // Return stock if product creation fails
             if (!($preordered && $effStock <= 0)) {
@@ -436,7 +441,7 @@ class CartController extends FrontBaseController
     private function reserveStock(int $merchantProductId, int $deltaQty, ?string $size = null, ?string $cartKey = null): void
     {
         DB::transaction(function() use ($merchantProductId, $deltaQty, $size, $cartKey) {
-            $row = DB::table('merchant_products')->where('id', $merchantProductId)->lockForUpdate()->first();
+            $row = DB::table('merchant_items')->where('id', $merchantProductId)->lockForUpdate()->first();
             if (!$row) {
                 throw new \Exception('Merchant product not found');
             }
@@ -459,7 +464,7 @@ class CartController extends FrontBaseController
                     $qtys[$idx] = (string)$newSizeQty;
                     $newSizeQtyStr = implode(',', $qtys);
 
-                    DB::table('merchant_products')
+                    DB::table('merchant_items')
                         ->where('id', $merchantProductId)
                         ->update(['size_qty' => $newSizeQtyStr, 'updated_at' => now()]);
                 }
@@ -470,7 +475,7 @@ class CartController extends FrontBaseController
                     throw new \Exception('Insufficient stock');
                 }
 
-                DB::table('merchant_products')
+                DB::table('merchant_items')
                     ->where('id', $merchantProductId)
                     ->update(['stock' => $newStock, 'updated_at' => now()]);
             }
@@ -496,7 +501,7 @@ class CartController extends FrontBaseController
     private function returnStock(int $merchantProductId, int $deltaQty, ?string $size = null, ?string $cartKey = null): void
     {
         DB::transaction(function() use ($merchantProductId, $deltaQty, $size, $cartKey) {
-            $row = DB::table('merchant_products')->where('id', $merchantProductId)->lockForUpdate()->first();
+            $row = DB::table('merchant_items')->where('id', $merchantProductId)->lockForUpdate()->first();
             if (!$row) return; // المنتج محذوف، تجاهل
 
             // دعم المقاسات: إرجاع للمقاس المحدد
@@ -509,13 +514,13 @@ class CartController extends FrontBaseController
                     $qtys[$idx] = (string)((int)$qtys[$idx] + $deltaQty);
                     $newSizeQtyStr = implode(',', $qtys);
 
-                    DB::table('merchant_products')
+                    DB::table('merchant_items')
                         ->where('id', $merchantProductId)
                         ->update(['size_qty' => $newSizeQtyStr, 'updated_at' => now()]);
                 }
             } else {
                 // السقوط إلى stock العام
-                DB::table('merchant_products')
+                DB::table('merchant_items')
                     ->where('id', $merchantProductId)
                     ->increment('stock', $deltaQty);
             }
@@ -534,7 +539,7 @@ class CartController extends FrontBaseController
      */
     public function addMerchantCart($merchantProductId)
     {
-        $mp = MerchantProduct::with(['product', 'user', 'qualityBrand'])->findOrFail($merchantProductId);
+        $mp = MerchantItem::with(['catalogItem', 'user', 'qualityBrand'])->findOrFail($merchantProductId);
 
         if (!$mp || $mp->status !== 1) {
             return response()->json(['status' => 'error', 'msg' => __('Product not available')], 400);
@@ -565,14 +570,14 @@ class CartController extends FrontBaseController
             ], 422);
         }
 
-        // CRITICAL: استخدام ProductContextHelper لإنشاء Product مع سياق merchant
+        // CRITICAL: استخدام CatalogItemContextHelper لإنشاء CatalogItem مع سياق merchant
         // Helper يضمن:
-        // - Product instance جديد تماماً (لا يوجد Eloquent caching)
-        // - حقن السعر الصحيح من MerchantProduct::vendorSizePrice()
+        // - CatalogItem instance جديد تماماً (لا يوجد Eloquent caching)
+        // - حقن السعر الصحيح من MerchantItem::vendorSizePrice()
         // - كل combination من (product_id, user_id, brand_quality_id) مستقل
-        // - القيم المحقونة لها الأولوية على Product::__get() magic methods
+        // - القيم المحقونة لها الأولوية على CatalogItem::__get() magic methods
         try {
-            $prod = ProductContextHelper::createWithContext($mp);
+            $prod = CatalogItemContextHelper::createWithContext($mp);
         } catch (\Exception $e) {
             return response()->json(['status' => 'error', 'msg' => __('Product not found')], 404);
         }
@@ -600,7 +605,7 @@ class CartController extends FrontBaseController
             }
         }
 
-        // Merchant context already injected by ProductContextHelper::createWithContext()
+        // Merchant context already injected by CatalogItemContextHelper::createWithContext()
 
         $keys = (string) request('keys','');
         $values = (string) request('values','');
@@ -676,7 +681,7 @@ class CartController extends FrontBaseController
 
     /**
      * تجميع منتجات السلة حسب التاجر
-     * يستخدم VendorCartService للحصول على بيانات كاملة لكل تاجر
+     * يستخدم MerchantCartService للحصول على بيانات كاملة لكل تاجر
      * بما في ذلك الوزن والأبعاد وخصم الجملة
      */
     private function groupProductsByVendor(array $products): array
@@ -684,7 +689,7 @@ class CartController extends FrontBaseController
         $grouped = [];
 
         foreach ($products as $rowKey => $product) {
-            // استخراج vendor_id باستخدام نفس منطق VendorCartService
+            // استخراج vendor_id باستخدام نفس منطق MerchantCartService
             $vendorId = $product['user_id']
                 ?? data_get($product, 'item.user_id')
                 ?? data_get($product, 'item.vendor_user_id')
@@ -709,7 +714,10 @@ class CartController extends FrontBaseController
             }
 
             // حساب خصم الجملة والأبعاد لكل منتج
-            $mpId = $product['merchant_product_id']
+            // Backward compatible: check both merchant_item_id (new) and merchant_product_id (legacy)
+            $mpId = $product['merchant_item_id']
+                ?? $product['merchant_product_id']
+                ?? data_get($product, 'item.merchant_item_id')
                 ?? data_get($product, 'item.merchant_product_id')
                 ?? 0;
             $qty = (int)($product['qty'] ?? 1);
@@ -718,11 +726,11 @@ class CartController extends FrontBaseController
             $colorVal = $product['color'] ?? '';
             $color = is_array($colorVal) ? ($colorVal[0] ?? '') : (string)$colorVal;
 
-            // استخدام VendorCartService لحساب خصم الجملة
-            $bulkDiscount = $mpId ? VendorCartService::calculateBulkDiscount($mpId, $qty) : null;
+            // استخدام MerchantCartService لحساب خصم الجملة
+            $bulkDiscount = $mpId ? MerchantCartService::calculateBulkDiscount($mpId, $qty) : null;
 
-            // استخدام VendorCartService لجلب الأبعاد (بدون fallback)
-            $dimensions = $mpId ? VendorCartService::getProductDimensions($mpId) : null;
+            // استخدام MerchantCartService لجلب الأبعاد (بدون fallback)
+            $dimensions = $mpId ? MerchantCartService::getProductDimensions($mpId) : null;
 
             // جلب بيانات الحجز المؤقت
             $cartKey = $this->generateCartKey($mpId, $size ?: null, $color ?: null);
@@ -756,9 +764,9 @@ class CartController extends FrontBaseController
             }
         }
 
-        // بناء بيانات الشحن لكل تاجر باستخدام VendorCartService
+        // بناء بيانات الشحن لكل تاجر باستخدام MerchantCartService
         foreach ($grouped as $vendorId => &$vendorData) {
-            $shippingData = VendorCartService::calculateVendorShipping($vendorId, $products);
+            $shippingData = MerchantCartService::calculateVendorShipping($vendorId, $products);
             $vendorData['shipping_data'] = $shippingData;
             $vendorData['has_complete_data'] = $shippingData['has_complete_data'];
             $vendorData['missing_data'] = $shippingData['missing_data'];
@@ -846,8 +854,8 @@ class CartController extends FrontBaseController
         }
         return [$picked, $pickedQty];
     }
-    // REMOVED: pickDefaultListing - No longer needed, use unifiedAdd with explicit merchant_product_id
-    private function effectiveStock(MerchantProduct $mp, string $size = ''): int
+    // REMOVED: pickDefaultListing - No longer needed, use unifiedAdd with explicit merchant_item_id
+    private function effectiveStock(MerchantItem $mp, string $size = ''): int
     {
         if (!empty($mp->size) && !empty($mp->size_qty) && $size !== '') {
             $sizes = $this->toArrayValues($mp->size);
@@ -861,17 +869,17 @@ class CartController extends FrontBaseController
     }
     // داخل CartController
 
-    /** هويّة المنتج فقط من products (بدون ألوان) */
-    private function fetchIdentity(int $id): ?Product
+    /** هويّة العنصر فقط من catalog_items (بدون ألوان) */
+    private function fetchIdentity(int $id): ?CatalogItem
     {
         // ملاحظة: تم نقل الألوان إلى merchant_products (color_all, color_price)
-        return Product::query()->select([
+        return CatalogItem::query()->select([
             'id','slug','sku','name','photo',
             'weight','type','file','link','measure','attributes','cross_products',
         ])->find($id);
     }
 
-    // REMOVED: fetchListingOrFallback - No longer needed, use unifiedAdd with explicit merchant_product_id
+    // REMOVED: fetchListingOrFallback - No longer needed, use unifiedAdd with explicit merchant_item_id
 
     private function normNum($v, $default = 0.0) { return is_numeric($v) ? (float)$v : (float)$default; }
 
@@ -914,10 +922,15 @@ class CartController extends FrontBaseController
     }
 
     /**
-     * استخراج merchant_product_id من صف السلة
+     * استخراج merchant_item_id من صف السلة
      */
-    private function extractMerchantProductId(array $row): int
+    private function extractMerchantItemId(array $row): int
     {
+        if (isset($row['merchant_item_id']) && $row['merchant_item_id']) {
+            return (int) $row['merchant_item_id'];
+        }
+
+        // Backward compatibility: check merchant_product_id
         if (isset($row['merchant_product_id']) && $row['merchant_product_id']) {
             return (int) $row['merchant_product_id'];
         }
@@ -925,10 +938,10 @@ class CartController extends FrontBaseController
         $item = $row['item'] ?? null;
         if ($item) {
             if (is_object($item)) {
-                return (int) ($item->merchant_product_id ?? 0);
+                return (int) ($item->merchant_item_id ?? $item->merchant_product_id ?? 0);
             }
             if (is_array($item)) {
-                return (int) ($item['merchant_product_id'] ?? 0);
+                return (int) ($item['merchant_item_id'] ?? $item['merchant_product_id'] ?? 0);
             }
         }
 
@@ -980,19 +993,19 @@ class CartController extends FrontBaseController
     /* ===================== DEPRECATED METHODS - Use unifiedAdd() instead ===================== */
 
     /**
-     * @deprecated Use unifiedAdd() with merchant_product_id
+     * @deprecated Use unifiedAdd() with merchant_item_id
      */
     public function addcart($id)
     {
         return response()->json([
             'ok' => false,
-            'error' => 'This endpoint is deprecated. Use POST /cart/unified with merchant_product_id',
+            'error' => 'This endpoint is deprecated. Use POST /cart/unified with merchant_item_id',
             'deprecated' => true
         ], 410);
     }
 
     /**
-     * @deprecated Use unifiedAdd() with merchant_product_id
+     * @deprecated Use unifiedAdd() with merchant_item_id
      */
     public function addtocart($id)
     {
@@ -1000,19 +1013,19 @@ class CartController extends FrontBaseController
     }
 
     /**
-     * @deprecated Use unifiedAdd() with merchant_product_id
+     * @deprecated Use unifiedAdd() with merchant_item_id
      */
     public function addnumcart(Request $request)
     {
         return response()->json([
             'ok' => false,
-            'error' => 'This endpoint is deprecated. Use POST /cart/unified with merchant_product_id',
+            'error' => 'This endpoint is deprecated. Use POST /cart/unified with merchant_item_id',
             'deprecated' => true
         ], 410);
     }
 
     /**
-     * @deprecated Use unifiedAdd() with merchant_product_id
+     * @deprecated Use unifiedAdd() with merchant_item_id
      */
     public function addtonumcart(Request $request)
     {
@@ -1044,7 +1057,7 @@ class CartController extends FrontBaseController
             return response()->json(['status'=>'error','msg'=>'Invalid merchant product'], 400);
         }
 
-        $mp = MerchantProduct::where('id', $mpId)->first();
+        $mp = MerchantItem::where('id', $mpId)->first();
         if (!$mp || (int)$mp->status !== 1) {
             return response()->json(['status'=>'error','msg'=>'Vendor listing invalid'], 400);
         }
@@ -1141,24 +1154,24 @@ class CartController extends FrontBaseController
         }
 
         // المنتج (هوية فقط)
-        $prod = \App\Models\Product::find($id, ['id','slug','name','photo','type','attributes']);
+        $prod = \App\Models\CatalogItem::find($id, ['id','slug','name','photo','type','attributes']);
         if (!$prod) { return 0; }
 
         // معلومات الصف من السلة (Vendor-aware)
         $row  = $oldCart->items[$itemid];
         $item = $row['item'] ?? null;
 
-        // استخراج merchant_product_id من السلة (NO FALLBACK - يجب أن يكون موجوداً)
-        $mpId = $this->extractMerchantProductId($row);
+        // استخراج merchant_item_id من السلة (NO FALLBACK - يجب أن يكون موجوداً)
+        $mpId = $this->extractMerchantItemId($row);
         if (!$mpId) {
-            \Log::warning('addbyone: merchant_product_id not found in cart row', ['itemid' => $itemid]);
+            \Log::warning('addbyone: merchant_item_id not found in cart row', ['itemid' => $itemid]);
             return 0;
         }
 
         // جلب عرض البائع مباشرة بـ ID (NO QUERY by product_id+vendor_id)
-        $mp = MerchantProduct::find($mpId);
+        $mp = MerchantItem::find($mpId);
         if (!$mp || (int)$mp->status !== 1) {
-            \Log::warning('addbyone: MerchantProduct not found or inactive', ['mp_id' => $mpId]);
+            \Log::warning('addbyone: MerchantItem not found or inactive', ['mp_id' => $mpId]);
             return 0;
         }
 
@@ -1205,8 +1218,8 @@ class CartController extends FrontBaseController
             }
         }
 
-        // حساب خصم الجملة الجديد باستخدام VendorCartService
-        $bulkDiscount = VendorCartService::calculateBulkDiscount($mp->id, $newQty);
+        // حساب خصم الجملة الجديد باستخدام MerchantCartService
+        $bulkDiscount = MerchantCartService::calculateBulkDiscount($mp->id, $newQty);
 
         // حقن سياق البائع داخل كائن المنتج
         $prod->user_id             = $vendorId;
@@ -1251,8 +1264,8 @@ class CartController extends FrontBaseController
 
         \Session::put('cart', $cart);
 
-        // جلب بيانات الأبعاد باستخدام VendorCartService
-        $dimensions = VendorCartService::getProductDimensions($mp->id);
+        // جلب بيانات الأبعاد باستخدام MerchantCartService
+        $dimensions = MerchantCartService::getProductDimensions($mp->id);
 
         // جلب المخزون المحدث
         $mp->refresh();
@@ -1292,22 +1305,22 @@ class CartController extends FrontBaseController
             return 0;
         }
 
-        $prod = \App\Models\Product::find($id, ['id','slug','name','photo','type','attributes']);
+        $prod = \App\Models\CatalogItem::find($id, ['id','slug','name','photo','type','attributes']);
         if (!$prod) { return 0; }
 
         $row  = $oldCart->items[$itemid];
 
-        // استخراج merchant_product_id من السلة (NO FALLBACK - يجب أن يكون موجوداً)
-        $mpId = $this->extractMerchantProductId($row);
+        // استخراج merchant_item_id من السلة (NO FALLBACK - يجب أن يكون موجوداً)
+        $mpId = $this->extractMerchantItemId($row);
         if (!$mpId) {
-            \Log::warning('reducebyone: merchant_product_id not found in cart row', ['itemid' => $itemid]);
+            \Log::warning('reducebyone: merchant_item_id not found in cart row', ['itemid' => $itemid]);
             return 0;
         }
 
         // جلب عرض البائع مباشرة بـ ID (NO QUERY by product_id+vendor_id)
-        $mp = MerchantProduct::find($mpId);
+        $mp = MerchantItem::find($mpId);
         if (!$mp || (int)$mp->status !== 1) {
-            \Log::warning('reducebyone: MerchantProduct not found or inactive', ['mp_id' => $mpId]);
+            \Log::warning('reducebyone: MerchantItem not found or inactive', ['mp_id' => $mpId]);
             return 0;
         }
 
@@ -1342,8 +1355,8 @@ class CartController extends FrontBaseController
             $this->updateReservationQty($cartKey, $newQty, $mpId, $sizeStr ?: null);
         }
 
-        // حساب خصم الجملة الجديد باستخدام VendorCartService
-        $bulkDiscount = VendorCartService::calculateBulkDiscount($mp->id, $newQty);
+        // حساب خصم الجملة الجديد باستخدام MerchantCartService
+        $bulkDiscount = MerchantCartService::calculateBulkDiscount($mp->id, $newQty);
 
         // حقن سياق البائع
         $prod->user_id             = $vendorId;
@@ -1391,8 +1404,8 @@ class CartController extends FrontBaseController
 
         \Session::put('cart', $cart);
 
-        // جلب بيانات الأبعاد باستخدام VendorCartService
-        $dimensions = VendorCartService::getProductDimensions($mp->id);
+        // جلب بيانات الأبعاد باستخدام MerchantCartService
+        $dimensions = MerchantCartService::getProductDimensions($mp->id);
 
         // جلب المخزون المحدث
         $mp->refresh();

@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Front;
 
 use App\Models\Compare;
-use App\Models\Product;
-use App\Models\MerchantProduct;
+use App\Models\CatalogItem;
+use App\Models\MerchantItem;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Session;
 
@@ -77,11 +77,11 @@ class CompareController extends FrontBaseController
     public function addcompare($merchantProductId)
     {
         $data[0] = 0;
-        $merchantProduct = MerchantProduct::with(['product', 'user', 'qualityBrand'])->findOrFail($merchantProductId);
+        $merchantItem = MerchantItem::with(['catalogItem', 'user', 'qualityBrand'])->findOrFail($merchantProductId);
         $oldCompare = Session::has('compare') ? Session::get('compare') : null;
 
         $compare = new Compare($oldCompare);
-        $compare->add($merchantProduct, $merchantProductId);
+        $compare->add($merchantItem, $merchantProductId);
         Session::put('compare', $compare);
 
         if ($compare->items[$merchantProductId]['ck'] == 1) {
@@ -102,38 +102,38 @@ class CompareController extends FrontBaseController
     public function addcompareLegacy(Request $request, $productId)
     {
         $data[0] = 0;
-        $product = Product::findOrFail($productId);
+        $catalogItem = CatalogItem::findOrFail($productId);
         $oldCompare = Session::has('compare') ? Session::get('compare') : null;
 
         $userId = $request->get('user');
 
-        // If user parameter is provided, find specific merchant product for that vendor
+        // If user parameter is provided, find specific merchant item for that vendor
         if ($userId) {
-            $merchantProduct = MerchantProduct::with(['product', 'user', 'qualityBrand'])
-                ->where('product_id', $productId)
+            $merchantItem = MerchantItem::with(['catalogItem', 'user', 'qualityBrand'])
+                ->where('catalog_item_id', $productId)
                 ->where('user_id', $userId)
                 ->where('status', 1)
                 ->first();
         } else {
-            // Fallback: find the first active merchant product
-            $merchantProduct = MerchantProduct::with(['product', 'user', 'qualityBrand'])
-                ->where('product_id', $productId)
+            // Fallback: find the first active merchant item
+            $merchantItem = MerchantItem::with(['catalogItem', 'user', 'qualityBrand'])
+                ->where('catalog_item_id', $productId)
                 ->where('status', 1)
                 ->orderBy('price')
                 ->first();
         }
 
-        if (!$merchantProduct) {
+        if (!$merchantItem) {
             $data[0] = 1;
             $data['error'] = __('Product not available from any vendor.');
             return response()->json($data);
         }
 
         $compare = new Compare($oldCompare);
-        $compare->add($merchantProduct, $merchantProduct->id);
+        $compare->add($merchantItem, $merchantItem->id);
         Session::put('compare', $compare);
 
-        if ($compare->items[$merchantProduct->id]['ck'] == 1) {
+        if ($compare->items[$merchantItem->id]['ck'] == 1) {
             $data[0] = 1;
         }
 

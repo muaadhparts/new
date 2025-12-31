@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Api\Auth;
 
 use App\{
   Models\User,
-  Models\Generalsetting
+  Models\Muaadhsetting
 };
 
 use App\{
@@ -47,7 +47,7 @@ class AuthController extends Controller
         return response()->json(['status' => false, 'data' => [], 'error' => $validator->errors()]);
       }
 
-      $gs = Generalsetting::first();
+      $gs = Muaadhsetting::first();
 
       $user = new User;
       $user->name = $request->fullname;
@@ -218,7 +218,7 @@ class AuthController extends Controller
 
   public function sendVerificationCode(Request $request)
   {
-    $gs = Generalsetting::first();
+    $gs = Muaadhsetting::first();
   }
 
   /**
@@ -256,7 +256,7 @@ class AuthController extends Controller
 
   public function forgot(Request $request)
   {
-    $gs = Generalsetting::findOrFail(1);
+    $gs = Muaadhsetting::findOrFail(1);
     $user = User::where('email', $request->email)->first();
     if ($user) {
 

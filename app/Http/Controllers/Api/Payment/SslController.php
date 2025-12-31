@@ -4,8 +4,8 @@ namespace App\Http\Controllers\Api\Payment;
 
 use App\Http\Controllers\Controller;
 use App\Models\Currency;
-use App\Models\Generalsetting;
-use App\Models\Order;
+use App\Models\Muaadhsetting;
+use App\Models\Purchase;
 use App\Models\Package;
 use App\Models\PaymentGateway;
 use App\Models\Shipping;
@@ -17,27 +17,27 @@ class SslController extends Controller
     public function store(Request $request)
     {
 
-        if (!$request->has('order_number')) {
+        if (!$request->has('purchase_number')) {
             return response()->json(['status' => false, 'data' => [], 'error' => 'Invalid Request']);
         }
 
-        $order_number = $request->order_number;
-        $order = Order::where('order_number', $order_number)->firstOrFail();
-        $curr = Currency::where('sign', '=', $order->currency_sign)->firstOrFail();
+        $purchase_number = $request->purchase_number;
+        $purchase = Purchase::where('purchase_number', $purchase_number)->firstOrFail();
+        $curr = Currency::where('sign', '=', $purchase->currency_sign)->firstOrFail();
         if ($curr->name != "BDT") {
             return redirect()->back()->with('unsuccess', 'Please Select BDT Currency For Sslcommerz .');
         }
 
 
-        $item_amount = $order->pay_amount * $order->currency_value;
+        $item_amount = $purchase->pay_amount * $purchase->currency_value;
 
         $txnid = "SSLCZ_TXN_" . uniqid();
 
-        $order->pay_amount = round($item_amount / $order->currency_value, 2);
-        $order['method'] = $request->method;
-        $order['txnid'] = $txnid;
+        $purchase->pay_amount = round($item_amount / $purchase->currency_value, 2);
+        $purchase['method'] = $request->method;
+        $purchase['txnid'] = $txnid;
 
-        $order->update();
+        $purchase->update();
 
 
         $data = PaymentGateway::whereKeyword('sslcommerz')->first();
@@ -49,18 +49,18 @@ class SslController extends Controller
         $post_data['currency'] = $curr->name;
         $post_data['tran_id'] = $txnid;
         $post_data['success_url'] = action('Api\Payment\SslController@notify');
-        $post_data['fail_url'] = route('payment.checkout') . "?order_number=" . $order->order_number;
-        $post_data['cancel_url'] = route('payment.checkout') . "?order_number=" . $order->order_number;
+        $post_data['fail_url'] = route('payment.checkout') . "?purchase_number=" . $purchase->purchase_number;
+        $post_data['cancel_url'] = route('payment.checkout') . "?purchase_number=" . $purchase->purchase_number;
         # $post_data['multi_card_name'] = "mastercard,visacard,amexcard";  # DISABLE TO DISPLAY ALL AVAILABLE
 
         # CUSTOMER INFORMATION
-        $post_data['cus_name'] = $order['customer_name'];
-        $post_data['cus_email'] = $order['customer_email'];
-        $post_data['cus_add1'] = $order['customer_address'];
-        $post_data['cus_city'] = $order['customer_city'];
+        $post_data['cus_name'] = $purchase['customer_name'];
+        $post_data['cus_email'] = $purchase['customer_email'];
+        $post_data['cus_add1'] = $purchase['customer_address'];
+        $post_data['cus_city'] = $purchase['customer_city'];
         $post_data['cus_state'] = '';
-        $post_data['cus_postcode'] = $order['customer_zip'];
-        $post_data['cus_country'] = $order['customer_country'];
+        $post_data['cus_postcode'] = $purchase['customer_zip'];
+        $post_data['cus_country'] = $purchase['customer_country'];
         $post_data['cus_phone'] = '';
         $post_data['cus_fax'] = '';
 
@@ -110,13 +110,13 @@ class SslController extends Controller
 
         $input = $request->all();
 
-        $order = Order::where('txnid', $input['tran_id'])->first();
+        $purchase = Purchase::where('txnid', $input['tran_id'])->first();
         $success_url = route('front.payment.success', 1);
-        $cancel_url = route('payment.checkout') . "?order_number=" . $order->order_number;
+        $cancel_url = route('payment.checkout') . "?purchase_number=" . $purchase->purchase_number;
         if ($input['status'] == 'VALID') {
             $data['payment_status'] = 'Completed';
             $data['method'] = 'sslcommerz';
-            $order->update($data);
+            $purchase->update($data);
             return redirect($success_url);
         } else {
             return redirect($cancel_url);

@@ -8,7 +8,7 @@ use App\Http\Resources\WithdrawDetailsResource;
 
 use App\Http\Resources\WithdrawResource;
 use App\Models\Currency;
-use App\Models\Generalsetting;
+use App\Models\Muaadhsetting;
 use App\Models\Transaction;
 use App\Models\User;use App\Models\Withdraw;
 use Auth;
@@ -145,7 +145,7 @@ class WithdrawController extends Controller
             $user = auth()->user();
             $from = User::findOrFail($user->id);
             $curr = Currency::where('is_default', '=', 1)->first();
-            $withdrawcharge = Generalsetting::findOrFail(1);
+            $withdrawcharge = Muaadhsetting::findOrFail(1);
             $charge = $withdrawcharge->withdraw_fee;
 
             if ($request->amount > 0) {
@@ -200,7 +200,7 @@ class WithdrawController extends Controller
         try {
         $curr = Currency::where('is_default','=',1)->first();
         $user = Auth::user();
-        $gs = Generalsetting::find(1);
+        $gs = Muaadhsetting::find(1);
 
         $rules =
         [

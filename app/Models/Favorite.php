@@ -10,41 +10,41 @@ class Favorite extends Model
 
     public $timestamps = false;
 
-    protected $fillable = ['user_id', 'product_id', 'merchant_product_id'];
+    protected $fillable = ['user_id', 'catalog_item_id', 'merchant_item_id'];
 
     public function user()
     {
         return $this->belongsTo('App\Models\User')->withDefault();
     }
 
-    public function product()
+    public function catalogItem()
     {
-        return $this->belongsTo('App\Models\Product')->withDefault();
+        return $this->belongsTo('App\Models\CatalogItem', 'catalog_item_id')->withDefault();
     }
 
-    public function merchantProduct()
+    public function merchantItem()
     {
-        return $this->belongsTo('App\Models\MerchantProduct')->withDefault();
+        return $this->belongsTo('App\Models\MerchantItem', 'merchant_item_id')->withDefault();
     }
 
     /**
-     * Get the effective merchant product for this favorite item
-     * If merchant_product_id is set, use it. Otherwise, find first active merchant product
+     * Get the effective merchant item for this favorite item
+     * If merchant_item_id is set, use it. Otherwise, find first active merchant item
      */
-    public function getEffectiveMerchantProduct()
+    public function getEffectiveMerchantItem()
     {
-        if ($this->merchant_product_id) {
-            return $this->merchantProduct;
+        if ($this->merchant_item_id) {
+            return $this->merchantItem;
         }
 
-        if ($this->relationLoaded('product') && $this->product && $this->product->relationLoaded('merchantProducts')) {
-            return $this->product->merchantProducts
-                ->filter(fn($mp) => $mp->status == 1)
+        if ($this->relationLoaded('catalogItem') && $this->catalogItem && $this->catalogItem->relationLoaded('merchantItems')) {
+            return $this->catalogItem->merchantItems
+                ->filter(fn($mi) => $mi->status == 1)
                 ->sortBy('price')
                 ->first();
         }
 
-        return \App\Models\MerchantProduct::where('product_id', $this->product_id)
+        return \App\Models\MerchantItem::where('catalog_item_id', $this->catalog_item_id)
             ->where('status', 1)
             ->orderBy('price')
             ->first();

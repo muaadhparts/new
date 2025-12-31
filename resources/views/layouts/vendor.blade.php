@@ -76,7 +76,7 @@
     <div class="muaadh-mobile-overlay"></div>
 
     {{-- Vendor Dashboard Mobile Sidebar --}}
-    @include('includes.vendor.vendor-mobile-header')
+    @include('includes.merchant.merchant-mobile-header')
 
     <!-- overlay for dashboard menu -->
     <div class="overlay"></div>
@@ -85,12 +85,12 @@
     <div class="gs-user-panel-review">
         <div class="d-flex">
             <!-- sidebar -->
-            @include('includes.vendor.sidebar')
+            @include('includes.merchant.sidebar')
 
             <!-- main content (header and outlet) -->
             <div class="gs-vendor-header-outlet-wrapper">
                 <!-- header start  -->
-                @include('includes.vendor.header')
+                @include('includes.merchant.header')
                 <!-- header end  -->
 
                 <!-- outlet start  -->

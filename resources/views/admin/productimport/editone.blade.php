@@ -1,15 +1,15 @@
 @extends('layouts.admin')
 
 @section('styles')
-	<link href="{{asset('assets/admin/css/product.css')}}" rel="stylesheet"/>
+	<link href="{{asset('assets/admin/css/catalog-item.css')}}" rel="stylesheet"/>
 	<link href="{{asset('assets/admin/css/jquery.Jcrop.css')}}" rel="stylesheet"/>
 	<link href="{{asset('assets/admin/css/Jcrop-style.css')}}" rel="stylesheet"/>
 	<link href="{{asset('assets/admin/css/select2.css')}}" rel="stylesheet"/>
 @endsection
 
 @php
-	// Get merchant product data for this product
-	$merchantProduct = \App\Models\MerchantProduct::where('product_id', $data->id)->first();
+	// Get merchant item data for this catalog item
+	$merchantItem = \App\Models\MerchantItem::where('catalog_item_id', $data->id)->first();
 @endphp
 
 @section('content')
@@ -49,19 +49,19 @@
 						<div class="product-description">
 							<div class="body-area">
 
-								{{-- Vendor Selection --}}
+								{{-- Merchant Selection --}}
 								<div class="row">
 									<div class="col-lg-12">
 										<div class="left-area">
-											<h4 class="heading">{{ __('Vendor') }}*</h4>
+											<h4 class="heading">{{ __('Merchant') }}*</h4>
 										</div>
 									</div>
 									<div class="col-lg-12">
-										<select id="vendor_id" name="user_id" required="" class="select2">
-											<option value="">{{ __('Select Vendor') }}</option>
-											@foreach (\App\Models\User::where('is_vendor', 2)->where('ban', 0)->orderBy('shop_name')->get() as $vendor)
-												<option value="{{ $vendor->id }}" {{ $merchantProduct && $merchantProduct->user_id == $vendor->id ? 'selected' : '' }}>
-													{{ $vendor->shop_name ?: $vendor->name }} ({{ $vendor->email }})
+										<select id="merchant_id" name="user_id" required="" class="select2">
+											<option value="">{{ __('Select Merchant') }}</option>
+											@foreach (\App\Models\User::where('is_merchant', 2)->where('ban', 0)->orderBy('shop_name')->get() as $merchant)
+												<option value="{{ $merchant->id }}" {{ $merchantItem && $merchantItem->user_id == $merchant->id ? 'selected' : '' }}>
+													{{ $merchant->shop_name ?: $merchant->name }} ({{ $merchant->email }})
 												</option>
 											@endforeach
 										</select>
@@ -98,7 +98,7 @@
 										<select name="brand_quality_id" class="form-control">
 											<option value="">{{ __('Select Quality Brand') }}</option>
 											@foreach (\App\Models\QualityBrand::all() as $qb)
-												<option value="{{ $qb->id }}" {{ $merchantProduct && $merchantProduct->brand_quality_id == $qb->id ? 'selected' : '' }}>
+												<option value="{{ $qb->id }}" {{ $merchantItem && $merchantItem->brand_quality_id == $qb->id ? 'selected' : '' }}>
 													{{ $qb->name }} {{ $qb->name_ar ? '- ' . $qb->name_ar : '' }}
 												</option>
 											@endforeach
@@ -138,7 +138,7 @@
 										</div>
 									</div>
 									<div class="col-lg-12">
-										<input type="text" class="form-control" placeholder="{{ __("Enter Product Link") }}" name="affiliate_link" required="" value="{{ $merchantProduct->affiliate_link ?? '' }}">
+										<input type="text" class="form-control" placeholder="{{ __("Enter Product Link") }}" name="affiliate_link" required="" value="{{ $merchantItem->affiliate_link ?? '' }}">
 									</div>
 								</div>
 

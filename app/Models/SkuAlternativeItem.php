@@ -9,8 +9,16 @@ class SkuAlternativeItem extends Model
     protected $table = 'sku_alternatives';
     protected $fillable = ['sku', 'group_id'];
 
+    /**
+     * @deprecated Use catalogItems() instead
+     */
     public function products()
     {
-        return $this->hasMany(Product::class, 'sku', 'sku');
+        return $this->hasMany(CatalogItem::class, 'sku', 'sku');
+    }
+
+    public function catalogItems()
+    {
+        return $this->hasMany(CatalogItem::class, 'sku', 'sku');
     }
 }

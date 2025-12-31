@@ -36,7 +36,31 @@
       "Bash(mysql:*)",
       "Bash(git mv:*)",
       "Bash(git rm:*)",
-      "Bash(copy:*)"
+      "Bash(copy:*)",
+      "Bash(ls \"C:\\\\Users\\\\hp\\\\Herd\\\\oldnew\\\\app\\\\Http\\\\Controllers\\\\Admin\"\" | findstr -i \"order purchase \")",
+      "Bash(python:*)",
+      "Bash(cat:*)",
+      "Bash(php artisan tinker:*)",
+      "Bash(dir:*)",
+      "Bash(ren:*)",
+      "Bash(ren product-different-view.blade.php catalog-item-different-view.blade.php)",
+      "Bash(if exist \"C:\\\\Users\\\\hp\\\\Herd\\\\oldnew\\\\public\\\\assets\\\\admin\\\\js\\\\catalog-item.js\" echo \"exists\" else echo \"not exists\")",
+      "Bash(if exist \"C:\\\\Users\\\\hp\\\\Herd\\\\oldnew\\\\public\\\\assets\\\\css\\\\catalog-item-card.css\" echo \"exists\" else echo \"not exists\")",
+      "Bash(powershell -Command \"Get-ChildItem -Path ''app/Http/Controllers/Payment/Checkout/*.php'' | ForEach-Object { \\(Get-Content $_FullName\\) -replace ''\\\\$input\\\\[''''order_number''''\\\\]'', ''$input[''''purchase_number'''']'' | Set-Content $_FullName }\")",
+      "Bash(powershell -Command \"Test-Path ''C:\\\\Users\\\\hp\\\\Herd\\\\oldnew\\\\app\\\\Models\\\\Notification.php''\")",
+      "Bash(powershell -Command \"Test-Path ''C:\\\\Users\\\\hp\\\\Herd\\\\oldnew\\\\app\\\\Models\\\\UserNotification.php''\")",
+      "Bash(ls -la \"C:\\\\Users\\\\hp\\\\Herd\\\\oldnew\\\\resources\\\\views\\\\includes\\\\vendor\"\" 2>/dev/null || dir \"C:UsershpHerdoldnewresourcesviewsincludesvendor \")",
+      "Bash(ls -la \"C:\\\\Users\\\\hp\\\\Herd\\\\oldnew\\\\resources\\\\views\\\\vendor\"\" 2>/dev/null || dir \"C:UsershpHerdoldnewresourcesviewsvendor \")",
+      "Bash(ls -la \"C:\\\\Users\\\\hp\\\\Herd\\\\oldnew\\\\resources\\\\views\\\\layouts\"\" 2>/dev/null || dir \"C:UsershpHerdoldnewresourcesviewslayouts \")",
+      "Bash(Select-Object Name)",
+      "Bash(php artisan view:clear:*)",
+      "Bash(php artisan config:clear:*)",
+      "Bash(Remove-Item -Path \"C:\\\\Users\\\\hp\\\\Herd\\\\oldnew\\\\app\\\\Http\\\\Controllers\\\\Admin\\\\VendorController.php\" -Force)",
+      "Bash(Remove-Item -Path \"C:\\\\Users\\\\hp\\\\Herd\\\\oldnew\\\\app\\\\Http\\\\Controllers\\\\Admin\\\\VendorCredentialController.php\" -Force)",
+      "Bash(Remove-Item -Path \"C:\\\\Users\\\\hp\\\\Herd\\\\oldnew\\\\app\\\\Http\\\\Controllers\\\\Admin\\\\VendorSubscriptionController.php\" -Force)",
+      "Bash(Remove-Item -Path \"C:\\\\Users\\\\hp\\\\Herd\\\\oldnew\\\\app\\\\Http\\\\Controllers\\\\Front\\\\VendorController.php\" -Force)",
+      "Bash(Remove-Item -Path \"C:\\\\Users\\\\hp\\\\Herd\\\\oldnew\\\\app\\\\Http\\\\Controllers\\\\Api\\\\Front\\\\VendorController.php\" -Force)",
+      "Bash(Remove-Item -Path \"C:\\\\Users\\\\hp\\\\Herd\\\\oldnew\\\\app\\\\Http\\\\Resources\\\\VendorResource.php\" -Force)"
     ]
   }
 }

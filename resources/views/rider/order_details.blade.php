@@ -6,7 +6,7 @@
                 <!-- sidebar -->
                 @include('includes.rider.sidebar')
                 @php
-                    $order = $data->order;
+                    $order = $data->purchase;
                 @endphp
                 <!-- main content -->
                 <div class="gs-dashboard-user-content-wrapper gs-dashboard-outlet">
@@ -203,8 +203,8 @@
                                 @lang('Collection Amount from Customer') :
                                 @if ($order->method == 'Cash On Delivery')
                                     {{ \PriceHelper::showAdminCurrencyPrice(
-                                        ($order->vendororders->where('user_id', $data->vendor_id)->sum('price') + $extra_price) *
-                                            $data->order->currency_value,
+                                        ($order->merchantPurchases->where('user_id', $data->vendor_id)->sum('price') + $extra_price) *
+                                            $data->purchase->currency_value,
                                         $order->currency_sign,
                                     ) }}
                                 @else

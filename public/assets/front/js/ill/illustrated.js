@@ -290,7 +290,7 @@
              data-id="${p.store_id||''}"
              data-sku="${escapeHtml(p.part_number||'')}"
              data-url="${escapeHtml(p.quick_view||'')}"
-             data-user="${escapeHtml(p.user_id || p.vendor_id || '')}">
+             data-user="${escapeHtml(p.user_id || p.merchant_id || '')}">
              ${escapeHtml(t('labels.quick_view'))}
            </button>`
         : '';
@@ -298,7 +298,7 @@
                          data-sku="${escapeHtml(p.part_number||'')}"
                          data-id="${p.store_id||''}"
                          data-url="${escapeHtml(p.quick_view||'')}"
-                         data-user="${escapeHtml(p.user_id || p.vendor_id || '')}">
+                         data-user="${escapeHtml(p.user_id || p.merchant_id || '')}">
                          ${escapeHtml(p.part_number||'')}
                       </a>`;
 
@@ -368,13 +368,13 @@
                  data-id="${p.store_id||''}"
                  data-sku="${escapeHtml(p.part_number||'')}"
                  data-url="${escapeHtml(p.quick_view||'')}"
-                 data-user="${escapeHtml(p.user_id || p.vendor_id || '')}">
+                 data-user="${escapeHtml(p.user_id || p.merchant_id || '')}">
                  ${escapeHtml(t('labels.quick_view'))}</button>`:'';
           const partLink=`<a href="javascript:;" class="text-decoration-none text-primary part-link"
                           data-sku="${escapeHtml(p.part_number||'')}"
                           data-id="${p.store_id||''}"
                           data-url="${escapeHtml(p.quick_view||'')}"
-                          data-user="${escapeHtml(p.user_id || p.vendor_id || '')}">
+                          data-user="${escapeHtml(p.user_id || p.merchant_id || '')}">
                           🔢 ${escapeHtml(p.part_number||'')}</a>`;
 
           const subsList = normListFromAny(p.substitutions ?? p.alternatives ?? p.alt ?? p.subs, 'subs');
@@ -1040,8 +1040,9 @@
 
       const btn = this;
       const id  = $(btn).data('id');
-      const mpId = $(btn).data('mp-id') || $(btn).data('mpId'); // merchant_product_id
-      if (!id && !mpId) { console.warn('ill-add-to-cart: missing data-id or data-mp-id'); return; }
+      // Support both merchant_item_id (new) and mp-id/mpId (legacy) for backward compatibility
+      const mpId = $(btn).data('merchant-item-id') || $(btn).data('merchantItemId') || $(btn).data('mp-id') || $(btn).data('mpId');
+      if (!id && !mpId) { console.warn('ill-add-to-cart: missing data-id or data-merchant-item-id'); return; }
 
       // كمية إن وُجدت داخل بطاقة المنتج، وإلا = 1 (جدول البدائل)
       const $root = $(btn).closest('.ill-product');
@@ -1097,8 +1098,9 @@
 
       const btn = this;
       const id  = $(btn).data('id');
-      const mpId = $(btn).data('mp-id') || $(btn).data('mpId'); // merchant_product_id
-      if (!id && !mpId) { console.warn('ill-buy-now: missing data-id or data-mp-id'); return; }
+      // Support both merchant_item_id (new) and mp-id/mpId (legacy) for backward compatibility
+      const mpId = $(btn).data('merchant-item-id') || $(btn).data('merchantItemId') || $(btn).data('mp-id') || $(btn).data('mpId');
+      if (!id && !mpId) { console.warn('ill-buy-now: missing data-id or data-merchant-item-id'); return; }
 
       // كمية من الحقل إن وُجد، وإلا = 1
       const $root = $(btn).closest('.ill-product');

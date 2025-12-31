@@ -37,7 +37,7 @@
           <div class="col-lg-7">
             <div class="product-info">
               <h4 class="item-name">
-                <x-product-name :product="$product" :vendor-id="request()->get('user', $product->user_id)" target="_blank" />
+                <x-catalog-item-name :catalog-item="$product" :vendor-id="request()->get('user', $product->user_id)" target="_blank" />
               </h4>
 
               <div class="top-meta">
@@ -67,14 +67,14 @@
                   {{-- REVIEW SECTION  --}}
 
                     <div class="stars">
-                        <div class="ratings">
+                        <div class="review-stars">
                             <div class="empty-stars"></div>
-                            <div class="full-stars" style="width:{{ App\Models\Rating::ratings($product->id) }}%"></div>
+                            <div class="full-stars" style="width:{{ App\Models\CatalogReview::scorePercentage($product->id) }}%"></div>
                           </div>
                     </div>
 
                     <div class="review">
-                      <i class="far fa-comments"></i> {{ App\Models\Rating::ratingCount($product->id) }} {{ __('Review') }}
+                      <i class="far fa-comments"></i> {{ App\Models\CatalogReview::reviewCount($product->id) }} {{ __('Review') }}
                     </div>
 
                   {{-- REVIEW SECTION ENDS  --}}
@@ -117,7 +117,7 @@
 
                     <div class="compear">
 
-                      <a class="add-to-compare" href="javascript:;" data-href="{{ route('product.compare.add',$product->id) }}" data-bs-toggle="tooltip" data-bs-placement="top" title="{{ __('Compare') }}">
+                      <a class="add-to-compare" href="javascript:;" data-href="{{ route('catalog-item.compare.add',$product->id) }}" data-bs-toggle="tooltip" data-bs-placement="top" title="{{ __('Compare') }}">
                         <i class="fas fa-random"></i>
                       </a>
 
@@ -345,7 +345,7 @@
               {{-- PRODUCT ADD CART SECTION --}}
               @php
                   $quickVendorId = request()->get('user', $product->user_id);
-                  $quickMp = $product->merchantProducts()->where('user_id', $quickVendorId)->where('status', 1)->first();
+                  $quickMp = $product->merchantItems()->where('user_id', $quickVendorId)->where('status', 1)->first();
                   $quickMinQty = $quickMp ? max(1, (int)($quickMp->minimum_qty ?? 1)) : max(1, (int)($product->minimum_qty ?? 1));
                   $quickStock = $quickMp ? (int)($quickMp->stock ?? 0) : (int)($product->stock ?? 0);
                   $quickPreordered = $quickMp ? (int)($quickMp->preordered ?? 0) : 0;
@@ -354,7 +354,7 @@
 
               <input type="hidden" id="mproduct_price" value="{{ round($product->vendorSizePrice() * $curr->value,2) }}">
               <input type="hidden" id="mproduct_id" value="{{ $product->id }}">
-              <input type="hidden" id="mmerchant_product_id" value="{{ $quickMp->id ?? '' }}">
+              <input type="hidden" id="mmerchant_item_id" value="{{ $quickMp->id ?? '' }}">
               <input type="hidden" id="mvendor_user_id" value="{{ $quickVendorId }}">
               <input type="hidden" id="mcurr_pos" value="{{ $gs->currency_format }}">
               <input type="hidden" id="mcurr_sign" value="{{ $curr->sign }}">
@@ -367,7 +367,7 @@
 
                       {{-- PRODUCT QUANTITY SECTION --}}
 
-                      {{-- product_type is now on merchant_products --}}
+                      {{-- product_type is now on merchant_items --}}
                       @if($quickMp && $quickMp->product_type != "affiliate" && $product->type == 'Physical')
 
                           <li>
@@ -390,7 +390,7 @@
 
                       {{-- PRODUCT QUANTITY SECTION ENDS --}}
 
-                      {{-- product_type is now on merchant_products --}}
+                      {{-- product_type is now on merchant_items --}}
                       @if($quickMp && $quickMp->product_type == "affiliate")
 
                       <li>
@@ -405,7 +405,7 @@
                       {{-- UNIFIED: Use data attributes for cart-unified.js --}}
                       <li>
                         <button type="button" class="m-cart-add"
-                                data-merchant-product-id="{{ $quickMp->id }}"
+                                data-merchant-item-id="{{ $quickMp->id }}"
                                 data-vendor-id="{{ $quickVendorId }}"
                                 data-min-qty="{{ $quickMinQty }}"
                                 data-qty-input=".modal-total">
@@ -416,7 +416,7 @@
 
                       <li>
                         <button type="button" class="m-cart-add"
-                                data-merchant-product-id="{{ $quickMp->id }}"
+                                data-merchant-item-id="{{ $quickMp->id }}"
                                 data-vendor-id="{{ $quickVendorId }}"
                                 data-min-qty="{{ $quickMinQty }}"
                                 data-qty-input=".modal-total"
@@ -465,7 +465,7 @@
 
               @php
                 $quickVendorId = request()->get('user', $product->user_id);
-                $quickMerchant = $product->merchantProducts()->where('user_id', $quickVendorId)->where('status', 1)->first();
+                $quickMerchant = $product->merchantItems()->where('user_id', $quickVendorId)->where('status', 1)->first();
               @endphp
 
               @if($quickMerchant && $quickMerchant->qualityBrand)
@@ -507,11 +507,11 @@
               <div class="mt-2">
                 @php
                     $quickVendorId = request()->get('user', $product->user_id);
-                    $quickMerchant = $product->merchantProducts()->where('user_id', $quickVendorId)->where('status', 1)->first();
+                    $quickMerchant = $product->merchantItems()->where('user_id', $quickVendorId)->where('status', 1)->first();
                     $quickMerchantId = $quickMerchant->id ?? null;
                 @endphp
                 @if($quickMerchantId)
-                    <a class="view_more_btn" href="{{ route('front.product', ['slug' => $product->slug, 'vendor_id' => $quickVendorId, 'merchant_product_id' => $quickMerchantId]) }}">{{__('Get More Details')}} <i class="fas fa-arrow-right"></i></a>
+                    <a class="view_more_btn" href="{{ route('front.catalog-item', ['slug' => $product->slug, 'vendor_id' => $quickVendorId, 'merchant_item_id' => $quickMerchantId]) }}">{{__('Get More Details')}} <i class="fas fa-arrow-right"></i></a>
                 @endif
               </div>
 
@@ -737,7 +737,7 @@
         // ============================================
         // DEPRECATED: #maddcrt and #mqaddcrt handlers
         // Now handled by cart-unified.js via .m-cart-add class
-        // Buttons use: class="m-cart-add" with data-merchant-product-id, data-qty-input, data-redirect
+        // Buttons use: class="m-cart-add" with data-merchant-item-id, data-qty-input, data-redirect
         // ============================================
 
     })(jQuery);

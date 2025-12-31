@@ -2,9 +2,10 @@
  * Unified Cart System
  * ===================
  * Single source of truth for all cart operations.
- * Uses merchant_product_id exclusively - NO fallbacks.
+ * Uses merchant_item_id exclusively - NO fallbacks.
+ * Maintains backward compatibility with merchant_product_id data attributes.
  *
- * @version 3.0
+ * @version 3.1
  */
 
 (function() {
@@ -108,17 +109,28 @@
     const CartAPI = {
         /**
          * Add item to cart (unified endpoint)
+         * Sends merchant_item_id in payload (new naming convention)
+         * Also reads from merchant_product_id for backward compatibility
          */
         async addItem(payload) {
-            const mpId = payload.merchant_product_id;
+            // Support both merchant_item_id (new) and merchant_product_id (legacy)
+            const mpId = payload.merchant_item_id || payload.merchant_product_id;
 
             // Prevent duplicate requests
             if (state.processing.has(mpId)) {
-                console.warn('Cart: Request already in progress for MP:', mpId);
+                console.warn('Cart: Request already in progress for MI:', mpId);
                 return { success: false, message: 'Request in progress' };
             }
 
             state.processing.add(mpId);
+
+            // Convert payload to use new naming convention for API
+            const apiPayload = {
+                ...payload,
+                merchant_item_id: mpId
+            };
+            // Remove old key if present to avoid confusion
+            delete apiPayload.merchant_product_id;
 
             try {
                 const response = await fetch(CONFIG.endpoint, {
@@ -129,7 +141,7 @@
                         'Accept': 'application/json',
                         'X-Requested-With': 'XMLHttpRequest'
                     },
-                    body: JSON.stringify(payload)
+                    body: JSON.stringify(apiPayload)
                 });
 
                 const data = await response.json();
@@ -174,7 +186,7 @@
             const c = this.container;
             return {
                 mpId: parseInt(c.dataset.mpId) || 0,
-                vendorId: parseInt(c.dataset.vendorId) || 0,
+                merchantId: parseInt(c.dataset.merchantId) || 0,
                 productId: parseInt(c.dataset.productId) || 0,
                 price: parseFloat(c.dataset.price) || 0,
                 stock: parseInt(c.dataset.stock) || 0,
@@ -197,7 +209,7 @@
          */
         init() {
             if (!this.data.mpId) {
-                console.error('CartButton: Missing merchant_product_id');
+                console.error('CartButton: Missing merchant_item_id (data-mp-id attribute)');
                 return;
             }
 
@@ -365,9 +377,9 @@
         validate() {
             const errors = [];
 
-            // Required: merchant_product_id
+            // Required: merchant_item_id
             if (!this.data.mpId) {
-                errors.push('Missing merchant_product_id');
+                errors.push('Missing merchant_item_id');
             }
 
             // Quantity validation
@@ -388,12 +400,13 @@
 
         /**
          * Build payload for API
+         * Uses merchant_item_id (new naming convention)
          */
         buildPayload() {
             return {
-                merchant_product_id: this.data.mpId,
-                vendor_id: this.data.vendorId,
-                product_id: this.data.productId,
+                merchant_item_id: this.data.mpId,
+                merchant_id: this.data.merchantId,
+                catalog_item_id: this.data.productId,
                 qty: this.state.qty,
                 size: this.state.selectedSize,
                 color: this.state.selectedColor,
@@ -464,21 +477,22 @@
     const SimpleAddHandler = {
         /**
          * Handle simple add-to-cart button clicks (.m-cart-add)
+         * Reads merchant_item_id (new) or merchant_product_id (legacy) for backward compatibility
          */
         handleClick(e) {
             e.preventDefault();
             const btn = e.currentTarget;
 
-            // REQUIRED: merchant_product_id
-            const mpId = btn.dataset.merchantProductId;
+            // REQUIRED: merchant_item_id (also accepts merchant_product_id for backward compatibility)
+            const mpId = btn.dataset.merchantItemId || btn.dataset.merchantProductId;
             if (!mpId) {
-                console.error('Cart: merchant_product_id not found on button');
+                console.error('Cart: merchant_item_id not found on button');
                 utils.toast('Cannot add to cart - missing product data', 'error');
                 return;
             }
 
-            // Get vendor_id (optional but recommended)
-            const vendorId = btn.dataset.vendorId || 0;
+            // Get merchant_id (optional but recommended)
+            const merchantId = btn.dataset.merchantId || 0;
 
             // Get redirect URL (for Buy Now buttons)
             const redirectUrl = btn.dataset.redirect || null;
@@ -532,10 +546,10 @@
                 }
             }
 
-            // Build payload
+            // Build payload with new naming convention
             const payload = {
-                merchant_product_id: parseInt(mpId),
-                vendor_id: parseInt(vendorId) || 0,
+                merchant_item_id: parseInt(mpId),
+                merchant_id: parseInt(merchantId) || 0,
                 qty: qty,
             };
 
@@ -763,7 +777,7 @@
         // Initialize event delegation for dynamic content (modals, AJAX)
         EventDelegation.init();
 
-        console.log('[Cart] Unified cart system initialized v4.0 (m-cart-add only)');
+        console.log('[Cart] Unified cart system initialized v4.1 (merchant_item_id naming)');
     }
 
     // Initialize on DOM ready

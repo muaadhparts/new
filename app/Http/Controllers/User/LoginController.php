@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Front\FrontBaseController;
-use App\Models\Generalsetting;
+use App\Models\Muaadhsetting;
 use App\Models\User;
 use Auth;
 use Exception;
@@ -47,7 +47,7 @@ class LoginController extends FrontBaseController
         $user->otp = $otp;
         $user->save();
 
-        $gs = Generalsetting::first();
+        $gs = Muaadhsetting::first();
 
         try {
 

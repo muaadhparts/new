@@ -14,7 +14,7 @@ use Illuminate\Support\Str;
 use Mollie\Laravel\Facades\Mollie;
 
 use Session;
-use OrderHelper;
+use PurchaseHelper;
 
 
 class MollieController extends DepositBaseController

@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Front;
 
 use App\Http\Controllers\Controller;
-use App\Models\Order;
+use App\Models\Purchase;
 use App\Models\ShipmentStatusLog;
 use App\Services\TryotoService;
 use Illuminate\Http\Request;
@@ -27,7 +27,7 @@ class ShipmentTrackingController extends Controller
         $orderNumber = $request->get('order');
         $shipment = null;
         $history = collect();
-        $order = null;
+        $purchase = null;
 
         if ($trackingNumber) {
             // Search by tracking number
@@ -40,7 +40,7 @@ class ShipmentTrackingController extends Controller
                     ->orderBy('status_date', 'desc')
                     ->get();
 
-                $order = Order::find($shipment->order_id);
+                $purchase = Purchase::find($shipment->purchase_id);
 
                 // Try to get live status from Tryoto
                 $liveStatus = $this->tryotoService->trackShipment($trackingNumber);
@@ -50,22 +50,22 @@ class ShipmentTrackingController extends Controller
             }
         } elseif ($orderNumber) {
             // Search by order number
-            $order = Order::where('order_number', $orderNumber)->first();
+            $purchase = Purchase::where('purchase_number', $orderNumber)->first();
 
-            if ($order) {
-                $shipment = ShipmentStatusLog::where('order_id', $order->id)
+            if ($purchase) {
+                $shipment = ShipmentStatusLog::where('purchase_id', $purchase->id)
                     ->latest('status_date')
                     ->first();
 
                 if ($shipment) {
-                    $history = ShipmentStatusLog::where('order_id', $order->id)
+                    $history = ShipmentStatusLog::where('purchase_id', $purchase->id)
                         ->orderBy('status_date', 'desc')
                         ->get();
                 }
             }
         }
 
-        return view('frontend.tracking.index', compact('shipment', 'history', 'order', 'trackingNumber', 'orderNumber'));
+        return view('frontend.tracking.index', compact('shipment', 'history', 'purchase', 'trackingNumber', 'orderNumber'));
     }
 
     /**
@@ -141,15 +141,15 @@ class ShipmentTrackingController extends Controller
 
         $userId = Auth::id();
 
-        $orders = Order::where('user_id', $userId)
+        $purchases = Purchase::where('user_id', $userId)
             ->whereNotNull('vendor_shipping_id')
             ->latest()
             ->get();
 
         $shipments = [];
 
-        foreach ($orders as $order) {
-            $logs = ShipmentStatusLog::where('order_id', $order->id)
+        foreach ($purchases as $purchase) {
+            $logs = ShipmentStatusLog::where('purchase_id', $purchase->id)
                 ->select('tracking_number', 'company_name', 'status', 'status_ar', 'status_date')
                 ->orderBy('status_date', 'desc')
                 ->get()
@@ -158,13 +158,13 @@ class ShipmentTrackingController extends Controller
             foreach ($logs as $tracking => $trackingLogs) {
                 $latest = $trackingLogs->first();
                 $shipments[] = [
-                    'order_number' => $order->order_number,
+                    'purchase_number' => $purchase->purchase_number,
                     'tracking_number' => $tracking,
                     'company' => $latest->company_name,
                     'status' => $latest->status,
                     'status_ar' => $latest->status_ar,
                     'date' => $latest->status_date,
-                    'order_id' => $order->id,
+                    'purchase_id' => $purchase->id,
                 ];
             }
         }

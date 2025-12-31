@@ -6,24 +6,21 @@ use Illuminate\Database\Eloquent\Model;
 
 class Comment extends Model
 {
-    protected $fillable = ['product_id', 'merchant_product_id', 'user_id', 'text'];
+    protected $fillable = ['catalog_item_id', 'merchant_item_id', 'user_id', 'text'];
 
     public function user()
     {
     	return $this->belongsTo('App\Models\User')->withDefault();
     }
 
-    public function product()
+    public function catalogItem()
     {
-    	return $this->belongsTo('App\Models\Product')->withDefault();
+        return $this->belongsTo('App\Models\CatalogItem', 'catalog_item_id')->withDefault();
     }
 
-    /**
-     * السجل التجاري المرتبط بالتعليق
-     */
-    public function merchantProduct()
+    public function merchantItem()
     {
-        return $this->belongsTo('App\Models\MerchantProduct')->withDefault();
+        return $this->belongsTo('App\Models\MerchantItem', 'merchant_item_id')->withDefault();
     }
 
 	public function replies()

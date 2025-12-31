@@ -147,7 +147,7 @@
                columns: [
                   { data: 'name', name: 'name' },
                   { data: 'subject', name: 'subject' },
-                  { data: 'order_number', name: 'order_number' },
+                  { data: 'purchase_number', name: 'purchase_number' },
                   { data: 'created_at', name: 'created_at'},
                   { data: 'action', searchable: false, orderable: false }
 

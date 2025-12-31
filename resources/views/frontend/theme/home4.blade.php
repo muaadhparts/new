@@ -3,7 +3,7 @@
 HOME PAGE - Section-Based Architecture (Theme System)
 ================================================================================
 Each section is controlled by the active HomePageTheme ($theme->*)
-All product data is vendor-only (is_vendor = 2)
+All product data is merchant-only (is_merchant = 2)
 Sections are rendered based on theme settings and order
 ================================================================================
 --}}
@@ -117,13 +117,13 @@ Sections are rendered based on theme settings and order
 
     {{-- ===================================================================
          SECTION: Featured Products (if enabled: $theme->show_featured_products)
-         Uses slider like Related Products - each card is a MerchantProduct
+         Uses slider like Related Products - each card is a MerchantItem
          =================================================================== --}}
     @if(($theme->show_featured_products ?? false) && isset($featured_merchants) && count($featured_merchants) > 0)
     <section class="muaadh-section">
         <div class="container">
             <h2 class="title text-center">{{ $theme->title_featured_products ?? __('Featured Products') }}</h2>
-            @include('frontend.sections.product-slider', ['merchantProducts' => $featured_merchants])
+            @include('frontend.sections.catalog-item-slider', ['merchantItems' => $featured_merchants])
         </div>
     </section>
     @endif
@@ -135,7 +135,7 @@ Sections are rendered based on theme settings and order
     <section class="muaadh-section muaadh-deal-section">
         <div class="container">
             <h2 class="title text-center">{{ $theme->title_deal_of_day ?? __('Deal of the Day') }}</h2>
-            @include('frontend.sections.deal-of-day', ['merchantProduct' => $flash_merchant])
+            @include('frontend.sections.deal-of-day', ['merchantItem' => $flash_merchant])
         </div>
     </section>
     @endif
@@ -148,7 +148,7 @@ Sections are rendered based on theme settings and order
     <section class="muaadh-section">
         <div class="container">
             <h2 class="title text-center">{{ $theme->title_top_rated ?? __('Top Rated Products') }}</h2>
-            @include('frontend.sections.product-slider', ['merchantProducts' => $top_merchants])
+            @include('frontend.sections.catalog-item-slider', ['merchantItems' => $top_merchants])
         </div>
     </section>
     @endif
@@ -161,7 +161,7 @@ Sections are rendered based on theme settings and order
     <section class="muaadh-section">
         <div class="container">
             <h2 class="title text-center">{{ $theme->title_big_save ?? __('Big Save Products') }}</h2>
-            @include('frontend.sections.product-slider', ['merchantProducts' => $big_merchants])
+            @include('frontend.sections.catalog-item-slider', ['merchantItems' => $big_merchants])
         </div>
     </section>
     @endif
@@ -174,7 +174,7 @@ Sections are rendered based on theme settings and order
     <section class="muaadh-section">
         <div class="container">
             <h2 class="title text-center">{{ $theme->title_trending ?? __('Trending Products') }}</h2>
-            @include('frontend.sections.product-slider', ['merchantProducts' => $trending_merchants])
+            @include('frontend.sections.catalog-item-slider', ['merchantItems' => $trending_merchants])
         </div>
     </section>
     @endif
@@ -187,7 +187,7 @@ Sections are rendered based on theme settings and order
     <section class="muaadh-section">
         <div class="container">
             <h2 class="title text-center">{{ $theme->title_best_sellers ?? __('Best Selling Products') }}</h2>
-            @include('frontend.sections.product-slider', ['merchantProducts' => $best_merchants])
+            @include('frontend.sections.catalog-item-slider', ['merchantItems' => $best_merchants])
         </div>
     </section>
     @endif

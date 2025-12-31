@@ -3,10 +3,10 @@
 namespace App\Traits;
 
 use App\Helpers\PriceHelper;
-use App\Models\Order;
+use App\Models\Purchase;
 use App\Models\User;
 use App\Models\City;
-use App\Models\UserNotification;
+use App\Models\UserCatalogEvent;
 use App\Services\TryotoService;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
@@ -19,14 +19,14 @@ use Illuminate\Support\Facades\DB;
 trait CreatesTryotoShipments
 {
     /**
-     * Create Tryoto shipment(s) after the order is successfully created.
+     * Create Tryoto shipment(s) after the purchase is successfully created.
      * Store the results in vendor_shipping_id as JSON, and update the shipping/shipping_title for the view.
      *
-     * @param Order $order
+     * @param Purchase $purchase
      * @param array $input
      * @return void
      */
-    protected function createOtoShipments(Order $order, array $input): void
+    protected function createOtoShipments(Purchase $purchase, array $input): void
     {
         // Check shipping selection — supports array (multi-vendor) or single-value scenarios
         $shippingInput = $input['shipping'] ?? $input['vendor_shipping_id'] ?? null;
@@ -46,11 +46,11 @@ trait CreatesTryotoShipments
 
         // Shipment destination: customer city
         // تحويل city ID إلى city name باستخدام TryotoService
-        $destinationCityValue = $order->customer_city;
+        $destinationCityValue = $purchase->customer_city;
         $destinationCity = $systemTryotoService->resolveCityName($destinationCityValue);
 
         // Preparing cart items for dimension/weight calculations
-        $cartRaw = $order->cart;
+        $cartRaw = $purchase->cart;
         $cartArr = is_string($cartRaw) ? (json_decode($cartRaw, true) ?: []) : (is_array($cartRaw) ? $cartRaw : (array) $cartRaw);
 
         // Trying to extract items in common formats
@@ -83,26 +83,26 @@ trait CreatesTryotoShipments
         $dims = PriceHelper::calculateShippingDimensions($productsForDims);
 
         $otoPayloads = [];
-        foreach ($selections as $vendorId => $value) {
+        foreach ($selections as $merchantId => $value) {
             // OTO option is in the form: deliveryOptionId#Company#price
             if (!is_string($value) || strpos($value, '#') === false) {
                 continue; // Not OTO, could be an internal shipping ID
             }
             [$deliveryOptionId, $company, $price] = explode('#', $value);
-            $codAmount = ($order->method === 'cod' || $order->method === 'Cash On Delivery' || $order->payment_status === 'Cash On Delivery') ? (float)$order->pay_amount : 0.0;
+            $codAmount = ($purchase->method === 'cod' || $purchase->method === 'Cash On Delivery' || $purchase->payment_status === 'Cash On Delivery') ? (float)$purchase->pay_amount : 0.0;
 
             // الحصول على warehouse address من التاجر
-            $vendor = User::find($vendorId);
+            $merchant = User::find($merchantId);
 
             // تحويل city ID إلى city name باستخدام TryotoService
-            $originCityValue = $vendor->city_id ?? $vendor->warehouse_city ?? $vendor->shop_city;
+            $originCityValue = $merchant->city_id ?? $merchant->warehouse_city ?? $merchant->shop_city;
             $originCity = $systemTryotoService->resolveCityName($originCityValue);
 
-            // ✅ Use vendor-specific credentials for shipment creation
-            $vendorTryotoService = app(TryotoService::class)->forVendor((int)$vendorId);
-            $result = $vendorTryotoService->createShipment(
-                $order,
-                (int)$vendorId,
+            // ✅ Use merchant-specific credentials for shipment creation
+            $merchantTryotoService = app(TryotoService::class)->forMerchant((int)$merchantId);
+            $result = $merchantTryotoService->createShipment(
+                $purchase,
+                (int)$merchantId,
                 $deliveryOptionId,
                 $company,
                 (float)$price,
@@ -111,7 +111,7 @@ trait CreatesTryotoShipments
 
             if ($result['success']) {
                 $otoPayloads[] = [
-                    'vendor_id' => (string)$vendorId,
+                    'merchant_id' => (string)$merchantId,
                     'company' => $company,
                     'price' => (float)$price,
                     'deliveryOptionId'=> $deliveryOptionId,
@@ -120,15 +120,15 @@ trait CreatesTryotoShipments
                 ];
 
                 Log::debug('Tryoto Shipment Created via TryotoService', [
-                    'order_id' => $order->id,
-                    'vendor_id' => $vendorId,
+                    'purchase_id' => $purchase->id,
+                    'merchant_id' => $merchantId,
                     'tracking_number' => $result['tracking_number'],
                     'company' => $company,
                 ]);
             } else {
                 Log::error('Tryoto createShipment failed', [
-                    'order_id' => $order->id,
-                    'vendor_id' => $vendorId,
+                    'purchase_id' => $purchase->id,
+                    'merchant_id' => $merchantId,
                     'error' => $result['error'] ?? 'Unknown error'
                 ]);
             }
@@ -136,21 +136,21 @@ trait CreatesTryotoShipments
 
         if ($otoPayloads) {
             // 1) Store the details in vendor_shipping_id as JSON text (no migration required)
-            $order->vendor_shipping_id = json_encode(['oto' => $otoPayloads], JSON_UNESCAPED_UNICODE);
+            $purchase->vendor_shipping_id = json_encode(['oto' => $otoPayloads], JSON_UNESCAPED_UNICODE);
 
             // 2) Quick display and explanation
             $first = $otoPayloads[0];
 
-            // لا نُعيد تعيين $order->shipping لأنها تحتوي على طريقة التوصيل (shipto/pickup)
+            // لا نُعيد تعيين $purchase->shipping لأنها تحتوي على طريقة التوصيل (shipto/pickup)
             // بدلاً من ذلك، نحفظ معلومات Tryoto في shipping_title فقط
-            $order->shipping_title = 'Tryoto - ' . ($first['company'] ?? 'N/A') . ' (Tracking: ' . ($first['trackingNumber'] ?? 'N/A') . ')';
+            $purchase->shipping_title = 'Tryoto - ' . ($first['company'] ?? 'N/A') . ' (Tracking: ' . ($first['trackingNumber'] ?? 'N/A') . ')';
 
             // إذا كانت shipping فارغة أو غير محددة، نضع 'shipto' كقيمة افتراضية
-            if (empty($order->shipping) || !in_array($order->shipping, ['shipto', 'pickup'])) {
-                $order->shipping = 'shipto';
+            if (empty($purchase->shipping) || !in_array($purchase->shipping, ['shipto', 'pickup'])) {
+                $purchase->shipping = 'shipto';
             }
 
-            $order->save();
+            $purchase->save();
         }
     }
 
