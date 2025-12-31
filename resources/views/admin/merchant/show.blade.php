@@ -174,7 +174,7 @@
                                                                                 </div>
                                                                             </td>
                                                                             <td>
-                                                                                <a href="{{ route('admin-prod-edit', $dt->id ?? 0) }}" class="view-details">
+                                                                                <a href="{{ route('admin-catalog-item-edit', $dt->id ?? 0) }}" class="view-details">
                                                                                     <i class="fas fa-eye"></i>{{ __("Details") }}
                                                                                 </a>
                                                                             </td>

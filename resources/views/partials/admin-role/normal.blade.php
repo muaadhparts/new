@@ -110,19 +110,19 @@
     </a>
     <ul class="collapse list-unstyled" id="menu2" data-bs-parent="#accordion">
         <li>
-            <a href="{{ route('admin-prod-types') }}"><span>{{ __('Add New Product') }}</span></a>
+            <a href="{{ route('admin-catalog-item-types') }}"><span>{{ __('Add New Product') }}</span></a>
         </li>
         <li>
-            <a href="{{ route('admin-prod-index') }}"><span>{{ __('All Products') }}</span></a>
+            <a href="{{ route('admin-catalog-item-index') }}"><span>{{ __('All Products') }}</span></a>
         </li>
         <li>
-            <a href="{{ route('admin-prod-deactive') }}"><span>{{ __('Deactivated Product') }}</span></a>
+            <a href="{{ route('admin-catalog-item-deactive') }}"><span>{{ __('Deactivated Product') }}</span></a>
         </li>
         <li>
-            <a href="{{ route('admin-prod-catalog-index') }}"><span>{{ __('Product Catalogs') }}</span></a>
+            <a href="{{ route('admin-catalog-item-catalog-index') }}"><span>{{ __('Product Catalogs') }}</span></a>
         </li>
         <li>
-            <a href="{{ route('admin-gs-prod-settings') }}"><span>{{ __('Product Settings') }}</span></a>
+            <a href="{{ route('admin-gs-catalog-item-settings') }}"><span>{{ __('Product Settings') }}</span></a>
         </li>
     </ul>
 </li>
@@ -150,7 +150,7 @@
 @if(Auth::guard('admin')->user()->sectionCheck('bulk_product_upload'))
 
 <li>
-    <a href="{{ route('admin-prod-import') }}"><i class="fas fa-upload"></i>{{ __('Bulk Product Upload') }}</a>
+    <a href="{{ route('admin-catalog-item-import') }}"><i class="fas fa-upload"></i>{{ __('Bulk Product Upload') }}</a>
 </li>
 
 @endif
@@ -163,7 +163,7 @@
     </a>
     <ul class="collapse list-unstyled" id="menu4" data-bs-parent="#accordion">
         <li>
-            <a href="{{ route('admin-rating-index') }}"><span>{{ __('Product Reviews') }}</span></a>
+            <a href="{{ route('admin-catalog-review-index') }}"><span>{{ __('Product Reviews') }}</span></a>
         </li>
      
         <li>
@@ -516,7 +516,7 @@
     </a>
     <ul class="collapse list-unstyled" id="seoTools" data-bs-parent="#accordion">
         <li>
-            <a href="{{ route('admin-prod-popular',30) }}"><span>{{ __('Popular Products') }}</span></a>
+            <a href="{{ route('admin-catalog-item-popular',30) }}"><span>{{ __('Popular Products') }}</span></a>
         </li>
         <li>
             <a href="{{ route('admin-seotool-analytics') }}"><span>{{ __('Google Analytics') }}</span></a>

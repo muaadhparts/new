@@ -19,10 +19,10 @@
 												<a href="javascript:;">{{ __("Products") }} </a>
 											</li>
 											<li>
-												<a href="{{ route('admin-prod-index') }}">{{ __("All Products") }}</a>
+												<a href="{{ route('admin-catalog-item-index') }}">{{ __("All Products") }}</a>
 											</li>
 												<li>
-													<a href="{{ route('admin-prod-import') }}">{{ __("Bulk Upload") }}</a>
+													<a href="{{ route('admin-catalog-item-import') }}">{{ __("Bulk Upload") }}</a>
 												</li>
 											</ul>
 									</div>
@@ -33,7 +33,7 @@
 									<div class="col-lg-12 p-5">
 
 					                      <div class="gocover" style="background: url({{asset('assets/images/'.$gs->admin_loader)}}) no-repeat scroll center center rgba(45, 45, 45, 0.5);"></div>
-					                      <form id="muaadhform" action="{{route('admin-prod-importsubmit')}}" method="POST" enctype="multipart/form-data">
+					                      <form id="muaadhform" action="{{route('admin-catalog-item-importsubmit')}}" method="POST" enctype="multipart/form-data">
 					                        {{csrf_field()}}
 
                         						@include('alerts.admin.form-both')  

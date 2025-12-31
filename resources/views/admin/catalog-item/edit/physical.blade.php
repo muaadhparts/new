@@ -12,7 +12,7 @@
                             <a href="{{ route('admin.dashboard') }}">{{ __('Dashboard') }} </a>
                         </li>
                         <li>
-                            <a href="{{ route('admin-prod-index') }}">{{ __('Products') }} </a>
+                            <a href="{{ route('admin-catalog-item-index') }}">{{ __('Products') }} </a>
                         </li>
                         <li>
                             <a href="javascript:;">{{ __('Physical Product') }}</a>
@@ -24,7 +24,7 @@
                 </div>
             </div>
         </div>
-        <form id="muaadhform" action="{{ route('admin-prod-update', $merchantItem->id) }}" method="POST"
+        <form id="muaadhform" action="{{ route('admin-catalog-item-update', $merchantItem->id) }}" method="POST"
             enctype="multipart/form-data">
             {{ csrf_field() }}
             @include('alerts.admin.form-both')
@@ -1459,7 +1459,7 @@
                         var img = $('#feature_photo').val();
 
                         $.ajax({
-                            url: "{{ route('admin-prod-upload-update', $data->id) }}",
+                            url: "{{ route('admin-catalog-item-upload-update', $data->id) }}",
                             type: "POST",
                             data: {
                                 "image": img

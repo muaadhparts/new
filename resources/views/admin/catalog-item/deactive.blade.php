@@ -15,7 +15,7 @@
 												<a href="javascript:;">{{ __("Products") }} </a>
 											</li>
 											<li>
-												<a href="{{ route('admin-prod-deactive') }}">{{ __("Deactivated Products") }}</a>
+												<a href="{{ route('admin-catalog-item-deactive') }}">{{ __("Deactivated Products") }}</a>
 											</li>
 										</ul>
 								</div>
@@ -211,7 +211,7 @@
 			   ordering: false,
                processing: true,
                serverSide: true,
-               ajax: '{{ route('admin-prod-datatables') }}?type=deactive',
+               ajax: '{{ route('admin-catalog-item-datatables') }}?type=deactive',
                columns: [
                         { data: 'photo', name: 'photo' },
                         { data: 'name', name: 'name' },

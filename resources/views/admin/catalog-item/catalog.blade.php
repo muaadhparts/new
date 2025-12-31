@@ -15,7 +15,7 @@
 												<a href="javascript:;">{{ __("Products") }} </a>
 											</li>
 											<li>
-												<a href="{{ route('admin-prod-index') }}">{{ __("Catalog Products") }}</a>
+												<a href="{{ route('admin-catalog-item-index') }}">{{ __("Catalog Products") }}</a>
 											</li>
 										</ul>
 								</div>
@@ -181,7 +181,7 @@
 			   ordering: false,
                processing: true,
                serverSide: true,
-               ajax: '{{ route('admin-prod-catalog-datatables') }}',
+               ajax: '{{ route('admin-catalog-item-catalog-datatables') }}',
                columns: [
                         { data: 'photo', name: 'photo' },
                         { data: 'name', name: 'name' },

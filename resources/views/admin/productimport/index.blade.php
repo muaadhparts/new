@@ -15,7 +15,7 @@
 												<a href="javascript:;">{{ __("Products") }} </a>
 											</li>
 											<li>
-												<a href="{{ route('admin-prod-index') }}">{{ __("Affiliate Products") }}</a>
+												<a href="{{ route('admin-catalog-item-index') }}">{{ __("Affiliate Products") }}</a>
 											</li>
 										</ul>
 								</div>

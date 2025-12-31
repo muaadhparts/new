@@ -15,10 +15,10 @@
                         <a href="javascript:;">{{ __("Products") }} </a>
                       </li>
                       <li>
-                        <a href="{{ route('admin-prod-index') }}">{{ __("All Products") }}</a>
+                        <a href="{{ route('admin-catalog-item-index') }}">{{ __("All Products") }}</a>
                       </li>
                       <li>
-                        <a href="{{ route('admin-prod-types') }}">{{ __("Add Product") }}</a>
+                        <a href="{{ route('admin-catalog-item-types') }}">{{ __("Add Product") }}</a>
                       </li>
                     </ul>
                 </div>
@@ -39,7 +39,7 @@
               <div class="ap-product-categories">
                 <div class="row">
                   <div class="col-lg-4">
-                    <a href="{{ route('admin-prod-create','physical') }}">
+                    <a href="{{ route('admin-catalog-item-create','physical') }}">
                     <div class="cat-box box1">
                       <div class="icon">
                         <i class="fas fa-tshirt"></i>
@@ -49,7 +49,7 @@
                     </a>
                   </div>
                   <div class="col-lg-4">
-                    <a href="{{ route('admin-prod-create','digital') }}">
+                    <a href="{{ route('admin-catalog-item-create','digital') }}">
                     <div class="cat-box box2">
                       <div class="icon">
                         <i class="fas fa-camera-retro"></i>
@@ -59,7 +59,7 @@
                     </a>
                   </div>
                   <div class="col-lg-4">
-                    <a href="{{ route('admin-prod-create','license') }}">
+                    <a href="{{ route('admin-catalog-item-create','license') }}">
                     <div class="cat-box box3">
                       <div class="icon">
                         <i class="fas fa-award"></i>
@@ -72,7 +72,7 @@
 
                 <div class="row my-4 d-flex justify-content-center">
                   <div class="col-lg-4">
-                    <a href="{{ route('admin-prod-create','listing') }}">
+                    <a href="{{ route('admin-catalog-item-create','listing') }}">
                     <div class="cat-box box3">
                       <div class="icon">
                         <i class="fas fa-th-list"></i>

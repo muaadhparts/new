@@ -6,7 +6,7 @@
             <div class="row">
                 <div class="col-lg-12">
                     <h4 class="heading">{{ __('Physical Product') }} <a class="add-btn"
-                            href="{{ route('admin-prod-types') }}"><i class="fas fa-arrow-left"></i> {{ __('Back') }}</a>
+                            href="{{ route('admin-catalog-item-types') }}"><i class="fas fa-arrow-left"></i> {{ __('Back') }}</a>
                     </h4>
                     <ul class="links">
                         <li>
@@ -16,19 +16,19 @@
                             <a href="javascript:;">{{ __('Products') }} </a>
                         </li>
                         <li>
-                            <a href="{{ route('admin-prod-index') }}">{{ __('All Products') }}</a>
+                            <a href="{{ route('admin-catalog-item-index') }}">{{ __('All Products') }}</a>
                         </li>
                         <li>
-                            <a href="{{ route('admin-prod-types') }}">{{ __('Add Product') }}</a>
+                            <a href="{{ route('admin-catalog-item-types') }}">{{ __('Add Product') }}</a>
                         </li>
                         <li>
-                            <a href="{{ route('admin-prod-create', 'physical') }}">{{ __('Physical Product') }}</a>
+                            <a href="{{ route('admin-catalog-item-create', 'physical') }}">{{ __('Physical Product') }}</a>
                         </li>
                     </ul>
                 </div>
             </div>
         </div>
-        <form id="muaadhform" action="{{ route('admin-prod-store') }}" method="POST" enctype="multipart/form-data">
+        <form id="muaadhform" action="{{ route('admin-catalog-item-store') }}" method="POST" enctype="multipart/form-data">
             {{ csrf_field() }}
             @include('alerts.admin.form-both')
             <div class="row">

@@ -15,7 +15,7 @@
                             <a href="javascript:;">{{ __('Products') }} </a>
                         </li>
                         <li>
-                            <a href="{{ route('admin-prod-index') }}">{{ __('All Products') }}</a>
+                            <a href="{{ route('admin-catalog-item-index') }}">{{ __('All Products') }}</a>
                         </li>
                     </ul>
                 </div>
@@ -207,7 +207,7 @@
                 ordering: false,
                 processing: true,
                 serverSide: true,
-                ajax: '{{ route('admin-prod-datatables') }}?type=all',
+                ajax: '{{ route('admin-catalog-item-datatables') }}?type=all',
                 columns: [
 					{
                         data: 'photo',
@@ -259,7 +259,7 @@
 
             $(function() {
                 $(".btn-area").append('<div class="col-sm-4 table-contents">' +
-                    '<a class="add-btn" href="{{ route('admin-prod-types') }}">' +
+                    '<a class="add-btn" href="{{ route('admin-catalog-item-types') }}">' +
                     '<i class="fas fa-plus"></i> <span class="remove-mobile">{{ __('Add Product') }}<span>' +
                     '</a>' +
                     '</div>');

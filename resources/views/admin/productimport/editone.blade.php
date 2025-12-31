@@ -940,7 +940,7 @@ $(function($) {
   	var img = $('#feature_photo').val();
 
       $.ajax({
-        url: "{{route('admin-prod-upload-update',$data->id)}}",
+        url: "{{route('admin-catalog-item-upload-update',$data->id)}}",
         type: "POST",
         data: {"image":img,"_token": "{{ csrf_token() }}"},
         success: function (data) {

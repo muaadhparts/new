@@ -71,7 +71,7 @@
                 <div class="left">
                     <h5 class="title">{{ __('Total Products!') }}</h5>
                     <span class="number">{{$products}}</span>
-                    <a href="{{route('admin-prod-index')}}" class="link">{{ __('View All') }}</a>
+                    <a href="{{route('admin-catalog-item-index')}}" class="link">{{ __('View All') }}</a>
                 </div>
                 <div class="right d-flex align-self-center">
                     <div class="icon">
@@ -173,7 +173,7 @@
                                     <th>{{ __('Purchase Number') }}</th>
                                     <th>{{ __('Purchase Date') }}</th>
                                 </tr>
-                                @foreach($rorders as $data)
+                                @foreach($rpurchases as $data)
                                 <tr>
                                     <td>{{ $data->purchase_number }}</td>
                                     <td>{{ date('Y-m-d',strtotime($data->created_at)) }}</td>
@@ -265,7 +265,7 @@
                                                 <td> {{ $data->showPrice() }} </td>
 
                                                 <td>
-                                                    <div class="action-list"><a href="{{ route('admin-prod-edit',$data->id) }}"><i
+                                                    <div class="action-list"><a href="{{ route('admin-catalog-item-edit',$data->id) }}"><i
                                                                 class="fas fa-eye"></i> {{ __('Details') }}</a>
                                                     </div>
                                                 </td>
@@ -319,7 +319,7 @@
                                                         <td>{{ $data->product->type ?? 'N/A' }}</td>
                                                         <td> {{ $data->showPrice() }} </td>
                                                         <td>
-                                                            <div class="action-list"><a href="{{ route('admin-prod-edit',$data->product->id ?? $data->id) }}"><i
+                                                            <div class="action-list"><a href="{{ route('admin-catalog-item-edit',$data->product->id ?? $data->id) }}"><i
                                                                         class="fas fa-eye"></i> {{ __('Details') }}</a>
                                                             </div>
                                                         </td>

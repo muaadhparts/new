@@ -128,8 +128,8 @@
 											}}</span>
 									</a>
 									<div class="dropdown-menu">
-										<div class="dropdownmenu-wrapper" data-href="{{ route('product-notf-show') }}"
-											id="product-notf-show">
+										<div class="dropdownmenu-wrapper" data-href="{{ route('catalog-item-notf-show') }}"
+											id="catalog-item-notf-show">
 										</div>
 									</div>
 								</li>
@@ -153,8 +153,8 @@
 										<span id="order-notf-count">{{ App\Models\CatalogEvent::countPurchase() }}</span>
 									</a>
 									<div class="dropdown-menu">
-										<div class="dropdownmenu-wrapper" data-href="{{ route('order-notf-show') }}"
-											id="order-notf-show">
+										<div class="dropdownmenu-wrapper" data-href="{{ route('purchase-notf-show') }}"
+											id="purchase-notf-show">
 										</div>
 									</div>
 								</li>
@@ -221,7 +221,7 @@
 		var mainurl = "{{url('/')}}";
 		var admin_loader = {{ $gs->is_admin_loader }};
 		var whole_sell = {{ $gs->wholesell }};
-		var getattrUrl = '{{ route('admin-prod-getattributes') }}';
+		var getattrUrl = '{{ route('admin-catalog-item-getattributes') }}';
 		var curr = {!! json_encode($curr) !!};
 		var lang = {
 			'additional_price': '{{ __('0.00 (Additional Price)') }}'
