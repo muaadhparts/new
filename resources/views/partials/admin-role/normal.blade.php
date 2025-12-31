@@ -7,19 +7,19 @@
             class="fas fa-hand-holding-usd"></i>{{ __('Purchases') }}</a>
     <ul class="collapse list-unstyled" id="purchase" data-bs-parent="#accordion">
         <li>
-            <a href="{{ route('admin-orders-all') }}"> {{ __('All Purchases') }}</a>
+            <a href="{{ route('admin-purchases-all') }}"> {{ __('All Purchases') }}</a>
         </li>
         <li>
-            <a href="{{ route('admin-orders-all') }}?status=pending"> {{ __('Pending Purchases') }}</a>
+            <a href="{{ route('admin-purchases-all') }}?status=pending"> {{ __('Pending Purchases') }}</a>
         </li>
         <li>
-            <a href="{{ route('admin-orders-all') }}?status=processing"> {{ __('Processing Purchases') }}</a>
+            <a href="{{ route('admin-purchases-all') }}?status=processing"> {{ __('Processing Purchases') }}</a>
         </li>
         <li>
-            <a href="{{ route('admin-orders-all') }}?status=completed"> {{ __('Completed Purchases') }}</a>
+            <a href="{{ route('admin-purchases-all') }}?status=completed"> {{ __('Completed Purchases') }}</a>
         </li>
         <li>
-            <a href="{{ route('admin-orders-all') }}?status=declined"> {{ __('Declined Purchases') }}</a>
+            <a href="{{ route('admin-purchases-all') }}?status=declined"> {{ __('Declined Purchases') }}</a>
         </li>
 
     </ul>

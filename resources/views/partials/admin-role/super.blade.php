@@ -3,19 +3,19 @@
             class="fas fa-hand-holding-usd"></i>{{ __('Orders') }}</a>
     <ul class="collapse list-unstyled" id="order" data-bs-parent="#accordion">
         <li>
-            <a href="{{ route('admin-orders-all') }}"> {{ __('All Orders') }}</a>
+            <a href="{{ route('admin-purchases-all') }}"> {{ __('All Orders') }}</a>
         </li>
         <li>
-            <a href="{{ route('admin-orders-all') }}?status=pending"> {{ __('Pending Orders') }}</a>
+            <a href="{{ route('admin-purchases-all') }}?status=pending"> {{ __('Pending Orders') }}</a>
         </li>
         <li>
-            <a href="{{ route('admin-orders-all') }}?status=processing"> {{ __('Processing Orders') }}</a>
+            <a href="{{ route('admin-purchases-all') }}?status=processing"> {{ __('Processing Orders') }}</a>
         </li>
         <li>
-            <a href="{{ route('admin-orders-all') }}?status=completed"> {{ __('Completed Orders') }}</a>
+            <a href="{{ route('admin-purchases-all') }}?status=completed"> {{ __('Completed Orders') }}</a>
         </li>
         <li>
-            <a href="{{ route('admin-orders-all') }}?status=declined"> {{ __('Declined Orders') }}</a>
+            <a href="{{ route('admin-purchases-all') }}?status=declined"> {{ __('Declined Orders') }}</a>
         </li>
         <li>
             <a href="{{ route('admin-purchase-create') }}"> {{ __('Pos') }}</a>
@@ -297,7 +297,7 @@
             <a href="{{ route('admin.credentials.index') }}"><span><i class="fas fa-cog me-1"></i>{{ __('System Credentials') }}</span></a>
         </li>
         <li>
-            <a href="{{ route('admin.vendor-credentials.index') }}"><span><i class="fas fa-store me-1"></i>{{ __('Vendor Credentials') }}</span></a>
+            <a href="{{ route('admin.merchant-credentials.index') }}"><span><i class="fas fa-store me-1"></i>{{ __('Vendor Credentials') }}</span></a>
         </li>
         <li>
             <a href="{{ route('admin-shipping-index') }}"><span>{{ __('Shipping Methods') }}</span></a>
